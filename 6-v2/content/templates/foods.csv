@@ -1,0 +1,4 @@
+foodId,name_en,name_ar,portions,kcal,proteinG,carbsG,fatG,allergens,dietTags
+koshari,Koshari,كشري,plate|half plate,430,13,78,7,gluten,vegetarian|vegan
+ful_medames,Ful medames,فول مدمس,bowl|half bowl,220,12,30,6,none,vegetarian|vegan
+tahini_salad,Tahini salad,سلطة طحينة,small bowl,180,5,8,15,sesame,vegetarian|vegan|gluten_free

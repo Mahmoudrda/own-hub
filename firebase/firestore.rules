@@ -1,0 +1,864 @@
+rules_version = '2';
+
+// Own Hub — Firestore security rules.
+//
+// READ THIS BEFORE EDITING.
+//
+// Firestore evaluates overlapping match statements so that access is allowed if
+// ANY matching condition is true. There is no deny, and a more specific rule
+// CANNOT revoke what a broader one granted. That single fact shapes this whole
+// file: if each feature group wrote its own `match /users/{uid}`, one permissive
+// `allow update` anywhere would defeat every sibling restriction — including the
+// server-only guard on verification, which is the line that makes this a
+// women-only product.
+//
+// Therefore:
+//   * there is exactly ONE `match /users/{uid}` block and ONE for
+//     `match /coaches/{coachUid}` in this file, and a test asserts that;
+//   * per-group field permissions are OR-ed together inside those blocks;
+//   * the global invariants are AND-ed OUTSIDE the OR, so no slice can escape
+//     them, no matter what a future group adds to its own slice.
+//
+// Adding a second match block for either root re-opens the hazard. Extend the
+// slice instead.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------- helpers
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Verification is a server-minted custom claim, never a document read. A
+    // rules get() here would bill one extra read on every gated operation.
+    function isVerified() {
+      return signedIn() && request.auth.token.verified == true;
+    }
+
+    function isCoach() {
+      return signedIn() && request.auth.token.coachV == 'active';
+    }
+
+    // DECISIONS.md D12. Staff, for the content console — a server-minted claim
+    // exactly like `verified` and `coachV`, so a client cannot grant itself
+    // admin any more than it can grant itself a verified badge. This gates
+    // WRITES to the content library only; it opens no door to users/{uid}.
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    // The set of keys this write touches.
+    //
+    // **`resource` is null on a create.** Firestore's own field-level guide
+    // splits its two examples for exactly this reason: it uses
+    // `request.resource.data.keys().hasOnly(...)` for create and
+    // `request.resource.data.diff(resource.data).affectedKeys().hasOnly(...)`
+    // for update, because on a create there is no existing document to diff
+    // against. Reading `resource.data` there is an error, and an error in a
+    // rule denies the request.
+    //
+    // This function had only the update half, and it is AND-ed into
+    // `clientInvariants()`, which `allow create` on users/{uid} depends on. So
+    // creating a user document — the first write this app ever makes, on the
+    // first screen after sign-up — could never evaluate true. Nothing caught
+    // it because no emulator runs in this project (no firebase.json, no Java
+    // runtime), so the rules have never actually been executed.
+    //
+    // On a create, "the keys this write touches" is every key in the new
+    // document, which is the correct reading and makes the invariants below
+    // bite on create as well as update: a document born with a `verification`
+    // map is now refused, not merely one that grows one later.
+    function changed() {
+      return resource == null
+        ? request.resource.data.keys().toSet()
+        : request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    function touches(fields) {
+      return changed().hasAny(fields);
+    }
+
+    function onlyTouches(fields) {
+      return changed().hasOnly(fields);
+    }
+
+    // A timestamp the client cannot backdate or postdate. Used where the value
+    // starts a clock the product relies on — G7's one-hour report window is the
+    // case that matters, because a forgeable createdAt is a forgeable deadline.
+    function serverStamped(field) {
+      return request.resource.data[field] == request.time;
+    }
+
+    // Spine K3, the G8 convention. `updatedAt` must come from the server's own
+    // clock: a client that can backdate a write can lose someone else's edit in
+    // a merge, and one that can postdate it can pin itself at the top of a range
+    // query forever.
+    //
+    // G13 §6 and G14 §6 define this identically and G9 §6 calls it — but it was
+    // never merged into this file, so every block written against it would have
+    // been rejected at deploy time with an undefined-function error.
+    function freshStamp() {
+      return request.resource.data.updatedAt == request.time;
+    }
+
+    // G8 §6's contract, stated in prose by G6 §1.2: every client write carries a
+    // schema version and a server-stamped `updatedAt`, so a document's shape is
+    // always readable and its clock is never the client's.
+    //
+    // G6 records that its own first draft left these out of a key whitelist,
+    // which would have made its rule reject every conformant write. Keeping the
+    // definition here, once, is what stops that being rediscovered per group.
+    function requiredMeta() {
+      return request.resource.data.schemaV is int && freshStamp();
+    }
+
+    // Deterministic document ids. `isDay` is spine C1's replay defence: the id
+    // IS the date, so a retried write collides with itself rather than becoming
+    // a second entry.
+    function isDay(id)  { return id.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+    function isWeek(id) { return id.matches('^[0-9]{4}-W[0-9]{2}$'); }
+
+    // True when `other` has NOT blocked the caller.
+    //
+    // Costs one billed document read every time it is evaluated, so it guards
+    // individual documents and must never be put on a list query — a feed of
+    // 30 posts would bill 30 extra reads per page. G7 §6 is explicit about it.
+    function notBlockedBy(other) {
+      return !exists(
+        /databases/$(database)/documents/users/$(other)/blocks/$(request.auth.uid)
+      );
+    }
+
+    // ------------------------------------------------ G7's two maps, by key
+    //
+    // `onlyTouches(['profile','privacy','notify','updatedAt'])` says WHICH maps
+    // a client may write, and nothing at all about what may go inside them. So
+    // `privacy: "yes"` or `notify: {quietStart: 99999}` were both accepted, and
+    // the client half of every privacy promise in A03 rested on the app being
+    // the only writer. These make the shape enforceable at the boundary.
+    //
+    // Deliberately stricter than G7 §6's snippet in one way: that version tests
+    // `hasOnly` and then reads `...privacy.profileVisible is bool` directly. If
+    // the key is absent, reading it is an error and the whole write is denied
+    // rather than judged — a partial map write would fail with no explanation.
+    // Requiring `hasAll` of the four booleans first makes the absence explicit
+    // and the type checks safe to evaluate.
+    function validPrivacy() {
+      return !touches(['privacy']) || (
+        request.resource.data.privacy.keys().hasOnly([
+          'profileVisible', 'showBests', 'blurFacesDefault',
+          'shareLogsWithCoach', 'policyVersion', 'updatedAt'
+        ])
+        && request.resource.data.privacy.keys().hasAll([
+          'profileVisible', 'showBests', 'blurFacesDefault', 'shareLogsWithCoach'
+        ])
+        && request.resource.data.privacy.profileVisible     is bool
+        && request.resource.data.privacy.showBests          is bool
+        && request.resource.data.privacy.blurFacesDefault   is bool
+        && request.resource.data.privacy.shareLogsWithCoach is bool
+      );
+    }
+
+    // Quiet hours are minutes past midnight, 0-1439. A value outside that range
+    // is not a preference, it is a bug that silences her notifications forever.
+    //
+    // There is no outcome counter and no outcome array here to validate: spine
+    // C6 makes suppression derivable from the notifications subcollection
+    // rather than storable as a tally.
+    function validNotify() {
+      return !touches(['notify']) || (
+        request.resource.data.notify.keys().hasOnly([
+          'push', 'mealNudge', 'quietStart', 'quietEnd', 'kinds', 'usualMealHour'
+        ])
+        && request.resource.data.notify.keys().hasAll([
+          'push', 'mealNudge', 'quietStart', 'quietEnd'
+        ])
+        && request.resource.data.notify.push       is bool
+        && request.resource.data.notify.mealNudge  is bool
+        && request.resource.data.notify.quietStart is int
+        && request.resource.data.notify.quietStart >= 0
+        && request.resource.data.notify.quietStart <= 1439
+        && request.resource.data.notify.quietEnd   is int
+        && request.resource.data.notify.quietEnd   >= 0
+        && request.resource.data.notify.quietEnd   <= 1439
+      );
+    }
+
+    // --------------------------------------------------- global invariants
+    // AND-ed outside every per-group slice below. A slice can widen what fields
+    // it writes; it can never escape these.
+
+    // Rule 3 / spine C6: a run of consecutive days is not storable, so it cannot
+    // be rendered. Enforced at the boundary rather than trusted to the client.
+    // `missedDays`, `dailyStreak` and `daysStreak` were added after G6 pointed
+    // out that the ban listed five spellings and not the three its own plan
+    // uses. `missedDays` is the sharpest of them: a stored count of missed days
+    // is exactly what P0-WEEK-02 forbids being shown, and a field cannot be
+    // rendered if it cannot be written.
+    function noRunCounter() {
+      return !request.resource.data.keys().hasAny([
+        'streak', 'streakDays', 'dayStreak', 'daysStreak', 'dailyStreak',
+        'currentStreak', 'consecutiveDays', 'daysInARow', 'missedDays'
+      ]);
+    }
+
+    // Spine C5: the single most security-critical line in the schema. If a client
+    // can write its own verification result, the women-only gate is one line of
+    // script away from being bypassed.
+    function verificationUntouched() {
+      return !touches(['verification']);
+    }
+
+    // G6: points, weeks, tiers and bests are server-written. A client that can
+    // increment its own points can mint any tier.
+    function rewardsUntouched() {
+      return !touches(['rewards', 'weeklyGoal']);
+    }
+
+    function clientInvariants() {
+      return noRunCounter() && verificationUntouched() && rewardsUntouched();
+    }
+
+    // ------------------------------------------------------ users/{uid}
+    // ONE block. Every group's field permissions are OR-ed inside it.
+
+    match /users/{uid} {
+      allow read: if isSelf(uid);
+
+      allow create: if isSelf(uid)
+                    && clientInvariants()
+                    && !request.resource.data.keys().hasAny(['rewards', 'verification']);
+
+      // G2 owns profile; G7 owns privacy and notify. Neither may reach the other
+      // groups' maps, and neither may escape the invariants.
+      // `onlyTouches` says which maps may be written; `validPrivacy`/`validNotify`
+      // say what may go inside them. Without the second half, A03's switches were
+      // shape-checked by the app and by nothing else.
+      allow update: if isSelf(uid)
+                    && clientInvariants()
+                    && onlyTouches(['profile', 'privacy', 'notify', 'updatedAt'])
+                    && validPrivacy()
+                    && validNotify();
+
+      // Deletion is a Cloud Function that purges by manifest; Firestore does not
+      // cascade, so a client delete here would orphan every subcollection.
+      allow delete: if false;
+
+      // -- G3: the daily check-in. Deterministic id, so a replay collides.
+      //
+      // The field validator is G3 §6's `checkinFieldsOk`, merged verbatim. A
+      // bare `read, write` accepted any shape, which matters more this week
+      // than last: Y04 is gaining the sleep, bloating and bleeding controls,
+      // and `bleeding == 'heavy'` is half of the severe-symptom gate. A value
+      // the gate cannot recognise would not fail loudly — it would simply
+      // never suppress, and she would be offered a workout on a day the
+      // product promised not to.
+      match /checkins/{day} {
+        allow read: if isSelf(uid);
+        allow create, update: if isSelf(uid)
+                              && isDay(day)
+                              && noRunCounter()
+                              && request.resource.data.keys().hasOnly([
+                                   'energy', 'cramps', 'appetite',
+                                   'sleep', 'bloating', 'bleeding'
+                                 ])
+                              && (!request.resource.data.keys().hasAny(['energy'])
+                                  || request.resource.data.energy
+                                       in ['low', 'ok', 'high'])
+                              && (!request.resource.data.keys().hasAny(['appetite'])
+                                  || request.resource.data.appetite
+                                       in ['low', 'ok', 'high'])
+                              && (!request.resource.data.keys().hasAny(['sleep'])
+                                  || request.resource.data.sleep
+                                       in ['poor', 'ok', 'good'])
+                              && (!request.resource.data.keys().hasAny(['cramps'])
+                                  || request.resource.data.cramps
+                                       in ['none', 'mild', 'moderate', 'severe'])
+                              && (!request.resource.data.keys().hasAny(['bloating'])
+                                  || request.resource.data.bloating
+                                       in ['none', 'mild', 'moderate', 'severe'])
+                              && (!request.resource.data.keys().hasAny(['bleeding'])
+                                  || request.resource.data.bleeding
+                                       in ['none', 'spotting', 'light',
+                                           'medium', 'heavy']);
+        // The five-second undo (rule 9) deletes rather than confirms.
+        allow delete: if isSelf(uid);
+      }
+
+      // -- G4: sessions, with sets embedded (spine C2).
+      match /sessions/{sessionId} {
+        allow read: if isSelf(uid);
+        // Spine C8: a live session must be born with nothing logged. A recalled
+        // or unplanned session is logged after the fact and is exempt.
+        allow create: if isSelf(uid)
+                      && noRunCounter()
+                      && (request.resource.data.source != 'live'
+                          || request.resource.data.loggedSetCount == 0);
+        allow update: if isSelf(uid)
+                      && noRunCounter()
+                      && request.resource.data.source == resource.data.source;
+        allow delete: if false;
+      }
+
+      // -- G5: one meal document per day (spine C3).
+      //
+      // A bare `read, write` was too wide. The shape is load-bearing here: C3
+      // exists so two offline devices merge into ONE document per day by
+      // arrayUnion rather than overwriting each other, and a write of the wrong
+      // shape is how that silently becomes last-write-wins.
+      //
+      // The caps match the app's own kSlotItemCap, so the rules and the client
+      // agree rather than each guessing. `.get(key, [])` is deliberate: a day
+      // with no dinner logged yet has no `dinner` key, and indexing it directly
+      // would fail the whole write.
+      match /meals/{day} {
+        allow read: if isSelf(uid);
+        allow write: if isSelf(uid)
+                     && noRunCounter()
+                     && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+                     && request.resource.data.keys().hasOnly([
+                          'slots', 'totals', 'firstLogAt', 'tz',
+                          'libVersion', 'updatedAt', 'skippedAt'
+                        ])
+                     && request.resource.data.get('slots', {}).keys().hasOnly([
+                          'breakfast', 'lunch', 'dinner', 'snack'
+                        ])
+                     && request.resource.data.get('slots', {})
+                          .get('breakfast', []).size() <= 24
+                     && request.resource.data.get('slots', {})
+                          .get('lunch', []).size() <= 24
+                     && request.resource.data.get('slots', {})
+                          .get('dinner', []).size() <= 24
+                     && request.resource.data.get('slots', {})
+                          .get('snack', []).size() <= 24
+                     && request.resource.data.get('totals', {})
+                          .get('kcal', 0) >= 0
+                     && request.resource.data.get('totals', {})
+                          .get('kcal', 0) <= 30000
+                     && request.resource.data.get('totals', {})
+                          .get('protein', 0) >= 0
+                     && request.resource.data.get('totals', {})
+                          .get('protein', 0) <= 2000;
+        // A day is corrected by writing it, never by deleting it — the same
+        // reasoning as sessions. Deleting a day would silently un-count it.
+        allow delete: if false;
+      }
+
+      // -- G5: her usual plates and Eat preferences. Exactly one document.
+      match /eatPrefs/{docId} {
+        allow read: if isSelf(uid);
+        allow write: if isSelf(uid)
+                     && noRunCounter()
+                     && docId == 'current'
+                     && request.resource.data.keys().hasOnly([
+                          'plates', 'ramadanMode', 'proteinTargetGOverride',
+                          'libVersion', 'updatedAt'
+                        ])
+                     && request.resource.data.get('plates', {}).size() <= 40
+                     && request.resource.data.get('ramadanMode', 'auto')
+                          in ['auto', 'on', 'off'];
+        allow delete: if false;
+      }
+
+      // -- G5: the week's dinner plan and its grocery list.
+      match /mealPlans/{weekId} {
+        allow read: if isSelf(uid);
+        allow write: if isSelf(uid)
+                     && noRunCounter()
+                     && weekId.matches('^[0-9]{4}-W[0-9]{2}$')
+                     && request.resource.data.keys().hasOnly([
+                          'dinners', 'groceries', 'recipeVersion', 'updatedAt'
+                        ])
+                     && request.resource.data.get('dinners', {}).keys().hasOnly([
+                          'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'
+                        ])
+                     && request.resource.data.get('groceries', []).size() <= 120;
+        // Hers to clear. A week plan is a convenience, not a record of what
+        // happened — unlike a meal day, nothing is lost by removing it.
+        allow delete: if isSelf(uid);
+      }
+
+      // -- G6: server-written. A client may read its own progress, never write it.
+      match /weeks/{weekId}      { allow read: if isSelf(uid); allow write: if false; }
+      match /bests/{exerciseId}  { allow read: if isSelf(uid); allow write: if false; }
+      match /awards/{awardId}    { allow read: if isSelf(uid); allow write: if false; }
+
+      // -- G6: measurements are hers alone. Never queried across users, and the
+      //    index exemptions make that unexecutable rather than merely denied.
+      // Rule 11 at the storage layer. With a key whitelist, no `sharedWith`,
+      // `public` or `rank` field can ever come into existence here — so there
+      // is nothing for a later feature to expose by accident. A bare
+      // `allow read, write` left that open, and these are her body
+      // measurements.
+      //
+      // The K3 metadata fields are INSIDE the whitelist, deliberately: G6 §1.2
+      // records that omitting them would have made its own rule reject every
+      // conformant write.
+      match /measurements/{day} {
+        allow read: if isSelf(uid);
+        allow create, update: if isSelf(uid)
+                              && isDay(day)
+                              && noRunCounter()
+                              && requiredMeta()
+                              && request.resource.data.keys().hasOnly([
+                                   'weightKg', 'waistCm', 'hipsCm', 'armCm',
+                                   'thighCm', 'takenAt', 'note',
+                                   'schemaV', 'updatedAt', 'clientWrittenAt',
+                                   'opId'
+                                 ]);
+        allow delete: if isSelf(uid);
+      }
+
+      // -- G9: cycle. The most sensitive data in the product. A coach NEVER reads
+      //    it through a membership check here — she reads a Function-written
+      //    projection, and only while the grant on the relationship is live.
+      //
+      // `allow read, write: if isSelf(uid)` was too wide in both directions, and
+      // G9 §6 says why. `read` grants `list`, and there is no cycle query, for
+      // anyone, ever — one document, fixed id. `write` accepted any shape, so
+      // nothing stopped a stored `phase`, `cycleDay` or `fertileWindow`, which
+      // is §2.4 defeated at the storage layer rather than in the UI.
+      match /cycle/{docId} {
+        function cycleOk(d) {
+          return d.keys().hasOnly([
+                   'mode', 'contextFlags', 'cycleLengthDays', 'adaptation',
+                   'sharing', 'lastPeriod', 'recentStarts',
+                   'schemaV', 'updatedAt', 'clientWrittenAt', 'opId'
+                 ])
+            && (!d.keys().hasAny(['mode'])
+                || d.mode in ['datesAndSymptoms', 'symptomsOnly'])
+            && (!d.keys().hasAny(['contextFlags'])
+                || (d.contextFlags is list && d.contextFlags.size() <= 6))
+            && (!d.keys().hasAny(['recentStarts'])
+                || (d.recentStarts is list && d.recentStarts.size() <= 12))
+            && (!d.keys().hasAny(['cycleLengthDays'])
+                || d.cycleLengthDays == null
+                || (d.cycleLengthDays is int
+                    && d.cycleLengthDays >= 21
+                    && d.cycleLengthDays <= 45))
+            && (!d.keys().hasAny(['adaptation'])
+                || d.adaptation.keys().hasOnly([
+                     'workoutSuggestions', 'mealSuggestions',
+                     'homeCard', 'easierWhenLowEnergy'
+                   ]))
+            && (!d.keys().hasAny(['sharing'])
+                || d.sharing.keys().hasOnly([
+                     'energyAppetite', 'symptoms',
+                     'datesAndPatterns', 'grantedForRelId'
+                   ]))
+            // §2.4 at the storage layer: a phase, a cycle day and a prediction
+            // are not things this product decides, so they are not things this
+            // document can hold.
+            && !d.keys().hasAny([
+                 'phase', 'cycleDay', 'predictedOvulation',
+                 'fertileWindow', 'forecast'
+               ]);
+        }
+
+        allow get:  if isSelf(uid);
+        allow list: if false;
+        allow create, update: if isSelf(uid)
+                              && docId == 'current'
+                              && noRunCounter()
+                              && freshStamp()
+                              && cycleOk(request.resource.data);
+        allow delete: if isSelf(uid);          // Y12 "Delete cycle data"
+      }
+
+      // The document id IS the start date (C1), so a replayed log collides with
+      // itself instead of creating a second period.
+      match /periods/{day} {
+        function asDate(s) {
+          return timestamp.date(int(s[0:4]), int(s[5:7]), int(s[8:10]));
+        }
+
+        function periodOk(d) {
+          return d.keys().hasOnly([
+                   'start', 'end', 'stillBleeding', 'editedAt',
+                   'schemaV', 'updatedAt', 'clientWrittenAt', 'opId'
+                 ])
+            && d.start == day                    // id and field can never disagree
+            && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+            && d.stillBleeding is bool
+            && d.stillBleeding == (d.end == null)  // and can never contradict
+            && (d.end == null
+                || (d.end is string
+                    && d.end.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+                    && d.end >= d.start))        // ISO dates compare lexically
+            // No bleeding in the future. One day of slack for a device whose
+            // timezone is ahead of the server's.
+            && asDate(d.start) <= request.time + duration.value(1, 'd')
+            && (d.end == null
+                || asDate(d.end) <= request.time + duration.value(1, 'd'));
+        }
+
+        allow get:  if isSelf(uid);
+        allow list: if isSelf(uid);            // Y08's bounded range, owner only
+        allow create, update: if isSelf(uid)
+                              && noRunCounter()
+                              && freshStamp()
+                              && periodOk(request.resource.data);
+        allow delete: if isSelf(uid);          // Y09 delete
+      }
+
+      // -- G4/G14: a split she authored herself (DECISIONS D7).
+      match /splits/{splitId} {
+        allow read: if isSelf(uid);
+        allow write: if isSelf(uid)
+                     && request.resource.data.ownerKind == 'self';
+      }
+
+      // -- G8: her devices.
+      match /devices/{deviceId} { allow read, write: if isSelf(uid); }
+
+      // -- G7: the notification inbox (A01).
+      //
+      // Function-written, with a 30-day TTL on `expiresAt` — that TTL is what
+      // keeps A01 a bounded read forever instead of a scan that grows with the
+      // account's age. She may mark one read, or record how she answered a
+      // nudge, and nothing else: a client that could create its own
+      // notification could put any text in front of any woman.
+      match /notifications/{notifId} {
+        allow get, list: if isSelf(uid);
+        allow create, delete: if false;
+        allow update: if isSelf(uid)
+                      && onlyTouches(['read', 'readAt', 'outcome'])
+                      && (!touches(['outcome'])
+                          || request.resource.data.outcome
+                               in ['logged', 'ignored', 'dismissed']);
+      }
+
+      // -- G7: who she has blocked (A04).
+      //
+      // The document id IS the blocked uid, so a replayed block collides with
+      // itself rather than stacking (spine C1) — which is what makes blocking
+      // safe to write offline. Unblocking is hers; the mirror below is not.
+      match /blocks/{blockedUid} {
+        allow get, list: if isSelf(uid);
+        allow create, update: if isSelf(uid)
+                      && blockedUid != uid
+                      && request.resource.data.keys().hasOnly(
+                           ['createdAt', 'source'])
+                      && request.resource.data.source
+                           in ['post', 'profile', 'message', 'safety_centre']
+                      && serverStamped('createdAt');
+        allow delete: if isSelf(uid);
+      }
+
+      // -- G7: the reverse mirror, Function-written.
+      //
+      // Closed to EVERYONE, including the woman it belongs to, and that is the
+      // point: nobody learns who blocked them. A blocked read returns the
+      // ordinary "not available" state, never "you are blocked", so blocking
+      // someone cannot become a way of telling them.
+      match /blockedBy/{blockerUid} {
+        allow read, write: if false;
+      }
+
+      // -- G7: "Reports you made" (A04). A Function-written mirror, so she can
+      //    follow her own report without the moderation queue ever being
+      //    client-readable.
+      match /myReports/{reportId} {
+        allow get, list: if isSelf(uid);
+        allow write: if false;
+      }
+
+      // -- G1: her consent trail (PDPL).
+      //
+      // Verbatim from G1 §6. Declared nowhere until now, so it fell through to
+      // the catch-all and was denied in BOTH directions — which sounds safe and
+      // is not: PDPL gives her a right of access to her own consent records,
+      // and deny-all blocked her from reading them. Writing stays closed: a
+      // consent record is minted by the ConsentService callable with a
+      // server timestamp and a server-side hash of the policy text, because a
+      // client-written consent record proves nothing.
+      match /consents/{consentId} {
+        allow get, list: if isSelf(uid);
+        allow write: if false;
+      }
+
+      // -- G3: shown-once notices.
+      //
+      // Verbatim from G3 §6. The document id IS `kind-week`, and the rule
+      // requires the id to equal the data — so "shown once, never again that
+      // week" (P0-WEEK-03) is structural rather than a flag someone has to
+      // check. A replayed offline write collides with itself and cannot
+      // re-show the notice.
+      match /notices/{noticeId} {
+        allow read: if isSelf(uid);
+        allow create, update: if isSelf(uid)
+                              && noRunCounter()
+                              && request.resource.data.keys().hasOnly([
+                                   'kind', 'forWeek', 'seenAt'
+                                 ])
+                              && request.resource.data.kind in [
+                                   'quietWeek', 'tierSlip'
+                                 ]
+                              && isWeek(request.resource.data.forWeek)
+                              && noticeId ==
+                                   request.resource.data.kind + '-' +
+                                   request.resource.data.forWeek
+                              && request.resource.data.seenAt == request.time;
+        // An acknowledgement is not retractable.
+        allow delete: if false;
+      }
+
+      // -- G3: the first-week arc. One document, fixed id `arc`.
+      //
+      // Booleans only, and HANDOFF rule 17 in enforceable form: with no
+      // `expiresAt`, `deadline` or `failedAt` storable, the first week has no
+      // deadline and no failure state, so it cannot be something she loses.
+      match /firstWeek/{docId} {
+        allow read: if isSelf(uid);
+        allow create, update: if isSelf(uid)
+                              && docId == 'arc'
+                              && noRunCounter()
+                              && request.resource.data.keys().hasOnly([
+                                   'hasAnyLog', 'steps', 'completedAt'
+                                 ])
+                              && request.resource.data.hasAnyLog is bool
+                              && request.resource.data.steps.keys().hasOnly([
+                                   'logSet', 'logMeal', 'finishSession',
+                                   'joinGroup', 'followUp'
+                                 ])
+                              && !request.resource.data.keys().hasAny([
+                                   'expiresAt', 'deadline', 'failedAt'
+                                 ]);
+        allow delete: if false;
+      }
+    }
+
+    // ------------------------------------------------ coaches/{coachUid}
+    // ONE block, for the same reason. G12 (profile, offers), G13 (portfolio,
+    // results, ads) and G14 (splits) are OR-ed slices inside it.
+
+    match /coaches/{coachUid} {
+      // A coach's public face is world-readable; everything beneath is hers.
+      allow read: if signedIn();
+      allow create: if isSelf(coachUid) && isCoach();
+      allow update: if isSelf(coachUid)
+                    && isCoach()
+                    && !touches(['verifiedCerts', 'coachV', 'rating']);
+      allow delete: if false;
+
+      // G13: a published portfolio is readable by anyone signed in, because a
+      // woman choosing a coach must be able to see it before she commits.
+      match /portfolio/{version} {
+        allow read: if signedIn() && resource.data.published == true
+                    || isSelf(coachUid);
+        allow write: if isSelf(coachUid) && isCoach();
+      }
+
+      match /offers/{offerId} {
+        allow read: if signedIn();
+        allow write: if isSelf(coachUid) && isCoach();
+      }
+
+      // G13 / spine C10: a client result is publishable only while consent is
+      // active, checked at READ time so withdrawal takes effect everywhere at
+      // once — including inside already-composed ad creatives.
+      match /results/{resultId} {
+        allow read: if isSelf(coachUid)
+                    || (signedIn() && resource.data.consentState == 'granted');
+        allow write: if isSelf(coachUid) && isCoach();
+      }
+
+      match /ads/{adId}        { allow read, write: if isSelf(coachUid) && isCoach(); }
+      match /splits/{splitId}  { allow read, write: if isSelf(coachUid) && isCoach(); }
+    }
+
+    // ------------------------------------------------------- relationships
+    // relId is exactly {coachUid}__{clientUid}; the Storage rules parse it, so
+    // the spelling is load-bearing.
+
+    match /relationships/{relId} {
+      function isParty() {
+        return signedIn()
+               && (request.auth.uid == resource.data.coachUid
+                   || request.auth.uid == resource.data.clientUid);
+      }
+
+      allow read: if isParty();
+      allow create: if signedIn()
+                    && request.resource.data.clientUid == request.auth.uid;
+      // Money state and the sharing grant are server-written.
+      allow update: if isParty()
+                    && !touches(['payment', 'status', 'grantedForRelId']);
+      allow delete: if false;
+
+      // Rule 2: a message never changes a plan. A message document may not carry
+      // plan fields at all, so "the coach changed my plan in chat" is not a shape
+      // this collection can hold.
+      match /messages/{msgId} {
+        allow read: if isParty();
+        allow create: if isParty()
+                      && request.resource.data.senderUid == request.auth.uid
+                      && !request.resource.data.keys().hasAny(
+                           ['planVersion', 'assignments', 'published']);
+        allow update, delete: if false;
+      }
+
+      match /reviews/{reviewId} {
+        allow read: if isParty();
+        allow write: if isParty();
+      }
+    }
+
+    // ------------------------------------------------------------- plans
+    // G2 authors plans; a coach reads her client's under an active relationship.
+    // Publishing is a Function, because publishing is what changes a plan.
+
+    match /plans/{uid}/{document=**} {
+      allow read: if isSelf(uid)
+                  || exists(/databases/$(database)/documents/relationships/$(request.auth.uid + '__' + uid));
+      allow write: if false;
+    }
+
+    // -------------------------------------------------------- community
+    // Spine C9: the feed is assembled on READ. Nothing here fans out on write.
+
+    match /posts/{postId} {
+      allow read: if isVerified();
+      allow create: if isVerified()
+                    && request.resource.data.authorUid == request.auth.uid
+                    // Rule 6: blur defaults on, applied on-device before upload.
+                    && request.resource.data.blurred is bool;
+      allow update: if isVerified()
+                    && resource.data.authorUid == request.auth.uid
+                    // Counts are server-maintained; a client cannot inflate them.
+                    && !touches(['counts', 'authorUid', 'createdAt']);
+      allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+
+      match /comments/{commentId} {
+        allow read: if isVerified();
+        allow create: if isVerified()
+                      && request.resource.data.authorUid == request.auth.uid;
+        allow update: if false;
+        allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+      }
+    }
+
+    match /publicProfiles/{uid} {
+      allow read: if isVerified();
+      allow write: if false; // Function-maintained projection.
+    }
+
+    match /followGraph/{ownerUid}/{edge}/{otherUid} {
+      allow read: if isVerified();
+      allow write: if isSelf(ownerUid);
+    }
+
+    match /groups/{groupId} {
+      allow read: if isVerified();
+      allow write: if false;
+      match /members/{uid} {
+        allow read: if isVerified();
+        allow write: if isSelf(uid);
+      }
+    }
+
+    // ---------------------------------------------------------- moderation
+    // She can report; she can never read the queue, and she can never learn
+    // whether a report led anywhere.
+
+    // The moderation queue. She reads her own mirror at users/{uid}/myReports;
+    // this collection is never client-readable, because a readable report queue
+    // tells a harasser who reported him.
+    //
+    // Only `reporterUid` was checked before, which left three holes that matter:
+    // `createdAt` was forgeable, so the one-hour first-response clock could be
+    // set to any time; `note` was unbounded; and `reason` was free text, so the
+    // triage categories the safety team sorts by were whatever a client sent.
+    match /reports/{reportId} {
+      allow get, list: if false;
+      allow create: if signedIn()
+                    && request.resource.data.reporterUid == request.auth.uid
+                    && request.resource.data.subjectUid != request.auth.uid
+                    && request.resource.data.state == 'submitted'
+                    && serverStamped('createdAt')
+                    && request.resource.data.get('note', '').size() <= 1000
+                    && request.resource.data.reason in [
+                         'harassment', 'man_account', 'nudity', 'spam',
+                         'impersonation', 'self_harm', 'other'
+                       ]
+                    && request.resource.data.keys().hasOnly([
+                         'reporterUid', 'subjectUid', 'subjectKind', 'subjectRef',
+                         'reason', 'note', 'state', 'createdAt', 'locale',
+                         'appVersion'
+                       ]);
+      // Moderators act through the Admin SDK, which bypasses rules entirely.
+      allow update, delete: if false;
+    }
+
+    // A02's proof of erasure. She may watch her own deletion run; she may not
+    // write it, because a client that could set `state: 'done'` could make the
+    // app tell her she was deleted when she was not.
+    match /deletionRequests/{uid} {
+      allow get:   if isSelf(uid);
+      allow list:  if false;
+      allow write: if false;
+    }
+
+    // ------------------------------------------------------- assessments
+    match /assessments/{assessmentId} {
+      allow read: if signedIn()
+                  && (request.auth.uid == resource.data.clientUid
+                      || request.auth.uid == resource.data.coachUid);
+      allow create: if signedIn() && isCoach();
+      allow update: if signedIn() && isCoach()
+                    && request.auth.uid == resource.data.coachUid;
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------ libraries
+    // Immutable content. Read by everyone, written by the content pipeline only.
+
+    // The content library. DECISIONS.md D12 / plan G16.
+    //
+    // These were `write: if false` for everyone, which meant the library could
+    // not be authored from anywhere — and it is empty, which is exactly why
+    // P0-EAT-01 cannot pass and the exercise safety filter has nothing to
+    // filter on. Admin writes them through the console; members still cannot.
+    //
+    // Read stays signedIn(): this is a women-only product and the library sits
+    // behind the same gate as everything else.
+    match /exercises/{id} { allow read: if signedIn(); allow write: if isAdmin(); }
+    match /foods/{id}     { allow read: if signedIn(); allow write: if isAdmin(); }
+    match /recipes/{id}   { allow read: if signedIn(); allow write: if isAdmin(); }
+    match /programs/{id}  { allow read: if signedIn(); allow write: if isAdmin(); }
+
+    // --------------------------------------------------------- server only
+    match /verificationJobs/{jobId} { allow read, write: if false; }
+    match /nidRegistry/{hash}       { allow read, write: if false; }
+
+    // G15. The assistant's daily allowance. Function-only, deliberately.
+    //
+    // `AssistantQuota` on the device is a MIRROR so the composer can disable
+    // itself; it is not the security boundary. A client that could write here
+    // could grant itself unlimited questions against a metered third-party
+    // model, which is the one feature in this product with an unbounded bill.
+    // The caps are 5 questions per woman per day and 6 drafts per coach.
+    match /assistantQuota/{uid}     { allow read, write: if false; }
+
+    // STILL MISSING, and deliberately not guessed at:
+    //   planDrafts, media, enquiries, payments.
+    // Each is referenced by Phase 3 code, and each needs its shape settled
+    // against the emulator before a rule is written for it. A rule invented
+    // from inference reads as protection while protecting nothing, and none of
+    // these can be tested until the Firebase project exists. Tracked as an
+    // owner task.
+
+    // --------------------------------------------------- deny by default
+    // Anything not named above is denied. Stated explicitly so the posture is
+    // visible rather than implied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,4 @@
+exerciseId,name_en,name_ar,equipment,pattern,contraindicationTags,quiet,floorOnly,videoFile,thumbFile
+goblet_squat,Goblet squat,القرفصاء بالدمبل,dumbbells,squat,none,true,false,goblet_squat.mp4,goblet_squat.jpg
+glute_bridge,Glute bridge,جسر المقعدة,none,hinge,none,true,true,glute_bridge.mp4,glute_bridge.jpg
+wall_sit,Wall sit,الجلوس على الحائط,none,squat,deep_knee_flexion,true,false,wall_sit.mp4,wall_sit.jpg

@@ -1,0 +1,248 @@
+{
+  "_comment": [
+    "Own Hub — Firestore indexes and, more importantly, index EXEMPTIONS.",
+    "",
+    "Firestore indexes every field automatically, including each non-array subfield",
+    "of a map and the elements of arrays. That means §2 rule 11 — nothing is ranked",
+    "by weight, weight lost, or followers — is FALSE in a deployed project unless the",
+    "exemptions below exist, no matter what the application code says. Four separate",
+    "feature plans reached this independently.",
+    "",
+    "A fieldOverride with an empty 'indexes' array disables automatic indexing for",
+    "that field, so the forbidden query cannot be executed rather than merely being",
+    "denied. These are deployment artifacts, not tuning: deploy them with the rules,",
+    "and assert after deploy that the forbidden query fails."
+  ],
+  "indexes": [
+    {
+      "_why": "G10 community feed. The whole feed is one query per audience chunk; fan-out happens on READ, never on write (spine C9).",
+      "collectionGroup": "posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "audienceKeys",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "visibility",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "G12 coach roster, paginated 20 per page. The only hot-path composite in the coach app.",
+      "collectionGroup": "relationships",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "coachUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastActivityAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "G11 the coach's enquiry queue. Declared openly rather than claimed away.",
+      "collectionGroup": "relationships",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "coachUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "G10 a woman's own posts, newest first, for her profile grid.",
+      "collectionGroup": "posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "authorUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "_why": "RULE 11. Sets are embedded in the session document (spine C2), so every element of the array is auto-indexed — including actualWeight. Without this, 'order sessions by weight lifted' is a query that simply works.",
+      "collectionGroup": "sessions",
+      "fieldPath": "sets",
+      "indexes": []
+    },
+    {
+      "_why": "RULE 11. Her weight. Private to her, never compared, never ranked — enforced here rather than in a repository method someone can bypass.",
+      "collectionGroup": "measurements",
+      "fieldPath": "weightKg",
+      "indexes": []
+    },
+    {
+      "_why": "RULE 11. Body measurements, same reasoning.",
+      "collectionGroup": "measurements",
+      "fieldPath": "body",
+      "indexes": []
+    },
+    {
+      "_why": "RULE 11. Personal bests are hers; a league table of loads is exactly what this product refuses to build.",
+      "collectionGroup": "bests",
+      "fieldPath": "loadKg",
+      "indexes": []
+    },
+    {
+      "_why": "RULE 11. Follower counts are DISPLAYED, never ranked (HANDOFF rule 11). Leaving this indexed makes 'most followed women' a one-line query.",
+      "collectionGroup": "publicProfiles",
+      "fieldPath": "followerCount",
+      "indexes": []
+    },
+    {
+      "_why": "RULE 11. Likes and comments on a post. Ordering by them turns a community into a leaderboard.",
+      "collectionGroup": "posts",
+      "fieldPath": "counts",
+      "indexes": []
+    },
+    {
+      "_why": "RULE 11. A follow-up's cost summary carries counted weeks and sessions; ranking by it ranks women by effort.",
+      "collectionGroup": "posts",
+      "fieldPath": "cost",
+      "indexes": []
+    },
+    {
+      "_why": "RULE 11. Group size. Ordering groups by membership makes the biggest room the default, which is the opposite of what a beginner needs.",
+      "collectionGroup": "groups",
+      "fieldPath": "memberCount",
+      "indexes": []
+    },
+    {
+      "_why": "RULE 11, and the sharpest case: a client result carries her before/after numbers. Indexed, 'rank coaches by client weight lost' is a query that just works — which is precisely the marketing this product refuses.",
+      "collectionGroup": "results",
+      "fieldPath": "numbers",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. Cycle settings must not be queryable across users at all, so that 'find every pregnant woman' is unexecutable rather than merely denied.",
+      "collectionGroup": "cycle",
+      "fieldPath": "contextFlags",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. Period entries, same reasoning.",
+      "collectionGroup": "periods",
+      "fieldPath": "start",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. Daily symptoms live on the check-in; no field of it may be queryable across women.",
+      "collectionGroup": "checkins",
+      "fieldPath": "cramps",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL, as above.",
+      "collectionGroup": "checkins",
+      "fieldPath": "bleeding",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL, as above.",
+      "collectionGroup": "checkins",
+      "fieldPath": "energy",
+      "indexes": []
+    },
+    {
+      "_why": "COST, not a rule. One meal document per day holds a slots map (spine C3); auto-indexing every subfield multiplies write cost for queries nobody makes.",
+      "collectionGroup": "meals",
+      "fieldPath": "slots",
+      "indexes": []
+    },
+    {
+      "_why": "COST. The running totals on the same document.",
+      "collectionGroup": "meals",
+      "fieldPath": "totals",
+      "indexes": []
+    },
+    {
+      "_why": "COST. Portfolio blocks are a large ordered array rendered as a unit and never queried into.",
+      "collectionGroup": "portfolio",
+      "fieldPath": "blocks",
+      "indexes": []
+    },
+    {
+      "_why": "COST. plates is a map with roughly 1,100 leaf paths; every auto-indexed subfield is an index-entry write on every rollup, and the document approaches the 40,000-entry ceiling. No query reads these fields individually.",
+      "collectionGroup": "eatPrefs",
+      "fieldPath": "plates",
+      "indexes": []
+    },
+    {
+      "_why": "COST. The week grocery list is an array nobody queries into.",
+      "collectionGroup": "mealPlans",
+      "fieldPath": "groceries",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. G9 requires NINE exemptions across cycle and periods; two were deployed and seven were not, so five cycle fields and two period fields were being auto-indexed in a deployed project. PHASE2-ACCEPTANCE.md recorded this as 'six missing' by counting three checkins rows that belong to G3, not G9. Each row below closes one real cross-user query. This one: recentStarts is the rolling list of her last cycle start dates, and an index on it makes 'find every woman whose cycle started in week N' executable.",
+      "collectionGroup": "cycle",
+      "fieldPath": "recentStarts",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. mode is datesAndSymptoms or symptomsOnly. Indexed, it segments the women who declined to share dates — which is precisely the choice the mode exists to let her make privately.",
+      "collectionGroup": "cycle",
+      "fieldPath": "mode",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. Her stated cycle length. An indexed integer in the 21-45 range is a queryable medical attribute, and 'everyone with a cycle shorter than 24 days' is a clinical cohort nobody in this company should be able to assemble.",
+      "collectionGroup": "cycle",
+      "fieldPath": "cycleLengthDays",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. The sharing grants. Indexing consent state makes 'every woman sharing symptoms with a coach' a query, which turns a private decision into a marketable segment.",
+      "collectionGroup": "cycle",
+      "fieldPath": "sharing",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. Her most recent period. The single most sensitive scalar in the product; an index on it answers 'who is bleeding today' across every user.",
+      "collectionGroup": "cycle",
+      "fieldPath": "lastPeriod",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. The end date of a period entry. periods.start was exempted and end was not, which left half the range queryable — enough to reconstruct the other half.",
+      "collectionGroup": "periods",
+      "fieldPath": "end",
+      "indexes": []
+    },
+    {
+      "_why": "PDPL. stillBleeding is a boolean that is true for exactly the women currently on their period. Of every field in this file, this is the one an index most directly weaponises.",
+      "collectionGroup": "periods",
+      "fieldPath": "stillBleeding",
+      "indexes": []
+    }
+  ]
+}

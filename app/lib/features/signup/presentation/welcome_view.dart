@@ -1,0 +1,110 @@
+/// C01 — Welcome. The first screen a woman ever sees.
+///
+/// Matches `6-v2/src/screens-signup.mjs` → `C01`. Two departures from the
+/// prototype markup, both deliberate:
+///
+///  * The prototype's drawn status bar is device chrome, not product UI. See
+///    [AppScaffold].
+///  * The prototype shows the word "logotype" in a monospace face — a designer's
+///    annotation marking where the wordmark goes, not copy. The i18n extractor
+///    swept it into the dictionary and even produced an Arabic translation for
+///    it, which is how you can tell it was never meant to be read aloud. The
+///    product is named now, so the slot holds the name until there is an asset.
+library;
+
+import 'package:flutter/material.dart';
+
+import '../../../l10n/app_l10n.dart';
+import '../../../theme/app_tokens.dart';
+import '../../../ui/app_button.dart';
+import '../../../ui/app_scaffold.dart';
+import '../../../ui/hand/hand.dart';
+
+class WelcomeView extends StatelessWidget {
+  const WelcomeView({super.key, this.onGetStarted, this.onSignIn});
+
+  final VoidCallback? onGetStarted;
+  final VoidCallback? onSignIn;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+
+    return AppScaffold(
+      // Spacers centre the content optically, so this is not a plain scroll
+      // view — it fills the viewport and scrolls only when it must.
+      scrollable: false,
+      footer: [
+        AppButton(l10n.getStarted, onPressed: onGetStarted),
+        AppButton(
+          l10n.iAlreadyHaveAnAccount,
+          variant: AppButtonVariant.text,
+          height: 48,
+          fontSize: 15,
+          onPressed: onSignIn,
+        ),
+      ],
+      children: [
+        const AppSpacer(),
+        Center(
+          child: Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: const Icon(
+              Icons.self_improvement,
+              size: 48,
+              color: Color(0xFFFFFFFF),
+            ),
+          ),
+        ),
+        // TODO(owner): replace with the Own Hub wordmark asset when it exists.
+        Text(
+          'Own Hub',
+          textAlign: TextAlign.center,
+          style: AppText.label.copyWith(
+            fontSize: 13,
+            letterSpacing: 0.4,
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          // The cover line, set at editorial scale and underlined once by
+          // hand — the first ink she sees. Sized to its longest line so the
+          // underline sits under the words rather than across the column.
+          child: Center(
+            child: HandUnderline(
+              level: HandLevel.signature,
+              width: HandStroke.felt,
+              drawOn: true,
+              delay: const Duration(milliseconds: 240),
+              gap: 6,
+              child: Text(
+                l10n.aRoomFullOfWomenTrainingLike,
+                textAlign: TextAlign.center,
+                textWidthBasis: TextWidthBasis.longestLine,
+                style: EditorialType.cover,
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            l10n.quietWorkoutsForHomeFoodYouAlready,
+            textAlign: TextAlign.center,
+            style: AppText.body.copyWith(
+              height: 24 / 16,
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const AppSpacer(),
+      ],
+    );
+  }
+}

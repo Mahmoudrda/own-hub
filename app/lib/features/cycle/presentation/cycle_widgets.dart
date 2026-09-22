@@ -1,0 +1,126 @@
+/// Pieces shared by the Y screens, built once so they cannot drift apart.
+library;
+
+import 'package:flutter/material.dart';
+
+import '../../../l10n/app_l10n.dart';
+import '../../../theme/app_tokens.dart';
+import '../../../ui/app_chip_row.dart';
+import '../../../ui/app_nav_bar.dart';
+import '../../today/presentation/today_cards.dart' show openScreen;
+
+/// The hub's three tabs. **Calendar is absent in symptom-only mode** — Y14 has
+/// no dates to show, so the tab is not rendered rather than rendered empty.
+enum CycleTab { today, calendar, patterns }
+
+class CycleTabs extends StatelessWidget {
+  const CycleTabs({
+    super.key,
+    required this.active,
+    required this.showCalendar,
+    this.onSelect,
+  });
+
+  final CycleTab active;
+
+  /// False in symptom-only mode and nowhere else.
+  final bool showCalendar;
+
+  final ValueChanged<CycleTab>? onSelect;
+
+  /// The tabs actually shown, in order.
+  List<CycleTab> get tabs => [
+    CycleTab.today,
+    if (showCalendar) CycleTab.calendar,
+    CycleTab.patterns,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final shown = tabs;
+
+    String labelFor(CycleTab tab) => switch (tab) {
+      CycleTab.today => l10n.today,
+      CycleTab.calendar => l10n.calendar,
+      CycleTab.patterns => l10n.patterns,
+    };
+
+    return AppChipRow(
+      items: [for (final tab in shown) labelFor(tab)],
+      selected: {if (shown.contains(active)) shown.indexOf(active)},
+      onTap: onSelect == null ? null : (i) => onSelect!(shown[i]),
+    );
+  }
+}
+
+/// The bottom bar every hub screen carries.
+///
+/// Home stays the active tab: My cycle is reached *from* Home and is not a tab
+/// of its own, which is what the prototype's `navBar('Home')` says.
+class CycleNavBar extends StatelessWidget {
+  const CycleNavBar({super.key, this.onSelectTab});
+
+  final ValueChanged<String>? onSelectTab;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppNavBar(
+      activeScreenId: 'T01',
+      onSelect: (id) {
+        final onTab = onSelectTab;
+        if (onTab != null) {
+          onTab(id);
+          return;
+        }
+        openScreen(context, id);
+      },
+    );
+  }
+}
+
+/// A row with a title, an optional subtitle and a trailing control.
+///
+/// `AppListItem` already provides the row; this is the layout Y02, Y10 and Y12
+/// use for a switch, kept here so four screens cannot end up with four
+/// spacings.
+class CycleSwitchRow extends StatelessWidget {
+  const CycleSwitchRow({
+    super.key,
+    required this.title,
+    required this.trailing,
+    this.subtitle = '',
+  });
+
+  final String title;
+  final String subtitle;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppText.titleM),
+              if (subtitle.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        trailing,
+      ],
+    );
+  }
+}

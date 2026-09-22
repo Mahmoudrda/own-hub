@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Own Hub privacy manifest.
+
+	  ACCURATE FOR v1.0, WHICH COLLECTS NOTHING. The app has no backend wired:
+	  pubspec carries no Firebase, no analytics, no ads and no HTTP client, and
+	  every repository is in memory. So NSPrivacyCollectedDataTypes is empty and
+	  that is the honest answer, not a stub.
+
+	  It must stay identical to the App Privacy answers in App Store Connect and
+	  to docs/release/privacy-policy.md. A mismatch between the three is one of
+	  the most common rejections.
+
+	  WHEN THE BACKEND IS WIRED, this file must gain, at minimum:
+	    - NSPrivacyCollectedDataTypePhoneNumber  (sign-in, linked, not tracking)
+	    - NSPrivacyCollectedDataTypeHealthFitness (workouts/meals/cycle, linked)
+	    - NSPrivacyCollectedDataTypeUserID
+	    - NSPrivacyCollectedDataTypeCrashData    (only if Crashlytics ships)
+	  and NSPrivacyAccessedAPITypes for whatever the new plugins touch
+	  (UserDefaults CA92.1 is the usual first one, via shared_preferences).
+	  Verify with Xcode: Product > Archive > Organizer > Generate Privacy Report.
+	-->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>

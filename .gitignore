@@ -1,0 +1,58 @@
+# Build output and tooling caches
+app/build/
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/ios/Pods/
+app/ios/.symlinks/
+app/ios/Flutter/Flutter.framework
+app/ios/Flutter/Flutter.podspec
+app/ios/Flutter/ephemeral/
+app/android/.gradle/
+app/android/local.properties
+app/android/app/build/
+app/web/build/
+.dart_tool/
+node_modules/
+*.iml
+.idea/
+.vscode/
+.DS_Store
+
+# Signing and service credentials: never in the repository
+**/key.properties
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+**/google-services.json
+**/GoogleService-Info.plist
+.env
+.env.*
+
+# Working notes, plans and reviews: these stay on the machine
+*.md
+!/README.md
+docs/
+.impeccable/
+6-v2/plans/
+6-v2/review/
+6-v2/research/
+6-v2/screenshots/
+*.xlsx
+
+# Earlier drafts of the product, kept locally for reference
+1-original/
+2-source/
+3-screenshots/
+4-content/
+5-claude-design-canvas/
+own_hub_tmp/
+womens-fitness-app.html
+6-v2/prototype/
+6-v2/wireframe/
+
+# Screenshots and captures
+*.png.tmp
+captures/

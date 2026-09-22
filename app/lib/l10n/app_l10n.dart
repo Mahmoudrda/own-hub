@@ -1,0 +1,12780 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_l10n_ar.dart';
+import 'app_l10n_en.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppL10n
+/// returned by `AppL10n.of(context)`.
+///
+/// Applications need to include `AppL10n.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_l10n.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppL10n.localizationsDelegates,
+///   supportedLocales: AppL10n.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppL10n.supportedLocales
+/// property.
+abstract class AppL10n {
+  AppL10n(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppL10n of(BuildContext context) {
+    return Localizations.of<AppL10n>(context, AppL10n)!;
+  }
+
+  static const LocalizationsDelegate<AppL10n> delegate = _AppL10nDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('ar'),
+    Locale('en'),
+  ];
+
+  /// No description provided for @coaching.
+  ///
+  /// In en, this message translates to:
+  /// **'Coaching'**
+  String get coaching;
+
+  /// No description provided for @eat.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat'**
+  String get eat;
+
+  /// No description provided for @train.
+  ///
+  /// In en, this message translates to:
+  /// **'Train'**
+  String get train;
+
+  /// No description provided for @community.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get community;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @train_556cm.
+  ///
+  /// In en, this message translates to:
+  /// **'train'**
+  String get train_556cm;
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueLabel;
+
+  /// No description provided for @myCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'My cycle'**
+  String get myCycle;
+
+  /// No description provided for @n.
+  ///
+  /// In en, this message translates to:
+  /// **'N'**
+  String get n;
+
+  /// No description provided for @clients.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients'**
+  String get clients;
+
+  /// No description provided for @s.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get s;
+
+  /// No description provided for @chats.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats'**
+  String get chats;
+
+  /// No description provided for @earnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings'**
+  String get earnings;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get calendar;
+
+  /// No description provided for @m.
+  ///
+  /// In en, this message translates to:
+  /// **'M'**
+  String get m;
+
+  /// No description provided for @rest.
+  ///
+  /// In en, this message translates to:
+  /// **'rest'**
+  String get rest;
+
+  /// No description provided for @gobletSquat.
+  ///
+  /// In en, this message translates to:
+  /// **'Goblet squat'**
+  String get gobletSquat;
+
+  /// No description provided for @maiFarouk.
+  ///
+  /// In en, this message translates to:
+  /// **'Mai Farouk'**
+  String get maiFarouk;
+
+  /// No description provided for @nourhanElSayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Nourhan El-Sayed'**
+  String get nourhanElSayed;
+
+  /// No description provided for @patterns.
+  ///
+  /// In en, this message translates to:
+  /// **'Patterns'**
+  String get patterns;
+
+  /// No description provided for @quiet.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet'**
+  String get quiet;
+
+  /// No description provided for @beginnersGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginners group'**
+  String get beginnersGroup;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'done'**
+  String get done;
+
+  /// No description provided for @gluteBridge.
+  ///
+  /// In en, this message translates to:
+  /// **'Glute bridge'**
+  String get gluteBridge;
+
+  /// No description provided for @log.
+  ///
+  /// In en, this message translates to:
+  /// **'Log'**
+  String get log;
+
+  /// No description provided for @saraAdel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara Adel'**
+  String get saraAdel;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @fulAndBaladi.
+  ///
+  /// In en, this message translates to:
+  /// **'Ful and baladi'**
+  String get fulAndBaladi;
+
+  /// No description provided for @h.
+  ///
+  /// In en, this message translates to:
+  /// **'H'**
+  String get h;
+
+  /// No description provided for @move2Of5.
+  ///
+  /// In en, this message translates to:
+  /// **'Move 2 of 5'**
+  String get move2Of5;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @fullBodyStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-body strength'**
+  String get fullBodyStrength;
+
+  /// No description provided for @join.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get join;
+
+  /// No description provided for @koshariBowlMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Koshari bowl, medium'**
+  String get koshariBowlMedium;
+
+  /// No description provided for @low.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get low;
+
+  /// No description provided for @nadaSamir.
+  ///
+  /// In en, this message translates to:
+  /// **'Nada Samir'**
+  String get nadaSamir;
+
+  /// No description provided for @postpartumRebuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpartum rebuild'**
+  String get postpartumRebuild;
+
+  /// No description provided for @saveAndClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and close'**
+  String get saveAndClose;
+
+  /// No description provided for @stepBackLunge.
+  ///
+  /// In en, this message translates to:
+  /// **'Step-back lunge'**
+  String get stepBackLunge;
+
+  /// No description provided for @thu.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get thu;
+
+  /// No description provided for @n10Min.
+  ///
+  /// In en, this message translates to:
+  /// **'10 min'**
+  String get n10Min;
+
+  /// No description provided for @n12Kg10.
+  ///
+  /// In en, this message translates to:
+  /// **'12 kg × 10'**
+  String get n12Kg10;
+
+  /// No description provided for @n12Kg12.
+  ///
+  /// In en, this message translates to:
+  /// **'12 kg × 12'**
+  String get n12Kg12;
+
+  /// No description provided for @atHome.
+  ///
+  /// In en, this message translates to:
+  /// **'At home'**
+  String get atHome;
+
+  /// No description provided for @breakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get breakfast;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @dinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get dinner;
+
+  /// No description provided for @energyAndAppetite.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy and appetite'**
+  String get energyAndAppetite;
+
+  /// No description provided for @fromSara.
+  ///
+  /// In en, this message translates to:
+  /// **'From Sara'**
+  String get fromSara;
+
+  /// No description provided for @habibaNasr.
+  ///
+  /// In en, this message translates to:
+  /// **'Habiba Nasr'**
+  String get habibaNasr;
+
+  /// No description provided for @iAlreadyDidIt.
+  ///
+  /// In en, this message translates to:
+  /// **'I already did it'**
+  String get iAlreadyDidIt;
+
+  /// No description provided for @level7Regular.
+  ///
+  /// In en, this message translates to:
+  /// **'Level 7 · Regular'**
+  String get level7Regular;
+
+  /// No description provided for @lunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get lunch;
+
+  /// No description provided for @mon.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get mon;
+
+  /// No description provided for @nourAdel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nour Adel'**
+  String get nourAdel;
+
+  /// No description provided for @personalBests.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal bests'**
+  String get personalBests;
+
+  /// No description provided for @protein.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein'**
+  String get protein;
+
+  /// No description provided for @recipes.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipes'**
+  String get recipes;
+
+  /// No description provided for @startEverythingsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Start, everything\'s ready'**
+  String get startEverythingsReady;
+
+  /// No description provided for @tue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get tue;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @workouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts'**
+  String get workouts;
+
+  /// No description provided for @n1800Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'1,800 EGP'**
+  String get n1800Egp;
+
+  /// No description provided for @n20Min.
+  ///
+  /// In en, this message translates to:
+  /// **'20 min'**
+  String get n20Min;
+
+  /// No description provided for @n290Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'290 kcal'**
+  String get n290Kcal;
+
+  /// No description provided for @n310EachSide.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 10 each side'**
+  String get n310EachSide;
+
+  /// No description provided for @n312Bodyweight.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 12 · bodyweight'**
+  String get n312Bodyweight;
+
+  /// No description provided for @n35MinHerNoteKeepTheSquat.
+  ///
+  /// In en, this message translates to:
+  /// **'35 min · her note: “Keep the squat at 12 kg, aim for 12 reps.”'**
+  String get n35MinHerNoteKeepTheSquat;
+
+  /// No description provided for @n410Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'410 kcal'**
+  String get n410Kcal;
+
+  /// No description provided for @aboutRight.
+  ///
+  /// In en, this message translates to:
+  /// **'About right'**
+  String get aboutRight;
+
+  /// No description provided for @cycleSymptoms.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle symptoms'**
+  String get cycleSymptoms;
+
+  /// No description provided for @eggsAndTea.
+  ///
+  /// In en, this message translates to:
+  /// **'Eggs and tea'**
+  String get eggsAndTea;
+
+  /// No description provided for @herPhotoFaceBlurred.
+  ///
+  /// In en, this message translates to:
+  /// **'her photo, face blurred'**
+  String get herPhotoFaceBlurred;
+
+  /// No description provided for @howAreYouFeeling.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling?'**
+  String get howAreYouFeeling;
+
+  /// No description provided for @koshariPortioned.
+  ///
+  /// In en, this message translates to:
+  /// **'Koshari, portioned'**
+  String get koshariPortioned;
+
+  /// No description provided for @lentilSoupAndEggs.
+  ///
+  /// In en, this message translates to:
+  /// **'Lentil soup and eggs'**
+  String get lentilSoupAndEggs;
+
+  /// No description provided for @loggedByYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged by you'**
+  String get loggedByYou;
+
+  /// No description provided for @molokhiaWithChicken.
+  ///
+  /// In en, this message translates to:
+  /// **'Molokhia with chicken'**
+  String get molokhiaWithChicken;
+
+  /// No description provided for @monday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get monday;
+
+  /// No description provided for @monthlyCoaching.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly coaching'**
+  String get monthlyCoaching;
+
+  /// No description provided for @noEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'No equipment'**
+  String get noEquipment;
+
+  /// No description provided for @okay.
+  ///
+  /// In en, this message translates to:
+  /// **'Okay'**
+  String get okay;
+
+  /// No description provided for @periodDay2.
+  ///
+  /// In en, this message translates to:
+  /// **'Period day 2'**
+  String get periodDay2;
+
+  /// No description provided for @postpartum.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpartum'**
+  String get postpartum;
+
+  /// No description provided for @prescribed.
+  ///
+  /// In en, this message translates to:
+  /// **'prescribed'**
+  String get prescribed;
+
+  /// No description provided for @saraHany.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara Hany'**
+  String get saraHany;
+
+  /// No description provided for @september2026.
+  ///
+  /// In en, this message translates to:
+  /// **'September 2026'**
+  String get september2026;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get thisWeek;
+
+  /// No description provided for @tuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get tuesday;
+
+  /// No description provided for @vegetarian.
+  ///
+  /// In en, this message translates to:
+  /// **'Vegetarian'**
+  String get vegetarian;
+
+  /// No description provided for @week3.
+  ///
+  /// In en, this message translates to:
+  /// **'Week 3'**
+  String get week3;
+
+  /// No description provided for @youDid.
+  ///
+  /// In en, this message translates to:
+  /// **'you did'**
+  String get youDid;
+
+  /// No description provided for @youLoggedLowEnergyAndMildCramps.
+  ///
+  /// In en, this message translates to:
+  /// **'You logged low energy and mild cramps.'**
+  String get youLoggedLowEnergyAndMildCramps;
+
+  /// No description provided for @n14Of20.
+  ///
+  /// In en, this message translates to:
+  /// **'14 of 20'**
+  String get n14Of20;
+
+  /// No description provided for @n15Min.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min'**
+  String get n15Min;
+
+  /// No description provided for @n15September2026.
+  ///
+  /// In en, this message translates to:
+  /// **'15 September 2026'**
+  String get n15September2026;
+
+  /// No description provided for @n156Kcal13GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'156 kcal · 13 g protein'**
+  String get n156Kcal13GProtein;
+
+  /// No description provided for @n2Of3.
+  ///
+  /// In en, this message translates to:
+  /// **'2 of 3'**
+  String get n2Of3;
+
+  /// No description provided for @n21600Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'21,600 EGP'**
+  String get n21600Egp;
+
+  /// No description provided for @n3Of3.
+  ///
+  /// In en, this message translates to:
+  /// **'3 of 3'**
+  String get n3Of3;
+
+  /// No description provided for @n30Min.
+  ///
+  /// In en, this message translates to:
+  /// **'30 min'**
+  String get n30Min;
+
+  /// No description provided for @n53Of95G.
+  ///
+  /// In en, this message translates to:
+  /// **'53 of 95 g'**
+  String get n53Of95G;
+
+  /// No description provided for @n540Kcal18GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'540 kcal · 18 g protein'**
+  String get n540Kcal18GProtein;
+
+  /// No description provided for @n8SepTo7Oct30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'8 Sep to 7 Oct · 30 days'**
+  String get n8SepTo7Oct30Days;
+
+  /// No description provided for @n900Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'900 EGP'**
+  String get n900Egp;
+
+  /// No description provided for @aGentlerOptionToday.
+  ///
+  /// In en, this message translates to:
+  /// **'A gentler option today'**
+  String get aGentlerOptionToday;
+
+  /// No description provided for @aProgramNoCheckIns.
+  ///
+  /// In en, this message translates to:
+  /// **'A program, no check-ins'**
+  String get aProgramNoCheckIns;
+
+  /// No description provided for @aboutCyclePhases.
+  ///
+  /// In en, this message translates to:
+  /// **'About cycle phases'**
+  String get aboutCyclePhases;
+
+  /// No description provided for @addToTodaysPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to today\'s plan'**
+  String get addToTodaysPlan;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @backToToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to today'**
+  String get backToToday;
+
+  /// No description provided for @beginners.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginners'**
+  String get beginners;
+
+  /// No description provided for @breakfastYourUsual.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast, your usual'**
+  String get breakfastYourUsual;
+
+  /// No description provided for @breakfastYourUsual_1lb0u.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast, your usual?'**
+  String get breakfastYourUsual_1lb0u;
+
+  /// No description provided for @cairoWestSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairo, west side'**
+  String get cairoWestSide;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @coachDemoStill.
+  ///
+  /// In en, this message translates to:
+  /// **'coach demo still'**
+  String get coachDemoStill;
+
+  /// No description provided for @coachSaraHany.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach Sara Hany'**
+  String get coachSaraHany;
+
+  /// No description provided for @coaches.
+  ///
+  /// In en, this message translates to:
+  /// **'Coaches'**
+  String get coaches;
+
+  /// No description provided for @day9.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 9'**
+  String get day9;
+
+  /// No description provided for @deadBug.
+  ///
+  /// In en, this message translates to:
+  /// **'Dead bug'**
+  String get deadBug;
+
+  /// No description provided for @draft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get draft;
+
+  /// No description provided for @dumbbells.
+  ///
+  /// In en, this message translates to:
+  /// **'Dumbbells'**
+  String get dumbbells;
+
+  /// No description provided for @easy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get easy;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @firstWeekDoneMyKneesDidNot.
+  ///
+  /// In en, this message translates to:
+  /// **'First week done. My knees did not hurt once.'**
+  String get firstWeekDoneMyKneesDidNot;
+
+  /// No description provided for @floorLegsNoJumping.
+  ///
+  /// In en, this message translates to:
+  /// **'Floor legs, no jumping'**
+  String get floorLegsNoJumping;
+
+  /// No description provided for @foodLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Food logged'**
+  String get foodLogged;
+
+  /// No description provided for @foodPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'food photo'**
+  String get foodPhoto;
+
+  /// No description provided for @fourWeeksInAndICarriedBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Four weeks in and I carried both kids up the stairs.'**
+  String get fourWeeksInAndICarriedBoth;
+
+  /// No description provided for @fromCoachSara.
+  ///
+  /// In en, this message translates to:
+  /// **'From Coach Sara'**
+  String get fromCoachSara;
+
+  /// No description provided for @fromYourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'From your plan'**
+  String get fromYourPlan;
+
+  /// No description provided for @fullBodyStrength35Min.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-body strength · 35 min'**
+  String get fullBodyStrength35Min;
+
+  /// No description provided for @getStronger.
+  ///
+  /// In en, this message translates to:
+  /// **'Get stronger'**
+  String get getStronger;
+
+  /// No description provided for @goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get goal;
+
+  /// No description provided for @gobletSquat12Kg10TwoKilos.
+  ///
+  /// In en, this message translates to:
+  /// **'Goblet squat, 12 kg × 10. Two kilos more than my best.'**
+  String get gobletSquat12Kg10TwoKilos;
+
+  /// No description provided for @halaMostafa.
+  ///
+  /// In en, this message translates to:
+  /// **'Hala Mostafa'**
+  String get halaMostafa;
+
+  /// No description provided for @highProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'High protein'**
+  String get highProtein;
+
+  /// No description provided for @hipThrustHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Hip thrust hold'**
+  String get hipThrustHold;
+
+  /// No description provided for @holdToReplyByVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to reply by voice'**
+  String get holdToReplyByVoice;
+
+  /// No description provided for @imReadyNextSet.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m ready, next set'**
+  String get imReadyNextSet;
+
+  /// No description provided for @inbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox'**
+  String get inbox;
+
+  /// No description provided for @koshariBowlAndSalad.
+  ///
+  /// In en, this message translates to:
+  /// **'Koshari bowl and salad'**
+  String get koshariBowlAndSalad;
+
+  /// No description provided for @large.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get large;
+
+  /// No description provided for @later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get later;
+
+  /// No description provided for @legs.
+  ///
+  /// In en, this message translates to:
+  /// **'Legs'**
+  String get legs;
+
+  /// No description provided for @legsAndGlutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Legs and glutes'**
+  String get legsAndGlutes;
+
+  /// No description provided for @logAPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Log a period'**
+  String get logAPeriod;
+
+  /// No description provided for @logged.
+  ///
+  /// In en, this message translates to:
+  /// **'logged'**
+  String get logged;
+
+  /// No description provided for @logotype.
+  ///
+  /// In en, this message translates to:
+  /// **'logotype'**
+  String get logotype;
+
+  /// No description provided for @lookAround.
+  ///
+  /// In en, this message translates to:
+  /// **'Look around'**
+  String get lookAround;
+
+  /// No description provided for @meals.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals'**
+  String get meals;
+
+  /// No description provided for @medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get medium;
+
+  /// No description provided for @messageSara.
+  ///
+  /// In en, this message translates to:
+  /// **'Message Sara'**
+  String get messageSara;
+
+  /// No description provided for @milestones.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get milestones;
+
+  /// No description provided for @mobileWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile wallet'**
+  String get mobileWallet;
+
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// No description provided for @noteForHer.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for her'**
+  String get noteForHer;
+
+  /// No description provided for @nothingAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing assigned'**
+  String get nothingAssigned;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @nourWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Nour · workouts'**
+  String get nourWorkouts;
+
+  /// No description provided for @onTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'On track'**
+  String get onTrack;
+
+  /// No description provided for @periodDatesAndPatterns.
+  ///
+  /// In en, this message translates to:
+  /// **'Period dates and patterns'**
+  String get periodDatesAndPatterns;
+
+  /// No description provided for @planOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan only'**
+  String get planOnly;
+
+  /// No description provided for @planWeeklyCheckInChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan, weekly check-in, chat'**
+  String get planWeeklyCheckInChat;
+
+  /// No description provided for @post.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get post;
+
+  /// No description provided for @postpartumStrengthGiza.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpartum strength · Giza'**
+  String get postpartumStrengthGiza;
+
+  /// No description provided for @previewAndPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview and publish'**
+  String get previewAndPublish;
+
+  /// No description provided for @privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacy;
+
+  /// No description provided for @quick.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick'**
+  String get quick;
+
+  /// No description provided for @quietFullBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet full body'**
+  String get quietFullBody;
+
+  /// No description provided for @r.
+  ///
+  /// In en, this message translates to:
+  /// **'R'**
+  String get r;
+
+  /// No description provided for @ranaTarek.
+  ///
+  /// In en, this message translates to:
+  /// **'Rana Tarek'**
+  String get ranaTarek;
+
+  /// No description provided for @reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get reply;
+
+  /// No description provided for @restDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest day'**
+  String get restDay;
+
+  /// No description provided for @restToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest today'**
+  String get restToday;
+
+  /// No description provided for @safetyCentre.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety Centre'**
+  String get safetyCentre;
+
+  /// No description provided for @sat.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get sat;
+
+  /// No description provided for @sayOrTypeWhatYouAte.
+  ///
+  /// In en, this message translates to:
+  /// **'Say or type what you ate'**
+  String get sayOrTypeWhatYouAte;
+
+  /// No description provided for @sendToSara.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to Sara'**
+  String get sendToSara;
+
+  /// No description provided for @set1.
+  ///
+  /// In en, this message translates to:
+  /// **'Set 1'**
+  String get set1;
+
+  /// No description provided for @set2.
+  ///
+  /// In en, this message translates to:
+  /// **'Set 2'**
+  String get set2;
+
+  /// No description provided for @set2Of3.
+  ///
+  /// In en, this message translates to:
+  /// **'Set 2 of 3'**
+  String get set2Of3;
+
+  /// No description provided for @set3.
+  ///
+  /// In en, this message translates to:
+  /// **'Set 3'**
+  String get set3;
+
+  /// No description provided for @showTheCycleCardOnHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the cycle card on Home'**
+  String get showTheCycleCardOnHome;
+
+  /// No description provided for @small.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get small;
+
+  /// No description provided for @somethingElse.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else'**
+  String get somethingElse;
+
+  /// No description provided for @start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get start;
+
+  /// No description provided for @stillBleeding.
+  ///
+  /// In en, this message translates to:
+  /// **'Still bleeding'**
+  String get stillBleeding;
+
+  /// No description provided for @sun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get sun;
+
+  /// No description provided for @swapThisMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap this move'**
+  String get swapThisMove;
+
+  /// No description provided for @t.
+  ///
+  /// In en, this message translates to:
+  /// **'T'**
+  String get t;
+
+  /// No description provided for @tuesday16September.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday 16 September'**
+  String get tuesday16September;
+
+  /// No description provided for @upNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Up next'**
+  String get upNext;
+
+  /// No description provided for @week2.
+  ///
+  /// In en, this message translates to:
+  /// **'Week 2'**
+  String get week2;
+
+  /// No description provided for @week4.
+  ///
+  /// In en, this message translates to:
+  /// **'Week 4'**
+  String get week4;
+
+  /// No description provided for @week4Mai.
+  ///
+  /// In en, this message translates to:
+  /// **'Week 4 · Mai'**
+  String get week4Mai;
+
+  /// No description provided for @weeklyReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly review'**
+  String get weeklyReview;
+
+  /// No description provided for @weeklyReviewDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly review due'**
+  String get weeklyReviewDue;
+
+  /// No description provided for @weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get weight;
+
+  /// No description provided for @whatDidYouDo.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you do?'**
+  String get whatDidYouDo;
+
+  /// No description provided for @whyThisSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Why this suggestion?'**
+  String get whyThisSuggestion;
+
+  /// No description provided for @yesIHaveUpdatedThursdayTheNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, I have updated Thursday. The new session is in your plan.'**
+  String get yesIHaveUpdatedThursdayTheNew;
+
+  /// No description provided for @youKeep12KgOnThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'You: keep 12 kg on Thursday'**
+  String get youKeep12KgOnThursday;
+
+  /// No description provided for @yourCoaching.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coaching'**
+  String get yourCoaching;
+
+  /// No description provided for @cameBackIsEarnedByReturningAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Came back\" is earned by returning after a break. It is the one we most want you to have.'**
+  String get cameBackIsEarnedByReturningAfter;
+
+  /// No description provided for @iWantToFeelStrongEnoughTo.
+  ///
+  /// In en, this message translates to:
+  /// **'\"I want to feel strong enough to carry my son without my back hurting.\"'**
+  String get iWantToFeelStrongEnoughTo;
+
+  /// No description provided for @keep12KgAndAimFor12.
+  ///
+  /// In en, this message translates to:
+  /// **'“Keep 12 kg and aim for 12 reps. Stop at 10 if your knees complain.”'**
+  String get keep12KgAndAimFor12;
+
+  /// No description provided for @morningSessionsBeforeTheKidsWakeUp.
+  ///
+  /// In en, this message translates to:
+  /// **'“Morning sessions before the kids wake up worked. Thursday is too long.”'**
+  String get morningSessionsBeforeTheKidsWakeUp;
+
+  /// No description provided for @notSharedNeverMeansNoSymptomsShe.
+  ///
+  /// In en, this message translates to:
+  /// **'“Not shared” never means “no symptoms”. She chose what you see.'**
+  String get notSharedNeverMeansNoSymptomsShe;
+
+  /// No description provided for @theSquatFeltHeavyAt12Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'\"The squat felt heavy at 12 kg but I finished all three sets.\"'**
+  String get theSquatFeltHeavyAt12Kg;
+
+  /// No description provided for @n15S.
+  ///
+  /// In en, this message translates to:
+  /// **'+15 s'**
+  String get n15S;
+
+  /// No description provided for @n2Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'+2 kg'**
+  String get n2Kg;
+
+  /// No description provided for @n20.
+  ///
+  /// In en, this message translates to:
+  /// **'+20'**
+  String get n20;
+
+  /// No description provided for @n3Reps.
+  ///
+  /// In en, this message translates to:
+  /// **'+3 reps'**
+  String get n3Reps;
+
+  /// No description provided for @n30Points.
+  ///
+  /// In en, this message translates to:
+  /// **'+30 points'**
+  String get n30Points;
+
+  /// No description provided for @n31G.
+  ///
+  /// In en, this message translates to:
+  /// **'+31 g'**
+  String get n31G;
+
+  /// No description provided for @n5Points.
+  ///
+  /// In en, this message translates to:
+  /// **'+5 points'**
+  String get n5Points;
+
+  /// No description provided for @best.
+  ///
+  /// In en, this message translates to:
+  /// **'★ Best'**
+  String get best;
+
+  /// No description provided for @n1GobletSquat12Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'1 · goblet squat 12 kg'**
+  String get n1GobletSquat12Kg;
+
+  /// No description provided for @n1GobletSquat12Kg12.
+  ///
+  /// In en, this message translates to:
+  /// **'1 · goblet squat 12 kg × 12'**
+  String get n1GobletSquat12Kg12;
+
+  /// No description provided for @n1ResolvedIn40Minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'1 · resolved in 40 minutes'**
+  String get n1ResolvedIn40Minutes;
+
+  /// No description provided for @n1WhatIsSaidHereStaysHere.
+  ///
+  /// In en, this message translates to:
+  /// **'1 · What is said here stays here'**
+  String get n1WhatIsSaidHereStaysHere;
+
+  /// No description provided for @n1Hour.
+  ///
+  /// In en, this message translates to:
+  /// **'1 hour'**
+  String get n1Hour;
+
+  /// No description provided for @n1Jul.
+  ///
+  /// In en, this message translates to:
+  /// **'1 Jul'**
+  String get n1Jul;
+
+  /// No description provided for @n1RenewalFromAugust.
+  ///
+  /// In en, this message translates to:
+  /// **'1 renewal from August'**
+  String get n1RenewalFromAugust;
+
+  /// No description provided for @n1Saved.
+  ///
+  /// In en, this message translates to:
+  /// **'1 saved'**
+  String get n1Saved;
+
+  /// No description provided for @n1SepTo30SepOnTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'1 Sep to 30 Sep · on track · day 16'**
+  String get n1SepTo30SepOnTrack;
+
+  /// No description provided for @n1Serving.
+  ///
+  /// In en, this message translates to:
+  /// **'1 serving'**
+  String get n1Serving;
+
+  /// No description provided for @n1Serving540Kcal18GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'1 serving · 540 kcal · 18 g protein'**
+  String get n1Serving540Kcal18GProtein;
+
+  /// No description provided for @n1ServingFromYourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'1 serving · from your plan'**
+  String get n1ServingFromYourPlan;
+
+  /// No description provided for @n1440Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'1,440 EGP'**
+  String get n1440Egp;
+
+  /// No description provided for @n1800EgpYourShare1440.
+  ///
+  /// In en, this message translates to:
+  /// **'1,800 EGP · your share 1,440'**
+  String get n1800EgpYourShare1440;
+
+  /// No description provided for @n1800EgpMonthly900EgpPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'1,800 EGP monthly · 900 EGP plan only'**
+  String get n1800EgpMonthly900EgpPlan;
+
+  /// No description provided for @n1860Women12PostsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'1,860 women · 12 posts today'**
+  String get n1860Women12PostsToday;
+
+  /// No description provided for @serving.
+  ///
+  /// In en, this message translates to:
+  /// **'½ serving'**
+  String get serving;
+
+  /// No description provided for @n10Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'10 kg'**
+  String get n10Kg;
+
+  /// No description provided for @n10Min310Kcal19GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'10 min · 310 kcal · 19 g protein · 8 EGP'**
+  String get n10Min310Kcal19GProtein;
+
+  /// No description provided for @n10MinBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'10 min · beginner'**
+  String get n10MinBeginner;
+
+  /// No description provided for @n10MinBeginnerNour.
+  ///
+  /// In en, this message translates to:
+  /// **'10 min · beginner · Nour'**
+  String get n10MinBeginnerNour;
+
+  /// No description provided for @n10MonthlyPackages.
+  ///
+  /// In en, this message translates to:
+  /// **'10 monthly packages'**
+  String get n10MonthlyPackages;
+
+  /// No description provided for @n10Sessions.
+  ///
+  /// In en, this message translates to:
+  /// **'10 sessions'**
+  String get n10Sessions;
+
+  /// No description provided for @n1.
+  ///
+  /// In en, this message translates to:
+  /// **'1½'**
+  String get n1;
+
+  /// No description provided for @n116Of120SlotsAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'116 of 120 slots assigned'**
+  String get n116Of120SlotsAssigned;
+
+  /// No description provided for @n1210.
+  ///
+  /// In en, this message translates to:
+  /// **'12 × 10'**
+  String get n1210;
+
+  /// No description provided for @n12ClientsPayoutOn1October.
+  ///
+  /// In en, this message translates to:
+  /// **'12 clients · payout on 1 October'**
+  String get n12ClientsPayoutOn1October;
+
+  /// No description provided for @n12Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'12 kg'**
+  String get n12Kg;
+
+  /// No description provided for @n12Kg1016SeptemberWas10.
+  ///
+  /// In en, this message translates to:
+  /// **'12 kg × 10 · 16 September · was 10 kg'**
+  String get n12Kg1016SeptemberWas10;
+
+  /// No description provided for @n12Of14.
+  ///
+  /// In en, this message translates to:
+  /// **'12 of 14'**
+  String get n12Of14;
+
+  /// No description provided for @n12Of20.
+  ///
+  /// In en, this message translates to:
+  /// **'12 of 20'**
+  String get n12Of20;
+
+  /// No description provided for @n12Of20Spots.
+  ///
+  /// In en, this message translates to:
+  /// **'12 of 20 spots'**
+  String get n12Of20Spots;
+
+  /// No description provided for @n12Of20Taken.
+  ///
+  /// In en, this message translates to:
+  /// **'12 of 20 taken'**
+  String get n12Of20Taken;
+
+  /// No description provided for @n12PartnerGymsInCairoGizaAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'12 partner gyms in Cairo, Giza and Alexandria.'**
+  String get n12PartnerGymsInCairoGizaAnd;
+
+  /// No description provided for @n12SepTo11Oct1Session.
+  ///
+  /// In en, this message translates to:
+  /// **'12 Sep to 11 Oct · 1 session in 2 weeks'**
+  String get n12SepTo11Oct1Session;
+
+  /// No description provided for @n12SpotsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'12 spots left'**
+  String get n12SpotsLeft;
+
+  /// No description provided for @n124Videos.
+  ///
+  /// In en, this message translates to:
+  /// **'124 videos'**
+  String get n124Videos;
+
+  /// No description provided for @n14Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'14 kg'**
+  String get n14Kg;
+
+  /// No description provided for @n14WeeksCountedBestRun9.
+  ///
+  /// In en, this message translates to:
+  /// **'14 weeks counted · best run 9'**
+  String get n14WeeksCountedBestRun9;
+
+  /// No description provided for @n146Done5DaysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'146 done · 5 days left'**
+  String get n146Done5DaysLeft;
+
+  /// No description provided for @n15Min5MovesLastWeeksWeights.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min · 5 moves · last week\'s weights'**
+  String get n15Min5MovesLastWeeksWeights;
+
+  /// No description provided for @n15MinBeginnerMariam.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min · beginner · Mariam'**
+  String get n15MinBeginnerMariam;
+
+  /// No description provided for @n15MinBeginnerNoEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min · beginner · no equipment'**
+  String get n15MinBeginnerNoEquipment;
+
+  /// No description provided for @n15MinDoneMonday.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min · done Monday'**
+  String get n15MinDoneMonday;
+
+  /// No description provided for @n15MinFloorOnlyCoachApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min · floor only · coach-approved'**
+  String get n15MinFloorOnlyCoachApproved;
+
+  /// No description provided for @n15MinToday.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min · today'**
+  String get n15MinToday;
+
+  /// No description provided for @n15Minutes5Moves.
+  ///
+  /// In en, this message translates to:
+  /// **'15 minutes, 5 moves'**
+  String get n15Minutes5Moves;
+
+  /// No description provided for @n15Minutes5Moves14SetsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'15 minutes, 5 moves, 14 sets. You typed nothing.'**
+  String get n15Minutes5Moves14SetsYou;
+
+  /// No description provided for @n17Jun.
+  ///
+  /// In en, this message translates to:
+  /// **'17 Jun'**
+  String get n17Jun;
+
+  /// No description provided for @n18GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'18 g protein'**
+  String get n18GProtein;
+
+  /// No description provided for @n18Sessions8RestDays.
+  ///
+  /// In en, this message translates to:
+  /// **'18 sessions · 8 rest days'**
+  String get n18Sessions8RestDays;
+
+  /// No description provided for @n18WorkoutsQuietAndNoEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'18 workouts, quiet and no equipment'**
+  String get n18WorkoutsQuietAndNoEquipment;
+
+  /// No description provided for @n18000EgpYourShare14400.
+  ///
+  /// In en, this message translates to:
+  /// **'18,000 EGP · your share 14,400'**
+  String get n18000EgpYourShare14400;
+
+  /// No description provided for @n2Lunges.
+  ///
+  /// In en, this message translates to:
+  /// **'2 · lunges'**
+  String get n2Lunges;
+
+  /// No description provided for @n2NoCommentsOnAnyoneElsesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'2 · No comments on anyone else\'s body'**
+  String get n2NoCommentsOnAnyoneElsesBody;
+
+  /// No description provided for @n2Sun20Tue22.
+  ///
+  /// In en, this message translates to:
+  /// **'2 · Sun 20, Tue 22'**
+  String get n2Sun20Tue22;
+
+  /// No description provided for @n2Blocked.
+  ///
+  /// In en, this message translates to:
+  /// **'2 blocked'**
+  String get n2Blocked;
+
+  /// No description provided for @n2HoursAfterYouSentIt.
+  ///
+  /// In en, this message translates to:
+  /// **'2 hours after you sent it'**
+  String get n2HoursAfterYouSentIt;
+
+  /// No description provided for @n2HoursAgoVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'2 hours ago · voice note'**
+  String get n2HoursAgoVoiceNote;
+
+  /// No description provided for @n2Of3Done.
+  ///
+  /// In en, this message translates to:
+  /// **'2 of 3 done'**
+  String get n2Of3Done;
+
+  /// No description provided for @n2PlanOnlyPackages.
+  ///
+  /// In en, this message translates to:
+  /// **'2 plan-only packages'**
+  String get n2PlanOnlyPackages;
+
+  /// No description provided for @n2RecipesThatCoverYourProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'2 recipes that cover your protein'**
+  String get n2RecipesThatCoverYourProtein;
+
+  /// No description provided for @n23.
+  ///
+  /// In en, this message translates to:
+  /// **'2/3'**
+  String get n23;
+
+  /// No description provided for @n20CountedWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'20 counted weeks'**
+  String get n20CountedWeeks;
+
+  /// No description provided for @n20Min6Moves.
+  ///
+  /// In en, this message translates to:
+  /// **'20 min · 6 moves'**
+  String get n20Min6Moves;
+
+  /// No description provided for @n20MinASimpleOptionForA.
+  ///
+  /// In en, this message translates to:
+  /// **'20 min · a simple option for a low-energy day'**
+  String get n20MinASimpleOptionForA;
+
+  /// No description provided for @n20MinEasyHabiba.
+  ///
+  /// In en, this message translates to:
+  /// **'20 min · easy · Habiba'**
+  String get n20MinEasyHabiba;
+
+  /// No description provided for @n20MinThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'20 min · Thursday'**
+  String get n20MinThursday;
+
+  /// No description provided for @n20MinVegetarianLentilsProvideIronPeppers.
+  ///
+  /// In en, this message translates to:
+  /// **'20 min · vegetarian · lentils provide iron, peppers provide vitamin C'**
+  String get n20MinVegetarianLentilsProvideIronPeppers;
+
+  /// No description provided for @n200GYogurt3Dates5G.
+  ///
+  /// In en, this message translates to:
+  /// **'200 g yogurt · 3 dates · 5 g cinnamon'**
+  String get n200GYogurt3Dates5G;
+
+  /// No description provided for @n200SessionsInTwoWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'200 sessions in two weeks'**
+  String get n200SessionsInTwoWeeks;
+
+  /// No description provided for @n200SessionsTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'200 sessions together'**
+  String get n200SessionsTogether;
+
+  /// No description provided for @n21Of25PlannedSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'21 of 25 planned sessions'**
+  String get n21Of25PlannedSessions;
+
+  /// No description provided for @n22Min4Servings14EgpA.
+  ///
+  /// In en, this message translates to:
+  /// **'22 min · 4 servings · 14 EGP a serving'**
+  String get n22Min4Servings14EgpA;
+
+  /// No description provided for @n22Min540Kcal18GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'22 min · 540 kcal · 18 g protein · 14 EGP'**
+  String get n22Min540Kcal18GProtein;
+
+  /// No description provided for @n22Of95G.
+  ///
+  /// In en, this message translates to:
+  /// **'22 of 95 g'**
+  String get n22Of95G;
+
+  /// No description provided for @n23ItemsAbout640Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'23 items · about 640 EGP'**
+  String get n23ItemsAbout640Egp;
+
+  /// No description provided for @n23Of50.
+  ///
+  /// In en, this message translates to:
+  /// **'23 of 50'**
+  String get n23Of50;
+
+  /// No description provided for @n27Comments.
+  ///
+  /// In en, this message translates to:
+  /// **'27 comments'**
+  String get n27Comments;
+
+  /// No description provided for @n3NoSellingNoRecruiting.
+  ///
+  /// In en, this message translates to:
+  /// **'3 · No selling, no recruiting'**
+  String get n3NoSellingNoRecruiting;
+
+  /// No description provided for @n31012Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 10 · 12 kg'**
+  String get n31012Kg;
+
+  /// No description provided for @n31012KgSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 10 · 12 kg suggested'**
+  String get n31012KgSuggested;
+
+  /// No description provided for @n31212Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 12 · 12 kg'**
+  String get n31212Kg;
+
+  /// No description provided for @n3159SeptemberWas312.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 15 · 9 September · was 3 × 12'**
+  String get n3159SeptemberWas312;
+
+  /// No description provided for @n330Seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 30 seconds'**
+  String get n330Seconds;
+
+  /// No description provided for @n38EachSide.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 8 each side'**
+  String get n38EachSide;
+
+  /// No description provided for @n3CheckInsWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'3 check-ins waiting'**
+  String get n3CheckInsWaiting;
+
+  /// No description provided for @n3DaysAWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'3 days a week'**
+  String get n3DaysAWeek;
+
+  /// No description provided for @n3Jun.
+  ///
+  /// In en, this message translates to:
+  /// **'3 Jun'**
+  String get n3Jun;
+
+  /// No description provided for @n3Min.
+  ///
+  /// In en, this message translates to:
+  /// **'3 min'**
+  String get n3Min;
+
+  /// No description provided for @n3Min280Kcal14GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'3 min · 280 kcal · 14 g protein · 12 EGP'**
+  String get n3Min280Kcal14GProtein;
+
+  /// No description provided for @n3Of3OneSwappedForAn.
+  ///
+  /// In en, this message translates to:
+  /// **'3 of 3 · one swapped for an easier option'**
+  String get n3Of3OneSwappedForAn;
+
+  /// No description provided for @n3Of4Sessions.
+  ///
+  /// In en, this message translates to:
+  /// **'3 of 4 sessions'**
+  String get n3Of4Sessions;
+
+  /// No description provided for @n3Options.
+  ///
+  /// In en, this message translates to:
+  /// **'3 options'**
+  String get n3Options;
+
+  /// No description provided for @n3SessionsProtein95GADay.
+  ///
+  /// In en, this message translates to:
+  /// **'3 sessions · protein 95 g a day'**
+  String get n3SessionsProtein95GADay;
+
+  /// No description provided for @n3ThingsWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'3 things waiting'**
+  String get n3ThingsWaiting;
+
+  /// No description provided for @n30Days8SepTo7Oct.
+  ///
+  /// In en, this message translates to:
+  /// **'30 days · 8 Sep to 7 Oct'**
+  String get n30Days8SepTo7Oct;
+
+  /// No description provided for @n30S.
+  ///
+  /// In en, this message translates to:
+  /// **'30 s'**
+  String get n30S;
+
+  /// No description provided for @n31Of48WomenHaveFinishedTheir.
+  ///
+  /// In en, this message translates to:
+  /// **'31 of 48 women have finished their part.'**
+  String get n31Of48WomenHaveFinishedTheir;
+
+  /// No description provided for @n32MinCountedByYourPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'32 min, counted by your phone'**
+  String get n32MinCountedByYourPhone;
+
+  /// No description provided for @n35Min.
+  ///
+  /// In en, this message translates to:
+  /// **'35 min'**
+  String get n35Min;
+
+  /// No description provided for @n35MinYourProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'35 min · your program'**
+  String get n35MinYourProgram;
+
+  /// No description provided for @n380Kcal26GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'380 kcal · 26 g protein'**
+  String get n380Kcal26GProtein;
+
+  /// No description provided for @n4MealSlotsAreStillEmptyPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'4 meal slots are still empty. Publish them as a free choice, or go back and fill them.'**
+  String get n4MealSlotsAreStillEmptyPublish;
+
+  /// No description provided for @n4Of12.
+  ///
+  /// In en, this message translates to:
+  /// **'4 of 12'**
+  String get n4Of12;
+
+  /// No description provided for @n4Of30DaysStillNeedA.
+  ///
+  /// In en, this message translates to:
+  /// **'4 of 30 days still need a meal or an explicit free choice.'**
+  String get n4Of30DaysStillNeedA;
+
+  /// No description provided for @n4ReviewsAndTheDay30Wrap.
+  ///
+  /// In en, this message translates to:
+  /// **'4 reviews and the day-30 wrap-up'**
+  String get n4ReviewsAndTheDay30Wrap;
+
+  /// No description provided for @n4210Women.
+  ///
+  /// In en, this message translates to:
+  /// **'4,210 women'**
+  String get n4210Women;
+
+  /// No description provided for @n4210Women38PostsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'4,210 women · 38 posts today'**
+  String get n4210Women38PostsToday;
+
+  /// No description provided for @n4754From2200Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'4.7 ★ (54) · from 2,200 EGP · replies in ~1h'**
+  String get n4754From2200Egp;
+
+  /// No description provided for @n48126.
+  ///
+  /// In en, this message translates to:
+  /// **'4.8 ★ (126)'**
+  String get n48126;
+
+  /// No description provided for @n48126From1800Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'4.8 ★ (126) · from 1,800 EGP · replies in ~2h'**
+  String get n48126From1800Egp;
+
+  /// No description provided for @n4988From1500Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'4.9 ★ (88) · from 1,500 EGP · replies in ~4h'**
+  String get n4988From1500Egp;
+
+  /// No description provided for @n45Min.
+  ///
+  /// In en, this message translates to:
+  /// **'45 min'**
+  String get n45Min;
+
+  /// No description provided for @n45Min460Kcal34GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'45 min · 460 kcal · 34 g protein · 26 EGP'**
+  String get n45Min460Kcal34GProtein;
+
+  /// No description provided for @n45S.
+  ///
+  /// In en, this message translates to:
+  /// **'45 s'**
+  String get n45S;
+
+  /// No description provided for @n45Seconds2SeptemberWas30.
+  ///
+  /// In en, this message translates to:
+  /// **'45 seconds · 2 September · was 30'**
+  String get n45Seconds2SeptemberWas30;
+
+  /// No description provided for @n460Kcal34GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'460 kcal · 34 g protein'**
+  String get n460Kcal34GProtein;
+
+  /// No description provided for @n490Total.
+  ///
+  /// In en, this message translates to:
+  /// **'490 total'**
+  String get n490Total;
+
+  /// No description provided for @n5Days.
+  ///
+  /// In en, this message translates to:
+  /// **'5 days'**
+  String get n5Days;
+
+  /// No description provided for @n5Days2DaysNotLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'5 days · 2 days not logged'**
+  String get n5Days2DaysNotLogged;
+
+  /// No description provided for @n5DaysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'5 days left'**
+  String get n5DaysLeft;
+
+  /// No description provided for @n5DinnersOneShop.
+  ///
+  /// In en, this message translates to:
+  /// **'5 dinners · one shop'**
+  String get n5DinnersOneShop;
+
+  /// No description provided for @n5MinDairyFreeSwapAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'5 min · dairy-free swap available'**
+  String get n5MinDairyFreeSwapAvailable;
+
+  /// No description provided for @n50Sessions.
+  ///
+  /// In en, this message translates to:
+  /// **'50 sessions'**
+  String get n50Sessions;
+
+  /// No description provided for @n520Kcal38GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'520 kcal · 38 g protein'**
+  String get n520Kcal38GProtein;
+
+  /// No description provided for @n540Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'540 kcal'**
+  String get n540Kcal;
+
+  /// No description provided for @n6EasierSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'6 easier sessions'**
+  String get n6EasierSessions;
+
+  /// No description provided for @n6LoggedDays2Cycles.
+  ///
+  /// In en, this message translates to:
+  /// **'6 logged days · 2 cycles'**
+  String get n6LoggedDays2Cycles;
+
+  /// No description provided for @n60S.
+  ///
+  /// In en, this message translates to:
+  /// **'60 s'**
+  String get n60S;
+
+  /// No description provided for @n7200EgpYourShare5760.
+  ///
+  /// In en, this message translates to:
+  /// **'7,200 EGP · your share 5,760'**
+  String get n7200EgpYourShare5760;
+
+  /// No description provided for @n730InTheMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'7:30 in the morning'**
+  String get n730InTheMorning;
+
+  /// No description provided for @n70PointsToLevel8.
+  ///
+  /// In en, this message translates to:
+  /// **'70 points to level 8.'**
+  String get n70PointsToLevel8;
+
+  /// No description provided for @n78G.
+  ///
+  /// In en, this message translates to:
+  /// **'78 g'**
+  String get n78G;
+
+  /// No description provided for @n8AllAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'8 · all answered'**
+  String get n8AllAnswered;
+
+  /// No description provided for @n8Of10.
+  ///
+  /// In en, this message translates to:
+  /// **'8 of 10'**
+  String get n8Of10;
+
+  /// No description provided for @n8SepTo7OctReviewDue.
+  ///
+  /// In en, this message translates to:
+  /// **'8 Sep to 7 Oct · review due today · day 9'**
+  String get n8SepTo7OctReviewDue;
+
+  /// No description provided for @n8SepTo7Oct2026.
+  ///
+  /// In en, this message translates to:
+  /// **'8 Sep to 7 Oct 2026'**
+  String get n8SepTo7Oct2026;
+
+  /// No description provided for @n8SoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'8 so far'**
+  String get n8SoFar;
+
+  /// No description provided for @n8Weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'8 weeks'**
+  String get n8Weeks;
+
+  /// No description provided for @n8WeeksQuietNoEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'8 weeks · quiet · no equipment'**
+  String get n8WeeksQuietNoEquipment;
+
+  /// No description provided for @n8WeeksWithYou.
+  ///
+  /// In en, this message translates to:
+  /// **'8 weeks with you'**
+  String get n8WeeksWithYou;
+
+  /// No description provided for @n84.
+  ///
+  /// In en, this message translates to:
+  /// **'84%'**
+  String get n84;
+
+  /// No description provided for @n9Jun.
+  ///
+  /// In en, this message translates to:
+  /// **'9 Jun'**
+  String get n9Jun;
+
+  /// No description provided for @n95G.
+  ///
+  /// In en, this message translates to:
+  /// **'95 g'**
+  String get n95G;
+
+  /// No description provided for @aClassOrAWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'A class or a walk'**
+  String get aClassOrAWalk;
+
+  /// No description provided for @aKneeBackOrShoulder.
+  ///
+  /// In en, this message translates to:
+  /// **'A knee, back or shoulder'**
+  String get aKneeBackOrShoulder;
+
+  /// No description provided for @aLadiesOnlyGym.
+  ///
+  /// In en, this message translates to:
+  /// **'A ladies-only gym'**
+  String get aLadiesOnlyGym;
+
+  /// No description provided for @aMat.
+  ///
+  /// In en, this message translates to:
+  /// **'A mat'**
+  String get aMat;
+
+  /// No description provided for @aPersonalBest.
+  ///
+  /// In en, this message translates to:
+  /// **'A personal best'**
+  String get aPersonalBest;
+
+  /// No description provided for @aPlanBuiltForYourDaysAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'A plan built for your days and equipment'**
+  String get aPlanBuiltForYourDaysAnd;
+
+  /// No description provided for @aRestWeekCoveredLastWeekSo.
+  ///
+  /// In en, this message translates to:
+  /// **'A rest week covered last week, so nothing changed. The next one comes after four counted weeks.'**
+  String get aRestWeekCoveredLastWeekSo;
+
+  /// No description provided for @aRoomFullOfWomenTrainingLike.
+  ///
+  /// In en, this message translates to:
+  /// **'A room full of women training like you'**
+  String get aRoomFullOfWomenTrainingLike;
+
+  /// No description provided for @aSelfieIsMatchedToThePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'A selfie is matched to the photo on the card, only to prove the card is yours.'**
+  String get aSelfieIsMatchedToThePhoto;
+
+  /// No description provided for @aShortVideoCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'A short video check'**
+  String get aShortVideoCheck;
+
+  /// No description provided for @aSimpleOptionForALowEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'A simple option for a low-energy day.'**
+  String get aSimpleOptionForALowEnergy;
+
+  /// No description provided for @aWeeklyCheckInSheAnswersBy.
+  ///
+  /// In en, this message translates to:
+  /// **'A weekly check-in she answers by voice'**
+  String get aWeeklyCheckInSheAnswersBy;
+
+  /// No description provided for @aWomanModeratorReadsItWithinAn.
+  ///
+  /// In en, this message translates to:
+  /// **'A woman moderator reads it within an hour'**
+  String get aWomanModeratorReadsItWithinAn;
+
+  /// No description provided for @aWomanModeratorReadsItUsuallyWithin.
+  ///
+  /// In en, this message translates to:
+  /// **'A woman moderator reads it, usually within an hour'**
+  String get aWomanModeratorReadsItUsuallyWithin;
+
+  /// No description provided for @aWomanOnOurTeamChecksThem.
+  ///
+  /// In en, this message translates to:
+  /// **'A woman on our team checks them, usually the same day.'**
+  String get aWomanOnOurTeamChecksThem;
+
+  /// No description provided for @aWomanOnTheTeam9amTo.
+  ///
+  /// In en, this message translates to:
+  /// **'A woman on the team, 9am to 9pm'**
+  String get aWomanOnTheTeam9amTo;
+
+  /// No description provided for @aWomanReviewerIsLooking.
+  ///
+  /// In en, this message translates to:
+  /// **'A woman reviewer is looking'**
+  String get aWomanReviewerIsLooking;
+
+  /// No description provided for @about1106KcalSoFarToday.
+  ///
+  /// In en, this message translates to:
+  /// **'About 1,106 kcal so far today'**
+  String get about1106KcalSoFarToday;
+
+  /// No description provided for @about2HoursMeasuredNotTyped.
+  ///
+  /// In en, this message translates to:
+  /// **'About 2 hours · measured, not typed'**
+  String get about2HoursMeasuredNotTyped;
+
+  /// No description provided for @about410KcalSoFarToday.
+  ///
+  /// In en, this message translates to:
+  /// **'About 410 kcal so far today'**
+  String get about410KcalSoFarToday;
+
+  /// No description provided for @about6WeeksAway.
+  ///
+  /// In en, this message translates to:
+  /// **'about 6 weeks away'**
+  String get about6WeeksAway;
+
+  /// No description provided for @acceptAndSendAWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept and send a welcome'**
+  String get acceptAndSendAWelcome;
+
+  /// No description provided for @acceptingTakesOneSpotOfYour20.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepting takes one spot of your 20. She pays only when you accept.'**
+  String get acceptingTakesOneSpotOfYour20;
+
+  /// No description provided for @add30Seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 30 seconds'**
+  String get add30Seconds;
+
+  /// No description provided for @addADay.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a day'**
+  String get addADay;
+
+  /// No description provided for @addAMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a move'**
+  String get addAMove;
+
+  /// No description provided for @addAnEasierOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an easier option'**
+  String get addAnEasierOption;
+
+  /// No description provided for @addAnotherCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another certificate'**
+  String get addAnotherCertificate;
+
+  /// No description provided for @addAnotherExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another exercise'**
+  String get addAnotherExercise;
+
+  /// No description provided for @addAnotherServing.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another serving'**
+  String get addAnotherServing;
+
+  /// No description provided for @addPeriodDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Add period dates'**
+  String get addPeriodDates;
+
+  /// No description provided for @addReps.
+  ///
+  /// In en, this message translates to:
+  /// **'Add reps'**
+  String get addReps;
+
+  /// No description provided for @addWeightOrPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Add weight or photos?'**
+  String get addWeightOrPhotos;
+
+  /// No description provided for @addWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Add workout'**
+  String get addWorkout;
+
+  /// No description provided for @addYourPersonalBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your personal best'**
+  String get addYourPersonalBest;
+
+  /// No description provided for @addYoghurtDatesAndNuts.
+  ///
+  /// In en, this message translates to:
+  /// **'Add: yoghurt, dates and nuts'**
+  String get addYoghurtDatesAndNuts;
+
+  /// No description provided for @addingUpdatesYourPlanItDoesNot.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding updates your plan. It does not log the meal as eaten.'**
+  String get addingUpdatesYourPlanItDoesNot;
+
+  /// No description provided for @adds14GProteinFor12Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds 14 g protein for 12 EGP'**
+  String get adds14GProteinFor12Egp;
+
+  /// No description provided for @adjustHerPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust her plan'**
+  String get adjustHerPlan;
+
+  /// No description provided for @adjustMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust meals'**
+  String get adjustMeals;
+
+  /// No description provided for @adjustPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust portion'**
+  String get adjustPortion;
+
+  /// No description provided for @adjustWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust workouts'**
+  String get adjustWorkouts;
+
+  /// No description provided for @afterABirth.
+  ///
+  /// In en, this message translates to:
+  /// **'After a birth'**
+  String get afterABirth;
+
+  /// No description provided for @afterABreakABirthOrAn.
+  ///
+  /// In en, this message translates to:
+  /// **'After a break, a birth, or an injury'**
+  String get afterABreakABirthOrAn;
+
+  /// No description provided for @afterOvulationUntilTheNextPeriodStarts.
+  ///
+  /// In en, this message translates to:
+  /// **'After ovulation, until the next period starts.'**
+  String get afterOvulationUntilTheNextPeriodStarts;
+
+  /// No description provided for @all124IncludingTheQuietOnes.
+  ///
+  /// In en, this message translates to:
+  /// **'All 124, including the quiet ones'**
+  String get all124IncludingTheQuietOnes;
+
+  /// No description provided for @allFoods4100InTheList.
+  ///
+  /// In en, this message translates to:
+  /// **'All foods, 4,100 in the list'**
+  String get allFoods4100InTheList;
+
+  /// No description provided for @allOfThisIsOptionalNothingIs.
+  ///
+  /// In en, this message translates to:
+  /// **'All of this is optional. Nothing is carried over from yesterday.'**
+  String get allOfThisIsOptionalNothingIs;
+
+  /// No description provided for @allWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'All workouts'**
+  String get allWorkouts;
+
+  /// No description provided for @allergiesAndDietaryPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Allergies and dietary preferences'**
+  String get allergiesAndDietaryPreferences;
+
+  /// No description provided for @alreadySavedEditInYourProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Already saved, edit in your profile'**
+  String get alreadySavedEditInYourProfile;
+
+  /// No description provided for @anAlternative.
+  ///
+  /// In en, this message translates to:
+  /// **'An alternative'**
+  String get anAlternative;
+
+  /// No description provided for @anEggIsReleasedACalendarCannot.
+  ///
+  /// In en, this message translates to:
+  /// **'An egg is released. A calendar cannot confirm it.'**
+  String get anEggIsReleasedACalendarCannot;
+
+  /// No description provided for @anyEgyptianBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Any Egyptian bank'**
+  String get anyEgyptianBank;
+
+  /// No description provided for @anyoneElseTrainingAt11pmSoThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone else training at 11pm so the flat is quiet?'**
+  String get anyoneElseTrainingAt11pmSoThe;
+
+  /// No description provided for @anythingSaraShouldKnowOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything Sara should know? Optional'**
+  String get anythingSaraShouldKnowOptional;
+
+  /// No description provided for @anythingWeShouldKnowOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything we should know? Optional.'**
+  String get anythingWeShouldKnowOptional;
+
+  /// No description provided for @anythingWeShouldTrainAround.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything we should train around?'**
+  String get anythingWeShouldTrainAround;
+
+  /// No description provided for @appSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'App suggestion'**
+  String get appSuggestion;
+
+  /// No description provided for @appetite.
+  ///
+  /// In en, this message translates to:
+  /// **'Appetite'**
+  String get appetite;
+
+  /// No description provided for @approvedOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved options'**
+  String get approvedOptions;
+
+  /// No description provided for @arabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get arabic;
+
+  /// No description provided for @askAboutThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about this'**
+  String get askAboutThis;
+
+  /// No description provided for @askSaraForSomethingElse.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Sara for something else'**
+  String get askSaraForSomethingElse;
+
+  /// No description provided for @atHome3KgDumbbells.
+  ///
+  /// In en, this message translates to:
+  /// **'At home · 3 kg dumbbells'**
+  String get atHome3KgDumbbells;
+
+  /// No description provided for @ateThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Ate this'**
+  String get ateThis;
+
+  /// No description provided for @avoid.
+  ///
+  /// In en, this message translates to:
+  /// **'Avoid'**
+  String get avoid;
+
+  /// No description provided for @awaitingReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting reply'**
+  String get awaitingReply;
+
+  /// No description provided for @backToTheWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the workout'**
+  String get backToTheWorkout;
+
+  /// No description provided for @bands.
+  ///
+  /// In en, this message translates to:
+  /// **'Bands'**
+  String get bands;
+
+  /// No description provided for @bankAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank account'**
+  String get bankAccount;
+
+  /// No description provided for @beHonestThisBecomesYourWeeklyGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Be honest. This becomes your weekly goal.'**
+  String get beHonestThisBecomesYourWeeklyGoal;
+
+  /// No description provided for @beginnerFoundations.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner foundations'**
+  String get beginnerFoundations;
+
+  /// No description provided for @beginnersAndHomeTrainingCairo.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginners and home training · Cairo'**
+  String get beginnersAndHomeTrainingCairo;
+
+  /// No description provided for @beginnersGroupReached146Sessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginners group reached 146 sessions'**
+  String get beginnersGroupReached146Sessions;
+
+  /// No description provided for @beingChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Being checked'**
+  String get beingChecked;
+
+  /// No description provided for @bests.
+  ///
+  /// In en, this message translates to:
+  /// **'Bests'**
+  String get bests;
+
+  /// No description provided for @bleedingItHappensDuringTheFollicularPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Bleeding. It happens during the follicular phase.'**
+  String get bleedingItHappensDuringTheFollicularPhase;
+
+  /// No description provided for @blockNada.
+  ///
+  /// In en, this message translates to:
+  /// **'Block Nada'**
+  String get blockNada;
+
+  /// No description provided for @blockedMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked members'**
+  String get blockedMembers;
+
+  /// No description provided for @blurFacesInMyPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Blur faces in my photos'**
+  String get blurFacesInMyPhotos;
+
+  /// No description provided for @body.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get body;
+
+  /// No description provided for @bodyPrivately.
+  ///
+  /// In en, this message translates to:
+  /// **'Body, privately'**
+  String get bodyPrivately;
+
+  /// No description provided for @boiledEggs.
+  ///
+  /// In en, this message translates to:
+  /// **'Boiled eggs'**
+  String get boiledEggs;
+
+  /// No description provided for @bookTheVideoCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Book the video check'**
+  String get bookTheVideoCheck;
+
+  /// No description provided for @both.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get both;
+
+  /// No description provided for @bothImagesAreDeletedAfterTheCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Both images are deleted after the check. We keep the result, nothing else.'**
+  String get bothImagesAreDeletedAfterTheCheck;
+
+  /// No description provided for @boxSquatToAChair.
+  ///
+  /// In en, this message translates to:
+  /// **'Box squat to a chair'**
+  String get boxSquatToAChair;
+
+  /// No description provided for @boxSquatToAChairApprovedSubstitution.
+  ///
+  /// In en, this message translates to:
+  /// **'Box squat to a chair · approved substitution'**
+  String get boxSquatToAChairApprovedSubstitution;
+
+  /// No description provided for @breakOneAndYouLoseYourPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Break one and you lose your place. You can read them again any time.'**
+  String get breakOneAndYouLoseYourPlace;
+
+  /// No description provided for @breakfast22GProtein4AWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast · 22 g protein · 4× a week'**
+  String get breakfast22GProtein4AWeek;
+
+  /// No description provided for @browseMessageWhenYouAreVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse, message when you are verified'**
+  String get browseMessageWhenYouAreVerified;
+
+  /// No description provided for @buildAPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Build a plan'**
+  String get buildAPlan;
+
+  /// No description provided for @buildFromWhatSheAlreadyLogsA.
+  ///
+  /// In en, this message translates to:
+  /// **'Build from what she already logs. A meal plan she has never cooked is a meal plan she will not follow.'**
+  String get buildFromWhatSheAlreadyLogsA;
+
+  /// No description provided for @buildMyFirstPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Build my first plan'**
+  String get buildMyFirstPlan;
+
+  /// No description provided for @buildPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Build plan'**
+  String get buildPlan;
+
+  /// No description provided for @buildUpLiftABitMoreEach.
+  ///
+  /// In en, this message translates to:
+  /// **'Build up, lift a bit more each week'**
+  String get buildUpLiftABitMoreEach;
+
+  /// No description provided for @buildYourFirstPlanAndAMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Build your first plan and a meal template so your first client gets it on day one.'**
+  String get buildYourFirstPlanAndAMeal;
+
+  /// No description provided for @builtFromYourFourAnswers.
+  ///
+  /// In en, this message translates to:
+  /// **'Built from your four answers'**
+  String get builtFromYourFourAnswers;
+
+  /// No description provided for @byJoiningYouAgreeToTheCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'By joining you agree to the community rules.'**
+  String get byJoiningYouAgreeToTheCommunity;
+
+  /// No description provided for @canWeMakeThursdayShorterIHave.
+  ///
+  /// In en, this message translates to:
+  /// **'Can we make Thursday shorter? I have 20 minutes.'**
+  String get canWeMakeThursdayShorterIHave;
+
+  /// No description provided for @cancelAnyTimeRenewsMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel any time · renews monthly'**
+  String get cancelAnyTimeRenewsMonthly;
+
+  /// No description provided for @card.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get card;
+
+  /// No description provided for @cardRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Card read'**
+  String get cardRead;
+
+  /// No description provided for @catchYourBreathThisStartsAndStops.
+  ///
+  /// In en, this message translates to:
+  /// **'Catch your breath. This starts and stops on its own.'**
+  String get catchYourBreathThisStartsAndStops;
+
+  /// No description provided for @certificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates'**
+  String get certificates;
+
+  /// No description provided for @certificatesChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates checked'**
+  String get certificatesChecked;
+
+  /// No description provided for @change.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get change;
+
+  /// No description provided for @changeHowYouUseMyCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change how you use My cycle'**
+  String get changeHowYouUseMyCycle;
+
+  /// No description provided for @changeProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'Change program'**
+  String get changeProgram;
+
+  /// No description provided for @changesWhatWeSuggestNeverYourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes what we suggest, never your plan'**
+  String get changesWhatWeSuggestNeverYourPlan;
+
+  /// No description provided for @changingThePlanNeverChangesALog.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing the plan never changes a log you already saved. Tapping twice does not create a second log.'**
+  String get changingThePlanNeverChangesALog;
+
+  /// No description provided for @chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get chat;
+
+  /// No description provided for @chatRepliesInAbout2Hours.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat, replies in about 2 hours'**
+  String get chatRepliesInAbout2Hours;
+
+  /// No description provided for @cheap.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheap'**
+  String get cheap;
+
+  /// No description provided for @checkIn1Of3SessionsSecond.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in · 1 of 3 sessions · second quiet week'**
+  String get checkIn1Of3SessionsSecond;
+
+  /// No description provided for @checkIns.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-ins'**
+  String get checkIns;
+
+  /// No description provided for @checkedByALicensedEgyptianProviderTap.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked by a licensed Egyptian provider. Tap to read exactly what is stored.'**
+  String get checkedByALicensedEgyptianProviderTap;
+
+  /// No description provided for @checkedByAWomanNoPhotoKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked by a woman, no photo kept'**
+  String get checkedByAWomanNoPhotoKept;
+
+  /// No description provided for @checking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking'**
+  String get checking;
+
+  /// No description provided for @checkingYourCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your card'**
+  String get checkingYourCard;
+
+  /// No description provided for @chestUpWeightHeldAtYourChest.
+  ///
+  /// In en, this message translates to:
+  /// **'Chest up, weight held at your chest'**
+  String get chestUpWeightHeldAtYourChest;
+
+  /// No description provided for @chicken1Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'Chicken 1 kg'**
+  String get chicken1Kg;
+
+  /// No description provided for @chickenAndRice.
+  ///
+  /// In en, this message translates to:
+  /// **'Chicken and rice'**
+  String get chickenAndRice;
+
+  /// No description provided for @chooseWhatFeelsRightToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what feels right today'**
+  String get chooseWhatFeelsRightToday;
+
+  /// No description provided for @chooseWhereItGoesYouCanTailor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose where it goes. You can tailor individual sessions afterwards.'**
+  String get chooseWhereItGoesYouCanTailor;
+
+  /// No description provided for @chooseYourLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your language'**
+  String get chooseYourLanguage;
+
+  /// No description provided for @city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// No description provided for @coach.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach'**
+  String get coach;
+
+  /// No description provided for @coachProfiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach profiles'**
+  String get coachProfiles;
+
+  /// No description provided for @coachReplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach replied'**
+  String get coachReplied;
+
+  /// No description provided for @coachApprovedNothingStanding.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach-approved · nothing standing'**
+  String get coachApprovedNothingStanding;
+
+  /// No description provided for @coachApprovedSameMusclesLessDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach-approved · same muscles, less depth'**
+  String get coachApprovedSameMusclesLessDepth;
+
+  /// No description provided for @coachesHaveProfilesForThat.
+  ///
+  /// In en, this message translates to:
+  /// **'Coaches have profiles for that.'**
+  String get coachesHaveProfilesForThat;
+
+  /// No description provided for @coachesWhoGetIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Coaches who get it'**
+  String get coachesWhoGetIt;
+
+  /// No description provided for @completeSet2.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete set 2'**
+  String get completeSet2;
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completed;
+
+  /// No description provided for @continue1800Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue · 1,800 EGP'**
+  String get continue1800Egp;
+
+  /// No description provided for @continueFromSara.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue · from Sara'**
+  String get continueFromSara;
+
+  /// No description provided for @cookedItLogMyBowl.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooked it, log my bowl'**
+  String get cookedItLogMyBowl;
+
+  /// No description provided for @copyAndReplaceThose2Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy and replace those 2 days'**
+  String get copyAndReplaceThose2Days;
+
+  /// No description provided for @copyThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy this week'**
+  String get copyThisWeek;
+
+  /// No description provided for @copyWeek2.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy week 2'**
+  String get copyWeek2;
+
+  /// No description provided for @coreFloorQuiet.
+  ///
+  /// In en, this message translates to:
+  /// **'Core · floor · quiet'**
+  String get coreFloorQuiet;
+
+  /// No description provided for @countFromTheFirstDayOfOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Count from the first day of one period to the first day of the next.'**
+  String get countFromTheFirstDayOfOne;
+
+  /// No description provided for @countIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Count it'**
+  String get countIt;
+
+  /// No description provided for @countedWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Counted weeks'**
+  String get countedWeeks;
+
+  /// No description provided for @countsByTimeAlone.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts by time alone'**
+  String get countsByTimeAlone;
+
+  /// No description provided for @cramps.
+  ///
+  /// In en, this message translates to:
+  /// **'Cramps'**
+  String get cramps;
+
+  /// No description provided for @createAMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a meal'**
+  String get createAMeal;
+
+  /// No description provided for @createMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Create meal'**
+  String get createMeal;
+
+  /// No description provided for @createMyAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create my account'**
+  String get createMyAccount;
+
+  /// No description provided for @cumin.
+  ///
+  /// In en, this message translates to:
+  /// **'Cumin'**
+  String get cumin;
+
+  /// No description provided for @cupboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Cupboard'**
+  String get cupboard;
+
+  /// No description provided for @cycleDatesAreEstimatesThisFeatureIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle dates are estimates. This feature is for general wellbeing, not diagnosis or contraception.'**
+  String get cycleDatesAreEstimatesThisFeatureIs;
+
+  /// No description provided for @cycleInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle information'**
+  String get cycleInformation;
+
+  /// No description provided for @cycleSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle settings'**
+  String get cycleSettings;
+
+  /// No description provided for @d.
+  ///
+  /// In en, this message translates to:
+  /// **'D'**
+  String get d;
+
+  /// No description provided for @dailyCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily check-in'**
+  String get dailyCheckIn;
+
+  /// No description provided for @dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get dates;
+
+  /// No description provided for @datesAndSymptomsOrSymptomsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates and symptoms, or symptoms only'**
+  String get datesAndSymptomsOrSymptomsOnly;
+
+  /// No description provided for @datesBleedingAndHowYouFeel.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates, bleeding and how you feel'**
+  String get datesBleedingAndHowYouFeel;
+
+  /// No description provided for @day1.
+  ///
+  /// In en, this message translates to:
+  /// **'day 1'**
+  String get day1;
+
+  /// No description provided for @day1FullBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 1 · Full body'**
+  String get day1FullBody;
+
+  /// No description provided for @day10.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 10'**
+  String get day10;
+
+  /// No description provided for @day11.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 11'**
+  String get day11;
+
+  /// No description provided for @day11Of18.
+  ///
+  /// In en, this message translates to:
+  /// **'day 11 of 18'**
+  String get day11Of18;
+
+  /// No description provided for @day2LegsAndGlutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 2 · Legs and glutes'**
+  String get day2LegsAndGlutes;
+
+  /// No description provided for @day3UpperBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 3 · Upper body'**
+  String get day3UpperBody;
+
+  /// No description provided for @day8.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 8'**
+  String get day8;
+
+  /// No description provided for @day9Of30.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 9 of 30'**
+  String get day9Of30;
+
+  /// No description provided for @daysAWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Days a week'**
+  String get daysAWeek;
+
+  /// No description provided for @daysWritten.
+  ///
+  /// In en, this message translates to:
+  /// **'Days written'**
+  String get daysWritten;
+
+  /// No description provided for @daysYouCanTrain.
+  ///
+  /// In en, this message translates to:
+  /// **'Days you can train'**
+  String get daysYouCanTrain;
+
+  /// No description provided for @daysYouLoggedFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Days you logged food'**
+  String get daysYouLoggedFood;
+
+  /// No description provided for @deleteCycleData.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete cycle data'**
+  String get deleteCycleData;
+
+  /// No description provided for @deleteThisPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this period'**
+  String get deleteThisPeriod;
+
+  /// No description provided for @delivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get delivered;
+
+  /// No description provided for @demoVideoWomanCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'demo video, woman coach'**
+  String get demoVideoWomanCoach;
+
+  /// No description provided for @difficulty.
+  ///
+  /// In en, this message translates to:
+  /// **'Difficulty'**
+  String get difficulty;
+
+  /// No description provided for @dinaFarid.
+  ///
+  /// In en, this message translates to:
+  /// **'Dina Farid'**
+  String get dinaFarid;
+
+  /// No description provided for @dinnerYourUsual.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner, your usual'**
+  String get dinnerYourUsual;
+
+  /// No description provided for @doItNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Do it now'**
+  String get doItNow;
+
+  /// No description provided for @done_54ca1.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done_54ca1;
+
+  /// No description provided for @done12Kg10.
+  ///
+  /// In en, this message translates to:
+  /// **'Done · 12 kg × 10'**
+  String get done12Kg10;
+
+  /// No description provided for @downloadEverythingOrDeleteYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Download everything, or delete your account'**
+  String get downloadEverythingOrDeleteYourAccount;
+
+  /// No description provided for @dumbbells3Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'Dumbbells 3 kg'**
+  String get dumbbells3Kg;
+
+  /// No description provided for @earned.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned'**
+  String get earned;
+
+  /// No description provided for @earningsThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings this month'**
+  String get earningsThisMonth;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @editingHereNeverChangesTheLibraryWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Editing here never changes the library workout, only what Nour is assigned.'**
+  String get editingHereNeverChangesTheLibraryWorkout;
+
+  /// No description provided for @eggs20.
+  ///
+  /// In en, this message translates to:
+  /// **'Eggs 20'**
+  String get eggs20;
+
+  /// No description provided for @egpAMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'EGP a month'**
+  String get egpAMonth;
+
+  /// No description provided for @endDate.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get endDate;
+
+  /// No description provided for @ended7Oct.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended 7 Oct'**
+  String get ended7Oct;
+
+  /// No description provided for @energy.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy'**
+  String get energy;
+
+  /// No description provided for @energyAndAppetiteOnlyYouChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy and appetite only · you choose'**
+  String get energyAndAppetiteOnlyYouChoose;
+
+  /// No description provided for @energyOnTheFirstThreeDaysOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy on the first three days of your last two periods'**
+  String get energyOnTheFirstThreeDaysOf;
+
+  /// No description provided for @energySleepLessBackPain.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy, sleep, less back pain'**
+  String get energySleepLessBackPain;
+
+  /// No description provided for @energyLowOn2Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy: low on 2 days'**
+  String get energyLowOn2Days;
+
+  /// No description provided for @english_imxmn.
+  ///
+  /// In en, this message translates to:
+  /// **'English · العربية'**
+  String get english_imxmn;
+
+  /// No description provided for @estimated.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated'**
+  String get estimated;
+
+  /// No description provided for @every7DaysAndOnDay30.
+  ///
+  /// In en, this message translates to:
+  /// **'Every 7 days, and on day 30'**
+  String get every7DaysAndOnDay30;
+
+  /// No description provided for @everyAccountIsVerifiedWithIdBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Every account is verified with ID before she can see a single post.'**
+  String get everyAccountIsVerifiedWithIdBefore;
+
+  /// No description provided for @everyCoachHereIsAVerifiedWoman.
+  ///
+  /// In en, this message translates to:
+  /// **'Every coach here is a verified woman with checked certificates.'**
+  String get everyCoachHereIsAVerifiedWoman;
+
+  /// No description provided for @everyMemberIsVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Every member is verified'**
+  String get everyMemberIsVerified;
+
+  /// No description provided for @everyWomanHereWentThroughTheSame.
+  ///
+  /// In en, this message translates to:
+  /// **'Every woman here went through the same check.'**
+  String get everyWomanHereWentThroughTheSame;
+
+  /// No description provided for @everythingInTheApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything in the app'**
+  String get everythingInTheApp;
+
+  /// No description provided for @everythingRegularOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything Regular opened'**
+  String get everythingRegularOpened;
+
+  /// No description provided for @everythingYouDidIsStillHereTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you did is still here to read.'**
+  String get everythingYouDidIsStillHereTo;
+
+  /// No description provided for @existingAssignmentsReplaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Existing assignments replaced'**
+  String get existingAssignmentsReplaced;
+
+  /// No description provided for @f.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get f;
+
+  /// No description provided for @faceVisibleClientsPickAPersonNot.
+  ///
+  /// In en, this message translates to:
+  /// **'Face visible. Clients pick a person, not a logo.'**
+  String get faceVisibleClientsPickAPersonNot;
+
+  /// No description provided for @facesBlurred.
+  ///
+  /// In en, this message translates to:
+  /// **'Faces blurred'**
+  String get facesBlurred;
+
+  /// No description provided for @fawry.
+  ///
+  /// In en, this message translates to:
+  /// **'Fawry'**
+  String get fawry;
+
+  /// No description provided for @feelBetter.
+  ///
+  /// In en, this message translates to:
+  /// **'Feel better'**
+  String get feelBetter;
+
+  /// No description provided for @feelBetterInMyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Feel better in my body'**
+  String get feelBetterInMyBody;
+
+  /// No description provided for @fillTheGaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill the gaps'**
+  String get fillTheGaps;
+
+  /// No description provided for @finalCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Final check'**
+  String get finalCheck;
+
+  /// No description provided for @findCareNearYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Find care near you'**
+  String get findCareNearYou;
+
+  /// No description provided for @finishWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish workout'**
+  String get finishWorkout;
+
+  /// No description provided for @firstCountedWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'First counted week'**
+  String get firstCountedWeek;
+
+  /// No description provided for @firstPersonalBest.
+  ///
+  /// In en, this message translates to:
+  /// **'First personal best'**
+  String get firstPersonalBest;
+
+  /// No description provided for @firstProgramFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'First program finished'**
+  String get firstProgramFinished;
+
+  /// No description provided for @firstSession.
+  ///
+  /// In en, this message translates to:
+  /// **'First session'**
+  String get firstSession;
+
+  /// No description provided for @firstWeekCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'First week check'**
+  String get firstWeekCheck;
+
+  /// No description provided for @firstWeekDoneAndNoKneePain.
+  ///
+  /// In en, this message translates to:
+  /// **'First week done, and no knee pain.'**
+  String get firstWeekDoneAndNoKneePain;
+
+  /// No description provided for @fiveDinnersBuiltFromRecipesYouHave.
+  ///
+  /// In en, this message translates to:
+  /// **'Five dinners, built from recipes you have logged before. Swap any of them.'**
+  String get fiveDinnersBuiltFromRecipesYouHave;
+
+  /// No description provided for @floorOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Floor only'**
+  String get floorOnly;
+
+  /// No description provided for @follicularPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Follicular phase'**
+  String get follicularPhase;
+
+  /// No description provided for @followAlongVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'follow-along video'**
+  String get followAlongVideo;
+
+  /// No description provided for @foodLogged46DaysAWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Food logged 4.6 days a week'**
+  String get foodLogged46DaysAWeek;
+
+  /// No description provided for @foodYouAlreadyCook.
+  ///
+  /// In en, this message translates to:
+  /// **'Food you already cook'**
+  String get foodYouAlreadyCook;
+
+  /// No description provided for @foodNoNutsVegetarianOnWeekdaysCooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Food: no nuts · vegetarian on weekdays · cooks in 20 minutes'**
+  String get foodNoNutsVegetarianOnWeekdaysCooks;
+
+  /// No description provided for @formClip.
+  ///
+  /// In en, this message translates to:
+  /// **'Form clip'**
+  String get formClip;
+
+  /// No description provided for @fourMovesFloorOnlyNothingToCarry.
+  ///
+  /// In en, this message translates to:
+  /// **'Four moves, floor only, nothing to carry. It counts toward your week like any session.'**
+  String get fourMovesFloorOnlyNothingToCarry;
+
+  /// No description provided for @fourWeeksInAndICarriedBoth_1e0cy.
+  ///
+  /// In en, this message translates to:
+  /// **'Four weeks in and I carried both kids up the stairs without stopping. Started at ten minutes a day on the floor.'**
+  String get fourWeeksInAndICarriedBoth_1e0cy;
+
+  /// No description provided for @friday.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get friday;
+
+  /// No description provided for @fromSaraDumbbells3KgKeepThe.
+  ///
+  /// In en, this message translates to:
+  /// **'From Sara · dumbbells 3 kg · “Keep the squat at 12 kg, aim for 12 reps.”'**
+  String get fromSaraDumbbells3KgKeepThe;
+
+  /// No description provided for @fromTheFirstDayOfBleedingUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'From the first day of bleeding until an egg is released.'**
+  String get fromTheFirstDayOfBleedingUntil;
+
+  /// No description provided for @fromYourCoachUnchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'From your coach · unchanged'**
+  String get fromYourCoachUnchanged;
+
+  /// No description provided for @frontOfTheCard.
+  ///
+  /// In en, this message translates to:
+  /// **'front of the card'**
+  String get frontOfTheCard;
+
+  /// No description provided for @fulAndBaladi410Kcal22G.
+  ///
+  /// In en, this message translates to:
+  /// **'Ful and baladi · 410 kcal · 22 g protein'**
+  String get fulAndBaladi410Kcal22G;
+
+  /// No description provided for @fulWithEgg.
+  ///
+  /// In en, this message translates to:
+  /// **'Ful with egg'**
+  String get fulWithEgg;
+
+  /// No description provided for @fulWithEggAndCumin.
+  ///
+  /// In en, this message translates to:
+  /// **'Ful with egg and cumin'**
+  String get fulWithEggAndCumin;
+
+  /// No description provided for @fulWithOilAndCumin.
+  ///
+  /// In en, this message translates to:
+  /// **'Ful with oil and cumin'**
+  String get fulWithOilAndCumin;
+
+  /// No description provided for @fullNameAsOnTheAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name as on the account'**
+  String get fullNameAsOnTheAccount;
+
+  /// No description provided for @fullBodyStrength34MinutesFromCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-body strength · 34 minutes · from Coach Sara'**
+  String get fullBodyStrength34MinutesFromCoach;
+
+  /// No description provided for @fullBodyStrength35Min_1jwg4.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-body strength, 35 min'**
+  String get fullBodyStrength35Min_1jwg4;
+
+  /// No description provided for @futureDatesAreNotAcceptedAndAn.
+  ///
+  /// In en, this message translates to:
+  /// **'Future dates are not accepted, and an end date cannot come before a start date.'**
+  String get futureDatesAreNotAcceptedAndAn;
+
+  /// No description provided for @gentleMobility15MinInsteadOfFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle mobility, 15 min · instead of full-body strength, 35 min'**
+  String get gentleMobility15MinInsteadOfFull;
+
+  /// No description provided for @gentleMovementMayHelpSomePeopleWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle movement may help some people with period pain. You can keep your plan, take the easier option, or rest. All three are fine.'**
+  String get gentleMovementMayHelpSomePeopleWith;
+
+  /// No description provided for @getBackIntoIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Get back into it'**
+  String get getBackIntoIt;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get getStarted;
+
+  /// No description provided for @getStrongerAfterBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Get stronger after birth'**
+  String get getStrongerAfterBirth;
+
+  /// No description provided for @giza.
+  ///
+  /// In en, this message translates to:
+  /// **'Giza'**
+  String get giza;
+
+  /// No description provided for @gluteBridge312.
+  ///
+  /// In en, this message translates to:
+  /// **'Glute bridge · 3 × 12'**
+  String get gluteBridge312;
+
+  /// No description provided for @glutesNoEquipmentQuiet.
+  ///
+  /// In en, this message translates to:
+  /// **'Glutes · no equipment · quiet'**
+  String get glutesNoEquipmentQuiet;
+
+  /// No description provided for @gobletSquat31212Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'Goblet squat · 3 × 12 · 12 kg'**
+  String get gobletSquat31212Kg;
+
+  /// No description provided for @gobletSquat12KgGluteBridge3.
+  ///
+  /// In en, this message translates to:
+  /// **'Goblet squat 12 kg · glute bridge 3 × 15 · plank 45 s'**
+  String get gobletSquat12KgGluteBridge3;
+
+  /// No description provided for @gobletSquat12Kg10TwoKilos_a8afn.
+  ///
+  /// In en, this message translates to:
+  /// **'Goblet squat, 12 kg × 10. Two kilos more than your best.'**
+  String get gobletSquat12Kg10TwoKilos_a8afn;
+
+  /// No description provided for @gobletSquatSet3.
+  ///
+  /// In en, this message translates to:
+  /// **'Goblet squat, set 3'**
+  String get gobletSquatSet3;
+
+  /// No description provided for @goodBeforeAnEveningSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Good before an evening session.'**
+  String get goodBeforeAnEveningSession;
+
+  /// No description provided for @grilledChickenAndSalad.
+  ///
+  /// In en, this message translates to:
+  /// **'Grilled chicken and salad'**
+  String get grilledChickenAndSalad;
+
+  /// No description provided for @groceryList.
+  ///
+  /// In en, this message translates to:
+  /// **'Grocery list'**
+  String get groceryList;
+
+  /// No description provided for @groupedTheWayYouShopTickAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Grouped the way you shop. Tick as you go. It remembers.'**
+  String get groupedTheWayYouShopTickAs;
+
+  /// No description provided for @groups.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get groups;
+
+  /// No description provided for @habibaAnd12OthersLikedYourBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Habiba and 12 others liked your best'**
+  String get habibaAnd12OthersLikedYourBest;
+
+  /// No description provided for @hard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get hard;
+
+  /// No description provided for @hardToFitIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard to fit in'**
+  String get hardToFitIn;
+
+  /// No description provided for @heelsFlatKneesOutOverYourToes.
+  ///
+  /// In en, this message translates to:
+  /// **'Heels flat, knees out over your toes'**
+  String get heelsFlatKneesOutOverYourToes;
+
+  /// No description provided for @her30DayPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Her 30-day plan'**
+  String get her30DayPlan;
+
+  /// No description provided for @herChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Her choice'**
+  String get herChoice;
+
+  /// No description provided for @herFaceLive.
+  ///
+  /// In en, this message translates to:
+  /// **'her face, live'**
+  String get herFaceLive;
+
+  /// No description provided for @herMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Her meals'**
+  String get herMeals;
+
+  /// No description provided for @herNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Her note'**
+  String get herNote;
+
+  /// No description provided for @herTierWeeksCountedNotWeightLifted.
+  ///
+  /// In en, this message translates to:
+  /// **'Her tier. Weeks counted, not weight lifted.'**
+  String get herTierWeeksCountedNotWeightLifted;
+
+  /// No description provided for @herWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Her week'**
+  String get herWeek;
+
+  /// No description provided for @herWeekWrittenFromHerLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Her week, written from her logs'**
+  String get herWeekWrittenFromHerLogs;
+
+  /// No description provided for @high.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get high;
+
+  /// No description provided for @highImpactDeepKneeBends.
+  ///
+  /// In en, this message translates to:
+  /// **'High impact, deep knee bends'**
+  String get highImpactDeepKneeBends;
+
+  /// No description provided for @hips96Cm.
+  ///
+  /// In en, this message translates to:
+  /// **'Hips 96 cm'**
+  String get hips96Cm;
+
+  /// No description provided for @holdItFlatAllFourCornersInside.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold it flat, all four corners inside'**
+  String get holdItFlatAllFourCornersInside;
+
+  /// No description provided for @holdToTalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to talk'**
+  String get holdToTalk;
+
+  /// No description provided for @homeOnWeekdaysGymWhenICan.
+  ///
+  /// In en, this message translates to:
+  /// **'Home on weekdays, gym when I can'**
+  String get homeOnWeekdaysGymWhenICan;
+
+  /// No description provided for @homeWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Home workouts'**
+  String get homeWorkouts;
+
+  /// No description provided for @homeWorkoutsGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Home workouts group'**
+  String get homeWorkoutsGroup;
+
+  /// No description provided for @hormonalContraception.
+  ///
+  /// In en, this message translates to:
+  /// **'Hormonal contraception'**
+  String get hormonalContraception;
+
+  /// No description provided for @howAreYouFeelingToday.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling today?'**
+  String get howAreYouFeelingToday;
+
+  /// No description provided for @howHardWasIt.
+  ///
+  /// In en, this message translates to:
+  /// **'How hard was it?'**
+  String get howHardWasIt;
+
+  /// No description provided for @howManageableWasYourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'How manageable was your plan?'**
+  String get howManageableWasYourPlan;
+
+  /// No description provided for @howManyClientsCanYouTake.
+  ///
+  /// In en, this message translates to:
+  /// **'How many clients can you take?'**
+  String get howManyClientsCanYouTake;
+
+  /// No description provided for @howMuchTimeDoYouReallyHave.
+  ///
+  /// In en, this message translates to:
+  /// **'How much time do you really have?'**
+  String get howMuchTimeDoYouReallyHave;
+
+  /// No description provided for @howWeTreatEachOther.
+  ///
+  /// In en, this message translates to:
+  /// **'How we treat each other'**
+  String get howWeTreatEachOther;
+
+  /// No description provided for @howWouldYouLikeToPay.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you like to pay?'**
+  String get howWouldYouLikeToPay;
+
+  /// No description provided for @iAgreeLetMeIn.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree, let me in'**
+  String get iAgreeLetMeIn;
+
+  /// No description provided for @iAlreadyHaveAnAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'I already have an account'**
+  String get iAlreadyHaveAnAccount;
+
+  /// No description provided for @iCoachWomen.
+  ///
+  /// In en, this message translates to:
+  /// **'I coach women'**
+  String get iCoachWomen;
+
+  /// No description provided for @iCouldNotTrainThisWeekWork.
+  ///
+  /// In en, this message translates to:
+  /// **'I could not train this week, work was impossible.'**
+  String get iCouldNotTrainThisWeekWork;
+
+  /// No description provided for @iDidAll3SetsLogThem.
+  ///
+  /// In en, this message translates to:
+  /// **'I did all 3 sets, log them'**
+  String get iDidAll3SetsLogThem;
+
+  /// No description provided for @iDontKnow.
+  ///
+  /// In en, this message translates to:
+  /// **'I don\'t know'**
+  String get iDontKnow;
+
+  /// No description provided for @iTakeWomenBackToLiftingAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'I take women back to lifting after birth.'**
+  String get iTakeWomenBackToLiftingAfter;
+
+  /// No description provided for @iTakeWomenFromSixWeeksAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'I take women from six weeks after birth back to lifting, slowly. Most of my clients train at home with two dumbbells and 20 minutes.'**
+  String get iTakeWomenFromSixWeeksAfter;
+
+  /// No description provided for @iWearNiqabCheckMeAnotherWay.
+  ///
+  /// In en, this message translates to:
+  /// **'I wear niqab, check me another way'**
+  String get iWearNiqabCheckMeAnotherWay;
+
+  /// No description provided for @imACoachSetUpMyProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m a coach, set up my profile'**
+  String get imACoachSetUpMyProfile;
+
+  /// No description provided for @imHereToTrain.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m here to train'**
+  String get imHereToTrain;
+
+  /// No description provided for @idCheckedWomenOnlyReviewedByWomen.
+  ///
+  /// In en, this message translates to:
+  /// **'ID checked, women only, reviewed by women'**
+  String get idCheckedWomenOnlyReviewedByWomen;
+
+  /// No description provided for @ifYouAreInDangerRightNow.
+  ///
+  /// In en, this message translates to:
+  /// **'If you are in danger right now, call 122. This app cannot reach the police for you.'**
+  String get ifYouAreInDangerRightNow;
+
+  /// No description provided for @ifYouDoNotShowYourFace.
+  ///
+  /// In en, this message translates to:
+  /// **'If you do not show your face to a camera, nothing here asks you to. Choose either one. Your ID card is still read the same way.'**
+  String get ifYouDoNotShowYourFace;
+
+  /// No description provided for @inPersonAtALadiesOnlyGym.
+  ///
+  /// In en, this message translates to:
+  /// **'In person at a ladies-only gym'**
+  String get inPersonAtALadiesOnlyGym;
+
+  /// No description provided for @ingredientsAndAmounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients and amounts'**
+  String get ingredientsAndAmounts;
+
+  /// No description provided for @irregularCyclesHormonalContraceptionAndPerimenop.
+  ///
+  /// In en, this message translates to:
+  /// **'Irregular cycles, hormonal contraception and perimenopause all use this mode: your logs, no forecast.'**
+  String get irregularCyclesHormonalContraceptionAndPerimenop;
+
+  /// No description provided for @irregularPeriods.
+  ///
+  /// In en, this message translates to:
+  /// **'Irregular periods'**
+  String get irregularPeriods;
+
+  /// No description provided for @itChecksItselfTheMomentTheSixth.
+  ///
+  /// In en, this message translates to:
+  /// **'It checks itself the moment the sixth digit lands. On Android we read the message for you.'**
+  String get itChecksItselfTheMomentTheSixth;
+
+  /// No description provided for @itPhotographsItselfWhenItIsSharp.
+  ///
+  /// In en, this message translates to:
+  /// **'It photographs itself when it is sharp. Nothing is uploaded until you tap send.'**
+  String get itPhotographsItselfWhenItIsSharp;
+
+  /// No description provided for @itTakesAbout90Seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'It takes about 90 seconds.'**
+  String get itTakesAbout90Seconds;
+
+  /// No description provided for @joinAboutTwoMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Join · about two minutes'**
+  String get joinAboutTwoMinutes;
+
+  /// No description provided for @joined.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined'**
+  String get joined;
+
+  /// No description provided for @june.
+  ///
+  /// In en, this message translates to:
+  /// **'June'**
+  String get june;
+
+  /// No description provided for @keep12KgAndAimFor12_25smx.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep 12 kg and aim for 12 reps.'**
+  String get keep12KgAndAimFor12_25smx;
+
+  /// No description provided for @keep12KgOnSquatsAddReps.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep 12 kg on squats, add reps instead'**
+  String get keep12KgOnSquatsAddReps;
+
+  /// No description provided for @keepMine.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep mine'**
+  String get keepMine;
+
+  /// No description provided for @keepMyWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep my workout'**
+  String get keepMyWorkout;
+
+  /// No description provided for @keepWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep weight'**
+  String get keepWeight;
+
+  /// No description provided for @keptAllOfIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept, all of it'**
+  String get keptAllOfIt;
+
+  /// No description provided for @kneesFeltFineToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Knees felt fine today.'**
+  String get kneesFeltFineToday;
+
+  /// No description provided for @kneesSoreSwapItForAGlute.
+  ///
+  /// In en, this message translates to:
+  /// **'Knees sore? Swap it for a glute bridge. Same muscles, nothing on the floor.'**
+  String get kneesSoreSwapItForAGlute;
+
+  /// No description provided for @koshariAnd2Eggs.
+  ///
+  /// In en, this message translates to:
+  /// **'koshari and 2 eggs'**
+  String get koshariAnd2Eggs;
+
+  /// No description provided for @koshariBowl.
+  ///
+  /// In en, this message translates to:
+  /// **'Koshari bowl'**
+  String get koshariBowl;
+
+  /// No description provided for @koshari2Eggs.
+  ///
+  /// In en, this message translates to:
+  /// **'Koshari, 2 eggs'**
+  String get koshari2Eggs;
+
+  /// No description provided for @koshariFulAndMolokhiaInThePortions.
+  ///
+  /// In en, this message translates to:
+  /// **'Koshari, ful and molokhia in the portions you actually serve. No grams, no calorie shaming.'**
+  String get koshariFulAndMolokhiaInThePortions;
+
+  /// No description provided for @l.
+  ///
+  /// In en, this message translates to:
+  /// **'L'**
+  String get l;
+
+  /// No description provided for @labels.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels'**
+  String get labels;
+
+  /// No description provided for @ladiesGymStrengthAlexandria.
+  ///
+  /// In en, this message translates to:
+  /// **'Ladies-gym strength · Alexandria'**
+  String get ladiesGymStrengthAlexandria;
+
+  /// No description provided for @ladiesOnlyGym.
+  ///
+  /// In en, this message translates to:
+  /// **'Ladies-only gym'**
+  String get ladiesOnlyGym;
+
+  /// No description provided for @ladiesOnlyGymsAndWalkingGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Ladies-only gyms and walking groups'**
+  String get ladiesOnlyGymsAndWalkingGroups;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languages.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get languages;
+
+  /// No description provided for @last2Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 2 days'**
+  String get last2Days;
+
+  /// No description provided for @last7Days3Of3Workouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days: 3 of 3 workouts, one lighter session she chose. Food logged on 5 days.'**
+  String get last7Days3Of3Workouts;
+
+  /// No description provided for @lastEightWeeksThePaleOneWas.
+  ///
+  /// In en, this message translates to:
+  /// **'Last eight weeks · the pale one was a rest week'**
+  String get lastEightWeeksThePaleOneWas;
+
+  /// No description provided for @lastPeriodStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Last period start'**
+  String get lastPeriodStart;
+
+  /// No description provided for @lastReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Last review'**
+  String get lastReview;
+
+  /// No description provided for @lastTuesday10Kg10EverySet.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Tuesday: 10 kg × 10, every set finished. So we added 2 kg.'**
+  String get lastTuesday10Kg10EverySet;
+
+  /// No description provided for @left.
+  ///
+  /// In en, this message translates to:
+  /// **'left'**
+  String get left;
+
+  /// No description provided for @legsNoEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Legs · no equipment'**
+  String get legsNoEquipment;
+
+  /// No description provided for @legsAndGlutesTodaysPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Legs and glutes, today\'s plan'**
+  String get legsAndGlutesTodaysPlan;
+
+  /// No description provided for @lentilSoupAndToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Lentil soup and toast'**
+  String get lentilSoupAndToast;
+
+  /// No description provided for @lentilSoupTomatoAndToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Lentil soup, tomato and toast'**
+  String get lentilSoupTomatoAndToast;
+
+  /// No description provided for @lentils500G.
+  ///
+  /// In en, this message translates to:
+  /// **'Lentils 500 g'**
+  String get lentils500G;
+
+  /// No description provided for @lessHungry.
+  ///
+  /// In en, this message translates to:
+  /// **'Less hungry'**
+  String get lessHungry;
+
+  /// No description provided for @level7.
+  ///
+  /// In en, this message translates to:
+  /// **'Level 7'**
+  String get level7;
+
+  /// No description provided for @level7AndEveryPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Level 7 and every point'**
+  String get level7AndEveryPoint;
+
+  /// No description provided for @levelUp.
+  ///
+  /// In en, this message translates to:
+  /// **'level up'**
+  String get levelUp;
+
+  /// No description provided for @logBoth696Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Log both · 696 kcal'**
+  String get logBoth696Kcal;
+
+  /// No description provided for @logIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Log it'**
+  String get logIt;
+
+  /// No description provided for @logLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Log lunch'**
+  String get logLunch;
+
+  /// No description provided for @logged1131Serving.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged 1:13 · 1 serving'**
+  String get logged1131Serving;
+
+  /// No description provided for @logged15SeptEstimated12To14.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged 15 Sept · estimated 12 to 14 Oct'**
+  String get logged15SeptEstimated12To14;
+
+  /// No description provided for @logsItself.
+  ///
+  /// In en, this message translates to:
+  /// **'logs itself'**
+  String get logsItself;
+
+  /// No description provided for @lookAroundFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Look around first'**
+  String get lookAroundFirst;
+
+  /// No description provided for @lookStraightAheadNoSmileNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Look straight ahead. No smile needed.'**
+  String get lookStraightAheadNoSmileNeeded;
+
+  /// No description provided for @loseWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose weight'**
+  String get loseWeight;
+
+  /// No description provided for @loseWeightSteadily.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose weight steadily'**
+  String get loseWeightSteadily;
+
+  /// No description provided for @lowEnergyMildCrampsTodayOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Low energy, mild cramps. Today only.'**
+  String get lowEnergyMildCrampsTodayOnly;
+
+  /// No description provided for @lunch18GProtein2AWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch · 18 g protein · 2× a week'**
+  String get lunch18GProtein2AWeek;
+
+  /// No description provided for @lunchKoshariBowlMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch · koshari bowl, medium'**
+  String get lunchKoshariBowlMedium;
+
+  /// No description provided for @lunchLogged1Serving.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch logged · 1 serving'**
+  String get lunchLogged1Serving;
+
+  /// No description provided for @lunchLogged696Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch logged · 696 kcal'**
+  String get lunchLogged696Kcal;
+
+  /// No description provided for @lunchFromYourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch, from your plan'**
+  String get lunchFromYourPlan;
+
+  /// No description provided for @lutealPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Luteal phase'**
+  String get lutealPhase;
+
+  /// No description provided for @machinesAndFreeWeights.
+  ///
+  /// In en, this message translates to:
+  /// **'Machines and free weights'**
+  String get machinesAndFreeWeights;
+
+  /// No description provided for @makeItWorkForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it work for you'**
+  String get makeItWorkForYou;
+
+  /// No description provided for @makeThisWeek2Sessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Make this week 2 sessions'**
+  String get makeThisWeek2Sessions;
+
+  /// No description provided for @manageable.
+  ///
+  /// In en, this message translates to:
+  /// **'Manageable?'**
+  String get manageable;
+
+  /// No description provided for @mariamHassan.
+  ///
+  /// In en, this message translates to:
+  /// **'Mariam Hassan'**
+  String get mariamHassan;
+
+  /// No description provided for @markedAsPlannedRestItCostsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as planned rest, it costs you nothing'**
+  String get markedAsPlannedRestItCostsYou;
+
+  /// No description provided for @matchedToThePhotoOnYourCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched to the photo on your card, then deleted. A woman reviews anything the check cannot decide.'**
+  String get matchedToThePhotoOnYourCard;
+
+  /// No description provided for @mealSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal suggestions'**
+  String get mealSuggestions;
+
+  /// No description provided for @mealsMai.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals · Mai'**
+  String get mealsMai;
+
+  /// No description provided for @mealsForToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals for today'**
+  String get mealsForToday;
+
+  /// No description provided for @measuredAgainstYourOwnHistoryOnlyMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Measured against your own history only. More reps, more weight, a longer hold, or a harder version. A 3 kg dumbbell counts like a 30 kg barbell.'**
+  String get measuredAgainstYourOwnHistoryOnlyMore;
+
+  /// No description provided for @measurements.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurements'**
+  String get measurements;
+
+  /// No description provided for @mediumBowlTheOneYouUsuallyServe.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium bowl, the one you usually serve'**
+  String get mediumBowlTheOneYouUsuallyServe;
+
+  /// No description provided for @membersAndTheirPostsAreBehindThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Members and their posts are behind the check'**
+  String get membersAndTheirPostsAreBehindThe;
+
+  /// No description provided for @menstruation.
+  ///
+  /// In en, this message translates to:
+  /// **'Menstruation'**
+  String get menstruation;
+
+  /// No description provided for @messageBeforeYouDecide.
+  ///
+  /// In en, this message translates to:
+  /// **'Message before you decide'**
+  String get messageBeforeYouDecide;
+
+  /// No description provided for @messageOrHoldToTalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Message or hold to talk'**
+  String get messageOrHoldToTalk;
+
+  /// No description provided for @mild.
+  ///
+  /// In en, this message translates to:
+  /// **'Mild'**
+  String get mild;
+
+  /// No description provided for @minutesASession.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes a session'**
+  String get minutesASession;
+
+  /// No description provided for @missedSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed sessions'**
+  String get missedSessions;
+
+  /// No description provided for @moderate.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate'**
+  String get moderate;
+
+  /// No description provided for @molokhiaFrozen400G.
+  ///
+  /// In en, this message translates to:
+  /// **'Molokhia, frozen 400 g'**
+  String get molokhiaFrozen400G;
+
+  /// No description provided for @mon_4jow1.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon ✓'**
+  String get mon_4jow1;
+
+  /// No description provided for @mon14.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon 14'**
+  String get mon14;
+
+  /// No description provided for @monthlyCoachingWithNourhan.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly coaching with Nourhan'**
+  String get monthlyCoachingWithNourhan;
+
+  /// No description provided for @moreHungry.
+  ///
+  /// In en, this message translates to:
+  /// **'More hungry'**
+  String get moreHungry;
+
+  /// No description provided for @moreToLogSleepBloatingBleeding.
+  ///
+  /// In en, this message translates to:
+  /// **'More to log: sleep, bloating, bleeding'**
+  String get moreToLogSleepBloatingBleeding;
+
+  /// No description provided for @morningSessionsBeforeTheKidsWakeUp_1m46g.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning sessions before the kids wake up.'**
+  String get morningSessionsBeforeTheKidsWakeUp_1m46g;
+
+  /// No description provided for @move3Of5.
+  ///
+  /// In en, this message translates to:
+  /// **'Move 3 of 5'**
+  String get move3Of5;
+
+  /// No description provided for @movedToTheHarderVersion26August.
+  ///
+  /// In en, this message translates to:
+  /// **'moved to the harder version · 26 August'**
+  String get movedToTheHarderVersion26August;
+
+  /// No description provided for @muteThisGroupForAWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute this group for a week'**
+  String get muteThisGroupForAWeek;
+
+  /// No description provided for @myCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'My coach'**
+  String get myCoach;
+
+  /// No description provided for @myCoachCanSeeMyLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'My coach can see my logs'**
+  String get myCoachCanSeeMyLogs;
+
+  /// No description provided for @myCyclePeriodDay2.
+  ///
+  /// In en, this message translates to:
+  /// **'My cycle · period day 2'**
+  String get myCyclePeriodDay2;
+
+  /// No description provided for @nameTierAndGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Name, tier and groups'**
+  String get nameTierAndGroups;
+
+  /// No description provided for @nasmCpt.
+  ///
+  /// In en, this message translates to:
+  /// **'NASM CPT'**
+  String get nasmCpt;
+
+  /// No description provided for @nasmCptPreAndPostnatalVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'NASM CPT · pre and postnatal · verified'**
+  String get nasmCptPreAndPostnatalVerified;
+
+  /// No description provided for @nasmCptPreAndPostnatalSpecialistVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'NASM CPT · Pre and postnatal specialist · verified 12 March'**
+  String get nasmCptPreAndPostnatalSpecialistVerified;
+
+  /// No description provided for @needAnIdeaForDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Need an idea for dinner?'**
+  String get needAnIdeaForDinner;
+
+  /// No description provided for @needsAReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs a reply'**
+  String get needsAReply;
+
+  /// No description provided for @needsReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs reply'**
+  String get needsReply;
+
+  /// No description provided for @newEnquiry.
+  ///
+  /// In en, this message translates to:
+  /// **'New enquiry'**
+  String get newEnquiry;
+
+  /// No description provided for @newEnquiryPostpartumHome20Min.
+  ///
+  /// In en, this message translates to:
+  /// **'New enquiry · postpartum, home, 20 min'**
+  String get newEnquiryPostpartumHome20Min;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @nextPeriodEstimate12To14October.
+  ///
+  /// In en, this message translates to:
+  /// **'Next period estimate: 12 to 14 October, based on your recorded cycles. Timing can change.'**
+  String get nextPeriodEstimate12To14October;
+
+  /// No description provided for @nextTimeWeKeep12KgAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Next time we keep 12 kg and aim for 10 again. A hard set never drops your weight by itself.'**
+  String get nextTimeWeKeep12KgAnd;
+
+  /// No description provided for @nextStrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: Strong'**
+  String get nextStrong;
+
+  /// No description provided for @nhsPeriodPain.
+  ///
+  /// In en, this message translates to:
+  /// **'NHS: period pain'**
+  String get nhsPeriodPain;
+
+  /// No description provided for @noDatesNoEstimates.
+  ///
+  /// In en, this message translates to:
+  /// **'No dates, no estimates'**
+  String get noDatesNoEstimates;
+
+  /// No description provided for @noDatesNoEstimatesJustHowYou.
+  ///
+  /// In en, this message translates to:
+  /// **'No dates, no estimates · just how you feel'**
+  String get noDatesNoEstimatesJustHowYou;
+
+  /// No description provided for @noDayRangesNoYouAreHere.
+  ///
+  /// In en, this message translates to:
+  /// **'No day ranges, no “you are here”, and no hormone chart, because none of that can be measured from dates.'**
+  String get noDayRangesNoYouAreHere;
+
+  /// No description provided for @noJumping.
+  ///
+  /// In en, this message translates to:
+  /// **'No jumping'**
+  String get noJumping;
+
+  /// No description provided for @noJumpingNoEquipmentTenMinutesCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'No jumping, no equipment, ten minutes counts. Your neighbours will never know.'**
+  String get noJumpingNoEquipmentTenMinutesCounts;
+
+  /// No description provided for @noNutsVegetarianOnWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'No nuts. Vegetarian on weekdays.'**
+  String get noNutsVegetarianOnWeekdays;
+
+  /// No description provided for @noScreenshotsNoSharingAnyoneElseOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'No screenshots, no sharing anyone else outside.'**
+  String get noScreenshotsNoSharingAnyoneElseOutside;
+
+  /// No description provided for @noStandingNothingToHold.
+  ///
+  /// In en, this message translates to:
+  /// **'No standing, nothing to hold'**
+  String get noStandingNothingToHold;
+
+  /// No description provided for @nobodyHereHasBeenTrainingMoreThan.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody here has been training more than a year.'**
+  String get nobodyHereHasBeenTrainingMoreThan;
+
+  /// No description provided for @nobodySeesThisNotTheCommunityNot.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody sees this. Not the community, not your coach unless you send it.'**
+  String get nobodySeesThisNotTheCommunityNot;
+
+  /// No description provided for @none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get none;
+
+  /// No description provided for @noneOfThese.
+  ///
+  /// In en, this message translates to:
+  /// **'None of these'**
+  String get noneOfThese;
+
+  /// No description provided for @notAFitForMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a fit for me'**
+  String get notAFitForMe;
+
+  /// No description provided for @notEvenAComplimentTalkAboutThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Not even a compliment. Talk about the work instead.'**
+  String get notEvenAComplimentTalkAboutThe;
+
+  /// No description provided for @notFeelingItToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Not feeling it today?'**
+  String get notFeelingItToday;
+
+  /// No description provided for @notNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
+
+  /// No description provided for @notShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Not shared'**
+  String get notShared;
+
+  /// No description provided for @notSure.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sure'**
+  String get notSure;
+
+  /// No description provided for @nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing'**
+  String get nothing;
+
+  /// No description provided for @nothingChangesUntilYouTellUsHow.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing changes until you tell us how you feel.'**
+  String get nothingChangesUntilYouTellUsHow;
+
+  /// No description provided for @nothingIsLostOneSessionStartsIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is lost. One session starts it.'**
+  String get nothingIsLostOneSessionStartsIt;
+
+  /// No description provided for @nothingIsScheduledYetSoNothingIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is scheduled yet, so nothing is shown as assigned. Your own workouts and recipes still work.'**
+  String get nothingIsScheduledYetSoNothingIs;
+
+  /// No description provided for @nothingIsSentWhenYouPickIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is sent when you pick it. You preview first, then send.'**
+  String get nothingIsSentWhenYouPickIt;
+
+  /// No description provided for @nothingRightNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing right now'**
+  String get nothingRightNow;
+
+  /// No description provided for @nourMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Nour · meals'**
+  String get nourMeals;
+
+  /// No description provided for @nourReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Nour · review'**
+  String get nourReview;
+
+  /// No description provided for @now.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get now;
+
+  /// No description provided for @now_65hr.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get now_65hr;
+
+  /// No description provided for @numbersOnlyNeverAWeightFromThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers only, never a weight from the scale.'**
+  String get numbersOnlyNeverAWeightFromThe;
+
+  /// No description provided for @numbersOnlyNeverWeightFromAScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers only, never weight from a scale'**
+  String get numbersOnlyNeverWeightFromAScale;
+
+  /// No description provided for @nutFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Nut-free'**
+  String get nutFree;
+
+  /// No description provided for @nutritionDetailsUnavailableThisMealUsesIngredien.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition details unavailable. This meal uses ingredients without verified values, so no totals are shown.'**
+  String get nutritionDetailsUnavailableThisMealUsesIngredien;
+
+  /// No description provided for @offByDefaultCoachingNeverRequiresIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Off by default. Coaching never requires it.'**
+  String get offByDefaultCoachingNeverRequiresIt;
+
+  /// No description provided for @offUnlessYouTurnItOnCoaching.
+  ///
+  /// In en, this message translates to:
+  /// **'Off unless you turn it on. Coaching never requires it.'**
+  String get offUnlessYouTurnItOnCoaching;
+
+  /// No description provided for @offerAnEasierWorkoutWhenILog.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer an easier workout when I log low energy'**
+  String get offerAnEasierWorkoutWhenILog;
+
+  /// No description provided for @oldest19HoursYouPromiseOneWorking.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest 19 hours · you promise one working day'**
+  String get oldest19HoursYouPromiseOneWorking;
+
+  /// No description provided for @oldest19HoursYouPromise24.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest: 19 hours · you promise 24'**
+  String get oldest19HoursYouPromise24;
+
+  /// No description provided for @onByDefaultForEveryPost.
+  ///
+  /// In en, this message translates to:
+  /// **'On by default for every post'**
+  String get onByDefaultForEveryPost;
+
+  /// No description provided for @onByDefaultTapToShowYours.
+  ///
+  /// In en, this message translates to:
+  /// **'On by default. Tap to show yours.'**
+  String get onByDefaultTapToShowYours;
+
+  /// No description provided for @onTrack3Of3ThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'On track · 3 of 3 this week'**
+  String get onTrack3Of3ThisWeek;
+
+  /// No description provided for @onTrackFinishedHerProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'On track · finished her program'**
+  String get onTrackFinishedHerProgram;
+
+  /// No description provided for @onTrackWeek4Of8.
+  ///
+  /// In en, this message translates to:
+  /// **'On track · week 4 of 8'**
+  String get onTrackWeek4Of8;
+
+  /// No description provided for @oneADayQuiet10pmTo8am.
+  ///
+  /// In en, this message translates to:
+  /// **'One a day, quiet 10pm to 8am'**
+  String get oneADayQuiet10pmTo8am;
+
+  /// No description provided for @oneCheckThenYouAreIn.
+  ///
+  /// In en, this message translates to:
+  /// **'One check, then you are in'**
+  String get oneCheckThenYouAreIn;
+
+  /// No description provided for @oneLegAtATimeHoldsThe.
+  ///
+  /// In en, this message translates to:
+  /// **'One leg at a time, holds the weight'**
+  String get oneLegAtATimeHoldsThe;
+
+  /// No description provided for @oneLineAboutYou.
+  ///
+  /// In en, this message translates to:
+  /// **'One line about you'**
+  String get oneLineAboutYou;
+
+  /// No description provided for @oneMinuteItIsFilledInFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'One minute · it is filled in from your logs'**
+  String get oneMinuteItIsFilledInFrom;
+
+  /// No description provided for @oneMinuteMostlyFilledInAlready.
+  ///
+  /// In en, this message translates to:
+  /// **'One minute · mostly filled in already'**
+  String get oneMinuteMostlyFilledInAlready;
+
+  /// No description provided for @oneMoreAndYouHaveFinishedWhatever.
+  ///
+  /// In en, this message translates to:
+  /// **'One more and you have finished, whatever anyone else does.'**
+  String get oneMoreAndYouHaveFinishedWhatever;
+
+  /// No description provided for @oneMoreSessionAndThisWeekCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'One more session and this week counts.'**
+  String get oneMoreSessionAndThisWeekCounts;
+
+  /// No description provided for @oneNudgeADayAtMostAt.
+  ///
+  /// In en, this message translates to:
+  /// **'One nudge a day at most, at the hour you usually log. Ignore three and they stop by themselves.'**
+  String get oneNudgeADayAtMostAt;
+
+  /// No description provided for @oneShopCoversIt.
+  ///
+  /// In en, this message translates to:
+  /// **'One shop covers it'**
+  String get oneShopCoversIt;
+
+  /// No description provided for @oneShortSheetItDoesNotMean.
+  ///
+  /// In en, this message translates to:
+  /// **'One short sheet. It does not mean a daily reply.'**
+  String get oneShortSheetItDoesNotMean;
+
+  /// No description provided for @onions1Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'Onions 1 kg'**
+  String get onions1Kg;
+
+  /// No description provided for @onlyIfYouWantEstimatesLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Only if you want estimates later'**
+  String get onlyIfYouWantEstimatesLater;
+
+  /// No description provided for @onlyWomenReviewTheseChecksNoMan.
+  ///
+  /// In en, this message translates to:
+  /// **'Only women review these checks. No man ever sees your face, your card or your name.'**
+  String get onlyWomenReviewTheseChecksNoMan;
+
+  /// No description provided for @onlyYouAndYourCoachEverSee.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you and your coach ever see this.'**
+  String get onlyYouAndYourCoachEverSee;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @openAsAnEditableDraftNothingIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Open as an editable draft. Nothing is sent automatically as personal feedback.'**
+  String get openAsAnEditableDraftNothingIs;
+
+  /// No description provided for @opensWithRamadan6400Women.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens with Ramadan · 6,400 women'**
+  String get opensWithRamadan6400Women;
+
+  /// No description provided for @optionGentleMobility.
+  ///
+  /// In en, this message translates to:
+  /// **'Option: gentle mobility'**
+  String get optionGentleMobility;
+
+  /// No description provided for @optionalNeverRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. Never required.'**
+  String get optionalNeverRequired;
+
+  /// No description provided for @optionalYouCanUseTheAppForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. You can use the app forever without it.'**
+  String get optionalYouCanUseTheAppForever;
+
+  /// No description provided for @orJustLogBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Or just log breakfast'**
+  String get orJustLogBreakfast;
+
+  /// No description provided for @orOneYouveHadBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Or one you\'ve had before'**
+  String get orOneYouveHadBefore;
+
+  /// No description provided for @orSayItZumba40Minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Or say it: \"Zumba, 40 minutes\"'**
+  String get orSayItZumba40Minutes;
+
+  /// No description provided for @ovulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Ovulation'**
+  String get ovulation;
+
+  /// No description provided for @package.
+  ///
+  /// In en, this message translates to:
+  /// **'Package'**
+  String get package;
+
+  /// No description provided for @packages.
+  ///
+  /// In en, this message translates to:
+  /// **'Packages'**
+  String get packages;
+
+  /// No description provided for @paidOutOnThe1stOfEach.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid out on the 1st of each month.'**
+  String get paidOutOnThe1stOfEach;
+
+  /// No description provided for @pasta500G.
+  ///
+  /// In en, this message translates to:
+  /// **'Pasta 500 g'**
+  String get pasta500G;
+
+  /// No description provided for @pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pause;
+
+  /// No description provided for @pay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay'**
+  String get pay;
+
+  /// No description provided for @pay1800Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay 1,800 EGP'**
+  String get pay1800Egp;
+
+  /// No description provided for @payWithACodeAtAnyFawry.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay with a code at any Fawry point'**
+  String get payWithACodeAtAnyFawry;
+
+  /// No description provided for @payoutMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout method'**
+  String get payoutMethod;
+
+  /// No description provided for @payoutOn1OctoberToVodafoneCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout on 1 October to Vodafone Cash · 010 xxx xx32'**
+  String get payoutOn1OctoberToVodafoneCash;
+
+  /// No description provided for @pelvicFloorFirstClearedFromWeekSix.
+  ///
+  /// In en, this message translates to:
+  /// **'Pelvic floor first, cleared from week six'**
+  String get pelvicFloorFirstClearedFromWeekSix;
+
+  /// No description provided for @perimenopause.
+  ///
+  /// In en, this message translates to:
+  /// **'Perimenopause'**
+  String get perimenopause;
+
+  /// No description provided for @periodDay2SymptomTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Period day 2 · symptom tracking'**
+  String get periodDay2SymptomTracking;
+
+  /// No description provided for @personalBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal best'**
+  String get personalBest;
+
+  /// No description provided for @photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get photo;
+
+  /// No description provided for @photoCompareStoredOnYourPhoneAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo compare, stored on your phone and encrypted in the app.'**
+  String get photoCompareStoredOnYourPhoneAnd;
+
+  /// No description provided for @photosOfTheCertificateAreEnoughWe.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos of the certificate are enough. We check the issuing body ourselves, and unverified coaches cannot take clients.'**
+  String get photosOfTheCertificateAreEnoughWe;
+
+  /// No description provided for @pickADifferentProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a different program'**
+  String get pickADifferentProgram;
+
+  /// No description provided for @pickOneItChangesTheProgramNot.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick one. It changes the program, not the app.'**
+  String get pickOneItChangesTheProgramNot;
+
+  /// No description provided for @pickUpToThreeClientsFilterBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up to three. Clients filter by these.'**
+  String get pickUpToThreeClientsFilterBy;
+
+  /// No description provided for @planNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan needed'**
+  String get planNeeded;
+
+  /// No description provided for @planUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan updated'**
+  String get planUpdated;
+
+  /// No description provided for @planUpdatedThursday18September.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan updated · Thursday 18 September'**
+  String get planUpdatedThursday18September;
+
+  /// No description provided for @plankHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Plank hold'**
+  String get plankHold;
+
+  /// No description provided for @planned.
+  ///
+  /// In en, this message translates to:
+  /// **'planned'**
+  String get planned;
+
+  /// No description provided for @plannedBySara1Serving540Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned by Sara · 1 serving · 540 kcal'**
+  String get plannedBySara1Serving540Kcal;
+
+  /// No description provided for @plannedFullBodyStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned: full-body strength'**
+  String get plannedFullBodyStrength;
+
+  /// No description provided for @platesSheAlreadyEats.
+  ///
+  /// In en, this message translates to:
+  /// **'Plates she already eats'**
+  String get platesSheAlreadyEats;
+
+  /// No description provided for @postToHomeWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Post to Home workouts'**
+  String get postToHomeWorkouts;
+
+  /// No description provided for @postpartumRebuild2HoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpartum rebuild · 2 hours ago'**
+  String get postpartumRebuild2HoursAgo;
+
+  /// No description provided for @postpartumRebuildWeek3.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpartum rebuild · week 3'**
+  String get postpartumRebuildWeek3;
+
+  /// No description provided for @postpartumStrengthGizaArabicAndEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpartum strength · Giza · Arabic and English'**
+  String get postpartumStrengthGizaArabicAndEnglish;
+
+  /// No description provided for @postpartum4MonthsTrainsAtHome20.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpartum, 4 months · trains at home · 20 minutes · 3 days a week'**
+  String get postpartum4MonthsTrainsAtHome20;
+
+  /// No description provided for @preferNotToSay.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer not to say'**
+  String get preferNotToSay;
+
+  /// No description provided for @pregnancy.
+  ///
+  /// In en, this message translates to:
+  /// **'Pregnancy'**
+  String get pregnancy;
+
+  /// No description provided for @pregnant.
+  ///
+  /// In en, this message translates to:
+  /// **'Pregnant'**
+  String get pregnant;
+
+  /// No description provided for @pregnantOrPostpartum.
+  ///
+  /// In en, this message translates to:
+  /// **'Pregnant or postpartum'**
+  String get pregnantOrPostpartum;
+
+  /// No description provided for @prepTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Prep time'**
+  String get prepTime;
+
+  /// No description provided for @preparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing'**
+  String get preparing;
+
+  /// No description provided for @preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get preview;
+
+  /// No description provided for @previewHerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview her day'**
+  String get previewHerDay;
+
+  /// No description provided for @price.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get price;
+
+  /// No description provided for @priceAMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Price a month'**
+  String get priceAMonth;
+
+  /// No description provided for @private.
+  ///
+  /// In en, this message translates to:
+  /// **'private'**
+  String get private;
+
+  /// No description provided for @profileVisibleToMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile visible to members'**
+  String get profileVisibleToMembers;
+
+  /// No description provided for @protein78GAverageTarget95G.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein 78 g average · target 95 g'**
+  String get protein78GAverageTarget95G;
+
+  /// No description provided for @proteinAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein average'**
+  String get proteinAverage;
+
+  /// No description provided for @proteinTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein target'**
+  String get proteinTarget;
+
+  /// No description provided for @publishPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish plan'**
+  String get publishPlan;
+
+  /// No description provided for @publishToNour.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish to Nour'**
+  String get publishToNour;
+
+  /// No description provided for @quickSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick selfie'**
+  String get quickSelfie;
+
+  /// No description provided for @quiet1SessionIn2Weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet · 1 session in 2 weeks'**
+  String get quiet1SessionIn2Weeks;
+
+  /// No description provided for @quietNoEquipmentFloor.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet · no equipment · floor'**
+  String get quietNoEquipmentFloor;
+
+  /// No description provided for @quietMovesFloorNothingToCarry.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet moves, floor, nothing to carry'**
+  String get quietMovesFloorNothingToCarry;
+
+  /// No description provided for @quietWorkoutsForHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet workouts for home'**
+  String get quietWorkoutsForHome;
+
+  /// No description provided for @quietWorkoutsForHomeFoodYouAlready.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet workouts for home, food you already cook, and a community only women can enter.'**
+  String get quietWorkoutsForHomeFoodYouAlready;
+
+  /// No description provided for @ramadan.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramadan'**
+  String get ramadan;
+
+  /// No description provided for @ramadanModeOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramadan mode off'**
+  String get ramadanModeOff;
+
+  /// No description provided for @ramadanTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramadan training'**
+  String get ramadanTraining;
+
+  /// No description provided for @read.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get read;
+
+  /// No description provided for @readNhsGuidanceOnPeriodPain.
+  ///
+  /// In en, this message translates to:
+  /// **'Read NHS guidance on period pain'**
+  String get readNhsGuidanceOnPeriodPain;
+
+  /// No description provided for @readTheThreeRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the three rules'**
+  String get readTheThreeRules;
+
+  /// No description provided for @readableNewMessagesAreClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Readable · new messages are closed'**
+  String get readableNewMessagesAreClosed;
+
+  /// No description provided for @readableNoNewAssignments.
+  ///
+  /// In en, this message translates to:
+  /// **'Readable · no new assignments'**
+  String get readableNoNewAssignments;
+
+  /// No description provided for @rebuiltAroundThePelvicFloorFirstCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuilt around the pelvic floor first. Cleared for postpartum from week six, with your doctor\'s go-ahead.'**
+  String get rebuiltAroundThePelvicFloorFirstCleared;
+
+  /// No description provided for @recent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get recent;
+
+  /// No description provided for @recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording…'**
+  String get recording;
+
+  /// No description provided for @registeredDietitianAndCoachPostpartumStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered dietitian and coach · postpartum strength'**
+  String get registeredDietitianAndCoachPostpartumStrength;
+
+  /// No description provided for @regular.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular'**
+  String get regular;
+
+  /// No description provided for @regularAsksForFourOfYourLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular asks for four of your last eight weeks, and three counted. One more counted week brings it back.'**
+  String get regularAsksForFourOfYourLast;
+
+  /// No description provided for @regularHoldsWhileFourOfYourLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular holds while four of your last eight weeks count. Six did.'**
+  String get regularHoldsWhileFourOfYourLast;
+
+  /// No description provided for @reminderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time'**
+  String get reminderTime;
+
+  /// No description provided for @repliesIn2h.
+  ///
+  /// In en, this message translates to:
+  /// **'Replies in ~2h'**
+  String get repliesIn2h;
+
+  /// No description provided for @replyInChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply in chat'**
+  String get replyInChat;
+
+  /// No description provided for @replyTimeShownToClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply time shown to clients'**
+  String get replyTimeShownToClients;
+
+  /// No description provided for @reportSomeone.
+  ///
+  /// In en, this message translates to:
+  /// **'Report someone'**
+  String get reportSomeone;
+
+  /// No description provided for @reportThisPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Report this post'**
+  String get reportThisPost;
+
+  /// No description provided for @reportsYouMade.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports you made'**
+  String get reportsYouMade;
+
+  /// No description provided for @reportsBlockedMembersHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports, blocked members, help'**
+  String get reportsBlockedMembersHelp;
+
+  /// No description provided for @reps.
+  ///
+  /// In en, this message translates to:
+  /// **'Reps'**
+  String get reps;
+
+  /// No description provided for @restBetweenSets.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest between sets'**
+  String get restBetweenSets;
+
+  /// No description provided for @restStartsItself.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest starts itself'**
+  String get restStartsItself;
+
+  /// No description provided for @restTimerStartsItself.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest timer starts itself'**
+  String get restTimerStartsItself;
+
+  /// No description provided for @review.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get review;
+
+  /// No description provided for @reviewDueDay9Of30Waiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Review due · day 9 of 30 · waiting 19 hours'**
+  String get reviewDueDay9Of30Waiting;
+
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviews;
+
+  /// No description provided for @reviewsDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews due'**
+  String get reviewsDue;
+
+  /// No description provided for @revisionsDefaultToFutureDatesASession.
+  ///
+  /// In en, this message translates to:
+  /// **'Revisions default to future dates. A session she has already started, and anything she has already logged, stay on the version she used.'**
+  String get revisionsDefaultToFutureDatesASession;
+
+  /// No description provided for @rice1Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'Rice 1 kg'**
+  String get rice1Kg;
+
+  /// No description provided for @riceLentilsAndPastaCookedTogetherWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Rice, lentils and pasta cooked together, with the fried onions on top and the sauce on the side so you decide how much goes on.'**
+  String get riceLentilsAndPastaCookedTogetherWith;
+
+  /// No description provided for @riceLentilsPasta.
+  ///
+  /// In en, this message translates to:
+  /// **'Rice, lentils, pasta'**
+  String get riceLentilsPasta;
+
+  /// No description provided for @safeMovementsNothingOnTheBelly.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe movements, nothing on the belly'**
+  String get safeMovementsNothingOnTheBelly;
+
+  /// No description provided for @sameMusclesQuieterOnTheFloor.
+  ///
+  /// In en, this message translates to:
+  /// **'Same muscles, quieter on the floor.'**
+  String get sameMusclesQuieterOnTheFloor;
+
+  /// No description provided for @saraApprovedTheseInAdvanceSoYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara approved these in advance, so you do not have to wait for a reply.'**
+  String get saraApprovedTheseInAdvanceSoYou;
+
+  /// No description provided for @saraHanyDay9Of30.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara Hany · day 9 of 30'**
+  String get saraHanyDay9Of30;
+
+  /// No description provided for @saraIsPreparingYourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara is preparing your plan'**
+  String get saraIsPreparingYourPlan;
+
+  /// No description provided for @saraRepliedToYourReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara replied to your review'**
+  String get saraRepliedToYourReview;
+
+  /// No description provided for @saraRepliedWithAVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara replied with a voice note'**
+  String get saraRepliedWithAVoiceNote;
+
+  /// No description provided for @saraSet45SecondsBetweenTheseSets.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara set 45 seconds between these sets.'**
+  String get saraSet45SecondsBetweenTheseSets;
+
+  /// No description provided for @saraShortenedItTo20Minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara shortened it to 20 minutes'**
+  String get saraShortenedItTo20Minutes;
+
+  /// No description provided for @saraWouldSeeEnergyLowAppetiteUsual.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara would see: energy low, appetite usual, and “client selected a lighter session”.'**
+  String get saraWouldSeeEnergyLowAppetiteUsual;
+
+  /// No description provided for @sarasNoteAddTheSaladIfYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara’s note: “Add the salad if you are still hungry after.”'**
+  String get sarasNoteAddTheSaladIfYou;
+
+  /// No description provided for @save12Kg8.
+  ///
+  /// In en, this message translates to:
+  /// **'Save · 12 kg × 8'**
+  String get save12Kg8;
+
+  /// No description provided for @saveAndSendToSara.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and send to Sara'**
+  String get saveAndSendToSara;
+
+  /// No description provided for @saveCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Save check-in'**
+  String get saveCheckIn;
+
+  /// No description provided for @saveFeedbackAndPublishChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save feedback and publish changes'**
+  String get saveFeedbackAndPublishChanges;
+
+  /// No description provided for @savePreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Save preferences'**
+  String get savePreferences;
+
+  /// No description provided for @saveThisWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this workout?'**
+  String get saveThisWorkout;
+
+  /// No description provided for @saveToMyMealsAndAssign.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to my meals and assign'**
+  String get saveToMyMealsAndAssign;
+
+  /// No description provided for @saveToTuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Tuesday'**
+  String get saveToTuesday;
+
+  /// No description provided for @savedReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved replies'**
+  String get savedReplies;
+
+  /// No description provided for @savedToYourOwnCollectionItIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to your own collection. It is not added to the app’s public library.'**
+  String get savedToYourOwnCollectionItIs;
+
+  /// No description provided for @sayItAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Say it again'**
+  String get sayItAgain;
+
+  /// No description provided for @saySomethingKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Say something kind'**
+  String get saySomethingKind;
+
+  /// No description provided for @scanMyId.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan my ID'**
+  String get scanMyId;
+
+  /// No description provided for @schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get schedule;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
+
+  /// No description provided for @search124Moves.
+  ///
+  /// In en, this message translates to:
+  /// **'Search 124 moves'**
+  String get search124Moves;
+
+  /// No description provided for @search124Workouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search 124 workouts'**
+  String get search124Workouts;
+
+  /// No description provided for @secondQuietWeekHerRestWeekIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Second quiet week. Her rest week is already used.'**
+  String get secondQuietWeekHerRestWeekIs;
+
+  /// No description provided for @seeAGentlerOptionBasedOnYour.
+  ///
+  /// In en, this message translates to:
+  /// **'See a gentler option based on your check-in'**
+  String get seeAGentlerOptionBasedOnYour;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// No description provided for @seeAnExampleDay.
+  ///
+  /// In en, this message translates to:
+  /// **'See an example day'**
+  String get seeAnExampleDay;
+
+  /// No description provided for @seeExactlyWhatSheWouldSee.
+  ///
+  /// In en, this message translates to:
+  /// **'See exactly what she would see'**
+  String get seeExactlyWhatSheWouldSee;
+
+  /// No description provided for @seeHerPackages.
+  ///
+  /// In en, this message translates to:
+  /// **'See her packages'**
+  String get seeHerPackages;
+
+  /// No description provided for @seeMyToday.
+  ///
+  /// In en, this message translates to:
+  /// **'See my Today'**
+  String get seeMyToday;
+
+  /// No description provided for @seeTheGroceryList.
+  ///
+  /// In en, this message translates to:
+  /// **'See the grocery list'**
+  String get seeTheGroceryList;
+
+  /// No description provided for @seeTheSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'See the steps'**
+  String get seeTheSteps;
+
+  /// No description provided for @seeTheWholeProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'See the whole program'**
+  String get seeTheWholeProgram;
+
+  /// No description provided for @selectAppMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Select app meal'**
+  String get selectAppMeal;
+
+  /// No description provided for @selfieMatchedToTheCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Selfie matched to the card'**
+  String get selfieMatchedToTheCard;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @sendItAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Send it again'**
+  String get sendItAgain;
+
+  /// No description provided for @sendMeACode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send me a code'**
+  String get sendMeACode;
+
+  /// No description provided for @sendReplyAndPlanChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reply and plan change'**
+  String get sendReplyAndPlanChange;
+
+  /// No description provided for @sendThisWeekToMai.
+  ///
+  /// In en, this message translates to:
+  /// **'Send this week to Mai'**
+  String get sendThisWeekToMai;
+
+  /// No description provided for @sendToMai.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to Mai'**
+  String get sendToMai;
+
+  /// No description provided for @september.
+  ///
+  /// In en, this message translates to:
+  /// **'September'**
+  String get september;
+
+  /// No description provided for @septemberSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'September so far'**
+  String get septemberSoFar;
+
+  /// No description provided for @servings.
+  ///
+  /// In en, this message translates to:
+  /// **'Servings'**
+  String get servings;
+
+  /// No description provided for @session20PersonalBest10.
+  ///
+  /// In en, this message translates to:
+  /// **'Session 20 · personal best 10'**
+  String get session20PersonalBest10;
+
+  /// No description provided for @sessionDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Session done'**
+  String get sessionDone;
+
+  /// No description provided for @sessionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Session name'**
+  String get sessionName;
+
+  /// No description provided for @sessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get sessions;
+
+  /// No description provided for @sessionsYouLoggedAsIAlreadyDid.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions you logged as \"I already did it\" never set a best, because the numbers were copied.'**
+  String get sessionsYouLoggedAsIAlreadyDid;
+
+  /// No description provided for @sessionsFoodDaysAndBests.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions, food days and bests'**
+  String get sessionsFoodDaysAndBests;
+
+  /// No description provided for @set2GobletSquat.
+  ///
+  /// In en, this message translates to:
+  /// **'Set 2 · Goblet squat'**
+  String get set2GobletSquat;
+
+  /// R09 undo snackbar. Must name the numbers SHE logged, not the prescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {setNumber} saved · {weight} kg × {reps}'**
+  String setSetnumberSavedWeightKgReps(int setNumber, String weight, int reps);
+
+  /// No description provided for @set2Saved12Kg12.
+  ///
+  /// In en, this message translates to:
+  /// **'Set 2 saved · 12 kg × 12'**
+  String get set2Saved12Kg12;
+
+  /// No description provided for @set312Kg12.
+  ///
+  /// In en, this message translates to:
+  /// **'Set 3 · 12 kg × 12'**
+  String get set312Kg12;
+
+  /// No description provided for @setsCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets completed'**
+  String get setsCompleted;
+
+  /// No description provided for @severe.
+  ///
+  /// In en, this message translates to:
+  /// **'Severe'**
+  String get severe;
+
+  /// No description provided for @severeCrampsLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Severe cramps logged'**
+  String get severeCrampsLogged;
+
+  /// No description provided for @severeOrUnusualPainDeservesMedicalAdvice.
+  ///
+  /// In en, this message translates to:
+  /// **'Severe or unusual pain deserves medical advice. If the pain is worse than usual and pain relief has not helped, seek urgent care.'**
+  String get severeOrUnusualPainDeservesMedicalAdvice;
+
+  /// No description provided for @shareCycleInformationWithSara.
+  ///
+  /// In en, this message translates to:
+  /// **'Share cycle information with Sara'**
+  String get shareCycleInformationWithSara;
+
+  /// No description provided for @shareFormVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Share form video'**
+  String get shareFormVideo;
+
+  /// No description provided for @shareTheSquatWithYourGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the squat with your group'**
+  String get shareTheSquatWithYourGroup;
+
+  /// No description provided for @shareWithMyCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Share with my coach'**
+  String get shareWithMyCoach;
+
+  /// No description provided for @shared.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared'**
+  String get shared;
+
+  /// No description provided for @sharedByNour.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared by Nour'**
+  String get sharedByNour;
+
+  /// No description provided for @sharedWellbeing.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared wellbeing'**
+  String get sharedWellbeing;
+
+  /// No description provided for @sharedWithSara.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared with Sara'**
+  String get sharedWithSara;
+
+  /// No description provided for @sheAverages78G.
+  ///
+  /// In en, this message translates to:
+  /// **'She averages 78 g'**
+  String get sheAverages78G;
+
+  /// No description provided for @sheChoosesWhatShowsHereLogsWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'She chooses what shows here. Logs, weight and photos are never on a profile.'**
+  String get sheChoosesWhatShowsHereLogsWeight;
+
+  /// No description provided for @sheDisappearsFromYourFeedAndCannot.
+  ///
+  /// In en, this message translates to:
+  /// **'She disappears from your feed and cannot message you'**
+  String get sheDisappearsFromYourFeedAndCannot;
+
+  /// No description provided for @sheHasYourIntakeMostPlansArrive.
+  ///
+  /// In en, this message translates to:
+  /// **'She has your intake. Most plans arrive within a working day.'**
+  String get sheHasYourIntakeMostPlansArrive;
+
+  /// No description provided for @shortOnesThatStillCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Short ones that still count'**
+  String get shortOnesThatStillCount;
+
+  /// No description provided for @showMealSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Show meal suggestions'**
+  String get showMealSuggestions;
+
+  /// No description provided for @showMyPersonalBests.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my personal bests'**
+  String get showMyPersonalBests;
+
+  /// No description provided for @showUsYourCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Show us your certificates'**
+  String get showUsYourCertificates;
+
+  /// No description provided for @showWorkoutSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Show workout suggestions'**
+  String get showWorkoutSuggestions;
+
+  /// No description provided for @showingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing up'**
+  String get showingUp;
+
+  /// No description provided for @skipSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip setup'**
+  String get skipSetup;
+
+  /// No description provided for @skipThisExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this exercise'**
+  String get skipThisExercise;
+
+  /// No description provided for @skipThisMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this move'**
+  String get skipThisMove;
+
+  /// No description provided for @skipTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip timer'**
+  String get skipTimer;
+
+  /// No description provided for @skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get skipped;
+
+  /// No description provided for @slowlyWithoutCuttingFoodYouLove.
+  ///
+  /// In en, this message translates to:
+  /// **'Slowly, without cutting food you love'**
+  String get slowlyWithoutCuttingFoodYouLove;
+
+  /// No description provided for @snack.
+  ///
+  /// In en, this message translates to:
+  /// **'Snack'**
+  String get snack;
+
+  /// No description provided for @soWereLogging.
+  ///
+  /// In en, this message translates to:
+  /// **'So we\'re logging'**
+  String get soWereLogging;
+
+  /// No description provided for @spots.
+  ///
+  /// In en, this message translates to:
+  /// **'Spots'**
+  String get spots;
+
+  /// No description provided for @standUpStrongSqueezeAtTheTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stand up strong, squeeze at the top'**
+  String get standUpStrongSqueezeAtTheTop;
+
+  /// No description provided for @start10Minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Start 10 minutes'**
+  String get start10Minutes;
+
+  /// No description provided for @startDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get startDate;
+
+  /// No description provided for @startDay1Now.
+  ///
+  /// In en, this message translates to:
+  /// **'Start day 1 now'**
+  String get startDay1Now;
+
+  /// No description provided for @startDay2.
+  ///
+  /// In en, this message translates to:
+  /// **'Start day 2'**
+  String get startDay2;
+
+  /// No description provided for @startFromATemplateChangeWhatMatters.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from a template, change what matters, send. Her app updates tonight and she sees it as today\'s session.'**
+  String get startFromATemplateChangeWhatMatters;
+
+  /// No description provided for @startThe10Minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the 10 minutes'**
+  String get startThe10Minutes;
+
+  /// No description provided for @startTodaysSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Start today\'s session'**
+  String get startTodaysSession;
+
+  /// No description provided for @startWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Start workout'**
+  String get startWorkout;
+
+  /// No description provided for @startsTodayRenews16October.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts today · renews 16 October'**
+  String get startsTodayRenews16October;
+
+  /// No description provided for @step1Of2.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 2'**
+  String get step1Of2;
+
+  /// No description provided for @step1Of3SavedAsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 3 · saved as you go'**
+  String get step1Of3SavedAsYou;
+
+  /// No description provided for @step1Of4.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 4'**
+  String get step1Of4;
+
+  /// No description provided for @step1Of6.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 6'**
+  String get step1Of6;
+
+  /// No description provided for @step2Of2.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 2'**
+  String get step2Of2;
+
+  /// No description provided for @step2Of4.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 4'**
+  String get step2Of4;
+
+  /// No description provided for @step2Of6.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 6'**
+  String get step2Of6;
+
+  /// No description provided for @step3Of3.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 3 of 3'**
+  String get step3Of3;
+
+  /// No description provided for @step3Of4.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 3 of 4'**
+  String get step3Of4;
+
+  /// No description provided for @step3Of6.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 3 of 6'**
+  String get step3Of6;
+
+  /// No description provided for @step4Of4.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 4 of 4'**
+  String get step4Of4;
+
+  /// No description provided for @step4Of6.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 4 of 6'**
+  String get step4Of6;
+
+  /// No description provided for @step5Of6.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 5 of 6'**
+  String get step5Of6;
+
+  /// No description provided for @step6Of6.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 6 of 6'**
+  String get step6Of6;
+
+  /// No description provided for @stepBackLunge310.
+  ///
+  /// In en, this message translates to:
+  /// **'Step-back lunge · 3 × 10'**
+  String get stepBackLunge310;
+
+  /// No description provided for @stillAMemberJustQuiet.
+  ///
+  /// In en, this message translates to:
+  /// **'Still a member, just quiet'**
+  String get stillAMemberJustQuiet;
+
+  /// No description provided for @stopIfMovementMakesYourSymptomsWorse.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop if movement makes your symptoms worse.'**
+  String get stopIfMovementMakesYourSymptomsWorse;
+
+  /// No description provided for @strength.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength'**
+  String get strength;
+
+  /// No description provided for @subscription8SepTo7Oct.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription · 8 Sep to 7 Oct'**
+  String get subscription8SepTo7Oct;
+
+  /// No description provided for @suggestedForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested for you'**
+  String get suggestedForYou;
+
+  /// No description provided for @sun13.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun 13'**
+  String get sun13;
+
+  /// No description provided for @sunToThu900To17.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun to Thu, 9:00 to 17:00 Cairo · replies within one working day. Not monitored at night.'**
+  String get sunToThu900To17;
+
+  /// No description provided for @sunTueThu20Min.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun, Tue, Thu · 20 min'**
+  String get sunTueThu20Min;
+
+  /// No description provided for @sunday20September.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday 20 September'**
+  String get sunday20September;
+
+  /// No description provided for @sundayToThursday900To17.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday to Thursday, 9:00 to 17:00 · replies within one working day'**
+  String get sundayToThursday900To17;
+
+  /// No description provided for @swap.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap'**
+  String get swap;
+
+  /// No description provided for @swapExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap exercise'**
+  String get swapExercise;
+
+  /// No description provided for @swapIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap it'**
+  String get swapIt;
+
+  /// No description provided for @swapThisExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap this exercise'**
+  String get swapThisExercise;
+
+  /// No description provided for @symptomOnlyMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Symptom-only mode'**
+  String get symptomOnlyMode;
+
+  /// No description provided for @symptomOnlyModeNoDatesNoEstimates.
+  ///
+  /// In en, this message translates to:
+  /// **'Symptom-only mode. No dates, no estimates.'**
+  String get symptomOnlyModeNoDatesNoEstimates;
+
+  /// No description provided for @taameyaSaladBaladi520Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Ta\'ameya, salad, baladi · 520 kcal'**
+  String get taameyaSaladBaladi520Kcal;
+
+  /// No description provided for @takeClientsSetYourPackagesKeep80.
+  ///
+  /// In en, this message translates to:
+  /// **'Take clients, set your packages, keep 80%.'**
+  String get takeClientsSetYourPackagesKeep80;
+
+  /// No description provided for @takeItMyself.
+  ///
+  /// In en, this message translates to:
+  /// **'Take it myself'**
+  String get takeItMyself;
+
+  /// No description provided for @talkToAHuman.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk to a human'**
+  String get talkToAHuman;
+
+  /// No description provided for @tapAnyMoveToWatchItOr.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any move to watch it or swap it.'**
+  String get tapAnyMoveToWatchItOr;
+
+  /// No description provided for @tapOneAndItIsSavedUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap one and it is saved. Undo for five seconds.'**
+  String get tapOneAndItIsSavedUndo;
+
+  /// No description provided for @tellClientsWhoYouAre.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell clients who you are'**
+  String get tellClientsWhoYouAre;
+
+  /// No description provided for @thatIsExactlyRightKeep12Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'That is exactly right. Keep 12 kg on Thursday and we add reps, not weight.'**
+  String get thatIsExactlyRightKeep12Kg;
+
+  /// No description provided for @thatsRightLog696Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s right · log 696 kcal'**
+  String get thatsRightLog696Kcal;
+
+  /// No description provided for @thatsTuesdayDone.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s Tuesday done'**
+  String get thatsTuesdayDone;
+
+  /// No description provided for @theCommunityStaysClosedUntilTheCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'The community stays closed until the check is done. That is the point of it.'**
+  String get theCommunityStaysClosedUntilTheCheck;
+
+  /// No description provided for @theLibraryIsOpenAsUsual.
+  ///
+  /// In en, this message translates to:
+  /// **'The library is open as usual'**
+  String get theLibraryIsOpenAsUsual;
+
+  /// No description provided for @theShortestOneWeHave.
+  ///
+  /// In en, this message translates to:
+  /// **'The shortest one we have'**
+  String get theShortestOneWeHave;
+
+  /// No description provided for @theSquatFeltHeavyAt12Kg_wg4mi.
+  ///
+  /// In en, this message translates to:
+  /// **'The squat felt heavy at 12 kg but I finished all three sets.'**
+  String get theSquatFeltHeavyAt12Kg_wg4mi;
+
+  /// No description provided for @theThreeStepsPlainly.
+  ///
+  /// In en, this message translates to:
+  /// **'The three steps, plainly'**
+  String get theThreeStepsPlainly;
+
+  /// No description provided for @thenThisWeekIsTwoSessionsTen.
+  ///
+  /// In en, this message translates to:
+  /// **'Then this week is two sessions, ten minutes each. I moved them to Sunday and Wednesday.'**
+  String get thenThisWeekIsTwoSessionsTen;
+
+  /// No description provided for @thisDescribesYourLogsItDoesNot.
+  ///
+  /// In en, this message translates to:
+  /// **'This describes your logs. It does not explain the cause or predict every cycle.'**
+  String get thisDescribesYourLogsItDoesNot;
+
+  /// No description provided for @thisIsExactlyWhatAClientSees.
+  ///
+  /// In en, this message translates to:
+  /// **'This is exactly what a client sees. Tap the eye to open it as she would.'**
+  String get thisIsExactlyWhatAClientSees;
+
+  /// No description provided for @thisIsTheExactThingINeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the exact thing I needed to read today.'**
+  String get thisIsTheExactThingINeeded;
+
+  /// No description provided for @thisIsTheTopOfYourPublic.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the top of your public profile.'**
+  String get thisIsTheTopOfYourPublic;
+
+  /// No description provided for @thisIsTheWholeReasonTheCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the whole reason the community feels safe: every member is verified before she can see or say anything.'**
+  String get thisIsTheWholeReasonTheCommunity;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get thisMonth;
+
+  /// No description provided for @thisMove.
+  ///
+  /// In en, this message translates to:
+  /// **'This move'**
+  String get thisMove;
+
+  /// No description provided for @thisNeedsMoreThanAWorkoutChange.
+  ///
+  /// In en, this message translates to:
+  /// **'This needs more than a workout change'**
+  String get thisNeedsMoreThanAWorkoutChange;
+
+  /// No description provided for @thisWeekFromSara.
+  ///
+  /// In en, this message translates to:
+  /// **'This week from Sara'**
+  String get thisWeekFromSara;
+
+  /// No description provided for @thisWeek0Of3.
+  ///
+  /// In en, this message translates to:
+  /// **'This week, 0 of 3'**
+  String get thisWeek0Of3;
+
+  /// No description provided for @thisWeek1Of3.
+  ///
+  /// In en, this message translates to:
+  /// **'This week, 1 of 3'**
+  String get thisWeek1Of3;
+
+  /// No description provided for @thisWeeksPlanAndList.
+  ///
+  /// In en, this message translates to:
+  /// **'This week\'s plan and list'**
+  String get thisWeeksPlanAndList;
+
+  /// No description provided for @threeDaysAWeek15MinutesAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Three days a week, 15 minutes, at home'**
+  String get threeDaysAWeek15MinutesAt;
+
+  /// No description provided for @threeRulesTheyAreTheWholeReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Three rules. They are the whole reason this place works.'**
+  String get threeRulesTheyAreTheWholeReason;
+
+  /// No description provided for @thu18.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu 18'**
+  String get thu18;
+
+  /// No description provided for @thursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get thursday;
+
+  /// No description provided for @thursdayFullBodyStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday · full-body strength'**
+  String get thursdayFullBodyStrength;
+
+  /// No description provided for @thursday18SeptemberOnwardsPublishedBySara.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday 18 September onwards · published by Sara'**
+  String get thursday18SeptemberOnwardsPublishedBySara;
+
+  /// No description provided for @thursdayDropsTo20Minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday drops to 20 minutes'**
+  String get thursdayDropsTo20Minutes;
+
+  /// No description provided for @timePerSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Time per session'**
+  String get timePerSession;
+
+  /// No description provided for @today_554hp.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get today_554hp;
+
+  /// No description provided for @todaysMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s meals'**
+  String get todaysMeals;
+
+  /// No description provided for @todaysWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s workout'**
+  String get todaysWorkout;
+
+  /// No description provided for @togetherSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'together so far'**
+  String get togetherSoFar;
+
+  /// No description provided for @tomatoSauce.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomato sauce'**
+  String get tomatoSauce;
+
+  /// No description provided for @tomatoes1Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomatoes 1 kg'**
+  String get tomatoes1Kg;
+
+  /// No description provided for @trackPeriodsAndSymptoms.
+  ///
+  /// In en, this message translates to:
+  /// **'Track periods and symptoms'**
+  String get trackPeriodsAndSymptoms;
+
+  /// No description provided for @trackSymptomsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Track symptoms only'**
+  String get trackSymptomsOnly;
+
+  /// No description provided for @trainOnYourOwnMeanwhile.
+  ///
+  /// In en, this message translates to:
+  /// **'Train on your own meanwhile'**
+  String get trainOnYourOwnMeanwhile;
+
+  /// No description provided for @trains.
+  ///
+  /// In en, this message translates to:
+  /// **'Trains'**
+  String get trains;
+
+  /// No description provided for @tue16.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue 16'**
+  String get tue16;
+
+  /// No description provided for @tue16Session.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue 16 · session'**
+  String get tue16Session;
+
+  /// No description provided for @tuesday840LoggedFromTheLock.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday 8:40 · logged from the lock screen'**
+  String get tuesday840LoggedFromTheLock;
+
+  /// No description provided for @tuesdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesdays'**
+  String get tuesdays;
+
+  /// No description provided for @twelveInAllNoneAreSecretAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Twelve in all. None are secret, and none are for filling in a profile.'**
+  String get twelveInAllNoneAreSecretAnd;
+
+  /// No description provided for @twoBoiledEggs.
+  ///
+  /// In en, this message translates to:
+  /// **'Two boiled eggs'**
+  String get twoBoiledEggs;
+
+  /// No description provided for @twoDaysWithoutAFoodLogAre.
+  ///
+  /// In en, this message translates to:
+  /// **'Two days without a food log are shown as not logged, not as meals skipped.'**
+  String get twoDaysWithoutAFoodLogAre;
+
+  /// No description provided for @twoMinutesWithAWomanReviewerNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Two minutes with a woman reviewer. Nothing is recorded or kept.'**
+  String get twoMinutesWithAWomanReviewerNothing;
+
+  /// No description provided for @twoMoreAndTheWeekCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Two more and the week counts.'**
+  String get twoMoreAndTheWeekCounts;
+
+  /// No description provided for @typeADifferentNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a different number'**
+  String get typeADifferentNumber;
+
+  /// No description provided for @typeTheCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Type the code'**
+  String get typeTheCode;
+
+  /// No description provided for @under2000Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'Under 2,000 EGP'**
+  String get under2000Egp;
+
+  /// No description provided for @under20Min.
+  ///
+  /// In en, this message translates to:
+  /// **'Under 20 min'**
+  String get under20Min;
+
+  /// No description provided for @unread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get unread;
+
+  /// No description provided for @uploadedChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded · checking'**
+  String get uploadedChecking;
+
+  /// No description provided for @upperBody20Min.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper body · 20 min'**
+  String get upperBody20Min;
+
+  /// No description provided for @upperBodyAtHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper body at home'**
+  String get upperBodyAtHome;
+
+  /// No description provided for @upperBodyLikeLastThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper body, like last Thursday'**
+  String get upperBodyLikeLastThursday;
+
+  /// No description provided for @useThisOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this option'**
+  String get useThisOption;
+
+  /// No description provided for @usual.
+  ///
+  /// In en, this message translates to:
+  /// **'Usual'**
+  String get usual;
+
+  /// No description provided for @usualCycleLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Usual cycle length'**
+  String get usualCycleLength;
+
+  /// No description provided for @usuallySecondsIfItNeedsAPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually seconds. If it needs a person, a woman reviewer takes it from here.'**
+  String get usuallySecondsIfItNeedsAPerson;
+
+  /// No description provided for @usuallyTheSameDayWeWillText.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually the same day. We will text you the moment your profile is live.'**
+  String get usuallyTheSameDayWeWillText;
+
+  /// No description provided for @usuallyUnderTwoHoursWeWillText.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually under two hours. We will text you.'**
+  String get usuallyUnderTwoHoursWeWillText;
+
+  /// No description provided for @vegetables.
+  ///
+  /// In en, this message translates to:
+  /// **'Vegetables'**
+  String get vegetables;
+
+  /// C13. Her actual verification time, not the mockup 74.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified in {seconds} seconds. Your ID photo and selfie have been deleted. We kept the result and nothing else.'**
+  String verifiedInSecondsSecondsYourIdPhoto(int seconds);
+
+  /// No description provided for @verifiedWomanJoined3DaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified woman · joined 3 days ago'**
+  String get verifiedWomanJoined3DaysAgo;
+
+  /// No description provided for @verifiedWomanJoinedMarch.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified woman · joined March'**
+  String get verifiedWomanJoinedMarch;
+
+  /// No description provided for @verifiedWomanRegularLevel7.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified woman · Regular · level 7'**
+  String get verifiedWomanRegularLevel7;
+
+  /// No description provided for @verifiedWomenCoachesPaidMonthlyInEgyptian.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified women coaches, paid monthly in Egyptian pounds.'**
+  String get verifiedWomenCoachesPaidMonthlyInEgyptian;
+
+  /// No description provided for @view.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get view;
+
+  /// No description provided for @viewOption.
+  ///
+  /// In en, this message translates to:
+  /// **'View option'**
+  String get viewOption;
+
+  /// No description provided for @viewRecipe.
+  ///
+  /// In en, this message translates to:
+  /// **'View recipe'**
+  String get viewRecipe;
+
+  /// No description provided for @visaMastercardMeeza.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa, Mastercard, Meeza'**
+  String get visaMastercardMeeza;
+
+  /// No description provided for @vodafoneCash010XxxXx32.
+  ///
+  /// In en, this message translates to:
+  /// **'Vodafone Cash · 010 xxx xx32'**
+  String get vodafoneCash010XxxXx32;
+
+  /// No description provided for @vodafoneCashChangeAnyTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Vodafone Cash · change any time'**
+  String get vodafoneCashChangeAnyTime;
+
+  /// No description provided for @vodafoneCashOrangeMoneyEtisalatInstapay.
+  ///
+  /// In en, this message translates to:
+  /// **'Vodafone Cash, Orange Money, Etisalat, InstaPay'**
+  String get vodafoneCashOrangeMoneyEtisalatInstapay;
+
+  /// No description provided for @voiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice note'**
+  String get voiceNote;
+
+  /// No description provided for @voiceNote042.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice note · 0:42'**
+  String get voiceNote042;
+
+  /// No description provided for @w.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get w;
+
+  /// No description provided for @waist82Cm.
+  ///
+  /// In en, this message translates to:
+  /// **'Waist 82 cm'**
+  String get waist82Cm;
+
+  /// No description provided for @waistHipsArmEvery4WeeksIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Waist, hips, arm. Every 4 weeks is plenty.'**
+  String get waistHipsArmEvery4WeeksIs;
+
+  /// No description provided for @waiting19HoursCanWeMakeThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting 19 hours · “Can we make Thursday shorter?”'**
+  String get waiting19HoursCanWeMakeThursday;
+
+  /// No description provided for @waiting19HoursICouldNotTrain.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting 19 hours · \"I could not train this week\"'**
+  String get waiting19HoursICouldNotTrain;
+
+  /// No description provided for @waiting6HoursVoiceNote042.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting 6 hours · voice note 0:42'**
+  String get waiting6HoursVoiceNote042;
+
+  /// No description provided for @waitingThereThePostpartumRebuildProgramAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting there: the postpartum rebuild program and your Strong label.'**
+  String get waitingThereThePostpartumRebuildProgramAnd;
+
+  /// No description provided for @walkThisMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk this morning'**
+  String get walkThisMorning;
+
+  /// No description provided for @wallSit.
+  ///
+  /// In en, this message translates to:
+  /// **'Wall sit'**
+  String get wallSit;
+
+  /// No description provided for @weAreNotSuggestingAWorkoutToday.
+  ///
+  /// In en, this message translates to:
+  /// **'We are not suggesting a workout today. Your plan is still there when you want it.'**
+  String get weAreNotSuggestingAWorkoutToday;
+
+  /// No description provided for @weAvoidWhatHurtsWeDoNot.
+  ///
+  /// In en, this message translates to:
+  /// **'We avoid what hurts, we do not diagnose'**
+  String get weAvoidWhatHurtsWeDoNot;
+
+  /// No description provided for @weHeardThis.
+  ///
+  /// In en, this message translates to:
+  /// **'We heard this'**
+  String get weHeardThis;
+
+  /// No description provided for @weJustNeedYourNumberAndA.
+  ///
+  /// In en, this message translates to:
+  /// **'We just need your number and a quick check that you are a woman. It takes about two minutes, once.'**
+  String get weJustNeedYourNumberAndA;
+
+  /// No description provided for @weKeepTheCommunityForVerifiedWomen.
+  ///
+  /// In en, this message translates to:
+  /// **'We keep the community for verified women. Join and you will see all of it.'**
+  String get weKeepTheCommunityForVerifiedWomen;
+
+  /// No description provided for @weNeverShowYourWalletNumberOr.
+  ///
+  /// In en, this message translates to:
+  /// **'We never show your wallet number or your address to clients.'**
+  String get weNeverShowYourWalletNumberOr;
+
+  /// No description provided for @weReadYourNationalIdCardThe.
+  ///
+  /// In en, this message translates to:
+  /// **'We read your national ID card. The card itself says you are a woman. We never guess from your face.'**
+  String get weReadYourNationalIdCardThe;
+
+  /// C07. Her number, so a mistyped one is obvious before she waits.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent six digits to {phone}.'**
+  String weSentSixDigitsToPhone(String phone);
+
+  /// No description provided for @weTextYouASixDigitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'We text you a six-digit code. We never show your number to anyone.'**
+  String get weTextYouASixDigitCode;
+
+  /// No description provided for @wellLog.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll log'**
+  String get wellLog;
+
+  /// No description provided for @wereCheckingYourCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re checking your certificates'**
+  String get wereCheckingYourCertificates;
+
+  /// No description provided for @wed.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get wed;
+
+  /// No description provided for @wed17.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed 17'**
+  String get wed17;
+
+  /// No description provided for @wednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get wednesday;
+
+  /// No description provided for @week.
+  ///
+  /// In en, this message translates to:
+  /// **'week'**
+  String get week;
+
+  /// No description provided for @week1.
+  ///
+  /// In en, this message translates to:
+  /// **'Week 1'**
+  String get week1;
+
+  /// No description provided for @week1StartsWithFourMovesOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Week 1 starts with four moves on the floor. Nothing jumps, nothing needs a neighbour to be out.'**
+  String get week1StartsWithFourMovesOn;
+
+  /// No description provided for @week3Of8.
+  ///
+  /// In en, this message translates to:
+  /// **'Week 3 of 8'**
+  String get week3Of8;
+
+  /// No description provided for @weekFiveAddsTheStandingMovesMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Week five adds the standing moves. Message me if your back complains.'**
+  String get weekFiveAddsTheStandingMovesMessage;
+
+  /// No description provided for @weightLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight loss'**
+  String get weightLoss;
+
+  /// No description provided for @welcomeMaiILookedAtYourAnswers.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Mai! I looked at your answers, so we start on the floor this week, nothing standing.'**
+  String get welcomeMaiILookedAtYourAnswers;
+
+  /// No description provided for @whatDoYouCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you coach?'**
+  String get whatDoYouCoach;
+
+  /// No description provided for @whatDoYouHaveAtHome.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you have at home?'**
+  String get whatDoYouHaveAtHome;
+
+  /// No description provided for @whatDoYouWantMost.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want most?'**
+  String get whatDoYouWantMost;
+
+  /// No description provided for @whatHappensWhenIReport.
+  ///
+  /// In en, this message translates to:
+  /// **'What happens when I report?'**
+  String get whatHappensWhenIReport;
+
+  /// No description provided for @whatHappensWhenItEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'What happens when it ends'**
+  String get whatHappensWhenItEnds;
+
+  /// No description provided for @whatNourWillGet.
+  ///
+  /// In en, this message translates to:
+  /// **'What Nour will get'**
+  String get whatNourWillGet;
+
+  /// No description provided for @whatSheIsAskingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'What she is asking for'**
+  String get whatSheIsAskingFor;
+
+  /// No description provided for @whatTodayLooksLikeOnceShePublishes.
+  ///
+  /// In en, this message translates to:
+  /// **'What today looks like once she publishes'**
+  String get whatTodayLooksLikeOnceShePublishes;
+
+  /// No description provided for @whatWeAgreed.
+  ///
+  /// In en, this message translates to:
+  /// **'What we agreed'**
+  String get whatWeAgreed;
+
+  /// No description provided for @whatWillChange.
+  ///
+  /// In en, this message translates to:
+  /// **'What will change'**
+  String get whatWillChange;
+
+  /// No description provided for @whatWorkedWellOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'What worked well? Optional'**
+  String get whatWorkedWellOptional;
+
+  /// No description provided for @whatWouldYouLikeToChange.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to change?'**
+  String get whatWouldYouLikeToChange;
+
+  /// No description provided for @whatWouldYouLikeToDo.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to do?'**
+  String get whatWouldYouLikeToDo;
+
+  /// No description provided for @whatYouCharge.
+  ///
+  /// In en, this message translates to:
+  /// **'What you charge'**
+  String get whatYouCharge;
+
+  /// No description provided for @whatYouLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'What you logged'**
+  String get whatYouLogged;
+
+  /// No description provided for @whatsInside.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s inside'**
+  String get whatsInside;
+
+  /// No description provided for @whatsYourNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your number?'**
+  String get whatsYourNumber;
+
+  /// No description provided for @where.
+  ///
+  /// In en, this message translates to:
+  /// **'Where'**
+  String get where;
+
+  /// No description provided for @whereAndWithWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'Where and with what'**
+  String get whereAndWithWhat;
+
+  /// No description provided for @whereShouldWeSendYourMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Where should we send your money?'**
+  String get whereShouldWeSendYourMoney;
+
+  /// No description provided for @whereWillYouTrain.
+  ///
+  /// In en, this message translates to:
+  /// **'Where will you train?'**
+  String get whereWillYouTrain;
+
+  /// No description provided for @whereYourClientsTrain.
+  ///
+  /// In en, this message translates to:
+  /// **'Where your clients train'**
+  String get whereYourClientsTrain;
+
+  /// No description provided for @whichOneAreYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Which one are you?'**
+  String get whichOneAreYou;
+
+  /// No description provided for @whileYouWaitEverythingHereIsOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'While you wait, everything here is open'**
+  String get whileYouWaitEverythingHereIsOpen;
+
+  /// No description provided for @whoSeesYourProfileAndWins.
+  ///
+  /// In en, this message translates to:
+  /// **'Who sees your profile and wins'**
+  String get whoSeesYourProfileAndWins;
+
+  /// No description provided for @withPortionsAndCostPerServing.
+  ///
+  /// In en, this message translates to:
+  /// **'With portions and cost per serving'**
+  String get withPortionsAndCostPerServing;
+
+  /// No description provided for @womenOnlyEveryMemberChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Women only, every member checked'**
+  String get womenOnlyEveryMemberChecked;
+
+  /// No description provided for @workWithSaraAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Work with Sara again'**
+  String get workWithSaraAgain;
+
+  /// No description provided for @workoutSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout suggestions'**
+  String get workoutSuggestions;
+
+  /// No description provided for @workoutTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout time'**
+  String get workoutTime;
+
+  /// No description provided for @workoutsAndMealsDraftForWeek3.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts and meals · draft for week 3'**
+  String get workoutsAndMealsDraftForWeek3;
+
+  /// No description provided for @workoutsAndVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts and videos'**
+  String get workoutsAndVideos;
+
+  /// No description provided for @workoutsCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts completed'**
+  String get workoutsCompleted;
+
+  /// No description provided for @workoutsRecipesAndTheCommunityFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts, recipes and the community. Free.'**
+  String get workoutsRecipesAndTheCommunityFree;
+
+  /// No description provided for @worksWithOrWithoutACoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Works with or without a coach'**
+  String get worksWithOrWithoutACoach;
+
+  /// No description provided for @y.
+  ///
+  /// In en, this message translates to:
+  /// **'Y'**
+  String get y;
+
+  /// No description provided for @yasminAdel.
+  ///
+  /// In en, this message translates to:
+  /// **'Yasmin Adel'**
+  String get yasminAdel;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @yesterday5DaysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday · 5 days left'**
+  String get yesterday5DaysLeft;
+
+  /// No description provided for @yesterdaysLogsAndAnySessionYouAlready.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday’s logs and any session you already started stay as they were.'**
+  String get yesterdaysLogsAndAnySessionYouAlready;
+
+  /// No description provided for @yesterdaysLunchAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday\'s lunch again'**
+  String get yesterdaysLunchAgain;
+
+  /// No description provided for @yoghurtDatesAndNuts.
+  ///
+  /// In en, this message translates to:
+  /// **'Yoghurt, dates and nuts'**
+  String get yoghurtDatesAndNuts;
+
+  /// No description provided for @yogurtDatesAndCinnamon.
+  ///
+  /// In en, this message translates to:
+  /// **'Yogurt, dates and cinnamon'**
+  String get yogurtDatesAndCinnamon;
+
+  /// No description provided for @yogurtOatsAndFruit.
+  ///
+  /// In en, this message translates to:
+  /// **'Yogurt, oats and fruit'**
+  String get yogurtOatsAndFruit;
+
+  /// No description provided for @youArePayingAPersonNotA.
+  ///
+  /// In en, this message translates to:
+  /// **'You are paying a person, not a subscription: she keeps 80% of it.'**
+  String get youArePayingAPersonNotA;
+
+  /// No description provided for @youAreShowingUpForNow.
+  ///
+  /// In en, this message translates to:
+  /// **'You are Showing up for now'**
+  String get youAreShowingUpForNow;
+
+  /// No description provided for @youCanChangeItOnAnyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change it on any day.'**
+  String get youCanChangeItOnAnyDay;
+
+  /// No description provided for @youCanChangeThisAnyTimeIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this any time in settings.'**
+  String get youCanChangeThisAnyTimeIn;
+
+  /// No description provided for @youCanChangeThisLaterByMessaging.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this later by messaging us.'**
+  String get youCanChangeThisLaterByMessaging;
+
+  /// No description provided for @youCanStartNow.
+  ///
+  /// In en, this message translates to:
+  /// **'You can start now'**
+  String get youCanStartNow;
+
+  /// No description provided for @youChooseWhatToLogYouCan.
+  ///
+  /// In en, this message translates to:
+  /// **'You choose what to log. You can change or delete it any time.'**
+  String get youChooseWhatToLogYouCan;
+
+  /// No description provided for @youKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'You keep'**
+  String get youKeep;
+
+  /// No description provided for @youKeep80OfEverythingAClient.
+  ///
+  /// In en, this message translates to:
+  /// **'You keep 80% of everything a client pays.'**
+  String get youKeep80OfEverythingAClient;
+
+  /// No description provided for @youLoggedLowEnergyOn4Of.
+  ///
+  /// In en, this message translates to:
+  /// **'You logged low energy on 4 of 6 logged days in the first 3 days of your last 2 periods.'**
+  String get youLoggedLowEnergyOn4Of;
+
+  /// No description provided for @youLoggedMoreHungerAddASnack.
+  ///
+  /// In en, this message translates to:
+  /// **'You logged more hunger. Add a snack if you want one.'**
+  String get youLoggedMoreHungerAddASnack;
+
+  /// No description provided for @youSentWeek4.
+  ///
+  /// In en, this message translates to:
+  /// **'You: sent week 4'**
+  String get youSentWeek4;
+
+  /// C13. The first sentence the product says to her personally.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re in, {name}'**
+  String youreInName(String name);
+
+  /// No description provided for @your14CountedWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Your 14 counted weeks'**
+  String get your14CountedWeeks;
+
+  /// No description provided for @your14WeeksAreSafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Your 14 weeks are safe'**
+  String get your14WeeksAreSafe;
+
+  /// No description provided for @your30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Your 30 days'**
+  String get your30Days;
+
+  /// No description provided for @your30DaysWithSaraHaveEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your 30 days with Sara have ended'**
+  String get your30DaysWithSaraHaveEnded;
+
+  /// No description provided for @your30DayPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your 30-day plan'**
+  String get your30DayPlan;
+
+  /// No description provided for @your80Of27000Egp12.
+  ///
+  /// In en, this message translates to:
+  /// **'Your 80% of 27,000 EGP · 12 clients'**
+  String get your80Of27000Egp12;
+
+  /// No description provided for @yourActualNumbersGoToSaraPrescribed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your actual numbers go to Sara. Prescribed values are never counted as completed work.'**
+  String get yourActualNumbersGoToSaraPrescribed;
+
+  /// No description provided for @yourCheckInGuidesToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Your check-in guides today'**
+  String get yourCheckInGuidesToday;
+
+  /// No description provided for @yourCoachIsPaidAfterYourFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach is paid after your first check-in. If she never replies, you get your money back.'**
+  String get yourCoachIsPaidAfterYourFirst;
+
+  /// No description provided for @yourCoachSinceTodayRepliesIn2h.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach since today · replies in ~2h'**
+  String get yourCoachSinceTodayRepliesIn2h;
+
+  /// No description provided for @yourConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your conversation'**
+  String get yourConversation;
+
+  /// No description provided for @yourData.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data'**
+  String get yourData;
+
+  /// No description provided for @yourDatesIfYouHaveThem.
+  ///
+  /// In en, this message translates to:
+  /// **'Your dates, if you have them'**
+  String get yourDatesIfYouHaveThem;
+
+  /// No description provided for @yourIdAndSelfieWereDeletedAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Your ID and selfie were deleted after the check. Only the result is kept.'**
+  String get yourIdAndSelfieWereDeletedAfter;
+
+  /// No description provided for @yourIdCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Your ID card'**
+  String get yourIdCard;
+
+  /// No description provided for @yourLogsWeightPhotosAndPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Your logs, weight, photos and phone number are never visible to another member. These settings are only about what you choose to show.'**
+  String get yourLogsWeightPhotosAndPhoneNumber;
+
+  /// No description provided for @yourMealsReviewedOnceAWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Your meals reviewed once a week'**
+  String get yourMealsReviewedOnceAWeek;
+
+  /// No description provided for @yourNumberYourIdAndYourLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Your number, your ID and your logs are never shown to members.'**
+  String get yourNumberYourIdAndYourLogs;
+
+  /// No description provided for @yourOwnWorkoutsRecipesLogsAndMy.
+  ///
+  /// In en, this message translates to:
+  /// **'Your own workouts, recipes, logs and My cycle carry on exactly as before. Cycle sharing switched itself off when the coaching ended.'**
+  String get yourOwnWorkoutsRecipesLogsAndMy;
+
+  /// No description provided for @yourPart.
+  ///
+  /// In en, this message translates to:
+  /// **'Your part'**
+  String get yourPart;
+
+  /// No description provided for @yourPatterns.
+  ///
+  /// In en, this message translates to:
+  /// **'Your patterns'**
+  String get yourPatterns;
+
+  /// No description provided for @yourPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Your photo'**
+  String get yourPhoto;
+
+  /// No description provided for @yourPlannedWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Your planned workout'**
+  String get yourPlannedWorkout;
+
+  /// No description provided for @yourPlate600Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plate · 600 kcal'**
+  String get yourPlate600Kcal;
+
+  /// No description provided for @yourPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'Your portion'**
+  String get yourPortion;
+
+  /// No description provided for @yourProgramContinuesTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Your program continues tomorrow'**
+  String get yourProgramContinuesTomorrow;
+
+  /// No description provided for @yourProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress'**
+  String get yourProgress;
+
+  /// No description provided for @yourPublicProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Your public profile'**
+  String get yourPublicProfile;
+
+  /// No description provided for @yourReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reviews'**
+  String get yourReviews;
+
+  /// No description provided for @yourSessionsCountHereAsYouSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sessions count here as you save them. There is nothing extra to log. Nobody sees your weights, only that a session happened.'**
+  String get yourSessionsCountHereAsYouSave;
+
+  /// No description provided for @yourSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Your support'**
+  String get yourSupport;
+
+  /// No description provided for @yourThursdayWorkoutWasUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Thursday workout was updated'**
+  String get yourThursdayWorkoutWasUpdated;
+
+  /// No description provided for @yourTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Your training'**
+  String get yourTraining;
+
+  /// No description provided for @yourWeekFromYourLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week, from your logs'**
+  String get yourWeekFromYourLogs;
+
+  /// No description provided for @yourWeekMondayTuesdayAndThursdayChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week: Monday, Tuesday and Thursday. Change any day by tapping it.'**
+  String get yourWeekMondayTuesdayAndThursdayChange;
+
+  /// No description provided for @yourWorkoutResultsAndFoodLogsAre.
+  ///
+  /// In en, this message translates to:
+  /// **'Your workout results and food logs are part of coaching. Cycle information is separate, and yours.'**
+  String get yourWorkoutResultsAndFoodLogsAre;
+
+  /// No description provided for @yours.
+  ///
+  /// In en, this message translates to:
+  /// **'Yours'**
+  String get yours;
+
+  /// No description provided for @youreIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re in'**
+  String get youreIn;
+
+  /// No description provided for @clientResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Client results'**
+  String get clientResults;
+
+  /// No description provided for @howIWork.
+  ///
+  /// In en, this message translates to:
+  /// **'How I work'**
+  String get howIWork;
+
+  /// No description provided for @follow.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow'**
+  String get follow;
+
+  /// No description provided for @whatIOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'What I offer'**
+  String get whatIOffer;
+
+  /// No description provided for @backToLiftingAfterBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to lifting, after birth'**
+  String get backToLiftingAfterBirth;
+
+  /// No description provided for @cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover'**
+  String get cover;
+
+  /// No description provided for @gizaAtHome20Minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Giza · at home · 20 minutes'**
+  String get gizaAtHome20Minutes;
+
+  /// No description provided for @aa.
+  ///
+  /// In en, this message translates to:
+  /// **'Aa'**
+  String get aa;
+
+  /// No description provided for @live.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get live;
+
+  /// No description provided for @planWeeklyReviewChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan, weekly review, chat'**
+  String get planWeeklyReviewChat;
+
+  /// No description provided for @publish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get publish;
+
+  /// No description provided for @n2DaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'2 days ago'**
+  String get n2DaysAgo;
+
+  /// No description provided for @aMinuteWithMe.
+  ///
+  /// In en, this message translates to:
+  /// **'A minute with me'**
+  String get aMinuteWithMe;
+
+  /// No description provided for @addASection.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a section'**
+  String get addASection;
+
+  /// No description provided for @askMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask me'**
+  String get askMe;
+
+  /// No description provided for @backUnderAWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Back under a weight'**
+  String get backUnderAWeight;
+
+  /// No description provided for @designAnAd.
+  ///
+  /// In en, this message translates to:
+  /// **'Design an ad'**
+  String get designAnAd;
+
+  /// No description provided for @eightWeeksSameFlatSame15Minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Eight weeks. Same flat, same 15 minutes.'**
+  String get eightWeeksSameFlatSame15Minutes;
+
+  /// No description provided for @myPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'My portfolio'**
+  String get myPortfolio;
+
+  /// No description provided for @photoHeadlineOneLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo, headline, one line'**
+  String get photoHeadlineOneLine;
+
+  /// No description provided for @reel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reel'**
+  String get reel;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @story.
+  ///
+  /// In en, this message translates to:
+  /// **'Story'**
+  String get story;
+
+  /// No description provided for @theFloorWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'The floor weeks'**
+  String get theFloorWeeks;
+
+  /// No description provided for @threeShortParagraphs.
+  ///
+  /// In en, this message translates to:
+  /// **'Three short paragraphs'**
+  String get threeShortParagraphs;
+
+  /// No description provided for @video.
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get video;
+
+  /// No description provided for @weTalkFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'We talk first'**
+  String get weTalkFirst;
+
+  /// No description provided for @week8.
+  ///
+  /// In en, this message translates to:
+  /// **'Week 8'**
+  String get week8;
+
+  /// No description provided for @whoIAm.
+  ///
+  /// In en, this message translates to:
+  /// **'Who I am'**
+  String get whoIAm;
+
+  /// No description provided for @yourLook.
+  ///
+  /// In en, this message translates to:
+  /// **'Your look'**
+  String get yourLook;
+
+  /// No description provided for @yourPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your page'**
+  String get yourPage;
+
+  /// No description provided for @n012100.
+  ///
+  /// In en, this message translates to:
+  /// **'0:12 / 1:00'**
+  String get n012100;
+
+  /// No description provided for @n1204Views.
+  ///
+  /// In en, this message translates to:
+  /// **'1,204 views'**
+  String get n1204Views;
+
+  /// No description provided for @n1204Views9EnquiriesThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'1,204 views · 9 enquiries this month'**
+  String get n1204Views9EnquiriesThisMonth;
+
+  /// No description provided for @n16501800Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'1,650 → 1,800 EGP'**
+  String get n16501800Egp;
+
+  /// No description provided for @n12Weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'12 weeks'**
+  String get n12Weeks;
+
+  /// No description provided for @n15s.
+  ///
+  /// In en, this message translates to:
+  /// **'15s'**
+  String get n15s;
+
+  /// No description provided for @n2HoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'2 hours ago'**
+  String get n2HoursAgo;
+
+  /// No description provided for @n2OffersWrittenByYou.
+  ///
+  /// In en, this message translates to:
+  /// **'2 offers, written by you'**
+  String get n2OffersWrittenByYou;
+
+  /// No description provided for @n24Sessions8CountedWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'24 sessions · 8 counted weeks'**
+  String get n24Sessions8CountedWeeks;
+
+  /// No description provided for @n24Sessions8CountedWeeksNoWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'24 sessions · 8 counted weeks · no weight shown'**
+  String get n24Sessions8CountedWeeksNoWeight;
+
+  /// No description provided for @n3DaysAgo5DaysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'3 days ago · 5 days left'**
+  String get n3DaysAgo5DaysLeft;
+
+  /// No description provided for @n3HoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'3 hours ago'**
+  String get n3HoursAgo;
+
+  /// No description provided for @n32MinutesCountedByHerPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'32 minutes · counted by her phone'**
+  String get n32MinutesCountedByHerPhone;
+
+  /// No description provided for @n38.
+  ///
+  /// In en, this message translates to:
+  /// **'38%'**
+  String get n38;
+
+  /// No description provided for @n4PublishedEachOneConsented.
+  ///
+  /// In en, this message translates to:
+  /// **'4 published · each one consented'**
+  String get n4PublishedEachOneConsented;
+
+  /// No description provided for @n4StoriesConsented.
+  ///
+  /// In en, this message translates to:
+  /// **'4 stories · consented'**
+  String get n4StoriesConsented;
+
+  /// No description provided for @n48126RepliesIn2h.
+  ///
+  /// In en, this message translates to:
+  /// **'4.8 ★ (126) · replies in ~2h'**
+  String get n48126RepliesIn2h;
+
+  /// No description provided for @n48126RepliesIn2h12.
+  ///
+  /// In en, this message translates to:
+  /// **'4.8 ★ (126) · replies in ~2h · 12 spots left'**
+  String get n48126RepliesIn2h12;
+
+  /// No description provided for @n54.
+  ///
+  /// In en, this message translates to:
+  /// **'54%'**
+  String get n54;
+
+  /// No description provided for @n6Sections.
+  ///
+  /// In en, this message translates to:
+  /// **'6 sections'**
+  String get n6Sections;
+
+  /// No description provided for @n71.
+  ///
+  /// In en, this message translates to:
+  /// **'71%'**
+  String get n71;
+
+  /// No description provided for @n86OpenedYourPage9AskedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'86 opened your page · 9 asked to work with you'**
+  String get n86OpenedYourPage9AskedTo;
+
+  /// No description provided for @n92.
+  ///
+  /// In en, this message translates to:
+  /// **'92%'**
+  String get n92;
+
+  /// No description provided for @aFollowUpStaysOnTheFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'A follow-up stays on the first post, so a thread is one woman over time, never two women side by side.'**
+  String get aFollowUpStaysOnTheFirst;
+
+  /// No description provided for @aPlanBuiltForYourDays.
+  ///
+  /// In en, this message translates to:
+  /// **'A plan built for your days'**
+  String get aPlanBuiltForYourDays;
+
+  /// No description provided for @aProgramNoCheckIns900Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'A program, no check-ins · 900 EGP'**
+  String get aProgramNoCheckIns900Egp;
+
+  /// No description provided for @aResultCanBePicturesNumbersOr.
+  ///
+  /// In en, this message translates to:
+  /// **'A result can be pictures, numbers, or her sentence, whichever she agreed to.'**
+  String get aResultCanBePicturesNumbersOr;
+
+  /// No description provided for @aVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A voice note'**
+  String get aVoiceNote;
+
+  /// No description provided for @aWeeklyReviewAnsweredByVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'A weekly review answered by voice'**
+  String get aWeeklyReviewAnsweredByVoice;
+
+  /// No description provided for @activity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activity;
+
+  /// No description provided for @addAFollowUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a follow-up'**
+  String get addAFollowUp;
+
+  /// No description provided for @addAFollowUpPictureToIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a follow-up picture to it'**
+  String get addAFollowUpPictureToIt;
+
+  /// No description provided for @addALine.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a line'**
+  String get addALine;
+
+  /// No description provided for @addAStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a step'**
+  String get addAStep;
+
+  /// No description provided for @addAnotherOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another offer'**
+  String get addAnotherOffer;
+
+  /// No description provided for @addPhotosOrAVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos or a video'**
+  String get addPhotosOrAVideo;
+
+  /// No description provided for @addWhatItCostYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Add what it cost you'**
+  String get addWhatItCostYou;
+
+  /// No description provided for @added.
+  ///
+  /// In en, this message translates to:
+  /// **'added'**
+  String get added;
+
+  /// No description provided for @askAnotherClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask another client'**
+  String get askAnotherClient;
+
+  /// No description provided for @backToEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to editing'**
+  String get backToEditing;
+
+  /// No description provided for @badgeMostPicked.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge: most picked'**
+  String get badgeMostPicked;
+
+  /// No description provided for @beginnersGroupJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginners group · just now'**
+  String get beginnersGroupJustNow;
+
+  /// No description provided for @blur.
+  ///
+  /// In en, this message translates to:
+  /// **'Blur'**
+  String get blur;
+
+  /// No description provided for @blurAnyClientWhoIsInShot.
+  ///
+  /// In en, this message translates to:
+  /// **'Blur any client who is in shot'**
+  String get blurAnyClientWhoIsInShot;
+
+  /// No description provided for @calmAndPlain.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm and plain'**
+  String get calmAndPlain;
+
+  /// No description provided for @carriedBothKidsUpTheStairs24.
+  ///
+  /// In en, this message translates to:
+  /// **'Carried both kids up the stairs. 24 sessions, no weight ever discussed.'**
+  String get carriedBothKidsUpTheStairs24;
+
+  /// No description provided for @changePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get changePhoto;
+
+  /// No description provided for @coachSara.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach Sara'**
+  String get coachSara;
+
+  /// No description provided for @colour.
+  ///
+  /// In en, this message translates to:
+  /// **'Colour'**
+  String get colour;
+
+  /// No description provided for @colourTypeAndShapeChangeEverySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Colour, type and shape change every section at once. Nothing you write moves.'**
+  String get colourTypeAndShapeChangeEverySection;
+
+  /// No description provided for @consented2SeptemberSheChoseBlur.
+  ///
+  /// In en, this message translates to:
+  /// **'Consented 2 September · she chose blur'**
+  String get consented2SeptemberSheChoseBlur;
+
+  /// No description provided for @contrastIsCheckedForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Contrast is checked for you'**
+  String get contrastIsCheckedForYou;
+
+  /// No description provided for @corners.
+  ///
+  /// In en, this message translates to:
+  /// **'Corners'**
+  String get corners;
+
+  /// No description provided for @coverPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover photo'**
+  String get coverPhoto;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @darkenThePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Darken the photo'**
+  String get darkenThePhoto;
+
+  /// No description provided for @designIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Design it'**
+  String get designIt;
+
+  /// No description provided for @designYourPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Design your page'**
+  String get designYourPage;
+
+  /// No description provided for @dragToReorderTheEyeHidesA.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder. The eye hides a section without deleting what is in it.'**
+  String get dragToReorderTheEyeHidesA;
+
+  /// No description provided for @editWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit words'**
+  String get editWords;
+
+  /// No description provided for @eightWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Eight weeks'**
+  String get eightWeeks;
+
+  /// No description provided for @eightWeeksSinceYourFirstPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Eight weeks since your first post'**
+  String get eightWeeksSinceYourFirstPost;
+
+  /// No description provided for @enquiries.
+  ///
+  /// In en, this message translates to:
+  /// **'enquiries'**
+  String get enquiries;
+
+  /// No description provided for @facesBlurredBeforeItUploads.
+  ///
+  /// In en, this message translates to:
+  /// **'Faces blurred before it uploads'**
+  String get facesBlurredBeforeItUploads;
+
+  /// No description provided for @facesBlurredInBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Faces blurred in both'**
+  String get facesBlurredInBoth;
+
+  /// No description provided for @feed.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed'**
+  String get feed;
+
+  /// No description provided for @followBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow back'**
+  String get followBack;
+
+  /// No description provided for @followUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow-up'**
+  String get followUp;
+
+  /// No description provided for @followers.
+  ///
+  /// In en, this message translates to:
+  /// **'followers'**
+  String get followers;
+
+  /// No description provided for @following.
+  ///
+  /// In en, this message translates to:
+  /// **'following'**
+  String get following;
+
+  /// No description provided for @forYou.
+  ///
+  /// In en, this message translates to:
+  /// **'For you'**
+  String get forYou;
+
+  /// No description provided for @fourWeeksInAndICarriedBoth_4oed7.
+  ///
+  /// In en, this message translates to:
+  /// **'Four weeks in and I carried both kids up the stairs without stopping.'**
+  String get fourWeeksInAndICarriedBoth_4oed7;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @goBackToItAnyTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back to it any time.'**
+  String get goBackToItAnyTime;
+
+  /// No description provided for @habiba.
+  ///
+  /// In en, this message translates to:
+  /// **'Habiba'**
+  String get habiba;
+
+  /// No description provided for @headline.
+  ///
+  /// In en, this message translates to:
+  /// **'Headline'**
+  String get headline;
+
+  /// No description provided for @herVoice034.
+  ///
+  /// In en, this message translates to:
+  /// **'Her voice · 0:34'**
+  String get herVoice034;
+
+  /// No description provided for @hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'hidden'**
+  String get hidden;
+
+  /// No description provided for @hiddenForNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden for now'**
+  String get hiddenForNow;
+
+  /// No description provided for @iTakeWomenFromSixWeeksAfter_wduev.
+  ///
+  /// In en, this message translates to:
+  /// **'I take women from six weeks after birth back to lifting, slowly.'**
+  String get iTakeWomenFromSixWeeksAfter_wduev;
+
+  /// No description provided for @keepAsADraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep as a draft'**
+  String get keepAsADraft;
+
+  /// No description provided for @last30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get last30Days;
+
+  /// No description provided for @layout.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get layout;
+
+  /// No description provided for @light.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get light;
+
+  /// No description provided for @liveWithinAMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'Live within a minute'**
+  String get liveWithinAMinute;
+
+  /// No description provided for @maiAgreedToShowTheseChoseThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Mai agreed to show these, chose the pictures, and can withdraw them.'**
+  String get maiAgreedToShowTheseChoseThe;
+
+  /// No description provided for @media.
+  ///
+  /// In en, this message translates to:
+  /// **'Media'**
+  String get media;
+
+  /// No description provided for @message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get message;
+
+  /// No description provided for @nada.
+  ///
+  /// In en, this message translates to:
+  /// **'Nada'**
+  String get nada;
+
+  /// No description provided for @nadaCommentedThisIsTheExactThing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nada commented: “This is the exact thing I needed.”'**
+  String get nadaCommentedThisIsTheExactThing;
+
+  /// No description provided for @nasmCptPreAndPostnatalCheckedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'NASM CPT · pre and postnatal · checked by us 12 March'**
+  String get nasmCptPreAndPostnatalCheckedBy;
+
+  /// No description provided for @noPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'No photo'**
+  String get noPhoto;
+
+  /// No description provided for @noWeightLossPromisesAndNoTimelines.
+  ///
+  /// In en, this message translates to:
+  /// **'No weight-loss promises and no timelines. We check every ad against the same rules before it runs.'**
+  String get noWeightLossPromisesAndNoTimelines;
+
+  /// No description provided for @nothingAboutThisPageIsATemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing about this page is a template we hand you. The sections, the order, the colours and the words are yours. We only check the certificates behind the badge.'**
+  String get nothingAboutThisPageIsATemplate;
+
+  /// No description provided for @nothingHereIsANumberGoingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here is a number going up. Every line is a woman who did something, or a thing you can act on.'**
+  String get nothingHereIsANumberGoingUp;
+
+  /// No description provided for @nourhanGizaFrom1800Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'Nourhan · Giza · from 1,800 EGP'**
+  String get nourhanGizaFrom1800Egp;
+
+  /// No description provided for @now16September.
+  ///
+  /// In en, this message translates to:
+  /// **'Now · 16 September'**
+  String get now16September;
+
+  /// No description provided for @numbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers'**
+  String get numbers;
+
+  /// No description provided for @numbersOnlyNeverAWeightFromThe_1oov4.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers only, never a weight from the scale'**
+  String get numbersOnlyNeverAWeightFromThe_1oov4;
+
+  /// No description provided for @numbersOnlySheDeclinedPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers only · she declined photos'**
+  String get numbersOnlySheDeclinedPhotos;
+
+  /// No description provided for @onBeforeYouAskTapToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'On before you ask. Tap to show yours.'**
+  String get onBeforeYouAskTapToShow;
+
+  /// No description provided for @onByDefaultOnTheOldOne.
+  ///
+  /// In en, this message translates to:
+  /// **'On by default, on the old one too.'**
+  String get onByDefaultOnTheOldOne;
+
+  /// No description provided for @onUnlessSheConsentedToHerFace.
+  ///
+  /// In en, this message translates to:
+  /// **'On unless she consented to her face.'**
+  String get onUnlessSheConsentedToHerFace;
+
+  /// No description provided for @oneLineUnderIt.
+  ///
+  /// In en, this message translates to:
+  /// **'One line under it'**
+  String get oneLineUnderIt;
+
+  /// No description provided for @onlyVerifiedWomenCanSeeAnythingYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Only verified women can see anything you post here, and screenshots are against the pledge everyone agreed to.'**
+  String get onlyVerifiedWomenCanSeeAnythingYou;
+
+  /// No description provided for @onlyYouCanSeeWhatYouSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you can see what you saved.'**
+  String get onlyYouCanSeeWhatYouSaved;
+
+  /// No description provided for @opened.
+  ///
+  /// In en, this message translates to:
+  /// **'opened'**
+  String get opened;
+
+  /// No description provided for @pelvicFloorAndBreathingBeforeASingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pelvic floor and breathing before a single squat.'**
+  String get pelvicFloorAndBreathingBeforeASingle;
+
+  /// No description provided for @photoAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo above'**
+  String get photoAbove;
+
+  /// No description provided for @photoOrPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo or post'**
+  String get photoOrPost;
+
+  /// No description provided for @photos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get photos;
+
+  /// No description provided for @pickAsManyAsYouWantIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick as many as you want, in any order. A section can appear more than once.'**
+  String get pickAsManyAsYouWantIn;
+
+  /// No description provided for @pickThePostYouAreFollowingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the post you are following up on. The new picture joins it instead of starting again.'**
+  String get pickThePostYouAreFollowingUp;
+
+  /// No description provided for @plank20s75s.
+  ///
+  /// In en, this message translates to:
+  /// **'Plank 20s → 75s'**
+  String get plank20s75s;
+
+  /// No description provided for @postTheFollowUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Post the follow-up'**
+  String get postTheFollowUp;
+
+  /// No description provided for @posted8WeeksAgo96Likes.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted 8 weeks ago · 96 likes'**
+  String get posted8WeeksAgo96Likes;
+
+  /// No description provided for @posts.
+  ///
+  /// In en, this message translates to:
+  /// **'posts'**
+  String get posts;
+
+  /// No description provided for @publishVersion4.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish version 4'**
+  String get publishVersion4;
+
+  /// No description provided for @published4DaysAgoVersion3.
+  ///
+  /// In en, this message translates to:
+  /// **'Published 4 days ago · version 3'**
+  String get published4DaysAgoVersion3;
+
+  /// No description provided for @questions.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get questions;
+
+  /// No description provided for @quietMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet moves'**
+  String get quietMoves;
+
+  /// No description provided for @reelCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Reel cover'**
+  String get reelCover;
+
+  /// No description provided for @reels.
+  ///
+  /// In en, this message translates to:
+  /// **'Reels'**
+  String get reels;
+
+  /// No description provided for @replaced.
+  ///
+  /// In en, this message translates to:
+  /// **'replaced'**
+  String get replaced;
+
+  /// No description provided for @round.
+  ///
+  /// In en, this message translates to:
+  /// **'Round'**
+  String get round;
+
+  /// No description provided for @saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get saved;
+
+  /// No description provided for @sayWhatChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Say what changed'**
+  String get sayWhatChanged;
+
+  /// No description provided for @searchWomenGroupsAndMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'Search women, groups and moves'**
+  String get searchWomenGroupsAndMoves;
+
+  /// No description provided for @sections.
+  ///
+  /// In en, this message translates to:
+  /// **'Sections'**
+  String get sections;
+
+  /// No description provided for @sectionsColoursAndWordsAllYours.
+  ///
+  /// In en, this message translates to:
+  /// **'Sections, colours and words · all yours'**
+  String get sectionsColoursAndWordsAllYours;
+
+  /// No description provided for @seeAll27Comments.
+  ///
+  /// In en, this message translates to:
+  /// **'See all 27 comments'**
+  String get seeAll27Comments;
+
+  /// No description provided for @seeAll41Comments.
+  ///
+  /// In en, this message translates to:
+  /// **'See all 41 comments'**
+  String get seeAll41Comments;
+
+  /// No description provided for @sendHerSomethingKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Send her something kind'**
+  String get sendHerSomethingKind;
+
+  /// No description provided for @sevenWomenInAHundredWhoSee.
+  ///
+  /// In en, this message translates to:
+  /// **'Seven women in a hundred who see you ask. The average here is four.'**
+  String get sevenWomenInAHundredWhoSee;
+
+  /// No description provided for @sharp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharp'**
+  String get sharp;
+
+  /// No description provided for @sheHasToAgreeInTheApp.
+  ///
+  /// In en, this message translates to:
+  /// **'She has to agree, in the app'**
+  String get sheHasToAgreeInTheApp;
+
+  /// No description provided for @sixWeeksAfterBirthOnTheFloor.
+  ///
+  /// In en, this message translates to:
+  /// **'Six weeks after birth, on the floor'**
+  String get sixWeeksAfterBirthOnTheFloor;
+
+  /// No description provided for @slowlyWithYourDoctorsClearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Slowly, with your doctor’s clearance.'**
+  String get slowlyWithYourDoctorsClearance;
+
+  /// No description provided for @soTheWordsStayReadable.
+  ///
+  /// In en, this message translates to:
+  /// **'So the words stay readable'**
+  String get soTheWordsStayReadable;
+
+  /// No description provided for @soft.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft'**
+  String get soft;
+
+  /// No description provided for @softAndRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft and round'**
+  String get softAndRound;
+
+  /// No description provided for @somethingFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Something free'**
+  String get somethingFree;
+
+  /// No description provided for @strongAndWide.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong and wide'**
+  String get strongAndWide;
+
+  /// No description provided for @textOverPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Text over photo'**
+  String get textOverPhoto;
+
+  /// No description provided for @theLastMonthYouRunThePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'The last month you run the plan, I only watch.'**
+  String get theLastMonthYouRunThePlan;
+
+  /// No description provided for @then21July.
+  ///
+  /// In en, this message translates to:
+  /// **'Then · 21 July'**
+  String get then21July;
+
+  /// No description provided for @thisIsYoursNotOurs.
+  ///
+  /// In en, this message translates to:
+  /// **'This is yours, not ours'**
+  String get thisIsYoursNotOurs;
+
+  /// No description provided for @threeFloorMovesForAFlatWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Three floor moves for a flat with thin walls. No jumping, nothing to carry.'**
+  String get threeFloorMovesForAFlatWith;
+
+  /// No description provided for @trainingInASmallFlatQuietlyBeginners.
+  ///
+  /// In en, this message translates to:
+  /// **'Training in a small flat, quietly. Beginners group.'**
+  String get trainingInASmallFlatQuietlyBeginners;
+
+  /// No description provided for @twentyMinutesNoChargeBeforeYouPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Twenty minutes, no charge, before you pay anything.'**
+  String get twentyMinutesNoChargeBeforeYouPay;
+
+  /// No description provided for @type.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get type;
+
+  /// No description provided for @upToAMinuteForTheGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to a minute, for the group'**
+  String get upToAMinuteForTheGroup;
+
+  /// No description provided for @verifiedWomanJoinedMarchShowingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified woman · joined March · Showing up'**
+  String get verifiedWomanJoinedMarchShowingUp;
+
+  /// No description provided for @version3IsKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Version 3 is kept'**
+  String get version3IsKept;
+
+  /// No description provided for @views.
+  ///
+  /// In en, this message translates to:
+  /// **'views'**
+  String get views;
+
+  /// No description provided for @viewsProfileEnquiries.
+  ///
+  /// In en, this message translates to:
+  /// **'Views → profile → enquiries'**
+  String get viewsProfileEnquiries;
+
+  /// No description provided for @voice.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get voice;
+
+  /// No description provided for @walkBeforeTheSchoolRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk before the school run'**
+  String get walkBeforeTheSchoolRun;
+
+  /// No description provided for @weAskHerShePicksThePictures.
+  ///
+  /// In en, this message translates to:
+  /// **'We ask her, she picks the pictures, and she can withdraw it later.'**
+  String get weAskHerShePicksThePictures;
+
+  /// No description provided for @weWillNotLetYouPickText.
+  ///
+  /// In en, this message translates to:
+  /// **'We will not let you pick text a client cannot read.'**
+  String get weWillNotLetYouPickText;
+
+  /// No description provided for @whatChangedSinceVersion3.
+  ///
+  /// In en, this message translates to:
+  /// **'What changed since version 3'**
+  String get whatChangedSinceVersion3;
+
+  /// No description provided for @whatItCostHer.
+  ///
+  /// In en, this message translates to:
+  /// **'What it cost her'**
+  String get whatItCostHer;
+
+  /// No description provided for @whatItIsDoing.
+  ///
+  /// In en, this message translates to:
+  /// **'What it is doing'**
+  String get whatItIsDoing;
+
+  /// No description provided for @whatTheySaid.
+  ///
+  /// In en, this message translates to:
+  /// **'What they said'**
+  String get whatTheySaid;
+
+  /// No description provided for @whenIAmFree.
+  ///
+  /// In en, this message translates to:
+  /// **'When I am free'**
+  String get whenIAmFree;
+
+  /// No description provided for @whichSectionTheyStopOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Which section they stop on'**
+  String get whichSectionTheyStopOn;
+
+  /// No description provided for @womenAlreadyReadingItSeeTheOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Women already reading it see the old one until it swaps.'**
+  String get womenAlreadyReadingItSeeTheOld;
+
+  /// No description provided for @womenWhoReachClientResultsAskTwice.
+  ///
+  /// In en, this message translates to:
+  /// **'Women who reach Client results ask twice as often. It sits fifth. Try moving it up.'**
+  String get womenWhoReachClientResultsAskTwice;
+
+  /// No description provided for @writeYourOwnOffersTwoIsCommon.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your own offers. Two is common, one is fine, and nothing forces them to look alike.'**
+  String get writeYourOwnOffersTwoIsCommon;
+
+  /// No description provided for @yasmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Yasmin'**
+  String get yasmin;
+
+  /// No description provided for @yasminStartedFollowingYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Yasmin started following you'**
+  String get yasminStartedFollowingYou;
+
+  /// No description provided for @youKeep80OfEveryPriceYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You keep 80% of every price you write here. The client sees the price; she never sees our share.'**
+  String get youKeep80OfEveryPriceYou;
+
+  /// No description provided for @youKeepIt.
+  ///
+  /// In en, this message translates to:
+  /// **'You keep it'**
+  String get youKeepIt;
+
+  /// No description provided for @yourColours.
+  ///
+  /// In en, this message translates to:
+  /// **'Your colours'**
+  String get yourColours;
+
+  /// No description provided for @yourDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day'**
+  String get yourDay;
+
+  /// No description provided for @yourFourSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Your four steps'**
+  String get yourFourSteps;
+
+  /// No description provided for @yourLookSizedForTheFeedA.
+  ///
+  /// In en, this message translates to:
+  /// **'Your look, sized for the feed, a story or a reel cover'**
+  String get yourLookSizedForTheFeedA;
+
+  /// No description provided for @yourMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Your media'**
+  String get yourMedia;
+
+  /// No description provided for @yourMethodInYourOwnStepsName.
+  ///
+  /// In en, this message translates to:
+  /// **'Your method, in your own steps. Name them whatever you call them with clients.'**
+  String get yourMethodInYourOwnStepsName;
+
+  /// No description provided for @yourPriceChangeAppliesToNewClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Your price change applies to new clients only. Everyone already with you keeps what she agreed to.'**
+  String get yourPriceChangeAppliesToNewClients;
+
+  /// No description provided for @atIntake.
+  ///
+  /// In en, this message translates to:
+  /// **'at intake'**
+  String get atIntake;
+
+  /// No description provided for @n15Min5MovesQuietNoEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min · 5 moves · quiet, no equipment, last week’s weights'**
+  String get n15Min5MovesQuietNoEquipment;
+
+  /// No description provided for @modify.
+  ///
+  /// In en, this message translates to:
+  /// **'Modify'**
+  String get modify;
+
+  /// No description provided for @pass.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass'**
+  String get pass;
+
+  /// No description provided for @refer.
+  ///
+  /// In en, this message translates to:
+  /// **'Refer'**
+  String get refer;
+
+  /// No description provided for @buildASplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Build a split'**
+  String get buildASplit;
+
+  /// No description provided for @clientsAtOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients at once'**
+  String get clientsAtOnce;
+
+  /// No description provided for @egyptianDishesWithPortionsAndCostPer.
+  ///
+  /// In en, this message translates to:
+  /// **'Egyptian dishes with portions and cost per serving'**
+  String get egyptianDishesWithPortionsAndCostPer;
+
+  /// No description provided for @mySplits.
+  ///
+  /// In en, this message translates to:
+  /// **'My splits'**
+  String get mySplits;
+
+  /// No description provided for @singleLegBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Single-leg balance'**
+  String get singleLegBalance;
+
+  /// No description provided for @sitToStand.
+  ///
+  /// In en, this message translates to:
+  /// **'Sit to stand'**
+  String get sitToStand;
+
+  /// No description provided for @upperLower.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper / lower'**
+  String get upperLower;
+
+  /// No description provided for @n15Points.
+  ///
+  /// In en, this message translates to:
+  /// **'+15 points'**
+  String get n15Points;
+
+  /// No description provided for @n0To6Weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'0 to 6 weeks'**
+  String get n0To6Weeks;
+
+  /// No description provided for @n11S.
+  ///
+  /// In en, this message translates to:
+  /// **'11 s'**
+  String get n11S;
+
+  /// No description provided for @n2Of5MovesDone.
+  ///
+  /// In en, this message translates to:
+  /// **'2 of 5 moves done'**
+  String get n2Of5MovesDone;
+
+  /// No description provided for @n20S.
+  ///
+  /// In en, this message translates to:
+  /// **'20 s'**
+  String get n20S;
+
+  /// No description provided for @n3DaysSunTueThuOn7.
+  ///
+  /// In en, this message translates to:
+  /// **'3 days · Sun, Tue, Thu · on 7 clients'**
+  String get n3DaysSunTueThuOn7;
+
+  /// No description provided for @n3DaysWeeks1To4On.
+  ///
+  /// In en, this message translates to:
+  /// **'3 days · weeks 1 to 4 · on 5 clients'**
+  String get n3DaysWeeks1To4On;
+
+  /// No description provided for @n4Days2On1OffOn.
+  ///
+  /// In en, this message translates to:
+  /// **'4 days · 2 on, 1 off · on 3 clients'**
+  String get n4Days2On1OffOn;
+
+  /// No description provided for @n4S.
+  ///
+  /// In en, this message translates to:
+  /// **'4 s'**
+  String get n4S;
+
+  /// No description provided for @n475Total.
+  ///
+  /// In en, this message translates to:
+  /// **'475 total'**
+  String get n475Total;
+
+  /// No description provided for @n5NoHands.
+  ///
+  /// In en, this message translates to:
+  /// **'5 no hands'**
+  String get n5NoHands;
+
+  /// No description provided for @n5WithHands.
+  ///
+  /// In en, this message translates to:
+  /// **'5 with hands'**
+  String get n5WithHands;
+
+  /// No description provided for @n6DaysAdvancedOn1Client.
+  ///
+  /// In en, this message translates to:
+  /// **'6 days · advanced · on 1 client'**
+  String get n6DaysAdvancedOn1Client;
+
+  /// No description provided for @n6WeeksTo1Year.
+  ///
+  /// In en, this message translates to:
+  /// **'6 weeks to 1 year'**
+  String get n6WeeksTo1Year;
+
+  /// No description provided for @n75S.
+  ///
+  /// In en, this message translates to:
+  /// **'75 s'**
+  String get n75S;
+
+  /// No description provided for @n85PointsToLevel8.
+  ///
+  /// In en, this message translates to:
+  /// **'85 points to level 8.'**
+  String get n85PointsToLevel8;
+
+  /// No description provided for @aReAssessmentNeverEditsAPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'A re-assessment never edits a published plan by itself. Save it, then adjust her weeks, the same way a message never changes a plan.'**
+  String get aReAssessmentNeverEditsAPublished;
+
+  /// No description provided for @aSplitIsAWeekShapeYou.
+  ///
+  /// In en, this message translates to:
+  /// **'A split is a week shape you write once and apply to any client. Editing a split never changes a plan you already published.'**
+  String get aSplitIsAWeekShapeYou;
+
+  /// No description provided for @anyLeakingHeavinessOrDoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Any leaking, heaviness or doming'**
+  String get anyLeakingHeavinessOrDoming;
+
+  /// No description provided for @anythingYouCannotEat.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything you cannot eat'**
+  String get anythingYouCannotEat;
+
+  /// No description provided for @applyASplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply a split'**
+  String get applyASplit;
+
+  /// No description provided for @applyingASplitWritesTheseDaysAcross.
+  ///
+  /// In en, this message translates to:
+  /// **'Applying a split writes these days across the month. You still tailor sets, weights and notes per client.'**
+  String get applyingASplitWritesTheseDaysAcross;
+
+  /// No description provided for @approvedSubstitutionsCarryIntoEveryClientYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved substitutions carry into every client you apply this to.'**
+  String get approvedSubstitutionsCarryIntoEveryClientYou;
+
+  /// No description provided for @assessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment'**
+  String get assessment;
+
+  /// No description provided for @assessmentNour.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment · Nour'**
+  String get assessmentNour;
+
+  /// No description provided for @assessmentDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment due'**
+  String get assessmentDue;
+
+  /// No description provided for @baseline.
+  ///
+  /// In en, this message translates to:
+  /// **'Baseline'**
+  String get baseline;
+
+  /// No description provided for @bestsSquat12KgPlank45S.
+  ///
+  /// In en, this message translates to:
+  /// **'Bests: squat 12 kg · plank 45 s'**
+  String get bestsSquat12KgPlank45S;
+
+  /// No description provided for @birth.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth'**
+  String get birth;
+
+  /// No description provided for @caesarean.
+  ///
+  /// In en, this message translates to:
+  /// **'Caesarean'**
+  String get caesarean;
+
+  /// No description provided for @day1_4ehtd.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 1'**
+  String get day1_4ehtd;
+
+  /// No description provided for @day2.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 2'**
+  String get day2;
+
+  /// No description provided for @day3.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 3'**
+  String get day3;
+
+  /// No description provided for @day4.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 4'**
+  String get day4;
+
+  /// No description provided for @deepKneeBends.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep knee bends'**
+  String get deepKneeBends;
+
+  /// No description provided for @doctorsClearanceToTrain.
+  ///
+  /// In en, this message translates to:
+  /// **'Doctor\'s clearance to train'**
+  String get doctorsClearanceToTrain;
+
+  /// No description provided for @done2SeptemberReAssessIn2.
+  ///
+  /// In en, this message translates to:
+  /// **'Done 2 September · re-assess in 2 weeks'**
+  String get done2SeptemberReAssessIn2;
+
+  /// No description provided for @everything.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything'**
+  String get everything;
+
+  /// No description provided for @filledInFromHerIntakeChangeWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled in from her intake. Change what has moved, and nothing is overwritten until you save.'**
+  String get filledInFromHerIntakeChangeWhat;
+
+  /// No description provided for @finishHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish here'**
+  String get finishHere;
+
+  /// No description provided for @fiveTimesNoHands.
+  ///
+  /// In en, this message translates to:
+  /// **'Five times, no hands'**
+  String get fiveTimesNoHands;
+
+  /// No description provided for @fullBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'Full body ×3'**
+  String get fullBody3;
+
+  /// R13 undo snackbar after a whole move.
+  ///
+  /// In en, this message translates to:
+  /// **'{move} saved · {sets} sets'**
+  String moveSavedSetsSets(String move, int sets);
+
+  /// No description provided for @healthAndClearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Health and clearance'**
+  String get healthAndClearance;
+
+  /// No description provided for @highImpact.
+  ///
+  /// In en, this message translates to:
+  /// **'High impact'**
+  String get highImpact;
+
+  /// No description provided for @howManyDaysBeforeItRepeats.
+  ///
+  /// In en, this message translates to:
+  /// **'How many days before it repeats?'**
+  String get howManyDaysBeforeItRepeats;
+
+  /// No description provided for @howYouUsuallyEat.
+  ///
+  /// In en, this message translates to:
+  /// **'How you usually eat'**
+  String get howYouUsuallyEat;
+
+  /// No description provided for @keepHerEasierOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep her easier options'**
+  String get keepHerEasierOptions;
+
+  /// No description provided for @kneePainOnStairs.
+  ///
+  /// In en, this message translates to:
+  /// **'Knee pain on stairs'**
+  String get kneePainOnStairs;
+
+  /// No description provided for @loadedTwisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Loaded twisting'**
+  String get loadedTwisting;
+
+  /// No description provided for @loggedFromMemoryYourWeekCountsIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged from memory. Your week counts it like any other session.'**
+  String get loggedFromMemoryYourWeekCountsIt;
+
+  /// No description provided for @lowerBody20Min.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower body · 20 min'**
+  String get lowerBody20Min;
+
+  /// No description provided for @mostDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Most days'**
+  String get mostDays;
+
+  /// No description provided for @movementScreening.
+  ///
+  /// In en, this message translates to:
+  /// **'Movement screening'**
+  String get movementScreening;
+
+  /// No description provided for @nameIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Name it'**
+  String get nameIt;
+
+  /// No description provided for @nextMoveStepBackLunge.
+  ///
+  /// In en, this message translates to:
+  /// **'Next move · step-back lunge'**
+  String get nextMoveStepBackLunge;
+
+  /// No description provided for @noAssessmentOnFilePublishAnywayOr.
+  ///
+  /// In en, this message translates to:
+  /// **'No assessment on file. Publish anyway, or complete it first.'**
+  String get noAssessmentOnFilePublishAnywayOr;
+
+  /// No description provided for @noDairy.
+  ///
+  /// In en, this message translates to:
+  /// **'No dairy'**
+  String get noDairy;
+
+  /// No description provided for @noGluten.
+  ///
+  /// In en, this message translates to:
+  /// **'No gluten'**
+  String get noGluten;
+
+  /// No description provided for @noNuts.
+  ///
+  /// In en, this message translates to:
+  /// **'No nuts'**
+  String get noNuts;
+
+  /// No description provided for @noNutsVegetarianOnWeekdaysBothFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'No nuts. Vegetarian on weekdays. Both from her assessment.'**
+  String get noNutsVegetarianOnWeekdaysBothFrom;
+
+  /// No description provided for @noPersonalBestFromThisOneThe.
+  ///
+  /// In en, this message translates to:
+  /// **'No personal best from this one. The numbers were copied, not measured.'**
+  String get noPersonalBestFromThisOneThe;
+
+  /// No description provided for @noShellfish.
+  ///
+  /// In en, this message translates to:
+  /// **'No shellfish'**
+  String get noShellfish;
+
+  /// No description provided for @nothingHereIsShownToOtherMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here is shown to other members, ever.'**
+  String get nothingHereIsShownToOtherMembers;
+
+  /// No description provided for @ofEveryPriceYouSetOnYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Of every price you set on your page.'**
+  String get ofEveryPriceYouSetOnYour;
+
+  /// No description provided for @overAYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Over a year'**
+  String get overAYear;
+
+  /// No description provided for @painInjuriesOrSurgery.
+  ///
+  /// In en, this message translates to:
+  /// **'Pain, injuries or surgery'**
+  String get painInjuriesOrSurgery;
+
+  /// No description provided for @pelvicFloorSymptoms.
+  ///
+  /// In en, this message translates to:
+  /// **'Pelvic floor symptoms'**
+  String get pelvicFloorSymptoms;
+
+  /// No description provided for @pelvicFloorStillReferred.
+  ///
+  /// In en, this message translates to:
+  /// **'Pelvic floor: still referred'**
+  String get pelvicFloorStillReferred;
+
+  /// No description provided for @plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get plan;
+
+  /// No description provided for @postpartumFloorWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Postpartum floor weeks'**
+  String get postpartumFloorWeeks;
+
+  /// No description provided for @proneOnBelly.
+  ///
+  /// In en, this message translates to:
+  /// **'Prone on belly'**
+  String get proneOnBelly;
+
+  /// No description provided for @pushPullLegs.
+  ///
+  /// In en, this message translates to:
+  /// **'Push · pull · legs'**
+  String get pushPullLegs;
+
+  /// No description provided for @reAssessmentWeek4.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-assessment · week 4'**
+  String get reAssessmentWeek4;
+
+  /// No description provided for @recordABaselineInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a baseline instead'**
+  String get recordABaselineInstead;
+
+  /// No description provided for @recorded2September.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded 2 September'**
+  String get recorded2September;
+
+  /// No description provided for @rightKneeSoreOnStairsSinceMarch.
+  ///
+  /// In en, this message translates to:
+  /// **'Right knee, sore on stairs since March'**
+  String get rightKneeSoreOnStairsSinceMarch;
+
+  /// No description provided for @saraWillPlanAroundTheFamilyPot.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara will plan around the family pot.'**
+  String get saraWillPlanAroundTheFamilyPot;
+
+  /// No description provided for @saveAndAdjustHerPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and adjust her plan'**
+  String get saveAndAdjustHerPlan;
+
+  /// No description provided for @saveAndApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and apply'**
+  String get saveAndApply;
+
+  /// No description provided for @saveAsASplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as a split'**
+  String get saveAsASplit;
+
+  /// No description provided for @saveAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Save assessment'**
+  String get saveAssessment;
+
+  /// No description provided for @saveOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Save only'**
+  String get saveOnly;
+
+  /// No description provided for @saveThisSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this split'**
+  String get saveThisSplit;
+
+  /// No description provided for @saveToMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to media'**
+  String get saveToMedia;
+
+  /// No description provided for @session20.
+  ///
+  /// In en, this message translates to:
+  /// **'Session 20'**
+  String get session20;
+
+  /// No description provided for @sheIsSeeingAPhysiotherapistLoadedJumping.
+  ///
+  /// In en, this message translates to:
+  /// **'She is seeing a physiotherapist. Loaded jumping stays off her plan.'**
+  String get sheIsSeeingAPhysiotherapistLoadedJumping;
+
+  /// No description provided for @shownOnYourPageAsSpotsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown on your page as spots left.'**
+  String get shownOnYourPageAsSpotsLeft;
+
+  /// No description provided for @someoneElseCooksAtHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone else cooks at home'**
+  String get someoneElseCooksAtHome;
+
+  /// No description provided for @stage.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage'**
+  String get stage;
+
+  /// No description provided for @step2Of3.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 3'**
+  String get step2Of3;
+
+  /// No description provided for @tenSecondsEachSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Ten seconds each side'**
+  String get tenSecondsEachSide;
+
+  /// No description provided for @theseWriteStraightOntoHerPlanSo.
+  ///
+  /// In en, this message translates to:
+  /// **'These write straight onto her plan, so a session can never prescribe them.'**
+  String get theseWriteStraightOntoHerPlanSo;
+
+  /// No description provided for @thisIsTheOnlyPlaceYourAllergies.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the only place your allergies come from. Sara sees them while she writes every meal.'**
+  String get thisIsTheOnlyPlaceYourAllergies;
+
+  /// No description provided for @timeYouHaveToCook.
+  ///
+  /// In en, this message translates to:
+  /// **'Time you have to cook'**
+  String get timeYouHaveToCook;
+
+  /// No description provided for @twiceAWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Twice a week'**
+  String get twiceAWeek;
+
+  /// No description provided for @vaginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaginal'**
+  String get vaginal;
+
+  /// No description provided for @vegetarianOnWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Vegetarian on weekdays'**
+  String get vegetarianOnWeekdays;
+
+  /// No description provided for @whatToAvoid.
+  ///
+  /// In en, this message translates to:
+  /// **'What to avoid'**
+  String get whatToAvoid;
+
+  /// No description provided for @youKeep80.
+  ///
+  /// In en, this message translates to:
+  /// **'You keep 80%'**
+  String get youKeep80;
+
+  /// No description provided for @youWillWriteYourOffersWhenYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You will write your offers when you design your page: what each one is called, what is in it and what it costs.'**
+  String get youWillWriteYourOffersWhenYou;
+
+  /// No description provided for @yourFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Your food'**
+  String get yourFood;
+
+  /// No description provided for @yourPricesLiveOnYourPageWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Your prices live on your page, where you write them in your own words.'**
+  String get yourPricesLiveOnYourPageWhere;
+
+  /// No description provided for @whatARestWeekCovers.
+  ///
+  /// In en, this message translates to:
+  /// **'What a rest week covers'**
+  String get whatARestWeekCovers;
+
+  /// No description provided for @aMissedWeekRepairedWithoutAsking.
+  ///
+  /// In en, this message translates to:
+  /// **'A missed week, repaired without asking'**
+  String get aMissedWeekRepairedWithoutAsking;
+
+  /// No description provided for @ifATierSlips.
+  ///
+  /// In en, this message translates to:
+  /// **'If a tier slips'**
+  String get ifATierSlips;
+
+  /// No description provided for @oneCountedWeekBringsItBack.
+  ///
+  /// In en, this message translates to:
+  /// **'One counted week brings it back'**
+  String get oneCountedWeekBringsItBack;
+
+  /// No description provided for @n0Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'0 EGP'**
+  String get n0Egp;
+
+  /// No description provided for @n0Of20.
+  ///
+  /// In en, this message translates to:
+  /// **'0 of 20'**
+  String get n0Of20;
+
+  /// No description provided for @n1860WomenClearedFromWeekSix.
+  ///
+  /// In en, this message translates to:
+  /// **'1,860 women · cleared from week six'**
+  String get n1860WomenClearedFromWeekSix;
+
+  /// No description provided for @n4210WomenNobodyOverAYear.
+  ///
+  /// In en, this message translates to:
+  /// **'4,210 women · nobody over a year in'**
+  String get n4210WomenNobodyOverAYear;
+
+  /// No description provided for @n4210WomenInTheBeginnersGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'4,210 women in the beginners group'**
+  String get n4210WomenInTheBeginnersGroup;
+
+  /// No description provided for @aCover.
+  ///
+  /// In en, this message translates to:
+  /// **'A cover'**
+  String get aCover;
+
+  /// No description provided for @acceptingAClientTakesOneOfYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepting a client takes one of your 20 places. She pays only once you accept.'**
+  String get acceptingAClientTakesOneOfYour;
+
+  /// No description provided for @addAMealYouAlwaysPrescribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a meal you always prescribe'**
+  String get addAMealYouAlwaysPrescribe;
+
+  /// No description provided for @breakfast290Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast · 290 kcal'**
+  String get breakfast290Kcal;
+
+  /// No description provided for @breakfast410Kcal22GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast · 410 kcal · 22 g protein'**
+  String get breakfast410Kcal22GProtein;
+
+  /// No description provided for @browseAll12Sections.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse all 12 sections'**
+  String get browseAll12Sections;
+
+  /// No description provided for @clientsDecideFromIt3SectionsSo.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients decide from it · 3 sections so far'**
+  String get clientsDecideFromIt3SectionsSo;
+
+  /// No description provided for @everyWomanYouWillSeeHerePassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Every woman you will see here passed the same check.'**
+  String get everyWomanYouWillSeeHerePassed;
+
+  /// No description provided for @facesArriveBlurredUnlessYouTurnThat.
+  ///
+  /// In en, this message translates to:
+  /// **'Faces arrive blurred unless you turn that off yourself, and nothing you post leaves the room.'**
+  String get facesArriveBlurredUnlessYouTurnThat;
+
+  /// No description provided for @finishYourPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your page'**
+  String get finishYourPage;
+
+  /// No description provided for @fourMovesOnTheFloorNothingJumps.
+  ///
+  /// In en, this message translates to:
+  /// **'Four moves on the floor. Nothing jumps, nothing needs the neighbours out.'**
+  String get fourMovesOnTheFloorNothingJumps;
+
+  /// No description provided for @groupsForSomeoneStartingOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups for someone starting out'**
+  String get groupsForSomeoneStartingOut;
+
+  /// No description provided for @howYouWork.
+  ///
+  /// In en, this message translates to:
+  /// **'How you work'**
+  String get howYouWork;
+
+  /// No description provided for @iWillStartTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'I will start tomorrow'**
+  String get iWillStartTomorrow;
+
+  /// No description provided for @itFillsWithTheGroupsYouJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'It fills with the groups you join, never a public timeline. Join one and its posts appear here.'**
+  String get itFillsWithTheGroupsYouJoin;
+
+  /// No description provided for @itIsLiveFor1204Women.
+  ///
+  /// In en, this message translates to:
+  /// **'It is live for 1,204 women a month once published.'**
+  String get itIsLiveFor1204Women;
+
+  /// No description provided for @itWaitsInYourOwnCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'It waits in your own collection'**
+  String get itWaitsInYourOwnCollection;
+
+  /// No description provided for @logSomethingTwiceAndItBecomesA.
+  ///
+  /// In en, this message translates to:
+  /// **'Log something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.'**
+  String get logSomethingTwiceAndItBecomesA;
+
+  /// No description provided for @lunch540Kcal18GProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch · 540 kcal · 18 g protein'**
+  String get lunch540Kcal18GProtein;
+
+  /// No description provided for @mondayTuesdayThursday15Min.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday, Tuesday, Thursday · 15 min'**
+  String get mondayTuesdayThursday15Min;
+
+  /// No description provided for @mostCoachesStartWithTheseThree.
+  ///
+  /// In en, this message translates to:
+  /// **'Most coaches start with these three'**
+  String get mostCoachesStartWithTheseThree;
+
+  /// No description provided for @noClientsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No clients yet'**
+  String get noClientsYet;
+
+  /// No description provided for @noCountdownNoRedNumbersProteinIs.
+  ///
+  /// In en, this message translates to:
+  /// **'No countdown, no red numbers. Protein is the only target, and it is a bar that fills.'**
+  String get noCountdownNoRedNumbersProteinIs;
+
+  /// No description provided for @noPlatesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No plates yet'**
+  String get noPlatesYet;
+
+  /// No description provided for @nobodyThereHasBeenTrainingOverA.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody there has been training over a year'**
+  String get nobodyThereHasBeenTrainingOverA;
+
+  /// No description provided for @nobodyYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody yet'**
+  String get nobodyYet;
+
+  /// No description provided for @notATemplateWithYourNameDropped.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a template with your name dropped in. A stack of sections you choose and order yourself.'**
+  String get notATemplateWithYourNameDropped;
+
+  /// No description provided for @nothingHereIsDecidedForYouTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here is decided for you. Two coaches on this platform should not look alike.'**
+  String get nothingHereIsDecidedForYouTwo;
+
+  /// No description provided for @nothingLoggedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing logged yet'**
+  String get nothingLoggedYet;
+
+  /// No description provided for @nothingSavedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing saved yet'**
+  String get nothingSavedYet;
+
+  /// No description provided for @oneMealIsEnoughToStartThe.
+  ///
+  /// In en, this message translates to:
+  /// **'One meal is enough to start the guessing'**
+  String get oneMealIsEnoughToStartThe;
+
+  /// No description provided for @oneOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'One offer'**
+  String get oneOffer;
+
+  /// No description provided for @onePhotoOneSentenceAboutWhatYou.
+  ///
+  /// In en, this message translates to:
+  /// **'One photo, one sentence about what you do'**
+  String get onePhotoOneSentenceAboutWhatYou;
+
+  /// No description provided for @orStartFromOneOfThese.
+  ///
+  /// In en, this message translates to:
+  /// **'Or start from one of these'**
+  String get orStartFromOneOfThese;
+
+  /// No description provided for @readyForWhenSheArrives.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready for when she arrives'**
+  String get readyForWhenSheArrives;
+
+  /// No description provided for @runsBeforeHerFirstWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs before her first week'**
+  String get runsBeforeHerFirstWeek;
+
+  /// No description provided for @saveASplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a split'**
+  String get saveASplit;
+
+  /// No description provided for @startDay1.
+  ///
+  /// In en, this message translates to:
+  /// **'Start day 1'**
+  String get startDay1;
+
+  /// No description provided for @startWithACover.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with a cover'**
+  String get startWithACover;
+
+  /// No description provided for @tellUsOneThingYouEat.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us one thing you eat'**
+  String get tellUsOneThingYouEat;
+
+  /// No description provided for @threeSessionsMakesTheWeekCountMiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Three sessions makes the week count. Miss one and a rest week covers it, once you have earned one.'**
+  String get threeSessionsMakesTheWeekCountMiss;
+
+  /// No description provided for @todaysSessionAndTheMealYouUsually.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s session and the meal you usually eat at this hour will sit here. Log one thing and it starts filling itself in.'**
+  String get todaysSessionAndTheMealYouUsually;
+
+  /// No description provided for @usuallyTheSameDayYouCanBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually the same day. You can build everything else now.'**
+  String get usuallyTheSameDayYouCanBuild;
+
+  /// No description provided for @weAreCheckingYourCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'We are checking your certificates'**
+  String get weAreCheckingYourCertificates;
+
+  /// No description provided for @whatItIsCalledWhatIsIn.
+  ///
+  /// In en, this message translates to:
+  /// **'What it is called, what is in it, what it costs'**
+  String get whatItIsCalledWhatIsIn;
+
+  /// No description provided for @whenAWomanAsksToWorkWith.
+  ///
+  /// In en, this message translates to:
+  /// **'When a woman asks to work with you she lands here, with what she wants and her own words. Your page is what brings her.'**
+  String get whenAWomanAsksToWorkWith;
+
+  /// No description provided for @womenWhoAskToWorkWithYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Women who ask to work with you appear here, the longest-waiting first, so you never have to hunt for who needs a reply.'**
+  String get womenWhoAskToWorkWithYou;
+
+  /// No description provided for @workOnMyPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Work on my page'**
+  String get workOnMyPage;
+
+  /// No description provided for @worthDoingBeforeYourFirstClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Worth doing before your first client'**
+  String get worthDoingBeforeYourFirstClient;
+
+  /// No description provided for @writeYourWeekOnceUseItOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your week once, use it on everyone'**
+  String get writeYourWeekOnceUseItOn;
+
+  /// No description provided for @youAreVerifiedTheRoomIsOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'You are verified · the room is open'**
+  String get youAreVerifiedTheRoomIsOpen;
+
+  /// No description provided for @youKeep80TheFirstPayoutLands.
+  ///
+  /// In en, this message translates to:
+  /// **'You keep 80%. The first payout lands on the 1st of the month after your first client pays.'**
+  String get youKeep80TheFirstPayoutLands;
+
+  /// No description provided for @yourFeedIsEmptyOnPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Your feed is empty on purpose'**
+  String get yourFeedIsEmptyOnPurpose;
+
+  /// No description provided for @yourMethodInTheWordsYouAlready.
+  ///
+  /// In en, this message translates to:
+  /// **'Your method, in the words you already use'**
+  String get yourMethodInTheWordsYouAlready;
+
+  /// No description provided for @yourPageIsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your page is empty'**
+  String get yourPageIsEmpty;
+
+  /// No description provided for @yourPageIsHowTheyFindYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Your page is how they find you'**
+  String get yourPageIsHowTheyFindYou;
+
+  /// No description provided for @threeSessionsMakesTheWeekCountAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Three sessions makes the week count, and a rest week covers one you miss.'**
+  String get threeSessionsMakesTheWeekCountAnd;
+
+  /// No description provided for @facesArriveBlurredAndNothingHereLeaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Faces arrive blurred, and nothing here leaves the room.'**
+  String get facesArriveBlurredAndNothingHereLeaves;
+
+  /// No description provided for @whenAWomanAsksToWorkWith_1j1kf.
+  ///
+  /// In en, this message translates to:
+  /// **'When a woman asks to work with you she lands here, in her own words. Your page is what brings her.'**
+  String get whenAWomanAsksToWorkWith_1j1kf;
+
+  /// No description provided for @youKeep80FirstPayoutTheMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'You keep 80%. First payout the month after your first client pays.'**
+  String get youKeep80FirstPayoutTheMonth;
+
+  /// No description provided for @whenAWomanAsksToWorkWith_4vp4g.
+  ///
+  /// In en, this message translates to:
+  /// **'When a woman asks to work with you she lands here, in her own words.'**
+  String get whenAWomanAsksToWorkWith_4vp4g;
+
+  /// No description provided for @youKeep80OfWhatShePays.
+  ///
+  /// In en, this message translates to:
+  /// **'You keep 80% of what she pays.'**
+  String get youKeep80OfWhatShePays;
+
+  /// No description provided for @yourFirstWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first week'**
+  String get yourFirstWeek;
+
+  /// No description provided for @assistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant'**
+  String get assistant;
+
+  /// No description provided for @discardTheDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard the draft'**
+  String get discardTheDraft;
+
+  /// No description provided for @n124MoveLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'124-move library'**
+  String get n124MoveLibrary;
+
+  /// No description provided for @n15MinutesFiveMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'15 minutes, five moves'**
+  String get n15MinutesFiveMoves;
+
+  /// No description provided for @n2Of4Done.
+  ///
+  /// In en, this message translates to:
+  /// **'2 of 4 done'**
+  String get n2Of4Done;
+
+  /// No description provided for @n2Of5DoneNothingExpires.
+  ///
+  /// In en, this message translates to:
+  /// **'2 of 5 done · nothing expires'**
+  String get n2Of5DoneNothingExpires;
+
+  /// No description provided for @n310LessDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 10 · less depth'**
+  String get n310LessDepth;
+
+  /// No description provided for @n312NothingOnTheKnee.
+  ///
+  /// In en, this message translates to:
+  /// **'3 × 12 · nothing on the knee'**
+  String get n312NothingOnTheKnee;
+
+  /// No description provided for @n3Of3ItCounted.
+  ///
+  /// In en, this message translates to:
+  /// **'3 of 3 · it counted'**
+  String get n3Of3ItCounted;
+
+  /// No description provided for @n3018Sessions8Rest.
+  ///
+  /// In en, this message translates to:
+  /// **'30 · 18 sessions, 8 rest'**
+  String get n3018Sessions8Rest;
+
+  /// No description provided for @n35PointsSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'35 points so far'**
+  String get n35PointsSoFar;
+
+  /// No description provided for @n7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get n7Days;
+
+  /// No description provided for @addAFollowUpPicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a follow-up picture'**
+  String get addAFollowUpPicture;
+
+  /// No description provided for @allFiveDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All five done'**
+  String get allFiveDone;
+
+  /// No description provided for @allFiveDoneNothingAboutTheApp.
+  ///
+  /// In en, this message translates to:
+  /// **'All five done. Nothing about the app changes from here. You have just already used every part of it once.'**
+  String get allFiveDoneNothingAboutTheApp;
+
+  /// No description provided for @allFromYour124MoveLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'All from your 124-move library'**
+  String get allFromYour124MoveLibrary;
+
+  /// No description provided for @answerYourFirstEnquiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer your first enquiry'**
+  String get answerYourFirstEnquiry;
+
+  /// No description provided for @askSaraInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Sara instead'**
+  String get askSaraInstead;
+
+  /// No description provided for @askSomething.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask something'**
+  String get askSomething;
+
+  /// No description provided for @askOrHoldToTalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask, or hold to talk'**
+  String get askOrHoldToTalk;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @beginnersPostpartumOrYourCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginners, postpartum or your city'**
+  String get beginnersPostpartumOrYourCity;
+
+  /// No description provided for @bleedingBetweenPeriodsWithSharpPainShould.
+  ///
+  /// In en, this message translates to:
+  /// **'Bleeding between periods with sharp pain should be looked at by a clinician.'**
+  String get bleedingBetweenPeriodsWithSharpPainShould;
+
+  /// No description provided for @certificatesClearedThisMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates cleared this morning'**
+  String get certificatesClearedThisMorning;
+
+  /// No description provided for @changeYourPlanOnlySaraPublishingDoes.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your plan · only Sara publishing does that'**
+  String get changeYourPlanOnlySaraPublishingDoes;
+
+  /// No description provided for @cost46Egp.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost 46 EGP'**
+  String get cost46Egp;
+
+  /// No description provided for @days.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get days;
+
+  /// No description provided for @diagnoseAnythingOrAnswerAMedicalQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnose anything, or answer a medical question'**
+  String get diagnoseAnythingOrAnswerAMedicalQuestion;
+
+  /// No description provided for @draftNour.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft · Nour'**
+  String get draftNour;
+
+  /// No description provided for @draftAWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft a week'**
+  String get draftAWeek;
+
+  /// No description provided for @draftItForMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft it for me'**
+  String get draftItForMe;
+
+  /// No description provided for @draftedFromWhatYouAlreadyWrote.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafted from what you already wrote'**
+  String get draftedFromWhatYouAlreadyWrote;
+
+  /// No description provided for @eachOneIsWorkAClientWill.
+  ///
+  /// In en, this message translates to:
+  /// **'Each one is work a client will actually see. None of it is a tour.'**
+  String get eachOneIsWorkAClientWill;
+
+  /// No description provided for @everyNumberCameFromTheFoodLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Every number came from the food library'**
+  String get everyNumberCameFromTheFoodLibrary;
+
+  /// No description provided for @explainARuleWhyAWeekCounted.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain a rule: why a week counted, what a rest week covers'**
+  String get explainARuleWhyAWeekCounted;
+
+  /// No description provided for @findAMoveForYourEquipmentAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a move for your equipment and your knee'**
+  String get findAMoveForYourEquipmentAnd;
+
+  /// No description provided for @finishOneSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish one session'**
+  String get finishOneSession;
+
+  /// No description provided for @finishingAllFiveIsNotADeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Finishing all five is not a deadline. It is the shortest path to knowing where everything is.'**
+  String get finishingAllFiveIsNotADeadline;
+
+  /// No description provided for @fulWithOilAndCumin410Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Ful with oil and cumin · 410 kcal'**
+  String get fulWithOilAndCumin410Kcal;
+
+  /// No description provided for @herAvoidListWasAppliedFirstDeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Her avoid list was applied first: deep knee bends and high impact never appear.'**
+  String get herAvoidListWasAppliedFirstDeep;
+
+  /// No description provided for @herOwnPlatesAreUsedFirstBecause.
+  ///
+  /// In en, this message translates to:
+  /// **'Her own plates are used first, because a meal plan she has never cooked is one she will not follow.'**
+  String get herOwnPlatesAreUsedFirstBecause;
+
+  /// No description provided for @iAmNotAbleToAnswerThat.
+  ///
+  /// In en, this message translates to:
+  /// **'I am not able to answer that one. It is a medical question, and guessing at it would not be safe.'**
+  String get iAmNotAbleToAnswerThat;
+
+  /// No description provided for @iHaveSharpPainLowDownAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'I have sharp pain low down and bleeding between periods. Is that normal?'**
+  String get iHaveSharpPainLowDownAnd;
+
+  /// No description provided for @inventAMealOrAQuantityEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'Invent a meal or a quantity: every gram comes from the food library'**
+  String get inventAMealOrAQuantityEvery;
+
+  /// No description provided for @itCan.
+  ///
+  /// In en, this message translates to:
+  /// **'It can'**
+  String get itCan;
+
+  /// No description provided for @itCannot.
+  ///
+  /// In en, this message translates to:
+  /// **'It cannot'**
+  String get itCannot;
+
+  /// No description provided for @itCoversAWeekYouMissWithout.
+  ///
+  /// In en, this message translates to:
+  /// **'It covers a week you miss, without being asked.'**
+  String get itCoversAWeekYouMissWithout;
+
+  /// No description provided for @itRefusesRatherThanHedgingAFitness.
+  ///
+  /// In en, this message translates to:
+  /// **'It refuses rather than hedging. A fitness assistant that answers medical questions is the one thing this product will not ship.'**
+  String get itRefusesRatherThanHedgingAFitness;
+
+  /// No description provided for @itRunsBeforeAnyonesFirstWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'It runs before anyone’s first week'**
+  String get itRunsBeforeAnyonesFirstWeek;
+
+  /// No description provided for @joinOneGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Join one group'**
+  String get joinOneGroup;
+
+  /// No description provided for @kneeNoDeepBends.
+  ///
+  /// In en, this message translates to:
+  /// **'Knee · no deep bends'**
+  String get kneeNoDeepBends;
+
+  /// No description provided for @koshariBowlMedium540Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Koshari bowl, medium · 540 kcal'**
+  String get koshariBowlMedium540Kcal;
+
+  /// No description provided for @lentilSoupAndEggs380Kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Lentil soup and eggs · 380 kcal'**
+  String get lentilSoupAndEggs380Kcal;
+
+  /// No description provided for @level.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get level;
+
+  /// No description provided for @liveFor1204WomenAMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Live for 1,204 women a month'**
+  String get liveFor1204WomenAMonth;
+
+  /// No description provided for @logOneMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Log one meal'**
+  String get logOneMeal;
+
+  /// No description provided for @logOneSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Log one set'**
+  String get logOneSet;
+
+  /// No description provided for @lowerBodyBoxSquatNotGoblet.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower body · box squat, not goblet'**
+  String get lowerBodyBoxSquatNotGoblet;
+
+  /// No description provided for @mealDraftNour.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal draft · Nour'**
+  String get mealDraftNour;
+
+  /// No description provided for @moves.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves'**
+  String get moves;
+
+  /// No description provided for @myKneeHurtsOnTheSquatsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'My knee hurts on the squats today'**
+  String get myKneeHurtsOnTheSquatsToday;
+
+  /// No description provided for @noNutsVegetarianOnWeekdaysAppliedBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'No nuts. Vegetarian on weekdays. Applied before anything was chosen.'**
+  String get noNutsVegetarianOnWeekdaysAppliedBefore;
+
+  /// No description provided for @noTimerOnAnyOfThemMiss.
+  ///
+  /// In en, this message translates to:
+  /// **'No timer on any of them. Miss a day and nothing here changes.'**
+  String get noTimerOnAnyOfThemMiss;
+
+  /// No description provided for @nothingHereExpiresAndNoClientSees.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here expires, and no client sees your progress through it.'**
+  String get nothingHereExpiresAndNoClientSees;
+
+  /// No description provided for @nothingIsPublishedThisOpensAsA.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is published. This opens as a draft in your planner, and you decide what she sees.'**
+  String get nothingIsPublishedThisOpensAsA;
+
+  /// No description provided for @nothingWasCalculatedADishWithoutVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was calculated. A dish without verified values is offered without totals, never with invented ones.'**
+  String get nothingWasCalculatedADishWithoutVerified;
+
+  /// No description provided for @nothingWasLoggedAndNothingWasShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was logged and nothing was shared. Your cycle information is not visible to me unless you turn that on.'**
+  String get nothingWasLoggedAndNothingWasShared;
+
+  /// No description provided for @of4.
+  ///
+  /// In en, this message translates to:
+  /// **'of 4'**
+  String get of4;
+
+  /// No description provided for @of5.
+  ///
+  /// In en, this message translates to:
+  /// **'of 5'**
+  String get of5;
+
+  /// No description provided for @onceYouHaveAPostToFollow.
+  ///
+  /// In en, this message translates to:
+  /// **'Once you have a post to follow up on'**
+  String get onceYouHaveAPostToFollow;
+
+  /// No description provided for @openInMyPlanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in my planner'**
+  String get openInMyPlanner;
+
+  /// No description provided for @openInTheMealPlanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in the meal planner'**
+  String get openInTheMealPlanner;
+
+  /// No description provided for @points.
+  ///
+  /// In en, this message translates to:
+  /// **'Points'**
+  String get points;
+
+  /// No description provided for @protein92G.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein 92 g'**
+  String get protein92G;
+
+  /// No description provided for @publishYourPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish your page'**
+  String get publishYourPage;
+
+  /// No description provided for @saveOneSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Save one split'**
+  String get saveOneSplit;
+
+  /// No description provided for @seeYourCycleInformationUnlessYouShare.
+  ///
+  /// In en, this message translates to:
+  /// **'See your cycle information unless you share it'**
+  String get seeYourCycleInformationUnlessYouShare;
+
+  /// No description provided for @seeYourProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'See your progress'**
+  String get seeYourProgress;
+
+  /// No description provided for @setUpAnAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up an assessment'**
+  String get setUpAnAssessment;
+
+  /// No description provided for @setUpTheAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up the assessment'**
+  String get setUpTheAssessment;
+
+  /// No description provided for @sharpOrNewPain.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharp or new pain?'**
+  String get sharpOrNewPain;
+
+  /// No description provided for @shePaysOnlyOnceYouAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'She pays only once you accept'**
+  String get shePaysOnlyOnceYouAccept;
+
+  /// No description provided for @someQuestionsItWillNotAnswerAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Some questions it will not answer, and should not'**
+  String get someQuestionsItWillNotAnswerAnd;
+
+  /// No description provided for @split.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get split;
+
+  /// No description provided for @swapTodaysExerciseForAnApprovedAlternative.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap today’s exercise for an approved alternative'**
+  String get swapTodaysExerciseForAnApprovedAlternative;
+
+  /// No description provided for @swappingChangesTodayOnlyYourPlanFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Swapping changes today only. Your plan from Sara is untouched.'**
+  String get swappingChangesTodayOnlyYourPlanFrom;
+
+  /// No description provided for @tellYouThePortionOfADish.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell you the portion of a dish you already log'**
+  String get tellYouThePortionOfADish;
+
+  /// No description provided for @theSamePointsTheRestOfThe.
+  ///
+  /// In en, this message translates to:
+  /// **'The same points the rest of the app gives. Nothing extra for opening it.'**
+  String get theSamePointsTheRestOfThe;
+
+  /// No description provided for @thisNeedsADoctorNotAnApp.
+  ///
+  /// In en, this message translates to:
+  /// **'This needs a doctor, not an app'**
+  String get thisNeedsADoctorNotAnApp;
+
+  /// No description provided for @twoDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Two done'**
+  String get twoDone;
+
+  /// No description provided for @twoDoneThreeWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Two done, three waiting'**
+  String get twoDoneThreeWaiting;
+
+  /// No description provided for @twoMovesInYourSessionWorkThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Two moves in your session work the same muscles without loading the knee. Both are already approved by Sara.'**
+  String get twoMovesInYourSessionWorkThe;
+
+  /// No description provided for @upperLowerOn3Clients.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper / lower · on 3 clients'**
+  String get upperLowerOn3Clients;
+
+  /// No description provided for @upperLower4Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper / lower · 4 days'**
+  String get upperLower4Days;
+
+  /// No description provided for @whatIDidWithThatMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'What I did with that message'**
+  String get whatIDidWithThatMessage;
+
+  /// No description provided for @whatItAddedUpTo.
+  ///
+  /// In en, this message translates to:
+  /// **'What it added up to'**
+  String get whatItAddedUpTo;
+
+  /// No description provided for @whatItCanAndCannotDo.
+  ///
+  /// In en, this message translates to:
+  /// **'What it can and cannot do'**
+  String get whatItCanAndCannotDo;
+
+  /// No description provided for @whatLeavesYourPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'What leaves your phone'**
+  String get whatLeavesYourPhone;
+
+  /// No description provided for @youDidFulAndBaladi.
+  ///
+  /// In en, this message translates to:
+  /// **'You did · ful and baladi'**
+  String get youDidFulAndBaladi;
+
+  /// No description provided for @youDidGobletSquat12Kg.
+  ///
+  /// In en, this message translates to:
+  /// **'You did · goblet squat, 12 kg'**
+  String get youDidGobletSquat12Kg;
+
+  /// No description provided for @youKnowYourWayAround.
+  ///
+  /// In en, this message translates to:
+  /// **'You know your way around'**
+  String get youKnowYourWayAround;
+
+  /// No description provided for @yourFirstRestWeekIsBanked.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first rest week is banked'**
+  String get yourFirstRestWeekIsBanked;
+
+  /// No description provided for @yourPageIsVisibleAndYouCan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your page is visible and you can take clients.'**
+  String get yourPageIsVisibleAndYouCan;
+
+  /// No description provided for @yourQuestionYourEquipmentAndWhatYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Your question, your equipment and what you are avoiding. Never your name, your photos, your weight or your ID.'**
+  String get yourQuestionYourEquipmentAndWhatYou;
+
+  /// No description provided for @savedOnYourPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on your phone'**
+  String get savedOnYourPhone;
+
+  /// No description provided for @waitingForSignal.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for signal'**
+  String get waitingForSignal;
+
+  /// No description provided for @savedHereUntilYouHaveSignal.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved here until you have signal'**
+  String get savedHereUntilYouHaveSignal;
+
+  /// No description provided for @savedItWillSyncWhenYouHave.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. It will sync when you have signal.'**
+  String get savedItWillSyncWhenYouHave;
+
+  /// No description provided for @youAreOfflineEverythingYouLogIs.
+  ///
+  /// In en, this message translates to:
+  /// **'You are offline. Everything you log is saved here and sent when you reconnect.'**
+  String get youAreOfflineEverythingYouLogIs;
+
+  /// No description provided for @nothingWasLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was lost.'**
+  String get nothingWasLost;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
+  /// No description provided for @thatDidNotSaveTapToTry.
+  ///
+  /// In en, this message translates to:
+  /// **'That did not save. Tap to try again.'**
+  String get thatDidNotSaveTapToTry;
+
+  /// No description provided for @somethingWentWrongAtOurEndNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong at our end. Nothing you did caused it.'**
+  String get somethingWentWrongAtOurEndNothing;
+
+  /// No description provided for @weCouldNotReachTheServerYour.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not reach the server. Your work is safe on this phone.'**
+  String get weCouldNotReachTheServerYour;
+
+  /// No description provided for @thisIsTakingLongerThanUsual.
+  ///
+  /// In en, this message translates to:
+  /// **'This is taking longer than usual.'**
+  String get thisIsTakingLongerThanUsual;
+
+  /// No description provided for @thatCodeIsNotRightCheckThe.
+  ///
+  /// In en, this message translates to:
+  /// **'That code is not right. Check the message and try again.'**
+  String get thatCodeIsNotRightCheckThe;
+
+  /// No description provided for @thatCodeHasExpiredAskForA.
+  ///
+  /// In en, this message translates to:
+  /// **'That code has expired. Ask for a new one.'**
+  String get thatCodeHasExpiredAskForA;
+
+  /// No description provided for @tooManyTriesWaitAMinuteThen.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many tries. Wait a minute, then ask for a new code.'**
+  String get tooManyTriesWaitAMinuteThen;
+
+  /// No description provided for @checkTheNumberAndTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the number and try again.'**
+  String get checkTheNumberAndTryAgain;
+
+  /// No description provided for @thatDoesNotLookLikeAnEgyptian.
+  ///
+  /// In en, this message translates to:
+  /// **'That does not look like an Egyptian mobile number.'**
+  String get thatDoesNotLookLikeAnEgyptian;
+
+  /// No description provided for @thePhotoDidNotUploadCheckYour.
+  ///
+  /// In en, this message translates to:
+  /// **'The photo did not upload. Check your signal and try again.'**
+  String get thePhotoDidNotUploadCheckYour;
+
+  /// No description provided for @weCouldNotReadTheCardHold.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not read the card. Hold it flat and try again.'**
+  String get weCouldNotReadTheCardHold;
+
+  /// No description provided for @theCheckCouldNotFinishAWoman.
+  ///
+  /// In en, this message translates to:
+  /// **'The check could not finish. A woman reviewer will take it from here.'**
+  String get theCheckCouldNotFinishAWoman;
+
+  /// No description provided for @allowCameraAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow camera access'**
+  String get allowCameraAccess;
+
+  /// No description provided for @weNeedYourCameraToReadYour.
+  ///
+  /// In en, this message translates to:
+  /// **'We need your camera to read your ID card. Nothing is uploaded until you tap send.'**
+  String get weNeedYourCameraToReadYour;
+
+  /// No description provided for @weNeedTheMicrophoneToHearWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'We need the microphone to hear what you ate.'**
+  String get weNeedTheMicrophoneToHearWhat;
+
+  /// No description provided for @turnOnNotificationsSoWeCanTell.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on notifications so we can tell you when your check is done.'**
+  String get turnOnNotificationsSoWeCanTell;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openSettings;
+
+  /// No description provided for @cameraAccessIsOffYouCanTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is off. You can turn it on in settings.'**
+  String get cameraAccessIsOffYouCanTurn;
+
+  /// No description provided for @notRightNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not right now'**
+  String get notRightNow;
+
+  /// No description provided for @waitingToSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to sync'**
+  String get waitingToSync;
+
+  /// No description provided for @everythingHereIsSavedOnYourPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything here is saved on your phone already.'**
+  String get everythingHereIsSavedOnYourPhone;
+
+  /// No description provided for @youCanKeepGoingItSendsItself.
+  ///
+  /// In en, this message translates to:
+  /// **'You can keep going. It sends itself later.'**
+  String get youCanKeepGoingItSendsItself;
+
+  /// No description provided for @walkThisMorning32Min.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk this morning · 32 min'**
+  String get walkThisMorning32Min;
+
+  /// No description provided for @n20MinVegetarian.
+  ///
+  /// In en, this message translates to:
+  /// **'20 min · vegetarian'**
+  String get n20MinVegetarian;
+
+  /// No description provided for @threeSessionsAWeekIsYourGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Three sessions a week is your goal. Hit it and the week counts, and a week you miss is covered by a rest week once you have earned one.'**
+  String get threeSessionsAWeekIsYourGoal;
+
+  /// No description provided for @arabicText_vqu26.
+  ///
+  /// In en, this message translates to:
+  /// **'الفصحى · كل شيء في التطبيق'**
+  String get arabicText_vqu26;
+
+  /// No description provided for @iTrainAndICoach.
+  ///
+  /// In en, this message translates to:
+  /// **'I train and I coach'**
+  String get iTrainAndICoach;
+
+  /// No description provided for @twoAppsInOneSwitchBetweenThem.
+  ///
+  /// In en, this message translates to:
+  /// **'Two apps in one. Switch between them whenever you like.'**
+  String get twoAppsInOneSwitchBetweenThem;
+
+  /// No description provided for @youCanChangeThisLaterInYour.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this later in your profile.'**
+  String get youCanChangeThisLaterInYour;
+
+  /// No description provided for @switchApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch app'**
+  String get switchApp;
+
+  /// No description provided for @youAreATraineeAndACoach.
+  ///
+  /// In en, this message translates to:
+  /// **'You are a trainee and a coach. This switches the whole app, not one tab.'**
+  String get youAreATraineeAndACoach;
+
+  /// No description provided for @training.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get training;
+
+  /// No description provided for @switchToCoaching.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to coaching'**
+  String get switchToCoaching;
+
+  /// No description provided for @switchToTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to training'**
+  String get switchToTraining;
+
+  /// No description provided for @yourProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile'**
+  String get yourProfile;
+
+  /// No description provided for @yourIdPhotoAndSelfieHaveBeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your ID photo and selfie have been deleted. We kept the result and nothing else.'**
+  String get yourIdPhotoAndSelfieHaveBeen;
+
+  /// R07 primary button. Names the numbers it is about to save — HER prescription, not the prototype set. The undo bar on R09 then repeats the same numbers, which is the point of rule 9.
+  ///
+  /// In en, this message translates to:
+  /// **'Done · {weight} kg × {reps}'**
+  String doneWeightKgReps(String weight, int reps);
+
+  /// No description provided for @contentLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Content library'**
+  String get contentLibrary;
+
+  /// No description provided for @exercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercises'**
+  String get exercises;
+
+  /// No description provided for @foods.
+  ///
+  /// In en, this message translates to:
+  /// **'Foods'**
+  String get foods;
+
+  /// No description provided for @programmes.
+  ///
+  /// In en, this message translates to:
+  /// **'Programmes'**
+  String get programmes;
+
+  /// No description provided for @importLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importLabel;
+
+  /// No description provided for @exportLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get exportLabel;
+
+  /// No description provided for @addAnExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an exercise'**
+  String get addAnExercise;
+
+  /// No description provided for @addAFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a food'**
+  String get addAFood;
+
+  /// No description provided for @bulkImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulk import'**
+  String get bulkImport;
+
+  /// No description provided for @chooseACsvFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a CSV file'**
+  String get chooseACsvFile;
+
+  /// No description provided for @checkTheFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the file'**
+  String get checkTheFile;
+
+  /// No description provided for @importCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Import check'**
+  String get importCheck;
+
+  /// No description provided for @nothingHasBeenWrittenYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been written yet.'**
+  String get nothingHasBeenWrittenYet;
+
+  /// No description provided for @rowsWithProblems.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows with problems'**
+  String get rowsWithProblems;
+
+  /// No description provided for @fixTheseRowsAndImportAgainNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix these rows and import again. Nothing is saved until every row passes.'**
+  String get fixTheseRowsAndImportAgainNothing;
+
+  /// No description provided for @importEverything.
+  ///
+  /// In en, this message translates to:
+  /// **'Import everything'**
+  String get importEverything;
+
+  /// No description provided for @missingASafetyTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing a safety tag'**
+  String get missingASafetyTag;
+
+  /// No description provided for @missingAllergens.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing allergens'**
+  String get missingAllergens;
+
+  /// No description provided for @missingContraindications.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing contraindications'**
+  String get missingContraindications;
+
+  /// No description provided for @writeNoneWhenThereAreNoneBlank.
+  ///
+  /// In en, this message translates to:
+  /// **'Write “none” when there are none. Blank is not the same thing.'**
+  String get writeNoneWhenThereAreNoneBlank;
+
+  /// No description provided for @uploadVideosAndPictures.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload videos and pictures'**
+  String get uploadVideosAndPictures;
+
+  /// No description provided for @notLinkedToAnythingYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not linked to anything yet'**
+  String get notLinkedToAnythingYet;
+
+  /// No description provided for @exportTheContentLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Export the content library'**
+  String get exportTheContentLibrary;
+
+  /// No description provided for @csvsAndMediaInTheSameShape.
+  ///
+  /// In en, this message translates to:
+  /// **'CSVs and media, in the same shape you import them.'**
+  String get csvsAndMediaInTheSameShape;
+
+  /// No description provided for @noMemberDataIsEverIncludedNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No member data is ever included: no logs, no photos, no cycle.'**
+  String get noMemberDataIsEverIncludedNo;
+
+  /// E01/E04 protein bar. Her real intake, never the mockup 53.
+  ///
+  /// In en, this message translates to:
+  /// **'{soFar} of {target} g'**
+  String sofarOfTargetG(String soFar, String target);
+
+  /// E04 running total. A TOTAL, never a countdown — there is no target here and no remainder, by design (G5 1.5).
+  ///
+  /// In en, this message translates to:
+  /// **'About {kcal} kcal so far today'**
+  String aboutKcalKcalSoFarToday(String kcal);
+
+  /// E04. What this meal added to her protein.
+  ///
+  /// In en, this message translates to:
+  /// **'+{grams} g'**
+  String gramsG(String grams);
+
+  /// E07/E08 grocery list. "About", because prices move.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items · about {egp} EGP'**
+  String countItemsAboutEgpEgp(int count, String egp);
+
+  /// E04 undo bar. Names what SHE logged. The fixed "Lunch logged — 696 kcal" would announce 696 whatever she ate, which is the defect PHASE1-FIXES.md 8 removed from R07.
+  ///
+  /// In en, this message translates to:
+  /// **'{meal} logged · {kcal} kcal'**
+  String mealLoggedKcalKcal(String meal, String kcal);
+
+  /// E02/E04 allergen sheet (G5 5.1). Names the allergen SHE told us about, so the sheet is about her and not a generic warning.
+  ///
+  /// In en, this message translates to:
+  /// **'This dish has {allergen}. You told us to avoid that.'**
+  String thisDishHasAllergenYouToldUs(String allergen);
+
+  /// No description provided for @notThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Not this'**
+  String get notThis;
+
+  /// No description provided for @logItAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Log it anyway'**
+  String get logItAnyway;
+
+  /// T01 week card. Her real target, not the prototype 3 — a woman whose goal is 4 sessions read "This week, 0 of 3". The card already had the numbers; only the sentence was fixed.
+  ///
+  /// In en, this message translates to:
+  /// **'This week, {done} of {target}'**
+  String thisWeekDoneOfTarget(int done, int target);
+
+  /// E01 starter rows. The food SHE is looking at, not the mockup. _starterMeta switched on foodId over three hardcoded cases with `_ => lunch540Kcal18GProtein` as the default, so every other food — boiled eggs included — claimed koshari's 540 kcal and 18 g. Wrong nutrition, stated confidently, on the screen where she decides what to eat.
+  ///
+  /// In en, this message translates to:
+  /// **'{slot} · {kcal} kcal · {protein} g protein'**
+  String slotKcalKcalProteinGProtein(String slot, String kcal, String protein);
+
+  /// E01/E04 suggestion rows. _metaOf switched on foodId over six cases with `_ => n540Kcal18GProtein` as the default, so any food outside the list reported koshari's macros. Its own doc comment claimed the value was "picked from the dictionary by the row it describes, so the row and its macros cannot disagree" — which was exactly what it could not guarantee.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal · {protein} g protein'**
+  String kcalKcalProteinGProtein(String kcal, String protein);
+
+  /// No description provided for @waist.
+  ///
+  /// In en, this message translates to:
+  /// **'Waist'**
+  String get waist;
+
+  /// No description provided for @hips.
+  ///
+  /// In en, this message translates to:
+  /// **'Hips'**
+  String get hips;
+
+  /// No description provided for @arm.
+  ///
+  /// In en, this message translates to:
+  /// **'Arm'**
+  String get arm;
+
+  /// No description provided for @thigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Thigh'**
+  String get thigh;
+
+  /// No description provided for @cm.
+  ///
+  /// In en, this message translates to:
+  /// **'cm'**
+  String get cm;
+
+  /// No description provided for @kg.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get kg;
+
+  /// P04 measurement chips. The label is Waist/Hips/Arm/Thigh and the value is hers. Withheld entirely until now: the four labels did not exist, so the add control could not be drawn and the chips were display-only.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} {value} cm'**
+  String labelValueCm(String label, String value);
+
+  /// P04's undo bar. Must name the weight SHE saved. The screen previously used the bare word "Saved", which is true of every measurement and therefore tells her nothing about the one she can still take back.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} kg saved'**
+  String weightKgSaved(String weight);
+
+  /// No description provided for @sleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep'**
+  String get sleep;
+
+  /// No description provided for @bloating.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloating'**
+  String get bloating;
+
+  /// No description provided for @bleeding.
+  ///
+  /// In en, this message translates to:
+  /// **'Bleeding'**
+  String get bleeding;
+
+  /// No description provided for @spotting.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotting'**
+  String get spotting;
+
+  /// No description provided for @heavy.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavy'**
+  String get heavy;
+
+  /// No description provided for @poor.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor'**
+  String get poor;
+
+  /// No description provided for @good.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get good;
+
+  /// No description provided for @est.
+  ///
+  /// In en, this message translates to:
+  /// **'est.'**
+  String get est;
+
+  /// Y03/Y11. `periodDay2` bakes the mockup's day two into the sentence, so the hub rendered the bare number for every other day rather than lie. This is the form that lets the sentence be true on any day.
+  ///
+  /// In en, this message translates to:
+  /// **'Period day {day}'**
+  String periodDayDay(String day);
+
+  /// Y10's chart caption. The fixed string named the mockup's 4 of 6, so the caption was withheld and the chart drew with no sentence beside it.
+  ///
+  /// In en, this message translates to:
+  /// **'{logged} of {total} logged days'**
+  String loggedOfTotalLoggedDays(String logged, String total);
+
+  /// No description provided for @cameBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Came back'**
+  String get cameBack;
+
+  /// No description provided for @firstSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'First steps'**
+  String get firstSteps;
+
+  /// No description provided for @strong.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get strong;
+
+  /// No description provided for @unshakeable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unshakeable'**
+  String get unshakeable;
+
+  /// P01 and T01. `level7Regular` freezes the mockup's level 7 into the pill, so it announced level 7 to a woman on level 1.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {n}'**
+  String levelN(String n);
+
+  /// P02 milestones and P03 bests — the generic "4 of 12" the counted-weeks and bests tiles need. Both previously rendered nothing rather than a constant, which is why P02's heading does not appear.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {total}'**
+  String countOfTotal(String count, String total);
+
+  /// P03 personal-best delta. Hers, not a sample.
+  ///
+  /// In en, this message translates to:
+  /// **'+{n} kg'**
+  String nKg(String n);
+
+  /// P03 personal-best delta, repetitions.
+  ///
+  /// In en, this message translates to:
+  /// **'+{n} reps'**
+  String nReps(String n);
+
+  /// P03 personal-best delta, a hold in seconds. Note G4 publishes no `actualHoldSec`, so nothing populates this yet — the string exists so the branch is complete the day it does.
+  ///
+  /// In en, this message translates to:
+  /// **'+{n} s'**
+  String nS(String n);
+
+  /// No description provided for @libraryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get libraryLabel;
+
+  /// No description provided for @row.
+  ///
+  /// In en, this message translates to:
+  /// **'Row'**
+  String get row;
+
+  /// No description provided for @problem.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem'**
+  String get problem;
+
+  /// No description provided for @column.
+  ///
+  /// In en, this message translates to:
+  /// **'Column'**
+  String get column;
+
+  /// No description provided for @requiredLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get requiredLabel;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'yes'**
+  String get yes;
+
+  /// No description provided for @yesBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'yes, both'**
+  String get yesBoth;
+
+  /// No description provided for @columnsItExpects.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns it expects'**
+  String get columnsItExpects;
+
+  /// Z01 collection subtitles and Z09's row count. `CollectionStatus.rows` is already carried for exactly this and was never rendered.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} rows'**
+  String nRows(String n);
+
+  /// No description provided for @importEverything_damon.
+  ///
+  /// In en, this message translates to:
+  /// **'Import everything?'**
+  String get importEverything_damon;
+
+  /// No description provided for @backToTheFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the file'**
+  String get backToTheFile;
+
+  /// No description provided for @noExercisesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No exercises yet'**
+  String get noExercisesYet;
+
+  /// No description provided for @noFoodsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No foods yet'**
+  String get noFoodsYet;
+
+  /// No description provided for @noRecipesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No recipes yet'**
+  String get noRecipesYet;
+
+  /// No description provided for @noProgrammesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No programmes yet'**
+  String get noProgrammesYet;
+
+  /// No description provided for @noVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'No video'**
+  String get noVideo;
+
+  /// No description provided for @noMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'No macros'**
+  String get noMacros;
+
+  /// No description provided for @size.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get size;
+
+  /// No description provided for @videos.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get videos;
+
+  /// No description provided for @unlinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlinked'**
+  String get unlinked;
+
+  /// No description provided for @mediaLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Media library'**
+  String get mediaLibrary;
+
+  /// No description provided for @whatToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'What to export'**
+  String get whatToExport;
+
+  /// No description provided for @csv.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV'**
+  String get csv;
+
+  /// No description provided for @csvVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV + videos'**
+  String get csvVideos;
+
+  /// No description provided for @csvPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV + photos'**
+  String get csvPhotos;
+
+  /// No description provided for @exerciseId.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise id'**
+  String get exerciseId;
+
+  /// No description provided for @foodId.
+  ///
+  /// In en, this message translates to:
+  /// **'Food id'**
+  String get foodId;
+
+  /// No description provided for @nameEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (English)'**
+  String get nameEnglish;
+
+  /// No description provided for @nameArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (Arabic)'**
+  String get nameArabic;
+
+  /// No description provided for @equipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment'**
+  String get equipment;
+
+  /// No description provided for @contraindicationTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Contraindication tags'**
+  String get contraindicationTags;
+
+  /// No description provided for @allergens.
+  ///
+  /// In en, this message translates to:
+  /// **'Allergens'**
+  String get allergens;
+
+  /// No description provided for @dietTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Diet tags'**
+  String get dietTags;
+
+  /// No description provided for @proteinG.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein g'**
+  String get proteinG;
+
+  /// No description provided for @kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get kcal;
+
+  /// No description provided for @fri.
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get fri;
+
+  /// T01's workout badge and R01's programme header. The worst of the remaining baked-in samples: `week3Of8` states "Week 3 of 8" to every woman, and `train_view` uses it as a FALLBACK (`programWeek ?? week3Of8`) — so it asserts a week precisely when the real one is unknown, which is the one moment it should say nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week} of {total}'**
+  String weekWeekOfTotal(String week, String total);
+
+  /// T01's walk card. Her phone counted the minutes; the card stated 32 regardless. The undo bar quotes this same line, so the number she is offered a chance to take back has to be the number she walked.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk this morning · {minutes} min'**
+  String walkThisMorningMinutesMin(String minutes);
+
+  /// T01's meal-card chips and E06's recipe facts. A TOTAL, never a countdown, and never a remainder — G5 §1.5. The fixed `n410Kcal` and `n290Kcal` named the mockup's breakfast whatever she had eaten.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal'**
+  String kcalKcal(String kcal);
+
+  /// No description provided for @carbsG.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs g'**
+  String get carbsG;
+
+  /// No description provided for @fatG.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat g'**
+  String get fatG;
+
+  /// No description provided for @editAnExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit an exercise'**
+  String get editAnExercise;
+
+  /// No description provided for @editAFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit a food'**
+  String get editAFood;
+
+  /// No description provided for @pattern.
+  ///
+  /// In en, this message translates to:
+  /// **'Pattern'**
+  String get pattern;
+
+  /// No description provided for @portions.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions'**
+  String get portions;
+
+  /// No description provided for @videoFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Video file'**
+  String get videoFile;
+
+  /// No description provided for @thumbnail.
+  ///
+  /// In en, this message translates to:
+  /// **'Thumbnail'**
+  String get thumbnail;
+
+  /// No description provided for @photoFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo file'**
+  String get photoFile;
+
+  /// No description provided for @recipeId.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe id'**
+  String get recipeId;
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get minutes;
+
+  /// No description provided for @ingredients.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients'**
+  String get ingredients;
+
+  /// No description provided for @addARecipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a recipe'**
+  String get addARecipe;
+
+  /// No description provided for @programmeId.
+  ///
+  /// In en, this message translates to:
+  /// **'Programme id'**
+  String get programmeId;
+
+  /// No description provided for @weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Weeks'**
+  String get weeks;
+
+  /// No description provided for @sessionLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Session length'**
+  String get sessionLength;
+
+  /// No description provided for @addAProgramme.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a programme'**
+  String get addAProgramme;
+
+  /// No description provided for @upload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get upload;
+
+  /// No description provided for @chooseAFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a file'**
+  String get chooseAFile;
+
+  /// No description provided for @file.
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get file;
+
+  /// Z10's media library. The file size, which the screen currently shows as a raw byte count — 12,000,000 — because no unit string existed. True, Western-digit, and harder to read than the design intends.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} MB'**
+  String sizeMb(String size);
+
+  /// Z10's media library, for a file under a megabyte.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} KB'**
+  String sizeKb(String size);
+
+  /// Z09's dry-run summary. Deliberately its own string rather than `{n} rows`: the admin console avoided that one here because it renders "1 rows" in the commonest case of all, a single-row fix.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} rows ready'**
+  String nRowsReady(String n);
+
+  /// No description provided for @nothingHereIsAMembersDataThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here is a member\'s data. This console manages the library only.'**
+  String get nothingHereIsAMembersDataThis;
+
+  /// No description provided for @editARecipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit a recipe'**
+  String get editARecipe;
+
+  /// No description provided for @editAProgramme.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit a programme'**
+  String get editAProgramme;
+
+  /// No description provided for @stableChangingItOrphansEverythingThatReferenced.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable. Changing it orphans everything that referenced it.'**
+  String get stableChangingItOrphansEverythingThatReferenced;
+
+  /// No description provided for @requiredWriteNoneIfThereAreNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Required. Write “none” if there are none. Blank is not the same thing.'**
+  String get requiredWriteNoneIfThereAreNone;
+
+  /// No description provided for @aRecipeThatNamesAPhotoNobody.
+  ///
+  /// In en, this message translates to:
+  /// **'A recipe that names a photo nobody uploaded is refused at validation, rather than reaching a woman as a card with a missing image.'**
+  String get aRecipeThatNamesAPhotoNobody;
+
+  /// No description provided for @aProgrammeIsAShapeWeeksDays.
+  ///
+  /// In en, this message translates to:
+  /// **'A programme is a shape: weeks, days, session length. It holds no ingredient and no movement of its own, so there is no safety column for a guard to read off it.'**
+  String get aProgrammeIsAShapeWeeksDays;
+
+  /// No description provided for @featureFlags.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature flags'**
+  String get featureFlags;
+
+  /// No description provided for @turningAFeatureOffHidesItEverywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning a feature off hides it everywhere, for everyone.'**
+  String get turningAFeatureOffHidesItEverywhere;
+
+  /// No description provided for @builtAndLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Built and live'**
+  String get builtAndLive;
+
+  /// No description provided for @notSwitchedOnYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not switched on yet'**
+  String get notSwitchedOnYet;
+
+  /// No description provided for @videoAndReels.
+  ///
+  /// In en, this message translates to:
+  /// **'Video and reels'**
+  String get videoAndReels;
+
+  /// No description provided for @offBlurExportIsUnmeasuredOnA.
+  ///
+  /// In en, this message translates to:
+  /// **'Off · blur export is unmeasured on a budget handset'**
+  String get offBlurExportIsUnmeasuredOnA;
+
+  /// No description provided for @offNoPaymentProviderIsConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Off · no payment provider is connected'**
+  String get offNoPaymentProviderIsConnected;
+
+  /// No description provided for @aFeatureInsideAnotherOneCannotBe.
+  ///
+  /// In en, this message translates to:
+  /// **'A feature inside another one cannot be on while the one around it is off. Switching Community off switches off everything inside it, so nothing is left reachable on its own.'**
+  String get aFeatureInsideAnotherOneCannotBe;
+
+  /// No description provided for @nothingFoundForThatIWouldRather.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found for that. I would rather say so than guess.'**
+  String get nothingFoundForThatIWouldRather;
+
+  /// No description provided for @askingNeedsAConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Asking needs a connection.'**
+  String get askingNeedsAConnection;
+
+  /// No description provided for @draftingNeedsAConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafting needs a connection.'**
+  String get draftingNeedsAConnection;
+
+  /// No description provided for @youHaveUsedTodaysQuestionsThereWill.
+  ///
+  /// In en, this message translates to:
+  /// **'You have used today\'s questions. There will be more tomorrow.'**
+  String get youHaveUsedTodaysQuestionsThereWill;
+
+  /// No description provided for @saveFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Save feedback'**
+  String get saveFeedback;
+
+  /// No description provided for @publishChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish changes'**
+  String get publishChanges;
+
+  /// No description provided for @wellPublishTheMomentYoureBackOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll publish the moment you\'re back online'**
+  String get wellPublishTheMomentYoureBackOnline;
+
+  /// No description provided for @waitingToSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to send'**
+  String get waitingToSend;
+
+  /// A price. Every other EGP string in the dictionary bakes a sample figure into the sentence, so a one-off package had no way to state its own price and rendered none at all.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} EGP'**
+  String amountEgp(String amount);
+
+  /// H01's price-band facet. `under2000Egp` bakes 2,000, so the chip was absent from the directory even though the filter behind it works.
+  ///
+  /// In en, this message translates to:
+  /// **'Under {n} EGP'**
+  String underNEgp(String n);
+
+  /// No description provided for @youNeedAConnectionToPayNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'You need a connection to pay. Nothing is queued.'**
+  String get youNeedAConnectionToPayNothing;
+
+  /// No description provided for @thatPaymentWasDeclinedNothingWasCharged.
+  ///
+  /// In en, this message translates to:
+  /// **'That payment was declined. Nothing was charged.'**
+  String get thatPaymentWasDeclinedNothingWasCharged;
+
+  /// No description provided for @yourMoneyIsOnItsWayBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Your money is on its way back. It can take a few days.'**
+  String get yourMoneyIsOnItsWayBack;
+
+  /// No description provided for @spotsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Spots left'**
+  String get spotsLeft;
+
+  /// No description provided for @sheIsNotTakingClientsRightNow.
+  ///
+  /// In en, this message translates to:
+  /// **'She is not taking clients right now'**
+  String get sheIsNotTakingClientsRightNow;
+
+  /// No description provided for @preparingYourPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your payment'**
+  String get preparingYourPayment;
+
+  /// No description provided for @paid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paid;
+
+  /// No description provided for @sort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get sort;
+
+  /// No description provided for @bestMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Best match'**
+  String get bestMatch;
+
+  /// No description provided for @repliesFastest.
+  ///
+  /// In en, this message translates to:
+  /// **'Replies fastest'**
+  String get repliesFastest;
+
+  /// No description provided for @priceLowToHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Price: low to high'**
+  String get priceLowToHigh;
+
+  /// No description provided for @priceHighToLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Price: high to low'**
+  String get priceHighToLow;
+
+  /// No description provided for @allScreens.
+  ///
+  /// In en, this message translates to:
+  /// **'All screens'**
+  String get allScreens;
+
+  /// No description provided for @openAnyScreenForTesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Open any screen, for testing'**
+  String get openAnyScreenForTesting;
+
+  /// No description provided for @you.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get you;
+
+  /// No description provided for @writeAPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a post'**
+  String get writeAPost;
+
+  /// No description provided for @addTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Add topics'**
+  String get addTopics;
+
+  /// No description provided for @postTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Post to'**
+  String get postTo;
+
+  /// No description provided for @posted.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted'**
+  String get posted;
+
+  /// No description provided for @walking.
+  ///
+  /// In en, this message translates to:
+  /// **'Walking'**
+  String get walking;
+
+  /// No description provided for @noReelsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No reels yet'**
+  String get noReelsYet;
+
+  /// No description provided for @thereIsNoCameraInThisBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no camera in this build yet, so nothing was taken. You can write a text post from Create.'**
+  String get thereIsNoCameraInThisBuild;
+
+  /// No description provided for @whyAreYouReportingThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are you reporting this?'**
+  String get whyAreYouReportingThis;
+
+  /// No description provided for @harassmentOrBullying.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment or bullying'**
+  String get harassmentOrBullying;
+
+  /// No description provided for @thisIsAMansAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a man\'s account'**
+  String get thisIsAMansAccount;
+
+  /// No description provided for @nudity.
+  ///
+  /// In en, this message translates to:
+  /// **'Nudity'**
+  String get nudity;
+
+  /// No description provided for @spam.
+  ///
+  /// In en, this message translates to:
+  /// **'Spam'**
+  String get spam;
+
+  /// No description provided for @pretendingToBeSomeoneElse.
+  ///
+  /// In en, this message translates to:
+  /// **'Pretending to be someone else'**
+  String get pretendingToBeSomeoneElse;
+
+  /// No description provided for @selfHarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-harm'**
+  String get selfHarm;
+
+  /// No description provided for @reportSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Report sent'**
+  String get reportSent;
+
+  /// No description provided for @deleteThisPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this post'**
+  String get deleteThisPost;
+
+  /// No description provided for @tapAgainToDeleteItEverywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap again to delete it everywhere'**
+  String get tapAgainToDeleteItEverywhere;
+
+  /// No description provided for @unmuteThisGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute this group'**
+  String get unmuteThisGroup;
+
+  /// No description provided for @leaveGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave group'**
+  String get leaveGroup;
+
+  /// M12's follow-up strip: which week of her own chain a moment is. The only minted forms (Week 1, Week 4) bake the prototype's weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {n}'**
+  String weekN(String n);
+
+  /// No description provided for @mapsAreNotConnectedInThisBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Maps are not connected in this build yet, so the app cannot look for care near you.'**
+  String get mapsAreNotConnectedInThisBuild;
+
+  /// No description provided for @openingWebLinksIsNotConnectedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening web links is not connected in this build yet.'**
+  String get openingWebLinksIsNotConnectedIn;
+
+  /// No description provided for @restingTodayNothingInYourPlanChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Resting today. Nothing in your plan changes.'**
+  String get restingTodayNothingInYourPlanChanges;
+
+  /// No description provided for @skipThisStepTestBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this step (test build)'**
+  String get skipThisStepTestBuild;
+
+  /// No description provided for @testBuildNothingIsPhotographedOrChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Test build: nothing is photographed or checked here, and no ID is verified.'**
+  String get testBuildNothingIsPhotographedOrChecked;
+
+  /// C07, only while no account is required. Names the one code the in-memory sign-in accepts, so the sign-up chain can be walked by hand without SMS.
+  ///
+  /// In en, this message translates to:
+  /// **'Test build: no text message is sent. The code is {code}.'**
+  String testBuildNoTextMessageIsSent(String code);
+
+  /// No description provided for @useTheTestCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the test code'**
+  String get useTheTestCode;
+
+  /// No description provided for @testBuildNobodyCheckedAnIdSo.
+  ///
+  /// In en, this message translates to:
+  /// **'Test build: nobody checked an ID, so this account is not verified.'**
+  String get testBuildNobodyCheckedAnIdSo;
+
+  /// No description provided for @theAssistantIsNotConnectedYetSo.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant is not connected yet, so it cannot answer questions. A person can: ask your coach below.'**
+  String get theAssistantIsNotConnectedYetSo;
+
+  /// No description provided for @draftingIsNotConnectedYetThePlanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafting is not connected yet. The planner works as usual.'**
+  String get draftingIsNotConnectedYetThePlanner;
+
+  /// No description provided for @exampleThisIsWhatTheAssistantShows.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: this is what the assistant shows when it will not answer a question.'**
+  String get exampleThisIsWhatTheAssistantShows;
+
+  /// No description provided for @notificationsAreNotConnectedInThisBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are not connected in this build yet.'**
+  String get notificationsAreNotConnectedInThisBuild;
+
+  /// No description provided for @whyAreYouReporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are you reporting?'**
+  String get whyAreYouReporting;
+
+  /// No description provided for @harassment.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment'**
+  String get harassment;
+
+  /// No description provided for @aMansAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'A man\'s account'**
+  String get aMansAccount;
+
+  /// No description provided for @whoIsItAndWhatHappenedOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Who is it, and what happened? Optional'**
+  String get whoIsItAndWhatHappenedOptional;
+
+  /// No description provided for @sendReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Send report'**
+  String get sendReport;
+
+  /// No description provided for @testBuildNoModerationTeamIsConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Test build: no moderation team is connected, so this report stays on this phone and nobody reads it.'**
+  String get testBuildNoModerationTeamIsConnected;
+
+  /// No description provided for @testReportSavedNobodyReadsItIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Test report saved. Nobody reads it in this build.'**
+  String get testReportSavedNobodyReadsItIn;
+
+  /// No description provided for @testReportNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Test report, not sent'**
+  String get testReportNotSent;
+
+  /// A04's blocked-members row. A label form so the Arabic needs no number agreement; the count is the members she actually blocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked: {count}'**
+  String blockedCount(String count);
+
+  /// A04's reports row while no account is required: how many test reports are held on this phone. Nothing is sent anywhere in this build.
+  ///
+  /// In en, this message translates to:
+  /// **'Test reports: {count}'**
+  String testReportsCount(String count);
+
+  /// No description provided for @unblock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get unblock;
+
+  /// No description provided for @youHaveNotBlockedAnyone.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not blocked anyone.'**
+  String get youHaveNotBlockedAnyone;
+
+  /// No description provided for @pasteACsvFromTheClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a CSV from the clipboard'**
+  String get pasteACsvFromTheClipboard;
+
+  /// No description provided for @pastedFromTheClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Pasted from the clipboard'**
+  String get pastedFromTheClipboard;
+
+  /// No description provided for @theClipboardHasNoTextToCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'The clipboard has no text to check.'**
+  String get theClipboardHasNoTextToCheck;
+
+  /// Z11 after Export: the chosen collections' CSVs were copied to the clipboard, because this build has no file saving.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV files copied to the clipboard: {count}. Saving files is not connected in this build yet.'**
+  String csvFilesCopiedToTheClipboardCount(String count);
+
+  /// O05's headline read back from her own O02/O03 answers. Label form so the Arabic is grammatical for every allowed count.
+  ///
+  /// In en, this message translates to:
+  /// **'Days a week: {days} · Minutes a session: {minutes} · At home'**
+  String daysAWeekDaysMinutesASession(String days, String minutes);
+
+  /// O05's headline read back from her own O02/O03 answers, gym variant.
+  ///
+  /// In en, this message translates to:
+  /// **'Days a week: {days} · Minutes a session: {minutes} · At a ladies-only gym'**
+  String daysAWeekDaysMinutesASession_1qm7e(String days, String minutes);
+
+  /// O05's headline read back from her own O02/O03 answers, home-and-gym variant.
+  ///
+  /// In en, this message translates to:
+  /// **'Days a week: {days} · Minutes a session: {minutes} · At home and the gym'**
+  String daysAWeekDaysMinutesASession_1cc8s(String days, String minutes);
+
+  /// No description provided for @like.
+  ///
+  /// In en, this message translates to:
+  /// **'Like'**
+  String get like;
+
+  /// No description provided for @comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get comment;
+
+  /// Eat allergen sheet (G5 5.1), for a dish whose allergens are unknown while she has told us she avoids something. Unknown is treated as unsafe, so the log waits for her explicit choice. {dish} is the food's name in her language.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody has listed what is in {dish} yet, so we cannot check it against what you avoid.'**
+  String nobodyHasListedWhatIsInDish(String dish);
+
+  /// No description provided for @nuts.
+  ///
+  /// In en, this message translates to:
+  /// **'nuts'**
+  String get nuts;
+
+  /// No description provided for @dairy.
+  ///
+  /// In en, this message translates to:
+  /// **'dairy'**
+  String get dairy;
+
+  /// No description provided for @gluten.
+  ///
+  /// In en, this message translates to:
+  /// **'gluten'**
+  String get gluten;
+
+  /// No description provided for @shellfish.
+  ///
+  /// In en, this message translates to:
+  /// **'shellfish'**
+  String get shellfish;
+
+  /// No description provided for @weCannotCheckTheseDishesForWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'We cannot check these dishes for what you avoid yet, so none are suggested.'**
+  String get weCannotCheckTheseDishesForWhat;
+
+  /// No description provided for @theStepsForThisDishHaveNot.
+  ///
+  /// In en, this message translates to:
+  /// **'The steps for this dish have not been written yet.'**
+  String get theStepsForThisDishHaveNot;
+
+  /// No description provided for @rearrangeTheWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Rearrange the week'**
+  String get rearrangeTheWeek;
+
+  /// No description provided for @youAreATestCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'You are a test coach'**
+  String get youAreATestCoach;
+
+  /// No description provided for @whileSignUpIsSwitchedOffYou.
+  ///
+  /// In en, this message translates to:
+  /// **'While sign-up is switched off, you count as a checked coach so you can try everything. Nobody has looked at your certificates.'**
+  String get whileSignUpIsSwitchedOffYou;
+
+  /// No description provided for @testNotChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Test · not checked'**
+  String get testNotChecked;
+
+  /// No description provided for @inTestModeACertificateIsRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'In test mode a certificate is recorded without a photo, and nobody reviews it.'**
+  String get inTestModeACertificateIsRecorded;
+
+  /// No description provided for @walletOrAccountNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet or account number'**
+  String get walletOrAccountNumber;
+
+  /// No description provided for @testPayoutNoMoneyMovesAndNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Test payout. No money moves, and nothing is sent to a real wallet or bank.'**
+  String get testPayoutNoMoneyMovesAndNothing;
+
+  /// No description provided for @whatIsInItOnePerLine.
+  ///
+  /// In en, this message translates to:
+  /// **'What is in it, one per line'**
+  String get whatIsInItOnePerLine;
+
+  /// No description provided for @testPaymentNoMoneyMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'Test payment · no money moves'**
+  String get testPaymentNoMoneyMoves;
+
+  /// No description provided for @testModeCoachesSetUpOnThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Test mode: coaches set up on this phone appear here once they finish setup and publish their page. Nobody has checked their certificates.'**
+  String get testModeCoachesSetUpOnThis;
+
+  /// No description provided for @nothingIsCountedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is counted yet'**
+  String get nothingIsCountedYet;
+
+  /// No description provided for @viewsAndEnquiriesAreNotMeasuredIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Views and enquiries are not measured in this version, so there are no figures to show. A zero here would be a guess about your page, not a fact.'**
+  String get viewsAndEnquiriesAreNotMeasuredIn;
+
+  /// No description provided for @wordsOnTheButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Words on the button'**
+  String get wordsOnTheButton;
+
+  /// No description provided for @thisSectionNeedsAPhotoOrVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'This section needs a photo or video. Add one, choose a layout without one, or hide the section.'**
+  String get thisSectionNeedsAPhotoOrVideo;
+
+  /// No description provided for @addAtLeastOneStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one step.'**
+  String get addAtLeastOneStep;
+
+  /// R07/R08/R09 title. Her position in the day's moves, replacing the fixed 'Move 2 of 5'.
+  ///
+  /// In en, this message translates to:
+  /// **'Move {move} of {total}'**
+  String moveMoveOfTotal(String move, String total);
+
+  /// R13 primary button. The move she goes back to, replacing the fixed 'Next move · step-back lunge'.
+  ///
+  /// In en, this message translates to:
+  /// **'Next move · {move}'**
+  String nextMoveMove(String move);
+
+  /// R09 'Up next' card: the move and set she returns to after resting.
+  ///
+  /// In en, this message translates to:
+  /// **'{move}, set {set}'**
+  String moveSetSet(String move, String set);
+
+  /// One set's figure — what was asked, or what she did. Western digits in both languages.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} kg × {reps}'**
+  String weightKgReps(String weight, String reps);
+
+  /// A bodyweight set's figure — no load to state, never '0 kg'.
+  ///
+  /// In en, this message translates to:
+  /// **'{reps} reps'**
+  String repsReps(String reps);
+
+  /// A timed hold's figure.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} seconds'**
+  String secondsSeconds(String seconds);
+
+  /// R07/R08 primary button for a bodyweight set. Names the numbers it is about to save.
+  ///
+  /// In en, this message translates to:
+  /// **'Done · {reps} reps'**
+  String doneRepsReps(String reps);
+
+  /// R07/R08 primary button for a timed hold.
+  ///
+  /// In en, this message translates to:
+  /// **'Done · {seconds} seconds'**
+  String doneSecondsSeconds(String seconds);
+
+  /// Undo bar after a bodyweight set is logged. Repeats the button's numbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {setNumber} saved · {reps} reps'**
+  String setSetnumberSavedRepsReps(String setNumber, String reps);
+
+  /// Undo bar after a timed hold is logged.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {setNumber} saved · {seconds} seconds'**
+  String setSetnumberSavedSecondsSeconds(String setNumber, String seconds);
+
+  /// R10/R12 heading. The day she trained, replacing the fixed Tuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s {day} done'**
+  String thatsDayDone(String day);
+
+  /// R10/R12: the points this session actually earned her, from the award ledger.
+  ///
+  /// In en, this message translates to:
+  /// **'+{points} points'**
+  String pointsPoints(String points);
+
+  /// Week line when three or more sessions are still to go. One and two have their own sentences.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} more and the week counts.'**
+  String countMoreAndTheWeekCounts(String count);
+
+  /// No description provided for @thisWeekCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'This week counts.'**
+  String get thisWeekCounts;
+
+  /// T07: the first-week arc counted from the arc, replacing the fixed 'Two done, three waiting'.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} done, {waiting} waiting'**
+  String doneDoneWaitingWaiting(String done, String waiting);
+
+  /// P01 bests tile: her lifetime personal bests, replacing the fixed '8 so far'.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} so far'**
+  String countSoFar(String count);
+
+  /// No description provided for @shareItWithYourGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Share it with your group'**
+  String get shareItWithYourGroup;
+
+  /// No description provided for @seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Seconds'**
+  String get seconds;
+
+  /// No description provided for @anotherReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Another reason'**
+  String get anotherReason;
+
+  /// No description provided for @thereIsNoPhotoPickerInThis.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no photo picker in this build yet, so nothing can be added to your media.'**
+  String get thereIsNoPhotoPickerInThis;
+
+  /// No description provided for @savingAnImageToYourPhoneIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving an image to your phone is not connected in this build yet.'**
+  String get savingAnImageToYourPhoneIs;
+
+  /// No description provided for @testModeThisIsYourOwnCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Test mode: this is your own coach page, so you can accept your own enquiry here.'**
+  String get testModeThisIsYourOwnCoach;
+
+  /// No description provided for @acceptAsTheCoachTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept as the coach (test)'**
+  String get acceptAsTheCoachTest;
+
+  /// No description provided for @sharingIsNotConnectedInThisBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing is not connected in this build yet, so nothing leaves this phone.'**
+  String get sharingIsNotConnectedInThisBuild;
+
+  /// No description provided for @noRecipeCarriesARamadanTagYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No recipe carries a Ramadan tag yet.'**
+  String get noRecipeCarriesARamadanTagYet;
+
+  /// No description provided for @removedFromSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from saved'**
+  String get removedFromSaved;
+
+  /// No description provided for @weDoNotKnowWhatYouAvoid.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not know what you avoid yet, so nothing can be logged.'**
+  String get weDoNotKnowWhatYouAvoid;
+
+  /// No description provided for @endThisCoachingNowTest.
+  ///
+  /// In en, this message translates to:
+  /// **'End this coaching now (test)'**
+  String get endThisCoachingNowTest;
+
+  /// No description provided for @thisDishIsNotInTheFood.
+  ///
+  /// In en, this message translates to:
+  /// **'This dish is not in the food list yet, so it cannot be logged from here.'**
+  String get thisDishIsNotInTheFood;
+
+  /// No description provided for @rose.
+  ///
+  /// In en, this message translates to:
+  /// **'Rose'**
+  String get rose;
+
+  /// No description provided for @sage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sage'**
+  String get sage;
+
+  /// No description provided for @amber.
+  ///
+  /// In en, this message translates to:
+  /// **'Amber'**
+  String get amber;
+
+  /// No description provided for @blue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get blue;
+
+  /// No description provided for @purple.
+  ///
+  /// In en, this message translates to:
+  /// **'Purple'**
+  String get purple;
+
+  /// No description provided for @teal.
+  ///
+  /// In en, this message translates to:
+  /// **'Teal'**
+  String get teal;
+
+  /// No description provided for @aNewCodeIsOnItsWay.
+  ///
+  /// In en, this message translates to:
+  /// **'A new code is on its way.'**
+  String get aNewCodeIsOnItsWay;
+
+  /// A range of two values the screen already knows: opening hours on a coach's page, or the number of clients she may take. Written out in each language rather than joined with a dash in code, which would read as English punctuation inside an Arabic line.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} to {to}'**
+  String fromToTo(String from, String to);
+
+  /// No description provided for @notYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet'**
+  String get notYet;
+}
+
+class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {
+  const _AppL10nDelegate();
+
+  @override
+  Future<AppL10n> load(Locale locale) {
+    return SynchronousFuture<AppL10n>(lookupAppL10n(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['ar', 'en'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppL10nDelegate old) => false;
+}
+
+AppL10n lookupAppL10n(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'ar':
+      return AppL10nAr();
+    case 'en':
+      return AppL10nEn();
+  }
+
+  throw FlutterError(
+    'AppL10n.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}

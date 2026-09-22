@@ -1,0 +1,102 @@
+// Cloud Storage rules.
+//
+// This file did not exist. Firestore had rules from the start and Storage had
+// none, which means every media path in this product has been running on
+// whatever the console default happened to be. It is created here for the admin
+// content library (DECISIONS.md D12, plan G16) and **deliberately denies
+// everything else**, so the gap is now a closed door rather than an open one.
+//
+// # Other groups own the other paths
+//
+// ID and selfie capture, community post media and coach portfolio media are not
+// mine to author. They add their own `match` blocks ABOVE the catch-all. Until
+// they do, they are denied — which is the correct direction to fail.
+//
+// # Two absences that are deliberate, and must stay
+//
+//   * **Progress photos have no path here at all.** G7 established they are
+//     local-only with no server copy, and A02's export is narrower than the
+//     words "download everything" for exactly that reason. If someone later
+//     notices the "gap" and adds `users/{uid}/photos/**`, they will have moved
+//     a woman's body photographs onto a server, silently, while fixing what
+//     looked like an oversight. It is not an oversight.
+//   * **ID card and selfie images have no long-lived path.** Rule 7 says they
+//     are deleted once the check completes, and the cheapest way to keep that
+//     promise is to give them nowhere durable to live. The verification
+//     provider holds them for the duration of the check and destroys them; that
+//     flow runs server-side and does not write here.
+//
+// # Nothing here is world-readable
+//
+// This is a women-only product. Read requires a signed-in account everywhere,
+// including the exercise videos — a public bucket URL would be a way into the
+// library from outside the gate.
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Server-set custom claim, exactly as token.verified and token.coachV are.
+    // A client cannot grant itself admin.
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isVideo() {
+      return request.resource.contentType.matches('video/.*');
+    }
+
+    // ------------------------------------------------ the content library
+    //
+    // Exercise demonstrations, recipe photographs, programme artwork. Uploaded
+    // in bulk from Z10, read by every signed-in member.
+    //
+    // The size ceiling is a guard against an accidental upload of the wrong
+    // file, not a quality setting: these are short demonstration clips, and a
+    // 200 MB video would be unwatchable on Egyptian mobile data long before it
+    // was a storage problem.
+    match /content/{collection}/{docId}/{file} {
+      allow read: if signedIn();
+      allow write: if isAdmin()
+                   && (isImage() || isVideo())
+                   && request.resource.size < 200 * 1024 * 1024;
+      allow delete: if isAdmin();
+    }
+
+    // ------------------------------------------------- her own data export
+    //
+    // A02's "Download my data" writes here from a Cloud Function and she reads
+    // it back. Function-written only: a client that could write its own export
+    // could put any file behind a link the app presents as her own data.
+    //
+    // Deletion manifest row 25 deletes this prefix. Objects also expire after
+    // 24 hours, so an export left on a shared device stops working by itself.
+    //
+    // `user-media/{uid}/**` from G7 §1.3 is deliberately NOT added here. Its
+    // owners are the community and coach-media groups, and neither is planned
+    // yet; opening the path before its rules exist is how a media bucket ends
+    // up governed by nothing. It stays denied by the catch-all until the group
+    // that owns it writes its block.
+    match /user-exports/{uid}/{allPaths=**} {
+      allow read:  if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ------------------------------------------------------------- default
+    //
+    // Everything not named above is denied, for everyone, in both directions.
+    // New media paths are added as explicit blocks above this one.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

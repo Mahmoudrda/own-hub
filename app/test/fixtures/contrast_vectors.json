@@ -1,0 +1,202 @@
+{
+  "_": "Shared contrast vectors for G13's theme validator. Read by test/features/coachbrand/contrast_test.dart today, and by the publish Function's contrast.test.ts when it is written, so the two implementations of WCAG 2.1 cannot drift (G13 s1.4.6). Every value below was computed from the specification, independently of the Dart code it checks.",
+  "spec": "WCAG 2.1 - relative luminance and contrast ratio (1.4.3, 1.4.11)",
+  "thresholds": {
+    "_": "G13 s1.4.3. 3.0:1 for display and headline ONLY; 4.5:1 for every other text style INCLUDING titleL 20/600 and titleM 17/600 - 600 is not bold, so neither qualifies as WCAG large text; 3.0:1 non-text.",
+    "display": 3.0,
+    "headline": 3.0,
+    "titleL": 4.5,
+    "titleM": 4.5,
+    "titleS": 4.5,
+    "body": 4.5,
+    "bodyM": 4.5,
+    "label": 4.5,
+    "nav": 4.5,
+    "nonText": 3.0,
+    "largeTextStyles": [
+      "display",
+      "headline"
+    ]
+  },
+  "luminance": [
+    {
+      "hex": "#FFFFFF",
+      "l": 1.0
+    },
+    {
+      "hex": "#000000",
+      "l": 0.0
+    },
+    {
+      "hex": "#808080",
+      "l": 0.21586050011389923
+    },
+    {
+      "hex": "#B4526E",
+      "l": 0.16863674070423443
+    },
+    {
+      "hex": "#4F7359",
+      "l": 0.14645000929933893
+    },
+    {
+      "hex": "#8A5A17",
+      "l": 0.1277746414289684
+    },
+    {
+      "hex": "#4A5B8C",
+      "l": 0.10831466580452125
+    },
+    {
+      "hex": "#7A4A7E",
+      "l": 0.10541491984908147
+    },
+    {
+      "hex": "#2F6E6A",
+      "l": 0.12796805843842976
+    },
+    {
+      "hex": "#241A1E",
+      "l": 0.012075943890124532
+    },
+    {
+      "hex": "#FFF8F9",
+      "l": 0.9523435649452184
+    }
+  ],
+  "ratios": [
+    {
+      "a": "#FFFFFF",
+      "b": "#000000",
+      "ratio": 21.0
+    },
+    {
+      "a": "#FFFFFF",
+      "b": "#FFFFFF",
+      "ratio": 1.0
+    },
+    {
+      "a": "#000000",
+      "b": "#808080",
+      "ratio": 5.317210002277984
+    },
+    {
+      "a": "#FFFFFF",
+      "b": "#808080",
+      "ratio": 3.9494396480491156
+    },
+    {
+      "a": "#241A1E",
+      "b": "#FFF8F9",
+      "ratio": 16.14705314379727
+    },
+    {
+      "a": "#FFFFFF",
+      "b": "#B4526E",
+      "ratio": 4.802486519959654
+    },
+    {
+      "a": "#FFFFFF",
+      "b": "#4F7359",
+      "ratio": 5.344871215557298
+    },
+    {
+      "a": "#FFFFFF",
+      "b": "#2F6E6A",
+      "ratio": 5.899935130006829
+    }
+  ],
+  "percentile90": [
+    {
+      "_": "nearest rank: index ceil(0.9n) - 1, sorted ascending",
+      "samples": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9
+      ],
+      "p90": 0.8
+    },
+    {
+      "samples": [
+        0.5
+      ],
+      "p90": 0.5
+    },
+    {
+      "samples": [
+        1.0,
+        0.0
+      ],
+      "p90": 1.0
+    },
+    {
+      "_": "one blown-out sky: 90% dark stone, 10% white",
+      "samplesRepeat": [
+        {
+          "value": 0.02,
+          "count": 920
+        },
+        {
+          "value": 1.0,
+          "count": 104
+        }
+      ],
+      "mean": 0.1195312499999997,
+      "p90": 1.0
+    }
+  ],
+  "overlayFloors": [
+    {
+      "_": "A dark region needs no scrim at all.",
+      "regionP90": 0.02,
+      "text": "#FFFFFF",
+      "scrim": "#000000",
+      "minAlpha": 0.0,
+      "refused": false
+    },
+    {
+      "_": "The blown-out sky. The MEAN of the same region would say alphaFromMean; the 90th percentile says minAlpha, and the 90th percentile is what a reader's eye lands on.",
+      "regionP90": 1.0,
+      "text": "#FFFFFF",
+      "scrim": "#000000",
+      "alphaFromMean": 0.0,
+      "minAlpha": 0.82,
+      "refused": false
+    },
+    {
+      "_": "Mid-grey headline on a blown-out photo. Even 0.9 fails, so the layout is refused and photo-above is offered instead.",
+      "regionP90": 1.0,
+      "text": "#808080",
+      "scrim": "#000000",
+      "minAlpha": 0.9,
+      "refused": true
+    },
+    {
+      "regionP90": 0.5,
+      "text": "#FFFFFF",
+      "scrim": "#000000",
+      "minAlpha": 0.64,
+      "refused": false
+    }
+  ],
+  "curatedSeeds": [
+    "#B4526E",
+    "#4F7359",
+    "#8A5A17",
+    "#4A5B8C",
+    "#7A4A7E",
+    "#2F6E6A"
+  ],
+  "contrastLevels": [
+    0.0,
+    0.5,
+    1.0
+  ]
+}

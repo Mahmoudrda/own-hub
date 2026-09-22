@@ -1,0 +1,377 @@
+/// A02 — Profile and settings.
+///
+/// Matches `6-v2/src/screens-account.mjs` → `A02`, with one row the prototype
+/// does not have and the product cannot ship without: **allergies and dietary
+/// preferences**.
+///
+/// # The allergy row is the point of this screen
+///
+/// `DECISIONS.md` D3 — "ask early, editable forever" — names allergies among the
+/// answers that must be editable in My Profile, and `DECISIONS.md` records under
+/// "Blocking Phase 2" that **no screen anywhere collects them**. That is why
+/// `AppRouter.eatConstraints` is pinned to `DietaryConstraints.none` — a claim
+/// that every woman was asked and named nothing, true of nobody — and why
+/// `P0-EAT-01` cannot pass.
+///
+/// The editor is a **sheet**, not a route: HANDOFF rule 16 forbids turning a
+/// state into a destination, and there is no screen id for it among the 161.
+///
+/// G7 hosts this row; **G2 writes the field** (G7 Q18). The write goes through
+/// [DietaryProfileRepository], whose Firestore implementation belongs beside
+/// `IntakeRepository` on `users/{uid}.profile`.
+///
+/// # Numbers this screen does not state
+///
+/// The prototype's header reads "Mai Farouk · Verified woman · Regular · level
+/// 7". Three of those four are unrenderable as facts about her:
+///
+///   * the name is hers and **is** rendered — a name is a value, not copy;
+///   * "Verified woman" has no standalone dictionary string, so the badge is the
+///     verified icon alone;
+///   * **the tier and level are not rendered at all.** `DECISIONS.md` D6: "Until
+///     written here, no tier number is authoritative", and `verifiedWomanRegularLevel7`
+///     is a fixed sample. `PHASE1-FIXES.md` §13 records `T05` shipping exactly
+///     these three numbers as her personal facts.
+///
+/// Likewise "Period day 2 · symptom tracking" and "Sara Hany · day 9 of 30" are
+/// the mockup's samples with no parameterised form in the dictionary, so those
+/// rows carry no subtitle rather than a subtitle about somebody else.
+library;
+
+import 'package:flutter/material.dart';
+
+import '../../../l10n/app_l10n.dart';
+import '../../../theme/app_tokens.dart';
+import '../../../ui/app_avatar.dart';
+import '../../../ui/app_button.dart';
+import '../../../ui/app_chip_row.dart';
+import '../../../ui/app_list_item.dart';
+import '../../../ui/app_nav_bar.dart';
+import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_sheet.dart';
+import '../../../ui/hand/hand.dart';
+import '../domain/dietary_profile.dart';
+import '../domain/privacy_settings.dart';
+import '../domain/verification_claim.dart';
+import 'account_view_models.dart';
+
+class ProfileView extends StatefulWidget {
+  const ProfileView({
+    super.key,
+    required this.dietaryRepository,
+    this.firstName,
+    this.verification = VerificationRecord.none,
+    this.notify = NotifySettings.initial,
+    this.onBack,
+    this.onOpenCycle,
+    this.onOpenCoach,
+    this.onOpenLanguage,
+    this.onOpenNotifications,
+    this.onOpenPrivacy,
+    this.onOpenSafetyCentre,
+    this.onOpenYourData,
+    this.onOpenAllScreens,
+    this.onSelectTab,
+  });
+
+  /// G2's port. A02 renders the row; G2 owns the field.
+  final DietaryProfileRepository dietaryRepository;
+
+  /// Typed by her at C13. Null renders the avatar without an initial rather
+  /// than inventing a name.
+  final String? firstName;
+
+  final VerificationRecord verification;
+  final NotifySettings notify;
+
+  final VoidCallback? onBack;
+  final VoidCallback? onOpenCycle;
+  final VoidCallback? onOpenCoach;
+  final VoidCallback? onOpenLanguage;
+  final VoidCallback? onOpenNotifications;
+  final VoidCallback? onOpenPrivacy;
+  final VoidCallback? onOpenSafetyCentre;
+
+  /// The testing index of every screen. Null — and the row absent — whenever
+  /// an account is required.
+  final VoidCallback? onOpenAllScreens;
+
+  /// Export and account deletion.
+  ///
+  /// **Deliberately a callback with no screen behind it yet.** The deletion
+  /// machine is built and tested (`AccountDeletionService`), but every sentence
+  /// its UI needs — "Deleting your account", "Your account is gone.", "Still
+  /// finishing", "You need a connection to delete your account" — is absent
+  /// from the dictionary. Drawing that flow would mean hardcoding English into
+  /// a widget, which §7 forbids and which an Arabic reader would meet as
+  /// untranslated text on the most consequential screen in the product.
+  final VoidCallback? onOpenYourData;
+
+  final ValueChanged<String>? onSelectTab;
+
+  @override
+  State<ProfileView> createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends State<ProfileView> {
+  late DietaryProfile _dietary = widget.dietaryRepository.read();
+
+  Future<void> _editDietary() async {
+    final saved = await showAppSheet<DietaryProfile>(
+      context: context,
+      children: [
+        _DietaryEditor(
+          initial: _dietary,
+          onSave: (profile) => Navigator.of(context).pop(profile),
+        ),
+      ],
+    );
+
+    if (saved == null || !mounted) return;
+
+    // G2 writes the field. A02 never touches `profile.allergies` itself.
+    final merged = await widget.dietaryRepository.save(
+      allergies: saved.allergies,
+      dietary: saved.dietary,
+    );
+    if (!mounted) return;
+    setState(() => _dietary = merged);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final view = ProfileScreenView.from(
+      verification: widget.verification,
+      dietary: _dietary,
+      notify: widget.notify,
+      firstName: widget.firstName,
+    );
+
+    return AppScaffold(
+      appBar: AppTopBar(onBack: widget.onBack),
+      footer: [AppNavBar(activeScreenId: 'T01', onSelect: widget.onSelectTab)],
+      children: [
+        _header(l10n, view),
+
+        _row(
+          icon: Icons.self_improvement,
+          title: l10n.myCycle,
+          onTap: widget.onOpenCycle,
+        ),
+        _row(
+          icon: Icons.sports_outlined,
+          title: l10n.myCoach,
+          onTap: widget.onOpenCoach,
+        ),
+
+        // D3's row. The one the Eat safety guard has been waiting for.
+        _row(
+          icon: Icons.restaurant_outlined,
+          title: l10n.allergiesAndDietaryPreferences,
+          subtitle: l10n.anythingYouCannotEat,
+          onTap: _editDietary,
+        ),
+
+        _row(
+          icon: Icons.language,
+          title: l10n.language,
+          subtitle: l10n.english_imxmn,
+          onTap: widget.onOpenLanguage,
+        ),
+        _row(
+          icon: Icons.notifications_none,
+          title: l10n.notifications,
+          // True only while her notification settings ARE the defaults this
+          // sentence describes. Otherwise it is a statement about somebody
+          // else's quiet hours.
+          subtitle: view.notifyIsDefault ? l10n.oneADayQuiet10pmTo8am : '',
+          onTap: widget.onOpenNotifications,
+        ),
+        _row(
+          icon: Icons.lock_outline,
+          title: l10n.privacy,
+          subtitle: l10n.whoSeesYourProfileAndWins,
+          onTap: widget.onOpenPrivacy,
+        ),
+        _row(
+          icon: Icons.shield_outlined,
+          title: l10n.safetyCentre,
+          subtitle: l10n.reportsBlockedMembersHelp,
+          onTap: widget.onOpenSafetyCentre,
+        ),
+        _row(
+          icon: Icons.download_outlined,
+          title: l10n.yourData,
+          subtitle: l10n.downloadEverythingOrDeleteYourAccount,
+          onTap: widget.onOpenYourData,
+        ),
+        if (widget.onOpenAllScreens != null)
+          _row(
+            icon: Icons.grid_view,
+            title: l10n.allScreens,
+            subtitle: l10n.openAnyScreenForTesting,
+            onTap: widget.onOpenAllScreens,
+          ),
+      ],
+    );
+  }
+
+  Widget _header(AppL10n l10n, ProfileScreenView view) {
+    final name = view.firstName;
+
+    return Row(
+      children: [
+        AppAvatar(firstName: name, size: 56),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Row(
+            children: [
+              // Her name on the line, as on the first page of a diary: the
+              // only mark on a page that is otherwise settings.
+              if (name != null && name.isNotEmpty)
+                Flexible(
+                  child: HandUnderline(
+                    level: HandLevel.crafted,
+                    gap: 3,
+                    child: Text(
+                      name,
+                      textWidthBasis: TextWidthBasis.longestLine,
+                      style: EditorialType.section,
+                    ),
+                  ),
+                ),
+              if (view.verified) ...[
+                const SizedBox(width: 6),
+                const Icon(
+                  Icons.verified,
+                  size: 18,
+                  color: AppColors.primaryDim,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _row({
+    required IconData icon,
+    required String title,
+    String subtitle = '',
+    VoidCallback? onTap,
+  }) {
+    return AppListItem(
+      leading: Icon(icon, size: 24, color: AppColors.primaryDim),
+      title: title,
+      subtitle: subtitle,
+      trailing: const Icon(
+        Icons.chevron_right,
+        size: 22,
+        color: AppColors.onSurfaceVariant,
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
+/// The allergy and dietary editor — a **branch of A02**, never a route.
+///
+/// The vocabulary is exactly what the prototype authors on `G17`, whose own
+/// design note calls it "the only place in the product where a client states her
+/// allergies". Every label is already in the dictionary in both languages, and
+/// nothing here adds an allergen content has not written: a plausible-looking
+/// allergen list is the fabricated safety guarantee this whole feature exists to
+/// avoid.
+class _DietaryEditor extends StatefulWidget {
+  const _DietaryEditor({required this.initial, required this.onSave});
+
+  final DietaryProfile initial;
+  final ValueChanged<DietaryProfile> onSave;
+
+  @override
+  State<_DietaryEditor> createState() => _DietaryEditorState();
+}
+
+class _DietaryEditorState extends State<_DietaryEditor> {
+  late final Set<AllergenTag> _allergies = {...?widget.initial.allergies};
+  late Set<DietaryTag> _dietary = {...?widget.initial.dietary};
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+
+    final allergenLabels = <AllergenTag, String>{
+      AllergenTag.nuts: l10n.noNuts,
+      AllergenTag.dairy: l10n.noDairy,
+      AllergenTag.gluten: l10n.noGluten,
+      AllergenTag.shellfish: l10n.noShellfish,
+    };
+
+    final dietaryLabels = <DietaryTag, String>{
+      DietaryTag.everything: l10n.everything,
+      DietaryTag.vegetarianWeekdays: l10n.vegetarianOnWeekdays,
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(l10n.allergiesAndDietaryPreferences, style: AppText.titleL),
+        const SizedBox(height: 14),
+
+        Text(
+          l10n.anythingYouCannotEat,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final tag in AllergenTag.values)
+              AppChip(
+                allergenLabels[tag]!,
+                selected: _allergies.contains(tag),
+                onTap: () => setState(() {
+                  if (!_allergies.remove(tag)) _allergies.add(tag);
+                }),
+              ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+        Text(
+          l10n.howYouUsuallyEat,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final tag in DietaryTag.values)
+              AppChip(
+                dietaryLabels[tag]!,
+                selected: _dietary.contains(tag),
+                // Single choice: "everything" and a restriction are not both
+                // true, and a woman who picks one has answered the question.
+                onTap: () => setState(() => _dietary = {tag}),
+              ),
+          ],
+        ),
+
+        const SizedBox(height: 16),
+        AppButton(
+          l10n.save,
+          // Saving with nothing selected is a real answer — "I have no
+          // allergies" — and is what turns `unknown` into `none`. That is the
+          // whole reason this screen exists, so the button is never disabled.
+          onPressed: () => widget.onSave(
+            DietaryProfile(allergies: _allergies, dietary: _dietary),
+          ),
+        ),
+      ],
+    );
+  }
+}

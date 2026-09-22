@@ -1,0 +1,173 @@
+// Routing is derived from the screen inventory, so these tests guard what
+// generation cannot: that the scope is the whole product (DECISIONS.md D1), and
+// that the six first-run states never became destinations (HANDOFF rule 16).
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/routing/app_routes.dart';
+
+void main() {
+  test('the generated inventory still holds every prototype screen', () {
+    // 161 until D12's admin content console landed: Z01–Z11 added eleven.
+    // D18 added Z12 and Z13, the recipe and programme forms, so those two
+    // collections can be authored one row at a time and not only by CSV.
+    // D25 added Z14, the switchboard — the only place in the product where a
+    // feature is turned on or off.
+    expect(appRoutes.length, 175);
+  });
+
+  test('every screen is a destination except the eight first-run states', () {
+    // D1 withdrew the MVP cut: both roles, every flow. 175 - 8 = 167.
+    //
+    // Six first-run states until the Cycle flow was built. Y11 and Y14 joined
+    // them: both are branches of Y03 rendered by the same widget, exactly as
+    // T06 is a branch of T01, so routing to them would mean rendering "severe
+    // symptoms" over a hub that has none.
+    expect(appDestinations.length, 167);
+    expect(appRoutes.length - firstRunStates.length, appDestinations.length);
+  });
+
+  test('all seventeen flows are reachable', () {
+    // Guards against the scope silently narrowing back to the client-only cut.
+    //
+    // Seventeen since D12: `admin` is the console staff use to author the
+    // content library, and the only flow whose role is neither client nor
+    // coach. It is listed here for the same reason as the rest — a flow that
+    // quietly stops being reachable is how a whole surface disappears.
+    final flows = appDestinations.values.map((r) => r.flow).toSet();
+    expect(flows.length, 17);
+    for (final f in [
+      'signup',
+      'today',
+      'train',
+      'eat',
+      'progress',
+      'account',
+      'cycle',
+      'community',
+      'coaching',
+      'coached',
+      'onboarding',
+      'assistant',
+      'coach',
+      'coach-setup',
+      'coachbrand',
+      'coachplan',
+      'admin',
+    ]) {
+      expect(flows, contains(f), reason: '$f must be reachable');
+    }
+  });
+
+  test('no first-run state is routable', () {
+    // Rule 16. If one of these gained a route, something could navigate to
+    // "Home, empty" while Home is not empty.
+    expect(firstRunStates, {
+      'T06',
+      'E09',
+      'M17',
+      'K24',
+      'W11',
+      'B14',
+      'Y11',
+      'Y14',
+    });
+    for (final id in firstRunStates) {
+      expect(
+        appRoutes.containsKey(id),
+        isTrue,
+        reason: '$id should exist in the inventory as a screen',
+      );
+      expect(
+        appDestinations.containsKey(id),
+        isFalse,
+        reason: '$id must not be a destination',
+      );
+      expect(
+        screenIdForRoute(appRoutes[id]!.name),
+        isNull,
+        reason: '${appRoutes[id]!.name} must not resolve',
+      );
+      expect(
+        AppRouter.onGenerateRoute(RouteSettings(name: appRoutes[id]!.name)),
+        isNull,
+      );
+    }
+  });
+
+  test('route names are unique and absolute', () {
+    final names = appDestinations.values.map((r) => r.name).toList();
+    expect(names.toSet().length, names.length);
+    expect(names.every((n) => n.startsWith('/')), isTrue);
+  });
+
+  test('a screen from every part of the product resolves', () {
+    // One per area, so a regression in any flow shows up here.
+    for (final id in [
+      'C01',
+      'O01',
+      'T01',
+      'R01',
+      'E01',
+      'P01',
+      'A01',
+      'Y01',
+      'M01',
+      'H01',
+      'G01',
+      'X01',
+      'K01',
+      'B01',
+      'W01',
+    ]) {
+      final route = appRoutes[id];
+      if (route == null) continue;
+      expect(screenIdForRoute(route.name), id, reason: '$id must resolve');
+      expect(
+        AppRouter.onGenerateRoute(RouteSettings(name: route.name)),
+        isNotNull,
+      );
+    }
+  });
+
+  testWidgets('an unbuilt destination says so instead of looking finished', (
+    WidgetTester tester,
+  ) async {
+    // The subject is chosen at run time, not named here.
+    //
+    // This test has been aimed at P02, then M01, then B02, then B12, and every
+    // one of them was eventually written — so the test that proves an unbuilt
+    // screen admits it has four times been proving something about a finished
+    // one. It now finds a destination with no widget behind it, whichever that
+    // is today, and falls back to an unknown route once every destination is
+    // built. Either way the guarantee under test is the same: a route that
+    // resolves to no screen says so, rather than rendering something that
+    // looks finished.
+    final saved = AppRouter.featureFlags;
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      for (final f in Feature.values) f: true,
+    });
+    addTearDown(() => AppRouter.featureFlags = saved);
+
+    final unbuilt = appDestinations.keys.where((id) => !AppRouter.isBuilt(id));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        onGenerateRoute: AppRouter.onGenerateRoute,
+        onUnknownRoute: AppRouter.onUnknownRoute,
+        initialRoute: unbuilt.isEmpty
+            ? '/nothing/serves-this'
+            : appDestinations[unbuilt.first]!.name,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    if (unbuilt.isNotEmpty) {
+      expect(find.text(unbuilt.first), findsOneWidget);
+    }
+    expect(find.textContaining('Not built yet'), findsOneWidget);
+  });
+}

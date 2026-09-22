@@ -1,0 +1,163 @@
+/// Identity verification — the reason this product exists.
+///
+/// A woman is admitted to the community only after the app has established she
+/// is a woman. Everything in this file is shaped by four rules that are not
+/// negotiable, and each is enforced structurally rather than by a check:
+///
+///  * **Rule 8 — no face-based gender classification, anywhere.** Sex is read
+///    from the 13th digit of the Egyptian national ID number and from nothing
+///    else. The selfie establishes that the person holding the card is the
+///    person on it; it is never classified. (*Tickle v Giggle*, Full Federal
+///    Court of Australia, May 2026.)
+///  * **Rule 7 — the images are deleted.** Only the outcome is kept. There is
+///    deliberately no field on [VerificationResult] that can hold an image, a
+///    URL or a path, so "we forgot to delete it" is not a state this type can
+///    represent.
+///  * **Spine C5 — the result is server-written.** Nothing here writes it; the
+///    app reads a decision and a custom claim. A client that could set its own
+///    verified flag would make the women-only gate one line to bypass.
+///  * **The niqab path is first-class.** A woman who will not show her face to a
+///    camera is not an edge case to be handled later — [VerificationMethod] has
+///    a variant for her, and no path through this file demands a selfie.
+library;
+
+import 'package:meta/meta.dart';
+
+/// How she was checked.
+enum VerificationMethod {
+  /// ID document plus a liveness selfie, decided automatically.
+  automatic,
+
+  /// A woman reviewer looked at it. Used when the automatic check cannot decide.
+  humanReview,
+
+  /// A video call or a partner gym, for a woman who will not be photographed.
+  /// No selfie is captured on this path at any point.
+  niqabFriendly,
+}
+
+/// Where she is in the check.
+///
+/// A sealed hierarchy rather than an enum plus loose fields, so an impossible
+/// combination — decided but with no method, rejected but carrying a review
+/// queue position — cannot be constructed.
+@immutable
+sealed class VerificationState {
+  const VerificationState();
+
+  /// She has not started. Training, recipes and coach profiles are already open
+  /// to her; only the community waits.
+  const factory VerificationState.notStarted() = VerificationNotStarted;
+
+  /// Submitted, waiting on the automatic check.
+  ///
+  /// [startedAt] is what makes C13's "verified in N seconds" a measurement
+  /// rather than a decoration. Nothing recorded a start time before, so that
+  /// sentence fell back to the prototype's 74 and told every woman the same
+  /// invented number about her own check.
+  const factory VerificationState.checking({DateTime? startedAt}) =
+      VerificationChecking;
+
+  /// The automatic check could not decide, so a woman will look at it.
+  /// **Not a rejection**, and the copy must never imply one.
+  const factory VerificationState.awaitingReviewer({DateTime? submittedAt}) =
+      VerificationAwaitingReviewer;
+
+  const factory VerificationState.verified(VerificationResult result) =
+      VerificationVerified;
+
+  /// Could not be verified. She is told we are reviewing her application to keep
+  /// the community safe and private, and routed to the woman-reviewer path —
+  /// never accused, never dead-ended (DECISIONS.md D8).
+  const factory VerificationState.needsAnotherLook() =
+      VerificationNeedsAnotherLook;
+
+  /// Whether the community is open to her.
+  bool get isVerified => this is VerificationVerified;
+
+  /// Whether she is waiting on someone. Drives the "we are reviewing" copy.
+  bool get isPending =>
+      this is VerificationChecking ||
+      this is VerificationAwaitingReviewer ||
+      this is VerificationNeedsAnotherLook;
+}
+
+class VerificationNotStarted extends VerificationState {
+  const VerificationNotStarted();
+}
+
+class VerificationChecking extends VerificationState {
+  const VerificationChecking({this.startedAt});
+
+  /// When the check began. Nullable because a check restored from a cold start
+  /// genuinely does not know, and guessing would reintroduce the fiction this
+  /// field exists to remove.
+  final DateTime? startedAt;
+}
+
+class VerificationAwaitingReviewer extends VerificationState {
+  const VerificationAwaitingReviewer({this.submittedAt});
+  final DateTime? submittedAt;
+}
+
+class VerificationVerified extends VerificationState {
+  const VerificationVerified(this.result);
+  final VerificationResult result;
+}
+
+class VerificationNeedsAnotherLook extends VerificationState {
+  const VerificationNeedsAnotherLook();
+}
+
+/// What is kept after a successful check.
+///
+/// Note what is absent and must stay absent: no image, no document number, no
+/// date of birth, no name. Rule 7 says the pictures are deleted once the check
+/// completes, and the cheapest way to keep that promise is to have nowhere to
+/// put them.
+@immutable
+class VerificationResult {
+  const VerificationResult({
+    required this.method,
+    required this.decidedAt,
+    required this.imagesDeletedAt,
+    this.startedAt,
+  });
+
+  final VerificationMethod method;
+  final DateTime decidedAt;
+
+  /// When the check began, carried through from [VerificationChecking].
+  ///
+  /// Nullable, and [took] is nullable with it, because C13 must be able to tell
+  /// the difference between "this took 12 seconds" and "we did not time it".
+  /// The screen says nothing about duration in the second case rather than
+  /// reaching for a plausible-looking number.
+  final DateTime? startedAt;
+
+  /// How long the check actually took, or null when it was never timed.
+  Duration? get took {
+    final began = startedAt;
+    return began == null ? null : decidedAt.difference(began);
+  }
+
+  /// When the provider confirmed the images were destroyed.
+  ///
+  /// Nullable on purpose: null means "not yet confirmed", which is a state the
+  /// reconciler must page on rather than a state to render as fine. A boolean
+  /// would have made "we never checked" indistinguishable from "it is done".
+  final DateTime? imagesDeletedAt;
+
+  bool get imagesConfirmedDeleted => imagesDeletedAt != null;
+}
+
+/// Reads verification state. **There is no write method, by design** — the
+/// decision is made by a Cloud Function and delivered as an auth claim.
+abstract class VerificationRepository {
+  /// Her current state.
+  Stream<VerificationState> watch();
+
+  /// Starts a check. Returns the state to show while it runs; the outcome
+  /// arrives through [watch].
+  Future<VerificationState> submit({required VerificationMethod method});
+}
