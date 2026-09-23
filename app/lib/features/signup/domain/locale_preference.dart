@@ -44,10 +44,12 @@ abstract class LocalePreference {
 
 /// In-memory implementation.
 ///
-/// TODO(build): replace with a `shared_preferences` implementation so the choice
-/// survives a restart, and add it alongside the Firebase packages in one batch —
-/// both bring platform channels, and adding them together means one pod install
-/// and one build verification rather than two.
+/// The choice does survive a restart, and it is deliberately not this class
+/// that makes it: `lib/app_state/local_persistence.dart` writes one document
+/// holding every store, the language among them, and reads it back before the
+/// first frame. A `shared_preferences` implementation here would mean a second
+/// key, written on a different schedule, that account deletion would have to
+/// remember separately.
 class InMemoryLocalePreference implements LocalePreference {
   InMemoryLocalePreference([this._value]);
 

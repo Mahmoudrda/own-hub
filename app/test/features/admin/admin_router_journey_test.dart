@@ -29,6 +29,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/admin/domain/content_schema.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -86,7 +87,15 @@ void main() {
   // file exactly as it survives between screens in the running app. Resetting
   // it here keeps each test independent; the PRODUCT fix for the same hazard is
   // that `onAdd` clears it, which the negative control below proves.
-  setUp(() => AppRouter.adminEditingRow = const <String, String>{});
+  final savedFlags = AppRouter.featureFlags;
+  setUp(() {
+    AppRouter.adminEditingRow = const <String, String>{};
+    // The console is off in the first release and compiled out of a release
+    // build, so this file turns it on rather than inheriting a default it no
+    // longer has. What is being tested is the console, not the flag.
+    AppRouter.featureFlags = FeatureFlags.everything;
+  });
+  tearDown(() => AppRouter.featureFlags = savedFlags);
 
   group('the library the router hands the console is the seeded one', () {
     testWidgets('Z04 lists stored foods rather than an empty collection', (

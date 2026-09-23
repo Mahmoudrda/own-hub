@@ -97,6 +97,13 @@ class InMemoryIntakeRepository implements IntakeRepository {
     return _intake;
   }
 
+  /// Puts back the answers she had already given when the app closed.
+  ///
+  /// The storage layer calls it at launch, before any screen exists, and
+  /// [writes] stays empty because nothing was merged — see
+  /// `lib/app_state/local_persistence.dart`.
+  void restore(Intake intake) => _intake = intake;
+
   /// Back to a woman who has answered nothing.
   ///
   /// Account deletion calls it: the intake IS her setup answers, and leaving

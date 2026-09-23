@@ -137,45 +137,70 @@ class FeatureFlags {
 
   final Map<Feature, bool> _values;
 
-  /// What ships today.
+  /// What the first public release contains.
   ///
-  /// Everything on, at the owner's instruction, so the whole product can be
-  /// explored. See the library doc for the three that were off for reasons
-  /// rather than for sequencing.
+  /// Everything here is on because it works on this phone, with no server
+  /// behind it: she trains, she eats, she tracks her cycle, she watches her
+  /// own progress, and all of it is hers and stays on her handset.
+  ///
+  /// Everything else is off, and each one is off for the same reason rather
+  /// than for taste: **it needs a back end that does not exist yet.** An
+  /// account needs somewhere to live; verification needs an identity provider;
+  /// the community needs moderation, which means a person and a queue, not a
+  /// list in memory; coaching needs both women to be real accounts and money to
+  /// move; the assistant needs a model behind a Cloud Function. Shipping any of
+  /// them now would mean shipping a promise the build cannot keep, which is
+  /// both a rejection and, in the community's case, a safety claim that is not
+  /// true.
+  ///
+  /// Turning one back on is one line here. Turning several back on is the
+  /// second release, once Firebase is standing.
   static const FeatureFlags shipped = FeatureFlags(<Feature, bool>{
-    // OFF at the owner's instruction, so the whole app can be browsed and
-    // tested without creating an account. Switch it back ON before any
-    // public release: with it off, anyone who installs the app is inside,
-    // unverified.
+    // No accounts in the first release, so no sign-up and no verification.
+    // The screens still exist and are still tested; they are simply not a door
+    // anyone walks through yet. Note that "no account required" is now the
+    // shipping shape, so it can no longer be what guards a testing aid: see
+    // `AppRouter.testingAidsAllowed`.
     Feature.accountRequired: false,
+    Feature.signUp: false,
+    Feature.verification: false,
 
-    // Phase 1 — built and shipped.
-    Feature.signUp: true,
-    Feature.verification: true,
+    // The first release, and all of it works with no network at all.
     Feature.today: true,
     Feature.train: true,
-
-    // Phase 2 — built and shipped.
     Feature.eat: true,
     Feature.progress: true,
     Feature.cycle: true,
     Feature.privacyCentre: true,
-    Feature.adminConsole: true,
 
-    // Phase 3 — all on at the owner's instruction.
-    Feature.community: true,
-    Feature.communityPosts: true,
-    Feature.communityVideo: true,
-    Feature.communityVoiceNotes: true,
-    Feature.communityFollowerCounts: true,
-    Feature.coachApp: true,
-    Feature.coachPlanning: true,
-    Feature.coachPortfolio: true,
-    Feature.coachedLife: true,
-    Feature.marketplace: true,
-    Feature.payments: true,
-    Feature.assistant: true,
+    // The console is for the people who run the product, not for the women
+    // using it. It is also compiled out of a release build entirely.
+    Feature.adminConsole: false,
+
+    // Waiting on a back end.
+    Feature.community: false,
+    Feature.communityPosts: false,
+    Feature.communityVideo: false,
+    Feature.communityVoiceNotes: false,
+    Feature.communityFollowerCounts: false,
+    Feature.coachApp: false,
+    Feature.coachPlanning: false,
+    Feature.coachPortfolio: false,
+    Feature.coachedLife: false,
+    Feature.marketplace: false,
+    Feature.payments: false,
+    Feature.assistant: false,
   });
+
+  /// Every feature on, with no account required.
+  ///
+  /// This is the shape the product is explored and tested in, not the shape it
+  /// ships in. The crawler, the journeys and the large-text sweep build it so
+  /// that a screen which is off in the first release is still walked and still
+  /// proved, instead of quietly rotting until the release that turns it on.
+  static FeatureFlags get everything =>
+      allOff.with_(<Feature, bool>{for (final f in Feature.values) f: true})
+          .with_(<Feature, bool>{Feature.accountRequired: false});
 
   /// Everything off. Useful in tests that assert a screen is unreachable.
   static final FeatureFlags allOff = FeatureFlags(<Feature, bool>{

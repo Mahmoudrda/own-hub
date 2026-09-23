@@ -3,10 +3,11 @@
 #
 # Adapted from flutter-store-release-guide.md Phase 8, plus the gates this app
 # needs that the guide could not know about:
-#   1. `Feature.accountRequired` must be ON. With it off the app has no sign-up,
-#      carries an index of every screen, prints the sign-in code on the screen
-#      that asks for it, and opens a test payment rail. None of that may reach a
-#      store, and all of it looks normal unless something checks.
+#   1. No testing affordance may reach a store. The first release ships with no
+#      account, so "an account is required" can no longer be what separates a
+#      testing build from a real one: the index of every screen, the printed
+#      sign-in code and the test payment rail all key off the build mode now,
+#      and this checks that they still do.
 #   2. The four public pages must have addresses in lib/config/legal_links.dart.
 #      The in-app privacy row is drawn only when they do, so an empty value is
 #      not a cosmetic gap: it is a missing store requirement.
@@ -39,7 +40,9 @@ check "version line present"               "grep -qE '^version: [0-9]+\.[0-9]+\.
 
 echo
 echo "-- this is a store build, not a testing build --"
-check "an account is required"             "grep -q 'Feature.accountRequired: true' lib/domain/flags/feature_flags.dart"
+check "testing aids need a debug build"    "grep -q 'kDebugMode && !featureFlags.isOn(Feature.accountRequired)' lib/routing/app_router.dart"
+check "no aid keys off a flag alone"       "! grep -rn 'isTestMode' lib/app_state | grep -q 'accountRequired'"
+check "the console is compiled out"        "grep -q 'resolvesInThisBuild' lib/routing/app_router.dart"
 check "release guards pass"                "flutter test test/release_readiness_test.dart"
 
 echo

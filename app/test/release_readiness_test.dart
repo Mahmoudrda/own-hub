@@ -212,4 +212,65 @@ void main() {
       );
     });
   });
+
+  group('the first release is the shape that ships', () {
+    testWidgets('it opens on Home, with no community and no coach side', (
+      tester,
+    ) async {
+      AppRouter.featureFlags = FeatureFlags.shipped;
+      await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
+      await tester.pumpAndSettle();
+      final l10n = await AppL10n.delegate.load(const Locale('en'));
+
+      expect(
+        find.text(l10n.startEverythingsReady),
+        findsOneWidget,
+        reason: 'no account, so Home is the front door',
+      );
+      expect(
+        find.text(l10n.community),
+        findsNothing,
+        reason: 'the community needs a moderator, so it is dark in 1.0',
+      );
+      expect(
+        find.text(l10n.allScreens),
+        findsNothing,
+        reason: 'the index of every screen is not part of the product',
+      );
+    });
+
+    test('the testing aids key off the build, not off a flag', () {
+      // `Feature.accountRequired` used to be the difference between a testing
+      // build and a real one. It cannot be any more: the first release ships
+      // with it off. This asserts the wiring at source, because a widget test
+      // always runs in debug and so can never observe the release arm.
+      final router = File('lib/routing/app_router.dart').readAsStringSync();
+      expect(
+        router.contains(
+          'kDebugMode && !featureFlags.isOn(Feature.accountRequired)',
+        ),
+        isTrue,
+        reason: 'testingAidsAllowed must require a debug build',
+      );
+      for (final aid in [
+        'onOpenAllScreens: !testingAidsAllowed',
+        'testCode: testingAidsAllowed',
+      ]) {
+        expect(router.contains(aid), isTrue, reason: 'ungated aid: $aid');
+      }
+      for (final state in [
+        'lib/app_state/coach_profile_state.dart',
+        'lib/app_state/coaching_link_state.dart',
+        'lib/app_state/coach_portfolio_state.dart',
+      ]) {
+        expect(
+          File(state)
+              .readAsStringSync()
+              .contains('AppRouter.testingAidsAllowed'),
+          isTrue,
+          reason: '$state opens a test rail; it must key off the build',
+        );
+      }
+    });
+  });
 }

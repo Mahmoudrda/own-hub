@@ -23,7 +23,11 @@
 ///   * **Home's meal card.** `recordMeal` is called when a meal is *written*,
 ///     never when it is merely pending — Home is not on screen during the undo
 ///     window, so a log she takes back never reaches it.
-///   * **Recipes she saved.** In memory, like everything else in this build.
+///   * **Recipes she saved.**
+///
+/// Her plates and her bookmarks are written to the phone with everything else
+/// (`local_persistence.dart`); the log bus is not, because a meal still inside
+/// its five seconds was never written.
 ///
 /// Nothing here is seeded. A woman who has logged nothing has no plates, and
 /// Home keeps whatever it opened with.
@@ -318,6 +322,33 @@ class EatAppState {
       '${at.year.toString().padLeft(4, '0')}-'
       '${at.month.toString().padLeft(2, '0')}-'
       '${at.day.toString().padLeft(2, '0')}';
+
+  /// Her plates, keyed the way they are stored, as the snapshot keeps them.
+  ///
+  /// [usualPlates] is the ordered view a screen wants; this is the map the
+  /// storage layer writes. See `lib/app_state/local_persistence.dart`.
+  Map<String, UsualPlate> get platesByIdentity =>
+      Map<String, UsualPlate>.unmodifiable(_plates);
+
+  /// The recipes she bookmarked.
+  Set<String> get savedRecipes => Set<String>.unmodifiable(_saved);
+
+  /// Puts back her plates and her bookmarks. The mirror of [reset].
+  ///
+  /// The log bus is deliberately not restored: a meal still inside its five
+  /// seconds when the app closed was never written, and resurrecting it would
+  /// be logging a meal she can no longer take back.
+  void restore({
+    Map<String, UsualPlate> plates = const <String, UsualPlate>{},
+    Iterable<String> savedRecipes = const <String>[],
+  }) {
+    _plates
+      ..clear()
+      ..addAll(plates);
+    _saved
+      ..clear()
+      ..addAll(savedRecipes);
+  }
 
   /// Drops everything without writing it. For tests and sign-out.
   void reset() {

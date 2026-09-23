@@ -53,29 +53,30 @@ void main() {
     });
   });
 
-  group('the shipped defaults match what is actually finished', () {
-    test('Phase 1 and 2 flows are reachable', () {
-      for (final flow in ['signup', 'today', 'train', 'eat', 'progress',
-                          'cycle', 'admin']) {
+  group('the shipped defaults are the first release', () {
+    test('the flows she gets on day one are reachable', () {
+      for (final flow in ['today', 'train', 'eat', 'progress', 'cycle']) {
         final f = AppRouter.featureForFlow(flow);
         expect(f, isNotNull, reason: flow);
         expect(
           FeatureFlags.shipped.isOn(f!),
           isTrue,
-          reason: '$flow is built and tested; it should not be dark',
+          reason: '$flow works with no server behind it and should not be dark',
         );
       }
     });
 
-    test("every Phase 3 flow is reachable, at the owner's instruction", () {
-      for (final flow in ['community', 'coach', 'coachplan', 'coachbrand',
-                          'coached', 'coaching', 'assistant']) {
+    test('the flows that need a back end are dark', () {
+      for (final flow in ['signup', 'admin', 'community', 'coach', 'coachplan',
+                          'coachbrand', 'coached', 'coaching', 'assistant']) {
         final f = AppRouter.featureForFlow(flow);
         expect(f, isNotNull, reason: flow);
         expect(
           FeatureFlags.shipped.isOn(f!),
-          isTrue,
-          reason: '$flow was switched on deliberately',
+          isFalse,
+          reason:
+              '$flow would promise something this build cannot do. Turning '
+              'it on belongs to the release that has a server.',
         );
       }
     });

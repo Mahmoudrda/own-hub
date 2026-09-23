@@ -11,8 +11,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/identity/user_roles.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_nav_bar.dart';
 
@@ -38,6 +40,13 @@ Widget _host(
 }
 
 void main() {
+  // The bar hides a tab whose feature is off, and the first release ships
+  // without the community. This file is about the bar's own behaviour, so it
+  // states the world it wants rather than inheriting one that will move again.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(() => AppRouter.featureFlags = FeatureFlags.everything);
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('a woman sees her four destinations', () {
     testWidgets('all four, labelled', (tester) async {
       await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'R01')));
@@ -81,8 +90,10 @@ void main() {
 
   group('the bar follows her active role', () {
     test('each role maps to exactly one bar', () {
-      expect(tabsFor(AppRole.trainee), same(traineeTabs));
-      expect(tabsFor(AppRole.coach), same(coachTabs));
+      // Contents, not identity: the bar filters out anything switched off, so
+      // it returns a fresh list rather than the canonical one.
+      expect(tabsFor(AppRole.trainee), equals(traineeTabs));
+      expect(tabsFor(AppRole.coach), equals(coachTabs));
     });
 
     testWidgets('with no scope at all it falls back to the trainee bar', (

@@ -41,6 +41,11 @@ const String _needle = 'FeatureFlags.' 'shipped';
 /// asserted below: an entry that is no longer needed is a failure rather than
 /// a harmless leftover.
 const Map<String, String> _mayReadTheDefaults = <String, String>{
+  'test/release_readiness_test.dart':
+      'Its subject is the build that goes to the stores, so the shipped set is '
+      'the thing under test: that the first release opens on Home, that the '
+      'community and the coach side are dark, and that no testing aid is '
+      'reachable. Every other group in that file sets its own flags.',
   'test/domain/flags/feature_flags_test.dart':
       'Its first group asserts which features the owner has switched on. That '
       'group is the one place where the defaults are the subject rather than '

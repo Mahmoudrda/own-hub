@@ -14,8 +14,10 @@
 ///    so the card stops asking once she has answered.
 ///  * **The month Y08 shows.**
 ///
-/// In memory, like every other store in this build: it does not survive a
-/// restart. Call [changed] after any write so open screens redraw.
+/// In memory while the app is running, and written to the phone with
+/// everything else — see `local_persistence.dart`. Call [changed] after any
+/// write so open screens redraw; that is also the signal the snapshot is
+/// saved on.
 library;
 
 import 'dart:async';
@@ -98,9 +100,7 @@ class CycleAppState {
     final repository = AppRouter.cycleRepository;
     final cycle = repository.current;
     if (cycle != null && !_homeCardChosen && !cycle.adaptation.homeCard) {
-      await repository.setAdaptation(
-        cycle.adaptation.copyWith(homeCard: true),
-      );
+      await repository.setAdaptation(cycle.adaptation.copyWith(homeCard: true));
     }
     changed();
   }
@@ -170,6 +170,39 @@ class CycleAppState {
   void nextMonth() {
     _monthOffset++;
     AppChanges.bump();
+  }
+
+  /// The check-ins she has saved, without today's — the map as it is stored.
+  ///
+  /// [checkIns] folds in `AppRouter.todayCheckIn` for the screens; this is the
+  /// raw map the storage layer writes. See
+  /// `lib/app_state/local_persistence.dart`.
+  Map<String, TodayCheckIn> get savedCheckIns =>
+      Map<String, TodayCheckIn>.unmodifiable(_checkIns);
+
+  /// The day she answered today's gentler option, or null.
+  String? get decidedOn => _decidedOn;
+
+  /// Whether she has set the Home switch herself.
+  bool get homeCardChosen => _homeCardChosen;
+
+  /// Puts back what this state held when the app was last closed.
+  ///
+  /// The month offset is not restored: it is where Y08 was scrolled to, not
+  /// something she recorded, and opening on this month is the right place to
+  /// start. The mirror of [reset], except that this one writes nothing to the
+  /// cycle repository — the storage layer restores that document itself.
+  void restore({
+    Map<String, TodayCheckIn> checkIns = const <String, TodayCheckIn>{},
+    String? decidedOn,
+    bool homeCardChosen = false,
+  }) {
+    _checkIns
+      ..clear()
+      ..addAll(checkIns);
+    _decidedOn = decidedOn;
+    _homeCardChosen = homeCardChosen;
+    _monthOffset = 0;
   }
 
   /// For tests: a woman who has never opened My cycle.

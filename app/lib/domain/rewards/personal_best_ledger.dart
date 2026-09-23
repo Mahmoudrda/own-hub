@@ -157,6 +157,23 @@ class PersonalBestLedger {
     return SessionBests(written: found, counted: counted);
   }
 
+  /// Puts back what she had already earned when the app was last closed.
+  ///
+  /// Not a way to lower anything, and not a second writer: this is the storage
+  /// layer handing back the count it read off the phone, at launch, before any
+  /// screen exists. [bests] is deliberately absent — the progress store holds
+  /// that map by reference and restores it in place, so there is exactly one
+  /// copy here too. See `lib/app_state/local_persistence.dart`.
+  void restore({
+    Iterable<String> countedIds = const <String>[],
+    int bestsCount = 0,
+  }) {
+    _counted
+      ..clear()
+      ..addAll(countedIds);
+    this.bestsCount = bestsCount;
+  }
+
   /// Back to a woman with no bests and nothing counted.
   ///
   /// Account deletion calls it. `bests` is shared by reference with the

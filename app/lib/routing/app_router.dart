@@ -2,7 +2,7 @@ import 'dart:async';
 
 // `kReleaseMode` — the admin console is compiled out of reach in a release
 // binary. See `AppRouter.resolvesInThisBuild`.
-import 'package:flutter/foundation.dart' show kReleaseMode;
+import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
 // `Clipboard` — Z11 hands the export over on it, because nothing in this build
 // can write a file.
@@ -445,6 +445,18 @@ class AppRouter {
     'onboarding',
   };
 
+  /// Whether this build may carry the affordances that exist only for walking
+  /// the product: the index of every screen, the sign-in code printed on the
+  /// screen that asks for it, the test payment rail.
+  ///
+  /// They used to key off [Feature.accountRequired] alone, which was right
+  /// while that flag was the difference between a testing build and a real one.
+  /// It is not any more: the first release ships without accounts, so that
+  /// condition is true in the build that goes to the stores. The gate is the
+  /// build mode now, which no flag and no runtime switch can turn back on.
+  static bool get testingAidsAllowed =>
+      kDebugMode && !featureFlags.isOn(Feature.accountRequired);
+
   /// Screens that actually exist. Everything absent renders [NotBuiltYet], so
   /// the gap between what is designed and what is built is visible rather than
   /// guessed at — and this map is the honest measure of progress.
@@ -478,9 +490,7 @@ class AppRouter {
       repository: authRepository,
       // Only while no account is required, like every other test affordance.
       // Against a real provider there is no such code and none is claimed.
-      testCode: featureFlags.isOn(Feature.accountRequired)
-          ? null
-          : testCodeOf(authRepository),
+      testCode: testingAidsAllowed ? testCodeOf(authRepository) : null,
       onConfirmed: () => goTo(context, 'C08'),
       // "Send it again" has to answer. In this build nothing is sent, so the
       // answer names the code instead of promising a message.
@@ -1081,8 +1091,8 @@ class AppRouter {
           }),
         );
       },
-      // Every screen, one tap away — only while no account is required.
-      onOpenAllScreens: featureFlags.isOn(Feature.accountRequired)
+      // Every screen, one tap away, in a build that is not going to a store.
+      onOpenAllScreens: !testingAidsAllowed
           ? null
           : () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => const AllScreensView()),

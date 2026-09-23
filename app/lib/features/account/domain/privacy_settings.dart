@@ -316,6 +316,18 @@ class InMemoryPrivacyRepository implements PrivacyRepository {
     return !_online;
   }
 
+  /// Puts back the settings the app was holding when it closed.
+  ///
+  /// Not a write path, and deliberately not reachable from a screen: it takes
+  /// whole objects, which is exactly what [setPrivacyKey] refuses to do. The
+  /// storage layer calls it at launch, before any screen exists, and the
+  /// field-path record stays empty because nothing was written — see
+  /// `lib/app_state/local_persistence.dart`.
+  void restore({PrivacySettings? privacy, NotifySettings? notify}) {
+    if (privacy != null) _privacy = privacy;
+    if (notify != null) _notify = notify;
+  }
+
   /// Back to the settings a new account opens with. Account deletion calls it.
   void reset() {
     _privacy = PrivacySettings.initial;

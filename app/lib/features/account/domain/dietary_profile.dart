@@ -252,6 +252,13 @@ class InMemoryDietaryProfileRepository implements DietaryProfileRepository {
     return _profile;
   }
 
+  /// Puts back the answers she had already given when the app closed.
+  ///
+  /// It cannot invent [DietaryProfile.noneNamed]: the storage layer only ever
+  /// hands back what it read, and a woman who was never asked has nothing
+  /// stored, so she stays unasked. See `lib/app_state/local_persistence.dart`.
+  void restore(DietaryProfile profile) => _profile = profile;
+
   /// Back to unasked. Account deletion calls it, and `unasked` rather than
   /// `none` is the point: "she has no allergies" is a claim, and a deleted
   /// account has not made it.

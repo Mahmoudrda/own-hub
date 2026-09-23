@@ -25,7 +25,6 @@
 /// that nobody has looked at them.
 library;
 
-import '../domain/flags/feature_flags.dart';
 import '../features/coach/domain/coach_credentials.dart';
 import '../features/coach/domain/coach_desk.dart';
 import '../features/coach/domain/coach_profile.dart';
@@ -45,10 +44,9 @@ class CoachProfileState {
 
   static final CoachProfileState instance = CoachProfileState._();
 
-  /// True while no account is required — the only time a test rail or a test
-  /// coach may exist.
-  static bool get isTestMode =>
-      !AppRouter.featureFlags.isOn(Feature.accountRequired);
+  /// True only in a build that is not going to a store: the only time a
+  /// test rail may exist. See `AppRouter.testingAidsAllowed`.
+  static bool get isTestMode => AppRouter.testingAidsAllowed;
 
   /// THE coach repository. The same object every coach screen reads.
   InMemoryCoachRepository get repository => AppRouter.coachRepository;

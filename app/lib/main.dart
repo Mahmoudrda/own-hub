@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'app_state/local_persistence.dart';
 import 'domain/flags/feature_flags.dart';
 import 'domain/identity/user_roles.dart';
 import 'l10n/app_l10n.dart';
@@ -10,7 +11,7 @@ import 'routing/app_routes.dart';
 import 'theme/app_tokens.dart';
 import 'theme/hand_theme.dart';
 
-void main() {
+Future<void> main() async {
   // Dark status-bar content, before anything is drawn.
   //
   // The theme sets this too, but `AppBarTheme.systemOverlayStyle` only reaches
@@ -26,6 +27,20 @@ void main() {
     ),
   );
   LicenseRegistry.addLicense(_handFontLicences);
+
+  // Her week, read off this phone BEFORE the first frame.
+  //
+  // Awaited here rather than loaded from a screen so that the first thing she
+  // sees is already hers: Home drawn once, from her own session count and her
+  // own meal, instead of the app's defaults replaced a frame later. One read,
+  // one decode — see `lib/app_state/local_persistence.dart`.
+  //
+  // It cannot fail the launch. A missing, empty, truncated, corrupt or older
+  // snapshot restores nothing and the app opens exactly as it did before any
+  // of this existed.
+  await LocalPersistence.instance.load();
+  LocalPersistence.instance.start();
+
   runApp(const OwnHubApp());
 }
 
@@ -71,8 +86,15 @@ class _OwnHubAppState extends State<OwnHubApp> {
   /// `--dart-define=OWNHUB_LOCALE=ar` opens the build in Arabic, so any
   /// screen can be captured in either language — the store listing needs
   /// both, and right-to-left layout is only ever checked by looking at it.
+  ///
+  /// A language she has already chosen wins over both. It is read off the
+  /// phone before the first frame, so the app opens in her language rather
+  /// than opening in the default and switching once she notices.
   final ValueNotifier<Locale> _locale = ValueNotifier(
-    const Locale(String.fromEnvironment('OWNHUB_LOCALE', defaultValue: 'en')),
+    AppRouter.localePreference.read()?.locale ??
+        const Locale(
+          String.fromEnvironment('OWNHUB_LOCALE', defaultValue: 'en'),
+        ),
   );
 
   /// Her roles, and which app she is in (D11). Trainee until C08 says
@@ -80,10 +102,12 @@ class _OwnHubAppState extends State<OwnHubApp> {
   /// side grants nothing a coach account would.
   ///
   /// With [Feature.accountRequired] off there is no sign-up to choose a role
-  /// in, so she is a guest holding BOTH roles: the trainee app opens, and her
-  /// picture switches to the coach side, so neither half is out of reach.
+  /// in, so she is a guest. She holds both roles only where there is a coach
+  /// side to hold: the first release ships without one, and a picture that
+  /// switches to an app that is switched off is a door into nothing.
   final ValueNotifier<UserRoles> _roles = ValueNotifier(
-    AppRouter.featureFlags.isOn(Feature.accountRequired)
+    AppRouter.featureFlags.isOn(Feature.accountRequired) ||
+            !AppRouter.featureFlags.isOn(Feature.coachApp)
         ? UserRoles.trainee
         : UserRoles.both,
   );

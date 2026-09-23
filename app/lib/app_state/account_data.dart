@@ -24,8 +24,9 @@
 ///
 /// ## What "everything" means in this build
 ///
-/// Every store listed below is the whole of what the app holds about her: there
-/// is no disk, no cache and no network. The comments name the
+/// Every store listed below, plus the one document they are written to on the
+/// handset, is the whole of what the app holds about her: there is no network
+/// and no server copy. The comments name the
 /// [kDeletionManifest] row each step covers, so a collection added later
 /// without a line here is a visible omission rather than an invisible one, which
 /// is the same property §7.3 (a) asks of the manifest itself.
@@ -53,6 +54,7 @@ import 'coaching_link_state.dart';
 import 'community_state.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
+import 'local_persistence.dart';
 import 'workout_session_state.dart';
 
 /// The five handset steps, done against the stores this build actually has.
@@ -81,12 +83,27 @@ class ThisPhoneWipe implements LocalWipe {
   @override
   Future<void> terminateFirestore() async {}
 
-  /// The offline cache, which in this build is every store the app holds.
+  /// The offline cache, which in this build is every store the app holds and
+  /// the one document they are written to.
   ///
   /// This is where the bulk of the manifest lands: rows 1 to 8 and 11 to 21,
   /// plus 35 to 37. Nothing here is a copy, so clearing it is the deletion.
   @override
   Future<void> clearPersistence() async {
+    // The snapshot on the handset, FIRST — and it is first for the same reason
+    // signing out is: what is still on the phone can put back what is about to
+    // be cleared. Without this line the stores below would be emptied, the
+    // document on the phone would not, and everything she deleted would be
+    // back the next time she opened the app.
+    //
+    // Not awaited, and that is deliberate. The half that has to happen in
+    // order — cancelling the write that was already scheduled — happens
+    // synchronously inside `erase`, before its first await. The removal itself
+    // is a platform call, and her deletion must not be hostage to one: a store
+    // that is slow, wedged or missing must still leave every store below empty
+    // and the sheet still has to close and say so.
+    unawaited(LocalPersistence.instance.erase());
+
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();
     AppRouter.mealRepository.store.reset();

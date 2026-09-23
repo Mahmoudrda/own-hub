@@ -22,9 +22,22 @@ flutter run                                   # English
 flutter run --dart-define=OWNHUB_LOCALE=ar    # Arabic
 ```
 
-The app currently opens straight onto Home as a guest who holds both roles, trainee and coach, so
-every part of it can be browsed without an account. That is a feature flag, `Feature.accountRequired`
-in `app/lib/domain/flags/feature_flags.dart`. **Switch it back on before any public release.**
+The app opens straight onto Home. There is no account, because the first release does not need one:
+it is Today, Train, Eat, My cycle and Progress, and all of it works on the phone with nothing behind
+it. The community, the coach side, payments and the assistant are switched off until there is a back
+end to support them honestly, and each switch is one line in `FeatureFlags.shipped`
+(`app/lib/domain/flags/feature_flags.dart`), which says why.
+
+To walk the whole product, including the parts the first release does not ship, run the tests: the
+crawler, the journeys and the large-text sweep all build `FeatureFlags.everything`.
+
+```sh
+OWNHUB_QA_REPORT=/tmp/crawl.tsv flutter test test/qa/tap_crawler_test.dart
+```
+
+`tool/release_preflight.sh` is the gate before any submission. It refuses a build that still carries
+the testing affordances, checks Play's 16 KB page alignment on every native library, reads which key
+signed the bundle, and fails while the four public pages have no address.
 
 ## Generated files, do not edit by hand
 

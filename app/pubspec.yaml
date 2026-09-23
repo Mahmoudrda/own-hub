@@ -48,6 +48,22 @@ dependencies:
   # so it cannot be used for anything that has to agree across devices.
   crypto: any
 
+  # The one place anything she does is written to the phone.
+  #
+  # Chosen over `path_provider` plus a file, and the deciding argument is the
+  # store rather than the API. Apple's required-reason rules cover the
+  # file-timestamp APIs a plugin needs to read and write a document in the
+  # application support directory, so a file-based store means authoring and
+  # maintaining `PrivacyInfo.xcprivacy` by hand; get it wrong and the upload is
+  # refused at submission. `shared_preferences` ships its own privacy manifest
+  # declaring the NSUserDefaults reason it uses, so the manifest travels with
+  # the package and stays right when the package updates.
+  #
+  # It costs nothing in shape: the snapshot is still ONE JSON document under
+  # one key, so a launch is one read and one decode — see
+  # `lib/app_state/local_persistence.dart`. Nothing leaves the phone.
+  shared_preferences: ^2.3.0
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8

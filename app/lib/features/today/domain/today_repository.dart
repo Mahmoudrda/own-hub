@@ -221,6 +221,37 @@ class InMemoryTodayRepository implements TodayRepository {
     _seen.add(_key(kind, week));
   }
 
+  /// The notices she has already been shown, as the snapshot keeps them.
+  ///
+  /// Unmodifiable: this is a window for the code that writes her day to the
+  /// phone, not a second way in. See `lib/app_state/local_persistence.dart`.
+  Set<String> get seenNotices => Set<String>.unmodifiable(_seen);
+
+  /// The sessions already counted into the week above, as the snapshot keeps
+  /// them. Restoring these is what stops a finished session being credited a
+  /// second time the next time the app opens.
+  Set<String> get creditedSessions =>
+      Set<String>.unmodifiable(_creditedSessions);
+
+  /// Puts back the day this repository held when the app was last closed.
+  ///
+  /// The mirror of [reset]: same three pieces of memory, filled instead of
+  /// emptied. It emits, so a screen already listening draws her day rather than
+  /// the fake's.
+  void restore({
+    required TodayDay day,
+    Iterable<String> seenNotices = const <String>[],
+    Iterable<String> creditedSessions = const <String>[],
+  }) {
+    _seen
+      ..clear()
+      ..addAll(seenNotices);
+    _creditedSessions
+      ..clear()
+      ..addAll(creditedSessions);
+    _emit(day);
+  }
+
   /// Back to the day this repository was born with, holding nothing she did.
   ///
   /// Account deletion calls it (`lib/app_state/account_data.dart`). It is not a

@@ -16,6 +16,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/app_changes.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../main.dart' show LocaleScope;
 import '../../../theme/app_tokens.dart';
@@ -54,6 +55,10 @@ class _LanguageViewState extends State<LanguageView> {
   Future<void> _choose(AppLanguage language) async {
     setState(() => _selected = language);
     await widget.preference.write(language);
+    // The language is one of the things written to the phone, and this is the
+    // signal the storage layer listens to. Without it she would pick Arabic,
+    // close the app and open it again in English.
+    AppChanges.bump();
     if (!mounted) return;
     // Apply it now, so the change is visible rather than promised.
     LocaleScope.of(context).value = language.locale;

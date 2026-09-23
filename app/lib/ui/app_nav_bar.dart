@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/identity/user_roles.dart';
 import '../l10n/app_l10n.dart';
+import '../routing/app_router.dart';
 import '../theme/app_tokens.dart';
 import 'hand/hand.dart';
 
@@ -117,9 +118,25 @@ String _clientsLabel(AppL10n l) => l.clients;
 String _chatsLabel(AppL10n l) => l.chats;
 String _earningsLabel(AppL10n l) => l.earnings;
 
-/// The bar a given role sees. The one place that mapping exists.
-List<NavDestination> tabsFor(AppRole role) =>
-    role == AppRole.coach ? coachTabs : traineeTabs;
+/// The bar a given role sees, minus anything this build has switched off.
+///
+/// The filter is not a detail. A tab whose feature is dark renders, takes a
+/// quarter of the bar, and lands on the "not in this build" panel: a door
+/// drawn on a wall. The first release ships without the community, so this is
+/// the difference between four tabs and three.
+List<NavDestination> tabsFor(AppRole role) {
+  final all = role == AppRole.coach ? coachTabs : traineeTabs;
+  return [
+    for (final tab in all)
+      if (_isOn(tab)) tab,
+  ];
+}
+
+bool _isOn(NavDestination tab) {
+  final flow = appDestinations[tab.screenId]?.flow;
+  final feature = flow == null ? null : AppRouter.featureForFlow(flow);
+  return feature == null || AppRouter.featureFlags.isOn(feature);
+}
 
 class AppNavBar extends StatelessWidget {
   const AppNavBar({

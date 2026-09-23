@@ -32,7 +32,6 @@
 ///     zeros.
 library;
 
-import '../domain/flags/feature_flags.dart';
 import '../features/coachbrand/domain/ad_creative.dart';
 import '../features/coachbrand/domain/block_registry.dart';
 import '../features/coachbrand/domain/coach_media.dart';
@@ -58,9 +57,8 @@ class CoachPortfolioState {
 
   static final CoachPortfolioState instance = CoachPortfolioState._();
 
-  /// True while no account is required.
-  static bool get isTestMode =>
-      !AppRouter.featureFlags.isOn(Feature.accountRequired);
+  /// True only in a build that is not going to a store.
+  static bool get isTestMode => AppRouter.testingAidsAllowed;
 
   /// The device this edit is being made on. The single-writer guard travels
   /// onto every save, so a draft edited on two phones can name the other one.
