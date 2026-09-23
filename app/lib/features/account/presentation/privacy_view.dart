@@ -30,6 +30,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../config/legal_links.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -51,6 +52,8 @@ class PrivacyView extends StatefulWidget {
     this.verification = VerificationRecord.none,
     this.onBack,
     this.onOpenCycleSharing,
+    this.onOpenPrivacyPolicy,
+    this.onOpenTerms,
     this.onSelectTab,
   });
 
@@ -64,6 +67,11 @@ class PrivacyView extends StatefulWidget {
   /// A03's cycle row hands off to Y12. G7 renders the row; **G9 owns the
   /// switches behind it** — two groups writing one field is a rejected plan.
   final VoidCallback? onOpenCycleSharing;
+
+  /// Open the published policy and terms pages. The launching itself belongs to
+  /// the router, which is the only place that knows how to reach the outside.
+  final VoidCallback? onOpenPrivacyPolicy;
+  final VoidCallback? onOpenTerms;
 
   final ValueChanged<String>? onSelectTab;
 
@@ -189,6 +197,43 @@ class _PrivacyViewState extends State<PrivacyView> {
           ),
           onTap: widget.onOpenCycleSharing,
         ),
+
+        // The two public pages the stores require to be reachable from inside
+        // the app, not only from the listing. They appear once the pages have
+        // an address: a row that opens nothing is worse than no row, and
+        // `LegalLinks` is empty until the site is published.
+        if (LegalLinks.privacyPolicy.isNotEmpty)
+          AppListItem(
+            leading: const Icon(
+              Icons.shield_outlined,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.privacyPolicy,
+            subtitle: l10n.opensInYourBrowser,
+            trailing: const Icon(
+              Icons.open_in_new,
+              size: 20,
+              color: AppColors.onSurfaceVariant,
+            ),
+            onTap: widget.onOpenPrivacyPolicy,
+          ),
+        if (LegalLinks.terms.isNotEmpty)
+          AppListItem(
+            leading: const Icon(
+              Icons.description_outlined,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.termsOfUse,
+            subtitle: l10n.opensInYourBrowser,
+            trailing: const Icon(
+              Icons.open_in_new,
+              size: 20,
+              color: AppColors.onSurfaceVariant,
+            ),
+            onTap: widget.onOpenTerms,
+          ),
 
         // Rule 7 — stated only when it is true. See the file note on why there
         // is no `else` branch here.

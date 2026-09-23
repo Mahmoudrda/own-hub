@@ -296,5 +296,10 @@
  "Teal": "فيروزي",
  "A new code is on its way.": "رمز جديد في طريقه إليكِ.",
  "{from} to {to}": "{from} إلى {to}",
- "Not yet": "ليس بعد"
+ "Not yet": "ليس بعد",
+ "It checks itself the moment the sixth digit lands.": "يتحقّق تلقائيًا بمجرّد إدخال الرقم السادس.",
+ "Privacy policy": "سياسة الخصوصية",
+ "Terms of use": "شروط الاستخدام",
+ "Opens in your browser": "تُفتح في متصفحك",
+ "That page could not be opened. Try again later.": "تعذّر فتح الصفحة. حاولي مرة أخرى لاحقًا."
 }

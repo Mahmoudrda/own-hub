@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # Pre-submission gate. Run it the morning you submit; every check must PASS.
 #
-# Adapted from flutter-store-release-guide.md Phase 8 in two ways that matter:
-#   1. This project is NOT a git repository, so the guide's git-history secret
-#      scans cannot run. They are replaced with filesystem checks that catch the
-#      same mistake (signing material sitting inside the repo).
-#   2. The public URLs do not exist yet. Set RELEASE_BASE_URL to enable those
-#      checks; they are reported as SKIP, never silently passed.
+# Adapted from flutter-store-release-guide.md Phase 8, plus the gates this app
+# needs that the guide could not know about:
+#   1. `Feature.accountRequired` must be ON. With it off the app has no sign-up,
+#      carries an index of every screen, prints the sign-in code on the screen
+#      that asks for it, and opens a test payment rail. None of that may reach a
+#      store, and all of it looks normal unless something checks.
+#   2. The four public pages must have addresses in lib/config/legal_links.dart.
+#      The in-app privacy row is drawn only when they do, so an empty value is
+#      not a cosmetic gap: it is a missing store requirement.
+#   3. The public URLs are also fetched when RELEASE_BASE_URL is set; without it
+#      those checks are reported as SKIP, never silently passed.
 #
 #   RELEASE_BASE_URL=https://ownhub.example bash tool/release_preflight.sh
 
@@ -33,6 +38,11 @@ check "pubspec description is not template" "! grep -q 'A new Flutter project' p
 check "version line present"               "grep -qE '^version: [0-9]+\.[0-9]+\.[0-9]+\+[0-9]+' pubspec.yaml"
 
 echo
+echo "-- this is a store build, not a testing build --"
+check "an account is required"             "grep -q 'Feature.accountRequired: true' lib/domain/flags/feature_flags.dart"
+check "release guards pass"                "flutter test test/release_readiness_test.dart"
+
+echo
 echo "-- Google Play hard requirements --"
 check "compileSdk pinned to 36"            "grep -q 'compileSdk = 36' android/app/build.gradle.kts"
 check "targetSdk pinned to 36"             "grep -q 'targetSdk = 36' android/app/build.gradle.kts"
@@ -54,9 +64,10 @@ check "team id filled in"                  "! grep -q 'YOUR_TEAM_ID' ios/ExportO
 check "iPhone-only (iPad not declared)"    "! grep -q 'TARGETED_DEVICE_FAMILY = \"1,2\"' ios/Runner.xcodeproj/project.pbxproj"
 
 echo
-echo "-- secrets hygiene (filesystem, this repo is not under git) --"
-check "key.properties is gitignored"       "grep -q 'key.properties' .gitignore"
-check "keystores are gitignored"           "grep -q '\*\.jks' .gitignore"
+echo "-- secrets hygiene --"
+check "key.properties is ignored"          "git check-ignore -q android/key.properties"
+check "keystores are ignored"              "grep -q '\*\.jks' ../.gitignore"
+check "no signing material in history"     "[ -z \"\$(git log --all --name-only --pretty=format: -- '*.jks' '*.keystore' '*.p8' '*.p12' 'key.properties' | grep . || true)\" ]"
 found=$(find . -path ./build -prune -o \( -name '*.jks' -o -name '*.keystore' -o -name '*.p8' -o -name '*.p12' \) -print 2>/dev/null | head -5)
 if [ -z "$found" ]; then ok "no signing material inside the repo"; else bad "signing material inside the repo: $found"; fi
 check "no API key literal in lib/"         "! grep -rqE 'sk-ant-|AIza[0-9A-Za-z_-]{30}' lib"
@@ -66,6 +77,10 @@ echo "-- release build hygiene --"
 check "no bare print() in lib/"            "! grep -rn --include='*.dart' -E '^[[:space:]]*print\(' lib | grep -q ."
 
 echo
+echo "-- the four public pages --"
+check "legal links filled in"              "! grep -qE \"static const String (privacyPolicy|terms|support|deleteAccount) = ''\" lib/config/legal_links.dart"
+
+echo
 echo "-- public URLs --"
 if [ -n "${RELEASE_BASE_URL:-}" ]; then
   for path in privacy terms support delete-account; do
@@ -73,6 +88,41 @@ if [ -n "${RELEASE_BASE_URL:-}" ]; then
   done
 else
   na "privacy / terms / support / delete-account URLs" "RELEASE_BASE_URL not set"
+fi
+
+echo
+echo "-- the built bundle, when there is one --"
+AAB=build/app/outputs/bundle/release/app-release.aab
+if [ -f "$AAB" ]; then
+  tmp=$(mktemp -d)
+  unzip -q -o "$AAB" 'base/lib/*' -d "$tmp" 2>/dev/null || true
+  libs=$(find "$tmp/base/lib/arm64-v8a" "$tmp/base/lib/x86_64" -name '*.so' 2>/dev/null)
+  if [ -n "$libs" ]; then
+    # Play requires 16 KB page alignment on every 64-bit native library.
+    if python3 tool/elf_align.py $libs | grep -q 'TOO SMALL'; then
+      bad "every 64-bit library is 16 KB aligned"
+      python3 tool/elf_align.py $libs | sed 's/^/        /'
+    else
+      ok "every 64-bit library is 16 KB aligned"
+    fi
+  fi
+  # Which key signed it, read from the signature block's own name: Gradle
+  # names it after the key alias, so a debug fallback is META-INF/ANDROIDD.RSA
+  # and an upload key called "upload" is META-INF/UPLOAD.RSA. This is read from
+  # the file rather than from keytool because keytool needs a JDK, and a check
+  # that silently passes when a tool is missing is worse than no check.
+  sig=$(unzip -l "$AAB" | awk '{print $4}' \
+    | grep -m1 -E '^META-INF/[^/]+\.(RSA|EC|DSA)$' || true)
+  case "$sig" in
+    '')
+      bad "the bundle is signed (built unsigned: no android/key.properties)" ;;
+    META-INF/ANDROIDD.*)
+      bad "the bundle is signed with the DEBUG key; Play refuses that upload" ;;
+    *)
+      ok "the bundle is signed with $(basename "$sig" | cut -d. -f1)" ;;
+  esac
+else
+  na "bundle checks (16 KB alignment, signing)" "no app-release.aab built yet"
 fi
 
 echo

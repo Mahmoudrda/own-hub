@@ -12744,6 +12744,36 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Not yet'**
   String get notYet;
+
+  /// No description provided for @itChecksItselfTheMomentTheSixth_1pr5i.
+  ///
+  /// In en, this message translates to:
+  /// **'It checks itself the moment the sixth digit lands.'**
+  String get itChecksItselfTheMomentTheSixth_1pr5i;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @termsOfUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of use'**
+  String get termsOfUse;
+
+  /// No description provided for @opensInYourBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens in your browser'**
+  String get opensInYourBrowser;
+
+  /// No description provided for @thatPageCouldNotBeOpenedTry.
+  ///
+  /// In en, this message translates to:
+  /// **'That page could not be opened. Try again later.'**
+  String get thatPageCouldNotBeOpenedTry;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

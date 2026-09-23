@@ -2729,5 +2729,10 @@
       }
     }
   },
-  "notYet": "Not yet"
+  "notYet": "Not yet",
+  "itChecksItselfTheMomentTheSixth_1pr5i": "It checks itself the moment the sixth digit lands.",
+  "privacyPolicy": "Privacy policy",
+  "termsOfUse": "Terms of use",
+  "opensInYourBrowser": "Opens in your browser",
+  "thatPageCouldNotBeOpenedTry": "That page could not be opened. Try again later."
 }

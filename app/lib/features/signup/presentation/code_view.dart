@@ -204,7 +204,13 @@ class _CodeViewState extends State<CodeView> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           children: [
             Text(
-              l10n.itChecksItselfTheMomentTheSixth,
+              // The second sentence is about Android's SMS autofill. It is
+              // only true there, and naming another platform is a rejection
+              // under App Review 2.3.10, so the iOS build says the first
+              // sentence on its own.
+              Theme.of(context).platform == TargetPlatform.android
+                  ? l10n.itChecksItselfTheMomentTheSixth
+                  : l10n.itChecksItselfTheMomentTheSixth_1pr5i,
               style: AppText.body.copyWith(
                 color: AppColors.onTertiaryContainer,
               ),

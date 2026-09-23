@@ -2729,5 +2729,10 @@
       }
     }
   },
-  "notYet": "ليس بعد"
+  "notYet": "ليس بعد",
+  "itChecksItselfTheMomentTheSixth_1pr5i": "يتحقّق تلقائيًا بمجرّد إدخال الرقم السادس.",
+  "privacyPolicy": "سياسة الخصوصية",
+  "termsOfUse": "شروط الاستخدام",
+  "opensInYourBrowser": "تُفتح في متصفحك",
+  "thatPageCouldNotBeOpenedTry": "تعذّر فتح الصفحة. حاولي مرة أخرى لاحقًا."
 }

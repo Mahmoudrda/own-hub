@@ -6930,4 +6930,21 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get notYet => 'Not yet';
+
+  @override
+  String get itChecksItselfTheMomentTheSixth_1pr5i =>
+      'It checks itself the moment the sixth digit lands.';
+
+  @override
+  String get privacyPolicy => 'Privacy policy';
+
+  @override
+  String get termsOfUse => 'Terms of use';
+
+  @override
+  String get opensInYourBrowser => 'Opens in your browser';
+
+  @override
+  String get thatPageCouldNotBeOpenedTry =>
+      'That page could not be opened. Try again later.';
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
 import '../app_state/app_changes.dart';
+import '../config/legal_links.dart';
 import '../app_state/coach_portfolio_state.dart';
 import '../app_state/coach_profile_state.dart';
 import '../app_state/coached_life_state.dart';
@@ -15,6 +16,7 @@ import '../app_state/community_state.dart';
 import '../app_state/cycle_state.dart';
 import '../app_state/eat_state.dart';
 import '../app_state/honest_notice.dart';
+import '../app_state/open_link.dart';
 import '../app_state/workout_session_state.dart';
 import '../domain/training/prescribed_set.dart';
 import '../domain/rewards/level_curve.dart';
@@ -1020,6 +1022,11 @@ class AppRouter {
       service: privacyService,
       onBack: () => Navigator.of(context).maybePop(),
       onOpenCycleSharing: () => goTo(context, 'Y12'),
+      // The published pages. Both stores want the policy reachable from inside
+      // the app; the rows only exist once `LegalLinks` has an address.
+      onOpenPrivacyPolicy: () =>
+          unawaited(openExternalLink(context, LegalLinks.privacyPolicy)),
+      onOpenTerms: () => unawaited(openExternalLink(context, LegalLinks.terms)),
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
     'A04': (context) => SafetyCentreView(

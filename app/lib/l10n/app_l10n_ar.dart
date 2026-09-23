@@ -6897,4 +6897,21 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get notYet => 'ليس بعد';
+
+  @override
+  String get itChecksItselfTheMomentTheSixth_1pr5i =>
+      'يتحقّق تلقائيًا بمجرّد إدخال الرقم السادس.';
+
+  @override
+  String get privacyPolicy => 'سياسة الخصوصية';
+
+  @override
+  String get termsOfUse => 'شروط الاستخدام';
+
+  @override
+  String get opensInYourBrowser => 'تُفتح في متصفحك';
+
+  @override
+  String get thatPageCouldNotBeOpenedTry =>
+      'تعذّر فتح الصفحة. حاولي مرة أخرى لاحقًا.';
 }
