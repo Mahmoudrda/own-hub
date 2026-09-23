@@ -2734,5 +2734,15 @@
   "privacyPolicy": "سياسة الخصوصية",
   "termsOfUse": "شروط الاستخدام",
   "opensInYourBrowser": "تُفتح في متصفحك",
-  "thatPageCouldNotBeOpenedTry": "تعذّر فتح الصفحة. حاولي مرة أخرى لاحقًا."
+  "thatPageCouldNotBeOpenedTry": "تعذّر فتح الصفحة. حاولي مرة أخرى لاحقًا.",
+  "deleteYourAccountAndEverythingInIt": "احذفي حسابك وكل ما فيه",
+  "deletingTakesAwayEverythingYouHavePut": "الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك ومنشوراتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه.",
+  "thisBuildKeepsEverythingOnThisPhone": "هذه النسخة تحفظ كل شيء على هذا الهاتف، لذا يمسح الحذف الهاتف. لا يوجد خادم بعد، ولا شيء من بياناتك محفوظ في مكان آخر.",
+  "downloadingACopyOfYourDataIs": "تنزيل نسخة من بياناتك غير مبني بعد، فلا يوجد زر له هنا.",
+  "deleteEverything": "احذفي كل شيء",
+  "yourDataIsGoneTheAppIs": "اختفت بياناتك. عاد التطبيق إلى يومه الأول.",
+  "reportHerFromHerPostOrHer": "بلّغي عنها من منشورها أو من صفحتها.",
+  "youPickAReasonAndSendIt": "تختارين سببًا وترسلينه.",
+  "aWomanOnTheTeamReadsIt": "تقرؤه إحدى زميلات الفريق.",
+  "sheTellsYouWhatSheDidAbout": "تخبرك بما فعلته بشأنه."
 }

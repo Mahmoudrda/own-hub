@@ -251,4 +251,12 @@ class InMemoryDietaryProfileRepository implements DietaryProfileRepository {
     _profile = _profile.copyWith(allergies: allergies, dietary: dietary);
     return _profile;
   }
+
+  /// Back to unasked. Account deletion calls it, and `unasked` rather than
+  /// `none` is the point: "she has no allergies" is a claim, and a deleted
+  /// account has not made it.
+  void reset() {
+    _profile = DietaryProfile.unasked;
+    writes.clear();
+  }
 }

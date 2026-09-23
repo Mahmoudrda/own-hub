@@ -96,15 +96,18 @@ class ProfileView extends StatefulWidget {
   /// an account is required.
   final VoidCallback? onOpenAllScreens;
 
-  /// Export and account deletion.
+  /// Account deletion.
   ///
-  /// **Deliberately a callback with no screen behind it yet.** The deletion
-  /// machine is built and tested (`AccountDeletionService`), but every sentence
-  /// its UI needs — "Deleting your account", "Your account is gone.", "Still
-  /// finishing", "You need a connection to delete your account" — is absent
-  /// from the dictionary. Drawing that flow would mean hardcoding English into
-  /// a widget, which §7 forbids and which an Arabic reader would meet as
-  /// untranslated text on the most consequential screen in the product.
+  /// This was a callback with nothing behind it and a row that rendered anyway,
+  /// so the tap did nothing: Apple 2.1 for the dead control, and 5.1.1(v) for
+  /// an account that can be made in the app and not removed in it. The router
+  /// now opens `your_data_sheet.dart`, which explains what deleting takes away
+  /// and then takes it away.
+  ///
+  /// The sentences that were missing are minted. The row says **delete**
+  /// rather than "download everything, or delete": there is no server in this
+  /// build and no export to hand her, and the sheet says so in plain words
+  /// rather than showing a download button that would produce nothing.
   final VoidCallback? onOpenYourData;
 
   final ValueChanged<String>? onSelectTab;
@@ -201,9 +204,9 @@ class _ProfileViewState extends State<ProfileView> {
           onTap: widget.onOpenSafetyCentre,
         ),
         _row(
-          icon: Icons.download_outlined,
+          icon: Icons.delete_outline,
           title: l10n.yourData,
-          subtitle: l10n.downloadEverythingOrDeleteYourAccount,
+          subtitle: l10n.deleteYourAccountAndEverythingInIt,
           onTap: widget.onOpenYourData,
         ),
         if (widget.onOpenAllScreens != null)

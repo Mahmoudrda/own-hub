@@ -315,6 +315,14 @@ class InMemoryPrivacyRepository implements PrivacyRepository {
     if (!_online) pending.add(fieldPath);
     return !_online;
   }
+
+  /// Back to the settings a new account opens with. Account deletion calls it.
+  void reset() {
+    _privacy = PrivacySettings.initial;
+    _notify = NotifySettings.initial;
+    writes.clear();
+    pending.clear();
+  }
 }
 
 /// Rule 9's **exception boundary**, named so QA does not have to guess.

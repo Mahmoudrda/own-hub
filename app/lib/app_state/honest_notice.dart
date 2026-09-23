@@ -11,8 +11,15 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
-void showHonestNotice(BuildContext context, String text) {
-  final messenger = ScaffoldMessenger.maybeOf(context);
+void showHonestNotice(BuildContext context, String text) =>
+    showHonestNoticeOn(ScaffoldMessenger.maybeOf(context), text);
+
+/// The same note, for a caller that took the messenger **before** an await.
+///
+/// Account deletion needs this: it empties the stores, pops back to the first
+/// route and only then has something to say, by which point the context it
+/// started from is gone. The messenger lives above the navigator and survives.
+void showHonestNoticeOn(ScaffoldMessengerState? messenger, String text) {
   if (messenger == null) return;
   messenger.hideCurrentSnackBar();
   messenger.showSnackBar(

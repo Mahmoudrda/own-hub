@@ -79,8 +79,10 @@ String get _todayId {
       '${now.day.toString().padLeft(2, '0')}';
 }
 
-MealStore get _store =>
-    (AppRouter.mealRepository as InMemoryMealRepository).store;
+// The cast this used to need is gone: `AppRouter.mealRepository` is declared
+// as the in-memory repository now, because account deletion has to reach the
+// store behind it.
+MealStore get _store => AppRouter.mealRepository.store;
 
 List<MealItem> get _written =>
     _store.days[_todayId]?.allItems.toList() ?? const <MealItem>[];

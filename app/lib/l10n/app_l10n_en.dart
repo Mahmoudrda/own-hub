@@ -6947,4 +6947,41 @@ class AppL10nEn extends AppL10n {
   @override
   String get thatPageCouldNotBeOpenedTry =>
       'That page could not be opened. Try again later.';
+
+  @override
+  String get deleteYourAccountAndEverythingInIt =>
+      'Delete your account and everything in it';
+
+  @override
+  String get deletingTakesAwayEverythingYouHavePut =>
+      'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers. It happens at once, and none of it can be brought back.';
+
+  @override
+  String get thisBuildKeepsEverythingOnThisPhone =>
+      'This build keeps everything on this phone, so deleting clears the phone. There is no server yet, and nothing of yours is held anywhere else.';
+
+  @override
+  String get downloadingACopyOfYourDataIs =>
+      'Downloading a copy of your data is not built yet, so there is no button for it here.';
+
+  @override
+  String get deleteEverything => 'Delete everything';
+
+  @override
+  String get yourDataIsGoneTheAppIs =>
+      'Your data is gone. The app is back to its first day.';
+
+  @override
+  String get reportHerFromHerPostOrHer =>
+      'Report her from her post or her page.';
+
+  @override
+  String get youPickAReasonAndSendIt => 'You pick a reason and send it.';
+
+  @override
+  String get aWomanOnTheTeamReadsIt => 'A woman on the team reads it.';
+
+  @override
+  String get sheTellsYouWhatSheDidAbout =>
+      'She tells you what she did about it.';
 }

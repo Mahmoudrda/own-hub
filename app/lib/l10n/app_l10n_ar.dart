@@ -6914,4 +6914,38 @@ class AppL10nAr extends AppL10n {
   @override
   String get thatPageCouldNotBeOpenedTry =>
       'تعذّر فتح الصفحة. حاولي مرة أخرى لاحقًا.';
+
+  @override
+  String get deleteYourAccountAndEverythingInIt => 'احذفي حسابك وكل ما فيه';
+
+  @override
+  String get deletingTakesAwayEverythingYouHavePut =>
+      'الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك ومنشوراتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه.';
+
+  @override
+  String get thisBuildKeepsEverythingOnThisPhone =>
+      'هذه النسخة تحفظ كل شيء على هذا الهاتف، لذا يمسح الحذف الهاتف. لا يوجد خادم بعد، ولا شيء من بياناتك محفوظ في مكان آخر.';
+
+  @override
+  String get downloadingACopyOfYourDataIs =>
+      'تنزيل نسخة من بياناتك غير مبني بعد، فلا يوجد زر له هنا.';
+
+  @override
+  String get deleteEverything => 'احذفي كل شيء';
+
+  @override
+  String get yourDataIsGoneTheAppIs =>
+      'اختفت بياناتك. عاد التطبيق إلى يومه الأول.';
+
+  @override
+  String get reportHerFromHerPostOrHer => 'بلّغي عنها من منشورها أو من صفحتها.';
+
+  @override
+  String get youPickAReasonAndSendIt => 'تختارين سببًا وترسلينه.';
+
+  @override
+  String get aWomanOnTheTeamReadsIt => 'تقرؤه إحدى زميلات الفريق.';
+
+  @override
+  String get sheTellsYouWhatSheDidAbout => 'تخبرك بما فعلته بشأنه.';
 }

@@ -96,4 +96,14 @@ class InMemoryIntakeRepository implements IntakeRepository {
     );
     return _intake;
   }
+
+  /// Back to a woman who has answered nothing.
+  ///
+  /// Account deletion calls it: the intake IS her setup answers, and leaving
+  /// them behind would hand a deleted account's goal and equipment to whoever
+  /// opened the app next.
+  void reset() {
+    _intake = Intake.defaults;
+    writes.clear();
+  }
 }

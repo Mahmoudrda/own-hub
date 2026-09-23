@@ -156,4 +156,15 @@ class PersonalBestLedger {
 
     return SessionBests(written: found, counted: counted);
   }
+
+  /// Back to a woman with no bests and nothing counted.
+  ///
+  /// Account deletion calls it. `bests` is shared by reference with the
+  /// progress store, so it is cleared in place rather than replaced: handing
+  /// the ledger a fresh map would leave P03 reading the old one.
+  void reset() {
+    bests.clear();
+    _counted.clear();
+    bestsCount = 0;
+  }
 }

@@ -12,6 +12,8 @@
 // reading: no other platform is named on screen (App Review 2.3.10), and no
 // control opens a page that has no address yet (2.1).
 
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +22,7 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/routing/app_routes.dart';
 
 /// The app as it will be submitted: every feature on, an account required.
 FeatureFlags get _release =>
@@ -71,6 +74,102 @@ void main() {
         AppRouter.featureFlags.isOn(Feature.accountRequired),
         isTrue,
         reason: 'the rail keys off exactly this flag',
+      );
+    });
+  });
+
+  group('the admin console cannot ship', () {
+    // Z01 to Z14 are the owner's content tooling, and Z14 is the switchboard
+    // behind every feature flag. It can turn `Feature.accountRequired` OFF,
+    // which is the one switch every other guard in this file keys off: with it
+    // off there is no sign-up, the index of all 161 screens appears, the
+    // sign-in code is printed on the screen that asks for it and a test
+    // payment rail opens. A flag cannot guard the screen that edits flags, so
+    // this one is guarded by the build.
+    //
+    // `Feature.adminConsole` stays a flag and stays on in `_release` above, on
+    // purpose: this asserts the *build* refuses the console even with its own
+    // feature switched on, which is the only version of the check that would
+    // have caught the defect.
+
+    final admin = appRoutes.entries
+        .where((e) => e.value.flow == 'admin')
+        .toList();
+
+    test('a release build resolves none of Z01 to Z14', () {
+      expect(admin, hasLength(14), reason: 'the console is fourteen screens');
+      for (final entry in admin) {
+        expect(
+          AppRouter.resolvesInThisBuild(entry.key, release: true),
+          isFalse,
+          reason: '${entry.key} at ${entry.value.name} still resolves',
+        );
+      }
+    });
+
+    test('the switchboard most of all', () {
+      expect(AppRouter.resolvesInThisBuild('Z14', release: true), isFalse);
+    });
+
+    test('and nothing else is withheld', () {
+      for (final entry in appRoutes.entries) {
+        if (entry.value.flow == 'admin') continue;
+        expect(
+          AppRouter.resolvesInThisBuild(entry.key, release: true),
+          isTrue,
+          reason: '${entry.key} is not the admin console',
+        );
+      }
+    });
+
+    test('debug and profile keep it, because the owner works in them', () {
+      for (final id in const ['Z01', 'Z08', 'Z14']) {
+        expect(AppRouter.resolvesInThisBuild(id, release: false), isTrue);
+      }
+    });
+
+    test('an unknown route and a withheld one get the same answer: null', () {
+      // A widget test cannot be compiled in release mode — `kReleaseMode` is a
+      // const the test binary sets to false — so the refusal itself is proved
+      // against the gate above. What this asserts is the other half: in a
+      // build that keeps the console the route resolves, and a name no screen
+      // serves resolves to null. Null is what the gate returns in release, so
+      // an admin route there lands on `onUnknownRoute` exactly as a typo does.
+      expect(
+        AppRouter.onGenerateRoute(RouteSettings(name: appRoutes['Z14']!.name)),
+        isNotNull,
+      );
+      expect(
+        AppRouter.onGenerateRoute(
+          const RouteSettings(name: '/no/screen/serves/this'),
+        ),
+        isNull,
+      );
+    });
+
+    test('and a deep link naming it opens the front door instead', () {
+      // `main.dart` picks the initial route from whatever the platform hands
+      // it. A withheld id must fall through to the front door there too, or a
+      // release build deep-linked to `/admin/z14` opens on "no screen serves
+      // this route" instead of on the app.
+      final source = File('lib/main.dart').readAsStringSync();
+      expect(
+        source,
+        contains('AppRouter.resolvesInThisBuild(id)'),
+        reason: 'the initial route must honour the same gate',
+      );
+    });
+
+    test('and the router asks the gate before it builds anything', () {
+      // Read from the source for the same reason the rule guards in
+      // `product_rules_test.dart` are: the branch cannot be exercised from a
+      // test binary, so the assertion is that it is there and is the first
+      // thing after the id is known.
+      final source = File('lib/routing/app_router.dart').readAsStringSync();
+      expect(
+        source,
+        contains('if (!resolvesInThisBuild(id)) return null;'),
+        reason: 'onGenerateRoute must consult the gate, not only define it',
       );
     });
   });

@@ -275,9 +275,14 @@ class CommunityState {
   }) {
     ensureSeeded(l10n);
     final tab = tabAt(tabIndex);
+    // A woman she has blocked has no tiles. The graph is the same exclusion
+    // list the feed filters on, and her page is the one surface where forgetting
+    // it hands back everything the block was supposed to take away.
+    final hidden = store.graph.hides(uid);
     final posts = <CommunityPost>[
       for (final p in store.posts)
-        if (p.authorUid == uid &&
+        if (!hidden &&
+            p.authorUid == uid &&
             p.visibility.isVisibleInFeed &&
             p.kind != PostKind.story &&
             _matchesTab(p, tab))

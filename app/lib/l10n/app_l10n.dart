@@ -12774,6 +12774,66 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'That page could not be opened. Try again later.'**
   String get thatPageCouldNotBeOpenedTry;
+
+  /// No description provided for @deleteYourAccountAndEverythingInIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account and everything in it'**
+  String get deleteYourAccountAndEverythingInIt;
+
+  /// No description provided for @deletingTakesAwayEverythingYouHavePut.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers. It happens at once, and none of it can be brought back.'**
+  String get deletingTakesAwayEverythingYouHavePut;
+
+  /// No description provided for @thisBuildKeepsEverythingOnThisPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'This build keeps everything on this phone, so deleting clears the phone. There is no server yet, and nothing of yours is held anywhere else.'**
+  String get thisBuildKeepsEverythingOnThisPhone;
+
+  /// No description provided for @downloadingACopyOfYourDataIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading a copy of your data is not built yet, so there is no button for it here.'**
+  String get downloadingACopyOfYourDataIs;
+
+  /// No description provided for @deleteEverything.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete everything'**
+  String get deleteEverything;
+
+  /// No description provided for @yourDataIsGoneTheAppIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is gone. The app is back to its first day.'**
+  String get yourDataIsGoneTheAppIs;
+
+  /// No description provided for @reportHerFromHerPostOrHer.
+  ///
+  /// In en, this message translates to:
+  /// **'Report her from her post or her page.'**
+  String get reportHerFromHerPostOrHer;
+
+  /// No description provided for @youPickAReasonAndSendIt.
+  ///
+  /// In en, this message translates to:
+  /// **'You pick a reason and send it.'**
+  String get youPickAReasonAndSendIt;
+
+  /// No description provided for @aWomanOnTheTeamReadsIt.
+  ///
+  /// In en, this message translates to:
+  /// **'A woman on the team reads it.'**
+  String get aWomanOnTheTeamReadsIt;
+
+  /// No description provided for @sheTellsYouWhatSheDidAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'She tells you what she did about it.'**
+  String get sheTellsYouWhatSheDidAbout;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -221,6 +221,18 @@ class InMemoryTodayRepository implements TodayRepository {
     _seen.add(_key(kind, week));
   }
 
+  /// Back to the day this repository was born with, holding nothing she did.
+  ///
+  /// Account deletion calls it (`lib/app_state/account_data.dart`). It is not a
+  /// screen reset: `_seen` and `_creditedSessions` are the two places Today
+  /// remembers her across a rebuild, and a deletion that left either behind
+  /// would credit a session she no longer has.
+  void reset({TodayDay? day}) {
+    _seen.clear();
+    _creditedSessions.clear();
+    _emit(day ?? defaultDay());
+  }
+
   @override
   Future<void> dispose() => _days.close();
 }

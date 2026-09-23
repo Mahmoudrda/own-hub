@@ -221,6 +221,20 @@ class ProgressStore {
   /// Keyed by `yyyy-MM-dd`.
   final Map<String, Measurement> measurements;
 
+  /// Empties every collection in the store. Account deletion calls it, and it
+  /// covers manifest rows 2, 6, 7 and 32.
+  ///
+  /// The maps are cleared in place rather than replaced, because
+  /// `AppRouter.personalBestLedger` holds `bests` by reference: a fresh map
+  /// here would leave the ledger writing into the old one.
+  void reset() {
+    weeks.clear();
+    bests.clear();
+    measurements.clear();
+    goal = const WeeklyGoal();
+    rewards = const Rewards();
+  }
+
   /// Applies a measurement the way Firestore's `set(merge: true)` would.
   void applyMeasurement(Measurement measurement) {
     _assertDayId(measurement.dayId);

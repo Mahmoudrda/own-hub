@@ -2734,5 +2734,15 @@
   "privacyPolicy": "Privacy policy",
   "termsOfUse": "Terms of use",
   "opensInYourBrowser": "Opens in your browser",
-  "thatPageCouldNotBeOpenedTry": "That page could not be opened. Try again later."
+  "thatPageCouldNotBeOpenedTry": "That page could not be opened. Try again later.",
+  "deleteYourAccountAndEverythingInIt": "Delete your account and everything in it",
+  "deletingTakesAwayEverythingYouHavePut": "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers. It happens at once, and none of it can be brought back.",
+  "thisBuildKeepsEverythingOnThisPhone": "This build keeps everything on this phone, so deleting clears the phone. There is no server yet, and nothing of yours is held anywhere else.",
+  "downloadingACopyOfYourDataIs": "Downloading a copy of your data is not built yet, so there is no button for it here.",
+  "deleteEverything": "Delete everything",
+  "yourDataIsGoneTheAppIs": "Your data is gone. The app is back to its first day.",
+  "reportHerFromHerPostOrHer": "Report her from her post or her page.",
+  "youPickAReasonAndSendIt": "You pick a reason and send it.",
+  "aWomanOnTheTeamReadsIt": "A woman on the team reads it.",
+  "sheTellsYouWhatSheDidAbout": "She tells you what she did about it."
 }

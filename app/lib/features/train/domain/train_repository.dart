@@ -511,6 +511,19 @@ class InMemoryTrainRepository implements TrainRepository {
     _sessions[id] = session;
     return session;
   }
+
+  /// Drops every session and every flush, keeping the bundled library.
+  ///
+  /// Account deletion calls it: `_sessions` and `flushes` are her workouts,
+  /// while `workouts` and `alternatives` are content that shipped with the app
+  /// and are not hers to delete.
+  void reset() {
+    _sessions.clear();
+    flushes.clear();
+    swaps.clear();
+    _liveSessionId = null;
+    _counter = 0;
+  }
 }
 
 /// The video library before any of it has been produced.

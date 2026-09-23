@@ -686,6 +686,14 @@ class MealStore {
   final Map<String, MealPlan> plans = <String, MealPlan>{};
   EatPrefs prefs = const EatPrefs();
 
+  /// Every meal she logged, every plan and her eating preferences. Account
+  /// deletion calls it, covering manifest rows 5, 13 and 14.
+  void reset() {
+    days.clear();
+    plans.clear();
+    prefs = const EatPrefs();
+  }
+
   /// Applies a write with the transform semantics Firestore would apply.
   ///
   /// The important line is the merge: [MealWrite.added] is unioned into whatever

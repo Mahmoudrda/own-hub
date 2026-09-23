@@ -2111,5 +2111,15 @@
  "Privacy policy": "سياسة الخصوصية",
  "Terms of use": "شروط الاستخدام",
  "Opens in your browser": "تُفتح في متصفحك",
- "That page could not be opened. Try again later.": "تعذّر فتح الصفحة. حاولي مرة أخرى لاحقًا."
+ "That page could not be opened. Try again later.": "تعذّر فتح الصفحة. حاولي مرة أخرى لاحقًا.",
+ "Delete your account and everything in it": "احذفي حسابك وكل ما فيه",
+ "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers. It happens at once, and none of it can be brought back.": "الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك ومنشوراتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه.",
+ "This build keeps everything on this phone, so deleting clears the phone. There is no server yet, and nothing of yours is held anywhere else.": "هذه النسخة تحفظ كل شيء على هذا الهاتف، لذا يمسح الحذف الهاتف. لا يوجد خادم بعد، ولا شيء من بياناتك محفوظ في مكان آخر.",
+ "Downloading a copy of your data is not built yet, so there is no button for it here.": "تنزيل نسخة من بياناتك غير مبني بعد، فلا يوجد زر له هنا.",
+ "Delete everything": "احذفي كل شيء",
+ "Your data is gone. The app is back to its first day.": "اختفت بياناتك. عاد التطبيق إلى يومه الأول.",
+ "Report her from her post or her page.": "بلّغي عنها من منشورها أو من صفحتها.",
+ "You pick a reason and send it.": "تختارين سببًا وترسلينه.",
+ "A woman on the team reads it.": "تقرؤه إحدى زميلات الفريق.",
+ "She tells you what she did about it.": "تخبرك بما فعلته بشأنه."
 }

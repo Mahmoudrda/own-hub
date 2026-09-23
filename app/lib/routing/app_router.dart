@@ -1,11 +1,16 @@
 import 'dart:async';
 
+// `kReleaseMode` — the admin console is compiled out of reach in a release
+// binary. See `AppRouter.resolvesInThisBuild`.
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 // `Clipboard` — Z11 hands the export over on it, because nothing in this build
 // can write a file.
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
+import '../app_state/account_data.dart';
 import '../app_state/app_changes.dart';
+import '../app_state/blocking.dart';
 import '../config/legal_links.dart';
 import '../app_state/coach_portfolio_state.dart';
 import '../app_state/coach_profile_state.dart';
@@ -96,6 +101,7 @@ import '../features/account/presentation/notifications_view.dart';
 import '../features/account/presentation/privacy_view.dart';
 import '../features/account/presentation/profile_view.dart';
 import '../features/account/presentation/safety_centre_view.dart';
+import '../features/account/presentation/your_data_sheet.dart';
 import '../features/admin/domain/csv_parser.dart';
 import '../features/admin/domain/content_schema.dart';
 import '../features/admin/domain/export_manifest.dart' show buildExportBundle;
@@ -312,6 +318,12 @@ class AppRouter {
     if (name == null) return null;
     final id = screenIdForRoute(name);
     if (id == null) return null;
+
+    // The admin console is not in a shipped build at all. Returning null is
+    // the same answer this method gives a name no screen serves, so the route
+    // lands on `onUnknownRoute` exactly as a typo would.
+    if (!resolvesInThisBuild(id)) return null;
+
     final route = appDestinations[id]!;
 
     // D25. A screen whose feature is switched off is not reachable, even when
@@ -343,6 +355,38 @@ class AppRouter {
             ),
     );
   }
+
+  /// Whether [screenId] may resolve to anything at all in this build.
+  ///
+  /// False for the admin console, `Z01` to `Z14`, in a release binary, and for
+  /// nothing else, ever.
+  ///
+  /// # Why a compile-time gate rather than a feature flag
+  ///
+  /// `Feature.adminConsole` already gates the flow, and it is not enough.
+  /// `Z14` is the switchboard itself: it can turn **every** flag on, including
+  /// `Feature.accountRequired`, and turning that one off removes sign-up,
+  /// prints the one sign-in code the in-memory auth accepts, opens the index of
+  /// every screen in the product and opens a test payment rail. A flag cannot
+  /// guard the screen that edits flags.
+  ///
+  /// And a route that resolves is reachable. The platform hands
+  /// [onGenerateRoute] whatever route name it is given, so anything that can
+  /// name `/admin/z14` (a deep link, a notification payload, another app on the
+  /// handset) is one string away from the console. `kReleaseMode` is const, so
+  /// in release the admin arm below is the only answer the compiler keeps and
+  /// the check costs nothing at run time.
+  ///
+  /// Debug and profile builds keep the console: that is how the owner loads
+  /// content and walks the product.
+  ///
+  /// [release] is a parameter because a widget test cannot be compiled in
+  /// release mode. It defaults to the real thing and is passed only by the test
+  /// that proves the refusal, in `test/release_readiness_test.dart`.
+  static bool resolvesInThisBuild(
+    String screenId, {
+    bool release = kReleaseMode,
+  }) => !release || appRoutes[screenId]?.flow != 'admin';
 
   /// The switch that governs a flow, or null when the flow is never gated.
   ///
@@ -1010,6 +1054,33 @@ class AppRouter {
       onOpenNotifications: () => goTo(context, 'A01'),
       onOpenPrivacy: () => goTo(context, 'A03'),
       onOpenSafetyCentre: () => goTo(context, 'A04'),
+      // Apple 5.1.1(v). The row rendered and this callback was never passed,
+      // so "Your data" was a tap that did nothing on the one screen where the
+      // stores require an action. It is a sheet rather than a destination:
+      // there is no screen id for deletion among the 161, and HANDOFF rule 16
+      // forbids minting one for a state.
+      onOpenYourData: () {
+        // All three captured before the sheet opens: after the pop below this
+        // builder's context is gone, while the navigator and the messenger
+        // both live above it and survive.
+        final navigator = Navigator.of(context);
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        final gone = AppL10n.of(context).yourDataIsGoneTheAppIs;
+        unawaited(
+          showYourDataSheet(
+            context,
+            onDelete: deleteEverythingOnThisPhone,
+          ).then((deleted) {
+            if (!deleted || !navigator.mounted) return;
+            // Day one, literally: everything she opened on the way here is
+            // about data that no longer exists, so the stack goes with it.
+            // The first route is Home while no account is required, and the
+            // front door when one is.
+            navigator.popUntil((route) => route.isFirst);
+            showHonestNoticeOn(messenger, gone);
+          }),
+        );
+      },
       // Every screen, one tap away — only while no account is required.
       onOpenAllScreens: featureFlags.isOn(Feature.accountRequired)
           ? null
@@ -1029,10 +1100,37 @@ class AppRouter {
       onOpenTerms: () => unawaited(openExternalLink(context, LegalLinks.terms)),
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
+    // Four of A04's five rows drew a chevron and had no callback at all, which
+    // on the safety screen is the worst place in the product for a control
+    // that looks live and is not. Each one now does the thing or stops
+    // claiming it can; the view's own note records which is which.
     'A04': (context) => SafetyCentreView(
       blockService: blockService,
       reportService: reportService,
       onBack: () => Navigator.of(context).maybePop(),
+      // Reporting a woman needs a woman to report. `M08` collects the reason
+      // against her post or her page; from here there is no subject, so the
+      // row says where a report starts rather than opening an empty picker.
+      onReportSomeone: () => showHonestNotice(
+        context,
+        AppL10n.of(context).reportHerFromHerPostOrHer,
+      ),
+      // The published support page, on exactly the rule A03 follows: the row
+      // is drawn only once the page has an address, so the app never shows a
+      // control that opens nothing.
+      onTalkToAHuman: LegalLinks.support.isEmpty
+          ? null
+          : () => unawaited(openExternalLink(context, LegalLinks.support)),
+      // A name for a woman she blocked, from the store that has one. Empty
+      // when this build has never seen her name, and the row then carries the
+      // unblock action alone rather than a uid dressed up as a person.
+      nameOf: (uid) =>
+          communityStore.profiles[uid]?.name ??
+          communityStore.posts
+              .where((p) => p.authorUid == uid)
+              .map((p) => p.authorCard.name)
+              .firstOrNull ??
+          '',
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
 
@@ -3478,7 +3576,8 @@ class AppRouter {
       FakeVerificationRepository();
   static final CaptureService captureService =
       const UnavailableCaptureService();
-  static final IntakeRepository intakeRepository = InMemoryIntakeRepository();
+  static final InMemoryIntakeRepository intakeRepository =
+      InMemoryIntakeRepository();
   static final InMemoryTodayRepository todayRepository =
       InMemoryTodayRepository();
 
@@ -3524,22 +3623,29 @@ class AppRouter {
   static const String _selfUid = 'me';
 
   /// G7. Her allergy and dietary answers — the input `eatConstraints` reads.
-  static final DietaryProfileRepository dietaryRepository =
+  static final InMemoryDietaryProfileRepository dietaryRepository =
       InMemoryDietaryProfileRepository();
 
-  static final PrivacyRepository privacyRepository =
+  static final InMemoryPrivacyRepository privacyRepository =
       InMemoryPrivacyRepository();
   static final PrivacySettingsService privacyService = PrivacySettingsService(
     privacyRepository,
   );
 
-  static final BlockService blockService = InMemoryBlockService(
-    selfUid: _selfUid,
+  /// Blocking, wrapped so that it actually hides her.
+  ///
+  /// The record alone changed nothing anyone could see: `hiddenAuthors` is what
+  /// the feed, Explore, the groups and her profile filter on, and nothing wrote
+  /// to it. [BlockingService] is the Function's half, done here because this
+  /// build has no Functions. Every caller of `blockService` gets it.
+  static final BlockingService blockService = BlockingService(
+    InMemoryBlockService(selfUid: _selfUid),
+    store: communityStore,
   );
-  static final ReportService reportService = InMemoryReportService(
+  static final InMemoryReportService reportService = InMemoryReportService(
     reporterUid: _selfUid,
   );
-  static final NotificationsRepository notificationsRepository =
+  static final InMemoryNotificationsRepository notificationsRepository =
       InMemoryNotificationsRepository();
 
   /// G6. **One store behind all three progress repositories.**
@@ -3701,7 +3807,7 @@ class AppRouter {
   );
 
   /// Seeded with this week's plan, so E07 and E08 have something to draw.
-  static final MealRepository mealRepository = InMemoryMealRepository(
+  static final InMemoryMealRepository mealRepository = InMemoryMealRepository(
     plans: {
       WeekKey.of(DateTime.now()).id: sampleMealPlan(
         WeekKey.of(DateTime.now()).id,
@@ -3925,7 +4031,12 @@ class AppRouter {
 
   static List<PostCardModel> get communityGroupPosts => <PostCardModel>[
     for (final post in communityStore.posts)
-      if (post.groupId != null && post.groupId == communityOpenGroupId)
+      // A blocked woman is gone from the room too, not only from the feed.
+      // The graph is the one exclusion list, read here exactly as `feedPosts`
+      // and `exploreModel` read it.
+      if (post.groupId != null &&
+          post.groupId == communityOpenGroupId &&
+          !communityStore.graph.hides(post.authorUid))
         PostCardModel.from(post, viewerUid: communityStore.selfUid),
   ];
 

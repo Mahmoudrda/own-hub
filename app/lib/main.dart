@@ -108,7 +108,12 @@ class _OwnHubAppState extends State<OwnHubApp> {
   String _initialRoute() {
     final supplied =
         WidgetsBinding.instance.platformDispatcher.defaultRouteName;
-    if (screenIdForRoute(supplied) != null) return supplied;
+    final id = screenIdForRoute(supplied);
+    // A route the build does not resolve is treated exactly as an unknown one,
+    // so a deep link naming the admin console in a release binary opens the
+    // front door rather than the "no screen serves this" page. The console is
+    // already unreachable at `onGenerateRoute`; this is about what she sees.
+    if (id != null && AppRouter.resolvesInThisBuild(id)) return supplied;
     return AppRouter.featureFlags.isOn(Feature.accountRequired)
         ? appRoutes['C01']!.name
         : appRoutes['T01']!.name;
