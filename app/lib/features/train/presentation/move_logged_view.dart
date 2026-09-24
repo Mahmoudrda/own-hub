@@ -54,8 +54,13 @@ class MoveLoggedView extends StatelessWidget {
 
   final List<PlannedMove>? moves;
 
-  /// How many moves are struck off. Everything before this index is done, the
-  /// one at it is next.
+  /// How many **moves** are struck off. Everything before this index is done,
+  /// the one at it is next.
+  ///
+  /// The router used to pass `loggedSetCount` here — a count of sets, rendered
+  /// as moves — so a woman who had logged two moves of three sets each read
+  /// "6 of 5" above a list of five, with every row struck through and no row
+  /// marked as next.
   final int loggedCount;
 
   @override
@@ -97,6 +102,11 @@ class MoveLoggedView extends StatelessWidget {
           ),
         ];
 
+    // The move she goes back to, or null when that was the last one.
+    final nextMove = (loggedCount >= 0 && loggedCount < list.length)
+        ? list[loggedCount]
+        : null;
+
     return AppScaffold(
       appBar: TrainTopBar(
         title: l10n.legsAndGlutes,
@@ -107,13 +117,20 @@ class MoveLoggedView extends StatelessWidget {
             onPressed: onPause,
             iconSize: 24,
             color: AppColors.onSurfaceVariant,
+            tooltip: l10n.pause,
             icon: const Icon(Icons.pause),
           ),
         ],
       ),
       footer: [
         AppButton(
-          l10n.nextMoveStepBackLunge,
+          // The move that is actually next, named off the same list the rows
+          // below are drawn from. It was the fixed `nextMoveStepBackLunge` —
+          // "Next move · step-back lunge" — which it said with a goblet squat
+          // coming up, and said again on the last move when nothing was next.
+          nextMove == null
+              ? l10n.finishWorkout
+              : l10n.nextMoveMove(nextMove.name),
           icon: Icons.play_arrow,
           onPressed: onNextMove,
         ),

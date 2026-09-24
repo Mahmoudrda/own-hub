@@ -52,7 +52,13 @@ FirstWeekView _view({
   ValueChanged<String>? onOpenStep,
 }) {
   return FirstWeekView(
-    repository: repository ?? InMemoryTodayRepository(),
+    // The prototype's day, asked for by name. `InMemoryTodayRepository()` now
+    // starts on day one — an empty arc with today's date — because that is what
+    // a fresh install must get; these cases are about an arc part way through,
+    // so they state the day they mean.
+    repository:
+        repository ??
+        InMemoryTodayRepository(day: InMemoryTodayRepository.defaultDay()),
     onClose: () {},
     onStartSession: () {},
     onOpenStep: onOpenStep ?? (_) {},

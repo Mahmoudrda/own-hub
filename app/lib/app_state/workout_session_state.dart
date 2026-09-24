@@ -64,6 +64,26 @@ class WorkoutSessionState {
   /// Zero-based, within [currentMove].
   int get setIndex => _setIndex;
 
+  /// How many moves are behind her: zero-based, and also the count of moves
+  /// struck off.
+  ///
+  /// R13 was handed [loggedSetCount] for this — a count of *sets* rendered as
+  /// moves — so two moves of three sets each read "6 of 5".
+  int get moveIndex => _moveIndex;
+
+  /// How many moves today's session holds, her swaps included.
+  int get moveCount => moves.length;
+
+  /// The move she tapped on R03 to watch it.
+  ///
+  /// R03's `onOpenMove` threw its argument away and R04 was built with no move
+  /// at all, so tapping "Dead bug" opened a demo of a goblet squat — a move
+  /// that is not in the session. This carries the one she asked for.
+  PlannedMove? get openedMove => _openedMove;
+  PlannedMove? _openedMove;
+
+  void openMove(PlannedMove move) => _openedMove = move;
+
   /// The set she is being asked for, or null when there is no live session.
   PrescribedSet? get currentSet {
     final move = currentMove;
@@ -258,6 +278,7 @@ class WorkoutSessionState {
     _setIndex = 0;
     _loggedSets = 0;
     _startedAt = null;
+    _openedMove = null;
     _swaps.clear();
   }
 }

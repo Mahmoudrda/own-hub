@@ -354,7 +354,7 @@ class _BodyPrivatelyViewState extends State<BodyPrivatelyView> {
         ],
       ),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'T01',
+        activeScreenId: 'P04',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {

@@ -36,6 +36,7 @@ class IntakeStepScaffold extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.children,
+    this.lead,
     this.onContinue,
     this.onSkip,
     this.onBack,
@@ -47,6 +48,16 @@ class IntakeStepScaffold extends StatelessWidget {
 
   final String title;
   final String subtitle;
+
+  /// A line above the question, on the one step that needs it.
+  ///
+  /// The walk was designed as the tail of sign-up, where a woman arrived
+  /// already knowing she was being set up. It now opens the app on a fresh
+  /// install, so the first screen has to say what is about to happen and how
+  /// long it takes before it asks her anything. "Step 1 of 4" in the bar is the
+  /// length; this is the rest of it, and only `O01` passes one. Same small
+  /// grey treatment `O05` opens with, so the flow reads as one piece.
+  final String? lead;
 
   /// The answers themselves.
   final List<Widget> children;
@@ -93,6 +104,11 @@ class IntakeStepScaffold extends StatelessWidget {
         ),
       ],
       children: [
+        if (lead != null)
+          Text(
+            lead!,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
         Text(
           title,
           style: AppText.display.copyWith(color: AppColors.onPrimaryContainer),

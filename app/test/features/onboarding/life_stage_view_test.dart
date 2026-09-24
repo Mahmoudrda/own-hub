@@ -13,11 +13,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/onboarding/domain/intake_repository.dart';
 import 'package:own_hub/features/onboarding/presentation/intake_option.dart';
 import 'package:own_hub/features/onboarding/presentation/life_stage_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
 Widget _host(
@@ -78,7 +80,33 @@ void main() {
       );
     });
 
-    testWidgets('it says who sees this', (tester) async {
+    testWidgets('it says who sees this, and names nobody who cannot', (
+      tester,
+    ) async {
+      // The coach app ships dark, so "and your coach" would name a reader this
+      // release does not have, on the one screen that asks about a pregnancy.
+      final saved = AppRouter.featureFlags;
+      addTearDown(() => AppRouter.featureFlags = saved);
+      AppRouter.featureFlags = FeatureFlags.allOff;
+
+      await tester.pumpWidget(
+        _host(LifeStageView(repository: InMemoryIntakeRepository())),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Only you ever see this.'), findsOneWidget);
+      expect(find.text('Only you and your coach ever see this.'), findsNothing);
+    });
+
+    testWidgets('with a coach side, the promise names her coach too', (
+      tester,
+    ) async {
+      final saved = AppRouter.featureFlags;
+      addTearDown(() => AppRouter.featureFlags = saved);
+      AppRouter.featureFlags = FeatureFlags.allOff.with_({
+        Feature.coachApp: true,
+      });
+
       await tester.pumpWidget(
         _host(LifeStageView(repository: InMemoryIntakeRepository())),
       );

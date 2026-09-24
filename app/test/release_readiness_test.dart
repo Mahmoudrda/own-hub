@@ -221,14 +221,25 @@ void main() {
       tester,
     ) async {
       AppRouter.featureFlags = FeatureFlags.shipped;
+      // Setup behind her, so the front door is what is under test here rather
+      // than the four questions that open over it on a first launch. That
+      // launch is walked end to end in `test/journeys/onboarding_journey_test`.
+      AppRouter.intakeRepository.markSetupDone();
+      addTearDown(AppRouter.intakeRepository.reset);
+      // A fresh install, stated: the repository starts on day one, so Home is
+      // its day-one branch rather than the prototype's Tuesday.
+      AppRouter.todayRepository.reset();
+      addTearDown(AppRouter.todayRepository.reset);
       await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
       await tester.pumpAndSettle();
       final l10n = await AppL10n.delegate.load(const Locale('en'));
 
       expect(
-        find.text(l10n.startEverythingsReady),
+        find.text(l10n.startDay1),
         findsOneWidget,
-        reason: 'no account, so Home is the front door',
+        reason:
+            'no account, so Home is the front door — and with nothing logged '
+            'Home is T06, whose one action is "Start day 1"',
       );
       expect(
         find.text(l10n.community),
@@ -478,10 +489,15 @@ void _shippingFlagsTests() {
       expect(find.text(l10n.joinOneGroup), findsNothing);
       expect(find.text(l10n.addAFollowUpPicture), findsNothing);
 
-      // The count follows the arc: two of the three are done in the sample
-      // day, so one is waiting rather than three.
+      // The count follows the arc, and a fresh install's arc is empty: none
+      // of the three done, three waiting.
+      //
+      // This read "2 done, 1 waiting" for as long as `AppRouter.todayRepository`
+      // was seeded with the prototype's Tuesday, which had two steps already
+      // ticked. The repository starts on day one now, so the screen a new woman
+      // opens says she has done none of it — which she has not.
       expect(find.text(l10n.ofTotal('3')), findsOneWidget);
-      expect(find.text(l10n.doneDoneWaitingWaiting('2', '1')), findsOneWidget);
+      expect(find.text(l10n.doneDoneWaitingWaiting('0', '3')), findsOneWidget);
     });
 
     testWidgets('finishing a session offers nowhere to post it', (

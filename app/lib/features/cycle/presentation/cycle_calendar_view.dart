@@ -111,7 +111,10 @@ class CycleCalendarView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: CycleNavBar(onSelectTab: onSelectTab),
+      bottomNavigationBar: CycleNavBar(
+        screenId: 'Y08',
+        onSelectTab: onSelectTab,
+      ),
       appBar: AppTopBar(
         title: l10n.myCycle,
         onBack: onBack,
@@ -139,9 +142,8 @@ class CycleCalendarView extends StatelessWidget {
                 // Material's own tooltips: localised in both languages, and
                 // no new dictionary strings for two arrows.
                 IconButton(
-                  tooltip: MaterialLocalizations.of(
-                    context,
-                  ).previousMonthTooltip,
+                  tooltip: MaterialLocalizations.of(context)
+                      .previousMonthTooltip,
                   color: AppColors.onSurfaceVariant,
                   icon: const Icon(Icons.chevron_left),
                   onPressed: onPreviousMonth,

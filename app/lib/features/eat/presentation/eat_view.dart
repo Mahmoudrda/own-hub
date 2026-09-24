@@ -289,6 +289,29 @@ class _EatViewState extends State<EatView> {
     guard: AllergyGuard(widget.constraints),
   );
 
+  /// The **one** undo offer for one log (§2 rule 9).
+  ///
+  /// When [EatView.onLogged] is wired the handle travels on to E04, which draws
+  /// the in-page [AppUndoBar] for it. Raising a floating snackbar here as well
+  /// put two offers for the same meal on screen at once, reading the same
+  /// sentence and closing half a second apart — and a woman who reached the one
+  /// that had already expired got nothing at all. The in-page bar is the one
+  /// that stays: it sits where the prototype draws it, it does not cover the
+  /// slot card it is announcing, and it degrades honestly, dropping its button
+  /// the moment the five seconds close instead of leaving one that lies.
+  ///
+  /// With no handler to carry the handle onward nothing else would offer the
+  /// window, so the snackbar stands in.
+  void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    if (widget.onLogged != null) return;
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: AppL10n.of(context).undo,
+      onUndo: onUndo,
+    );
+  }
+
   /// One tap. Saves immediately, offers five seconds, asks nothing.
   void _log(
     List<ParsedItem> entries,
@@ -321,10 +344,8 @@ class _EatViewState extends State<EatView> {
         slot: slot,
         describe: l10n.foodLogged,
       );
-      showUndoSnackBar(
-        context,
-        handle: handle,
-        undoLabel: l10n.undo,
+      _offerUndo(
+        handle,
         onUndo: () {
           session.settle();
           if (mounted) setState(() {});
@@ -353,10 +374,8 @@ class _EatViewState extends State<EatView> {
       ),
     );
 
-    showUndoSnackBar(
-      context,
-      handle: handle,
-      undoLabel: l10n.undo,
+    _offerUndo(
+      handle,
       onUndo: () {
         if (!mounted) return;
         setState(() {
@@ -419,13 +438,25 @@ class _EatViewState extends State<EatView> {
     return !session.issued(handle) || session.isOpen(handle);
   }
 
+  /// Whether the log E04 was opened for was taken back.
+  ///
+  /// The bar used to stay after she undid it, still reading "Food logged" over
+  /// a day that no longer holds the meal, with the five points beside it.
+  bool get _wasUndone {
+    final handle = widget.justLogged;
+    final session = widget.session;
+    if (handle == null || session == null) return false;
+    return session.wasUndone(handle);
+  }
+
   List<Widget> _today(BuildContext context, AppL10n l10n, EatDayView view) {
-    final justLogged = widget.justLogged;
+    final justLogged = _wasUndone ? null : widget.justLogged;
 
     return [
-      // E04's undo bar. Drawn **in the page** rather than raised as a floating
-      // snackbar, exactly as R13 does — a floating bar would sit over the slot
-      // card it is announcing.
+      // E04's undo bar, and the ONLY undo this screen shows. Drawn **in the
+      // page** rather than raised as a floating snackbar, exactly as R13 does —
+      // a floating bar would sit over the slot card it is announcing, and two
+      // bars for one meal is what `_offerUndo` exists to prevent.
       if (justLogged != null)
         AppUndoBar(
           message: justLogged.describe,
@@ -551,7 +582,7 @@ class _EatViewState extends State<EatView> {
         commit: () => _service(l10n).commit(prepared.write),
       ),
     );
-    showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
+    _offerUndo(handle);
     widget.onLogged?.call(handle);
   }
 

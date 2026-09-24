@@ -42,6 +42,7 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/train_repository.dart';
 import '../domain/weight_label.dart';
+import 'set_labels.dart';
 import 'train_widgets.dart';
 
 class MidSetView extends StatefulWidget {
@@ -57,6 +58,9 @@ class MidSetView extends StatefulWidget {
     this.setIndex = 1,
     this.repository,
     this.bus,
+    this.lastLogged,
+    this.moveNumber,
+    this.moveCount,
   });
 
   final VoidCallback? onClose;
@@ -81,6 +85,21 @@ class MidSetView extends StatefulWidget {
 
   final TrainRepository? repository;
   final LogCommandBus? bus;
+
+  /// The last set she logged for this move, in an earlier session.
+  ///
+  /// Null when she has never logged one, which is the case for every woman on
+  /// her first session — and the reason the progression note below is drawn
+  /// from this rather than from the prescription. See `domain/set_history.dart`
+  /// for where a caller gets it.
+  final SetOutcome? lastLogged;
+
+  /// Which move of how many, for the bar at the top.
+  ///
+  /// Both null renders no count rather than a fixed one. The bar said
+  /// "Move 2 of 5" to a woman on the first move of four.
+  final int? moveNumber;
+  final int? moveCount;
 
   @override
   State<MidSetView> createState() => _MidSetViewState();
@@ -184,13 +203,20 @@ class _MidSetViewState extends State<MidSetView> {
 
     final handle = _bus.submit(
       UndoableLog(
-        // Names the same numbers the button named — read off the prescription she
-        // just agreed to, never off a hardcoded string that would keep saying
-        // "12 kg × 10" for a woman who was asked for something else.
-        describe: l10n.setSetnumberSavedWeightKgReps(
-          prescribed.order,
-          weightLabel(prescribed.weightKg ?? 0),
-          prescribed.reps ?? 0,
+        // Names the same numbers the button named — read off the prescription
+        // she just agreed to, never off a hardcoded string that would keep
+        // saying "12 kg × 10" for a woman who was asked for something else.
+        //
+        // Through `setSavedLabel`, so a bodyweight set reads "12 reps" and a
+        // hold reads "30 seconds". It used to force the loaded form with
+        // `weightKg ?? 0`, which announced a glute bridge as "0 kg × 12" — a
+        // weight she never lifted, in the sentence that offers her the undo.
+        describe: setSavedLabel(
+          l10n,
+          setNumber: prescribed.order,
+          weightKg: prescribed.weightKg,
+          reps: prescribed.reps,
+          holdSeconds: prescribed.holdSeconds,
         ),
         commit: () => _repository.flushMove(
           sessionId: widget.sessionId,
@@ -200,6 +226,40 @@ class _MidSetViewState extends State<MidSetView> {
       ),
     );
     widget.onSetLogged?.call(handle);
+  }
+
+  /// The sage note under the prescription: what she did last time, or that
+  /// there is no last time yet.
+  ///
+  /// Every figure in it comes from [MidSetView.lastLogged], which is a set she
+  /// logged. Nothing here reads a prescription for a number, so there is no
+  /// path by which this line can state a session that did not happen.
+  Widget _progressionNote(AppL10n l10n, PrescribedSet? prescribed) {
+    final last = widget.lastLogged;
+    if (last == null) {
+      return AppSageNote(l10n.noHistoryForThisMoveYetWhat);
+    }
+
+    final was = setFigure(
+      l10n,
+      weightKg: last.weightKg,
+      reps: last.reps,
+      holdSeconds: last.holdSeconds,
+    );
+    // A logged set with nothing in it to state. Nothing is claimed about it.
+    if (was.isEmpty) return const SizedBox.shrink();
+
+    final lastKg = last.weightKg;
+    final nowKg = prescribed?.weightKg;
+    final added = (lastKg != null && nowKg != null) ? nowKg - lastKg : null;
+    // The step is stated only when there is one. "So we added 0 kg" is not a
+    // reason, and a lighter day is not something to announce as progress.
+    if (added != null && added > 0) {
+      return AppSageNote(
+        l10n.lastTimeLastSoWeAddedAdded(was, weightLabel(added)),
+      );
+    }
+    return AppSageNote(l10n.lastTimeLast(was));
   }
 
   void _logWholeMove(PlannedMove move) {
@@ -227,13 +287,17 @@ class _MidSetViewState extends State<MidSetView> {
     return AppScaffold(
       footerScrollsWhenLarge: true,
       appBar: TrainTopBar(
-        title: l10n.move2Of5,
+        // Which move of how many, when the caller knows. It was the fixed
+        // `move2Of5`, so the bar read "Move 2 of 5" above the first move of a
+        // four-move session. A caller that does not know says nothing.
+        title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
         onClose: widget.onClose,
         actions: [
           IconButton(
             onPressed: widget.onPause,
             iconSize: 24,
             color: AppColors.onSurfaceVariant,
+            tooltip: l10n.pause,
             icon: const Icon(Icons.pause),
           ),
         ],
@@ -248,11 +312,17 @@ class _MidSetViewState extends State<MidSetView> {
           // agreement between what the button says and what gets written is the
           // whole basis of rule 1's one permitted path from prescription to
           // result.
+          //
+          // Through `setDoneLabel`, which picks the sentence the set's own
+          // shape asks for. Forcing the loaded form put "Done · 0 kg × 12" on
+          // the first bodyweight move of the first session.
           prescribed == null
               ? l10n.done_54ca1
-              : l10n.doneWeightKgReps(
-                  weightLabel(prescribed.weightKg ?? 0),
-                  prescribed.reps ?? 0,
+              : setDoneLabel(
+                  l10n,
+                  weightKg: prescribed.weightKg,
+                  reps: prescribed.reps,
+                  holdSeconds: prescribed.holdSeconds,
                 ),
           subtitle: l10n.restStartsItself,
           // A move with no sets has nothing to log, and _logOneSet would have
@@ -359,17 +429,19 @@ class _MidSetViewState extends State<MidSetView> {
             // Why the weight moved. Progression explains itself rather than
             // arriving as a number she did not ask for.
             //
-            // "Last Tuesday: 10 kg × 10, every set finished. So we added 2 kg."
-            // states last week's load, last week's reps and this week's step —
-            // three figures, none of which this screen is given. It is true of
-            // exactly the woman prescribed 12 kg × 10, so it is shown to her
-            // and to nobody else. The dictionary gap is a `{was}`/`{now}` form;
-            // the build reports it.
-            if (statesHerFigure<(num?, int?)>(
-              states: const (12, 10),
-              hers: (prescribed?.weightKg, prescribed?.reps),
-            ))
-              AppSageNote(l10n.lastTuesday10Kg10EverySet),
+            // This was "Last Tuesday: 10 kg × 10, every set finished. So we
+            // added 2 kg." — three figures about a session that had to have
+            // happened. It was guarded by `statesHerFigure` against the
+            // prescription `(12, 10)`, which is a sound guard defeated by the
+            // one workout in the build prescribing exactly 12 kg × 10 to
+            // everybody. So the first set a woman was ever asked to do cited a
+            // Tuesday she had not trained.
+            //
+            // The note now reads her history (`lastLogged`) rather than her
+            // prescription, so it reaches only a woman who has one. Where she
+            // has none, the true thing to say is that this is the first, and
+            // that what she logs today is the measure for the next one.
+            _progressionNote(l10n, prescribed),
           ],
         ),
         Text(

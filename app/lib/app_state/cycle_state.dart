@@ -117,6 +117,22 @@ class CycleAppState {
     changed();
   }
 
+  /// Y14's "Show workout suggestions" — the same field Y02 and Y12 write.
+  ///
+  /// The symptom-only path never passes Y02, so this is the only place a woman
+  /// who tracks symptoms alone can say the app may offer her a gentler
+  /// session. Without it the gentler option was gated on a consent she had no
+  /// way of giving. The row that asks disappears once the switch is on.
+  Future<void> setWorkoutSuggestions(bool on) async {
+    final repository = AppRouter.cycleRepository;
+    final cycle = repository.current;
+    if (cycle == null) return;
+    await repository.setAdaptation(
+      cycle.adaptation.copyWith(workoutSuggestions: on),
+    );
+    changed();
+  }
+
   /// Y10's "Offer an easier workout when I log low energy".
   Future<void> setEasierWhenLowEnergy(bool on) async {
     final repository = AppRouter.cycleRepository;

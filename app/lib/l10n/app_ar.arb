@@ -2756,5 +2756,63 @@
     }
   },
   "yourLogsWeightAndPhotosStayOn": "سجلاتك ووزنك وصورك تبقى على هذا الهاتف.",
-  "deletingTakesAwayEverythingYouHavePut_g3hy0": "الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه."
+  "deletingTakesAwayEverythingYouHavePut_g3hy0": "الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه.",
+  "yourTrainingWeekByWeek": "تدريبك، أسبوعًا بعد أسبوع",
+  "thisAppCountsWeeksNotDaysAnd": "هذا التطبيق يحسب الأسابيع لا الأيام، ولا يحسب إلا ما تسجّلينه بنفسك.",
+  "fourShortQuestionsThenYourWeekIs": "أربعة أسئلة قصيرة، ثم يصبح أسبوعكِ جاهزًا. يمكنكِ تخطّي أيٍّ منها.",
+  "yourGoalYourDaysAndWhatYou": "هدفكِ وأيامكِ وما تتدرّبين به",
+  "reachYourGoalAndTheWeekCounts": "حقّقي هدفكِ فيُحتسب الأسبوع، والأسبوع الذي تفوّتينه يغطّيه أسبوع راحة متى كسبتِ واحدًا.",
+  "yourWeekCountsWhenYouFinishYour": "يُحتسب أسبوعكِ عندما تُتمّين تمارينه، ولا يوم بعينه عليكِ التدريب فيه.",
+  "onlyYouEverSeeThis": "لا يرى هذا أحد سواكِ.",
+  "settings": "الإعدادات",
+  "more": "المزيد",
+  "downloadThisWeek": "نزّلي هذا الأسبوع",
+  "turnNotificationsOnSoWeCanNudge": "شغّلي الإشعارات لنذكّرك في الوقت الذي تسجّلين فيه عادةً.",
+  "noHistoryForThisMoveYetWhat": "لا سجل لهذه الحركة بعد. ما تسجّلينه اليوم هو ما يُقاس عليه ما يليه.",
+  "theLibraryIsStillBeingWrittenWhat": "المكتبة ما زالت قيد الكتابة. ما تجدينه هنا هو ما يأتي مع التطبيق اليوم.",
+  "nothingMatchesThoseFilters": "لا شيء يطابق هذه المرشّحات.",
+  "minutesMinutesMovesMoves": "{minutes} دقيقة، {moves} تمارين",
+  "@minutesMinutesMovesMoves": {
+    "description": "R03's summary of today's session. Counted off the day's own moves, never a fixed '5 moves'.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      },
+      "moves": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "lastTimeLastSoWeAddedAdded": "آخر مرة: {last}. لذلك أضفنا {added} كجم.",
+  "@lastTimeLastSoWeAddedAdded": {
+    "description": "R07's progression note, drawn only when she has a logged set for this move and today's prescription is heavier.",
+    "placeholders": {
+      "last": {
+        "type": "String",
+        "example": "10 kg × 10"
+      },
+      "added": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "lastTimeLast": "آخر مرة: {last}.",
+  "@lastTimeLast": {
+    "description": "R07's progression note when she has a logged set for this move and nothing was added.",
+    "placeholders": {
+      "last": {
+        "type": "String",
+        "example": "10 kg × 10"
+      }
+    }
+  },
+  "lunchYourUsual": "الغداء المعتاد",
+  "snackYourUsual": "الوجبة الخفيفة المعتادة",
+  "saturday": "السبت",
+  "sunday": "الأحد",
+  "noProgramYet": "لا يوجد برنامج بعد",
+  "aProgramSetsOutYourWeeksAnd": "البرنامج يرتّب أسابيعك والأيام داخلها، ولم يُكتب لك برنامج بعد. تمرين واحد جاهز الآن، ويفتحه زر ابدئي تمرين اليوم."
 }

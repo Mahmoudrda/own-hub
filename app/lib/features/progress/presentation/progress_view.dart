@@ -63,7 +63,9 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
-import '../../today/presentation/today_cards.dart' show openScreen;
+import '../../today/domain/today_day.dart' show FirstWeekArc;
+import '../../today/presentation/today_cards.dart'
+    show firstWeekDone, offeredFirstWeekSteps, openScreen;
 import 'progress_view_model.dart';
 import 'progress_widgets.dart';
 
@@ -71,6 +73,7 @@ class ProgressView extends StatelessWidget {
   const ProgressView({
     super.key,
     required this.summary,
+    this.firstWeek = const FirstWeekArc(),
     this.onBack,
     this.onOpenMilestones,
     this.onOpenBests,
@@ -83,6 +86,23 @@ class ProgressView extends StatelessWidget {
 
   /// Her progress, already computed. The screen does no arithmetic.
   final ProgressSummary summary;
+
+  /// Her first week, for the counted subtitle on the row that opens T07.
+  ///
+  /// That subtitle was the fixed `l10n.allFiveDone` — "All five done" — with
+  /// no data behind it at all, in the middle of a screen that is otherwise
+  /// scrupulously honest ("Counted weeks 0 of 4", "Milestones 0 of 8",
+  /// "Nothing saved yet"). It told a woman who had done nothing that she had
+  /// finished, and it sat on what used to be the only route to T07, so it
+  /// actively discouraged the one tap that would have taught her the app.
+  ///
+  /// It says five because the arc has five steps; this build offers three,
+  /// because two of them belong to Community. So the count is taken over
+  /// [offeredFirstWeekSteps], exactly as Home and T07 take it.
+  ///
+  /// An empty arc by default: a `ProgressView` built without one describes a
+  /// woman who has logged nothing, which is true of the default it replaces.
+  final FirstWeekArc firstWeek;
 
   final VoidCallback? onBack;
   final VoidCallback? onOpenMilestones;
@@ -107,7 +127,7 @@ class ProgressView extends StatelessWidget {
       backgroundColor: AppColors.surface,
       appBar: AppTopBar(title: l10n.yourProgress, onBack: onBack),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'T01',
+        activeScreenId: 'P01',
         onSelect: (id) {
           final onTab = onSelectTab;
           if (onTab != null) {
@@ -132,7 +152,10 @@ class ProgressView extends StatelessWidget {
               color: AppColors.primaryDim,
             ),
             title: l10n.yourFirstWeek,
-            subtitle: l10n.allFiveDone,
+            subtitle: l10n.countOfTotal(
+              countLabel(firstWeekDone(firstWeek)),
+              countLabel(offeredFirstWeekSteps().length),
+            ),
             trailing: const Icon(
               Icons.chevron_right,
               size: 22,

@@ -73,6 +73,11 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # Test-only: drives the real app on a simulator for the launch-video capture
+  # (integration_test/demo_drive_test.dart). Ships in no binary.
+  integration_test:
+    sdk: flutter
+
   # Controls time in tests, so the five-second undo window is
   # verified deterministically rather than by sleeping.
   fake_async: any

@@ -128,7 +128,10 @@ class _QuietWeekViewState extends State<QuietWeekView> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'T01',
+        // T04, not T01: see the note in `already_did_it_view.dart`. Claiming
+        // Home here killed the Home tab on the one screen a woman opens after
+        // a week she missed.
+        activeScreenId: 'T04',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {

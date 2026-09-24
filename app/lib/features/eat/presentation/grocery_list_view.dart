@@ -117,7 +117,10 @@ class _GroceryListViewState extends State<GroceryListView> {
         ],
       ),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'E01',
+        // E08, which is what this screen is. Claiming 'E01' marked the Eat tab
+        // active, and the active tab is not a link to itself — so the Eat tab
+        // was dead from the grocery list.
+        activeScreenId: 'E08',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {

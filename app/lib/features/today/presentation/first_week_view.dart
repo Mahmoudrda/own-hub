@@ -37,6 +37,7 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
+import '../../../ui/app_chevron.dart';
 import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
@@ -567,7 +568,7 @@ class _ArcStepRow extends StatelessWidget {
           ),
         ] else if (now) ...[
           const SizedBox(width: 8),
-          const Icon(Icons.chevron_right, size: 21, color: AppColors.primary),
+          const AppChevron(size: 21, color: AppColors.primary),
         ],
       ],
     );

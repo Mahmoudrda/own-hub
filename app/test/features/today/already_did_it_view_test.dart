@@ -106,8 +106,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Tuesday'), findsOneWidget);
-        expect(find.text('Legs and glutes'), findsOneWidget);
-        expect(find.text('Breakfast, your usual'), findsOneWidget);
+        expect(find.text("Today's workout"), findsOneWidget);
+        expect(find.text('Breakfast'), findsOneWidget);
       },
     );
   });

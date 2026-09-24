@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
+import '../../../ui/app_chevron.dart';
 // AppCardVariant arrives through app_list_item.dart, which re-exports it.
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
@@ -158,7 +159,10 @@ class _SwapMoveViewState extends State<SwapMoveView> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'R01',
+        // R05, not R01. The active tab is not a link to itself, so claiming
+        // Train here drew the Train tab as the one she was on and gave it no
+        // tap — a dead tab on a screen reached from Train.
+        activeScreenId: 'R05',
         onSelect: widget.onSelectTab,
       ),
       body: AppScaffold(
@@ -214,11 +218,7 @@ class _SwapChoicesState extends State<_SwapChoices> {
             variant: i == _chosen
                 ? AppCardVariant.selected
                 : AppCardVariant.outlined,
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
-            ),
+            trailing: const AppChevron(),
             onTap: () => setState(() => _chosen = i),
           ),
         ],

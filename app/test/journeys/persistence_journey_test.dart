@@ -188,6 +188,13 @@ void main() {
     LocalPersistence.instance.reset();
     await const ThisPhoneWipe().clearPersistence();
     SharedPreferences.setMockInitialValues(const <String, Object>{});
+    // These cases are about a woman who has used the app and come back, so she
+    // has been through the four setup questions. Without this the relaunch
+    // opens on `O01` over Home, which is correct for a fresh install and is a
+    // different journey — it is walked in `onboarding_journey_test.dart`. It
+    // is set before the first boot on purpose: the snapshot the first run
+    // writes then carries the flag, and the relaunch restores it.
+    AppRouter.intakeRepository.markSetupDone();
     LocalPersistence.instance.start();
   });
 

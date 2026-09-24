@@ -187,7 +187,7 @@ void main() {
       expect(find.text('Everything Regular opened'), findsNothing);
 
       // Today is still underneath, and still hers to use.
-      expect(find.text('Legs and glutes'), findsOneWidget);
+      expect(find.text("Today's workout"), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -197,7 +197,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Kept, all of it'), findsNothing);
-      expect(find.text('Legs and glutes'), findsOneWidget);
+      expect(find.text("Today's workout"), findsOneWidget);
     });
 
     testWidgets('an unopened notice is not marked as seen', (tester) async {
@@ -240,7 +240,7 @@ void main() {
         reason: 'the notice key contains the week, so it cannot repeat',
       );
       // Today is still underneath, and still hers to use.
-      expect(find.text('Legs and glutes'), findsOneWidget);
+      expect(find.text("Today's workout"), findsOneWidget);
     });
   });
 

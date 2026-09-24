@@ -80,6 +80,12 @@ class _GoalViewState extends State<GoalView> {
 
     return IntakeStepScaffold(
       step: 1,
+      // The first screen of the app on a fresh install, and until it opened
+      // there it never had to introduce itself. A woman who has just installed
+      // a fitness app and is asked "What do you want most?" with no preamble
+      // does not know how many more questions there are or that she may refuse
+      // them; this says both before the first one.
+      lead: l10n.fourShortQuestionsThenYourWeekIs,
       title: l10n.whatDoYouWantMost,
       subtitle: l10n.pickOneItChangesTheProgramNot,
       onContinue: _continue,

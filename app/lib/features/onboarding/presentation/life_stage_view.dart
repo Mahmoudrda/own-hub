@@ -27,7 +27,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
 import 'intake_option.dart';
@@ -93,7 +95,15 @@ class _LifeStageViewState extends State<LifeStageView> {
     return IntakeStepScaffold(
       step: 4,
       title: l10n.anythingWeShouldTrainAround,
-      subtitle: l10n.onlyYouAndYourCoachEverSee,
+      // "Only you and your coach ever see this" names a reader this release
+      // does not have: the coach app ships dark, so there is no coach on the
+      // other side of the sentence and no screen that could show her this. The
+      // promise is the same either way, and it is the one that has to be exact
+      // on the only screen in the product that asks about a pregnancy — so it
+      // names whoever can actually read the answer and nobody else.
+      subtitle: AppRouter.featureFlags.isOn(Feature.coachApp)
+          ? l10n.onlyYouAndYourCoachEverSee
+          : l10n.onlyYouEverSeeThis,
       onContinue: _continue,
       onSkip: widget.onSkip,
       onBack: widget.onBack,

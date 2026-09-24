@@ -152,7 +152,10 @@ class _PrivacyViewState extends State<PrivacyView> {
 
     return AppScaffold(
       appBar: AppTopBar(title: l10n.privacy, onBack: widget.onBack),
-      footer: [AppNavBar(activeScreenId: 'T01', onSelect: widget.onSelectTab)],
+      // Its own id. `'T01'` marked the Home tab as the current page, and the
+      // bar gives the active tab no `onTap` on purpose, so Home was drawn and
+      // dead on a screen nobody stays on. A03 is not a tab.
+      footer: [AppNavBar(activeScreenId: 'A03', onSelect: widget.onSelectTab)],
       children: [
         // The note names what the switches below are for. With none of them
         // drawn it would be a sentence about members and a choice she does

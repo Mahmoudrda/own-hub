@@ -34,7 +34,9 @@ Future<void> _logTheSet(WidgetTester tester) async {
 int get _weekOnHome => AppRouter.todayRepository.day.week.sessionsLogged;
 
 int get _weekInProgress =>
-    AppRouter.progressStore.weeks[WeekKey.of(DateTime.now()).id]
+    AppRouter
+        .progressStore
+        .weeks[WeekKey.of(DateTime.now()).id]
         ?.creditedSessionIds
         .length ??
     0;
@@ -82,7 +84,9 @@ void main() {
     await tester.tap(find.text("I'm ready, next set"));
     await tester.pumpAndSettle();
     await _logTheSet(tester);
-    expect(state.currentMove?.name, 'Goblet squat', reason: 'next move');
+    // The second move of the session, which is the step-back lunge since the
+    // 12 kg goblet squat left a session that promises no equipment.
+    expect(state.currentMove?.name, 'Step-back lunge', reason: 'next move');
     expect(state.setIndex, 0);
   });
 

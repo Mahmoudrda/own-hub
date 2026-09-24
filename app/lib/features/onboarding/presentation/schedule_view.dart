@@ -105,13 +105,20 @@ class _ScheduleViewState extends State<ScheduleView> {
         ),
         // The rest-week rule, stated before she can fail it. Sage, because it is
         // restorative: a missed week costs her nothing once she has banked one.
+        //
+        // It used to open "Three sessions a week is your goal", under chips
+        // offering two, three, four and five. The sentence was true of the
+        // default and of nobody who changed it, on the screen whose whole
+        // subject is that the number is hers. The rule is the same for every
+        // number, so the sentence now states the rule and leaves the number to
+        // the chips she just tapped.
         AppCard(
           variant: AppCardVariant.sage,
           borderRadius: AppRadius.md,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           children: [
             Text(
-              l10n.threeSessionsAWeekIsYourGoal,
+              l10n.reachYourGoalAndTheWeekCounts,
               style: AppText.body.copyWith(
                 color: AppColors.onTertiaryContainer,
               ),

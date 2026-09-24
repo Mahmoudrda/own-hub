@@ -121,7 +121,7 @@ class MilestonesView extends StatelessWidget {
       backgroundColor: AppColors.surface,
       appBar: AppTopBar(title: l10n.milestones, onBack: onBack),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'T01',
+        activeScreenId: 'P02',
         onSelect: (id) {
           final onTab = onSelectTab;
           if (onTab != null) {

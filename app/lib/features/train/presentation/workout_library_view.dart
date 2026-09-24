@@ -10,6 +10,21 @@
 /// is no index behind it to maintain. That is why the one screen in this group
 /// which looks like a search is also the cheapest.
 ///
+/// ## The three coaches who did not exist
+///
+/// This screen listed three rows — "Floor legs, no jumping · 10 min · beginner
+/// · Nour", "Quiet full body · 15 min · beginner · Mariam", "Upper body at home
+/// · 20 min · easy · Habiba" — in both languages, two taps from Home. Nour,
+/// Mariam and Habiba are invented women, credited as instructors, which the
+/// product forbids outright. Worse, the router discarded the tapped row's id,
+/// so all three opened the same session: she chose "Upper body at home" and got
+/// "Legs and glutes".
+///
+/// Both halves are the same fault — a list that describes a library the app
+/// does not have. So the rows now come from the workouts it does have
+/// ([sampleWorkoutLibrary], derived from the one authored session), and the
+/// note under them says the rest is still being written rather than staging it.
+///
 /// ## The D7 gap, reported rather than invented
 ///
 /// `DECISIONS.md` D7 says a trainee may **pick a predefined split *or* design her
@@ -24,14 +39,18 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
+import '../../../ui/app_chevron.dart';
 import '../../../ui/app_chip_row.dart';
+import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_field.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_media.dart';
 import '../../../ui/app_nav_bar.dart';
+import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../domain/train_repository.dart';
 import 'train_widgets.dart';
+import 'workout_day_view.dart';
 
 class WorkoutLibraryView extends StatefulWidget {
   const WorkoutLibraryView({
@@ -46,8 +65,8 @@ class WorkoutLibraryView extends StatefulWidget {
   final ValueChanged<LibraryWorkout>? onOpenWorkout;
   final ValueChanged<String>? onSelectTab;
 
-  /// Injectable. Defaults to the design's three rows, resolved from the
-  /// dictionary — the real 124-title library does not exist yet.
+  /// Injectable. Defaults to the workouts the app actually ships
+  /// ([sampleWorkoutLibrary]) — the real 124-title library does not exist yet.
   final List<LibraryWorkout>? workouts;
 
   @override
@@ -83,38 +102,15 @@ class _WorkoutLibraryViewState extends State<WorkoutLibraryView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
-    final all =
-        widget.workouts ??
-        [
-          LibraryWorkout(
-            id: 'floor_legs',
-            title: l10n.floorLegsNoJumping,
-            detail: l10n.n10MinBeginnerNour,
-            quiet: true,
-            minutes: 10,
-          ),
-          LibraryWorkout(
-            id: 'quiet_full_body',
-            title: l10n.quietFullBody,
-            detail: l10n.n15MinBeginnerMariam,
-            quiet: true,
-            minutes: 15,
-          ),
-          LibraryWorkout(
-            id: 'upper_body_home',
-            title: l10n.upperBodyAtHome,
-            detail: l10n.n20MinEasyHabiba,
-            quiet: true,
-            minutes: 20,
-          ),
-        ];
+    final all = widget.workouts ?? sampleWorkoutLibrary(l10n);
 
     final visible = _visible(all);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'R01',
+        // R11, not R01: see the note in `swap_move_view.dart`.
+        activeScreenId: 'R11',
         onSelect: widget.onSelectTab,
       ),
       body: AppScaffold(
@@ -163,13 +159,23 @@ class _WorkoutLibraryViewState extends State<WorkoutLibraryView> {
                 borderRadius: AppRadius.sm,
                 showPlayButton: false,
               ),
-              trailing: const Icon(
-                Icons.chevron_right,
-                size: 22,
-                color: AppColors.onSurfaceVariant,
-              ),
+              trailing: const AppChevron(),
+              // Hands back the row she tapped. The router used to throw the
+              // argument away and open a fixed screen, so every row led to the
+              // same session whatever it said on it.
               onTap: () => widget.onOpenWorkout?.call(workout),
             ),
+          // Why the list is as short as it is. Stated rather than padded out
+          // with rows the app cannot open — and stated without a count, so it
+          // stays true as titles land.
+          if (visible.isEmpty)
+            AppEmptyState(
+              icon: Icons.fitness_center,
+              title: l10n.nothingMatchesThoseFilters,
+              body: l10n.theLibraryIsStillBeingWrittenWhat,
+            )
+          else
+            AppSageNote(l10n.theLibraryIsStillBeingWrittenWhat),
         ],
       ),
     );

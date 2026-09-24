@@ -33,6 +33,7 @@ import '../../../ui/app_list_item.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_toggle.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/cycle_document.dart';
 import '../domain/day_suggestion.dart';
@@ -64,6 +65,7 @@ class CycleHubView extends StatelessWidget {
     this.onSetUp,
     this.onSelectTab,
     this.onSelectCycleTab,
+    this.onSetWorkoutSuggestions,
     this.gentlerDecided = false,
   });
 
@@ -95,6 +97,10 @@ class CycleHubView extends StatelessWidget {
 
   final ValueChanged<CycleTab>? onSelectCycleTab;
 
+  /// Y14's "Show workout suggestions". Writes `adaptation.workoutSuggestions`,
+  /// the same field Y02 and Y12 write — see [_askToAdapt].
+  final ValueChanged<bool>? onSetWorkoutSuggestions;
+
   /// True once she has answered today's gentler option — "Keep mine", "Keep
   /// my workout" or rest. The card stops asking; a new check-in asks again.
   final bool gentlerDecided;
@@ -111,7 +117,10 @@ class CycleHubView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: CycleNavBar(onSelectTab: onSelectTab),
+      bottomNavigationBar: CycleNavBar(
+        screenId: 'Y03',
+        onSelectTab: onSelectTab,
+      ),
       appBar: AppTopBar(
         title: l10n.myCycle,
         onBack: onBack,
@@ -486,11 +495,42 @@ class CycleHubView extends StatelessWidget {
     ];
   }
 
+  /// Y14 offered **no gentler option at all**.
+  ///
+  /// A woman in symptom-only mode could check in as having no energy and
+  /// moderate cramps, and this branch would draw her planned session and the
+  /// line "Nothing changes until you tell us how you feel" — which she just
+  /// had. Symptom-only is the path chosen by a woman who does not want to log
+  /// dates, and nothing about that choice says she wants less help on a bad
+  /// day: §2.4's rule is that suggestions follow the symptoms she logged, and
+  /// those are the only thing this mode collects.
+  ///
+  /// So the card is the same card `_today` draws, from the same
+  /// [GentlerOption], reaching the same Y06 and the same "Why this
+  /// suggestion?" — there is no second adaptation model here and could not be:
+  /// the branch reads [CycleHubSnapshot.suggestion] and cannot produce one.
+  ///
+  /// ## Where the consent for it is given
+  ///
+  /// `showGentlerCard` is gated on `adaptation.workoutSuggestions`, and a new
+  /// document has every adaptation off (`CycleRepository.completeSetup` writes
+  /// `CycleAdaptation.allOff` and takes no parameter that could write anything
+  /// else). On the dates path Y02 asks the question — its switches render
+  /// pre-ticked and saving answers it. **The symptom-only path never passes
+  /// Y02**: Y01 sends her straight here. So the consent could not be given at
+  /// all on this path, short of finding it in Y12's settings, and the card
+  /// would have stayed hidden however she felt.
+  ///
+  /// Y14 therefore asks the question Y02 would have, with the same row and the
+  /// same words, at the one place this path reaches. It is off until she turns
+  /// it on — nothing adapts unasked — and the row goes once she has answered.
   List<Widget> _symptomsOnly(
     BuildContext context,
     AppL10n l10n,
     CycleHubSnapshot snapshot,
   ) {
+    final suggestion = snapshot.suggestion;
+
     return [
       CycleTabs(
         active: CycleTab.today,
@@ -524,6 +564,16 @@ class CycleHubView extends StatelessWidget {
         ],
       ),
       AppButton(l10n.howAreYouFeeling, icon: Icons.mood, onPressed: onCheckIn),
+      // The same card, the same buttons and the same Y06 behind them as the
+      // dates path gets. See the note above this method.
+      if (snapshot.showGentlerCard &&
+          suggestion is GentlerOption &&
+          !gentlerDecided)
+        _gentlerCard(l10n, suggestion),
+      // Y02's question, asked where this path can actually reach it. Once she
+      // has answered it, the gate is open and the row stops taking up space.
+      if (!snapshot.workoutSuggestionsOn)
+        _askToAdapt(l10n, snapshot.workoutSuggestionsOn),
       AppCard(
         children: [
           Text(l10n.yourPlannedWorkout, style: AppText.titleM),
@@ -565,5 +615,27 @@ class CycleHubView extends StatelessWidget {
       ),
       AppSageNote(l10n.irregularCyclesHormonalContraceptionAndPerimenop),
     ];
+  }
+
+  /// "Show workout suggestions" — Y02's row, on the path that never sees Y02.
+  ///
+  /// The same title and the same switch component Y02 and Y12 use, so this is
+  /// recognisably the one setting and not a second one. Off until she turns it
+  /// on: the product does not adapt her training without being asked, and this
+  /// is the asking.
+  Widget _askToAdapt(AppL10n l10n, bool value) {
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      children: [
+        CycleSwitchRow(
+          title: l10n.showWorkoutSuggestions,
+          trailing: AppToggle(
+            value: value,
+            semanticLabel: l10n.showWorkoutSuggestions,
+            onChanged: (on) => onSetWorkoutSuggestions?.call(on),
+          ),
+        ),
+      ],
+    );
   }
 }

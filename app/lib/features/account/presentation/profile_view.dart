@@ -67,6 +67,7 @@ class ProfileView extends StatefulWidget {
     this.onBack,
     this.onOpenCycle,
     this.onOpenCoach,
+    this.onOpenTraining,
     this.onOpenLanguage,
     this.onOpenNotifications,
     this.onOpenPrivacy,
@@ -89,6 +90,17 @@ class ProfileView extends StatefulWidget {
   final VoidCallback? onBack;
   final VoidCallback? onOpenCycle;
   final VoidCallback? onOpenCoach;
+
+  /// The four setup questions, reopened — `O01` to `O05`.
+  ///
+  /// D3's "editable forever" had no door here at all. Her goal, her days a
+  /// week, her session length, her equipment and what the programme has to
+  /// train around were collected once, in a flow that only sign-up could reach,
+  /// and after that there was no screen in the product that could change any of
+  /// them. Null leaves the row off, the way every other optional row here
+  /// behaves.
+  final VoidCallback? onOpenTraining;
+
   final VoidCallback? onOpenLanguage;
   final VoidCallback? onOpenNotifications;
   final VoidCallback? onOpenPrivacy;
@@ -158,10 +170,33 @@ class _ProfileViewState extends State<ProfileView> {
     );
 
     return AppScaffold(
-      appBar: AppTopBar(onBack: widget.onBack),
-      footer: [AppNavBar(activeScreenId: 'T01', onSelect: widget.onSelectTab)],
+      // This page carried no title at all: a back arrow, an illustration, her
+      // picture and a list of rows, on the screen half the product hangs off.
+      // The route table has always called it "Profile and settings"; the
+      // dictionary's own name for it is the one the avatar announces, so the
+      // page and the control that opens it now say the same words.
+      appBar: AppTopBar(title: l10n.yourProfile, onBack: widget.onBack),
+      // Its own id, which is what the bar's `activeScreenId` has always asked
+      // for: "the screen currently shown". This passed `'T01'`, and the bar has
+      // a deliberate rule that the active tab is not a link to itself — so the
+      // Home tab was drawn as the current page, given no `onTap`, and did
+      // nothing, on a settings screen where Home is the one place she is most
+      // likely to be heading. A02 is not a tab, so naming itself leaves all
+      // three tabs live and none of them marked.
+      footer: [AppNavBar(activeScreenId: 'A02', onSelect: widget.onSelectTab)],
       children: [
         _header(l10n, view),
+
+        // First, because it is the only row that changes what the app gives
+        // her: her goal, her days a week, her minutes a session, her equipment
+        // and what the programme has to train around.
+        if (widget.onOpenTraining != null)
+          _row(
+            icon: Icons.fitness_center_outlined,
+            title: l10n.yourTraining,
+            subtitle: l10n.yourGoalYourDaysAndWhatYou,
+            onTap: widget.onOpenTraining,
+          ),
 
         _row(
           icon: Icons.self_improvement,

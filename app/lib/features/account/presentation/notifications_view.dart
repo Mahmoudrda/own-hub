@@ -91,6 +91,12 @@ class NotificationsView extends StatelessWidget {
   final VoidCallback? onBack;
 
   /// The gear in the app bar, which the prototype sends to A02.
+  ///
+  /// The router used to send it to `A03`, the privacy centre. A gear on a
+  /// notifications screen does not mean "privacy" to anybody, and it carried no
+  /// label or tooltip, so a screen reader announced it as "button" and a
+  /// sighted woman had no way to guess. It is labelled, and it goes where the
+  /// line above always said it goes.
   final VoidCallback? onOpenSettings;
 
   /// Offers the OS prompt. Never called on open — G7 §3.1: the product prompts
@@ -121,11 +127,14 @@ class NotificationsView extends StatelessWidget {
             onPressed: onOpenSettings,
             iconSize: 24,
             color: AppColors.onSurface,
+            tooltip: l10n.settings,
             icon: const Icon(Icons.settings),
           ),
         ],
       ),
-      footer: [AppNavBar(activeScreenId: 'T01', onSelect: onSelectTab)],
+      // Its own id: A01 is not a tab, and claiming Home was the active one left
+      // the Home tab drawn and unresponsive. See `profile_view.dart`.
+      footer: [AppNavBar(activeScreenId: 'A01', onSelect: onSelectTab)],
       children: [
         if (view.showsPermissionPrompt)
           AppListItem(
@@ -134,7 +143,20 @@ class NotificationsView extends StatelessWidget {
               size: 24,
               color: AppColors.primaryDim,
             ),
-            title: l10n.turnOnNotificationsSoWeCanTell,
+            // What this release can actually notify her about.
+            //
+            // It read "Turn on notifications so we can tell you when your
+            // check is done" — ID-verification copy, for a check this build
+            // does not run and a sign-up flow that is switched off. The
+            // promise below it, on the same screen, has always been "one nudge
+            // a day at most, at the hour you usually log", so that is what the
+            // permission is asked for.
+            title: l10n.turnNotificationsOnSoWeCanNudge,
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.onSurfaceVariant,
+            ),
             onTap: onRequestPermission,
           )
         else if (view.showsSettingsDeepLink)

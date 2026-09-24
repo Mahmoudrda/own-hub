@@ -127,11 +127,30 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Day 1'), findsOneWidget);
-      expect(find.text('Beginner foundations'), findsOneWidget);
+
+      // The cover says what the app is for. It used to name a programme —
+      // "Beginner foundations" — and promise what was in today's session —
+      // "Four moves on the floor. Nothing jumps." Both were fixed strings on
+      // the one screen that renders before she has answered a single question
+      // or been given a plan.
+      expect(find.text('Your training, week by week'), findsOneWidget);
+      expect(
+        find.text(
+          'This app counts weeks, not days, and only what you log yourself.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Beginner foundations'), findsNothing);
+      expect(
+        find.textContaining('Four moves on the floor'),
+        findsNothing,
+        reason: 'T06 is handed no plan, so it cannot say what is in one',
+      );
       // Her three days are chosen in O04 and never reach this screen, so the
       // fixed "Monday, Tuesday, Thursday · 15 min" read the prototype's
       // schedule back to a woman who had just picked Saturday and Sunday.
       expect(find.text('Monday, Tuesday, Thursday · 15 min'), findsNothing);
+      // One obvious thing to do.
       expect(find.text('Start day 1'), findsOneWidget);
 
       // What will appear here, and why it is empty.
@@ -188,9 +207,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('اليوم 1'), findsOneWidget);
-    expect(find.text('أساسيات للمبتدئات'), findsOneWidget);
+    expect(find.text('تدريبك، أسبوعًا بعد أسبوع'), findsOneWidget);
     expect(find.text('لا شيء مسجَّل بعد'), findsOneWidget);
-    expect(find.text('Beginner foundations'), findsNothing);
+    expect(find.text('Your training, week by week'), findsNothing);
     expect(find.text('Nothing logged yet'), findsNothing);
   });
 

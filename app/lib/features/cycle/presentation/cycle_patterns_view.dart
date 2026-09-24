@@ -85,7 +85,10 @@ class CyclePatternsView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: CycleNavBar(onSelectTab: onSelectTab),
+      bottomNavigationBar: CycleNavBar(
+        screenId: 'Y10',
+        onSelectTab: onSelectTab,
+      ),
       appBar: AppTopBar(
         title: l10n.myCycle,
         onBack: onBack,

@@ -30,6 +30,7 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
 import '../domain/train_repository.dart';
 import '../domain/weight_label.dart';
+import 'set_labels.dart';
 import 'train_widgets.dart';
 
 /// What she chose, handed back to the caller.
@@ -56,6 +57,8 @@ class ChangeSetView extends StatefulWidget {
       reps: 10,
     ),
     this.moveName,
+    this.moveNumber,
+    this.moveCount,
     this.weightOptionsKg = const [10, 12, 14],
     this.repOptions = const [8, 9, 10, 12],
     this.openSheet = true,
@@ -69,6 +72,13 @@ class ChangeSetView extends StatefulWidget {
   /// R09 — the rest screen, carrying the log this screen just made, so the undo
   /// bar there names *her* numbers and Undo reaches this very write.
   final ValueChanged<LogHandle>? onSaved;
+
+  /// Which move of how many, for the bar at the top.
+  ///
+  /// Both null renders no count rather than a fixed one. The bar carried
+  /// `move2Of5` — "Move 2 of 5" — over the first move of a four-move session.
+  final int? moveNumber;
+  final int? moveCount;
 
   /// The only route to a keyboard on this screen.
   final VoidCallback? onTypeANumber;
@@ -187,7 +197,10 @@ class _ChangeSetViewState extends State<ChangeSetView> {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
-      appBar: TrainTopBar(title: l10n.move2Of5, onClose: widget.onClose),
+      appBar: TrainTopBar(
+        title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
+        onClose: widget.onClose,
+      ),
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,7 +352,10 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
         AppButton(
           l10n.typeADifferentNumber,
           variant: AppButtonVariant.text,
-          height: 40,
+          // 44, not 40: the iOS minimum, and this sheet is used mid-set with
+          // one hand. AppButton already floors the *tap target* at 44 — the
+          // block she can see is now the block she can hit.
+          height: 44,
           fontSize: 15,
           onPressed: widget.onTypeANumber,
         ),

@@ -167,7 +167,8 @@ class _TierSlipViewState extends State<TierSlipView> {
                 ),
               ),
               AppNavBar(
-                activeScreenId: 'T01',
+                // T05, not T01: see the note in `already_did_it_view.dart`.
+                activeScreenId: 'T05',
                 onSelect: (id) {
                   final onTab = widget.onSelectTab;
                   if (onTab != null) {

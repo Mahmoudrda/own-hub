@@ -250,12 +250,19 @@ class EatAppState {
       slot: slot,
       describe: l10n.foodLogged,
     );
-    showUndo(context, handle);
+    // **No snackbar here.** This used to raise one and then hand the handle
+    // back, and its only caller — Home's plate — carries that handle straight
+    // to E04, which draws the in-page undo bar for it. Two offers for one meal
+    // were on screen at once, reading the same sentence and closing half a
+    // second apart, and the one she reached second reported false and changed
+    // nothing. One log, one undo: carry the handle to the screen that draws the
+    // bar, or call [showUndo] if you are staying put.
     return handle;
   }
 
-  /// The five-second offer, wired so every screen showing the meal drops it the
-  /// moment she takes it back.
+  /// The five-second offer for a caller that does not carry the handle onward,
+  /// wired so every screen showing the meal drops it the moment she takes it
+  /// back. A caller that navigates to E04 must not also call this.
   void showUndo(BuildContext context, LogHandle handle) {
     showUndoSnackBar(
       context,

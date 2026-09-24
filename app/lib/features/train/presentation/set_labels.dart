@@ -22,13 +22,23 @@ bool _loaded(num? weightKg, int? reps) =>
 
 bool _timed(int? reps, int? holdSeconds) => reps == null && holdSeconds != null;
 
+/// "Move 2 of 5" for the bar at the top of the session screens, or empty.
+///
+/// Empty for anything that is not a real position in a real list: no numbers
+/// at all, a session with no moves, or a number past the end. R07, R08 and R09
+/// all carried the fixed `move2Of5`, which said "Move 2 of 5" over the first
+/// move of a four-move session; the first replacement then read "Move 1 of 0"
+/// on a screen opened with no session behind it. Saying nothing is the honest
+/// reading of not knowing, and it is decided once here rather than in three
+/// app bars.
+String moveTitle(AppL10n l10n, int? number, int? total) {
+  if (number == null || total == null) return '';
+  if (total <= 0 || number <= 0 || number > total) return '';
+  return l10n.moveMoveOfTotal(countLabel(number), countLabel(total));
+}
+
 /// "12 kg × 10", "12 reps" or "30 seconds". Empty when nothing is stated.
-String setFigure(
-  AppL10n l10n, {
-  num? weightKg,
-  int? reps,
-  int? holdSeconds,
-}) {
+String setFigure(AppL10n l10n, {num? weightKg, int? reps, int? holdSeconds}) {
   if (_loaded(weightKg, reps)) {
     return l10n.weightKgReps(weightLabel(weightKg!), countLabel(reps!));
   }

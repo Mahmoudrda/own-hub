@@ -67,7 +67,12 @@ void main() {
 
     // The primary action continues the session. Ending it is a separate,
     // quieter choice she has to make deliberately.
-    await tester.tap(find.text('Next move · step-back lunge'));
+    //
+    // The label names the move that is actually next, read off the same list
+    // the rows are drawn from. It was the fixed `nextMoveStepBackLunge`, which
+    // said "step-back lunge" with a goblet squat coming up and said it again
+    // on the last move, when nothing was next at all.
+    await tester.tap(find.text('Next move · Step-back lunge'));
     await tester.pumpAndSettle();
 
     expect(next, 1);
@@ -88,6 +93,16 @@ void main() {
     await tester.tap(find.text('Finish here'));
     await tester.pumpAndSettle();
     expect(finished, 1);
+  });
+
+  testWidgets('on the last move the button stops naming a next one', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(const MoveLoggedView(loggedCount: 5)));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Next move'), findsNothing);
+    expect(find.text('Finish workout'), findsOneWidget);
   });
 
   testWidgets('the undo offer is identical to the one after a single set', (

@@ -149,7 +149,9 @@ class _SafetyCentreViewState extends State<SafetyCentreView> {
 
     return AppScaffold(
       appBar: AppTopBar(title: l10n.safetyCentre, onBack: widget.onBack),
-      footer: [AppNavBar(activeScreenId: 'T01', onSelect: widget.onSelectTab)],
+      // Its own id: A04 is not a tab, and claiming Home was the active one left
+      // the Home tab drawn and unresponsive. See `profile_view.dart`.
+      footer: [AppNavBar(activeScreenId: 'A04', onSelect: widget.onSelectTab)],
       children: [
         // Everything down to "Talk to a human" is about other women: a
         // verified membership, reporting one, blocking one, what happens to a

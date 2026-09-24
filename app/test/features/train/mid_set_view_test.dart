@@ -37,16 +37,121 @@ void main() {
     await tester.pumpWidget(_host(const MidSetView()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Move 2 of 5'), findsOneWidget);
+    // No "Move 2 of 5": the bar carried that fixed string over the first move
+    // of a four-move session. A caller that has not said which move this is
+    // gets no count at all.
+    expect(find.text('Move 2 of 5'), findsNothing);
     expect(find.text('Goblet squat'), findsOneWidget);
     // Was "Set 2 of 3" from a fixed string, whatever the move prescribed; it
     // is now counted off `move.sets`, which is also what draws the rows below.
     expect(find.text('2 of 3'), findsWidgets);
-    // Progression explains itself rather than arriving as a number she did not
-    // ask for.
-    expect(find.textContaining('Last Tuesday'), findsOneWidget);
+    // And no "Last Tuesday": see the group below.
+    expect(find.textContaining('Last Tuesday'), findsNothing);
     expect(find.text('This move'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('names the move she is on, when the caller knows', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(const MidSetView(moveNumber: 1, moveCount: 4)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Move 1 of 4'), findsOneWidget);
+  });
+
+  testWidgets('and says nothing when the numbers are not a real position', (
+    tester,
+  ) async {
+    // Opened with no live session, `moveIndex + 1` is 1 and `moveCount` is 0,
+    // so the first version of this bar read "Move 1 of 0" on the simulator.
+    await tester.pumpWidget(
+      _host(const MidSetView(moveNumber: 1, moveCount: 0)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Move 1 of'), findsNothing);
+  });
+
+  group('the last time she is told about is one she actually had', () {
+    // R07 drew "Last Tuesday: 10 kg × 10, every set finished. So we added
+    // 2 kg." — three figures about a session that had to have happened. It was
+    // guarded against the prescription `(12, 10)`, a sound guard defeated by
+    // the fact that the one workout in the build prescribed exactly 12 kg × 10
+    // to everybody. So the first set a woman was ever asked to do cited a
+    // Tuesday she had not trained.
+
+    testWidgets('a woman with no logged history is told there is none', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_host(const MidSetView()));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Last Tuesday'), findsNothing);
+      expect(find.textContaining('Last time'), findsNothing);
+      expect(
+        find.text(
+          'No history for this move yet. What you log today is what the next '
+          'one is measured against.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('and a woman who has one is told what she lifted', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(const MidSetView(lastLogged: SetOutcome(weightKg: 10, reps: 10))),
+      );
+      await tester.pumpAndSettle();
+
+      // Her numbers, and the step from them to today's 12 kg.
+      expect(
+        find.text('Last time: 10 kg × 10. So we added 2 kg.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Last Tuesday'), findsNothing);
+    });
+
+    testWidgets('with no step claimed when nothing was added', (tester) async {
+      await tester.pumpWidget(
+        _host(const MidSetView(lastLogged: SetOutcome(weightKg: 12, reps: 10))),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Last time: 12 kg × 10.'), findsOneWidget);
+      expect(find.textContaining('added'), findsNothing);
+    });
+
+    testWidgets('a bodyweight move is never announced as zero kilos', (
+      tester,
+    ) async {
+      // The button forced the loaded sentence with `weightKg ?? 0`, so the
+      // first move of the first session read "Done · 0 kg × 12" — a weight she
+      // never lifted, on the button that logs it.
+      const move = PlannedMove(
+        exerciseId: 'glute_bridge',
+        name: 'Glute bridge',
+        prescriptionLabel: '3 × 12 · bodyweight',
+        sets: [PrescribedSet(exerciseId: 'glute_bridge', order: 1, reps: 12)],
+      );
+
+      final handles = <LogHandle>[];
+      await tester.pumpWidget(
+        _host(MidSetView(move: move, setIndex: 0, onSetLogged: handles.add)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Done · 12 reps'), findsOneWidget);
+      expect(find.textContaining('0 kg'), findsNothing);
+
+      await tester.tap(find.text('Done · 12 reps'));
+      await tester.pump();
+      expect(handles.single.describe, 'Set 1 saved · 12 reps');
+    });
   });
 
   testWidgets('the button names HER prescription, not the prototype set', (
@@ -266,8 +371,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('التمرين 2 من 5'), findsOneWidget);
+    expect(find.text('التمرين 2 من 5'), findsNothing);
     expect(find.text('تمّ · 12 كجم × 10'), findsOneWidget);
+    expect(
+      find.text(
+        'لا سجل لهذه الحركة بعد. ما تسجّلينه اليوم هو ما يُقاس عليه ما يليه.',
+      ),
+      findsOneWidget,
+    );
     expect(find.text('أدّيتُ المجموعات الثلاث، سجّليها'), findsOneWidget);
     expect(find.text('Done · 12 kg × 10'), findsNothing);
   });

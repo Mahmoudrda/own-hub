@@ -1267,6 +1267,11 @@ Map<String, Object?> _captureIntake() {
     'days': intake.days,
     'minutes': intake.minutes,
     'lifeStage': intake.lifeStage.wireName,
+    // Whether she has been through the setup walk at all. Kept beside her
+    // answers rather than in a section of its own, because it is a fact about
+    // the same four questions and because account deletion clears both through
+    // the same `reset()`.
+    'setupDone': AppRouter.intakeRepository.setupDone,
   };
 }
 
@@ -1297,7 +1302,11 @@ void Function()? _readIntake(Object? raw) {
         _wire(LifeStage.values, section['lifeStage']) ?? defaults.lifeStage,
   );
 
-  return () => AppRouter.intakeRepository.restore(intake);
+  // Absent means a document written before the walk existed, and the honest
+  // reading of that is that she was never asked. She is asked once.
+  final setupDone = _bool(section['setupDone']) ?? false;
+
+  return () => AppRouter.intakeRepository.restore(intake, setupDone: setupDone);
 }
 
 Map<String, Object?> _captureLanguage() => <String, Object?>{

@@ -1,9 +1,11 @@
 /// R01 — Train.
 ///
 /// Matches `6-v2/src/screens-train.mjs` → `R01`. The tab opens on the one thing
-/// she is in the middle of, with the week drawn as three chips she can tap. Short
-/// sessions sit **above** the library because a ten-minute floor session is what
-/// gets done on a bad day, and it counts the same as any other.
+/// she is in the middle of, with the week drawn as marks: one circle per
+/// session the week asks for, ticked for each one logged. (The prototype's
+/// three day chips are gone — see [TrainView.build].) Short sessions sit
+/// **above** the library because a ten-minute floor session is what gets done
+/// on a bad day, and it counts the same as any other.
 ///
 /// Two notes carried from the plan, neither of them mine to resolve here:
 ///
@@ -20,11 +22,13 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../domain/flags/feature_flags.dart';
+import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
+import '../../../ui/app_chevron.dart';
 import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
@@ -64,7 +68,7 @@ class TrainView extends StatelessWidget {
     this.shortSessions,
     this.programTitle,
     this.programWeek,
-    this.sessionsThisWeek = 2,
+    this.sessionsThisWeek = 0,
     this.sessionsPrescribed = 3,
   });
 
@@ -74,7 +78,16 @@ class TrainView extends StatelessWidget {
   final VoidCallback? onContinue;
 
   final VoidCallback? onSeeProgram;
+
+  /// Where the week strip's "Today" chip went.
+  ///
+  /// Nothing draws it while the week's days are not modelled — see the comment
+  /// in [build] where the three fixed chips used to be. Kept because the
+  /// router and the tests pass it, and because the strip comes back with a
+  /// plan that holds real days. Home is one tap away on the bar below either
+  /// way.
   final VoidCallback? onOpenToday;
+
   final VoidCallback? onGentlerOption;
 
   /// The timed follow-along short session — `R06`.
@@ -154,6 +167,9 @@ class TrainView extends StatelessWidget {
                 onPressed: onSearch,
                 iconSize: 24,
                 color: AppColors.onSurfaceVariant,
+                // The only door to the library, and it announced nothing at
+                // all to a screen reader.
+                tooltip: l10n.search,
                 icon: const Icon(Icons.search),
               ),
             ],
@@ -167,22 +183,58 @@ class TrainView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Her programme, or nothing.
+                        //
+                        // This read `programTitle ?? postpartumRebuild`, and
+                        // the `R01` builder passes no title, so the fallback
+                        // was what every woman saw: Home called her session
+                        // "Legs and glutes" and Train, one tap later, called
+                        // her programme "Postpartum rebuild". Nobody asked
+                        // her, and it is not a neutral placeholder — shown to
+                        // a nineteen year old it is absurd, and to a woman who
+                        // lost a pregnancy it is cruel. The week line below
+                        // already withholds itself the same way.
+                        if (programTitle != null) ...[
+                          Text(
+                            programTitle!,
+                            style: AppText.bodyM.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 1),
+                        ],
+                        // Her week, named.
+                        //
+                        // This read `programWeek ?? week3Of8`, so it stated
+                        // "Week 3 of 8" precisely when the real week was
+                        // unknown — a fallback whose only job was to fill the
+                        // gap with the prototype's number. Withdrawing it was
+                        // right and left the corner of the card empty, with
+                        // the marks alone on the row and nothing saying what
+                        // they counted.
+                        //
+                        // "This week" is the honest heading for marks that
+                        // count this week's sessions, and it is the same
+                        // heading Home sets over the same marks. A programme
+                        // that has said which week it is replaces it; nothing
+                        // invents one.
                         Text(
-                          programTitle ?? l10n.postpartumRebuild,
+                          programWeek ?? l10n.thisWeek,
+                          style: AppText.titleL,
+                        ),
+                        const SizedBox(height: 2),
+                        // The marks beside this are exact, and so is the line
+                        // under them: Home prints "1 of 3" over the same
+                        // circles rather than leaving her to count them.
+                        Text(
+                          l10n.countOfTotal(
+                            countLabel(sessionsThisWeek),
+                            countLabel(sessionsPrescribed),
+                          ),
                           style: AppText.bodyM.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 1),
-                        // Her week, or nothing.
-                        //
-                        // This read `programWeek ?? week3Of8`, so it
-                        // stated "Week 3 of 8" precisely when the real week was
-                        // unknown — a fallback whose only job was to fill the
-                        // gap with the prototype's number. Saying nothing is
-                        // the honest reading of not knowing.
-                        if (programWeek != null)
-                          Text(programWeek!, style: AppText.titleL),
                       ],
                     ),
                   ),
@@ -200,18 +252,27 @@ class TrainView extends StatelessWidget {
                   ),
                 ],
               ),
-              // The week as three chips she can tap. Composed from AppChip
-              // rather than AppChipRow because each one has its own action and
-              // its own selected state, which a shared index cannot express.
-              Row(
-                children: [
-                  Expanded(child: AppChip(l10n.mon_4jow1, selected: true)),
-                  const SizedBox(width: 8),
-                  Expanded(child: AppChip(l10n.today, onTap: onOpenToday)),
-                  const SizedBox(width: 8),
-                  Expanded(child: AppChip(l10n.thu)),
-                ],
-              ),
+              // The prototype's week strip is gone: "Mon ✓", "Today", "Thu".
+              //
+              // The tick was the defect. `mon_4jow1` is the literal string
+              // "Mon ✓" in the dictionary, drawn `selected: true` on every
+              // build, so R01 told every woman she had trained on Monday —
+              // for ever, whatever she had or had not done. It is the same
+              // untruth as the prototype's Tuesday that was taken off Home.
+              //
+              // It could not be replaced with her real days, because there are
+              // none to read. §2 rule 3 is weeks, not days, and the domain
+              // means it: `WeekRollup` credits sessions to a week by id, its
+              // own library comment records that "no signature here could
+              // compute a consecutive-day count even for a caller who wanted
+              // one", and `WeekDoc` keeps a set of session ids with no date on
+              // any of them. `TrainSession.dateKey` is the assignment's key
+              // and `finishSession` does not carry it through. So which day
+              // she trained is not a fact this product holds.
+              //
+              // What it does hold is the count, and that is already drawn
+              // exactly, twice over: the marks above and the line beside them.
+              // Three chips that named days would have to invent two of them.
               AppButton(
                 // "Continue · from Sara" credits a coach. In a build with
                 // no coaching there is no Sara and nobody wrote this
@@ -283,11 +344,7 @@ class TrainView extends StatelessWidget {
               size: 24,
               color: AppColors.primaryDim,
             ),
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
-            ),
+            trailing: const AppChevron(),
             onTap: onGentlerOption,
           ),
         ],

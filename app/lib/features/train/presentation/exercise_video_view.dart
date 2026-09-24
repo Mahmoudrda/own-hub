@@ -57,6 +57,13 @@ class ExerciseVideoView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
+    // The move she tapped, or the one move in the dictionary with authored
+    // cues when this screen is opened on its own.
+    //
+    // The fallback used to be what every woman saw: `R03` discarded the move
+    // she tapped (`onOpenMove: (_) => goTo(context, 'R04')`), so tapping "Dead
+    // bug" opened a goblet squat. The router now carries the move, and this
+    // stays what it says it is — a preview.
     final shown =
         move ??
         PlannedMove(

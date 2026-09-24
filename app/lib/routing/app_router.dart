@@ -21,6 +21,7 @@ import '../app_state/community_state.dart';
 import '../app_state/cycle_state.dart';
 import '../app_state/eat_state.dart';
 import '../app_state/honest_notice.dart';
+import '../app_state/onboarding_state.dart';
 import '../app_state/open_link.dart';
 import '../app_state/workout_session_state.dart';
 import '../domain/training/prescribed_set.dart';
@@ -79,6 +80,7 @@ import '../features/today/presentation/tier_slip_view.dart';
 import '../domain/logging/log_command_bus.dart';
 import '../features/today/presentation/today_view.dart';
 import '../features/train/domain/session_bests_bridge.dart';
+import '../features/train/domain/set_history.dart';
 import '../features/train/domain/train_repository.dart';
 import '../features/train/presentation/change_set_view.dart';
 import '../features/train/presentation/exercise_video_view.dart';
@@ -629,37 +631,62 @@ class AppRouter {
 
     // Setup. Every step writes to the SAME repository instance, or her answers
     // would not survive the walk from O01 to O05.
+    //
+    // `onClose` is the X in the corner, and it was passed by nobody: the button
+    // rendered on all four questions and did nothing, so the one control that
+    // promises she is not trapped in setup was the one control that could not
+    // let her out. It leaves the walk now, exactly as the last step does —
+    // `OnboardingState.leaveSetup` records that she has been asked, applies
+    // whatever she answered, and pops back to the screen she came from (Home on
+    // a first launch, A02 when she reopened the questions from her profile).
+    // Back on the FIRST question is not a step backwards, it is the way out —
+    // whether she got here on a fresh install (Home is underneath) or from her
+    // profile (A02 is). So it leaves setup properly rather than popping
+    // silently and asking her the same four questions on the next launch.
     'O01': (context) => GoalView(
       repository: intakeRepository,
       onContinue: () => goTo(context, 'O02'),
       onSkip: () => goTo(context, 'O02'),
-      onBack: () => Navigator.of(context).maybePop(),
+      onBack: () => OnboardingState.instance.leaveSetup(context),
+      onClose: () => OnboardingState.instance.leaveSetup(context),
     ),
     'O02': (context) => PlaceView(
       repository: intakeRepository,
       onContinue: () => goTo(context, 'O03'),
       onSkip: () => goTo(context, 'O03'),
       onBack: () => Navigator.of(context).maybePop(),
+      onClose: () => OnboardingState.instance.leaveSetup(context),
     ),
     'O03': (context) => ScheduleView(
       repository: intakeRepository,
       onContinue: () => goTo(context, 'O04'),
       onSkip: () => goTo(context, 'O04'),
       onBack: () => Navigator.of(context).maybePop(),
+      onClose: () => OnboardingState.instance.leaveSetup(context),
     ),
     'O04': (context) => LifeStageView(
       repository: intakeRepository,
       onContinue: () => goTo(context, 'O05'),
       onSkip: () => goTo(context, 'O05'),
       onBack: () => Navigator.of(context).maybePop(),
+      onClose: () => OnboardingState.instance.leaveSetup(context),
     ),
+    // The end of the walk. All three doors leave setup first, so the questions
+    // are gone from the history whichever one she takes and no back gesture can
+    // walk her into them again.
     'O05': (context) => StartingProgramView(
       repository: intakeRepository,
-      onStartNow: () => goTo(context, 'R03'),
-      onStartTomorrow: () => goTo(context, 'T01'),
+      onStartNow: () {
+        OnboardingState.instance.leaveSetup(context);
+        goTo(context, 'R03');
+      },
+      onStartTomorrow: () => OnboardingState.instance.leaveSetup(context),
       // Goes to the workout library, not a picker — no picker exists among
       // the 161 screens. Recorded as F4 in PHASE1-FINDINGS.md.
-      onPickDifferentProgram: () => goTo(context, 'R11'),
+      onPickDifferentProgram: () {
+        OnboardingState.instance.leaveSetup(context);
+        goTo(context, 'R11');
+      },
     ),
 
     // Today. T06 and T08 are states inside T01 and T07, never routes.
@@ -668,6 +695,12 @@ class AppRouter {
       // The same figure P01 shows, from the same derivation, so Home and
       // Progress cannot disagree about her level.
       level: progressSummary.level,
+      // What her plan calls today's session, or nothing. Home's cover was the
+      // fixed `l10n.legsAndGlutes` while Train, one tap away, named
+      // "Postpartum rebuild" — two names for one programme, neither of them
+      // hers. Null until a plan says otherwise, and the card then heads itself
+      // "Today's workout" rather than naming a programme she never chose.
+      sessionTitle: trainRepository.day?.title,
       onStartSession: () => goTo(context, 'R03'),
       onRecall: () => goTo(context, 'T02'),
       onOpenMeal: () => goTo(context, 'E01'),
@@ -790,9 +823,15 @@ class AppRouter {
         goTo(context, 'R07');
       },
       onAlreadyDidIt: () => goTo(context, 'T02'),
-      onOpenMove: (_) => goTo(context, 'R04'),
+      // The move she tapped, carried through. It was discarded, so tapping
+      // "Dead bug" opened a demo of a goblet squat.
+      onOpenMove: (move) {
+        WorkoutSessionState.instance.openMove(move);
+        goTo(context, 'R04');
+      },
     ),
     'R04': (context) => ExerciseVideoView(
+      move: WorkoutSessionState.instance.openedMove,
       onClose: () => Navigator.of(context).maybePop(),
       onBackToWorkout: () => goTo(context, 'R03'),
       onSwap: () => goTo(context, 'R05'),
@@ -830,6 +869,18 @@ class AppRouter {
       // long as she kept tapping.
       move: WorkoutSessionState.instance.currentMove,
       setIndex: WorkoutSessionState.instance.setIndex,
+      // Which move of how many. The bar read a fixed "Move 2 of 5".
+      moveNumber: WorkoutSessionState.instance.moveIndex + 1,
+      moveCount: WorkoutSessionState.instance.moveCount,
+      // What she actually lifted for this move last time, read from her own
+      // logged sets and excluding the session she is in. Null on a first
+      // session, which is the case the sage note used to get wrong: it stated
+      // "Last Tuesday: 10 kg × 10" to a woman who had never trained.
+      lastLogged: lastLoggedOutcome(
+        trainRepository,
+        WorkoutSessionState.instance.currentMove?.exerciseId,
+        exceptSessionId: WorkoutSessionState.instance.sessionId,
+      ),
       onClose: () => Navigator.of(context).maybePop(),
       onChange: () => goTo(context, 'R08'),
       onSetLogged: (handle) {
@@ -844,6 +895,9 @@ class AppRouter {
     'R08': (context) => ChangeSetView(
       repository: trainRepository,
       sessionId: WorkoutSessionState.instance.sessionId,
+      // Which move of how many. The bar read a fixed "Move 2 of 5".
+      moveNumber: WorkoutSessionState.instance.moveIndex + 1,
+      moveCount: WorkoutSessionState.instance.moveCount,
       prescribed:
           WorkoutSessionState.instance.currentSet ??
           const PrescribedSet(
@@ -864,6 +918,9 @@ class AppRouter {
     ),
     'R09': (context) => RestingView(
       handle: handleFrom(context),
+      // Which move of how many. The bar read a fixed "Move 2 of 5".
+      moveNumber: WorkoutSessionState.instance.moveIndex + 1,
+      moveCount: WorkoutSessionState.instance.moveCount,
       onClose: () => Navigator.of(context).maybePop(),
       // The next set, or the end of the session when there is no next set.
       onReady: () {
@@ -883,9 +940,25 @@ class AppRouter {
       onBackToToday: () => goTo(context, 'T01'),
       onShare: () => goTo(context, 'M03'),
     ),
+    // The row she taps is the session she gets.
+    //
+    // This was `onOpenWorkout: (_) => goTo(context, 'R03')` under a list of
+    // three rows with three different titles, so she chose "Upper body at
+    // home" and was given "Legs and glutes". The argument is no longer thrown
+    // away: `workoutDayFor` resolves the row she tapped to the session behind
+    // it, and R03 is opened only when there is one.
+    //
+    // There is exactly one authored workout, and `sampleWorkoutLibrary` is
+    // derived from it, so today the lookup always finds it — which is the
+    // point. The day a second workout is written, this lookup is where R03
+    // starts taking an id, and `train_honesty_test.dart` fails until it does
+    // rather than quietly opening the wrong session again.
     'R11': (context) => WorkoutLibraryView(
       onBack: () => Navigator.of(context).maybePop(),
-      onOpenWorkout: (_) => goTo(context, 'R03'),
+      onOpenWorkout: (workout) {
+        if (workoutDayFor(AppL10n.of(context), workout.id) == null) return;
+        goTo(context, 'R03');
+      },
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
     // Eat. E09 is a BRANCH of E01, not a destination: `firstRunStates` keeps it
@@ -1018,7 +1091,10 @@ class AppRouter {
     'R13': (context) => MoveLoggedView(
       handle: handleFrom(context),
       moves: WorkoutSessionState.instance.moves,
-      loggedCount: WorkoutSessionState.instance.loggedSetCount,
+      // Moves struck off, not sets. This passed `loggedSetCount` into a count
+      // rendered as moves, so two moves of three sets each read "6 of 5" over
+      // a list of five, every row struck through and none marked next.
+      loggedCount: WorkoutSessionState.instance.moveIndex,
       onClose: () => Navigator.of(context).maybePop(),
       // The next move, or the end of the session when that was the last one.
       onNextMove: () {
@@ -1042,6 +1118,9 @@ class AppRouter {
     // reachable by nobody — the same fault T07 had before T06 was wired.
     'P01': (context) => ProgressView(
       summary: progressSummary,
+      // Her first week, so the row that opens T07 counts it instead of
+      // stating "All five done" to a woman who has done none of it.
+      firstWeek: todayRepository.day.arc,
       onBack: () => Navigator.of(context).maybePop(),
       onOpenMilestones: () => goTo(context, 'P02'),
       onOpenBests: () => goTo(context, 'P03'),
@@ -1084,7 +1163,12 @@ class AppRouter {
     // ----------------------------------------------------- Account (G7)
     'A01': (context) => NotificationsView(
       onBack: () => Navigator.of(context).maybePop(),
-      onOpenSettings: () => goTo(context, 'A03'),
+      // The gear goes to settings, which is what a gear means. It went to
+      // `A03`, the privacy centre — not what a gear on a notifications screen
+      // says it will do, and it carried no label to say otherwise. `A02` is
+      // where the notification and privacy rows both live, so nothing becomes
+      // less reachable: privacy is still two taps from Home.
+      onOpenSettings: () => goTo(context, 'A02'),
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
     'A02': (context) => ProfileView(
@@ -1106,6 +1190,13 @@ class AppRouter {
       // send a coached woman to H05 instead; `MarketplaceStage` already draws
       // that distinction.
       onOpenCoach: () => goTo(context, 'H01'),
+      // D3's other half — "ask early, editable forever". The four setup
+      // questions had no door outside the switched-off sign-up flow, so
+      // "forever" was false in the shipped build and a woman who skipped setup,
+      // or whose life changed, had to reinstall to say so. This row runs the
+      // identical walk, and `O05` pops back here rather than to Home because
+      // leaving setup returns her to wherever she entered it from.
+      onOpenTraining: () => goTo(context, 'O01'),
       onOpenLanguage: () => goTo(context, 'C02'),
       onOpenNotifications: () => goTo(context, 'A01'),
       onOpenPrivacy: () => goTo(context, 'A03'),
@@ -1504,6 +1595,11 @@ class AppRouter {
       onViewOption: () => goTo(context, 'Y06'),
       // Her plan stands, and the card stops asking until she checks in again.
       onKeepMine: () => CycleAppState.instance.decideToday(),
+      // Y14's consent row. The symptom-only path never passes Y02, so this is
+      // the only place that woman can say the app may offer her a gentler
+      // session — and the gentler card is gated on exactly this field.
+      onSetWorkoutSuggestions: (on) =>
+          unawaited(CycleAppState.instance.setWorkoutSuggestions(on)),
       onOpenMeals: () => goTo(context, 'Y07'),
       onAddDates: () => goTo(context, 'Y02'),
       // Y11's two outward routes need maps and a browser, and this build has
@@ -1571,7 +1667,13 @@ class AppRouter {
     ),
     'Y06': (context) => GentlerOptionView(
       reason: CycleAppState.instance.todaysReason,
-      onUseOption: () => goTo(context, 'R03'),
+      // Taking the option is an answer too, so the hub stops asking — the same
+      // as "Keep my workout" and rest. Without this she came back from the
+      // gentler session to a card still offering it.
+      onUseOption: () {
+        CycleAppState.instance.decideToday();
+        goTo(context, 'R03');
+      },
       // Her planned session, unchanged — and the hub stops offering.
       onKeepWorkout: () {
         CycleAppState.instance.decideToday();

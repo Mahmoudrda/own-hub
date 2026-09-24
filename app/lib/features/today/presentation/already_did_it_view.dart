@@ -181,7 +181,11 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
                 ),
               ),
               AppNavBar(
-                activeScreenId: 'T01',
+                // T02, not T01. The active tab is deliberately not a link to
+                // itself, so a screen that claims to be Home while it is a
+                // sheet over Home leaves the Home tab drawn, marked active,
+                // and doing nothing. Its own id keeps all three tabs live.
+                activeScreenId: 'T02',
                 onSelect: (id) {
                   final onTab = widget.onSelectTab;
                   if (onTab != null) {

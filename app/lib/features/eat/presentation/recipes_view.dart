@@ -173,7 +173,10 @@ class _RecipesViewState extends State<RecipesView> {
         ],
       ),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'E01',
+        // E05, which is what this screen is. Claiming 'E01' marked the Eat tab
+        // active, and `AppNavBar` gives the active tab no `onTap` — so the Eat
+        // tab rendered as the current page and did nothing when she pressed it.
+        activeScreenId: 'E05',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {

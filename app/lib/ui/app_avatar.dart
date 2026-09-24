@@ -23,6 +23,7 @@ import '../domain/identity/user_roles.dart';
 import '../l10n/app_l10n.dart';
 import '../theme/app_tokens.dart';
 import 'app_card.dart';
+import 'app_chevron.dart';
 import 'app_list_item.dart';
 import 'app_sheet.dart';
 import 'hand/hand.dart';
@@ -195,11 +196,7 @@ class AppAvatar extends StatelessWidget {
                   color: AppColors.primaryDim,
                 ),
                 title: l10n.yourProfile,
-                trailing: const Icon(
-                  Icons.chevron_right,
-                  size: 22,
-                  color: AppColors.onSurfaceVariant,
-                ),
+                trailing: const AppChevron(),
                 onTap: () {
                   Navigator.of(context).pop();
                   onOpenProfile!();

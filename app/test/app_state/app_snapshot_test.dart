@@ -323,6 +323,22 @@ void main() {
       expect(intake.lifeStage, LifeStage.postpartum);
     });
 
+    test('that she has been through setup at all', () async {
+      // The value the second launch turns on. Without it the four questions
+      // would open over Home every time the app started, which is the one
+      // thing a woman notices faster than never being asked at all.
+      expect(AppRouter.intakeRepository.setupDone, isFalse);
+      AppRouter.intakeRepository.markSetupDone();
+
+      await _roundTrip();
+      expect(AppRouter.intakeRepository.setupDone, isTrue);
+
+      // And deleting everything asks again, because a fresh start is fresh.
+      await const ThisPhoneWipe().clearPersistence();
+      await _roundTrip();
+      expect(AppRouter.intakeRepository.setupDone, isFalse);
+    });
+
     test('the language she chose', () async {
       await AppRouter.localePreference.write(AppLanguage.arabic);
       final document = jsonEncode(AppSnapshot.capture());

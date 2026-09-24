@@ -56,17 +56,28 @@ class CycleTabs extends StatelessWidget {
 
 /// The bottom bar every hub screen carries.
 ///
-/// Home stays the active tab: My cycle is reached *from* Home and is not a tab
-/// of its own, which is what the prototype's `navBar('Home')` says.
+/// **My cycle is not a tab**, so no tab owns these screens and none of them is
+/// marked active. This said `'T01'`, which marked Home as the page she was on —
+/// and `AppNavBar` gives the active tab no `onTap`, because a tab is not a link
+/// to itself. The result was Home rendered as current and dead on all five My
+/// cycle screens, which is the one tab a woman reading her cycle is most likely
+/// to reach for.
+///
+/// So each screen passes [screenId] — its own id, the thing
+/// `AppNavBar.activeScreenId` has always documented — and every tab stays live.
 class CycleNavBar extends StatelessWidget {
-  const CycleNavBar({super.key, this.onSelectTab});
+  const CycleNavBar({super.key, this.screenId = '', this.onSelectTab});
+
+  /// The My cycle screen being drawn (Y03, Y07, Y08, Y10, Y12). No tab owns
+  /// any of them, which is the point: the default marks none of them active.
+  final String screenId;
 
   final ValueChanged<String>? onSelectTab;
 
   @override
   Widget build(BuildContext context) {
     return AppNavBar(
-      activeScreenId: 'T01',
+      activeScreenId: screenId,
       onSelect: (id) {
         final onTab = onSelectTab;
         if (onTab != null) {

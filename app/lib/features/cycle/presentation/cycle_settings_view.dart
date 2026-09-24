@@ -154,7 +154,10 @@ class _CycleSettingsViewState extends State<CycleSettingsView> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: CycleNavBar(onSelectTab: widget.onSelectTab),
+      bottomNavigationBar: CycleNavBar(
+        screenId: 'Y12',
+        onSelectTab: widget.onSelectTab,
+      ),
       appBar: AppTopBar(title: l10n.cycleSettings, onBack: widget.onBack),
       body: AppScaffold(
         children: [

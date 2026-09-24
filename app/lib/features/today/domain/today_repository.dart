@@ -70,12 +70,32 @@ abstract class TodayRepository {
 
 /// An in-memory [TodayRepository]. Real behaviour, no storage.
 class InMemoryTodayRepository implements TodayRepository {
+  /// Born on day one, holding nothing she did not do.
+  ///
+  /// The default used to be [defaultDay] — the prototype's Tuesday — so a woman
+  /// who had just installed the app opened it on somebody else's week: a 32
+  /// minute walk, week 3 of 8 of a programme she never chose, one session of
+  /// three already ticked and a breakfast logged at 08:40. Every "withhold the
+  /// figure rather than state it" guard elsewhere in this codebase was defeated
+  /// by this one word.
+  ///
+  /// [defaultDay] is still here and unchanged, because the prototype
+  /// screenshots and a dozen tests are drawn against it. It is now something a
+  /// caller has to **ask** for by name rather than what a fresh install gets.
+  ///
+  /// A returning woman is not affected: `lib/app_state/local_persistence.dart`
+  /// reads her snapshot before `runApp` and [restore] replaces this day
+  /// wholesale. Day one is what she gets only when there is genuinely nothing
+  /// stored.
   InMemoryTodayRepository({TodayDay? day, Set<String>? seenNotices})
-    : _day = day ?? defaultDay(),
+    : _day = day ?? dayOne(),
       _seen = seenNotices ?? <String>{};
 
   /// The day T01 is drawn against in `6-v2/src/screens-today.mjs`: one session
   /// logged of three, a walk waiting to be counted, breakfast already logged.
+  ///
+  /// **Not what a real install gets** — see the constructor. Asked for by name
+  /// by the tests and the gallery that are drawn against the prototype.
   ///
   /// The prototype's figures live **here**, in the fake, alongside the
   /// `sessionsLogged: 1` and the 08:40 that were already here — not in the
@@ -106,8 +126,12 @@ class InMemoryTodayRepository implements TodayRepository {
   }
 
   /// Day one: nothing logged, so T01 renders T06.
+  ///
+  /// The date defaults to **now**, not to the prototype's frozen Tuesday. Home's
+  /// masthead names the day off this date, so a frozen one told a woman opening
+  /// the app on a Thursday that it was Tuesday.
   static TodayDay dayOne({DateTime? date}) {
-    final on = date ?? DateTime(2026, 9, 15, 9, 41);
+    final on = date ?? DateTime.now();
     return TodayDay(
       date: on,
       state: DayState.dayOne,
@@ -261,7 +285,9 @@ class InMemoryTodayRepository implements TodayRepository {
   void reset({TodayDay? day}) {
     _seen.clear();
     _creditedSessions.clear();
-    _emit(day ?? defaultDay());
+    // Day one, for the same reason the constructor starts there: a woman who
+    // has just deleted everything must not be handed the prototype's week back.
+    _emit(day ?? dayOne());
   }
 
   @override

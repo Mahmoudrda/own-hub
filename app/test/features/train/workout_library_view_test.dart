@@ -41,9 +41,49 @@ void main() {
     // Constraints she has, not muscle-group jargon.
     expect(find.text('Quiet'), findsOneWidget);
     expect(find.text('No equipment'), findsOneWidget);
-    expect(find.text('Floor legs, no jumping'), findsOneWidget);
-    expect(find.text('10 min · beginner · Nour'), findsOneWidget);
+    // The workout the app actually ships, described without crediting anyone.
+    expect(find.text('Legs and glutes'), findsOneWidget);
+    expect(find.text('15 min · beginner · no equipment'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group('the three coaches who did not exist', () {
+    // R11 listed "Floor legs, no jumping · 10 min · beginner · Nour", "Quiet
+    // full body · 15 min · beginner · Mariam" and "Upper body at home · 20 min
+    // · easy · Habiba" — three invented Egyptian women credited as
+    // instructors, in both languages, two taps from Home, against a rule that
+    // forbids invented people outright. All three opened the same session.
+    const invented = ['Nour', 'Mariam', 'Habiba'];
+
+    testWidgets('no row credits a woman who does not exist', (tester) async {
+      for (final locale in [const Locale('en'), const Locale('ar')]) {
+        await tester.pumpWidget(
+          _host(const WorkoutLibraryView(), locale: locale),
+        );
+        await tester.pumpAndSettle();
+
+        for (final name in invented) {
+          expect(
+            find.textContaining(name),
+            findsNothing,
+            reason: '$name is invented, and $locale renders her',
+          );
+        }
+      }
+    });
+
+    testWidgets('and no row is a title the app cannot open', (tester) async {
+      await tester.pumpWidget(_host(const WorkoutLibraryView()));
+      await tester.pumpAndSettle();
+
+      for (final title in const [
+        'Floor legs, no jumping',
+        'Quiet full body',
+        'Upper body at home',
+      ]) {
+        expect(find.text(title), findsNothing);
+      }
+    });
   });
 
   testWidgets('the list is not preceded by a count it cannot make', (
@@ -60,47 +100,68 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('18 workouts'), findsNothing);
-    expect(find.text('Floor legs, no jumping'), findsOneWidget);
-    expect(find.text('Quiet full body'), findsOneWidget);
+    expect(find.text('Legs and glutes'), findsOneWidget);
+  });
+
+  testWidgets('says why the list is short, without a count', (tester) async {
+    // Padding it out with rows the app cannot open is what produced the three
+    // invented coaches. It says what it has instead — and says it without a
+    // number, so it stays true as titles land.
+    await tester.pumpWidget(_host(const WorkoutLibraryView()));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'The library is still being written. What is here is what the app '
+        'ships with today.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('filtering happens locally, with no query', (tester) async {
     await tester.pumpWidget(_host(const WorkoutLibraryView()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Quiet full body'), findsOneWidget);
-    expect(find.text('Upper body at home'), findsOneWidget);
+    expect(find.text('Legs and glutes'), findsOneWidget);
 
-    // Ten minutes only. The twenty-minute session drops out immediately.
+    // Ten minutes only. The fifteen-minute session drops out immediately, and
+    // the screen says so rather than going blank.
     await tester.tap(find.text('10 min'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Floor legs, no jumping'), findsOneWidget);
-    expect(find.text('Upper body at home'), findsNothing);
+    expect(find.text('Legs and glutes'), findsNothing);
+    expect(find.text('Nothing matches those filters.'), findsOneWidget);
   });
 
   testWidgets('typing narrows the list without a network call', (tester) async {
     await tester.pumpWidget(_host(const WorkoutLibraryView()));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), 'Upper');
+    await tester.enterText(find.byType(TextField), 'Legs');
     await tester.pumpAndSettle();
 
-    expect(find.text('Upper body at home'), findsOneWidget);
-    expect(find.text('Floor legs, no jumping'), findsNothing);
+    expect(find.text('Legs and glutes'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'Kettlebell');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Legs and glutes'), findsNothing);
   });
 
   testWidgets('opening a workout hands back the row', (tester) async {
+    // The router used to discard this argument, which is how three differently
+    // titled rows all opened one session.
     LibraryWorkout? opened;
     await tester.pumpWidget(
       _host(WorkoutLibraryView(onOpenWorkout: (workout) => opened = workout)),
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Quiet full body'));
+    await tester.tap(find.text('Legs and glutes'));
     await tester.pumpAndSettle();
 
-    expect(opened?.id, 'quiet_full_body');
+    expect(opened?.title, 'Legs and glutes');
   });
 
   testWidgets('rows come from data, and show no network image', (tester) async {
@@ -121,7 +182,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Morning mobility'), findsOneWidget);
-    expect(find.text('Floor legs, no jumping'), findsNothing);
+    expect(find.text('Legs and glutes'), findsNothing);
     // The 124 posters do not exist yet; nothing here may fetch one.
     expect(find.byType(Image), findsNothing);
   });
@@ -151,8 +212,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('بحث'), findsOneWidget);
-    expect(find.text('تمارين ساقين أرضية، بدون قفز'), findsOneWidget);
-    expect(find.text('Floor legs, no jumping'), findsNothing);
+    expect(find.text('الساقان والأرداف'), findsOneWidget);
+    expect(find.text('15 دقيقة · مبتدئة · بدون أدوات'), findsOneWidget);
+    expect(find.text('Legs and glutes'), findsNothing);
   });
 
   testWidgets('does not overflow at the largest system text size in Arabic', (

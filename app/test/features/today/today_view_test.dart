@@ -56,8 +56,16 @@ Widget _host(
 
 /// Every route out is stubbed, so a stray tap can never reach the real router
 /// and no test depends on another screen existing.
-TodayView _today({TodayRepository? repository, DateTime? now, int? level}) {
+TodayView _today({
+  TodayRepository? repository,
+  DateTime? now,
+  int? level,
+  String? sessionTitle,
+}) {
   return TodayView(
+    // The prototype's day, asked for by name. `InMemoryTodayRepository()` now
+    // starts on day one, which is what a fresh install must get; these cases
+    // are about a day part way through, so they state the day they mean.
     repository:
         repository ??
         InMemoryTodayRepository(
@@ -65,6 +73,7 @@ TodayView _today({TodayRepository? repository, DateTime? now, int? level}) {
         ),
     now: now ?? _tuesday,
     level: level,
+    sessionTitle: sessionTitle,
     onStartSession: () {},
     onRecall: () {},
     onOpenMeal: () {},
@@ -100,13 +109,93 @@ void main() {
       expect(find.text('Level 7 · Regular'), findsNothing);
       expect(find.text('Walk this morning · 32 min'), findsOneWidget);
       expect(find.text('Count it'), findsOneWidget);
-      expect(find.text('Legs and glutes'), findsOneWidget);
+      // The cover names the thing, not a programme. It was the fixed
+      // `l10n.legsAndGlutes`, so Home told every woman the name of a programme
+      // she had never chosen — and Train, one tap away, called the same
+      // programme "Postpartum rebuild".
+      expect(find.text("Today's workout"), findsOneWidget);
+      expect(find.text('Legs and glutes'), findsNothing);
       expect(find.text('Week 3 of 8'), findsOneWidget);
       expect(find.text("Start, everything's ready"), findsOneWidget);
       expect(find.text('I already did it'), findsOneWidget);
-      expect(find.text('Breakfast, your usual'), findsOneWidget);
+      // The meal is headed by the hour it happened, not by a fixed
+      // "Breakfast, your usual" that stayed on the card over a koshari bowl
+      // logged at one in the afternoon. This one really is breakfast: 08:40.
+      expect(find.text('Breakfast'), findsOneWidget);
+      expect(find.text('Breakfast, your usual'), findsNothing);
       expect(find.text('Ful and baladi'), findsOneWidget);
       expect(find.text('This week, 1 of 3'), findsOneWidget);
+    });
+
+    testWidgets('the cover names her plan when there is one', (tester) async {
+      // And proves the line above is a fallback rather than a second constant:
+      // a title supplied by her plan is what the cover sets.
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(_today(sessionTitle: 'Floor legs, no jumping')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Floor legs, no jumping'), findsOneWidget);
+      expect(find.text("Today's workout"), findsNothing);
+    });
+
+    testWidgets('the meal heading follows the meal, not the mockup', (
+      tester,
+    ) async {
+      // Found by driving the real app: log a koshari bowl at lunch and Home
+      // still read "Breakfast, your usual" with the koshari underneath it. The
+      // heading was a constant while everything under it was data.
+      _phone(tester);
+      final lunch = DateTime(2026, 9, 15, 13, 10);
+      await tester.pumpWidget(
+        _host(
+          _today(
+            now: lunch,
+            repository: InMemoryTodayRepository(
+              day: InMemoryTodayRepository.defaultDay(date: _tuesday).copyWith(
+                mealLoggedAt: lunch,
+                plates: const [
+                  PlateSuggestion(foodId: 'koshari_bowl', kcal: 540),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Koshari bowl'), findsOneWidget);
+      expect(find.text('Lunch'), findsOneWidget);
+      expect(find.text('Breakfast'), findsNothing);
+      expect(find.text('Breakfast, your usual'), findsNothing);
+    });
+
+    testWidgets('with nothing logged it guesses the hour, and says so', (
+      tester,
+    ) async {
+      _phone(tester);
+      final evening = DateTime(2026, 9, 15, 19, 30);
+      await tester.pumpWidget(
+        _host(
+          _today(
+            now: evening,
+            repository: InMemoryTodayRepository(
+              // Past day one, but nothing eaten yet today.
+              day: TodayDay(
+                date: _tuesday,
+                state: DayState.nothingDone,
+                arc: const FirstWeekArc(hasAnyLog: true),
+                week: const WeekProgress(sessionsLogged: 0, sessionsTarget: 3),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Dinner, your usual'), findsOneWidget);
+      expect(find.text('Breakfast, your usual'), findsNothing);
     });
 
     testWidgets('the week line counts HER target, not the prototype 3', (
@@ -138,7 +227,32 @@ void main() {
       expect(find.text('This week, 2 of 4'), findsOneWidget);
       expect(find.text('This week, 1 of 3'), findsNothing);
       expect(find.text('This week, 0 of 3'), findsNothing);
+      // And the line beside it counts down from the same two numbers. It was
+      // the fixed "Two more and the week counts." — said beside "0 of 3" on a
+      // fresh install, and said again to a woman who had finished her week.
+      expect(find.text('2 more and the week counts.'), findsOneWidget);
+      expect(find.text('Two more and the week counts.'), findsNothing);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a week she has finished says so, rather than asking for two '
+        'more', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          _today(
+            repository: InMemoryTodayRepository(
+              day: InMemoryTodayRepository.defaultDay(date: _tuesday).copyWith(
+                week: const WeekProgress(sessionsLogged: 3, sessionsTarget: 3),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('This week counts.'), findsOneWidget);
+      expect(find.textContaining('more and the week counts'), findsNothing);
     });
 
     testWidgets('the level pill is HER level, and names no tier', (
@@ -379,11 +493,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('الثلاثاء'), findsOneWidget);
-    expect(find.text('الساقان والأرداف'), findsOneWidget);
+    expect(find.text('تمرين اليوم'), findsOneWidget);
     expect(find.text('احتسبيها'), findsOneWidget);
     expect(find.text('هذا الأسبوع، 1 من 3'), findsOneWidget);
     // English surviving here is exactly what a hardcoded string looks like.
-    expect(find.text('Legs and glutes'), findsNothing);
+    expect(find.text("Today's workout"), findsNothing);
     expect(find.text('Count it'), findsNothing);
   });
 

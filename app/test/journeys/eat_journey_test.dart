@@ -21,6 +21,7 @@ import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/domain/week/week_key.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/ui/app_nav_bar.dart';
 import 'package:own_hub/ui/app_undo_bar.dart';
 
 void _phone(WidgetTester tester) {
@@ -116,6 +117,43 @@ void main() {
     );
   });
 
+  group('one log, one undo', () {
+    testWidgets('logging a meal offers exactly one way back', (tester) async {
+      // Both were on screen at once: E02 raised a floating `AppUndoSnackbar`
+      // and then pushed E04, which drew the in-page `AppUndoBar` for the same
+      // handle. Two offers, the same sentence, closing half a second apart —
+      // and a woman who tapped the one that had already expired got nothing.
+      _phone(tester);
+      await _boot(tester);
+      await _typeAndLog(tester, 'koshari');
+
+      expect(find.byType(AppUndoBar), findsOneWidget);
+      expect(
+        find.byType(SnackBar),
+        findsNothing,
+        reason: 'the in-page bar is the one this screen shows',
+      );
+      expect(
+        find.text('Undo'),
+        findsOneWidget,
+        reason: 'one meal, one way back — anywhere on the screen',
+      );
+
+      // And its five seconds are honest: the offer is still there at three
+      // seconds and gone once the write has landed.
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.text('Undo'), findsOneWidget);
+
+      await _windowCloses(tester);
+      expect(find.text('Undo'), findsNothing);
+      expect(
+        find.byType(AppUndoBar),
+        findsOneWidget,
+        reason: 'the bar stays, saying what was saved',
+      );
+    });
+  });
+
   group('one meal, typed', () {
     testWidgets('E02 logs it, E04 shows it, and it is written after five '
         'seconds', (tester) async {
@@ -194,6 +232,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('About 540 kcal so far today'), findsNothing);
+      expect(
+        find.byType(AppUndoBar),
+        findsNothing,
+        reason: 'the bar read "Food logged" over a day that no longer held it',
+      );
       await _windowCloses(tester);
       expect(_written, isEmpty, reason: 'an undone meal is never written');
 
@@ -251,6 +294,10 @@ void main() {
       // It logged, and it landed on the logged day rather than merely
       // navigating there.
       expect(find.byType(AppUndoBar), findsOneWidget);
+      // One offer, here too: Home used to raise a snackbar of its own and then
+      // carry the same handle to E04's bar.
+      expect(find.byType(SnackBar), findsNothing);
+      expect(find.text('Undo'), findsOneWidget);
       expect(find.text('About 1,080 kcal so far today'), findsOneWidget);
 
       await _windowCloses(tester);
@@ -358,6 +405,41 @@ void main() {
       findsNWidgets(2),
       reason: 'a shop survives being closed mid-market',
     );
+  });
+
+  testWidgets('every tab stays live on a screen that is not a tab', (
+    tester,
+  ) async {
+    // E05 and E08 both claimed `activeScreenId: 'E01'`, and `AppNavBar` gives
+    // the active tab no `onTap` — a tab is not a link to itself. So the Eat tab
+    // rendered as the page she was already on and did nothing, from two screens
+    // that are not the Eat tab.
+    _phone(tester);
+    await _boot(tester);
+    await _open(tester, 'E07');
+    await tester.tap(find.text('See the grocery list'));
+    await tester.pumpAndSettle();
+    expect(find.text('Onions 1 kg'), findsOneWidget, reason: 'E08 is open');
+
+    await tester.tap(
+      find.descendant(of: find.byType(AppNavBar), matching: find.text('Eat')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Onions 1 kg'),
+      findsNothing,
+      reason: 'the Eat tab went somewhere',
+    );
+
+    // And Home, from the grocery list, reaches Home.
+    await _open(tester, 'E07');
+    await tester.tap(find.text('See the grocery list'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: find.byType(AppNavBar), matching: find.text('Home')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Onions 1 kg'), findsNothing);
   });
 
   testWidgets('the week rearranges rather than pretending to regenerate', (

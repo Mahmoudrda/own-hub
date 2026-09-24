@@ -149,6 +149,23 @@ class _SayItViewState extends State<SayItView> {
     setState(() => _state = _model(l10n).refuse());
   }
 
+  /// The **one** undo offer for one log (§2 rule 9).
+  ///
+  /// When [SayItView.onLogged] is wired the handle travels on to E04, which
+  /// draws the in-page `AppUndoBar` for it. Raising a floating snackbar here as
+  /// well put two offers for the same meal on screen, and the one she reached
+  /// second had already expired. Without that handler nothing downstream would
+  /// offer the five seconds, so the snackbar stands in.
+  void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    if (widget.onLogged != null) return;
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: AppL10n.of(context).undo,
+      onUndo: onUndo,
+    );
+  }
+
   void _log(List<ParsedItem> entries) {
     final l10n = AppL10n.of(context);
     final service = MealLogService(
@@ -182,12 +199,7 @@ class _SayItViewState extends State<SayItView> {
         slot: slot,
         describe: l10n.foodLogged,
       );
-      showUndoSnackBar(
-        context,
-        handle: handle,
-        undoLabel: l10n.undo,
-        onUndo: session.settle,
-      );
+      _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
       return;
     }
@@ -198,7 +210,7 @@ class _SayItViewState extends State<SayItView> {
         commit: () => service.commit(prepared.write),
       ),
     );
-    showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
+    _offerUndo(handle);
     widget.onLogged?.call(handle);
   }
 

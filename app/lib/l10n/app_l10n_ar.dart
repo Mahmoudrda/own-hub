@@ -6961,4 +6961,87 @@ class AppL10nAr extends AppL10n {
   @override
   String get deletingTakesAwayEverythingYouHavePut_g3hy0 =>
       'الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه.';
+
+  @override
+  String get yourTrainingWeekByWeek => 'تدريبك، أسبوعًا بعد أسبوع';
+
+  @override
+  String get thisAppCountsWeeksNotDaysAnd =>
+      'هذا التطبيق يحسب الأسابيع لا الأيام، ولا يحسب إلا ما تسجّلينه بنفسك.';
+
+  @override
+  String get fourShortQuestionsThenYourWeekIs =>
+      'أربعة أسئلة قصيرة، ثم يصبح أسبوعكِ جاهزًا. يمكنكِ تخطّي أيٍّ منها.';
+
+  @override
+  String get yourGoalYourDaysAndWhatYou => 'هدفكِ وأيامكِ وما تتدرّبين به';
+
+  @override
+  String get reachYourGoalAndTheWeekCounts =>
+      'حقّقي هدفكِ فيُحتسب الأسبوع، والأسبوع الذي تفوّتينه يغطّيه أسبوع راحة متى كسبتِ واحدًا.';
+
+  @override
+  String get yourWeekCountsWhenYouFinishYour =>
+      'يُحتسب أسبوعكِ عندما تُتمّين تمارينه، ولا يوم بعينه عليكِ التدريب فيه.';
+
+  @override
+  String get onlyYouEverSeeThis => 'لا يرى هذا أحد سواكِ.';
+
+  @override
+  String get settings => 'الإعدادات';
+
+  @override
+  String get more => 'المزيد';
+
+  @override
+  String get downloadThisWeek => 'نزّلي هذا الأسبوع';
+
+  @override
+  String get turnNotificationsOnSoWeCanNudge =>
+      'شغّلي الإشعارات لنذكّرك في الوقت الذي تسجّلين فيه عادةً.';
+
+  @override
+  String get noHistoryForThisMoveYetWhat =>
+      'لا سجل لهذه الحركة بعد. ما تسجّلينه اليوم هو ما يُقاس عليه ما يليه.';
+
+  @override
+  String get theLibraryIsStillBeingWrittenWhat =>
+      'المكتبة ما زالت قيد الكتابة. ما تجدينه هنا هو ما يأتي مع التطبيق اليوم.';
+
+  @override
+  String get nothingMatchesThoseFilters => 'لا شيء يطابق هذه المرشّحات.';
+
+  @override
+  String minutesMinutesMovesMoves(String minutes, String moves) {
+    return '$minutes دقيقة، $moves تمارين';
+  }
+
+  @override
+  String lastTimeLastSoWeAddedAdded(String last, String added) {
+    return 'آخر مرة: $last. لذلك أضفنا $added كجم.';
+  }
+
+  @override
+  String lastTimeLast(String last) {
+    return 'آخر مرة: $last.';
+  }
+
+  @override
+  String get lunchYourUsual => 'الغداء المعتاد';
+
+  @override
+  String get snackYourUsual => 'الوجبة الخفيفة المعتادة';
+
+  @override
+  String get saturday => 'السبت';
+
+  @override
+  String get sunday => 'الأحد';
+
+  @override
+  String get noProgramYet => 'لا يوجد برنامج بعد';
+
+  @override
+  String get aProgramSetsOutYourWeeksAnd =>
+      'البرنامج يرتّب أسابيعك والأيام داخلها، ولم يُكتب لك برنامج بعد. تمرين واحد جاهز الآن، ويفتحه زر ابدئي تمرين اليوم.';
 }

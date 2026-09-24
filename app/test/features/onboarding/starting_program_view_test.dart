@@ -16,6 +16,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/onboarding/domain/intake_repository.dart';
 import 'package:own_hub/features/onboarding/domain/starting_program.dart';
 import 'package:own_hub/features/onboarding/presentation/starting_program_view.dart';
@@ -49,8 +50,39 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Built from your four answers'), findsOneWidget);
+      // Her answers, not the prototype's. This line was one fixed dictionary
+      // entry reading "Three days a week, 15 minutes, at home" under the words
+      // "Built from your four answers", so the screen whose whole job is to
+      // prove the answers counted told every woman she had chosen the same
+      // thing.
       expect(
-        find.text('Three days a week, 15 minutes, at home'),
+        find.text('Days a week: 3 · Minutes a session: 15 · At home'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a different set of answers reads back differently', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          StartingProgramView(
+            repository: InMemoryIntakeRepository(
+              const Intake(
+                place: TrainingPlace.ladiesGym,
+                days: 5,
+                minutes: 30,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Days a week: 5 · Minutes a session: 30 · At a ladies-only gym',
+        ),
         findsOneWidget,
       );
     });
@@ -69,26 +101,36 @@ void main() {
         find.textContaining('Week 1 starts with four moves'),
         findsOneWidget,
       );
-      // A still, not a video: O05 costs zero video egress.
-      expect(find.byType(AppMedia), findsOneWidget);
+      // No media block. The slot held an empty one with a play button that
+      // played nothing, on the last screen of setup. It comes back when there
+      // is a still to put in it.
+      expect(find.byType(AppMedia), findsNothing);
     });
 
-    testWidgets('her week is already set, and it says she can change it', (
+    testWidgets('it says how her week is counted, and names no weekday', (
       tester,
     ) async {
+      // "Your week: Monday, Tuesday and Thursday. Change any day by tapping
+      // it." was false twice: nothing in this product schedules a weekday, so
+      // there was no day to change and no tap that changed one — and §2 rule 3
+      // counts weeks, never days, so naming three weekdays on the last screen
+      // of setup taught her the opposite of how her week is scored.
       await tester.pumpWidget(
         _host(StartingProgramView(repository: InMemoryIntakeRepository())),
       );
       await tester.pumpAndSettle();
 
       expect(
-        find.textContaining('Your week: Monday, Tuesday and Thursday'),
+        find.textContaining('Your week counts when you finish your sessions'),
         findsOneWidget,
       );
-      expect(
-        find.textContaining('Change any day by tapping it'),
-        findsOneWidget,
-      );
+      for (final weekday in ['Monday', 'Tuesday', 'Thursday']) {
+        expect(
+          find.textContaining(weekday),
+          findsNothing,
+          reason: 'weeks, not days: this product schedules no weekday',
+        );
+      }
     });
   });
 

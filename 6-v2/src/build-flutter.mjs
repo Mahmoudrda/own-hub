@@ -444,6 +444,9 @@ if (fs.existsSync(dictPath)) {
     "{count} so far": {"description": "P01 bests tile: her lifetime personal bests, replacing the fixed '8 so far'.", "placeholders": {"count": {"type": "String", "example": "8"}}},
     "{from} to {to}": {"description": "A range of two values the screen already knows: opening hours on a coach's page, or the number of clients she may take. Written out in each language rather than joined with a dash in code, which would read as English punctuation inside an Arabic line.", "placeholders": {"from": {"type": "String", "example": "9:00"}, "to": {"type": "String", "example": "17:00"}}},
     "of {total}": {"description": "The small half of the ring on her first week: how many steps the arc has. The number is a value, and the arc is shorter when a step belongs to a feature this build has switched off, so it cannot be frozen into the sentence.", "placeholders": {"total": {"type": "String", "example": "3"}}},
+    "{minutes} minutes, {moves} moves": {"description": "R03's summary of today's session. Counted off the day's own moves, never a fixed '5 moves'.", "placeholders": {"minutes": {"type": "String", "example": "15"}, "moves": {"type": "String", "example": "4"}}},
+    "Last time: {last}. So we added {added} kg.": {"description": "R07's progression note, drawn only when she has a logged set for this move and today's prescription is heavier.", "placeholders": {"last": {"type": "String", "example": "10 kg × 10"}, "added": {"type": "String", "example": "2"}}},
+    "Last time: {last}.": {"description": "R07's progression note when she has a logged set for this move and nothing was added.", "placeholders": {"last": {"type": "String", "example": "10 kg × 10"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

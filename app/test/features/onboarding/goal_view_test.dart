@@ -131,6 +131,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // Scrolled to first. O01 opens the app on a fresh install now, so it
+      // carries a line saying how many questions there are and that they can
+      // be skipped — one line more than the 800x600 test window has room for
+      // under the fourth answer. Every phone this ships on is far taller; the
+      // screen is a `SingleChildScrollView` either way.
+      await tester.ensureVisible(find.text('Get back into it'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Get back into it'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Continue'));

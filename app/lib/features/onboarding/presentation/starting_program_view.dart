@@ -40,7 +40,6 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
-import '../../../ui/app_media.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/intake.dart';
@@ -75,6 +74,35 @@ class StartingProgramView extends StatelessWidget {
 
   /// `R11` — the Workout library. See the note at the top of this file.
   final VoidCallback? onPickDifferentProgram;
+
+  /// The line that reads her four answers back to her.
+  ///
+  /// This was the single dictionary entry "Three days a week, 15 minutes, at
+  /// home", printed under the words "Built from your four answers" to every
+  /// woman who finished setup. A woman who chose four days and twenty minutes
+  /// at a gym was told, on the screen whose entire job is to prove her answers
+  /// counted, that she had chosen something else.
+  ///
+  /// One string per place rather than a place inserted into a sentence: Arabic
+  /// puts "في المنزل" and "في نادٍ للسيدات" in a sentence that has to agree with
+  /// them, and a template with a noun dropped into it reads as machine
+  /// translation. The numbers are placeholders in both languages and stay
+  /// Western digits (`P0-A11Y-01`).
+  String _herAnswers(AppL10n l10n, Intake intake) {
+    final days = '${intake.days}';
+    final minutes = '${intake.minutes}';
+    return switch (intake.place) {
+      TrainingPlace.home => l10n.daysAWeekDaysMinutesASession(days, minutes),
+      TrainingPlace.ladiesGym => l10n.daysAWeekDaysMinutesASession_1qm7e(
+        days,
+        minutes,
+      ),
+      TrainingPlace.both => l10n.daysAWeekDaysMinutesASession_1cc8s(
+        days,
+        minutes,
+      ),
+    };
+  }
 
   /// Dictionary copy for a programme id, or null when none has been written.
   ///
@@ -143,7 +171,7 @@ class StartingProgramView extends StatelessWidget {
             const SizedBox(height: 6),
             // Her answers read back, at section scale under the small kicker.
             Text(
-              l10n.threeDaysAWeek15MinutesAt,
+              _herAnswers(l10n, intake),
               style: EditorialType.section.copyWith(
                 color: AppColors.onPrimaryContainer,
               ),
@@ -189,11 +217,12 @@ class StartingProgramView extends StatelessWidget {
                   ),
                 ],
               ),
-              // A still, not a video: O05 costs zero video egress (G2 §2.4).
-              // The prototype labels this block "coach demo still" in a
-              // monospace face — a designer's annotation marking what goes
-              // here, like "logotype" on C01, and not copy to be read aloud.
-              const AppMedia(height: 130),
+              // The prototype had a still here, labelled "coach demo still" in
+              // a monospace face: a designer's annotation marking what goes in
+              // the slot, like "logotype" on C01. There is no still to put in
+              // it, and an empty media block with a play button on the last
+              // screen of setup is a control that plays nothing, on the screen
+              // that hands her into the app. It comes back with the asset.
               Text(
                 copy.firstWeek,
                 style: AppText.bodyM.copyWith(
@@ -216,9 +245,17 @@ class StartingProgramView extends StatelessWidget {
                   color: AppColors.tertiary,
                 ),
                 const SizedBox(width: 10),
+                // "Your week: Monday, Tuesday and Thursday. Change any day by
+                // tapping it." was false twice over. Nothing in this product
+                // schedules a weekday, so there were no days to change and no
+                // tap that changed one; and §2 rule 3 is that this app counts
+                // weeks and never days, so naming three of them on the last
+                // screen of setup taught her the opposite of how her week is
+                // scored. What the card says now is the rule that actually
+                // governs it.
                 Expanded(
                   child: Text(
-                    l10n.yourWeekMondayTuesdayAndThursdayChange,
+                    l10n.yourWeekCountsWhenYouFinishYour,
                     style: AppText.bodyM.copyWith(color: AppColors.onSurface),
                   ),
                 ),

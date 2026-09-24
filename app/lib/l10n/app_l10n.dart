@@ -12852,6 +12852,144 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers. It happens at once, and none of it can be brought back.'**
   String get deletingTakesAwayEverythingYouHavePut_g3hy0;
+
+  /// No description provided for @yourTrainingWeekByWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Your training, week by week'**
+  String get yourTrainingWeekByWeek;
+
+  /// No description provided for @thisAppCountsWeeksNotDaysAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'This app counts weeks, not days, and only what you log yourself.'**
+  String get thisAppCountsWeeksNotDaysAnd;
+
+  /// No description provided for @fourShortQuestionsThenYourWeekIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Four short questions, then your week is ready. Skip any of them.'**
+  String get fourShortQuestionsThenYourWeekIs;
+
+  /// No description provided for @yourGoalYourDaysAndWhatYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal, your days and what you train with'**
+  String get yourGoalYourDaysAndWhatYou;
+
+  /// No description provided for @reachYourGoalAndTheWeekCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.'**
+  String get reachYourGoalAndTheWeekCounts;
+
+  /// No description provided for @yourWeekCountsWhenYouFinishYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week counts when you finish your sessions. No single day is the one you must train on.'**
+  String get yourWeekCountsWhenYouFinishYour;
+
+  /// No description provided for @onlyYouEverSeeThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you ever see this.'**
+  String get onlyYouEverSeeThis;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @downloadThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Download this week'**
+  String get downloadThisWeek;
+
+  /// No description provided for @turnNotificationsOnSoWeCanNudge.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn notifications on, so we can nudge you at the hour you usually log.'**
+  String get turnNotificationsOnSoWeCanNudge;
+
+  /// No description provided for @noHistoryForThisMoveYetWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'No history for this move yet. What you log today is what the next one is measured against.'**
+  String get noHistoryForThisMoveYetWhat;
+
+  /// No description provided for @theLibraryIsStillBeingWrittenWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'The library is still being written. What is here is what the app ships with today.'**
+  String get theLibraryIsStillBeingWrittenWhat;
+
+  /// No description provided for @nothingMatchesThoseFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches those filters.'**
+  String get nothingMatchesThoseFilters;
+
+  /// R03's summary of today's session. Counted off the day's own moves, never a fixed '5 moves'.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minutes, {moves} moves'**
+  String minutesMinutesMovesMoves(String minutes, String moves);
+
+  /// R07's progression note, drawn only when she has a logged set for this move and today's prescription is heavier.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time: {last}. So we added {added} kg.'**
+  String lastTimeLastSoWeAddedAdded(String last, String added);
+
+  /// R07's progression note when she has a logged set for this move and nothing was added.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time: {last}.'**
+  String lastTimeLast(String last);
+
+  /// No description provided for @lunchYourUsual.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch, your usual'**
+  String get lunchYourUsual;
+
+  /// No description provided for @snackYourUsual.
+  ///
+  /// In en, this message translates to:
+  /// **'Snack, your usual'**
+  String get snackYourUsual;
+
+  /// No description provided for @saturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get saturday;
+
+  /// No description provided for @sunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get sunday;
+
+  /// No description provided for @noProgramYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No program yet'**
+  String get noProgramYet;
+
+  /// No description provided for @aProgramSetsOutYourWeeksAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'A program sets out your weeks and the days in them. Nothing is written for you yet. One session is ready now, and Start today\'s session opens it.'**
+  String get aProgramSetsOutYourWeeksAnd;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

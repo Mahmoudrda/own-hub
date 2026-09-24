@@ -6997,4 +6997,88 @@ class AppL10nEn extends AppL10n {
   @override
   String get deletingTakesAwayEverythingYouHavePut_g3hy0 =>
       'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers. It happens at once, and none of it can be brought back.';
+
+  @override
+  String get yourTrainingWeekByWeek => 'Your training, week by week';
+
+  @override
+  String get thisAppCountsWeeksNotDaysAnd =>
+      'This app counts weeks, not days, and only what you log yourself.';
+
+  @override
+  String get fourShortQuestionsThenYourWeekIs =>
+      'Four short questions, then your week is ready. Skip any of them.';
+
+  @override
+  String get yourGoalYourDaysAndWhatYou =>
+      'Your goal, your days and what you train with';
+
+  @override
+  String get reachYourGoalAndTheWeekCounts =>
+      'Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.';
+
+  @override
+  String get yourWeekCountsWhenYouFinishYour =>
+      'Your week counts when you finish your sessions. No single day is the one you must train on.';
+
+  @override
+  String get onlyYouEverSeeThis => 'Only you ever see this.';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get downloadThisWeek => 'Download this week';
+
+  @override
+  String get turnNotificationsOnSoWeCanNudge =>
+      'Turn notifications on, so we can nudge you at the hour you usually log.';
+
+  @override
+  String get noHistoryForThisMoveYetWhat =>
+      'No history for this move yet. What you log today is what the next one is measured against.';
+
+  @override
+  String get theLibraryIsStillBeingWrittenWhat =>
+      'The library is still being written. What is here is what the app ships with today.';
+
+  @override
+  String get nothingMatchesThoseFilters => 'Nothing matches those filters.';
+
+  @override
+  String minutesMinutesMovesMoves(String minutes, String moves) {
+    return '$minutes minutes, $moves moves';
+  }
+
+  @override
+  String lastTimeLastSoWeAddedAdded(String last, String added) {
+    return 'Last time: $last. So we added $added kg.';
+  }
+
+  @override
+  String lastTimeLast(String last) {
+    return 'Last time: $last.';
+  }
+
+  @override
+  String get lunchYourUsual => 'Lunch, your usual';
+
+  @override
+  String get snackYourUsual => 'Snack, your usual';
+
+  @override
+  String get saturday => 'Saturday';
+
+  @override
+  String get sunday => 'Sunday';
+
+  @override
+  String get noProgramYet => 'No program yet';
+
+  @override
+  String get aProgramSetsOutYourWeeksAnd =>
+      'A program sets out your weeks and the days in them. Nothing is written for you yet. One session is ready now, and Start today\'s session opens it.';
 }

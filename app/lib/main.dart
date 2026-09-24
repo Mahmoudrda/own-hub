@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_state/local_persistence.dart';
+import 'app_state/onboarding_state.dart';
 import 'domain/flags/feature_flags.dart';
 import 'domain/identity/user_roles.dart';
 import 'l10n/app_l10n.dart';
@@ -142,6 +143,13 @@ class _OwnHubAppState extends State<OwnHubApp> {
   /// With no route supplied, the front door depends on
   /// [Feature.accountRequired]: sign-up (C01) when an account is required,
   /// Home (T01) when it is not.
+  ///
+  /// The setup questions are not chosen here, and the reason is worth stating
+  /// where somebody will look for them. They are not an alternative front door;
+  /// they open **on top of** the front door, as the second entry of
+  /// [_firstRunStack], so that finishing, skipping or closing is a pop back to
+  /// the screen underneath rather than a push to a new one. See
+  /// `lib/app_state/onboarding_state.dart`.
   String _initialRoute() {
     final supplied =
         WidgetsBinding.instance.platformDispatcher.defaultRouteName;
@@ -151,9 +159,53 @@ class _OwnHubAppState extends State<OwnHubApp> {
     // front door rather than the "no screen serves this" page. The console is
     // already unreachable at `onGenerateRoute`; this is about what she sees.
     if (id != null && AppRouter.resolvesInThisBuild(id)) return supplied;
-    return AppRouter.featureFlags.isOn(Feature.accountRequired)
-        ? appRoutes['C01']!.name
-        : appRoutes['T01']!.name;
+    return _frontDoor;
+  }
+
+  /// The app's own first screen, with nothing supplied from outside.
+  static String get _frontDoor =>
+      AppRouter.featureFlags.isOn(Feature.accountRequired)
+      ? appRoutes['C01']!.name
+      : appRoutes['T01']!.name;
+
+  /// The routes the app opens holding, newest last.
+  ///
+  /// Generated here as ONE route each, rather than letting Flutter split them.
+  ///
+  /// Flutter's default splits "/signup/c01" into "/", "/signup" and
+  /// "/signup/c01" and asks onGenerateRoute for each ancestor. Neither "/" nor
+  /// "/signup" is a screen, so both return null, the initial route fails, and
+  /// the app renders a blank white page — running, responsive, and completely
+  /// empty.
+  ///
+  /// This shipped once. Every test passed and the app launched fine; only a
+  /// screenshot caught it, because pumpWidget does not exercise the
+  /// ancestor-splitting path that breaks it.
+  ///
+  /// On a first launch the stack is two deep: the front door, and the setup
+  /// questions open on top of it. Both are built before the first frame and
+  /// neither is animated in, so she sees `O01` and not a flash of a Home she
+  /// has not filled in yet. The questions are stacked only over the app's own
+  /// front door — a build launched straight onto a named screen for a
+  /// screenshot, or a notification landing on `T03`, is left exactly where it
+  /// was sent.
+  List<Route<dynamic>> _firstRunStack(String initial) {
+    Route<dynamic> routeFor(String name) =>
+        AppRouter.onGenerateRoute(RouteSettings(name: name)) ??
+        AppRouter.onUnknownRoute(RouteSettings(name: name));
+
+    final front = routeFor(initial);
+    // Compared against the front door itself rather than against
+    // `_initialRoute()`, which answers with whatever the platform supplied. A
+    // build launched straight onto `/onboarding/o02` for a screenshot would
+    // otherwise have question one stacked on top of question two.
+    if (!OnboardingState.instance.isDue || initial != _frontDoor) {
+      return [front];
+    }
+    final setup = AppRouter.onGenerateRoute(
+      RouteSettings(name: appRoutes['O01']!.name),
+    );
+    return setup == null ? [front] : [front, setup];
   }
 
   @override
@@ -189,25 +241,9 @@ class _OwnHubAppState extends State<OwnHubApp> {
             // were caught by a screenshot and by nothing else, so being able to
             // take one of an arbitrary screen is worth this much.
             initialRoute: _initialRoute(),
-            // Generate the initial route ourselves, as ONE route.
-            //
-            // Flutter's default splits "/signup/c01" into "/", "/signup" and
-            // "/signup/c01" and asks onGenerateRoute for each ancestor. Neither
-            // "/" nor "/signup" is a screen, so both return null, the initial
-            // route fails, and the app renders a blank white page — running,
-            // responsive, and completely empty.
-            //
-            // This shipped once. Every test passed and the app launched fine; only
-            // a screenshot caught it, because pumpWidget does not exercise the
-            // ancestor-splitting path that breaks it.
-            onGenerateInitialRoutes: (initial) {
-              final route = AppRouter.onGenerateRoute(
-                RouteSettings(name: initial),
-              );
-              return [
-                route ?? AppRouter.onUnknownRoute(RouteSettings(name: initial)),
-              ];
-            },
+            // Generated ourselves, one route per entry, and two of them on a
+            // first launch. See `_firstRunStack`.
+            onGenerateInitialRoutes: _firstRunStack,
             onGenerateRoute: AppRouter.onGenerateRoute,
             onUnknownRoute: AppRouter.onUnknownRoute,
           ),
