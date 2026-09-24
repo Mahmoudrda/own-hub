@@ -12834,6 +12834,24 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'She tells you what she did about it.'**
   String get sheTellsYouWhatSheDidAbout;
+
+  /// The small half of the ring on her first week: how many steps the arc has. The number is a value, and the arc is shorter when a step belongs to a feature this build has switched off, so it cannot be frozen into the sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'of {total}'**
+  String ofTotal(String total);
+
+  /// No description provided for @yourLogsWeightAndPhotosStayOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Your logs, weight and photos stay on this phone.'**
+  String get yourLogsWeightAndPhotosStayOn;
+
+  /// No description provided for @deletingTakesAwayEverythingYouHavePut_g3hy0.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers. It happens at once, and none of it can be brought back.'**
+  String get deletingTakesAwayEverythingYouHavePut_g3hy0;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

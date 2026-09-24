@@ -22,8 +22,10 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -257,7 +259,9 @@ class CycleHubView extends StatelessWidget {
             // "App suggestion", never "coach-approved" — G2 publishes no
             // `workout.easierOption`, so a coach has approved nothing (OQ-4).
             AppPill(
-              option.alternative.provenance == SessionProvenance.appSuggestion
+              option.alternative.provenance ==
+                          SessionProvenance.appSuggestion ||
+                      !AppRouter.featureFlags.isOn(Feature.coachedLife)
                   ? l10n.appSuggestion
                   : l10n.fromYourCoachUnchanged,
               background: AppColors.surfaceContainer,
@@ -531,7 +535,12 @@ class CycleHubView extends StatelessWidget {
               color: AppColors.primaryDim,
             ),
             title: l10n.fullBodyStrength35Min_1jwg4,
-            subtitle: l10n.fromYourCoachUnchanged,
+            // The credit belongs to whoever wrote the session. With no
+            // coaching in this build nobody did, so the row names the
+            // session and claims nothing about its author.
+            subtitle: AppRouter.featureFlags.isOn(Feature.coachedLife)
+                ? l10n.fromYourCoachUnchanged
+                : '',
           ),
           Text(
             l10n.nothingChangesUntilYouTellUsHow,

@@ -33,7 +33,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_sheet.dart';
@@ -87,7 +89,16 @@ class _YourDataSheetState extends State<YourDataSheet> {
         Text(l10n.yourData, style: AppText.titleL),
         const SizedBox(height: 14),
 
-        Text(l10n.deletingTakesAwayEverythingYouHavePut, style: AppText.bodyM),
+        // The list names what goes. "your posts" belongs to a feature the
+        // first release ships without, and a sentence about deleting
+        // something she was never able to make is the same invention as a
+        // control that leads nowhere. Same sentence, only what exists.
+        Text(
+          AppRouter.featureFlags.isOn(Feature.community)
+              ? l10n.deletingTakesAwayEverythingYouHavePut
+              : l10n.deletingTakesAwayEverythingYouHavePut_g3hy0,
+          style: AppText.bodyM,
+        ),
         const SizedBox(height: 10),
         Text(l10n.thisBuildKeepsEverythingOnThisPhone, style: quiet),
         const SizedBox(height: 10),

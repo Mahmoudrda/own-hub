@@ -24,7 +24,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -97,7 +99,9 @@ class GentlerOptionView extends StatelessWidget {
               title: l10n.optionGentleMobility,
               // No subtitle. See the library note — the only string available
               // claims a coach approved this, and none has.
-              subtitle: provenance == SessionProvenance.appSuggestion
+              subtitle:
+                  provenance == SessionProvenance.appSuggestion ||
+                      !AppRouter.featureFlags.isOn(Feature.coachedLife)
                   ? l10n.appSuggestion
                   : l10n.fromYourCoachUnchanged,
             ),

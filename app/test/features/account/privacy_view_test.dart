@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/account/domain/privacy_settings.dart';
 import 'package:own_hub/features/account/domain/verification_claim.dart';
 import 'package:own_hub/features/account/presentation/privacy_view.dart';
@@ -49,6 +51,17 @@ List<AppToggle> _toggles(WidgetTester tester) =>
     tester.widgetList<AppToggle>(find.byType(AppToggle)).toList();
 
 void main() {
+  // Three of the four switches decide what the community sees and the fourth
+  // what a coach sees, so both have to be on for four switches to exist.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.community: true,
+      Feature.coachedLife: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('the switches', () {
     testWidgets('four switches, and only the blur starts on', (tester) async {
       _phone(tester);

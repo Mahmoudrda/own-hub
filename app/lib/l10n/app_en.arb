@@ -2744,5 +2744,17 @@
   "reportHerFromHerPostOrHer": "Report her from her post or her page.",
   "youPickAReasonAndSendIt": "You pick a reason and send it.",
   "aWomanOnTheTeamReadsIt": "A woman on the team reads it.",
-  "sheTellsYouWhatSheDidAbout": "She tells you what she did about it."
+  "sheTellsYouWhatSheDidAbout": "She tells you what she did about it.",
+  "ofTotal": "of {total}",
+  "@ofTotal": {
+    "description": "The small half of the ring on her first week: how many steps the arc has. The number is a value, and the arc is shorter when a step belongs to a feature this build has switched off, so it cannot be frozen into the sentence.",
+    "placeholders": {
+      "total": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "yourLogsWeightAndPhotosStayOn": "Your logs, weight and photos stay on this phone.",
+  "deletingTakesAwayEverythingYouHavePut_g3hy0": "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers. It happens at once, and none of it can be brought back."
 }

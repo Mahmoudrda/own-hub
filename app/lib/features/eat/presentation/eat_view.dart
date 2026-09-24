@@ -45,9 +45,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_list_item.dart';
@@ -503,10 +505,18 @@ class _EatViewState extends State<EatView> {
 
   List<Widget> _plannedBlock(AppL10n l10n) {
     final planned = widget.plannedMeal!;
+    // The pill credits whoever wrote the plan. `fromSara` is the prototype's
+    // coach, and in a build with no coaching nobody wrote it, so the row names
+    // the plan and credits nobody rather than naming a woman who is not there.
+    final credit =
+        planned.coachName ??
+        (AppRouter.featureFlags.isOn(Feature.coachedLife) ? l10n.fromSara : '');
     return [
       AppSplitRow(
         start: Text(l10n.lunchFromYourPlan, style: AppText.titleM),
-        end: AppPill(planned.coachName ?? l10n.fromSara, icon: Icons.sports),
+        end: credit.isEmpty
+            ? const SizedBox.shrink()
+            : AppPill(credit, icon: Icons.sports),
       ),
       MealRow(
         title: planned.title,

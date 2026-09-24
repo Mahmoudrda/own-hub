@@ -31,7 +31,9 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../config/legal_links.dart';
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_list_item.dart';
@@ -133,6 +135,12 @@ class _PrivacyViewState extends State<PrivacyView> {
     return result ?? false;
   }
 
+  /// Whether there is anybody to be visible to.
+  bool get _community => AppRouter.featureFlags.isOn(Feature.community);
+
+  /// Whether a coach can be reading anything of hers.
+  bool get _coached => AppRouter.featureFlags.isOn(Feature.coachedLife);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -146,40 +154,57 @@ class _PrivacyViewState extends State<PrivacyView> {
       appBar: AppTopBar(title: l10n.privacy, onBack: widget.onBack),
       footer: [AppNavBar(activeScreenId: 'T01', onSelect: widget.onSelectTab)],
       children: [
-        AppSageNote(l10n.yourLogsWeightPhotosAndPhoneNumber),
+        // The note names what the switches below are for. With none of them
+        // drawn it would be a sentence about members and a choice she does
+        // not have, so it is replaced by the thing that is true instead:
+        // there is no server in the first release and nothing leaves the
+        // handset.
+        AppSageNote(
+          _community
+              ? l10n.yourLogsWeightPhotosAndPhoneNumber
+              : l10n.yourLogsWeightAndPhotosStayOn,
+        ),
 
-        _switchRow(
-          l10n: l10n,
-          view: view,
-          key: PrivacyKey.profileVisible,
-          icon: Icons.person_outline,
-          title: l10n.profileVisibleToMembers,
-          subtitle: l10n.nameTierAndGroups,
-        ),
-        _switchRow(
-          l10n: l10n,
-          view: view,
-          key: PrivacyKey.showBests,
-          icon: Icons.emoji_events_outlined,
-          title: l10n.showMyPersonalBests,
-          subtitle: l10n.numbersOnlyNeverWeightFromAScale,
-        ),
-        _switchRow(
-          l10n: l10n,
-          view: view,
-          key: PrivacyKey.blurFacesDefault,
-          icon: Icons.blur_on,
-          title: l10n.blurFacesInMyPhotos,
-          subtitle: l10n.onByDefaultForEveryPost,
-        ),
-        _switchRow(
-          l10n: l10n,
-          view: view,
-          key: PrivacyKey.shareLogsWithCoach,
-          icon: Icons.sports_outlined,
-          title: l10n.myCoachCanSeeMyLogs,
-          subtitle: l10n.sessionsFoodDaysAndBests,
-        ),
+        // Every switch here answers "who else sees this". The first three ask
+        // it about the community and the fourth about a coach, so with both
+        // dark they are four controls that change nothing for anybody. Not
+        // drawn rather than drawn and inert: a privacy switch that does
+        // nothing is the worst kind of control to leave on a screen.
+        if (_community) ...[
+          _switchRow(
+            l10n: l10n,
+            view: view,
+            key: PrivacyKey.profileVisible,
+            icon: Icons.person_outline,
+            title: l10n.profileVisibleToMembers,
+            subtitle: l10n.nameTierAndGroups,
+          ),
+          _switchRow(
+            l10n: l10n,
+            view: view,
+            key: PrivacyKey.showBests,
+            icon: Icons.emoji_events_outlined,
+            title: l10n.showMyPersonalBests,
+            subtitle: l10n.numbersOnlyNeverWeightFromAScale,
+          ),
+          _switchRow(
+            l10n: l10n,
+            view: view,
+            key: PrivacyKey.blurFacesDefault,
+            icon: Icons.blur_on,
+            title: l10n.blurFacesInMyPhotos,
+            subtitle: l10n.onByDefaultForEveryPost,
+          ),
+        ],
+        if (_coached)
+          _switchRow(
+            l10n: l10n,
+            view: view,
+            key: PrivacyKey.shareLogsWithCoach,
+            icon: Icons.sports_outlined,
+            title: l10n.myCoachCanSeeMyLogs,
+            subtitle: l10n.sessionsFoodDaysAndBests,
+          ),
 
         // Cycle sharing is G9's. A03 hosts the door, Y12 owns the switches.
         AppListItem(

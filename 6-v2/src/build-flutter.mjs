@@ -443,6 +443,7 @@ if (fs.existsSync(dictPath)) {
     "{done} done, {waiting} waiting": {"description": "T07: the first-week arc counted from the arc, replacing the fixed 'Two done, three waiting'.", "placeholders": {"done": {"type": "String", "example": "2"}, "waiting": {"type": "String", "example": "3"}}},
     "{count} so far": {"description": "P01 bests tile: her lifetime personal bests, replacing the fixed '8 so far'.", "placeholders": {"count": {"type": "String", "example": "8"}}},
     "{from} to {to}": {"description": "A range of two values the screen already knows: opening hours on a coach's page, or the number of clients she may take. Written out in each language rather than joined with a dash in code, which would read as English punctuation inside an Arabic line.", "placeholders": {"from": {"type": "String", "example": "9:00"}, "to": {"type": "String", "example": "17:00"}}},
+    "of {total}": {"description": "The small half of the ring on her first week: how many steps the arc has. The number is a value, and the arc is shorter when a step belongs to a feature this build has switched off, so it cannot be frozen into the sentence.", "placeholders": {"total": {"type": "String", "example": "3"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

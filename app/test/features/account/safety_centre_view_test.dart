@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/account/domain/safety.dart';
 import 'package:own_hub/features/account/presentation/safety_centre_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -53,6 +55,16 @@ Widget _screen({
 );
 
 void main() {
+  // Every row here is about other women — verified members, reporting one,
+  // blocking one. A04 is tested in the build that has a community.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.community: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('the screen renders its authored rows', () {
     testWidgets('verification, reporting, blocking, help and the 122 line', (
       tester,

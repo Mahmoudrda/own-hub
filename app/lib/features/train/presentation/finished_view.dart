@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -95,13 +96,19 @@ class FinishedView extends StatelessWidget {
     return AppScaffold(
       footer: [
         AppButton(l10n.backToToday, onPressed: onBackToToday),
-        AppButton(
-          l10n.shareTheSquatWithYourGroup,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: onShare,
-        ),
+        // The share link is Community's, and the first release ships without
+        // it. Offering a post at the peak moment when there is nowhere to
+        // post it is worse than a quiet link: it is the one screen a woman
+        // reaches by finishing something, and it would end on the
+        // switched-off panel.
+        if (AppRouter.screenIsOn('M03'))
+          AppButton(
+            l10n.shareTheSquatWithYourGroup,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onShare,
+          ),
       ],
       children: [
         const SizedBox(height: 6),

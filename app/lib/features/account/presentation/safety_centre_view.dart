@@ -57,7 +57,9 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart' show countLabel;
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -134,6 +136,9 @@ class _SafetyCentreViewState extends State<SafetyCentreView> {
     children: const [_WhatHappensSheet()],
   );
 
+  /// Whether there is a community to be kept safe in.
+  bool get _community => AppRouter.featureFlags.isOn(Feature.community);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -146,93 +151,101 @@ class _SafetyCentreViewState extends State<SafetyCentreView> {
       appBar: AppTopBar(title: l10n.safetyCentre, onBack: widget.onBack),
       footer: [AppNavBar(activeScreenId: 'T01', onSelect: widget.onSelectTab)],
       children: [
-        AppCard(
-          variant: AppCardVariant.sage,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.verified_user,
-                  size: 26,
-                  color: AppColors.tertiary,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l10n.everyMemberIsVerified, style: AppText.titleM),
-                      const SizedBox(height: 3),
-                      Text(
-                        l10n.idCheckedWomenOnlyReviewedByWomen,
-                        style: AppText.bodyM.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+        // Everything down to "Talk to a human" is about other women: a
+        // verified membership, reporting one, blocking one, what happens to a
+        // report. The first release ships with no community at all, so none
+        // of it is true and none of it is drawn. What stays is the help route
+        // and the emergency line, which are hers whether or not anyone else
+        // is here.
+        if (_community) ...[
+          AppCard(
+            variant: AppCardVariant.sage,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.verified_user,
+                    size: 26,
+                    color: AppColors.tertiary,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l10n.everyMemberIsVerified, style: AppText.titleM),
+                        const SizedBox(height: 3),
+                        Text(
+                          l10n.idCheckedWomenOnlyReviewedByWomen,
+                          style: AppText.bodyM.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // A report needs a subject, and this screen has none: the reason picker
+          // lives on `M08`, against the post or the page being reported. The row
+          // answers with where a report starts instead of opening a picker with
+          // nobody in it, and carries no arrow, because it is not a destination.
+          AppListItem(
+            leading: const Icon(
+              Icons.flag_outlined,
+              size: 24,
+              color: AppColors.primaryDim,
             ),
-          ],
-        ),
-
-        // A report needs a subject, and this screen has none: the reason picker
-        // lives on `M08`, against the post or the page being reported. The row
-        // answers with where a report starts instead of opening a picker with
-        // nobody in it, and carries no arrow, because it is not a destination.
-        AppListItem(
-          leading: const Icon(
-            Icons.flag_outlined,
-            size: 24,
-            color: AppColors.primaryDim,
+            title: l10n.reportSomeone,
+            subtitle: l10n.aWomanModeratorReadsItWithinAn,
+            onTap: widget.onReportSomeone,
           ),
-          title: l10n.reportSomeone,
-          subtitle: l10n.aWomanModeratorReadsItWithinAn,
-          onTap: widget.onReportSomeone,
-        ),
 
-        // The count is computed, never the prototype's fixed "2 blocked", and
-        // it is stated only once there is something to state.
-        AppListItem(
-          leading: const Icon(
-            Icons.block,
-            size: 24,
-            color: AppColors.primaryDim,
+          // The count is computed, never the prototype's fixed "2 blocked", and
+          // it is stated only once there is something to state.
+          AppListItem(
+            leading: const Icon(
+              Icons.block,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.blockedMembers,
+            subtitle: view.blockedCount == 0
+                ? ''
+                : l10n.blockedCount(countLabel(view.blockedCount)),
+            trailing: _chevron,
+            onTap: _openBlocked,
           ),
-          title: l10n.blockedMembers,
-          subtitle: view.blockedCount == 0
-              ? ''
-              : l10n.blockedCount(countLabel(view.blockedCount)),
-          trailing: _chevron,
-          onTap: _openBlocked,
-        ),
 
-        AppListItem(
-          leading: const Icon(
-            Icons.history,
-            size: 24,
-            color: AppColors.primaryDim,
+          AppListItem(
+            leading: const Icon(
+              Icons.history,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.reportsYouMade,
+            // The one subtitle here that IS honest, and only while it is true.
+            subtitle: view.hasUnsentReport ? l10n.waitingForSignal : '',
+            // No arrow: there is no screen of her own reports among the 161, so
+            // this is a status line about the reports she filed from `M08`.
           ),
-          title: l10n.reportsYouMade,
-          // The one subtitle here that IS honest, and only while it is true.
-          subtitle: view.hasUnsentReport ? l10n.waitingForSignal : '',
-          // No arrow: there is no screen of her own reports among the 161, so
-          // this is a status line about the reports she filed from `M08`.
-        ),
 
-        AppListItem(
-          leading: const Icon(
-            Icons.help_outline,
-            size: 24,
-            color: AppColors.primaryDim,
+          AppListItem(
+            leading: const Icon(
+              Icons.help_outline,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.whatHappensWhenIReport,
+            subtitle: l10n.theThreeStepsPlainly,
+            trailing: _chevron,
+            onTap: _openWhatHappens,
           ),
-          title: l10n.whatHappensWhenIReport,
-          subtitle: l10n.theThreeStepsPlainly,
-          trailing: _chevron,
-          onTap: _openWhatHappens,
-        ),
+        ],
 
         // Drawn only when the support page has an address. An empty link would
         // make this the one row on the safety screen that goes nowhere, which

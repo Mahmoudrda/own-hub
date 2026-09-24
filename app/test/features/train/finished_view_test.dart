@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/presentation/finished_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -45,6 +47,15 @@ const _recalled = TrainSession(
 );
 
 void main() {
+  // The share link posts to a group, so R10 is tested with Community on.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.community: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   testWidgets('names what she earned, in the order she cares about', (
     tester,
   ) async {

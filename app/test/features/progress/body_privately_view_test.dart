@@ -18,6 +18,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/domain/logging/log_command_bus.dart';
 import 'package:own_hub/features/progress/domain/progress_repository.dart';
 import 'package:own_hub/features/progress/presentation/body_privately_view.dart';
@@ -116,6 +118,16 @@ Future<void> _addMeasurement(
 }
 
 void main() {
+  // The privacy sentence on P04 names the community, so it is tested in the
+  // build that has one.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.community: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('P0-RWD-03 — a measurement can be undone', () {
     testWidgets('adding one opens a field, never a dialog', (tester) async {
       _phone(tester);

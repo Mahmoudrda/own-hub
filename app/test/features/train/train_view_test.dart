@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/train/presentation/train_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -29,6 +31,16 @@ Widget _host(
 }
 
 void main() {
+  // "Continue · from Sara" credits a coach, so this file is about the build
+  // that has coaching. Without it the button reads "Continue".
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.coachedLife: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   testWidgets('opens on her programme, with the week she can tap', (
     tester,
   ) async {

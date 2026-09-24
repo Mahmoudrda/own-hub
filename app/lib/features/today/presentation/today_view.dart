@@ -26,6 +26,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_empty_state.dart';
@@ -228,12 +229,16 @@ class _TodayViewState extends State<TodayView> {
         day: weekdayLabel(l10n, _day.date),
         level: widget.level,
         actions: [
-          IconButton(
-            tooltip: l10n.askSomething,
-            color: AppColors.onSurfaceVariant,
-            icon: const Icon(Icons.psychology),
-            onPressed: () => openScreen(context, 'X01', widget.onAsk),
-          ),
+          // The assistant ships dark in the first release, and an icon in the
+          // greeting is the most prominent control on the app's landing
+          // screen. Drawn only where there is something behind it.
+          if (AppRouter.screenIsOn('X01'))
+            IconButton(
+              tooltip: l10n.askSomething,
+              color: AppColors.onSurfaceVariant,
+              icon: const Icon(Icons.psychology),
+              onPressed: () => openScreen(context, 'X01', widget.onAsk),
+            ),
           IconButton(
             tooltip: l10n.notifications,
             color: AppColors.onSurfaceVariant,
@@ -482,9 +487,12 @@ class _TodayViewState extends State<TodayView> {
         // nothing expires" — on the ONE screen where nothing is done yet:
         // T06 renders only when `arc.hasAnyLog` is false, so it told a woman
         // with an empty arc that two of it were finished.
+        // Counted over the steps this build offers, the same list T07 draws.
+        // `arc.stepCount` is always five, so with Community dark Home said
+        // "0 of 5" about an arc of three.
         subtitle: l10n.countOfTotal(
-          countLabel(_day.arc.doneCount),
-          countLabel(_day.arc.stepCount),
+          countLabel(firstWeekDone(_day.arc)),
+          countLabel(offeredFirstWeekSteps().length),
         ),
         trailing: chevron,
         onTap: () => openScreen(context, 'T07', widget.onOpenFirstWeek),
@@ -512,23 +520,28 @@ class _TodayViewState extends State<TodayView> {
         // T06.
         onTap: () => openScreen(context, 'E01', widget.onTellUsWhatYouEat),
       ),
-      AppListItem(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        leading: const Icon(
-          Icons.groups,
-          size: 22,
-          color: AppColors.primaryDim,
+      // The community is dark in the first release, so on day one this row
+      // named a group she cannot join and opened the "switched off" panel.
+      // Not drawn rather than drawn and disabled: the rest of day one is three
+      // things she can actually do.
+      if (AppRouter.screenIsOn('M01'))
+        AppListItem(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          leading: const Icon(
+            Icons.groups,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          // `n4210WomenInTheBeginnersGroup` — "4,210 women in the beginners
+          // group" — is a membership figure nothing in this app counts, frozen
+          // into the dictionary on the screen a woman sees on her first day.
+          // The group has a name; the size is not claimed.
+          title: l10n.beginnersGroup,
+          subtitle: l10n.nobodyThereHasBeenTrainingOverA,
+          trailing: chevron,
+          // Same reasoning as above: M17 is Community's day-one state.
+          onTap: () => openScreen(context, 'M01', widget.onOpenBeginnersGroup),
         ),
-        // `n4210WomenInTheBeginnersGroup` — "4,210 women in the beginners
-        // group" — is a membership figure nothing in this app counts, frozen
-        // into the dictionary on the screen a woman sees on her first day.
-        // The group has a name; the size is not claimed.
-        title: l10n.beginnersGroup,
-        subtitle: l10n.nobodyThereHasBeenTrainingOverA,
-        trailing: chevron,
-        // Same reasoning as above: M17 is Community's day-one state.
-        onTap: () => openScreen(context, 'M01', widget.onOpenBeginnersGroup),
-      ),
       // The weekly rule, said once, before she can fail it.
       AppSageNote(l10n.threeSessionsMakesTheWeekCountAnd),
     ];

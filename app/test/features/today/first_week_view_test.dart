@@ -9,6 +9,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/today/domain/today_day.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/first_week_view.dart';
@@ -60,6 +62,22 @@ FirstWeekView _view({
 }
 
 void main() {
+  // T07 draws the two Community steps, so it needs Community on. Its other
+  // three lead into Train and Eat, and a step whose destination is dark is
+  // not drawn, so those are named too. The first release ships without
+  // Community and the arc is three steps there — the case below, and
+  // `release_readiness_test.dart`.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.today: true,
+      Feature.train: true,
+      Feature.eat: true,
+      Feature.community: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('five concrete first actions', () {
     testWidgets('all five are listed, in order', (tester) async {
       _phone(tester);
@@ -109,8 +127,37 @@ void main() {
       expect(ring.big, '2');
       expect(ring.small, 'of 5');
       expect(ring.fraction, 2 / 5);
-      expect(find.text('Two done, three waiting'), findsOneWidget);
+      // Counted, not stated: `twoDoneThreeWaiting` was fixed copy sitting
+      // above two live numbers, so it read "Two done, three waiting" to a
+      // woman who had done none.
+      expect(find.text('2 done, 3 waiting'), findsOneWidget);
       expect(find.text('done'), findsNWidgets(2));
+    });
+
+    testWidgets('and the arc is only as long as this build can offer', (
+      tester,
+    ) async {
+      // The first release ships with Community dark. The two Community steps
+      // are not drawn, and — the part that matters — they are not counted
+      // either: an arc of three that still asked for five would leave her at
+      // "2 of 5" forever with nothing left to tap.
+      AppRouter.featureFlags = FeatureFlags.allOff.with_({
+        Feature.today: true,
+        Feature.train: true,
+        Feature.eat: true,
+      });
+      _phone(tester);
+      await tester.pumpWidget(_host(_view()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Join one group'), findsNothing);
+      expect(find.text('Add a follow-up picture'), findsNothing);
+
+      final ring = tester.widget<AppRingStat>(find.byType(AppRingStat));
+      expect(ring.big, '2');
+      expect(ring.small, 'of 3');
+      expect(ring.fraction, 2 / 3);
+      expect(find.text('2 done, 1 waiting'), findsOneWidget);
     });
   });
 

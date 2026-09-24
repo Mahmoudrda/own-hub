@@ -19,7 +19,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -211,7 +213,13 @@ class TrainView extends StatelessWidget {
                 ],
               ),
               AppButton(
-                l10n.continueFromSara,
+                // "Continue · from Sara" credits a coach. In a build with
+                // no coaching there is no Sara and nobody wrote this
+                // programme for her, so the button says what it does. The
+                // credit comes back with the feature.
+                AppRouter.featureFlags.isOn(Feature.coachedLife)
+                    ? l10n.continueFromSara
+                    : l10n.continueLabel,
                 icon: Icons.play_arrow,
                 onPressed: onContinue,
               ),

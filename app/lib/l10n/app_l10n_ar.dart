@@ -6948,4 +6948,17 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get sheTellsYouWhatSheDidAbout => 'تخبرك بما فعلته بشأنه.';
+
+  @override
+  String ofTotal(String total) {
+    return 'من $total';
+  }
+
+  @override
+  String get yourLogsWeightAndPhotosStayOn =>
+      'سجلاتك ووزنك وصورك تبقى على هذا الهاتف.';
+
+  @override
+  String get deletingTakesAwayEverythingYouHavePut_g3hy0 =>
+      'الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه.';
 }

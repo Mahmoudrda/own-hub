@@ -330,8 +330,7 @@ class AppRouter {
     // it is fully built and its route resolves. Without this check
     // `featureFlags` is a claim with no mechanism: every Phase 3 screen would
     // be one deep link away from a woman the moment it compiled.
-    final feature = featureForFlow(route.flow);
-    if (feature != null && !featureFlags.isOn(feature)) {
+    if (!screenIsOn(id)) {
       return MaterialPageRoute<dynamic>(
         settings: settings,
         builder: (_) => FeatureOff(screenId: id, title: route.title),
@@ -424,6 +423,45 @@ class AppRouter {
     _ => null,
   };
 
+  /// Screens whose flow is gated but which are not the gated feature.
+  ///
+  /// `C02` is the language chooser. It sits in the sign-up flow because that is
+  /// where she first meets it, but choosing between Arabic and English is a
+  /// setting, not a step of registration: `A02` carries a row into it, and
+  /// `C02`'s own copy promises "you can change this any time in your profile".
+  /// With sign-up dark the row landed on [FeatureOff], so the first release
+  /// would have shipped in whatever language the handset happened to be in,
+  /// with no way to change it. That is the same failure `featureForFlow`
+  /// refuses to allow for `account` — a flag flip must never trap a woman —
+  /// so it is refused here too.
+  ///
+  /// An entry here has to carry that kind of reason. It is not a place for a
+  /// screen somebody wants reachable early.
+  static const Set<String> ungatedScreens = {'C02'};
+
+  /// Whether a control that leads to [screenId] may be drawn at all.
+  ///
+  /// The one question every screen asks before it renders a row, a chip, a
+  /// button or a step that opens another screen. A control whose destination
+  /// is dark lands on [FeatureOff] — a door drawn on a wall, which is App
+  /// Review 2.1 and, on the screens in the store listing, the first thing a
+  /// woman meets.
+  ///
+  /// `app_nav_bar.dart` asked this question for the bottom bar before anything
+  /// else did; it now asks it here, so the bar and the screens cannot come to
+  /// different answers about the same feature.
+  ///
+  /// An unknown id is **on**: this is not a gate (that is [onGenerateRoute]'s
+  /// job, and it is the one that has to be conservative) but a rendering
+  /// decision, and a typo should show a broken link rather than silently
+  /// delete a control nobody can then find.
+  static bool screenIsOn(String screenId) {
+    if (ungatedScreens.contains(screenId)) return true;
+    final flow = appRoutes[screenId]?.flow;
+    final feature = flow == null ? null : featureForFlow(flow);
+    return feature == null || featureFlags.isOn(feature);
+  }
+
   /// Flows this file has made an explicit decision about.
   static const Set<String> decidedFlows = {
     'signup',
@@ -465,9 +503,17 @@ class AppRouter {
       onGetStarted: () => goTo(context, 'C02'),
       onSignIn: () => goTo(context, 'C06'),
     ),
+    // Reachable from her profile as well as from the welcome screen, and in
+    // the first release only from her profile — see `ungatedScreens`. So it
+    // needs a way back, and "Continue" has to mean "done" when the screen it
+    // continues to is dark, or the one setting that survives a dark sign-up
+    // flow would end on the switched-off panel.
     'C02': (context) => LanguageView(
       preference: localePreference,
-      onContinue: () => goTo(context, 'C03'),
+      onBack: () => Navigator.of(context).maybePop(),
+      onContinue: screenIsOn('C03')
+          ? () => goTo(context, 'C03')
+          : () => Navigator.of(context).maybePop(),
     ),
     'C03': (context) => WhatsInsideView(
       onCreateAccount: () => goTo(context, 'C06'),

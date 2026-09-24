@@ -40,7 +40,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_avatar.dart';
 import '../../../ui/app_button.dart';
@@ -141,6 +143,10 @@ class _ProfileViewState extends State<ProfileView> {
     setState(() => _dietary = merged);
   }
 
+  /// Whether this build has a community at all. Several rows here describe
+  /// one, and a subtitle about members is a claim as much as a button is.
+  bool get _community => AppRouter.featureFlags.isOn(Feature.community);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -162,11 +168,15 @@ class _ProfileViewState extends State<ProfileView> {
           title: l10n.myCycle,
           onTap: widget.onOpenCycle,
         ),
-        _row(
-          icon: Icons.sports_outlined,
-          title: l10n.myCoach,
-          onTap: widget.onOpenCoach,
-        ),
+        // Hiring a coach is the marketplace, and the marketplace waits on a
+        // payment rail. D11 moved this row here from the deleted fifth tab;
+        // it comes back the day that flag does.
+        if (AppRouter.screenIsOn('H01'))
+          _row(
+            icon: Icons.sports_outlined,
+            title: l10n.myCoach,
+            onTap: widget.onOpenCoach,
+          ),
 
         // D3's row. The one the Eat safety guard has been waiting for.
         _row(
@@ -176,6 +186,11 @@ class _ProfileViewState extends State<ProfileView> {
           onTap: _editDietary,
         ),
 
+        // The language chooser lives in the sign-up flow and is a setting all
+        // the same, which is why `AppRouter.ungatedScreens` keeps it
+        // reachable with sign-up dark. Without that this row was the one
+        // control in the product that could strand a woman in a language she
+        // does not read.
         _row(
           icon: Icons.language,
           title: l10n.language,
@@ -194,13 +209,20 @@ class _ProfileViewState extends State<ProfileView> {
         _row(
           icon: Icons.lock_outline,
           title: l10n.privacy,
-          subtitle: l10n.whoSeesYourProfileAndWins,
+          // "Who sees your profile and wins" describes a profile other women
+          // read. With the community dark nobody sees either, so the row
+          // carries no subtitle rather than a promise about a room that is
+          // not open.
+          subtitle: _community ? l10n.whoSeesYourProfileAndWins : '',
           onTap: widget.onOpenPrivacy,
         ),
         _row(
           icon: Icons.shield_outlined,
           title: l10n.safetyCentre,
-          subtitle: l10n.reportsBlockedMembersHelp,
+          // Same rule: reports and blocked members are about members. What is
+          // left on A04 with the community off is the help route and the
+          // emergency line, which are worth keeping and are not a list.
+          subtitle: _community ? l10n.reportsBlockedMembersHelp : '',
           onTap: widget.onOpenSafetyCentre,
         ),
         _row(

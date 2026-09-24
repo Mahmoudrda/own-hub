@@ -16,6 +16,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/cycle/domain/cycle_document.dart';
 import 'package:own_hub/features/cycle/domain/cycle_repository.dart';
 import 'package:own_hub/features/cycle/domain/cycle_sharing_policy.dart';
@@ -51,6 +53,16 @@ Future<InMemoryCycleRepository> _setUp() async {
 }
 
 void main() {
+  // Cycle sharing is a grant to a coach, so Y12 draws the sharing card only
+  // where coaching exists.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.coachedLife: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('P0-CYC-13 — off by default, independent, and unrequired', () {
     testWidgets('all three sharing switches render off', (tester) async {
       final repository = await _setUp();

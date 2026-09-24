@@ -6984,4 +6984,17 @@ class AppL10nEn extends AppL10n {
   @override
   String get sheTellsYouWhatSheDidAbout =>
       'She tells you what she did about it.';
+
+  @override
+  String ofTotal(String total) {
+    return 'of $total';
+  }
+
+  @override
+  String get yourLogsWeightAndPhotosStayOn =>
+      'Your logs, weight and photos stay on this phone.';
+
+  @override
+  String get deletingTakesAwayEverythingYouHavePut_g3hy0 =>
+      'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers. It happens at once, and none of it can be brought back.';
 }

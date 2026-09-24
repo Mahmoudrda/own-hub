@@ -79,23 +79,36 @@ class OwnHubApp extends StatefulWidget {
 }
 
 class _OwnHubAppState extends State<OwnHubApp> {
-  /// Arabic by default, because this ships in Egypt. `C02` is the second screen
-  /// she sees and lets her change it; until then the device locale would be a
-  /// worse guess than the product's own audience.
+  /// The language she has already chosen, else the one her phone is set to,
+  /// else English.
   ///
-  /// `--dart-define=OWNHUB_LOCALE=ar` opens the build in Arabic, so any
-  /// screen can be captured in either language — the store listing needs
-  /// both, and right-to-left layout is only ever checked by looking at it.
+  /// The phone is the better guess and it used to be ignored: this shipped in
+  /// Egypt opening in English on a handset set to Arabic, with the chooser one
+  /// screen deep. The whole Arabic product was in the binary and she had to go
+  /// looking for it.
   ///
-  /// A language she has already chosen wins over both. It is read off the
-  /// phone before the first frame, so the app opens in her language rather
-  /// than opening in the default and switching once she notices.
+  /// `--dart-define=OWNHUB_LOCALE=ar` still forces a language, because a
+  /// screenshot of the Arabic build has to be repeatable and right-to-left
+  /// layout is only ever checked by looking at it. A choice she has made wins
+  /// over everything, and it is read before the first frame so the app opens in
+  /// her language rather than switching once she notices.
   final ValueNotifier<Locale> _locale = ValueNotifier(
-    AppRouter.localePreference.read()?.locale ??
-        const Locale(
-          String.fromEnvironment('OWNHUB_LOCALE', defaultValue: 'en'),
-        ),
+    AppRouter.localePreference.read()?.locale ?? _firstRunLocale(),
   );
+
+  /// What to open in before she has said. `const String.fromEnvironment`
+  /// defaults to empty rather than to a language, so an unforced build falls
+  /// through to the phone.
+  static Locale _firstRunLocale() {
+    const forced = String.fromEnvironment('OWNHUB_LOCALE');
+    if (forced.isNotEmpty) return Locale(forced);
+    for (final locale in WidgetsBinding.instance.platformDispatcher.locales) {
+      for (final supported in AppL10n.supportedLocales) {
+        if (supported.languageCode == locale.languageCode) return supported;
+      }
+    }
+    return const Locale('en');
+  }
 
   /// Her roles, and which app she is in (D11). Trainee until C08 says
   /// otherwise: it is the common case, and it is the safe one — the trainee

@@ -132,11 +132,7 @@ List<NavDestination> tabsFor(AppRole role) {
   ];
 }
 
-bool _isOn(NavDestination tab) {
-  final flow = appDestinations[tab.screenId]?.flow;
-  final feature = flow == null ? null : AppRouter.featureForFlow(flow);
-  return feature == null || AppRouter.featureFlags.isOn(feature);
-}
+bool _isOn(NavDestination tab) => AppRouter.screenIsOn(tab.screenId);
 
 class AppNavBar extends StatelessWidget {
   const AppNavBar({

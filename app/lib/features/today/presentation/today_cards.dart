@@ -43,6 +43,53 @@ void openScreen(
   AppRouter.goTo(context, screenId);
 }
 
+/// Where each step of her first week leads.
+///
+/// The map is the arc's edge list, and it lives here rather than in
+/// `first_week_view.dart` because T01 counts the same arc T07 draws: "2 of 5"
+/// on Home and five rows on the arc have to be the same five.
+const Map<FirstWeekStep, String> firstWeekStepScreens = {
+  FirstWeekStep.logSet: 'R07',
+  FirstWeekStep.logMeal: 'E02',
+  FirstWeekStep.finishSession: 'R03',
+  FirstWeekStep.joinGroup: 'M04',
+  FirstWeekStep.followUp: 'M11',
+};
+
+/// Her first week, minus any step this build cannot offer.
+///
+/// Two of the five belong to Community, and the first release ships without
+/// it. `DECISIONS.md` D1 refused to *cut* those steps — they are written, they
+/// are translated and they come back the day Community is on — but an arc that
+/// asks her to join a group in a build with no groups is a week she cannot
+/// finish, so a dark step is not drawn and, just as importantly, is not
+/// counted. The domain stays flag-free (`today_day.dart` knows five steps and
+/// nothing about switches); the decision is made here, where every other
+/// rendering decision about a feature is made.
+List<FirstWeekStep> offeredFirstWeekSteps() => [
+  for (final entry in firstWeekStepScreens.entries)
+    if (AppRouter.screenIsOn(entry.value)) entry.key,
+];
+
+/// How many of the steps she is actually offered are done.
+///
+/// Never `arc.doneCount`: that counts every step she has completed, including
+/// one belonging to a feature since switched off, which would show four of
+/// three.
+int firstWeekDone(FirstWeekArc arc) =>
+    offeredFirstWeekSteps().where(arc.completed.contains).length;
+
+/// True when nothing is left of the arc this build offers.
+///
+/// This, not [FirstWeekArc.isComplete], is what decides whether T08 renders.
+/// With Community dark, `isComplete` can never be true, so the finished screen
+/// would be unreachable to every woman in the first release — exactly the
+/// outcome D1 was written to prevent, arriving from the other direction.
+bool firstWeekIsComplete(FirstWeekArc arc) {
+  final offered = offeredFirstWeekSteps();
+  return offered.isNotEmpty && offered.every(arc.completed.contains);
+}
+
 /// The day's name, from the date rather than from a hardcoded Tuesday.
 ///
 /// Saturday and Sunday have no full-name key in the dictionary — only the

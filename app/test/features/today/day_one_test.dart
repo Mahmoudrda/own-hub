@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -79,6 +80,20 @@ TodayView _populated() => TodayView(
 );
 
 void main() {
+  // Day one offers the beginners group and counts the whole five-step arc.
+  // Community owns two of those steps and Train and Eat own three, and a
+  // step this build cannot offer is not counted. Stated, not inherited.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.today: true,
+      Feature.train: true,
+      Feature.eat: true,
+      Feature.community: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('rule 16 — a state, not a route', () {
     test('day one is not a destination anything can navigate to', () {
       expect(firstRunStates, contains('T06'));

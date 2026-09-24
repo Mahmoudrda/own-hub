@@ -66,8 +66,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -378,8 +380,16 @@ class _BodyPrivatelyViewState extends State<BodyPrivatelyView> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
+                    // "Nobody sees this. Not the community, not your coach
+                    // unless you send it." is true and names two things this
+                    // build does not have, which on the most private screen
+                    // in the product reads as a promise about rooms she
+                    // cannot find. Same promise, only what exists.
                     child: Text(
-                      l10n.nobodySeesThisNotTheCommunityNot,
+                      AppRouter.featureFlags.isOn(Feature.community) ||
+                              AppRouter.featureFlags.isOn(Feature.coachedLife)
+                          ? l10n.nobodySeesThisNotTheCommunityNot
+                          : l10n.onlyYouCanSeeWhatYouSaved,
                       style: AppText.bodyM,
                     ),
                   ),

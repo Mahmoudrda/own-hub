@@ -26,10 +26,20 @@ import '../../../ui/app_scaffold.dart';
 import '../domain/locale_preference.dart';
 
 class LanguageView extends StatefulWidget {
-  const LanguageView({super.key, required this.preference, this.onContinue});
+  const LanguageView({
+    super.key,
+    required this.preference,
+    this.onContinue,
+    this.onBack,
+  });
 
   final LocalePreference preference;
   final VoidCallback? onContinue;
+
+  /// Null on the way through sign-up, where there is nothing behind this
+  /// screen. Set when she opens it from her profile to change the language,
+  /// which is a visit rather than a step.
+  final VoidCallback? onBack;
 
   @override
   State<LanguageView> createState() => _LanguageViewState();
@@ -70,7 +80,7 @@ class _LanguageViewState extends State<LanguageView> {
     final selected = _effective;
 
     return AppScaffold(
-      appBar: const AppTopBar(),
+      appBar: AppTopBar(onBack: widget.onBack),
       footer: [AppButton(l10n.continueLabel, onPressed: widget.onContinue)],
       children: [
         // Both headings, always. See the note at the top of this file.

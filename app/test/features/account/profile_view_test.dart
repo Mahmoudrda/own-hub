@@ -8,6 +8,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/account/domain/verification_claim.dart';
 import 'package:own_hub/features/account/presentation/profile_view.dart';
@@ -41,6 +43,17 @@ Widget _host(
 }
 
 void main() {
+  // The "My coach" row opens the directory, and two subtitles describe a
+  // community. Both named rather than borrowed from the defaults.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.community: true,
+      Feature.marketplace: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('the allergy row exists at all', () {
     testWidgets('A02 carries the row D3 requires', (tester) async {
       _phone(tester);

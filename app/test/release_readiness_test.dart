@@ -19,10 +19,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/config/legal_links.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/features/today/domain/today_repository.dart';
+import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/routing/app_routes.dart';
+import 'package:own_hub/theme/app_tokens.dart';
 
 /// The app as it will be submitted: every feature on, an account required.
 FeatureFlags get _release =>
@@ -271,6 +274,296 @@ void main() {
           reason: '$state opens a test rail; it must key off the build',
         );
       }
+    });
+  });
+
+  _shippingFlagsTests();
+}
+
+// ---------------------------------------------------------------------------
+// What the first release offers, and what it must not.
+//
+// Every screen below is one a woman opens in the shipped build, and several of
+// them are the screens in the store listing. A control that leads to a feature
+// this release has switched off is App Review 2.1 — a button that does nothing
+// — and a sentence that describes one is worse, because she cannot even see
+// that it is a dead end. This walks the six shipping flows and reads what is
+// actually on the page.
+//
+// It is a word list rather than a list of controls on purpose: a control is
+// added by writing a row, and a row nobody thought of is exactly the one that
+// ships. The legitimate uses are named one by one below, so adding a real
+// sentence about a group of vegetables costs one line and a reason.
+
+/// The flows the first release shows.
+const Set<String> _shippingFlows = {
+  'today',
+  'train',
+  'eat',
+  'cycle',
+  'progress',
+  'account',
+};
+
+/// Words that name something the first release does not have.
+///
+/// Matched whole, case-insensitively, so "postpartum" is not "post" and
+/// "Grouped the way you shop" is not "group".
+const List<String> _switchedOff = [
+  'community',
+  'communities',
+  'coach',
+  'coaches',
+  'coaching',
+  'group',
+  'groups',
+  'member',
+  'members',
+  'post',
+  'posts',
+  'reel',
+  'reels',
+  'follower',
+  'followers',
+  'moderator',
+  'moderators',
+  'marketplace',
+  'assistant',
+  'unblock',
+  'blocked',
+  'sign up',
+  'verified',
+  'verification',
+];
+
+/// Sentences that contain one of those words and are nonetheless true here.
+///
+/// Each entry is a legitimate use, not an exemption to be handed out: the word
+/// means something else, or the sentence is about this build rather than about
+/// a feature.
+const Set<String> _legitimate = {
+  // E08 groups the shopping list by aisle. Nothing social about it.
+  'Grouped the way you shop. Tick as you go. It remembers.',
+};
+
+String? _textOf(Text widget) =>
+    widget.data ?? widget.textSpan?.toPlainText(includeSemanticsLabels: false);
+
+/// Everything the page says, including the names of its icon buttons.
+List<String> _pageText(WidgetTester tester) => [
+  for (final w in tester.widgetList<Text>(find.byType(Text)))
+    if (_textOf(w) case final String s) s,
+  for (final w in tester.widgetList<Tooltip>(find.byType(Tooltip)))
+    if (w.message case final String s) s,
+];
+
+/// The switched-off words [text] names, or an empty list.
+List<String> _namesSwitchedOff(String text) {
+  if (_legitimate.contains(text)) return const [];
+  return [
+    for (final word in _switchedOff)
+      if (RegExp(
+        '\\b${RegExp.escape(word)}\\b',
+        caseSensitive: false,
+      ).hasMatch(text))
+        word,
+  ];
+}
+
+void _shippingFlagsTests() {
+  group('the first release names nothing it has switched off', () {
+    setUp(() => AppRouter.featureFlags = FeatureFlags.shipped);
+
+    final ids = [
+      for (final e in appDestinations.entries)
+        if (_shippingFlows.contains(e.value.flow)) e.key,
+    ];
+
+    test('there are screens to walk', () {
+      expect(ids.length, greaterThan(30), reason: 'the six shipping flows');
+    });
+
+    for (final id in ids) {
+      testWidgets('$id offers nothing that is dark', (tester) async {
+        tester.view.physicalSize = const Size(1170, 2532);
+        tester.view.devicePixelRatio = 3;
+        addTearDown(tester.view.reset);
+
+        await _open(tester, id);
+
+        expect(
+          find.byType(FeatureOff),
+          findsNothing,
+          reason: '$id itself is not in this release',
+        );
+
+        // `T08` — "First week done" — is listed as a destination and has no
+        // builder, so it renders the placeholder. That is a defect of its
+        // own (the arc's own file calls T08 "the completed rendering of the
+        // same arc, not somewhere you go", which makes it a first-run state),
+        // and it is reported rather than papered over here. What this group
+        // reads is product copy, and the placeholder's text is not that.
+        if (find.byType(NotBuiltYet).evaluate().isNotEmpty) return;
+
+        final offences = <String>[];
+        for (final line in _pageText(tester)) {
+          final words = _namesSwitchedOff(line);
+          if (words.isNotEmpty) offences.add('"$line" names ${words.first}');
+        }
+        expect(
+          offences,
+          isEmpty,
+          reason:
+              '$id offers or describes a feature this build has switched '
+              'off:\n  ${offences.join('\n  ')}',
+        );
+      });
+    }
+  });
+
+  group('the controls that used to lead nowhere', () {
+    setUp(() => AppRouter.featureFlags = FeatureFlags.shipped);
+
+    testWidgets('Home does not offer the assistant or a group', (tester) async {
+      await _open(tester, 'T01');
+      final l10n = await AppL10n.delegate.load(const Locale('en'));
+      expect(find.byTooltip(l10n.askSomething), findsNothing);
+      expect(find.text(l10n.beginnersGroup), findsNothing);
+    });
+
+    testWidgets('day one does not either, and it is the first screen she '
+        'sees', (tester) async {
+      // T06 is a state of T01, taken when nothing has been logged, so it
+      // cannot be opened by route. It is the screen a new woman actually
+      // meets, which is why it is walked here rather than left to the route
+      // list above.
+      tester.view.physicalSize = const Size(1170, 2532);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppL10n.localizationsDelegates,
+          supportedLocales: AppL10n.supportedLocales,
+          theme: buildTheme(const Locale('en')),
+          home: TodayView(
+            repository: InMemoryTodayRepository(
+              day: InMemoryTodayRepository.dayOne(),
+            ),
+            onSelectTab: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final offences = [
+        for (final line in _pageText(tester))
+          if (_namesSwitchedOff(line).isNotEmpty) line,
+      ];
+      expect(offences, isEmpty, reason: offences.join('\n'));
+
+      // And her first week is counted over the steps that remain, so the
+      // number on Home matches the number of rows on T07.
+      expect(find.text('0 of 3'), findsOneWidget);
+    });
+
+    testWidgets('her first week is three steps she can finish', (tester) async {
+      await _open(tester, 'T07');
+      final l10n = await AppL10n.delegate.load(const Locale('en'));
+
+      expect(find.text(l10n.logOneSet), findsOneWidget);
+      expect(find.text(l10n.logOneMeal), findsOneWidget);
+      expect(find.text(l10n.finishOneSession), findsOneWidget);
+      expect(find.text(l10n.joinOneGroup), findsNothing);
+      expect(find.text(l10n.addAFollowUpPicture), findsNothing);
+
+      // The count follows the arc: two of the three are done in the sample
+      // day, so one is waiting rather than three.
+      expect(find.text(l10n.ofTotal('3')), findsOneWidget);
+      expect(find.text(l10n.doneDoneWaitingWaiting('2', '1')), findsOneWidget);
+    });
+
+    testWidgets('finishing a session offers nowhere to post it', (
+      tester,
+    ) async {
+      await _open(tester, 'R10');
+      final l10n = await AppL10n.delegate.load(const Locale('en'));
+      expect(find.text(l10n.backToToday), findsOneWidget);
+      expect(find.text(l10n.shareTheSquatWithYourGroup), findsNothing);
+    });
+
+    testWidgets('her profile does not offer a coach', (tester) async {
+      await _open(tester, 'A02');
+      final l10n = await AppL10n.delegate.load(const Locale('en'));
+      expect(find.text(l10n.myCoach), findsNothing);
+      // And the language chooser is still there, because a build that cannot
+      // change language is a build a woman can be trapped in.
+      expect(find.text(l10n.language), findsOneWidget);
+    });
+
+    testWidgets('the language chooser opens rather than the switched-off '
+        'panel', (tester) async {
+      await _open(tester, 'C02');
+      expect(find.byType(FeatureOff), findsNothing);
+      expect(find.text('English'), findsOneWidget);
+    });
+
+    testWidgets('privacy offers no switch that changes nothing', (
+      tester,
+    ) async {
+      await _open(tester, 'A03');
+      final l10n = await AppL10n.delegate.load(const Locale('en'));
+      expect(find.text(l10n.profileVisibleToMembers), findsNothing);
+      expect(find.text(l10n.myCoachCanSeeMyLogs), findsNothing);
+      // What is left is true, and the door into cycle sharing stays.
+      expect(find.text(l10n.cycleInformation), findsOneWidget);
+    });
+
+    testWidgets('the safety centre keeps the emergency line and drops the '
+        'membership it does not have', (tester) async {
+      await _open(tester, 'A04');
+      final l10n = await AppL10n.delegate.load(const Locale('en'));
+      expect(find.text(l10n.everyMemberIsVerified), findsNothing);
+      expect(find.text(l10n.reportSomeone), findsNothing);
+      expect(find.text(l10n.ifYouAreInDangerRightNow), findsOneWidget);
+    });
+
+    testWidgets('cycle settings offer no sharing with a coach', (tester) async {
+      await _open(tester, 'Y12');
+      final l10n = await AppL10n.delegate.load(const Locale('en'));
+      expect(find.text(l10n.shareWithMyCoach), findsNothing);
+      expect(find.text(l10n.changeHowYouUseMyCycle), findsOneWidget);
+    });
+  });
+
+  group('she can read it in her own language', () {
+    testWidgets('an Arabic phone opens in Arabic', (tester) async {
+      // This shipped opening in English on an Egyptian handset, with the
+      // chooser one screen deep and the whole Arabic product already in the
+      // binary. The phone is the better guess until she says otherwise.
+      tester.platformDispatcher.localesTestValue = const [Locale('ar', 'EG')];
+      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+      AppRouter.featureFlags = FeatureFlags.shipped;
+
+      await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
+      await tester.pumpAndSettle();
+
+      expect(
+        Localizations.localeOf(tester.element(find.byType(Navigator).first))
+            .languageCode,
+        'ar',
+      );
+    });
+
+    testWidgets('and the chooser is reachable, not behind sign-up', (
+      tester,
+    ) async {
+      // `C02` lives in the signup flow, which the first release switches off,
+      // so without its exemption the Language row landed on the switched-off
+      // panel and she was stuck in whatever language the app opened in.
+      AppRouter.featureFlags = FeatureFlags.shipped;
+      expect(AppRouter.screenIsOn('C02'), isTrue);
     });
   });
 }
