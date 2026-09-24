@@ -601,8 +601,10 @@ class _TodayViewState extends State<TodayView> {
           // Same reasoning as above: M17 is Community's day-one state.
           onTap: () => openScreen(context, 'M01', widget.onOpenBeginnersGroup),
         ),
-      // The weekly rule, said once, before she can fail it.
-      AppSageNote(l10n.threeSessionsMakesTheWeekCountAnd),
+      // The weekly rule, said once, before she can fail it. It states the
+      // rule and never the number: she sets her own target in setup, and this
+      // sat on the same screen telling her it was three.
+      AppSageNote(l10n.reachYourGoalAndTheWeekCounts),
     ];
   }
 }

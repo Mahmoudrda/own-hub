@@ -59,7 +59,11 @@ void main() {
   testWidgets('names what she earned, in the order she cares about', (
     tester,
   ) async {
-    await tester.pumpWidget(_host(const FinishedView()));
+    // A Tuesday, so the heading is checkable. It used to say Tuesday to
+    // everyone on every day, which is what this now guards against.
+    await tester.pumpWidget(
+      _host(FinishedView(finishedOn: DateTime(2026, 9, 15))),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text("That's Tuesday done"), findsOneWidget);
@@ -141,7 +145,10 @@ void main() {
 
   testWidgets('reads in Arabic, from the dictionary', (tester) async {
     await tester.pumpWidget(
-      _host(const FinishedView(session: _live), locale: const Locale('ar')),
+      _host(
+        FinishedView(session: _live, finishedOn: DateTime(2026, 9, 15)),
+        locale: const Locale('ar'),
+      ),
     );
     await tester.pumpAndSettle();
 

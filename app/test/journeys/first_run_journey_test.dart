@@ -174,14 +174,15 @@ void main() {
       expect(find.text('Nothing logged yet'), findsOneWidget);
       expect(find.textContaining('will sit here'), findsOneWidget);
 
-      // The weekly rule, said once, before she can fail it.
+      // The weekly rule, said once, before she can fail it, and stated
+      // without a number because the number is hers.
       expect(
         find.text(
-          'Three sessions makes the week count, and a rest week covers one '
-          'you miss.',
+          'Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.',
         ),
         findsOneWidget,
       );
+      expect(find.textContaining('Three sessions'), findsNothing);
 
       // And no programme she never chose.
       expect(find.text('Beginner foundations'), findsNothing);

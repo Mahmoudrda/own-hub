@@ -8,8 +8,15 @@
 ///
 /// Nothing in `lib/` is changed by it. The one thing it sets is
 /// `AppRouter.featureFlags = FeatureFlags.everything`, which is what the
-/// crawler and the journey tests already do, so the community tab and the coach
-/// side are reachable while it walks.
+/// crawler and the journey tests already do.
+///
+/// **That flag set is visible on camera**, in three places, and whoever cuts
+/// the film should know: the bottom bar carries a Community tab the first
+/// release does not ship, `R10` offers "Share the squat with your group", and
+/// `A03` draws four privacy switches. With the shipping six features instead,
+/// `A03` draws **no** switches at all — every one of them answers "who else
+/// sees this", and with no community and no coach there is nobody to see — so
+/// scene 8 as briefed only exists in the everything build.
 ///
 /// ## Why the gestures are hand-rolled
 ///
@@ -23,6 +30,10 @@
 ///
 /// Run:
 ///   flutter test integration_test/demo_drive_test.dart -d SIMULATOR-UDID
+///
+/// or, to record it, `docs/release/video/footage/record.sh` — with a
+/// `flutter test` session attached the app is force-quit part way through
+/// every take that is being screen-recorded.
 library;
 
 import 'package:flutter/material.dart';
@@ -45,7 +56,7 @@ late LiveTestWidgetsFlutterBinding _binding;
 void _mark(String kind, String label) {
   final ms = DateTime.now().difference(_t0).inMilliseconds;
   // One line per event, pipe separated, so the host can parse it out of the
-  // test log without guessing.
+  // log without guessing.
   // ignore: avoid_print
   print('DEMOMARK|$ms|$kind|$label');
 }
@@ -60,7 +71,7 @@ void _dump(String tag) {
     if (route == '-') route = ModalRoute.of(element)?.settings.name ?? '?';
   }
   // ignore: avoid_print
-  print('DEMODUMP|$tag|$route|${seen.take(12).join(' ~ ')}');
+  print('DEMODUMP|$tag|$route|${seen.take(14).join(' ~ ')}');
 }
 
 // ------------------------------------------------------------------ pacing --
@@ -143,7 +154,7 @@ Future<void> _swipeUp(WidgetTester tester, double distance) async {
   final id = _nextPointer++;
   _stamp += const Duration(milliseconds: 16);
   _send(PointerDownEvent(pointer: id, position: point, timeStamp: _stamp));
-  await tester.pump(const Duration(milliseconds: 40));
+  await _hold(tester, 40);
   const steps = 18;
   final step = Offset(0, -distance / steps);
   for (var i = 0; i < steps; i++) {
@@ -164,6 +175,19 @@ Future<void> _swipeUp(WidgetTester tester, double distance) async {
   await _hold(tester, 800);
 }
 
+/// Scrolls until [finder] can be tapped, then taps it.
+Future<void> _revealAndTap(
+  WidgetTester tester,
+  Finder finder,
+  String label,
+) async {
+  for (var attempt = 0; attempt < 4; attempt++) {
+    if (_vis(finder).evaluate().isNotEmpty) break;
+    await _swipeUp(tester, 320);
+  }
+  await _tap(tester, finder, label);
+}
+
 // --------------------------------------------------------------- navigation
 
 /// The escape hatch the brief allows: open a screen by name when no tap
@@ -176,13 +200,8 @@ Future<void> _jump(WidgetTester tester, String screenId) async {
   await _hold(tester, 700);
 }
 
-/// Back to the Home route the app opened on, **disposing everything above it**.
-///
-/// Not tidiness. R09's rest countdown is a plain `Timer`, and a route below the
-/// top is kept alive rather than disposed, so the clock she left behind keeps
-/// running and — 38 seconds later, wherever she now is — calls `onReady` and
-/// pushes R07 over the screen she is on. Popping the training routes off is
-/// what stops that landing in the middle of a take.
+/// Back to the route the app opened on, disposing everything above it. Keeps
+/// the stack shallow so a finder cannot reach a screen two pushes down.
 Future<void> _popToRoot(WidgetTester tester) async {
   _mark('nav', 'pop-to-home');
   tester
@@ -200,13 +219,15 @@ Finder _navTab(String label) =>
 
 void main() {
   _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  // Left at the default on purpose — see `_hold`. The pump rate is the frame
-  // rate, so the recording gets smooth transitions without the app rendering
-  // (and the recorder capturing) 60 identical frames a second of a still page.
 
   testWidgets('walks Own Hub for the launch video', (tester) async {
     _binding.shouldPropagateDevicePointerEvents = true;
     AppRouter.featureFlags = FeatureFlags.everything;
+    // A clean install every take: the setup walk is scene 00, and it only runs
+    // while she has not been asked.
+    AppRouter.intakeRepository.reset();
+    AppRouter.progressStore.reset();
+    AppRouter.todayRepository.reset();
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -219,74 +240,53 @@ void main() {
     await tester.pumpWidget(const OwnHubApp());
     _mark('boot', 'pumped');
     await _hold(tester, 3000);
+    _dump('first-frame');
 
-    // ------------------------------------------------------- warm-up ------
+    // ------------------------------------------------ 0. Setup -----------
     //
-    // None of this is in a clip.
-    _mark('warmup', 'begin');
-
-    // (a) My cycle set up, so the hub has a day to show when scene 7 arrives.
-    await _jump(tester, 'Y03');
-    await _hold(tester, 1200);
-    await _tap(
-      tester,
-      find.text('Track periods and symptoms'),
-      'warm.cycle-set-up',
-    );
-    await _hold(tester, 1200);
-    await _tap(
-      tester,
-      find.text('Track periods and symptoms'),
-      'warm.cycle-mode-dates',
-    );
+    // Four questions and a summary, on a fresh install. Paced brisker than the
+    // rest of the film on purpose: it is an opening montage, not a scene.
+    _scene('00-setup', 'start');
+    await _hold(tester, 1100);
+    await _tap(tester, find.text('Get back into it'), '00.goal');
     await _hold(tester, 700);
-    await _tap(tester, find.text('Continue'), 'warm.cycle-continue');
-    await _hold(tester, 1200);
-    await _tap(tester, find.text('Save preferences'), 'warm.cycle-save-prefs');
-    await _hold(tester, 1500);
-    _dump('after-cycle-setup');
-    await _popToRoot(tester);
+    await _tap(tester, find.text('Continue'), '00.continue-1');
+    await _hold(tester, 800);
 
-    // (b) The session, advanced to the goblet squat. The day starts on the
-    // glute bridge, whose set button reads "Done · 0 kg × 12"; the move the
-    // mid-set scene is about is the second one, so the first is logged here.
-    await _hold(tester, 1200);
+    await _tap(tester, find.text('A ladies-only gym'), '00.place');
+    await _hold(tester, 600);
+    await _tap(tester, find.text('Dumbbells'), '00.equipment');
+    await _hold(tester, 700);
+    await _tap(tester, find.text('Continue'), '00.continue-2');
+    await _hold(tester, 800);
+
+    await _tap(tester, find.text('4'), '00.days-4');
+    await _hold(tester, 600);
+    await _tap(tester, find.text('30'), '00.minutes-30');
+    await _hold(tester, 700);
+    await _tap(tester, find.text('Continue'), '00.continue-3');
+    await _hold(tester, 800);
+
+    await _tap(tester, find.text('A knee, back or shoulder'), '00.life-stage');
+    await _hold(tester, 700);
+    await _tap(tester, find.text('Continue'), '00.continue-4');
+    await _hold(tester, 3000);
+    _scene('00-setup', 'end');
+    _dump('summary');
+
+    // between the clips: out of setup, onto her own Home
     await _tap(
       tester,
-      find.text("Start, everything's ready"),
-      'warm.home-start',
+      find.text('I will start tomorrow'),
+      'link.start-tomorrow',
     );
-    await _hold(tester, 1600);
-    await _tap(
-      tester,
-      find.text("Start, everything's ready"),
-      'warm.day-start',
-    );
-    await _hold(tester, 1800);
-    await _tap(
-      tester,
-      find.text('I did all 3 sets, log them'),
-      'warm.log-move',
-    );
-    await _hold(tester, 1800);
-    await _tap(
-      tester,
-      find.text('Next move · step-back lunge'),
-      'warm.next-move',
-    );
-    await _hold(tester, 1800);
-    await _popToRoot(tester);
-    await _hold(tester, 1800);
-    _mark('warmup', 'end');
+    await _hold(tester, 2200);
+    _dump('home-day-one');
 
     // --------------------------------------------------- 1. Home ----------
     _scene('01-home', 'start');
     await _hold(tester, 2600);
-    await _tap(
-      tester,
-      find.text("Start, everything's ready"),
-      '01.start-everythings-ready',
-    );
+    await _tap(tester, find.text('Start day 1'), '01.start-day-1');
     await _hold(tester, 2600);
     _scene('01-home', 'end');
 
@@ -300,11 +300,12 @@ void main() {
     );
     await _hold(tester, 2600);
     _scene('02-session', 'end');
+    _dump('mid-set');
 
     // ------------------------------------------------- 3. Mid-set ---------
     _scene('03-mid-set', 'start');
     await _hold(tester, 2800);
-    await _tap(tester, find.text('Done · 12 kg × 10'), '03.done-12kg-10');
+    await _tap(tester, find.text('Done · 12 reps'), '03.done-12-reps');
     await _hold(tester, 3000);
     _scene('03-mid-set', 'end');
 
@@ -326,11 +327,11 @@ void main() {
     await _tap(tester, find.text('Finish here'), '04.finish-here');
     await _hold(tester, 4000);
     _scene('04-finish', 'end');
+    _dump('finished');
 
     // between the clips: off the celebration and back to Home
     await _tap(tester, find.text('Back to today'), 'link.back-to-today');
     await _hold(tester, 1600);
-    // Everything the session pushed goes now, rest clock included.
     await _popToRoot(tester);
     await _hold(tester, 1400);
 
@@ -349,9 +350,31 @@ void main() {
     // then loses its Undo on camera rather than being cut off.
     await _hold(tester, 7400);
     _scene('06-eat', 'end');
+    _dump('eat-logged');
 
-    // between the clips: the cycle hub, then its check-in
+    // between the clips: My cycle, set it up, then the check-in.
+    //
+    // Opened by name. Home's own "My cycle" row is drawn from
+    // `TodayDay.showCycleCard`, which only becomes true once she has set My
+    // cycle up, so on a fresh install there is no door to it on Home at all —
+    // the only one in the product is the row in her profile.
     await _jump(tester, 'Y03');
+    await _hold(tester, 1500);
+    await _tap(
+      tester,
+      find.text('Track periods and symptoms'),
+      'link.cycle-set-up',
+    );
+    await _hold(tester, 1200);
+    await _tap(
+      tester,
+      find.text('Track periods and symptoms'),
+      'link.cycle-mode-dates',
+    );
+    await _hold(tester, 700);
+    await _tap(tester, find.text('Continue'), 'link.cycle-continue');
+    await _hold(tester, 1200);
+    await _tap(tester, find.text('Save preferences'), 'link.cycle-save-prefs');
     await _hold(tester, 1500);
     await _tap(
       tester,
@@ -372,13 +395,14 @@ void main() {
     await _tap(tester, find.text('Save check-in'), '07.save-check-in');
     await _hold(tester, 3800);
     _scene('07-cycle', 'end');
+    _dump('gentler');
 
     // between the clips: her profile, then Privacy
     await _jump(tester, 'A02');
     await _hold(tester, 1600);
-    await _swipeUp(tester, 320);
-    await _tap(tester, find.text('Privacy'), 'link.open-privacy');
+    await _revealAndTap(tester, find.text('Privacy'), 'link.open-privacy');
     await _hold(tester, 1800);
+    _dump('privacy');
 
     // ------------------------------------------------- 8. Privacy ---------
     _scene('08-privacy', 'start');
@@ -392,18 +416,16 @@ void main() {
     await _hold(tester, 2800);
     _scene('08-privacy', 'end');
 
-    // between the clips: onto a screen whose Home tab is a live link. Privacy
-    // draws the bar with Home already marked active, so its own Home tab is
-    // not tappable at all.
-    await _tap(tester, _navTab('Eat'), 'link.tab-eat-again');
-    await _hold(tester, 2200);
-
     // -------------------------------------------- 9. Home again ----------
+    //
+    // Straight off Privacy now: the bar there used to draw Home as the active
+    // tab, which made its own Home tab a link to itself and therefore dead.
     _scene('09-home-again', 'start');
     await _hold(tester, 2400);
     await _tap(tester, _navTab('Home'), '09.tab-home');
     await _hold(tester, 4200);
     _scene('09-home-again', 'end');
+    _dump('home-again');
 
     _mark('done', 'end-of-walk');
     _binding.shouldPropagateDevicePointerEvents = false;

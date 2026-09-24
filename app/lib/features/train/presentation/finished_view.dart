@@ -21,6 +21,9 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
+// `weekdayLabel` is Home's, and the two screens must name the day the same
+// way or a woman sees Thursday on one and Tuesday on the next.
+import '../../today/presentation/today_cards.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -37,6 +40,7 @@ class FinishedView extends StatelessWidget {
     this.onBackToToday,
     this.onShare,
     this.session,
+    this.finishedOn,
     this.sessionsThisWeek = 2,
     this.sessionsPrescribed = 3,
     this.levelProgressPercent = 50,
@@ -51,6 +55,10 @@ class FinishedView extends StatelessWidget {
   /// The session just finished. Decides whether a personal best may be shown at
   /// all: only a measured live session can set one.
   final TrainSession? session;
+
+  /// The day she finished. Null means today, which is what it always is in
+  /// the product: this screen is shown the moment a session ends.
+  final DateTime? finishedOn;
 
   final int sessionsThisWeek;
   final int sessionsPrescribed;
@@ -124,7 +132,14 @@ class FinishedView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Text(l10n.thatsTuesdayDone, style: AppText.display),
+              child: Text(
+                // Her day, not the prototype's Tuesday. `finishedOn` defaults
+                // to now, so a screen built with nothing still names today.
+                l10n.thatsDayDone(
+                  weekdayLabel(l10n, finishedOn ?? DateTime.now()),
+                ),
+                style: AppText.display,
+              ),
             ),
             const SizedBox(width: 12),
             const HandTick(

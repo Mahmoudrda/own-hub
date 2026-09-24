@@ -174,12 +174,15 @@ void main() {
       await tester.pumpWidget(_host(_dayOne()));
       await tester.pumpAndSettle();
 
+      // The rule, and never the number: she sets her own target in setup, and
+      // this used to sit beside it saying three.
       expect(
         find.text(
-          'Three sessions makes the week count, and a rest week covers one you miss.',
+          'Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.',
         ),
         findsOneWidget,
       );
+      expect(find.textContaining('Three sessions'), findsNothing);
     });
 
     testWidgets('the first-week arc is offered, and nothing expires', (
