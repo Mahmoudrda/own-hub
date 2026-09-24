@@ -500,14 +500,21 @@ class _EatViewState extends State<EatView> {
       // Rendered only for a woman who actually has a coach — null for everyone
       // in the MVP.
       if (widget.plannedMeal != null) ..._plannedBlock(l10n),
+      // The slot she is actually in, and no claim about a pattern.
+      //
+      // This was "Dinner, your usual" beside "Tuesdays": the slot fixed
+      // whatever the hour, and a weekly habit asserted to a woman who had
+      // logged one meal in her life. `slotAt` is the same hour-to-slot rule
+      // Home heads its meal row with, so the two screens agree. "Your usual"
+      // is the guess form and stays, because that is what this row is: the
+      // thing she tends to eat at this hour.
       if (justLogged != null)
-        AppSplitRow(
-          start: Text(l10n.dinnerYourUsual, style: AppText.titleM),
-          end: Text(
-            l10n.tuesdays,
-            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-          ),
-        ),
+        Text(switch (EatDayViewModel.slotAt(DateTime.now())) {
+          MealSlot.breakfast => l10n.breakfastYourUsual,
+          MealSlot.lunch => l10n.lunchYourUsual,
+          MealSlot.dinner => l10n.dinnerYourUsual,
+          MealSlot.snack => l10n.snackYourUsual,
+        }, style: AppText.titleM),
       for (final suggestion in view.suggestions)
         MealRow(
           title: _titleOf(suggestion),

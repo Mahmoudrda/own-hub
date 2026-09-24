@@ -446,8 +446,17 @@ void main() {
       // exposes current totals with no before/after pair. The number was a
       // dictionary constant, so this test was pinning an invented figure in
       // place. The screen now renders no delta at all until a real one exists.
-      expect(find.text('Dinner, your usual'), findsOneWidget);
-      expect(find.text('Tuesdays'), findsOneWidget);
+      // The header names the slot the hour is actually in, so it cannot be
+      // pinned to one word here. What it must never do again is claim a
+      // weekly pattern: "Tuesdays" sat beside it, asserting a habit to a
+      // woman who had logged one meal in her life.
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is Text && (w.data ?? '').endsWith(', your usual'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Tuesdays'), findsNothing);
 
       bus.dispose();
     });
