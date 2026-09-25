@@ -95,13 +95,82 @@ final RegExp kBannedKeyHolders = RegExp(
 void main() {
   group('P0-ASK-13 — the API key never ships in the app', () {
     test('no key-shaped literal exists anywhere in lib/', () {
+      // One exemption, and it is as narrow as it can be written: the `apiKey:`
+      // lines of the FlutterFire generated `lib/firebase_options.dart`.
+      //
+      // A Firebase apiKey is not a secret. It is a public project identifier
+      // that ships inside every Android and iOS binary by design, it
+      // authorises nothing on its own, and what actually protects the data is
+      // `firebase/firestore.rules`. The sentence in the reason below is still
+      // exactly right about it: an APK is a zip and anything in it is public.
+      // That is the argument FOR letting this one through, not against.
+      //
+      // The exemption is a line test rather than a file test on purpose. A
+      // Gemini key is also `AIza...` and is indistinguishable by shape from
+      // the Firebase one, so exempting the whole file would create a hole the
+      // exact size of the key this rule exists to keep out. `sk-ant-`, `sk-`,
+      // `AKIA` and `ya29.` still fail in this file like anywhere else, and the
+      // pairing test below proves the hole stays closed.
+      final offenders = _hits(_allLibSource(), kForbiddenKeyShapes).where((
+        hit,
+      ) {
+        if (!hit.contains('lib/firebase_options.dart')) return true;
+        if (!RegExp(r'\bapiKey\s*:').hasMatch(hit)) return true;
+        return !RegExp(r'^[^:]*:\d+\s+apiKey:\s*.AIza[0-9A-Za-z_\-]{30,}.,?$')
+            .hasMatch(hit.trim());
+      }).toList();
+
       expect(
-        _hits(_allLibSource(), kForbiddenKeyShapes),
+        offenders,
         isEmpty,
         reason:
             'An APK is a zip: anything in it is public. All model calls '
             'originate from the Cloud Function, and the key is a Secret '
             'Manager secret bound to it.',
+      );
+    });
+
+    test('the firebase_options exemption cannot hide a model key', () {
+      // Without this, the exemption above is a hole shaped like a Gemini key:
+      // paste one onto an `apiKey:` line in the generated file and no guard
+      // looks at it again. Same pairing idiom as the deny-list exemption in
+      // `product_rules_test.dart`.
+      final file = File('lib/firebase_options.dart');
+      expect(
+        file.existsSync(),
+        isTrue,
+        reason: 'The exempted file must exist, or the exemption is stale and '
+            'should be deleted rather than left pointing at nothing.',
+      );
+
+      final source = file.readAsStringSync();
+      expect(
+        source.contains('DefaultFirebaseOptions'),
+        isTrue,
+        reason: 'The exempted path must be the FlutterFire generated file. If '
+            'it is something else, the exemption is being reused for a file it '
+            'was never reasoned about.',
+      );
+
+      // Every Google-shaped key in the file sits on an `apiKey:` line, and no
+      // other vendor shape appears at all. A model key would arrive on some
+      // other field, in a bare constant, or with a different prefix, and each
+      // of those is caught here.
+      final lines = source.split('\n');
+      final misplaced = <String>[];
+      for (var i = 0; i < lines.length; i++) {
+        final line = lines[i];
+        if (_isComment(line)) continue;
+        if (!kForbiddenKeyShapes.hasMatch(line)) continue;
+        if (RegExp(r'\bapiKey\s*:\s*.AIza').hasMatch(line)) continue;
+        misplaced.add('lib/firebase_options.dart:${i + 1}  ${line.trim()}');
+      }
+      expect(
+        misplaced,
+        isEmpty,
+        reason: 'A key-shaped literal in the generated file that is not the '
+            'Firebase apiKey field is not covered by the reasoning for this '
+            'exemption.',
       );
     });
 

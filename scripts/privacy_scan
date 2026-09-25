@@ -1,0 +1,276 @@
+#!/usr/bin/env python3
+"""Spec §9.5: prove that nothing forbidden came to rest anywhere.
+
+Scans Firestore, every Storage bucket, and Cloud Logging for the things spec §4
+says must never exist outside a woman's own session:
+
+    * a 14-digit sequence, in ASCII, Eastern Arabic-Indic (U+0660..U+0669) or
+      Persian (U+06F0..U+06F9) digits;
+    * image magic bytes — JPEG (FF D8 FF), PNG, GIF, WebP, HEIC;
+    * base64-encoded image payloads, which are what an image looks like when it
+      has been put into a JSON field or a log line by accident;
+    * any Arabic string supplied via --names, for the test cards used in a smoke
+      run.
+
+Run it after the integration suite and after any live smoke test. A clean run is
+part of spec §12's definition of done.
+
+    scripts/privacy_scan --project own-hub
+    scripts/privacy_scan --project own-hub --since 2h --names "فاطمة" "أحمد"
+    scripts/privacy_scan --project own-hub --skip-logs     # no logging read
+
+Exit code 0 means clean. Exit code 1 means it found something, and the finding
+is printed with its location and NOTHING of its content — a privacy scanner that
+prints the ID number it found has just written that number to your terminal
+scrollback and your CI log. Every finding below reports where and what kind,
+never what.
+
+WHAT THIS CANNOT DO, stated because a scanner people over-trust is worse than
+none:
+  * It reads what the caller's credentials can read. Run it with a principal
+    that can see everything, or its silence means nothing.
+  * Cloud Logging is sampled and retained for a limited window. A clean log scan
+    proves the window was clean, not that a leak never happened.
+  * It cannot see inside a third-party processor. Vision's and any vendor's own
+    retention is a contractual question, covered in AUDIT.md, not a scannable
+    one.
+  * Base64 detection keys on the standard JPEG/PNG prefixes. A re-encoded or
+    chunked image would be missed.
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import re
+import sys
+from typing import Iterable
+
+# A run of exactly 14 digits, not part of a longer run. `(?<!\d)` and `(?!\d)`
+# matter: without them a 20-digit hash of decimal digits reports as an ID number
+# and the scan cries wolf until people stop running it.
+ASCII_14 = re.compile(r"(?<![0-9])[0-9]{14}(?![0-9])")
+ARABIC_14 = re.compile(r"(?<![٠-٩])[٠-٩]{14}(?![٠-٩])")
+PERSIAN_14 = re.compile(r"(?<![۰-۹])[۰-۹]{14}(?![۰-۹])")
+
+# What an image looks like after base64 encoding. These are the first characters
+# of the encoded form of each magic number.
+BASE64_IMAGE = re.compile(r"(?:/9j/|iVBORw0KGgo|R0lGODlh|UklGR|data:image/)")
+
+MAGIC_BYTES = {
+    b"\xff\xd8\xff": "JPEG",
+    b"\x89PNG\r\n\x1a\n": "PNG",
+    b"GIF87a": "GIF",
+    b"GIF89a": "GIF",
+    b"RIFF": "WebP/RIFF",
+    b"\x00\x00\x00\x18ftypheic": "HEIC",
+}
+
+# Collections whose contents are hashes of exactly the thing we are looking for.
+# A 64-character hex digest contains no 14-digit decimal run, so these do not
+# false-positive — but they are listed so a reader knows they were considered
+# rather than forgotten.
+EXPECTED_HASH_COLLECTIONS = {
+    "nidRegistry",
+    "verificationBehaviour",
+    "verificationInstalls",
+}
+
+
+class Findings:
+    def __init__(self) -> None:
+        self.rows: list[tuple[str, str, str]] = []
+
+    def add(self, where: str, kind: str, detail: str = "") -> None:
+        self.rows.append((where, kind, detail))
+
+    def report(self) -> int:
+        if not self.rows:
+            print("\nPRIVACY SCAN CLEAN — nothing forbidden found.")
+            return 0
+        print(f"\nPRIVACY SCAN FOUND {len(self.rows)} PROBLEM(S):\n")
+        for where, kind, detail in self.rows:
+            print(f"  [{kind}] {where}" + (f"  ({detail})" if detail else ""))
+        print(
+            "\nThe content is deliberately NOT printed. Go and look at the "
+            "location above with a tool that does not log what it reads."
+        )
+        return 1
+
+
+def scan_text(value: str) -> list[str]:
+    """Which forbidden patterns does this string contain? Names only."""
+    hits = []
+    if ASCII_14.search(value):
+        hits.append("14-digit-ascii")
+    if ARABIC_14.search(value):
+        hits.append("14-digit-arabic-indic")
+    if PERSIAN_14.search(value):
+        hits.append("14-digit-persian")
+    if BASE64_IMAGE.search(value):
+        hits.append("base64-image-payload")
+    return hits
+
+
+def walk(value, path: str) -> Iterable[tuple[str, str]]:
+    """Recurse a Firestore document value, yielding (path, finding-kind)."""
+    if isinstance(value, str):
+        for hit in scan_text(value):
+            yield path, hit
+    elif isinstance(value, bytes):
+        for magic, name in MAGIC_BYTES.items():
+            if value.startswith(magic):
+                yield path, f"image-bytes-{name}"
+        # A bytes field in a verification collection is suspicious whatever it
+        # holds: nothing in spec §4's allowlist is binary.
+        yield path, "unexpected-binary-field"
+    elif isinstance(value, dict):
+        for key, inner in value.items():
+            yield from walk(inner, f"{path}.{key}")
+    elif isinstance(value, (list, tuple)):
+        for index, inner in enumerate(value):
+            yield from walk(inner, f"{path}[{index}]")
+
+
+def scan_firestore(project: str, findings: Findings, names: list[str]) -> None:
+    from google.cloud import firestore
+
+    client = firestore.Client(project=project)
+    collections = list(client.collections())
+    print(f"Firestore: {len(collections)} root collection(s)")
+
+    for collection in collections:
+        count = 0
+        for snapshot in collection.limit(5000).stream():
+            count += 1
+            data = snapshot.to_dict() or {}
+            where = f"{collection.id}/{snapshot.id}"
+            for field_path, kind in walk(data, where):
+                findings.add(field_path, kind)
+            # The document ID itself. An ID number used as a document id is the
+            # single most likely way this rule gets broken by accident.
+            for kind in scan_text(snapshot.id):
+                if collection.id in EXPECTED_HASH_COLLECTIONS and kind.startswith(
+                    "14-digit"
+                ):
+                    findings.add(where, "RAW-ID-AS-DOCUMENT-ID", "must be an HMAC")
+                else:
+                    findings.add(where, f"document-id-{kind}")
+            blob = str(data)
+            for name in names:
+                if name and name in blob:
+                    findings.add(where, "test-card-name-present", "see --names")
+        print(f"  {collection.id}: {count} document(s)")
+
+
+def scan_storage(project: str, findings: Findings) -> None:
+    from google.cloud import storage
+
+    client = storage.Client(project=project)
+    for bucket in client.list_buckets():
+        blobs = list(client.list_blobs(bucket.name, max_results=2000))
+        print(f"Storage: {bucket.name} — {len(blobs)} object(s)")
+
+        is_evidence = "verification-evidence" in bucket.name
+        if is_evidence:
+            # Spec §9.5: "assert the flag bucket is empty after the purge job
+            # runs." Anything left here is either mid-review or a purge failure.
+            if blobs:
+                findings.add(
+                    f"gs://{bucket.name}",
+                    "evidence-bucket-not-empty",
+                    f"{len(blobs)} object(s) — expected empty after purge",
+                )
+            # Configuration, which is as important as the contents: the Tea leak
+            # was a correctly-populated bucket with the wrong access policy.
+            try:
+                bucket.reload()
+                if not bucket.iam_configuration.uniform_bucket_level_access_enabled:
+                    findings.add(
+                        f"gs://{bucket.name}", "uniform-access-DISABLED"
+                    )
+                if bucket.iam_configuration.public_access_prevention != "enforced":
+                    findings.add(
+                        f"gs://{bucket.name}", "public-access-prevention-NOT-ENFORCED"
+                    )
+                if not bucket.lifecycle_rules:
+                    findings.add(f"gs://{bucket.name}", "no-lifecycle-rule")
+            except Exception as error:  # noqa: BLE001
+                findings.add(f"gs://{bucket.name}", "config-unreadable", type(error).__name__)
+            continue
+
+        for blob in blobs:
+            for kind in scan_text(blob.name):
+                findings.add(f"gs://{bucket.name}/{blob.name}", f"object-name-{kind}")
+            if (blob.content_type or "").startswith("image/"):
+                # Outside the evidence bucket, an image is only legitimate if it
+                # is library content. Anything under a user-ish prefix is a find.
+                if not blob.name.startswith("content/"):
+                    findings.add(
+                        f"gs://{bucket.name}/{blob.name}",
+                        "image-outside-content-library",
+                        blob.content_type,
+                    )
+
+
+def scan_logs(project: str, findings: Findings, since: str) -> None:
+    from google.cloud import logging as cloud_logging
+
+    client = cloud_logging.Client(project=project)
+    amount = int(since[:-1])
+    unit = since[-1]
+    delta = {"m": dt.timedelta(minutes=amount), "h": dt.timedelta(hours=amount),
+             "d": dt.timedelta(days=amount)}[unit]
+    start = (dt.datetime.now(dt.timezone.utc) - delta).isoformat()
+    log_filter = f'timestamp >= "{start}"'
+
+    checked = 0
+    for entry in client.list_entries(filter_=log_filter, max_results=20000):
+        checked += 1
+        payload = entry.payload
+        text = payload if isinstance(payload, str) else str(payload)
+        for kind in scan_text(text):
+            findings.add(
+                f"log/{entry.log_name.split('/')[-1]}@{entry.timestamp}",
+                f"log-{kind}",
+            )
+    print(f"Cloud Logging: {checked} entr(ies) in the last {since}")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--project", default="own-hub")
+    parser.add_argument("--since", default="2h", help="log window, e.g. 30m, 2h, 1d")
+    parser.add_argument("--names", nargs="*", default=[],
+                        help="Arabic strings from test cards to search for")
+    parser.add_argument("--skip-logs", action="store_true")
+    parser.add_argument("--skip-storage", action="store_true")
+    parser.add_argument("--skip-firestore", action="store_true")
+    args = parser.parse_args()
+
+    findings = Findings()
+    print(f"Privacy scan — project {args.project}\n")
+
+    for enabled, label, fn in (
+        (not args.skip_firestore, "Firestore",
+         lambda: scan_firestore(args.project, findings, args.names)),
+        (not args.skip_storage, "Storage",
+         lambda: scan_storage(args.project, findings)),
+        (not args.skip_logs, "Cloud Logging",
+         lambda: scan_logs(args.project, findings, args.since)),
+    ):
+        if not enabled:
+            print(f"{label}: SKIPPED")
+            continue
+        try:
+            fn()
+        except Exception as error:  # noqa: BLE001
+            # A scanner that cannot reach a surface must say so loudly. Silence
+            # here would read as "clean", which is the one thing it is not.
+            findings.add(label, "SCAN-FAILED-SURFACE-NOT-CHECKED", type(error).__name__)
+
+    return findings.report()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

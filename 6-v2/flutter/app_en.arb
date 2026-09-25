@@ -2814,5 +2814,56 @@
   "saturday": "Saturday",
   "sunday": "Sunday",
   "noProgramYet": "No program yet",
-  "aProgramSetsOutYourWeeksAnd": "A program sets out your weeks and the days in them. Nothing is written for you yet. One session is ready now, and Start today's session opens it."
+  "aProgramSetsOutYourWeeksAnd": "A program sets out your weeks and the days in them. Nothing is written for you yet. One session is ready now, and Start today's session opens it.",
+  "holdTheCardStill": "Hold the card still",
+  "moveALittleCloser": "Move a little closer",
+  "moveBackALittle": "Move back a little",
+  "thereIsNotEnoughLight": "There is not enough light",
+  "bringYourFaceIntoTheCircle": "Bring your face into the circle",
+  "lookStraightAhead": "Look straight ahead",
+  "blinkSlowly": "Blink slowly",
+  "turnYourHeadSlightlyToTheRight": "Turn your head slightly to the right",
+  "turnYourHeadSlightlyToTheLeft": "Turn your head slightly to the left",
+  "holdStill": "Hold still",
+  "tiltTheCardToCutTheGlare": "Tilt the card to cut the glare",
+  "onlyOneFaceInTheFrame": "Only one face in the frame",
+  "showTheFrontOfTheCard": "Show the front of the card",
+  "theBackOfYourCard": "The back of your card",
+  "backOfTheCard": "back of the card",
+  "turnTheCardOver": "Turn the card over",
+  "weReadBothSidesNothingIsUploaded": "We read both sides. Nothing is uploaded until you tap send.",
+  "verified": "Verified",
+  "underReview": "Under review",
+  "verificationUnsuccessful": "Verification unsuccessful",
+  "pleaseRetakeThePhoto": "Please retake the photo",
+  "beforeTheCameraOpens": "Before the camera opens",
+  "youWillPhotographTheFrontAndBack": "You will photograph the front and back of your national ID card, then take a short selfie.",
+  "thePhotographsAreProcessedByGoogleCloud": "The photographs are processed by Google Cloud and Amazon Web Services, on servers outside Egypt.",
+  "ifYourCheckIsApprovedOrRefused": "If your check is approved or refused, nothing is kept except a one way keyed hash of your ID number. It cannot be turned back into the number.",
+  "ifYourCaseNeedsAWomanTo": "If your case needs a woman to review it, the encrypted photographs are kept for up to 72 hours and then deleted.",
+  "theCameraIsTheOnlyWayIn": "The camera is the only way in. You cannot choose a picture you already have.",
+  "iAgreeStartTheCamera": "I agree, start the camera",
+  "iWouldRatherNot": "I would rather not",
+  "weCannotRunThisStepOnYour": "We cannot run this step on your phone right now. A woman can check your card instead.",
+  "stepStepOfTotal": "Step {step} of {total}",
+  "@stepStepOfTotal": {
+    "description": "Progress through the server-chosen liveness challenge on C11. The number of steps is decided by the server per session, so it cannot be baked into the sentence the way the other Step strings in this dictionary are.",
+    "placeholders": {
+      "step": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "aShortVideoCallWithAWoman": "A short video call with a woman",
+  "weWillTextYouATimeIt": "We will text you a time. It takes about two minutes and nothing is recorded.",
+  "nothingYouPhotographedIsStoredItWas": "Nothing you photographed is stored. It was deleted the moment the check finished.",
+  "theAppOpensAsSoonAsYour": "The app opens as soon as your check is done.",
+  "nothingYouPhotographIsKeptBothSides": "Nothing you photograph is kept. Both sides of the card and the selfie are deleted as soon as the check finishes, whatever the result.",
+  "ifAWomanNeedsToCheckIt": "If a woman needs to check, it is a short video call with you. Your photographs are never sent to anyone.",
+  "thePhotographsAreProcessedByGoogleCloud_tqchn": "The photographs are processed by Google Cloud, on servers outside Egypt."
 }

@@ -6,7 +6,7 @@ class AppRoute {
   const AppRoute({required this.name, required this.flow, required this.title});
 }
 
-/// 175 screens across 17 flows.
+/// 177 screens across 17 flows.
 const Map<String, AppRoute> appRoutes = {
   'C01': AppRoute(name: '/signup/c01', flow: 'signup', title: "Welcome"),
   'C02': AppRoute(name: '/signup/c02', flow: 'signup', title: "Language"),
@@ -17,7 +17,9 @@ const Map<String, AppRoute> appRoutes = {
   'C07': AppRoute(name: '/signup/c07', flow: 'signup', title: "The code"),
   'C08': AppRoute(name: '/signup/c08', flow: 'signup', title: "Client or coach"),
   'C09': AppRoute(name: '/signup/c09', flow: 'signup', title: "Why we check"),
+  'C09b': AppRoute(name: '/signup/c09b', flow: 'signup', title: "Before the camera opens"),
   'C10': AppRoute(name: '/signup/c10', flow: 'signup', title: "Scan your ID"),
+  'C10b': AppRoute(name: '/signup/c10b', flow: 'signup', title: "The back of your card"),
   'C11': AppRoute(name: '/signup/c11', flow: 'signup', title: "Quick selfie"),
   'C12': AppRoute(name: '/signup/c12', flow: 'signup', title: "Checking"),
   'C13': AppRoute(name: '/signup/c13', flow: 'signup', title: "You're in"),

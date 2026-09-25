@@ -10,6 +10,54 @@
 	<false/>
 	<key>CFBundleDisplayName</key>
 	<string>Own Hub</string>
+	<!-- The permission sheet is product copy, not a legal line. iOS shows this
+	     sentence under "Own Hub would like to access the camera", at the moment
+	     an Egyptian woman is deciding whether to hand over a photograph of her
+	     national ID card, and it is the only thing on that sheet we control.
+	     So it says what is taken and what happens to it afterwards, because
+	     "to verify your identity" answers neither question.
+
+	     Localised in en.lproj and ar.lproj/InfoPlist.strings; this copy is the
+	     development-region fallback and must stay in step with them. There is
+	     deliberately NO NSPhotoLibraryUsageDescription and no library
+	     entitlement anywhere in this target: the card is photographed live, and
+	     a flow that could take an existing picture could take a picture of
+	     someone else's card. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman. Nothing is uploaded until you tap send, and the photographs are deleted after the check.</string>
+	<!-- Both locales the app ships in, so iOS picks the right
+	     InfoPlist.strings instead of falling back to English on an
+	     Arabic handset. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ar</string>
+	</array>
+	<!-- The way Firebase phone auth gets back INTO the app on iOS.
+	     Without this the sign-up flow cannot complete by either route, which
+	     is why it is here rather than filed as a nicety. Firebase verifies the
+	     app one of two ways: a silent push, which needs an APNs key this
+	     project does not have yet, or a reCAPTCHA web view. The web view is
+	     the live path today, and it hands control back through this URL
+	     scheme. With no scheme registered it opens, she solves it, and then
+	     nothing happens: the callback has nowhere to land and the six-digit
+	     code never arrives.
+	     The value is the REVERSED_CLIENT_ID from GoogleService-Info.plist. It
+	     is not a secret; it is the client id read backwards and it ships in
+	     every build of every Firebase iOS app. Adding an APNs key later does
+	     not make this removable, because the web view stays the fallback
+	     whenever the push does not arrive. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.681714989950-ig46eu1jg345idchla73e8f8v0s9gr86</string>
+			</array>
+		</dict>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

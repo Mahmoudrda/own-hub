@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- baseUrl in config.json is still the reserved placeholder host
+     ownhub.example, which cannot resolve. Set the real domain and
+     run  python3 _build/build.py  again before submitting this file. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://ownhub.example/</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/ar/</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/privacy</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/privacy"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/ar/privacy</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/privacy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/privacy"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/terms</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/terms"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/terms"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/terms"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/ar/terms</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/terms"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/terms"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/support</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/support"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/support"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/support"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/ar/support</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/support"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/support"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/support"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/delete-account</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/delete-account"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/ar/delete-account</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/delete-account"/>
+  </url>
+</urlset>

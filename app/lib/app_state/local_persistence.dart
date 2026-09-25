@@ -99,23 +99,29 @@ abstract class SnapshotStorage {
 /// means `SharedPreferences.setMockInitialValues` in a test is picked up
 /// instead of being shadowed by an instance captured earlier.
 class PreferencesSnapshotStorage implements SnapshotStorage {
-  const PreferencesSnapshotStorage();
+  /// [key] defaults to [kSnapshotKey], which is her week and the only thing
+  /// this class was originally for. It is a parameter because `cloud_store.dart`
+  /// keeps a second, much smaller document beside it — the record of which
+  /// documents the server has already accepted — and that document wants the
+  /// same read-write-erase seam and the same tested behaviour, not a second
+  /// copy of it. A second KEY is still a visible decision: see
+  /// `kCloudLedgerKey` for the argument that it earns one.
+  const PreferencesSnapshotStorage({this.key = kSnapshotKey});
+
+  final String key;
 
   @override
   Future<String?> read() async =>
-      (await SharedPreferences.getInstance()).getString(kSnapshotKey);
+      (await SharedPreferences.getInstance()).getString(key);
 
   @override
   Future<void> write(String snapshot) async {
-    await (await SharedPreferences.getInstance()).setString(
-      kSnapshotKey,
-      snapshot,
-    );
+    await (await SharedPreferences.getInstance()).setString(key, snapshot);
   }
 
   @override
   Future<void> erase() async {
-    await (await SharedPreferences.getInstance()).remove(kSnapshotKey);
+    await (await SharedPreferences.getInstance()).remove(key);
   }
 }
 

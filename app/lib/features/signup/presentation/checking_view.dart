@@ -36,6 +36,7 @@ class CheckingView extends StatefulWidget {
     this.fraction = 0.72,
     this.onVerified,
     this.onAwaitingReviewer,
+    this.onRetake,
     this.onContinue,
   });
 
@@ -55,6 +56,15 @@ class CheckingView extends StatefulWidget {
   /// [VerificationAwaitingReviewer] and [VerificationNeedsAnotherLook], because
   /// neither is a rejection and both end in the same place.
   final VoidCallback? onAwaitingReviewer;
+
+  /// The photographs need taking again — back to `C10`.
+  ///
+  /// Falls back to [onAwaitingReviewer] when it is null, which is deliberate
+  /// and not laziness: an unwired build must send her to the video call rather
+  /// than leave her on a screen whose only other control goes forward to
+  /// "You're in". Stranding a woman on a spinner is a worse bug than spending a
+  /// review call she did not need.
+  final VoidCallback? onRetake;
 
   /// The prototype's footer button. In the running product the transition is
   /// the listener above, not a tap; this stays because the design has it and
@@ -88,6 +98,10 @@ class _CheckingViewState extends State<CheckingView> {
       case VerificationAwaitingReviewer():
       case VerificationNeedsAnotherLook():
         widget.onAwaitingReviewer?.call();
+      case VerificationRetakeNeeded():
+        // Her move, not a reviewer's. See the note on `onRetake`: with nothing
+        // wired up she goes to the video call rather than nowhere at all.
+        (widget.onRetake ?? widget.onAwaitingReviewer)?.call();
       case VerificationNotStarted():
       case VerificationChecking():
         break;

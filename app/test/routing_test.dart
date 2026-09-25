@@ -16,17 +16,26 @@ void main() {
     // collections can be authored one row at a time and not only by CSV.
     // D25 added Z14, the switchboard — the only place in the product where a
     // feature is turned on or off.
-    expect(appRoutes.length, 175);
+    //
+    // 175 → 177 when the verification flow was wired: `C09b`, the consent step
+    // that has to be agreed to before any camera opens, and `C10b`, the second
+    // pass that photographs the back of the card. Both are real screens a woman
+    // walks through, so both are in the inventory rather than smuggled in as
+    // states of their neighbours. Their ids carry a letter rather than taking
+    // the next number because C10 to C16 are referenced by id throughout the
+    // specs, the plans and the prototype, and renumbering would repoint every
+    // one of those references at the wrong screen.
+    expect(appRoutes.length, 177);
   });
 
   test('every screen is a destination except the eight first-run states', () {
-    // D1 withdrew the MVP cut: both roles, every flow. 175 - 8 = 167.
+    // D1 withdrew the MVP cut: both roles, every flow. 177 - 8 = 169.
     //
     // Six first-run states until the Cycle flow was built. Y11 and Y14 joined
     // them: both are branches of Y03 rendered by the same widget, exactly as
     // T06 is a branch of T01, so routing to them would mean rendering "severe
     // symptoms" over a hub that has none.
-    expect(appDestinations.length, 167);
+    expect(appDestinations.length, 169);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 
@@ -147,9 +156,14 @@ void main() {
     // resolves to no screen says so, rather than rendering something that
     // looks finished.
     final saved = AppRouter.featureFlags;
-    AppRouter.featureFlags = FeatureFlags.allOff.with_({
-      for (final f in Feature.values) f: true,
-    });
+    // `everything` rather than literally every flag, and the difference is
+    // `Feature.accountRequired`. That flag is now the whole-app gate: with it
+    // on, `AppRouter.verificationGate` answers every product route with the
+    // sign-up chain, so this test would open `C01` and report that the
+    // placeholder is missing — measuring the gate instead of the placeholder.
+    // `FeatureFlags.everything` is documented as the shape the product is
+    // explored in, and it is the shape this test has always meant.
+    AppRouter.featureFlags = FeatureFlags.everything;
     addTearDown(() => AppRouter.featureFlags = saved);
 
     final unbuilt = appDestinations.keys.where((id) => !AppRouter.isBuilt(id));

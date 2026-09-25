@@ -45,6 +45,82 @@ service cloud.firestore {
       return signedIn() && request.auth.token.coachV == 'active';
     }
 
+    // THE WHOLE-APP GATE, and the four paths that must escape it.
+    //
+    // Spec §1: she cannot USE the app before verification completes. Spec §5
+    // states it as "deny all app data reads and writes unless verified".
+    //
+    // Applied literally to EVERYTHING, that is a deadlock. The verification
+    // flow itself writes `users/{uid}`; if that write needs the `verified`
+    // claim, she can never earn the claim, because earning it requires the
+    // write. Sign-up bricks for every new account, including the owner's, and
+    // it bricks silently — a permission denial on the first screen after
+    // sign-up looks like a network problem.
+    //
+    // So the gate has a named set of exceptions. DO NOT "tidy" this into a
+    // uniform gate. The deadlock is not visible from outside and it cannot be
+    // caught by reading the rule that causes it.
+    //
+    // Behind the gate: her logs, her body data, her plans, the community, the
+    // coaching surfaces, the content library. Everything the product IS.
+    //
+    // NOT behind the gate, and why each one. This list was wrong: an evaluator
+    // run found ELEVEN more paths an unverified account could reach than the
+    // list named. Each has since been decided one way or the other, and the
+    // decision is recorded here rather than left to be rediscovered.
+    //
+    //   * `users/{uid}` itself — the deadlock path above. Written by the
+    //     sign-up screen before verification and read by the verification flow.
+    //     It is already locked down field by field: `verificationUntouched()`
+    //     means she can never write her own verification result, which is the
+    //     property that actually matters here.
+    //   * `consents` — she consents BEFORE the camera opens (spec §2 step 1),
+    //     so a gate here would make consent impossible to give, and PDPL gives
+    //     her a right of access to her own consent records regardless.
+    //   * `deletionRequests` — a woman who was never verified must still be
+    //     able to leave, and to watch her erasure run. A right to erasure that
+    //     depends on passing a face match is not a right.
+    //   * `blocks`, `blockedBy`, `myReports`, and `reports` creation — safety
+    //     must never depend on a verification state. A woman being harassed
+    //     during sign-up needs to block and report him before anyone checks
+    //     her ID.
+    //   * `devices` — the push token is registered at launch, before the
+    //     camera opens, and the verification RESULT is delivered to it. A gate
+    //     here means the one notification she is waiting for has nowhere to
+    //     land. It now carries a key whitelist and the global invariants, so
+    //     the exception is a named door rather than an open collection.
+    //   * `notifications` read and update — the same reason, from the other
+    //     end: this inbox is where "your verification was approved" arrives.
+    //     `create` and `delete` are `false`, so the only client powers here are
+    //     reading her own and marking one read.
+    //   * `followGraph` DELETE — unfollowing must never be gated, for the same
+    //     reason it is exempt from `notBlockedBy()`: a lapsed claim must not
+    //     trap a follow edge forever. `create` and `update` ARE gated.
+    //   * `posts` and `comments` delete, own only — taking her own words or her
+    //     own photograph down is an act of the same family as blocking and
+    //     reporting. It must not depend on a claim she might lose.
+    //
+    // MOVED BEHIND THE GATE after the same run, because none of them had a
+    // reason to be outside it:
+    //
+    //   * `relationships` create — this was the escalation vector. See the
+    //     block itself.
+    //   * `notices` — `quietWeek` and `tierSlip` are both post-verification
+    //     surfaces, so an unverified account had nothing to acknowledge.
+    //   * `groups/{g}/members` write — joining a group is using the community.
+    //   * `followGraph` create and update — so is following someone.
+    //
+    // The ephemeral liveness session state needs no exception: it is
+    // server-only already (`verificationSessions`, below).
+    //
+    // RELEASE ORDERING: the client-side `accountRequired` flag that makes this
+    // gate user-visible is the LAST change in this programme, not an early one.
+    // Until the backend can actually approve a woman, turning it on locks out
+    // every existing user including the owner.
+    function isSelfVerified(uid) {
+      return isSelf(uid) && isVerified();
+    }
+
     // DECISIONS.md D12. Staff, for the content console — a server-minted claim
     // exactly like `verified` and `coachV`, so a client cannot grant itself
     // admin any more than it can grant itself a verified badge. This gates
@@ -107,13 +183,49 @@ service cloud.firestore {
       return request.resource.data.updatedAt == request.time;
     }
 
-    // G8 §6's contract, stated in prose by G6 §1.2: every client write carries a
-    // schema version and a server-stamped `updatedAt`, so a document's shape is
-    // always readable and its clock is never the client's.
+    // freshStamp() only where `updatedAt` is actually written.
     //
-    // G6 records that its own first draft left these out of a key whitelist,
-    // which would have made its rule reject every conformant write. Keeping the
-    // definition here, once, is what stops that being rediscovered per group.
+    // freshStamp() itself cannot be AND-ed onto a collection whose client
+    // writes are partial. On an UPDATE, `request.resource.data` is the whole
+    // post-write document, so a write that never mentions `updatedAt` still
+    // carries the stored value — and a bare freshStamp() would reject it for
+    // not being `request.time`. On a CREATE, several collections legitimately
+    // carry no clock at all (`checkins`, `firstWeek`, `splits`).
+    //
+    // So the rule is conditional on the key being TOUCHED, which is the honest
+    // statement of the property anyway: this collection has no opinion on
+    // whether you stamp, but if you do, the stamp is the server's.
+    //
+    // This closes the hazard freshStamp()'s own comment describes. Six write
+    // paths — users/{uid}, sessions, meals, eatPrefs, mealPlans and splits —
+    // accepted an `updatedAt` postdated to 2099, which pins a document at the
+    // top of a range query forever. Measured, and now refused.
+    function stampedIfTouched() {
+      return !touches(['updatedAt']) || freshStamp();
+    }
+
+    // G8 §6's K3 contract: where a document carries `schemaV`, it is an int,
+    // and where it carries `updatedAt`, the value is the server's own clock.
+    //
+    // THE PROSE HERE USED TO OVERSTATE THIS. It said "every client write
+    // carries a schema version and a server-stamped `updatedAt`". Run against
+    // an evaluator, that is false, and not narrowly: this function is reachable
+    // from `measurements` and from nowhere else. The measured matrix is
+    //
+    //   REQUIRES schemaV          measurements
+    //   REJECTS  schemaV          checkins, meals, eatPrefs, mealPlans,
+    //                             firstWeek, users/{uid}
+    //   REQUIRES a server stamp   cycle, periods
+    //   STAMP IS OPTIONAL, and
+    //   server-clocked if given   users/{uid}, sessions, meals, eatPrefs,
+    //                             mealPlans, splits, measurements
+    //
+    // Those whitelists are deliberate and the client agrees with them —
+    // `cloud_documents.dart` sends no `schemaV` for a check-in and no clock for
+    // the first-week arc. Ten collections were NOT changed to match a sentence;
+    // the sentence was corrected to match the ten collections. What every
+    // client write does now carry is the second half, through
+    // stampedIfTouched() above, and that is the half a forged clock attacks.
     function requiredMeta() {
       return request.resource.data.schemaV is int && freshStamp();
     }
@@ -129,10 +241,72 @@ service cloud.firestore {
     // Costs one billed document read every time it is evaluated, so it guards
     // individual documents and must never be put on a list query — a feed of
     // 30 posts would bill 30 extra reads per page. G7 §6 is explicit about it.
+    //
+    // WHERE THIS IS CALLED, and why only there.
+    //
+    // The rules compiler reported this as defined but never called, which meant
+    // blocking was enforced in the app and nowhere else — a client that skips
+    // the app's own check could comment on, follow, or message someone who had
+    // blocked them. It is now attached to four places, and every one of them is
+    // a single-document WRITE:
+    //
+    //   1. posts/{postId}/comments — create
+    //   2. followGraph/{owner}/{edge}/{other} — create and update
+    //   3. relationships/{relId}/messages — create
+    //   4. relationships/{relId} — create
+    //
+    // Writes, not reads, because the cost note above rules out attaching it to
+    // anything a feed touches, and because a write is the thing that actually
+    // reaches the person who blocked you. Comment creation pays two extra reads
+    // (the parent post, then the block check); the others pay one. All four are
+    // rare compared with the reads they sit beside.
+    //
+    // DELIBERATELY NOT ATTACHED TO:
+    //
+    //   * `posts/{postId}` read — that is the feed, and the feed is a list
+    //     query. One block check per post per page is exactly the bill G7 §6
+    //     forbids.
+    //   * `publicProfiles/{uid}` read — two reasons. It is also a list query
+    //     (profile search), and more importantly a rules denial returns
+    //     PERMISSION_DENIED, which a client can tell apart from an empty
+    //     result. The blockedBy mirror below is closed to everyone precisely so
+    //     that "a blocked read returns the ordinary not-available state, never
+    //     you-are-blocked". Putting this on a profile read would leak the very
+    //     fact that comment is written to protect.
+    //   * `reports/{reportId}` create — you must ALWAYS be able to report
+    //     someone who has blocked you. A harasser who blocks his victim must
+    //     not thereby silence her report.
+    //   * `followGraph` delete — unfollowing someone who blocked you has to
+    //     keep working, or a block traps a stale follow edge forever.
     function notBlockedBy(other) {
       return !exists(
         /databases/$(database)/documents/users/$(other)/blocks/$(request.auth.uid)
       );
+    }
+
+    // The author of a post, for the comment guard below. A separate function so
+    // the extra get() is visible at the call site rather than buried in a
+    // condition.
+    function postAuthor(postId) {
+      return get(/databases/$(database)/documents/posts/$(postId)).data.authorUid;
+    }
+
+    // Is this uid a coach at all?
+    //
+    // `isCoach()` answers that for the CALLER, from a claim, for free. There is
+    // no equivalent for a third party: rules cannot read another account's
+    // custom claims, so the only server-authored evidence available is the
+    // existence of her coach page — which `coaches/{coachUid}` create gates on
+    // `isCoach()`, i.e. on the server-minted claim. So the page is a durable
+    // record that the claim was held.
+    //
+    // Costs one billed read, on relationship creation only. Before this
+    // existed, `coachUid` on a new relationship was an arbitrary string the
+    // caller chose, and choosing his own uid made `notBlockedBy(coachUid)`
+    // trivially true — half of the escalation documented on the relationships
+    // block below.
+    function isRealCoach(someUid) {
+      return exists(/databases/$(database)/documents/coaches/$(someUid));
     }
 
     // ------------------------------------------------ G7's two maps, by key
@@ -162,6 +336,30 @@ service cloud.firestore {
         && request.resource.data.privacy.showBests          is bool
         && request.resource.data.privacy.blurFacesDefault   is bool
         && request.resource.data.privacy.shareLogsWithCoach is bool
+      );
+    }
+
+    // G2's map, by key.
+    //
+    // `profile` was the one map with no shape at all. `cloud_documents.dart`
+    // says so in a comment beside the write — "nothing inside `profile` is
+    // validated by the rules, which is why the three things with no collection
+    // of their own live here" — and an evaluator run turned that into a
+    // finding: `profile.idHmac` and `profile.verified` were both accepted.
+    //
+    // A claim-like or hash-like field is exactly as dangerous one level down as
+    // it is at the top level, and spec §9.3 requirement 1 draws no such
+    // distinction. The ten keys below are the ten `_userDoc()` writes, so this
+    // is the client's own shape made enforceable rather than a new one.
+    //
+    // A partial write is normal here (the settings screen sends `goal` alone),
+    // so this is `hasOnly` with no `hasAll`: absent is fine, foreign is not.
+    function validProfile() {
+      return !touches(['profile']) || (
+        request.resource.data.profile.keys().hasOnly([
+          'goal', 'place', 'equipment', 'days', 'minutes', 'lifeStage',
+          'setupDone', 'allergies', 'dietary', 'language'
+        ])
       );
     }
 
@@ -231,20 +429,49 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if isSelf(uid);
 
+      // CREATE AND UPDATE CARRY THE SAME WHITELIST. They did not, and the gap
+      // was the widest hole in this file after the relationships one.
+      //
+      // `allow update` has named four writable maps since it was written.
+      // `allow create` named none, so the document could simply be BORN holding
+      // what it may never be changed to. Measured against an evaluator, ELEVEN
+      // of eleven claim-like and hash-like payloads were accepted at create
+      // time — `verified: true`, `admin: true`, `coachV: 'active'`, `idHmac`,
+      // and a `nationalId` carrying a fourteen-digit Egyptian ID number.
+      //
+      // That last one is spec §9.3 requirement 1 violated literally, and it is
+      // the exact shape §9.5's privacy scan exists to fail the build on: a
+      // plaintext national ID at rest, written by the client, on the first
+      // screen after sign-up.
+      //
+      // None of it bought a privilege — every gate in this file reads
+      // `request.auth.token`, never a document field, and §04 proves a forged
+      // `admin: true` opens nothing. The damage was the data itself.
+      //
+      // A create is a write of every key at once, and `changed()` returns every
+      // key on a create, so the SAME four-map whitelist and the SAME three map
+      // validators apply to both verbs from one place.
       allow create: if isSelf(uid)
                     && clientInvariants()
-                    && !request.resource.data.keys().hasAny(['rewards', 'verification']);
+                    && onlyTouches(['profile', 'privacy', 'notify', 'updatedAt'])
+                    && validProfile()
+                    && validPrivacy()
+                    && validNotify()
+                    && stampedIfTouched();
 
       // G2 owns profile; G7 owns privacy and notify. Neither may reach the other
       // groups' maps, and neither may escape the invariants.
-      // `onlyTouches` says which maps may be written; `validPrivacy`/`validNotify`
-      // say what may go inside them. Without the second half, A03's switches were
-      // shape-checked by the app and by nothing else.
+      // `onlyTouches` says which maps may be written; `validProfile`,
+      // `validPrivacy` and `validNotify` say what may go inside them. Without
+      // the second half, A03's switches were shape-checked by the app and by
+      // nothing else.
       allow update: if isSelf(uid)
                     && clientInvariants()
                     && onlyTouches(['profile', 'privacy', 'notify', 'updatedAt'])
+                    && validProfile()
                     && validPrivacy()
-                    && validNotify();
+                    && validNotify()
+                    && stampedIfTouched();
 
       // Deletion is a Cloud Function that purges by manifest; Firestore does not
       // cascade, so a client delete here would orphan every subcollection.
@@ -260,8 +487,8 @@ service cloud.firestore {
       // never suppress, and she would be offered a workout on a day the
       // product promised not to.
       match /checkins/{day} {
-        allow read: if isSelf(uid);
-        allow create, update: if isSelf(uid)
+        allow read: if isSelfVerified(uid);
+        allow create, update: if isSelfVerified(uid)
                               && isDay(day)
                               && noRunCounter()
                               && request.resource.data.keys().hasOnly([
@@ -288,22 +515,42 @@ service cloud.firestore {
                                        in ['none', 'spotting', 'light',
                                            'medium', 'heavy']);
         // The five-second undo (rule 9) deletes rather than confirms.
-        allow delete: if isSelf(uid);
+        allow delete: if isSelfVerified(uid);
       }
 
       // -- G4: sessions, with sets embedded (spine C2).
       match /sessions/{sessionId} {
-        allow read: if isSelf(uid);
+        allow read: if isSelfVerified(uid);
         // Spine C8: a live session must be born with nothing logged. A recalled
         // or unplanned session is logged after the fact and is exempt.
-        allow create: if isSelf(uid)
+        allow create: if isSelfVerified(uid)
                       && noRunCounter()
+                      && stampedIfTouched()
                       && (request.resource.data.source != 'live'
                           || request.resource.data.loggedSetCount == 0);
-        allow update: if isSelf(uid)
+        allow update: if isSelfVerified(uid)
                       && noRunCounter()
+                      && stampedIfTouched()
                       && request.resource.data.source == resource.data.source;
-        allow delete: if false;
+        // A session is a record of something that happened, so it is not hers
+        // to delete — with one exception, which the two-phase live write
+        // creates and which `allow delete: if false` stranded.
+        //
+        // Spine C8 forces a live session to be BORN empty and filled
+        // afterwards. If the app is killed between the two phases, a `live`
+        // session with zero logged sets is left on the server: a record of
+        // nothing, that she can see, that no client can remove, and that the
+        // rule above will not let her re-create correctly either.
+        //
+        // So delete is open for exactly that document and no other. A session
+        // with a set in it is still permanent, and `recalled` and `unplanned`
+        // never take this path because they are created finished. `.get()`
+        // rather than a bare field read: a birth document written by an older
+        // build may carry neither key, and reading an absent field would error
+        // and deny.
+        allow delete: if isSelfVerified(uid)
+                      && resource.data.get('source', '') == 'live'
+                      && resource.data.get('loggedSetCount', -1) == 0;
       }
 
       // -- G5: one meal document per day (spine C3).
@@ -318,9 +565,10 @@ service cloud.firestore {
       // with no dinner logged yet has no `dinner` key, and indexing it directly
       // would fail the whole write.
       match /meals/{day} {
-        allow read: if isSelf(uid);
-        allow write: if isSelf(uid)
+        allow read: if isSelfVerified(uid);
+        allow write: if isSelfVerified(uid)
                      && noRunCounter()
+                     && stampedIfTouched()
                      && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
                      && request.resource.data.keys().hasOnly([
                           'slots', 'totals', 'firstLogAt', 'tz',
@@ -352,9 +600,10 @@ service cloud.firestore {
 
       // -- G5: her usual plates and Eat preferences. Exactly one document.
       match /eatPrefs/{docId} {
-        allow read: if isSelf(uid);
-        allow write: if isSelf(uid)
+        allow read: if isSelfVerified(uid);
+        allow write: if isSelfVerified(uid)
                      && noRunCounter()
+                     && stampedIfTouched()
                      && docId == 'current'
                      && request.resource.data.keys().hasOnly([
                           'plates', 'ramadanMode', 'proteinTargetGOverride',
@@ -368,9 +617,10 @@ service cloud.firestore {
 
       // -- G5: the week's dinner plan and its grocery list.
       match /mealPlans/{weekId} {
-        allow read: if isSelf(uid);
-        allow write: if isSelf(uid)
+        allow read: if isSelfVerified(uid);
+        allow write: if isSelfVerified(uid)
                      && noRunCounter()
+                     && stampedIfTouched()
                      && weekId.matches('^[0-9]{4}-W[0-9]{2}$')
                      && request.resource.data.keys().hasOnly([
                           'dinners', 'groceries', 'recipeVersion', 'updatedAt'
@@ -381,13 +631,13 @@ service cloud.firestore {
                      && request.resource.data.get('groceries', []).size() <= 120;
         // Hers to clear. A week plan is a convenience, not a record of what
         // happened — unlike a meal day, nothing is lost by removing it.
-        allow delete: if isSelf(uid);
+        allow delete: if isSelfVerified(uid);
       }
 
       // -- G6: server-written. A client may read its own progress, never write it.
-      match /weeks/{weekId}      { allow read: if isSelf(uid); allow write: if false; }
-      match /bests/{exerciseId}  { allow read: if isSelf(uid); allow write: if false; }
-      match /awards/{awardId}    { allow read: if isSelf(uid); allow write: if false; }
+      match /weeks/{weekId}      { allow read: if isSelfVerified(uid); allow write: if false; }
+      match /bests/{exerciseId}  { allow read: if isSelfVerified(uid); allow write: if false; }
+      match /awards/{awardId}    { allow read: if isSelfVerified(uid); allow write: if false; }
 
       // -- G6: measurements are hers alone. Never queried across users, and the
       //    index exemptions make that unexecutable rather than merely denied.
@@ -401,8 +651,8 @@ service cloud.firestore {
       // records that omitting them would have made its own rule reject every
       // conformant write.
       match /measurements/{day} {
-        allow read: if isSelf(uid);
-        allow create, update: if isSelf(uid)
+        allow read: if isSelfVerified(uid);
+        allow create, update: if isSelfVerified(uid)
                               && isDay(day)
                               && noRunCounter()
                               && requiredMeta()
@@ -412,7 +662,7 @@ service cloud.firestore {
                                    'schemaV', 'updatedAt', 'clientWrittenAt',
                                    'opId'
                                  ]);
-        allow delete: if isSelf(uid);
+        allow delete: if isSelfVerified(uid);
       }
 
       // -- G9: cycle. The most sensitive data in the product. A coach NEVER reads
@@ -461,14 +711,14 @@ service cloud.firestore {
                ]);
         }
 
-        allow get:  if isSelf(uid);
+        allow get:  if isSelfVerified(uid);
         allow list: if false;
-        allow create, update: if isSelf(uid)
+        allow create, update: if isSelfVerified(uid)
                               && docId == 'current'
                               && noRunCounter()
                               && freshStamp()
                               && cycleOk(request.resource.data);
-        allow delete: if isSelf(uid);          // Y12 "Delete cycle data"
+        allow delete: if isSelfVerified(uid);          // Y12 "Delete cycle data"
       }
 
       // The document id IS the start date (C1), so a replayed log collides with
@@ -498,24 +748,54 @@ service cloud.firestore {
                 || asDate(d.end) <= request.time + duration.value(1, 'd'));
         }
 
-        allow get:  if isSelf(uid);
-        allow list: if isSelf(uid);            // Y08's bounded range, owner only
-        allow create, update: if isSelf(uid)
+        allow get:  if isSelfVerified(uid);
+        allow list: if isSelfVerified(uid);            // Y08's bounded range, owner only
+        allow create, update: if isSelfVerified(uid)
                               && noRunCounter()
                               && freshStamp()
                               && periodOk(request.resource.data);
-        allow delete: if isSelf(uid);          // Y09 delete
+        allow delete: if isSelfVerified(uid);          // Y09 delete
       }
 
       // -- G4/G14: a split she authored herself (DECISIONS D7).
+      //
+      // `allow write` silently covers DELETE, and `request.resource` is null on
+      // a delete — so `request.resource.data.ownerKind` was a read of a field
+      // on nothing. That errors, and an error denies. D7 says the split is
+      // hers; measured, she could create one and never remove it.
+      //
+      // Stating the three verbs separately is the fix and also the lesson: a
+      // guard written in terms of `request.resource` belongs on `create` and
+      // `update`, never on `write`.
       match /splits/{splitId} {
-        allow read: if isSelf(uid);
-        allow write: if isSelf(uid)
-                     && request.resource.data.ownerKind == 'self';
+        allow read: if isSelfVerified(uid);
+        allow create, update: if isSelfVerified(uid)
+                              && noRunCounter()
+                              && stampedIfTouched()
+                              && request.resource.data.ownerKind == 'self';
+        allow delete: if isSelfVerified(uid);
       }
 
-      // -- G8: her devices.
-      match /devices/{deviceId} { allow read, write: if isSelf(uid); }
+      // -- G8: her devices. One of the gate exceptions named in the header:
+      // the push token is registered before the camera opens, and the
+      // verification result is delivered to it.
+      //
+      // It was `allow read, write: if isSelf(uid)` with no whitelist and no
+      // invariants — the only collection in this file that accepted any shape
+      // at all. Measured, it took `streak: 40` and `idHmac` from an unverified
+      // account. A token registration is four fields; nothing else belongs in a
+      // collection that sits outside the whole-app gate.
+      match /devices/{deviceId} {
+        allow read: if isSelf(uid);
+        allow create, update: if isSelf(uid)
+                              && noRunCounter()
+                              && stampedIfTouched()
+                              && request.resource.data.keys().hasOnly([
+                                   'token', 'platform', 'appVersion',
+                                   'locale', 'updatedAt'
+                                 ]);
+        allow delete: if isSelf(uid);      // sign-out retires the token
+      }
 
       // -- G7: the notification inbox (A01).
       //
@@ -590,9 +870,15 @@ service cloud.firestore {
       // week" (P0-WEEK-03) is structural rather than a flag someone has to
       // check. A replayed offline write collides with itself and cannot
       // re-show the notice.
+      //
+      // `isSelf` raised to `isSelfVerified`: both kinds, `quietWeek` and
+      // `tierSlip`, describe a training week she cannot have had yet, so an
+      // unverified account had nothing here to acknowledge. It was reachable
+      // outside the gate and undocumented, which is the pair of facts that
+      // makes a gate exception a hole rather than a decision.
       match /notices/{noticeId} {
-        allow read: if isSelf(uid);
-        allow create, update: if isSelf(uid)
+        allow read: if isSelfVerified(uid);
+        allow create, update: if isSelfVerified(uid)
                               && noRunCounter()
                               && request.resource.data.keys().hasOnly([
                                    'kind', 'forWeek', 'seenAt'
@@ -615,8 +901,8 @@ service cloud.firestore {
       // `expiresAt`, `deadline` or `failedAt` storable, the first week has no
       // deadline and no failure state, so it cannot be something she loses.
       match /firstWeek/{docId} {
-        allow read: if isSelf(uid);
-        allow create, update: if isSelf(uid)
+        allow read: if isSelfVerified(uid);
+        allow create, update: if isSelfVerified(uid)
                               && docId == 'arc'
                               && noRunCounter()
                               && request.resource.data.keys().hasOnly([
@@ -639,9 +925,36 @@ service cloud.firestore {
     // results, ads) and G14 (splits) are OR-ed slices inside it.
 
     match /coaches/{coachUid} {
-      // A coach's public face is world-readable; everything beneath is hers.
-      allow read: if signedIn();
-      allow create: if isSelf(coachUid) && isCoach();
+      // A coach's public face is readable by any VERIFIED woman. It was
+      // `signedIn()`; under the whole-app gate, browsing coaches is using the
+      // product. A coach reading her own page is exempt so she is not locked
+      // out of her own profile while her own verification is pending.
+      allow read: if isVerified() || isSelf(coachUid);
+
+      // THE THREE TRUST SIGNALS, AT BIRTH AS WELL AS AFTER IT.
+      //
+      // `allow update` has refused `verifiedCerts`, `coachV` and `rating` since
+      // it was written. `allow create` refused nothing, so a coach page could
+      // be BORN with `rating: 5.0` and
+      // `verifiedCerts: ['NASM', 'ACE', 'anything at all']` — measured, and
+      // read back by a verified woman browsing coaches.
+      //
+      // These three are not cosmetic. They are the entire basis on which a
+      // woman decides who she lets design her training and, for in-person
+      // coaching, who she stands in a room with. `rating` is aggregated by a
+      // Function from real reviews; `verifiedCerts` is written after a
+      // credential check; `coachV` mirrors the server-minted claim that gated
+      // this create in the first place, so a client copy of it adds nothing but
+      // a second version of the truth.
+      //
+      // `hasAny` on the new document's own keys rather than `touches()`,
+      // because on a create the two are the same thing and this spelling says
+      // plainly that the field may not exist, not merely that it may not change.
+      allow create: if isSelf(coachUid)
+                    && isCoach()
+                    && !request.resource.data.keys().hasAny([
+                         'verifiedCerts', 'coachV', 'rating'
+                       ]);
       allow update: if isSelf(coachUid)
                     && isCoach()
                     && !touches(['verifiedCerts', 'coachV', 'rating']);
@@ -678,15 +991,104 @@ service cloud.firestore {
     // the spelling is load-bearing.
 
     match /relationships/{relId} {
+      // WHICH DOCUMENT IS `resource`?
+      //
+      // Inside THIS match, `resource` is the relationship. Inside the nested
+      // `messages` and `reviews` matches it is the message or the review, and
+      // a helper declared up here does not change that — a function in rules is
+      // inlined at its call site, so it reads whatever `resource` means THERE.
+      //
+      // The old comment beside `messages` asserted the opposite ("`resource` is
+      // the parent relationship document, which is already loaded for
+      // isParty()"). It was simply wrong, and the consequences were not subtle:
+      //
+      //   * message create was DENIED for the coach, DENIED for the client, and
+      //     DENIED on the happy path for both, because a message document has
+      //     no `coachUid` — reading an absent field errors, and an error denies.
+      //     Coach messaging was entirely unusable.
+      //   * message read was granted to any verified stranger whose uid happened
+      //     to appear in a `coachUid` or `clientUid` field ON THE MESSAGE. Access
+      //     was decided by the document being read rather than by the
+      //     relationship it lives in.
+      //   * `notBlockedBy` on message create had therefore never once been
+      //     reached, so the blocking test passed for the wrong reason: nobody
+      //     could message at all.
+      //
+      // So the party check now comes in two spellings, and the name says which
+      // document each one reads. Sibling matches must use `isPartyOfParent()`.
+      function isPartyOf(rel) {
+        return isVerified()
+               && (request.auth.uid == rel.coachUid
+                   || request.auth.uid == rel.clientUid);
+      }
+
+      // Valid ONLY in this match, where `resource` is the relationship itself.
       function isParty() {
-        return signedIn()
-               && (request.auth.uid == resource.data.coachUid
-                   || request.auth.uid == resource.data.clientUid);
+        return isPartyOf(resource.data);
+      }
+
+      // Valid anywhere under this match. Costs one billed read of the parent.
+      // Rules cache repeated access to the same document within one request, so
+      // listing a thread of 200 messages pays for the parent once, not 200
+      // times — but a point-read of a single message does now cost one extra
+      // read, which the previous (broken) rule did not. That is the price of
+      // deciding access from the relationship instead of from the message, and
+      // it also means a message under a relationship that does not exist is
+      // denied rather than judged on its own contents.
+      function parent() {
+        return get(/databases/$(database)/documents/relationships/$(relId)).data;
+      }
+
+      function isPartyOfParent() {
+        return isPartyOf(parent());
       }
 
       allow read: if isParty();
-      allow create: if signedIn()
-                    && request.resource.data.clientUid == request.auth.uid;
+
+      // HORIZONTAL PRIVILEGE ESCALATION — the hole this shape used to leave.
+      //
+      // The rule was `signedIn() && clientUid == request.auth.uid &&
+      // notBlockedBy(coachUid)`. Three things it never checked, and what each
+      // one cost:
+      //
+      //   1. `relId` was never compared with the document's own fields. The
+      //      caller chose the id. `plans/{uid}` below granted read to anyone for
+      //      whom `relationships/{callerUid}__{uid}` merely EXISTED, so writing
+      //      a document at that id was a read grant over another woman's entire
+      //      plan tree. Measured: 4 of 4 plan reads leaked, with real content.
+      //   2. `coachUid` was never required to be a coach. Setting it to his own
+      //      uid made `notBlockedBy(coachUid)` a check on whether he had blocked
+      //      himself — so BLOCKING HIM DID NOT CLOSE IT. The victim's block sits
+      //      at `users/{victim}/blocks/...` and was never consulted.
+      //   3. `signedIn()` rather than the gate. It worked WITHOUT the `verified`
+      //      claim, which put it entirely outside the women-only premise this
+      //      product is built on.
+      //
+      // The victim could not see the forged edge, could not list relationships,
+      // and could not delete it.
+      //
+      // All three are closed here, and the plans rule below stops trusting a
+      // bare `exists()` as well. Either fix alone would have closed the measured
+      // attack; both are applied because the id constraint is what makes the
+      // relationship collection honest, and the field check is what stops the
+      // next rule that keys off a client-writable path from inheriting the bug.
+      //
+      // Two billed reads on create: the coach page, then the block check.
+      // Relationships are opened once per coaching engagement.
+      allow create: if isSelfVerified(request.resource.data.clientUid)
+                    && relId == request.resource.data.coachUid + '__'
+                                + request.resource.data.clientUid
+                    && isRealCoach(request.resource.data.coachUid)
+                    && notBlockedBy(request.resource.data.coachUid)
+                    // Money state, lifecycle state and the sharing grant are
+                    // server-written. `allow update` has always said so; a
+                    // document that could be born holding them said otherwise.
+                    // `grantedForRelId` is the cycle-sharing grant — the key
+                    // that opens the most sensitive data in the product.
+                    && !request.resource.data.keys().hasAny([
+                         'payment', 'status', 'grantedForRelId'
+                       ]);
+
       // Money state and the sharing grant are server-written.
       allow update: if isParty()
                     && !touches(['payment', 'status', 'grantedForRelId']);
@@ -696,17 +1098,25 @@ service cloud.firestore {
       // plan fields at all, so "the coach changed my plan in chat" is not a shape
       // this collection can hold.
       match /messages/{msgId} {
-        allow read: if isParty();
-        allow create: if isParty()
+        allow read: if isPartyOfParent();
+        // The counterparty is whichever of the two parties is not the sender,
+        // read from the PARENT relationship — the same cached document
+        // `isPartyOfParent()` already loaded. One further billed read for the
+        // block check itself.
+        allow create: if isPartyOfParent()
                       && request.resource.data.senderUid == request.auth.uid
+                      && notBlockedBy(
+                           request.auth.uid == parent().coachUid
+                             ? parent().clientUid
+                             : parent().coachUid)
                       && !request.resource.data.keys().hasAny(
                            ['planVersion', 'assignments', 'published']);
         allow update, delete: if false;
       }
 
       match /reviews/{reviewId} {
-        allow read: if isParty();
-        allow write: if isParty();
+        allow read: if isPartyOfParent();
+        allow write: if isPartyOfParent();
       }
     }
 
@@ -715,8 +1125,48 @@ service cloud.firestore {
     // Publishing is a Function, because publishing is what changes a plan.
 
     match /plans/{uid}/{document=**} {
-      allow read: if isSelf(uid)
-                  || exists(/databases/$(database)/documents/relationships/$(request.auth.uid + '__' + uid));
+      // NEVER TRUST A BARE exists() ON A CLIENT-WRITABLE PATH.
+      //
+      // This rule used to read, in full:
+      //
+      //   exists(/databases/$(database)/documents/relationships/
+      //          $(request.auth.uid + '__' + uid))
+      //
+      // and that is the whole vulnerability in one line. `relationships` is
+      // client-creatable and the caller chose the document id, so the condition
+      // reduced to "has this caller written a document at a path he computed
+      // himself?". Every signed-in account could answer yes about every woman
+      // in the product, and did: 4 of 4 plan reads leaked, including the
+      // published plan's text.
+      //
+      // `exists()` answers "is something there". It never answers "does what is
+      // there say what I am about to assume it says". On a path a client can
+      // write, only the second question is worth asking.
+      //
+      // So the relationship is now LOADED and its fields are checked: it must
+      // name this caller as the coach and this `uid` as the client, which is
+      // also exactly what the id spells — an edge that disagrees with its own
+      // id grants nothing. `isCoach()` first, so a woman without the
+      // server-minted coach claim is refused before any document is read, and
+      // so `request.auth.uid` is never dereferenced on an anonymous call.
+      //
+      // Cost: one billed read on the coach's path only. She is reading her
+      // client's plan, which is several reads already; the woman reading her own
+      // plan takes the left branch and pays nothing.
+      function relWith(clientUid) {
+        return /databases/$(database)/documents/relationships/$(request.auth.uid + '__' + clientUid);
+      }
+
+      function coachOnActiveRelationship(clientUid) {
+        return isCoach()
+               && isVerified()
+               && exists(relWith(clientUid))
+               && get(relWith(clientUid)).data.coachUid == request.auth.uid
+               && get(relWith(clientUid)).data.clientUid == clientUid;
+      }
+
+      allow read: if isSelfVerified(uid)
+                  || coachOnActiveRelationship(uid);
       allow write: if false;
     }
 
@@ -725,41 +1175,96 @@ service cloud.firestore {
 
     match /posts/{postId} {
       allow read: if isVerified();
+      // `clientInvariants()` is AND-ed outside every slice of `users/{uid}`,
+      // and outside nothing else — so a post could be born with `streak: 40`,
+      // which is rule 3 defeated by writing it somewhere the invariant does not
+      // reach. `counts` is the same asymmetry as everywhere else in this file:
+      // `allow update` refuses to let a client touch the server-maintained
+      // tallies, and `allow create` let a post be born with
+      // `counts.likes = 99999`. Both measured as ALLOWED.
       allow create: if isVerified()
                     && request.resource.data.authorUid == request.auth.uid
                     // Rule 6: blur defaults on, applied on-device before upload.
-                    && request.resource.data.blurred is bool;
+                    && request.resource.data.blurred is bool
+                    && noRunCounter()
+                    && !request.resource.data.keys().hasAny(['counts']);
       allow update: if isVerified()
                     && resource.data.authorUid == request.auth.uid
                     // Counts are server-maintained; a client cannot inflate them.
                     && !touches(['counts', 'authorUid', 'createdAt']);
+      // A gate exception, named in the header: taking her own photograph down
+      // must not depend on a claim she might lose.
       allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
 
       match /comments/{commentId} {
         allow read: if isVerified();
+        // Two extra billed reads on a comment CREATE only: one to learn whose
+        // post it is, one for the block check. Creates are rare beside reads,
+        // and the alternative — a blocked man able to comment under her posts
+        // because the only check lived in the app — is not a trade.
         allow create: if isVerified()
-                      && request.resource.data.authorUid == request.auth.uid;
+                      && request.resource.data.authorUid == request.auth.uid
+                      && noRunCounter()
+                      && !request.resource.data.keys().hasAny(['counts'])
+                      && notBlockedBy(postAuthor(postId));
         allow update: if false;
+        // Same exception, same reason, as `posts` delete above.
         allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
       }
     }
 
     match /publicProfiles/{uid} {
+      // notBlockedBy is deliberately NOT here. See the note at its definition:
+      // this is a list query, and a rules denial is distinguishable from an
+      // empty result, which would turn a block into a signal.
       allow read: if isVerified();
       allow write: if false; // Function-maintained projection.
     }
 
     match /followGraph/{ownerUid}/{edge}/{otherUid} {
       allow read: if isVerified();
-      allow write: if isSelf(ownerUid);
+      // One extra billed read per follow. Split from `write` on purpose:
+      // DELETE must stay open, because unfollowing someone who blocked you has
+      // to keep working or the block traps a stale edge forever.
+      //
+      // `isSelf` raised to `isSelfVerified` on the two verbs that ADD an edge:
+      // following someone is using the community, and the read side of this
+      // same collection has always been `isVerified()`. Delete deliberately
+      // stays `isSelf` — the argument that keeps it outside `notBlockedBy()`
+      // keeps it outside the gate too, and an account with no claim has no
+      // business being unable to undo an edge it can no longer create.
+      allow create, update: if isSelfVerified(ownerUid) && notBlockedBy(otherUid);
+      allow delete: if isSelf(ownerUid);
     }
 
     match /groups/{groupId} {
       allow read: if isVerified();
       allow write: if false;
+
+      // Her own membership document, and nothing else.
+      //
+      // Two findings here. `allow read` grants LIST, and the client says the
+      // opposite in three separate files — "`groups/{gid}/members` is
+      // `allow list: if false` in the rules, so a roster is not something this
+      // screen can build", "4,210 women are not a list to scrape". The rules
+      // did not say that; they do now, and `get` is left open so she can see
+      // whether she has joined.
+      //
+      // And `allow write: if isSelf(uid)` accepted any shape from an unverified
+      // account: measured, `role: 'admin'`, `moderator: true` and `streak: 99`
+      // were all written. No rule in this file reads those fields, so nothing
+      // was granted — but a `role: 'admin'` sitting on a membership document is
+      // a trap for the first feature that decides to trust one.
       match /members/{uid} {
-        allow read: if isVerified();
-        allow write: if isSelf(uid);
+        allow get:  if isVerified();
+        allow list: if false;
+        allow create, update: if isSelfVerified(uid)
+                              && noRunCounter()
+                              && stampedIfTouched()
+                              && request.resource.data.keys().hasOnly([
+                                   'at', 'joinedAt', 'mutedUntil', 'updatedAt'
+                                 ]);
+        allow delete: if isSelfVerified(uid);     // leaving a group is hers
       }
     }
 
@@ -806,13 +1311,40 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------- assessments
+    // An assessment is a coach's written record of a woman's body, her injuries
+    // and her clearance to train. `allow create` was `signedIn() && isCoach()`
+    // and nothing else — no field constraints at all. Measured, a coach could
+    // create an assessment ATTRIBUTED TO ANOTHER COACH, one about a woman who
+    // never hired her, and — because the rule never asked for the `verified`
+    // claim — one written by a coach account that had not passed the gate.
+    //
+    // Read is already correct: only the two named parties. So the fix is to
+    // make the write side name the same two people, and to require the
+    // relationship that makes the second one her client.
+    //
+    // One billed read on create. An assessment is written once per client.
     match /assessments/{assessmentId} {
-      allow read: if signedIn()
+      allow read: if isVerified()
                   && (request.auth.uid == resource.data.clientUid
                       || request.auth.uid == resource.data.coachUid);
-      allow create: if signedIn() && isCoach();
-      allow update: if signedIn() && isCoach()
-                    && request.auth.uid == resource.data.coachUid;
+      allow create: if isVerified()
+                    && isCoach()
+                    && request.resource.data.coachUid == request.auth.uid
+                    && request.resource.data.clientUid is string
+                    && exists(/databases/$(database)/documents/relationships/$(request.auth.uid + '__' + request.resource.data.clientUid));
+      // P0-ASMT-05, quoted in assessment_repository.dart: "No UI path edits a
+      // recorded assessment. A direct write is denied by rules; the only
+      // permitted update is the status flip to superseded. Deletion is denied
+      // outright. Correcting means recording a new one." The rule said only
+      // that the owning coach may change anything at all, which is not the
+      // same sentence. An answer she gave about her own body cannot be quietly
+      // rewritten afterwards.
+      allow update: if isVerified()
+                    && isCoach()
+                    && request.auth.uid == resource.data.coachUid
+                    && onlyTouches(['status', 'updatedAt'])
+                    && stampedIfTouched()
+                    && request.resource.data.status in ['recorded', 'superseded'];
       allow delete: if false;
     }
 
@@ -828,14 +1360,62 @@ service cloud.firestore {
     //
     // Read stays signedIn(): this is a women-only product and the library sits
     // behind the same gate as everything else.
-    match /exercises/{id} { allow read: if signedIn(); allow write: if isAdmin(); }
-    match /foods/{id}     { allow read: if signedIn(); allow write: if isAdmin(); }
-    match /recipes/{id}   { allow read: if signedIn(); allow write: if isAdmin(); }
-    match /programs/{id}  { allow read: if signedIn(); allow write: if isAdmin(); }
+    // Reads were `signedIn()`. Under the whole-app gate they are `isVerified()`:
+    // the library is what the product is made of, and an unverified account
+    // browsing the full exercise and recipe catalogue is using the product.
+    // `isAdmin()` still writes, and an admin is verified staff.
+    match /exercises/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /foods/{id}     { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /recipes/{id}   { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /programs/{id}  { allow read: if isVerified(); allow write: if isAdmin(); }
 
     // --------------------------------------------------------- server only
-    match /verificationJobs/{jobId} { allow read, write: if false; }
-    match /nidRegistry/{hash}       { allow read, write: if false; }
+    //
+    // Everything identity verification touches. Spec §5: "deny all client
+    // writes to verification, consent, hash, flag, and config data."
+    //
+    // All of these would already be denied by the catch-all at the bottom of
+    // this file. They are named anyway, for the same reason the catch-all is
+    // stated explicitly rather than implied: a reader auditing this file should
+    // be able to see the posture for a collection without having to reason
+    // about what is absent. A deny that is visible is a deny that survives the
+    // next person's edit.
+    match /verificationJobs/{jobId}    { allow read, write: if false; }
+    match /nidRegistry/{hash}          { allow read, write: if false; }
+
+    // The flag queue. NOT client-readable even by an admin: spec §5's review
+    // screen goes through `list_verification_flags`, an Admin-SDK callable, so
+    // that opening evidence writes an access-log entry. A directly readable
+    // flag collection would be a way to read the queue without leaving a trace.
+    match /verification_flags/{flagId} { allow read, write: if false; }
+
+    // Ephemeral liveness session state, spec §4 row 4: maximum one hour, no
+    // images, no raw ID. The document id IS the sessionId, and it is written
+    // and consumed only by the server — a client that could read it would learn
+    // the challenge sequence before being asked to perform it, which is the one
+    // piece of information that makes the challenge worth randomising.
+    match /verificationSessions/{sessionId} { allow read, write: if false; }
+
+    // The per-uid cost ledger (spec §6). Closed to her as well as to everyone
+    // else: a client that could write it could grant itself unlimited paid
+    // provider calls, and one that could read it learns our unit economics.
+    match /verificationLedger/{uid}    { allow read, write: if false; }
+
+    // Cross-account behaviour counters backing spec §3's last two FLAG signals.
+    // Keyed by hash, never by device id or ID number.
+    match /verificationBehaviour/{hash} { allow read, write: if false; }
+    match /verificationInstalls/{hash}  { allow read, write: if false; }
+
+    // The daily kill-switch counter (spec §6) and the evidence access log
+    // (spec §5). The access log in particular must never be client-writable:
+    // an audit trail an actor can edit is not an audit trail.
+    match /verificationStats/{day}     { allow read, write: if false; }
+    match /verificationEvidenceAccess/{entryId} { allow read, write: if false; }
+
+    // Thresholds live here, not in Remote Config and not in the client
+    // (spec §3). A client-readable threshold document tells an attacker exactly
+    // how close they got.
+    match /verificationConfig/{docId}  { allow read, write: if false; }
 
     // G15. The assistant's daily allowance. Function-only, deliberately.
     //

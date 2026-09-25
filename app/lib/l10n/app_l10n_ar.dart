@@ -7044,4 +7044,132 @@ class AppL10nAr extends AppL10n {
   @override
   String get aProgramSetsOutYourWeeksAnd =>
       'البرنامج يرتّب أسابيعك والأيام داخلها، ولم يُكتب لك برنامج بعد. تمرين واحد جاهز الآن، ويفتحه زر ابدئي تمرين اليوم.';
+
+  @override
+  String get holdTheCardStill => 'ثبّتي البطاقة';
+
+  @override
+  String get moveALittleCloser => 'اقتربي قليلاً';
+
+  @override
+  String get moveBackALittle => 'ابتعدي قليلاً';
+
+  @override
+  String get thereIsNotEnoughLight => 'الإضاءة غير كافية';
+
+  @override
+  String get bringYourFaceIntoTheCircle => 'ضعي وجهك داخل الدائرة';
+
+  @override
+  String get lookStraightAhead => 'انظري إلى الأمام مباشرة';
+
+  @override
+  String get blinkSlowly => 'أغمضي عينيك ثم افتحيهما ببطء';
+
+  @override
+  String get turnYourHeadSlightlyToTheRight => 'أديري رأسك قليلاً إلى اليمين';
+
+  @override
+  String get turnYourHeadSlightlyToTheLeft => 'أديري رأسك قليلاً إلى اليسار';
+
+  @override
+  String get holdStill => 'اثبتي دون حركة';
+
+  @override
+  String get tiltTheCardToCutTheGlare => 'أميلي البطاقة قليلاً لتقليل الوهج';
+
+  @override
+  String get onlyOneFaceInTheFrame => 'وجه واحد فقط داخل الإطار';
+
+  @override
+  String get showTheFrontOfTheCard => 'أظهري الوجه الأمامي للبطاقة';
+
+  @override
+  String get theBackOfYourCard => 'ظهر بطاقتك';
+
+  @override
+  String get backOfTheCard => 'ظهر البطاقة';
+
+  @override
+  String get turnTheCardOver => 'اقلبي البطاقة';
+
+  @override
+  String get weReadBothSidesNothingIsUploaded =>
+      'نقرأ الوجهين معًا. لا يُرفع شيء حتى تضغطي على الإرسال.';
+
+  @override
+  String get verified => 'تم التحقق';
+
+  @override
+  String get underReview => 'قيد المراجعة';
+
+  @override
+  String get verificationUnsuccessful => 'لم يكتمل التحقق';
+
+  @override
+  String get pleaseRetakeThePhoto => 'يرجى التقاط الصورة مرة أخرى';
+
+  @override
+  String get beforeTheCameraOpens => 'قبل أن تفتح الكاميرا';
+
+  @override
+  String get youWillPhotographTheFrontAndBack =>
+      'ستصوّرين الوجه الأمامي والخلفي لبطاقتك الشخصية، ثم تلتقطين صورة ذاتية قصيرة.';
+
+  @override
+  String get thePhotographsAreProcessedByGoogleCloud =>
+      'تُعالَج الصور لدى Google Cloud وAmazon Web Services على خوادم خارج مصر.';
+
+  @override
+  String get ifYourCheckIsApprovedOrRefused =>
+      'إذا تمت الموافقة على طلبك أو رُفض، لا نحتفظ بشيء سوى بصمة مشفّرة أحادية الاتجاه لرقم بطاقتك، ولا يمكن إعادتها إلى الرقم الأصلي.';
+
+  @override
+  String get ifYourCaseNeedsAWomanTo =>
+      'إذا احتاج طلبك إلى مراجعة من إحدى النساء، تُحفظ الصور مشفّرة مدة أقصاها 72 ساعة ثم تُحذف.';
+
+  @override
+  String get theCameraIsTheOnlyWayIn =>
+      'الكاميرا هي الطريقة الوحيدة. لا يمكنك اختيار صورة محفوظة لديك.';
+
+  @override
+  String get iAgreeStartTheCamera => 'أوافق وأبدأ التصوير';
+
+  @override
+  String get iWouldRatherNot => 'أفضّل ألا أفعل';
+
+  @override
+  String get weCannotRunThisStepOnYour =>
+      'لا يمكننا تنفيذ هذه الخطوة على هاتفك الآن. يمكن لإحدى النساء مراجعة بطاقتك بدلاً من ذلك.';
+
+  @override
+  String stepStepOfTotal(String step, String total) {
+    return 'الخطوة $step من $total';
+  }
+
+  @override
+  String get aShortVideoCallWithAWoman => 'مكالمة فيديو قصيرة مع إحدى النساء';
+
+  @override
+  String get weWillTextYouATimeIt =>
+      'سنرسل إليك رسالة بالموعد. تستغرق نحو دقيقتين ولا يُسجَّل شيء.';
+
+  @override
+  String get nothingYouPhotographedIsStoredItWas =>
+      'لا يُحفظ أي مما صوّرتِه. حُذف فور انتهاء الفحص.';
+
+  @override
+  String get theAppOpensAsSoonAsYour => 'يفتح التطبيق بمجرد انتهاء التحقق.';
+
+  @override
+  String get nothingYouPhotographIsKeptBothSides =>
+      'لا نحتفظ بأي صورة تلتقطينها. يُحذف وجها البطاقة والصورة الذاتية فور انتهاء الفحص، أيًا كانت النتيجة.';
+
+  @override
+  String get ifAWomanNeedsToCheckIt =>
+      'إذا لزمت مراجعة من إحدى النساء، فتتم عبر مكالمة فيديو قصيرة معك. لا تُرسَل صورك إلى أحد أبدًا.';
+
+  @override
+  String get thePhotographsAreProcessedByGoogleCloud_tqchn =>
+      'تُعالَج الصور لدى Google Cloud على خوادم خارج مصر.';
 }

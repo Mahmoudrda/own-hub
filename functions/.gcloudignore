@@ -1,0 +1,8 @@
+# Everything not needed at runtime. The deployment bundle is uploaded on every
+# deploy, so the venv (several hundred MB) staying out of it is the difference
+# between a fast deploy and a slow one.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+tests/

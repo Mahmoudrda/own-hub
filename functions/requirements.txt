@@ -1,0 +1,22 @@
+# Cloud Functions gen2, python312, europe-west3.
+#
+# Pinned exactly. A KYC endpoint is the wrong place for a floating dependency:
+# a minor bump in an ML library can move a score distribution, and a score
+# distribution moving is a threshold silently changing meaning.
+firebase-functions==0.6.0
+firebase-admin==7.7.0
+google-cloud-firestore==2.21.0
+google-cloud-vision==3.15.0
+google-cloud-secret-manager==2.30.0
+google-cloud-storage==2.19.0
+
+# opencv-python-HEADLESS, not opencv-python. The headless build omits the GUI
+# module, which pulls in X11/GTK shared libraries that do not exist in the
+# Functions runtime. Using the non-headless build is the classic way to get an
+# ImportError that only appears after deploy.
+opencv-python-headless==4.10.0.84
+
+# numpy <2 because opencv-python-headless 4.10 was built against the numpy 1.x
+# ABI. Installing numpy 2.x alongside it produces a runtime crash inside cv2
+# rather than a resolver error, which is the worst kind.
+numpy==1.26.4

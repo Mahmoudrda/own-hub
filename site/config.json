@@ -1,0 +1,346 @@
+{
+  "_readme": [
+    "Every fact on this website that only the owner can supply lives in this file.",
+    "Fill a value in and run  python3 _build/build.py  from the site/ folder.",
+    "Anything still empty is rendered on the page as a visible rose-outlined",
+    "[to be completed: ...] marker, in both languages, so a gap is never mistaken",
+    "for a fact. Do not invent a value here. A policy carrying a wrong email address",
+    "is worse than one that admits a gap.",
+    "Values written as {\"en\": \"\", \"ar\": \"\"} are prose and need both languages.",
+    "Values written as a bare string are language-neutral (dates, emails, URLs, numbers)."
+  ],
+  "baseUrl": "https://ownhub.example",
+  "values": {
+    "effectiveDate": {
+      "value": "24 September 2026",
+      "label": {
+        "en": "effective date",
+        "ar": "تاريخ السريان"
+      },
+      "note": "The date these pages go live. It must not be earlier than the day the app is first downloadable. Used as the effective date on the policy and the terms, as the last-updated line on every page, and as the date in both changelogs. Write it the same way in both languages, in Western digits, e.g. 1 October 2026 / 1 أكتوبر 2026 — see effectiveDateAr if the Arabic month name differs."
+    },
+    "effectiveDateAr": {
+      "value": "24 سبتمبر 2026",
+      "label": {
+        "en": "effective date",
+        "ar": "تاريخ السريان"
+      },
+      "note": "Optional. The same date written in Arabic, e.g. 1 أكتوبر 2026. If left empty the Arabic pages show the value of effectiveDate."
+    },
+    "lastUpdated": {
+      "value": "",
+      "label": {
+        "en": "last updated",
+        "ar": "آخر تحديث"
+      },
+      "note": "Optional. Only set this once a page has been revised after publication. Empty means the pages show effectiveDate."
+    },
+    "lastUpdatedAr": {
+      "value": "",
+      "label": {
+        "en": "last updated",
+        "ar": "آخر تحديث"
+      },
+      "note": "Optional Arabic spelling of lastUpdated."
+    },
+    "brandFounder": {
+      "value": {
+        "en": "Rahma Mohsen",
+        "ar": "رحمة محسن"
+      },
+      "label": {
+        "en": "founder",
+        "ar": "المؤسِّسة"
+      },
+      "note": "The founder of Own Hub, and the name the product speaks in. She is named on the home page and in the policy's 'who we are'. She is not the store account holder, so she is not the legal publisher: see legalEntity."
+    },
+    "legalEntity": {
+      "value": {
+        "en": "Mahmoud Reda",
+        "ar": "محمود رضا"
+      },
+      "label": {
+        "en": "publisher",
+        "ar": "الناشر"
+      },
+      "note": "The individual who holds the two store accounts, passes their identity verification, publishes and develops the app, and is the controller for PDPL purposes. Google publicly shows the account holder's legal name, country and email, and the policy must name the same person, so this value must match the store account exactly. If a company is registered later, replace this with the name exactly as it appears on the commercial register, and replace legalAddress with its registered address in the same edit."
+    },
+    "legalAddress": {
+      "value": {
+        "en": "Egypt",
+        "ar": "مصر"
+      },
+      "label": {
+        "en": "address",
+        "ar": "العنوان"
+      },
+      "note": "Country only, and deliberately so: an individual publisher of a women's safety product should not carry a home address on a public page. A country plus a monitored email is the normal and sufficient form for a solo publisher. A registered company's address replaces this."
+    },
+    "contactPrivacy": {
+      "value": "mahmoud.reda.acc@gmail.com",
+      "label": {
+        "en": "privacy contact email",
+        "ar": "بريد التواصل بشأن الخصوصية"
+      },
+      "note": "A monitored mailbox, not a procedure. It appears on the privacy policy and on the deletion page, and the deletion page builds a pre-filled message to it."
+    },
+    "contactSupport": {
+      "value": "mahmoud.reda.acc@gmail.com",
+      "label": {
+        "en": "support contact email",
+        "ar": "بريد الدعم"
+      },
+      "note": "A monitored mailbox. It appears on the support page and in the terms. It may be the same address as contactPrivacy."
+    },
+    "commercialRegistration": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "commercial registration and tax card numbers",
+        "ar": "رقما السجل التجاري والبطاقة الضريبية"
+      },
+      "optional": true,
+      "note": "Optional: counsel decides whether these belong on the page. Empty means the row is not drawn at all, with no marker."
+    },
+    "dataProtectionOfficer": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "data protection officer",
+        "ar": "مسؤول حماية البيانات"
+      },
+      "optional": true,
+      "note": "Optional: name and contact, or leave empty if the PDPC does not require one for this entity. Empty means the row is not drawn at all, with no marker."
+    },
+    "pdpcContact": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "contact details for Egypt's Personal Data Protection Centre",
+        "ar": "بيانات التواصل مع المركز المصري لحماية البيانات الشخصية"
+      },
+      "note": "To be added once counsel confirms the current channel."
+    },
+    "courtVenue": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the governorate or court that hears disputes",
+        "ar": "المحافظة أو المحكمة المختصة بنظر النزاعات"
+      },
+      "note": "For example Cairo."
+    },
+    "liabilityCap": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the cap on liability",
+        "ar": "الحد الأقصى للمسؤولية"
+      },
+      "note": "Counsel to set. The app is free, so the usual 'the amount you paid us' cap comes to zero. Counsel should decide whether that stands under Egyptian law, or whether a nominal figure is needed."
+    },
+    "minimumAge": {
+      "value": "",
+      "label": {
+        "en": "minimum age",
+        "ar": "الحد الأدنى للسن"
+      },
+      "note": "16 or 18, set by counsel. It is not enforceable in this release, which has no account. Whatever number counsel sets must appear identically here, in the app, and in both store age ratings from the release that introduces accounts onwards."
+    },
+    "rightsResponseWindow": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the response window for a data request",
+        "ar": "المدة التي نردّ خلالها على طلبك"
+      },
+      "note": "The window the PDPL executive regulations require. The app and this page must say the same number."
+    },
+    "transferCountries": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the countries data would reach, and the transfer mechanism",
+        "ar": "الدول التي قد تصل إليها البيانات، وأساس النقل"
+      },
+      "note": "Part B only. Counsel must confirm the transfer mechanism and any permit required, and then name the countries the data reaches."
+    },
+    "providerAuth": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the authentication provider",
+        "ar": "مزوّد خدمة تسجيل الدخول"
+      },
+      "note": "Part B only. Not connected today."
+    },
+    "providerAuthRegion": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the region it processes in",
+        "ar": "المنطقة التي يعالج فيها البيانات"
+      },
+      "note": "Part B only."
+    },
+    "providerDatabase": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the database and storage provider",
+        "ar": "مزوّد قاعدة البيانات والتخزين"
+      },
+      "note": "Part B only. Not connected today."
+    },
+    "providerDatabaseRegion": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the region it stores in",
+        "ar": "المنطقة التي تُخزَّن فيها البيانات"
+      },
+      "note": "Part B only. That choice is permanent, and it decides whether data leaves Egypt."
+    },
+    "providerIdentity": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the identity verification provider",
+        "ar": "مزوّد خدمة التحقق من الهوية"
+      },
+      "note": "Part B only. Not connected today."
+    },
+    "providerIdentityRegion": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "where it processes, and whether images stay in Egypt",
+        "ar": "مكان المعالجة، وهل تبقى الصور في مصر"
+      },
+      "note": "Part B only. That is a contract term, not a setting."
+    },
+    "providerPayment": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the payment provider",
+        "ar": "مزوّد خدمة الدفع"
+      },
+      "note": "Part B only, and only if coaching ships."
+    },
+    "retentionCoachMessages": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "how long messages with a coach are kept",
+        "ar": "مدة الاحتفاظ بالرسائل مع المدرّبة"
+      },
+      "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker, because in a release with no server nothing is retained at all.",
+      "fallback": {
+        "en": "Nothing is kept, because nothing leaves your phone in this version. A period will be set with counsel before any server exists.",
+        "ar": "لا يُحتفظ بشيء، لأن لا شيء يغادر هاتفك في هذا الإصدار. وستُحدَّد المدة مع المستشار القانوني قبل وجود أي خادم."
+      }
+    },
+    "retentionSafetyReports": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "how long safety reports are kept",
+        "ar": "مدة الاحتفاظ ببلاغات السلامة"
+      },
+      "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker, because in a release with no server nothing is retained at all.",
+      "fallback": {
+        "en": "Nothing is kept, because nothing leaves your phone in this version. A period will be set with counsel before any server exists.",
+        "ar": "لا يُحتفظ بشيء، لأن لا شيء يغادر هاتفك في هذا الإصدار. وستُحدَّد المدة مع المستشار القانوني قبل وجود أي خادم."
+      }
+    },
+    "retentionPaymentRecords": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "how long payment and invoice records are kept",
+        "ar": "مدة الاحتفاظ بسجلات الدفع والفواتير"
+      },
+      "note": "Part B only. The period Egyptian tax law requires. This is an exception to deletion and the policy says so plainly. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker, because in a release with no server nothing is retained at all.",
+      "fallback": {
+        "en": "Nothing is kept, because there is nothing to buy and no payment of any kind in this version. When payments exist, Egyptian invoicing and tax rules set the period, and it is an exception to deletion.",
+        "ar": "لا يُحتفظ بشيء، إذ لا شيء يُشترى ولا توجد أي مدفوعات في هذا الإصدار. وحين توجد المدفوعات، تُحدِّد قواعد الفوترة والضرائب المصرية المدة، وهي استثناء من الحذف."
+      }
+    },
+    "storeUrlIos": {
+      "value": "",
+      "label": {
+        "en": "App Store link",
+        "ar": "رابط App Store"
+      },
+      "optional": true,
+      "note": "Optional. Empty means no download button is drawn on the home page, and no marker either. Fill it in once the listing is live."
+    },
+    "storeUrlAndroid": {
+      "value": "",
+      "label": {
+        "en": "Google Play link",
+        "ar": "رابط Google Play"
+      },
+      "optional": true,
+      "note": "Optional. Empty means no download button is drawn on the home page, and no marker either."
+    }
+  },
+  "_draftingNotesNotPublished": {
+    "_readme": [
+      "These markers in the source documents are instructions to the owner about how",
+      "to finish the drafting. They are not facts a reader needs, and several of them",
+      "would be actively harmful on a public page, so the website does not carry them.",
+      "They are recorded here so that nothing written in the source documents is lost.",
+      "Every one of them is still outstanding."
+    ],
+    "legalReviewBanner": "privacy-policy.md, terms.md and delete-account.md each open with 'Draft for legal review. This is not legal advice. It has not been read by an Egyptian lawyer, and it must be before it is published.' That banner is not published on the website, because a published policy that announces it has not been reviewed is worse than no policy. THE REVIEW MUST HAPPEN BEFORE THIS SITE GOES LIVE.",
+    "storeFormsMustAgree": "privacy-policy.md A7: the day a server is connected, both store forms, the iOS privacy manifest and Part B of this policy must go live in the same release. A store form that disagrees with this page is a rejection.",
+    "analyticsLawfulBasis": "privacy-policy.md B3: if analytics or diagnostics are ever added, counsel must decide whether the basis is consent or legitimate interest. If it is consent, the app needs an opt-in switch, and it does not have one.",
+    "erasureVsSafetyRecords": "privacy-policy.md B6: does the PDPL right to erasure permit keeping a pseudonymous safety record and a re-registration block? One question for counsel, not two. The engineering can go either way.",
+    "membershipPolicy": "terms.md section 3: the written membership policy, who qualifies as a woman for this product, how the document gate is applied, and what happens in a contested case, must be settled with counsel before accounts ship.",
+    "severeSymptomSource": "terms.md section 4: the severe-symptom screen in the app cites British NHS guidance to Egyptian women, and its 'find care near you' control is not connected. Both are in this release, because My cycle is. Replace the citation with an Egyptian clinical source, or sign it off explicitly, before release. THIS IS A RELEASE BLOCKER, NOT A WEBSITE ITEM.",
+    "allergenData": "terms.md section 5: the allergen data behind the food library is not authored, so today the allergy guard cannot clear any dish for a woman who names an allergy: her suggestions empty and her logging is refused. Either author the allergen tags before release, or take the allergy question out of the profile for this release. THIS IS A RELEASE BLOCKER, NOT A WEBSITE ITEM.",
+    "libraryAccuracy": "terms.md section 11: the exercise and food libraries must be reviewed for accuracy before release.",
+    "egyptOnlyDistribution": "terms.md section 15: confirm whether the store listings are restricted to Egypt. If the app is downloadable elsewhere, counsel should say what that means for the Terms.",
+    "appleEulaClause": "terms.md section 16: Apple's Licensed Application End User Licence Agreement requires specific wording about Apple's role, including that Apple is a third party beneficiary of the Terms. Counsel should add the clause Apple requires. THE TERMS ARE INCOMPLETE WITHOUT IT.",
+    "fontLicencesInApp": "terms.md section 16: the SIL OFL licence texts for Rubik, La Belle Aurore and Aref Ruqaa must be reachable from inside the app. Two of the three are bundled and registered today, and no screen displays them. The website carries Rubik's copy at /assets/fonts/OFL-Rubik.txt, which does not discharge the in-app requirement.",
+    "monitoredMailbox": "delete-account.md: the deletion address needs a monitored mailbox, not a procedure.",
+    "exportWhenBuilt": "delete-account.md: when an export is built, add it to this page and to the sheet in the app in the same release. A page that offers an export that does not exist is worse than a page that does not offer one.",
+    "publishingChecklist": "delete-account.md carries a publishing checklist addressed to the owner. It is not published. It is reproduced in the handover notes instead."
+  }
+}

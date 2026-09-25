@@ -447,6 +447,7 @@ if (fs.existsSync(dictPath)) {
     "{minutes} minutes, {moves} moves": {"description": "R03's summary of today's session. Counted off the day's own moves, never a fixed '5 moves'.", "placeholders": {"minutes": {"type": "String", "example": "15"}, "moves": {"type": "String", "example": "4"}}},
     "Last time: {last}. So we added {added} kg.": {"description": "R07's progression note, drawn only when she has a logged set for this move and today's prescription is heavier.", "placeholders": {"last": {"type": "String", "example": "10 kg × 10"}, "added": {"type": "String", "example": "2"}}},
     "Last time: {last}.": {"description": "R07's progression note when she has a logged set for this move and nothing was added.", "placeholders": {"last": {"type": "String", "example": "10 kg × 10"}}},
+    "Step {step} of {total}": {"description": "Progress through the server-chosen liveness challenge on C11. The number of steps is decided by the server per session, so it cannot be baked into the sentence the way the other Step strings in this dictionary are.", "placeholders": {"step": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "4"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

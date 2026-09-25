@@ -3,22 +3,38 @@
 /// Matches `6-v2/src/screens-signup.mjs` → `C14`.
 ///
 /// **This screen is not a rejection and must never read as one.** A check that
-/// needs a person — and a check that failed the automatic pass, and a provider
-/// outage, which all arrive here — means a woman reviewer is looking at it.
-/// `DECISIONS.md` D8 fixes the substance: we are reviewing your application to
-/// make sure this community stays safe and private. Nothing here accuses her and
-/// nothing dead-ends.
+/// needs a person, a check that did not pass, and a call that never completed
+/// all arrive here. `DECISIONS.md` D8 fixes the substance: we are reviewing your
+/// application to make sure this community stays safe and private. Nothing here
+/// accuses her and nothing dead-ends.
 ///
 /// The card is **amber, not error**. Amber is the product's "a caution that is
 /// not a failure"; red is reserved for genuine problems and medical guidance.
 /// Using the error variant here would turn waiting into an accusation with one
 /// word of code.
 ///
-/// What makes the promise real is the three rows underneath: workouts, recipes
-/// and coach profiles all open right now. G1's capability matrix says the only
-/// thing a pending check closes is the community — and G1's route contract
-/// requires `R01`, `E05` and `H01` to render for an unverified account, because
-/// this screen's promise depends on it.
+/// ## Two owner decisions rewrote this screen
+///
+/// **Nothing of hers is in a queue being looked at.** The photographs are
+/// deleted outright when the check finishes, whatever the outcome, so there is
+/// no encrypted bundle and no reviewer studying her ID card. Review is a short
+/// video call with a woman, the same two minutes `C15` already offers. The old
+/// headline, "A woman reviewer is looking", described a model that no longer
+/// exists and would have been a lie on the one screen where she is most
+/// reliant on being told the truth.
+///
+/// **The gate is the whole app, not only the community.** This screen used to
+/// carry three rows promising that workouts, recipes and coach profiles were
+/// open while she waited. They are not, so they are gone, and the copy says
+/// what is actually true: the app opens when the check is done.
+///
+/// The three `onOpen…` callbacks that used to open workouts, recipes and coach
+/// profiles are **gone**, in the same change that closed the rest of the app:
+/// `AppRouter.verificationGate` now refuses every product route to an account
+/// that has not passed the check, so those three rows would have been doors
+/// onto a screen that turns her straight back. A callback wired to nothing is
+/// not harmless, it is a row waiting to be drawn again by somebody who finds
+/// it, and this is the screen where a row that goes nowhere costs the most.
 library;
 
 import 'package:flutter/material.dart';
@@ -26,28 +42,16 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_card.dart';
-import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 
 class BeingCheckedView extends StatelessWidget {
-  const BeingCheckedView({
-    super.key,
-    this.onOpenWorkouts,
-    this.onOpenRecipes,
-    this.onOpenCoaches,
-    this.onSelectTab,
-  });
+  const BeingCheckedView({super.key, this.onSelectTab});
 
-  /// `R01`. Open while she waits.
-  final VoidCallback? onOpenWorkouts;
-
-  /// `E05`. Open while she waits.
-  final VoidCallback? onOpenRecipes;
-
-  /// `H01`. Browsable while she waits; messaging waits for the check.
-  final VoidCallback? onOpenCoaches;
-
+  /// The bottom bar. It is drawn because the design draws it and because a
+  /// screen with no bar reads as a modal she is trapped in, and every tab it
+  /// offers lands back here while the check is running — which is the gate
+  /// saying the same thing twice rather than a dead control.
   final ValueChanged<String>? onSelectTab;
 
   @override
@@ -81,12 +85,12 @@ class BeingCheckedView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n.aWomanReviewerIsLooking,
+                          l10n.aShortVideoCallWithAWoman,
                           style: AppText.titleM,
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          l10n.usuallyUnderTwoHoursWeWillText,
+                          l10n.weWillTextYouATimeIt,
                           style: AppText.bodyM.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
@@ -98,55 +102,17 @@ class BeingCheckedView extends StatelessWidget {
               ),
             ],
           ),
-          Text(l10n.whileYouWaitEverythingHereIsOpen, style: AppText.titleM),
-          AppListItem(
-            leading: const Icon(
-              Icons.fitness_center,
-              size: 24,
-              color: AppColors.primaryDim,
-            ),
-            title: l10n.workoutsAndVideos,
-            subtitle: l10n.all124IncludingTheQuietOnes,
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
-            ),
-            onTap: onOpenWorkouts,
-          ),
-          AppListItem(
-            leading: const Icon(
-              Icons.restaurant,
-              size: 24,
-              color: AppColors.primaryDim,
-            ),
-            title: l10n.recipes,
-            subtitle: l10n.withPortionsAndCostPerServing,
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
-            ),
-            onTap: onOpenRecipes,
-          ),
-          AppListItem(
-            leading: const Icon(
-              Icons.sports_gymnastics,
-              size: 24,
-              color: AppColors.primaryDim,
-            ),
-            title: l10n.coachProfiles,
-            subtitle: l10n.browseMessageWhenYouAreVerified,
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
-            ),
-            onTap: onOpenCoaches,
+          // Rule 7, at the moment she is most likely to wonder where her
+          // photographs went. Nothing was filed, nothing is waiting, nobody is
+          // looking at a picture of her.
+          Text(
+            l10n.nothingYouPhotographedIsStoredItWas,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
           // The closed door, named as the point rather than as a punishment.
+          // It is the whole app now, not only the community.
           Text(
-            l10n.theCommunityStaysClosedUntilTheCheck,
+            l10n.theAppOpensAsSoonAsYour,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
         ],

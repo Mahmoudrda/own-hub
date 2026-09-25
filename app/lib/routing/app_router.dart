@@ -1,5 +1,10 @@
 import 'dart:async';
 
+// The ID token, and nothing else from this package. `verified` is a custom
+// claim the Cloud Function mints and the security rules read, so it is the one
+// answer to "has she passed the check" that the client cannot forge. See
+// `AppRouter.readVerificationClaim`.
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 // `kReleaseMode` — the admin console is compiled out of reach in a release
 // binary. See `AppRouter.resolvesInThisBuild`.
 import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
@@ -11,6 +16,10 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import '../app_state/account_data.dart';
 import '../app_state/app_changes.dart';
 import '../app_state/blocking.dart';
+// Read, never written: `FirebaseBoot.isReady` is what decides whether the
+// identity check can be built against real Cloud Functions or has to refuse
+// honestly. See `_newIdentityCheck`.
+import '../app_state/firebase_boot.dart';
 import '../config/legal_links.dart';
 import '../app_state/coach_portfolio_state.dart';
 import '../app_state/coach_profile_state.dart';
@@ -51,14 +60,19 @@ import '../features/onboarding/presentation/life_stage_view.dart';
 import '../features/onboarding/presentation/place_view.dart';
 import '../features/onboarding/presentation/schedule_view.dart';
 import '../features/onboarding/presentation/starting_program_view.dart';
+import '../features/signup/data/callable_capture_consent_store.dart';
+import '../features/signup/data/firebase_auth_repository.dart';
+import '../features/signup/data/identity_check.dart';
 import '../features/signup/domain/auth_repository.dart';
+import '../features/signup/domain/capture_consent.dart';
 import '../features/signup/domain/id_capture.dart';
 import '../features/signup/domain/locale_preference.dart';
 import '../features/signup/domain/verification.dart';
-import '../features/signup/domain/verification_fake.dart';
+import '../features/signup/domain/verification_provider.dart';
 import '../features/signup/presentation/being_checked_view.dart';
 import '../features/signup/presentation/checking_view.dart';
 import '../features/signup/presentation/code_view.dart';
+import '../features/signup/presentation/consent_view.dart';
 import '../features/signup/presentation/id_capture_view.dart';
 import '../features/signup/presentation/language_view.dart';
 import '../features/signup/presentation/look_around_view.dart';
@@ -339,6 +353,43 @@ class AppRouter {
       );
     }
 
+    // The whole-app gate. She cannot use the product before the check
+    // completes, and this is the only place that can actually enforce it.
+    //
+    // Enforced at the route rather than by hiding controls, because hiding a
+    // control is a rendering decision and this is a gate. The platform hands
+    // [onGenerateRoute] whatever name it is given — a deep link, a notification
+    // payload, `main.dart`'s initial route, another app on the handset — so
+    // anything that can name `/train/r01` reaches Train unless the answer is
+    // given here. It is the same argument `resolvesInThisBuild` makes about the
+    // admin console, for the same reason.
+    //
+    // Returning her route rather than null: null lands on `onUnknownRoute`,
+    // which says "no screen serves this route". That is untrue and it is a
+    // developer's sentence. [verificationGate] answers with the screen she
+    // should be on instead, in her language, and the recursion is one level
+    // deep because nothing it can name is itself behind the gate.
+    final gate = verificationGate(id);
+    if (gate != null) return onGenerateRoute(RouteSettings(name: gate));
+
+    // And nothing opens a lens before her agreement has been written down.
+    //
+    // Unconditional, unlike the gate above: a camera on a woman's face and her
+    // national ID with no record that she agreed to it is not a release
+    // decision, and it does not become acceptable because a feature flag is
+    // off. `C09b` is therefore the only door into the three capture screens,
+    // and this is what makes that true for a deep link as well as for a tap.
+    //
+    // `ConsentView` sets [consentRecorded] only after the write has returned,
+    // and `beginIdentityCheck` lifts it for a woman who agreed to this same
+    // wording on an earlier visit. A failed write leaves it false and she stays
+    // on the consent screen, which is the correct failure.
+    if (_opensALens.contains(id) && !consentRecorded) {
+      return onGenerateRoute(
+        RouteSettings(name: appDestinations['C09b']!.name),
+      );
+    }
+
     final built = _built[id];
     return MaterialPageRoute<dynamic>(
       settings: settings,
@@ -464,6 +515,167 @@ class AppRouter {
     return feature == null || featureFlags.isOn(feature);
   }
 
+  // ------------------------------------------------- The whole-app gate (G1)
+  //
+  // The owner's decision, and it replaced a narrower one: a pending check used
+  // to close only the community, and training, recipes and coach profiles were
+  // open while she waited. They are not any more. Nothing opens until the check
+  // completes, and `C14` says exactly that.
+  //
+  // **This is built and switched off.** The gate closes when
+  // `Feature.accountRequired` is on, and that flag is off in
+  // `FeatureFlags.shipped` — see the note on [testingAidsAllowed] for the
+  // release ordering, which is the whole reason it is still off.
+
+  /// Flows a woman reaches before, or instead of, being verified.
+  ///
+  /// Everything not listed here is behind the gate: Today, Train, Eat,
+  /// Progress, My cycle, the community, the marketplace, the coached life and
+  /// every coach surface. Each entry below has to carry a reason that survives
+  /// being read out to the owner, because each one is a hole in a women-only
+  /// gate.
+  ///
+  ///   * **`signup`** — it IS the check. Gating it would mean a woman who
+  ///     cannot verify because she cannot reach the screen that verifies her.
+  ///   * **`onboarding`** — the four setup questions. `main.dart` opens them on
+  ///     top of the front door on a first launch, and the same argument
+  ///     [featureForFlow] makes applies: a half-registered woman must never be
+  ///     stranded with no way forward and no way back.
+  ///   * **`account`** — her privacy centre, her export and her account
+  ///     deletion. PDPL erasure is not something to put behind a check she has
+  ///     not passed, and a woman who is refused must still be able to take her
+  ///     data and leave. Refusing her the app AND the door out is the one
+  ///     combination this product must never produce.
+  ///   * **`admin`** — staff tooling, already compiled out of a release binary
+  ///     by [resolvesInThisBuild] and gated on a server-minted `admin` claim in
+  ///     the rules. It is not the product, and asking the person who loads the
+  ///     recipe library for an Egyptian national ID card would be nonsense.
+  static const Set<String> openBeforeVerification = {
+    'signup',
+    'onboarding',
+    'account',
+    'admin',
+  };
+
+  /// Whether [screenId] is part of the product she must be verified to use.
+  static bool behindVerification(String screenId) {
+    final flow = appRoutes[screenId]?.flow;
+    // An unknown id is behind the gate. The opposite of [screenIsOn]'s answer
+    // to the same question, and deliberately: that one is a rendering decision
+    // where a typo should show a broken link, this one is a gate where a typo
+    // must not be a way in.
+    return flow == null || !openBeforeVerification.contains(flow);
+  }
+
+  /// Whether the server says this account has passed the check.
+  ///
+  /// Two sources, both of which are the server's:
+  ///
+  ///   * the `verified` custom claim, read at start-up into [_verifiedClaim].
+  ///     `firebase/firestore.rules` reads `request.auth.token.verified == true`
+  ///     in 864 lines of rules, and the function mints that exact name, so it
+  ///     is the name this reads.
+  ///   * [lastVerification], which is what `C12` received a moment ago in this
+  ///     session. It exists because the claim is only visible after a token
+  ///     refresh, and a woman told "You're in" on `C13` must not meet a locked
+  ///     app on `C16`.
+  ///
+  /// **Nothing here is the client deciding.** Both are readings of a decision
+  /// made by a Cloud Function; there is no branch that grants access on
+  /// anything the phone worked out.
+  ///
+  /// The gap worth naming: a verified woman who reopens the app while offline
+  /// has a cached ID token, so the claim is still readable, but a woman whose
+  /// token was minted before her approval and who has no network gets `false`
+  /// until a refresh succeeds. She sees `C14` rather than the app. That is the
+  /// durable-status seam — a Firestore-backed verification record — and it
+  /// belongs in `app_state/`, which another worker owns today.
+  static bool get isVerified => _verifiedClaim || lastVerification != null;
+
+  static bool _verifiedClaim = false;
+
+  /// Re-reads the `verified` custom claim from her ID token.
+  ///
+  /// Called once from `main()`, after `FirebaseBoot.start()`, so the answer is
+  /// already in hand by the time the first route is generated —
+  /// [onGenerateRoute] is synchronous and cannot wait for a token.
+  ///
+  /// Never throws and never blocks the launch: no Firebase, no user, or a
+  /// network that will not answer all leave the claim false, which costs an
+  /// unverified woman nothing and costs a verified one a screen she can get
+  /// past by finishing the check again. The alternative — assuming verified on
+  /// a failed read — would be a women-only gate that opens whenever the network
+  /// is bad.
+  static Future<void> readVerificationClaim() async {
+    if (!FirebaseBoot.isReady) return;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _verifiedClaim = false;
+        return;
+      }
+      final token = await user.getIdTokenResult();
+      _verifiedClaim = token.claims?['verified'] == true;
+    } catch (_) {
+      // Deliberately silent, and deliberately false. See above.
+      _verifiedClaim = false;
+    }
+  }
+
+  /// The route she should be on instead of [screenId], or null to let her
+  /// through.
+  ///
+  /// Null is the answer in the shipping build today, for every screen, because
+  /// `Feature.accountRequired` is off.
+  static String? verificationGate(String screenId) => gateDestination(
+    screenId,
+    gateClosed: featureFlags.isOn(Feature.accountRequired),
+    signedIn: signedInUid != null,
+    verified: isVerified,
+    waitingOnAReviewer: awaitingReviewer,
+  );
+
+  /// The gate's decision, as a function of the four facts it turns on.
+  ///
+  /// Split out from [verificationGate] so the decision can be proved for a
+  /// woman who is signed in, and for one waiting on a video call, in a test
+  /// binary where neither state can be produced: `authRepository` is a real
+  /// `FirebaseAuthRepository` and there is no Firebase behind it, so
+  /// [signedInUid] is always null there. The alternative was a settable uid on
+  /// the router, which is a way into the product that exists only for tests —
+  /// and this file is not where one of those belongs. This function reads its
+  /// inputs and holds no state, so proving it proves the gate.
+  @visibleForTesting
+  static String? gateDestination(
+    String screenId, {
+    required bool gateClosed,
+    required bool signedIn,
+    required bool verified,
+    required bool waitingOnAReviewer,
+  }) {
+    if (!gateClosed) return null;
+    if (!behindVerification(screenId)) return null;
+    if (verified) return null;
+
+    // Where she goes instead. Not a wall: every one of these is a screen she
+    // can act on.
+    //
+    //   * signed out — `C01`, the front door, because there is no account to
+    //     verify yet.
+    //   * waiting on a person — `C14`, which says a woman will call and that
+    //     the app opens when the check is done. Sending her back to "here is
+    //     why we check" would read as though the check she completed never
+    //     happened.
+    //   * otherwise — `C09`, the check itself, which is the one thing standing
+    //     between her and the app.
+    final id = switch ((signedIn, waitingOnAReviewer)) {
+      (false, _) => 'C01',
+      (_, true) => 'C14',
+      _ => 'C09',
+    };
+    return appDestinations[id]?.name;
+  }
+
   /// Flows this file has made an explicit decision about.
   static const Set<String> decidedFlows = {
     'signup',
@@ -494,6 +706,24 @@ class AppRouter {
   /// It is not any more: the first release ships without accounts, so that
   /// condition is true in the build that goes to the stores. The gate is the
   /// build mode now, which no flag and no runtime switch can turn back on.
+  ///
+  /// # Do not turn `Feature.accountRequired` on yet
+  ///
+  /// It is now the switch that closes the whole app: [verificationGate] refuses
+  /// every product route to an account that has not passed the check, which is
+  /// the gate the owner asked for. It is wired, tested and **deliberately left
+  /// off**, and the order of the two steps is the point.
+  ///
+  /// Turning it on before `functions/` is deployed locks out every user,
+  /// silently, including the owner. There would be nothing that could approve
+  /// anybody: `start_verification` and `verify_identity` would answer
+  /// `not-found`, `IdentityCheck.startLiveness` would return false, and every
+  /// woman in the product would land on `C14` waiting for a video call that
+  /// nothing books. The app would look completely normal from the outside.
+  ///
+  /// So the release order is: deploy the functions, verify one real account end
+  /// to end against them, and only then flip this one flag — here, or on `Z14`.
+  /// Nothing else has to change for the app to close.
   static bool get testingAidsAllowed =>
       kDebugMode && !featureFlags.isOn(Feature.accountRequired);
 
@@ -567,28 +797,108 @@ class AppRouter {
         // records, and picking "coach" still earns nothing until the coach
         // application and its certificate checks pass.
         RoleScope.maybeOf(context)?.value = role.toRoles();
+        // The check begins here rather than at the first camera: C09 is already
+        // part of it, and the niqab path leaves from C09 without ever opening a
+        // lens. One [IdentityCheck] now covers everything from "why we check"
+        // to the decision, whichever way she goes.
+        beginIdentityCheck();
         goTo(context, 'C09');
       },
       onBack: () => Navigator.of(context).maybePop(),
     ),
     'C09': (context) => WhyWeCheckView(
-      onScanId: () => goTo(context, 'C10'),
+      // Not straight to the camera. `C09b` is the consent step, and it is the
+      // only door into `C10`: her agreement to where her face and her national
+      // ID go is written down before a lens opens, never after.
+      onScanId: () => goTo(context, 'C09b'),
       // The niqab path. Nothing on this route may ask for a selfie.
       onNiqabPath: () => goTo(context, 'C15'),
       onBack: () => Navigator.of(context).maybePop(),
     ),
+    // The consent step, between "one check and you are in" and the first lens.
+    //
+    // The uid is hers when she is signed in, and the stand-in otherwise, which
+    // is what a walk through this flow with no account required produces. A
+    // record written against the stand-in is written into the in-memory store
+    // (see `_newIdentityCheck`), so it is a rehearsal and not a consent record
+    // claiming to be about somebody.
+    'C09b': (context) => ConsentView(
+      uid: signedInUid ?? _selfUid,
+      store: identityCheck.consent,
+      // Only ever after the write returned. `ConsentView` enforces that half;
+      // this records it for the guard in `onGenerateRoute`, so a deep link
+      // straight to `/signup/c10` cannot skip the screen she just agreed on.
+      onAgreed: () {
+        consentRecorded = true;
+        goTo(context, 'C10');
+      },
+      // "I would rather not" is a real answer, and it leads somewhere: a woman
+      // reviewer, no camera, no processor outside Egypt.
+      onDeclined: () => goTo(context, 'C15'),
+      onBack: () => Navigator.of(context).maybePop(),
+    ),
+    // Both sides of the card, in two passes of one screen.
+    //
+    // The capture service comes from [identityCheck], never from a fresh one:
+    // `C10` and `C10b` fill the same `VerificationEvidence` that `C12` submits.
+    // Two services would mean two evidence holders, and the failure would
+    // surface three files away as "the server says the card is missing".
     'C10': (context) => IdCaptureView(
-      captureService: captureService,
-      onCaptured: () => goTo(context, 'C11'),
+      captureService: identityCheck.capture,
+      onCaptured: () => goTo(context, 'C10b'),
+      onClose: () => Navigator.of(context).maybePop(),
+    ),
+    // The back. It prints her sex as a word, أنثى or ذكر, which is the
+    // independent reading the 13th digit of the number is cross-checked
+    // against — and `verify_identity` refuses a submission carrying only one
+    // side, so skipping this pass is a call that cannot be answered.
+    //
+    // The liveness session is minted HERE, on the way out, and not before
+    // `C10`. It expires on a wall clock measured in a minute or two, and
+    // starting it while she is still finding the card in her bag spends most of
+    // it on the two card steps. `startLiveness` is what hands the one
+    // server-chosen challenge to the capture service and the repository
+    // together.
+    'C10b': (context) => IdCaptureView(
+      captureService: identityCheck.capture,
+      side: CaptureTarget.idBack,
+      // Written out here rather than in a helper, because the two destinations
+      // have to be visible in this map: `nav_reachability_test` recovers the
+      // navigation graph from the literal ids each builder mentions, and an
+      // edge hidden inside a function is an edge no measurement can see. The
+      // Cycle tabs are commented at the foot of this file for the same reason.
+      onCaptured: () async {
+        final navigator = Navigator.of(context);
+        final started = await identityCheck.startLiveness();
+        // She can close the capture while the call is in flight, and pushing
+        // onto a dead navigator throws.
+        if (!navigator.mounted || !context.mounted) return;
+        if (started) {
+          goTo(context, 'C11');
+        } else {
+          // No session, so there is nothing for a selfie to answer. She goes to
+          // the woman reviewer rather than spending two minutes on frames the
+          // server has no challenge to score.
+          goTo(context, 'C15');
+        }
+      },
       onClose: () => Navigator.of(context).maybePop(),
     ),
     'C11': (context) => SelfieCaptureView(
-      captureService: captureService,
+      captureService: identityCheck.capture,
       onCaptured: () => goTo(context, 'C12'),
       onClose: () => Navigator.of(context).maybePop(),
     ),
+    // The submit for the automatic path happens as this screen opens.
+    //
+    // Nothing called it before: `C15` submitted the niqab path and the
+    // automatic path submitted nothing at all, so `C12` listened to a
+    // repository that had never been asked a question and every woman who
+    // photographed her card sat on the ring for ever. `_checkingRepository`
+    // submits once per attempt and hands back the same repository the frames
+    // were captured into.
     'C12': (context) => CheckingView(
-      repository: verificationRepository,
+      repository: _checkingRepository(),
       onVerified: (result) {
         // Kept so C13 can state a measured duration instead of inventing one.
         lastVerification = result;
@@ -596,7 +906,19 @@ class AppRouter {
       },
       // Both "waiting for a reviewer" and "needs another look" land on the
       // same screen. Neither is a rejection (DECISIONS.md D8).
-      onAwaitingReviewer: () => goTo(context, 'C14'),
+      onAwaitingReviewer: () {
+        awaitingReviewer = true;
+        goTo(context, 'C14');
+      },
+      // `RETRY_CAPTURE` and `RETRY_REQUIRED`, and an expired liveness session,
+      // all arrive here. Her move, not a reviewer's: both sides of the card
+      // again, a fresh challenge before `C11`, and a fresh submit — which is
+      // why the guard is lifted rather than left standing from the attempt
+      // that asked her to do this.
+      onRetake: () {
+        _automaticSubmitted = false;
+        goTo(context, 'C10');
+      },
       onContinue: () => goTo(context, 'C13'),
     ),
     'C13': (context) => YoureInView(
@@ -607,19 +929,24 @@ class AppRouter {
       onReadTheRules: () => goTo(context, 'C16'),
       onCoachSetup: () => goTo(context, 'K01'),
     ),
-    'C14': (context) => BeingCheckedView(
-      onOpenWorkouts: () => goTo(context, 'R01'),
-      onOpenRecipes: () => goTo(context, 'E05'),
-      onOpenCoaches: () => goTo(context, 'H01'),
-      onSelectTab: (screenId) => goTo(context, screenId),
-    ),
+    // Nothing is open to her while she waits.
+    //
+    // This used to pass three callbacks — workouts, recipes, coach profiles —
+    // from the model where a pending check closed only the community. The owner
+    // has chosen the whole-app gate, so those rows would have been three doors
+    // into screens [verificationGateCloses] now refuses. They are gone from the
+    // widget as well as from here: a callback wired to nothing is a row waiting
+    // to be drawn again by somebody who finds it.
+    'C14': (context) =>
+        BeingCheckedView(onSelectTab: (screenId) => goTo(context, screenId)),
     // Which path she chose matters operationally — a video check and a partner
     // gym cost very different things — so it is recorded rather than dropped.
     // G1 flagged that the two share one VerificationMethod today (F8).
     'C15': (context) => WomanReviewerView(
-      repository: verificationRepository,
+      repository: identityCheck.verification,
       onBooked: (path) {
         lastReviewerPath = path;
+        awaitingReviewer = true;
         goTo(context, 'C14');
       },
       onBack: () => Navigator.of(context).maybePop(),
@@ -3729,11 +4056,158 @@ class AppRouter {
   static FeatureFlags featureFlags = FeatureFlags.shipped;
 
   static final LocalePreference localePreference = InMemoryLocalePreference();
-  static final AuthRepository authRepository = FakeAuthRepository();
-  static final VerificationRepository verificationRepository =
-      FakeVerificationRepository();
-  static final CaptureService captureService =
-      const UnavailableCaptureService();
+  /// Real phone sign-in, against the `own-hub` Firebase project.
+  ///
+  /// `static final` is lazy in Dart, so `FirebaseAuth.instance` is not touched
+  /// until something first asks for the repository, which is always after
+  /// `FirebaseBoot.start()` in `main()`. That ordering is not luck and should
+  /// not be traded away for an eager field.
+  ///
+  /// It is also safe when Firebase did not come up at all: the repository
+  /// resolves through `FirebaseBoot.isReady`, starts `signedOut`, and answers
+  /// `AuthFailure.network` rather than throwing. A woman with no signal sees
+  /// the honest message, not a crash.
+  ///
+  /// [FakeAuthRepository] is untouched and is still what the tests use. The
+  /// one visible difference is that its printed test code no longer exists in
+  /// this build, because `testCodeOf` returns null for anything that is not
+  /// the fake.
+  static final AuthRepository authRepository = FirebaseAuthRepository();
+
+  /// Her uid, or null when nobody is signed in.
+  ///
+  /// Synchronous on purpose: `onGenerateRoute` cannot await, and the gate below
+  /// has to answer before a route is built rather than a frame later.
+  static String? get signedInUid => switch (authRepository.current) {
+    AuthSignedIn(:final uid) => uid,
+    _ => null,
+  };
+
+  // ------------------------------------------------- The identity check (G1)
+  //
+  // One object per sign-up, holding the capture service and the verification
+  // repository over ONE `VerificationEvidence` and ONE liveness session. The
+  // reason it is one object rather than two fields is written at the top of
+  // `features/signup/data/identity_check.dart`, and it is worth repeating here
+  // because this is the file that could get it wrong: `C10` and `C10b` fill an
+  // evidence holder and `C12` submits one, and if those are two objects the
+  // failure surfaces on a server, in another language, as "the card is
+  // missing".
+
+  static IdentityCheck? _identityCheck;
+
+  /// The check she is in the middle of, made on first use.
+  ///
+  /// Lazy rather than eager because a deep link can land on `C12` without ever
+  /// passing `C08`, and because construction reaches for Firebase — which is
+  /// not up in a widget test and may not be up on a handset either.
+  static IdentityCheck get identityCheck =>
+      _identityCheck ??= _newIdentityCheck();
+
+  /// Starts a fresh check and drops whatever the last one was holding.
+  ///
+  /// Called when she enters the flow at `C08`. A second attempt gets a second
+  /// [IdentityCheck] with empty evidence and no challenge, which is what "she
+  /// photographs the card again" has to mean: reusing the old one would submit
+  /// frames from the attempt before against a session that is already spent.
+  static void beginIdentityCheck() {
+    _identityCheck?.abandon();
+    _identityCheck = _newIdentityCheck();
+    consentRecorded = false;
+    awaitingReviewer = false;
+    _automaticSubmitted = false;
+
+    // Her stored agreement, if she already gave one to this wording. Read now,
+    // unawaited, while she is still reading `C09`: it means a woman who
+    // consented yesterday and came back today is not stopped by the deep-link
+    // guard below for a decision she has already made.
+    final uid = signedInUid;
+    if (uid != null) unawaited(_readStoredConsent(uid));
+  }
+
+  /// Lifts [consentRecorded] when she has already agreed to this wording.
+  ///
+  /// Never lowers it, and never throws. A failed read leaves the flag where it
+  /// was, which costs her one screen and a second tap — the opposite mistake,
+  /// opening a camera because a read failed, is the one this whole arrangement
+  /// exists to prevent.
+  static Future<void> _readStoredConsent(String uid) async {
+    try {
+      if (await identityCheck.mayOpenCamera(uid)) consentRecorded = true;
+    } catch (_) {
+      // Offline, or the consent document is not readable. Either way she is
+      // asked again, and re-agreeing to the same version lands on the same
+      // document rather than filling her consent history with duplicates.
+    }
+  }
+
+  /// The pieces of the check, resolved against what this build actually has.
+  ///
+  /// `FirebaseBoot` is deliberately built so a failed `initializeApp` never
+  /// stops the app opening, so this can run with no Firebase at all — in a
+  /// widget test, on a handset with broken Play Services, or in the first
+  /// release, which ships with verification switched off. Both real
+  /// implementations touch `FirebaseFunctions` in their constructors and throw
+  /// `[core/no-app]` there, so neither may be built unconditionally. The
+  /// refusing pair is honest instead: no camera lies about taking a picture, no
+  /// provider invents a decision, and a woman reaches a reviewer rather than a
+  /// crash.
+  static IdentityCheck _newIdentityCheck() => FirebaseBoot.isReady
+      ? IdentityCheck(consent: CallableCaptureConsentStore())
+      : IdentityCheck(
+          consent: InMemoryCaptureConsentStore(),
+          provider: const UnavailableVerificationProvider(),
+        );
+
+  /// The three screens that open a camera.
+  ///
+  /// `C10` and `C10b` photograph the card, `C11` runs the liveness challenge.
+  /// Nothing else in the product opens a lens, and `C15`'s reviewer path never
+  /// reaches any of them — which is what makes the niqab route camera-free
+  /// structurally rather than by promise.
+  static const Set<String> _opensALens = {'C10', 'C10b', 'C11'};
+
+  /// Whether her agreement has been written down in this sign-up.
+  ///
+  /// The screen that writes it is `C09b`, and it only reports back once the
+  /// write has returned. This exists because `onGenerateRoute` cannot await the
+  /// store: without it, `/signup/c10` typed as a deep link would open a lens on
+  /// a woman who has agreed to nothing.
+  static bool consentRecorded = false;
+
+  /// Whether a check has been handed to a person, as far as this session knows.
+  ///
+  /// Set by `C12` and `C15`, the only two screens that reach `C14`. It decides
+  /// which screen the gate sends her to — "a woman will call you" rather than
+  /// "here is why we check" — and nothing else.
+  ///
+  /// Session-scoped, like `lastSignupRole`. The durable answer is the
+  /// verification document the account worker is moving into Firestore; see the
+  /// note on [isVerified].
+  static bool awaitingReviewer = false;
+
+  /// Whether the automatic path has been submitted for this attempt.
+  static bool _automaticSubmitted = false;
+
+  /// The repository `C12` listens to, with the submit done exactly once.
+  ///
+  /// The submit cannot go in the builder body: the builder is inside a
+  /// `ListenableBuilder` and runs again on every change anywhere in the app, so
+  /// an unguarded call would start a new paid check on each rebuild. It cannot
+  /// go in `CheckingView` either without that screen deciding when a check
+  /// starts, which is the router's job — `C15` is the other caller and it
+  /// submits a different method.
+  static VerificationRepository _checkingRepository() {
+    final check = identityCheck;
+    if (!_automaticSubmitted) {
+      _automaticSubmitted = true;
+      // Not awaited: `submit` returns the state to show *while* the check runs
+      // and `C12` is already listening for the outcome.
+      unawaited(check.verification.submit(method: VerificationMethod.automatic));
+    }
+    return check.verification;
+  }
+
   static final InMemoryIntakeRepository intakeRepository =
       InMemoryIntakeRepository();
   static final InMemoryTodayRepository todayRepository =

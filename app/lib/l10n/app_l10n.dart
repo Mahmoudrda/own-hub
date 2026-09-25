@@ -12990,6 +12990,234 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'A program sets out your weeks and the days in them. Nothing is written for you yet. One session is ready now, and Start today\'s session opens it.'**
   String get aProgramSetsOutYourWeeksAnd;
+
+  /// No description provided for @holdTheCardStill.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the card still'**
+  String get holdTheCardStill;
+
+  /// No description provided for @moveALittleCloser.
+  ///
+  /// In en, this message translates to:
+  /// **'Move a little closer'**
+  String get moveALittleCloser;
+
+  /// No description provided for @moveBackALittle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move back a little'**
+  String get moveBackALittle;
+
+  /// No description provided for @thereIsNotEnoughLight.
+  ///
+  /// In en, this message translates to:
+  /// **'There is not enough light'**
+  String get thereIsNotEnoughLight;
+
+  /// No description provided for @bringYourFaceIntoTheCircle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring your face into the circle'**
+  String get bringYourFaceIntoTheCircle;
+
+  /// No description provided for @lookStraightAhead.
+  ///
+  /// In en, this message translates to:
+  /// **'Look straight ahead'**
+  String get lookStraightAhead;
+
+  /// No description provided for @blinkSlowly.
+  ///
+  /// In en, this message translates to:
+  /// **'Blink slowly'**
+  String get blinkSlowly;
+
+  /// No description provided for @turnYourHeadSlightlyToTheRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn your head slightly to the right'**
+  String get turnYourHeadSlightlyToTheRight;
+
+  /// No description provided for @turnYourHeadSlightlyToTheLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn your head slightly to the left'**
+  String get turnYourHeadSlightlyToTheLeft;
+
+  /// No description provided for @holdStill.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold still'**
+  String get holdStill;
+
+  /// No description provided for @tiltTheCardToCutTheGlare.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilt the card to cut the glare'**
+  String get tiltTheCardToCutTheGlare;
+
+  /// No description provided for @onlyOneFaceInTheFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Only one face in the frame'**
+  String get onlyOneFaceInTheFrame;
+
+  /// No description provided for @showTheFrontOfTheCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the front of the card'**
+  String get showTheFrontOfTheCard;
+
+  /// No description provided for @theBackOfYourCard.
+  ///
+  /// In en, this message translates to:
+  /// **'The back of your card'**
+  String get theBackOfYourCard;
+
+  /// No description provided for @backOfTheCard.
+  ///
+  /// In en, this message translates to:
+  /// **'back of the card'**
+  String get backOfTheCard;
+
+  /// No description provided for @turnTheCardOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the card over'**
+  String get turnTheCardOver;
+
+  /// No description provided for @weReadBothSidesNothingIsUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'We read both sides. Nothing is uploaded until you tap send.'**
+  String get weReadBothSidesNothingIsUploaded;
+
+  /// No description provided for @verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verified;
+
+  /// No description provided for @underReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Under review'**
+  String get underReview;
+
+  /// No description provided for @verificationUnsuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification unsuccessful'**
+  String get verificationUnsuccessful;
+
+  /// No description provided for @pleaseRetakeThePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Please retake the photo'**
+  String get pleaseRetakeThePhoto;
+
+  /// No description provided for @beforeTheCameraOpens.
+  ///
+  /// In en, this message translates to:
+  /// **'Before the camera opens'**
+  String get beforeTheCameraOpens;
+
+  /// No description provided for @youWillPhotographTheFrontAndBack.
+  ///
+  /// In en, this message translates to:
+  /// **'You will photograph the front and back of your national ID card, then take a short selfie.'**
+  String get youWillPhotographTheFrontAndBack;
+
+  /// No description provided for @thePhotographsAreProcessedByGoogleCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'The photographs are processed by Google Cloud and Amazon Web Services, on servers outside Egypt.'**
+  String get thePhotographsAreProcessedByGoogleCloud;
+
+  /// No description provided for @ifYourCheckIsApprovedOrRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'If your check is approved or refused, nothing is kept except a one way keyed hash of your ID number. It cannot be turned back into the number.'**
+  String get ifYourCheckIsApprovedOrRefused;
+
+  /// No description provided for @ifYourCaseNeedsAWomanTo.
+  ///
+  /// In en, this message translates to:
+  /// **'If your case needs a woman to review it, the encrypted photographs are kept for up to 72 hours and then deleted.'**
+  String get ifYourCaseNeedsAWomanTo;
+
+  /// No description provided for @theCameraIsTheOnlyWayIn.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera is the only way in. You cannot choose a picture you already have.'**
+  String get theCameraIsTheOnlyWayIn;
+
+  /// No description provided for @iAgreeStartTheCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree, start the camera'**
+  String get iAgreeStartTheCamera;
+
+  /// No description provided for @iWouldRatherNot.
+  ///
+  /// In en, this message translates to:
+  /// **'I would rather not'**
+  String get iWouldRatherNot;
+
+  /// No description provided for @weCannotRunThisStepOnYour.
+  ///
+  /// In en, this message translates to:
+  /// **'We cannot run this step on your phone right now. A woman can check your card instead.'**
+  String get weCannotRunThisStepOnYour;
+
+  /// Progress through the server-chosen liveness challenge on C11. The number of steps is decided by the server per session, so it cannot be baked into the sentence the way the other Step strings in this dictionary are.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String stepStepOfTotal(String step, String total);
+
+  /// No description provided for @aShortVideoCallWithAWoman.
+  ///
+  /// In en, this message translates to:
+  /// **'A short video call with a woman'**
+  String get aShortVideoCallWithAWoman;
+
+  /// No description provided for @weWillTextYouATimeIt.
+  ///
+  /// In en, this message translates to:
+  /// **'We will text you a time. It takes about two minutes and nothing is recorded.'**
+  String get weWillTextYouATimeIt;
+
+  /// No description provided for @nothingYouPhotographedIsStoredItWas.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing you photographed is stored. It was deleted the moment the check finished.'**
+  String get nothingYouPhotographedIsStoredItWas;
+
+  /// No description provided for @theAppOpensAsSoonAsYour.
+  ///
+  /// In en, this message translates to:
+  /// **'The app opens as soon as your check is done.'**
+  String get theAppOpensAsSoonAsYour;
+
+  /// No description provided for @nothingYouPhotographIsKeptBothSides.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing you photograph is kept. Both sides of the card and the selfie are deleted as soon as the check finishes, whatever the result.'**
+  String get nothingYouPhotographIsKeptBothSides;
+
+  /// No description provided for @ifAWomanNeedsToCheckIt.
+  ///
+  /// In en, this message translates to:
+  /// **'If a woman needs to check, it is a short video call with you. Your photographs are never sent to anyone.'**
+  String get ifAWomanNeedsToCheckIt;
+
+  /// No description provided for @thePhotographsAreProcessedByGoogleCloud_tqchn.
+  ///
+  /// In en, this message translates to:
+  /// **'The photographs are processed by Google Cloud, on servers outside Egypt.'**
+  String get thePhotographsAreProcessedByGoogleCloud_tqchn;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

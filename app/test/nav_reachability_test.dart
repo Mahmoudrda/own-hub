@@ -236,11 +236,22 @@ bool _excusedForHavingNoRoute(
   final lines = File('lib/routing/app_router.dart').readAsLinesSync();
 
   // `    'T01': (context) => ...` — an entry in `_built`, at map indentation.
-  final entry = RegExp(r"^    '([A-Z]\d{2})':\s*\(context\)");
+  //
+  // The trailing `[a-z]?` is `C09b` and `C10b`, the consent step and the back
+  // of the ID card. They were inserted into a numbered flow whose ids are
+  // referenced across the specs, the plans and the prototype, so they carry a
+  // letter instead of renumbering seven screens.
+  //
+  // Both patterns had to change together, and the one that mattered is the
+  // first. Without it `'C09b': (context)` matches no entry, `current` stays on
+  // the screen above, and every edge in the consent screen's builder is
+  // silently credited to `C09` — a graph that is wrong rather than incomplete,
+  // which is the failure this parser is least able to report.
+  final entry = RegExp(r"^    '([A-Z]\d{2}[a-z]?)':\s*\(context\)");
   // Both ways a screen pushes another. `_goCarryingHandle` is the R08 path: it
   // carries a LogHandle as a route argument, and it is still one tap.
   final edge = RegExp(
-    r"(?:goTo|_goCarryingHandle)\(\s*context,\s*'([A-Z]\d{2})'",
+    r"(?:goTo|_goCarryingHandle)\(\s*context,\s*'([A-Z]\d{2}[a-z]?)'",
   );
 
   final start = lines.indexWhere(
@@ -411,8 +422,11 @@ void main() {
     for (final id in roots) {
       final from = src.indexOf("    '$id': (context)");
       if (from < 0) continue;
+      // `[a-z]?` for the same reason as the parser above: a suffixed id ends
+      // the preceding block just as a numbered one does, and missing it would
+      // make one builder's block swallow the next.
       final next = src.indexOf(
-        RegExp("\\n    '[A-Z]\\d{2}': \\(context\\)"),
+        RegExp("\\n    '[A-Z]\\d{2}[a-z]?': \\(context\\)"),
         from + 1,
       );
       final block = src.substring(from, next < 0 ? src.length : next);

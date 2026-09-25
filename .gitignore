@@ -56,3 +56,19 @@ womens-fitness-app.html
 # Screenshots and captures
 *.png.tmp
 captures/
+
+# Python virtualenv and caches for the verification functions. The venv is
+# rebuilt from requirements; committing it would add ~8,000 files and pin
+# platform-specific binaries to one machine.
+functions/.venv/
+**/__pycache__/
+**/.pytest_cache/
+
+# Emulator artefacts. `firestore-debug.log` is written into the working
+# directory every time the Firestore emulator starts.
+firestore-debug.log
+ui-debug.log
+firebase-debug.log
+
+# Node dependencies for the security-rules suite.
+test/rules/node_modules/

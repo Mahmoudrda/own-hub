@@ -25,11 +25,21 @@
 /// ## What "everything" means in this build
 ///
 /// Every store listed below, plus the one document they are written to on the
-/// handset, is the whole of what the app holds about her: there is no network
-/// and no server copy. The comments name the
-/// [kDeletionManifest] row each step covers, so a collection added later
+/// handset, is the whole of what this PHONE holds about her. The comments name
+/// the [kDeletionManifest] row each step covers, so a collection added later
 /// without a line here is a visible omission rather than an invisible one, which
 /// is the same property §7.3 (a) asks of the manifest itself.
+///
+/// **There is now a server copy, and this does not delete it.**
+/// `lib/app_state/cloud_store.dart` mirrors her week into `users/{uid}` once she
+/// is signed in and verified. Firestore does not cascade and the rules deny a
+/// client delete of `users/{uid}` outright, so purging those documents is the
+/// deletion Function's work against the manifest — exactly as it always was.
+/// What the steps below reach is this handset: the stores, the snapshot,
+/// Firestore's own offline cache and mutation queue, and the record of which of
+/// her documents the server has already accepted. The sheet above this still
+/// says plainly which rows are the server's rather than claiming a purge that
+/// did not happen.
 ///
 /// The rows this build **cannot** reach are the ones that are not on this phone:
 /// nothing is pseudonymised (row 30), nothing is closed (row 23) and no proof of
@@ -40,12 +50,15 @@ library;
 
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../features/account/domain/account_deletion_service.dart';
 import '../features/account/domain/deletion_manifest.dart';
 import '../features/account/domain/dietary_profile.dart';
 import '../features/cycle/domain/today_check_in.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
+import 'cloud_store.dart';
 import 'coach_portfolio_state.dart';
 import 'coach_profile_state.dart';
 import 'coached_life_state.dart';
@@ -54,6 +67,7 @@ import 'coaching_link_state.dart';
 import 'community_state.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
+import 'firebase_boot.dart';
 import 'local_persistence.dart';
 import 'workout_session_state.dart';
 
@@ -77,11 +91,32 @@ class ThisPhoneWipe implements LocalWipe {
     AppRouter.lastReviewerPath = null;
   }
 
-  /// No Firestore instance exists, so there is nothing to terminate. Kept as a
-  /// step rather than dropped: the order is asserted against
-  /// [kLocalWipeOrder], and a missing step would read as an order that changed.
+  /// Stops the sync, then stops Firestore and empties what it kept on disk.
+  ///
+  /// There IS a Firestore instance now (`lib/app_state/cloud_store.dart`), and
+  /// two things it holds have to go. The first is the mutation queue: offline
+  /// persistence is a durable queue, so a write she made a moment before
+  /// deleting her account would otherwise leave the phone AFTER the deletion
+  /// and recreate the documents the server just purged. The second is the read
+  /// cache, which is a copy of her documents sitting on the handset.
+  /// `terminate()` then `clearPersistence()` is the order the SDK requires —
+  /// the cache cannot be cleared while the client is running.
+  ///
+  /// Guarded by [FirebaseBoot.isReady], which is false in every widget test and
+  /// on a phone where Firebase never came up. Deleting her data must not be
+  /// hostage to a backend she may not even have reached.
   @override
-  Future<void> terminateFirestore() async {}
+  Future<void> terminateFirestore() async {
+    CloudStore.instance.stop();
+    if (!FirebaseBoot.isReady) return;
+    try {
+      await FirebaseFirestore.instance.terminate();
+      await FirebaseFirestore.instance.clearPersistence();
+    } catch (_) {
+      // A client that will not shut down is not a reason to leave her stores
+      // full. The steps below are the ones she can see.
+    }
+  }
 
   /// The offline cache, which in this build is every store the app holds and
   /// the one document they are written to.
@@ -103,6 +138,12 @@ class ThisPhoneWipe implements LocalWipe {
     // that is slow, wedged or missing must still leave every store below empty
     // and the sheet still has to close and say so.
     unawaited(LocalPersistence.instance.erase());
+
+    // The record of which of her documents the server has already accepted, for
+    // the same reason and on the same terms. Left behind, a new account on this
+    // handset would inherit a ledger claiming her documents were already
+    // uploaded — and would never upload them.
+    unawaited(CloudStore.instance.forget());
 
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();

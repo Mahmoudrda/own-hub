@@ -274,30 +274,79 @@ void main() {
 
       await tester.enterText(find.byType(TextField), '417293');
       await tester.pumpAndSettle();
-      // Six digits check themselves, so she is on the next screen without ever
-      // having pressed it. That is the screen's own promise, kept.
-      expect(find.text('Type the code'), findsNothing);
+
+      // Six digits still check themselves without her pressing anything — that
+      // half of the screen's promise is unchanged, and it is pinned against
+      // the fake in the C07 view test.
+      //
+      // What the check ANSWERS changed when the router's auth became
+      // `FirebaseAuthRepository`. Pushed straight to C07 in a widget test
+      // there is no Firebase behind it and no message was ever sent, so the
+      // repository holds nothing to check these digits against and refuses
+      // them. Staying here is therefore the correct outcome: advancing on a
+      // code that was never sent is the defect, not the fix.
+      expect(find.text('Type the code'), findsOneWidget);
+
+      // And the refusal is VISIBLE, which is what this file exists to catch.
+      // C07 carries no wrong-code copy yet, so the boxes emptying is the whole
+      // answer: six digits went in and were handed back. A screen that still
+      // showed them would be precisely the inert control this journey hunts.
+      for (final digit in ['4', '1', '7', '2', '9', '3']) {
+        expect(find.text(digit), findsNothing, reason: digit);
+      }
+      expect(
+        buttonNamed(tester, 'Continue').onPressed,
+        isNull,
+        reason: 'the gate holds: emptied boxes are not something to continue with',
+      );
     });
 
-    testWidgets('"Send it again" says what was sent, and names the test code', (
-      tester,
-    ) async {
+    testWidgets('"Send it again" answers, and names no code', (tester) async {
       await _open(tester, 'C07');
 
-      // The code this build accepts is on the screen: no message is sent, so
-      // without it the sign-up chain cannot be walked by hand at all.
-      expect(find.textContaining('The code is 417293'), findsOneWidget);
+      // This asserted the opposite until the router's auth became
+      // `FirebaseAuthRepository`: the screen printed the one code the fake
+      // accepts, and the test pinned it, because without it the sign-up chain
+      // could not be walked by hand.
+      //
+      // That card was never a feature. It comes from `testCodeOf`, which names
+      // a code only for `FakeAuthRepository` and answers null for anything
+      // else — against a real provider there is no such code, only the one in
+      // the message she was sent. So nothing is printed here even with the
+      // testing aids switched on, which is the seam, not the flag, and it is
+      // what `release_readiness_test.dart` demands of a shipped build. The
+      // fake's own code is still pinned, against the fake, in
+      // `test/features/signup/firebase_auth_repository_test.dart`.
+      expect(find.textContaining('Test build'), findsNothing);
+      expect(find.textContaining('417293'), findsNothing);
 
       await tester.tap(find.text('Send it again'));
       await tester.pumpAndSettle();
 
+      // The control answers, which is this file's whole subject.
       expect(find.byType(SnackBar), findsOneWidget);
+
+      final said = find
+          .descendant(of: find.byType(SnackBar), matching: find.byType(Text))
+          .evaluate()
+          .map((element) => (element.widget as Text).data ?? '')
+          .where((line) => line.trim().isNotEmpty);
+      expect(
+        said,
+        isNotEmpty,
+        reason: 'a notice with no words in it is a control that did nothing',
+      );
+
+      // And it does not lie. Pushed straight to C07 there is no number behind
+      // the screen and nothing has been sent, so a notice promising a code is
+      // on its way would be the worse defect of the two: she would sit waiting
+      // for a message that cannot arrive.
       expect(
         find.descendant(
           of: find.byType(SnackBar),
-          matching: find.textContaining('no text message is sent'),
+          matching: find.textContaining('on its way'),
         ),
-        findsOneWidget,
+        findsNothing,
       );
     });
   });

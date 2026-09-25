@@ -7081,4 +7081,135 @@ class AppL10nEn extends AppL10n {
   @override
   String get aProgramSetsOutYourWeeksAnd =>
       'A program sets out your weeks and the days in them. Nothing is written for you yet. One session is ready now, and Start today\'s session opens it.';
+
+  @override
+  String get holdTheCardStill => 'Hold the card still';
+
+  @override
+  String get moveALittleCloser => 'Move a little closer';
+
+  @override
+  String get moveBackALittle => 'Move back a little';
+
+  @override
+  String get thereIsNotEnoughLight => 'There is not enough light';
+
+  @override
+  String get bringYourFaceIntoTheCircle => 'Bring your face into the circle';
+
+  @override
+  String get lookStraightAhead => 'Look straight ahead';
+
+  @override
+  String get blinkSlowly => 'Blink slowly';
+
+  @override
+  String get turnYourHeadSlightlyToTheRight =>
+      'Turn your head slightly to the right';
+
+  @override
+  String get turnYourHeadSlightlyToTheLeft =>
+      'Turn your head slightly to the left';
+
+  @override
+  String get holdStill => 'Hold still';
+
+  @override
+  String get tiltTheCardToCutTheGlare => 'Tilt the card to cut the glare';
+
+  @override
+  String get onlyOneFaceInTheFrame => 'Only one face in the frame';
+
+  @override
+  String get showTheFrontOfTheCard => 'Show the front of the card';
+
+  @override
+  String get theBackOfYourCard => 'The back of your card';
+
+  @override
+  String get backOfTheCard => 'back of the card';
+
+  @override
+  String get turnTheCardOver => 'Turn the card over';
+
+  @override
+  String get weReadBothSidesNothingIsUploaded =>
+      'We read both sides. Nothing is uploaded until you tap send.';
+
+  @override
+  String get verified => 'Verified';
+
+  @override
+  String get underReview => 'Under review';
+
+  @override
+  String get verificationUnsuccessful => 'Verification unsuccessful';
+
+  @override
+  String get pleaseRetakeThePhoto => 'Please retake the photo';
+
+  @override
+  String get beforeTheCameraOpens => 'Before the camera opens';
+
+  @override
+  String get youWillPhotographTheFrontAndBack =>
+      'You will photograph the front and back of your national ID card, then take a short selfie.';
+
+  @override
+  String get thePhotographsAreProcessedByGoogleCloud =>
+      'The photographs are processed by Google Cloud and Amazon Web Services, on servers outside Egypt.';
+
+  @override
+  String get ifYourCheckIsApprovedOrRefused =>
+      'If your check is approved or refused, nothing is kept except a one way keyed hash of your ID number. It cannot be turned back into the number.';
+
+  @override
+  String get ifYourCaseNeedsAWomanTo =>
+      'If your case needs a woman to review it, the encrypted photographs are kept for up to 72 hours and then deleted.';
+
+  @override
+  String get theCameraIsTheOnlyWayIn =>
+      'The camera is the only way in. You cannot choose a picture you already have.';
+
+  @override
+  String get iAgreeStartTheCamera => 'I agree, start the camera';
+
+  @override
+  String get iWouldRatherNot => 'I would rather not';
+
+  @override
+  String get weCannotRunThisStepOnYour =>
+      'We cannot run this step on your phone right now. A woman can check your card instead.';
+
+  @override
+  String stepStepOfTotal(String step, String total) {
+    return 'Step $step of $total';
+  }
+
+  @override
+  String get aShortVideoCallWithAWoman => 'A short video call with a woman';
+
+  @override
+  String get weWillTextYouATimeIt =>
+      'We will text you a time. It takes about two minutes and nothing is recorded.';
+
+  @override
+  String get nothingYouPhotographedIsStoredItWas =>
+      'Nothing you photographed is stored. It was deleted the moment the check finished.';
+
+  @override
+  String get theAppOpensAsSoonAsYour =>
+      'The app opens as soon as your check is done.';
+
+  @override
+  String get nothingYouPhotographIsKeptBothSides =>
+      'Nothing you photograph is kept. Both sides of the card and the selfie are deleted as soon as the check finishes, whatever the result.';
+
+  @override
+  String get ifAWomanNeedsToCheckIt =>
+      'If a woman needs to check, it is a short video call with you. Your photographs are never sent to anyone.';
+
+  @override
+  String get thePhotographsAreProcessedByGoogleCloud_tqchn =>
+      'The photographs are processed by Google Cloud, on servers outside Egypt.';
 }

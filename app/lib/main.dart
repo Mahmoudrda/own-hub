@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'app_state/cloud_store.dart';
+import 'app_state/firebase_boot.dart';
 import 'app_state/local_persistence.dart';
 import 'app_state/onboarding_state.dart';
 import 'domain/flags/feature_flags.dart';
@@ -41,6 +45,34 @@ Future<void> main() async {
   // of this existed.
   await LocalPersistence.instance.load();
   LocalPersistence.instance.start();
+
+  // The back end, brought up AFTER her local week and unable to fail the
+  // launch. The order matters: whatever Firebase does or does not do, the
+  // first frame is already drawn from her own data, so a dead network costs
+  // her nothing she can see. See `lib/app_state/firebase_boot.dart`.
+  await FirebaseBoot.start();
+
+  // Has the server already let her in? Read once, here, because
+  // `AppRouter.onGenerateRoute` is synchronous and the whole-app gate has to
+  // answer before the first route is built rather than a frame later. It cannot
+  // fail the launch either: no Firebase, no signed-in user or no network all
+  // leave the claim false, and false means she meets the check rather than the
+  // app. See `AppRouter.readVerificationClaim`.
+  await AppRouter.readVerificationClaim();
+
+  // The cloud copy of her week, started but deliberately NOT awaited.
+  //
+  // `start()` only attaches listeners and reads one preferences key; it does
+  // no network work of its own, so awaiting it would be harmless today. That
+  // is precisely why it is not awaited: the promise this boot makes is that
+  // nothing before the first frame touches the network, and a promise kept by
+  // accident is one a later edit breaks quietly. `unawaited` makes it
+  // structural rather than incidental.
+  //
+  // With no account, no Firebase, or no verified claim it does nothing at all,
+  // and the app is exactly what it was before any of this existed. See
+  // `lib/app_state/cloud_store.dart`.
+  unawaited(CloudStore.instance.start());
 
   runApp(const OwnHubApp());
 }

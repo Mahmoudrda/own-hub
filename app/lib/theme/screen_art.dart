@@ -54,7 +54,13 @@ abstract final class ScreenArt {
     'C07': [AppArt.yogaMat],
     'C08': [AppArt.squatWeights, AppArt.lungeKneeling],
     'C09': [AppArt.meditation],
+    // The consent screen. Calm, like every screen where she is reading
+    // something about herself rather than doing something.
+    'C09b': [AppArt.meditation],
     'C10': [AppArt.stretchSeated],
+    // The back of the same card, so the same picture as the front: it is one
+    // step in two passes and it should not feel like a new screen.
+    'C10b': [AppArt.stretchSeated],
     'C11': [AppArt.flexBicep],
     'C12': [AppArt.meditation],
     'C13': [AppArt.dance],

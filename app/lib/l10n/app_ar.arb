@@ -2814,5 +2814,56 @@
   "saturday": "السبت",
   "sunday": "الأحد",
   "noProgramYet": "لا يوجد برنامج بعد",
-  "aProgramSetsOutYourWeeksAnd": "البرنامج يرتّب أسابيعك والأيام داخلها، ولم يُكتب لك برنامج بعد. تمرين واحد جاهز الآن، ويفتحه زر ابدئي تمرين اليوم."
+  "aProgramSetsOutYourWeeksAnd": "البرنامج يرتّب أسابيعك والأيام داخلها، ولم يُكتب لك برنامج بعد. تمرين واحد جاهز الآن، ويفتحه زر ابدئي تمرين اليوم.",
+  "holdTheCardStill": "ثبّتي البطاقة",
+  "moveALittleCloser": "اقتربي قليلاً",
+  "moveBackALittle": "ابتعدي قليلاً",
+  "thereIsNotEnoughLight": "الإضاءة غير كافية",
+  "bringYourFaceIntoTheCircle": "ضعي وجهك داخل الدائرة",
+  "lookStraightAhead": "انظري إلى الأمام مباشرة",
+  "blinkSlowly": "أغمضي عينيك ثم افتحيهما ببطء",
+  "turnYourHeadSlightlyToTheRight": "أديري رأسك قليلاً إلى اليمين",
+  "turnYourHeadSlightlyToTheLeft": "أديري رأسك قليلاً إلى اليسار",
+  "holdStill": "اثبتي دون حركة",
+  "tiltTheCardToCutTheGlare": "أميلي البطاقة قليلاً لتقليل الوهج",
+  "onlyOneFaceInTheFrame": "وجه واحد فقط داخل الإطار",
+  "showTheFrontOfTheCard": "أظهري الوجه الأمامي للبطاقة",
+  "theBackOfYourCard": "ظهر بطاقتك",
+  "backOfTheCard": "ظهر البطاقة",
+  "turnTheCardOver": "اقلبي البطاقة",
+  "weReadBothSidesNothingIsUploaded": "نقرأ الوجهين معًا. لا يُرفع شيء حتى تضغطي على الإرسال.",
+  "verified": "تم التحقق",
+  "underReview": "قيد المراجعة",
+  "verificationUnsuccessful": "لم يكتمل التحقق",
+  "pleaseRetakeThePhoto": "يرجى التقاط الصورة مرة أخرى",
+  "beforeTheCameraOpens": "قبل أن تفتح الكاميرا",
+  "youWillPhotographTheFrontAndBack": "ستصوّرين الوجه الأمامي والخلفي لبطاقتك الشخصية، ثم تلتقطين صورة ذاتية قصيرة.",
+  "thePhotographsAreProcessedByGoogleCloud": "تُعالَج الصور لدى Google Cloud وAmazon Web Services على خوادم خارج مصر.",
+  "ifYourCheckIsApprovedOrRefused": "إذا تمت الموافقة على طلبك أو رُفض، لا نحتفظ بشيء سوى بصمة مشفّرة أحادية الاتجاه لرقم بطاقتك، ولا يمكن إعادتها إلى الرقم الأصلي.",
+  "ifYourCaseNeedsAWomanTo": "إذا احتاج طلبك إلى مراجعة من إحدى النساء، تُحفظ الصور مشفّرة مدة أقصاها 72 ساعة ثم تُحذف.",
+  "theCameraIsTheOnlyWayIn": "الكاميرا هي الطريقة الوحيدة. لا يمكنك اختيار صورة محفوظة لديك.",
+  "iAgreeStartTheCamera": "أوافق وأبدأ التصوير",
+  "iWouldRatherNot": "أفضّل ألا أفعل",
+  "weCannotRunThisStepOnYour": "لا يمكننا تنفيذ هذه الخطوة على هاتفك الآن. يمكن لإحدى النساء مراجعة بطاقتك بدلاً من ذلك.",
+  "stepStepOfTotal": "الخطوة {step} من {total}",
+  "@stepStepOfTotal": {
+    "description": "Progress through the server-chosen liveness challenge on C11. The number of steps is decided by the server per session, so it cannot be baked into the sentence the way the other Step strings in this dictionary are.",
+    "placeholders": {
+      "step": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "aShortVideoCallWithAWoman": "مكالمة فيديو قصيرة مع إحدى النساء",
+  "weWillTextYouATimeIt": "سنرسل إليك رسالة بالموعد. تستغرق نحو دقيقتين ولا يُسجَّل شيء.",
+  "nothingYouPhotographedIsStoredItWas": "لا يُحفظ أي مما صوّرتِه. حُذف فور انتهاء الفحص.",
+  "theAppOpensAsSoonAsYour": "يفتح التطبيق بمجرد انتهاء التحقق.",
+  "nothingYouPhotographIsKeptBothSides": "لا نحتفظ بأي صورة تلتقطينها. يُحذف وجها البطاقة والصورة الذاتية فور انتهاء الفحص، أيًا كانت النتيجة.",
+  "ifAWomanNeedsToCheckIt": "إذا لزمت مراجعة من إحدى النساء، فتتم عبر مكالمة فيديو قصيرة معك. لا تُرسَل صورك إلى أحد أبدًا.",
+  "thePhotographsAreProcessedByGoogleCloud_tqchn": "تُعالَج الصور لدى Google Cloud على خوادم خارج مصر."
 }

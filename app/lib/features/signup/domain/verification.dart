@@ -45,8 +45,14 @@ enum VerificationMethod {
 sealed class VerificationState {
   const VerificationState();
 
-  /// She has not started. Training, recipes and coach profiles are already open
-  /// to her; only the community waits.
+  /// She has not started.
+  ///
+  /// **The gate is the whole app now, not only the community.** An earlier
+  /// version of this comment said training, recipes and coach profiles were
+  /// already open to her while she waited. The owner has since decided
+  /// otherwise: nothing opens until the check completes. Every screen that
+  /// promised otherwise has to say the new thing, and `C14` is the one that
+  /// said it loudest.
   const factory VerificationState.notStarted() = VerificationNotStarted;
 
   /// Submitted, waiting on the automatic check.
@@ -72,10 +78,25 @@ sealed class VerificationState {
   const factory VerificationState.needsAnotherLook() =
       VerificationNeedsAnotherLook;
 
+  /// The photographs need taking again.
+  ///
+  /// A separate state from [needsAnotherLook] because it is a separate thing to
+  /// do. "A woman will call you" and "take the photograph again" are different
+  /// instructions with different costs, and collapsing them would spend a human
+  /// video call on a glare patch she could have fixed in ten seconds.
+  ///
+  /// Also reached when the liveness session expired before she finished. That
+  /// is nobody's fault and must not read as one.
+  const factory VerificationState.retakeNeeded() = VerificationRetakeNeeded;
+
   /// Whether the community is open to her.
   bool get isVerified => this is VerificationVerified;
 
   /// Whether she is waiting on someone. Drives the "we are reviewing" copy.
+  ///
+  /// [VerificationRetakeNeeded] is deliberately not pending: she is not waiting
+  /// on anybody, the next move is hers, and copy that told her to sit tight
+  /// would leave her sitting tight forever.
   bool get isPending =>
       this is VerificationChecking ||
       this is VerificationAwaitingReviewer ||
@@ -107,6 +128,10 @@ class VerificationVerified extends VerificationState {
 
 class VerificationNeedsAnotherLook extends VerificationState {
   const VerificationNeedsAnotherLook();
+}
+
+class VerificationRetakeNeeded extends VerificationState {
+  const VerificationRetakeNeeded();
 }
 
 /// What is kept after a successful check.
@@ -141,11 +166,17 @@ class VerificationResult {
     return began == null ? null : decidedAt.difference(began);
   }
 
-  /// When the provider confirmed the images were destroyed.
+  /// When the images were destroyed.
   ///
   /// Nullable on purpose: null means "not yet confirmed", which is a state the
   /// reconciler must page on rather than a state to render as fine. A boolean
   /// would have made "we never checked" indistinguishable from "it is done".
+  ///
+  /// Under the current model the function deletes the bundle outright for every
+  /// outcome, approved or refused, so there is no retention window and nothing
+  /// is ever put in front of a human reviewer. Review is a video call. Null
+  /// therefore now means the check never returned at all, which is still a
+  /// thing to page on.
   final DateTime? imagesDeletedAt;
 
   bool get imagesConfirmedDeleted => imagesDeletedAt != null;

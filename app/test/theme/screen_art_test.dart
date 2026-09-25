@@ -63,9 +63,15 @@ void main() {
   ) async {
     // Every feature on, stated rather than borrowed: the subject is EVERY
     // screen, so every screen must be reachable whatever the defaults say.
-    AppRouter.featureFlags = FeatureFlags.allOff.with_({
-      for (final f in Feature.values) f: true,
-    });
+    //
+    // `everything` rather than literally every flag, because
+    // `Feature.accountRequired` is no longer a feature — it is the whole-app
+    // gate. With it on, `AppRouter.verificationGate` answers every product
+    // route with the sign-up chain, so this loop would open `C01` 160 times and
+    // report that every screen is illustrated. It would pass, and it would have
+    // measured nothing. `FeatureFlags.everything` is documented as the shape
+    // the product is walked in and holds that one flag off.
+    AppRouter.featureFlags = FeatureFlags.everything;
     tester.view.physicalSize = const Size(1170, 4000);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.reset);

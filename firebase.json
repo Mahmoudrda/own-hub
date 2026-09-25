@@ -6,10 +6,26 @@
   "storage": {
     "rules": "firebase/storage.rules"
   },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "identity",
+      "runtime": "python312",
+      "ignore": [
+        ".venv",
+        "venv",
+        "__pycache__",
+        "*.pyc",
+        ".pytest_cache",
+        "tests"
+      ]
+    }
+  ],
   "emulators": {
     "auth": { "port": 9099 },
     "firestore": { "port": 8080 },
     "storage": { "port": 9199 },
+    "functions": { "port": 5001 },
     "ui": { "enabled": true, "port": 4000 },
     "singleProjectMode": true
   }

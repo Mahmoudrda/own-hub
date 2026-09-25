@@ -60,6 +60,13 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
   'test/features/coaching/checkout_gate_test.dart':
       '"this flow ships dark" records the default position of the '
       'marketplace. Every refusal tested around it pins its own flags.',
+  'test/routing/verification_gate_test.dart':
+      'One test there — "the flag is off in the shipped defaults, and that is '
+      'deliberate" — has the default position of `accountRequired` as its '
+      'subject. That flag is now the whole-app gate, and it is switched off '
+      'because the verification functions are not deployed: turning it on '
+      'first would lock out every user, silently. Every other group in that '
+      'file builds its own world.',
   'test/navigation_smoke_test.dart':
       'It pushes every destination through the real router as the app '
       'actually ships, so the defaults are the point of the walk rather than '

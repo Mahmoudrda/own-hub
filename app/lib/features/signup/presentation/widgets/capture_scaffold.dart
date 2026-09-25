@@ -5,20 +5,27 @@
 /// button. The two differ only in the shape of the cut-out and the words, so the
 /// shape lives here once.
 ///
-/// **The cut-out is a placeholder, not a camera.** Until the provider's SDK is a
-/// dependency there is no live preview to draw, so the frame shows the
-/// prototype's own annotation — "front of the card", "her face, live" — which is
-/// what the design draws too. It never imitates a live image, and the shutter is
-/// disabled unless a real [CaptureSession] reports it is framing. See
+/// The cut-out holds the live camera when there is one to hold, and the
+/// prototype's own annotation — "front of the card", "her face, live" — when
+/// there is not. It never imitates a live image, and the shutter is disabled
+/// unless a real [CaptureSession] reports it is framing. See
 /// `domain/id_capture.dart`.
+///
+/// [guidance] is the one line the on-device checks are allowed to say, and it
+/// sits under the body copy rather than over the viewfinder because a sentence
+/// printed across a card is a sentence she cannot read and a card she cannot
+/// see. Null most of the time, and that is the design: a viewfinder that always
+/// has an instruction on it teaches her to stop reading the instruction.
 library;
 
 import '../../../../ui/screen_art_strip.dart';
 
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_white_button.dart';
+import '../../domain/id_capture.dart';
 
 /// White at 60% — the prototype's annotation colour on the dark screens.
 const Color _annotation = Color(0x99FFFFFF);
@@ -36,6 +43,7 @@ class CaptureScaffold extends StatelessWidget {
     required this.headline,
     required this.body,
     required this.actionLabel,
+    this.guidance,
     this.onAction,
     this.onClose,
   });
@@ -53,6 +61,10 @@ class CaptureScaffold extends StatelessWidget {
   final String body;
 
   final String actionLabel;
+
+  /// The live instruction, already translated, or null when there is nothing
+  /// worth saying.
+  final String? guidance;
 
   /// Null disables the shutter — which is the honest state whenever there is no
   /// camera behind it.
@@ -114,6 +126,33 @@ class CaptureScaffold extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (guidance != null) ...[
+                      const SizedBox(height: 16),
+                      // Announced as well as drawn. The guidance is the only
+                      // part of this screen that changes while she is holding
+                      // the phone, and a woman using TalkBack gets no value
+                      // from a viewfinder she cannot see unless the correction
+                      // is spoken. `liveRegion` is what makes the screen reader
+                      // read it again each time it changes.
+                      Semantics(
+                        liveRegion: true,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0x33FFFFFF),
+                            borderRadius: BorderRadius.circular(AppRadius.full),
+                          ),
+                          child: Text(
+                            guidance!,
+                            textAlign: TextAlign.center,
+                            style: AppText.bodyM.copyWith(color: _onDark),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -133,6 +172,34 @@ class CaptureScaffold extends StatelessWidget {
     );
   }
 }
+
+/// The dictionary entry for one piece of on-device guidance.
+///
+/// Exhaustive over [CaptureGuidance] with no default arm, so adding a guidance
+/// value without minting copy for it in both languages is a compile error
+/// rather than an English sentence appearing in an Arabic build.
+/// [isSelfie] exists for one line: "hold the card still" is nonsense when she
+/// is the subject, and a single shared sentence would have had to be vague
+/// enough to be useless in both places.
+String captureGuidanceText(
+  AppL10n l10n,
+  CaptureGuidance guidance, {
+  required bool isSelfie,
+}) => switch (guidance) {
+      CaptureGuidance.holdSteady =>
+        isSelfie ? l10n.holdStill : l10n.holdTheCardStill,
+      CaptureGuidance.moveCloser => l10n.moveALittleCloser,
+      CaptureGuidance.moveBack => l10n.moveBackALittle,
+      CaptureGuidance.moreLight => l10n.thereIsNotEnoughLight,
+      CaptureGuidance.lessGlare => l10n.tiltTheCardToCutTheGlare,
+      CaptureGuidance.centreYourFace => l10n.bringYourFaceIntoTheCircle,
+      CaptureGuidance.onlyOneFace => l10n.onlyOneFaceInTheFrame,
+      CaptureGuidance.showTheFront => l10n.showTheFrontOfTheCard,
+      CaptureGuidance.lookStraight => l10n.lookStraightAhead,
+      CaptureGuidance.blink => l10n.blinkSlowly,
+      CaptureGuidance.turnLeft => l10n.turnYourHeadSlightlyToTheLeft,
+      CaptureGuidance.turnRight => l10n.turnYourHeadSlightlyToTheRight,
+    };
 
 /// The label drawn inside a cut-out where the camera image will go.
 ///

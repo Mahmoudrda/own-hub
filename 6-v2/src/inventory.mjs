@@ -35,7 +35,19 @@ export const screens = [
   { id: 'C07', flow: 'signup', title: 'The code' },
   { id: 'C08', flow: 'signup', title: 'Client or coach' },
   { id: 'C09', flow: 'signup', title: 'Why we check' },
+  // Two screens whose ids carry a letter suffix, because they were inserted
+  // into a numbered flow that is referenced by id in the specs, the plans and
+  // the prototype. Renumbering C10 to C16 to make room would silently
+  // repoint every one of those references at the wrong screen.
+  //
+  // C09b is the consent step. Nothing may open a camera before she has agreed
+  // to where her face and her national ID go, and that agreement is written
+  // down before C10 becomes reachable.
+  { id: 'C09b', flow: 'signup', title: 'Before the camera opens' },
   { id: 'C10', flow: 'signup', title: 'Scan your ID' },
+  // C10b is the second pass of the card: the back prints her sex as a word,
+  // which is the independent reading the 13th digit is cross-checked against.
+  { id: 'C10b', flow: 'signup', title: 'The back of your card' },
   { id: 'C11', flow: 'signup', title: 'Quick selfie' },
   { id: 'C12', flow: 'signup', title: 'Checking' },
   { id: 'C13', flow: 'signup', title: "You're in" },

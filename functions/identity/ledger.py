@@ -1,0 +1,126 @@
+"""Spec §6: the per-uid cost ledger, in micro-USD.
+
+The rule is one sentence: **before every paid call, refuse if
+`spent + next_call_cost > COST_CAP`.** Everything else here exists to make that
+sentence true under concurrency, under retries, and under a provider that fails
+after we have already committed to paying it.
+
+Integers throughout. A budget check written in floating point accumulates error
+and eventually either refuses a call it should allow or allows one it should
+refuse; money is counted, never measured.
+
+Three properties that are easy to get wrong and are each enforced below:
+
+  * **Charge on success, not on intent.** `reserve` checks the budget and
+    `commit` debits it. A provider timeout or 5xx never debits, because spec
+    §9.4 requires that a failed call gives the user a retry with no charge.
+    Charging a woman's budget for our vendor's outage would lock her out of the
+    product through no fault of her own.
+
+  * **Attempt limits are counted separately from spend.** Spec §6 caps 4 OCR
+    submissions and 2 liveness attempts as well as the 50,000 µUSD. Both must
+    hold: a cheap provider would otherwise let someone attempt forever.
+
+  * **The check and the debit are one transaction.** Two concurrent requests
+    that both read "44,000 spent" would both pass a non-transactional check and
+    both spend, landing at 60,000. Spec §5 requires callables to be idempotent
+    and this is half of how that is achieved; the other half is the
+    `operation_id` below.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Optional, Protocol
+
+from . import config, reasons
+
+OCR_SUBMISSION = "ocr"
+LIVENESS_ATTEMPT = "liveness"
+FACE_MATCH = "match"
+
+
+@dataclass(frozen=True)
+class Budget:
+    """One uid's spending state."""
+
+    spent_micro_usd: int = 0
+    ocr_submissions: int = 0
+    liveness_attempts: int = 0
+
+    @property
+    def remaining(self) -> int:
+        return config.COST_CAP_MICRO_USD - self.spent_micro_usd
+
+
+@dataclass(frozen=True)
+class Refusal:
+    code: str
+
+
+def check(budget: Budget, kind: str, cost: int) -> Optional[Refusal]:
+    """May this call be made? None means yes.
+
+    Pure, so tests/test_ledger.py can walk the boundary exactly — including the
+    case that sits ON the cap, which spec §9.4 requires be refused BEFORE the
+    provider is contacted rather than after.
+    """
+    if kind == OCR_SUBMISSION and budget.ocr_submissions >= config.MAX_OCR_SUBMISSIONS:
+        return Refusal(reasons.ATTEMPT_LIMIT_OCR)
+    if (
+        kind == LIVENESS_ATTEMPT
+        and budget.liveness_attempts >= config.MAX_LIVENESS_ATTEMPTS
+    ):
+        return Refusal(reasons.ATTEMPT_LIMIT_LIVENESS)
+    if budget.spent_micro_usd + cost > config.COST_CAP_MICRO_USD:
+        return Refusal(reasons.COST_CAP_REACHED)
+    return None
+
+
+def apply(budget: Budget, kind: str, cost: int) -> Budget:
+    """The budget after a SUCCESSFUL call. Never called on a failure."""
+    return Budget(
+        spent_micro_usd=budget.spent_micro_usd + cost,
+        ocr_submissions=budget.ocr_submissions + (1 if kind == OCR_SUBMISSION else 0),
+        liveness_attempts=budget.liveness_attempts
+        + (1 if kind == LIVENESS_ATTEMPT else 0),
+    )
+
+
+def worst_case_micro_usd() -> int:
+    """The arithmetic, executed rather than asserted in a comment.
+
+    4 OCR submissions x 2 images x 1,500 + 2 liveness attempts x (0 + 0)
+    = 12,000 + 0 = 12,000, well under the 50,000 cap.
+
+    Spec §6 wrote this as 44,000 on the assumption of AWS liveness at 15,000 and
+    CompareFaces at 1,000. The owner has decided against AWS, so the only money
+    in this pipeline is Cloud Vision.
+
+    Computed, not hard-coded, so that adding a paid provider back — or Google
+    changing Vision's price — moves this number automatically and trips the test
+    below if it ever crosses the ceiling.
+    """
+    from . import providers
+
+    ocr = config.MAX_OCR_SUBMISSIONS * 2 * providers.COST_OCR_PER_IMAGE
+    liveness = config.MAX_LIVENESS_ATTEMPTS * (
+        providers.COST_LIVENESS_SESSION + providers.COST_FACE_MATCH
+    )
+    return ocr + liveness
+
+
+class LedgerStore(Protocol):
+    """The transactional half. Implemented over Firestore in store.py.
+
+    `spend` must perform check-and-debit inside ONE transaction and must be
+    idempotent on `operation_id`: a double tap resends the same operation id,
+    and the second call must return the first call's answer rather than
+    charging twice. Spec §5 requires exactly this.
+    """
+
+    def read(self, uid: str) -> Budget: ...
+
+    def spend(
+        self, uid: str, kind: str, cost: int, operation_id: str
+    ) -> tuple[bool, Budget, Optional[str]]: ...

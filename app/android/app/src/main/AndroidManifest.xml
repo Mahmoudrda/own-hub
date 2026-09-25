@@ -1,4 +1,33 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The only permission this app asks for, and the only one it needs.
+         Android shows its own sentence on the runtime prompt and gives us no
+         string to put in it, so the explanation lives on the consent screen
+         that runs immediately before the camera opens, in Arabic and English.
+         iOS is the platform that lets us write the sheet copy, and we do, in
+         ios/Runner/{en,ar}.lproj/InfoPlist.strings. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- DELIBERATELY ABSENT: READ_MEDIA_IMAGES, READ_EXTERNAL_STORAGE and
+         anything else that reaches the photo library. She photographs her card
+         live, now. A flow that could pick an existing picture could pick a
+         picture of somebody else's card, which is the entire attack the
+         women-only gate has to survive. It is also a Play Data Safety
+         declaration and a policy conversation we would have to have for a
+         capability the product does not want. -->
+
+    <!-- Not required, so the app still installs on a handset with no camera or
+         no autofocus. Google Play filters installs on any hardware feature a
+         manifest requests without saying otherwise, and a woman whose phone
+         cannot do the check can still train, cook and read; only the community
+         waits for her. C10 tells her the camera is missing and offers the
+         woman-reviewer path. -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
     <application
         android:label="Own Hub"
         android:name="${applicationName}"
