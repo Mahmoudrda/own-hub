@@ -47,10 +47,35 @@ class Budget:
     spent_micro_usd: int = 0
     ocr_submissions: int = 0
     liveness_attempts: int = 0
+    operations: tuple[str, ...] = ()
+    """The operation ids already applied, newest last, as `spend` stored them.
+
+    Carried on the budget rather than fetched separately because the pipeline
+    already reads the budget before the first paid call, so checking for a
+    replayed operation id costs nothing extra — and it has to be checked THERE,
+    before the provider is contacted, not inside `spend` afterwards.
+
+    Inside `spend` the idempotency check happens after the provider has already
+    been called and billed, so it prevents the second debit without preventing
+    the second bill. A client that repeats one operation id therefore used to
+    get an unlimited number of billed Vision calls against a ledger that moved
+    exactly once. `operation_id` is chosen by the client (main.py takes it
+    straight from the request body), so that was an attacker-controlled way to
+    suppress the debit, not a rare accident."""
 
     @property
     def remaining(self) -> int:
         return config.COST_CAP_MICRO_USD - self.spent_micro_usd
+
+    def already_applied(self, operation_id: str) -> bool:
+        """Has this exact operation id already been charged for?
+
+        `spend` keeps only the last 50 ids, so this answers "recently" rather
+        than "ever". That is the right window: it covers any plausible retry
+        while keeping the ledger document well inside Firestore's 1 MiB limit,
+        and an id that has aged out of the list is one whose 50 successors have
+        each been charged for in the meantime, so the spend was real."""
+        return bool(operation_id) and operation_id in self.operations
 
 
 @dataclass(frozen=True)

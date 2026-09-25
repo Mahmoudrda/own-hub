@@ -207,7 +207,22 @@ class FaceMatchProvider(abc.ABC):
 
 @dataclass
 class MockOcr(OcrProvider):
-    """Scripted OCR for tests. Returns whatever text it was handed."""
+    """Scripted OCR for tests. Returns whatever text it was handed.
+
+    The two rules below are copied deliberately from
+    providers_selfhosted.VisionOcr.read and must not drift from it:
+
+      * usability is `bool(text.strip())`, not `bool(text)`. A page of spaces is
+        not text. The mock used the looser test, so a whitespace-only OCR result
+        was usable here and unreadable in production — a divergence that would
+        have let a test assert a parse path production never takes.
+      * the cost is the full per-image price whichever way `ok` lands, because
+        Vision bills per image submitted rather than per image it managed to
+        read.
+
+    tests/test_contract.py asserts both rules against the live provider rather
+    than trusting this docstring.
+    """
 
     texts: Sequence[str] = field(default_factory=list)
     provider_id: str = "mock-ocr"
@@ -218,11 +233,12 @@ class MockOcr(OcrProvider):
         index = len(self.calls)
         self.calls.append(image_jpeg)
         text = self.texts[index] if index < len(self.texts) else ""
+        usable = bool(text.strip())
         return OcrResult(
             provider_id=self.provider_id,
             cost_micro_usd=self.cost_per_call,
-            ok=bool(text),
-            reason=None if text else reasons.NID_UNREADABLE,
+            ok=usable,
+            reason=None if usable else reasons.NID_UNREADABLE,
             text=text,
         )
 

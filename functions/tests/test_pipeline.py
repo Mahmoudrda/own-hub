@@ -59,6 +59,17 @@ class CountingMatch(providers.MockFaceMatch):
 
 
 class FakeLedger:
+    """A stand-in for store.FirestoreLedger, kept deliberately faithful to it.
+
+    It records applied operation ids ONTO THE BUDGET, exactly as
+    FirestoreLedger.spend does, because the pipeline now reads
+    `Budget.operations` to refuse a replayed submission before it pays for OCR.
+    A fake that dropped that field would let the replay test pass against a
+    pipeline that never checked anything — which is the same failure the score
+    scales had: a fake whose behaviour quietly differed from the real store, and
+    a suite that only ever ran against the fake.
+    """
+
     def __init__(self, budget: ledger.Budget | None = None):
         self.budget = budget or ledger.Budget()
         self.spends: list[tuple[str, int, str]] = []
@@ -71,8 +82,74 @@ class FakeLedger:
         if any(op == operation_id for _, _, op in self.spends):
             return False, self.budget, None
         self.spends.append((kind, cost, operation_id))
-        self.budget = ledger.apply(self.budget, kind, cost)
+        applied = ledger.apply(self.budget, kind, cost)
+        self.budget = ledger.Budget(
+            spent_micro_usd=applied.spent_micro_usd,
+            ocr_submissions=applied.ocr_submissions,
+            liveness_attempts=applied.liveness_attempts,
+            operations=tuple(list(self.budget.operations) + [operation_id])[-50:],
+        )
         return True, self.budget, None
+
+
+class BilledButUnreadableOcr(providers.OcrProvider):
+    """Cloud Vision answering "no text in this image", which is a BILLED unit.
+
+    This is the blank-JPEG attack in one class. Vision charges per image
+    submitted, not per image it manages to read, so this provider reports the
+    full price alongside `ok=False`. Before the fix the pipeline debited the
+    ledger only when `ok` was true, so a caller looping on blank images paid
+    nothing and was billed for nothing while Google billed us every round.
+    """
+
+    provider_id = "billed-but-unreadable"
+    cost_per_call = providers.COST_OCR_PER_IMAGE
+
+    def __init__(self):
+        self.calls: list[bytes] = []
+
+    def read(self, image_jpeg: bytes) -> providers.OcrResult:
+        self.calls.append(image_jpeg)
+        return providers.OcrResult(
+            provider_id=self.provider_id,
+            cost_micro_usd=self.cost_per_call,
+            ok=False,
+            reason=reasons.NID_UNREADABLE,
+            text="",
+        )
+
+
+class NeverReachedOcr(providers.OcrProvider):
+    """A provider whose only job is to fail the test if it is ever contacted."""
+
+    provider_id = "never-reached"
+    cost_per_call = providers.COST_OCR_PER_IMAGE
+
+    def __init__(self):
+        self.calls: list[bytes] = []
+
+    def read(self, image_jpeg: bytes) -> providers.OcrResult:
+        self.calls.append(image_jpeg)
+        raise AssertionError("the OCR provider was contacted when it must not be")
+
+
+class TransportFailureOcr(providers.OcrProvider):
+    """Vision timed out or returned a 5xx: no unit counted, nothing billed."""
+
+    provider_id = "transport-failure"
+    cost_per_call = providers.COST_OCR_PER_IMAGE
+
+    def __init__(self):
+        self.calls: list[bytes] = []
+
+    def read(self, image_jpeg: bytes) -> providers.OcrResult:
+        self.calls.append(image_jpeg)
+        return providers.OcrResult(
+            provider_id=self.provider_id,
+            cost_micro_usd=0,
+            ok=False,
+            reason=reasons.INTERNAL_ERROR,
+        )
 
 
 class FakeRegistry:
@@ -237,6 +314,122 @@ def test_the_liveness_attempt_limit_is_enforced():
     assert liveness.fetch_calls == 0
 
 
+# ----------------------------------- the blank-image loop, and what bounds it
+#
+# The single most expensive defect this pipeline has had. Cloud Vision bills per
+# image submitted; it does not bill per image it manages to read. The pipeline
+# debited the ledger only when the OCR came back `ok`, so a caller posting blank
+# JPEGs was billed nothing, burned no attempt, and moved neither the 50,000 µUSD
+# cap nor the 4-submission limit — while Google billed two units every round, for
+# as long as the loop ran. These four tests are the bound.
+
+
+def _run_with_ocr(ocr, ledger_store, operation_id="op-1", uid="uid-1"):
+    deps, session = build(ledger_store=ledger_store)
+    deps.ocr = ocr
+    inputs = pipeline.Inputs(
+        uid=uid,
+        card_front=b"front-jpeg",
+        card_back=b"back-jpeg",
+        liveness_session_id=session,
+        operation_id=operation_id,
+        today=TODAY,
+    )
+    return pipeline.run(inputs, deps)
+
+
+def test_an_unreadable_card_still_charges_the_ledger_because_vision_billed_us():
+    ledger_store = FakeLedger()
+    outcome = _run_with_ocr(BilledButUnreadableOcr(), ledger_store)
+
+    assert outcome.decision.outcome == decisions.RETRY_CAPTURE
+    assert ledger_store.budget.spent_micro_usd == providers.COST_OCR_PER_IMAGE, (
+        "Vision counted a unit for the front, so the ledger must show it"
+    )
+    assert ledger_store.budget.ocr_submissions == 1, (
+        "and the submission must be counted, or MAX_OCR_SUBMISSIONS never fires"
+    )
+
+
+def test_the_unreadable_front_is_not_followed_by_a_second_billed_call():
+    # The back's text is worthless without a front number to cross-check it
+    # against, and an unreadable front is the commonest failure this endpoint
+    # sees. Reading both doubled the bill on exactly that branch.
+    ocr = BilledButUnreadableOcr()
+    _run_with_ocr(ocr, FakeLedger())
+    assert len(ocr.calls) == 1, "the back must not be read once the front has failed"
+
+
+def test_blank_submissions_run_out_after_the_ocr_attempt_limit():
+    # The loop, bounded. Four unreadable submissions consume the allowance and
+    # the fifth is refused before the provider is contacted at all.
+    ledger_store = FakeLedger()
+    for attempt in range(config.MAX_OCR_SUBMISSIONS):
+        outcome = _run_with_ocr(
+            BilledButUnreadableOcr(), ledger_store, operation_id=f"op-{attempt}"
+        )
+        assert outcome.decision.outcome == decisions.RETRY_CAPTURE
+
+    blocked = NeverReachedOcr()
+    outcome = _run_with_ocr(blocked, ledger_store, operation_id="op-one-too-many")
+    assert reasons.ATTEMPT_LIMIT_OCR in outcome.decision.reasons
+    assert blocked.calls == [], "spec §9.4: refused BEFORE hitting the provider"
+
+    spent = ledger_store.budget.spent_micro_usd
+    assert spent == config.MAX_OCR_SUBMISSIONS * providers.COST_OCR_PER_IMAGE
+    assert spent <= config.COST_CAP_MICRO_USD
+
+
+def test_a_transport_failure_is_still_free_so_our_outage_is_not_her_problem():
+    # The other half, and it must not be weakened by the fix above. A call that
+    # never completed counted no unit at Google, so it costs her nothing and
+    # burns no attempt. Spec §9.4.
+    ledger_store = FakeLedger()
+    outcome = _run_with_ocr(TransportFailureOcr(), ledger_store)
+
+    assert outcome.decision.outcome == decisions.RETRY_CAPTURE
+    assert ledger_store.budget.spent_micro_usd == 0
+    assert ledger_store.budget.ocr_submissions == 0
+    assert ledger_store.spends == []
+
+
+def test_a_replayed_operation_id_never_reaches_the_paid_provider():
+    # `operationId` comes out of the request body. The ledger's own idempotency
+    # check lives inside spend(), which runs AFTER the OCR calls, so repeating
+    # one id used to buy unlimited billed Vision calls against a ledger that
+    # moved exactly once.
+    ledger_store = FakeLedger()
+    first = _run_with_ocr(
+        providers.MockOcr(texts=[front_text(FEMALE), back_text()]),
+        ledger_store,
+        operation_id="same-tap",
+    )
+    assert first.decision.outcome == decisions.APPROVED
+    charged_once = ledger_store.budget.spent_micro_usd
+
+    blocked = NeverReachedOcr()
+    second = _run_with_ocr(blocked, ledger_store, operation_id="same-tap")
+
+    assert reasons.DUPLICATE_SUBMISSION in second.decision.reasons
+    assert blocked.calls == [], "the replay must be refused before Vision is called"
+    assert ledger_store.budget.spent_micro_usd == charged_once
+
+
+def test_a_fresh_operation_id_is_still_allowed_through():
+    # The guard must bound a replay without blocking her genuine second attempt,
+    # which carries a new operation id.
+    ledger_store = FakeLedger()
+    _run_with_ocr(
+        providers.MockOcr(texts=[front_text(FEMALE), back_text()]),
+        ledger_store,
+        operation_id="tap-1",
+    )
+    ocr = providers.MockOcr(texts=[front_text(FEMALE), back_text()])
+    _run_with_ocr(ocr, ledger_store, operation_id="tap-2")
+    assert len(ocr.calls) == 2, "a new submission reads both sides as normal"
+    assert ledger_store.budget.ocr_submissions == 2
+
+
 def test_a_failed_provider_call_is_not_charged_for():
     # Spec §9.4: provider timeout/5xx gives a retry and records no charge.
     # Charging her budget for our vendor's outage would eventually lock her out.
@@ -302,8 +495,15 @@ def test_a_missing_session_fails():
 # ------------------------------------------------------------ idempotency
 
 
-def test_a_double_submit_does_not_double_charge():
+def test_a_double_submit_does_not_double_charge_or_double_bill():
     # Spec §5: a double tap must not double-charge.
+    #
+    # "Does not double-charge" was too weak a property on its own, and this test
+    # used to assert only that. It passed against a pipeline that ran the whole
+    # of step 3 a second time — two more billed Vision calls — and then skipped
+    # the debit inside spend(). The ledger stayed flat and the invoice did not,
+    # which is the opposite of what the test's name promises. Both halves are
+    # asserted now.
     ledger_store = FakeLedger()
     deps, session = build(ledger_store=ledger_store)
     inputs = pipeline.Inputs(
@@ -320,6 +520,7 @@ def test_a_double_submit_does_not_double_charge():
     deps.ocr = providers.MockOcr(texts=[front_text(FEMALE), back_text()])
     pipeline.run(inputs, deps)
     assert ledger_store.budget.spent_micro_usd == before
+    assert deps.ocr.calls == [], "and the second tap must not pay for OCR again"
 
 
 # ----------------------------------------------------------------- flags

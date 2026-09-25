@@ -171,9 +171,33 @@ def _install_hash(raw: Optional[str]) -> Optional[str]:
     and bounds the damage of an accident. App Check is the control that actually
     resists automation, which is why config.ENFORCE_APP_CHECK is True.
     """
-    if not raw:
+    if not raw or not isinstance(raw, str):
+        # Not a string means a client sending a number, an object or a list in
+        # this field. There is nothing to hash and nothing worth failing the
+        # request over: the install id is a FLAG signal, not a control, so the
+        # honest answer is the same as sending nothing at all.
         return None
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _operation_id(raw: Any) -> str:
+    """The client's idempotency key, bounded and typed.
+
+    It is used as a Firestore field value and stored in a list of the last 50 on
+    the ledger document, which is capped at 1 MiB. An unbounded string from the
+    request body is therefore a way to make that document large enough to start
+    failing writes for the account it belongs to — which would jam the very
+    counter that limits her spend.
+
+    128 characters is well beyond any real idempotency key (a UUID is 36) and
+    far short of anything that matters to a 1 MiB budget. Anything longer, or
+    anything that is not a string, is treated as absent and a server-generated
+    id is used — refusing the request outright would fail a verification over a
+    field the client can regenerate.
+    """
+    if isinstance(raw, str) and 0 < len(raw) <= 128:
+        return raw
+    return str(uuid.uuid4())
 
 
 def _response(decision: decisions.Decision) -> dict:
@@ -201,10 +225,16 @@ def _response(decision: decisions.Decision) -> dict:
 
 def _deps() -> pipeline.Deps:
     """The live wiring. Self-hosted providers; the AWS slot is unfilled."""
+    # One FirestoreChallengeStore, not two. They are stateless and two instances
+    # behave identically, but binding `put` and `take` off separate objects
+    # reads as though the mint and the consume might touch different state,
+    # which is the one thing about a single-use session that must be obviously
+    # untrue.
+    challenges = store.FirestoreChallengeStore()
     liveness = providers_selfhosted.SelfHostedLiveness(
         store=providers_selfhosted.ChallengeStore(
-            put=store.FirestoreChallengeStore().put,
-            take=store.FirestoreChallengeStore().take,
+            put=challenges.put,
+            take=challenges.take,
         )
     )
     return pipeline.Deps(
@@ -272,7 +302,6 @@ def start_verification(request: https_fn.CallableRequest) -> dict:
 
     deps = _deps()
     session_id = deps.liveness.create_session(uid)
-    record = store.FirestoreChallengeStore()
     snapshot = store.db().collection(config.COL_SESSIONS).document(session_id).get()
     steps = (snapshot.to_dict() or {}).get("steps", [])
 
@@ -309,26 +338,83 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
     """
     uid = _require_auth(request)
     data = request.data or {}
+    if not isinstance(data, dict):
+        # A callable body is whatever the client put in `data`. A list or a
+        # string reaches here just as easily as an object and would turn every
+        # `.get` below into an AttributeError, which the functions framework
+        # renders as INTERNAL — a 500 for what is plainly a bad request, and a
+        # stack trace in the logs for something that deserves one line.
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
 
     if not store.has_consent(uid):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
         )
 
+    # Spec §6's global kill switch, on the door that actually costs money.
+    #
+    # start_verification also checks it, but start_verification is free: it
+    # mints a challenge and writes one Firestore document. THIS is the callable
+    # that calls Cloud Vision, and nothing in the pipeline requires a session to
+    # have been minted first — OCR is step 3 and the liveness session is not
+    # consulted until step 6 — so a caller that never touches
+    # start_verification reached both paid Vision calls with the global limit
+    # never once consulted.
+    #
+    # Checked here, before the base64 is decoded, so a refused request costs one
+    # Firestore transaction rather than 24 MB of decoding as well.
+    if (
+        store.daily_count_and_increment(store.DAILY_VERIFY_FIELD)
+        > config.DAILY_VERIFICATION_LIMIT
+    ):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.DAILY_LIMIT_REACHED
+        )
+
+    # THE FRAME COUNT IS CHECKED BEFORE ANYTHING IS DECODED.
+    #
+    # The count used to be validated after the whole list had been decoded, and
+    # only on the non-niqab path — so `{"niqabPath": true, "frames": [...1000
+    # frames...]}` was decoded in full and never counted at all. The per-image
+    # and total-bytes ceilings bounded the memory, but nothing bounded the
+    # number of base64 decodes, and the work was done before the request could
+    # be refused. Refusing on a list length is free.
+    raw_frames = data.get("frames") or []
+    if not isinstance(raw_frames, list):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.IMAGE_UNDECODABLE
+        )
+    if len(raw_frames) > config.MAX_SELFIE_FRAMES:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.IMAGE_TOO_LARGE
+        )
+
     sizes: dict = {}
     card_front = _decode_image(data.get("front"), sizes)
     card_back = _decode_image(data.get("back"), sizes)
-    frames = [_decode_image(frame, sizes) for frame in (data.get("frames") or [])]
+    frames = [_decode_image(frame, sizes) for frame in raw_frames]
 
     # Only the session id is taken from the client's `liveness` object. Anything
     # else it contains — notably an `outcome` — is discarded here and never
-    # reaches the pipeline.
-    session_id = (data.get("liveness") or {}).get("sessionId")
+    # reaches the pipeline. The isinstance guard is because `liveness` is
+    # attacker-controlled like everything else in the body: a string here would
+    # otherwise raise AttributeError and surface as a 500.
+    liveness_block = data.get("liveness")
+    session_id = (
+        liveness_block.get("sessionId") if isinstance(liveness_block, dict) else None
+    )
+    if session_id is not None and not isinstance(session_id, str):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.SESSION_MISSING
+        )
 
     niqab = bool(data.get("niqabPath"))
-    if not niqab and not (
-        config.MIN_SELFIE_FRAMES <= len(frames) <= config.MAX_SELFIE_FRAMES
-    ):
+    # The upper bound was enforced above, before decoding. This is the floor,
+    # and it applies only off the niqab path: a woman who asked for a woman
+    # reviewer sends no frames at all and the pipeline returns before liveness.
+    if not niqab and len(frames) < config.MIN_SELFIE_FRAMES:
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.LIVENESS_FAILED
         )
@@ -341,7 +427,7 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
         selfie_frames=frames,
         niqab_path_requested=niqab,
         install_id_hash=_install_hash(data.get("installId")),
-        operation_id=str(data.get("operationId") or uuid.uuid4()),
+        operation_id=_operation_id(data.get("operationId")),
     )
 
     deps = _deps()

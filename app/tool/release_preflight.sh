@@ -73,7 +73,22 @@ check "keystores are ignored"              "grep -q '\*\.jks' ../.gitignore"
 check "no signing material in history"     "[ -z \"\$(git log --all --name-only --pretty=format: -- '*.jks' '*.keystore' '*.p8' '*.p12' 'key.properties' | grep . || true)\" ]"
 found=$(find . -path ./build -prune -o \( -name '*.jks' -o -name '*.keystore' -o -name '*.p8' -o -name '*.p12' \) -print 2>/dev/null | head -5)
 if [ -z "$found" ]; then ok "no signing material inside the repo"; else bad "signing material inside the repo: $found"; fi
-check "no API key literal in lib/"         "! grep -rqE 'sk-ant-|AIza[0-9A-Za-z_-]{30}' lib"
+# The generated `lib/firebase_options.dart` is excluded, and only it.
+#
+# A Firebase apiKey is not a secret: it is a public project identifier that
+# ships inside every Android and iOS binary by design, it authorises nothing on
+# its own, and what protects the data is firebase/firestore.rules. Treating it
+# as a secret here would mean deleting the file the app cannot compile without.
+#
+# `AIza` still fails everywhere else, because a Gemini key looks identical and
+# IS a secret that would bill us. The exclusion is one path, not a relaxed
+# pattern, and the same reasoning is pinned by tests in
+# `test/product_rules_test.dart` and
+# `test/features/assistant/assistant_product_rules_test.dart`, each paired with
+# a second test proving the exclusion cannot hide a real key.
+check "no API key literal in lib/"         "! grep -rqE 'sk-ant-|AIza[0-9A-Za-z_-]{30}' --exclude=firebase_options.dart lib"
+check "the firebase_options exclusion is not hiding a model key" \
+      "! grep -nE 'sk-ant-|ANTHROPIC|AIza[0-9A-Za-z_-]{30}' lib/firebase_options.dart | grep -qvE 'apiKey:'"
 
 echo
 echo "-- release build hygiene --"

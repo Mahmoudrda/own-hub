@@ -154,6 +154,15 @@ COST_CAP_REACHED = "cost_cap_reached"
 ATTEMPT_LIMIT_OCR = "attempt_limit_ocr"
 ATTEMPT_LIMIT_LIVENESS = "attempt_limit_liveness"
 DAILY_LIMIT_REACHED = "daily_limit_reached"
+DUPLICATE_SUBMISSION = "duplicate_submission"
+"""This operationId has already been submitted and charged for.
+
+Refused before the OCR provider is contacted, which is the point of it. The
+ledger's own idempotency check lives inside `spend`, which runs after the paid
+call, so it stops the second debit and not the second bill — and `operationId`
+comes from the request body, so repeating one was an attacker-controlled way to
+get unlimited billed Vision calls against a ledger that never moved. See
+ledger.Budget.already_applied and pipeline._run."""
 CONSENT_MISSING = "consent_missing"
 APP_CHECK_MISSING = "app_check_missing"
 UNAUTHENTICATED = "unauthenticated"
@@ -229,6 +238,7 @@ _TO_USER_SAFE = {
     DUPLICATE_ID: CONTACT_SUPPORT,
     REGISTRATION_CLOSED: CONTACT_SUPPORT,
     DAILY_LIMIT_REACHED: TRY_AGAIN_LATER,
+    DUPLICATE_SUBMISSION: TRY_AGAIN_LATER,
     LIVENESS_PROVIDER_ERROR: TRY_AGAIN_LATER,
     MATCH_PROVIDER_ERROR: TRY_AGAIN_LATER,
     INTERNAL_ERROR: TRY_AGAIN_LATER,

@@ -17,7 +17,7 @@ from __future__ import annotations
 import ast
 import os
 
-from identity import decisions, reasons
+from identity import decisions, providers, reasons
 
 _MAIN = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "main.py"
@@ -59,11 +59,174 @@ def _is_request_data(node) -> bool:
 
 
 def test_only_the_session_id_is_taken_from_the_liveness_object():
-    source = open(_MAIN, encoding="utf-8").read()
-    assert 'data.get("liveness") or {}).get("sessionId")' in source, (
+    """Exactly one key may be read out of the client's `liveness` block.
+
+    Asserted over the syntax tree rather than by matching a literal line of
+    main.py. The string form of this test pinned one spelling of the
+    expression, so adding an isinstance guard around it broke the test while
+    the property it protects was untouched — and, worse, the same test would
+    have passed a SECOND `.get` added on the next line, because the original
+    substring was still present. The property is "every key read from the
+    liveness block is sessionId", and that is what is checked here.
+    """
+    tree = ast.parse(open(_MAIN, encoding="utf-8").read())
+
+    # Names bound to the client's liveness block, however it is spelled:
+    # `x = data.get("liveness")`, or `x = data.get("liveness") or {}`.
+    aliases = {"liveness"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            if isinstance(node.targets[0], ast.Name) and _reads_liveness(node.value):
+                aliases.add(node.targets[0].id)
+
+    keys = set()
+    for node in ast.walk(tree):
+        # `<alias>.get("...")`, and the inline `(data.get("liveness") or
+        # {}).get("...")` form that has no alias at all.
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            if node.func.attr != "get" or not node.args:
+                continue
+            target = node.func.value
+            named = isinstance(target, ast.Name) and target.id in aliases
+            if (named or _reads_liveness(target)) and isinstance(
+                node.args[0], ast.Constant
+            ):
+                keys.add(node.args[0].value)
+        # `<alias>["..."]`
+        if isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Constant):
+            if isinstance(node.value, ast.Name) and node.value.id in aliases:
+                keys.add(node.slice.value)
+
+    assert keys == {"sessionId"}, (
         "the session id must be the only thing read out of the client's "
-        "liveness object"
+        f"liveness object, but main.py also reads {sorted(keys - {'sessionId'})}"
     )
+
+
+def _reads_liveness(node) -> bool:
+    """Is this expression `data.get("liveness")`, with or without `or {}`?"""
+    if isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or):
+        return any(_reads_liveness(value) for value in node.values)
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "get"
+        and bool(node.args)
+        and isinstance(node.args[0], ast.Constant)
+        and node.args[0].value == "liveness"
+    )
+
+
+# ------------------- 3. the live providers and the mocks bill the same way
+#
+# This section exists because the suite has now been fooled twice by the same
+# shape of defect: a live provider whose behaviour differed from the mock every
+# test ran against, in a way no test compared.
+#
+#   * SelfHostedLiveness declared the cosine score scale while the thresholds
+#     declared the composite one, so every real verification would have raised
+#     ThresholdScaleMismatch in production while the suite stayed green.
+#   * VisionOcr reported cost_micro_usd=0 for a response that carried no text,
+#     while MockOcr reported the full price. Google bills for both, so the live
+#     provider's answer was the wrong one — and because only the mock was ever
+#     exercised, the pipeline's "debit what was billed" logic was tested against
+#     a provider that never exhibited the bug.
+#
+# The lesson generalises: assert the LIVE object's declared contract, never the
+# fake's. Hand-built inputs cannot catch a disagreement between the two.
+
+
+def test_the_live_ocr_provider_charges_for_an_answer_that_carries_no_text():
+    """Vision bills per image submitted, not per image it manages to read.
+
+    Driven through a stub client rather than the network, but through the REAL
+    VisionOcr.read, which is where the cost decision is made.
+    """
+    from identity import providers_selfhosted
+
+    class _EmptyResponse:
+        class error:
+            message = ""
+
+        class full_text_annotation:
+            text = ""
+
+    class _StubClient:
+        def document_text_detection(self, image, image_context):
+            return _EmptyResponse()
+
+    result = providers_selfhosted.VisionOcr(client=_StubClient()).read(b"blank-jpeg")
+
+    assert result.ok is False, "no text means the card is unusable"
+    assert result.cost_micro_usd == providers.COST_OCR_PER_IMAGE, (
+        "but Google counted a unit, so the ledger must be told about it — this "
+        "is the blank-image loop that billed us for ever and charged nobody"
+    )
+
+
+def test_the_live_ocr_provider_charges_nothing_when_the_call_never_completed():
+    """The other half of spec §9.4, which the fix above must not weaken."""
+    from identity import providers_selfhosted
+
+    class _ExplodingClient:
+        def document_text_detection(self, image, image_context):
+            raise RuntimeError("timeout carrying image bytes in its message")
+
+    result = providers_selfhosted.VisionOcr(client=_ExplodingClient()).read(b"jpeg")
+
+    assert result.ok is False
+    assert result.cost_micro_usd == 0, "no unit was counted, so no charge"
+    assert result.reason == reasons.INTERNAL_ERROR
+    assert "timeout" not in repr(result), "nothing from the exception propagates"
+
+
+def test_the_mock_and_the_live_ocr_provider_agree_on_when_a_call_is_billed():
+    """The assertion that was missing both times.
+
+    MockOcr is what every pipeline test runs against. If it bills on different
+    conditions from VisionOcr, every cost assertion in the suite is about a
+    provider that does not exist in production.
+    """
+    from identity import providers_selfhosted
+
+    class _Response:
+        def __init__(self, text):
+            self.full_text_annotation = type("_", (), {"text": text})()
+            self.error = type("_", (), {"message": ""})()
+
+    class _StubClient:
+        def __init__(self, text):
+            self.text = text
+
+        def document_text_detection(self, image, image_context):
+            return _Response(self.text)
+
+    for text in ("", "   ", "some recognised text"):
+        live = providers_selfhosted.VisionOcr(client=_StubClient(text)).read(b"j")
+        mock = providers.MockOcr(texts=[text]).read(b"j")
+        assert live.ok == bool(text.strip()) and mock.ok == bool(text.strip()), (
+            f"the two providers disagree on usability for {text!r}"
+        )
+        assert live.cost_micro_usd == mock.cost_micro_usd, (
+            f"the two providers disagree on cost for {text!r}: a completed "
+            f"Vision call is billed whatever it returned"
+        )
+
+
+def test_the_live_providers_scales_match_the_active_threshold_set():
+    """The first defect of this shape, held in place.
+
+    pipeline.run reads `score_scale` off each live provider and hands it to
+    ThresholdSet.for_providers. A provider declaring a scale the active
+    thresholds were not calibrated for raises on the first real request and on
+    no test, because tests build Signals with matching scales by hand.
+    """
+    from identity import config, providers_selfhosted
+
+    liveness = providers_selfhosted.SelfHostedLiveness()
+    match = providers_selfhosted.SelfHostedFaceMatch()
+
+    config.ACTIVE_THRESHOLDS.for_providers(liveness.score_scale, match.score_scale)
 
 
 # ------------------------------ 2. internal reason codes never cross the wire

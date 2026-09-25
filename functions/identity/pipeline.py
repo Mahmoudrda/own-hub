@@ -165,7 +165,7 @@ def _run(inputs: Inputs, deps: Deps, observed: _Observed) -> Outcome:
     # before hitting the provider". Checking afterwards would still refuse the
     # result, and would still have been billed for it.
 
-    ocr_cost = deps.ocr.cost_per_call * 2  # front and back
+    ocr_cost = deps.ocr.cost_per_call * 2  # front and back, the worst case
     budget = deps.ledger_store.read(inputs.uid)
     refusal = ledger.check(budget, ledger.OCR_SUBMISSION, ocr_cost)
     if refusal is not None:
@@ -174,22 +174,67 @@ def _run(inputs: Inputs, deps: Deps, observed: _Observed) -> Outcome:
             spent_micro_usd=budget.spent_micro_usd,
         )
 
-    front = deps.ocr.read(inputs.card_front)
-    back = deps.ocr.read(inputs.card_back)
+    ocr_operation = f"{inputs.operation_id}:ocr"
+    if budget.already_applied(ocr_operation):
+        # A REPLAYED OPERATION ID, REFUSED BEFORE THE PROVIDER IS TOUCHED.
+        #
+        # `operation_id` comes from the client (main.py reads it out of the
+        # request body). The ledger's own idempotency check sits inside `spend`,
+        # which runs AFTER the Vision calls, so it suppresses the second debit
+        # without suppressing the second bill. Repeating one id therefore bought
+        # unlimited billed Vision calls against a ledger that moved exactly once
+        # — the per-uid cap and the 4-submission limit both sat still while the
+        # invoice grew.
+        #
+        # Refusing here costs one Firestore read that was happening anyway. It
+        # also makes the double tap spec §5 asks about genuinely cheap instead
+        # of merely non-double-charging: the second tap does no OCR at all.
+        return Outcome(
+            decision=decisions.Decision(
+                decisions.RETRY_CAPTURE, (reasons.DUPLICATE_SUBMISSION,)
+            ),
+            spent_micro_usd=budget.spent_micro_usd,
+        )
+
     provider_ids["ocr"] = deps.ocr.provider_id
+    front = deps.ocr.read(inputs.card_front)
+
+    # The back is read ONLY once the front is known to be usable.
+    #
+    # An unreadable front is the commonest failure this endpoint sees — a thumb
+    # over the number, glare on the laminate, a dark room — and the back's text
+    # is worthless without a front number to cross-check it against. Reading
+    # both unconditionally doubled the Vision bill on precisely the branch that
+    # gets taken most often, for a value that is then discarded three lines
+    # later.
+    back = deps.ocr.read(inputs.card_back) if front.ok else None
+
+    # CHARGE FOR WHAT THE PROVIDER ACTUALLY BILLED, on every path out of here.
+    #
+    # `ok` is about whether the text is usable. `cost_micro_usd` is about
+    # whether Google counted a unit. They are different questions and the code
+    # used to answer only the first: the debit was skipped whenever `front.ok`
+    # was false, which meant a caller submitting blank images looped for ever
+    # with the ledger frozen at zero. Vision bills per image submitted, not per
+    # image it managed to read, so an unreadable card is a real 3,000 µUSD (or
+    # 1,500, now that the back is conditional) and it belongs on the ledger.
+    #
+    # Only a call that never completed — a timeout, a 5xx, a transport error —
+    # reports zero, and that is spec §9.4's no-charge retry, intact and
+    # unweakened. See providers_selfhosted.VisionOcr.read, where the two cases
+    # are now distinguished at the point the answer is constructed.
+    billed = front.cost_micro_usd + (back.cost_micro_usd if back is not None else 0)
+    if billed:
+        charged, budget, _ = deps.ledger_store.spend(
+            inputs.uid, ledger.OCR_SUBMISSION, billed, ocr_operation
+        )
+        if charged:
+            spent = budget.spent_micro_usd
 
     if not front.ok:
-        # A provider that failed is not charged for. spend() is simply not
-        # called, so the ledger is untouched and she keeps her attempt.
         return finish(
             decisions.Signals(nid_parse_failure=front.reason or reasons.NID_UNREADABLE)
         )
-
-    charged, budget, _ = deps.ledger_store.spend(
-        inputs.uid, ledger.OCR_SUBMISSION, ocr_cost, f"{inputs.operation_id}:ocr"
-    )
-    if charged:
-        spent = budget.spent_micro_usd
 
     # --------------------------------------- step 3: parse and cross-check
 
@@ -201,13 +246,19 @@ def _run(inputs: Inputs, deps: Deps, observed: _Observed) -> Outcome:
     # agree." Only checked when the back actually yielded a number — most backs
     # do not carry one, and demanding agreement with a number that was never
     # printed would fail every genuine card.
-    if back.ok:
+    # `back is not None` is guaranteed here — it is only None when the front was
+    # unreadable, and that path returned above — but it is spelled out rather
+    # than assumed, because the thing that makes it true is an early return
+    # forty lines away and a later edit could move it.
+    back_ok = back is not None and back.ok
+
+    if back_ok:
         back_parsed, _ = nid.first_valid(back.text, today=inputs.today)
         if back_parsed is not None and back_parsed.number != parsed.number:
             return finish(decisions.Signals(sides_disagree=True))
 
     age = parsed.age_on(inputs.today)
-    sex_word = arabic.read_sex_field(back.text) if back.ok else None
+    sex_word = arabic.read_sex_field(back.text) if back_ok else None
 
     if parsed.governorate_unknown:
         # Captured HERE, before `del parsed` at step 5, because this is the last

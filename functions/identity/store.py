@@ -96,6 +96,10 @@ class FirestoreLedger:
             spent_micro_usd=int(data.get("spent_micro_usd", 0)),
             ocr_submissions=int(data.get("ocr_submissions", 0)),
             liveness_attempts=int(data.get("liveness_attempts", 0)),
+            # Carried so the pipeline can refuse a replayed operation id BEFORE
+            # it calls Vision. See Budget.operations for why checking it inside
+            # `spend` is too late to stop the bill.
+            operations=tuple(data.get("operations", []) or ()),
         )
 
     def spend(
@@ -113,10 +117,18 @@ class FirestoreLedger:
                 spent_micro_usd=int(data.get("spent_micro_usd", 0)),
                 ocr_submissions=int(data.get("ocr_submissions", 0)),
                 liveness_attempts=int(data.get("liveness_attempts", 0)),
+                operations=tuple(applied),
             )
 
             # Idempotency. A retried tap carries the same operation_id and must
             # return the first call's answer rather than charging again.
+            #
+            # This is the LAST line of defence, not the first one. By the time
+            # execution reaches here the provider has already been called and
+            # billed, so skipping the debit here without also refusing the
+            # request earlier turns a replayed operation id into free provider
+            # calls. pipeline._run checks Budget.already_applied before it
+            # contacts Vision, and that is the check that protects the money.
             if operation_id in applied:
                 return False, budget, None
 
@@ -125,6 +137,12 @@ class FirestoreLedger:
                 return False, budget, refusal.code
 
             updated = ledger.apply(budget, kind, cost)
+            updated = ledger.Budget(
+                spent_micro_usd=updated.spent_micro_usd,
+                ocr_submissions=updated.ocr_submissions,
+                liveness_attempts=updated.liveness_attempts,
+                operations=tuple((applied + [operation_id])[-50:]),
+            )
             # Bounded: keeping every operation id forever would grow this
             # document without limit, and a Firestore document is capped at 1 MiB.
             # The last 50 covers any plausible retry window.
@@ -481,13 +499,27 @@ def record_unknown_governorate(code: str) -> None:
         pass
 
 
-def daily_count_and_increment() -> int:
+def daily_count_and_increment(field: str = "sessions") -> int:
     """Spec §6's global kill switch counter.
 
     One document per UTC day. A distributed counter would be the textbook answer
     at high write rates, and at 278 verifications a day it would be premature:
     Firestore's per-document write limit is around one per second sustained, and
     278/day is 0.003/second.
+
+    TWO FIELDS ON THE SAME DOCUMENT, and the second one is the one that matters.
+
+    `sessions` counts start_verification, which mints a challenge and costs
+    nothing. `verifications` counts verify_identity, which is the only callable
+    in this system that spends money — two Cloud Vision units per submission.
+
+    Counting only `sessions` put the kill switch on the free door. Nothing in
+    verify_identity's path requires a session to have been minted: OCR is step 3
+    and the liveness session is not consulted until step 6, so a caller who
+    never touches start_verification reaches both paid Vision calls with the
+    global limit never once consulted. Per-uid caps still bound one account, but
+    the blast-radius limit spec §6 asks for is a GLOBAL one, and a global limit
+    that only counts the free call cannot bound a bill.
     """
     today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
     reference = db().collection(config.COL_STATS).document(today)
@@ -495,8 +527,12 @@ def daily_count_and_increment() -> int:
     @firestore.transactional
     def txn(transaction):
         snapshot = reference.get(transaction=transaction)
-        count = int((snapshot.to_dict() or {}).get("sessions", 0)) if snapshot.exists else 0
-        transaction.set(reference, {"sessions": count + 1}, merge=True)
+        count = int((snapshot.to_dict() or {}).get(field, 0)) if snapshot.exists else 0
+        transaction.set(reference, {field: count + 1}, merge=True)
         return count + 1
 
     return txn(db().transaction())
+
+
+DAILY_VERIFY_FIELD = "verifications"
+"""The counter verify_identity increments. See daily_count_and_increment."""

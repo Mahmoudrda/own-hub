@@ -85,6 +85,12 @@ class VisionOcr(providers.OcrProvider):
             # into a log or a crash report (spec §4: no image bytes in logs,
             # Crashlytics, Analytics or error payloads). Nothing from the
             # exception is propagated.
+            #
+            # cost_micro_usd is genuinely 0 here, unlike the empty-text branch
+            # at the bottom of this method: the request never completed, so
+            # Google never counted a unit. This is the ONLY OCR path that is
+            # free, and spec §9.4's "a failed call gives the user a retry with
+            # no charge" is about exactly this case and no other.
             return providers.OcrResult(
                 provider_id=self.provider_id,
                 cost_micro_usd=0,
@@ -100,6 +106,22 @@ class VisionOcr(providers.OcrProvider):
                 reason=reasons.INTERNAL_ERROR,
             )
 
+        # GOOGLE HAS ALREADY BILLED US BY THIS LINE.
+        #
+        # Vision charges per image submitted per feature, not per useful answer.
+        # A response that arrived — even one carrying no text at all, which is
+        # what a blank frame or a photograph of a carpet produces — is a billed
+        # unit at COST_OCR_PER_IMAGE. So `cost_micro_usd` is the full price on
+        # BOTH branches below, and `ok` says only whether the text is usable.
+        #
+        # Those two facts used to be conflated: the empty-text branch reported
+        # zero cost, the pipeline only debited the ledger when `ok` was true,
+        # and the result was a loop that billed Google twice per round and
+        # charged the caller's ledger nothing, for ever. Neither the 50,000 µUSD
+        # cap nor the 4-submission limit could ever fire against it, because
+        # neither counter moved. providers.MockOcr has always reported the cost
+        # unconditionally, which is the correct rule, so every test in the suite
+        # was exercising a provider that behaved differently from this one.
         text = response.full_text_annotation.text or ""
         return providers.OcrResult(
             provider_id=self.provider_id,

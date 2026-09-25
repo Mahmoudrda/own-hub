@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import pytest
 
-from identity import config, providers_selfhosted as sh
+from identity import config, providers_selfhosted as sh, reasons
 
 
 # ---------------------------------------------------------- the challenge
@@ -303,3 +303,44 @@ def test_a_frame_count_that_does_not_match_the_challenge_fails():
     # performed the challenge it was given.
     frames = [b"x"] * 5
     assert sh.evaluate_frames(frames, STEPS).ok is False
+
+
+# ---------------------------------- the wire bounds and the challenge length
+#
+# A third instance of the defect class in tests/test_contract.py, caught before
+# it became one: two numbers in different files that must agree, and nothing
+# asserting that they do.
+
+
+def test_the_challenge_length_is_inside_the_frame_count_the_wire_accepts():
+    """CHALLENGE_STEPS must sit inside [MIN_SELFIE_FRAMES, MAX_SELFIE_FRAMES].
+
+    main.verify_identity accepts 3 to 8 frames. evaluate_frames then demands
+    exactly one frame per challenge step, and start_verification issues
+    CHALLENGE_STEPS of them. So the two ranges are coupled: move
+    CHALLENGE_STEPS outside the accepted window and every real verification
+    fails at step 6 with LIVENESS_FAILED, while this suite stays green, because
+    every liveness test builds its frames and its steps together and they always
+    match by construction.
+
+    That is exactly how the score-scale defect survived, so it is asserted here
+    rather than left to whoever next tunes the challenge.
+    """
+    assert config.MIN_SELFIE_FRAMES <= config.CHALLENGE_STEPS <= config.MAX_SELFIE_FRAMES
+
+
+def test_a_frame_count_the_wire_accepts_but_the_challenge_does_not_fails_closed():
+    """3 frames against a 4-step challenge is refused, not scored.
+
+    The wire bounds are deliberately wider than the challenge length, so this
+    case is reachable from a client that sends a legal-looking payload. It must
+    fail closed — a mismatch means we cannot say which frame answered which
+    step, and scoring it anyway would be inventing a verdict.
+    """
+    steps = tuple(sh.random_challenge())
+    result = sh.evaluate_frames(
+        [b"frame"] * (len(steps) - 1), steps
+    )
+    assert result.ok is False
+    assert result.reason == reasons.LIVENESS_FAILED
+    assert result.confidence == 0.0
