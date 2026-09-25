@@ -104,9 +104,48 @@ class Outcome:
     match_similarity: Optional[float] = None
     spent_micro_usd: int = 0
     provider_ids: dict = field(default_factory=dict)
+    unknown_governorate_code: Optional[str] = None
+    """The two digits, when they were not in nid.GOVERNORATES, so the table can
+    be corrected.
+
+    This is the other half of demoting an unknown governorate code from a FLAG
+    to a recorded observation (see decisions._score_stage). Removing the review
+    without keeping the code would mean the table could never be fixed: the job
+    document says only that an unknown code was seen, not which one, and by
+    design it will never say more, because a governorate is her place of birth
+    and spec §4 does not allow it beside her uid.
+
+    So the code travels only this far, in memory, and main.py adds one to an
+    aggregate counter keyed by the code with no uid attached. "We have seen 41
+    cards with code 45" tells us to go and look at code 45. It tells nobody
+    anything about any of those 41 women."""
 
 
 def run(inputs: Inputs, deps: Deps) -> Outcome:
+    """Spec §2 steps 3 to 8, and the one observation that outlives the request.
+
+    A thin wrapper around `_run` so the unknown-governorate code can be stamped
+    onto whichever of `_run`'s many exits was taken, without threading it
+    through ten Outcome constructions by hand.
+    """
+    observed = _Observed()
+    outcome = _run(inputs, deps, observed)
+    outcome.unknown_governorate_code = observed.unknown_governorate_code
+    return outcome
+
+
+@dataclass
+class _Observed:
+    """Things worth counting that are not part of the decision.
+
+    Deliberately tiny, and deliberately not a general-purpose bag. Anything
+    added here is a thing that survives the request, which is exactly the class
+    of change spec §4 exists to restrain."""
+
+    unknown_governorate_code: Optional[str] = None
+
+
+def _run(inputs: Inputs, deps: Deps, observed: _Observed) -> Outcome:
     signals = decisions.Signals(niqab_path_requested=inputs.niqab_path_requested)
     spent = 0
     provider_ids: dict = {}
@@ -170,13 +209,20 @@ def run(inputs: Inputs, deps: Deps) -> Outcome:
     age = parsed.age_on(inputs.today)
     sex_word = arabic.read_sex_field(back.text) if back.ok else None
 
+    if parsed.governorate_unknown:
+        # Captured HERE, before `del parsed` at step 5, because this is the last
+        # point at which the code exists. It no longer opens a review (see
+        # decisions._score_stage for why), so counting it is the only way the
+        # table in nid.py ever gets corrected.
+        observed.unknown_governorate_code = parsed.governorate_code
+
     signals = decisions.Signals(
         governorate_unknown=parsed.governorate_unknown,
         underage=age < config.MIN_AGE,
         age_implausible=age > config.MAX_AGE_PLAUSIBLE,
         sex_from_digit=parsed.sex_from_digit,
         sex_from_word=sex_word,
-        sex_word_retries_exhausted=budget.ocr_submissions >= config.MAX_OCR_SUBMISSIONS,
+        ocr_retries_exhausted=budget.ocr_submissions >= config.MAX_OCR_SUBMISSIONS,
         niqab_path_requested=inputs.niqab_path_requested,
     )
 

@@ -363,6 +363,15 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
     attempt = deps.ledger_store.read(uid).ocr_submissions
     job_id = store.write_job(uid, decision, outcome, attempt)
 
+    if outcome.unknown_governorate_code:
+        # She is not flagged for this and never should be: an unknown code is a
+        # gap in nid.GOVERNORATES or a misread of digits 8-9, not a fact about
+        # her. But the gap has to become visible to somebody, and the job
+        # document deliberately records only the reason code, never the digits.
+        # This counter is the one place the digits survive, with no uid attached
+        # and no way back to a person. See store.UNKNOWN_GOVERNORATE_DOC.
+        store.record_unknown_governorate(outcome.unknown_governorate_code)
+
     if decision.outcome == decisions.APPROVED:
         store.mint_claims(uid, True)
         store.write_user_verification(uid)

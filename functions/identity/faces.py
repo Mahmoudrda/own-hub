@@ -207,10 +207,17 @@ def map_cosine_to_100(score: float) -> float:
 
     A linear map is honest about being a change of units and nothing more:
 
-        cosine 0.28  ->  64.0        (self-hosted match_flag is 62)
-        cosine 0.363 ->  68.2        (OpenCV's published same-identity cut)
-        cosine 0.45  ->  72.5        (self-hosted match_pass is 80)
+        cosine 0.212 ->  60.6        (OpenCV's published CFP-FP cut, hardest)
+        cosine 0.28  ->  64.0        (config.match_flag, from AgeDB-30's 0.277)
+        cosine 0.363 ->  68.15       (OpenCV's published LFW same-identity cut)
+        cosine 0.42  ->  71.0        (config.match_pass, the FMR = 0.1% point)
         cosine 1.00  ->  100.0
+
+    Those two config anchors are asserted by tests/test_faces.py, not merely
+    written here: a previous version of this table claimed match_flag was 62
+    and match_pass was 80 while the configuration said 64.0 and 72.5, and a
+    comment that disagrees with the number it describes is worse than no
+    comment, because it is the one a reader trusts.
 
     Note that the resulting numbers are NOT comparable with Rekognition
     confidences even though they share a range. config.ThresholdSet refuses to

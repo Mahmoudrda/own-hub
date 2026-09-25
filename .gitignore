@@ -72,3 +72,4 @@ firebase-debug.log
 
 # Node dependencies for the security-rules suite.
 test/rules/node_modules/
+functions/venv

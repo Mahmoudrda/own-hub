@@ -325,10 +325,36 @@ def test_a_double_submit_does_not_double_charge():
 # ----------------------------------------------------------------- flags
 
 
-def test_an_unknown_governorate_flags_rather_than_rejects():
+def test_an_unknown_governorate_is_recorded_and_let_through():
+    # Code 20 was never issued, so it is either a gap in nid.GOVERNORATES or an
+    # OCR misread of digits 8-9 — and roughly seven in ten misreads in that
+    # position land on an unissued code, because only 28 of the 100 are real.
+    # Either way it is a fact about our table or our OCR, not about her, and a
+    # woman reviewer on a video call has nothing to examine: the card image is
+    # gone by the time the call happens. She goes through on the other checks
+    # and the code is recorded so the table can be corrected.
     outcome, _ = run(number=synth(gov="20", seq="0134"))
-    assert outcome.decision.outcome == decisions.PENDING_REVIEW
-    assert reasons.NID_GOVERNORATE_UNKNOWN in outcome.decision.flags
+    assert outcome.decision.outcome == decisions.APPROVED
+    assert reasons.NID_GOVERNORATE_UNKNOWN not in outcome.decision.flags
+    assert reasons.NID_GOVERNORATE_UNKNOWN in outcome.decision.reasons
+
+
+def test_the_unknown_governorate_code_itself_comes_back_so_the_table_can_be_fixed():
+    # The half of the downgrade that makes it honest. Dropping the review is
+    # only defensible if somebody can still discover that code 20 exists and
+    # correct nid.GOVERNORATES; the job document records the reason and never
+    # the digits, so the pipeline has to hand them back.
+    outcome, _ = run(number=synth(gov="20", seq="0134"))
+    assert outcome.unknown_governorate_code == "20"
+
+
+def test_a_known_governorate_leaves_nothing_to_count():
+    # The code travels only when it is one we do not have. A woman from Cairo
+    # contributes nothing to any counter, which is the default this has to hold
+    # to for the other 49,000 sign-ups.
+    outcome, _ = run(number=synth(gov="01", seq="0134"))
+    assert outcome.unknown_governorate_code is None
+    assert reasons.NID_GOVERNORATE_UNKNOWN not in outcome.decision.reasons
 
 
 def test_a_male_digit_with_a_female_word_flags_rather_than_rejects():

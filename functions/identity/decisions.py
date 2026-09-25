@@ -1,5 +1,51 @@
 """Spec §3's decision matrix, as one pure function.
 
+WHAT BELONGS IN HUMAN REVIEW, AND WHAT DOES NOT
+-----------------------------------------------
+The test every FLAG signal in here has to pass, and the reason several of spec
+§3's no longer do:
+
+    **A case belongs in human review only if a human would learn something a
+    retake would not.**
+
+That is sharper here than it sounds, because of what review IS in this product.
+No image is ever stored (DECISIONS_NEEDED.md D3), so a reviewer cannot look at
+her card or her selfie. She dials into a video call with a woman reviewer, who
+sees reason codes, two scores and a face on a live camera. A reviewer therefore
+learns a great deal about "is this a woman, and is she the person on the card"
+and nothing whatsoever about "did the OCR read the small Arabic type on the
+back correctly" — because by the time the call happens the photograph of that
+type no longer exists anywhere.
+
+So the signals split cleanly in two:
+
+  SUSPICIOUS — the card contradicts itself, or behaviour across accounts and
+    devices looks like someone working through cards. A retake cannot change
+    any of it, and a live encounter settles it. These flag:
+      SEX_CONFLICT, HMAC_MANY_FAILURES, INSTALL_MANY_IDS,
+      LIVENESS_FLAG_BAND and MATCH_FLAG_BAND once the attempts are used,
+      SEX_WORD_UNREADABLE once the attempts are used,
+      BIRTH_DATE_MISMATCH once the attempts are used,
+      NIQAB_PATH_REQUESTED, which she asked for herself.
+
+  THE CAMERA FAILED — a statement about how the card photographed, not about
+    the woman holding it. The remedy is another photograph, which costs
+    $0.003 against fifteen minutes of a woman reviewer's day. These retake:
+      SEX_WORD_UNREADABLE and BIRTH_DATE_MISMATCH while OCR retries remain,
+      LIVENESS_FLAG_BAND and MATCH_FLAG_BAND while attempts remain.
+
+  NEITHER — evidence about our own data, not about her:
+      NID_GOVERNORATE_UNKNOWN, which is recorded and counted and does not
+      open a review at all.
+
+Every one of those downgrades is argued at the line that implements it,
+including what an attacker gains from it. None of them lets anything through
+that used to be stopped: a band score still never approves, an unreadable word
+still flags once the retries are gone, and the two cross-account signals are
+untouched. The arithmetic for what this does to the queue is in
+VERIFICATION_REPORT.md; the short version is that at 50,000 sign-ups every
+percentage point of flag rate is 500 video calls.
+
 `decide()` takes a bag of already-gathered signals and returns an outcome. It
 makes no network calls, reads no clock, touches no Firestore. That is what lets
 tests/test_decisions.py walk every row of the matrix and every FLAG signal,
@@ -70,18 +116,34 @@ class Signals:
     nid_parse_failure: Optional[str] = None
     sides_disagree: bool = False
     governorate_unknown: bool = False
+    """RECORDED, NOT FLAGGED. See `_score_stage`, which explains why a code we
+    have not heard of is a gap in our table rather than a fact about her."""
     underage: bool = False
     age_implausible: bool = False
     printed_birth_date_disagrees: bool = False
+    """A BAD READ FIRST, a flag only if it survives the retries. See `_early`.
+
+    Not produced by the pipeline yet: spec §2 step 3 asks for the cross-check
+    "if the printed birth date is readable", and nothing reads it today. The
+    classification is set here anyway so that whoever wires it up inherits the
+    right behaviour instead of inventing one under deadline."""
 
     # Step 4, the sex gate
     sex_from_digit: Optional[str] = None  # "female" | "male"
     sex_from_word: Optional[str] = None  # "female" | "male" | None = unreadable
-    sex_word_retries_exhausted: bool = False
-    """Spec §3 flags an unreadable word only "after retries". Before the retries
-    are used up the right answer is RETRY_CAPTURE — ask her to photograph the
-    back again — because a human reviewer is expensive and a second photograph
-    is free."""
+    ocr_retries_exhausted: bool = False
+    """True once she has used her MAX_OCR_SUBMISSIONS photographs of the card.
+
+    Spec §3 flags an unreadable النوع word only "after retries". Before the
+    retries are used up the right answer is RETRY_CAPTURE — ask her to
+    photograph the back again — because a human reviewer is expensive and a
+    second photograph is free.
+
+    Named for the OCR budget rather than for the النوع word, because it now
+    gates two different bad-read signals: the unreadable sex word and a printed
+    birth date that disagrees with the encoded one. Both are statements about
+    how the card photographed, not about the woman holding it, and both deserve
+    the same free remedy before a human is spent."""
 
     # Step 5, dedupe
     duplicate_of_other_account: bool = False
@@ -167,7 +229,10 @@ def decide(
 
       1. Things that make the attempt unreadable (RETRY_CAPTURE) come first,
          because a card we could not read tells us nothing about who she is and
-         must never fall through into a rejection.
+         must never fall through into a rejection. This section grew: an
+         unreadable النوع word whichever way digit 13 reads, and a printed
+         birth date disagreeing with the encoded one, are now bad reads first
+         and flags only once the OCR retries are gone.
       2. Then the eligibility rejections, which no retry can change.
       3. Then the duplicate gate.
       4. Then flags.
@@ -175,10 +240,14 @@ def decide(
       6. Approval only when nothing above fired.
 
     Putting flags AFTER the hard rejections is the one ordering choice worth
-    arguing about. It means a man whose card also has an unknown governorate is
+    arguing about. It means a man whose card also carries some other oddity is
     rejected rather than queued for a human — correct, because a human would
     reject him too and the flag queue is a scarce resource that exists for
     ambiguous women, not for unambiguous men.
+
+    Step 5 has one more ordering rule inside it, for the same reason: an
+    uncertain SCORE sends her to a human only once a retake can no longer help
+    and nothing else about her attempt already needs one. See `_score_stage`.
     """
     thresholds = thresholds or config.ACTIVE_THRESHOLDS
     # Raises ThresholdScaleMismatch rather than judging a cosine-derived score
@@ -234,13 +303,74 @@ def _early(
         return Decision(RETRY_CAPTURE, (reasons.MATCH_PROVIDER_ERROR,))
     if (
         signals.sex_from_word is None
-        and not signals.sex_word_retries_exhausted
-        and signals.sex_from_digit == "female"
+        and not signals.ocr_retries_exhausted
+        and signals.sex_from_digit is not None
     ):
-        # Ask for a better photograph of the back before spending a reviewer on
-        # her. Only applies while the digit says female: if the digit says male
-        # we have a rejection to make and no reason to keep asking.
+        # THE OCR FAILED. THAT IS NOT A SUSPICION.
+        #
+        # An unreadable النوع word says the back of the card photographed badly:
+        # glare on the laminate, a shadow, a scratch across a field printed in
+        # small Arabic type. A human reviewer on a video call learns nothing
+        # from it that a second photograph would not, and the second photograph
+        # costs $0.003 while the video call costs fifteen minutes of a woman
+        # reviewer's day. Spec §3 agrees — it flags an unreadable word only
+        # "after retries" — and `ocr_retries_exhausted` is where that ends.
+        #
+        # This used to apply only while digit 13 said female. It now applies
+        # whichever way the digit reads, and the male-digit case is the one that
+        # gained the most:
+        #
+        #   * if the retake reads ذكر, he is a clean REJECTED_NOT_ELIGIBLE and
+        #     never reaches a human at all;
+        #   * if the retake reads أنثى, the digit and the word genuinely
+        #     disagree and SEX_CONFLICT fires below, which is a real flag;
+        #   * if it still will not read after four photographs, it flags exactly
+        #     as it did before.
+        #
+        # So the change converts reviews into retakes and loses no case. What an
+        # attacker gains: a man who deliberately obscures the النوع field can
+        # make us pay for four OCR submissions (12,000 µUSD, inside the 50,000
+        # cap) before he reaches the same human review he used to reach
+        # immediately. He arrives at a video call with a woman reviewer either
+        # way, which is where he is caught.
         return Decision(RETRY_CAPTURE, (reasons.SEX_WORD_UNREADABLE,))
+
+    if (
+        signals.printed_birth_date_disagrees
+        and not signals.ocr_retries_exhausted
+        and signals.sex_from_digit != "male"
+    ):
+        # The `!= "male"` guard keeps spec §2 step 4's "reject immediately, make
+        # no further paid calls". By the time execution reaches here with a male
+        # digit the printed word HAS been read — an unreadable one returned
+        # above — so it either agrees (he is rejected two blocks down, and four
+        # more photographs of his birth date would change nothing) or it
+        # disagrees (SEX_CONFLICT, a real flag a retake cannot clear). Unlike
+        # the النوع word, a clearer photograph of a printed date tells us
+        # nothing at all about digit 13.
+        #
+        # Same reasoning as above otherwise, and the evidence points the same
+        # way.
+        #
+        # Nothing hangs on the PRINTED date: age comes from digits 2-7 of the
+        # number, which has already been parsed as a real calendar date and
+        # checked against MIN_AGE. So a disagreement is not a fact about her
+        # eligibility, it is a fact about one OCR pass over small print on a
+        # laminated card — the error-prone half of a comparison whose other half
+        # was validated structurally.
+        #
+        # A forger controls both fields and would make them agree, so this
+        # catches only careless forgeries, and it catches them just as well on
+        # the fourth photograph as on the first. Asking for a better photograph
+        # first therefore removes the OCR noise without removing the signal: a
+        # disagreement that survives four independent reads is no longer
+        # plausibly a slip, and THAT is the thing worth a human.
+        #
+        # What an attacker gains: a careless forgery gets up to three further
+        # attempts to have its printed date read as something consistent. Since
+        # the date is read by the same OCR each time and the forgery does not
+        # change between photographs, that is close to no gain at all.
+        return Decision(RETRY_CAPTURE, (reasons.BIRTH_DATE_MISMATCH,))
 
     # -------------------------------------------- 2. eligibility rejections
 
@@ -284,10 +414,50 @@ def _score_stage(
 
     if signals.niqab_path_requested:
         flag(reasons.NIQAB_PATH_REQUESTED)
+
     if signals.governorate_unknown:
-        flag(reasons.NID_GOVERNORATE_UNKNOWN)
+        # RECORDED, NOT FLAGGED. `found.append` rather than `flag`, and the one
+        # word difference is the whole decision.
+        #
+        # Spec §2 step 3 calls an unknown governorate code a FLAG signal and
+        # says why in the same breath: "because the list may be incomplete". So
+        # the spec already tells us what an unknown code evidences — a gap in
+        # OUR table — and nid.GOVERNORATES says the same thing at more length.
+        # It is not evidence about the woman. A human on a video call cannot
+        # look at a two-digit code and learn anything from her face, and the
+        # card image she was asked for no longer exists by the time the call
+        # happens, so there is literally nothing for a reviewer to examine.
+        #
+        # It is also not rare enough to treat as an oddity. The code is digits
+        # 8-9 of a number read by OCR from Arabic-Indic glyphs on a laminated
+        # card. Only 28 of the 100 two-digit codes are real, so roughly seven in
+        # ten single-digit misreads in that position land on a code we have
+        # never heard of. This signal is therefore mostly an OCR-error detector
+        # wearing a fraud detector's coat, and at 50,000 sign-ups each percent
+        # of it is 500 video calls.
+        #
+        # What an attacker gains: a forged card carrying a governorate code that
+        # was never issued now passes this particular check silently. That is
+        # worth close to nothing to him. He had to forge a card to get here, and
+        # RESIDUAL_RISKS.md #1 already states plainly that nothing in this system
+        # detects a forged card — no hologram, no microprint, no government
+        # lookup. A forger clever enough to print a card is clever enough to
+        # copy a real governorate code off any other card, so the only forgeries
+        # this ever caught were the ones that would fail on sight anyway.
+        #
+        # It is still RECORDED on the job document, and main.py counts the code
+        # itself into an aggregate with no uid attached, so the table in nid.py
+        # can be corrected the first time the state issues a code we do not have.
+        found.append(reasons.NID_GOVERNORATE_UNKNOWN)
+
     if signals.printed_birth_date_disagrees:
+        # Reached only when `_early` let it through, which means the retries are
+        # exhausted: four separate photographs of the card all read a printed
+        # date that disagrees with the encoded one. At that point it has stopped
+        # looking like an OCR slip and started looking like a property of the
+        # card, which is a human's question. See the long note in `_early`.
         flag(reasons.BIRTH_DATE_MISMATCH)
+
     if (
         signals.sex_from_digit == "female"
         and signals.sex_from_word == "male"
@@ -295,7 +465,7 @@ def _score_stage(
         flag(reasons.SEX_CONFLICT)
     if (
         signals.sex_from_word is None
-        and signals.sex_word_retries_exhausted
+        and signals.ocr_retries_exhausted
         and reasons.SEX_WORD_UNREADABLE not in found
     ):
         flag(reasons.SEX_WORD_UNREADABLE)
@@ -343,10 +513,58 @@ def _score_stage(
             # and one that helps her take a better photograph.
             return Decision(RETRY_CAPTURE, tuple(failed))
 
+        # ------------------------------------------ the uncertain band
+        #
+        # A score between FLAG and PASS is the one case this whole review queue
+        # exists for, and it is also the single largest source of its volume. So
+        # the ordering below matters: a band score sends her to a human only
+        # when a retake can no longer help and nothing else about her attempt is
+        # already suspicious.
+        #
+        # Why a retake helps here, concretely. The band is our matcher being
+        # unsure, and the things that make it unsure are the things a second
+        # capture changes: a three-quarter selfie against a passport-style card
+        # portrait, a shadow across half her face, a card held at an angle so
+        # the printed photograph is keystoned, a small turn that barely cleared
+        # YAW_SPREAD_MIN. A woman reviewer on a video call cannot see any of
+        # that — by the time she dials in, no image exists anywhere — so she
+        # learns strictly less from a band score than a second photograph does.
+        # That is the owner's test for what belongs in review, applied to the
+        # biggest queue driver in the system.
+        #
+        # Nothing is approved that would not have been approved before: a band
+        # score never passes, on any attempt. The only change is that the human
+        # is spent last instead of first.
+        #
+        # What an attacker gains: an impostor whose first attempt lands in the
+        # band is told to retake instead of being put in front of a woman
+        # reviewer, so he gets a second draw at clearing match_pass. That is
+        # bounded at exactly one extra draw by MAX_LIVENESS_ATTEMPTS = 2, which
+        # stays at 2 for this reason and is already documented as an abuse limit
+        # rather than a spending one. The cost of that extra draw is priced into
+        # the choice of match_pass in config.py: the 1.1 expected admissions
+        # across the launch is computed with 500 impostors taking TWO attempts
+        # each, not one. And an impostor who burns attempts on card after card
+        # raises HMAC_MANY_FAILURES or INSTALL_MANY_IDS, which are flags a
+        # retake cannot clear.
+        banded: list[str] = []
         if liveness_verdict == _BAND:
-            flag(reasons.LIVENESS_FLAG_BAND)
+            banded.append(reasons.LIVENESS_FLAG_BAND)
         if match_verdict == _BAND:
-            flag(reasons.MATCH_FLAG_BAND)
+            banded.append(reasons.MATCH_FLAG_BAND)
+
+        if banded and not flags and not signals.attempts_exhausted:
+            # `not flags` is load-bearing. If she is already going to a human
+            # for a reason a retake cannot fix — the sex word and digit 13
+            # disagree, the same card has failed across three accounts, she
+            # asked for a woman reviewer herself — then sending her round the
+            # loop again wastes her time and delays a review she is getting
+            # anyway. Only a case whose ONLY problem is an uncertain score gets
+            # the retake.
+            return Decision(RETRY_CAPTURE, tuple(found + banded))
+
+        for code in banded:
+            flag(code)
 
     # ------------------------------------------------------ 6. the outcome
 

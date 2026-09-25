@@ -8,7 +8,24 @@ firebase-admin==7.7.0
 google-cloud-firestore==2.21.0
 google-cloud-vision==3.15.0
 google-cloud-secret-manager==2.30.0
-google-cloud-storage==2.19.0
+
+# google-cloud-storage is NOT imported anywhere in this codebase. It is here
+# only because firebase-admin depends on it, and it is pinned rather than left
+# to float for the reason at the top of this file.
+#
+# It was pinned at 2.19.0, which made the deploy impossible: firebase-admin
+# 7.7.0 requires >=3.1.1, so the resolver had no solution and Cloud Build
+# failed with ResolutionImpossible after the functions had already been
+# discovered. The local virtualenv had 3.14.1 installed and the tests were
+# green against it, so the pin disagreed with the environment every test had
+# ever run in. 3.14.1 is that version: what was actually exercised, rather
+# than a number chosen by hand.
+#
+# Nothing here writes to Storage. The flag-evidence bucket that would have
+# needed it was deleted outright on the owner's instruction, so if this
+# dependency ever becomes directly used again, that is a signal worth stopping
+# for rather than a routine import.
+google-cloud-storage==3.14.1
 
 # opencv-python-HEADLESS, not opencv-python. The headless build omits the GUI
 # module, which pulls in X11/GTK shared libraries that do not exist in the

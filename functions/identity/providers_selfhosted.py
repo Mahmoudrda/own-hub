@@ -215,7 +215,26 @@ class SelfHostedLiveness(providers.LivenessProvider):
     """
 
     provider_id: str = "selfhosted-challenge-liveness"
-    score_scale: str = config.SCALE_SFACE_COSINE_MAPPED
+    score_scale: str = config.SCALE_SELFHOSTED_LIVENESS
+    """SCALE_SELFHOSTED_LIVENESS, not SCALE_SFACE_COSINE_MAPPED, and the
+    difference was a live defect rather than a nicety.
+
+    This class used to declare the cosine scale. `pipeline.run` reads
+    `score_scale` off the provider and hands it to `ThresholdSet.for_providers`,
+    which compares it against `THRESHOLDS_SELF_HOSTED.liveness_scale` — and that
+    has always been SCALE_SELFHOSTED_LIVENESS. So every real verification that
+    reached step 8 would have raised ThresholdScaleMismatch and failed, while
+    the unit tests stayed green because they build their own Signals with
+    matching scales. tests/test_decisions.py even asserted that this exact
+    mismatch must raise, so the guard was working perfectly and the wiring was
+    pointing it at ourselves.
+
+    What `_confidence` returns is a weighted sum of a pose-pattern boolean, a
+    yaw spread and a frame-consistency term. It is not a cosine and it is not a
+    cosine put through a linear map, so the cosine label was wrong on the merits
+    as well as wrong in its effect. tests/test_liveness.py now asserts that the
+    live providers agree with ACTIVE_THRESHOLDS, which is the assertion that was
+    missing."""
     cost_per_call: int = providers.COST_FREE
     store: Optional[ChallengeStore] = None
     _frames: dict[str, Sequence[bytes]] = field(default_factory=dict)
@@ -271,7 +290,7 @@ def evaluate_frames(
     frames: Sequence[bytes],
     steps: Sequence[str],
     provider_id: str = "selfhosted-challenge-liveness",
-    score_scale: str = config.SCALE_SFACE_COSINE_MAPPED,
+    score_scale: str = config.SCALE_SELFHOSTED_LIVENESS,
 ) -> providers.LivenessResult:
     """The liveness decision itself, factored out so it is testable directly.
 

@@ -179,6 +179,106 @@ def test_the_score_is_bounded():
     assert 0.0 <= _score(worst_pair=5.0, spread=99.0) <= 100.0
 
 
+def test_nothing_can_pass_liveness_without_the_pose_pattern_matching():
+    # THE invariant behind liveness_pass. `_confidence` gives a pattern failure
+    # 12 instead of 45, so the very best a capture that did not follow the
+    # demanded order can score is 12 + 30 + 15 + 10 = 67. Keeping liveness_pass
+    # above that ceiling is what makes "the head moved in the order we asked"
+    # mandatory rather than merely worth points, and it is the property that had
+    # to survive lowering the bar from 82 to 75.
+    best_possible_without_the_pattern = sh._confidence(
+        worst_pair=1.0, spread=99.0, pattern_ok=False, blink_ok=True
+    )
+    assert best_possible_without_the_pattern == 67.0
+    assert config.THRESHOLDS_SELF_HOSTED.liveness_pass > best_possible_without_the_pattern
+
+
+def test_a_liveness_rejection_can_only_ever_be_a_pattern_failure():
+    # THE invariant behind liveness_flag, and it protects her rather than us.
+    # A capture that matched the pattern scores at least 45 + 15 = 60, because
+    # a yaw spread below YAW_SPREAD_MIN and a worst_pair below
+    # FACE_INTRA_SESSION_MIN_COSINE both hard-fail in `evaluate_frames` before
+    # any score is produced. Keeping liveness_flag below 60 means no woman who
+    # followed the challenge is ever refused by the score alone.
+    worst_capture_that_still_followed_the_challenge = sh._confidence(
+        worst_pair=config.FACE_INTRA_SESSION_MIN_COSINE,
+        spread=config.YAW_SPREAD_MIN,
+        pattern_ok=True,
+        blink_ok=False,
+    )
+    assert worst_capture_that_still_followed_the_challenge == 60.0
+    assert config.THRESHOLDS_SELF_HOSTED.liveness_flag < worst_capture_that_still_followed_the_challenge
+
+
+def test_a_compliant_capture_with_no_detected_blink_is_approved_not_reviewed():
+    # The reason liveness_pass moved from 82 to 75. She turned her head in the
+    # order she was asked, her frames are consistently the same face, and the
+    # only thing missing is our own eye-openness proxy — which faces.eye_openness
+    # documents as weak, which spectacles and side lighting move on their own,
+    # and which _confidence therefore weights at 10. At 82 this woman got a
+    # video call with a woman reviewer. She should not.
+    modest_but_honest = sh._confidence(
+        worst_pair=0.75, spread=0.33, pattern_ok=True, blink_ok=False
+    )
+    assert modest_but_honest == pytest.approx(78.2, abs=0.1)
+    assert modest_but_honest >= config.THRESHOLDS_SELF_HOSTED.liveness_pass
+
+
+# ----------------------------------------- the live providers' score scales
+#
+# The scale guard in config.ThresholdSet can only catch a mismatch if the live
+# providers declare the scale they actually speak. These two tests are the ones
+# that were missing: SelfHostedLiveness used to declare SCALE_SFACE_COSINE_MAPPED
+# while THRESHOLDS_SELF_HOSTED expected SCALE_SELFHOSTED_LIVENESS, so every real
+# verification reaching step 8 would have raised ThresholdScaleMismatch, and
+# every unit test stayed green because they build Signals with matching scales
+# by hand.
+
+
+def test_the_live_liveness_provider_speaks_the_scale_the_thresholds_expect():
+    assert (
+        sh.SelfHostedLiveness().score_scale
+        == config.ACTIVE_THRESHOLDS.liveness_scale
+    )
+
+
+def test_the_live_match_provider_speaks_the_scale_the_thresholds_expect():
+    assert (
+        sh.SelfHostedFaceMatch().score_scale == config.ACTIVE_THRESHOLDS.match_scale
+    )
+
+
+def test_our_liveness_and_our_match_do_not_share_a_scale_label():
+    # A weighted challenge composite and a linearly mapped cosine share a range
+    # and nothing else. If these two labels ever became equal, the guard would
+    # still be running and would still be comparing strings, and it would be
+    # comparing the wrong quantity against the wrong threshold without a sound.
+    assert sh.SelfHostedLiveness().score_scale != sh.SelfHostedFaceMatch().score_scale
+
+
+def test_a_full_decision_survives_the_live_providers_scales():
+    # The end-to-end version: take the scales straight off the live provider
+    # objects, exactly as pipeline.run does with getattr, and put them through
+    # the real decision. This is the call that was failing in production and
+    # passing in the suite.
+    from identity import decisions
+
+    result = decisions.decide(
+        decisions.Signals(
+            sex_from_digit="female",
+            sex_from_word="female",
+            liveness_ran=True,
+            liveness_confidence=config.ACTIVE_THRESHOLDS.liveness_pass,
+            match_ran=True,
+            match_similarity=config.ACTIVE_THRESHOLDS.match_pass,
+            liveness_scale=sh.SelfHostedLiveness().score_scale,
+            match_scale=sh.SelfHostedFaceMatch().score_scale,
+        ),
+        config.ACTIVE_THRESHOLDS,
+    )
+    assert result.outcome == decisions.APPROVED
+
+
 def test_the_pose_pattern_is_weighted_above_every_other_signal():
     # It is the only signal here a printed photograph cannot fake, so it must
     # carry the most. If someone reweights these, this catches it.

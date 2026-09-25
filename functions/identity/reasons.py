@@ -42,15 +42,32 @@ same. Spec §2 step 3: if the number appears on both sides, both reads must
 agree. A disagreement is an OCR failure, so it is RETRY_CAPTURE."""
 
 NID_GOVERNORATE_UNKNOWN = "nid_governorate_unknown"
-"""A FLAG, never a rejection. Spec §1 item 2: the published list may be
-incomplete, and a woman holding a card with a code we have not heard of is not
-a forger — she is the first person to show us a gap in our data."""
+"""RECORDED, never a flag and never a rejection.
+
+Spec §3 listed this as a FLAG signal and gave its own reason for doubting it in
+the same sentence: the published list may be incomplete. That makes an unknown
+code evidence about nid.GOVERNORATES, not about the woman holding the card, and
+a woman reviewer on a video call has nothing to examine — the card photograph is
+gone by the time the call happens. It is also not rare: only 28 of the 100
+two-digit codes were ever issued, so most single-digit OCR misreads in that
+position land on one we do not have.
+
+So it stays on the job document, main.py counts the code itself into an
+aggregate with no uid attached, and it opens no review. See
+decisions._score_stage for the full argument and what an attacker gains."""
 
 UNDERAGE = "underage"
 AGE_IMPLAUSIBLE = "age_implausible"
 BIRTH_DATE_MISMATCH = "birth_date_mismatch"
 """The date printed on the card disagrees with the date encoded in the number.
-A FLAG per spec §3."""
+
+A BAD READ first, a flag only once the OCR retries are exhausted. Nothing hangs
+on the printed date — age comes from digits 2-7, which have already been parsed
+as a real calendar date and checked against MIN_AGE — so a disagreement is one
+error-prone OCR pass over small print on a laminate, compared against a half
+that was validated structurally. A disagreement that survives four separate
+photographs has stopped being a slip, and that is the one a human should see.
+See decisions._early."""
 
 # ------------------------------------------------------------- the sex gate
 
@@ -59,8 +76,15 @@ SEX_DIGIT_MALE = "sex_digit_male"
 calls. This is the gate that keeps a male applicant's cost at about $0.003."""
 
 SEX_WORD_UNREADABLE = "sex_word_unreadable"
-"""The printed النوع word could not be read after retries. A FLAG per spec §3,
-not a rejection."""
+"""The printed النوع word could not be read. A FLAG per spec §3, not a
+rejection — but only AFTER the OCR retries are gone, and now whichever way
+digit 13 reads.
+
+Glare on the laminate, a shadow, a scratch across a field set in small Arabic
+type. A retake is free and a woman reviewer is not, and the male-digit branch
+gains the most: a retake that reads ذكر turns a review into a clean rejection,
+and one that reads أنثى raises SEX_CONFLICT, which is a real flag. See
+decisions._early."""
 
 SEX_CONFLICT = "sex_conflict"
 """Digit 13 and the printed word disagree. A FLAG per spec §3. Never

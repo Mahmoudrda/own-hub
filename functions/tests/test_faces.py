@@ -113,20 +113,58 @@ def test_cosine_mapping_anchors_match_the_documented_values():
     assert faces.map_cosine_to_100(0.363) == pytest.approx(68.15, abs=0.01)
 
 
-def test_the_self_hosted_thresholds_sit_where_the_comments_claim():
-    # config.THRESHOLDS_SELF_HOSTED says match_pass 80 is "cosine ~0.45" and
-    # match_flag 62 is "cosine ~0.28". If someone edits one without the other,
-    # the comment becomes a lie and this test catches it.
+def test_the_self_hosted_thresholds_sit_exactly_where_the_comments_claim():
+    # config.py's derivation block says match_pass 71.0 IS cosine 0.42 and
+    # match_flag 64.0 IS cosine 0.28. Exact, not approximate: both were chosen
+    # partly so the mapped value would be a round number, and an edit to either
+    # side that leaves the other alone turns the whole derivation into fiction.
     t = config.THRESHOLDS_SELF_HOSTED
-    assert faces.map_cosine_to_100(0.45) == pytest.approx(t.match_pass, abs=2.5)
-    assert faces.map_cosine_to_100(0.28) == pytest.approx(t.match_flag, abs=2.5)
+    assert faces.map_cosine_to_100(0.42) == pytest.approx(t.match_pass, abs=1e-9)
+    assert faces.map_cosine_to_100(0.28) == pytest.approx(t.match_flag, abs=1e-9)
 
 
 def test_the_self_hosted_accept_bar_is_above_opencvs_published_cut():
-    # OpenCV's own sample uses cosine 0.363 as the same-identity cut for this
-    # exact model. Ours must be stricter, because card-to-live is harder than
-    # the photo pairs that number was calibrated on.
+    # OpenCV's sample uses cosine 0.363 as the same-identity cut for this exact
+    # graph, and their tutorial publishes it as the BEST-ACCURACY cut on LFW —
+    # the point where the genuine and impostor distributions cross on easy,
+    # frontal pairs. A crossing point is not a safe accept bar for a product
+    # where a false accept means a man inside a women-only community, so ours
+    # sits above it, at the false-match-rate = 0.1% point instead.
     assert config.THRESHOLDS_SELF_HOSTED.match_pass > faces.map_cosine_to_100(0.363)
+
+
+def test_the_self_hosted_reject_floor_is_not_above_the_hardest_published_cut():
+    # The other side of the same argument, and the one that protects her rather
+    # than us. Below match_flag she is refused by a machine with no human in the
+    # loop. OpenCV's hardest published rows put the genuine/impostor crossing at
+    # cosine 0.277 (AgeDB-30, thirty-year age gaps) and 0.212 (CFP-FP,
+    # frontal-to-profile), and card-to-live is a cross-age problem: an Egyptian
+    # ID photograph can be seven years old. A floor above the cross-age crossing
+    # point would be rejecting women whose only failing is that their card is
+    # old, so it must not drift upward.
+    assert config.THRESHOLDS_SELF_HOSTED.match_flag <= faces.map_cosine_to_100(0.28)
+
+
+def test_the_four_live_numbers_are_the_ones_the_derivation_argued_for():
+    # A blunt pin. These four are the product's entire risk posture and they are
+    # provisional, so a silent edit is the thing to make loud. If you are
+    # changing them, change this test in the same commit and say why in
+    # calibrated_from.
+    t = config.THRESHOLDS_SELF_HOSTED
+    assert (t.liveness_pass, t.liveness_flag, t.match_pass, t.match_flag) == (
+        75.0,
+        55.0,
+        71.0,
+        64.0,
+    )
+
+
+def test_the_live_thresholds_admit_in_the_config_that_they_are_not_measured():
+    # The honesty requirement, enforced rather than trusted. Nobody reads a
+    # report; the next person to touch this reads calibrated_from.
+    said = config.THRESHOLDS_SELF_HOSTED.calibrated_from.upper()
+    assert "PROVISIONAL" in said
+    assert "NOT " in said and "MEASURED" in said
 
 
 # ----------------------------------------------------------- frame difference

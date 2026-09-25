@@ -447,6 +447,40 @@ def has_consent(uid: str) -> bool:
     return snapshot.exists
 
 
+UNKNOWN_GOVERNORATE_DOC = "governorate-unknown"
+"""One document, one counter per unseen code, no uid anywhere in it.
+
+An unknown governorate code stopped being a FLAG (decisions._score_stage), on
+the grounds that it is evidence about nid.GOVERNORATES rather than about the
+woman holding the card. That argument only holds if somebody can actually fix
+the table, and nothing else in the system remembers WHICH code was unknown: the
+job document records the reason code, never the two digits, because a
+governorate is her place of birth and spec §4 does not allow it beside her uid.
+
+So the code is counted here and nowhere else. The document looks like
+`{"45": 41, "37": 2}`. That is enough to say "go and check code 45" and is not
+enough to say anything at all about any of those 41 women — there is no uid, no
+timestamp per event, and no way back from a count to a person."""
+
+
+def record_unknown_governorate(code: str) -> None:
+    """Add one to the counter for a governorate code we do not have.
+
+    Best effort, and silent on failure by design: this is an observation for us,
+    and a Firestore hiccup here must never turn a woman's completed
+    verification into an error she sees. The decision has already been made and
+    returned by the time this is called.
+    """
+    if not code:
+        return
+    try:
+        db().collection(config.COL_STATS).document(UNKNOWN_GOVERNORATE_DOC).set(
+            {code: firestore.Increment(1)}, merge=True
+        )
+    except Exception:
+        pass
+
+
 def daily_count_and_increment() -> int:
     """Spec §6's global kill switch counter.
 

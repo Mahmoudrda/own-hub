@@ -217,33 +217,158 @@ THRESHOLDS_REKOGNITION = ThresholdSet(
     ),
 )
 
+# ------------------------------------------ where the four numbers came from
+#
+# READ THIS BEFORE CHANGING ANY OF THE FOUR. They are not arbitrary and they are
+# not measured either. Each one is a published number, or arithmetic over
+# published numbers, and the arithmetic is written out here so the next person
+# can check it rather than take it on trust.
+#
+# THE PUBLISHED SOURCES (fetched 25 September 2026)
+#
+#   [1] opencv_zoo, models/face_recognition_sface/sface.py, the reference
+#       implementation for THIS EXACT ONNX graph:
+#           self._threshold_cosine = 0.363
+#           self._threshold_norml2 = 1.128
+#           return cosine_score, 1 if cosine_score >= self._threshold_cosine else 0
+#
+#   [2] OpenCV's own DNN face tutorial (doc/tutorials/dnn/dnn_face) publishes
+#       the accuracy and the BEST-ACCURACY cosine cut per benchmark:
+#           LFW       99.60%   cosine 0.363
+#           CALFW     93.95%   cosine 0.340
+#           AgeDB-30  94.90%   cosine 0.277
+#           CPLFW     91.05%   cosine 0.275
+#           CFP-FP    94.80%   cosine 0.212
+#
+#   [3] DocFace+ (arXiv:1809.05620), on matching ID-document photos to selfies:
+#       a publicly available general face matcher (SphereFace) reaches a true
+#       accept rate of only 59.29% +/- 1.55 at a false accept rate of 0.1%,
+#       against 97.51% +/- 0.40 for a matcher trained on ID-selfie pairs.
+#
+# WHAT [2] SETTLES, AND IT IS THE OPPOSITE OF THE OBVIOUS INTUITION
+#
+# The previous value of match_pass was 72.5 (cosine 0.45), reasoned as: card
+# photograph to live face is harder than the photo pairs 0.363 was calibrated
+# on, so raise the bar. The first half is true. The second half does not follow,
+# and [2] is the counter-example: as the pairs get harder the published best cut
+# FALLS (0.363 on frontal LFW, 0.277 on thirty-year age gaps, 0.212 on
+# frontal-to-profile). Difficulty moves the GENUINE distribution down; it does
+# not move the impostor distribution up. Raising the accept bar because the
+# domain is hard buys a little against false accepts and pays for it with a very
+# large number of genuine women pushed into the uncertain band, which in this
+# product is a video call with a woman reviewer. See REVIEW_ROUTES below and
+# RESIDUAL_RISKS.md #7.
+#
+# HOW match_pass = cosine 0.42 WAS PICKED
+#
+# The accept bar is the only automated thing standing between a man holding a
+# woman's card and an account, so it is set by the IMPOSTOR tail and by nothing
+# else. Model different identities as cosine ~ Normal(0, s), mean zero because
+# two unrelated embeddings are near-orthogonal, and solve s from [2]'s LFW row:
+# 99.60% accuracy over an equal split of genuine and impostor pairs is a 0.40%
+# false match rate at cosine 0.363, so s = 0.363 / 2.652 = 0.137.
+#
+#   cosine   mapped   false match rate at that cut
+#   0.363     68.15   0.401%
+#   0.400     70.00   0.174%
+#   0.420     71.00   0.108%      <- chosen
+#   0.450     72.50   0.051%
+#
+# 0.42 is the false-match-rate = 0.1% operating point. That is deliberately the
+# same operating point [3] reports its numbers at, so this bar is comparable to
+# a published figure instead of being invented.
+#
+# Turned into people: at 50,000 sign-ups, assume pessimistically that 1% of them
+# (500) are men attempting a borrowed card, and that each gets both of his
+# MAX_LIVENESS_ATTEMPTS. 500 x 2 x 0.108% = 1.1 expected admissions across the
+# whole launch. At 0.363 the same arithmetic gives 4.0, which is four men inside
+# a women-only community and is not acceptable. At 0.45 it gives 0.5, half a man
+# better than 0.42, bought at roughly 4,000 additional video calls under the
+# middle genuine-score assumption in VERIFICATION_REPORT.md. Spec section 10
+# says that when the goals conflict, choose fewer false accepts and report the
+# trade-off; 0.42 is where the two curves stop being worth crossing.
+#
+# HOW match_flag = cosine 0.28 WAS PICKED
+#
+# Below this, once her attempts are used, she is rejected by a machine with no
+# human in the loop. That is the harshest thing this system does, so the floor
+# has to sit where published evidence makes a rejection defensible. 0.277 is
+# [2]'s best-accuracy cut on AgeDB-30, the hardest cross-age row in the table,
+# and card-to-live is at heart a cross-age problem: an Egyptian ID photograph
+# can be seven years old. At a best-accuracy cut the two distributions cross, so
+# below it a score is at least as likely to have come from a different person as
+# from the same one. Rounded to 0.28 so the mapped value is exactly 64.0. The
+# previous worker put the floor in the same place; this is a better reason for
+# it, not a different number.
+#
+# HOW THE TWO LIVENESS NUMBERS WERE PICKED
+#
+# There is NO published benchmark for the composite in
+# providers_selfhosted._confidence, because we wrote it. No source found, and
+# none will be: it is a weighted sum of a pose-pattern boolean, a yaw spread and
+# a frame-consistency term. So these two are arithmetic over that function's own
+# weights, which at least is checkable:
+#
+#   pattern_ok=False ceiling    12 + 30   + 15   + 10 = 67
+#   pattern_ok=True  floor      45 + 15   +  0   +  0 = 60
+#       (a spread below YAW_SPREAD_MIN and a worst_pair below
+#        FACE_INTRA_SESSION_MIN_COSINE both hard-fail before any score is
+#        produced, so those two terms cannot contribute less than 15 and 0)
+#   pattern_ok, real turn, consistent frames, NO detected blink
+#                               45 + 30   + 15   +  0 = 90
+#   pattern_ok, modest turn (yaw spread 0.33), typical consistency (0.75),
+#   no detected blink           45 + 22.5 + 10.7 +  0 = 78.2
+#
+# liveness_pass = 75 because that last line is a woman who did exactly what she
+# was asked and whose only failing is our own blink proxy, which
+# faces.eye_openness documents as weak and which _confidence weights at 10 for
+# precisely that reason. At the previous 82 she scored 78.2 and got a video
+# call. At 75 she is approved, and nothing that matters is given away: 75 > 67,
+# so the pose pattern must still have matched for anyone to pass, and all four
+# hard checks (a face in every frame, the same face throughout, frames that
+# actually differ, a head that actually turned) still gate before a score is
+# produced at all.
+#
+# liveness_flag = 55 because a pattern_ok capture cannot score below 60, so 55
+# guarantees that a liveness REJECTION is only ever handed to a capture whose
+# pose ordering failed, and never to a woman who followed the challenge. The
+# five points of headroom below 60 are there so that guarantee does not depend
+# on float equality at the exact minimum.
+
 THRESHOLDS_SELF_HOSTED = ThresholdSet(
     liveness_scale=SCALE_SELFHOSTED_LIVENESS,
     match_scale=SCALE_SFACE_COSINE_MAPPED,
-    liveness_pass=82.0,
+    liveness_pass=75.0,
     liveness_flag=55.0,
-    match_pass=72.5,
+    match_pass=71.0,
     match_flag=64.0,
     calibrated_from=(
-        "DERIVED, NOT MEASURED. Match: anchored on OpenCV's own published "
-        "same-identity cosine cut of 0.363 for this exact model, shifted up for "
-        "the harder card-portrait-to-live problem, then put through "
-        "faces.map_cosine_to_100 — match_pass 72.5 IS cosine 0.45 and "
-        "match_flag 64.0 IS cosine 0.28, and a test asserts that rather than "
-        "trusting this sentence. Liveness: 82 requires the pose pattern to have "
-        "matched (a pattern failure scores at most 67 under _confidence's "
-        "weights), and 55 puts an otherwise-good capture with an ambiguous pose "
-        "ordering into the flag band rather than rejecting it. No false-accept "
-        "or false-reject rate has been measured for any of these four numbers. "
-        "Spec §10's pilot must replace them before production."
+        "PROVISIONAL. Chosen from published benchmarks and arithmetic, and NOT "
+        "MEASURED on Egyptian ID cards photographed on Egyptian phones. No "
+        "false-accept rate, false-reject rate or flag rate has been observed "
+        "for any of these four numbers on this product's real population. "
+        "Match: match_pass 71.0 IS cosine 0.42, the false-match-rate = 0.1% "
+        "point of an impostor model solved from OpenCV's published LFW figure "
+        "for this exact graph (99.60% at cosine 0.363); match_flag 64.0 IS "
+        "cosine 0.28, OpenCV's published best-accuracy cut on AgeDB-30 (0.277), "
+        "the hardest cross-age row they publish. Tests assert both mappings "
+        "rather than trusting this sentence. Liveness: no published benchmark "
+        "exists for our own composite, so 75 and 55 are arithmetic over "
+        "providers_selfhosted._confidence's own weights: 75 sits above the 67 a "
+        "pattern failure can reach and below the 78.2 a compliant woman reaches "
+        "without a detected blink, and 55 sits below the 60 a pattern-matched "
+        "capture can reach. The derivation block above this line shows the "
+        "working. Spec section 10's pilot must replace all four before "
+        "production, and VERIFICATION_REPORT.md records the flag rate each one "
+        "implies."
     ),
 )
 """The numbers the self-hosted path runs on today, and the honest label on them.
 
-They are not spec §3's numbers, and they must not be: see the module docstring.
-They are also not measured. `calibrated_from` says so in the config itself
-rather than in a document nobody reads, because the next person to touch this
-file is the person who needs to know."""
+They are not spec section 3's numbers, and they must not be: see the module
+docstring. They are also not measured. `calibrated_from` says so in the
+configuration itself rather than in a document nobody reads, because the next
+person to touch this file is the person who needs to know."""
 
 ACTIVE_THRESHOLDS = THRESHOLDS_SELF_HOSTED
 """Which set is live. Changes with the provider, never independently of it."""
