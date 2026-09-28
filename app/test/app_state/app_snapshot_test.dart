@@ -275,14 +275,14 @@ void main() {
 
     test('her allergies, and the difference between none and never asked', () async {
       await AppRouter.dietaryRepository.save(
-        allergies: const {AllergenTag.nuts},
+        allergies: const {AllergenTag.treeNuts},
         dietary: const {DietaryTag.vegetarianWeekdays},
       );
 
       await _roundTrip();
 
       final profile = AppRouter.dietaryRepository.read();
-      expect(profile.allergies, {AllergenTag.nuts});
+      expect(profile.allergies, {AllergenTag.treeNuts});
       expect(profile.dietary, {DietaryTag.vegetarianWeekdays});
 
       // Asked, and named nothing, is a claim about her — and it is a different

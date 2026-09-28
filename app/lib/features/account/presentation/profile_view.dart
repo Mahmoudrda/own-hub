@@ -53,6 +53,7 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/dietary_profile.dart';
+import 'allergen_labels.dart';
 import '../domain/privacy_settings.dart';
 import '../domain/verification_claim.dart';
 import 'account_view_models.dart';
@@ -338,12 +339,13 @@ class _ProfileViewState extends State<ProfileView> {
 
 /// The allergy and dietary editor — a **branch of A02**, never a route.
 ///
-/// The vocabulary is exactly what the prototype authors on `G17`, whose own
-/// design note calls it "the only place in the product where a client states her
-/// allergies". Every label is already in the dictionary in both languages, and
-/// nothing here adds an allergen content has not written: a plausible-looking
-/// allergen list is the fabricated safety guarantee this whole feature exists to
-/// avoid.
+/// The vocabulary is [AllergenTag]'s sixteen, drawn from one shared label table
+/// so this screen and `G17` and `E10` cannot disagree about what she declared.
+/// It grew from four when Rahma's book was authored and dishes started carrying
+/// real allergen data; `dietary_profile.dart` records where each of the sixteen
+/// comes from. Every label is in the dictionary in both languages, and nothing
+/// here invents a category content has not written: a plausible-looking allergen
+/// list is the fabricated safety guarantee this whole feature exists to avoid.
 class _DietaryEditor extends StatefulWidget {
   const _DietaryEditor({required this.initial, required this.onSave});
 
@@ -361,13 +363,6 @@ class _DietaryEditorState extends State<_DietaryEditor> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-
-    final allergenLabels = <AllergenTag, String>{
-      AllergenTag.nuts: l10n.noNuts,
-      AllergenTag.dairy: l10n.noDairy,
-      AllergenTag.gluten: l10n.noGluten,
-      AllergenTag.shellfish: l10n.noShellfish,
-    };
 
     final dietaryLabels = <DietaryTag, String>{
       DietaryTag.everything: l10n.everything,
@@ -391,7 +386,7 @@ class _DietaryEditorState extends State<_DietaryEditor> {
           children: [
             for (final tag in AllergenTag.values)
               AppChip(
-                allergenLabels[tag]!,
+                allergenLabel(l10n, tag),
                 selected: _allergies.contains(tag),
                 onTap: () => setState(() {
                   if (!_allergies.remove(tag)) _allergies.add(tag);

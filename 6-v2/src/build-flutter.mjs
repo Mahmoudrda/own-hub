@@ -448,6 +448,16 @@ if (fs.existsSync(dictPath)) {
     "Last time: {last}. So we added {added} kg.": {"description": "R07's progression note, drawn only when she has a logged set for this move and today's prescription is heavier.", "placeholders": {"last": {"type": "String", "example": "10 kg × 10"}, "added": {"type": "String", "example": "2"}}},
     "Last time: {last}.": {"description": "R07's progression note when she has a logged set for this move and nothing was added.", "placeholders": {"last": {"type": "String", "example": "10 kg × 10"}}},
     "Step {step} of {total}": {"description": "Progress through the server-chosen liveness challenge on C11. The number of steps is decided by the server per session, so it cannot be baked into the sentence the way the other Step strings in this dictionary are.", "placeholders": {"step": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "4"}}},
+    "{n} min": {"description": "A cooking time on a recipe card. The figure comes from the recipe, never from the dictionary.", "placeholders": {"n": {"type": "String", "example": "20"}}},
+    "{n} g protein": {"description": "Protein per serving on a recipe card, only when the recipe states it.", "placeholders": {"n": {"type": "String", "example": "24"}}},
+    "{n} EGP a serving": {"description": "Cost per serving, shown beside the month it was priced in.", "placeholders": {"n": {"type": "String", "example": "14"}}},
+    "{n} kcal a serving": {"description": "Energy per serving, only when it was summed from verified foods.", "placeholders": {"n": {"type": "String", "example": "410"}}},
+    "Priced {month}": {"description": "The month an EGP figure was priced in. An undated price in Egypt is wrong within a quarter.", "placeholders": {"month": {"type": "String", "example": "October 2026"}}},
+    "{count} dishes are hidden because of what you avoid.": {"description": "Said at the foot of the recipe list. Hiding silently is worse than hiding visibly.", "placeholders": {"count": {"type": "String", "example": "7"}}},
+    "{n} g": {"description": "A gram figure beside an ingredient, in her own words' shadow.", "placeholders": {"n": {"type": "String", "example": "40"}}},
+    "Step {n} of {total}": {"description": "Cook mode's position line.", "placeholders": {"n": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "6"}}},
+    "{temp} degrees": {"description": "An oven temperature chip on a step.", "placeholders": {"temp": {"type": "String", "example": "200"}}},
+    "Serves {n}": {"description": "How many the recipe feeds, only when the book says.", "placeholders": {"n": {"type": "String", "example": "2"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

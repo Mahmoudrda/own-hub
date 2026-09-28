@@ -75,6 +75,10 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
     Feature.coachedLife,
     Feature.marketplace,
     Feature.payments,
+    // Under `payments`, and it cannot be switched on above it: `isOn()` walks
+    // ancestors. Listed anyway, because a switch that exists and is not on this
+    // screen is a switch nobody running the product knows about.
+    Feature.recipeTiering,
     Feature.assistant,
   ];
 

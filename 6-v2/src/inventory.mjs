@@ -43,11 +43,11 @@ export const screens = [
   // C09b is the consent step. Nothing may open a camera before she has agreed
   // to where her face and her national ID go, and that agreement is written
   // down before C10 becomes reachable.
-  { id: 'C09b', flow: 'signup', title: 'Before the camera opens' },
+  { id: 'C09b', flow: 'signup', title: 'Before the camera opens', noMockup: true },
   { id: 'C10', flow: 'signup', title: 'Scan your ID' },
   // C10b is the second pass of the card: the back prints her sex as a word,
   // which is the independent reading the 13th digit is cross-checked against.
-  { id: 'C10b', flow: 'signup', title: 'The back of your card' },
+  { id: 'C10b', flow: 'signup', title: 'The back of your card', noMockup: true },
   { id: 'C11', flow: 'signup', title: 'Quick selfie' },
   { id: 'C12', flow: 'signup', title: 'Checking' },
   { id: 'C13', flow: 'signup', title: "You're in" },
@@ -93,6 +93,17 @@ export const screens = [
   { id: 'E07', flow: 'eat', title: 'Week plan' },
   { id: 'E08', flow: 'eat', title: 'Grocery list' },
   { id: 'E09', flow: 'eat', title: 'Eat, day one' },
+  // The one question the recipe library cannot be opened without.
+  //
+  // `DietaryConstraints.none` is a CLAIM: asked, and named nothing. It was true
+  // of nobody, because nothing asked. The moment a dish carries an allergen that
+  // claim makes the guard clear a sesame dish for a woman allergic to sesame,
+  // silently, while looking live. E10 is what turns the claim into an answer, and
+  // it stands in front of E05 rather than beside it.
+  { id: 'E10', flow: 'eat', title: 'What you cannot eat', noMockup: true },
+  // Rahma's closing letter, page 26 of her book. Her words, her sign-off, and
+  // nothing else on the screen.
+  { id: 'E11', flow: 'eat', title: 'A message from Rahma', noMockup: true },
   // Progress
   { id: 'P01', flow: 'progress', title: 'Your progress' },
   { id: 'P02', flow: 'progress', title: 'Milestones' },

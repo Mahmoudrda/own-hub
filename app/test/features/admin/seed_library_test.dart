@@ -60,14 +60,41 @@ const Set<String> _contraindicationVocabulary = {
   'none',
 };
 
-/// What a dish may declare. The first four are `AllergenTag`'s wire names —
-/// asserted against the enum below rather than trusted here.
+/// What a dish may declare: every `AllergenTag` wire name, the four spellings
+/// the first version of that enum wrote, and `none`.
+///
+/// The enum widened from four tokens to sixteen when Rahma's recipe book was
+/// authored — the EU/UK declarables plus `fava` and `coconut`. The four old
+/// spellings stay listed because seed rows written against them still exist and
+/// `AllergenTag.fromWire` still resolves every one of them; dropping them here
+/// would fail a row that the guard reads correctly. The enum is asserted
+/// against this set below rather than trusted from it.
+///
+/// `egg` is the seed's singular spelling of the enum's `eggs`. It is kept
+/// because rows already carry it, and it is a content correction rather than a
+/// code one.
 const Set<String> _allergenVocabulary = {
+  // The sixteen.
+  'gluten',
+  'crustaceans',
+  'eggs',
+  'fish',
+  'peanuts',
+  'soy',
+  'milk',
+  'tree_nuts',
+  'celery',
+  'mustard',
+  'sesame',
+  'sulphites',
+  'lupin',
+  'molluscs',
+  'fava',
+  'coconut',
+  // Already written into seed rows, and still resolvable.
   'nuts',
   'dairy',
-  'gluten',
   'shellfish',
-  'sesame',
   'egg',
   'none',
 };

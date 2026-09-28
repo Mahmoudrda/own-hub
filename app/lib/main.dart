@@ -77,12 +77,20 @@ Future<void> main() async {
   runApp(const OwnHubApp());
 }
 
-/// The two OFL handwriting faces in `assets/fonts/`. The OFL asks that its
-/// text travel with the font, and the licences page is where it travels to.
+/// Every OFL face bundled in `assets/fonts/`. The licence asks that its text
+/// travel with the font, and the licences page is where it travels to.
+///
+/// Rubik was missing here for a long time while the two handwriting faces were
+/// registered, which is an easy omission to make and a hard one to notice:
+/// Rubik is the body face of the entire product, so it is the one a reader is
+/// most likely to ask about and the one whose absence says least. The use was
+/// always permitted, OFL 1.1 like the others. What was missing was the notice,
+/// and a notice nobody can reach is the same as no notice at all.
 Stream<LicenseEntry> _handFontLicences() async* {
   for (final (family, asset) in [
     ('La Belle Aurore', 'assets/fonts/OFL-LaBelleAurore.txt'),
     ('Aref Ruqaa', 'assets/fonts/OFL-ArefRuqaa.txt'),
+    ('Rubik', 'assets/fonts/OFL-Rubik.txt'),
   ]) {
     yield LicenseEntryWithLineBreaks([
       family,

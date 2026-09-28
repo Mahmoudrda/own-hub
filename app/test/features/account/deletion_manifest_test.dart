@@ -49,13 +49,19 @@ Set<String> _subcollectionsInRules() {
 
 void main() {
   group('the manifest is intact', () {
-    test('37 rows, numbered 1 to 37 with no gaps and no duplicates', () {
+    test('38 rows, numbered 1 to 38 with no gaps and no duplicates', () {
       // 34 until check (e) below ran for the first time and found three
       // collections nobody had enumerated in three passes by eye.
-      expect(kDeletionManifest, hasLength(37));
+      //
+      // 38 with `users/{uid}/private/**`, which arrived with the recipe
+      // entitlement. Check (e) found that one too, on the same day the rule was
+      // written, which is the guard doing exactly its job: a subcollection
+      // added ahead of the feature that reads it is the kind most likely to be
+      // left on the server after she deletes her account.
+      expect(kDeletionManifest, hasLength(38));
 
       final numbers = kDeletionManifest.map((r) => r.number).toList()..sort();
-      expect(numbers, [for (var i = 1; i <= 37; i++) i]);
+      expect(numbers, [for (var i = 1; i <= 38; i++) i]);
     });
 
     test('every row names a path and an owner', () {

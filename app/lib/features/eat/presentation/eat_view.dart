@@ -49,8 +49,10 @@ import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../app_state/eat_state.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
+import '../../../theme/recipe_book_tokens.dart';
 import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
@@ -537,6 +539,7 @@ class _EatViewState extends State<EatView> {
         ),
       if (_screenedToNothing(view.suggestions)) _guardNote(l10n),
       _recipesRow(l10n),
+      _rahmaShelf(l10n),
       _box(l10n),
     ];
   }
@@ -761,6 +764,69 @@ class _EatViewState extends State<EatView> {
     ),
     onTap: () => openScreen(context, 'E05', widget.onOpenRecipes),
   );
+
+  /// A shelf of her four sections, one small card each.
+  ///
+  /// **The rest of E01 is not restyled.** This is the logging screen: the day
+  /// totals, the suggestions, the say-or-type box and the guard note all stay
+  /// exactly as they are. Turning the whole tab pink would mean turning the day
+  /// totals pink, and the day totals are not a recipe book.
+  ///
+  /// Empty until the seed has been read, and empty is drawn as nothing at all
+  /// rather than as four grey placeholders: a shelf of loading cards on a screen
+  /// whose main job is logging a meal is noise.
+  Widget _rahmaShelf(AppL10n l10n) {
+    final book = (EatAppState.instance..ensureRecipeBook()).recipeBook;
+    if (book.sections.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.rahmasRecipes, style: AppText.titleM),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 108,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.zero,
+            itemCount: book.sections.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final section = book.sections[index];
+              return SizedBox(
+                width: 168,
+                child: HandSurface(
+                  seed: handSeed(['eat-shelf', section.sectionId]),
+                  fill: BookInk.paper,
+                  level: HandLevel.crafted,
+                  radius: 8,
+                  looseCorner: 16,
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                  onTap: () => openScreen(context, 'E05', widget.onOpenRecipes),
+                  semanticsButton: true,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: BookTitle(
+                          titleEn: section.titleEn,
+                          style: AppText.titleS.copyWith(color: BookInk.ink),
+                        ),
+                      ),
+                      FoodMark(
+                        markKey: section.markKey,
+                        size: 30,
+                        ink: BookInk.ink,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _box(AppL10n l10n) => SayOrTypeBox(
     label: l10n.sayOrTypeWhatYouAte,

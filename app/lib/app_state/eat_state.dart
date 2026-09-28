@@ -35,6 +35,7 @@ library;
 
 import 'package:flutter/widgets.dart';
 
+import '../features/eat/data/seeded_recipe_library.dart';
 import '../features/eat/domain/allergy_guard.dart';
 import '../features/eat/domain/item_id.dart';
 import '../features/eat/domain/meal_log_service.dart';
@@ -109,6 +110,41 @@ class EatAppState {
   /// community ids use. Without it E06 opened on koshari whichever row she
   /// pressed, over a Log button that wrote koshari.
   String? openRecipeId;
+
+  // ------------------------------------------------------- Rahma's book ----
+
+  /// Her thirty-nine cards, once the seed asset has been read.
+  ///
+  /// [RecipeBook.empty] until then, and every screen that draws it treats empty
+  /// as "there is no book" rather than as "the book is missing" — E05 falls back
+  /// to the four prototype rows, E06 to the food-backed page, and neither shows
+  /// a spinner. A spinner on a library that is already on the handset would be
+  /// a lie about where the data lives.
+  RecipeBook recipeBook = RecipeBook.empty;
+
+  Future<void>? _bookLoad;
+
+  /// Starts the one read of the seed, and tells the open screens when it lands.
+  ///
+  /// Called from the Eat screens rather than from `main()` so that a build which
+  /// never opens Eat never pays for it, and idempotent because three screens
+  /// call it. The failure path is deliberately silent: a bundle read that fails
+  /// leaves [recipeBook] empty, which every caller already handles, and there is
+  /// nothing a woman could do about it.
+  void ensureRecipeBook({RecipeLibrary? library}) {
+    if (_bookLoad != null) return;
+    _bookLoad = (library ?? SeededRecipeLibrary()).load().then((book) {
+      recipeBook = book;
+      AppChanges.bump();
+    }, onError: (_) {});
+  }
+
+  /// Puts a book in place without touching the bundle. Tests only.
+  @visibleForTesting
+  void seedRecipeBook(RecipeBook book) {
+    recipeBook = book;
+    _bookLoad = Future<void>.value();
+  }
 
   /// Her plates, most-eaten first and most-recent as the tie-break.
   ///

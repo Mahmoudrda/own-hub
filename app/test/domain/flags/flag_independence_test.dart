@@ -57,6 +57,12 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
   'test/features/assistant/assistant_service_test.dart':
       '"the assistant ships dark" records the default position of the kill '
       'switch. Every behavioural case in that file pins its own flags.',
+  'test/features/eat/recipe_guard_test.dart':
+      '"everything is open, because nothing is sold" and "the flag cannot be '
+      'switched on above its parent" both have the shipped position of '
+      '`payments` as their subject: `Feature.recipeTiering` has `payments` as '
+      'its parent, so a paid recipe tier is structurally unreachable rather '
+      'than merely unset. Every other case in that file builds its own world.',
   'test/features/coaching/checkout_gate_test.dart':
       '"this flow ships dark" records the default position of the '
       'marketplace. Every refusal tested around it pins its own flags.',

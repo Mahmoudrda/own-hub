@@ -117,7 +117,21 @@ enum Feature {
   payments,
 
   /// The assistant.
-  assistant;
+  assistant,
+
+  /// Whether a recipe's [RecipeTier] means anything.
+  ///
+  /// Its parent is [payments], deliberately: `isOn()` walks ancestors, so this
+  /// is **structurally impossible** to switch on while there is no way to take
+  /// money. That is the honest version of "the flag is off" — not a promise in
+  /// a comment that somebody flips during a release, but a gate that cannot
+  /// open until billing exists above it.
+  ///
+  /// Every seeded recipe is `free` and no paywall, price or locked card is
+  /// built. The flag exists so the entitlement can be modelled and tested now,
+  /// and so the day a paid tier is real, the shape it plugs into was designed
+  /// when nobody was in a hurry.
+  recipeTiering;
 
   /// The feature this one lives inside, or null when it is top level.
   Feature? get parent => switch (this) {
@@ -126,6 +140,7 @@ enum Feature {
     communityVoiceNotes ||
     communityFollowerCounts => community,
     payments => marketplace,
+    recipeTiering => payments,
     _ => null,
   };
 }
@@ -190,6 +205,10 @@ class FeatureFlags {
     Feature.marketplace: false,
     Feature.payments: false,
     Feature.assistant: false,
+
+    // Off, and its parent is `payments`, so this line is belt as well as
+    // braces: `isOn()` would refuse it even set to true.
+    Feature.recipeTiering: false,
   });
 
   /// Every feature on, with no account required.

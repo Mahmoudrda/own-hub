@@ -12,9 +12,11 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/account/domain/verification_claim.dart';
+import 'package:own_hub/features/account/presentation/allergen_labels.dart';
 import 'package:own_hub/features/account/presentation/profile_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_chip_row.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -84,11 +86,20 @@ void main() {
       await tester.tap(find.text('Allergies and dietary preferences'));
       await tester.pumpAndSettle();
 
-      // Exactly G17's four allergens. Nothing invented.
-      expect(find.text('No nuts'), findsOneWidget);
-      expect(find.text('No dairy'), findsOneWidget);
-      expect(find.text('No gluten'), findsOneWidget);
-      expect(find.text('No shellfish'), findsOneWidget);
+      // `AllergenTag`'s sixteen, drawn from the shared label table this screen
+      // now reads with `G17` and `E10`. Four until Rahma's recipe book was
+      // authored and dishes started carrying real allergen data; the labels are
+      // plain names rather than "No x" because sixteen negations read as a list
+      // of refusals. Nothing is invented: the categories are the EU/UK
+      // declarables plus the two Egypt needs.
+      final l10n = AppL10n.of(tester.element(find.byType(AppChip).first));
+      for (final tag in AllergenTag.values) {
+        expect(
+          find.text(allergenLabel(l10n, tag)),
+          findsOneWidget,
+          reason: '\${tag.wireName} has no chip, so she cannot declare it',
+        );
+      }
       expect(find.text('How you usually eat'), findsOneWidget);
 
       // A branch of A02, not a route (HANDOFF rule 16), and not a dialog.
@@ -110,18 +121,21 @@ void main() {
 
       await tester.tap(find.text('Allergies and dietary preferences'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('No nuts'));
+      await tester.tap(find.text('Tree nuts'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
-      expect(repository.read().allergies, {AllergenTag.nuts});
+      expect(repository.read().allergies, {AllergenTag.treeNuts});
       expect(repository.writes, [
         {'profile.allergies', 'profile.dietary'},
       ], reason: 'G7 hosts the row; G2 writes the field, by field path');
 
       // The value the Eat feature consumes.
-      expect(repository.read().toConstraints().allergies, {'nuts'});
+      // `nuts` until the tag split into `tree_nuts` and `peanuts`: they are two
+      // allergies, and folding them either hides peanuts from a woman who reacts
+      // to them or takes every nut dish from a woman who does not.
+      expect(repository.read().toConstraints().allergies, {'tree_nuts'});
     });
 
     testWidgets('saving with nothing selected is a real answer, not a no-op', (
@@ -158,7 +172,7 @@ void main() {
       _phone(tester);
       final repository = InMemoryDietaryProfileRepository(
         const DietaryProfile(
-          allergies: {AllergenTag.dairy},
+          allergies: {AllergenTag.milk},
           dietary: {DietaryTag.vegetarianWeekdays},
         ),
       );
@@ -171,14 +185,14 @@ void main() {
       await tester.tap(find.text('Allergies and dietary preferences'));
       await tester.pumpAndSettle();
 
-      // D3 — editable forever. She adds gluten to the dairy already there.
-      await tester.tap(find.text('No gluten'));
+      // D3 — editable forever. She adds gluten to the milk already there.
+      await tester.tap(find.text('Gluten'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
       expect(repository.read().allergies, {
-        AllergenTag.dairy,
+        AllergenTag.milk,
         AllergenTag.gluten,
       });
       expect(repository.read().dietary, {DietaryTag.vegetarianWeekdays});

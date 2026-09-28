@@ -48,6 +48,7 @@ library;
 import 'package:meta/meta.dart';
 
 import 'food_library.dart';
+import 'recipe.dart';
 
 /// What she cannot eat, and what she prefers not to.
 ///
@@ -231,6 +232,61 @@ class AllergyGuard {
 
   /// True when logging [food] needs no acknowledgement at all.
   bool isClear(Food food) => !assess(food).isBlocked;
+
+  /// Removes the recipes she must not be offered, **before** anything ranks or
+  /// sorts them. The recipe half of [screen], and it fails closed twice over.
+  ///
+  /// Two removals, and the second is the one this method exists for:
+  ///
+  ///  * **A named allergen.** `allergensFinal` intersects what she declared.
+  ///    Same rule as a food, same case-insensitive comparison.
+  ///  * **An unsigned recipe.** `allergenReviewedBy` is null, which means
+  ///    nobody has put their name to what is in this dish. That is not the same
+  ///    fact as an empty allergen set, and collapsing the two is how a library
+  ///    that nobody has checked comes to look checked. Extended from the
+  ///    existing `allergens == null` rule for foods, for the same reason:
+  ///    unknown is unsafe, never safe by default.
+  ///
+  /// As with foods, an unsigned recipe is removed **only for a woman who has
+  /// declared an allergy**. For everyone else it stays in the list and the
+  /// screen says out loud that it has not been checked, because hiding the
+  /// whole library from everybody would not make anyone safer and would make
+  /// the tab look broken.
+  ///
+  /// [Recipe.advisories] are deliberately not consulted. A pregnancy note or a
+  /// favism note is not something she ticked, so filtering on it would be the
+  /// app deciding something about her body that she did not tell it.
+  List<Recipe> screenRecipes(Iterable<Recipe> candidates) {
+    final allergies = constraints.allergies;
+    final dietary = constraints.dietary;
+    final declared = allergies != null && allergies.isNotEmpty;
+
+    return candidates.where((recipe) {
+      if (declared) {
+        if (!recipe.allergensReviewed) return false;
+        if (recipe.allergensFinal.any(_matches(allergies))) return false;
+      }
+      if (dietary != null && dietary.isNotEmpty) {
+        // A preference is not a safety constraint, so a recipe with no diet
+        // tags at all is not treated as a conflict. Doing so would empty the
+        // book for every woman with a preference, on content that mostly does
+        // not carry tags yet, and teach her the filter is broken.
+        if (recipe.dietTags.isNotEmpty &&
+            !_satisfies(recipe.dietTags, dietary)) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
+  }
+
+  /// How many of [candidates] [screenRecipes] would take away.
+  ///
+  /// The list screen states this figure at its foot. Hiding dishes silently is
+  /// worse than hiding them visibly: a woman who declared a nut allergy and
+  /// then found six recipes missing has no way to tell a filter from a fault.
+  int hiddenCount(Iterable<Recipe> candidates) =>
+      candidates.length - screenRecipes(candidates).length;
 
   bool Function(String) _matches(Set<String> against) =>
       (String tag) => against.any((a) => _same(a, tag));

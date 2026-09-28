@@ -42,38 +42,139 @@
 ///
 /// # The vocabulary is authored, not invented
 ///
-/// The four allergens and two dietary answers are exactly the ones the prototype
-/// authors on `G17` — which its own design note calls "the only place in the
-/// product where a client states her allergies". Every label below is already in
-/// the dictionary in both languages. Nothing here adds an allergen the content
-/// team has not written, because a plausible-looking allergen list is precisely
-/// the fabricated safety guarantee this feature exists to avoid.
+/// The two dietary answers are exactly the ones the prototype authors on `G17` —
+/// which its own design note calls "the only place in the product where a client
+/// states her allergies". Nothing here adds a *category* the content team has not
+/// written, because a plausible-looking allergen list is precisely the fabricated
+/// safety guarantee this feature exists to avoid.
+///
+/// The allergen list grew from four to sixteen when Rahma's recipe book was
+/// authored: see [AllergenTag], which records where each of the sixteen comes
+/// from and why folding any of them together would be worse than carrying it.
 library;
 
 import 'package:meta/meta.dart';
 
 import '../../eat/domain/allergy_guard.dart';
 
-/// The allergens `G17` offers. Four, and no more until content authors more.
+/// What she can tell us she cannot eat.
+///
+/// ## Why sixteen, and where they come from
+///
+/// The **EU/UK 14** declarable allergens, which are a superset of both Codex STAN
+/// 1-1985 and the FDA 9 and therefore map cleanly onto Egyptian labelling, plus
+/// two Egypt needs:
+///
+///   * **`fava`** is not an allergen at all; it is a metabolic
+///     contraindication. G6PD deficiency (favism) is common enough in Egypt that
+///     `Fool & Ta3mya` — recipe 14 of Rahma's book — needs a flag. It lives in
+///     this enum rather than beside the advisories because it is the same *user
+///     action*: she ticks a thing she cannot eat. What she does with it is
+///     identical; only the biology differs, and the biology is not this type's
+///     business.
+///   * **`coconut` is its own token** rather than folded into [treeNuts],
+///     because the FDA calls coconut a tree nut and the EU does not. Folding it
+///     produces either a false positive for every woman with a nut allergy — she
+///     loses `Coconut apple Pudding`, recipe 4, for no reason — or a false
+///     negative for the one woman who actually reacts to coconut. Two tokens
+///     cost one extra chip; one token costs somebody a reaction.
+///
+/// `lupin` (الترمس) is in the EU 14, is Egyptian street food, and appears
+/// nowhere in the book. It is here because the library grows, and because lupin
+/// cross-reacts with peanut, so a woman who ticks [peanuts] and later meets a
+/// lupin dish needs the tag to exist before the dish does.
+///
+/// ## Why the four old spellings still work
+///
+/// The first version of this enum had four members — `nuts`, `dairy`, `gluten`,
+/// `shellfish` — and women have already saved profiles using them.
+/// [fromWire] therefore accepts all four as **aliases**, because a rename that
+/// silently drops a saved declaration is a woman whose nut allergy stops being
+/// screened on the day of an app update. `shellfish` is the hard case: it split
+/// into [crustaceans] and [molluscs], and one wire token cannot become two enum
+/// members, so it maps to [crustaceans] (shrimp and crab, which is what
+/// "shellfish" means in practice in Egypt) and [expandAliases] widens it back to
+/// both for screening. Narrowing on read and widening on screen is the safe
+/// direction.
 ///
 /// [wireName] is what lands in `profile.allergies[]` and what must match
-/// `foods.allergens[]`. `AllergyGuard` compares case- and whitespace-insensitively,
-/// so these are lowercase single tokens by convention rather than by accident.
+/// `foods.allergens[]` and `Recipe.allergensFinal`. `AllergyGuard` compares case-
+/// and whitespace-insensitively, so these are lowercase single tokens by
+/// convention rather than by accident.
 enum AllergenTag {
-  nuts('nuts'),
-  dairy('dairy'),
+  // ------------------------------------------------------------ the EU/UK 14
   gluten('gluten'),
-  shellfish('shellfish');
+  crustaceans('crustaceans'),
+  eggs('eggs'),
+  fish('fish'),
+  peanuts('peanuts'),
+  soy('soy'),
+  milk('milk'),
+  treeNuts('tree_nuts'),
+  celery('celery'),
+  mustard('mustard'),
+  sesame('sesame'),
+  sulphites('sulphites'),
+  lupin('lupin'),
+  molluscs('molluscs'),
+
+  // ----------------------------------------------------------- and two more
+  /// Not an allergen. G6PD deficiency / favism. See the enum's note.
+  fava('fava'),
+
+  /// Its own token because the FDA and the EU disagree. See the enum's note.
+  coconut('coconut');
 
   const AllergenTag(this.wireName);
 
   final String wireName;
 
+  /// The four wire tokens the first version of this enum wrote.
+  ///
+  /// Read by [fromWire] and asserted **total** by a test: every member of the
+  /// old four must still resolve to something, or an already-saved profile
+  /// silently loses a declaration.
+  static const Map<String, AllergenTag> legacyAliases = <String, AllergenTag>{
+    'nuts': AllergenTag.treeNuts,
+    'dairy': AllergenTag.milk,
+    'gluten': AllergenTag.gluten,
+    // "shellfish" covered both classes. One token cannot become two members, so
+    // it lands on the one Egyptian kitchens mean by it and [expandAliases]
+    // widens it back to molluscs for screening.
+    'shellfish': AllergenTag.crustaceans,
+  };
+
   static AllergenTag? fromWire(String wire) {
+    final needle = wire.trim().toLowerCase();
     for (final tag in values) {
-      if (tag.wireName == wire.trim().toLowerCase()) return tag;
+      if (tag.wireName == needle) return tag;
     }
-    return null;
+    return legacyAliases[needle];
+  }
+
+  /// The tokens a dish must be screened against, given what she declared.
+  ///
+  /// One entry in, one or more out. Only `shellfish` widens today, and it widens
+  /// because the old token meant both classes: a woman who saved "shellfish"
+  /// before the split told us she cannot eat calamari either, and a guard that
+  /// dropped that on upgrade would be a silent regression in exactly the
+  /// direction this file exists to prevent.
+  static Set<String> expandAliases(Iterable<String> declared) {
+    final out = <String>{};
+    for (final raw in declared) {
+      final token = raw.trim().toLowerCase();
+      if (token == 'shellfish') {
+        out.add(AllergenTag.crustaceans.wireName);
+        out.add(AllergenTag.molluscs.wireName);
+        continue;
+      }
+      final tag = fromWire(token);
+      // An unrecognised token is kept rather than dropped. It may be a tag a
+      // later content release added and this build has never heard of, and
+      // forgetting it would fail open.
+      out.add(tag?.wireName ?? token);
+    }
+    return out;
   }
 }
 
@@ -159,8 +260,14 @@ class DietaryProfile {
   /// This is the single function that makes `P0-EAT-01` reachable: wire
   /// `AppRouter.eatConstraints` to `profile.toConstraints()` and
   /// `AllergyGuard`'s fail-closed behaviour goes live with no other change.
+  /// The alias expansion happens here rather than in the guard, because the
+  /// profile is the side that knows a wire token may be an old spelling. A
+  /// woman who saved `shellfish` before the tag split told us she cannot eat
+  /// calamari either, and the guard must screen both classes for her.
   DietaryConstraints toConstraints() => DietaryConstraints(
-    allergies: allergies?.map((a) => a.wireName).toSet(),
+    allergies: allergies == null
+        ? null
+        : AllergenTag.expandAliases(allergies!.map((a) => a.wireName)),
     dietary: dietary?.expand((d) => d.requiredDishTags).toSet(),
   );
 

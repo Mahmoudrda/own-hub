@@ -46,9 +46,12 @@ import '../domain/rewards/personal_best_ledger.dart';
 import '../domain/week/week_key.dart';
 import '../features/eat/domain/allergy_guard.dart';
 import '../features/eat/domain/meal_repository.dart';
+import '../features/eat/presentation/allergy_question_view.dart';
 import '../features/eat/presentation/eat_sample_library.dart';
 import '../features/eat/presentation/eat_view.dart';
 import '../features/eat/presentation/grocery_list_view.dart';
+import '../features/eat/presentation/rahma_letter_view.dart';
+import '../features/eat/presentation/rahma_recipe_view.dart';
 import '../features/eat/presentation/recipe_view.dart';
 import '../features/eat/presentation/recipes_view.dart';
 import '../features/eat/presentation/say_it_view.dart';
@@ -1350,6 +1353,14 @@ class AppRouter {
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
     'E05': (context) => RecipesView(
+      // Kicked off here rather than in `main()`: a build that never opens Eat
+      // never reads the asset, and three screens calling it is harmless because
+      // the load is idempotent.
+      book: (EatAppState.instance..ensureRecipeBook()).recipeBook,
+      constraints: eatConstraints,
+      asked: dietaryRepository.read().asked,
+      onAnswerAllergies: () => goTo(context, 'E10'),
+      onOpenLetter: () => goTo(context, 'E11'),
       onBack: () => Navigator.of(context).maybePop(),
       // The row she tapped, recorded inline at the tap — the same arrangement
       // the community ids use, because `goTo` pushes a route name and nothing
@@ -1361,7 +1372,14 @@ class AppRouter {
       onOpenWeekPlan: () => goTo(context, 'E07'),
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
-    'E06': (context) => RecipeView(
+    // One route, two pages, because they are two different kinds of thing.
+    //
+    // A `rahma_` id is one of her cards: her text, her card, both tabs, cook
+    // mode. Anything else is a prototype row, which is still built from the
+    // *food* pack because no recipe exists behind it — see `recipe_view.dart`.
+    // Branching here rather than inside one widget keeps every test written
+    // against the old page pointed at the old page.
+    'E06': (context) => _rahmaRecipe(context) ?? RecipeView(
       constraints: eatConstraints,
       repository: mealRepository,
       session: EatAppState.instance.session,
@@ -1395,6 +1413,23 @@ class AppRouter {
         goTo(context, 'E06');
       },
       onOpenGroceryList: () => goTo(context, 'E08'),
+    ),
+    'E10': (context) => AllergyQuestionView(
+      initial: dietaryRepository.read(),
+      onBack: () => Navigator.of(context).maybePop(),
+      onOpenProfile: () => goTo(context, 'A02'),
+      // An empty allergy set here is her answer, not a default, which is the
+      // one thing that turns `DietaryConstraints.none` from a fiction into a
+      // statement. `save` writes both fields and nothing else.
+      onAnswered: (allergies, dietary) async {
+        await dietaryRepository.save(allergies: allergies, dietary: dietary);
+        AppChanges.bump();
+        if (context.mounted) Navigator.of(context).maybePop();
+      },
+    ),
+    'E11': (context) => RahmaLetterView(
+      letterAr: (EatAppState.instance..ensureRecipeBook()).recipeBook.letterAr,
+      onBack: () => Navigator.of(context).maybePop(),
     ),
     'E08': (context) => GroceryListView(
       repository: mealRepository,
@@ -4498,6 +4533,30 @@ class AppRouter {
   static DietaryConstraints get eatConstraints {
     final profile = dietaryRepository.read();
     return profile.asked ? profile.toConstraints() : DietaryConstraints.none;
+  }
+
+  /// One of Rahma's cards, or null when the id she tapped is not one of hers.
+  ///
+  /// Null is also what an un-loaded book gives back, and the caller falls
+  /// through to the food-backed page rather than to a spinner. The seed is on
+  /// her handset; the only reason it would not be ready is the frame before the
+  /// bundle read lands, and a flash of a loader for that is worse than a page.
+  static Widget? _rahmaRecipe(BuildContext context) {
+    final id = EatAppState.instance.openRecipeId;
+    if (id == null) return null;
+    final book = (EatAppState.instance..ensureRecipeBook()).recipeBook;
+    final recipe = book.byId(id);
+    if (recipe == null) return null;
+    return RahmaRecipeView(
+      recipe: recipe,
+      onBack: () => Navigator.of(context).maybePop(),
+      // Nothing in this build can share, and saying so is the same discipline
+      // the rest of the Eat tab keeps rather than leaving a dead button.
+      onShare: () => showHonestNotice(
+        context,
+        AppL10n.of(context).sharingIsNotConnectedInThisBuild,
+      ),
+    );
   }
 
   /// Choices made during sign-up that later screens need.

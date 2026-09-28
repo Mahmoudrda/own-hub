@@ -7172,4 +7172,241 @@ class AppL10nAr extends AppL10n {
   @override
   String get thePhotographsAreProcessedByGoogleCloud_tqchn =>
       'تُعالَج الصور لدى Google Cloud على خوادم خارج مصر.';
+
+  @override
+  String get gluten_1v1e1 => 'الجلوتين';
+
+  @override
+  String get crustaceans => 'القشريات';
+
+  @override
+  String get eggs => 'البيض';
+
+  @override
+  String get fish => 'الأسماك';
+
+  @override
+  String get peanuts => 'الفول السوداني';
+
+  @override
+  String get soy => 'الصويا';
+
+  @override
+  String get milkAndDairy => 'الحليب ومشتقاته';
+
+  @override
+  String get treeNuts => 'المكسرات';
+
+  @override
+  String get celery => 'الكرفس';
+
+  @override
+  String get mustard => 'المسطردة';
+
+  @override
+  String get sesame => 'السمسم';
+
+  @override
+  String get sulphites => 'الكبريتيت';
+
+  @override
+  String get lupin => 'الترمس';
+
+  @override
+  String get molluscs => 'الرخويات';
+
+  @override
+  String get favaBeans => 'الفول';
+
+  @override
+  String get coconut => 'جوز الهند';
+
+  @override
+  String get isThereAnythingYouCannotEat => 'هل هناك ما لا يمكنك تناوله؟';
+
+  @override
+  String get tickAnythingYouAvoidDishesThatContain =>
+      'اختاري كل ما تتجنّبينه. الأطباق التي تحتويه تُخفى من وصفاتك.';
+
+  @override
+  String get noNothing => 'لا، لا شيء';
+
+  @override
+  String get saveWhatIAvoid => 'احفظي ما أتجنّبه';
+
+  @override
+  String get youCanChangeThisAnyTimeFrom =>
+      'يمكنك تغيير هذا في أي وقت من حسابك.';
+
+  @override
+  String get favaBeansAreListedBecauseOfFavism =>
+      'الفول مذكور هنا بسبب التفول، لا لأنه من مسببات الحساسية.';
+
+  @override
+  String get rahmasRecipes => 'وصفات رحمة';
+
+  @override
+  String get searchRecipes => 'ابحثي في الوصفات';
+
+  @override
+  String get noOven => 'بدون فرن';
+
+  @override
+  String get readyInTheFridge => 'جاهز في الثلاجة';
+
+  @override
+  String get quickCombinations => 'تركيبات سريعة';
+
+  @override
+  String get aMessageFromRahma => 'رسالة من رحمة';
+
+  @override
+  String get nothingMatchesThat => 'لا يوجد ما يطابق ذلك.';
+
+  @override
+  String get noCombinationsAreBuiltYetEachOne =>
+      'لم تُبنَ أي تركيبات بعد. كل تركيبة تحتاج أطعمة تم التحقق من قيمها.';
+
+  @override
+  String get ingredientsAndSteps => 'المكوّنات والخطوات';
+
+  @override
+  String get asItIsInTheBook => 'كما هي في الكتاب';
+
+  @override
+  String get steps => 'الخطوات';
+
+  @override
+  String get optional => 'اختياري';
+
+  @override
+  String get servedWith => 'يُقدَّم مع';
+
+  @override
+  String get cookMode => 'وضع الطهي';
+
+  @override
+  String get nextStep => 'الخطوة التالية';
+
+  @override
+  String get previousStep => 'الخطوة السابقة';
+
+  @override
+  String get contains => 'يحتوي على';
+
+  @override
+  String get containsNoneOfTheSixteenWeCheck =>
+      'لا يحتوي على أي من الستة عشر التي نتحقق منها.';
+
+  @override
+  String get nobodyHasSignedOffWhatIsIn =>
+      'لم يعتمد أحد مكوّنات هذا الطبق. راجعي ملصق كل منتج بنفسك.';
+
+  @override
+  String get theWeightsAreEstimatesExceptWhereThe =>
+      'الأوزان تقديرية إلا ما ذكره الكتاب.';
+
+  @override
+  String get theIngredientsAreRahmasReadTheLabel =>
+      'المقادير من رحمة. راجعي ملصق كل منتج بنفسك قبل الاستخدام.';
+
+  @override
+  String get howToTellItIsDone => 'كيف تعرفين أنها استوت';
+
+  @override
+  String get chickenIsDoneWhenNoPinkIs =>
+      'الدجاج يستوي عندما يختفي اللون الوردي ويصبح سائله صافيًا.';
+
+  @override
+  String get mincedMeatIsDoneWhenNoPink =>
+      'اللحمة المفرومة تستوي عندما يختفي اللون الوردي منها تمامًا.';
+
+  @override
+  String get liverIsDoneWhenItIsFirm =>
+      'الكبدة تستوي عندما تتماسك ولا ينزل منها دم عند تقطيعها.';
+
+  @override
+  String get shrimpIsDoneWhenItTurnsOpaque =>
+      'الجمبري يستوي عندما يصبح لونه معتمًا بالكامل ويتقوّس.';
+
+  @override
+  String get eggIsDoneWhenTheWhiteIs =>
+      'البيضة تستوي عندما يتماسك بياضها تمامًا.';
+
+  @override
+  String get liverIsVeryHighInVitaminA =>
+      'الكبدة عالية جدًا في فيتامين أ. إذا كنتِ حاملًا، استشيري طبيبك قبل تناولها.';
+
+  @override
+  String get thisDishContainsFavaBeansIfYou =>
+      'هذا الطبق يحتوي على الفول. إذا كنتِ مصابة بالتفول، وهو نقص إنزيمي وراثي، فتجنّبيه.';
+
+  @override
+  String get thisRecipeIsFromRahmasBook => 'هذه الوصفة من كتاب رحمة.';
+
+  @override
+  String get aCombinationNotARecipeNothingIs =>
+      'تركيبة، وليست وصفة. لا يوجد طهي.';
+
+  @override
+  String get theBookDoesNotSay => 'الكتاب لا يذكر ذلك.';
+
+  @override
+  String get changeWhatYouAvoid => 'تغيير ما تتجنّبينه';
+
+  @override
+  String get whatYouAvoid => 'ما تتجنّبينه';
+
+  @override
+  String get showTheBookPage => 'اعرضي صفحة الكتاب';
+
+  @override
+  String nMin(String n) {
+    return '$n دقيقة';
+  }
+
+  @override
+  String nGProtein(String n) {
+    return '$n جم بروتين';
+  }
+
+  @override
+  String nEgpAServing(String n) {
+    return '$n جنيه للحصة';
+  }
+
+  @override
+  String nKcalAServing(String n) {
+    return '$n سعرة للحصة';
+  }
+
+  @override
+  String pricedMonth(String month) {
+    return 'السعر بتاريخ $month';
+  }
+
+  @override
+  String countDishesAreHiddenBecauseOfWhat(String count) {
+    return '$count أطباق مخفية بسبب ما تتجنّبينه.';
+  }
+
+  @override
+  String nG(String n) {
+    return '$n جم';
+  }
+
+  @override
+  String stepNOfTotal(String n, String total) {
+    return 'الخطوة $n من $total';
+  }
+
+  @override
+  String tempDegrees(String temp) {
+    return '$temp درجة';
+  }
+
+  @override
+  String servesN(String n) {
+    return 'تكفي $n';
+  }
 }

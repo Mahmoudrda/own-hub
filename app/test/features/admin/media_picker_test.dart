@@ -257,9 +257,11 @@ void main() {
       // byte order mark or a quoted comma.
       const source = _FakeTextSource(
         'recipes.csv',
-        'recipeId,name_en,name_ar,minutes,ingredients,allergens,dietTags,'
-            'photoFile\n'
-            'om_ali,Om Ali,أم علي,45,"pastry|milk|nuts",nuts|dairy,vegetarian,\n',
+        // Widened with the recipe contract. The seam being proved is that a
+        // chosen file reaches `parseCsv` byte for byte, which is why the row is
+        // a whole valid row rather than a fragment.
+        'recipeId,name_en,name_ar,minutes,ingredients,allergens,dietTags,photoFile,sectionId,source,status,sourcePage,authoredBy,allergenReviewedBy,serves,activeMinutes,kcal,proteinG,carbsG,fatG,macroBasis,egpPerServing,egpPricedAt,advisories,doneness,markKey,tier\n'
+            'om_ali,Om Ali,أم علي,45,"pastry|milk|nuts",nuts|dairy,vegetarian,,,authored,review,,,,,,,,,,withheld,,,none,,pot,free\n',
       );
 
       final result = await source.chooseText() as TextPicked;

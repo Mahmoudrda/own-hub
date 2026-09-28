@@ -7212,4 +7212,241 @@ class AppL10nEn extends AppL10n {
   @override
   String get thePhotographsAreProcessedByGoogleCloud_tqchn =>
       'The photographs are processed by Google Cloud, on servers outside Egypt.';
+
+  @override
+  String get gluten_1v1e1 => 'Gluten';
+
+  @override
+  String get crustaceans => 'Crustaceans';
+
+  @override
+  String get eggs => 'Eggs';
+
+  @override
+  String get fish => 'Fish';
+
+  @override
+  String get peanuts => 'Peanuts';
+
+  @override
+  String get soy => 'Soy';
+
+  @override
+  String get milkAndDairy => 'Milk and dairy';
+
+  @override
+  String get treeNuts => 'Tree nuts';
+
+  @override
+  String get celery => 'Celery';
+
+  @override
+  String get mustard => 'Mustard';
+
+  @override
+  String get sesame => 'Sesame';
+
+  @override
+  String get sulphites => 'Sulphites';
+
+  @override
+  String get lupin => 'Lupin';
+
+  @override
+  String get molluscs => 'Molluscs';
+
+  @override
+  String get favaBeans => 'Fava beans';
+
+  @override
+  String get coconut => 'Coconut';
+
+  @override
+  String get isThereAnythingYouCannotEat => 'Is there anything you cannot eat?';
+
+  @override
+  String get tickAnythingYouAvoidDishesThatContain =>
+      'Tick anything you avoid. Dishes that contain it are hidden from your recipes.';
+
+  @override
+  String get noNothing => 'No, nothing';
+
+  @override
+  String get saveWhatIAvoid => 'Save what I avoid';
+
+  @override
+  String get youCanChangeThisAnyTimeFrom =>
+      'You can change this any time from your account.';
+
+  @override
+  String get favaBeansAreListedBecauseOfFavism =>
+      'Fava beans are listed because of favism, not because they are an allergen.';
+
+  @override
+  String get rahmasRecipes => 'Rahma\'s recipes';
+
+  @override
+  String get searchRecipes => 'Search recipes';
+
+  @override
+  String get noOven => 'No oven';
+
+  @override
+  String get readyInTheFridge => 'Ready in the fridge';
+
+  @override
+  String get quickCombinations => 'Quick combinations';
+
+  @override
+  String get aMessageFromRahma => 'A message from Rahma';
+
+  @override
+  String get nothingMatchesThat => 'Nothing matches that.';
+
+  @override
+  String get noCombinationsAreBuiltYetEachOne =>
+      'No combinations are built yet. Each one needs foods whose values have been verified.';
+
+  @override
+  String get ingredientsAndSteps => 'Ingredients and steps';
+
+  @override
+  String get asItIsInTheBook => 'As it is in the book';
+
+  @override
+  String get steps => 'Steps';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get servedWith => 'Served with';
+
+  @override
+  String get cookMode => 'Cook mode';
+
+  @override
+  String get nextStep => 'Next step';
+
+  @override
+  String get previousStep => 'Previous step';
+
+  @override
+  String get contains => 'Contains';
+
+  @override
+  String get containsNoneOfTheSixteenWeCheck =>
+      'Contains none of the sixteen we check for.';
+
+  @override
+  String get nobodyHasSignedOffWhatIsIn =>
+      'Nobody has signed off what is in this dish. Read the label on each product yourself.';
+
+  @override
+  String get theWeightsAreEstimatesExceptWhereThe =>
+      'The weights are estimates except where the book states them.';
+
+  @override
+  String get theIngredientsAreRahmasReadTheLabel =>
+      'The ingredients are Rahma\'s. Read the label on each product yourself before use.';
+
+  @override
+  String get howToTellItIsDone => 'How to tell it is done';
+
+  @override
+  String get chickenIsDoneWhenNoPinkIs =>
+      'Chicken is done when no pink is left and the juices run clear.';
+
+  @override
+  String get mincedMeatIsDoneWhenNoPink =>
+      'Minced meat is done when no pink is left anywhere in it.';
+
+  @override
+  String get liverIsDoneWhenItIsFirm =>
+      'Liver is done when it is firm and does not bleed when cut.';
+
+  @override
+  String get shrimpIsDoneWhenItTurnsOpaque =>
+      'Shrimp is done when it turns opaque all through and curls.';
+
+  @override
+  String get eggIsDoneWhenTheWhiteIs =>
+      'Egg is done when the white is set right through.';
+
+  @override
+  String get liverIsVeryHighInVitaminA =>
+      'Liver is very high in vitamin A. If you are pregnant, ask your doctor before eating it.';
+
+  @override
+  String get thisDishContainsFavaBeansIfYou =>
+      'This dish contains fava beans. If you have favism, an inherited enzyme condition, avoid it.';
+
+  @override
+  String get thisRecipeIsFromRahmasBook => 'This recipe is from Rahma\'s book.';
+
+  @override
+  String get aCombinationNotARecipeNothingIs =>
+      'A combination, not a recipe. Nothing is cooked.';
+
+  @override
+  String get theBookDoesNotSay => 'The book does not say.';
+
+  @override
+  String get changeWhatYouAvoid => 'Change what you avoid';
+
+  @override
+  String get whatYouAvoid => 'What you avoid';
+
+  @override
+  String get showTheBookPage => 'Show the book page';
+
+  @override
+  String nMin(String n) {
+    return '$n min';
+  }
+
+  @override
+  String nGProtein(String n) {
+    return '$n g protein';
+  }
+
+  @override
+  String nEgpAServing(String n) {
+    return '$n EGP a serving';
+  }
+
+  @override
+  String nKcalAServing(String n) {
+    return '$n kcal a serving';
+  }
+
+  @override
+  String pricedMonth(String month) {
+    return 'Priced $month';
+  }
+
+  @override
+  String countDishesAreHiddenBecauseOfWhat(String count) {
+    return '$count dishes are hidden because of what you avoid.';
+  }
+
+  @override
+  String nG(String n) {
+    return '$n g';
+  }
+
+  @override
+  String stepNOfTotal(String n, String total) {
+    return 'Step $n of $total';
+  }
+
+  @override
+  String tempDegrees(String temp) {
+    return '$temp degrees';
+  }
+
+  @override
+  String servesN(String n) {
+    return 'Serves $n';
+  }
 }

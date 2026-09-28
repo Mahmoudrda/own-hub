@@ -6,7 +6,7 @@ class AppRoute {
   const AppRoute({required this.name, required this.flow, required this.title});
 }
 
-/// 175 screens across 17 flows.
+/// 179 screens across 17 flows.
 const Map<String, AppRoute> appRoutes = {
   'C01': AppRoute(name: '/signup/c01', flow: 'signup', title: "Welcome"),
   'C02': AppRoute(name: '/signup/c02', flow: 'signup', title: "Language"),
@@ -17,7 +17,9 @@ const Map<String, AppRoute> appRoutes = {
   'C07': AppRoute(name: '/signup/c07', flow: 'signup', title: "The code"),
   'C08': AppRoute(name: '/signup/c08', flow: 'signup', title: "Client or coach"),
   'C09': AppRoute(name: '/signup/c09', flow: 'signup', title: "Why we check"),
+  'C09b': AppRoute(name: '/signup/c09b', flow: 'signup', title: "Before the camera opens"),
   'C10': AppRoute(name: '/signup/c10', flow: 'signup', title: "Scan your ID"),
+  'C10b': AppRoute(name: '/signup/c10b', flow: 'signup', title: "The back of your card"),
   'C11': AppRoute(name: '/signup/c11', flow: 'signup', title: "Quick selfie"),
   'C12': AppRoute(name: '/signup/c12', flow: 'signup', title: "Checking"),
   'C13': AppRoute(name: '/signup/c13', flow: 'signup', title: "You're in"),
@@ -59,6 +61,8 @@ const Map<String, AppRoute> appRoutes = {
   'E07': AppRoute(name: '/eat/e07', flow: 'eat', title: "Week plan"),
   'E08': AppRoute(name: '/eat/e08', flow: 'eat', title: "Grocery list"),
   'E09': AppRoute(name: '/eat/e09', flow: 'eat', title: "Eat, day one"),
+  'E10': AppRoute(name: '/eat/e10', flow: 'eat', title: "What you cannot eat"),
+  'E11': AppRoute(name: '/eat/e11', flow: 'eat', title: "A message from Rahma"),
   'P01': AppRoute(name: '/progress/p01', flow: 'progress', title: "Your progress"),
   'P02': AppRoute(name: '/progress/p02', flow: 'progress', title: "Milestones"),
   'P03': AppRoute(name: '/progress/p03', flow: 'progress', title: "Personal bests"),

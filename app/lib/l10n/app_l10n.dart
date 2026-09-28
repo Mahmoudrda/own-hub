@@ -13218,6 +13218,408 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'The photographs are processed by Google Cloud, on servers outside Egypt.'**
   String get thePhotographsAreProcessedByGoogleCloud_tqchn;
+
+  /// No description provided for @gluten_1v1e1.
+  ///
+  /// In en, this message translates to:
+  /// **'Gluten'**
+  String get gluten_1v1e1;
+
+  /// No description provided for @crustaceans.
+  ///
+  /// In en, this message translates to:
+  /// **'Crustaceans'**
+  String get crustaceans;
+
+  /// No description provided for @eggs.
+  ///
+  /// In en, this message translates to:
+  /// **'Eggs'**
+  String get eggs;
+
+  /// No description provided for @fish.
+  ///
+  /// In en, this message translates to:
+  /// **'Fish'**
+  String get fish;
+
+  /// No description provided for @peanuts.
+  ///
+  /// In en, this message translates to:
+  /// **'Peanuts'**
+  String get peanuts;
+
+  /// No description provided for @soy.
+  ///
+  /// In en, this message translates to:
+  /// **'Soy'**
+  String get soy;
+
+  /// No description provided for @milkAndDairy.
+  ///
+  /// In en, this message translates to:
+  /// **'Milk and dairy'**
+  String get milkAndDairy;
+
+  /// No description provided for @treeNuts.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree nuts'**
+  String get treeNuts;
+
+  /// No description provided for @celery.
+  ///
+  /// In en, this message translates to:
+  /// **'Celery'**
+  String get celery;
+
+  /// No description provided for @mustard.
+  ///
+  /// In en, this message translates to:
+  /// **'Mustard'**
+  String get mustard;
+
+  /// No description provided for @sesame.
+  ///
+  /// In en, this message translates to:
+  /// **'Sesame'**
+  String get sesame;
+
+  /// No description provided for @sulphites.
+  ///
+  /// In en, this message translates to:
+  /// **'Sulphites'**
+  String get sulphites;
+
+  /// No description provided for @lupin.
+  ///
+  /// In en, this message translates to:
+  /// **'Lupin'**
+  String get lupin;
+
+  /// No description provided for @molluscs.
+  ///
+  /// In en, this message translates to:
+  /// **'Molluscs'**
+  String get molluscs;
+
+  /// No description provided for @favaBeans.
+  ///
+  /// In en, this message translates to:
+  /// **'Fava beans'**
+  String get favaBeans;
+
+  /// No description provided for @coconut.
+  ///
+  /// In en, this message translates to:
+  /// **'Coconut'**
+  String get coconut;
+
+  /// No description provided for @isThereAnythingYouCannotEat.
+  ///
+  /// In en, this message translates to:
+  /// **'Is there anything you cannot eat?'**
+  String get isThereAnythingYouCannotEat;
+
+  /// No description provided for @tickAnythingYouAvoidDishesThatContain.
+  ///
+  /// In en, this message translates to:
+  /// **'Tick anything you avoid. Dishes that contain it are hidden from your recipes.'**
+  String get tickAnythingYouAvoidDishesThatContain;
+
+  /// No description provided for @noNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No, nothing'**
+  String get noNothing;
+
+  /// No description provided for @saveWhatIAvoid.
+  ///
+  /// In en, this message translates to:
+  /// **'Save what I avoid'**
+  String get saveWhatIAvoid;
+
+  /// No description provided for @youCanChangeThisAnyTimeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this any time from your account.'**
+  String get youCanChangeThisAnyTimeFrom;
+
+  /// No description provided for @favaBeansAreListedBecauseOfFavism.
+  ///
+  /// In en, this message translates to:
+  /// **'Fava beans are listed because of favism, not because they are an allergen.'**
+  String get favaBeansAreListedBecauseOfFavism;
+
+  /// No description provided for @rahmasRecipes.
+  ///
+  /// In en, this message translates to:
+  /// **'Rahma\'s recipes'**
+  String get rahmasRecipes;
+
+  /// No description provided for @searchRecipes.
+  ///
+  /// In en, this message translates to:
+  /// **'Search recipes'**
+  String get searchRecipes;
+
+  /// No description provided for @noOven.
+  ///
+  /// In en, this message translates to:
+  /// **'No oven'**
+  String get noOven;
+
+  /// No description provided for @readyInTheFridge.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready in the fridge'**
+  String get readyInTheFridge;
+
+  /// No description provided for @quickCombinations.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick combinations'**
+  String get quickCombinations;
+
+  /// No description provided for @aMessageFromRahma.
+  ///
+  /// In en, this message translates to:
+  /// **'A message from Rahma'**
+  String get aMessageFromRahma;
+
+  /// No description provided for @nothingMatchesThat.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches that.'**
+  String get nothingMatchesThat;
+
+  /// No description provided for @noCombinationsAreBuiltYetEachOne.
+  ///
+  /// In en, this message translates to:
+  /// **'No combinations are built yet. Each one needs foods whose values have been verified.'**
+  String get noCombinationsAreBuiltYetEachOne;
+
+  /// No description provided for @ingredientsAndSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients and steps'**
+  String get ingredientsAndSteps;
+
+  /// No description provided for @asItIsInTheBook.
+  ///
+  /// In en, this message translates to:
+  /// **'As it is in the book'**
+  String get asItIsInTheBook;
+
+  /// No description provided for @steps.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get steps;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @servedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Served with'**
+  String get servedWith;
+
+  /// No description provided for @cookMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Cook mode'**
+  String get cookMode;
+
+  /// No description provided for @nextStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Next step'**
+  String get nextStep;
+
+  /// No description provided for @previousStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous step'**
+  String get previousStep;
+
+  /// No description provided for @contains.
+  ///
+  /// In en, this message translates to:
+  /// **'Contains'**
+  String get contains;
+
+  /// No description provided for @containsNoneOfTheSixteenWeCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Contains none of the sixteen we check for.'**
+  String get containsNoneOfTheSixteenWeCheck;
+
+  /// No description provided for @nobodyHasSignedOffWhatIsIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody has signed off what is in this dish. Read the label on each product yourself.'**
+  String get nobodyHasSignedOffWhatIsIn;
+
+  /// No description provided for @theWeightsAreEstimatesExceptWhereThe.
+  ///
+  /// In en, this message translates to:
+  /// **'The weights are estimates except where the book states them.'**
+  String get theWeightsAreEstimatesExceptWhereThe;
+
+  /// No description provided for @theIngredientsAreRahmasReadTheLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'The ingredients are Rahma\'s. Read the label on each product yourself before use.'**
+  String get theIngredientsAreRahmasReadTheLabel;
+
+  /// No description provided for @howToTellItIsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'How to tell it is done'**
+  String get howToTellItIsDone;
+
+  /// No description provided for @chickenIsDoneWhenNoPinkIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Chicken is done when no pink is left and the juices run clear.'**
+  String get chickenIsDoneWhenNoPinkIs;
+
+  /// No description provided for @mincedMeatIsDoneWhenNoPink.
+  ///
+  /// In en, this message translates to:
+  /// **'Minced meat is done when no pink is left anywhere in it.'**
+  String get mincedMeatIsDoneWhenNoPink;
+
+  /// No description provided for @liverIsDoneWhenItIsFirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Liver is done when it is firm and does not bleed when cut.'**
+  String get liverIsDoneWhenItIsFirm;
+
+  /// No description provided for @shrimpIsDoneWhenItTurnsOpaque.
+  ///
+  /// In en, this message translates to:
+  /// **'Shrimp is done when it turns opaque all through and curls.'**
+  String get shrimpIsDoneWhenItTurnsOpaque;
+
+  /// No description provided for @eggIsDoneWhenTheWhiteIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Egg is done when the white is set right through.'**
+  String get eggIsDoneWhenTheWhiteIs;
+
+  /// No description provided for @liverIsVeryHighInVitaminA.
+  ///
+  /// In en, this message translates to:
+  /// **'Liver is very high in vitamin A. If you are pregnant, ask your doctor before eating it.'**
+  String get liverIsVeryHighInVitaminA;
+
+  /// No description provided for @thisDishContainsFavaBeansIfYou.
+  ///
+  /// In en, this message translates to:
+  /// **'This dish contains fava beans. If you have favism, an inherited enzyme condition, avoid it.'**
+  String get thisDishContainsFavaBeansIfYou;
+
+  /// No description provided for @thisRecipeIsFromRahmasBook.
+  ///
+  /// In en, this message translates to:
+  /// **'This recipe is from Rahma\'s book.'**
+  String get thisRecipeIsFromRahmasBook;
+
+  /// No description provided for @aCombinationNotARecipeNothingIs.
+  ///
+  /// In en, this message translates to:
+  /// **'A combination, not a recipe. Nothing is cooked.'**
+  String get aCombinationNotARecipeNothingIs;
+
+  /// No description provided for @theBookDoesNotSay.
+  ///
+  /// In en, this message translates to:
+  /// **'The book does not say.'**
+  String get theBookDoesNotSay;
+
+  /// No description provided for @changeWhatYouAvoid.
+  ///
+  /// In en, this message translates to:
+  /// **'Change what you avoid'**
+  String get changeWhatYouAvoid;
+
+  /// No description provided for @whatYouAvoid.
+  ///
+  /// In en, this message translates to:
+  /// **'What you avoid'**
+  String get whatYouAvoid;
+
+  /// No description provided for @showTheBookPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the book page'**
+  String get showTheBookPage;
+
+  /// A cooking time on a recipe card. The figure comes from the recipe, never from the dictionary.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min'**
+  String nMin(String n);
+
+  /// Protein per serving on a recipe card, only when the recipe states it.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} g protein'**
+  String nGProtein(String n);
+
+  /// Cost per serving, shown beside the month it was priced in.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} EGP a serving'**
+  String nEgpAServing(String n);
+
+  /// Energy per serving, only when it was summed from verified foods.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} kcal a serving'**
+  String nKcalAServing(String n);
+
+  /// The month an EGP figure was priced in. An undated price in Egypt is wrong within a quarter.
+  ///
+  /// In en, this message translates to:
+  /// **'Priced {month}'**
+  String pricedMonth(String month);
+
+  /// Said at the foot of the recipe list. Hiding silently is worse than hiding visibly.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} dishes are hidden because of what you avoid.'**
+  String countDishesAreHiddenBecauseOfWhat(String count);
+
+  /// A gram figure beside an ingredient, in her own words' shadow.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} g'**
+  String nG(String n);
+
+  /// Cook mode's position line.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {n} of {total}'**
+  String stepNOfTotal(String n, String total);
+
+  /// An oven temperature chip on a step.
+  ///
+  /// In en, this message translates to:
+  /// **'{temp} degrees'**
+  String tempDegrees(String temp);
+
+  /// How many the recipe feeds, only when the book says.
+  ///
+  /// In en, this message translates to:
+  /// **'Serves {n}'**
+  String servesN(String n);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

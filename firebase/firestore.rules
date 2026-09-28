@@ -634,6 +634,24 @@ service cloud.firestore {
         allow delete: if isSelfVerified(uid);
       }
 
+      // -- What she has paid for. Server-minted, exactly as `verified`, `coachV`
+      //    and `admin` already are.
+      //
+      // `{ tier, source, expiresAt, updatedAt }`, written by a Cloud Function
+      // that has validated a store receipt, or by an admin granting one. A
+      // client-asserted entitlement is not an entitlement; it is a suggestion,
+      // and the whole point of putting it in its own document rather than in
+      // `profile` is that `profile` is client-writable.
+      //
+      // Nothing reads this yet. `Feature.payments` is off, every recipe is
+      // free, and `RecipeAccessGate` returns open for all of them. It is here
+      // because the alternative is adding it the week money starts moving,
+      // which is the week nobody has time to think about it.
+      match /private/{docId} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+
       // -- G6: server-written. A client may read its own progress, never write it.
       match /weeks/{weekId}      { allow read: if isSelfVerified(uid); allow write: if false; }
       match /bests/{exerciseId}  { allow read: if isSelfVerified(uid); allow write: if false; }
@@ -1366,8 +1384,69 @@ service cloud.firestore {
     // `isAdmin()` still writes, and an admin is verified staff.
     match /exercises/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
     match /foods/{id}     { allow read: if isVerified(); allow write: if isAdmin(); }
-    match /recipes/{id}   { allow read: if isVerified(); allow write: if isAdmin(); }
     match /programs/{id}  { allow read: if isVerified(); allow write: if isAdmin(); }
+
+    // Recipes carry two things the other three libraries do not: an allergen
+    // set a woman's safety depends on, and a tier.
+    //
+    // **Two people, enforced here rather than in Dart.** A recipe may not be
+    // written with a null `allergenReviewedBy`, and may not be written with a
+    // reviewer who is also its author. Both are put in the rules because a Dart
+    // bug, an admin console regression or a hand-run import script can all
+    // bypass a client-side check, and the thing being checked is whether
+    // somebody actually looked at what is in the dish.
+    //
+    // **The tier gate is written now and is inert now.** Every seeded recipe is
+    // `free`, `Feature.payments` is off and `Feature.recipeTiering` cannot be
+    // switched on above it, so this clause never refuses anything today. It is
+    // here because a client-side lock is a lie if the document is readable
+    // anyway: the day a `pro` recipe exists, it must not be *readable* by a
+    // free account, and adding that rule afterwards means a window in which it
+    // was.
+    //
+    // `request.auth.token.tier` is a custom claim and not a document read. The
+    // reason is the one already recorded on `isVerified()`: a `get()` in a rule
+    // bills one extra read on every gated operation. The cost of a claim is
+    // staleness — up to an hour — so a purchase flow has to force
+    // `getIdToken(true)` afterwards or she pays and waits.
+    match /recipes/{id} {
+      //
+      // `resource == null` is the missing-document case and it has to come
+      // first: reading a recipe that does not exist is a normal miss, and
+      // evaluating `resource.data.tier` on it throws rather than denying, which
+      // turns every 404 into a rules error.
+      allow read: if isVerified()
+                  && (resource == null
+                      || !('tier' in resource.data)
+                      || resource.data.tier == 'free'
+                      || request.auth.token.tier == 'pro');
+      //
+      // `in` before `!=`: a document with no `allergenReviewedBy` key at all
+      // throws on the comparison rather than failing it, and a rules error and
+      // a rules denial are not the same thing to debug.
+      allow write: if isAdmin()
+                   && 'allergenReviewedBy' in request.resource.data
+                   && 'authoredBy' in request.resource.data
+                   && request.resource.data.allergenReviewedBy != null
+                   && request.resource.data.allergenReviewedBy
+                      != request.resource.data.authoredBy;
+      allow delete: if isAdmin();
+    }
+
+    // The list screen reads ONE document, not a query over N.
+    //
+    // Firestore bills per document read. A library list that queries every
+    // recipe on every tab open is N reads per open: at 200 recipes, 10,000
+    // women and three opens a day that is six million reads a day, about $360 a
+    // day. This project has already been bitten by that shape of cost once.
+    //
+    // So `meta/recipes` holds `{ version }` — one small read per session,
+    // skipped while the cached version is current — and `recipeIndex/{id}` is a
+    // single document holding the list row for every recipe, about 250 bytes
+    // each. Both are server-written: a client that could write the index could
+    // change what every other woman is offered.
+    match /recipeIndex/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /meta/{docId}     { allow read: if isVerified(); allow write: if isAdmin(); }
 
     // --------------------------------------------------------- server only
     //

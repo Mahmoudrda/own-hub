@@ -84,9 +84,17 @@ Future<void> _writePost(WidgetTester tester, String words) async {
 
 /// Names an allergy through A02's own editor. A real write to a real store, on
 /// the same screen the deletion row lives on.
+///
+/// The chip was labelled "No nuts" while `AllergenTag` had four members. It
+/// reads "Tree nuts" now: the enum grew to sixteen when Rahma's recipe book was
+/// authored, `nuts` split into `tree_nuts` and `peanuts` (they are not the same
+/// allergy and folding them costs somebody a reaction), and the chips became
+/// plain names rather than "No x" because a sixteen-chip list of negations
+/// reads as a list of refusals. The subject of this test is unchanged: she
+/// names an allergy, it is written, and deletion takes it away again.
 Future<void> _sayNoNuts(WidgetTester tester) async {
   await _tap(tester, find.text('Allergies and dietary preferences'));
-  await _tap(tester, find.text('No nuts'));
+  await _tap(tester, find.text('Tree nuts'));
   await _tap(tester, find.widgetWithText(AppButton, 'Save'));
 }
 
@@ -158,7 +166,7 @@ void main() {
       await _sayNoNuts(tester);
       expect(
         AppRouter.dietaryRepository.read().allergies,
-        contains(AllergenTag.nuts),
+        contains(AllergenTag.treeNuts),
       );
 
       await _fillTheOtherStores();

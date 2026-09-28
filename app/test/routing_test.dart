@@ -25,17 +25,29 @@ void main() {
     // the next number because C10 to C16 are referenced by id throughout the
     // specs, the plans and the prototype, and renumbering would repoint every
     // one of those references at the wrong screen.
-    expect(appRoutes.length, 177);
+    //
+    // 177 -> 179 with Rahma's recipe book. `E10` asks the one question the
+    // library cannot be opened without: `DietaryConstraints.none` is a claim
+    // that she was asked and named nothing, and shipping allergen-tagged
+    // recipes against a claim nobody made is exactly what
+    // `allergy_interlock_test.dart` exists to stop. `E11` is her closing
+    // letter, squeezed under a recipe on page 26 of the book. Neither is a
+    // state of a neighbour, so neither is smuggled in as one.
+    expect(appRoutes.length, 179);
   });
 
   test('every screen is a destination except the eight first-run states', () {
-    // D1 withdrew the MVP cut: both roles, every flow. 177 - 8 = 169.
+    // D1 withdrew the MVP cut: both roles, every flow. 179 - 8 = 171.
     //
     // Six first-run states until the Cycle flow was built. Y11 and Y14 joined
     // them: both are branches of Y03 rendered by the same widget, exactly as
     // T06 is a branch of T01, so routing to them would mean rendering "severe
     // symptoms" over a hub that has none.
-    expect(appDestinations.length, 169);
+    //
+    // 169 -> 171: E10 and E11 are both destinations. E10 in particular must be
+    // one — a question asked inside a sheet leaves no way back to it, and
+    // `product_rules_test.dart` bans a dialog on these paths anyway.
+    expect(appDestinations.length, 171);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 

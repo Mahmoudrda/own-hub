@@ -477,13 +477,19 @@ void main() {
       await _open(tester, 'A02');
       await tester.tap(find.text('Allergies and dietary preferences'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('No nuts'));
+      // "No nuts" until `AllergenTag` grew from four members to sixteen for
+      // Rahma's recipe book. `nuts` split into `tree_nuts` and `peanuts`,
+      // because they are two allergies and folding them either hides peanuts
+      // from a woman who reacts to them or takes every nut dish from a woman
+      // who does not. The chips are plain names now, for the same reason: a
+      // sixteen-item list of "No x" reads as a list of refusals.
+      await tester.tap(find.text('Tree nuts'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
       expect(AppRouter.eatConstraints.allergies, {
-        'nuts',
+        'tree_nuts',
       }, reason: 'Eat reads the profile A02 wrote, not a constant');
 
       await _home(tester);

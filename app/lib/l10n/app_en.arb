@@ -2865,5 +2865,166 @@
   "theAppOpensAsSoonAsYour": "The app opens as soon as your check is done.",
   "nothingYouPhotographIsKeptBothSides": "Nothing you photograph is kept. Both sides of the card and the selfie are deleted as soon as the check finishes, whatever the result.",
   "ifAWomanNeedsToCheckIt": "If a woman needs to check, it is a short video call with you. Your photographs are never sent to anyone.",
-  "thePhotographsAreProcessedByGoogleCloud_tqchn": "The photographs are processed by Google Cloud, on servers outside Egypt."
+  "thePhotographsAreProcessedByGoogleCloud_tqchn": "The photographs are processed by Google Cloud, on servers outside Egypt.",
+  "gluten_1v1e1": "Gluten",
+  "crustaceans": "Crustaceans",
+  "eggs": "Eggs",
+  "fish": "Fish",
+  "peanuts": "Peanuts",
+  "soy": "Soy",
+  "milkAndDairy": "Milk and dairy",
+  "treeNuts": "Tree nuts",
+  "celery": "Celery",
+  "mustard": "Mustard",
+  "sesame": "Sesame",
+  "sulphites": "Sulphites",
+  "lupin": "Lupin",
+  "molluscs": "Molluscs",
+  "favaBeans": "Fava beans",
+  "coconut": "Coconut",
+  "isThereAnythingYouCannotEat": "Is there anything you cannot eat?",
+  "tickAnythingYouAvoidDishesThatContain": "Tick anything you avoid. Dishes that contain it are hidden from your recipes.",
+  "noNothing": "No, nothing",
+  "saveWhatIAvoid": "Save what I avoid",
+  "youCanChangeThisAnyTimeFrom": "You can change this any time from your account.",
+  "favaBeansAreListedBecauseOfFavism": "Fava beans are listed because of favism, not because they are an allergen.",
+  "rahmasRecipes": "Rahma's recipes",
+  "searchRecipes": "Search recipes",
+  "noOven": "No oven",
+  "readyInTheFridge": "Ready in the fridge",
+  "quickCombinations": "Quick combinations",
+  "aMessageFromRahma": "A message from Rahma",
+  "nothingMatchesThat": "Nothing matches that.",
+  "noCombinationsAreBuiltYetEachOne": "No combinations are built yet. Each one needs foods whose values have been verified.",
+  "ingredientsAndSteps": "Ingredients and steps",
+  "asItIsInTheBook": "As it is in the book",
+  "steps": "Steps",
+  "optional": "Optional",
+  "servedWith": "Served with",
+  "cookMode": "Cook mode",
+  "nextStep": "Next step",
+  "previousStep": "Previous step",
+  "contains": "Contains",
+  "containsNoneOfTheSixteenWeCheck": "Contains none of the sixteen we check for.",
+  "nobodyHasSignedOffWhatIsIn": "Nobody has signed off what is in this dish. Read the label on each product yourself.",
+  "theWeightsAreEstimatesExceptWhereThe": "The weights are estimates except where the book states them.",
+  "theIngredientsAreRahmasReadTheLabel": "The ingredients are Rahma's. Read the label on each product yourself before use.",
+  "howToTellItIsDone": "How to tell it is done",
+  "chickenIsDoneWhenNoPinkIs": "Chicken is done when no pink is left and the juices run clear.",
+  "mincedMeatIsDoneWhenNoPink": "Minced meat is done when no pink is left anywhere in it.",
+  "liverIsDoneWhenItIsFirm": "Liver is done when it is firm and does not bleed when cut.",
+  "shrimpIsDoneWhenItTurnsOpaque": "Shrimp is done when it turns opaque all through and curls.",
+  "eggIsDoneWhenTheWhiteIs": "Egg is done when the white is set right through.",
+  "liverIsVeryHighInVitaminA": "Liver is very high in vitamin A. If you are pregnant, ask your doctor before eating it.",
+  "thisDishContainsFavaBeansIfYou": "This dish contains fava beans. If you have favism, an inherited enzyme condition, avoid it.",
+  "thisRecipeIsFromRahmasBook": "This recipe is from Rahma's book.",
+  "aCombinationNotARecipeNothingIs": "A combination, not a recipe. Nothing is cooked.",
+  "theBookDoesNotSay": "The book does not say.",
+  "changeWhatYouAvoid": "Change what you avoid",
+  "whatYouAvoid": "What you avoid",
+  "showTheBookPage": "Show the book page",
+  "nMin": "{n} min",
+  "@nMin": {
+    "description": "A cooking time on a recipe card. The figure comes from the recipe, never from the dictionary.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "nGProtein": "{n} g protein",
+  "@nGProtein": {
+    "description": "Protein per serving on a recipe card, only when the recipe states it.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "24"
+      }
+    }
+  },
+  "nEgpAServing": "{n} EGP a serving",
+  "@nEgpAServing": {
+    "description": "Cost per serving, shown beside the month it was priced in.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "14"
+      }
+    }
+  },
+  "nKcalAServing": "{n} kcal a serving",
+  "@nKcalAServing": {
+    "description": "Energy per serving, only when it was summed from verified foods.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "410"
+      }
+    }
+  },
+  "pricedMonth": "Priced {month}",
+  "@pricedMonth": {
+    "description": "The month an EGP figure was priced in. An undated price in Egypt is wrong within a quarter.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "October 2026"
+      }
+    }
+  },
+  "countDishesAreHiddenBecauseOfWhat": "{count} dishes are hidden because of what you avoid.",
+  "@countDishesAreHiddenBecauseOfWhat": {
+    "description": "Said at the foot of the recipe list. Hiding silently is worse than hiding visibly.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "nG": "{n} g",
+  "@nG": {
+    "description": "A gram figure beside an ingredient, in her own words' shadow.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "40"
+      }
+    }
+  },
+  "stepNOfTotal": "Step {n} of {total}",
+  "@stepNOfTotal": {
+    "description": "Cook mode's position line.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "tempDegrees": "{temp} degrees",
+  "@tempDegrees": {
+    "description": "An oven temperature chip on a step.",
+    "placeholders": {
+      "temp": {
+        "type": "String",
+        "example": "200"
+      }
+    }
+  },
+  "servesN": "Serves {n}",
+  "@servesN": {
+    "description": "How many the recipe feeds, only when the book says.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  }
 }

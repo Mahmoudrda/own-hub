@@ -119,10 +119,24 @@ describe('the admin claim itself', () => {
     });
     const db = await admin(uid.admin);
     // Opens:
-    for (const c of ['exercises', 'foods', 'recipes', 'programs']) {
+    for (const c of ['exercises', 'foods', 'programs']) {
       await assertSucceeds(setDoc(doc(db, `${c}/lib_1`), { name: 'lunge' }));
       await assertSucceeds(getDoc(doc(db, `${c}/lib_1`)));
     }
+    // `recipes` is the same posture with one more condition, and the condition
+    // is why it is written out here instead of sitting in the loop above: a
+    // recipe carries an allergen set a woman's safety depends on, so it cannot
+    // be written without a named reviewer who is not its author. `{ name:
+    // 'lunge' }` is refused now, and that refusal is the rule working. See
+    // `11-recipes.test.js` for the pair of cases in full.
+    await assertFails(setDoc(doc(db, 'recipes/lib_1'), { name: 'lunge' }));
+    await assertSucceeds(
+      setDoc(doc(db, 'recipes/lib_1'), {
+        name: 'lunge', authoredBy: 'rahma_mohsen',
+        allergenReviewedBy: 'qa_reviewer',
+      }),
+    );
+    await assertSucceeds(getDoc(doc(db, 'recipes/lib_1')));
     // Does not open:
     await assertFails(getDoc(doc(db, `users/${uid.her}`)));
     await assertFails(getDoc(doc(db, `users/${uid.her}/cycle/current`)));

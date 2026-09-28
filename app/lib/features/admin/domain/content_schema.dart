@@ -230,6 +230,17 @@ class ContentSchema {
     ],
   );
 
+  /// Recipes. The **facts** sheet, and deliberately not the text.
+  ///
+  /// `bodyAr`, `steps[]`, `ingredients[]` and `components[]` are **not columns
+  /// here and must not be added.** A forty-line Egyptian colloquial paragraph
+  /// with her own line breaks does not survive a CSV round trip, and
+  /// `csv_parser.dart` was not built to try. Her text arrives as a JSON sidecar
+  /// keyed by `recipeId` — `assets/content/rahma_recipes.json` in the bundle,
+  /// `recipes/{id}` in Firestore — and this sheet carries the facts an importer,
+  /// a validator and an exporter can all agree on.
+  ///
+  /// Said here rather than in a plan, so the next reader does not "fix" it.
   static const ContentSchema _recipes = ContentSchema._(
     collection: ContentCollection.recipes,
     fileName: 'recipes.csv',
@@ -243,6 +254,45 @@ class ContentSchema {
       ContentColumn('allergens', required: true, list: true, safetyTag: true),
       ContentColumn('dietTags', required: true, list: true),
       ContentColumn('photoFile', media: true),
+      // Where it sits in her book, and who wrote it.
+      // Not required: a recipe written here may not have been placed in a
+      // section of the book yet, and refusing the row for that would make the
+      // console unusable for drafting. What may not publish without a signature
+      // is enforced in `firestore.rules`, where a Dart bug cannot reach it.
+      ContentColumn('sectionId'),
+      ContentColumn('source', required: true),
+      ContentColumn('status', required: true),
+      ContentColumn('sourcePage', numeric: true),
+      // Not required, for the same reason, and with the same gate behind it.
+      ContentColumn('authoredBy'),
+      // The signature that lets a recipe publish. Optional as a column because
+      // a draft row legitimately has none; the *publication* gate is in
+      // `firestore.rules`, where a Dart bug cannot reach it.
+      ContentColumn('allergenReviewedBy'),
+      // Facts a screen renders only when they are present.
+      ContentColumn('serves', numeric: true),
+      ContentColumn('activeMinutes', numeric: true),
+      ContentColumn('kcal', numeric: true),
+      ContentColumn('proteinG', numeric: true),
+      ContentColumn('carbsG', numeric: true),
+      ContentColumn('fatG', numeric: true),
+      // `computed` or `withheld`. Required, because "we did not compute this"
+      // has to be a value somebody wrote rather than the absence of one.
+      ContentColumn('macroBasis', required: true),
+      // An undated EGP figure in Egypt is wrong within a quarter, so the price
+      // and the month it was priced in travel together.
+      ContentColumn('egpPerServing', numeric: true),
+      ContentColumn('egpPricedAt'),
+      // Not allergens and not filtered on: `pregnancy_liver`, `g6pd_fava`.
+      // A safety tag all the same, so the validator holds it to the same
+      // vocabulary discipline.
+      ContentColumn('advisories', required: true, list: true, safetyTag: true),
+      // A token from a fixed set, never a sentence. The Modern Standard copy
+      // for each one is in the dictionary.
+      ContentColumn('doneness'),
+      // A drawn food mark, not a photograph. See `food_marks.dart`.
+      ContentColumn('markKey'),
+      ContentColumn('tier', required: true),
     ],
   );
 

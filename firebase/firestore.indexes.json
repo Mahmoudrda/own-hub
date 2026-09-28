@@ -243,6 +243,42 @@
       "collectionGroup": "periods",
       "fieldPath": "stillBleeding",
       "indexes": []
+    },
+    {
+      "_why": "COST. The recipe list screen is answered by ONE document, `recipeIndex/{locale}_v{N}`, not by a query across `recipes`. A query returning N recipes on every Eat open is N reads per open: at 200 recipes, 10,000 women and three opens a day that is about $360 a day. Exempting the fields the index document already answers makes the expensive shape unexecutable rather than merely discouraged, which is the same posture the RULE 11 exemptions above take.",
+      "collectionGroup": "recipes",
+      "fieldPath": "proteinG",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "egpPerServing",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "totalMinutes",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "allergensFinal",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "dietTags",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "tier",
+      "indexes": []
     }
   ]
 }

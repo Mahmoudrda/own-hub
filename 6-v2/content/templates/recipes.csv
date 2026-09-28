@@ -1,3 +1,3 @@
-recipeId,name_en,name_ar,minutes,ingredients,allergens,dietTags,photoFile
-lentil_soup,Lentil soup,شوربة عدس,25,red lentils|onion|cumin|lemon,none,vegetarian|vegan|gluten_free,lentil_soup.jpg
-chicken_freekeh,Chicken freekeh,فريك بالدجاج,45,freekeh|chicken|onion|stock,gluten,high_protein,chicken_freekeh.jpg
+recipeId,name_en,name_ar,minutes,ingredients,allergens,dietTags,photoFile,sectionId,source,status,sourcePage,authoredBy,allergenReviewedBy,serves,activeMinutes,kcal,proteinG,carbsG,fatG,macroBasis,egpPerServing,egpPricedAt,advisories,doneness,markKey,tier
+lentil_soup,Lentil soup,شوربة عدس,25,red lentils|onion|cumin|lemon,none,vegetarian|vegan|gluten_free,lentil_soup.jpg,lunchy_junky_yum,authored,review,,content_team,,,15,,,,,withheld,,,none,,pot,free
+chicken_freekeh,Chicken freekeh,فريك بالدجاج,45,freekeh|chicken|onion|stock,gluten,high_protein,chicken_freekeh.jpg,lunchy_junky_yum,authored,review,,content_team,,,20,,,,,withheld,,,none,poultry_cooked_through,pot,free

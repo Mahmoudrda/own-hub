@@ -13,14 +13,20 @@
 /// true because the write goes through `DietaryProfileRepository` — G7's port,
 /// G2's document — and nothing in this feature keeps a second copy.
 ///
-/// The allergen chips are the four the content team authored. This screen does
-/// not offer a fifth, because a plausible-looking allergen list is exactly the
-/// fabricated safety guarantee the guard exists to avoid.
+/// The allergen chips are [AllergenTag]'s sixteen, drawn from the same shared
+/// label table `A02` and `E10` use. They were four until Rahma's recipe book was
+/// authored and dishes started carrying real allergen data; the list is shared
+/// rather than repeated because three screens with three private copies is how
+/// one of them ends up unable to record a declaration the others accept. This
+/// screen still invents nothing: the categories are the EU/UK declarables plus
+/// the two Egypt needs, and `dietary_profile.dart` says where each came from.
 library;
 
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
+import '../../account/domain/dietary_profile.dart';
+import '../../account/presentation/allergen_labels.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -48,8 +54,9 @@ class CoachingFoodView extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onContinue;
 
-  /// Indices into the four authored allergens, in order: nuts, dairy, gluten,
-  /// shellfish.
+  /// Indices into `AllergenTag.values`, in enum order. An index rather than a
+  /// tag because this screen is drawn from the prototype's chip API; the enum is
+  /// the authority on what each index means.
   final Set<int> selectedAllergens;
 
   final Set<int> selectedDietary;
@@ -103,14 +110,14 @@ class CoachingFoodView extends StatelessWidget {
             spacing: 6,
             runSpacing: 6,
             children: [
-              for (final (i, label) in [
-                l10n.noNuts,
-                l10n.noDairy,
-                l10n.noGluten,
-                l10n.noShellfish,
-              ].indexed)
+              // Indexed off `AllergenTag.values`, so the index this screen
+              // reports back is the index `coachedLife.toggleAllergen` looks up.
+              // A hand-written list here would drift from that enum the moment
+              // either changed, and the drift would silently mis-record what
+              // she cannot eat.
+              for (final (i, tag) in AllergenTag.values.indexed)
                 AppChip(
-                  label,
+                  allergenLabel(l10n, tag),
                   selected: selectedAllergens.contains(i),
                   onTap: onAllergen == null ? null : () => onAllergen!(i),
                 ),

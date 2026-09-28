@@ -153,21 +153,32 @@ flutter:
 
   # Rubik carries both scripts. Regenerate with python3 6-v2/scripts/build_fonts.py
   assets:
-    # Illustrations extracted from the owner's Icons.pdf at 600px on the longest
-    # side, shipped as WebP at three densities. Flutter picks 2.0x/3.0x by
-    # screen, so a 200pt illustration draws from a 600px source and cannot
-    # pixelate. WebP rather than PNG: same alpha, 2.6 MB instead of 9.3.
+    # There is no illustration asset. The product's 32 illustrations are DRAWN,
+    # by lib/ui/hand/art_marks.dart, and ship as code.
     #
-    # These are ILLUSTRATIONS, not UI icons. They are used for empty states and
-    # section art. They are deliberately NOT attached to individual food or
-    # exercise rows: a picture of a taco on a row that is not a taco is the same
-    # defect as a mockup's number shown as hers.
-    - assets/art/
-    - assets/art/2.0x/
-    - assets/art/3.0x/
+    # This used to be three lines bundling assets/art/ at 1x, 2x and 3x: 57
+    # WebP illustrations, 171 files, 4.8 MB, with no licence record for any of
+    # them and one of them byte-identical to an element of a Canva document
+    # whose licence forbids shipping it as a stand-alone asset. Drawing them
+    # instead removed the exposure and the 4.8 MB in the same change.
+    # assets/art/LICENCE.md stays in the repository as the record of that, and
+    # is deliberately NOT bundled: it is a note to whoever comes next, not
+    # something the app reads.
+    #
     # Licence texts for the two OFL hand faces, shown on the licences page.
     - assets/fonts/OFL-LaBelleAurore.txt
     - assets/fonts/OFL-ArefRuqaa.txt
+    - assets/fonts/OFL-Rubik.txt
+    # Rahma's recipe book, about 210 KB of Egyptian colloquial Arabic, generated
+    # by tool/extract_rahma_book.py and tool/build_rahma_recipes.py.
+    #
+    # In the binary rather than behind a network call, because the Eat tab has
+    # to work with one bar on a metro platform at 7am. It is also why her text
+    # is a JSON asset and not the ARB: `i18n_guard_test.dart` forbids Arabic
+    # literals under lib/, which is exactly right — her colloquial is content,
+    # the interface is Modern Standard, and they reach the screen through
+    # different pipes so they cannot be smeared into each other.
+    - assets/content/rahma_recipes.json
 
   fonts:
     - family: Rubik

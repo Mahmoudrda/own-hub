@@ -396,6 +396,19 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
         "coach's own splits live under coaches/{coachUid}/splits and are not "
         'hers to delete',
   ),
+  DeletionRow(
+    number: 38,
+    path: 'users/{uid}/private/**',
+    owner: 'G7',
+    method: DeletionMethod.recursive,
+    note:
+        'server-minted facts about her that are not hers to write: today that '
+        'is the recipe entitlement, {tier, source, expiresAt}. Nothing reads '
+        'it yet, and it is enumerated anyway — Firestore does not '
+        'cascade-delete a subcollection, so a collection added ahead of its '
+        'feature is exactly the kind that gets left behind on the server while '
+        'A02 tells her nothing survived',
+  ),
 ];
 
 /// The two rows A02's copy must explain, because they survive on purpose.

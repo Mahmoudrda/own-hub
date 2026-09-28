@@ -25,13 +25,13 @@ void main() {
           relId: _relId,
           cookMinutes: 45,
           familyPot: true,
-          allergies: {AllergenTag.shellfish, AllergenTag.gluten},
+          allergies: {AllergenTag.crustaceans, AllergenTag.gluten},
           dietary: {DietaryTag.vegetarianWeekdays},
         );
 
         // The profile has them…
         expect(profile.read().allergies, {
-          AllergenTag.shellfish,
+          AllergenTag.crustaceans,
           AllergenTag.gluten,
         });
         expect(profile.writes.last, contains('profile.allergies'));
@@ -51,7 +51,7 @@ void main() {
     test('the constraints projection carries what she stated', () {
       final writer = CoachProjectionWriter(store: CoachProjectionStore());
       final profile = DietaryProfile(
-        allergies: const {AllergenTag.shellfish},
+        allergies: const {AllergenTag.crustaceans},
         dietary: const {DietaryTag.vegetarianWeekdays},
       );
 
@@ -63,7 +63,9 @@ void main() {
         ),
       );
 
-      expect(constraints.allergies, ['shellfish']);
+      // `shellfish` until the vocabulary widened to the EU/UK declarables,
+      // which split it into crustaceans and molluscs.
+      expect(constraints.allergies, ['crustaceans']);
       expect(constraints.dietary, ['vegetarian']);
       // The avoid list is about movement, never about food.
       expect(constraints.avoid, ['left shoulder']);
@@ -71,12 +73,12 @@ void main() {
 
     test('no coach screen has anything to type into', () {
       // The projection is read-only: no setter, no copyWith, no mutable list.
-      const constraints = SharedConstraints(allergies: ['shellfish']);
+      const constraints = SharedConstraints(allergies: ['crustaceans']);
       expect(constraints.allergies, hasLength(1));
       // Mutating the list it exposes throws, because `buildConstraints` wraps
       // it unmodifiable.
       final built = const CoachProjectionWriter().buildConstraints(
-        const ProjectionInputs(allergies: ['shellfish']),
+        const ProjectionInputs(allergies: ['crustaceans']),
       );
       expect(
         () => built.allergies.add('sesame'),
@@ -90,11 +92,11 @@ void main() {
       final profile = InMemoryDietaryProfileRepository();
       final intake = InMemoryCoachingIntakeRepository(profile: profile);
 
-      await intake.mergeFood(relId: _relId, allergies: {AllergenTag.nuts});
+      await intake.mergeFood(relId: _relId, allergies: {AllergenTag.treeNuts});
       // A month later, from My Profile — the identical call.
-      await profile.save(allergies: {AllergenTag.nuts, AllergenTag.dairy});
+      await profile.save(allergies: {AllergenTag.treeNuts, AllergenTag.milk});
 
-      expect(profile.read().allergies, {AllergenTag.nuts, AllergenTag.dairy});
+      expect(profile.read().allergies, {AllergenTag.treeNuts, AllergenTag.milk});
     });
 
     test('a merge touches only the fields it names', () async {
@@ -134,7 +136,7 @@ void main() {
       await intake.mergeFood(
         relId: _relId,
         cookMinutes: 45,
-        allergies: {AllergenTag.shellfish},
+        allergies: {AllergenTag.crustaceans},
       );
       await intake.mergeSupport(
         relId: _relId,
@@ -150,7 +152,7 @@ void main() {
       expect(submitted.step, IntakeStep.done);
       expect(submitted.submittedAt, DateTime(2026, 9, 19, 20, 12));
       // The echo carries what the profile says, not a second answer.
-      expect(submitted.profileEcho.allergies, ['shellfish']);
+      expect(submitted.profileEcho.allergies, ['crustaceans']);
     });
 
     test('submitting a half-answered intake throws', () {
@@ -185,15 +187,15 @@ void main() {
       final profile = InMemoryDietaryProfileRepository();
       final intake = InMemoryCoachingIntakeRepository(profile: profile);
 
-      await intake.mergeFood(relId: _relId, allergies: {AllergenTag.nuts});
+      await intake.mergeFood(relId: _relId, allergies: {AllergenTag.treeNuts});
       final echoed = intake.read(_relId).profileEcho.allergies;
-      expect(echoed, ['nuts']);
+      expect(echoed, ['tree_nuts']);
 
       // She changes her mind in My Profile. The authority moves; the echo is
       // stale until the next intake write, which is why readers prefer the
       // profile.
-      await profile.save(allergies: {AllergenTag.nuts, AllergenTag.dairy});
-      expect(intake.read(_relId).profileEcho.allergies, ['nuts']);
+      await profile.save(allergies: {AllergenTag.treeNuts, AllergenTag.milk});
+      expect(intake.read(_relId).profileEcho.allergies, ['tree_nuts']);
       expect(profile.read().allergies, hasLength(2));
     });
 

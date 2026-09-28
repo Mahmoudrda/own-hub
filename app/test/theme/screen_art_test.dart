@@ -1,9 +1,17 @@
 // Every screen shows one or two illustrations, chosen for what it is for.
 //
 // Two layers. The table is checked on paper (every built screen covered, none
-// over two, every name real). Then every screen is opened through the REAL
-// router and the illustrations actually drawn are counted -- because a table
-// entry that nothing renders is a promise, not an illustration.
+// over two, no screen given the same drawing twice, every name real). Then
+// every screen is opened through the REAL router and the illustrations actually
+// drawn are counted -- because a table entry that nothing renders is a promise,
+// not an illustration.
+//
+// The detector used to collect `Image` widgets whose `AssetImage` pointed into
+// `assets/art/`. There is no such asset any more: the illustrations are painted
+// by `ArtMarkPainter` (see assets/art/LICENCE.md for why). So it collects
+// `ArtMark` widgets and reads the name each one is drawing. Same question,
+// asked of the thing that now answers it -- and the negative control below
+// still proves the detector can see a screen with nothing on it.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,15 +20,11 @@ import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_art.dart';
 import 'package:own_hub/theme/screen_art.dart';
+import 'package:own_hub/ui/hand/art_marks.dart';
 
-/// Illustrations actually rendered, as asset names.
-List<String> _drawn(WidgetTester t) => t
-    .widgetList<Image>(find.byType(Image))
-    .map((i) => i.image)
-    .whereType<AssetImage>()
-    .map((a) => a.assetName)
-    .where((n) => n.startsWith('assets/art/'))
-    .toList();
+/// Illustrations actually rendered, as mark names.
+List<String> _drawn(WidgetTester t) =>
+    t.widgetList<ArtMark>(find.byType(ArtMark)).map((m) => m.markKey).toList();
 
 void main() {
   final saved = AppRouter.featureFlags;
@@ -40,6 +44,18 @@ void main() {
           .where((e) => e.value.length > 2)
           .map((e) => e.key);
       expect(over, isEmpty);
+    });
+
+    test('no screen is given the same drawing twice', () {
+      // Not expressible before: the old set had four names for one picture of
+      // a woman running, so a screen could ask for two illustrations and get
+      // the same one printed side by side with nothing able to tell. One name
+      // is one drawing now, so this is a real check. `M04` and `M10` both
+      // failed it the moment the names collapsed, and both were changed.
+      final twice = ScreenArt.forScreen.entries
+          .where((e) => e.value.toSet().length != e.value.length)
+          .map((e) => '${e.key}(${e.value.join(' ')})');
+      expect(twice, isEmpty);
     });
 
     test('a hero screen is not also given a header', () {

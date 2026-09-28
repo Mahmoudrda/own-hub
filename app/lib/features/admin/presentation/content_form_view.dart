@@ -348,10 +348,37 @@ class _ContentFormViewState extends State<ContentFormView> {
   /// column set can hand it straight to the same validator the importer uses,
   /// which is what makes a row authored here and a row imported from a file the
   /// same kind of thing.
-  Map<String, String> _collected() => {
-    for (final column in _schema.columns)
-      column.name: column.boolean
-          ? (_flags[column.name]! ? 'true' : 'false')
-          : _text[column.name]!.text.trim(),
+  Map<String, String> _collected() {
+    final row = <String, String>{
+      for (final column in _schema.columns)
+        column.name: column.boolean
+            ? (_flags[column.name]! ? 'true' : 'false')
+            : _text[column.name]!.text.trim(),
+    };
+    row.forEach((name, value) {
+      if (value.isEmpty && _defaults[name] != null) row[name] = _defaults[name]!;
+    });
+    return row;
+  }
+
+  /// What a column is worth when nobody was asked for it.
+  ///
+  /// Four recipe columns are `required: true` and have no field on this screen,
+  /// because none of them is a question to put to a member of staff: they are
+  /// the state a newly authored row is *in*. Without a default, the form would
+  /// produce a row its own importer refuses, which is precisely the defect the
+  /// comment above `carbsG` records.
+  ///
+  /// Every value here is the cautious one. `review`, not `published`: nobody has
+  /// signed its allergen set. `withheld`, not `computed`: its macros were never
+  /// summed from verified foods. `free`, because nothing is sold. `none` for
+  /// advisories, which is the safety vocabulary's way of saying somebody
+  /// answered rather than somebody skipped.
+  static const Map<String, String> _defaults = {
+    'source': 'authored',
+    'status': 'review',
+    'macroBasis': 'withheld',
+    'tier': 'free',
+    'advisories': 'none',
   };
 }

@@ -16,7 +16,7 @@ const _cashewRice = Food(
   foodId: 'cashew_rice',
   names: ['cashew rice'],
   sizes: [FoodSize(id: 'M', label: 'Medium', kcal: 430, proteinG: 11)],
-  allergens: {'nuts'},
+  allergens: {'tree_nuts'},
   dietTags: {'vegetarian'},
 );
 
@@ -34,7 +34,7 @@ const _creamyPasta = Food(
   foodId: 'creamy_pasta',
   names: ['creamy pasta'],
   sizes: [FoodSize(id: 'M', label: 'Medium', kcal: 520, proteinG: 17)],
-  allergens: {'dairy', 'gluten'},
+  allergens: {'milk', 'gluten'},
 );
 
 void main() {
@@ -100,17 +100,19 @@ void main() {
       'a named allergy blocks the dish that contains it, and names it',
       () async {
         final repository = InMemoryDietaryProfileRepository();
-        final saved = await repository.save(allergies: {AllergenTag.nuts});
+        final saved = await repository.save(allergies: {AllergenTag.treeNuts});
 
         final constraints = saved.toConstraints();
-        expect(constraints.allergies, {'nuts'});
+        // `nuts` until the vocabulary widened: it split into `tree_nuts` and
+        // `peanuts`, which are two allergies and not one.
+        expect(constraints.allergies, {'tree_nuts'});
 
         final assessment = AllergyGuard(constraints).assess(_cashewRice);
 
         expect(assessment.isBlocked, isTrue);
         expect(assessment.reason, AllergyBlockReason.namedAllergen);
         expect(assessment.allergens, {
-          'nuts',
+          'tree_nuts',
         }, reason: 'the sheet names the allergen she told us about');
       },
     );
@@ -120,7 +122,7 @@ void main() {
       // safe. This is the case that matters today, because no food in the
       // shipped pack carries allergen data at all.
       final repository = InMemoryDietaryProfileRepository();
-      final saved = await repository.save(allergies: {AllergenTag.shellfish});
+      final saved = await repository.save(allergies: {AllergenTag.crustaceans});
 
       final assessment = AllergyGuard(saved.toConstraints()).assess(_untagged);
 
@@ -133,7 +135,7 @@ void main() {
       () async {
         final repository = InMemoryDietaryProfileRepository();
         final saved = await repository.save(
-          allergies: {AllergenTag.nuts},
+          allergies: {AllergenTag.treeNuts},
           dietary: {DietaryTag.everything},
         );
 
@@ -148,15 +150,17 @@ void main() {
     test('two allergens are carried across independently', () async {
       final repository = InMemoryDietaryProfileRepository();
       final saved = await repository.save(
-        allergies: {AllergenTag.dairy, AllergenTag.gluten},
+        allergies: {AllergenTag.milk, AllergenTag.gluten},
       );
 
-      expect(saved.toConstraints().allergies, {'dairy', 'gluten'});
+      // `dairy` until the vocabulary widened to the EU/UK declarables, whose
+      // token for this is `milk`.
+      expect(saved.toConstraints().allergies, {'milk', 'gluten'});
 
       // Acknowledging one does not clear the other. The dish carries both of
-      // her allergens; she accepts the dairy and the gluten still blocks.
+      // her allergens; she accepts the milk and the gluten still blocks.
       final assessment = AllergyGuard(saved.toConstraints())
-          .assess(_creamyPasta, acknowledged: {'dairy'});
+          .assess(_creamyPasta, acknowledged: {'milk'});
 
       expect(assessment.isBlocked, isTrue);
       expect(
@@ -170,7 +174,7 @@ void main() {
       // And acknowledging both clears it.
       expect(
         AllergyGuard(saved.toConstraints())
-            .assess(_creamyPasta, acknowledged: {'dairy', 'gluten'})
+            .assess(_creamyPasta, acknowledged: {'milk', 'gluten'})
             .isBlocked,
         isFalse,
       );
@@ -182,7 +186,7 @@ void main() {
       // dairy. A guard that blocked here would interrupt women who have no
       // relevant allergy — G7 Q18's exact complaint about the status quo.
       final repository = InMemoryDietaryProfileRepository();
-      final saved = await repository.save(allergies: {AllergenTag.dairy});
+      final saved = await repository.save(allergies: {AllergenTag.milk});
 
       expect(
         AllergyGuard(saved.toConstraints()).assess(_cashewRice).isBlocked,
@@ -195,7 +199,7 @@ void main() {
     test('saving allergies writes profile.allergies and nothing else', () async {
       final repository = InMemoryDietaryProfileRepository();
 
-      await repository.save(allergies: {AllergenTag.nuts});
+      await repository.save(allergies: {AllergenTag.treeNuts});
 
       expect(
         repository.writes,
@@ -214,10 +218,10 @@ void main() {
         final repository = InMemoryDietaryProfileRepository();
 
         await repository.save(
-          allergies: {AllergenTag.nuts},
+          allergies: {AllergenTag.treeNuts},
           dietary: {DietaryTag.vegetarianWeekdays},
         );
-        await repository.save(allergies: {AllergenTag.nuts, AllergenTag.dairy});
+        await repository.save(allergies: {AllergenTag.treeNuts, AllergenTag.milk});
 
         expect(repository.writes, [
           {'profile.allergies', 'profile.dietary'},
@@ -227,14 +231,14 @@ void main() {
         // D3 — editable forever. The second save edited allergies and left her
         // dietary answer alone.
         final profile = repository.read();
-        expect(profile.allergies, {AllergenTag.nuts, AllergenTag.dairy});
+        expect(profile.allergies, {AllergenTag.treeNuts, AllergenTag.milk});
         expect(profile.dietary, {DietaryTag.vegetarianWeekdays});
       },
     );
 
     test('clearing her allergies is an answer, not an erasure', () async {
       final repository = InMemoryDietaryProfileRepository(
-        const DietaryProfile(allergies: {AllergenTag.nuts}),
+        const DietaryProfile(allergies: {AllergenTag.treeNuts}),
       );
 
       // She removes the last chip. That is "I have no allergies", which is a
@@ -249,21 +253,78 @@ void main() {
   });
 
   group('the vocabulary is the one content authored', () {
-    test('four allergens, matching G17', () {
+    test('sixteen allergens: the EU/UK declarables, plus fava and coconut', () {
+      // Four until Rahma's recipe book was authored and dishes started carrying
+      // real allergen data. The list is the EU/UK 14 — a superset of Codex STAN
+      // 1-1985 and of the FDA 9, so it maps onto Egyptian labelling — plus two
+      // Egypt needs: `fava`, which is not an allergen at all but the G6PD
+      // contraindication recipe 14 of her book requires, and `coconut`, which
+      // is its own token because the FDA calls it a tree nut and the EU does
+      // not. `dietary_profile.dart` records the reasoning for each.
       expect(AllergenTag.values.map((a) => a.wireName).toList(), [
-        'nuts',
-        'dairy',
         'gluten',
-        'shellfish',
+        'crustaceans',
+        'eggs',
+        'fish',
+        'peanuts',
+        'soy',
+        'milk',
+        'tree_nuts',
+        'celery',
+        'mustard',
+        'sesame',
+        'sulphites',
+        'lupin',
+        'molluscs',
+        'fava',
+        'coconut',
       ]);
     });
 
     test('wire names round-trip, case- and whitespace-insensitively', () {
       // AllergyGuard compares this way, so a tag stored as "Nuts" must still
       // match. A guard that missed on capitalisation would fail OPEN.
-      expect(AllergenTag.fromWire('nuts'), AllergenTag.nuts);
+      expect(AllergenTag.fromWire('tree_nuts'), AllergenTag.treeNuts);
       expect(AllergenTag.fromWire(' Gluten '), AllergenTag.gluten);
-      expect(AllergenTag.fromWire('sesame'), isNull);
+      // `sesame` returned null while the vocabulary was four tokens wide, and
+      // the seed was already writing it onto dishes "truthfully, although no
+      // capture surface can name them yet". A woman allergic to sesame could
+      // not tell the app. She can now.
+      expect(AllergenTag.fromWire('sesame'), AllergenTag.sesame);
+    });
+
+    test('an already-saved profile does not lose a declaration', () {
+      // The rename is the dangerous part of widening this enum. A woman who
+      // saved `nuts` before the split must still be screened against nuts after
+      // an app update, or the guard silently stops protecting exactly the women
+      // who answered earliest.
+      for (final entry in AllergenTag.legacyAliases.entries) {
+        expect(
+          AllergenTag.fromWire(entry.key),
+          entry.value,
+          reason: '${entry.key} was a saved wire token and must still resolve',
+        );
+      }
+      expect(AllergenTag.legacyAliases.keys.toSet(), {
+        'nuts',
+        'dairy',
+        'gluten',
+        'shellfish',
+      }, reason: 'the four the first version of this enum could write');
+    });
+
+    test('shellfish widens back to both classes for screening', () {
+      // One wire token cannot become two enum members, so `shellfish` reads
+      // back as `crustaceans` — what an Egyptian kitchen means by it. Screening
+      // widens it again, because a woman who saved it told us she cannot eat
+      // calamari either. Narrow on read, widen on screen: the safe direction.
+      expect(
+        AllergenTag.expandAliases(const ['shellfish']),
+        {'crustaceans', 'molluscs'},
+      );
+      // A token from a content release newer than this binary is kept, not
+      // dropped. Forgetting it would fail open.
+      expect(AllergenTag.expandAliases(const ['lupin_flour']), {'lupin_flour'});
     });
 
     test('"everything" means nothing is filtered', () {

@@ -2865,5 +2865,166 @@
   "theAppOpensAsSoonAsYour": "يفتح التطبيق بمجرد انتهاء التحقق.",
   "nothingYouPhotographIsKeptBothSides": "لا نحتفظ بأي صورة تلتقطينها. يُحذف وجها البطاقة والصورة الذاتية فور انتهاء الفحص، أيًا كانت النتيجة.",
   "ifAWomanNeedsToCheckIt": "إذا لزمت مراجعة من إحدى النساء، فتتم عبر مكالمة فيديو قصيرة معك. لا تُرسَل صورك إلى أحد أبدًا.",
-  "thePhotographsAreProcessedByGoogleCloud_tqchn": "تُعالَج الصور لدى Google Cloud على خوادم خارج مصر."
+  "thePhotographsAreProcessedByGoogleCloud_tqchn": "تُعالَج الصور لدى Google Cloud على خوادم خارج مصر.",
+  "gluten_1v1e1": "الجلوتين",
+  "crustaceans": "القشريات",
+  "eggs": "البيض",
+  "fish": "الأسماك",
+  "peanuts": "الفول السوداني",
+  "soy": "الصويا",
+  "milkAndDairy": "الحليب ومشتقاته",
+  "treeNuts": "المكسرات",
+  "celery": "الكرفس",
+  "mustard": "المسطردة",
+  "sesame": "السمسم",
+  "sulphites": "الكبريتيت",
+  "lupin": "الترمس",
+  "molluscs": "الرخويات",
+  "favaBeans": "الفول",
+  "coconut": "جوز الهند",
+  "isThereAnythingYouCannotEat": "هل هناك ما لا يمكنك تناوله؟",
+  "tickAnythingYouAvoidDishesThatContain": "اختاري كل ما تتجنّبينه. الأطباق التي تحتويه تُخفى من وصفاتك.",
+  "noNothing": "لا، لا شيء",
+  "saveWhatIAvoid": "احفظي ما أتجنّبه",
+  "youCanChangeThisAnyTimeFrom": "يمكنك تغيير هذا في أي وقت من حسابك.",
+  "favaBeansAreListedBecauseOfFavism": "الفول مذكور هنا بسبب التفول، لا لأنه من مسببات الحساسية.",
+  "rahmasRecipes": "وصفات رحمة",
+  "searchRecipes": "ابحثي في الوصفات",
+  "noOven": "بدون فرن",
+  "readyInTheFridge": "جاهز في الثلاجة",
+  "quickCombinations": "تركيبات سريعة",
+  "aMessageFromRahma": "رسالة من رحمة",
+  "nothingMatchesThat": "لا يوجد ما يطابق ذلك.",
+  "noCombinationsAreBuiltYetEachOne": "لم تُبنَ أي تركيبات بعد. كل تركيبة تحتاج أطعمة تم التحقق من قيمها.",
+  "ingredientsAndSteps": "المكوّنات والخطوات",
+  "asItIsInTheBook": "كما هي في الكتاب",
+  "steps": "الخطوات",
+  "optional": "اختياري",
+  "servedWith": "يُقدَّم مع",
+  "cookMode": "وضع الطهي",
+  "nextStep": "الخطوة التالية",
+  "previousStep": "الخطوة السابقة",
+  "contains": "يحتوي على",
+  "containsNoneOfTheSixteenWeCheck": "لا يحتوي على أي من الستة عشر التي نتحقق منها.",
+  "nobodyHasSignedOffWhatIsIn": "لم يعتمد أحد مكوّنات هذا الطبق. راجعي ملصق كل منتج بنفسك.",
+  "theWeightsAreEstimatesExceptWhereThe": "الأوزان تقديرية إلا ما ذكره الكتاب.",
+  "theIngredientsAreRahmasReadTheLabel": "المقادير من رحمة. راجعي ملصق كل منتج بنفسك قبل الاستخدام.",
+  "howToTellItIsDone": "كيف تعرفين أنها استوت",
+  "chickenIsDoneWhenNoPinkIs": "الدجاج يستوي عندما يختفي اللون الوردي ويصبح سائله صافيًا.",
+  "mincedMeatIsDoneWhenNoPink": "اللحمة المفرومة تستوي عندما يختفي اللون الوردي منها تمامًا.",
+  "liverIsDoneWhenItIsFirm": "الكبدة تستوي عندما تتماسك ولا ينزل منها دم عند تقطيعها.",
+  "shrimpIsDoneWhenItTurnsOpaque": "الجمبري يستوي عندما يصبح لونه معتمًا بالكامل ويتقوّس.",
+  "eggIsDoneWhenTheWhiteIs": "البيضة تستوي عندما يتماسك بياضها تمامًا.",
+  "liverIsVeryHighInVitaminA": "الكبدة عالية جدًا في فيتامين أ. إذا كنتِ حاملًا، استشيري طبيبك قبل تناولها.",
+  "thisDishContainsFavaBeansIfYou": "هذا الطبق يحتوي على الفول. إذا كنتِ مصابة بالتفول، وهو نقص إنزيمي وراثي، فتجنّبيه.",
+  "thisRecipeIsFromRahmasBook": "هذه الوصفة من كتاب رحمة.",
+  "aCombinationNotARecipeNothingIs": "تركيبة، وليست وصفة. لا يوجد طهي.",
+  "theBookDoesNotSay": "الكتاب لا يذكر ذلك.",
+  "changeWhatYouAvoid": "تغيير ما تتجنّبينه",
+  "whatYouAvoid": "ما تتجنّبينه",
+  "showTheBookPage": "اعرضي صفحة الكتاب",
+  "nMin": "{n} دقيقة",
+  "@nMin": {
+    "description": "A cooking time on a recipe card. The figure comes from the recipe, never from the dictionary.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "nGProtein": "{n} جم بروتين",
+  "@nGProtein": {
+    "description": "Protein per serving on a recipe card, only when the recipe states it.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "24"
+      }
+    }
+  },
+  "nEgpAServing": "{n} جنيه للحصة",
+  "@nEgpAServing": {
+    "description": "Cost per serving, shown beside the month it was priced in.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "14"
+      }
+    }
+  },
+  "nKcalAServing": "{n} سعرة للحصة",
+  "@nKcalAServing": {
+    "description": "Energy per serving, only when it was summed from verified foods.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "410"
+      }
+    }
+  },
+  "pricedMonth": "السعر بتاريخ {month}",
+  "@pricedMonth": {
+    "description": "The month an EGP figure was priced in. An undated price in Egypt is wrong within a quarter.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "October 2026"
+      }
+    }
+  },
+  "countDishesAreHiddenBecauseOfWhat": "{count} أطباق مخفية بسبب ما تتجنّبينه.",
+  "@countDishesAreHiddenBecauseOfWhat": {
+    "description": "Said at the foot of the recipe list. Hiding silently is worse than hiding visibly.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "nG": "{n} جم",
+  "@nG": {
+    "description": "A gram figure beside an ingredient, in her own words' shadow.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "40"
+      }
+    }
+  },
+  "stepNOfTotal": "الخطوة {n} من {total}",
+  "@stepNOfTotal": {
+    "description": "Cook mode's position line.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "tempDegrees": "{temp} درجة",
+  "@tempDegrees": {
+    "description": "An oven temperature chip on a step.",
+    "placeholders": {
+      "temp": {
+        "type": "String",
+        "example": "200"
+      }
+    }
+  },
+  "servesN": "تكفي {n}",
+  "@servesN": {
+    "description": "How many the recipe feeds, only when the book says.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  }
 }

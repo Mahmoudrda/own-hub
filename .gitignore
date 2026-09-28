@@ -34,6 +34,12 @@ node_modules/
 # Working notes, plans and reviews: these stay on the machine
 *.md
 !/README.md
+# Not a working note: the licence record for the 57 bundled illustrations. It is
+# a shipped asset (pubspec includes the whole of assets/art/) and the evidence of
+# where each file came from, which is the one question about that pack nobody
+# could answer. `app_art_test.dart` reads it, so a clone without it is a red
+# build rather than a silent gap.
+!/app/assets/art/LICENCE.md
 docs/
 .impeccable/
 6-v2/plans/
