@@ -7386,11 +7386,6 @@ class AppL10nAr extends AppL10n {
   }
 
   @override
-  String countDishesAreHiddenBecauseOfWhat(String count) {
-    return '$count أطباق مخفية بسبب ما تتجنّبينه.';
-  }
-
-  @override
   String nG(String n) {
     return '$n جم';
   }
@@ -7409,4 +7404,99 @@ class AppL10nAr extends AppL10n {
   String servesN(String n) {
     return 'تكفي $n';
   }
+
+  @override
+  String countPluralOne1DishIsHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طبق مخفي لأن أحدًا لم يراجع مكوّناته بعد.',
+      many: '$count طبقًا مخفيًا لأن أحدًا لم يراجع مكوّناته بعد.',
+      few: '$count أطباق مخفية لأن أحدًا لم يراجع مكوّناتها بعد.',
+      two: 'طبقان مخفيان لأن أحدًا لم يراجع مكوّناتهما بعد.',
+      one: 'طبق واحد مخفي لأن أحدًا لم يراجع مكوّناته بعد.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1DishIsHidden_1hlr5(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طبق مخفي لأنه يحتوي على شيء تتجنّبينه.',
+      many: '$count طبقًا مخفيًا لأنه يحتوي على شيء تتجنّبينه.',
+      few: '$count أطباق مخفية لأنها تحتوي على شيء تتجنّبينه.',
+      two: 'طبقان مخفيان لأنهما يحتويان على شيء تتجنّبينه.',
+      one: 'طبق واحد مخفي لأنه يحتوي على شيء تتجنّبينه.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noDishHereHasBeenCheckedYet =>
+      'لم تُراجَع مكوّنات أي طبق هنا بعد. والسبب ليس ما تتجنّبينه: لم يعتمد أحد ما في هذه الأطباق، فالكتاب ينتظر.';
+
+  @override
+  String get everythingHereContainsSomethingYouToldUs =>
+      'كل ما هنا يحتوي على شيء أخبرتِنا أنك تتجنّبينه.';
+
+  @override
+  String get nothingInTheBookHasBeenChecked =>
+      'لم تُراجَع مكوّنات أي شيء في الكتاب بعد. أخبرينا بأي حساسية وسينتظر الكتاب حتى يراجعها أحد.';
+
+  @override
+  String get notCheckedYet => 'لم تُراجَع بعد';
+
+  @override
+  String get discardWhatYouTicked => 'أتتجاهلين ما اخترتِه؟';
+
+  @override
+  String get youTickedSomethingYouAvoidTheOther =>
+      'اخترتِ شيئًا تتجنّبينه. والإجابة الأخرى تحفظ قائمة فارغة بدلًا منه.';
+
+  @override
+  String get keepWhatITicked => 'احتفظي بما اخترته';
+
+  @override
+  String get yesSaveNothing => 'نعم، لا شيء';
+
+  @override
+  String get theBookNamesWhatGoesInAnd =>
+      'يذكر الكتاب ما يدخل في الطبق، ولا يذكر المقادير في الغالب.';
+
+  @override
+  String get theBookWritesThisOneAsA =>
+      'يكتب الكتاب هذا الطبق طريقةً بلا قائمة مكوّنات. وما يدخل فيه مذكور في الخطوات.';
+
+  @override
+  String nMinHandsOn(String n) {
+    return '$n دقيقة عمل فعلي';
+  }
+
+  @override
+  String nMinInAll(String n) {
+    return '$n دقيقة بالكامل';
+  }
+
+  @override
+  String countPluralOneAbout1HourIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'نحو $count ساعة بالكامل',
+      many: 'نحو $count ساعة بالكامل',
+      few: 'نحو $count ساعات بالكامل',
+      two: 'نحو ساعتين بالكامل',
+      one: 'نحو ساعة بالكامل',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noRecipeHasBeenPricedYet => 'لم تُسعَّر أي وصفة بعد.';
+
+  @override
+  String get noRecipeCanBeCalledNutFree =>
+      'لا يمكن وصف أي وصفة بأنها خالية من المكسرات بعد، لأن أحدًا لم يعتمد مكوّناتها.';
 }

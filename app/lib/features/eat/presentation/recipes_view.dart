@@ -45,6 +45,7 @@ import '../../today/presentation/today_cards.dart' show openScreen;
 import '../data/seeded_recipe_library.dart';
 import '../domain/allergy_guard.dart';
 import '../domain/recipe.dart';
+import 'recipe_labels.dart';
 
 /// One row of the recipe list.
 class RecipeRow {
@@ -126,8 +127,16 @@ bool matchesFilter(RecipeRow row, RecipeFilter filter) => switch (filter) {
 /// way a hand-maintained tag can.
 bool recipeMatchesFilter(Recipe recipe, RecipeFilter filter) => switch (filter) {
   RecipeFilter.highProtein => recipe.dietTags.contains('high_protein'),
-  RecipeFilter.underTwentyMinutes =>
-    recipe.totalMinutes != null && recipe.totalMinutes! < 20,
+  // Hands-on time where the recipe states one, because that is what the chip
+  // means. It read `totalMinutes`, which counts a night in the fridge, so
+  // overnight oats — five minutes of work — was excluded at 1,445 and so were
+  // chia pudding, ice cream and banana pudding. A row that does not say still
+  // never matches: the fallback is the total, not a zero.
+  RecipeFilter.underTwentyMinutes => switch (recipe.activeMinutes ??
+      recipe.totalMinutes) {
+    final int minutes => minutes < 20,
+    null => false,
+  },
   // Nobody has priced a recipe in the book, and `egpPerServing` is null on all
   // of them. Null means the row does not say, so none of them is "cheap".
   RecipeFilter.cheap =>
@@ -396,6 +405,43 @@ class _RecipesViewState extends State<RecipesView> {
     );
   }
 
+  /// Why her half of the screen is empty, in the woman's own terms.
+  ///
+  /// Order matters and it is the order of causes, not of severity. Anything
+  /// removed by the guard was removed **before** a filter was applied, so the
+  /// guard's reason is the true one: a chip cannot be blamed for a book that
+  /// was already gone.
+  ///
+  /// The two guard reasons are separate sentences because they are separate
+  /// facts, and conflating them is the defect this method exists for. Every one
+  /// of the thirty-nine recipes is unsigned today, so declaring molluscs — a
+  /// tag that fires on none of them — emptied the book and the screen said "39
+  /// dishes are hidden because of what you avoid". Nothing she avoids was in
+  /// any of them.
+  ///
+  /// The last two are the filters that can only ever select nothing in this
+  /// build. They each get their own line for the same reason Ramadan already
+  /// had one: a chip that falls through to "Nothing matches that" reads as a
+  /// fault in the app rather than as an absence in the content.
+  String _emptyLine(AppL10n l10n, HiddenRecipes hidden, RecipeFilter? filter) {
+    if (hidden.unsigned > 0) return l10n.noDishHereHasBeenCheckedYet;
+    if (hidden.namedAllergen > 0) {
+      return l10n.everythingHereContainsSomethingYouToldUs;
+    }
+    // Nobody has priced a recipe in the book, so "Cheap" selects none of them.
+    if (filter == RecipeFilter.cheap) return l10n.noRecipeHasBeenPricedYet;
+    if (filter == RecipeFilter.ramadan) {
+      return l10n.noRecipeCarriesARamadanTagYet;
+    }
+    // "No nuts" fails closed on `allergensReviewed`, and nothing is signed, so
+    // it correctly selects none. Saying which of those two facts is doing the
+    // work is the difference between an honest gap and a broken chip.
+    if (_bookFilter == RecipeFilter.noNuts) {
+      return l10n.noRecipeCanBeCalledNutFree;
+    }
+    return l10n.nothingMatchesThat;
+  }
+
   /// Rahma's half of the screen.
   ///
   /// Returns an empty list when there is no book, which is what keeps every
@@ -430,12 +476,12 @@ class _RecipesViewState extends State<RecipesView> {
     }
 
     final guard = AllergyGuard(widget.constraints);
-    var hidden = 0;
+    var hidden = HiddenRecipes.none;
     final bySection = <String, List<Recipe>>{};
     for (final section in book.sections) {
       final all = book.inSection(section.sectionId);
       final allowed = guard.screenRecipes(all);
-      hidden += all.length - allowed.length;
+      hidden = hidden.plus(guard.hiddenByReason(all));
       bySection[section.sectionId] = [
         for (final recipe in allowed)
           if ((filter == null || recipeMatchesFilter(recipe, filter)) &&
@@ -447,8 +493,25 @@ class _RecipesViewState extends State<RecipesView> {
     }
     final anyShown = bySection.values.any((rows) => rows.isNotEmpty);
 
+    // Said once, at the head of the book, instead of three lines on each of
+    // thirty-nine cards. It is also the only place the **consequence** is
+    // stated: the marker on a card says the dish is unchecked, and says nothing
+    // at all about the book disappearing the moment she names an allergy, which
+    // is the part that actually bites.
+    //
+    // Only while there is something to caveat. When the book is empty the empty
+    // state below already says this and says it in the past tense, and two
+    // sentences about the same fact read as the screen repeating itself.
+    final anyUnsigned =
+        anyShown && book.recipes.any((r) => !r.allergensReviewed);
+
     return [
       _BookHeading(title: l10n.rahmasRecipes),
+      if (anyUnsigned)
+        Text(
+          l10n.nothingInTheBookHasBeenChecked,
+          style: AppText.bodyM.copyWith(color: HandInk.print),
+        ),
       AppChipRow(
         grow: false,
         items: [l10n.noOven, l10n.readyInTheFridge, l10n.noNuts],
@@ -477,29 +540,33 @@ class _RecipesViewState extends State<RecipesView> {
               },
             ),
         ],
+      // The empty state has to name the reason it is empty, and the two reasons
+      // are not the same sentence.
+      //
+      // Every one of the thirty-nine recipes is unsigned today, so a woman who
+      // declares an allergy loses the whole book whatever she declared. The
+      // screen used to answer that with "Nothing matches that." followed by
+      // "39 dishes are hidden because of what you avoid" — while she may avoid
+      // something that appears in none of them. That sentence takes the app's
+      // own caution and tells her it came out of her body.
       if (!anyShown)
         Text(
-          l10n.nothingMatchesThat,
+          _emptyLine(l10n, hidden, filter),
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       // Hiding silently is worse than hiding visibly. A woman who declared a nut
       // allergy and then found six recipes missing has no way to tell a filter
-      // from a fault, so the screen says how many and offers the way back.
-      if (hidden > 0)
-        AppListItem(
-          variant: AppCardVariant.filled,
-          leading: const Icon(
-            Icons.shield_outlined,
-            size: 24,
-            color: AppColors.primaryDim,
-          ),
-          title: l10n.countDishesAreHiddenBecauseOfWhat(countLabel(hidden)),
-          subtitle: l10n.changeWhatYouAvoid,
-          trailing: const Icon(
-            Icons.chevron_right,
-            size: 22,
-            color: AppColors.onSurfaceVariant,
-          ),
+      // from a fault, so the screen says how many, **why**, and offers the way
+      // back. Two rows rather than one total, because "nobody has checked
+      // these yet" is not "this one contains sesame".
+      if (hidden.unsigned > 0)
+        _HiddenRow(
+          title: dishesHiddenUnchecked(l10n, hidden.unsigned),
+          onTap: () => openScreen(context, 'E10', widget.onAnswerAllergies),
+        ),
+      if (hidden.namedAllergen > 0)
+        _HiddenRow(
+          title: dishesHiddenByAllergen(l10n, hidden.namedAllergen),
           onTap: () => openScreen(context, 'E10', widget.onAnswerAllergies),
         ),
       // Assemblies: named combinations of verified foods, in the app's own
@@ -534,6 +601,39 @@ class _RecipesViewState extends State<RecipesView> {
           onTap: () => openScreen(context, 'E11', widget.onOpenLetter),
         ),
     ];
+  }
+}
+
+/// One reason some of her cards are not on screen, and the way back.
+///
+/// Drawn once per reason rather than once per total: "nobody has checked these
+/// yet" is a fact about the library and "this one contains sesame" is a fact
+/// about her, and one row stating their sum tells her the wrong one.
+class _HiddenRow extends StatelessWidget {
+  const _HiddenRow({required this.title, required this.onTap});
+
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return AppListItem(
+      variant: AppCardVariant.filled,
+      leading: const Icon(
+        Icons.shield_outlined,
+        size: 24,
+        color: AppColors.primaryDim,
+      ),
+      title: title,
+      subtitle: l10n.changeWhatYouAvoid,
+      trailing: const Icon(
+        Icons.chevron_right,
+        size: 22,
+        color: AppColors.onSurfaceVariant,
+      ),
+      onTap: onTap,
+    );
   }
 }
 
@@ -619,8 +719,14 @@ class _RahmaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    // The hands-on figure, not the total. Overnight oats is five minutes of
+    // work and a day in the fridge, and this card said "1,445 min" — a number
+    // that is true, unusable, and reads as a bug. The total still has its say
+    // on E06, where there is room for both.
+    final time = handsOnLabel(l10n, recipe.activeMinutes) ??
+        totalTimeLabel(l10n, recipe.totalMinutes);
     final facts = <String>[
-      if (recipe.totalMinutes != null) l10n.nMin(countLabel(recipe.totalMinutes!)),
+      ?time,
       if (recipe.proteinG != null) l10n.nGProtein(countLabel(recipe.proteinG!)),
       if (recipe.egpPerServing != null)
         l10n.nEgpAServing(countLabel(recipe.egpPerServing!)),
@@ -652,11 +758,19 @@ class _RahmaCard extends StatelessWidget {
                 style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
               ),
             ],
+            // Three words, not three lines. The full sentence — "Nobody has
+            // signed off what is in this dish. Read the label on each product
+            // yourself." — is right, and it is still on E06 beside the contents
+            // list where she is about to cook. Repeated under every one of
+            // thirty-nine cards it stopped being read, and it never mentioned
+            // the consequence that matters anyway. That is now said once, at
+            // the head of the book, where it is about the book rather than
+            // about this dish.
             if (!recipe.allergensReviewed) ...[
               const SizedBox(height: 8),
               Text(
-                l10n.nobodyHasSignedOffWhatIsIn,
-                style: AppText.bodyM.copyWith(color: HandInk.print),
+                l10n.notCheckedYet,
+                style: AppText.label.copyWith(color: HandInk.print),
               ),
             ],
           ],

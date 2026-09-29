@@ -39,7 +39,7 @@
    "markKey": "jar"
   }
  ],
- "letter": "A message to you :)\nليه بنحاول ناكل صحي؟\nالاكل الصحي بيدينا طاقة وبيخلي عندنا نشاط وبيخلي دماغنامركزة وبيمنعنا عن امراض مزمنة كتير\nاستثمري في صحتك ونفسك عشان دي اغلى حاجه عندكوحبي نفسك ب انك تعمليلها اكل هيفيدها وهيخلي جسمك حلو\nوشعرك حلو وبجد الموضوع سهل بس محتاج تعود ومفيش\nمشكله لو اكلنا من برة بس الهدف انه ميكونش اسلوب حياة\nوحاولي دايما تزقي نفسك للأحسن عشان نفسك وصحتك\nكل حاجه هتيجي بس واحدة واحدة وشكرا انك وثقتي فيا\nWith all my love\nRahma",
+ "letter": "A message to you :)\nليه بنحاول ناكل صحي؟\nالاكل الصحي بيدينا طاقة وبيخلي عندنا نشاط وبيخلي دماغنا مركزة وبيمنعنا عن امراض مزمنة كتير\nاستثمري في صحتك ونفسك عشان دي اغلى حاجه عندك وحبي نفسك ب انك تعمليلها اكل هيفيدها وهيخلي جسمك حلو\nوشعرك حلو وبجد الموضوع سهل بس محتاج تعود ومفيش\nمشكله لو اكلنا من برة بس الهدف انه ميكونش اسلوب حياة\nوحاولي دايما تزقي نفسك للأحسن عشان نفسك وصحتك\nكل حاجه هتيجي بس واحدة واحدة وشكرا انك وثقتي فيا\nWith all my love\nRahma",
  "recipes": [
   {
    "recipeId": "rahma_lazy_cake",
@@ -71,7 +71,7 @@
     {
      "ingredientRef": "rahma_lazy_cake_2",
      "foodId": null,
-     "qtyTextAr": "stevia",
+     "qtyTextAr": "كيس\nstevia",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -82,7 +82,7 @@
     {
      "ingredientRef": "rahma_lazy_cake_3",
      "foodId": null,
-     "qtyTextAr": "نص معلقه",
+     "qtyTextAr": "نص معلقه\nbaking powder",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -93,7 +93,7 @@
     {
      "ingredientRef": "rahma_lazy_cake_4",
      "foodId": null,
-     "qtyTextAr": "baking powder",
+     "qtyTextAr": "معلقتين دقيق شوفان صغيرين",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -104,7 +104,7 @@
     {
      "ingredientRef": "rahma_lazy_cake_5",
      "foodId": null,
-     "qtyTextAr": "معلقتين دقيق شوفان صغيرين",
+     "qtyTextAr": "معلقة كاكاو",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -115,18 +115,7 @@
     {
      "ingredientRef": "rahma_lazy_cake_6",
      "foodId": null,
-     "qtyTextAr": "معلقة كاكاو",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_lazy_cake_7",
-     "foodId": null,
-     "qtyTextAr": "معلقه زبادي",
+     "qtyTextAr": "معلقه زبادي\nlow fat",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -135,6 +124,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -158,8 +148,7 @@
       "rahma_lazy_cake_3",
       "rahma_lazy_cake_4",
       "rahma_lazy_cake_5",
-      "rahma_lazy_cake_6",
-      "rahma_lazy_cake_7"
+      "rahma_lazy_cake_6"
      ],
      "isTimer": false
     },
@@ -253,7 +242,7 @@
     {
      "ingredientRef": "rahma_pancakes_3",
      "foodId": null,
-     "qtyTextAr": "تلت معالق صغيرين",
+     "qtyTextAr": "تلت معالق صغيرين\nدقيق شوفان",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -264,17 +253,6 @@
     {
      "ingredientRef": "rahma_pancakes_4",
      "foodId": null,
-     "qtyTextAr": "دقيق شوفان",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_pancakes_5",
-     "foodId": null,
      "qtyTextAr": "معلقتين لبن",
      "grams": null,
      "gramsBasis": "unknown",
@@ -284,6 +262,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -323,8 +302,7 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_pancakes_3",
-      "rahma_pancakes_4"
+      "rahma_pancakes_3"
      ],
      "isTimer": false
     },
@@ -335,7 +313,7 @@
      "tempC": null,
      "tool": "pan",
      "usesRefs": [
-      "rahma_pancakes_5"
+      "rahma_pancakes_4"
      ],
      "isTimer": true
     }
@@ -462,6 +440,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -563,7 +542,7 @@
     {
      "ingredientRef": "rahma_coconut_apple_pudding_1",
      "foodId": null,
-     "qtyTextAr": "علبة زبادي يوناني كبيره",
+     "qtyTextAr": "علبة زبادي يوناني كبيره\nاو زبادي عادي كامل الدسم",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -574,7 +553,7 @@
     {
      "ingredientRef": "rahma_coconut_apple_pudding_2",
      "foodId": null,
-     "qtyTextAr": "زبادي عادي كامل الدسم",
+     "qtyTextAr": "2 رايس كيك",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -585,7 +564,7 @@
     {
      "ingredientRef": "rahma_coconut_apple_pudding_3",
      "foodId": null,
-     "qtyTextAr": "2 رايس كيك",
+     "qtyTextAr": "كيس سكر Stevia",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -596,7 +575,7 @@
     {
      "ingredientRef": "rahma_coconut_apple_pudding_4",
      "foodId": null,
-     "qtyTextAr": "كيس سكر Stevia",
+     "qtyTextAr": "نقطتين فانيليا",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -607,7 +586,7 @@
     {
      "ingredientRef": "rahma_coconut_apple_pudding_5",
      "foodId": null,
-     "qtyTextAr": "نقطتين فانيليا",
+     "qtyTextAr": "رشة قرفه",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -618,7 +597,7 @@
     {
      "ingredientRef": "rahma_coconut_apple_pudding_6",
      "foodId": null,
-     "qtyTextAr": "رشة قرفه",
+     "qtyTextAr": "نص معلقة صغيرة\nجوز هند مبشور",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -629,28 +608,6 @@
     {
      "ingredientRef": "rahma_coconut_apple_pudding_7",
      "foodId": null,
-     "qtyTextAr": "نص معلقة صغيرة",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_coconut_apple_pudding_8",
-     "foodId": null,
-     "qtyTextAr": "جوز هند مبشور",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_coconut_apple_pudding_9",
-     "foodId": null,
      "qtyTextAr": "مكعبات صغيرة تفاح",
      "grams": null,
      "gramsBasis": "unknown",
@@ -660,6 +617,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -668,8 +626,7 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_coconut_apple_pudding_1",
-      "rahma_coconut_apple_pudding_2"
+      "rahma_coconut_apple_pudding_1"
      ],
      "isTimer": false
     },
@@ -680,12 +637,11 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
+      "rahma_coconut_apple_pudding_2",
       "rahma_coconut_apple_pudding_3",
       "rahma_coconut_apple_pudding_4",
       "rahma_coconut_apple_pudding_5",
-      "rahma_coconut_apple_pudding_6",
-      "rahma_coconut_apple_pudding_7",
-      "rahma_coconut_apple_pudding_8"
+      "rahma_coconut_apple_pudding_6"
      ],
      "isTimer": false
     },
@@ -696,8 +652,8 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_coconut_apple_pudding_6",
-      "rahma_coconut_apple_pudding_9"
+      "rahma_coconut_apple_pudding_5",
+      "rahma_coconut_apple_pudding_7"
      ],
      "isTimer": false
     }
@@ -716,14 +672,12 @@
    "egpPricedAt": null,
    "allergensDerived": [
     "coconut",
-    "gluten",
     "milk"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
     "coconut",
-    "gluten",
     "milk"
    ],
    "advisories": [],
@@ -835,6 +789,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -983,7 +938,7 @@
     {
      "ingredientRef": "rahma_simple_oat_meal_1",
      "foodId": null,
-     "qtyTextAr": "170 جم زبادي يوناني/زبادي عالي",
+     "qtyTextAr": "170 جم زبادي يوناني/زبادي عالي\nالبروتين",
      "grams": 170,
      "gramsBasis": "stated",
      "gramsNote": null,
@@ -1036,6 +991,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -1214,6 +1170,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -1265,14 +1222,18 @@
    "egpPerServing": null,
    "egpPricedAt": null,
    "allergensDerived": [
+    "gluten",
     "milk",
-    "sesame"
+    "sesame",
+    "soy"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
+    "gluten",
     "milk",
-    "sesame"
+    "sesame",
+    "soy"
    ],
    "advisories": [],
    "dietTags": [
@@ -1350,6 +1311,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -1498,7 +1460,7 @@
     {
      "ingredientRef": "rahma_cottage_freshy_salad_6",
      "foodId": null,
-     "qtyTextAr": "زتونتين متقطعين",
+     "qtyTextAr": "زتونتين متقطعين\nصغير",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -1509,7 +1471,7 @@
     {
      "ingredientRef": "rahma_cottage_freshy_salad_7",
      "foodId": null,
-     "qtyTextAr": "واحدة توست محمص",
+     "qtyTextAr": "واحدة توست محمص\nمتقطعة مكعبات",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -1518,6 +1480,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -1637,7 +1600,7 @@
     {
      "ingredientRef": "rahma_lazy_ranch_fries_2",
      "foodId": null,
-     "qtyTextAr": "فص توم",
+     "qtyTextAr": "فص توم\nمفروم",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -1701,6 +1664,7 @@
      "brandHint": "الضحى"
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -1753,12 +1717,18 @@
    "egpPerServing": null,
    "egpPricedAt": null,
    "allergensDerived": [
-    "milk"
+    "celery",
+    "gluten",
+    "milk",
+    "mustard"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
-    "milk"
+    "celery",
+    "gluten",
+    "milk",
+    "mustard"
    ],
    "advisories": [],
    "dietTags": [
@@ -1882,6 +1852,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -2023,7 +1994,7 @@
     {
      "ingredientRef": "rahma_egg_pizza_2",
      "foodId": null,
-     "qtyTextAr": "ملح",
+     "qtyTextAr": "ملح\nوفلفل",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -2067,7 +2038,7 @@
     {
      "ingredientRef": "rahma_egg_pizza_6",
      "foodId": null,
-     "qtyTextAr": "زيتونه متقطعة",
+     "qtyTextAr": "زيتونه متقطعة\nصغير",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -2089,7 +2060,7 @@
     {
      "ingredientRef": "rahma_egg_pizza_8",
      "foodId": null,
-     "qtyTextAr": "فلفل اخضر",
+     "qtyTextAr": "فلفل اخضر\nشرايح",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -2098,6 +2069,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "few",
    "steps": [
     {
      "index": 1,
@@ -2264,6 +2236,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -2490,6 +2463,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -2630,7 +2604,7 @@
    "titleSearch": [
     "potato w eggs"
    ],
-   "bodyAr": "بطاطس بالبيض لايت.\nالمكونات:\n150 جم بطاطس\n2 بيضة\n½ فلفل\n¼ بصلة\nكمون + بابريكا\n1 معلقة صغيرة زيت\nالطريقة: قطعي البطاطس مكعبات\nصغيرة واسلقيها أو اعمليها في الـ air\n، fryer وبعدها قلبيها مع البصل\nوالفلفل والبيض.",
+   "bodyAr": "بطاطس بالبيض لايت.\nالمكونات:\n150 جم بطاطس\n2 بيضة\n½ فلفل\n¼ بصلة\nكمون + بابريكا\n1 معلقة صغيرة زيت\nالطريقة: قطعي البطاطس مكعبات\nصغيرة واسلقيها أو اعمليها في الـ air\nfryer، وبعدها قلبيها مع البصل\nوالفلفل والبيض.",
    "closingAr": null,
    "registerAr": "egyptian_colloquial",
    "ingredients": [
@@ -2701,6 +2675,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -2788,7 +2763,7 @@
     },
     {
      "index": 9,
-     "textAr": "الطريقة: قطعي البطاطس مكعبات\nصغيرة واسلقيها أو اعمليها في الـ air\n، fryer وبعدها قلبيها مع البصل\nوالفلفل والبيض.",
+     "textAr": "الطريقة: قطعي البطاطس مكعبات\nصغيرة واسلقيها أو اعمليها في الـ air\nfryer، وبعدها قلبيها مع البصل\nوالفلفل والبيض.",
      "minutes": null,
      "tempC": null,
      "tool": null,
@@ -2904,6 +2879,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -3092,6 +3068,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "few",
    "steps": [
     {
      "index": 1,
@@ -3265,6 +3242,7 @@
      "brandHint": "Protein puffs"
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -3347,13 +3325,15 @@
    "egpPricedAt": null,
    "allergensDerived": [
     "gluten",
-    "milk"
+    "milk",
+    "soy"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
     "gluten",
-    "milk"
+    "milk",
+    "soy"
    ],
    "advisories": [],
    "dietTags": [
@@ -3393,7 +3373,7 @@
     {
      "ingredientRef": "rahma_hwawshi_1",
      "foodId": null,
-     "qtyTextAr": "لحمة مفرومة قليلة الدهن + بصل +",
+     "qtyTextAr": "لحمة مفرومة قليلة الدهن + بصل +\nفلفل + بقدونس + بهارات لحمه",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -3404,17 +3384,6 @@
     {
      "ingredientRef": "rahma_hwawshi_2",
      "foodId": null,
-     "qtyTextAr": "فلفل + بقدونس + بهارات لحمه",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_hwawshi_3",
-     "foodId": null,
      "qtyTextAr": "عيش بلدي ريتش بيك",
      "grams": null,
      "gramsBasis": "unknown",
@@ -3424,6 +3393,7 @@
      "brandHint": "ريتش بيك"
     }
    ],
+   "ingredientsBasis": "few",
    "steps": [
     {
      "index": 1,
@@ -3441,8 +3411,7 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_hwawshi_1",
-      "rahma_hwawshi_2"
+      "rahma_hwawshi_1"
      ],
      "isTimer": false
     },
@@ -3453,7 +3422,7 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_hwawshi_3"
+      "rahma_hwawshi_2"
      ],
      "isTimer": false
     }
@@ -3471,14 +3440,18 @@
    "egpPerServing": null,
    "egpPricedAt": null,
    "allergensDerived": [
+    "celery",
     "gluten",
-    "milk"
+    "milk",
+    "mustard"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
+    "celery",
     "gluten",
-    "milk"
+    "milk",
+    "mustard"
    ],
    "advisories": [],
    "dietTags": [
@@ -3527,7 +3500,7 @@
     {
      "ingredientRef": "rahma_chicken_lemon_2",
      "foodId": null,
-     "qtyTextAr": "الليمون، الثوم، الزيت، البابريكا،",
+     "qtyTextAr": "الليمون، الثوم، الزيت، البابريكا،\nالكمون، الزعتر، البصل البودر، الملح والفلفل",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -3538,29 +3511,7 @@
     {
      "ingredientRef": "rahma_chicken_lemon_3",
      "foodId": null,
-     "qtyTextAr": "الكمون، الزعتر، البصل البودر، الملح والفلفل",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_chicken_lemon_4",
-     "foodId": null,
-     "qtyTextAr": "2-3 معالق",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_chicken_lemon_5",
-     "foodId": null,
-     "qtyTextAr": "مياه أو شوربة",
+     "qtyTextAr": "2-3 معالق\nمياه أو شوربة",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -3569,6 +3520,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "few",
    "steps": [
     {
      "index": 1,
@@ -3588,8 +3540,7 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_chicken_lemon_2",
-      "rahma_chicken_lemon_3"
+      "rahma_chicken_lemon_2"
      ],
      "isTimer": false
     },
@@ -3609,8 +3560,7 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_chicken_lemon_4",
-      "rahma_chicken_lemon_5"
+      "rahma_chicken_lemon_3"
      ],
      "isTimer": false
     },
@@ -3655,11 +3605,13 @@
    "egpPerServing": null,
    "egpPricedAt": null,
    "allergensDerived": [
+    "celery",
     "sesame"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
+    "celery",
     "sesame"
    ],
    "advisories": [],
@@ -3771,6 +3723,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -3833,14 +3786,18 @@
    "egpPerServing": null,
    "egpPricedAt": null,
    "allergensDerived": [
+    "celery",
     "gluten",
-    "milk"
+    "milk",
+    "mustard"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
+    "celery",
     "gluten",
-    "milk"
+    "milk",
+    "mustard"
    ],
    "advisories": [],
    "dietTags": [
@@ -3942,6 +3899,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "few",
    "steps": [
     {
      "index": 1,
@@ -4003,14 +3961,18 @@
    "egpPerServing": null,
    "egpPricedAt": null,
    "allergensDerived": [
+    "celery",
     "fish",
-    "gluten"
+    "gluten",
+    "mustard"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
+    "celery",
     "fish",
-    "gluten"
+    "gluten",
+    "mustard"
    ],
    "advisories": [],
    "dietTags": [
@@ -4057,7 +4019,7 @@
     {
      "ingredientRef": "rahma_shrimp_white_pasta_2",
      "foodId": null,
-     "qtyTextAr": "بملح وفلفل وكمون وبابريكا وريحان",
+     "qtyTextAr": "بملح وفلفل وكمون وبابريكا وريحان\nوليمونتين وزيت زيتون",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -4068,38 +4030,16 @@
     {
      "ingredientRef": "rahma_shrimp_white_pasta_3",
      "foodId": null,
-     "qtyTextAr": "وليمونتين وزيت زيتون",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_shrimp_white_pasta_4",
-     "foodId": null,
      "qtyTextAr": "مكرونة الخضار بتاعت الضحى",
-     "grams": null,
-     "gramsBasis": "unknown",
+     "grams": 50,
+     "gramsBasis": "stated",
      "gramsNote": null,
      "optional": false,
      "servingSideOnly": false,
      "brandHint": "الضحى"
     },
     {
-     "ingredientRef": "rahma_shrimp_white_pasta_5",
-     "foodId": null,
-     "qtyTextAr": "50 جرام",
-     "grams": 50,
-     "gramsBasis": "stated",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_shrimp_white_pasta_6",
+     "ingredientRef": "rahma_shrimp_white_pasta_4",
      "foodId": null,
      "qtyTextAr": "مسحة زبدة",
      "grams": null,
@@ -4110,7 +4050,7 @@
      "brandHint": null
     },
     {
-     "ingredientRef": "rahma_shrimp_white_pasta_7",
+     "ingredientRef": "rahma_shrimp_white_pasta_5",
      "foodId": null,
      "qtyTextAr": "فصين توم مفرومين",
      "grams": null,
@@ -4121,7 +4061,7 @@
      "brandHint": null
     },
     {
-     "ingredientRef": "rahma_shrimp_white_pasta_8",
+     "ingredientRef": "rahma_shrimp_white_pasta_6",
      "foodId": null,
      "qtyTextAr": "ونص كوباية لبن",
      "grams": null,
@@ -4132,7 +4072,7 @@
      "brandHint": null
     },
     {
-     "ingredientRef": "rahma_shrimp_white_pasta_9",
+     "ingredientRef": "rahma_shrimp_white_pasta_7",
      "foodId": null,
      "qtyTextAr": "وربع كوباية مايه مغليه",
      "grams": null,
@@ -4143,7 +4083,7 @@
      "brandHint": null
     },
     {
-     "ingredientRef": "rahma_shrimp_white_pasta_10",
+     "ingredientRef": "rahma_shrimp_white_pasta_8",
      "foodId": null,
      "qtyTextAr": "مرقة خضار كنور الفورية",
      "grams": null,
@@ -4154,7 +4094,7 @@
      "brandHint": "كنور"
     },
     {
-     "ingredientRef": "rahma_shrimp_white_pasta_11",
+     "ingredientRef": "rahma_shrimp_white_pasta_9",
      "foodId": null,
      "qtyTextAr": "ورشة بقدونس",
      "grams": null,
@@ -4165,6 +4105,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -4174,8 +4115,7 @@
      "tool": null,
      "usesRefs": [
       "rahma_shrimp_white_pasta_1",
-      "rahma_shrimp_white_pasta_2",
-      "rahma_shrimp_white_pasta_3"
+      "rahma_shrimp_white_pasta_2"
      ],
      "isTimer": false
     },
@@ -4186,8 +4126,7 @@
      "tempC": null,
      "tool": "pan",
      "usesRefs": [
-      "rahma_shrimp_white_pasta_4",
-      "rahma_shrimp_white_pasta_5"
+      "rahma_shrimp_white_pasta_3"
      ],
      "isTimer": true
     },
@@ -4199,8 +4138,8 @@
      "tool": null,
      "usesRefs": [
       "rahma_shrimp_white_pasta_1",
-      "rahma_shrimp_white_pasta_6",
-      "rahma_shrimp_white_pasta_7"
+      "rahma_shrimp_white_pasta_4",
+      "rahma_shrimp_white_pasta_5"
      ],
      "isTimer": false
     },
@@ -4212,11 +4151,11 @@
      "tool": null,
      "usesRefs": [
       "rahma_shrimp_white_pasta_1",
+      "rahma_shrimp_white_pasta_4",
       "rahma_shrimp_white_pasta_6",
+      "rahma_shrimp_white_pasta_7",
       "rahma_shrimp_white_pasta_8",
-      "rahma_shrimp_white_pasta_9",
-      "rahma_shrimp_white_pasta_10",
-      "rahma_shrimp_white_pasta_11"
+      "rahma_shrimp_white_pasta_9"
      ],
      "isTimer": false
     }
@@ -4306,7 +4245,7 @@
     {
      "ingredientRef": "rahma_steak_meal_3",
      "foodId": null,
-     "qtyTextAr": "ملح",
+     "qtyTextAr": "ملح\nوفلفل وروز ماري",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -4317,7 +4256,7 @@
     {
      "ingredientRef": "rahma_steak_meal_4",
      "foodId": null,
-     "qtyTextAr": "وفلفل وروز ماري",
+     "qtyTextAr": "وفص توم فريش",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -4328,7 +4267,7 @@
     {
      "ingredientRef": "rahma_steak_meal_5",
      "foodId": null,
-     "qtyTextAr": "وفص توم فريش",
+     "qtyTextAr": "بطاطس واحدة متوسطة",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -4339,17 +4278,6 @@
     {
      "ingredientRef": "rahma_steak_meal_6",
      "foodId": null,
-     "qtyTextAr": "بطاطس واحدة متوسطة",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_steak_meal_7",
-     "foodId": null,
      "qtyTextAr": "خس طماطم خيار",
      "grams": null,
      "gramsBasis": "unknown",
@@ -4359,6 +4287,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -4380,8 +4309,7 @@
      "usesRefs": [
       "rahma_steak_meal_2",
       "rahma_steak_meal_3",
-      "rahma_steak_meal_4",
-      "rahma_steak_meal_5"
+      "rahma_steak_meal_4"
      ],
      "isTimer": false
     },
@@ -4401,8 +4329,8 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_steak_meal_6",
-      "rahma_steak_meal_7"
+      "rahma_steak_meal_5",
+      "rahma_steak_meal_6"
      ],
      "isTimer": false
     }
@@ -4538,7 +4466,7 @@
     {
      "ingredientRef": "rahma_oven_tender_chicken_8",
      "foodId": null,
-     "qtyTextAr": "ونص",
+     "qtyTextAr": "ونص\nمعلقة كمون",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -4549,7 +4477,7 @@
     {
      "ingredientRef": "rahma_oven_tender_chicken_9",
      "foodId": null,
-     "qtyTextAr": "معلقة كمون",
+     "qtyTextAr": "ومعلقة كركم",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -4560,7 +4488,7 @@
     {
      "ingredientRef": "rahma_oven_tender_chicken_10",
      "foodId": null,
-     "qtyTextAr": "ومعلقة كركم",
+     "qtyTextAr": "ومعلقة كاري",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -4571,7 +4499,7 @@
     {
      "ingredientRef": "rahma_oven_tender_chicken_11",
      "foodId": null,
-     "qtyTextAr": "ومعلقة كاري",
+     "qtyTextAr": "ومعلقة بابريكا",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -4582,17 +4510,6 @@
     {
      "ingredientRef": "rahma_oven_tender_chicken_12",
      "foodId": null,
-     "qtyTextAr": "ومعلقة بابريكا",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_oven_tender_chicken_13",
-     "foodId": null,
      "qtyTextAr": "فلفل وكوسة وجزر وبطاطس وبصل وطماطم شرايح",
      "grams": null,
      "gramsBasis": "unknown",
@@ -4602,6 +4519,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -4639,8 +4557,7 @@
       "rahma_oven_tender_chicken_8",
       "rahma_oven_tender_chicken_9",
       "rahma_oven_tender_chicken_10",
-      "rahma_oven_tender_chicken_11",
-      "rahma_oven_tender_chicken_12"
+      "rahma_oven_tender_chicken_11"
      ],
      "isTimer": false
     },
@@ -4651,7 +4568,7 @@
      "tempC": null,
      "tool": "oven",
      "usesRefs": [
-      "rahma_oven_tender_chicken_13"
+      "rahma_oven_tender_chicken_12"
      ],
      "isTimer": true
     }
@@ -4668,10 +4585,16 @@
    "macroBasis": "withheld",
    "egpPerServing": null,
    "egpPricedAt": null,
-   "allergensDerived": [],
+   "allergensDerived": [
+    "celery",
+    "mustard"
+   ],
    "allergensExtra": [],
    "allergensRemoved": {},
-   "allergensFinal": [],
+   "allergensFinal": [
+    "celery",
+    "mustard"
+   ],
    "advisories": [],
    "dietTags": [
     "high_protein"
@@ -4750,7 +4673,7 @@
     {
      "ingredientRef": "rahma_buffalo_sweet_wings_5",
      "foodId": null,
-     "qtyTextAr": "وواحدة فلفل",
+     "qtyTextAr": "وواحدة فلفل\nاحمر",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -4836,6 +4759,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -4892,11 +4816,13 @@
    "egpPerServing": null,
    "egpPricedAt": null,
    "allergensDerived": [
+    "celery",
     "mustard"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
+    "celery",
     "mustard"
    ],
    "advisories": [],
@@ -4990,7 +4916,7 @@
     {
      "ingredientRef": "rahma_makrona_bashmel_6",
      "foodId": null,
-     "qtyTextAr": "وكيس مرقة دجاج كنور",
+     "qtyTextAr": "وكيس مرقة دجاج كنور\nالفوريه",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -5012,7 +4938,7 @@
     {
      "ingredientRef": "rahma_makrona_bashmel_8",
      "foodId": null,
-     "qtyTextAr": "بصل",
+     "qtyTextAr": "بصل\nمتقطع صغير",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -5054,6 +4980,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -5111,8 +5038,7 @@
         "rahma_makrona_bashmel_2",
         "rahma_makrona_bashmel_3",
         "rahma_makrona_bashmel_4",
-        "rahma_makrona_bashmel_5",
-        "rahma_makrona_bashmel_6"
+        "rahma_makrona_bashmel_5"
        ],
        "isTimer": false
       },
@@ -5186,7 +5112,7 @@
    "tier": "free",
    "brandHints": {
     "مكرونة الضحى بالخضار": "الضحى",
-    "وكيس مرقة دجاج كنور": "كنور"
+    "وكيس مرقة دجاج كنور\nالفوريه": "كنور"
    }
   },
   {
@@ -5233,7 +5159,7 @@
     {
      "ingredientRef": "rahma_kebda_meal_3",
      "foodId": null,
-     "qtyTextAr": "مسحة زيت",
+     "qtyTextAr": "مسحة زيت\nزيتون او سمنة بلدري",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -5255,7 +5181,7 @@
     {
      "ingredientRef": "rahma_kebda_meal_5",
      "foodId": null,
-     "qtyTextAr": "ونص كوباية",
+     "qtyTextAr": "ونص كوباية\nصغيرة مايه مغليه",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -5330,6 +5256,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -5562,6 +5489,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [],
    "variants": [],
    "components": [
@@ -5766,89 +5694,12 @@
     "lahma bel basal",
     "لحمة بالبصل"
    ],
-   "bodyAr": ".1 تبلي اللحمة بالملح، الفلفل، الكمون، البابريكا وبهارات اللحمة.\n.2 في طاسة، non-stick سخني الزيت وشوحي اللحمة على نار\nعالية 2-3 دقايق بس عشان تاخد لون.\n.3 في نفس الطاسة، حطي البصل والثوم والفلفل وقلبيهم مع\nمعلقتين مياه بدل إضافة زيت.\n.4 حطي اللحمة والخضار في صينية، وضيفي شرائح الطماطم\nونصف كوب المياه أو الشوربة.\n.5 غطي الصينية بالفويل ودخليها فرن سخن على 200°C لمدة\n25-35 دقيقة، حسب نوع وسُ مك اللحمة.\n.6 شيلي الفويل آخر 5-10 دقايق عشان الوش يتحمر والصوص\nيتسبك.\nتتقدم مع:\nرز أبيض أو بسمتي",
+   "bodyAr": ".1 تبلي اللحمة بالملح، الفلفل، الكمون، البابريكا وبهارات اللحمة.\n.2 في طاسة non-stick، سخني الزيت وشوحي اللحمة على نار\nعالية 2-3 دقايق بس عشان تاخد لون.\n.3 في نفس الطاسة، حطي البصل والثوم والفلفل وقلبيهم مع\nمعلقتين مياه بدل إضافة زيت.\n.4 حطي اللحمة والخضار في صينية، وضيفي شرائح الطماطم\nونصف كوب المياه أو الشوربة.\n.5 غطي الصينية بالفويل ودخليها فرن سخن على 200°C لمدة\n25-35 دقيقة، حسب نوع وسُ مك اللحمة.\n.6 شيلي الفويل آخر 5-10 دقايق عشان الوش يتحمر والصوص\nيتسبك.\nتتقدم مع:\nرز أبيض أو بسمتي",
    "closingAr": null,
    "registerAr": "egyptian_colloquial",
    "ingredients": [
     {
      "ingredientRef": "rahma_lahma_bel_basl_1",
-     "foodId": null,
-     "qtyTextAr": "اللحمة",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_lahma_bel_basl_2",
-     "foodId": null,
-     "qtyTextAr": "بالملح، الفلفل، الكمون، البابريكا وبهارات اللحمة",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_lahma_bel_basl_3",
-     "foodId": null,
-     "qtyTextAr": "الزيت",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_lahma_bel_basl_4",
-     "foodId": null,
-     "qtyTextAr": "البصل والثوم والفلفل",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_lahma_bel_basl_5",
-     "foodId": null,
-     "qtyTextAr": "معلقتين مياه",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_lahma_bel_basl_6",
-     "foodId": null,
-     "qtyTextAr": "شرائح الطماطم",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_lahma_bel_basl_7",
-     "foodId": null,
-     "qtyTextAr": "ونصف كوب المياه أو الشوربة",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_lahma_bel_basl_8",
      "foodId": null,
      "qtyTextAr": "رز أبيض أو بسمتي",
      "grams": null,
@@ -5859,6 +5710,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "none",
    "steps": [
     {
      "index": 1,
@@ -5866,22 +5718,16 @@
      "minutes": null,
      "tempC": null,
      "tool": null,
-     "usesRefs": [
-      "rahma_lahma_bel_basl_1",
-      "rahma_lahma_bel_basl_2"
-     ],
+     "usesRefs": [],
      "isTimer": false
     },
     {
      "index": 2,
-     "textAr": ".2 في طاسة، non-stick سخني الزيت وشوحي اللحمة على نار\nعالية 2-3 دقايق بس عشان تاخد لون.",
+     "textAr": ".2 في طاسة non-stick، سخني الزيت وشوحي اللحمة على نار\nعالية 2-3 دقايق بس عشان تاخد لون.",
      "minutes": 3,
      "tempC": null,
      "tool": "pan",
-     "usesRefs": [
-      "rahma_lahma_bel_basl_1",
-      "rahma_lahma_bel_basl_3"
-     ],
+     "usesRefs": [],
      "isTimer": true
     },
     {
@@ -5890,10 +5736,7 @@
      "minutes": null,
      "tempC": null,
      "tool": null,
-     "usesRefs": [
-      "rahma_lahma_bel_basl_4",
-      "rahma_lahma_bel_basl_5"
-     ],
+     "usesRefs": [],
      "isTimer": false
     },
     {
@@ -5902,11 +5745,7 @@
      "minutes": null,
      "tempC": null,
      "tool": null,
-     "usesRefs": [
-      "rahma_lahma_bel_basl_1",
-      "rahma_lahma_bel_basl_6",
-      "rahma_lahma_bel_basl_7"
-     ],
+     "usesRefs": [],
      "isTimer": false
     },
     {
@@ -5915,9 +5754,7 @@
      "minutes": 35,
      "tempC": 200,
      "tool": "oven",
-     "usesRefs": [
-      "rahma_lahma_bel_basl_1"
-     ],
+     "usesRefs": [],
      "isTimer": true
     },
     {
@@ -5927,7 +5764,7 @@
      "tempC": null,
      "tool": "oven",
      "usesRefs": [
-      "rahma_lahma_bel_basl_8"
+      "rahma_lahma_bel_basl_1"
      ],
      "isTimer": true
     }
@@ -5944,10 +5781,18 @@
    "macroBasis": "withheld",
    "egpPerServing": null,
    "egpPricedAt": null,
-   "allergensDerived": [],
+   "allergensDerived": [
+    "celery",
+    "gluten",
+    "mustard"
+   ],
    "allergensExtra": [],
    "allergensRemoved": {},
-   "allergensFinal": [],
+   "allergensFinal": [
+    "celery",
+    "gluten",
+    "mustard"
+   ],
    "advisories": [],
    "dietTags": [
     "high_protein"
@@ -6052,18 +5897,7 @@
     {
      "ingredientRef": "rahma_shorbet_3ads_7",
      "foodId": null,
-     "qtyTextAr": "1 شريحة توست محمص",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": true,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_shorbet_3ads_8",
-     "foodId": null,
-     "qtyTextAr": "½ رغيف عيش بلدي محمص في الفرن بدل التحمير في الزيت",
+     "qtyTextAr": "1 شريحة توست محمص\nأو\n½ رغيف عيش بلدي محمص في الفرن بدل التحمير في الزيت",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6072,6 +5906,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -6156,8 +5991,7 @@
      "tool": null,
      "usesRefs": [
       "rahma_shorbet_3ads_6",
-      "rahma_shorbet_3ads_7",
-      "rahma_shorbet_3ads_8"
+      "rahma_shorbet_3ads_7"
      ],
      "isTimer": false
     }
@@ -6175,12 +6009,14 @@
    "egpPerServing": null,
    "egpPricedAt": null,
    "allergensDerived": [
+    "celery",
     "gluten",
     "milk"
    ],
    "allergensExtra": [],
    "allergensRemoved": {},
    "allergensFinal": [
+    "celery",
     "gluten",
     "milk"
    ],
@@ -6215,7 +6051,7 @@
     "بطاطس",
     "لحمة"
    ],
-   "bodyAr": ".1 اغسلي اتنين بطاطس كويس واعملي فيها فتحات بسيطة\nبالشوكة.\n.2 دخليها الفرن على 200°C لمدة 35-45 دقيقة لحد ما\nتستوي، حسب حجمها.\n.3 سيبيها تبرد شوية، وافتحيها من النص وافرغي جزء من القلب\nمع الحفاظ على شكل القشرة.\n.4 في طاسة، non-stick حطي معلقة الزيت وشوحي البصل\nوالثوم.\n.5 ضيفي اللحمة المفرومة وقلبي لحد ما يتغير لونها.\n.6 ضيفي الفلفل والطماطم وصلصة الطماطم والتوابل والمياه.\n.7 سيبي الخليط على نار هادية 8-10 دقايق لحد ما اللحمة\nتستوي والصوص يتسبك.\n.8 اخلطي جزء من قلب البطاطس مع خليط اللحمة.\n.9 احشي البطاطس بالخليط ورجعيها الفرن 10 دقايق لحد ما\nالوش ياخد لون خفيف.\n.10 ممكن تضيفي على الوش:\n.11 20 جم جبنة موتزاريلا لايت لكل حصة لو عايزة طعم cheesy\n.12 تتقدم مع:\nسلطة خضراء أو زبادي بالخيار.",
+   "bodyAr": ".1 اغسلي اتنين بطاطس كويس واعملي فيها فتحات بسيطة\nبالشوكة.\n.2 دخليها الفرن على 200°C لمدة 35-45 دقيقة لحد ما\nتستوي، حسب حجمها.\n.3 سيبيها تبرد شوية، وافتحيها من النص وافرغي جزء من القلب\nمع الحفاظ على شكل القشرة.\n.4 في طاسة non-stick، حطي معلقة الزيت وشوحي البصل\nوالثوم.\n.5 ضيفي اللحمة المفرومة وقلبي لحد ما يتغير لونها.\n.6 ضيفي الفلفل والطماطم وصلصة الطماطم والتوابل والمياه.\n.7 سيبي الخليط على نار هادية 8-10 دقايق لحد ما اللحمة\nتستوي والصوص يتسبك.\n.8 اخلطي جزء من قلب البطاطس مع خليط اللحمة.\n.9 احشي البطاطس بالخليط ورجعيها الفرن 10 دقايق لحد ما\nالوش ياخد لون خفيف.\n.10 ممكن تضيفي على الوش:\n.11 20 جم جبنة موتزاريلا لايت لكل حصة لو عايزة طعم cheesy\n.12 تتقدم مع:\nسلطة خضراء أو زبادي بالخيار.",
    "closingAr": null,
    "registerAr": "egyptian_colloquial",
    "ingredients": [
@@ -6244,7 +6080,7 @@
     {
      "ingredientRef": "rahma_btates_bel_lahma_3",
      "foodId": null,
-     "qtyTextAr": "البصل",
+     "qtyTextAr": "البصل\nوالثوم",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6297,6 +6133,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -6329,7 +6166,7 @@
     },
     {
      "index": 4,
-     "textAr": ".4 في طاسة، non-stick حطي معلقة الزيت وشوحي البصل\nوالثوم.",
+     "textAr": ".4 في طاسة non-stick، حطي معلقة الزيت وشوحي البصل\nوالثوم.",
      "minutes": null,
      "tempC": null,
      "tool": null,
@@ -6487,7 +6324,7 @@
     {
      "ingredientRef": "rahma_cookies_shay_blabn_2",
      "foodId": null,
-     "qtyTextAr": "معلقة زبدة فول سوداني",
+     "qtyTextAr": "معلقة زبدة فول سوداني\nصغيرة",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6509,7 +6346,7 @@
     {
      "ingredientRef": "rahma_cookies_shay_blabn_4",
      "foodId": null,
-     "qtyTextAr": "ورشة",
+     "qtyTextAr": "ورشة\nقرفة",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6520,7 +6357,7 @@
     {
      "ingredientRef": "rahma_cookies_shay_blabn_5",
      "foodId": null,
-     "qtyTextAr": "قرفة ومعلقة كاكاو خام",
+     "qtyTextAr": "ومعلقة كاكاو خام",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6531,7 +6368,7 @@
     {
      "ingredientRef": "rahma_cookies_shay_blabn_6",
      "foodId": null,
-     "qtyTextAr": "وكيسين",
+     "qtyTextAr": "وكيسين\nStevia",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6542,17 +6379,6 @@
     {
      "ingredientRef": "rahma_cookies_shay_blabn_7",
      "foodId": null,
-     "qtyTextAr": "Stevia",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_cookies_shay_blabn_8",
-     "foodId": null,
      "qtyTextAr": "ومعلقة صغيرة لبن",
      "grams": null,
      "gramsBasis": "unknown",
@@ -6562,6 +6388,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -6586,8 +6413,7 @@
       "rahma_cookies_shay_blabn_4",
       "rahma_cookies_shay_blabn_5",
       "rahma_cookies_shay_blabn_6",
-      "rahma_cookies_shay_blabn_7",
-      "rahma_cookies_shay_blabn_8"
+      "rahma_cookies_shay_blabn_7"
      ],
      "isTimer": false
     },
@@ -6712,7 +6538,7 @@
     {
      "ingredientRef": "rahma_bagel_6",
      "foodId": null,
-     "qtyTextAr": "ومعلقتين",
+     "qtyTextAr": "ومعلقتين\nزيت زيتون",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6723,7 +6549,7 @@
     {
      "ingredientRef": "rahma_bagel_7",
      "foodId": null,
-     "qtyTextAr": "زيت زيتون",
+     "qtyTextAr": "وحبة مايه",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6734,7 +6560,7 @@
     {
      "ingredientRef": "rahma_bagel_8",
      "foodId": null,
-     "qtyTextAr": "وحبة مايه",
+     "qtyTextAr": "بيضة",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6745,17 +6571,6 @@
     {
      "ingredientRef": "rahma_bagel_9",
      "foodId": null,
-     "qtyTextAr": "بيضة",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_bagel_10",
-     "foodId": null,
      "qtyTextAr": "حبة البركة وسمسم",
      "grams": null,
      "gramsBasis": "unknown",
@@ -6765,6 +6580,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -6779,8 +6595,7 @@
       "rahma_bagel_4",
       "rahma_bagel_5",
       "rahma_bagel_6",
-      "rahma_bagel_7",
-      "rahma_bagel_8"
+      "rahma_bagel_7"
      ],
      "isTimer": false
     },
@@ -6791,7 +6606,7 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_bagel_9"
+      "rahma_bagel_8"
      ],
      "isTimer": false
     },
@@ -6802,7 +6617,7 @@
      "tempC": 200,
      "tool": "oven",
      "usesRefs": [
-      "rahma_bagel_10"
+      "rahma_bagel_9"
      ],
      "isTimer": true
     }
@@ -6956,7 +6771,7 @@
     {
      "ingredientRef": "rahma_crepe_9",
      "foodId": null,
-     "qtyTextAr": "ونص",
+     "qtyTextAr": "ونص\nمعلقة كاكاو خام",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6967,7 +6782,7 @@
     {
      "ingredientRef": "rahma_crepe_10",
      "foodId": null,
-     "qtyTextAr": "معلقة كاكاو خام",
+     "qtyTextAr": "وكيس سكر Stevia",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6978,7 +6793,7 @@
     {
      "ingredientRef": "rahma_crepe_11",
      "foodId": null,
-     "qtyTextAr": "وكيس سكر Stevia",
+     "qtyTextAr": "او معلقة عسل",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -6989,7 +6804,7 @@
     {
      "ingredientRef": "rahma_crepe_12",
      "foodId": null,
-     "qtyTextAr": "او معلقة عسل",
+     "qtyTextAr": "شرايح من موز",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -7000,29 +6815,7 @@
     {
      "ingredientRef": "rahma_crepe_13",
      "foodId": null,
-     "qtyTextAr": "شرايح من موز",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_crepe_14",
-     "foodId": null,
-     "qtyTextAr": "خمس",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_crepe_15",
-     "foodId": null,
-     "qtyTextAr": "عنبات",
+     "qtyTextAr": "خمس\nعنبات",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -7031,6 +6824,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -7076,8 +6870,7 @@
         "rahma_crepe_8",
         "rahma_crepe_9",
         "rahma_crepe_10",
-        "rahma_crepe_11",
-        "rahma_crepe_12"
+        "rahma_crepe_11"
        ],
        "isTimer": false
       },
@@ -7097,9 +6890,8 @@
        "tempC": null,
        "tool": null,
        "usesRefs": [
-        "rahma_crepe_13",
-        "rahma_crepe_14",
-        "rahma_crepe_15"
+        "rahma_crepe_12",
+        "rahma_crepe_13"
        ],
        "isTimer": false
       }
@@ -7250,18 +7042,7 @@
     {
      "ingredientRef": "rahma_banana_pudding_9",
      "foodId": null,
-     "qtyTextAr": "رشة",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_banana_pudding_10",
-     "foodId": null,
-     "qtyTextAr": "كاكاو خام",
+     "qtyTextAr": "رشة\nكاكاو خام",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -7270,6 +7051,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -7326,8 +7108,7 @@
      "tool": "fridge",
      "usesRefs": [
       "rahma_banana_pudding_8",
-      "rahma_banana_pudding_9",
-      "rahma_banana_pudding_10"
+      "rahma_banana_pudding_9"
      ],
      "isTimer": false
     }
@@ -7463,6 +7244,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -7585,7 +7367,7 @@
     {
      "ingredientRef": "rahma_french_toast_2",
      "foodId": null,
-     "qtyTextAr": "كيس سكر",
+     "qtyTextAr": "كيس سكر\nدايت",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -7596,7 +7378,7 @@
     {
      "ingredientRef": "rahma_french_toast_3",
      "foodId": null,
-     "qtyTextAr": "دايت",
+     "qtyTextAr": "ورشة فانيليا ورشة قرفه",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -7607,7 +7389,7 @@
     {
      "ingredientRef": "rahma_french_toast_4",
      "foodId": null,
-     "qtyTextAr": "ورشة فانيليا ورشة قرفه",
+     "qtyTextAr": "ومعلقتين كبار لبن",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -7618,7 +7400,7 @@
     {
      "ingredientRef": "rahma_french_toast_5",
      "foodId": null,
-     "qtyTextAr": "ومعلقتين كبار لبن",
+     "qtyTextAr": "اتنين\nتوست",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -7629,7 +7411,7 @@
     {
      "ingredientRef": "rahma_french_toast_6",
      "foodId": null,
-     "qtyTextAr": "اتنين",
+     "qtyTextAr": "مسحة زبدة",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -7640,7 +7422,7 @@
     {
      "ingredientRef": "rahma_french_toast_7",
      "foodId": null,
-     "qtyTextAr": "توست",
+     "qtyTextAr": "واحدة زبادي يوناني",
      "grams": null,
      "gramsBasis": "unknown",
      "gramsNote": null,
@@ -7651,28 +7433,6 @@
     {
      "ingredientRef": "rahma_french_toast_8",
      "foodId": null,
-     "qtyTextAr": "مسحة زبدة",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_french_toast_9",
-     "foodId": null,
-     "qtyTextAr": "واحدة زبادي يوناني",
-     "grams": null,
-     "gramsBasis": "unknown",
-     "gramsNote": null,
-     "optional": false,
-     "servingSideOnly": false,
-     "brandHint": null
-    },
-    {
-     "ingredientRef": "rahma_french_toast_10",
-     "foodId": null,
      "qtyTextAr": "ورشة قرفة ورشة عسل",
      "grams": null,
      "gramsBasis": "unknown",
@@ -7682,6 +7442,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,
@@ -7693,8 +7454,7 @@
       "rahma_french_toast_1",
       "rahma_french_toast_2",
       "rahma_french_toast_3",
-      "rahma_french_toast_4",
-      "rahma_french_toast_5"
+      "rahma_french_toast_4"
      ],
      "isTimer": false
     },
@@ -7705,8 +7465,7 @@
      "tempC": null,
      "tool": null,
      "usesRefs": [
-      "rahma_french_toast_6",
-      "rahma_french_toast_7"
+      "rahma_french_toast_5"
      ],
      "isTimer": false
     },
@@ -7717,8 +7476,7 @@
      "tempC": null,
      "tool": "pan",
      "usesRefs": [
-      "rahma_french_toast_7",
-      "rahma_french_toast_8"
+      "rahma_french_toast_6"
      ],
      "isTimer": true
     },
@@ -7730,8 +7488,7 @@
      "tool": null,
      "usesRefs": [
       "rahma_french_toast_7",
-      "rahma_french_toast_9",
-      "rahma_french_toast_10"
+      "rahma_french_toast_8"
      ],
      "isTimer": false
     }
@@ -7836,6 +7593,7 @@
      "brandHint": null
     }
    ],
+   "ingredientsBasis": "measures",
    "steps": [
     {
      "index": 1,

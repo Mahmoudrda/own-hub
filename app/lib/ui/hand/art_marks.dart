@@ -53,10 +53,28 @@
 /// take a position on. The old pack drew loose hair on every figure. A circle
 /// says "a woman training" and stops there.
 ///
-/// Figures stand on the same baseline, feet at 0.88 of the box, so two marks
+/// Every mark stands on the same baseline, [handMarkBaseline], so two marks
 /// side by side in [ScreenArtStrip] sit on the pencil rule under them instead
 /// of floating at different heights — which the old pack, being square images
 /// with their own internal margins, never managed.
+///
+/// The figures always did. Nothing else did: ground strokes were drawn at 0.90
+/// and objects stopped wherever the shape ended, so R01 — `dumbbells` beside
+/// `running` — was a planted runner next to a dumbbell hovering 18 points of
+/// the box above the rule. The number is one constant now, in `food_marks.dart`
+/// where both painters can reach it, and every mark below refers to it instead
+/// of repeating a literal.
+///
+/// ## One pen across both painters
+///
+/// Six of these marks are shapes `food_marks.dart` draws, and it draws them
+/// with a heavier pen: the recipe card's 0.032 nib against this file's 0.026,
+/// and 1.64x the wobble. Borrowed unchanged, that put two pen weights side by
+/// side at the top of E05, where `pasta` (borrowed) sits next to `buddha_bowl`
+/// (native). [HandMarkPen] makes the pen a parameter and [ArtMarkPainter.pen]
+/// goes down with the shape, so a borrowed mark is drawn in the same hand
+/// as the mark beside it while the recipe cards keep the pen they were drawn
+/// with.
 ///
 /// ## They obey the rules the hand layer already has
 ///
@@ -127,6 +145,7 @@ class ArtMarkPainter extends CustomPainter {
     required this.ink,
     this.level = HandLevel.expressive,
     this.rtl = false,
+    this.pen = artPen,
   });
 
   final String markKey;
@@ -134,11 +153,47 @@ class ArtMarkPainter extends CustomPainter {
   final HandLevel level;
   final bool rtl;
 
+  /// The pen to draw with, native shapes and borrowed ones alike. It is a
+  /// field rather than a constant read at the point of use so that a test can
+  /// hand in a different one and see BOTH kinds of mark change with it.
+  final HandMarkPen pen;
+
+  /// The pen these marks are drawn with, and the one handed down to
+  /// `food_marks.dart` for the six shapes borrowed from it.
+  ///
+  /// Thinner than the recipe card's 0.032: these carry limbs and frames rather
+  /// than one silhouette, and at 0.032 a figure's arms close up into a blob.
+  static const HandMarkPen artPen = HandMarkPen(
+    strokeFactor: 0.026,
+    minStroke: 1.1,
+    wobbleReference: 92,
+  );
+
+  /// Art names that are one of `food_marks.dart`'s shapes rather than a
+  /// drawing of their own, so a fried egg is the same fried egg wherever it
+  /// appears in the product.
+  ///
+  /// A map rather than six `case`s because the pairing is a fact the tests
+  /// need: [facing] and `FoodMarkPainter.facing` have to agree about these six
+  /// or a borrowed mark flips in one place and not the other.
+  static const Map<String, String> borrowed = {
+    'bowl_salad': FoodMarks.saladBowl,
+    'steak': FoodMarks.steak,
+    'toast_egg': FoodMarks.friedEgg,
+    'breakfast': FoodMarks.pancakeStack,
+    'bruschetta': FoodMarks.flatbread,
+    'pasta': FoodMarks.pot,
+  };
+
   /// Marks with a front and a back, which turn round in a right-to-left page.
   ///
   /// Everything else — a dumbbell, a bowl, a seated figure seen head-on — is
   /// symmetrical enough that flipping it would only change which way its
   /// hand-drawn wobble leans, so it is left alone.
+  ///
+  /// `steak` is here because the drawing has a bone down one side. It is also
+  /// in `FoodMarkPainter.facing`, since the same shape is directional on a
+  /// recipe card; [_draw] stops the two flips from cancelling each other.
   static const Set<String> facing = {
     'running',
     'dance',
@@ -153,6 +208,7 @@ class ArtMarkPainter extends CustomPainter {
     'spin_bike',
     'boxing_gloves',
     'plate_mixed',
+    'steak',
   };
 
   @override
@@ -175,9 +231,7 @@ class ArtMarkPainter extends CustomPainter {
     final stroke = Paint()
       ..color = ink
       ..style = PaintingStyle.stroke
-      // Thinner than a food mark's 0.032: these carry limbs and frames rather
-      // than one silhouette, and at 0.032 a figure's arms close up into a blob.
-      ..strokeWidth = math.max(1.1, s * 0.026)
+      ..strokeWidth = pen.widthFor(s)
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     final fill = Paint()
@@ -190,7 +244,7 @@ class ArtMarkPainter extends CustomPainter {
     void line(List<Offset> pts, {bool close = false, bool filled = false}) {
       final scaled = [for (final p in pts) Offset(p.dx * s, p.dy * s)];
       final path = smoothPath(
-        perturbLoop(scaled, seed: seed, wobble: level.wobble * (s / 92)),
+        perturbLoop(scaled, seed: seed, wobble: pen.wobbleFor(s, level)),
         close: close,
       );
       if (filled) canvas.drawPath(path, fill);
@@ -215,7 +269,7 @@ class ArtMarkPainter extends CustomPainter {
         final scaled = [for (final p in pts) Offset(p.dx * s, p.dy * s)];
         canvas.drawPath(
           smoothPath(
-            perturbLoop(scaled, seed: seed, wobble: level.wobble * (s / 92)),
+            perturbLoop(scaled, seed: seed, wobble: pen.wobbleFor(s, level)),
             close: true,
           ),
           solid,
@@ -241,7 +295,22 @@ class ArtMarkPainter extends CustomPainter {
       markKey: foodKey,
       ink: ink,
       level: level,
+      // This file's pen, not the recipe card's. Without it the borrowed shape
+      // is drawn 23% thicker and with 1.64x the wobble of the native mark next
+      // to it, which is two illustrators in one header strip.
+      pen: pen,
+      // [paint] has already mirrored the canvas for the names in [facing], so
+      // telling the inner painter to mirror as well would turn the shape back
+      // the way it came. For a name that is not in [facing] the inner set is
+      // the one that decides.
+      rtl: rtl && !facing.contains(markKey),
     ).paint(canvas, size);
+
+    final borrowedShape = borrowed[markKey];
+    if (borrowedShape != null) {
+      borrow(borrowedShape);
+      return;
+    }
 
     switch (markKey) {
       // ------------------------------------------------------- training
@@ -264,7 +333,7 @@ class ArtMarkPainter extends CustomPainter {
         ]);
         line([
           const Offset(0.57, 0.51), const Offset(0.67, 0.67),
-          const Offset(0.68, 0.87), const Offset(0.77, 0.89),
+          const Offset(0.68, 0.86), const Offset(0.77, handMarkBaseline),
         ]);
         line([
           const Offset(0.49, 0.52), const Offset(0.34, 0.61),
@@ -292,11 +361,11 @@ class ArtMarkPainter extends CustomPainter {
         ]);
         line([
           const Offset(0.51, 0.50), const Offset(0.55, 0.69),
-          const Offset(0.53, 0.88), const Offset(0.62, 0.89),
+          const Offset(0.53, 0.87), const Offset(0.62, handMarkBaseline),
         ]);
         line([
           const Offset(0.44, 0.51), const Offset(0.34, 0.67),
-          const Offset(0.38, 0.86), const Offset(0.29, 0.88),
+          const Offset(0.38, 0.86), const Offset(0.29, handMarkBaseline),
         ]);
 
       case 'strong_arms':
@@ -309,7 +378,9 @@ class ArtMarkPainter extends CustomPainter {
         // elbow read as a bent stick; the silhouette, with the bicep as a bulge
         // along its top edge, is what makes it an arm.
         line([
-          const Offset(0.09, 0.86), const Offset(0.36, 0.84),
+          const Offset(0.09, handMarkBaseline),
+          const Offset(0.22, handMarkBaseline),
+          const Offset(0.36, handMarkBaseline),
           const Offset(0.60, 0.80), const Offset(0.75, 0.66),
           const Offset(0.81, 0.46), const Offset(0.78, 0.26),
           const Offset(0.62, 0.20), const Offset(0.51, 0.31),
@@ -337,19 +408,24 @@ class ArtMarkPainter extends CustomPainter {
         line([const Offset(0.56, 0.31), const Offset(0.70, 0.30)]);
         line([
           const Offset(0.44, 0.55), const Offset(0.68, 0.60),
-          const Offset(0.64, 0.87), const Offset(0.74, 0.89),
+          const Offset(0.64, 0.86), const Offset(0.74, handMarkBaseline),
         ]);
         line([
           const Offset(0.38, 0.56), const Offset(0.56, 0.63),
-          const Offset(0.50, 0.88),
+          const Offset(0.50, handMarkBaseline),
         ]);
 
       case 'lunge_kneeling':
         // Front knee up, back knee down. Distinct from `lunge_warrior` at a
         // glance only because the back shin lies along the floor, so the floor
         // is drawn: without it the back leg reads as a second stride and the
-        // two lunges become the same mark.
-        line([const Offset(0.06, 0.90), const Offset(0.94, 0.90)]);
+        // two lunges become the same mark. It is drawn ON the shared rule, not
+        // two points below it, so a figure beside an object is standing on the
+        // same floor the object rests on.
+        line([
+          const Offset(0.06, handMarkBaseline),
+          const Offset(0.94, handMarkBaseline),
+        ]);
         head(const Offset(0.32, 0.15), 0.078);
         line([
           const Offset(0.24, 0.27), const Offset(0.42, 0.27),
@@ -358,11 +434,11 @@ class ArtMarkPainter extends CustomPainter {
         line([const Offset(0.26, 0.31), const Offset(0.21, 0.50)]);
         line([
           const Offset(0.42, 0.53), const Offset(0.66, 0.57),
-          const Offset(0.68, 0.87), const Offset(0.78, 0.88),
+          const Offset(0.68, 0.86), const Offset(0.78, handMarkBaseline),
         ]);
         line([
-          const Offset(0.31, 0.55), const Offset(0.27, 0.87),
-          const Offset(0.11, 0.88), const Offset(0.06, 0.80),
+          const Offset(0.31, 0.55), const Offset(0.27, 0.86),
+          const Offset(0.11, handMarkBaseline), const Offset(0.06, 0.80),
         ]);
 
       case 'lunge_warrior':
@@ -378,18 +454,21 @@ class ArtMarkPainter extends CustomPainter {
         line([const Offset(0.57, 0.29), const Offset(0.90, 0.33)]);
         line([
           const Offset(0.46, 0.50), const Offset(0.30, 0.67),
-          const Offset(0.22, 0.88), const Offset(0.12, 0.89),
+          const Offset(0.22, 0.86), const Offset(0.12, handMarkBaseline),
         ]);
         line([
           const Offset(0.54, 0.50), const Offset(0.72, 0.68),
-          const Offset(0.82, 0.88), const Offset(0.91, 0.89),
+          const Offset(0.82, 0.86), const Offset(0.91, handMarkBaseline),
         ]);
 
       case 'plank':
         // A body held on its forearms. Read as a diagonal, which is why the
         // ground line under the elbows is drawn: without it the figure looks
         // like it is falling over rather than holding still.
-        line([const Offset(0.10, 0.88), const Offset(0.36, 0.88)]);
+        line([
+          const Offset(0.10, handMarkBaseline),
+          const Offset(0.36, handMarkBaseline),
+        ]);
         line([const Offset(0.30, 0.87), const Offset(0.29, 0.64)]);
         head(const Offset(0.20, 0.58), 0.074);
         line([
@@ -398,9 +477,12 @@ class ArtMarkPainter extends CustomPainter {
         ], close: true, filled: true);
         line([
           const Offset(0.55, 0.74), const Offset(0.78, 0.83),
-          const Offset(0.88, 0.88),
+          const Offset(0.88, handMarkBaseline),
         ]);
-        line([const Offset(0.88, 0.88), const Offset(0.86, 0.80)]);
+        line([
+          const Offset(0.88, handMarkBaseline),
+          const Offset(0.86, 0.80),
+        ]);
 
       case 'stretch_seated':
         // Sitting, legs out along the floor, reaching forward over them. The
@@ -410,10 +492,14 @@ class ArtMarkPainter extends CustomPainter {
         // The floor line comes first and the legs lie on it as a long closed
         // shape, because the earlier version drew the legs as one stroke and
         // the whole mark collapsed into an unreadable hunch.
-        line([const Offset(0.10, 0.90), const Offset(0.90, 0.90)]);
+        line([
+          const Offset(0.10, handMarkBaseline),
+          const Offset(0.90, handMarkBaseline),
+        ]);
         line([
           const Offset(0.20, 0.76), const Offset(0.74, 0.80),
-          const Offset(0.74, 0.88), const Offset(0.20, 0.88),
+          const Offset(0.74, handMarkBaseline),
+          const Offset(0.20, handMarkBaseline),
         ], close: true, filled: true);
         line([const Offset(0.74, 0.82), const Offset(0.82, 0.70)]);
         line([
@@ -444,30 +530,40 @@ class ArtMarkPainter extends CustomPainter {
           const Offset(0.30, 0.55),
         ]);
         line([
-          const Offset(0.42, 0.53), const Offset(0.40, 0.88),
-          const Offset(0.31, 0.89),
+          const Offset(0.42, 0.53), const Offset(0.40, 0.86),
+          const Offset(0.31, handMarkBaseline),
         ]);
         line([
-          const Offset(0.51, 0.53), const Offset(0.54, 0.88),
-          const Offset(0.63, 0.89),
+          const Offset(0.51, 0.53), const Offset(0.54, 0.86),
+          const Offset(0.63, handMarkBaseline),
         ]);
 
       case 'rest_floor':
         // Lying down, one knee drawn up. Used wherever the product is telling
         // her to stop, so nothing in it is doing work: the raised knee is the
         // only thing off the floor and it is a rest position, not a movement.
-        line([const Offset(0.06, 0.90), const Offset(0.94, 0.90)]);
+        line([
+          const Offset(0.06, handMarkBaseline),
+          const Offset(0.94, handMarkBaseline),
+        ]);
         head(const Offset(0.14, 0.75), 0.082);
         line([
           const Offset(0.22, 0.70), const Offset(0.50, 0.74),
-          const Offset(0.50, 0.88), const Offset(0.22, 0.87),
+          const Offset(0.50, handMarkBaseline),
+          const Offset(0.22, 0.87),
         ], close: true, filled: true);
         line([
           const Offset(0.48, 0.78), const Offset(0.62, 0.56),
-          const Offset(0.74, 0.86), const Offset(0.84, 0.88),
+          const Offset(0.74, 0.86), const Offset(0.84, handMarkBaseline),
         ]);
-        line([const Offset(0.50, 0.86), const Offset(0.88, 0.88)]);
-        line([const Offset(0.26, 0.86), const Offset(0.44, 0.89)]);
+        line([
+          const Offset(0.50, 0.86),
+          const Offset(0.88, handMarkBaseline),
+        ]);
+        line([
+          const Offset(0.26, 0.86),
+          const Offset(0.44, handMarkBaseline),
+        ]);
 
       case 'meditation':
         // The most-placed mark in the product: her cycle, her privacy, the
@@ -480,8 +576,8 @@ class ArtMarkPainter extends CustomPainter {
           const Offset(0.67, 0.63), const Offset(0.33, 0.63),
         ], close: true, filled: true);
         line([
-          const Offset(0.22, 0.66), const Offset(0.34, 0.82),
-          const Offset(0.50, 0.86), const Offset(0.66, 0.82),
+          const Offset(0.22, 0.66), const Offset(0.34, 0.83),
+          const Offset(0.50, handMarkBaseline), const Offset(0.66, 0.83),
           const Offset(0.78, 0.66),
         ], close: true, filled: true);
         line([const Offset(0.40, 0.79), const Offset(0.60, 0.79)]);
@@ -509,43 +605,76 @@ class ArtMarkPainter extends CustomPainter {
           const Offset(0.57, 0.64), const Offset(0.43, 0.64),
         ], close: true, filled: true);
         line([
-          const Offset(0.46, 0.64), const Offset(0.44, 0.88),
-          const Offset(0.35, 0.89),
+          const Offset(0.46, 0.64), const Offset(0.44, 0.86),
+          const Offset(0.35, handMarkBaseline),
         ]);
         line([
-          const Offset(0.54, 0.64), const Offset(0.56, 0.88),
-          const Offset(0.65, 0.89),
+          const Offset(0.54, 0.64), const Offset(0.56, 0.86),
+          const Offset(0.65, handMarkBaseline),
         ]);
 
       case 'dumbbells':
-        line([const Offset(0.30, 0.52), const Offset(0.70, 0.52)]);
+        // Lying on the rule rather than hovering in the middle of the box. It
+        // used to end at 0.70, and R01 draws it beside `running`: a planted
+        // runner next to a floating dumbbell. Same proportions, moved down and
+        // grown to reach [handMarkBaseline].
+        line([const Offset(0.28, 0.65), const Offset(0.72, 0.65)]);
         line([
-          const Offset(0.14, 0.34), const Offset(0.28, 0.34),
-          const Offset(0.28, 0.70), const Offset(0.14, 0.70),
+          const Offset(0.10, 0.42), const Offset(0.26, 0.42),
+          const Offset(0.26, handMarkBaseline),
+          // A point in the middle of each base: the outline is smoothed
+          // through the points it is given, so a base drawn corner to corner
+          // bows below the rule by more than the nib is wide.
+          const Offset(0.18, handMarkBaseline),
+          const Offset(0.10, handMarkBaseline),
         ], close: true, filled: true);
         line([
-          const Offset(0.72, 0.34), const Offset(0.86, 0.34),
-          const Offset(0.86, 0.70), const Offset(0.72, 0.70),
+          const Offset(0.74, 0.42), const Offset(0.90, 0.42),
+          const Offset(0.90, handMarkBaseline),
+          const Offset(0.82, handMarkBaseline),
+          const Offset(0.74, handMarkBaseline),
         ], close: true, filled: true);
-        line([const Offset(0.30, 0.42), const Offset(0.30, 0.62)]);
-        line([const Offset(0.70, 0.42), const Offset(0.70, 0.62)]);
+        line([const Offset(0.28, 0.52), const Offset(0.28, 0.78)]);
+        line([const Offset(0.72, 0.52), const Offset(0.72, 0.78)]);
 
       case 'boxing_gloves':
+        // One glove, in profile, facing left. It was a fist blob with a small
+        // blob beside it and QA read it as two blobs, because the three things
+        // that say "glove" were missing: a cuff at the wrist, a thumb that is
+        // its own lobe with daylight between it and the fist, and lacing.
+        //
+        // The fist first, with the knuckle edge to the left.
         line([
-          const Offset(0.24, 0.46), const Offset(0.34, 0.26),
-          const Offset(0.58, 0.21), const Offset(0.76, 0.32),
-          const Offset(0.80, 0.56), const Offset(0.64, 0.70),
-          const Offset(0.36, 0.68),
+          const Offset(0.30, 0.38), const Offset(0.42, 0.22),
+          const Offset(0.62, 0.20), const Offset(0.78, 0.30),
+          const Offset(0.82, 0.48), const Offset(0.74, 0.62),
+          const Offset(0.50, 0.66), const Offset(0.34, 0.58),
         ], close: true, filled: true);
+        // The seam over the knuckles: the padded front is a separate panel,
+        // and that line is half of why a glove is not a mitten.
         line([
-          const Offset(0.26, 0.50), const Offset(0.16, 0.56),
-          const Offset(0.22, 0.64), const Offset(0.34, 0.62),
-        ], close: true, filled: true);
+          const Offset(0.40, 0.25), const Offset(0.36, 0.42),
+          const Offset(0.44, 0.60),
+        ]);
+        // The thumb, drawn as its own closed lobe below and left of the fist
+        // with a gap between the two outlines.
         line([
-          const Offset(0.40, 0.68), const Offset(0.68, 0.70),
-          const Offset(0.66, 0.86), const Offset(0.40, 0.84),
+          const Offset(0.31, 0.50), const Offset(0.19, 0.55),
+          const Offset(0.18, 0.66), const Offset(0.29, 0.69),
+          const Offset(0.36, 0.60),
         ], close: true, filled: true);
-        line([const Offset(0.42, 0.77), const Offset(0.66, 0.78)]);
+        // The cuff, down to the rule. Wider than the wrist and rolled at the
+        // bottom, which is what a glove has and a fist does not.
+        line([
+          const Offset(0.40, 0.64), const Offset(0.74, 0.62),
+          const Offset(0.72, handMarkBaseline),
+          const Offset(0.57, 0.875), const Offset(0.42, 0.86),
+        ], close: true, filled: true);
+        line([const Offset(0.41, 0.80), const Offset(0.73, 0.78)]);
+        // The lacing up the inside of the cuff.
+        line([const Offset(0.57, 0.64), const Offset(0.56, 0.86)]);
+        line([const Offset(0.50, 0.69), const Offset(0.64, 0.68)]);
+        line([const Offset(0.50, 0.76), const Offset(0.64, 0.75)]);
 
       case 'yoga_mat':
         // Rolled, not laid flat: a flat mat at 92 pt is a rectangle, and a
@@ -555,54 +684,84 @@ class ArtMarkPainter extends CustomPainter {
         // tube. A circle the height of the tube made the whole mark read as a
         // tin can; the ellipse is what says this is a roll seen end-on.
         line([
-          const Offset(0.30, 0.36), const Offset(0.84, 0.39),
-          const Offset(0.84, 0.75), const Offset(0.30, 0.78),
+          const Offset(0.30, 0.36), const Offset(0.84, 0.40),
+          const Offset(0.84, 0.84), const Offset(0.56, 0.866),
+          const Offset(0.30, handMarkBaseline),
         ], close: true, filled: true);
-        oval(const Offset(0.30, 0.57), 0.11, 0.21, filled: true);
-        oval(const Offset(0.30, 0.57), 0.055, 0.105);
-        line([const Offset(0.56, 0.38), const Offset(0.56, 0.77)]);
-        line([const Offset(0.64, 0.38), const Offset(0.64, 0.77)]);
+        oval(const Offset(0.30, 0.62), 0.11, 0.26, filled: true);
+        oval(const Offset(0.30, 0.62), 0.055, 0.13);
+        line([const Offset(0.56, 0.38), const Offset(0.56, 0.86)]);
+        line([const Offset(0.64, 0.39), const Offset(0.64, 0.85)]);
 
       case 'trainers':
         // A shoe in profile, toe to the right. The shape only reads if the
         // collar dips behind the tongue — the first version ran the upper in
         // one smooth sweep from heel to toe and came out as a bread roll.
         line([
-          const Offset(0.10, 0.72), const Offset(0.12, 0.48),
-          const Offset(0.25, 0.40), const Offset(0.34, 0.52),
-          const Offset(0.44, 0.38), const Offset(0.62, 0.50),
-          const Offset(0.82, 0.58), const Offset(0.90, 0.72),
+          const Offset(0.10, 0.76), const Offset(0.12, 0.50),
+          const Offset(0.25, 0.42), const Offset(0.34, 0.55),
+          const Offset(0.44, 0.40), const Offset(0.62, 0.53),
+          const Offset(0.82, 0.61), const Offset(0.90, 0.76),
         ], close: true, filled: true);
         line([
-          const Offset(0.07, 0.71), const Offset(0.91, 0.71),
-          const Offset(0.91, 0.83), const Offset(0.07, 0.82),
+          const Offset(0.07, 0.75), const Offset(0.91, 0.75),
+          const Offset(0.91, handMarkBaseline),
+          const Offset(0.07, 0.87),
         ], close: true, filled: true);
         // Laces across the tongue, and one long line for the shoe's side
         // panel, which is the detail that says trainer rather than slipper.
-        line([const Offset(0.37, 0.50), const Offset(0.45, 0.45)]);
-        line([const Offset(0.41, 0.57), const Offset(0.49, 0.51)]);
-        line([const Offset(0.46, 0.64), const Offset(0.54, 0.57)]);
-        line([const Offset(0.20, 0.66), const Offset(0.56, 0.68)]);
+        line([const Offset(0.37, 0.53), const Offset(0.45, 0.48)]);
+        line([const Offset(0.41, 0.60), const Offset(0.49, 0.54)]);
+        line([const Offset(0.46, 0.67), const Offset(0.54, 0.60)]);
+        line([const Offset(0.20, 0.69), const Offset(0.56, 0.71)]);
 
       case 'gym_bag':
+        // The most-placed mark in the set: B06, H03, K04, K25, O02, R11, Z01,
+        // Z08 and Z11, nine screens. It was a rounded rectangle with a line
+        // across it and one arc over the top, and QA read it as a wallet.
+        //
+        // A duffel reads by its silhouette: ends that round off, a body that
+        // sags between them, a zip along the top and two handles that meet
+        // above it. All four are drawn, in that order.
         line([
-          const Offset(0.36, 0.44), const Offset(0.50, 0.28),
-          const Offset(0.64, 0.44),
+          const Offset(0.12, 0.60), const Offset(0.26, 0.50),
+          const Offset(0.50, 0.48), const Offset(0.74, 0.50),
+          const Offset(0.88, 0.60),
+          // A point at the middle of each end, so the ends come out rounded
+          // instead of pointed: a lens reads as a purse.
+          const Offset(0.90, 0.68), const Offset(0.88, 0.76),
+          const Offset(0.74, 0.86), const Offset(0.50, handMarkBaseline),
+          const Offset(0.26, 0.86), const Offset(0.12, 0.76),
+          const Offset(0.10, 0.68),
+        ], close: true, filled: true);
+        // The end panels. Without them the body is a pill and the pill is the
+        // wallet.
+        line([const Offset(0.27, 0.51), const Offset(0.26, 0.86)]);
+        line([const Offset(0.73, 0.51), const Offset(0.74, 0.86)]);
+        // The zip along the top, with its pull hanging off the middle.
+        line([const Offset(0.20, 0.56), const Offset(0.80, 0.55)]);
+        line([const Offset(0.52, 0.56), const Offset(0.55, 0.63)]);
+        // Two handles, meeting above the bag.
+        line([
+          const Offset(0.37, 0.51), const Offset(0.42, 0.30),
+          const Offset(0.50, 0.26),
         ]);
         line([
-          const Offset(0.14, 0.46), const Offset(0.86, 0.46),
-          const Offset(0.81, 0.80), const Offset(0.19, 0.80),
-        ], close: true, filled: true);
-        line([const Offset(0.16, 0.55), const Offset(0.84, 0.55)]);
-        line([const Offset(0.44, 0.60), const Offset(0.56, 0.60)]);
+          const Offset(0.63, 0.51), const Offset(0.58, 0.30),
+          const Offset(0.50, 0.26),
+        ]);
+        // The grip where the two are held together.
+        line([const Offset(0.45, 0.31), const Offset(0.55, 0.31)]);
 
       case 'spin_bike':
-        circle(const Offset(0.30, 0.70), 0.17);
-        circle(const Offset(0.30, 0.70), 0.05, filled: true);
-        circle(const Offset(0.76, 0.68), 0.12, filled: true);
+        // Both wheels on the rule, so the bike stands rather than leans: the
+        // rear one used to stop 8 points of the box short of the front one.
+        circle(const Offset(0.30, 0.71), 0.17);
+        circle(const Offset(0.30, 0.71), 0.05, filled: true);
+        circle(const Offset(0.76, 0.76), 0.12, filled: true);
         line([
-          const Offset(0.30, 0.70), const Offset(0.50, 0.46),
-          const Offset(0.76, 0.68),
+          const Offset(0.30, 0.71), const Offset(0.50, 0.46),
+          const Offset(0.76, 0.76),
         ]);
         line([const Offset(0.50, 0.46), const Offset(0.66, 0.34)]);
         line([const Offset(0.36, 0.48), const Offset(0.54, 0.44)]);
@@ -611,76 +770,65 @@ class ArtMarkPainter extends CustomPainter {
 
       case 'headphones':
         line([
-          const Offset(0.16, 0.60), const Offset(0.22, 0.30),
-          const Offset(0.50, 0.19), const Offset(0.78, 0.30),
-          const Offset(0.84, 0.60),
+          const Offset(0.16, 0.64), const Offset(0.22, 0.30),
+          const Offset(0.50, 0.18), const Offset(0.78, 0.30),
+          const Offset(0.84, 0.64),
         ]);
         line([
-          const Offset(0.10, 0.58), const Offset(0.24, 0.58),
-          const Offset(0.24, 0.80), const Offset(0.10, 0.80),
+          const Offset(0.10, 0.62), const Offset(0.24, 0.62),
+          const Offset(0.24, handMarkBaseline),
+          const Offset(0.17, handMarkBaseline),
+          const Offset(0.10, handMarkBaseline),
         ], close: true, filled: true);
         line([
-          const Offset(0.76, 0.58), const Offset(0.90, 0.58),
-          const Offset(0.90, 0.80), const Offset(0.76, 0.80),
+          const Offset(0.76, 0.62), const Offset(0.90, 0.62),
+          const Offset(0.90, handMarkBaseline),
+          const Offset(0.83, handMarkBaseline),
+          const Offset(0.76, handMarkBaseline),
         ], close: true, filled: true);
 
       // ----------------------------------------------------------- food
       //
-      // Six of these are shapes `food_marks.dart` already draws for the recipe
-      // cards. They are borrowed rather than redrawn, so a fried egg is the
-      // same fried egg wherever it appears in the product.
-      case 'bowl_salad':
-        borrow(FoodMarks.saladBowl);
-
-      case 'steak':
-        borrow(FoodMarks.steak);
-
-      case 'toast_egg':
-        borrow(FoodMarks.friedEgg);
-
-      case 'breakfast':
-        borrow(FoodMarks.pancakeStack);
-
-      case 'bruschetta':
-        borrow(FoodMarks.flatbread);
-
-      case 'pasta':
-        borrow(FoodMarks.pot);
-
+      // Six more food names are shapes `food_marks.dart` already draws for the
+      // recipe cards. They are borrowed above, from [borrowed], rather than
+      // redrawn here, so a fried egg is the same fried egg wherever it appears
+      // in the product.
       case 'buddha_bowl':
         // Seen from above and divided, where `bowl_salad` is seen from the
         // side. That is the whole reason both exist: W06, the meal planner,
         // places them side by side and two side-view bowls would read as one
         // drawing printed twice.
-        circle(const Offset(0.50, 0.52), 0.35, filled: true);
-        circle(const Offset(0.50, 0.52), 0.27);
-        line([const Offset(0.50, 0.25), const Offset(0.50, 0.79)]);
-        line([const Offset(0.23, 0.52), const Offset(0.77, 0.52)]);
-        circle(const Offset(0.38, 0.40), 0.05);
-        circle(const Offset(0.62, 0.42), 0.04);
-        circle(const Offset(0.40, 0.65), 0.04);
-        circle(const Offset(0.63, 0.64), 0.05);
+        circle(const Offset(0.50, 0.53), 0.35, filled: true);
+        circle(const Offset(0.50, 0.53), 0.27);
+        line([const Offset(0.50, 0.26), const Offset(0.50, 0.80)]);
+        line([const Offset(0.23, 0.53), const Offset(0.77, 0.53)]);
+        circle(const Offset(0.38, 0.41), 0.05);
+        circle(const Offset(0.62, 0.43), 0.04);
+        circle(const Offset(0.40, 0.66), 0.04);
+        circle(const Offset(0.63, 0.65), 0.05);
 
       case 'plate_mixed':
-        oval(const Offset(0.44, 0.56), 0.32, 0.30, filled: true);
-        oval(const Offset(0.44, 0.56), 0.24, 0.22);
-        circle(const Offset(0.36, 0.50), 0.07, filled: true);
+        oval(const Offset(0.44, 0.58), 0.32, 0.30, filled: true);
+        oval(const Offset(0.44, 0.58), 0.24, 0.22);
+        circle(const Offset(0.36, 0.52), 0.07, filled: true);
         line([
-          const Offset(0.48, 0.48), const Offset(0.60, 0.56),
-          const Offset(0.46, 0.66), const Offset(0.38, 0.62),
+          const Offset(0.48, 0.50), const Offset(0.60, 0.58),
+          const Offset(0.46, 0.68), const Offset(0.38, 0.64),
         ], close: true, filled: true);
-        line([const Offset(0.84, 0.30), const Offset(0.82, 0.84)]);
-        line([const Offset(0.79, 0.28), const Offset(0.80, 0.42)]);
-        line([const Offset(0.89, 0.28), const Offset(0.87, 0.42)]);
+        line([const Offset(0.84, 0.32), const Offset(0.82, handMarkBaseline)]);
+        line([const Offset(0.79, 0.30), const Offset(0.80, 0.44)]);
+        line([const Offset(0.89, 0.30), const Offset(0.87, 0.44)]);
 
       case 'fruit_basket':
         line([
           const Offset(0.16, 0.54), const Offset(0.84, 0.54),
-          const Offset(0.74, 0.86), const Offset(0.26, 0.86),
+          const Offset(0.74, handMarkBaseline),
+          const Offset(0.50, handMarkBaseline),
+          const Offset(0.26, handMarkBaseline),
         ], close: true, filled: true);
-        line([const Offset(0.18, 0.66), const Offset(0.82, 0.66)]);
-        line([const Offset(0.38, 0.55), const Offset(0.36, 0.85)]);
-        line([const Offset(0.62, 0.55), const Offset(0.64, 0.85)]);
+        line([const Offset(0.18, 0.67), const Offset(0.82, 0.67)]);
+        line([const Offset(0.38, 0.55), const Offset(0.36, 0.87)]);
+        line([const Offset(0.62, 0.55), const Offset(0.64, 0.87)]);
         circle(const Offset(0.33, 0.44), 0.11, filled: true);
         circle(const Offset(0.55, 0.39), 0.13, filled: true);
         circle(const Offset(0.73, 0.46), 0.09, filled: true);
@@ -688,11 +836,11 @@ class ArtMarkPainter extends CustomPainter {
 
       case 'apple':
         line([
-          const Offset(0.27, 0.44), const Offset(0.38, 0.31),
-          const Offset(0.50, 0.36), const Offset(0.62, 0.31),
-          const Offset(0.73, 0.44), const Offset(0.74, 0.64),
-          const Offset(0.61, 0.81), const Offset(0.50, 0.83),
-          const Offset(0.39, 0.81), const Offset(0.26, 0.64),
+          const Offset(0.26, 0.44), const Offset(0.38, 0.30),
+          const Offset(0.50, 0.35), const Offset(0.62, 0.30),
+          const Offset(0.74, 0.44), const Offset(0.75, 0.66),
+          const Offset(0.61, 0.85), const Offset(0.50, handMarkBaseline),
+          const Offset(0.39, 0.85), const Offset(0.25, 0.66),
         ], close: true, filled: true);
         line([const Offset(0.50, 0.35), const Offset(0.53, 0.18)]);
         line([
@@ -706,7 +854,7 @@ class ArtMarkPainter extends CustomPainter {
         circle(const Offset(0.69, 0.49), 0.10, filled: true);
         circle(const Offset(0.43, 0.62), 0.10, filled: true);
         circle(const Offset(0.61, 0.64), 0.10, filled: true);
-        circle(const Offset(0.51, 0.78), 0.10, filled: true);
+        circle(const Offset(0.51, handMarkBaseline - 0.10), 0.10, filled: true);
         line([const Offset(0.52, 0.34), const Offset(0.50, 0.18)]);
         line([
           const Offset(0.50, 0.22), const Offset(0.34, 0.14),
@@ -715,17 +863,17 @@ class ArtMarkPainter extends CustomPainter {
 
       case 'watermelon':
         line([
-          const Offset(0.12, 0.62), const Offset(0.50, 0.22),
-          const Offset(0.88, 0.62), const Offset(0.70, 0.80),
-          const Offset(0.50, 0.84), const Offset(0.30, 0.80),
+          const Offset(0.12, 0.62), const Offset(0.50, 0.20),
+          const Offset(0.88, 0.62), const Offset(0.72, 0.82),
+          const Offset(0.50, handMarkBaseline), const Offset(0.28, 0.82),
         ], close: true, filled: true);
         line([
-          const Offset(0.20, 0.63), const Offset(0.50, 0.32),
+          const Offset(0.20, 0.63), const Offset(0.50, 0.31),
           const Offset(0.80, 0.63),
         ]);
         circle(const Offset(0.40, 0.58), 0.032, filled: true);
         circle(const Offset(0.58, 0.55), 0.032, filled: true);
-        circle(const Offset(0.50, 0.71), 0.032, filled: true);
+        circle(const Offset(0.50, 0.73), 0.032, filled: true);
 
       case 'nuts':
         line([
@@ -739,22 +887,28 @@ class ArtMarkPainter extends CustomPainter {
         ], close: true, filled: true);
         line([const Offset(0.58, 0.38), const Offset(0.69, 0.44)]);
         line([
-          const Offset(0.44, 0.68), const Offset(0.58, 0.60),
-          const Offset(0.70, 0.70), const Offset(0.56, 0.84),
+          const Offset(0.42, 0.70), const Offset(0.58, 0.60),
+          const Offset(0.72, 0.72), const Offset(0.56, handMarkBaseline),
         ], close: true, filled: true);
-        line([const Offset(0.50, 0.68), const Offset(0.61, 0.74)]);
+        line([const Offset(0.50, 0.70), const Offset(0.62, 0.77)]);
 
       default:
         // A name with no drawing behind it falls back to the yoga mat rather
         // than to nothing, because a blank corner reads as a failed image
         // load. `app_art_test.dart` asserts every name in `AppArt.all` is a
         // case above, so reaching here is a bug caught before release.
+        //
+        // Deliberately not `yoga_mat`'s own coordinates: the test tells "this
+        // name drew the fallback" from "this name drew a mat" by comparing the
+        // two pictures, and two shapes separated only by their wobble seed
+        // would make that comparison a coin toss.
         line([
-          const Offset(0.28, 0.40), const Offset(0.84, 0.43),
-          const Offset(0.84, 0.71), const Offset(0.28, 0.72),
+          const Offset(0.28, 0.48), const Offset(0.84, 0.51),
+          const Offset(0.84, 0.85), const Offset(0.56, 0.87),
+          const Offset(0.28, handMarkBaseline),
         ], close: true, filled: true);
-        circle(const Offset(0.28, 0.56), 0.16, filled: true);
-        circle(const Offset(0.28, 0.56), 0.07);
+        circle(const Offset(0.28, 0.68), 0.20, filled: true);
+        circle(const Offset(0.28, 0.68), 0.09);
     }
   }
 
@@ -763,5 +917,6 @@ class ArtMarkPainter extends CustomPainter {
       old.markKey != markKey ||
       old.ink != ink ||
       old.level != level ||
-      old.rtl != rtl;
+      old.rtl != rtl ||
+      old.pen != pen;
 }

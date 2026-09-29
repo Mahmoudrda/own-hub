@@ -2973,16 +2973,6 @@
       }
     }
   },
-  "countDishesAreHiddenBecauseOfWhat": "{count} dishes are hidden because of what you avoid.",
-  "@countDishesAreHiddenBecauseOfWhat": {
-    "description": "Said at the foot of the recipe list. Hiding silently is worse than hiding visibly.",
-    "placeholders": {
-      "count": {
-        "type": "String",
-        "example": "7"
-      }
-    }
-  },
   "nG": "{n} g",
   "@nG": {
     "description": "A gram figure beside an ingredient, in her own words' shadow.",
@@ -3026,5 +3016,67 @@
         "example": "2"
       }
     }
-  }
+  },
+  "countPluralOne1DishIsHidden": "{count, plural, one{1 dish is hidden because nobody has checked what is in it yet.} other{{count} dishes are hidden because nobody has checked what is in them yet.}}",
+  "@countPluralOne1DishIsHidden": {
+    "description": "E05, at the foot of Rahma's book. The reason the app is holding dishes back is that nobody has signed the allergen check, NOT anything she named. Arabic counts do not agree the way English ones do, so this is a plural message rather than one sentence with a number dropped into it: 39 takes the singular accusative.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "39"
+      }
+    }
+  },
+  "countPluralOne1DishIsHidden_1hlr5": "{count, plural, one{1 dish is hidden because it contains something you avoid.} other{{count} dishes are hidden because they contain something you avoid.}}",
+  "@countPluralOne1DishIsHidden_1hlr5": {
+    "description": "E05, at the foot of Rahma's book. The other reason a dish is held back, and it must read differently from the unchecked one: this one IS about her body.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "noDishHereHasBeenCheckedYet": "No dish here has been checked yet. This is not about what you avoid: nobody has signed off what is in these dishes, so the book waits.",
+  "everythingHereContainsSomethingYouToldUs": "Everything here contains something you told us you avoid.",
+  "nothingInTheBookHasBeenChecked": "Nothing in the book has been checked yet. Tell us about an allergy and the book waits until somebody has.",
+  "notCheckedYet": "Not checked yet",
+  "discardWhatYouTicked": "Discard what you ticked?",
+  "youTickedSomethingYouAvoidTheOther": "You ticked something you avoid. The other answer saves an empty list instead.",
+  "keepWhatITicked": "Keep what I ticked",
+  "yesSaveNothing": "Yes, save nothing",
+  "theBookNamesWhatGoesInAnd": "The book names what goes in, and mostly not how much.",
+  "theBookWritesThisOneAsA": "The book writes this one as a method, with no ingredient list. What goes in is named in the steps.",
+  "nMinHandsOn": "{n} min hands on",
+  "@nMinHandsOn": {
+    "description": "A recipe's active time. Overnight oats is five minutes of work and a day in the fridge, and the card stated 1,445.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "nMinInAll": "{n} min in all",
+  "@nMinInAll": {
+    "description": "A recipe's total time, beside the hands-on figure, for a dish under two hours.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "50"
+      }
+    }
+  },
+  "countPluralOneAbout1HourIn": "{count, plural, one{About 1 hour in all} other{About {count} hours in all}}",
+  "@countPluralOneAbout1HourIn": {
+    "description": "A recipe's total time once it passes two hours. Rounded to the hour and said to be rounded, because 1,445 minutes is true and unreadable.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "24"
+      }
+    }
+  },
+  "noRecipeHasBeenPricedYet": "No recipe has been priced yet.",
+  "noRecipeCanBeCalledNutFree": "No recipe can be called nut free yet, because nobody has signed off what is in them."
 }

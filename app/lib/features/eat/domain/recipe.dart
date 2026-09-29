@@ -114,6 +114,33 @@ enum GramsBasis {
       values.firstWhere((v) => v.name == wire, orElse: () => GramsBasis.unknown);
 }
 
+/// What the page actually gives by way of an ingredient list.
+///
+/// Her book is a Canva page, not a database, and it is not uniform. Most cards
+/// give a measure for nearly everything. Five name what goes in and mostly not
+/// how much. One — `Lahma bel basl` — has no ingredient list at all and is
+/// written as a method.
+///
+/// This exists so the screen can **say which**, rather than printing an
+/// "Ingredients" heading over "the meat, the oil, the onion" and letting a
+/// woman conclude the app lost the amounts.
+enum IngredientsBasis {
+  /// A measure for essentially every line.
+  measures,
+
+  /// She names them; she mostly does not say how much.
+  few,
+
+  /// No ingredient list on the page. What goes in is named in the steps.
+  none;
+
+  static IngredientsBasis fromWire(String wire) => values.firstWhere(
+    (v) => v.name == wire,
+    // A value this build does not know reads as the least claim, not the most.
+    orElse: () => IngredientsBasis.measures,
+  );
+}
+
 /// Free or paid. Modelled now, sold never — see `recipe_access_gate.dart`.
 enum RecipeTier {
   free,
@@ -159,7 +186,18 @@ class RecipeIngredient {
   final String? foodId;
 
   /// Her words, verbatim, and what the screen shows first at full size.
+  ///
+  /// **May contain one of her line breaks.** The book wraps mid-phrase — `نص
+  /// معلقه` reaches the right margin and `baking powder` starts the next line —
+  /// and the phrase is one phrase. The span carries the break so it stays a
+  /// verbatim slice of [Recipe.bodyAr]; [qtyLine] is what a row draws.
   final String qtyTextAr;
+
+  /// [qtyTextAr] as one line, for a row a woman reads while shopping.
+  ///
+  /// Only the line breaks close up. Nothing is reworded, nothing is reordered,
+  /// and the stored string stays the verbatim slice the substring test checks.
+  String get qtyLine => qtyTextAr.replaceAll('\n', ' ');
 
   final int? grams;
   final GramsBasis gramsBasis;
@@ -325,6 +363,7 @@ class Recipe {
     required this.titleSearch,
     required this.bodyAr,
     required this.ingredients,
+    required this.ingredientsBasis,
     required this.steps,
     required this.variants,
     required this.components,
@@ -371,6 +410,9 @@ class Recipe {
     bodyAr: json['bodyAr'] as String? ?? '',
     closingAr: json['closingAr'] as String?,
     ingredients: _ingredients(json['ingredients']),
+    ingredientsBasis: IngredientsBasis.fromWire(
+      json['ingredientsBasis'] as String? ?? '',
+    ),
     steps: _steps(json['steps']),
     variants: [
       for (final v in (json['variants'] as List?) ?? const [])
@@ -444,6 +486,11 @@ class Recipe {
   final String? closingAr;
 
   final List<RecipeIngredient> ingredients;
+
+  /// What the page gives by way of an ingredient list. See [IngredientsBasis]:
+  /// the screen says which, rather than letting a short list read as a fault.
+  final IngredientsBasis ingredientsBasis;
+
   final List<RecipeStep> steps;
   final List<RecipeVariant> variants;
   final List<RecipeComponent> components;

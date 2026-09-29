@@ -101,7 +101,22 @@ class RecipeBook {
         Recipe.fromJson((r as Map).cast<String, Object?>()),
       for (final a in (json['assemblies'] as List?) ?? const [])
         Recipe.fromJson((a as Map).cast<String, Object?>()),
-    ];
+      // `RecipeStatus.draft` is dropped here and nowhere else.
+      //
+      // The enum documents the difference it stands for: `draft` and `review`
+      // both mean a person is still working on this, and what separates them is
+      // whether it is fit to be **read at all**. That distinction had no reader
+      // anywhere under `lib/` — the unsigned marker and the "no nuts" filter are
+      // both driven by `allergenReviewedBy`, which is a different fact — so the
+      // field was schema with nothing behind it, and a half-written card
+      // arriving from Firestore would have been drawn on her screen.
+      //
+      // Vacuous on today's seed, where all thirty-nine are `review`, in exactly
+      // the way the publication gates in `rahma_seed_test.dart` are vacuous: it
+      // is written now so the day a row carries `draft`, the door is already
+      // shut. Dropping at parse rather than filtering per screen is what stops
+      // one list forgetting.
+    ].where((r) => r.status != RecipeStatus.draft).toList();
     return RecipeBook(
       schemaVersion: json['schemaVersion'] as int? ?? 0,
       contentVersion: json['contentVersion'] as int? ?? 0,

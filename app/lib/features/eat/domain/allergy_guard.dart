@@ -285,8 +285,56 @@ class AllergyGuard {
   /// The list screen states this figure at its foot. Hiding dishes silently is
   /// worse than hiding them visibly: a woman who declared a nut allergy and
   /// then found six recipes missing has no way to tell a filter from a fault.
-  int hiddenCount(Iterable<Recipe> candidates) =>
-      candidates.length - screenRecipes(candidates).length;
+  int hiddenCount(Iterable<Recipe> candidates) {
+    final hidden = hiddenByReason(candidates);
+    return hidden.unsigned + hidden.namedAllergen + hidden.dietary;
+  }
+
+  /// The same removals, **counted by reason**.
+  ///
+  /// This exists because the two reasons are not the same fact and a screen
+  /// that adds them together tells a woman something false about her own body.
+  ///
+  /// Today every one of the thirty-nine recipes is unsigned, so declaring an
+  /// allergy that appears in none of them — molluscs, say — hid the entire book
+  /// and the foot of the list said "39 dishes are hidden because of what you
+  /// avoid." Nothing she avoids is in any of them. The app had taken its own
+  /// caution and attributed it to her body, which on a women's health product
+  /// is the worst version of this failure available.
+  ///
+  /// So the counts come back separately and the screen says which is which.
+  HiddenRecipes hiddenByReason(Iterable<Recipe> candidates) {
+    final allergies = constraints.allergies;
+    final dietary = constraints.dietary;
+    final declared = allergies != null && allergies.isNotEmpty;
+
+    var unsigned = 0;
+    var named = 0;
+    var byDiet = 0;
+    for (final recipe in candidates) {
+      // Ordered as `screenRecipes` orders its tests, so a recipe is counted
+      // under the first reason that removed it and never under two.
+      if (declared && !recipe.allergensReviewed) {
+        unsigned++;
+        continue;
+      }
+      if (declared && recipe.allergensFinal.any(_matches(allergies))) {
+        named++;
+        continue;
+      }
+      if (dietary != null &&
+          dietary.isNotEmpty &&
+          recipe.dietTags.isNotEmpty &&
+          !_satisfies(recipe.dietTags, dietary)) {
+        byDiet++;
+      }
+    }
+    return HiddenRecipes(
+      unsigned: unsigned,
+      namedAllergen: named,
+      dietary: byDiet,
+    );
+  }
 
   bool Function(String) _matches(Set<String> against) =>
       (String tag) => against.any((a) => _same(a, tag));
@@ -302,4 +350,57 @@ class AllergyGuard {
   /// allergen; a guard that missed on capitalisation would fail open.
   static bool _same(String a, String b) =>
       a.trim().toLowerCase() == b.trim().toLowerCase();
+}
+
+/// How many recipes were taken away, and **why**, one count per reason.
+///
+/// Three fields rather than one total, because the three are different things
+/// to say to her:
+///
+///  * [unsigned] — nobody has checked these. It is a fact about the library,
+///    not about her, and saying it any other way is a lie about her body.
+///  * [namedAllergen] — these contain something she named. This one *is* about
+///    her, and it is the only one of the three that is.
+///  * [dietary] — these do not match a preference she stated.
+@immutable
+class HiddenRecipes {
+  const HiddenRecipes({
+    required this.unsigned,
+    required this.namedAllergen,
+    required this.dietary,
+  });
+
+  static const HiddenRecipes none = HiddenRecipes(
+    unsigned: 0,
+    namedAllergen: 0,
+    dietary: 0,
+  );
+
+  final int unsigned;
+  final int namedAllergen;
+  final int dietary;
+
+  int get total => unsigned + namedAllergen + dietary;
+  bool get any => total > 0;
+
+  HiddenRecipes plus(HiddenRecipes other) => HiddenRecipes(
+    unsigned: unsigned + other.unsigned,
+    namedAllergen: namedAllergen + other.namedAllergen,
+    dietary: dietary + other.dietary,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is HiddenRecipes &&
+      other.unsigned == unsigned &&
+      other.namedAllergen == namedAllergen &&
+      other.dietary == dietary;
+
+  @override
+  int get hashCode => Object.hash(unsigned, namedAllergen, dietary);
+
+  @override
+  String toString() =>
+      'HiddenRecipes(unsigned: $unsigned, namedAllergen: $namedAllergen, '
+      'dietary: $dietary)';
 }

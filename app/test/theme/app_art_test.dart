@@ -15,23 +15,87 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show ByteData;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/theme/app_art.dart';
+import 'package:own_hub/theme/hand_tokens.dart';
 import 'package:own_hub/ui/hand/art_marks.dart';
+import 'package:own_hub/ui/hand/food_marks.dart';
 
 /// Paints [markKey] into an image and returns the pixels, so two marks can be
 /// compared as drawings rather than as names.
-Future<ByteData> _pixels(String markKey, {bool rtl = false}) async {
-  const size = Size(96, 96);
+Future<ByteData> _pixels(
+  String markKey, {
+  bool rtl = false,
+  double side = 96,
+  HandMarkPen pen = ArtMarkPainter.artPen,
+  HandLevel level = HandLevel.expressive,
+}) async {
+  final size = Size(side, side);
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder, Offset.zero & size);
   ArtMarkPainter(
     markKey: markKey,
     ink: const Color(0xFF000000),
     rtl: rtl,
+    pen: pen,
+    level: level,
   ).paint(canvas, size);
-  final image = await recorder.endRecording().toImage(96, 96);
+  final image = await recorder.endRecording().toImage(
+    side.toInt(),
+    side.toInt(),
+  );
   final data = await image.toByteData();
   image.dispose();
   return data!;
+}
+
+/// The same, for a shape drawn by the other painter, so a borrowed mark can be
+/// compared against the thing it borrows.
+Future<ByteData> _foodPixels(
+  String markKey, {
+  bool rtl = false,
+  double side = 96,
+  HandMarkPen pen = HandMarkPen.recipeCard,
+  HandLevel level = HandLevel.expressive,
+}) async {
+  final size = Size(side, side);
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder, Offset.zero & size);
+  FoodMarkPainter(
+    markKey: markKey,
+    ink: const Color(0xFF000000),
+    rtl: rtl,
+    pen: pen,
+    level: level,
+  ).paint(canvas, size);
+  final image = await recorder.endRecording().toImage(
+    side.toInt(),
+    side.toInt(),
+  );
+  final data = await image.toByteData();
+  image.dispose();
+  return data!;
+}
+
+/// The lowest row of the image that has real ink in it, as a fraction of the
+/// box. Alpha above 40 rather than above 0, so the 13% wash inside a closed
+/// shape and the antialiasing at the edge of a stroke do not count as the
+/// bottom of the drawing.
+double _lowestInk(ByteData d, int side) {
+  for (var y = side - 1; y >= 0; y--) {
+    for (var x = 0; x < side; x++) {
+      if (d.getUint8((y * side + x) * 4 + 3) > 40) return y / side;
+    }
+  }
+  return -1;
+}
+
+/// Pixels with any ink at all, which is one way to measure how fat a pen is:
+/// the same path drawn with a wider nib covers more of the box.
+int _inkedPixels(ByteData d) {
+  var n = 0;
+  for (var i = 3; i < d.lengthInBytes; i += 4) {
+    if (d.getUint8(i) > 40) n++;
+  }
+  return n;
 }
 
 void main() {
@@ -76,13 +140,14 @@ void main() {
     expect(text.contains('cupcake.webp'), isTrue);
   });
 
-  testWidgets('every name is its own drawing, and only the ones that face '
-      'something turn round in Arabic', (tester) async {
-    // Three questions asked of one set of renders, because rendering 32 marks
-    // twice is the expensive part and `Picture.toImage` only resolves on the
-    // real event loop -- so it all has to happen inside ONE `runAsync`. Split
-    // across three tests it was three times the work and, the first time it
-    // was written, an await that never completed and a run that never ended.
+  testWidgets('every name is its own drawing, and the marks that face '
+      'something really do turn round in Arabic', (tester) async {
+    // Several questions asked of one set of renders, because rendering 32
+    // marks twice is the expensive part and `Picture.toImage` only resolves on
+    // the real event loop -- so it all has to happen inside ONE `runAsync`.
+    // Split across three tests it was three times the work and, the first time
+    // it was written, an await that never completed and a run that never
+    // ended.
     await tester.runAsync(() async {
       // A name with no `case` falls through to the default drawing. That is
       // the right behaviour at runtime -- a blank corner reads as a failed
@@ -92,7 +157,8 @@ void main() {
       );
       final silent = <String>[];
       final clashes = <String>[];
-      final wrongWayRound = <String>[];
+      final noOpFlip = <String>[];
+      final flippedAnyway = <String>[];
       final seen = <String, String>{};
 
       for (final name in AppArt.all) {
@@ -104,13 +170,29 @@ void main() {
         } else {
           seen[key] = name;
         }
-        // Decorative, but not arbitrary: a runner heading into the left margin
-        // of a right-to-left page is running backwards. Marks with no front --
-        // a dumbbell, a bowl -- must NOT flip, or their hand-drawn wobble
-        // would lean a different way in each language for no reason.
         final flips = _digest(await _pixels(name, rtl: true)) != key;
-        if (flips != ArtMarkPainter.facing.contains(name)) {
-          wrongWayRound.add(name);
+        // Which names belong in `facing` is a judgement about pictures, and it
+        // was made by looking at all 32 marks at 92 pt in both directions on
+        // 28 September 2026: every figure with a profile, the trainer, the
+        // bike, the glove, the plate with its fork and the steak with its fat
+        // cap turn round; the dumbbell, the bowls, the fruit, the headphones,
+        // the mat, the bag and the head-on figures do not. This test does not
+        // re-ask that question -- "the painter flips what is in `facing`" is
+        // the painter's own definition, and asserting it proves nothing.
+        //
+        // It asks the two things eyes cannot check by looking at one drawing:
+        if (ArtMarkPainter.facing.contains(name)) {
+          // That the flip is not a no-op. A mark that happens to be
+          // left-right symmetric would sit in `facing` looking correct and
+          // mirror to exactly the same picture, and nobody would ever see the
+          // difference the entry claims to make.
+          if (!flips) noOpFlip.add(name);
+        } else {
+          // And that nothing flips behind this set's back. The six borrowed
+          // marks are drawn by `FoodMarkPainter`, which has a `facing` set of
+          // its own, so a name can be absent here and still turn round -- or
+          // be flipped twice and turn round not at all.
+          if (flips) flippedAnyway.add(name);
         }
       }
 
@@ -119,7 +201,17 @@ void main() {
       // and `dumbbell_run` were four names for one picture, and nothing could
       // tell. One name, one drawing is the rule now, and this holds it.
       expect(clashes, isEmpty);
-      expect(wrongWayRound, isEmpty, reason: 'mirrored against `facing`');
+      expect(
+        noOpFlip,
+        isEmpty,
+        reason: 'these are in `facing` but mirror to the same picture, so the '
+            'entry buys nothing',
+      );
+      expect(
+        flippedAnyway,
+        isEmpty,
+        reason: 'these are not in `facing` and turned round anyway',
+      );
     });
   });
 
@@ -129,6 +221,152 @@ void main() {
       isEmpty,
       reason: 'a name in `facing` that no longer exists flips nothing',
     );
+  });
+
+  test('a borrowed shape faces the same way in both painters', () {
+    // `borrow` un-sets `rtl` for the names this painter has already mirrored,
+    // so a shape in both sets flips once rather than twice. The failure it
+    // guards is silent in the other direction too: a food shape put into
+    // `FoodMarkPainter.facing` and not into this one turns round on a recipe
+    // card and not in a header strip, which is the same drawing pointing two
+    // ways in one app.
+    final disagree = <String>[];
+    ArtMarkPainter.borrowed.forEach((artName, foodName) {
+      if (ArtMarkPainter.facing.contains(artName) !=
+          FoodMarkPainter.facing.contains(foodName)) {
+        disagree.add('$artName/$foodName');
+      }
+    });
+    expect(disagree, isEmpty);
+  });
+
+  test('every borrowed name is a real name on both sides', () {
+    expect(
+      ArtMarkPainter.borrowed.keys.toSet().difference(AppArt.all.toSet()),
+      isEmpty,
+    );
+    expect(
+      ArtMarkPainter.borrowed.values.toSet().difference(FoodMarks.all.toSet()),
+      isEmpty,
+    );
+  });
+
+  testWidgets('a borrowed mark is drawn with the same pen as a native one', (
+    tester,
+  ) async {
+    // E05 draws `pasta` (borrowed from `pot`) beside `buddha_bowl` (native).
+    // The borrowed one used to arrive with the recipe card's pen on it: a 23%
+    // wider nib and 1.64x the wobble, two hands in one header strip.
+    await tester.runAsync(() async {
+      const fat = HandMarkPen(
+        strokeFactor: 0.06,
+        minStroke: 3,
+        wobbleReference: 20,
+      );
+
+      // Hand a pen that cannot be mistaken for either default to a native mark
+      // and to a borrowed one. If either painter reached past its `pen` field
+      // for a constant, one of these would come back unchanged.
+      expect(
+        _digest(await _pixels('buddha_bowl', pen: fat)),
+        isNot(_digest(await _pixels('buddha_bowl'))),
+        reason: 'a native mark ignored the pen it was given',
+      );
+      expect(
+        _digest(await _pixels('pasta', pen: fat)),
+        _digest(await _foodPixels(FoodMarks.pot, pen: fat)),
+        reason: 'the borrowed shape was not drawn with the pen handed down',
+      );
+
+      // And with nothing passed, the borrowed shape is this file's pen rather
+      // than the card's.
+      expect(
+        _digest(await _pixels('pasta')),
+        _digest(await _foodPixels(FoodMarks.pot, pen: ArtMarkPainter.artPen)),
+      );
+      final borrowed = await _pixels('pasta');
+      final onACard = await _foodPixels(FoodMarks.pot);
+      expect(
+        _digest(borrowed),
+        isNot(_digest(onACard)),
+        reason: 'the recipe card pen and the art pen cannot be the same, or '
+            'this whole fix is a no-op',
+      );
+      // Measured rather than asserted from the constants: the art pen is
+      // 0.026 against the card's 0.032, so the same path must cover visibly
+      // less of the box. The bounds are wide because a stroke that crosses
+      // itself does not count twice.
+      final ratio = _inkedPixels(borrowed) / _inkedPixels(onACard);
+      expect(ratio, lessThan(0.95), reason: 'borrowed pen is not thinner');
+      expect(ratio, greaterThan(0.6), reason: 'borrowed pen is far too thin');
+    });
+  });
+
+  testWidgets('every mark stands on the shared baseline', (tester) async {
+    // R01 puts `dumbbells` next to `running` and E05 puts a borrowed `pot`
+    // next to `buddha_bowl`. The figures always ended at 0.88; the objects
+    // ended wherever their shape did -- the dumbbell at 0.70 -- so the two
+    // marks in a strip floated at different heights.
+    //
+    // Measured at `structural`, which is wobble 0: at `expressive` the hand
+    // drifts three points of the box at this size, and a bound wide enough to
+    // allow for that is wide enough to let a mark sit off the rule and pass.
+    //
+    // The window is the rule itself at the top and the rule plus five points
+    // at the bottom, because a mark is measured as it is DRAWN, not as it is
+    // specified: half the nib sits below the path, and a closed shape's base
+    // is a curve through its points, which bows a little past them. The marks
+    // that draw a straight foot land at 0.891 and the tubs at 0.926.
+    const rule = handMarkBaseline;
+    await tester.runAsync(() async {
+      const side = 256.0;
+      final off = <String>[];
+      for (final name in AppArt.all) {
+        final y = _lowestInk(
+          await _pixels(name, side: side, level: HandLevel.structural),
+          side.toInt(),
+        );
+        if (y < rule || y > rule + 0.05) {
+          off.add('$name(${y.toStringAsFixed(3)})');
+        }
+      }
+      for (final name in FoodMarks.all) {
+        final y = _lowestInk(
+          await _foodPixels(name, side: side, level: HandLevel.structural),
+          side.toInt(),
+        );
+        if (y < rule || y > rule + 0.05) {
+          off.add('$name(${y.toStringAsFixed(3)})');
+        }
+      }
+      expect(
+        off,
+        isEmpty,
+        reason: 'lowest ink should sit on handMarkBaseline ($rule); each entry '
+            'names the mark and where its lowest ink actually landed',
+      );
+    });
+  });
+
+  testWidgets('every mark paints at the sizes it is really used at', (
+    tester,
+  ) async {
+    // The redrawn marks carry more strokes than the ones they replaced -- a
+    // cuff and lacing, a bone, a zip -- and a coordinate that is fine at 92 pt
+    // can still divide by a rounding error at 16. The sizes are the smallest
+    // and largest the product asks for: 30 pt beside a list row, 160 pt on
+    // `whats_inside_view`, and the extremes either side of them.
+    await tester.runAsync(() async {
+      for (final side in [16.0, 28.0, 92.0, 256.0]) {
+        for (final name in AppArt.all) {
+          expect(
+            (await _pixels(name, side: side)).lengthInBytes,
+            side.toInt() * side.toInt() * 4,
+            reason: '$name at $side',
+          );
+        }
+      }
+    });
   });
 }
 

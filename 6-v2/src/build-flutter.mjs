@@ -453,11 +453,15 @@ if (fs.existsSync(dictPath)) {
     "{n} EGP a serving": {"description": "Cost per serving, shown beside the month it was priced in.", "placeholders": {"n": {"type": "String", "example": "14"}}},
     "{n} kcal a serving": {"description": "Energy per serving, only when it was summed from verified foods.", "placeholders": {"n": {"type": "String", "example": "410"}}},
     "Priced {month}": {"description": "The month an EGP figure was priced in. An undated price in Egypt is wrong within a quarter.", "placeholders": {"month": {"type": "String", "example": "October 2026"}}},
-    "{count} dishes are hidden because of what you avoid.": {"description": "Said at the foot of the recipe list. Hiding silently is worse than hiding visibly.", "placeholders": {"count": {"type": "String", "example": "7"}}},
     "{n} g": {"description": "A gram figure beside an ingredient, in her own words' shadow.", "placeholders": {"n": {"type": "String", "example": "40"}}},
     "Step {n} of {total}": {"description": "Cook mode's position line.", "placeholders": {"n": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "6"}}},
     "{temp} degrees": {"description": "An oven temperature chip on a step.", "placeholders": {"temp": {"type": "String", "example": "200"}}},
     "Serves {n}": {"description": "How many the recipe feeds, only when the book says.", "placeholders": {"n": {"type": "String", "example": "2"}}},
+    "{count, plural, one{1 dish is hidden because nobody has checked what is in it yet.} other{{count} dishes are hidden because nobody has checked what is in them yet.}}": {"description": "E05, at the foot of Rahma's book. The reason the app is holding dishes back is that nobody has signed the allergen check, NOT anything she named. Arabic counts do not agree the way English ones do, so this is a plural message rather than one sentence with a number dropped into it: 39 takes the singular accusative.", "placeholders": {"count": {"type": "int", "example": "39"}}},
+    "{count, plural, one{1 dish is hidden because it contains something you avoid.} other{{count} dishes are hidden because they contain something you avoid.}}": {"description": "E05, at the foot of Rahma's book. The other reason a dish is held back, and it must read differently from the unchecked one: this one IS about her body.", "placeholders": {"count": {"type": "int", "example": "3"}}},
+    "{n} min hands on": {"description": "A recipe's active time. Overnight oats is five minutes of work and a day in the fridge, and the card stated 1,445.", "placeholders": {"n": {"type": "String", "example": "5"}}},
+    "{n} min in all": {"description": "A recipe's total time, beside the hands-on figure, for a dish under two hours.", "placeholders": {"n": {"type": "String", "example": "50"}}},
+    "{count, plural, one{About 1 hour in all} other{About {count} hours in all}}": {"description": "A recipe's total time once it passes two hours. Rounded to the hour and said to be rounded, because 1,445 minutes is true and unreadable.", "placeholders": {"count": {"type": "int", "example": "24"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

@@ -94,6 +94,7 @@ void main() {
 
     final none = <String>[];
     final tooMany = <String>[];
+    final twice = <String>[];
     final spread = <int, List<String>>{};
     for (final entry in appDestinations.entries) {
       await tester.pumpWidget(
@@ -115,7 +116,20 @@ void main() {
       // A destination with no screen built yet renders a placeholder. It is
       // not a screen to illustrate, so it is left out of the count.
       if (find.byType(NotBuiltYet).evaluate().isNotEmpty) continue;
-      final n = _drawn(tester).toSet().length;
+      // Counted as a LIST. This was `_drawn(tester).toSet().length`, which
+      // collapses duplicates -- so the one bug this loop exists to catch, a
+      // screen rendering the same drawing twice, counted as one drawing and
+      // passed. The paper check above can only see the table; only this loop
+      // sees what a screen actually puts on the page, which is where a header
+      // strip and a screen's own inline art can land on the same mark.
+      final drawn = _drawn(tester);
+      final repeated = drawn.toSet().where(
+        (k) => drawn.where((d) => d == k).length > 1,
+      );
+      if (repeated.isNotEmpty) {
+        twice.add('${entry.key}(${repeated.join(' ')})');
+      }
+      final n = drawn.length;
       spread.putIfAbsent(n, () => []).add(entry.key);
       if (n == 0) none.add(entry.key);
       if (n > 3) tooMany.add('${entry.key}($n)');
@@ -129,6 +143,14 @@ void main() {
       print('DRAWS $k: ${spread[k]!.length} screens'
           '${k >= 3 ? ' -> ${spread[k]!.join(' ')}' : ''}');
     }
+    // ignore: avoid_print
+    print('SCREENS DRAWING ONE TWICE: ${twice.join(' ')}');
     expect(none, isEmpty, reason: 'every screen should show an illustration');
+    expect(
+      twice,
+      isEmpty,
+      reason: 'these screens rendered the same drawing more than once; each '
+          'entry names the screen and the mark it repeated',
+    );
   });
 }

@@ -35,6 +35,23 @@
 /// `lib/features/`, and the ban is right: a dialog is a thing you dismiss, and
 /// this is a thing you answer. A full route also means the sixteen chips have
 /// room at 1.6x text in Arabic, which a sheet does not.
+///
+/// The one sheet on this screen is the confirmation in front of discarding a
+/// declared allergy, and a sheet is right there for the opposite reason: it
+/// keeps the ticked chips visible behind it, which is the thing she needs to
+/// see while deciding.
+///
+/// ## Why it is not in `firstRunStates`, and must not be
+///
+/// `firstRunStates` in `app_router.dart` is **not** a list of screens shown at
+/// first run. It is the day-one rendering of a tab whose collection is empty —
+/// "Home, empty", "Eat, day one" — and its purpose is that `appDestinations`
+/// excludes them, so nothing can navigate to one. Putting E10 in it would make
+/// this screen unroutable and take the question away.
+///
+/// E10 is reached from two rows on E05 and one on A02, and that is the whole
+/// set. E05 renders none of Rahma's cards until `asked` is true, so the gate
+/// holds without anything pushing a route out of a `build`.
 library;
 
 import 'package:flutter/material.dart';
@@ -44,6 +61,7 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_sheet.dart';
 import '../../account/domain/dietary_profile.dart';
 import '../../account/presentation/allergen_labels.dart';
 
@@ -81,6 +99,53 @@ class _AllergyQuestionViewState extends State<AllergyQuestionView> {
   late final Set<AllergenTag> _allergies = {...?widget.initial.allergies};
   late Set<DietaryTag> _dietary = {...?widget.initial.dietary};
 
+  /// Whether there is anything on this screen that "No, nothing" would throw
+  /// away.
+  bool get _anyTicked => _allergies.isNotEmpty || _dietary.isNotEmpty;
+
+  /// Asks before discarding a declared allergy.
+  ///
+  /// The sheet is deliberately not symmetrical: keeping what she ticked is the
+  /// filled answer and discarding it is the outlined one, because one of those
+  /// two outcomes can end with a woman being shown a dish that contains sesame.
+  Future<void> _confirmDiscard(BuildContext context) async {
+    final l10n = AppL10n.of(context);
+    final discard = await showAppSheet<bool>(
+      context: context,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.discardWhatYouTicked, style: AppText.titleL),
+            const SizedBox(height: 4),
+            Text(
+              l10n.youTickedSomethingYouAvoidTheOther,
+              style: AppText.bodyM.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            AppButton(
+              l10n.keepWhatITicked,
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            const SizedBox(height: 10),
+            AppButton(
+              l10n.yesSaveNothing,
+              variant: AppButtonVariant.outlined,
+              height: 48,
+              fontSize: 15,
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        ),
+      ],
+    );
+    if (discard != true || !mounted) return;
+    widget.onAnswered(const <AllergenTag>{}, const <DietaryTag>{});
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -90,27 +155,43 @@ class _AllergyQuestionViewState extends State<AllergyQuestionView> {
         title: l10n.whatYouAvoid,
         onBack: widget.onBack,
       ),
+      // ## The footer answers the question in the order it is usually answered
+      //
+      // It used to open with a **disabled** filled "Save what I avoid" and put
+      // the only live control, outlined, underneath it. So the commonest and
+      // safest answer was drawn as the lesser one, below a dead button, and the
+      // screen's own primary action was unavailable the moment it appeared.
+      //
+      // Now nothing is ever drawn dead. Before she ticks anything there is one
+      // button and it is the answer most women give. The save button appears
+      // when there is something to save, and takes the primary slot then.
       footer: [
-        AppButton(
-          l10n.saveWhatIAvoid,
-          icon: Icons.check,
-          // Disabled while nothing is ticked, because an empty selection saved
-          // through this button would be indistinguishable from the explicit
-          // "no, nothing" below it, and the whole point of that button is that
-          // it is a separate, deliberate act.
-          onPressed: _allergies.isEmpty && _dietary.isEmpty
-              ? null
-              : () => widget.onAnswered(_allergies, _dietary),
-        ),
+        if (_anyTicked)
+          AppButton(
+            l10n.saveWhatIAvoid,
+            icon: Icons.check,
+            onPressed: () => widget.onAnswered(_allergies, _dietary),
+          ),
         AppButton(
           l10n.noNothing,
-          variant: AppButtonVariant.outlined,
-          height: 48,
-          fontSize: 15,
+          variant: _anyTicked
+              ? AppButtonVariant.outlined
+              : AppButtonVariant.filled,
+          height: _anyTicked ? 48 : 56,
+          fontSize: _anyTicked ? 15 : 17,
           // An answer. It writes `DietaryProfile.noneNamed`, which is the value
           // the guard is entitled to treat as "asked, and named nothing".
-          onPressed: () =>
-              widget.onAnswered(const <AllergenTag>{}, const <DietaryTag>{}),
+          //
+          // Once she has ticked something it is also a way to **throw that
+          // away**, and it used to do so in one tap with no word said: ticking
+          // sesame and then pressing this saved an empty allergy list. So it
+          // asks first, in a sheet — §2 rule 9 and `product_rules_test` both
+          // ban a dialog on these paths, and a sheet keeps the ticked chips
+          // visible behind it, which is the thing she needs to see.
+          onPressed: _anyTicked
+              ? () => _confirmDiscard(context)
+              : () =>
+                    widget.onAnswered(const <AllergenTag>{}, const <DietaryTag>{}),
         ),
       ],
       children: [

@@ -32,6 +32,7 @@ Recipe _recipe({
   titleSearch: [id],
   bodyAr: '',
   ingredients: const [],
+  ingredientsBasis: IngredientsBasis.measures,
   steps: const [],
   variants: const [],
   components: const [],
@@ -140,6 +141,75 @@ void main() {
         _recipe(id: 'c'),
       ];
       expect(AllergyGuard(constraints).hiddenCount(all), 2);
+    });
+
+    test('and it says WHICH, because the reasons are different facts', () {
+      // The ship-blocker. Every recipe in the shipped book is unsigned, so a
+      // woman who declares molluscs - which fire on none of the thirty-nine -
+      // loses the whole book. Counting that as "hidden because of what you
+      // avoid" takes the app's own caution and attributes it to her body.
+      const constraints = DietaryConstraints(
+        allergies: {'milk'},
+        dietary: <String>{},
+      );
+      final all = [
+        _recipe(id: 'contains', allergens: {'milk'}),
+        _recipe(id: 'unsigned', reviewedBy: null),
+        _recipe(id: 'unsigned_too', reviewedBy: null),
+        _recipe(id: 'fine'),
+      ];
+      final hidden = AllergyGuard(constraints).hiddenByReason(all);
+      expect(hidden.unsigned, 2);
+      expect(hidden.namedAllergen, 1);
+      expect(hidden.dietary, 0);
+      expect(hidden.total, AllergyGuard(constraints).hiddenCount(all));
+    });
+
+    test('a recipe removed twice over is counted once', () {
+      // An unsigned recipe that also names her allergen is removed for the
+      // first reason `screenRecipes` tests, and the two counts must add up to
+      // the number actually missing from the list rather than to more than it.
+      const constraints = DietaryConstraints(
+        allergies: {'milk'},
+        dietary: <String>{},
+      );
+      final all = [
+        _recipe(id: 'both', allergens: {'milk'}, reviewedBy: null),
+      ];
+      final guard = AllergyGuard(constraints);
+      final hidden = guard.hiddenByReason(all);
+      expect(hidden.unsigned, 1);
+      expect(hidden.namedAllergen, 0);
+      expect(hidden.total, 1);
+      expect(guard.screenRecipes(all), isEmpty);
+    });
+
+    test('a woman who named nothing has nothing hidden from her', () {
+      // `declared` is false, so neither an unsigned recipe nor one carrying an
+      // allergen is removed, and the screen must not tell her anything is.
+      final all = [
+        _recipe(id: 'unsigned', reviewedBy: null),
+        _recipe(id: 'nuts', allergens: {'tree_nuts'}),
+      ];
+      expect(
+        AllergyGuard(DietaryConstraints.none).hiddenByReason(all),
+        HiddenRecipes.none,
+      );
+    });
+
+    test('a preference is counted apart from a safety removal', () {
+      const constraints = DietaryConstraints(
+        allergies: <String>{},
+        dietary: {'vegetarian'},
+      );
+      final all = [
+        _recipe(id: 'meat', dietTags: {'high_protein'}),
+        _recipe(id: 'veg', dietTags: {'vegetarian'}),
+      ];
+      final hidden = AllergyGuard(constraints).hiddenByReason(all);
+      expect(hidden.dietary, 1);
+      expect(hidden.unsigned, 0);
+      expect(hidden.namedAllergen, 0);
     });
 
     test('an advisory is a note and never a filter', () {

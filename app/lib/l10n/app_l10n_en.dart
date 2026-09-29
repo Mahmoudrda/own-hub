@@ -7426,11 +7426,6 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String countDishesAreHiddenBecauseOfWhat(String count) {
-    return '$count dishes are hidden because of what you avoid.';
-  }
-
-  @override
   String nG(String n) {
     return '$n g';
   }
@@ -7449,4 +7444,92 @@ class AppL10nEn extends AppL10n {
   String servesN(String n) {
     return 'Serves $n';
   }
+
+  @override
+  String countPluralOne1DishIsHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count dishes are hidden because nobody has checked what is in them yet.',
+      one: '1 dish is hidden because nobody has checked what is in it yet.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1DishIsHidden_1hlr5(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count dishes are hidden because they contain something you avoid.',
+      one: '1 dish is hidden because it contains something you avoid.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noDishHereHasBeenCheckedYet =>
+      'No dish here has been checked yet. This is not about what you avoid: nobody has signed off what is in these dishes, so the book waits.';
+
+  @override
+  String get everythingHereContainsSomethingYouToldUs =>
+      'Everything here contains something you told us you avoid.';
+
+  @override
+  String get nothingInTheBookHasBeenChecked =>
+      'Nothing in the book has been checked yet. Tell us about an allergy and the book waits until somebody has.';
+
+  @override
+  String get notCheckedYet => 'Not checked yet';
+
+  @override
+  String get discardWhatYouTicked => 'Discard what you ticked?';
+
+  @override
+  String get youTickedSomethingYouAvoidTheOther =>
+      'You ticked something you avoid. The other answer saves an empty list instead.';
+
+  @override
+  String get keepWhatITicked => 'Keep what I ticked';
+
+  @override
+  String get yesSaveNothing => 'Yes, save nothing';
+
+  @override
+  String get theBookNamesWhatGoesInAnd =>
+      'The book names what goes in, and mostly not how much.';
+
+  @override
+  String get theBookWritesThisOneAsA =>
+      'The book writes this one as a method, with no ingredient list. What goes in is named in the steps.';
+
+  @override
+  String nMinHandsOn(String n) {
+    return '$n min hands on';
+  }
+
+  @override
+  String nMinInAll(String n) {
+    return '$n min in all';
+  }
+
+  @override
+  String countPluralOneAbout1HourIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'About $count hours in all',
+      one: 'About 1 hour in all',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noRecipeHasBeenPricedYet => 'No recipe has been priced yet.';
+
+  @override
+  String get noRecipeCanBeCalledNutFree =>
+      'No recipe can be called nut free yet, because nobody has signed off what is in them.';
 }

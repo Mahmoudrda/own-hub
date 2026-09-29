@@ -53,6 +53,9 @@ SEED = os.path.join(HERE, "..", "assets", "content", "rahma_recipes.json")
 # Extended by a human who reads Arabic. Adding a word here can only ever widen
 # what gets flagged for review, so a wrong addition is cheap and an omission is
 # not.
+# A word may appear under several tags, and several do. An Egyptian spice blend
+# is one ingredient and three vectors, and `scan` fires all of them — see the
+# note on `_WORDS`.
 DICTIONARY = {
     "sesame": ["سمسم", "طحينة", "طحينه", "طحينية", "زعتر", "tahina", "tahini"],
     "peanuts": ["فول سوداني", "زبدة فول سوداني", "peanut"],
@@ -61,29 +64,75 @@ DICTIONARY = {
     "milk": [
         "لبن", "حليب", "زبادي", "جبنة", "جبنه", "قريش", "موتزاريلا", "زبدة",
         "سمنة", "كريمة", "يوناني", "بشاميل", "البشاميل", "ريش",
+        # Whey is the commonest base for an extruded protein snack, and the
+        # packet is the only thing that says which. See `soy`.
+        "protein puffs",
     ],
     "eggs": ["بيض", "بيضة", "بيضه", "بيضتين", "اومليت", "مايونيز"],
     "gluten": [
         "دقيق", "شوفان", "عيش", "توست", "تورتيلا", "مكرونة", "مكرونه", "بقسماط",
         "فينو", "رغيف", "بيجل", "البيجل", "بسكوت", "بانيه", "باتيه", "برجر",
-        "رايس كيك", "عجينه", "بيكنج باودر", "baking powder",
+        "عجينه", "بيكنج باودر", "baking powder",
+        # A commercial blend is cut with wheat flour as an anticaking agent as
+        # often as not, and the packet is where that is written.
+        "بهارات", "بهارات اللحمة",
+        # Egyptian deli meat is bulked with rusk or starch.
+        "turkey", "لانشون",
     ],
     "fish": ["سمك", "تونة", "تونه", "سردين", "بلطي", "فيليه"],
     "crustaceans": ["جمبري", "جمبرى", "استاكوزا", "shrimp"],
     "molluscs": ["كاليماري", "بلح البحر", "محار"],
-    "soy": ["صويا", "صوص صويا"],
-    "celery": ["كرفس", "مرقة", "مكعب مرقة", "كنور"],
-    "mustard": ["مستردة", "مسطردة", "خردل"],
+    "soy": [
+        "صويا", "صوص صويا",
+        # Soy protein isolate is the other half of the protein-snack market,
+        # and soy protein is what Egyptian luncheon meat is extended with.
+        # Before these three words `soy` fired on nothing in the whole book,
+        # which is not a statement about the book so much as about this list.
+        "protein puffs", "turkey", "لانشون",
+    ],
+    "celery": [
+        "كرفس", "مرقة", "مكعب مرقة", "كنور",
+        # The same ingredient as `مرقة`, spelled the way she spells it. It
+        # fired nothing while `مرقة` and `كنور` fired celery, so one stock cube
+        # had two spellings and two different outcomes across three cards. In
+        # Egypt "الشوربة" in a method almost always means a cube.
+        "شوربة",
+        # Celery salt is in most Egyptian commercial spice blends.
+        "بهارات", "بهارات اللحمة", "كاري",
+    ],
+    "mustard": [
+        "مستردة", "مسطردة", "خردل",
+        # Mustard flour is a standard extender in both, and neither is sold
+        # with an ingredient list a woman can read across a kitchen.
+        "بهارات", "بهارات اللحمة", "كاري",
+    ],
     "sulphites": ["فواكه مجففة", "مشمش مجفف", "زبيب"],
     "lupin": ["ترمس"],
     "fava": ["فول", "فول مدمس", "طعمية", "طعميه", "فلافل", "بصارة"],
 }
+#
+# `رايس كيك` was in `gluten` and is not any more. A plain rice cake is rice and
+# salt, and firing gluten on it was not caution, it was a wrong fact: it was the
+# only gluten claim on `Coconut apple Pudding`, so a coeliac lost a dish she can
+# actually eat. Over-firing is cheap when the word really is a vector; this one
+# never was.
 
-# Every word, longest first. See the module note: `فول سوداني` must be consumed
-# before `فول` is ever looked at.
+# Every word, longest first, each carrying **every** tag it belongs to.
+#
+# Two things matter here. The first is the length order — see the module note:
+# `فول سوداني` must be consumed before `فول` is ever looked at. The second is
+# that the tags are collected per word rather than per (word, tag) pair, because
+# `scan` blanks out the characters a match consumed. Listing `بهارات` as three
+# separate pairs would let the first tag win the characters and silently lose
+# the other two, which is the failure mode this whole file exists to catch.
 _WORDS = sorted(
-    ((w, tag) for tag, words in DICTIONARY.items() for w in words),
-    key=lambda pair: -len(pair[0]),
+    (
+        (word, tuple(sorted(
+            tag for tag, words in DICTIONARY.items() if word in words
+        )))
+        for word in {w for words in DICTIONARY.values() for w in words}
+    ),
+    key=lambda pair: (-len(pair[0]), pair[0]),
 )
 
 
@@ -106,17 +155,25 @@ def bounded(word):
 
 
 def scan(text):
-    """Every tag the words in [text] fire, with the word that fired each one."""
+    """Every tag the words in [text] fire, with the word that fired each one.
+
+    Case-insensitive, because the Latin words arrive as brand names and a
+    reaction does not care whether she typed `Turkey` or `turkey`. Arabic has
+    no case, so this changes nothing on her own spellings.
+    """
     hits = {}
     # A word already matched is blanked out, so a longer match wins the
     # characters it consumed and the shorter one never sees them.
     remaining = text
-    for word, tag in _WORDS:
+    for word, tags in _WORDS:
         pattern = bounded(word)
-        if not re.search(pattern, remaining):
+        if not re.search(pattern, remaining, re.IGNORECASE):
             continue
-        hits.setdefault(tag, []).append(word)
-        remaining = re.sub(pattern, lambda m: " " * len(m.group(0)), remaining)
+        for tag in tags:
+            hits.setdefault(tag, []).append(word)
+        remaining = re.sub(
+            pattern, lambda m: " " * len(m.group(0)), remaining, flags=re.IGNORECASE
+        )
     return hits
 
 

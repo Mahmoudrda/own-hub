@@ -192,6 +192,14 @@ def clean_line(raw):
     # An Arabic comma reads `الزيت، ضيفي`; the run gave back `الزيت ،ضيفي`.
     s = re.sub(f"([{AR}]) +،", r"\1،", s)
     s = re.sub(f"،([{AR}])", r"، \1", s)
+    # A comma that closes a Latin phrase came back in front of it. The page
+    # prints `في طاسة non-stick، سخني الزيت`; the extractor hands over
+    # `في طاسة، non-stick سخني الزيت`, because the comma sits at the far end of
+    # the LTR run and the run was read the other way round. Same defect as the
+    # spaces around a digit group, one line further on. `، fryer` at the head of
+    # a line is the same thing split across her line break: `air` ends the line
+    # above and the comma closes `air fryer`.
+    s = re.sub(r"،\s*([A-Za-z][A-Za-z-]*)", r" \1،", s)
     # A heading's colon: `الطريقة :شوحي` is `الطريقة: شوحي`, and
     # `تتقدم مع ½-1 :رغيف` is `تتقدم مع: ½-1 رغيف` — the LTR run between the
     # word and its colon carried the colon along with it.
@@ -249,13 +257,140 @@ def attach_markers(lines):
     return out
 
 
+def _logical_word(raw):
+    """One `<word>` from `-bbox-layout`, in the order she typed it.
+
+    Two transformations, in this order and not the other:
+
+      1. **Reverse.** The bbox writer emits the glyphs of a word in the order
+         they are *drawn*, which for Arabic is left to right. Plain `pdftotext`
+         runs the bidi algorithm and gives logical order; the bbox writer does
+         not, so the two disagree until this reverses one of them.
+      2. **NFKC.** The same presentation-form fold `clean_line` does.
+
+    Reversing *before* normalising is the whole trick. `ﻻ` (U+FEFB) is one
+    drawn glyph that NFKC expands into two letters, ل then ا, already in
+    logical order. Normalising first and reversing afterwards turns `الاكل`
+    into `-االكل`, and every junction on a page carrying a lam-alef would then
+    fail to match.
+    """
+    for entity, ch in (
+        ("&amp;", "&"), ("&apos;", "'"), ("&quot;", '"'),
+        ("&lt;", "<"), ("&gt;", ">"),
+    ):
+        raw = raw.replace(entity, ch)
+    if re.search(r"[؀-ۿﭐ-﻿]", raw):
+        raw = raw[::-1]
+    raw = unicodedata.normalize("NFKC", raw)
+    return "".join(ch for ch in raw if unicodedata.category(ch) != "Cf")
+
+
+_BBOX_LINE = re.compile(r"<line [^>]*>(.*?)</line>", re.S)
+_BBOX_WORD = re.compile(r"<word[^>]*>(.*?)</word>")
+
+
+def page_junctions(pdf):
+    """Per page, every place two drawn lines meet, with one word of context.
+
+    `pdftotext` decides on its own where a drawn line ends and the next begins.
+    On the closing letter it decides wrong twice and **joins two lines with no
+    space at all**, so `دماغنا` at the end of one line and `مركزة` at the start
+    of the next come back as `دماغنامركزة`. Those are the only two corrupted
+    words in the book, and they are in the one page every woman reads.
+
+    The repair cannot be a list of words, because the same glue would be
+    invisible in the next book. So this reads the word boxes, which say exactly
+    where each drawn line stops, and hands back the pairs that could have been
+    glued. `repair_junctions` then only splits a pair it finds **actually**
+    glued in the text.
+
+    The context words on either side are what make it safe. `ونص` ends a line
+    on page 17 and `معلقة` starts the next, so the pair (`ونص`, `معلقة`) is a
+    real junction — and `ونصمعلقة` also appears, mid-line and unglued, on the
+    *other* card on that same page, where it is a word she typed. Anchoring on
+    the neighbours tells the two apart: her `ونصمعلقة` is preceded by `باودر`,
+    and the junction's is preceded by `اسود`.
+
+    Returns page number -> [(before, last, first, after)], where `before` and
+    `after` may be None when the drawn line has only one word.
+    """
+    out = subprocess.run(
+        ["pdftotext", "-bbox-layout", pdf, "-"],
+        check=True, capture_output=True, text=True,
+    ).stdout
+    junctions = {}
+    for page_no, page in enumerate(out.split("<page ")[1:], start=1):
+        lines = []
+        for line in _BBOX_LINE.finditer(page):
+            words = [_logical_word(w) for w in _BBOX_WORD.findall(line.group(1))]
+            words = [w for w in words if w]
+            if not words:
+                continue
+            # The bbox writer lists words left to right. An Arabic line reads
+            # the other way, so its last word is its leftmost.
+            if re.search(f"[{AR}]", "".join(words)):
+                words = words[::-1]
+            lines.append(words)
+        junctions[page_no] = [
+            (
+                above[-2] if len(above) > 1 else None,
+                above[-1],
+                below[0],
+                below[1] if len(below) > 1 else None,
+            )
+            for above, below in zip(lines, lines[1:])
+        ]
+    return junctions
+
+
+_ARABIC_LETTER = "ء-ي"
+
+
+def repair_junctions(lines, junctions):
+    """Put back the space `pdftotext` ate where it joined two drawn lines.
+
+    Conservative on purpose: a pair is split only where the text shows it glued
+    **and** both neighbouring words match. Anything less certain is left alone,
+    because the cost of a wrong split is a word of hers that she did not write
+    that way, and the cost of a missed one is a word that is already wrong.
+    """
+    out = list(lines)
+    for before, last, first, after in junctions:
+        pattern = ""
+        if before:
+            pattern += re.escape(before) + r"\s+"
+        pattern += (
+            f"(?<![{_ARABIC_LETTER}])"
+            + re.escape(last + first)
+            + f"(?![{_ARABIC_LETTER}])"
+        )
+        if after:
+            pattern += r"\s+" + re.escape(after)
+        replacement = ""
+        if before:
+            replacement += before + " "
+        replacement += last + " " + first
+        if after:
+            replacement += " " + after
+        for i, line in enumerate(out):
+            out[i] = re.sub(pattern, replacement.replace("\\", "\\\\"), line)
+    return out
+
+
 def page_lines(pdf):
     """Every page of the book as a list of cleaned, non-empty lines."""
     out = subprocess.run(
         ["pdftotext", pdf, "-"], check=True, capture_output=True, text=True
     ).stdout
+    junctions = page_junctions(pdf)
     pages = out.split("\f")
-    return [[clean_line(l) for l in p.split("\n") if clean_line(l)] for p in pages]
+    return [
+        repair_junctions(
+            [clean_line(l) for l in p.split("\n") if clean_line(l)],
+            junctions.get(n, []),
+        )
+        for n, p in enumerate(pages, start=1)
+    ]
 
 
 def split_page(lines, titles):

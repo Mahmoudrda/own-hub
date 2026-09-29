@@ -44,6 +44,7 @@ import '../../../ui/app_segmented.dart';
 import '../../../ui/hand/hand.dart';
 import '../../account/presentation/allergen_labels.dart';
 import '../domain/recipe.dart';
+import 'recipe_labels.dart';
 
 /// The MSA sentence for a doneness token.
 ///
@@ -250,7 +251,18 @@ class _Structured extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final steps = recipe.allSteps;
+    // **Her own steps only.** Each component's steps are drawn further down
+    // under the heading the book gives it, so taking `allSteps` here printed
+    // every component step twice: once flat and unheaded, then again grouped.
+    // `Fattah` keeps all eleven of its steps in components, so it read as
+    // twenty-two; `Makrona Bashmel` eleven for six, `Kebda Meal` nine for six,
+    // `Crepe` eight for five.
+    final steps = recipe.steps;
+    // Cook mode is the other case, and it is why `allSteps` still exists: one
+    // step at a time has to walk the whole dish in the order the card prints
+    // it, headings and all, or a woman following `Fattah` would be shown
+    // nothing at all.
+    final cookSteps = recipe.allSteps;
     final sides = [
       for (final i in recipe.ingredients)
         if (i.servingSideOnly) i,
@@ -265,9 +277,30 @@ class _Structured extends StatelessWidget {
       children: [
         _facts(l10n),
         const SizedBox(height: 12),
-        Text(l10n.ingredients, style: AppText.titleM.copyWith(color: BookInk.ink)),
-        const SizedBox(height: 6),
-        for (final ingredient in main) _IngredientRow(ingredient: ingredient),
+        // The heading and the rows are drawn only where the page has an
+        // ingredient list to draw. `Lahma bel basl` is written as twelve
+        // numbered steps and nothing else, so eight bare nouns were lifted out
+        // of the method and printed here — "the meat", "the oil", "the onion" —
+        // under a heading that made the book look as though it had lost the
+        // amounts. Saying what the page does give is honest; that list was not.
+        if (recipe.ingredientsBasis != IngredientsBasis.none) ...[
+          Text(
+            l10n.ingredients,
+            style: AppText.titleM.copyWith(color: BookInk.ink),
+          ),
+          const SizedBox(height: 6),
+          for (final ingredient in main) _IngredientRow(ingredient: ingredient),
+        ],
+        if (recipe.ingredientsBasis != IngredientsBasis.measures) ...[
+          const SizedBox(height: 4),
+          Text(
+            switch (recipe.ingredientsBasis) {
+              IngredientsBasis.none => l10n.theBookWritesThisOneAsA,
+              _ => l10n.theBookNamesWhatGoesInAnd,
+            },
+            style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+          ),
+        ],
         if (main.any((i) => i.gramsBasis == GramsBasis.estimated)) ...[
           const SizedBox(height: 4),
           Text(
@@ -289,7 +322,7 @@ class _Structured extends StatelessWidget {
                 style: AppText.titleM.copyWith(color: BookInk.ink),
               ),
             ),
-            if (steps.length > 1)
+            if (cookSteps.length > 1)
               TextButton(
                 onPressed: onToggleCookMode,
                 style: TextButton.styleFrom(
@@ -300,25 +333,26 @@ class _Structured extends StatelessWidget {
               ),
           ],
         ),
-        if (!cookMode)
-          for (final step in steps) _StepRow(step: step)
-        else
-          _CookMode(steps: steps, index: cookStep, onStep: onStep),
-        for (final component in recipe.components) ...[
-          const SizedBox(height: 14),
-          Text(
-            component.headingAr,
-            style: AppText.titleS.copyWith(color: BookInk.ink),
-          ),
-          for (final step in component.steps) _StepRow(step: step),
-        ],
-        for (final variant in recipe.variants) ...[
-          const SizedBox(height: 14),
-          Text(
-            variant.labelAr,
-            style: AppText.titleS.copyWith(color: BookInk.ink),
-          ),
-          for (final step in variant.steps) _StepRow(step: step),
+        if (cookMode)
+          _CookMode(steps: cookSteps, index: cookStep, onStep: onStep)
+        else ...[
+          for (final step in steps) _StepRow(step: step),
+          for (final component in recipe.components) ...[
+            const SizedBox(height: 14),
+            Text(
+              component.headingAr,
+              style: AppText.titleS.copyWith(color: BookInk.ink),
+            ),
+            for (final step in component.steps) _StepRow(step: step),
+          ],
+          for (final variant in recipe.variants) ...[
+            const SizedBox(height: 14),
+            Text(
+              variant.labelAr,
+              style: AppText.titleS.copyWith(color: BookInk.ink),
+            ),
+            for (final step in variant.steps) _StepRow(step: step),
+          ],
         ],
       ],
     );
@@ -330,8 +364,17 @@ class _Structured extends StatelessWidget {
   /// nothing to say, and saying "0 g protein" about a recipe nobody has costed
   /// is worse than silence.
   Widget _facts(AppL10n l10n) {
+    // Both times, and labelled. One number here read "1,445 min" for a bowl of
+    // oats that takes five minutes of work, because the screen drew the total
+    // and never the hands-on figure. Where the two agree, only one is drawn:
+    // repeating "12 min hands on · 12 min in all" says nothing twice.
+    final handsOn = handsOnLabel(l10n, recipe.activeMinutes);
+    final total = handsOn != null && recipe.activeMinutes == recipe.totalMinutes
+        ? null
+        : totalTimeLabel(l10n, recipe.totalMinutes);
     final parts = <String>[
-      if (recipe.totalMinutes != null) l10n.nMin(countLabel(recipe.totalMinutes!)),
+      ?handsOn,
+      ?total,
       if (recipe.serves != null) l10n.servesN(countLabel(recipe.serves!)),
       if (recipe.proteinG != null) l10n.nGProtein(countLabel(recipe.proteinG!)),
       if (recipe.kcal != null) l10n.nKcalAServing(countLabel(recipe.kcal!)),
@@ -369,8 +412,11 @@ class _IngredientRow extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 8,
         children: [
+          // `qtyLine`, not `qtyTextAr`: her phrase may cross one of the
+          // book's line breaks, and a row that wrapped where the page wrapped
+          // read as two ingredients.
           Text(
-            ingredient.qtyTextAr,
+            ingredient.qtyLine,
             style: AppText.body.copyWith(color: BookInk.ink),
           ),
           if (ingredient.grams != null)

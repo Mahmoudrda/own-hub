@@ -2973,16 +2973,6 @@
       }
     }
   },
-  "countDishesAreHiddenBecauseOfWhat": "{count} أطباق مخفية بسبب ما تتجنّبينه.",
-  "@countDishesAreHiddenBecauseOfWhat": {
-    "description": "Said at the foot of the recipe list. Hiding silently is worse than hiding visibly.",
-    "placeholders": {
-      "count": {
-        "type": "String",
-        "example": "7"
-      }
-    }
-  },
   "nG": "{n} جم",
   "@nG": {
     "description": "A gram figure beside an ingredient, in her own words' shadow.",
@@ -3026,5 +3016,67 @@
         "example": "2"
       }
     }
-  }
+  },
+  "countPluralOne1DishIsHidden": "{count, plural, one{طبق واحد مخفي لأن أحدًا لم يراجع مكوّناته بعد.} two{طبقان مخفيان لأن أحدًا لم يراجع مكوّناتهما بعد.} few{{count} أطباق مخفية لأن أحدًا لم يراجع مكوّناتها بعد.} many{{count} طبقًا مخفيًا لأن أحدًا لم يراجع مكوّناته بعد.} other{{count} طبق مخفي لأن أحدًا لم يراجع مكوّناته بعد.}}",
+  "@countPluralOne1DishIsHidden": {
+    "description": "E05, at the foot of Rahma's book. The reason the app is holding dishes back is that nobody has signed the allergen check, NOT anything she named. Arabic counts do not agree the way English ones do, so this is a plural message rather than one sentence with a number dropped into it: 39 takes the singular accusative.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "39"
+      }
+    }
+  },
+  "countPluralOne1DishIsHidden_1hlr5": "{count, plural, one{طبق واحد مخفي لأنه يحتوي على شيء تتجنّبينه.} two{طبقان مخفيان لأنهما يحتويان على شيء تتجنّبينه.} few{{count} أطباق مخفية لأنها تحتوي على شيء تتجنّبينه.} many{{count} طبقًا مخفيًا لأنه يحتوي على شيء تتجنّبينه.} other{{count} طبق مخفي لأنه يحتوي على شيء تتجنّبينه.}}",
+  "@countPluralOne1DishIsHidden_1hlr5": {
+    "description": "E05, at the foot of Rahma's book. The other reason a dish is held back, and it must read differently from the unchecked one: this one IS about her body.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "noDishHereHasBeenCheckedYet": "لم تُراجَع مكوّنات أي طبق هنا بعد. والسبب ليس ما تتجنّبينه: لم يعتمد أحد ما في هذه الأطباق، فالكتاب ينتظر.",
+  "everythingHereContainsSomethingYouToldUs": "كل ما هنا يحتوي على شيء أخبرتِنا أنك تتجنّبينه.",
+  "nothingInTheBookHasBeenChecked": "لم تُراجَع مكوّنات أي شيء في الكتاب بعد. أخبرينا بأي حساسية وسينتظر الكتاب حتى يراجعها أحد.",
+  "notCheckedYet": "لم تُراجَع بعد",
+  "discardWhatYouTicked": "أتتجاهلين ما اخترتِه؟",
+  "youTickedSomethingYouAvoidTheOther": "اخترتِ شيئًا تتجنّبينه. والإجابة الأخرى تحفظ قائمة فارغة بدلًا منه.",
+  "keepWhatITicked": "احتفظي بما اخترته",
+  "yesSaveNothing": "نعم، لا شيء",
+  "theBookNamesWhatGoesInAnd": "يذكر الكتاب ما يدخل في الطبق، ولا يذكر المقادير في الغالب.",
+  "theBookWritesThisOneAsA": "يكتب الكتاب هذا الطبق طريقةً بلا قائمة مكوّنات. وما يدخل فيه مذكور في الخطوات.",
+  "nMinHandsOn": "{n} دقيقة عمل فعلي",
+  "@nMinHandsOn": {
+    "description": "A recipe's active time. Overnight oats is five minutes of work and a day in the fridge, and the card stated 1,445.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "nMinInAll": "{n} دقيقة بالكامل",
+  "@nMinInAll": {
+    "description": "A recipe's total time, beside the hands-on figure, for a dish under two hours.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "50"
+      }
+    }
+  },
+  "countPluralOneAbout1HourIn": "{count, plural, one{نحو ساعة بالكامل} two{نحو ساعتين بالكامل} few{نحو {count} ساعات بالكامل} many{نحو {count} ساعة بالكامل} other{نحو {count} ساعة بالكامل}}",
+  "@countPluralOneAbout1HourIn": {
+    "description": "A recipe's total time once it passes two hours. Rounded to the hour and said to be rounded, because 1,445 minutes is true and unreadable.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "24"
+      }
+    }
+  },
+  "noRecipeHasBeenPricedYet": "لم تُسعَّر أي وصفة بعد.",
+  "noRecipeCanBeCalledNutFree": "لا يمكن وصف أي وصفة بأنها خالية من المكسرات بعد، لأن أحدًا لم يعتمد مكوّناتها."
 }

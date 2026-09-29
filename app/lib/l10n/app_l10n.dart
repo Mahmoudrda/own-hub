@@ -13591,12 +13591,6 @@ abstract class AppL10n {
   /// **'Priced {month}'**
   String pricedMonth(String month);
 
-  /// Said at the foot of the recipe list. Hiding silently is worse than hiding visibly.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} dishes are hidden because of what you avoid.'**
-  String countDishesAreHiddenBecauseOfWhat(String count);
-
   /// A gram figure beside an ingredient, in her own words' shadow.
   ///
   /// In en, this message translates to:
@@ -13620,6 +13614,108 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Serves {n}'**
   String servesN(String n);
+
+  /// E05, at the foot of Rahma's book. The reason the app is holding dishes back is that nobody has signed the allergen check, NOT anything she named. Arabic counts do not agree the way English ones do, so this is a plural message rather than one sentence with a number dropped into it: 39 takes the singular accusative.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 dish is hidden because nobody has checked what is in it yet.} other{{count} dishes are hidden because nobody has checked what is in them yet.}}'**
+  String countPluralOne1DishIsHidden(int count);
+
+  /// E05, at the foot of Rahma's book. The other reason a dish is held back, and it must read differently from the unchecked one: this one IS about her body.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 dish is hidden because it contains something you avoid.} other{{count} dishes are hidden because they contain something you avoid.}}'**
+  String countPluralOne1DishIsHidden_1hlr5(int count);
+
+  /// No description provided for @noDishHereHasBeenCheckedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No dish here has been checked yet. This is not about what you avoid: nobody has signed off what is in these dishes, so the book waits.'**
+  String get noDishHereHasBeenCheckedYet;
+
+  /// No description provided for @everythingHereContainsSomethingYouToldUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything here contains something you told us you avoid.'**
+  String get everythingHereContainsSomethingYouToldUs;
+
+  /// No description provided for @nothingInTheBookHasBeenChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in the book has been checked yet. Tell us about an allergy and the book waits until somebody has.'**
+  String get nothingInTheBookHasBeenChecked;
+
+  /// No description provided for @notCheckedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not checked yet'**
+  String get notCheckedYet;
+
+  /// No description provided for @discardWhatYouTicked.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard what you ticked?'**
+  String get discardWhatYouTicked;
+
+  /// No description provided for @youTickedSomethingYouAvoidTheOther.
+  ///
+  /// In en, this message translates to:
+  /// **'You ticked something you avoid. The other answer saves an empty list instead.'**
+  String get youTickedSomethingYouAvoidTheOther;
+
+  /// No description provided for @keepWhatITicked.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep what I ticked'**
+  String get keepWhatITicked;
+
+  /// No description provided for @yesSaveNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, save nothing'**
+  String get yesSaveNothing;
+
+  /// No description provided for @theBookNamesWhatGoesInAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'The book names what goes in, and mostly not how much.'**
+  String get theBookNamesWhatGoesInAnd;
+
+  /// No description provided for @theBookWritesThisOneAsA.
+  ///
+  /// In en, this message translates to:
+  /// **'The book writes this one as a method, with no ingredient list. What goes in is named in the steps.'**
+  String get theBookWritesThisOneAsA;
+
+  /// A recipe's active time. Overnight oats is five minutes of work and a day in the fridge, and the card stated 1,445.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min hands on'**
+  String nMinHandsOn(String n);
+
+  /// A recipe's total time, beside the hands-on figure, for a dish under two hours.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min in all'**
+  String nMinInAll(String n);
+
+  /// A recipe's total time once it passes two hours. Rounded to the hour and said to be rounded, because 1,445 minutes is true and unreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{About 1 hour in all} other{About {count} hours in all}}'**
+  String countPluralOneAbout1HourIn(int count);
+
+  /// No description provided for @noRecipeHasBeenPricedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No recipe has been priced yet.'**
+  String get noRecipeHasBeenPricedYet;
+
+  /// No description provided for @noRecipeCanBeCalledNutFree.
+  ///
+  /// In en, this message translates to:
+  /// **'No recipe can be called nut free yet, because nobody has signed off what is in them.'**
+  String get noRecipeCanBeCalledNutFree;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {
