@@ -79,12 +79,29 @@ class _LifeStageViewState extends State<LifeStageView> {
 
     final options = <(LifeStage, String, String)>[
       (LifeStage.none, l10n.nothingRightNow, ''),
+      // NEITHER OF THESE TWO LINES MAY MAKE A CLINICAL CLAIM.
+      //
+      // The postpartum row read "Pelvic floor first, cleared from week six".
+      // "Cleared" is a clinician's word and this screen is not a clinician;
+      // six weeks is a convention, and it is wrong after a caesarean, with a
+      // complication, or with diastasis. Three rows below, the same list
+      // carries the product's own rule: "We avoid what hurts, we do not
+      // diagnose." So the row now says what the app does and leaves the timing
+      // with the woman and her doctor, where it was always going to be.
+      //
+      // The pregnancy row read "Safe movements, nothing on the belly", which
+      // asserts safety in the app's own voice about a body it has never seen.
+      // It describes the movements instead.
       (
         LifeStage.postpartum,
         l10n.afterABirth,
-        l10n.pelvicFloorFirstClearedFromWeekSix,
+        l10n.pelvicFloorFirstOnceYourDoctorSays,
       ),
-      (LifeStage.pregnant, l10n.pregnant, l10n.safeMovementsNothingOnTheBelly),
+      (
+        LifeStage.pregnant,
+        l10n.pregnant,
+        l10n.gentlerMovementsNothingOnTheBelly,
+      ),
       (
         LifeStage.painInjury,
         l10n.aKneeBackOrShoulder,

@@ -3,22 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AppColors {
-  static const primary = Color(0xFFB4526E);
+  static const primary = Color(0xFFA24661);
   static const onPrimary = Color(0xFFFFFFFF);
   static const primaryContainer = Color(0xFFFFD9E3);
   static const onPrimaryContainer = Color(0xFF4A1C2E);
-  static const primaryDim = Color(0xFFA8455F);
+  static const primaryDim = Color(0xFF9A3F57);
   static const primarySoft = Color(0xFFF8E1E7);
   static const secondary = Color(0xFF75565E);
   static const onSecondary = Color(0xFFFFFFFF);
   static const secondaryContainer = Color(0xFFF5E3E8);
   static const onSecondaryContainer = Color(0xFF412B32);
-  static const tertiary = Color(0xFF4F7359);
+  static const tertiary = Color(0xFF4C6E55);
   static const onTertiary = Color(0xFFFFFFFF);
   static const tertiaryContainer = Color(0xFFDDEDE1);
   static const onTertiaryContainer = Color(0xFF1E3826);
-  static const tertiarySoft = Color(0xFF6E9478);
-  static const error = Color(0xFFA84A4A);
+  static const tertiarySoft = Color(0xFF65896F);
+  static const error = Color(0xFFA34848);
   static const onError = Color(0xFFFFFFFF);
   static const errorContainer = Color(0xFFFBE0E0);
   static const onErrorContainer = Color(0xFF4E1C1C);
@@ -32,8 +32,8 @@ class AppColors {
   static const surfaceHighest = Color(0xFFF0DBE2);
   static const onSurface = Color(0xFF241A1E);
   static const onSurfaceVariant = Color(0xFF6B5C61);
-  static const outline = Color(0xFF9C838A);
-  static const outlineVariant = Color(0xFFEBDCDF);
+  static const outline = Color(0xFF977C84);
+  static const outlineVariant = Color(0xFFB47B87);
   static const inverseSurface = Color(0xFF37292E);
   static const inverseOnSurface = Color(0xFFFFECF0);
   static const canvas = Color(0xFFF2E8EB);

@@ -448,13 +448,28 @@ void main() {
       // place. The screen now renders no delta at all until a real one exists.
       // The header names the slot the hour is actually in, so it cannot be
       // pinned to one word here. What it must never do again is claim a
-      // weekly pattern: "Tuesdays" sat beside it, asserting a habit to a
-      // woman who had logged one meal in her life.
+      // pattern: "Tuesdays" sat beside it, asserting a weekly habit to a woman
+      // who had logged one meal in her life — and ", your usual" was asserting
+      // the same habit in four fewer words, on the screen she reaches the
+      // instant she logs her first meal ever. One meal is not a usual.
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Text &&
+              const [
+                'Breakfast',
+                'Lunch',
+                'Dinner',
+                'Snack',
+              ].contains(w.data),
+        ),
+        findsWidgets,
+      );
       expect(
         find.byWidgetPredicate(
           (w) => w is Text && (w.data ?? '').endsWith(', your usual'),
         ),
-        findsOneWidget,
+        findsNothing,
       );
       expect(find.text('Tuesdays'), findsNothing);
 

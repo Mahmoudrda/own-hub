@@ -167,16 +167,26 @@ String plateName(AppL10n l10n, String foodId) => switch (foodId) {
 /// the hour she is in and says so ("your usual"); once something is logged it
 /// names the meal plainly, because the time it happened is already printed at
 /// the other end of the same line.
-String mealHeading(AppL10n l10n, {DateTime? loggedAt, DateTime? now}) {
+String mealSlotName(AppL10n l10n, MealSlot slot) => switch (slot) {
+  MealSlot.breakfast => l10n.breakfast,
+  MealSlot.lunch => l10n.lunch,
+  MealSlot.dinner => l10n.dinner,
+  MealSlot.snack => l10n.snack,
+};
+
+String mealHeading(
+  AppL10n l10n, {
+  DateTime? loggedAt,
+  DateTime? now,
+  bool hasUsual = false,
+}) {
   final slot = EatDayViewModel.slotAt(loggedAt ?? now ?? DateTime.now());
-  if (loggedAt != null) {
-    return switch (slot) {
-      MealSlot.breakfast => l10n.breakfast,
-      MealSlot.lunch => l10n.lunch,
-      MealSlot.dinner => l10n.dinner,
-      MealSlot.snack => l10n.snack,
-    };
-  }
+  if (loggedAt != null) return mealSlotName(l10n, slot);
+  // "Your usual" is a claim about a habit, and a woman on a fresh install has
+  // none: T01, T02 and E04 all headed the card "Lunch, your usual" over an
+  // empty card before she had logged a single meal. The slot logic was always
+  // right; the habit sentence is what had to earn itself.
+  if (!hasUsual) return mealSlotName(l10n, slot);
   return switch (slot) {
     MealSlot.breakfast => l10n.breakfastYourUsual,
     MealSlot.lunch => l10n.lunchYourUsual,
@@ -514,7 +524,15 @@ class MealCard extends StatelessWidget {
         Expanded(
           child: AppSplitRow(
             start: Text(
-              title ?? mealHeading(l10n, loggedAt: loggedAt, now: now),
+              title ??
+                  mealHeading(
+                    l10n,
+                    loggedAt: loggedAt,
+                    now: now,
+                    // She has a usual when there is a plate to name. Empty is a
+                    // woman with no history, and the card then names the meal.
+                    hasUsual: plates.isNotEmpty,
+                  ),
               style: AppText.titleM,
             ),
             end: loggedAt == null

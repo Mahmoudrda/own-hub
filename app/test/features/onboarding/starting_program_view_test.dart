@@ -68,9 +68,12 @@ void main() {
         _host(
           StartingProgramView(
             repository: InMemoryIntakeRepository(
+              // Was `days: 5`. O03 offers 2, 3 and 4 now — five would trip
+              // `Intake`'s own assert — and the case is about O05 reading her
+              // answers back, whatever they are, not about the number five.
               const Intake(
                 place: TrainingPlace.ladiesGym,
-                days: 5,
+                days: 4,
                 minutes: 30,
               ),
             ),
@@ -81,7 +84,7 @@ void main() {
 
       expect(
         find.text(
-          'Days a week: 5 · Minutes a session: 30 · At a ladies-only gym',
+          'Days a week: 4 · Minutes a session: 30 · At a ladies-only gym',
         ),
         findsOneWidget,
       );

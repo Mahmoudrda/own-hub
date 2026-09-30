@@ -88,27 +88,22 @@ class OnboardingState {
     AppChanges.bump();
   }
 
-  /// Her days a week become the weekly session target.
+  /// Her days a week become the weekly session target. Her number, unclamped.
   ///
-  /// ### The two specs disagree about five days, and this is where it shows
+  /// This used to take `min(days, kMaxSessionsTarget)` in the open, because the
+  /// two specs disagreed: `Intake.allowedDays` offered 2, 3, 4 and 5 while the
+  /// cap was 4. The clamp was honest about itself and still wrong for her — she
+  /// tapped 5, O05 read "Days a week: 5" back to her, and she was measured
+  /// against 4 for ever after.
   ///
-  /// `Intake.allowedDays` offers 2, 3, 4 and 5 — O03's chips, as designed.
-  /// [kMaxSessionsTarget] is 4, and `WeeklyGoalService.setTarget` **refuses**
-  /// anything above it rather than clamping, deliberately: a caller that asks
-  /// for seven has a bug, and quietly turning it into four would give her a
-  /// goal she never chose.
-  ///
-  /// A refusal here would be worse than either. It would leave the woman who
-  /// said she could train five days a week on the imposed three, which is the
-  /// exact defect this file exists to fix. So the clamp is taken **at the call
-  /// site, in the open**: five days a week asks for the largest goal the
-  /// rewards domain will grant, and the service is still the only thing that
-  /// decides. The conflict is the owner's to settle — either O03 stops offering
-  /// five or `kMaxSessionsTarget` rises — and until it is settled it is written
-  /// down here rather than hidden inside a `min()`.
+  /// The conflict is settled by the question, not by the cap: O03 no longer
+  /// offers a 5, so every chip she can tap is a target `WeeklyGoalService` will
+  /// accept and her answer reaches the goal whole. The service is still the
+  /// only thing that decides, and a caller asking for seven is still refused
+  /// rather than clamped — which is why this reads `decision.accepted` instead
+  /// of assuming the write landed.
   void _applyWeeklyTarget(int days) {
-    final wanted = days > kMaxSessionsTarget ? kMaxSessionsTarget : days;
-    final decision = _goals.setTarget(AppRouter.progressStore.goal, wanted);
+    final decision = _goals.setTarget(AppRouter.progressStore.goal, days);
     if (!decision.accepted) return;
     AppRouter.progressStore.goal = decision.goal;
 

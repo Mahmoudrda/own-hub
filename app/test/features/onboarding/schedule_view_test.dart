@@ -59,9 +59,13 @@ void main() {
       expect(find.text('Days a week'), findsOneWidget);
       expect(find.text('Minutes a session'), findsOneWidget);
 
-      for (final n in ['2', '3', '4', '5', '10', '15', '20', '30']) {
+      // Three day chips, not four. The fifth chip was removed with
+      // `Intake.allowedDays`: it offered a target `kMaxSessionsTarget` refuses,
+      // so a woman who tapped it was measured against four for ever after.
+      for (final n in ['2', '3', '4', '10', '15', '20', '30']) {
         expect(find.text(n), findsOneWidget, reason: n);
       }
+      expect(find.text('5'), findsNothing, reason: 'five is not offered');
     });
 
     testWidgets('the rest-week rule is explained before she can fail it', (
@@ -88,7 +92,9 @@ void main() {
 
       expect(_chipSelected(tester, '3'), isTrue);
       expect(_chipSelected(tester, '15'), isTrue);
-      expect(_chipSelected(tester, '5'), isFalse);
+      // Was '5'. Five is no longer a chip at all, so the negative control moved
+      // to the highest day chip that does exist.
+      expect(_chipSelected(tester, '4'), isFalse);
     });
   });
 
@@ -140,14 +146,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('5'));
+      // Was a 5. Four is the top chip now, and the point of the case is that
+      // the number she taps is the number that is written, whichever it is.
+      await tester.tap(find.text('4'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('30'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(repository.read().days, 5);
+      expect(repository.read().days, 4);
       expect(repository.read().minutes, 30);
       expect(repository.writes, [
         {'days', 'minutes'},

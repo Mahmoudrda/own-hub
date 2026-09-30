@@ -350,14 +350,18 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     note:
         'MeasurementsRepository.purgeLocal(). The photos have no Storage '
         'object and no Firestore reference, so NO server-side delete can reach '
-        'them',
+        'them. NOT BUILT: this release has no capture path and no photo store, '
+        'so the step runs and finds nothing. The row stands because the day a '
+        'camera lands it must already be enumerated',
   ),
   DeletionRow(
     number: 34,
     path: 'photo store key in Keychain / Android Keystore',
     owner: 'G6, destroyed by G7',
     method: DeletionMethod.localOnly,
-    note: 'wiping ciphertext while leaving the key is not deletion',
+    note:
+        'wiping ciphertext while leaving the key is not deletion. NOT BUILT: '
+        'no key is ever minted in this release, so there is none to destroy',
   ),
 
   // Rows 35-37 — added after check (e) went executable and immediately caught

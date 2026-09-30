@@ -20,6 +20,7 @@ import '../app_state/blocking.dart';
 // identity check can be built against real Cloud Functions or has to refuse
 // honestly. See `_newIdentityCheck`.
 import '../app_state/firebase_boot.dart';
+import '../config/care_links.dart';
 import '../config/legal_links.dart';
 import '../app_state/coach_portfolio_state.dart';
 import '../app_state/coach_profile_state.dart';
@@ -33,7 +34,6 @@ import '../app_state/honest_notice.dart';
 import '../app_state/onboarding_state.dart';
 import '../app_state/open_link.dart';
 import '../app_state/workout_session_state.dart';
-import '../domain/training/prescribed_set.dart';
 import '../domain/rewards/level_curve.dart';
 import '../features/testing/presentation/all_screens_view.dart';
 
@@ -1019,7 +1019,8 @@ class AppRouter {
       },
     ),
 
-    // Today. T06 and T08 are states inside T01 and T07, never routes.
+    // Today. T06 is a state inside T01, never a route. T08 is a state inside
+    // T07 too, and is built below anyway: see the note at its entry.
     'T01': (context) => TodayView(
       repository: todayRepository,
       // The same figure P01 shows, from the same derivation, so Home and
@@ -1070,6 +1071,15 @@ class AppRouter {
     ),
     'T02': (context) => AlreadyDidItView(
       repository: todayRepository,
+      // The line under "Legs and glutes, today's plan" is the plan's own
+      // summary, read off the one authored session. It was a fixed
+      // "15 min · 5 moves · last week's weights" — a claim about weights from a
+      // week she may not have trained — and the router passed nothing.
+      //
+      // There is deliberately no `lastOtherTitle`: nothing here knows what her
+      // last other session was called, so T02 draws no second row rather than
+      // offering "Upper body, like last Thursday" and writing it into her log.
+      plannedDetail: sampleWorkoutDay(AppL10n.of(context)).summary,
       // A session she did without her phone counts the same everywhere a
       // trained one does. Today's own copy is credited by the repository
       // above; this credits the week document and her points, deduped by the
@@ -1108,6 +1118,24 @@ class AppRouter {
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
     'T07': (context) => FirstWeekView(
+      repository: todayRepository,
+      onClose: () => Navigator.of(context).maybePop(),
+      onStartSession: () => goTo(context, 'R03'),
+      onOpenStep: (screenId) => goTo(context, screenId),
+      onBackToToday: () => goTo(context, 'T01'),
+      onSeeProgress: () => goTo(context, 'P01'),
+    ),
+    // T08 is the finished state of T07 and is rendered by the same widget, in
+    // place, the moment the arc completes. It is not somewhere you go.
+    //
+    // But it IS in `appDestinations`, so `/today/t08` resolved to a route with
+    // no builder and a woman following that link landed on the developer
+    // placeholder. Two ways out: take it out of the destinations, or give it
+    // the screen it names. This is the second, because the first makes the link
+    // fail rather than arrive, and `FirstWeekView` already decides which of the
+    // two states to draw from her own arc — so t08 lands on her first week in
+    // whatever state it is actually in, and never claims she has finished it.
+    'T08': (context) => FirstWeekView(
       repository: todayRepository,
       onClose: () => Navigator.of(context).maybePop(),
       onStartSession: () => goTo(context, 'R03'),
@@ -1197,7 +1225,16 @@ class AppRouter {
       // The move and the set she is actually on. Both were left out, so this
       // screen asked every woman for the second set of a goblet squat for as
       // long as she kept tapping.
-      move: WorkoutSessionState.instance.currentMove,
+      //
+      // The fallback is the first move of the one authored session, not the
+      // widget's own fixture. R07 opened without a live session — from the
+      // all-screens index, or a deep link — fell through to that fixture and
+      // prescribed 12 kg inside a session whose own subtitle on R03 reads
+      // "Quiet · no equipment · floor". Every move the app actually has is
+      // bodyweight.
+      move:
+          WorkoutSessionState.instance.currentMove ??
+          sampleWorkoutDay(AppL10n.of(context)).moves.first,
       setIndex: WorkoutSessionState.instance.setIndex,
       // Which move of how many. The bar read a fixed "Move 2 of 5".
       moveNumber: WorkoutSessionState.instance.moveIndex + 1,
@@ -1228,14 +1265,13 @@ class AppRouter {
       // Which move of how many. The bar read a fixed "Move 2 of 5".
       moveNumber: WorkoutSessionState.instance.moveIndex + 1,
       moveCount: WorkoutSessionState.instance.moveCount,
+      // The first set of the one authored session when there is no live one.
+      // This was a hand-written goblet squat at 12 kg, so R08 opened cold
+      // offered 10/12/14 kg inside a session whose own subtitle promises no
+      // equipment at all.
       prescribed:
           WorkoutSessionState.instance.currentSet ??
-          const PrescribedSet(
-            exerciseId: 'goblet_squat',
-            order: 2,
-            weightKg: 12,
-            reps: 10,
-          ),
+          sampleWorkoutDay(AppL10n.of(context)).moves.first.sets.first,
       moveName: WorkoutSessionState.instance.currentMove?.name,
       onClose: () => Navigator.of(context).maybePop(),
       // Carries the handle, exactly as R07 does. It used to assign the
@@ -1263,6 +1299,10 @@ class AppRouter {
       },
     ),
     'R10': (context) => FinishedView(
+      // The session this page is reporting on. Without it the page could not
+      // tell a measured session from a recalled one and drew the personal-best
+      // card for every woman who finished anything at all.
+      session: WorkoutSessionState.instance.lastFinished,
       // Her week, her points — the same numbers Home and Progress read.
       sessionsThisWeek: todayRepository.day.week.sessionsLogged,
       sessionsPrescribed: todayRepository.day.week.sessionsTarget,
@@ -1964,16 +2004,44 @@ class AppRouter {
           unawaited(CycleAppState.instance.setWorkoutSuggestions(on)),
       onOpenMeals: () => goTo(context, 'Y07'),
       onAddDates: () => goTo(context, 'Y02'),
-      // Y11's two outward routes need maps and a browser, and this build has
-      // neither. Each says so, rather than being a button that does nothing.
+      // Y11's two outward routes, and what they say is what is actually
+      // missing.
+      //
+      // They used to say "maps are not connected in this build" and "opening
+      // web links is not connected in this build". Both were untrue:
+      // `url_launcher` ships, `openExternalLink` exists, and A03 and A04 in
+      // this same file already use it. What is missing is CONTENT, not
+      // capability, and blaming the wrong thing on the screen a woman reaches
+      // in severe pain means the day the content lands nobody knows the button
+      // was ever ready.
+      //
+      // The care directory is the one that needs authoring: a clinically
+      // reviewed list of Egyptian clinics, `CareDirectory.bundled`, OQ-11.
+      //
+      // TWO THINGS ROUND ONE AND TWO RECORDED HERE AND THIS CHANGE DOES NOT
+      // SETTLE, because both are the owner's:
+      //   * the guidance button is labelled "Read NHS guidance on period
+      //     pain", and the NHS is a British health service being cited to an
+      //     Egyptian woman. The source has to be chosen before the link is
+      //     filled in, and the label changes with it.
+      //   * `122`, the Egyptian emergency line, is in the dictionary and
+      //     renders on A04. Whether it belongs on this card is a clinical
+      //     question about when severe period pain is an emergency, and it is
+      //     not one a fixing pass answers.
       onFindCare: () => showHonestNotice(
         context,
-        AppL10n.of(context).mapsAreNotConnectedInThisBuild,
+        AppL10n.of(context).weDoNotHaveACareDirectory,
       ),
-      onReadGuidance: () => showHonestNotice(
-        context,
-        AppL10n.of(context).openingWebLinksIsNotConnectedIn,
-      ),
+      // Wired the moment there is an address, on exactly the rule A03 and A04
+      // already follow for the published pages.
+      onReadGuidance: CareLinks.periodPainGuidance.isEmpty
+          ? () => showHonestNotice(
+              context,
+              AppL10n.of(context).weDoNotHaveAGuidancePage,
+            )
+          : () => unawaited(
+              openExternalLink(context, CareLinks.periodPainGuidance),
+            ),
       // Nothing records a planned rest yet (D5a's `markPlannedRest` does not
       // exist), so the note promises only what is true: nothing changed.
       onRest: () => showHonestNotice(
@@ -5170,10 +5238,11 @@ class AppRouter {
   static Route<dynamic> onUnknownRoute(RouteSettings settings) {
     return MaterialPageRoute<dynamic>(
       settings: settings,
-      builder: (_) => NotBuiltYet(
-        screenId: '—',
-        title: 'No screen serves ${settings.name ?? "this route"}',
-      ),
+      // No screen id and no route name. An unknown deep link is the one route a
+      // woman can arrive on by accident, and "No screen serves /train/r99" is a
+      // developer's sentence with a developer's noun in it. Empty strings make
+      // [NotBuiltYet] fall back to copy she can read, in her language.
+      builder: (_) => const NotBuiltYet(screenId: '', title: ''),
     );
   }
 }
@@ -5189,20 +5258,42 @@ class NotBuiltYet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // `Localizations.of` rather than `AppL10n.of`, which is a null check.
+    //
+    // This is the one screen in the product that a bare `MaterialApp` can show:
+    // a harness that points straight at `onUnknownRoute` has no delegates, and
+    // a crash there would replace an honest panel with a red screen. Null falls
+    // back to the English, which is the same sentence.
+    final l10n = Localizations.of<AppL10n>(context, AppL10n);
+
+    // "Routing is wired; this screen is waiting on its feature group
+    // implementation" is a sentence about our build system, shown to a woman
+    // who followed a link. What she needs to know is that the thing is not
+    // here, and that is all this says now.
+    final heading = title.isNotEmpty
+        ? title
+        : (l10n?.weCannotFindThatPage ?? 'We cannot find that page.');
+    final body =
+        l10n?.notBuiltYetThisPartOfThe ??
+        'Not built yet. This part of the app is not in this release.';
+
     return Scaffold(
       backgroundColor: AppColors.surfaceLow,
-      appBar: AppBar(title: Text(screenId, style: AppText.titleM)),
+      appBar: AppBar(
+        title: screenId.isEmpty
+            ? null
+            : Text(screenId, style: AppText.titleM),
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(title, style: AppText.titleL, textAlign: TextAlign.center),
+              Text(heading, style: AppText.titleL, textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
-                'Not built yet. Routing is wired; this screen is waiting on its '
-                'feature group implementation.',
+                body,
                 style: AppText.bodyM.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),

@@ -97,7 +97,11 @@ void main() {
       await tester.pumpWidget(_host(_view()));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('All five done.'), findsOneWidget);
+      // "All five done." named a number this build cannot reach: Community is
+      // dark, so `offeredFirstWeekSteps` returns three and every other figure
+      // on the screen says three. The sentence states no number now.
+      expect(find.textContaining('All done.'), findsOneWidget);
+      expect(find.textContaining('All five done.'), findsNothing);
       expect(find.text('What it added up to'), findsOneWidget);
       expect(find.text('Points'), findsOneWidget);
       expect(find.text('90'), findsOneWidget);

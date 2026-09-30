@@ -182,6 +182,14 @@ abstract final class ScreenArt {
     'T04': [AppArt.stretchSeated],
     'T05': [AppArt.restFloor],
     'T07': [AppArt.trainers, AppArt.yogaMat],
+    // T08 is T07's completed branch, and it was missing from this table for as
+    // long as the route rendered the not-built panel: a screen behind
+    // `NotBuiltYet` is skipped by the loop in `screen_art_test.dart`, so the
+    // gap only became visible the day the screen was built. One drawing, and
+    // the one the product already means by "you did it" (R10's hero) — the file
+    // comment on `first_week_view.dart` is explicit that finishing the first
+    // week is celebrated QUIETLY, because the confetti belongs to a workout.
+    'T08': [AppArt.strongArms],
     'W01': [AppArt.running],
     'W02': [AppArt.lungeKneeling],
     'W03': [AppArt.spinBike, AppArt.yogaMat],
@@ -200,12 +208,19 @@ abstract final class ScreenArt {
     'Y04': [AppArt.sideStretch],
     'Y05': [AppArt.yogaMat],
     'Y06': [AppArt.stretchSeated, AppArt.yogaMat],
-    'Y07': [AppArt.fruitBasket, AppArt.nuts],
+    // Y07 "Meals for today" and Y13 "About cycle phases" are cycle screens, and
+    // the calm rule at the top of this file governs them: her cycle uses
+    // meditation, stretching or the yoga mat. They carried fruit and nuts,
+    // which read as a food prescription attached to her period — the one place
+    // in the product where a picture of food beside a phase implies a rule
+    // about what she should be eating this week. The food marks belong on the
+    // Eat screens, where she came looking for them.
+    'Y07': [AppArt.meditation, AppArt.sideStretch],
     'Y08': [AppArt.meditation],
     'Y09': [AppArt.stretchSeated],
     'Y10': [AppArt.sideStretch],
     'Y12': [AppArt.meditation],
-    'Y13': [AppArt.yogaMat, AppArt.fruitBasket],
+    'Y13': [AppArt.yogaMat, AppArt.stretchSeated],
     'Z01': [AppArt.gymBag, AppArt.fruitBasket],
     'Z02': [AppArt.dumbbells, AppArt.squatWeights],
     'Z03': [AppArt.lungeWarrior],

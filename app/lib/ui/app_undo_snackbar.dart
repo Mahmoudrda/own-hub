@@ -14,6 +14,8 @@
 /// the write for, so the offer disappears exactly when it stops being true.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../domain/logging/log_command_bus.dart';
@@ -34,7 +36,7 @@ void showUndoSnackBar(
   // One at a time: two stacked undo offers would make it ambiguous which log
   // the visible one belongs to.
   messenger.hideCurrentSnackBar();
-  messenger.showSnackBar(
+  final controller = messenger.showSnackBar(
     SnackBar(
       duration: kUndoWindow,
       // **`persist` defaults to `action != null`**, and this bar always has an
@@ -62,4 +64,34 @@ void showUndoSnackBar(
       ),
     ),
   );
+
+  // The bar goes when the window goes, not a moment later.
+  //
+  // `SnackBar.duration` is the time it stays *fully shown*: Flutter starts that
+  // timer after the 250 ms entrance and then spends 250 ms taking it away, so a
+  // bar handed the five-second window lived for about five and a half seconds.
+  // Measured, at 1x: the write landed at about 4,500 ms and the bar was still
+  // up, with Undo still reachable, until about 5,500 ms. Tapping it in that
+  // second dismissed the bar and left the session logged, which is the worst
+  // shape an undo can take — it looks like it worked.
+  //
+  // So the handle closes the bar, because the handle is the thing that knows
+  // when the window actually shut.
+  var alreadyClosed = false;
+  unawaited(
+    controller.closed.then((_) {
+      alreadyClosed = true;
+    }),
+  );
+  handle.whenClosed(() {
+    // Nothing to take down: it was dismissed, swiped away, or replaced by a
+    // later log. `showSnackBar` completes the current bar's future when it
+    // supersedes it, which is what makes this check enough.
+    if (alreadyClosed || !messenger.mounted) return;
+    // `removeCurrentSnackBar`, not `controller.close()`. `close` reverses the
+    // exit animation over 250 ms, and Undo stays in the semantics tree and
+    // under her finger for every one of those frames — the same second, moved.
+    // This takes it away in the frame the window closes.
+    messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+  });
 }

@@ -3078,5 +3078,17 @@
     }
   },
   "noRecipeHasBeenPricedYet": "No recipe has been priced yet.",
-  "noRecipeCanBeCalledNutFree": "No recipe can be called nut free yet, because nobody has signed off what is in them."
+  "noRecipeCanBeCalledNutFree": "No recipe can be called nut free yet, because nobody has signed off what is in them.",
+  "noneOfTheseDishesHasBeenChecked": "None of these dishes has been checked for what you avoid, so none of them is shown.",
+  "pelvicFloorFirstOnceYourDoctorSays": "Pelvic floor first, once your doctor says you are ready",
+  "gentlerMovementsNothingOnTheBelly": "Gentler movements, nothing on the belly",
+  "weDoNotHaveACareDirectory": "We do not have a care directory for your city yet.",
+  "weDoNotHaveAGuidancePage": "We do not have a guidance page to open yet.",
+  "finishingThemAllIsNotADeadline": "Finishing them all is not a deadline. It is the shortest path to knowing where everything is.",
+  "allDoneNothingAboutTheAppChanges": "All done. Nothing about the app changes from here. You have just already used every part of it once.",
+  "notBuiltYetThisPartOfThe": "Not built yet. This part of the app is not in this release.",
+  "weCannotFindThatPage": "We cannot find that page.",
+  "weCouldNotReadTheFrontOf": "We could not read the front of your card. Hold it flat and try again.",
+  "weCouldNotReadTheBackOf": "We could not read the back of your card. Hold it flat and try again.",
+  "noneOfTheseDishesHasBeenChecked_9ic16": "None of these dishes has been checked for nuts."
 }

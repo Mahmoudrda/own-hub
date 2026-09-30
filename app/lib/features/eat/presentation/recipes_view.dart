@@ -56,6 +56,7 @@ class RecipeRow {
     this.minutes,
     this.proteinG,
     this.egp,
+    this.allergens,
   });
 
   final String recipeId;
@@ -75,6 +76,19 @@ class RecipeRow {
   final int? minutes;
   final int? proteinG;
   final int? egp;
+
+  /// What the dish contains, as allergen wire tokens.
+  ///
+  /// **Null means nobody has written it down**, the same convention
+  /// `Food.allergens` uses and the same one `AllergyGuard` fails closed on. An
+  /// empty set here would be a claim that the dish contains none of what she
+  /// named, and nobody has checked these four, so all four carry null.
+  ///
+  /// The field exists because without it the guard could not see these rows at
+  /// all: E10 promises "dishes that contain it are hidden from your recipes",
+  /// and "Yoghurt, dates and nuts" stayed on screen, tappable, for a woman who
+  /// had just declared tree nuts.
+  final Set<String>? allergens;
 }
 
 /// The filters E05 offers, in the order the chips are drawn.
@@ -82,8 +96,14 @@ class RecipeRow {
 /// The last three arrived with Rahma's book and each one answers a question her
 /// cards can actually answer: whether a dish needs an oven she may not have,
 /// whether it is something she can make the night before, and whether it is
-/// clear of nuts. They apply to her recipes only; the four prototype rows carry
-/// no tags to test, and a row that does not say never matches a filter.
+/// clear of nuts. The first two apply to her recipes only; the four prototype
+/// rows carry no tags to test, and a row that does not say never matches a
+/// filter.
+///
+/// [noNuts] is the exception and applies to both halves of the screen. It is a
+/// safety claim rather than a convenience, and a claim that holds over half a
+/// list is not a claim: the chip used to leave "Yoghurt, dates and nuts" on
+/// screen above the book it had just emptied.
 enum RecipeFilter {
   highProtein,
   underTwentyMinutes,
@@ -158,6 +178,13 @@ bool recipeMatchesFilter(Recipe recipe, RecipeFilter filter) => switch (filter) 
 };
 
 /// The four the prototype draws.
+///
+/// Every one of them leaves [RecipeRow.allergens] null, which means **nobody
+/// has checked**, exactly as `eat_sample_library.dart` records for the food
+/// pack: `foods.allergens[]` is unauthored, and writing a set here would be the
+/// app inventing a safety guarantee for a woman with a food allergy. Null is
+/// the fail-closed value, so a declared allergy takes all four off the screen
+/// and `_topEmptyLine` says why.
 List<RecipeRow> sampleRecipes(AppL10n l10n) => [
   RecipeRow(
     recipeId: 'koshari_portioned',
@@ -273,12 +300,36 @@ class _RecipesViewState extends State<RecipesView> {
     final l10n = AppL10n.of(context);
     final all = widget.recipes ?? sampleRecipes(l10n);
     final filter = _filter;
-    final recipes = filter == null
-        ? all
-        : [
-            for (final recipe in all)
-              if (matchesFilter(recipe, filter)) recipe,
-          ];
+
+    // The guard runs on the app's own rows too, and it runs **before** any
+    // chip. E10 promises her, verbatim, "dishes that contain it are hidden from
+    // your recipes"; this list is the one directly under that promise, and it
+    // used to be exempt from it because a `RecipeRow` carried no allergen field
+    // for the guard to read. A woman who declared tree nuts was still offered
+    // "Yoghurt, dates and nuts", tappable, with no interstitial.
+    //
+    // Nothing here is tagged, so for a woman with any declared allergy every
+    // row goes and the line below says why. That is stricter than the promise
+    // rather than looser than it, which is the only direction this is allowed
+    // to be wrong in.
+    final guard = AllergyGuard(widget.constraints);
+    final safe = [
+      for (final recipe in all)
+        if (guard.allowsAllergens(recipe.allergens)) recipe,
+    ];
+    final hiddenUnchecked = all.length - safe.length;
+
+    final recipes = [
+      for (final recipe in safe)
+        if ((filter == null || matchesFilter(recipe, filter)) &&
+            // "No nuts" is drawn beside Rahma's book and every other chip there
+            // stays in her half of the screen. This one cannot: it is a safety
+            // claim, and a claim that holds for half a list is not a claim. It
+            // selects none of these rows, because none of them has been checked.
+            (_bookFilter != RecipeFilter.noNuts ||
+                matchesFilter(recipe, RecipeFilter.noNuts)))
+          recipe,
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -345,13 +396,12 @@ class _RecipesViewState extends State<RecipesView> {
               _filter = _filter == tapped ? null : tapped;
             }),
           ),
-          // Said only for the filter it is true of. The other three read real
-          // figures off the rows, so an empty list there would mean her pack
-          // holds nothing that matches — a different sentence, which nothing
-          // in this build can reach.
-          if (recipes.isEmpty && filter == RecipeFilter.ramadan)
+          // An empty list has to name its own cause, and the causes are not one
+          // sentence. The guard's reason comes first because the guard ran
+          // first: a chip cannot be blamed for rows that were already gone.
+          if (recipes.isEmpty)
             Text(
-              l10n.noRecipeCarriesARamadanTagYet,
+              _topEmptyLine(l10n, hiddenUnchecked, filter),
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
           for (final recipe in recipes)
@@ -403,6 +453,26 @@ class _RecipesViewState extends State<RecipesView> {
         ],
       ),
     );
+  }
+
+  /// Why the app's own four rows are not on screen.
+  ///
+  /// Same discipline as [_emptyLine] below, ordered by cause rather than by
+  /// severity. [hiddenUnchecked] is the guard's removal and it comes first,
+  /// because it happened first.
+  String _topEmptyLine(AppL10n l10n, int hiddenUnchecked, RecipeFilter? filter) {
+    if (hiddenUnchecked > 0) return l10n.noneOfTheseDishesHasBeenChecked;
+    // Its own sentence, not the book's. The book says "No recipe can be called
+    // nut free yet", and printing that twice on one screen reads as the app
+    // repeating itself rather than as two libraries each answering for
+    // themselves.
+    if (_bookFilter == RecipeFilter.noNuts) {
+      return l10n.noneOfTheseDishesHasBeenChecked_9ic16;
+    }
+    if (filter == RecipeFilter.ramadan) {
+      return l10n.noRecipeCarriesARamadanTagYet;
+    }
+    return l10n.nothingMatchesThat;
   }
 
   /// Why her half of the screen is empty, in the woman's own terms.

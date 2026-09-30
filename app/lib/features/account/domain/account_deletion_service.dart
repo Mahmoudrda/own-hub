@@ -156,6 +156,11 @@ abstract class LocalWipe {
   Future<void> purgeLocalMeasurements();
 
   /// Manifest row 34 — the photo store's Keychain/Keystore key.
+  ///
+  /// Nothing in this release mints one: there is no camera path and no photo
+  /// store, so every implementation of this is a no-op today. The step is
+  /// enumerated and called anyway, because a row added the day the camera lands
+  /// is a row added after the first deletion has already run without it.
   Future<void> destroyPhotoStoreKey();
 }
 

@@ -171,6 +171,13 @@ void main() {
       expect(find.text('Breakfast, your usual'), findsNothing);
     });
 
+    // "and says so" used to mean "Dinner, your usual". It does not any more.
+    //
+    // "Your usual" is a claim about a habit, and this fixture is a woman with
+    // no plates at all: nothing she has ever eaten is on the card. The hour is
+    // still guessed and still named, because that part was always right; what
+    // had to earn itself is the word "usual". `MealCard` says it only when it
+    // has a plate of hers to name.
     testWidgets('with nothing logged it guesses the hour, and says so', (
       tester,
     ) async {
@@ -194,7 +201,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Dinner, your usual'), findsOneWidget);
+      expect(find.text('Dinner'), findsOneWidget);
+      expect(find.text('Dinner, your usual'), findsNothing);
       expect(find.text('Breakfast, your usual'), findsNothing);
     });
 

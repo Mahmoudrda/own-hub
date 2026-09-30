@@ -277,4 +277,64 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('a finger on a tab still works while the notice is raised', (
+    tester,
+  ) async {
+    // The scrim used to be drawn over the bottom bar, so all three tabs were
+    // painted at the foot of a notice she did not ask for and none of them
+    // could be touched: the coloured box took every pointer, and it carried no
+    // gesture of its own. That left exactly two ways off this screen, both of
+    // them buttons inside the notice.
+    //
+    // Tapped with a FINGER rather than through the semantics action, because
+    // `tester.semantics.tap` dispatches straight to the node and never
+    // hit-tests — it passed throughout the defect. `tester.tap` at the painted
+    // pixel is the only instrument that can see a scrim.
+    _phone(tester);
+    final tapped = <String>[];
+    await tester.pumpWidget(
+      _host(
+        TierSlipView(
+          repository: InMemoryTodayRepository(),
+          date: _monday,
+          standing: _slipped,
+          goal: const WeeklyGoal(countedWeeks: 14),
+          rewards: const Rewards(points: 490),
+          onStartShortSession: () {},
+          onShrinkGoal: () {},
+          onStartSession: () {},
+          onRecall: () {},
+          onSelectTab: tapped.add,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('You are Showing up for now'),
+      findsOneWidget,
+      reason: 'the notice must be raised, or this proves nothing',
+    );
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+
+    expect(tapped, ['T01']);
+  });
+
+  testWidgets('and the scrim closes the notice rather than only blocking it', (
+    tester,
+  ) async {
+    _phone(tester);
+    await tester.pumpWidget(_host(_view()));
+    await tester.pumpAndSettle();
+    expect(find.text('You are Showing up for now'), findsOneWidget);
+
+    // Well above the sheet, which is bottom-aligned: this pixel is scrim.
+    await tester.tapAt(const Offset(195, 120));
+    await tester.pumpAndSettle();
+
+    expect(find.text('You are Showing up for now'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

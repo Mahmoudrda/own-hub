@@ -170,7 +170,7 @@ def _run(inputs: Inputs, deps: Deps, observed: _Observed) -> Outcome:
     refusal = ledger.check(budget, ledger.OCR_SUBMISSION, ocr_cost)
     if refusal is not None:
         return Outcome(
-            decision=decisions.Decision(decisions.RETRY_CAPTURE, (refusal.code,)),
+            decision=decisions.decide_budget_refusal(refusal.code),
             spent_micro_usd=budget.spent_micro_usd,
         )
 
@@ -347,7 +347,7 @@ def _run(inputs: Inputs, deps: Deps, observed: _Observed) -> Outcome:
     )
     if refusal is not None:
         return Outcome(
-            decision=decisions.Decision(decisions.RETRY_CAPTURE, (refusal.code,)),
+            decision=decisions.decide_budget_refusal(refusal.code),
             id_hmac=id_hmac,
             spent_micro_usd=spent,
             provider_ids=provider_ids,
@@ -425,7 +425,7 @@ def _run(inputs: Inputs, deps: Deps, observed: _Observed) -> Outcome:
     refusal = ledger.check(budget, ledger.FACE_MATCH, deps.face_match.cost_per_call)
     if refusal is not None:
         return Outcome(
-            decision=decisions.Decision(decisions.RETRY_CAPTURE, (refusal.code,)),
+            decision=decisions.decide_budget_refusal(refusal.code),
             id_hmac=id_hmac,
             spent_micro_usd=spent,
             provider_ids=provider_ids,

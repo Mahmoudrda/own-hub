@@ -107,7 +107,10 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final at = widget.at ?? DateTime(2026, 9, 15, 8, 42);
+    // Now, not the mockup's 15 September 2026 at 08:42. A lock screen that
+    // states a date is stating the date it is being read on, or it is stating
+    // nothing.
+    final at = widget.at ?? DateTime.now();
     final white = AppColors.onPrimary;
 
     return AppScaffold(

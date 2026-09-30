@@ -7499,4 +7499,51 @@ class AppL10nAr extends AppL10n {
   @override
   String get noRecipeCanBeCalledNutFree =>
       'لا يمكن وصف أي وصفة بأنها خالية من المكسرات بعد، لأن أحدًا لم يعتمد مكوّناتها.';
+
+  @override
+  String get noneOfTheseDishesHasBeenChecked =>
+      'لم تُراجَع أي من هذه الأطباق بحثًا عمّا تتجنّبينه، لذا لا يظهر أي منها.';
+
+  @override
+  String get pelvicFloorFirstOnceYourDoctorSays =>
+      'قاع الحوض أولًا، بعد أن تطمئنك طبيبتك';
+
+  @override
+  String get gentlerMovementsNothingOnTheBelly =>
+      'حركات ألطف، ولا شيء على البطن';
+
+  @override
+  String get weDoNotHaveACareDirectory =>
+      'لا يوجد لدينا دليل رعاية لمدينتك بعد.';
+
+  @override
+  String get weDoNotHaveAGuidancePage =>
+      'لا توجد لدينا صفحة إرشادات نفتحها بعد.';
+
+  @override
+  String get finishingThemAllIsNotADeadline =>
+      'إنهاؤها كلها ليس موعدًا نهائيًا. إنه أقصر طريق لمعرفة مكان كل شيء.';
+
+  @override
+  String get allDoneNothingAboutTheAppChanges =>
+      'اكتمل كل شيء. لا يتغيّر شيء في التطبيق من هنا. أنتِ فقط استخدمتِ كل جزء منه مرة واحدة بالفعل.';
+
+  @override
+  String get notBuiltYetThisPartOfThe =>
+      'لم يُبنَ بعد. هذا الجزء من التطبيق ليس في هذا الإصدار.';
+
+  @override
+  String get weCannotFindThatPage => 'لا يمكننا العثور على تلك الصفحة.';
+
+  @override
+  String get weCouldNotReadTheFrontOf =>
+      'تعذّرت قراءة وجه البطاقة. أمسكيها مستوية وحاولي مرة أخرى.';
+
+  @override
+  String get weCouldNotReadTheBackOf =>
+      'تعذّرت قراءة ظهر البطاقة. أمسكيها مستوية وحاولي مرة أخرى.';
+
+  @override
+  String get noneOfTheseDishesHasBeenChecked_9ic16 =>
+      'لم تُراجَع أي من هذه الأطباق بحثًا عن المكسّرات.';
 }

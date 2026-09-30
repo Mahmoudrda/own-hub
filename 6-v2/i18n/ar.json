@@ -2268,5 +2268,17 @@
  "{n} min in all": "{n} دقيقة بالكامل",
  "{count, plural, one{About 1 hour in all} other{About {count} hours in all}}": "{count, plural, one{نحو ساعة بالكامل} two{نحو ساعتين بالكامل} few{نحو {count} ساعات بالكامل} many{نحو {count} ساعة بالكامل} other{نحو {count} ساعة بالكامل}}",
  "No recipe has been priced yet.": "لم تُسعَّر أي وصفة بعد.",
- "No recipe can be called nut free yet, because nobody has signed off what is in them.": "لا يمكن وصف أي وصفة بأنها خالية من المكسرات بعد، لأن أحدًا لم يعتمد مكوّناتها."
+ "No recipe can be called nut free yet, because nobody has signed off what is in them.": "لا يمكن وصف أي وصفة بأنها خالية من المكسرات بعد، لأن أحدًا لم يعتمد مكوّناتها.",
+ "None of these dishes has been checked for what you avoid, so none of them is shown.": "لم تُراجَع أي من هذه الأطباق بحثًا عمّا تتجنّبينه، لذا لا يظهر أي منها.",
+ "Pelvic floor first, once your doctor says you are ready": "قاع الحوض أولًا، بعد أن تطمئنك طبيبتك",
+ "Gentler movements, nothing on the belly": "حركات ألطف، ولا شيء على البطن",
+ "We do not have a care directory for your city yet.": "لا يوجد لدينا دليل رعاية لمدينتك بعد.",
+ "We do not have a guidance page to open yet.": "لا توجد لدينا صفحة إرشادات نفتحها بعد.",
+ "Finishing them all is not a deadline. It is the shortest path to knowing where everything is.": "إنهاؤها كلها ليس موعدًا نهائيًا. إنه أقصر طريق لمعرفة مكان كل شيء.",
+ "All done. Nothing about the app changes from here. You have just already used every part of it once.": "اكتمل كل شيء. لا يتغيّر شيء في التطبيق من هنا. أنتِ فقط استخدمتِ كل جزء منه مرة واحدة بالفعل.",
+ "Not built yet. This part of the app is not in this release.": "لم يُبنَ بعد. هذا الجزء من التطبيق ليس في هذا الإصدار.",
+ "We cannot find that page.": "لا يمكننا العثور على تلك الصفحة.",
+ "We could not read the front of your card. Hold it flat and try again.": "تعذّرت قراءة وجه البطاقة. أمسكيها مستوية وحاولي مرة أخرى.",
+ "We could not read the back of your card. Hold it flat and try again.": "تعذّرت قراءة ظهر البطاقة. أمسكيها مستوية وحاولي مرة أخرى.",
+ "None of these dishes has been checked for nuts.": "لم تُراجَع أي من هذه الأطباق بحثًا عن المكسّرات."
 }

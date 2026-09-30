@@ -17,7 +17,7 @@ const O02 = step(2, 'Where will you train?', 'You can change it on any day.',
   + col(`${m('What do you have at home?')}${chipRow([{ label: 'Nothing', sel: true }, { label: 'A mat' }, { label: 'Dumbbells' }, { label: 'Bands' }], -1, { grow: false })}`, { gap: 8 }), 'O03', 'O01');
 
 const O03 = step(3, 'How much time do you really have?', 'Be honest. This becomes your weekly goal.',
-  col(`${m('Days a week')}${chipRow(['2', '3', '4', '5'], 1)}`, { gap: 8 })
+  col(`${m('Days a week')}${chipRow(['2', '3', '4'], 1)}`, { gap: 8 })
   + col(`${m('Minutes a session')}${chipRow(['10', '15', '20', '30'], 1)}`, { gap: 8 })
   + sageNote('Three sessions a week is your goal. Hit it and the week counts, and a week you miss is covered by a rest week once you have earned one.'), 'O04', 'O02');
 

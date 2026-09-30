@@ -2,8 +2,10 @@
 //
 // Everything else in her palette is excellent — better than the app's own, in
 // fact, which is the finding worth keeping in view. Her ink on her paper is
-// 10.55:1. `AppColors.primary` on `AppColors.surface` is 4.58:1. Adopting her
-// ink made this the most readable surface in the product.
+// 10.55:1. `AppColors.primary` on `AppColors.surface` is 5.59:1 — it was 4.58
+// until QA round two darkened the rose to clear AA on the raised surfaces, and
+// hers is still nearly twice as readable. Adopting her ink made this the most
+// readable surface in the product.
 //
 // The exception is the divider's huge stacked section title, `#D3737E`. It
 // fails AA at any size on both grounds it is drawn over, and it fails by more

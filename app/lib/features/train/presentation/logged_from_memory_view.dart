@@ -18,6 +18,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
+import '../../../domain/rewards/stated_figure.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -26,6 +27,7 @@ import '../../../ui/app_progress.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
+import '../../today/presentation/today_cards.dart' show weekdayLabel;
 import '../domain/train_repository.dart';
 
 class LoggedFromMemoryView extends StatelessWidget {
@@ -33,6 +35,7 @@ class LoggedFromMemoryView extends StatelessWidget {
     super.key,
     this.onBackToToday,
     this.session,
+    this.loggedOn,
     this.sessionsThisWeek = 2,
     this.sessionsPrescribed = 3,
     this.levelProgressPercent = 44,
@@ -44,6 +47,15 @@ class LoggedFromMemoryView extends StatelessWidget {
   /// The session just recorded. Defaults to a recalled one, which is what this
   /// screen exists to report.
   final TrainSession? session;
+
+  /// The day she logged. Null means today, so a screen built with nothing still
+  /// names the real day.
+  ///
+  /// The heading was the fixed `thatsTuesdayDone`, which is the same defect
+  /// commit 5e78faa fixed on R10 one screen away: `countOfTotal` on this page
+  /// was parameterised in that pass and the sentence above it was missed, so a
+  /// woman logging on a Friday was told "That's Tuesday done".
+  final DateTime? loggedOn;
 
   final int sessionsThisWeek;
   final int sessionsPrescribed;
@@ -58,6 +70,14 @@ class LoggedFromMemoryView extends StatelessWidget {
   // from memory, and it is the same for everybody.
 
   final PersonalBestEligibility eligibility;
+
+  /// The day the heading names. See the comment at its call site.
+  DateTime get _loggedDay {
+    final named = loggedOn;
+    if (named != null) return named;
+    final dated = session?.dateKey;
+    return (dated == null ? null : DateTime.tryParse(dated)) ?? DateTime.now();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +107,22 @@ class LoggedFromMemoryView extends StatelessWidget {
             // the week counts either way, and only the best is withheld.
             const HandTick(size: 48, seed: 13, drawOn: true),
             const SizedBox(height: 10),
-            Text(l10n.thatsTuesdayDone, style: AppText.display),
+            // The day she is being told about, in this order: the one the
+            // caller named, then the one the SUPPLIED session is dated, then
+            // today.
+            //
+            // The middle step is not decoration. This screen is handed a
+            // session and reports it, so naming a different day than the
+            // session carries is the same defect as the fixed "Tuesday" that
+            // was just removed, one step further in. The `recorded` fallback
+            // above is deliberately NOT consulted: it is a placeholder dated
+            // 2026-09-15, and reading it would put the word "Tuesday" back on
+            // the screen for every woman the router reaches, which is exactly
+            // what this heading stopped doing.
+            Text(
+              l10n.thatsDayDone(weekdayLabel(l10n, _loggedDay)),
+              style: AppText.display,
+            ),
             const SizedBox(height: 6),
             Text(
               l10n.loggedFromMemoryYourWeekCountsIt,
@@ -149,10 +184,20 @@ class LoggedFromMemoryView extends StatelessWidget {
               filled: sessionsThisWeek,
             ),
             const SizedBox(height: 10),
-            Text(
-              l10n.oneMoreSessionAndThisWeekCounts,
-              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-            ),
+            // "One more session and this week counts" states the figure 1,
+            // and it was drawn beside her real "1 of 4". `statedLine` renders
+            // it only to the woman it is true of and nothing at all to anyone
+            // else, which is the arrangement four other screens already use.
+            if (statedLine(
+                  l10n.oneMoreSessionAndThisWeekCounts,
+                  states: 1,
+                  hers: sessionsPrescribed - sessionsThisWeek,
+                )
+                case final String line)
+              Text(
+                line,
+                style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+              ),
           ],
         ),
         // Where the trophy would have been.

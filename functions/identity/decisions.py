@@ -197,6 +197,42 @@ class Decision:
             raise ValueError(f"reason codes not in reasons.py: {sorted(unknown)}")
 
 
+def decide_budget_refusal(code: str) -> Decision:
+    """What to answer when the ledger refuses a call: she has used everything
+    we gave her.
+
+    THIS IS NOT RETRY_CAPTURE, AND IT USED TO BE.
+
+    `ledger.check` refuses three ways: the OCR submissions are gone
+    (MAX_OCR_SUBMISSIONS = 4), the liveness attempts are gone
+    (MAX_LIVENESS_ATTEMPTS = 2), or the per-uid cost cap is reached. All three
+    returned RETRY_CAPTURE, which the client maps to the camera screen. The
+    budget document is keyed by uid, has no TTL, no expiry and nothing anywhere
+    in `functions/` resets it, so the fifth unreadable photograph of a card sent
+    her back to the camera to take a sixth, and a sixth to take a seventh, for
+    the life of the account. She was told nothing, because the user-safe hint
+    never reached her screen either.
+
+    A refusal here is a statement about OUR limit, never about her photograph,
+    so "take it again" is the one answer that cannot be true. PENDING_REVIEW is:
+    it is already what an exhausted OCR allowance means everywhere else in this
+    module (SEX_WORD_UNREADABLE and BIRTH_DATE_MISMATCH both flag once
+    `ocr_retries_exhausted`), and review in this product is a video call with a
+    woman reviewer, who can settle in three minutes what four photographs of a
+    laminated card could not.
+
+    The abuse case does not argue the other way. An attacker who burns the
+    liveness allowance against one card buys a live encounter with a human,
+    which is a higher bar than the score they were trying to game, not a lower
+    one. The same reasoning is written out for NIQAB_PATH_REQUESTED.
+
+    A reviewer-callable reset of the budget is the obvious companion to this and
+    is deliberately NOT here: it is a product decision about who may hand a
+    woman four more attempts, and it belongs to the owner.
+    """
+    return Decision(PENDING_REVIEW, (code,))
+
+
 def decide_before_scores(signals: Signals) -> Optional[Decision]:
     """Everything spec §3 can conclude WITHOUT liveness or match scores.
 

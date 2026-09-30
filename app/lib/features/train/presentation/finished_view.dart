@@ -98,8 +98,14 @@ class FinishedView extends StatelessWidget {
 
     // A live session may show the trophy. A recalled or unplanned one never
     // can — the numbers were copied or absent, not measured.
+    //
+    // **And no session at all can.** This read `session == null || eligible`,
+    // so the absence of a session was treated as permission, and the router
+    // passed none: every woman who reached R10 was handed "A personal best",
+    // including on her very first session, one tap away from a P03 that says
+    // "Nothing saved yet". An unstated session is not an eligible one.
     final mayShowPersonalBest =
-        session == null || eligibility.isEligible(session!);
+        session != null && eligibility.isEligible(session!);
 
     return AppScaffold(
       footer: [

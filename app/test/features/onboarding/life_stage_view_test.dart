@@ -126,14 +126,38 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Both describe the training, never her condition.
+        // Re-pointed at the rule in this case's own name, which the old strings
+        // broke in two different ways.
+        //
+        // "Pelvic floor first, cleared from week six" told a woman when she is
+        // cleared. "Cleared" is a clinician's word, six weeks is a convention
+        // rather than a fact, and it is wrong after a caesarean, with a
+        // complication or with diastasis — so the row was making a clinical
+        // claim on a screen whose own list says "We avoid what hurts, we do not
+        // diagnose". "Safe movements" asserted safety in the app's voice about
+        // a body it has never seen.
+        //
+        // Both rows now describe the training and leave the timing and the
+        // verdict with her and her doctor, so the assertions are tightened
+        // rather than relaxed: the training word must be there, and the two
+        // words that were the defect must not be anywhere on the screen.
         expect(
-          find.text('Pelvic floor first, cleared from week six'),
+          find.text('Pelvic floor first, once your doctor says you are ready'),
           findsOneWidget,
         );
         expect(
-          find.text('Safe movements, nothing on the belly'),
+          find.text('Gentler movements, nothing on the belly'),
           findsOneWidget,
+        );
+        expect(
+          find.textContaining('cleared', findRichText: true),
+          findsNothing,
+          reason: 'this screen does not clear anyone for exercise',
+        );
+        expect(
+          find.textContaining('Safe movements', findRichText: true),
+          findsNothing,
+          reason: 'and it does not promise safety it cannot know',
         );
       },
     );

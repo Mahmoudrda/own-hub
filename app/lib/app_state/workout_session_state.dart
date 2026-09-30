@@ -104,6 +104,18 @@ class WorkoutSessionState {
 
   TrainSession? get session => _session;
 
+  TrainSession? _lastFinished;
+
+  /// The session [finish] last put away, still readable after it has cleared
+  /// the live one.
+  ///
+  /// R10 reports on a session it must be *told* about: it decides whether a
+  /// personal best is even possible from `session.source`, and with nothing
+  /// passed it used to treat the absence as permission and draw the trophy for
+  /// everybody. `finish` nulls [session] before the route builds, so the router
+  /// reads this instead.
+  TrainSession? get lastFinished => _lastFinished;
+
   /// Starts [day] if nothing is live. Safe to call from a tap on R01, R03 or
   /// Today: a session already under way is left alone.
   void start(WorkoutDay day, TrainRepository repository) {
@@ -192,6 +204,9 @@ class WorkoutSessionState {
   }) async {
     final session = _session;
     if (session == null) return;
+    // Synchronously, before the first await: the caller does not await this and
+    // pushes R10 in the next statement.
+    _lastFinished = session;
     final seconds = _startedAt == null
         ? 0
         : DateTime.now().difference(_startedAt!).inSeconds;
@@ -274,6 +289,7 @@ class WorkoutSessionState {
   void reset() {
     _day = null;
     _session = null;
+    _lastFinished = null;
     _moveIndex = 0;
     _setIndex = 0;
     _loggedSets = 0;

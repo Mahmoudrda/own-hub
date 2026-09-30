@@ -5,6 +5,11 @@
 /// and never leave the device unencrypted, because this is the data women are
 /// most often burned by."*
 ///
+/// **Half of that note describes a feature this build does not have.** There is
+/// no camera path, no photo store and no key: grep `lib/` for encryption and
+/// the only hits are comments. So the photo half of P04 is not drawn at all,
+/// and this screen makes no claim about photographs. See the `build` method.
+///
 /// ## Rule 9 — undo, never a confirmation
 ///
 /// Adding a weight or a measurement is a **logging action**, so it goes through
@@ -56,10 +61,13 @@
 /// without the word "saved". It names what she can take back, which is the job;
 /// the fuller sentence is a reported dictionary gap.
 ///
-/// The photo store is likewise not built: G6 §9.11 records that progress photos
-/// are local-only, encrypted with a Keychain/Keystore key, and consequently
-/// **do not survive a reinstall and cannot be in A02's export**. The
-/// placeholders render; nothing claims a photo has been saved.
+/// The photo store is likewise not built. G6 §9.11 describes what it *will* be:
+/// local-only, encrypted with a Keychain/Keystore key, and consequently **not
+/// surviving a reinstall and not in A02's export**. None of that exists yet,
+/// which is why nothing on this screen mentions photographs. Two placeholder
+/// frames badged June and September used to render under the sentence "stored
+/// on your phone and encrypted", which told a woman who had never opened a
+/// camera that the app was holding her pictures safely.
 library;
 
 import 'dart:async';
@@ -75,7 +83,6 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_field.dart';
-import '../../../ui/app_media.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_split_row.dart';
@@ -344,7 +351,10 @@ class _BodyPrivatelyViewState extends State<BodyPrivatelyView> {
           // Not a control: the padlock states what the screen is. There is
           // nothing to toggle, because it is private to her unconditionally.
           Padding(
-            padding: EdgeInsets.only(right: 8),
+            // Directional: in Arabic the bar mirrors, and `right` pinned the
+            // padding to the physical right edge on a screen that reads the
+            // other way.
+            padding: EdgeInsetsDirectional.only(end: 8),
             child: Icon(
               Icons.lock,
               size: 22,
@@ -399,7 +409,16 @@ class _BodyPrivatelyViewState extends State<BodyPrivatelyView> {
           ),
           _weightCard(l10n),
           _measurementsCard(l10n),
-          _photosCard(l10n),
+          // The photo-compare card is not drawn, and the decision is the same
+          // one `safety_centre_view.dart` and `privacy_view.dart` take for the
+          // community: a screen does not describe a room the build does not
+          // have. There is no capture path in this app, no photo store and no
+          // key (`account_data.dart:destroyPhotoStoreKey` says so outright), so
+          // the card drew two placeholder frames badged June and September for
+          // a woman who has never taken a photo, under the sentence "stored on
+          // your phone and encrypted". Nothing in `lib/` encrypts anything.
+          //
+          // It comes back with the capture path, not before.
         ],
       ),
     );
@@ -570,39 +589,4 @@ class _BodyPrivatelyViewState extends State<BodyPrivatelyView> {
     );
   }
 
-  Widget _photosCard(AppL10n l10n) {
-    return AppCard(
-      gap: 10,
-      children: [
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: AppMedia(
-                  height: 120,
-                  kind: AppMediaKind.photo,
-                  showPlayButton: false,
-                  badge: l10n.june,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: AppMedia(
-                  height: 120,
-                  kind: AppMediaKind.photo,
-                  showPlayButton: false,
-                  badge: l10n.september,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Text(
-          l10n.photoCompareStoredOnYourPhoneAnd,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
-      ],
-    );
-  }
 }

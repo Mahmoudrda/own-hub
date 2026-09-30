@@ -13716,6 +13716,78 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'No recipe can be called nut free yet, because nobody has signed off what is in them.'**
   String get noRecipeCanBeCalledNutFree;
+
+  /// No description provided for @noneOfTheseDishesHasBeenChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'None of these dishes has been checked for what you avoid, so none of them is shown.'**
+  String get noneOfTheseDishesHasBeenChecked;
+
+  /// No description provided for @pelvicFloorFirstOnceYourDoctorSays.
+  ///
+  /// In en, this message translates to:
+  /// **'Pelvic floor first, once your doctor says you are ready'**
+  String get pelvicFloorFirstOnceYourDoctorSays;
+
+  /// No description provided for @gentlerMovementsNothingOnTheBelly.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentler movements, nothing on the belly'**
+  String get gentlerMovementsNothingOnTheBelly;
+
+  /// No description provided for @weDoNotHaveACareDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not have a care directory for your city yet.'**
+  String get weDoNotHaveACareDirectory;
+
+  /// No description provided for @weDoNotHaveAGuidancePage.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not have a guidance page to open yet.'**
+  String get weDoNotHaveAGuidancePage;
+
+  /// No description provided for @finishingThemAllIsNotADeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Finishing them all is not a deadline. It is the shortest path to knowing where everything is.'**
+  String get finishingThemAllIsNotADeadline;
+
+  /// No description provided for @allDoneNothingAboutTheAppChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'All done. Nothing about the app changes from here. You have just already used every part of it once.'**
+  String get allDoneNothingAboutTheAppChanges;
+
+  /// No description provided for @notBuiltYetThisPartOfThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Not built yet. This part of the app is not in this release.'**
+  String get notBuiltYetThisPartOfThe;
+
+  /// No description provided for @weCannotFindThatPage.
+  ///
+  /// In en, this message translates to:
+  /// **'We cannot find that page.'**
+  String get weCannotFindThatPage;
+
+  /// No description provided for @weCouldNotReadTheFrontOf.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not read the front of your card. Hold it flat and try again.'**
+  String get weCouldNotReadTheFrontOf;
+
+  /// No description provided for @weCouldNotReadTheBackOf.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not read the back of your card. Hold it flat and try again.'**
+  String get weCouldNotReadTheBackOf;
+
+  /// No description provided for @noneOfTheseDishesHasBeenChecked_9ic16.
+  ///
+  /// In en, this message translates to:
+  /// **'None of these dishes has been checked for nuts.'**
+  String get noneOfTheseDishesHasBeenChecked_9ic16;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

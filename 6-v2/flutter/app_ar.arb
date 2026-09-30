@@ -3078,5 +3078,17 @@
     }
   },
   "noRecipeHasBeenPricedYet": "لم تُسعَّر أي وصفة بعد.",
-  "noRecipeCanBeCalledNutFree": "لا يمكن وصف أي وصفة بأنها خالية من المكسرات بعد، لأن أحدًا لم يعتمد مكوّناتها."
+  "noRecipeCanBeCalledNutFree": "لا يمكن وصف أي وصفة بأنها خالية من المكسرات بعد، لأن أحدًا لم يعتمد مكوّناتها.",
+  "noneOfTheseDishesHasBeenChecked": "لم تُراجَع أي من هذه الأطباق بحثًا عمّا تتجنّبينه، لذا لا يظهر أي منها.",
+  "pelvicFloorFirstOnceYourDoctorSays": "قاع الحوض أولًا، بعد أن تطمئنك طبيبتك",
+  "gentlerMovementsNothingOnTheBelly": "حركات ألطف، ولا شيء على البطن",
+  "weDoNotHaveACareDirectory": "لا يوجد لدينا دليل رعاية لمدينتك بعد.",
+  "weDoNotHaveAGuidancePage": "لا توجد لدينا صفحة إرشادات نفتحها بعد.",
+  "finishingThemAllIsNotADeadline": "إنهاؤها كلها ليس موعدًا نهائيًا. إنه أقصر طريق لمعرفة مكان كل شيء.",
+  "allDoneNothingAboutTheAppChanges": "اكتمل كل شيء. لا يتغيّر شيء في التطبيق من هنا. أنتِ فقط استخدمتِ كل جزء منه مرة واحدة بالفعل.",
+  "notBuiltYetThisPartOfThe": "لم يُبنَ بعد. هذا الجزء من التطبيق ليس في هذا الإصدار.",
+  "weCannotFindThatPage": "لا يمكننا العثور على تلك الصفحة.",
+  "weCouldNotReadTheFrontOf": "تعذّرت قراءة وجه البطاقة. أمسكيها مستوية وحاولي مرة أخرى.",
+  "weCouldNotReadTheBackOf": "تعذّرت قراءة ظهر البطاقة. أمسكيها مستوية وحاولي مرة أخرى.",
+  "noneOfTheseDishesHasBeenChecked_9ic16": "لم تُراجَع أي من هذه الأطباق بحثًا عن المكسّرات."
 }

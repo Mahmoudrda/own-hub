@@ -58,12 +58,13 @@ import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/screen_scope.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_undo_bar.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_art_strip.dart';
-import '../../today/presentation/today_cards.dart' show openScreen;
+import '../../today/presentation/today_cards.dart' show mealSlotName, openScreen;
 import '../domain/allergy_guard.dart';
 import '../domain/day_totals.dart';
 import '../domain/food_library.dart';
@@ -405,7 +406,13 @@ class _EatViewState extends State<EatView> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'E01',
+        // This one widget is both E01 and E04, so it cannot name its own id the
+        // way every other screen does. Hardcoding 'E01' marked the Eat tab
+        // active while she was standing on E04, and `AppNavBar` gives the active
+        // tab no `onTap` — so on E04 the Eat tab was drawn as the current page
+        // and did nothing at all when she pressed it. Outside the router there
+        // is no scope, and E01 is the right answer there.
+        activeScreenId: ScreenScope.of(context) ?? 'E01',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {
@@ -511,12 +518,14 @@ class _EatViewState extends State<EatView> {
       // is the guess form and stays, because that is what this row is: the
       // thing she tends to eat at this hour.
       if (justLogged != null)
-        Text(switch (EatDayViewModel.slotAt(DateTime.now())) {
-          MealSlot.breakfast => l10n.breakfastYourUsual,
-          MealSlot.lunch => l10n.lunchYourUsual,
-          MealSlot.dinner => l10n.dinnerYourUsual,
-          MealSlot.snack => l10n.snackYourUsual,
-        }, style: AppText.titleM),
+        // The meal, named plainly. It read "Lunch, your usual" the moment after
+        // she logged her first meal ever, which is one meal and not a usual.
+        // Home takes the same line once something is logged, for the same
+        // reason: the time is already printed beside it.
+        Text(
+          mealSlotName(l10n, EatDayViewModel.slotAt(DateTime.now())),
+          style: AppText.titleM,
+        ),
       for (final suggestion in view.suggestions)
         MealRow(
           title: _titleOf(suggestion),

@@ -163,21 +163,22 @@ class _ChangeSetViewState extends State<ChangeSetView> {
   void _log(ChangedSet changed) {
     final l10n = AppL10n.of(context);
 
-    // Both are non-null by construction — the chips are built from
-    // weightOptionsKg and repOptions, which are non-nullable lists. The
-    // fallbacks exist only because SetOutcome also models bodyweight and timed
-    // sets, which R08's chips cannot express yet.
-    final weightKg =
-        changed.outcome.weightKg ?? changed.prescribed.weightKg ?? 0;
-    final reps = changed.outcome.reps ?? changed.prescribed.reps ?? 0;
+    // Null weight means bodyweight, and it is carried through as null rather
+    // than defaulted to zero. The sheet no longer offers a weight for a set the
+    // plan gave none, so "0 kg x 12" is a sentence about a weight she never
+    // lifted — `setSavedLabel` says "12 reps" instead.
+    final weightKg = changed.outcome.weightKg ?? changed.prescribed.weightKg;
+    final reps = changed.outcome.reps ?? changed.prescribed.reps;
 
     final handle = _bus.submit(
       UndoableLog(
         // Her numbers, not the plan's. That is the entire point of this screen.
-        describe: l10n.setSetnumberSavedWeightKgReps(
-          changed.prescribed.order,
-          weightLabel(weightKg),
-          reps,
+        describe: setSavedLabel(
+          l10n,
+          setNumber: changed.prescribed.order,
+          weightKg: weightKg,
+          reps: reps,
+          holdSeconds: changed.prescribed.holdSeconds,
         ),
         commit: () => _repository.flushMove(
           sessionId: widget.sessionId,
@@ -276,6 +277,13 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
     ];
     final repLabels = [for (final reps in widget.repOptions) '$reps'];
 
+    // A bodyweight set has no weight to change, and offering one is the app
+    // inventing equipment. The session this build ships is "Quiet · no
+    // equipment · floor" and every move in it is bodyweight, so this sheet used
+    // to offer 10/12/14 kg over a glute bridge and then write whichever she
+    // tapped into her log as a weight she had lifted.
+    final loaded = widget.prescribed.weightKg != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -291,17 +299,19 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
           widget.moveName ?? l10n.gobletSquat,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
-        const SizedBox(height: 14),
-        Text(
-          l10n.weight,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
-        const SizedBox(height: 8),
-        AppChipRow(
-          items: weightLabels,
-          selected: {_weightIndex},
-          onTap: (i) => setState(() => _weightIndex = i),
-        ),
+        if (loaded) ...[
+          const SizedBox(height: 14),
+          Text(
+            l10n.weight,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          const SizedBox(height: 8),
+          AppChipRow(
+            items: weightLabels,
+            selected: {_weightIndex},
+            onTap: (i) => setState(() => _weightIndex = i),
+          ),
+        ],
         const SizedBox(height: 14),
         Text(
           l10n.reps,
@@ -334,15 +344,18 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
           // "Save · 12 kg × 8", and asserted 14 × 9 was written: the defect was
           // pinned by a passing test. Same string R07 uses, so the two screens
           // cannot disagree about what a saved set is called.
-          l10n.doneWeightKgReps(
-            weightLabel(widget.weightOptionsKg[_weightIndex]),
-            widget.repOptions[_repIndex],
+          setDoneLabel(
+            l10n,
+            weightKg: loaded ? widget.weightOptionsKg[_weightIndex] : null,
+            reps: widget.repOptions[_repIndex],
           ),
           onPressed: () => widget.onSave(
             ChangedSet(
               prescribed: widget.prescribed,
               outcome: SetOutcome(
-                weightKg: widget.weightOptionsKg[_weightIndex],
+                weightKg: loaded
+                    ? widget.weightOptionsKg[_weightIndex]
+                    : null,
                 reps: widget.repOptions[_repIndex],
               ),
             ),

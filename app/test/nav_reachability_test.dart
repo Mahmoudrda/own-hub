@@ -39,7 +39,14 @@ const Set<String> _oneTimeFlows = {'signup', 'onboarding'};
 /// notification, which is not a thing. Every other entry here must carry the
 /// same kind of reason — this set is an argument, not a place to put screens
 /// that are merely inconvenient to route.
-const Set<String> _externalEntry = {'T03'};
+/// `T08` is the finished state of `T07`, rendered in place by the same widget
+/// the moment her arc completes. Nothing inside the app navigates to it and
+/// nothing should: a `goTo` into it would be Today claiming she had finished
+/// her first week. It is in `appDestinations` all the same, so `/today/t08` is a
+/// real address a link can carry, and it is built for exactly that reason —
+/// before, it resolved to the developer placeholder. Reachability from a tab
+/// root is the wrong question for an address that arrives from outside.
+const Set<String> _externalEntry = {'T03', 'T08'};
 
 /// Built, but reachable only from a screen that is **not built yet**.
 ///

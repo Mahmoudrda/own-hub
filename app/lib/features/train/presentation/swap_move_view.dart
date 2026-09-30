@@ -28,6 +28,7 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
 import '../domain/train_repository.dart';
 import 'train_widgets.dart';
+import 'workout_day_view.dart' show sampleWorkoutDay;
 
 class SwapMoveView extends StatefulWidget {
   const SwapMoveView({
@@ -74,6 +75,9 @@ class SwapMoveView extends StatefulWidget {
 class _SwapMoveViewState extends State<SwapMoveView> {
   TrainRepository? _fallback;
 
+  /// True while the swap sheet is raised over the move list.
+  bool _sheetOpen = false;
+
   TrainRepository get _repository =>
       widget.repository ?? (_fallback ??= InMemoryTrainRepository());
 
@@ -87,33 +91,26 @@ class _SwapMoveViewState extends State<SwapMoveView> {
     }
   }
 
-  Future<void> _offerSwap() async {
-    final l10n = AppL10n.of(context);
-    final candidates = widget.alternatives ?? _defaultAlternatives(l10n);
+  void _offerSwap() {
+    if (_sheetOpen) return;
+    setState(() => _sheetOpen = true);
+  }
 
-    await showAppSheet<void>(
-      context: context,
-      children: [
-        Text(l10n.swapThisMove, style: AppText.titleL),
-        Text(
-          l10n.sameMusclesQuieterOnTheFloor,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
-        _SwapChoices(
-          candidates: candidates,
-          onConfirm: (choice) async {
-            await _repository.swapMove(
-              sessionId: widget.sessionId,
-              fromExerciseId: widget.exerciseId,
-              toExerciseId: choice.exerciseId,
-            );
-            if (!mounted) return;
-            Navigator.of(context).pop();
-            widget.onSwapped?.call(choice);
-          },
-        ),
-      ],
+  /// Closes the sheet and leaves her on the list she was looking at.
+  void _dismiss() {
+    if (!_sheetOpen) return;
+    setState(() => _sheetOpen = false);
+  }
+
+  Future<void> _confirm(MoveAlternative choice) async {
+    await _repository.swapMove(
+      sessionId: widget.sessionId,
+      fromExerciseId: widget.exerciseId,
+      toExerciseId: choice.exerciseId,
     );
+    if (!mounted) return;
+    setState(() => _sheetOpen = false);
+    widget.onSwapped?.call(choice);
   }
 
   List<MoveAlternative> _defaultAlternatives(AppL10n l10n) => [
@@ -133,31 +130,30 @@ class _SwapMoveViewState extends State<SwapMoveView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
-    final behind =
-        widget.moves ??
-        [
-          PlannedMove(
-            exerciseId: 'glute_bridge',
-            name: l10n.gluteBridge,
-            prescriptionLabel: l10n.n312Bodyweight,
-            sets: const [],
-          ),
-          PlannedMove(
-            exerciseId: 'goblet_squat',
-            name: l10n.gobletSquat,
-            prescriptionLabel: l10n.n31012Kg,
-            sets: const [],
-          ),
-          PlannedMove(
-            exerciseId: 'step_back_lunge',
-            name: l10n.stepBackLunge,
-            prescriptionLabel: l10n.n310EachSide,
-            sets: const [],
-          ),
-        ];
+    // The session the app actually has, not a hand-written list with a 12 kg
+    // goblet squat in the middle of it. R03 offers this session as "Quiet · no
+    // equipment · floor" and every move in it is bodyweight, so offering a
+    // loaded swap underneath that promise was the app contradicting its own
+    // subtitle.
+    final behind = widget.moves ?? sampleWorkoutDay(l10n).moves;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      // THE BAR IS THE TOP LAYER, AND THE SCRIM STOPS ABOVE IT.
+      //
+      // The same rule `already_did_it_view.dart` (T02) carries, applied to the
+      // last screen that broke it. This sheet used to be a real
+      // `showModalBottomSheet`, and a modal route's barrier covers the whole
+      // window — so all three tabs were painted at the foot of R05, marked
+      // live, and could not be touched: a finger on "Home" hit the barrier and
+      // dismissed the sheet instead. `tester.semantics.tap` does not hit-test,
+      // so every dead-control sweep in this repository passed it, and only
+      // `r1_49d_tabs_finger_test.dart` (a real finger at the painted pixel)
+      // could see it.
+      //
+      // The scrim and the sheet now live inside `body`, which in a Scaffold is
+      // laid out ABOVE `bottomNavigationBar` and cannot reach it. She can leave
+      // mid-swap, which is the whole point of drawing a bar at all.
       bottomNavigationBar: AppNavBar(
         // R05, not R01. The active tab is not a link to itself, so claiming
         // Train here drew the Train tab as the one she was on and gave it no
@@ -165,20 +161,71 @@ class _SwapMoveViewState extends State<SwapMoveView> {
         activeScreenId: 'R05',
         onSelect: widget.onSelectTab,
       ),
-      body: AppScaffold(
-        appBar: TrainTopBar(
-          title: l10n.legsAndGlutes,
-          onClose: widget.onBack,
-          closeIcon: Icons.arrow_back,
-        ),
+      body: Stack(
         children: [
-          for (final move in behind)
-            MoveRow(
-              name: move.name,
-              detail: move.prescriptionLabel,
-              current: move.exerciseId == widget.exerciseId,
-              onTap: _offerSwap,
+          // The move list, still visible behind the sheet — she can see what
+          // she is changing, which is why this is a sheet and not a page.
+          AppScaffold(
+            appBar: TrainTopBar(
+              title: l10n.legsAndGlutes,
+              onClose: widget.onBack,
+              closeIcon: Icons.arrow_back,
             ),
+            children: [
+              for (final move in behind)
+                MoveRow(
+                  name: move.name,
+                  detail: move.prescriptionLabel,
+                  current: move.exerciseId == widget.exerciseId,
+                  onTap: _offerSwap,
+                ),
+            ],
+          ),
+          if (_sheetOpen) ...[
+            Positioned.fill(
+              child: Semantics(
+                button: true,
+                label: l10n.close,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _dismiss,
+                  child: ColoredBox(
+                    color: AppColors.ink.withValues(alpha: 0.45),
+                  ),
+                ),
+              ),
+            ),
+            // Capped against the space this Stack actually has, not against the
+            // window: a sheet that measured itself with MediaQuery.sizeOf
+            // collapses to nothing wherever the ambient MediaQuery is not the
+            // full screen.
+            LayoutBuilder(
+              builder: (context, constraints) => Align(
+                alignment: Alignment.bottomCenter,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: constraints.maxHeight * 0.92,
+                  ),
+                  child: AppSheet(
+                    children: [
+                      Text(l10n.swapThisMove, style: AppText.titleL),
+                      Text(
+                        l10n.sameMusclesQuieterOnTheFloor,
+                        style: AppText.bodyM.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                      _SwapChoices(
+                        candidates:
+                            widget.alternatives ?? _defaultAlternatives(l10n),
+                        onConfirm: _confirm,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

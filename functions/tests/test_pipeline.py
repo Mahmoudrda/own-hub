@@ -380,6 +380,38 @@ def test_blank_submissions_run_out_after_the_ocr_attempt_limit():
     assert spent <= config.COST_CAP_MICRO_USD
 
 
+def test_an_exhausted_allowance_never_sends_her_back_to_the_camera():
+    """The lock-out. A budget refusal must not be RETRY_CAPTURE.
+
+    The ledger document is keyed by uid and nothing in `functions/` gives it a
+    TTL, an expiry or a reset, so once `ocr_submissions` reaches
+    MAX_OCR_SUBMISSIONS it stays there. RETRY_CAPTURE maps to the camera screen
+    on the client, so the fifth submission asked her for a sixth photograph, and
+    the sixth for a seventh, for the life of the account.
+
+    Asserted for all three refusals, because all three have the same shape.
+    """
+    exhausted = [
+        ledger.Budget(ocr_submissions=config.MAX_OCR_SUBMISSIONS),
+        ledger.Budget(liveness_attempts=config.MAX_LIVENESS_ATTEMPTS),
+        ledger.Budget(spent_micro_usd=config.COST_CAP_MICRO_USD - 100),
+    ]
+    for budget in exhausted:
+        outcome, _ = run(ledger_store=FakeLedger(budget), liveness=CountingLiveness())
+        assert outcome.decision.outcome != decisions.RETRY_CAPTURE, (
+            "a limit we imposed is not a photograph she can improve"
+        )
+        assert outcome.decision.outcome == decisions.PENDING_REVIEW
+
+
+def test_an_exhausted_allowance_still_reaches_her_as_a_hint_she_can_act_on():
+    """CONTACT_SUPPORT, not silence. `to_user_safe` is many-to-few on purpose,
+    so this leaks nothing about which check failed."""
+    used = ledger.Budget(ocr_submissions=config.MAX_OCR_SUBMISSIONS)
+    outcome, _ = run(ledger_store=FakeLedger(used))
+    assert reasons.to_user_safe(outcome.decision.reasons) == [reasons.CONTACT_SUPPORT]
+
+
 def test_a_transport_failure_is_still_free_so_our_outage_is_not_her_problem():
     # The other half, and it must not be weakened by the fix above. A call that
     # never completed counted no unit at Google, so it costs her nothing and

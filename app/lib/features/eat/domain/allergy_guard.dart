@@ -156,16 +156,10 @@ class AllergyGuard {
   /// 3 is explicit that the list is not emptied. [assess] is what holds the line
   /// in that case, at the moment of the log.
   List<Food> screen(Iterable<Food> candidates) {
-    final allergies = constraints.allergies;
     final dietary = constraints.dietary;
 
     return candidates.where((food) {
-      if (allergies != null && allergies.isNotEmpty) {
-        final tags = food.allergens;
-        // Unknown is unsafe — never "safe by default".
-        if (tags == null) return false;
-        if (tags.any(_matches(allergies))) return false;
-      }
+      if (!allowsAllergens(food.allergens)) return false;
 
       if (dietary != null && dietary.isNotEmpty) {
         final tags = food.dietTags;
@@ -178,6 +172,25 @@ class AllergyGuard {
 
       return true;
     }).toList();
+  }
+
+  /// Whether a row carrying [allergens] may be put in front of her at all.
+  ///
+  /// The allergy half of [screen], lifted out so that anything drawing a list
+  /// of dishes reads the same rule from the same place. It was inlined in
+  /// [screen] only, so `RecipesView`'s four prototype rows — which are not
+  /// `Food`s and never went through [screen] — sat above E10's promise that
+  /// "dishes that contain it are hidden from your recipes" with a nut dish
+  /// among them.
+  ///
+  /// Null [allergens] is **unknown, therefore unsafe**, exactly as
+  /// `Food.allergens` documents. Unknown constraints do not empty a list: G5
+  /// §5.1 item 3, and [assess] holds that line at the moment of the write.
+  bool allowsAllergens(Set<String>? allergens) {
+    final declared = constraints.allergies;
+    if (declared == null || declared.isEmpty) return true;
+    if (allergens == null) return false;
+    return !allergens.any(_matches(declared));
   }
 
   /// The verdict for a log that is about to be written.

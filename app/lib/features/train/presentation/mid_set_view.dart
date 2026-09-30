@@ -122,6 +122,14 @@ class _MidSetViewState extends State<MidSetView> {
     super.dispose();
   }
 
+  /// The move a caller that named none is shown.
+  ///
+  /// A fixture, and only a fixture: every route into R07 passes the move she is
+  /// actually on, and the router falls back to the first move of the one
+  /// authored session when there is no live one. Nothing a woman can reach
+  /// renders this, which is why a 12 kg goblet squat here is not the
+  /// twelve-kilogram prescription round one found inside a no-equipment
+  /// session. That one came from the router passing nothing.
   PlannedMove _defaultMove(AppL10n l10n) => PlannedMove(
     exerciseId: 'goblet_squat',
     name: l10n.gobletSquat,

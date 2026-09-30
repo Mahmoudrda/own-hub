@@ -10,9 +10,16 @@
 /// The two languages are closer than they look. Both are paper, both are rose,
 /// both are drawn by hand. What the book adds is a much darker ink on a much
 /// warmer paper, and the arithmetic is worth stating: the app's own
-/// `AppColors.primary` on `AppColors.surface` measures **4.58:1**. The book's
+/// `AppColors.primary` on `AppColors.surface` measures **5.59:1**. The book's
 /// [ink] on [paper] measures **10.55:1**. Adopting her ink makes this surface
 /// the most readable in the product.
+///
+/// That 5.59 was 4.58 until QA round two darkened seven foreground roles to
+/// clear WCAG on the raised surfaces (R2-41; see the comment at the top of
+/// `6-v2/src/tokens.mjs`). Her ink is still the more readable of the two by
+/// nearly double, and this comparison is re-measured rather than trusted:
+/// `r2_41_app_palette_contrast_test.dart` asserts the app's figure and
+/// `recipe_book_tokens_test.dart` asserts hers.
 ///
 /// ## One colour in the book is wrong and is not shipped
 ///

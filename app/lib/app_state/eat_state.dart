@@ -188,7 +188,17 @@ class EatAppState {
 
   /// What E06 should open on: the dish behind the row she tapped, or the one
   /// the screen defaults to when it is opened cold (the All-screens index).
-  String get openFoodId => foodForRecipe(openRecipeId) ?? 'koshari_bowl';
+  ///
+  /// The koshari fallback applies **only** to a cold open. It used to apply to
+  /// every row [foodForRecipe] could not resolve, which is how tapping
+  /// "Yoghurt, dates and nuts" produced a page headed "Koshari bowl" over a Log
+  /// button that would have written koshari: `RecipeView` reads the food's own
+  /// name first and only falls through to `title` when the id resolves to
+  /// nothing. Handing back the recipe id instead resolves to nothing in the
+  /// food pack, which is the truth, and the page then heads itself with the row
+  /// she actually pressed and says the dish cannot be logged from here.
+  String get openFoodId =>
+      foodForRecipe(openRecipeId) ?? openRecipeId ?? 'koshari_bowl';
 
   /// The title E06 carries when the pack cannot name the dish for it.
   String? recipeTitle(AppL10n l10n) {

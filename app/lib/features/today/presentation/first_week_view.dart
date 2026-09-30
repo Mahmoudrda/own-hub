@@ -149,7 +149,11 @@ class _FirstWeekViewState extends State<FirstWeekView> {
     // and whose plan may hold no goblet squat. The step's own title is the
     // instruction; the prototype's lift is not an example worth inventing.
     _Step(FirstWeekStep.logSet, l10n.logOneSet, ''),
-    _Step(FirstWeekStep.logMeal, l10n.logOneMeal, l10n.youDidFulAndBaladi),
+    // No subtitle on this one either, and for the reason written three lines
+    // above. `youDidFulAndBaladi` — "You did · ful and baladi" — is the past
+    // tense about a meal she has not logged, and one of the two instances of
+    // this defect was fixed in the same pass while this one was missed.
+    _Step(FirstWeekStep.logMeal, l10n.logOneMeal, ''),
     // `n15MinutesFiveMoves` — "15 minutes, five moves" — describes the
     // prototype's session, not today's, and this screen is handed no session.
     _Step(FirstWeekStep.finishSession, l10n.finishOneSession, ''),
@@ -317,7 +321,10 @@ class _FirstWeekViewState extends State<FirstWeekView> {
             ),
           ],
         ),
-        AppSageNote(l10n.finishingAllFiveIsNotADeadline),
+        // No number. `offeredFirstWeekSteps` returns three in this build, and
+        // "Finishing all five is not a deadline" sat under a ring, a heading
+        // and three rows that all said three.
+        AppSageNote(l10n.finishingThemAllIsNotADeadline),
       ],
     );
   }
@@ -401,7 +408,9 @@ class _FirstWeekViewState extends State<FirstWeekView> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(
-            l10n.allFiveDoneNothingAboutTheApp,
+            // No number, for the same reason the line on T07 has none: this
+            // build offers three of the five steps.
+            l10n.allDoneNothingAboutTheAppChanges,
             textAlign: TextAlign.center,
             style: AppText.bodyM.copyWith(
               height: 23 / 15,

@@ -7532,4 +7532,51 @@ class AppL10nEn extends AppL10n {
   @override
   String get noRecipeCanBeCalledNutFree =>
       'No recipe can be called nut free yet, because nobody has signed off what is in them.';
+
+  @override
+  String get noneOfTheseDishesHasBeenChecked =>
+      'None of these dishes has been checked for what you avoid, so none of them is shown.';
+
+  @override
+  String get pelvicFloorFirstOnceYourDoctorSays =>
+      'Pelvic floor first, once your doctor says you are ready';
+
+  @override
+  String get gentlerMovementsNothingOnTheBelly =>
+      'Gentler movements, nothing on the belly';
+
+  @override
+  String get weDoNotHaveACareDirectory =>
+      'We do not have a care directory for your city yet.';
+
+  @override
+  String get weDoNotHaveAGuidancePage =>
+      'We do not have a guidance page to open yet.';
+
+  @override
+  String get finishingThemAllIsNotADeadline =>
+      'Finishing them all is not a deadline. It is the shortest path to knowing where everything is.';
+
+  @override
+  String get allDoneNothingAboutTheAppChanges =>
+      'All done. Nothing about the app changes from here. You have just already used every part of it once.';
+
+  @override
+  String get notBuiltYetThisPartOfThe =>
+      'Not built yet. This part of the app is not in this release.';
+
+  @override
+  String get weCannotFindThatPage => 'We cannot find that page.';
+
+  @override
+  String get weCouldNotReadTheFrontOf =>
+      'We could not read the front of your card. Hold it flat and try again.';
+
+  @override
+  String get weCouldNotReadTheBackOf =>
+      'We could not read the back of your card. Hold it flat and try again.';
+
+  @override
+  String get noneOfTheseDishesHasBeenChecked_9ic16 =>
+      'None of these dishes has been checked for nuts.';
 }
