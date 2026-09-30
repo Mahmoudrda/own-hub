@@ -19,10 +19,28 @@ const O02 = step(2, 'Where will you train?', 'You can change it on any day.',
 const O03 = step(3, 'How much time do you really have?', 'Be honest. This becomes your weekly goal.',
   col(`${m('Days a week')}${chipRow(['2', '3', '4'], 1)}`, { gap: 8 })
   + col(`${m('Minutes a session')}${chipRow(['10', '15', '20', '30'], 1)}`, { gap: 8 })
-  + sageNote('Three sessions a week is your goal. Hit it and the week counts, and a week you miss is covered by a rest week once you have earned one.'), 'O04', 'O02');
+  // Not "Three sessions a week is your goal": O03 offers 2, 3 and 4 and the
+  // note stated one of them to every woman. The rule, with the number left to
+  // the chips she just tapped. `schedule_view.dart:121` ships this sentence.
+  + sageNote('Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.'), 'O04', 'O02');
 
 const O04 = step(4, 'Anything we should train around?', 'Only you and your coach ever see this.',
-  opt('Nothing right now', '', true) + opt('After a birth', 'Pelvic floor first, cleared from week six') + opt('Pregnant', 'Safe movements, nothing on the belly') + opt('A knee, back or shoulder', 'We avoid what hurts, we do not diagnose'), 'O05', 'O03');
+  // THE THREE ROWS CARRY NO SUBTITLE, AND THAT IS THE DESIGN, NOT AN OMISSION.
+  //
+  // They read "Pelvic floor first, cleared from week six" and "Safe movements,
+  // nothing on the belly", which were clinical claims this app is in no
+  // position to make. They were rewritten to describe the training instead, and
+  // the training they describe does not happen: `starting_program.dart` never
+  // reads `intake.lifeStage` and the catalogue holds one programme, so all four
+  // answers lead to the same eight-week beginner plan.
+  //
+  // `life_stage_view.dart` holds the three sentences behind
+  // `lifeStageShapesTraining()`, which measures the selector rather than
+  // trusting a comment, and shows the note below while it is false. When a
+  // postpartum programme is authored they come back by themselves. Anything
+  // written back into this mockup in the meantime is a promise again.
+  opt('Nothing right now', '', true) + opt('After a birth', '') + opt('Pregnant', '') + opt('A knee, back or shoulder', '')
+  + sageNote('We save your answer with the rest of your setup. Nothing in your sessions changes from it yet.'), 'O05', 'O03');
 
 const O05 = phone(
   statusBar()

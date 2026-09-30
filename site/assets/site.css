@@ -32,7 +32,11 @@
   --paper-sunk: #FBEEF1;
   --ink: #241C1F;
   --ink-soft: #57474C;
-  --rose: #B4526E;
+  /* Follows the app. The app darkened this role to clear WCAG AA on its
+     raised surfaces; the site has no raised surfaces to fail on, so this
+     is a brand-consistency change rather than a fix, and it happens to
+     lift paper-on-rose from 4.58:1 to 5.59:1. Hue and saturation held. */
+  --rose: #A24661;
   --rose-deep: #8E3C55;
   --rose-wash: #F7E7EC;
   --sage: #4E6A5A;

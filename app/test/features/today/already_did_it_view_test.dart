@@ -62,7 +62,7 @@ AlreadyDidItView _view({TodayRepository? repository}) {
           day: InMemoryTodayRepository.defaultDay(date: _tuesday),
         ),
     lastOtherTitle: 'Upper body, like last Thursday',
-    onLogged: () {},
+    onLogged: (_) {},
     onStartSession: () {},
     onOpenMeal: () {},
     onSelectTab: (_) {},
@@ -74,7 +74,7 @@ AlreadyDidItView _viewWithNoHistory() => AlreadyDidItView(
   repository: InMemoryTodayRepository(
     day: InMemoryTodayRepository.defaultDay(date: _tuesday),
   ),
-  onLogged: () {},
+  onLogged: (_) {},
   onStartSession: () {},
   onOpenMeal: () {},
   onSelectTab: (_) {},

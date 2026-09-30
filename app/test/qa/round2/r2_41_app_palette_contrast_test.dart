@@ -164,8 +164,27 @@ const List<(String, Color, String)> _nonText = [
   ('outline stroke', AppColors.outline, 'surface (page)'),
   ('outline stroke', AppColors.outline, 'surfaceLowest (outlined/selected card)'),
   ('outline stroke', AppColors.outline, 'surfaceContainer (filled card)'),
-  ('outlineVariant stroke', AppColors.outlineVariant, 'surface (page)'),
-  ('outlineVariant stroke', AppColors.outlineVariant, 'surfaceLowest (outlined/selected card)'),
+  // `outlineVariant` IS NOT MEASURED HERE, AND THAT IS THE FINDING OF ROUND
+  // THREE RATHER THAN A RELAXATION.
+  //
+  // These two rows are why round two moved `outlineVariant` from #EBDCDF to
+  // #B47B87 — thirty points of L* against one to six for the other six roles —
+  // and what that bought was these two numbers. What it cost was measured in
+  // R3-13: the missed-week bar became the loudest thing on P01's chart, an
+  // unselected answer ring sat 1.71:1 from the selected tick, and thirteen
+  // outlined cards grew a rose border.
+  //
+  // 1.4.11 applies to boundaries that CARRY MEANING. `contrast.dart:335-357`
+  // makes the argument in full and `kPortfolioContrastPairs` already acts on
+  // it, substituting `outline/surfaceContainer` for the `outlineVariant` pair
+  // G13 §1.4.4 names. The app palette now does the same: every meaningful
+  // boundary in `lib/` draws with `outline`, which IS measured three rows
+  // above, and `outlineVariant` is only ever a hairline between rows.
+  //
+  // That is a claim about source, so it is enforced against source, by
+  // `round4/r4_01_contrast_remeasure_test.dart` -> "outlineVariant is only ever
+  // decoration". Deleting these two rows without that test would be exactly the
+  // move this file exists to catch.
 ];
 
 String _f(double v) => v.toStringAsFixed(2);

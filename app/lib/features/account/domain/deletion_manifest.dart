@@ -344,7 +344,12 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
   ),
   DeletionRow(
     number: 33,
-    path: 'on-device encrypted progress-photo store',
+    // Named for what this release has, which is nowhere: there is no capture
+    // path, no store and no key. It read "on-device encrypted progress-photo
+    // store", which describes a thing the product does not have and reads, in a
+    // column of real Firestore paths, as one more real place. The note below
+    // said "NOT BUILT" and the path above it said the opposite.
+    path: 'progress photos on the phone (no store in this release)',
     owner: 'G6, wiped by G7',
     method: DeletionMethod.localOnly,
     note:

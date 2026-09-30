@@ -327,9 +327,11 @@ class _Waveform extends StatelessWidget {
               child: Container(
                 height: _heights[i],
                 decoration: BoxDecoration(
+                  // The quiet bars are the other half of a state, so they
+                  // take `outline` rather than the hairline role.
                   color: active && i < 7
                       ? AppColors.primary
-                      : AppColors.outlineVariant,
+                      : AppColors.outline,
                   // Squared off like a marker stroke, not a pill.
                   borderRadius: BorderRadius.circular(2),
                 ),

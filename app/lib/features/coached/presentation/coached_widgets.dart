@@ -324,6 +324,9 @@ class PrescribedActualRow extends StatelessWidget {
             Flexible(
               child: _Column(title: prescribedLabel, value: prescribed),
             ),
+            // A separator between two figures that are already labelled, so
+            // it is decoration and takes `outlineVariant` rather than the
+            // boundary role.
             Container(
               width: 1,
               height: 28,

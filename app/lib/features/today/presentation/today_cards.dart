@@ -195,6 +195,34 @@ String mealHeading(
   };
 }
 
+/// What to head T03's notification with.
+///
+/// The same slot logic as [mealHeading], asking, because a notification is a
+/// question and the button under it answers yes. T03 had the fixed
+/// "Breakfast, your usual?" — the sixth screen found carrying this defect,
+/// after T01, T02 and E04 were fixed and this one was missed — so the nudge
+/// that fires at the hour she usually logs said breakfast at six in the
+/// evening.
+///
+/// [hasUsual] is false when the caller has not named a meal. The nudge only
+/// fires for a meal she has had three times or more, so in the product it is
+/// always true here; a review surface opened with nothing gets the plain slot
+/// name rather than a habit she has not shown.
+String mealNudgeHeading(
+  AppL10n l10n, {
+  DateTime? now,
+  bool hasUsual = false,
+}) {
+  final slot = EatDayViewModel.slotAt(now ?? DateTime.now());
+  if (!hasUsual) return mealSlotName(l10n, slot);
+  return switch (slot) {
+    MealSlot.breakfast => l10n.breakfastYourUsual_1lb0u,
+    MealSlot.lunch => l10n.lunchYourUsual_1wxfd,
+    MealSlot.dinner => l10n.dinnerYourUsual_1rqgs,
+    MealSlot.snack => l10n.snackYourUsual_nkmpd,
+  };
+}
+
 /// The head of Today: the day, her level, and the way to the assistant.
 class TodayGreeting extends StatelessWidget {
   const TodayGreeting({

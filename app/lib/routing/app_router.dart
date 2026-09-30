@@ -1082,11 +1082,18 @@ class AppRouter {
       plannedDetail: sampleWorkoutDay(AppL10n.of(context)).summary,
       // A session she did without her phone counts the same everywhere a
       // trained one does. Today's own copy is credited by the repository
-      // above; this credits the week document and her points, deduped by the
-      // day so a second tap on the same day adds nothing.
-      onLogged: () {
+      // above; this credits the week document and her points.
+      //
+      // **The id is the session's own, not one invented here.** It used to be
+      // `recalled-<day>`, one per day, while Today keyed its copy per row
+      // (`-planned`, `-other`, `-time<minutes>`). Both sides deduped and the
+      // two still came apart, because they were deduping different things: a
+      // planned session and a walk on one day was 2 on Home and 1 on Progress.
+      // Counted weeks and tier standing come off Progress, so Home was the one
+      // lying. Same id, same ledger.
+      onLogged: (session) {
         WorkoutSessionState.creditSession(
-          sessionId: 'recalled-${dayId(DateTime.now())}',
+          sessionId: session.id,
           source: SessionSource.recalled,
           today: todayRepository,
           progress: progressStore,
@@ -1105,6 +1112,11 @@ class AppRouter {
     ),
     'T04': (context) => QuietWeekView(
       repository: todayRepository,
+      // Her counters. The screen's own doc says it "says nothing about her
+      // counted weeks rather than guessing" when this is null, and the router
+      // was the caller that never wired it — so on a fresh install T04 could
+      // only report a repair it had no evidence for.
+      goal: progressStore.goal,
       onStartShortSession: () => goTo(context, 'R03'),
       onOpenMeal: () => goTo(context, 'E01'),
       onOpenWeek: () => goTo(context, 'P01'),
@@ -1119,6 +1131,13 @@ class AppRouter {
     ),
     'T07': (context) => FirstWeekView(
       repository: todayRepository,
+      // Her points and her level, from the same rewards object R10's bar is
+      // drawn from. Nothing passed them, so both screens fell back to the
+      // widget's own defaults — the prototype's 90 and 2 — and told a woman who
+      // had logged nothing that she had 90 points on the screen whose whole
+      // subject is what she has done this week.
+      points: progressStore.rewards.points,
+      level: progressStore.rewards.level,
       onClose: () => Navigator.of(context).maybePop(),
       onStartSession: () => goTo(context, 'R03'),
       onOpenStep: (screenId) => goTo(context, screenId),
@@ -1137,6 +1156,11 @@ class AppRouter {
     // whatever state it is actually in, and never claims she has finished it.
     'T08': (context) => FirstWeekView(
       repository: todayRepository,
+      // The same two figures as T07: this is the same widget in its other
+      // state, so a number wired on one route and defaulted on the other would
+      // change when the arc completed.
+      points: progressStore.rewards.points,
+      level: progressStore.rewards.level,
       onClose: () => Navigator.of(context).maybePop(),
       onStartSession: () => goTo(context, 'R03'),
       onOpenStep: (screenId) => goTo(context, screenId),

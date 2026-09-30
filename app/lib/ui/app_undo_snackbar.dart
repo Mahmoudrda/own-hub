@@ -83,7 +83,35 @@ void showUndoSnackBar(
       alreadyClosed = true;
     }),
   );
-  handle.whenClosed(() {
+  // Taking the bar down, off the element tree's back.
+  //
+  // `removeCurrentSnackBar` does not only touch the bar: it drives the
+  // controller to 0, which notifies `_handleSnackBarStatusChanged`, which calls
+  // `_updateScaffolds`, which calls `findAncestorStateOfType` on **every
+  // Scaffold the messenger is tracking**. An element that is being unmounted
+  // cannot answer that, and asserts "Looking up a deactivated widget's ancestor
+  // is unsafe".
+  //
+  // Which is exactly the path a woman takes. `LogCommandBus.flushAll` is called
+  // from `dispose` by all seven screens that own a bus, so logging on T02 and
+  // then pressing a nav tab inside the five seconds — the commonest thing she
+  // does after a log — closed the pending command, and the close ran here, mid
+  // `finalizeTree`. Assertion-only in release, so undefined behaviour rather
+  // than a guaranteed crash, but the tree really is half torn down.
+  //
+  // `messenger.mounted` does not catch it and cannot: the messenger lives on
+  // the MaterialApp and is mounted the whole time. It is the Scaffolds under it
+  // that are going.
+  //
+  // So the removal is handed to a microtask. Microtasks run when the stack
+  // unwinds, which is after `drawFrame` has finished unmounting — by then every
+  // dead Scaffold has been through `ScaffoldState.dispose` and unregistered
+  // itself from the messenger, so there is nothing deactivated left to look up.
+  // On the ordinary path, where the five-second timer fires while the scheduler
+  // is idle, a microtask runs before the next frame is drawn, so the bar still
+  // goes in the frame the window closes. One code path for both, no phase
+  // sniffing.
+  void takeItDown() {
     // Nothing to take down: it was dismissed, swiped away, or replaced by a
     // later log. `showSnackBar` completes the current bar's future when it
     // supersedes it, which is what makes this check enough.
@@ -91,7 +119,8 @@ void showUndoSnackBar(
     // `removeCurrentSnackBar`, not `controller.close()`. `close` reverses the
     // exit animation over 250 ms, and Undo stays in the semantics tree and
     // under her finger for every one of those frames — the same second, moved.
-    // This takes it away in the frame the window closes.
     messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-  });
+  }
+
+  handle.whenClosed(() => scheduleMicrotask(takeItDown));
 }

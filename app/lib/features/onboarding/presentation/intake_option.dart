@@ -53,7 +53,10 @@ class IntakeOption extends StatelessWidget {
                 height: 26,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.outlineVariant, width: 2),
+                  // The ring that says "not this one", beside a filled tick
+                  // that says "this one". A selection state is meaning, so it
+                  // takes `outline` and not the decorative hairline role.
+                  border: Border.all(color: AppColors.outline, width: 2),
                 ),
               ),
       ),

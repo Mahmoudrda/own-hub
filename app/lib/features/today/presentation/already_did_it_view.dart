@@ -56,7 +56,15 @@ class AlreadyDidItView extends StatefulWidget {
   final LogCommandBus? bus;
 
   /// Where a saved session lands — R12, "Logged from memory".
-  final VoidCallback? onLogged;
+  ///
+  /// **It is handed the session, and the id on it is the one Progress must
+  /// credit.** This used to be a plain `VoidCallback`, so the router had no id
+  /// to credit with and invented one keyed to the day. Today's three rows carry
+  /// three ids (`-planned`, `-other`, `-time<minutes>`), so a woman who logged
+  /// her planned session and then a walk on the same day was counted twice by
+  /// Home and once by Progress — the same disagreement as the missing dedupe in
+  /// `logRecalledSession`, arriving by a different route. One id, both ledgers.
+  final ValueChanged<RecalledSession>? onLogged;
 
   final VoidCallback? onStartSession;
   final VoidCallback? onOpenMeal;
@@ -156,7 +164,8 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
       ),
     );
     showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
-    openScreen(context, 'R12', widget.onLogged);
+    final onLogged = widget.onLogged;
+    openScreen(context, 'R12', onLogged == null ? null : () => onLogged(session));
   }
 
   void _saveDuration(int index) {

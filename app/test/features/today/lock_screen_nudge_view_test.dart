@@ -44,10 +44,17 @@ Widget _host(
   );
 }
 
-LockScreenNudgeView _view({TodayRepository? repository}) {
+/// The nudge as it fires in the product: for a meal she has had three times or
+/// more, which is what [mealLine] naming one means.
+LockScreenNudgeView _view({
+  TodayRepository? repository,
+  DateTime? at,
+  String? mealLine = 'Ful and baladi',
+}) {
   return LockScreenNudgeView(
     repository: repository ?? InMemoryTodayRepository(),
-    at: _at,
+    at: at ?? _at,
+    mealLine: mealLine,
     onLogged: () {},
     onSomethingElse: () {},
   );
@@ -65,6 +72,11 @@ void main() {
       // while the time beside it moved.
       expect(find.text('Tuesday'), findsOneWidget);
       expect(find.text('Tuesday 16 September'), findsNothing);
+      // 08:42 is breakfast, and the heading is read from the clock rather than
+      // fixed. It WAS fixed: `breakfastYourUsual_1lb0u` for every nudge at
+      // every hour, so a woman whose usual log is at seven in the evening was
+      // asked "Breakfast, your usual?" over her dinner. T01, T02 and E04 were
+      // fixed for this and T03 was missed.
       expect(find.text('Breakfast, your usual?'), findsOneWidget);
       // The nudge fires only "for a meal she has had three times or more", and
       // the one line that had to be hers was the prototype's breakfast and its
@@ -108,6 +120,31 @@ void main() {
       expect(find.text('Undo'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 6));
+    });
+
+    testWidgets('the heading is the hour she is actually in', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(_view(at: DateTime(2026, 9, 15, 19, 10))),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Dinner, your usual?'), findsOneWidget);
+      expect(find.text('Breakfast, your usual?'), findsNothing);
+    });
+
+    testWidgets('and "your usual" is a habit, so it has to be named', (
+      tester,
+    ) async {
+      // No meal supplied means nobody has told this screen which habit it is
+      // about, and "your usual" is a claim about one. Same rule Home's meal
+      // card follows.
+      _phone(tester);
+      await tester.pumpWidget(_host(_view(mealLine: null)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Breakfast'), findsOneWidget);
+      expect(find.text('Breakfast, your usual?'), findsNothing);
     });
   });
 

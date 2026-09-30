@@ -57,6 +57,11 @@ TodayDay _completed() => TodayDay(
 FirstWeekView _view({TodayRepository? repository}) => FirstWeekView(
   key: const ValueKey('arc-complete'),
   repository: repository ?? InMemoryTodayRepository(day: _completed()),
+  // Stated here, because the widget's own defaults are now a new woman's 0 and
+  // 1 rather than the mockup's 90 and 2 — T07 and T08 were built by the router
+  // with neither passed, so both told every woman she had 90 points.
+  points: 90,
+  level: 2,
   onBackToToday: () {},
   onSeeProgress: () {},
   onClose: () {},

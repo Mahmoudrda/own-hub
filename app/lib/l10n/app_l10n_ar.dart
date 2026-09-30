@@ -2751,10 +2751,6 @@ class AppL10nAr extends AppL10n {
       'التحويل في 1 أكتوبر إلى فودافون كاش · 010 xxx xx32';
 
   @override
-  String get pelvicFloorFirstClearedFromWeekSix =>
-      'قاع الحوض أولًا، ومسموح به من الأسبوع السادس';
-
-  @override
   String get perimenopause => 'ما قبل انقطاع الطمث';
 
   @override
@@ -2766,10 +2762,6 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get photo => 'صورة';
-
-  @override
-  String get photoCompareStoredOnYourPhoneAnd =>
-      'مقارنة الصور، مخزَّنة على هاتفك ومشفَّرة داخل التطبيق.';
 
   @override
   String get photosOfTheCertificateAreEnoughWe =>
@@ -3012,9 +3004,6 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get riceLentilsPasta => 'أرز وعدس ومكرونة';
-
-  @override
-  String get safeMovementsNothingOnTheBelly => 'حركات آمنة، ولا شيء على البطن';
 
   @override
   String get sameMusclesQuieterOnTheFloor => 'العضلات نفسها، وأهدأ على الأرض.';
@@ -5189,10 +5178,6 @@ class AppL10nAr extends AppL10n {
   String get n0Of20 => '0 من 20';
 
   @override
-  String get n1860WomenClearedFromWeekSix =>
-      '1,860 امرأة · مسموح من الأسبوع السادس';
-
-  @override
   String get n4210WomenNobodyOverAYear =>
       '4,210 نساء · لا أحد يتدرّب منذ أكثر من سنة';
 
@@ -5870,10 +5855,6 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get n20MinVegetarian => '20 دقيقة · نباتي';
-
-  @override
-  String get threeSessionsAWeekIsYourGoal =>
-      'هدفك ثلاثة تمارين أسبوعيًا. حقّقيه فيُحتسب الأسبوع، والأسبوع الذي تفوّتينه يغطّيه أسبوع راحة متى كسبتِ واحدًا.';
 
   @override
   String get arabicText_vqu26 => 'الفصحى · كل شيء في التطبيق';
@@ -7125,10 +7106,6 @@ class AppL10nAr extends AppL10n {
       'إذا تمت الموافقة على طلبك أو رُفض، لا نحتفظ بشيء سوى بصمة مشفّرة أحادية الاتجاه لرقم بطاقتك، ولا يمكن إعادتها إلى الرقم الأصلي.';
 
   @override
-  String get ifYourCaseNeedsAWomanTo =>
-      'إذا احتاج طلبك إلى مراجعة من إحدى النساء، تُحفظ الصور مشفّرة مدة أقصاها 72 ساعة ثم تُحذف.';
-
-  @override
   String get theCameraIsTheOnlyWayIn =>
       'الكاميرا هي الطريقة الوحيدة. لا يمكنك اختيار صورة محفوظة لديك.';
 
@@ -7546,4 +7523,25 @@ class AppL10nAr extends AppL10n {
   @override
   String get noneOfTheseDishesHasBeenChecked_9ic16 =>
       'لم تُراجَع أي من هذه الأطباق بحثًا عن المكسّرات.';
+
+  @override
+  String get lunchYourUsual_1wxfd => 'الغداء المعتاد؟';
+
+  @override
+  String get dinnerYourUsual_1rqgs => 'العشاء المعتاد؟';
+
+  @override
+  String get snackYourUsual_nkmpd => 'الوجبة الخفيفة المعتادة؟';
+
+  @override
+  String get weSaveYourAnswerWithTheRest =>
+      'نحفظ إجابتكِ مع بقية إعدادكِ. ولا يتغيّر شيء في تمارينكِ بسببها حتى الآن.';
+
+  @override
+  String get nobodyHasSignedOffWhatIsIn_127cj =>
+      'لم يوقّع أحد بعد على مكوّنات هذه الأطباق، فلا يظهر منها شيء. هذه مراجعتنا نحن، لا قائمتكِ.';
+
+  @override
+  String get nothingIsPlannedForThisWeekYet =>
+      'لا شيء مخطَّط لهذا الأسبوع بعد. اختاري عشاءً لأي يوم في الأسفل.';
 }

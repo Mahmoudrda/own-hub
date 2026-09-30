@@ -3,7 +3,6 @@
  "20 min · vegetarian": "20 دقيقة · نباتي",
  "Next: Strong": "التالي: قوية",
  "Cycle symptoms": "أعراض الدورة",
- "Three sessions a week is your goal. Hit it and the week counts, and a week you miss is covered by a rest week once you have earned one.": "هدفك ثلاثة تمارين أسبوعيًا. حقّقيه فيُحتسب الأسبوع، والأسبوع الذي تفوّتينه يغطّيه أسبوع راحة متى كسبتِ واحدًا.",
  "الفصحى · كل شيء في التطبيق": "الفصحى · كل شيء في التطبيق",
  "I train and I coach": "أتدرّب وأدرّب",
  "Two apps in one. Switch between them whenever you like.": "تطبيقان في واحد. بدّلي بينهما متى شئتِ.",
@@ -363,7 +362,6 @@
  "You will photograph the front and back of your national ID card, then take a short selfie.": "ستصوّرين الوجه الأمامي والخلفي لبطاقتك الشخصية، ثم تلتقطين صورة ذاتية قصيرة.",
  "The photographs are processed by Google Cloud and Amazon Web Services, on servers outside Egypt.": "تُعالَج الصور لدى Google Cloud وAmazon Web Services على خوادم خارج مصر.",
  "If your check is approved or refused, nothing is kept except a one way keyed hash of your ID number. It cannot be turned back into the number.": "إذا تمت الموافقة على طلبك أو رُفض، لا نحتفظ بشيء سوى بصمة مشفّرة أحادية الاتجاه لرقم بطاقتك، ولا يمكن إعادتها إلى الرقم الأصلي.",
- "If your case needs a woman to review it, the encrypted photographs are kept for up to 72 hours and then deleted.": "إذا احتاج طلبك إلى مراجعة من إحدى النساء، تُحفظ الصور مشفّرة مدة أقصاها 72 ساعة ثم تُحذف.",
  "The camera is the only way in. You cannot choose a picture you already have.": "الكاميرا هي الطريقة الوحيدة. لا يمكنك اختيار صورة محفوظة لديك.",
  "I agree, start the camera": "أوافق وأبدأ التصوير",
  "I would rather not": "أفضّل ألا أفعل",
@@ -470,5 +468,11 @@
  "We cannot find that page.": "لا يمكننا العثور على تلك الصفحة.",
  "We could not read the front of your card. Hold it flat and try again.": "تعذّرت قراءة وجه البطاقة. أمسكيها مستوية وحاولي مرة أخرى.",
  "We could not read the back of your card. Hold it flat and try again.": "تعذّرت قراءة ظهر البطاقة. أمسكيها مستوية وحاولي مرة أخرى.",
- "None of these dishes has been checked for nuts.": "لم تُراجَع أي من هذه الأطباق بحثًا عن المكسّرات."
+ "None of these dishes has been checked for nuts.": "لم تُراجَع أي من هذه الأطباق بحثًا عن المكسّرات.",
+ "Lunch, your usual?": "الغداء المعتاد؟",
+ "Dinner, your usual?": "العشاء المعتاد؟",
+ "Snack, your usual?": "الوجبة الخفيفة المعتادة؟",
+ "We save your answer with the rest of your setup. Nothing in your sessions changes from it yet.": "نحفظ إجابتكِ مع بقية إعدادكِ. ولا يتغيّر شيء في تمارينكِ بسببها حتى الآن.",
+ "Nobody has signed off what is in these dishes yet, so none is shown. That is our check, not your list.": "لم يوقّع أحد بعد على مكوّنات هذه الأطباق، فلا يظهر منها شيء. هذه مراجعتنا نحن، لا قائمتكِ.",
+ "Nothing is planned for this week yet. Pick a dinner for any day below.": "لا شيء مخطَّط لهذا الأسبوع بعد. اختاري عشاءً لأي يوم في الأسفل."
 }

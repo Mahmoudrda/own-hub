@@ -2763,10 +2763,6 @@ class AppL10nEn extends AppL10n {
       'Payout on 1 October to Vodafone Cash · 010 xxx xx32';
 
   @override
-  String get pelvicFloorFirstClearedFromWeekSix =>
-      'Pelvic floor first, cleared from week six';
-
-  @override
   String get perimenopause => 'Perimenopause';
 
   @override
@@ -2777,10 +2773,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get photo => 'Photo';
-
-  @override
-  String get photoCompareStoredOnYourPhoneAnd =>
-      'Photo compare, stored on your phone and encrypted in the app.';
 
   @override
   String get photosOfTheCertificateAreEnoughWe =>
@@ -3023,10 +3015,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get riceLentilsPasta => 'Rice, lentils, pasta';
-
-  @override
-  String get safeMovementsNothingOnTheBelly =>
-      'Safe movements, nothing on the belly';
 
   @override
   String get sameMusclesQuieterOnTheFloor =>
@@ -5208,10 +5196,6 @@ class AppL10nEn extends AppL10n {
   String get n0Of20 => '0 of 20';
 
   @override
-  String get n1860WomenClearedFromWeekSix =>
-      '1,860 women · cleared from week six';
-
-  @override
   String get n4210WomenNobodyOverAYear => '4,210 women · nobody over a year in';
 
   @override
@@ -5896,10 +5880,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get n20MinVegetarian => '20 min · vegetarian';
-
-  @override
-  String get threeSessionsAWeekIsYourGoal =>
-      'Three sessions a week is your goal. Hit it and the week counts, and a week you miss is covered by a rest week once you have earned one.';
 
   @override
   String get arabicText_vqu26 => 'الفصحى · كل شيء في التطبيق';
@@ -7164,10 +7144,6 @@ class AppL10nEn extends AppL10n {
       'If your check is approved or refused, nothing is kept except a one way keyed hash of your ID number. It cannot be turned back into the number.';
 
   @override
-  String get ifYourCaseNeedsAWomanTo =>
-      'If your case needs a woman to review it, the encrypted photographs are kept for up to 72 hours and then deleted.';
-
-  @override
   String get theCameraIsTheOnlyWayIn =>
       'The camera is the only way in. You cannot choose a picture you already have.';
 
@@ -7579,4 +7555,25 @@ class AppL10nEn extends AppL10n {
   @override
   String get noneOfTheseDishesHasBeenChecked_9ic16 =>
       'None of these dishes has been checked for nuts.';
+
+  @override
+  String get lunchYourUsual_1wxfd => 'Lunch, your usual?';
+
+  @override
+  String get dinnerYourUsual_1rqgs => 'Dinner, your usual?';
+
+  @override
+  String get snackYourUsual_nkmpd => 'Snack, your usual?';
+
+  @override
+  String get weSaveYourAnswerWithTheRest =>
+      'We save your answer with the rest of your setup. Nothing in your sessions changes from it yet.';
+
+  @override
+  String get nobodyHasSignedOffWhatIsIn_127cj =>
+      'Nobody has signed off what is in these dishes yet, so none is shown. That is our check, not your list.';
+
+  @override
+  String get nothingIsPlannedForThisWeekYet =>
+      'Nothing is planned for this week yet. Pick a dinner for any day below.';
 }

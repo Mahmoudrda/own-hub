@@ -33,7 +33,7 @@ class AppColors {
   static const onSurface = Color(0xFF241A1E);
   static const onSurfaceVariant = Color(0xFF6B5C61);
   static const outline = Color(0xFF977C84);
-  static const outlineVariant = Color(0xFFB47B87);
+  static const outlineVariant = Color(0xFFEBDCDF);
   static const inverseSurface = Color(0xFF37292E);
   static const inverseOnSurface = Color(0xFFFFECF0);
   static const canvas = Color(0xFFF2E8EB);

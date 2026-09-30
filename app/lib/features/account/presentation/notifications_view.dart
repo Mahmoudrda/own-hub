@@ -56,8 +56,12 @@ class NotificationCopy {
       NotificationKind.groupMilestone => null,
       // Awaiting `{name} and {count} others liked your best`.
       NotificationKind.reaction => null,
-      // Awaiting a slot-parameterised nudge; the shipped string is breakfast
-      // only ("Breakfast, your usual?").
+      // The four slot strings now exist — `mealNudgeHeading` in
+      // `today_cards.dart` picks one from the hour, which is what T03 draws.
+      // What this switch cannot do is reach them: it is handed a [kind] and no
+      // notification, so it has no `createdAt` to read the slot from, and a
+      // meal nudge listed under the wrong meal is the defect T03 just had.
+      // Closing this means giving `titleFor` the row rather than its kind.
       NotificationKind.mealNudge => null,
       // Awaiting G7 Q11's MVP event set and its copy.
       NotificationKind.weekClosed => null,

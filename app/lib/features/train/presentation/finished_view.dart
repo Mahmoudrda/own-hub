@@ -20,6 +20,7 @@ import '../../../theme/app_art.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
+import '../../../domain/rewards/stated_figure.dart';
 import '../../../l10n/app_l10n.dart';
 // `weekdayLabel` is Home's, and the two screens must name the day the same
 // way or a woman sees Thursday on one and Tuesday on the next.
@@ -190,10 +191,24 @@ class FinishedView extends StatelessWidget {
               style: WeekStyle.marks,
             ),
             const SizedBox(height: 12),
-            Text(
-              l10n.oneMoreSessionAndThisWeekCounts,
-              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-            ),
+            // "One more session and this week counts" states the figure 1, and
+            // it was printed unconditionally under a segment bar drawing her
+            // real count: measured at a target of four, it was on screen at 0,
+            // 1, 2, 3 and 4 remaining. R12 got this guard a pass ago and R10 —
+            // the screen she sees the moment she finishes a workout — did not.
+            // `statedLine` renders it only to the woman it is true of and
+            // nothing at all to anyone else, which is what five other screens
+            // in this product already do with a fixed figure.
+            if (statedLine(
+                  l10n.oneMoreSessionAndThisWeekCounts,
+                  states: 1,
+                  hers: sessionsPrescribed - sessionsThisWeek,
+                )
+                case final String line)
+              Text(
+                line,
+                style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+              ),
           ],
         ),
         // The points, written in the margin in sage, with the level they

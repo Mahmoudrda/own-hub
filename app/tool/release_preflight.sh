@@ -61,6 +61,16 @@ echo
 echo "-- Apple hard requirements --"
 check "privacy manifest present"           "[ -f ios/Runner/PrivacyInfo.xcprivacy ]"
 check "privacy manifest in Xcode target"   "grep -q 'PrivacyInfo.xcprivacy' ios/Runner.xcodeproj/project.pbxproj"
+# Present is not the same as true. The manifest shipped declaring zero collected
+# data types, with a header saying the app "carries no Firebase", on a binary
+# with five Firebase packages and `Firebase.initializeApp` on every launch.
+# Firebase mints an installation identifier and sends it with every call, which
+# is Apple's DeviceID category. Two passes of QA read that file and neither
+# touched it, so it is checked here rather than remembered.
+check "privacy manifest declares Firebase's device id" \
+      "! grep -q '^  firebase_core:' pubspec.yaml || grep -q NSPrivacyCollectedDataTypeDeviceID ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest makes no zero-collection claim" \
+      "! grep -qiE 'carries no Firebase|COLLECTS NOTHING' ios/Runner/PrivacyInfo.xcprivacy"
 check "export compliance declared"         "grep -q ITSAppUsesNonExemptEncryption ios/Runner/Info.plist"
 check "ExportOptions.plist present"        "[ -f ios/ExportOptions.plist ]"
 check "team id filled in"                  "! grep -q 'YOUR_TEAM_ID' ios/ExportOptions.plist"

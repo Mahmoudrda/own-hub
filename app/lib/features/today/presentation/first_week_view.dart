@@ -70,8 +70,8 @@ class FirstWeekView extends StatefulWidget {
     this.onOpenStep,
     this.onBackToToday,
     this.onSeeProgress,
-    this.points = 90,
-    this.level = 2,
+    this.points = 0,
+    this.level = 1,
   });
 
   final TodayRepository? repository;
@@ -86,6 +86,15 @@ class FirstWeekView extends StatefulWidget {
 
   /// What the arc added up to. The same points the rest of the app gives —
   /// there is no parallel currency here.
+  ///
+  /// **The defaults are a brand-new woman's figures, not the mockup's.** They
+  /// were 90 and 2 — the prototype's — and the router built T07 and T08 and
+  /// passed neither, so every woman who opened her first week was told she had
+  /// 90 points and was level 2 before she had logged anything. The fixed
+  /// *label* three lines above `widget.points` (`n35PointsSoFar`) was replaced
+  /// for this exact reason in an earlier pass and the number was left. A
+  /// default that states a figure has to be the figure a woman who has done
+  /// nothing actually has, because that is who gets it when a caller forgets.
   final int points;
   final int level;
 

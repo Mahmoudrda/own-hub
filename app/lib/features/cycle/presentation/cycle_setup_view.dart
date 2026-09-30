@@ -220,7 +220,9 @@ class _ModeCard extends StatelessWidget {
             Icon(
               selected ? Icons.check_circle : Icons.circle_outlined,
               size: 26,
-              color: selected ? AppColors.primary : AppColors.outlineVariant,
+              // Unselected takes `outline`, the boundary role, for the same
+              // reason the intake answers do: it is a state, not a divider.
+              color: selected ? AppColors.primary : AppColors.outline,
             ),
           ],
         ),

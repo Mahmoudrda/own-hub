@@ -398,7 +398,7 @@ def build_favicon() -> None:
         "assets/favicon.svg",
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" '
         'role="img" aria-label="Own Hub">\n'
-        '  <rect width="64" height="64" rx="16" fill="#B4526E"/>\n'
+        '  <rect width="64" height="64" rx="16" fill="#A24661"/>\n'
         '  <path d="M32 47.5c-.9 0-1.7-.3-2.4-.9C24.9 42.5 17 35.8 17 28.6'
         'c0-4.8 3.6-8.6 8.2-8.6 2.7 0 5.2 1.3 6.8 3.4 1.6-2.1 4.1-3.4 6.8-3.4'
         ' 4.6 0 8.2 3.8 8.2 8.6 0 7.2-7.9 13.9-12.6 18-.7.6-1.5.9-2.4.9z" '

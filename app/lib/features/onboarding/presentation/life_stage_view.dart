@@ -5,18 +5,25 @@
 ///
 /// # This is not a diagnosis, and the copy has to keep saying so
 ///
-/// Her answer feeds what the programme **avoids**. It never names a condition,
-/// never infers one, and never tells her what is wrong with her — the injury
-/// option reads *"We avoid what hurts, we do not diagnose"*, and that sentence
-/// is the boundary this screen is built on. An app that told an Egyptian woman
-/// what her knee pain was would be practising medicine through a phone; an app
-/// that quietly stops programming jumps for her is doing its job.
+/// Her answer is *meant* to feed what the programme avoids. It never names a
+/// condition, never infers one, and never tells her what is wrong with her. An
+/// app that told an Egyptian woman what her knee pain was would be practising
+/// medicine through a phone; an app that quietly stops programming jumps for
+/// her is doing its job.
 ///
-/// The same care applies to pregnancy and postpartum. The screen records that
-/// she is pregnant; it does not decide what a pregnancy programme may contain.
-/// That decision has no authored, clinically-reviewed source yet (G2 §9 Q5), it
-/// belongs to `LifeStageSafetyFilter` on the server (G2 §5), and it is applied
-/// *before* selection rather than as a warning afterwards.
+/// The screen records that she is pregnant; it does not decide what a pregnancy
+/// programme may contain. That decision has no authored, clinically-reviewed
+/// source yet (G2 §9 Q5), it belongs to `LifeStageSafetyFilter` on the server
+/// (G2 §5), and it is applied *before* selection rather than as a warning
+/// afterwards.
+///
+/// # And in this build it feeds nothing, so it promises nothing
+///
+/// `selectStartingProgram` does not read `intake.lifeStage` and the catalogue
+/// holds one programme, so all four answers lead to `beginner_foundations`.
+/// The three rows therefore carry no subtitle at all: what they used to say
+/// about the training is held behind [lifeStageShapesTraining], which measures
+/// the selector rather than trusting this comment. See the note in `build`.
 ///
 /// # Private, and said so on the screen
 ///
@@ -30,8 +37,11 @@ import 'package:flutter/material.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
+import '../../../theme/app_tokens.dart';
+import '../../../ui/app_card.dart';
 import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
+import '../domain/starting_program.dart';
 import 'intake_option.dart';
 import 'intake_step_scaffold.dart';
 
@@ -77,35 +87,50 @@ class _LifeStageViewState extends State<LifeStageView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
+    // NEITHER OF THESE THREE LINES MAY MAKE A CLINICAL CLAIM, AND NONE OF THEM
+    // MAY DESCRIBE TRAINING THIS BUILD DOES NOT DO.
+    //
+    // Round one: the postpartum row read "Pelvic floor first, cleared from week
+    // six". "Cleared" is a clinician's word and this screen is not a clinician;
+    // six weeks is a convention, and it is wrong after a caesarean, with a
+    // complication, or with diastasis. The pregnancy row read "Safe movements,
+    // nothing on the belly", which asserts safety in the app's own voice about
+    // a body it has never seen. Both were rewritten to describe the training
+    // rather than her body, which was right as far as it went.
+    //
+    // Round four: they describe training that does not happen. `starting_
+    // program.dart` says so in its own words — "Life stage is recorded here,
+    // not filtered here ... this client-side selector therefore takes no
+    // clinical decision at all" — `selectStartingProgram` never reads
+    // `intake.lifeStage`, and the catalogue holds one programme. A pregnant
+    // woman was told we would keep nothing on her belly and handed the same
+    // eight-week beginner programme as everyone else. The old sentence was
+    // false about medicine; the new one was false about us, on the only screen
+    // in this product that asks about a pregnancy.
+    //
+    // So the three promises are shown only while [lifeStageShapesTraining] is
+    // true, which is measured from the selector itself rather than asserted
+    // here. It is false in this build, so the rows name the answer and nothing
+    // else, and the note below says what does happen to it. The day a
+    // postpartum programme is authored and the selector reads the field, these
+    // sentences come back on their own.
+    final shapesTraining = lifeStageShapesTraining();
     final options = <(LifeStage, String, String)>[
       (LifeStage.none, l10n.nothingRightNow, ''),
-      // NEITHER OF THESE TWO LINES MAY MAKE A CLINICAL CLAIM.
-      //
-      // The postpartum row read "Pelvic floor first, cleared from week six".
-      // "Cleared" is a clinician's word and this screen is not a clinician;
-      // six weeks is a convention, and it is wrong after a caesarean, with a
-      // complication, or with diastasis. Three rows below, the same list
-      // carries the product's own rule: "We avoid what hurts, we do not
-      // diagnose." So the row now says what the app does and leaves the timing
-      // with the woman and her doctor, where it was always going to be.
-      //
-      // The pregnancy row read "Safe movements, nothing on the belly", which
-      // asserts safety in the app's own voice about a body it has never seen.
-      // It describes the movements instead.
       (
         LifeStage.postpartum,
         l10n.afterABirth,
-        l10n.pelvicFloorFirstOnceYourDoctorSays,
+        shapesTraining ? l10n.pelvicFloorFirstOnceYourDoctorSays : '',
       ),
       (
         LifeStage.pregnant,
         l10n.pregnant,
-        l10n.gentlerMovementsNothingOnTheBelly,
+        shapesTraining ? l10n.gentlerMovementsNothingOnTheBelly : '',
       ),
       (
         LifeStage.painInjury,
         l10n.aKneeBackOrShoulder,
-        l10n.weAvoidWhatHurtsWeDoNot,
+        shapesTraining ? l10n.weAvoidWhatHurtsWeDoNot : '',
       ),
     ];
 
@@ -132,6 +157,29 @@ class _LifeStageViewState extends State<LifeStageView> {
             subtitle: subtitle,
             selected: _lifeStage == stage,
             onTap: () => setState(() => _lifeStage = stage),
+          ),
+        // What actually happens to the answer, on the screen that asks for it.
+        //
+        // The heading is "Anything we should train around?", and with the three
+        // promises off the rows a woman would otherwise be asked a question and
+        // told nothing at all about why. This says the true thing: it is saved,
+        // and it does not move her sessions yet. It disappears the moment the
+        // promises above become true, so the screen never says both.
+        //
+        // Same sage card O03 ends on, so the two setup steps read as one piece.
+        if (!shapesTraining)
+          AppCard(
+            variant: AppCardVariant.sage,
+            borderRadius: AppRadius.md,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            children: [
+              Text(
+                l10n.weSaveYourAnswerWithTheRest,
+                style: AppText.body.copyWith(
+                  color: AppColors.onTertiaryContainer,
+                ),
+              ),
+            ],
           ),
       ],
     );

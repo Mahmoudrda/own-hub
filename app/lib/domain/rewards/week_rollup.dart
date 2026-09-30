@@ -89,7 +89,10 @@ class WeekBar {
   /// a rest week covered ("the pale one was a rest week"), and a low neutral one
   /// for a week that did not count.
   ///
-  /// The low bar is [AppColors.outlineVariant] at the call site and never red.
+  /// The low bar is `AppColors.outline` at the call site and never red. It was
+  /// `outlineVariant`, and when that role moved to a mid rose the week that did
+  /// not count became the loudest bar on the chart.
+  ///
   /// There is no fourth kind, so there is nothing for a "missed" styling to be.
   WeekBarKind get kind {
     if (!counted) return WeekBarKind.missed;

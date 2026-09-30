@@ -50,8 +50,15 @@ Widget _host(
 FirstWeekView _view({
   TodayRepository? repository,
   ValueChanged<String>? onOpenStep,
+  // Stated by the caller, because the widget no longer states them for it. The
+  // defaults were 90 and 2 — the prototype's — and the router passed neither,
+  // so T07 and T08 told every woman she had 90 points. See the case below.
+  int points = 90,
+  int level = 2,
 }) {
   return FirstWeekView(
+    points: points,
+    level: level,
     // The prototype's day, asked for by name. `InMemoryTodayRepository()` now
     // starts on day one — an empty arc with today's date — because that is what
     // a fresh install must get; these cases are about an arc part way through,
@@ -212,6 +219,44 @@ void main() {
       expect(
         find.textContaining('Nothing extra for opening it.'),
         findsOneWidget,
+      );
+    });
+
+    testWidgets('and an unwired screen states a new woman, not the mockup', (
+      tester,
+    ) async {
+      // The defaults were the prototype's 90 and 2, and `app_router.dart` built
+      // T07 and T08 and passed neither: every woman opening her first week was
+      // told she had 90 points and was level 2 before she had logged anything.
+      // The label three lines above had already been fixed for exactly this
+      // reason and the number was left.
+      //
+      // The router wires both from `progressStore.rewards` now. This asserts
+      // the other half: what a caller that forgets gets is a woman who has done
+      // nothing, which is who is holding the phone when a wiring is missed.
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          FirstWeekView(
+            repository: InMemoryTodayRepository(
+              day: InMemoryTodayRepository.defaultDay(),
+            ),
+            onClose: () {},
+            onStartSession: () {},
+            onOpenStep: (_) {},
+            onBackToToday: () {},
+            onSeeProgress: () {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Points'), findsOneWidget);
+      expect(find.text('0'), findsOneWidget);
+      expect(
+        find.text('90'),
+        findsNothing,
+        reason: 'the mockup had 90 points; a woman on a fresh install has none',
       );
     });
   });

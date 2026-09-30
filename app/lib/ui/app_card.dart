@@ -59,9 +59,16 @@ enum AppCardVariant {
   AppCardVariant variant,
 ) {
   return switch (variant) {
+    // `outline`, not `outlineVariant`. The border of a card is a boundary
+    // that carries meaning — it is what makes an outlined card one object
+    // rather than text on the page — so WCAG 1.4.11 applies to it and the role
+    // that clears 3:1 is the one to ask for. `outlineVariant` is M3's
+    // decorative hairline and `contrast.dart` says so at length; recolouring it
+    // to 3:1 to serve this call site is what turned thirteen cards across
+    // twelve screens rose.
     AppCardVariant.outlined => (
       background: AppColors.surfaceLowest,
-      border: AppColors.outlineVariant,
+      border: AppColors.outline,
       borderWidth: 1,
     ),
     AppCardVariant.filled => (

@@ -5269,12 +5269,6 @@ abstract class AppL10n {
   /// **'Payout on 1 October to Vodafone Cash · 010 xxx xx32'**
   String get payoutOn1OctoberToVodafoneCash;
 
-  /// No description provided for @pelvicFloorFirstClearedFromWeekSix.
-  ///
-  /// In en, this message translates to:
-  /// **'Pelvic floor first, cleared from week six'**
-  String get pelvicFloorFirstClearedFromWeekSix;
-
   /// No description provided for @perimenopause.
   ///
   /// In en, this message translates to:
@@ -5298,12 +5292,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Photo'**
   String get photo;
-
-  /// No description provided for @photoCompareStoredOnYourPhoneAnd.
-  ///
-  /// In en, this message translates to:
-  /// **'Photo compare, stored on your phone and encrypted in the app.'**
-  String get photoCompareStoredOnYourPhoneAnd;
 
   /// No description provided for @photosOfTheCertificateAreEnoughWe.
   ///
@@ -5754,12 +5742,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Rice, lentils, pasta'**
   String get riceLentilsPasta;
-
-  /// No description provided for @safeMovementsNothingOnTheBelly.
-  ///
-  /// In en, this message translates to:
-  /// **'Safe movements, nothing on the belly'**
-  String get safeMovementsNothingOnTheBelly;
 
   /// No description provided for @sameMusclesQuieterOnTheFloor.
   ///
@@ -9793,12 +9775,6 @@ abstract class AppL10n {
   /// **'0 of 20'**
   String get n0Of20;
 
-  /// No description provided for @n1860WomenClearedFromWeekSix.
-  ///
-  /// In en, this message translates to:
-  /// **'1,860 women · cleared from week six'**
-  String get n1860WomenClearedFromWeekSix;
-
   /// No description provided for @n4210WomenNobodyOverAYear.
   ///
   /// In en, this message translates to:
@@ -10998,12 +10974,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'20 min · vegetarian'**
   String get n20MinVegetarian;
-
-  /// No description provided for @threeSessionsAWeekIsYourGoal.
-  ///
-  /// In en, this message translates to:
-  /// **'Three sessions a week is your goal. Hit it and the week counts, and a week you miss is covered by a rest week once you have earned one.'**
-  String get threeSessionsAWeekIsYourGoal;
 
   /// No description provided for @arabicText_vqu26.
   ///
@@ -13141,12 +13111,6 @@ abstract class AppL10n {
   /// **'If your check is approved or refused, nothing is kept except a one way keyed hash of your ID number. It cannot be turned back into the number.'**
   String get ifYourCheckIsApprovedOrRefused;
 
-  /// No description provided for @ifYourCaseNeedsAWomanTo.
-  ///
-  /// In en, this message translates to:
-  /// **'If your case needs a woman to review it, the encrypted photographs are kept for up to 72 hours and then deleted.'**
-  String get ifYourCaseNeedsAWomanTo;
-
   /// No description provided for @theCameraIsTheOnlyWayIn.
   ///
   /// In en, this message translates to:
@@ -13788,6 +13752,42 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'None of these dishes has been checked for nuts.'**
   String get noneOfTheseDishesHasBeenChecked_9ic16;
+
+  /// No description provided for @lunchYourUsual_1wxfd.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch, your usual?'**
+  String get lunchYourUsual_1wxfd;
+
+  /// No description provided for @dinnerYourUsual_1rqgs.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner, your usual?'**
+  String get dinnerYourUsual_1rqgs;
+
+  /// No description provided for @snackYourUsual_nkmpd.
+  ///
+  /// In en, this message translates to:
+  /// **'Snack, your usual?'**
+  String get snackYourUsual_nkmpd;
+
+  /// No description provided for @weSaveYourAnswerWithTheRest.
+  ///
+  /// In en, this message translates to:
+  /// **'We save your answer with the rest of your setup. Nothing in your sessions changes from it yet.'**
+  String get weSaveYourAnswerWithTheRest;
+
+  /// No description provided for @nobodyHasSignedOffWhatIsIn_127cj.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody has signed off what is in these dishes yet, so none is shown. That is our check, not your list.'**
+  String get nobodyHasSignedOffWhatIsIn_127cj;
+
+  /// No description provided for @nothingIsPlannedForThisWeekYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is planned for this week yet. Pick a dinner for any day below.'**
+  String get nothingIsPlannedForThisWeekYet;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

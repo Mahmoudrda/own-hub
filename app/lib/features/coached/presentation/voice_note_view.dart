@@ -209,7 +209,8 @@ class _RecordingWaveform extends StatelessWidget {
               child: Container(
                 height: h,
                 decoration: BoxDecoration(
-                  color: i < 9 ? AppColors.primary : AppColors.outlineVariant,
+                  // Played against unplayed: a state, so `outline`.
+                  color: i < 9 ? AppColors.primary : AppColors.outline,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),

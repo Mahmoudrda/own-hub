@@ -1,19 +1,19 @@
 [
  {
   "s": "Coaching",
-  "n": 61
+  "n": 62
  },
  {
   "s": "Eat",
-  "n": 60
+  "n": 61
  },
  {
   "s": "Community",
-  "n": 58
+  "n": 59
  },
  {
   "s": "Train",
-  "n": 58
+  "n": 59
  },
  {
   "s": "Home",
@@ -40,11 +40,11 @@
   "n": 14
  },
  {
-  "s": "Earnings",
-  "n": 13
+  "s": "My cycle",
+  "n": 14
  },
  {
-  "s": "My cycle",
+  "s": "Earnings",
   "n": 13
  },
  {
@@ -88,6 +88,10 @@
   "n": 9
  },
  {
+  "s": "Save",
+  "n": 9
+ },
+ {
   "s": "Glute bridge",
   "n": 8
  },
@@ -101,10 +105,6 @@
  },
  {
   "s": "M",
-  "n": 8
- },
- {
-  "s": "Save",
   "n": 8
  },
  {
@@ -340,6 +340,10 @@
   "n": 4
  },
  {
+  "s": "On",
+  "n": 4
+ },
+ {
   "s": "Programmes",
   "n": 4
  },
@@ -349,10 +353,6 @@
  },
  {
   "s": "Rest day",
-  "n": 4
- },
- {
-  "s": "Start — everything's ready",
   "n": 4
  },
  {
@@ -544,6 +544,10 @@
   "n": 3
  },
  {
+  "s": "Start, everything's ready",
+  "n": 3
+ },
+ {
   "s": "Sun",
   "n": 3
  },
@@ -586,6 +590,10 @@
  {
   "s": "Your coaching",
   "n": 3
+ },
+ {
+  "s": "1,860 women · 12 posts today",
+  "n": 2
  },
  {
   "s": "14 of 20",
@@ -648,7 +656,7 @@
   "n": 2
  },
  {
-  "s": "8 Sep – 7 Oct · 30 days",
+  "s": "8 Sep to 7 Oct · 30 days",
   "n": 2
  },
  {
@@ -916,7 +924,7 @@
   "n": 2
  },
  {
-  "s": "Note for Nour",
+  "s": "Note for her",
   "n": 2
  },
  {
@@ -929,6 +937,10 @@
  },
  {
   "s": "Nour · workouts",
+  "n": 2
+ },
+ {
+  "s": "Off",
   "n": 2
  },
  {
@@ -1012,7 +1024,7 @@
   "n": 2
  },
  {
-  "s": "Required. Write “none” if there are none — blank is not the same thing.",
+  "s": "Required. Write “none” if there are none. Blank is not the same thing.",
   "n": 2
  },
  {
@@ -1164,7 +1176,7 @@
   "n": 2
  },
  {
-  "s": "Yes — I have updated Thursday. The new session is in your plan.",
+  "s": "Yes, I have updated Thursday. The new session is in your plan.",
   "n": 2
  },
  {
@@ -1236,7 +1248,7 @@
   "n": 1
  },
  {
-  "s": "0–6 weeks",
+  "s": "0 to 6 weeks",
   "n": 1
  },
  {
@@ -1272,7 +1284,7 @@
   "n": 1
  },
  {
-  "s": "1 Sep – 30 Sep · on track · day 16",
+  "s": "1 Sep to 30 Sep · on track · day 16",
   "n": 1
  },
  {
@@ -1305,14 +1317,6 @@
  },
  {
   "s": "1,800 EGP monthly · 900 EGP plan only",
-  "n": 1
- },
- {
-  "s": "1,860 women · 12 posts today",
-  "n": 1
- },
- {
-  "s": "1,860 women · cleared from week six",
   "n": 1
  },
  {
@@ -1392,7 +1396,7 @@
   "n": 1
  },
  {
-  "s": "12 Sep – 11 Oct · 1 session in 2 weeks",
+  "s": "12 Sep to 11 Oct · 1 session in 2 weeks",
   "n": 1
  },
  {
@@ -1680,7 +1684,7 @@
   "n": 1
  },
  {
-  "s": "3 of 3 — it counted",
+  "s": "3 of 3 · it counted",
   "n": 1
  },
  {
@@ -1708,7 +1712,7 @@
   "n": 1
  },
  {
-  "s": "30 days · 8 Sep – 7 Oct",
+  "s": "30 days · 8 Sep to 7 Oct",
   "n": 1
  },
  {
@@ -1888,7 +1892,7 @@
   "n": 1
  },
  {
-  "s": "6 weeks – 1 year",
+  "s": "6 weeks to 1 year",
   "n": 1
  },
  {
@@ -1924,11 +1928,11 @@
   "n": 1
  },
  {
-  "s": "8 Sep – 7 Oct · review due today · day 9",
+  "s": "8 Sep to 7 Oct · review due today · day 9",
   "n": 1
  },
  {
-  "s": "8 Sep – 7 Oct 2026",
+  "s": "8 Sep to 7 Oct 2026",
   "n": 1
  },
  {
@@ -1984,7 +1988,11 @@
   "n": 1
  },
  {
-  "s": "A follow-up stays on the first post, so a thread is one woman over time — never two women side by side.",
+  "s": "A feature inside another one cannot be on while the one around it is off. Switching Community off switches off everything inside it, so nothing is left reachable on its own.",
+  "n": 1
+ },
+ {
+  "s": "A follow-up stays on the first post, so a thread is one woman over time, never two women side by side.",
   "n": 1
  },
  {
@@ -2024,11 +2032,11 @@
   "n": 1
  },
  {
-  "s": "A programme is a shape — weeks, days, session length. It holds no ingredient and no movement of its own, so there is no safety column for a guard to read off it.",
+  "s": "A programme is a shape: weeks, days, session length. It holds no ingredient and no movement of its own, so there is no safety column for a guard to read off it.",
   "n": 1
  },
  {
-  "s": "A re-assessment never edits a published plan by itself. Save it, then adjust her weeks — the same way a message never changes a plan.",
+  "s": "A re-assessment never edits a published plan by itself. Save it, then adjust her weeks, the same way a message never changes a plan.",
   "n": 1
  },
  {
@@ -2040,7 +2048,7 @@
   "n": 1
  },
  {
-  "s": "A result can be pictures, numbers, or her sentence — whichever she agreed to.",
+  "s": "A result can be pictures, numbers, or her sentence, whichever she agreed to.",
   "n": 1
  },
  {
@@ -2088,7 +2096,7 @@
   "n": 1
  },
  {
-  "s": "A woman on the team, 9am–9pm",
+  "s": "A woman on the team, 9am to 9pm",
   "n": 1
  },
  {
@@ -2236,7 +2244,7 @@
   "n": 1
  },
  {
-  "s": "All five done. Nothing about the app changes from here — you have just already used every part of it once.",
+  "s": "All five done. Nothing about the app changes from here. You have just already used every part of it once.",
   "n": 1
  },
  {
@@ -2268,7 +2276,7 @@
   "n": 1
  },
  {
-  "s": "Already saved — edit in your profile",
+  "s": "Already saved, edit in your profile",
   "n": 1
  },
  {
@@ -2408,7 +2416,7 @@
   "n": 1
  },
  {
-  "s": "Be honest — this becomes your weekly goal.",
+  "s": "Be honest. This becomes your weekly goal.",
   "n": 1
  },
  {
@@ -2536,6 +2544,10 @@
   "n": 1
  },
  {
+  "s": "Built and live",
+  "n": 1
+ },
+ {
   "s": "Built from your four answers",
   "n": 1
  },
@@ -2596,7 +2608,7 @@
   "n": 1
  },
  {
-  "s": "Change your plan — only Sara publishing does that",
+  "s": "Change your plan · only Sara publishing does that",
   "n": 1
  },
  {
@@ -2668,7 +2680,7 @@
   "n": 1
  },
  {
-  "s": "Clients decide from it — 3 sections so far",
+  "s": "Clients decide from it · 3 sections so far",
   "n": 1
  },
  {
@@ -2740,11 +2752,11 @@
   "n": 1
  },
  {
-  "s": "Continue — 1,800 EGP",
+  "s": "Continue · 1,800 EGP",
   "n": 1
  },
  {
-  "s": "Continue — from Sara",
+  "s": "Continue · from Sara",
   "n": 1
  },
  {
@@ -2756,7 +2768,7 @@
   "n": 1
  },
  {
-  "s": "Cooked it — log my bowl",
+  "s": "Cooked it, log my bowl",
   "n": 1
  },
  {
@@ -3000,7 +3012,7 @@
   "n": 1
  },
  {
-  "s": "Done — 12 kg × 10",
+  "s": "Done · 12 kg × 10",
   "n": 1
  },
  {
@@ -3108,7 +3120,7 @@
   "n": 1
  },
  {
-  "s": "Energy and appetite only — you choose",
+  "s": "Energy and appetite only · you choose",
   "n": 1
  },
  {
@@ -3192,7 +3204,7 @@
   "n": 1
  },
  {
-  "s": "Explain a rule — why a week counted, what a rest week covers",
+  "s": "Explain a rule: why a week counted, what a rest week covers",
   "n": 1
  },
  {
@@ -3228,6 +3240,10 @@
   "n": 1
  },
  {
+  "s": "Feature flags",
+  "n": 1
+ },
+ {
   "s": "Feed",
   "n": 1
  },
@@ -3248,7 +3264,7 @@
   "n": 1
  },
  {
-  "s": "Filled in from her intake. Change what has moved — nothing is overwritten until you save.",
+  "s": "Filled in from her intake. Change what has moved, and nothing is overwritten until you save.",
   "n": 1
  },
  {
@@ -3452,7 +3468,7 @@
   "n": 1
  },
  {
-  "s": "Gentle movement may help some people with period pain. You can keep your plan, take the easier option, or rest — all three are fine.",
+  "s": "Gentle movement may help some people with period pain. You can keep your plan, take the easier option, or rest. All three are fine.",
   "n": 1
  },
  {
@@ -3496,7 +3512,7 @@
   "n": 1
  },
  {
-  "s": "Goblet squat, 12 kg × 10 — two kilos more than your best.",
+  "s": "Goblet squat, 12 kg × 10. Two kilos more than your best.",
   "n": 1
  },
  {
@@ -3524,7 +3540,7 @@
   "n": 1
  },
  {
-  "s": "Grouped the way you shop. Tick as you go — it remembers.",
+  "s": "Grouped the way you shop. Tick as you go. It remembers.",
   "n": 1
  },
  {
@@ -3692,7 +3708,7 @@
   "n": 1
  },
  {
-  "s": "I did all 3 sets — log them",
+  "s": "I did all 3 sets, log them",
   "n": 1
  },
  {
@@ -3700,7 +3716,7 @@
   "n": 1
  },
  {
-  "s": "I have sharp pain low down and bleeding between periods — is that normal?",
+  "s": "I have sharp pain low down and bleeding between periods. Is that normal?",
   "n": 1
  },
  {
@@ -3712,7 +3728,7 @@
   "n": 1
  },
  {
-  "s": "I wear niqab — check me another way",
+  "s": "I wear niqab, check me another way",
   "n": 1
  },
  {
@@ -3720,7 +3736,7 @@
   "n": 1
  },
  {
-  "s": "I'm a coach — set up my profile",
+  "s": "I'm a coach, set up my profile",
   "n": 1
  },
  {
@@ -3740,7 +3756,7 @@
   "n": 1
  },
  {
-  "s": "If you do not show your face to a camera, nothing here asks you to. Choose either one — your ID card is still read the same way.",
+  "s": "If you do not show your face to a camera, nothing here asks you to. Choose either one. Your ID card is still read the same way.",
   "n": 1
  },
  {
@@ -3820,7 +3836,7 @@
   "n": 1
  },
  {
-  "s": "It checks itself the moment the sixth digit lands — on Android we read the message for you.",
+  "s": "It checks itself the moment the sixth digit lands. On Android we read the message for you.",
   "n": 1
  },
  {
@@ -3856,7 +3872,7 @@
   "n": 1
  },
  {
-  "s": "Join — about two minutes",
+  "s": "Join · about two minutes",
   "n": 1
  },
  {
@@ -3908,7 +3924,7 @@
   "n": 1
  },
  {
-  "s": "Knee — no deep bends",
+  "s": "Knee · no deep bends",
   "n": 1
  },
  {
@@ -3920,7 +3936,7 @@
   "n": 1
  },
  {
-  "s": "Knees sore? Swap it for a glute bridge — same muscles, nothing on the floor.",
+  "s": "Knees sore? Swap it for a glute bridge. Same muscles, nothing on the floor.",
   "n": 1
  },
  {
@@ -4080,7 +4096,7 @@
   "n": 1
  },
  {
-  "s": "Log both — 696 kcal",
+  "s": "Log both · 696 kcal",
   "n": 1
  },
  {
@@ -4100,7 +4116,7 @@
   "n": 1
  },
  {
-  "s": "Log something twice and it becomes a one-tap plate here — in the size you actually serve, not in grams.",
+  "s": "Log something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.",
   "n": 1
  },
  {
@@ -4132,7 +4148,7 @@
   "n": 1
  },
  {
-  "s": "Low energy, mild cramps — today only.",
+  "s": "Low energy, mild cramps. Today only.",
   "n": 1
  },
  {
@@ -4152,11 +4168,11 @@
   "n": 1
  },
  {
-  "s": "Lunch logged — 1 serving",
+  "s": "Lunch logged · 1 serving",
   "n": 1
  },
  {
-  "s": "Lunch logged — 696 kcal",
+  "s": "Lunch logged · 696 kcal",
   "n": 1
  },
  {
@@ -4192,7 +4208,7 @@
   "n": 1
  },
  {
-  "s": "Marked as planned rest — it costs you nothing",
+  "s": "Marked as planned rest, it costs you nothing",
   "n": 1
  },
  {
@@ -4212,7 +4228,7 @@
   "n": 1
  },
  {
-  "s": "Measured against your own history only. More reps, more weight, a longer hold, or a harder version — a 3 kg dumbbell counts like a 30 kg barbell.",
+  "s": "Measured against your own history only. More reps, more weight, a longer hold, or a harder version. A 3 kg dumbbell counts like a 30 kg barbell.",
   "n": 1
  },
  {
@@ -4296,7 +4312,7 @@
   "n": 1
  },
  {
-  "s": "More to log — sleep, bloating, bleeding",
+  "s": "More to log: sleep, bloating, bleeding",
   "n": 1
  },
  {
@@ -4400,11 +4416,11 @@
   "n": 1
  },
  {
-  "s": "Next move — step-back lunge",
+  "s": "Next move · step-back lunge",
   "n": 1
  },
  {
-  "s": "Next period estimate: 12 to 14 October — based on your recorded cycles. Timing can change.",
+  "s": "Next period estimate: 12 to 14 October, based on your recorded cycles. Timing can change.",
   "n": 1
  },
  {
@@ -4440,11 +4456,11 @@
   "n": 1
  },
  {
-  "s": "No dates, no estimates — just how you feel",
+  "s": "No dates, no estimates · just how you feel",
   "n": 1
  },
  {
-  "s": "No day ranges, no “you are here”, and no hormone chart — because none of that can be measured from dates.",
+  "s": "No day ranges, no “you are here”, and no hormone chart, because none of that can be measured from dates.",
   "n": 1
  },
  {
@@ -4472,7 +4488,7 @@
   "n": 1
  },
  {
-  "s": "No member data is ever included — no logs, no photos, no cycle.",
+  "s": "No member data is ever included: no logs, no photos, no cycle.",
   "n": 1
  },
  {
@@ -4492,7 +4508,7 @@
   "n": 1
  },
  {
-  "s": "No personal best from this one — the numbers were copied, not measured.",
+  "s": "No personal best from this one. The numbers were copied, not measured.",
   "n": 1
  },
  {
@@ -4560,7 +4576,7 @@
   "n": 1
  },
  {
-  "s": "Not a template with your name dropped in — a stack of sections you choose and order yourself.",
+  "s": "Not a template with your name dropped in. A stack of sections you choose and order yourself.",
   "n": 1
  },
  {
@@ -4584,11 +4600,15 @@
   "n": 1
  },
  {
+  "s": "Not switched on yet",
+  "n": 1
+ },
+ {
   "s": "Nothing",
   "n": 1
  },
  {
-  "s": "Nothing about this page is a template we hand you. The sections, the order, the colours and the words are yours — we only check the certificates behind the badge.",
+  "s": "Nothing about this page is a template we hand you. The sections, the order, the colours and the words are yours. We only check the certificates behind the badge.",
   "n": 1
  },
  {
@@ -4620,7 +4640,7 @@
   "n": 1
  },
  {
-  "s": "Nothing is lost — one session starts it.",
+  "s": "Nothing is lost. One session starts it.",
   "n": 1
  },
  {
@@ -4676,11 +4696,11 @@
   "n": 1
  },
  {
-  "s": "Numbers only — never a weight from the scale",
+  "s": "Numbers only · she declined photos",
   "n": 1
  },
  {
-  "s": "Numbers only — she declined photos",
+  "s": "Numbers only, never a weight from the scale",
   "n": 1
  },
  {
@@ -4692,7 +4712,7 @@
   "n": 1
  },
  {
-  "s": "Nutrition details unavailable — this meal uses ingredients without verified values, so no totals are shown.",
+  "s": "Nutrition details unavailable. This meal uses ingredients without verified values, so no totals are shown.",
   "n": 1
  },
  {
@@ -4709,6 +4729,14 @@
  },
  {
   "s": "Of every price you set on your page.",
+  "n": 1
+ },
+ {
+  "s": "Off · blur export is unmeasured on a budget handset",
+  "n": 1
+ },
+ {
+  "s": "Off · no payment provider is connected",
   "n": 1
  },
  {
@@ -4764,7 +4792,7 @@
   "n": 1
  },
  {
-  "s": "One a day, quiet 10pm–8am",
+  "s": "One a day, quiet 10pm to 8am",
   "n": 1
  },
  {
@@ -4792,11 +4820,11 @@
   "n": 1
  },
  {
-  "s": "One minute — it is filled in from your logs",
+  "s": "One minute · it is filled in from your logs",
   "n": 1
  },
  {
-  "s": "One minute — mostly filled in already",
+  "s": "One minute · mostly filled in already",
   "n": 1
  },
  {
@@ -4940,6 +4968,10 @@
   "n": 1
  },
  {
+  "s": "Payments",
+  "n": 1
+ },
+ {
   "s": "Payout method",
   "n": 1
  },
@@ -4949,10 +4981,6 @@
  },
  {
   "s": "Pelvic floor and breathing before a single squat.",
-  "n": 1
- },
- {
-  "s": "Pelvic floor first, cleared from week six",
   "n": 1
  },
  {
@@ -4981,10 +5009,6 @@
  },
  {
   "s": "Photo above",
-  "n": 1
- },
- {
-  "s": "Photo compare, stored on your phone and encrypted in the app.",
   "n": 1
  },
  {
@@ -5200,6 +5224,10 @@
   "n": 1
  },
  {
+  "s": "Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.",
+  "n": 1
+ },
+ {
   "s": "Read",
   "n": 1
  },
@@ -5384,10 +5412,6 @@
   "n": 1
  },
  {
-  "s": "Safe movements, nothing on the belly",
-  "n": 1
- },
- {
   "s": "Same muscles, quieter on the floor.",
   "n": 1
  },
@@ -5432,7 +5456,7 @@
   "n": 1
  },
  {
-  "s": "Save — 12 kg × 8",
+  "s": "Save · 12 kg × 8",
   "n": 1
  },
  {
@@ -5444,7 +5468,7 @@
   "n": 1
  },
  {
-  "s": "Save and apply to Nour",
+  "s": "Save and apply",
   "n": 1
  },
  {
@@ -5556,7 +5580,7 @@
   "n": 1
  },
  {
-  "s": "Sections, colours and words — all yours",
+  "s": "Sections, colours and words · all yours",
   "n": 1
  },
  {
@@ -5872,7 +5896,7 @@
   "n": 1
  },
  {
-  "s": "Some questions it will not answer — and should not",
+  "s": "Some questions it will not answer, and should not",
   "n": 1
  },
  {
@@ -5897,6 +5921,10 @@
  },
  {
   "s": "Stand up strong, squeeze at the top",
+  "n": 1
+ },
+ {
+  "s": "Start — everything's ready",
   "n": 1
  },
  {
@@ -5936,7 +5964,7 @@
   "n": 1
  },
  {
-  "s": "Step 1 of 3 — saved as you go",
+  "s": "Step 1 of 3 · saved as you go",
   "n": 1
  },
  {
@@ -6020,7 +6048,7 @@
   "n": 1
  },
  {
-  "s": "Sun–Thu, 9:00–17:00 Cairo · replies within one working day. Not monitored at night.",
+  "s": "Sun to Thu, 9:00 to 17:00 Cairo · replies within one working day. Not monitored at night.",
   "n": 1
  },
  {
@@ -6032,7 +6060,7 @@
   "n": 1
  },
  {
-  "s": "Sunday to Thursday, 9:00–17:00 · replies within one working day",
+  "s": "Sunday to Thursday, 9:00 to 17:00 · replies within one working day",
   "n": 1
  },
  {
@@ -6060,7 +6088,7 @@
   "n": 1
  },
  {
-  "s": "Symptom-only mode — no dates, no estimates.",
+  "s": "Symptom-only mode. No dates, no estimates.",
   "n": 1
  },
  {
@@ -6112,11 +6140,11 @@
   "n": 1
  },
  {
-  "s": "That's right — log 696 kcal",
+  "s": "That's right · log 696 kcal",
   "n": 1
  },
  {
-  "s": "The community stays closed until the check is done — that is the point of it.",
+  "s": "The community stays closed until the check is done. That is the point of it.",
   "n": 1
  },
  {
@@ -6232,10 +6260,6 @@
   "n": 1
  },
  {
-  "s": "Three sessions a week is your goal. Hit it and the week counts — and a week you miss is covered by a rest week once you have earned one.",
-  "n": 1
- },
- {
   "s": "Three sessions makes the week count, and a rest week covers one you miss.",
   "n": 1
  },
@@ -6269,6 +6293,10 @@
  },
  {
   "s": "today",
+  "n": 1
+ },
+ {
+  "s": "Today and logging",
   "n": 1
  },
  {
@@ -6332,6 +6360,10 @@
   "n": 1
  },
  {
+  "s": "Turning a feature off hides it everywhere, for everyone.",
+  "n": 1
+ },
+ {
   "s": "Twelve in all. None are secret, and none are for filling in a profile.",
   "n": 1
  },
@@ -6348,7 +6380,7 @@
   "n": 1
  },
  {
-  "s": "Two days without a food log are shown as not logged — not as meals skipped.",
+  "s": "Two days without a food log are shown as not logged, not as meals skipped.",
   "n": 1
  },
  {
@@ -6416,11 +6448,11 @@
   "n": 1
  },
  {
-  "s": "Upper / lower — on 3 clients",
+  "s": "Upper / lower · 4 days",
   "n": 1
  },
  {
-  "s": "Upper / lower · 4 days",
+  "s": "Upper / lower · on 3 clients",
   "n": 1
  },
  {
@@ -6476,7 +6508,7 @@
   "n": 1
  },
  {
-  "s": "Verified in 74 seconds. Your ID photo and selfie have been deleted — we kept the result and nothing else.",
+  "s": "Verified in 74 seconds. Your ID photo and selfie have been deleted. We kept the result and nothing else.",
   "n": 1
  },
  {
@@ -6497,6 +6529,10 @@
  },
  {
   "s": "Version 3 is kept",
+  "n": 1
+ },
+ {
+  "s": "Video and reels",
   "n": 1
  },
  {
@@ -6556,7 +6592,7 @@
   "n": 1
  },
  {
-  "s": "Waist, hips, arm — every 4 weeks is plenty.",
+  "s": "Waist, hips, arm. Every 4 weeks is plenty.",
   "n": 1
  },
  {
@@ -6588,10 +6624,6 @@
   "n": 1
  },
  {
-  "s": "We avoid what hurts, we do not diagnose",
-  "n": 1
- },
- {
   "s": "We heard this",
   "n": 1
  },
@@ -6608,7 +6640,11 @@
   "n": 1
  },
  {
-  "s": "We read your national ID card. The card itself says you are a woman — we never guess from your face.",
+  "s": "We read your national ID card. The card itself says you are a woman. We never guess from your face.",
+  "n": 1
+ },
+ {
+  "s": "We save your answer with the rest of your setup. Nothing in your sessions changes from it yet.",
   "n": 1
  },
  {
@@ -6664,7 +6700,7 @@
   "n": 1
  },
  {
-  "s": "Welcome Mai! I looked at your answers — we start on the floor this week, nothing standing.",
+  "s": "Welcome Mai! I looked at your answers, so we start on the floor this week, nothing standing.",
   "n": 1
  },
  {
@@ -6840,7 +6876,7 @@
   "n": 1
  },
  {
-  "s": "Women who reach Client results ask twice as often. It sits fifth — try moving it up.",
+  "s": "Women who reach Client results ask twice as often. It sits fifth. Try moving it up.",
   "n": 1
  },
  {
@@ -6936,7 +6972,7 @@
   "n": 1
  },
  {
-  "s": "You are verified — the room is open",
+  "s": "You are verified · the room is open",
   "n": 1
  },
  {
@@ -6960,11 +6996,11 @@
   "n": 1
  },
  {
-  "s": "You did — ful and baladi",
+  "s": "You did · ful and baladi",
   "n": 1
  },
  {
-  "s": "You did — goblet squat, 12 kg",
+  "s": "You did · goblet squat, 12 kg",
   "n": 1
  },
  {
@@ -6996,7 +7032,7 @@
   "n": 1
  },
  {
-  "s": "You will write your offers — what each one is called, what is in it and what it costs — when you design your page.",
+  "s": "You will write your offers when you design your page: what each one is called, what is in it and what it costs.",
   "n": 1
  },
  {
@@ -7188,7 +7224,7 @@
   "n": 1
  },
  {
-  "s": "Your sessions count here as you save them — there is nothing extra to log. Nobody sees your weights, only that a session happened.",
+  "s": "Your sessions count here as you save them. There is nothing extra to log. Nobody sees your weights, only that a session happened.",
   "n": 1
  },
  {
@@ -7220,7 +7256,7 @@
   "n": 1
  },
  {
-  "s": "الفصحى — كل شيء في التطبيق",
+  "s": "الفصحى · كل شيء في التطبيق",
   "n": 1
  }
 ]

@@ -26,6 +26,9 @@ class AppProgressBar extends StatelessWidget {
     required this.percent,
     this.height = 8,
     this.colour = AppColors.tertiarySoft,
+    // A SENTINEL, not a paint colour: `build` reads it back and swaps in
+    // `AppColors.outline`, the pencil tone, so the track a woman sees is the
+    // boundary role. A caller's own colour is kept as given.
     this.trackColour = AppColors.outlineVariant,
   });
 

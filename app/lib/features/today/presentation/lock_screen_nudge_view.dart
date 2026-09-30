@@ -183,7 +183,27 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
                 ),
               ],
             ),
-            Text(l10n.breakfastYourUsual_1lb0u, style: AppText.titleM),
+            // The meal the hour actually is, not a fixed breakfast.
+            //
+            // This was `breakfastYourUsual_1lb0u` for every nudge at every
+            // hour, so a woman whose usual log is at seven in the evening was
+            // asked "Breakfast, your usual?" over her dinner. Same defect as
+            // Home's meal card, fixed on T01, T02 and E04 and missed here.
+            // The hour goes through `EatDayViewModel.slotAt` like everywhere
+            // else, so this screen and Eat can never disagree about which meal
+            // five in the afternoon is.
+            //
+            // "Your usual" is earned, not assumed: it is a claim about a habit,
+            // and `mealLine` is the caller saying which habit. Null means
+            // nobody named one, and then the heading names the meal and stops.
+            Text(
+              mealNudgeHeading(
+                l10n,
+                now: at,
+                hasUsual: widget.mealLine != null,
+              ),
+              style: AppText.titleM,
+            ),
             // The meal's own figures, when a caller supplies them.
             //
             // This was `fulAndBaladi410Kcal22G` — "Ful and baladi · 410 kcal ·

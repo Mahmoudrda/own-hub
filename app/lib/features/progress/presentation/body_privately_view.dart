@@ -227,7 +227,15 @@ class _BodyPrivatelyViewState extends State<BodyPrivatelyView> {
   void dispose() {
     _weight.dispose();
     _measure.dispose();
-    if (_ownsBus) _bus.dispose();
+    // `flushAll`, not `dispose`. `LogCommandBus.dispose` drops pending work
+    // without committing it — its own doc says "for tests and for sign-out" —
+    // and this was the one screen of the eight that owns a bus calling it from
+    // a widget's `dispose`. So a woman who typed 63.5 kg, tapped Save and left
+    // inside the five seconds lost the write: the optimistic row was already on
+    // screen, so it looked saved until the next read. The other seven flush,
+    // which is what the undo window means: five seconds to take it back, not
+    // five seconds in which leaving deletes it.
+    if (_ownsBus) unawaited(_bus.flushAll());
     if (_ownsRepo) unawaited(_repo.dispose());
     super.dispose();
   }

@@ -27,6 +27,8 @@ class AppRingStat extends StatelessWidget {
     this.color = AppColors.tertiarySoft,
     this.bigColor = AppColors.onSurface,
     this.smallColor = AppColors.onSurfaceVariant,
+    // A sentinel, like `AppProgressBar.trackColour`: swapped for
+    // `AppColors.outline` in `build`, never painted as itself.
     this.trackColor = AppColors.outlineVariant,
   });
 

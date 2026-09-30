@@ -1,7 +1,7 @@
 // v2 design language: Material 3 colour roles, pink, tuned for Egyptian light and cheap screens.
 //
-// SEVEN FOREGROUND ROLES WERE DARKENED IN QA ROUND TWO (R2-41), AND NOT ONE HUE
-// MOVED.
+// SIX FOREGROUND ROLES WERE DARKENED IN QA ROUND TWO (R2-41), AND NOT ONE HUE
+// MOVED. A SEVENTH WAS, AND ROUND THREE PUT IT BACK.
 //
 // `contrast.dart` is a complete WCAG 2.1 implementation and it had only ever
 // been pointed at coach-authored portfolio themes; the product's own palette
@@ -10,20 +10,35 @@
 // canvas, 4.14 on surfaceContainer against a 4.50 floor), sage on its own sage
 // card (4.40), the error tone on its own card (4.4988, under by a rounding
 // error), the progress fill on sage (2.80 against a 3.00 non-text floor) and
-// outlineVariant on every page (1.27, which is an outlined card with no
-// visible border at all).
+// outlineVariant on every page (1.27, which was reported as an outlined card
+// with no visible border at all — see the note below on why that was the card
+// asking for the wrong role rather than the role being wrong).
 //
-// Each one was fixed by lowering HSL lightness with hue and saturation held
+// Six were fixed by lowering HSL lightness with hue and saturation held
 // exactly, so this is the same rose and the same sage, a shade deeper:
 //   primary        #B4526E -> #A24661   primaryDim   #A8455F -> #9A3F57
 //   tertiary       #4F7359 -> #4C6E55   tertiarySoft #6E9478 -> #65896F
 //   error          #A84A4A -> #A34848   outline      #9C838A -> #977C84
-//   outlineVariant #EBDCDF -> #B47B87
 //
-// outlineVariant is the one visible change rather than a shade: at 1.27 the
-// card border, the progress track and the unfilled week segment were painted
-// and invisible. It keeps the rose hue and stays lighter than `outline`, so the
-// two-level rule hierarchy still reads.
+// OUTLINEVARIANT WAS THE SEVENTH AND IT HAS BEEN PUT BACK.
+//
+// It went #EBDCDF -> #B47B87, thirty points of L* while the other six moved one
+// to six, and it landed at 3.27:1 against the page: a near-white hairline
+// became a mid rose. What that bought was a number. What it cost was measured
+// in QA round three — a missed week became the brightest, most saturated bar on
+// P01's chart at 1.14:1 from a repaired one, an unselected answer ring sat
+// 1.71:1 from the selected tick it has to be told apart from, the two boundary
+// roles were 1.11:1 from each other, and thirteen outlined cards across twelve
+// shipping screens grew a rose border.
+//
+// `contrast.dart` already argued the other way, in its own words: 1.4.11
+// applies to boundaries that CARRY MEANING, `outlineVariant` exists in M3 for
+// decoration, and `outline` (tone 50) is the role for a boundary that means
+// something. So the meaningful boundaries moved to `outline` — the outlined
+// card border, the missed-week bar, the unselected answer ring, the story ring,
+// the slider track, the two waveforms — and `outlineVariant` went back to what
+// it was. It is now only ever a hairline between rows, which is the one thing
+// 1.4.11 does not ask about.
 //
 // Surfaces were deliberately NOT lightened to buy the ratios. They are an
 // elevation ladder and moving them would flatten depth across every screen.
@@ -40,7 +55,7 @@ export const C = {
   amber: '#8A5A17', amberContainer: '#FBEBD6',
   surface: '#FFF8F9', surfaceLowest: '#FFFFFF', surfaceLow: '#FFF1F4', surfaceContainer: '#FBEAEF',
   surfaceHigh: '#F6E3E9', surfaceHighest: '#F0DBE2',
-  onSurface: '#241A1E', onSurfaceVariant: '#6B5C61', outline: '#977C84', outlineVariant: '#B47B87',
+  onSurface: '#241A1E', onSurfaceVariant: '#6B5C61', outline: '#977C84', outlineVariant: '#EBDCDF',
   inverseSurface: '#37292E', inverseOnSurface: '#FFECF0', scrim: 'rgba(36,26,30,.45)',
   canvas: '#F2E8EB', ink: '#241A1E',
 };

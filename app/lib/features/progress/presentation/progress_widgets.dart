@@ -75,10 +75,17 @@ class WeekBarsChart extends StatelessWidget {
     WeekBarKind.missed => 16,
   };
 
+  // The doc above calls the missed bar "a low neutral one", and `outline` is
+  // the neutral. It was `outlineVariant`, which round two moved to a mid rose,
+  // so a week that did not count became the brightest and most saturated bar on
+  // the chart — the only saturated thing on a page of sage. All three clear 3:1
+  // against the page, and the three kinds are told apart by height (34 / 28 /
+  // 16) and, on the repaired one, by the hatch drawn over it, so none of this
+  // rests on colour alone.
   static Color _colour(WeekBarKind kind) => switch (kind) {
     WeekBarKind.counted => AppColors.tertiary,
     WeekBarKind.repaired => AppColors.tertiarySoft,
-    WeekBarKind.missed => AppColors.outlineVariant,
+    WeekBarKind.missed => AppColors.outline,
   };
 }
 

@@ -461,7 +461,22 @@ class _RecipesViewState extends State<RecipesView> {
   /// severity. [hiddenUnchecked] is the guard's removal and it comes first,
   /// because it happened first.
   String _topEmptyLine(AppL10n l10n, int hiddenUnchecked, RecipeFilter? filter) {
-    if (hiddenUnchecked > 0) return l10n.noneOfTheseDishesHasBeenChecked;
+    // Says whose check is missing, because it is not hers.
+    //
+    // This read "None of these dishes has been checked FOR WHAT YOU AVOID, so
+    // none of them is shown", and three rows further down the same screen the
+    // book answers the identical fact with "This is not about what you avoid:
+    // nobody has signed off what is in these dishes". One screen, one cause,
+    // two sentences, and the first one put the cause in her body. Every one of
+    // the recipes is unsigned today, so a woman who declares molluscs — a tag
+    // that fires on none of them — emptied the list and was told it was what
+    // she avoids.
+    //
+    // It stays a different sentence from the book's, for the reason the
+    // `noNuts` branch below already gives: the same words printed twice on one
+    // screen read as the app repeating itself rather than as two libraries each
+    // answering for themselves.
+    if (hiddenUnchecked > 0) return l10n.nobodyHasSignedOffWhatIsIn_127cj;
     // Its own sentence, not the book's. The book says "No recipe can be called
     // nut free yet", and printing that twice on one screen reads as the app
     // repeating itself rather than as two libraries each answering for

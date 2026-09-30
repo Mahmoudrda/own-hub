@@ -58,7 +58,13 @@ const P04 = phone(
     card(row(`${icon('visibility_off', { size: 24, color: C.primaryDim })}<div style="flex:1;font-size:15px;line-height:22px;color:${C.onSurface}">Nobody sees this. Not the community, not your coach unless you send it.</div>`, { gap: 10, justify: 'flex-start', align: 'flex-start' }), { v: 'tonal', pad: '12px 14px' })
     + card(row(`${col(`${strong('Weight', 'titleM')}${m('Optional. You can use the app forever without it.')}`, { gap: 3, grow: true })}${btn('Add', { v: 'tonal', h: 40, size: 15 })}`), { gap: 8 })
     + card(col(`${strong('Measurements', 'titleM')}${m('Waist, hips, arm. Every 4 weeks is plenty.')}`, { gap: 3 }) + row(`${chip('Waist 82 cm')}${chip('Hips 96 cm')}${chip('Add')}`, { gap: 8, justify: 'flex-start' }), { gap: 10 })
-    + card(row(`${media({ label: 'June', h: 120, ic: '', v: 'photo' }).replace('flex:0 0 auto', 'flex:1')}${media({ label: 'September', h: 120, ic: '', v: 'photo' }).replace('flex:0 0 auto', 'flex:1')}`, { gap: 8 }) + m('Photo compare, stored on your phone and encrypted in the app.'), { gap: 10 })
+    // The caption under this card said "stored on your phone and encrypted in
+    // the app". There is no capture path in the build, no photo store and no
+    // key — grep `lib/` for encryption and the only hits are comments, which is
+    // why `body_privately_view.dart` draws no photo card at all and says so.
+    // The card stays here as the design for the day one exists; the promise
+    // does not ship ahead of it, and nor does its dictionary entry.
+    + card(row(`${media({ label: 'June', h: 120, ic: '', v: 'photo' }).replace('flex:0 0 auto', 'flex:1')}${media({ label: 'September', h: 120, ic: '', v: 'photo' }).replace('flex:0 0 auto', 'flex:1')}`, { gap: 8 }), { gap: 10 })
   , { pad: '0 16px 0', gap: 10 })
   + navBar('Home'));
 

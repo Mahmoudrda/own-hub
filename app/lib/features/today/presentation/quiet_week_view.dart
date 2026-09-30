@@ -36,8 +36,13 @@
 ///     cannot disagree;
 ///   * the headline goes through `statedLine`, because the dictionary's only
 ///     form of it has "14" inside it. A woman with nine counted weeks is told
-///     that a rest week covered her week — which is true — and is not told she
-///     has fourteen. A parameterised headline is a reported dictionary gap.
+///     that a rest week covered her week and is not told she has fourteen. A
+///     parameterised headline is a reported dictionary gap;
+///   * and the card that carries both is drawn only when [WeeklyGoal
+///     .lastRepairedWeek] names a week. That sentence was unconditional and
+///     T04 has a route: P01 links to it, so a phone switched on that morning
+///     was two taps from being told a rest week had covered a week she was not
+///     here for.
 library;
 
 import 'dart:async';
@@ -122,6 +127,9 @@ class _QuietWeekViewState extends State<QuietWeekView> {
     final l10n = AppL10n.of(context);
     final week = _repo.day.week;
 
+    // The week a rest week covered, or null if none did. See the card below.
+    final repairedWeek = widget.goal?.lastRepairedWeek;
+
     // 'Your 14 weeks are safe' — a fixed string with her count inside it.
     final safe = statedLine<int>(
       l10n.your14WeeksAreSafe,
@@ -150,34 +158,46 @@ class _QuietWeekViewState extends State<QuietWeekView> {
           TodayGreeting(day: weekdayLabel(l10n, _date)),
           // What was protected, before anything else on the screen.
           //
-          // The explanation is unconditional because it is true of every woman
-          // whose week was repaired: a rest week covered it, nothing changed,
-          // and the next one comes after four counted weeks — which is G6's own
-          // published cadence, not an inferred threshold.
-          AppCard(
-            variant: AppCardVariant.sage,
-            gap: 8,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.spa, size: 24, color: AppColors.tertiary),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: safe == null
-                        ? Text(
-                            l10n.aRestWeekCoveredLastWeekSo,
-                            style: AppText.body,
-                          )
-                        : Text(safe, style: AppText.titleM),
-                  ),
-                ],
-              ),
-              if (safe != null)
-                Text(l10n.aRestWeekCoveredLastWeekSo, style: AppText.body),
-            ],
-          ),
+          // **Only when a rest week actually covered one.** The sentence says
+          // "A rest week covered last week, so nothing changed" and it was
+          // printed unconditionally, to a phone that had been switched on that
+          // morning: P01 draws a row to T04, so two taps from Progress on day
+          // one told a brand-new woman that a rest week had covered a week she
+          // was not here for, at `restWeeksBanked = 0, countedWeeks = 0`. Same
+          // class as the headline three lines above, which already goes through
+          // `statedLine` for stating "14".
+          //
+          // [WeeklyGoal.lastRepairedWeek] is the field G6 publishes for exactly
+          // this — "so T04 can report a repair from the user document it
+          // already read" — so a repair it does not name is a repair that did
+          // not happen. Null also covers the caller that has wired no goal at
+          // all, which is the same answer: say nothing about her weeks rather
+          // than guess.
+          if (repairedWeek != null)
+            AppCard(
+              variant: AppCardVariant.sage,
+              gap: 8,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.spa, size: 24, color: AppColors.tertiary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: safe == null
+                          ? Text(
+                              l10n.aRestWeekCoveredLastWeekSo,
+                              style: AppText.body,
+                            )
+                          : Text(safe, style: AppText.titleM),
+                    ),
+                  ],
+                ),
+                if (safe != null)
+                  Text(l10n.aRestWeekCoveredLastWeekSo, style: AppText.body),
+              ],
+            ),
           // Then the ask, shrunk to the smallest thing that still counts.
           //
           // Set on the page as the cover, the way Today sets its session, with

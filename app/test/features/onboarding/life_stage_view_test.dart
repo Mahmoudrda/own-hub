@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/onboarding/domain/intake_repository.dart';
+import 'package:own_hub/features/onboarding/domain/starting_program.dart';
 import 'package:own_hub/features/onboarding/presentation/intake_option.dart';
 import 'package:own_hub/features/onboarding/presentation/life_stage_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -73,11 +74,41 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('We avoid what hurts, we do not diagnose'),
-        findsOneWidget,
-        reason: 'this sentence is the boundary the screen is built on',
-      );
+      // The boundary sentence, and the rule it now obeys.
+      //
+      // "We avoid what hurts, we do not diagnose" is the promise this screen is
+      // built on, and round four found that nothing keeps the first half of it:
+      // `selectStartingProgram` does not read `intake.lifeStage`, the catalogue
+      // holds one programme, and all four answers lead to the same one. So the
+      // sentence is now shown exactly when it is true, through
+      // `lifeStageShapesTraining()`, and this case asserts the coupling rather
+      // than either state — it goes on passing the day a life-stage filter
+      // lands, and fails if the sentence and the selector ever come apart.
+      final promise = find.text('We avoid what hurts, we do not diagnose');
+      if (lifeStageShapesTraining()) {
+        expect(
+          promise,
+          findsOneWidget,
+          reason: 'this sentence is the boundary the screen is built on',
+        );
+      } else {
+        expect(
+          promise,
+          findsNothing,
+          reason:
+              'nothing avoids what hurts in this build, so saying it is a '
+              'promise with no mechanism behind it',
+        );
+        expect(
+          find.text(
+            'We save your answer with the rest of your setup. Nothing in your '
+            'sessions changes from it yet.',
+          ),
+          findsOneWidget,
+          reason:
+              'and the screen still has to answer the question it asked',
+        );
+      }
     });
 
     testWidgets('it says who sees this, and names nobody who cannot', (
@@ -137,18 +168,27 @@ void main() {
         // diagnose". "Safe movements" asserted safety in the app's voice about
         // a body it has never seen.
         //
-        // Both rows now describe the training and leave the timing and the
-        // verdict with her and her doctor, so the assertions are tightened
-        // rather than relaxed: the training word must be there, and the two
-        // words that were the defect must not be anywhere on the screen.
-        expect(
+        // Both rows were rewritten to describe the training and leave the
+        // timing and the verdict with her and her doctor. Round four then found
+        // that they describe training this build does not do, so they are held
+        // behind `lifeStageShapesTraining()` — measured from the selector, not
+        // declared — and the assertion is the coupling rather than either
+        // state. The two words that were the original defect must not be
+        // anywhere on the screen in EITHER state, which is what makes this
+        // tighter than it was rather than looser.
+        final rows = <Finder>[
           find.text('Pelvic floor first, once your doctor says you are ready'),
-          findsOneWidget,
-        );
-        expect(
           find.text('Gentler movements, nothing on the belly'),
-          findsOneWidget,
-        );
+        ];
+        for (final row in rows) {
+          expect(
+            row,
+            lifeStageShapesTraining() ? findsOneWidget : findsNothing,
+            reason:
+                'the rows and the selector have to agree: '
+                'lifeStageShapesTraining() is ${lifeStageShapesTraining()}',
+          );
+        }
         expect(
           find.textContaining('cleared', findRichText: true),
           findsNothing,
@@ -246,8 +286,20 @@ void main() {
 
       expect(find.text('أشيء ينبغي أن نتجنّبه في التمرين؟'), findsOneWidget);
       expect(find.text('لا شيء الآن'), findsOneWidget);
-      // The "we do not diagnose" promise must exist in the language she reads.
-      expect(find.text('نتجنّب ما يؤلم، ولا نشخّص'), findsOneWidget);
+      // Whatever this screen says about her training, it says it in the
+      // language she reads. Both states are asserted in Arabic, so a row gated
+      // in English and left in Arabic fails here.
+      if (lifeStageShapesTraining()) {
+        expect(find.text('نتجنّب ما يؤلم، ولا نشخّص'), findsOneWidget);
+      } else {
+        expect(find.text('نتجنّب ما يؤلم، ولا نشخّص'), findsNothing);
+        expect(
+          find.text(
+            'نحفظ إجابتكِ مع بقية إعدادكِ. ولا يتغيّر شيء في تمارينكِ بسببها حتى الآن.',
+          ),
+          findsOneWidget,
+        );
+      }
       expect(find.text('الخطوة 4 من 4'), findsOneWidget);
       expect(find.text('Anything we should train around?'), findsNothing);
     });

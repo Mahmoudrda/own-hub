@@ -379,11 +379,17 @@ class CycleHubView extends StatelessWidget {
             l10n.severeOrUnusualPainDeservesMedicalAdvice,
             style: AppText.bodyM,
           ),
-          // The route to care. The maps intent is wired; the in-app fallback
-          // behind it needs a directory that does not exist — see
-          // `CareDirectory.bundled` and OQ-11. `P0-CYC-07`/`P0-CYC-08` cannot
-          // pass until a clinically reviewed Egyptian list is authored, and the
-          // button is wired rather than faked so that it will when one is.
+          // The route to care. There is no maps intent: this comment claimed
+          // one was wired, and what the router actually hands `onFindCare` is
+          // `showHonestNotice(weDoNotHaveACareDirectory)`. Nothing in `lib/`
+          // opens a map.
+          //
+          // The missing piece is CONTENT, not capability. `CareDirectory
+          // .bundled` needs a clinically reviewed Egyptian list (OQ-11), and
+          // `P0-CYC-07`/`P0-CYC-08` cannot pass until one is authored. The
+          // button is drawn and says what is missing, rather than being hidden,
+          // because a woman reaching this card in severe pain should not be
+          // shown a screen that is quietly one option shorter.
           AppButton(
             l10n.findCareNearYou,
             height: 48,

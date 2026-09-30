@@ -5,30 +5,66 @@
 	<!--
 	  Own Hub privacy manifest.
 
-	  ACCURATE FOR v1.0, WHICH COLLECTS NOTHING. The app has no backend wired:
-	  pubspec carries no Firebase, no analytics, no ads and no HTTP client, and
-	  every repository is in memory. So NSPrivacyCollectedDataTypes is empty and
-	  that is the honest answer, not a stub.
+	  WHAT THIS BINARY DOES TODAY. `Firebase.initializeApp` runs on every launch
+	  (`lib/app_state/firebase_boot.dart`), and pubspec carries five Firebase
+	  packages: firebase_core, firebase_auth, cloud_firestore, firebase_storage
+	  and cloud_functions. Firebase mints an installation identifier and sends it
+	  with every call it makes, so the app collects a device identifier whether
+	  or not a woman ever signs in. Apple's category for that is DeviceID, and it
+	  is declared below.
 
-	  It must stay identical to the App Privacy answers in App Store Connect and
-	  to docs/release/privacy-policy.md. A mismatch between the three is one of
-	  the most common rejections.
+	  Not linked, and not tracking. `Feature.accountRequired` is off in this
+	  build, so there is no sign-up, no account and nothing to link the
+	  identifier to; there are no ad SDKs, no analytics SDK and no third party it
+	  is shared with. NSPrivacyTracking stays false.
 
-	  WHEN THE BACKEND IS WIRED, this file must gain, at minimum:
-	    - NSPrivacyCollectedDataTypePhoneNumber  (sign-in, linked, not tracking)
-	    - NSPrivacyCollectedDataTypeHealthFitness (workouts/meals/cycle, linked)
-	    - NSPrivacyCollectedDataTypeUserID
-	    - NSPrivacyCollectedDataTypeCrashData    (only if Crashlytics ships)
-	  and NSPrivacyAccessedAPITypes for whatever the new plugins touch
-	  (UserDefaults CA92.1 is the usual first one, via shared_preferences).
-	  Verify with Xcode: Product > Archive > Organizer > Generate Privacy Report.
+	  NSPrivacyAccessedAPITypes is empty for the APP TARGET only. Every
+	  required-reason API this product touches is touched by a package that ships
+	  its own manifest, which Xcode merges into the privacy report at build time:
+	  shared_preferences declares NSUserDefaults CA92.1, and the Google and MLKit
+	  pods declare disk space, file timestamp, boot time and user defaults. If
+	  the app target ever reads one of those APIs directly, it belongs here.
+
+	  THE RELEASE THAT FLIPS `accountRequired` MUST ADD, before submission:
+	    - NSPrivacyCollectedDataTypePhoneNumber   (sign-in, LINKED, not tracking)
+	    - NSPrivacyCollectedDataTypeUserID        (the Firebase uid, LINKED)
+	    - NSPrivacyCollectedDataTypeHealthFitness (workouts, meals and My cycle,
+	      LINKED. Apple treats menstrual data as sensitive health data, so this
+	      one is not optional and the App Store Connect answers must match)
+	    - and, for as long as identity verification is live, the photographs the
+	      camera permission string already describes: both sides of a national ID
+	      card and one selfie. Apple's categories are
+	      NSPrivacyCollectedDataTypeOtherUserContent for the images and
+	      NSPrivacyCollectedDataTypeOtherDataTypes for the government ID, both
+	      LINKED, purpose AppFunctionality. They are deleted after the check, and
+	      "deleted afterwards" is not an exemption from declaring them.
+	    - NSPrivacyCollectedDataTypeCrashData only if Crashlytics ever ships. It
+	      is not in pubspec today.
+
+	  This file, the App Privacy answers in App Store Connect and
+	  docs/release/privacy-policy.md must say the same thing. A mismatch between
+	  the three is one of the most common rejections. Verify with Xcode:
+	  Product > Archive > Organizer > Generate Privacy Report.
 	-->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 	<key>NSPrivacyCollectedDataTypes</key>
-	<array/>
+	<array>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeDeviceID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array/>
 </dict>

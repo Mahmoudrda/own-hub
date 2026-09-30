@@ -172,19 +172,37 @@ class InMemoryTodayRepository implements TodayRepository {
 
   @override
   Future<void> logRecalledSession(RecalledSession session) async {
+    // Deduped by the deterministic session id, in the same set [recordSession]
+    // uses, because these two methods do one job between them and a session may
+    // reach Today down either path.
+    //
+    // The comment below used to promise this and the code did not do it:
+    // `session.id` was documented as deterministic *for exactly this reason*
+    // and never read. Measured on T02 — three taps on the same duration chip
+    // logged the same `recalled-<date>-time30` three times, Home said "This
+    // week, 3 of 3" and Progress said "1 of 3", because Progress credits
+    // through `WorkoutSessionState.creditSession`, which does dedupe. Counted
+    // weeks, banked rest weeks and tier standing all come off Progress, so Home
+    // was promising a week the reward system was never going to honour.
+    //
+    // The day state still moves even on a replay: she did do the session, and
+    // T02 arriving twice must not leave Home saying nothing is logged.
+    final firstCredit = _creditedSessions.add(session.id);
     _emit(
       _day.copyWith(
         state: DayState.recalled,
         arc: _day.arc.started,
-        week: WeekProgress(
-          // Optimistic week credit: the authoritative increment is a Cloud
-          // Function on the session document and is late by design when she is
-          // offline. Deduplicated by the deterministic session id, so it can
-          // never double-count when the server catches up (plan G3 §4).
-          sessionsLogged: _day.week.sessionsLogged + 1,
-          sessionsTarget: _day.week.sessionsTarget,
-          repairedByRestWeek: _day.week.repairedByRestWeek,
-        ),
+        week: firstCredit
+            ? WeekProgress(
+                // Optimistic week credit: the authoritative increment is a
+                // Cloud Function on the session document and is late by design
+                // when she is offline. The id is what makes the two agree once
+                // the server catches up (plan G3 §4).
+                sessionsLogged: _day.week.sessionsLogged + 1,
+                sessionsTarget: _day.week.sessionsTarget,
+                repairedByRestWeek: _day.week.repairedByRestWeek,
+              )
+            : _day.week,
       ),
     );
   }

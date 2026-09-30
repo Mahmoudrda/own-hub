@@ -133,8 +133,19 @@ class _WeekPlanViewState extends State<WeekPlanView> {
         ),
       ],
       children: [
+        // "Five dinners, built from recipes you have logged before. Swap any
+        // of them." — over five rows all reading "Need an idea for dinner?",
+        // which is what a woman with no plan saw. There were no five dinners,
+        // nothing had been built, and there was nothing to swap.
+        //
+        // The guard was already written and this screen was not using it:
+        // `WeekPlanView.hasPlan` carries the doc "True once anything has been
+        // planned. Before that E07 offers to build one rather than showing five
+        // blank rows with no explanation."
         Text(
-          l10n.fiveDinnersBuiltFromRecipesYouHave,
+          view.hasPlan
+              ? l10n.fiveDinnersBuiltFromRecipesYouHave
+              : l10n.nothingIsPlannedForThisWeekYet,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         // A planner page: one ink rule heads the week, and each day below it

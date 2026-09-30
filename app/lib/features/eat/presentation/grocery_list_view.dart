@@ -110,6 +110,10 @@ class _GroceryListViewState extends State<GroceryListView> {
         actions: [
           IconButton(
             onPressed: widget.onShare,
+            // Named. It was an icon with no tooltip, no label and no hint, so
+            // E08 shipped a tappable a screen reader announces as nothing at
+            // all — the only unnamed control on the screen.
+            tooltip: l10n.share,
             iconSize: 24,
             color: AppColors.onSurfaceVariant,
             icon: const Icon(Icons.share),
