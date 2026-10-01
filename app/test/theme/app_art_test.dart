@@ -108,19 +108,27 @@ void main() {
     expect(AppArt.all.toSet().length, AppArt.all.length);
   });
 
-  test('no illustration file is shipped at all', () {
-    // The whole point of the change: assets/art holds the licence record and
-    // nothing else. A `.webp`, `.png` or `.svg` reappearing here means someone
-    // has put a third-party asset back in the binary, which is exactly what
-    // LICENCE.md exists to stop.
-    final dir = Directory('assets/art');
-    final files = dir
+  test('every name has its file at 1x, 2x and 3x, and nothing else ships', () {
+    // A missing asset is not a compile error in Flutter: it is an empty box at
+    // runtime, on a screen nobody looked at. And a file no name points at is
+    // weight in every download for nothing.
+    for (final name in AppArt.all) {
+      for (final dir in ['assets/art', 'assets/art/2.0x', 'assets/art/3.0x']) {
+        expect(
+          File('$dir/$name.webp').existsSync(),
+          isTrue,
+          reason: '$dir/$name.webp is missing',
+        );
+      }
+    }
+    final shipped = Directory('assets/art')
         .listSync(recursive: true)
         .whereType<File>()
         .map((f) => f.uri.pathSegments.last)
         .where((n) => n != 'LICENCE.md')
-        .toList();
-    expect(files, isEmpty, reason: 'assets/art should hold only LICENCE.md');
+        .map((n) => n.replaceAll('.webp', ''))
+        .toSet();
+    expect(shipped, AppArt.all.toSet());
   });
 
   test('the pack has a licence record, and it covers every name', () {

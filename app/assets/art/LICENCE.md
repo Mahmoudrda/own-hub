@@ -233,3 +233,24 @@ The row that used to be open here is closed. Rubik's OFL text was missing from
 `assets/fonts/` while the family was bundled; it now sits at
 `assets/fonts/OFL-Rubik.txt` beside the other two and is registered in
 `main.dart`, so the notice travels with the font as the OFL requires.
+
+## 1 October 2026: the originals are back, by the owner's decision
+
+The owner reviewed the painted marks and chose to ship the original
+illustrations from `Icons.pdf` and `More icons.pdf` instead. Thirty two of
+them are bundled again, one per name in `lib/theme/app_art.dart`, at 1x, 2x and
+3x. The other twenty five from the old pack stay out of the binary.
+
+Running, dance, strong_arms, squat_weights, lunge_kneeling, lunge_warrior,
+plank, stretch_seated, side_stretch, rest_floor, meditation, overhead_raise,
+dumbbells, boxing_gloves, yoga_mat, trainers, gym_bag, spin_bike, headphones,
+bowl_salad, buddha_bowl, plate_mixed, steak, toast_egg, breakfast, bruschetta,
+pasta, fruit_basket, apple, grapes, watermelon, nuts.
+
+What this does not change: no licence document for these files has been found
+in the repository. The risk described above is accepted by the owner, not
+resolved. Before the store submission, put the Canva account and plan the
+icons were exported from (or the purchase record for each) in this file. If
+that record cannot be produced, the painted marks are still in
+`lib/ui/hand/art_marks.dart` and switching back is a one-line change to
+`AppArt.image`.

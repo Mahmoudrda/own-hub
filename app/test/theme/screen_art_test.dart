@@ -6,12 +6,9 @@
 // drawn are counted -- because a table entry that nothing renders is a promise,
 // not an illustration.
 //
-// The detector used to collect `Image` widgets whose `AssetImage` pointed into
-// `assets/art/`. There is no such asset any more: the illustrations are painted
-// by `ArtMarkPainter` (see assets/art/LICENCE.md for why). So it collects
-// `ArtMark` widgets and reads the name each one is drawing. Same question,
-// asked of the thing that now answers it -- and the negative control below
-// still proves the detector can see a screen with nothing on it.
+// The detector collects `Image` widgets whose `AssetImage` points into
+// `assets/art/` and reads back the illustration name from the file name. The
+// negative control below still proves it can see a screen with nothing on it.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,11 +17,16 @@ import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_art.dart';
 import 'package:own_hub/theme/screen_art.dart';
-import 'package:own_hub/ui/hand/art_marks.dart';
 
 /// Illustrations actually rendered, as mark names.
-List<String> _drawn(WidgetTester t) =>
-    t.widgetList<ArtMark>(find.byType(ArtMark)).map((m) => m.markKey).toList();
+List<String> _drawn(WidgetTester t) => t
+    .widgetList<Image>(find.byType(Image))
+    .map((i) => i.image)
+    .whereType<AssetImage>()
+    .map((a) => a.assetName)
+    .where((n) => n.startsWith('assets/art/'))
+    .map((n) => n.substring('assets/art/'.length).replaceAll('.webp', ''))
+    .toList();
 
 void main() {
   final saved = AppRouter.featureFlags;

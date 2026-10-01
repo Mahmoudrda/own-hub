@@ -153,18 +153,12 @@ flutter:
 
   # Rubik carries both scripts. Regenerate with python3 6-v2/scripts/build_fonts.py
   assets:
-    # There is no illustration asset. The product's 32 illustrations are DRAWN,
-    # by lib/ui/hand/art_marks.dart, and ship as code.
-    #
-    # This used to be three lines bundling assets/art/ at 1x, 2x and 3x: 57
-    # WebP illustrations, 171 files, 4.8 MB, with no licence record for any of
-    # them and one of them byte-identical to an element of a Canva document
-    # whose licence forbids shipping it as a stand-alone asset. Drawing them
-    # instead removed the exposure and the 4.8 MB in the same change.
-    # assets/art/LICENCE.md stays in the repository as the record of that, and
-    # is deliberately NOT bundled: it is a note to whoever comes next, not
-    # something the app reads.
-    #
+    # The owner's illustrations, from Icons.pdf and More icons.pdf: 32 WebP
+    # files at 1x, 2x and 3x, named in lib/theme/app_art.dart. Their licence
+    # record is assets/art/LICENCE.md, which is deliberately not bundled.
+    - assets/art/
+    - assets/art/2.0x/
+    - assets/art/3.0x/
     # Licence texts for the two OFL hand faces, shown on the licences page.
     - assets/fonts/OFL-LaBelleAurore.txt
     - assets/fonts/OFL-ArefRuqaa.txt

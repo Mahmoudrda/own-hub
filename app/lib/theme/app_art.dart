@@ -1,19 +1,12 @@
 /// The illustration set, by name.
 ///
-/// Thirty-two marks, **drawn and painted in code** by
-/// `lib/ui/hand/art_marks.dart`, in the colours `lib/ui/hand/art_palette.dart`
-/// mixes. There is no image file behind any of them and no third-party licence
-/// attached to any of them. Read the header of that file for how a mark is
-/// built, and `assets/art/LICENCE.md` for why the set that used to live here is
-/// gone and why no licensed set could replace it.
+/// Thirty-two illustrations from the owner's own icon set (`Icons.pdf` and
+/// `More icons.pdf`), shipped as WebP at 1x, 2x and 3x under `assets/art/`, so
+/// Flutter picks the file that matches the screen and nothing is upscaled.
 ///
-/// ## What this set replaced
-///
-/// Until this change these were 57 WebP illustrations at three densities,
-/// about 4.8 MB, with no licence record anywhere in the repository — and one of
-/// them, `cupcake.webp`, was byte-for-byte an element from the owner's
-/// Canva-produced recipe book, whose licence forbids exactly that use. The
-/// pack was deleted and every placement it served is painted instead.
+/// On 1 October 2026 the owner chose to ship these originals in place of the
+/// painted marks that had replaced them. `assets/art/LICENCE.md` records that
+/// decision and the licensing question it settles.
 ///
 /// ## What these are for, and what they are not
 ///
@@ -41,10 +34,8 @@ library;
 
 import 'package:flutter/widgets.dart';
 
-import '../ui/hand/art_marks.dart';
-
-/// Names of the illustrations. Every one of these is a `case` in
-/// [ArtMarkPainter], which `app_art_test.dart` asserts.
+/// Names of the illustrations. Every one has a WebP file at 1x, 2x and 3x,
+/// which `app_art_test.dart` asserts.
 abstract final class AppArt {
   // ------------------------------------------------------------- training
   /// A woman mid-stride, one foot planted. Covers everything the old pack
@@ -159,18 +150,24 @@ abstract final class AppArt {
     pasta, fruitBasket, apple, grapes, watermelon, nuts,
   ];
 
+  /// The bundled file for [name], at 1x. Flutter resolves the 2.0x and 3.0x
+  /// variants beside it by itself.
+  static String path(String name) => 'assets/art/$name.webp';
+
   /// An illustration at [size] logical pixels on its longest side.
   ///
-  /// Always decorative: [ArtMark] wraps the drawing in `ExcludeSemantics`,
-  /// because a screen reader announcing "salad bowl" over an empty-state
-  /// heading adds noise, not meaning. Nothing in this product puts information
-  /// in a drawing that the words beside it do not already carry, so there is no
-  /// label parameter to pass.
-  ///
-  /// Still called `image` although nothing here is an image any more:
-  /// `features/signup/whats_inside_view.dart` calls it, and that directory is
-  /// out of scope for the change that removed the WebP pack. Rename it there
-  /// and here together, in one change that can be read as one thing.
-  static Widget image(String name, {double size = 160}) =>
-      ArtMark(markKey: name, size: size);
+  /// Always decorative: a screen reader announcing "salad bowl" over an
+  /// empty-state heading adds noise, not meaning, and nothing in this product
+  /// puts information in a picture that the words beside it do not carry.
+  static Widget image(String name, {double size = 160}) => ExcludeSemantics(
+    child: Image.asset(
+      path(name),
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.medium,
+      gaplessPlayback: true,
+      errorBuilder: (_, _, _) => SizedBox.square(dimension: size),
+    ),
+  );
 }
