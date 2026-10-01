@@ -41,6 +41,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
+import '../../../data/pending_answers.dart';
 import '../../../domain/week/week_key.dart';
 import 'plate_rollup.dart';
 
@@ -636,6 +637,16 @@ abstract class MealRepository {
   /// branch on the contents rather than on a null.
   Future<MealDay> day(String dayId);
 
+  /// Whether "she has logged nothing" is a fact or only a silence.
+  ///
+  /// Synchronous and about the whole store rather than about one day, because
+  /// the question it answers is not "has she eaten today" — [day] answers that
+  /// — but "is this app in a position to say". `E09` turns an empty day into
+  /// the sentence "Eat, day one", and that sentence is wrong for a woman
+  /// signing in on a new handset while `CloudStore` is still pulling. See
+  /// `lib/data/pending_answers.dart`.
+  DataState get dataState;
+
   /// A live view of the same document, for the screen that is open.
   Stream<MealDay> watchDay(String dayId);
 
@@ -813,6 +824,9 @@ class InMemoryMealRepository implements MealRepository {
 
   /// The shared documents. Two repositories over one store are two devices.
   final MealStore store;
+
+  @override
+  DataState get dataState => dataStateOf(holdsNothing: store.days.isEmpty);
 
   final String tz;
   final int libVersion;

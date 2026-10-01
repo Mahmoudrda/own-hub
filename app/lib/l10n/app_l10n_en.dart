@@ -7576,4 +7576,7 @@ class AppL10nEn extends AppL10n {
   @override
   String get nothingIsPlannedForThisWeekYet =>
       'Nothing is planned for this week yet. Pick a dinner for any day below.';
+
+  @override
+  String get lookingForWhatYouHaveLogged => 'Looking for what you have logged.';
 }

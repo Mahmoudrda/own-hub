@@ -71,13 +71,29 @@ import '../routing/app_router.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
 
-/// The shape this build writes and the only shape it reads.
+/// The shape this build writes.
 ///
 /// Bump it whenever a section changes in a way an older decoder would read
-/// wrongly rather than not at all. A document carrying any other number is
-/// ignored whole, which is the cheapest correct migration there is: she loses
-/// the snapshot, never the app.
-const int kSnapshotSchema = 1;
+/// wrongly rather than not at all. A document carrying a number that is not in
+/// [kReadableSchemas] is ignored whole, which is the cheapest correct migration
+/// there is: she loses the snapshot, never the app.
+///
+/// 2 is the de-duplicated train section — a flush names the session's
+/// prescription rather than repeating it, and null fields are left out. A build
+/// that only knows 1 would read a flush's sets as empty rather than as
+/// nonsense, which is quiet enough to be worse, so it refuses the document
+/// instead.
+const int kSnapshotSchema = 2;
+
+/// Every shape this build can read.
+///
+/// Writing a new shape and reading only it would throw away the history of
+/// every woman who updates the app, which is a worse failure than the one the
+/// schema number exists to prevent. The 1 → 2 change is additive on the way in:
+/// every flush set in a 1 document carries its own `prescribed`, which is the
+/// same long form a 2 document still writes for a swapped move, read by the
+/// same line. So the old number stays readable, and is written by nothing.
+const Set<int> kReadableSchemas = <int>{1, 2};
 
 /// Turns every store into a document, and a document back into every store.
 abstract final class AppSnapshot {
@@ -126,7 +142,7 @@ abstract final class AppSnapshot {
       return const <void Function()>[];
     }
     if (parsed is! Map<String, Object?>) return const <void Function()>[];
-    if (_int(parsed['schema']) != kSnapshotSchema) {
+    if (!kReadableSchemas.contains(_int(parsed['schema']))) {
       return const <void Function()>[];
     }
 
@@ -530,17 +546,110 @@ Measurement? _readMeasurement(String dayId, Object? raw) {
 }
 
 // ------------------------------------------------------------------ train ---
+//
+// ## The sets were written twice, and now they are written once
+//
+// [InMemoryTrainRepository] keeps a session's sets twice on purpose, and that
+// is right in memory: `sessions[].sets` are the PRESCRIPTIONS the session was
+// born with, and `flushes[].sets` are what reached the server — the same
+// prescriptions, each carrying the outcome she agreed to. `set_history.dart`
+// depends on the separation.
+//
+// Persisting both verbatim meant every prescription went to the phone twice.
+// Measured on the shape the app really writes (`test/qa/round6`), two years of
+// training — 400 sessions of 5 moves and 3 sets — came to 1.76 MB, of which
+// 1.10 MB was `flushes` and 0.66 MB was `sessions`, and `jsonEncode` of that
+// document ran on the main isolate on every debounced write while she logged.
+//
+// So a flush set now names its prescription instead of repeating it: it writes
+// the `order`, and the reader finds the prescription under the session it
+// belongs to. Nothing of hers is dropped — the outcome, which is the half only
+// the flush holds, is still written in full, and a prescription that is NOT in
+// the session (a swapped move, a flush under a session id this phone no longer
+// holds) still carries its own copy, so the short form can never lose one.
+//
+// Null fields are left out of both halves for the same reason: `"holdSeconds":
+// null` is twenty bytes saying nothing, three times per set, and every reader
+// below already answers null for a key that is absent.
+
+/// Identifies a prescription within one session: an exercise and a set number.
+///
+/// Flat rather than nested so it can be a map key. `\u0000` cannot occur in an
+/// exercise id, so no two different pairs can collide on it.
+String _prescriptionKey(String exerciseId, int order) =>
+    '$exerciseId\u0000$order';
+
+/// The prescriptions a flush may name instead of repeating, per session id.
+///
+/// A key that appears twice in one session maps to null — "ambiguous, write it
+/// out". That cannot happen with a session built by `startSession`, where the
+/// order is the set's position in its move, but a document is read back from a
+/// phone and this index decides what a later read trusts, so it is built to be
+/// right rather than built on that.
+Map<String, Map<String, PrescribedSet?>> _prescriptionIndex(
+  Iterable<TrainSession> sessions,
+) {
+  final index = <String, Map<String, PrescribedSet?>>{};
+  for (final session in sessions) {
+    final byKey = <String, PrescribedSet?>{};
+    for (final set in session.sets) {
+      final key = _prescriptionKey(set.prescribed.exerciseId, set.prescribed.order);
+      byKey[key] = byKey.containsKey(key) ? null : set.prescribed;
+    }
+    index[session.id] = byKey;
+  }
+  return index;
+}
+
+/// True when [prescribed] is exactly the prescription the session already
+/// carries for this exercise and set number, so writing the number is the same
+/// as writing the prescription.
+///
+/// Every field is compared. Two sets can share an exercise and an order and
+/// still differ — a plan republished between the session and the flush — and
+/// restoring the session's copy over hers would quietly rewrite what she was
+/// asked for.
+bool _isSessionsOwn(
+  Map<String, Map<String, PrescribedSet?>> index,
+  String sessionId,
+  String flushExerciseId,
+  PrescribedSet prescribed,
+) {
+  if (prescribed.exerciseId != flushExerciseId) return false;
+  final candidate =
+      index[sessionId]?[_prescriptionKey(prescribed.exerciseId, prescribed.order)];
+  return candidate != null &&
+      candidate.weightKg == prescribed.weightKg &&
+      candidate.reps == prescribed.reps &&
+      candidate.holdSeconds == prescribed.holdSeconds;
+}
 
 Map<String, Object?> _captureTrain() {
   final repository = AppRouter.trainRepository;
+  final sessions = repository.sessions;
+  final index = _prescriptionIndex(sessions);
   return <String, Object?>{
-    'sessions': [for (final s in repository.sessions) _session(s)],
+    'sessions': [for (final s in sessions) _session(s)],
     'flushes': [
       for (final flush in repository.flushes)
         <String, Object?>{
           'sessionId': flush.sessionId,
           'exerciseId': flush.exerciseId,
-          'sets': [for (final set in flush.sets) _loggedSet(set)],
+          'sets': [
+            for (final set in flush.sets)
+              if (_isSessionsOwn(
+                index,
+                flush.sessionId,
+                flush.exerciseId,
+                set.prescribed,
+              ))
+                <String, Object?>{
+                  'order': set.prescribed.order,
+                  if (set.outcome case final outcome?) 'outcome': _outcome(outcome),
+                }
+              else
+                _loggedSet(set),
+          ],
         },
     ],
     'swaps': [
@@ -560,6 +669,11 @@ void Function()? _readTrain(Object? raw) {
       ?_readSession(entry),
   ];
 
+  // Built from the sessions this document carries, never from the repository:
+  // decoding touches no store, and a flush must be resolved against the
+  // session it was written beside rather than against whatever is in memory.
+  final index = _prescriptionIndex(sessions);
+
   final flushes =
       <({String sessionId, String exerciseId, List<LoggedSet> sets})>[
         for (final entry in _list(section['flushes']) ?? const <Object?>[])
@@ -569,7 +683,12 @@ void Function()? _readTrain(Object? raw) {
                 (
                   sessionId: sessionId,
                   exerciseId: exerciseId,
-                  sets: _readLoggedSets(row['sets']),
+                  sets: _readFlushSets(
+                    row['sets'],
+                    index: index,
+                    sessionId: sessionId,
+                    exerciseId: exerciseId,
+                  ),
                 ),
       ];
 
@@ -600,14 +719,16 @@ Map<String, Object?> _session(TrainSession session) => <String, Object?>{
   'source': session.source.name,
   'dateKey': session.dateKey,
   'sets': [for (final set in session.sets) _loggedSet(set)],
-  'assignmentId': session.assignmentId,
-  'planVersion': session.planVersion,
-  'workoutId': session.workoutId,
-  'activity': session.activity,
-  'recallMethod': session.recallMethod?.name,
-  'endedReason': session.endedReason?.name,
-  'durationSec': session.durationSec,
-  'completed': session.completed,
+  // Absent rather than null. Every reader below answers null for a missing key,
+  // and a recalled walk carries six of these empty.
+  'assignmentId': ?session.assignmentId,
+  'planVersion': ?session.planVersion,
+  'workoutId': ?session.workoutId,
+  'activity': ?session.activity,
+  if (session.recallMethod case final value?) 'recallMethod': value.name,
+  if (session.endedReason case final value?) 'endedReason': value.name,
+  if (session.durationSec != 0) 'durationSec': session.durationSec,
+  if (session.completed) 'completed': true,
 };
 
 TrainSession? _readSession(Object? raw) {
@@ -632,46 +753,110 @@ TrainSession? _readSession(Object? raw) {
   );
 }
 
-Map<String, Object?> _loggedSet(LoggedSet set) => <String, Object?>{
-  'prescribed': <String, Object?>{
-    'exerciseId': set.prescribed.exerciseId,
-    'order': set.prescribed.order,
-    'weightKg': set.prescribed.weightKg,
-    'reps': set.prescribed.reps,
-    'holdSeconds': set.prescribed.holdSeconds,
-  },
-  if (set.outcome case final outcome?)
-    'outcome': <String, Object?>{
-      'weightKg': outcome.weightKg,
-      'reps': outcome.reps,
-      'holdSeconds': outcome.holdSeconds,
-      'skipped': outcome.skipped,
-    },
+Map<String, Object?> _prescription(PrescribedSet prescribed) => <String, Object?>{
+  'exerciseId': prescribed.exerciseId,
+  'order': prescribed.order,
+  'weightKg': ?prescribed.weightKg,
+  'reps': ?prescribed.reps,
+  'holdSeconds': ?prescribed.holdSeconds,
 };
+
+Map<String, Object?> _outcome(SetOutcome outcome) => <String, Object?>{
+  'weightKg': ?outcome.weightKg,
+  'reps': ?outcome.reps,
+  'holdSeconds': ?outcome.holdSeconds,
+  // Only ever written when it is true. A skipped set is a decision of hers and
+  // has to survive; `skipped: false` is the default and says nothing.
+  if (outcome.skipped) 'skipped': true,
+};
+
+Map<String, Object?> _loggedSet(LoggedSet set) => <String, Object?>{
+  'prescribed': _prescription(set.prescribed),
+  if (set.outcome case final outcome?) 'outcome': _outcome(outcome),
+};
+
+SetOutcome? _readOutcome(Object? raw) {
+  final row = _map(raw);
+  if (row == null) return null;
+  return SetOutcome(
+    weightKg: _double(row['weightKg']),
+    reps: _int(row['reps']),
+    holdSeconds: _int(row['holdSeconds']),
+    skipped: _bool(row['skipped']) ?? false,
+  );
+}
+
+PrescribedSet? _readPrescription(Object? raw) {
+  final row = _map(raw);
+  if (row == null) return null;
+  final exerciseId = _str(row['exerciseId']);
+  if (exerciseId == null) return null;
+  return PrescribedSet(
+    exerciseId: exerciseId,
+    order: _int(row['order']) ?? 1,
+    weightKg: _double(row['weightKg']),
+    reps: _int(row['reps']),
+    holdSeconds: _int(row['holdSeconds']),
+  );
+}
 
 List<LoggedSet> _readLoggedSets(Object? raw) => <LoggedSet>[
   for (final entry in _list(raw) ?? const <Object?>[])
     if (_map(entry) case final row?)
-      if (_map(row['prescribed']) case final prescribed?)
-        if (_str(prescribed['exerciseId']) case final exerciseId?)
-          LoggedSet(
-            prescribed: PrescribedSet(
-              exerciseId: exerciseId,
-              order: _int(prescribed['order']) ?? 1,
-              weightKg: _double(prescribed['weightKg']),
-              reps: _int(prescribed['reps']),
-              holdSeconds: _int(prescribed['holdSeconds']),
-            ),
-            outcome: switch (_map(row['outcome'])) {
-              null => null,
-              final outcome => SetOutcome(
-                weightKg: _double(outcome['weightKg']),
-                reps: _int(outcome['reps']),
-                holdSeconds: _int(outcome['holdSeconds']),
-                skipped: _bool(outcome['skipped']) ?? false,
-              ),
-            },
-          ),
+      if (_readPrescription(row['prescribed']) case final prescribed?)
+        LoggedSet(prescribed: prescribed, outcome: _readOutcome(row['outcome'])),
+];
+
+/// The prescription one flush set is recorded against, in either of the two
+/// forms a document can carry it.
+///
+/// `prescribed` present is the long form: a prescription this document holds
+/// nowhere else, written out. Otherwise `order` names one of the session's own
+/// prescriptions, which is the form every flush of a live session takes and
+/// the reason the document halved. Null is a row that is neither, dropped the
+/// way every other corrupt row in this file is.
+PrescribedSet? _flushPrescription(
+  Map<String, Object?> row, {
+  required Map<String, Map<String, PrescribedSet?>> index,
+  required String sessionId,
+  required String exerciseId,
+}) {
+  final written = _readPrescription(row['prescribed']);
+  if (written != null) return written;
+  final order = _int(row['order']);
+  if (order == null) return null;
+  // The prescription the short form points at, when the session it belongs to
+  // came back whole.
+  final named = index[sessionId]?[_prescriptionKey(exerciseId, order)];
+  if (named != null) return named;
+  // It did not. The `sessions` row was truncated, corrupt, or written by a
+  // build that shaped a session differently — and dropping this set would throw
+  // away the OUTCOME, which is the half nothing else on the phone holds. So the
+  // set is kept with the only prescription this row can honestly support: the
+  // exercise and the set number, and no numbers she was asked for, because this
+  // document no longer says what they were. A null weight reads as bodyweight
+  // everywhere it is rendered, and nothing renders a flush's prescription:
+  // `set_history.dart` reads the outcome, and `cloud_documents.dart` uploads
+  // sessions rather than flushes.
+  return PrescribedSet(exerciseId: exerciseId, order: order);
+}
+
+List<LoggedSet> _readFlushSets(
+  Object? raw, {
+  required Map<String, Map<String, PrescribedSet?>> index,
+  required String sessionId,
+  required String exerciseId,
+}) => <LoggedSet>[
+  for (final entry in _list(raw) ?? const <Object?>[])
+    if (_map(entry) case final row?)
+      if (_flushPrescription(
+            row,
+            index: index,
+            sessionId: sessionId,
+            exerciseId: exerciseId,
+          )
+          case final prescribed?)
+        LoggedSet(prescribed: prescribed, outcome: _readOutcome(row['outcome'])),
 ];
 
 // ------------------------------------------------------------------ meals ---

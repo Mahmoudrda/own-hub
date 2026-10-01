@@ -27,6 +27,7 @@ import 'package:own_hub/app_state/cloud_store.dart';
 import 'package:own_hub/app_state/cloud_transport.dart';
 import 'package:own_hub/app_state/cycle_state.dart';
 import 'package:own_hub/app_state/local_persistence.dart';
+import 'package:own_hub/data/pending_answers.dart';
 import 'package:own_hub/domain/training/prescribed_set.dart';
 import 'package:own_hub/domain/week/week_key.dart';
 import 'package:own_hub/features/cycle/domain/cycle_document.dart';
@@ -702,6 +703,82 @@ void main() {
       // claiming her documents were already uploaded, and never upload them.
       final storage = CloudStore.instance.ledgerStorage as _MemoryStorage;
       expect(storage.document, isNull);
+    });
+  });
+
+  // =========================================================================
+  //
+  // A pull that has not landed is the one moment this app can tell a woman she
+  // is starting over when she is not: the store is empty, `T06` renders "Day
+  // 1", and her year of training is still on the wire. `PendingAnswers` holds
+  // the screen's tongue, and this is the half that matters — every way the link
+  // can end has to release it, or the screen stays quiet for good.
+  group('the pull is an answer, however it ends', () {
+    tearDown(PendingAnswers.reset);
+
+    test('nothing is expected with no account, as the app ships today', () {
+      expect(PendingAnswers.settled, isTrue);
+      expect(dataStateOf(holdsNothing: true), DataState.empty);
+    });
+
+    test('a pull that lands releases it', () async {
+      CloudStore.instance.transport = _FakeCloud();
+      CloudStore.instance.expectFirstAnswer();
+      expect(dataStateOf(holdsNothing: true), DataState.unknown);
+
+      await CloudStore.instance.linkFor(_uid);
+
+      expect(PendingAnswers.settled, isTrue);
+    });
+
+    test('a pull the rules refuse releases it', () async {
+      CloudStore.instance.transport = _FakeCloud()
+        ..refusePull = CloudRefusal.notVerified;
+      CloudStore.instance.expectFirstAnswer();
+
+      await CloudStore.instance.linkFor(_uid);
+
+      expect(CloudStore.instance.status, CloudStatus.notVerified);
+      expect(
+        PendingAnswers.settled,
+        isTrue,
+        reason: 'she is not verified, so the phone is the whole answer and '
+            'Home must say what the phone says',
+      );
+    });
+
+    test('a pull that fails on no signal releases it', () async {
+      CloudStore.instance.transport = _FakeCloud()
+        ..refusePull = CloudRefusal.unreachable;
+      CloudStore.instance.expectFirstAnswer();
+
+      await CloudStore.instance.linkFor(_uid);
+
+      expect(PendingAnswers.settled, isTrue);
+    });
+
+    test('a second link does not make Home go quiet again', () async {
+      CloudStore.instance.transport = _FakeCloud();
+      CloudStore.instance.expectFirstAnswer();
+      await CloudStore.instance.linkFor(_uid);
+
+      await CloudStore.instance.linkFor(_uid);
+
+      expect(
+        PendingAnswers.settled,
+        isTrue,
+        reason: 'by now she has been shown something, and taking it back is '
+            'the flicker this exists to prevent',
+      );
+    });
+
+    test('stopping the store releases it', () {
+      CloudStore.instance.expectFirstAnswer();
+      expect(PendingAnswers.settled, isFalse);
+
+      CloudStore.instance.stop();
+
+      expect(PendingAnswers.settled, isTrue);
     });
   });
 }

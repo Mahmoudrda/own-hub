@@ -7544,4 +7544,7 @@ class AppL10nAr extends AppL10n {
   @override
   String get nothingIsPlannedForThisWeekYet =>
       'لا شيء مخطَّط لهذا الأسبوع بعد. اختاري عشاءً لأي يوم في الأسفل.';
+
+  @override
+  String get lookingForWhatYouHaveLogged => 'نبحث عمّا سجّلتِه.';
 }

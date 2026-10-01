@@ -23,6 +23,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../data/pending_answers.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
@@ -227,9 +228,15 @@ class _TodayViewState extends State<TodayView> {
         },
       ),
       body: AppScaffold(
-        children: _day.isDayOne
-            ? _dayOne(context, l10n)
-            : _today(context, l10n),
+        // Three branches where there were two. `_dayOne` says "Day one" on a
+        // masthead and offers her the first session, which is the right screen
+        // for a woman who has never logged anything and a confident lie to a
+        // woman whose year of training has not been pulled down yet.
+        children: switch ((_day.isDayOne, _repo.dataState)) {
+          (true, DataState.unknown) => _stillLooking(context, l10n),
+          (true, _) => _dayOne(context, l10n),
+          (false, _) => _today(context, l10n),
+        },
       ),
     );
   }
@@ -458,6 +465,33 @@ class _TodayViewState extends State<TodayView> {
       ],
     );
   }
+
+  // ------------------------------------------------------- T06, unanswered ----
+
+  /// Home while nothing has yet said whether she has a history.
+  ///
+  /// Deliberately not a spinner: there was none here before, and the honest
+  /// thing to put on a screen that does not know is a sentence rather than an
+  /// animation implying the app is doing work she should wait for. It keeps the
+  /// masthead, because the weekday and her profile are true whatever the pull
+  /// says, and drops the "Day 1" pill, the cover, the button and the empty
+  /// state, because every one of them is a claim about a history nothing has
+  /// read yet.
+  List<Widget> _stillLooking(BuildContext context, AppL10n l10n) => [
+    TodayGreeting(
+      day: weekdayLabel(l10n, _day.date),
+      actions: [
+        AppAvatar(
+          size: 44,
+          onOpenProfile: () => openScreen(context, 'A02', widget.onOpenProfile),
+        ),
+      ],
+    ),
+    Text(
+      l10n.lookingForWhatYouHaveLogged,
+      style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
+    ),
+  ];
 
   // ---------------------------------------------------------------- T06 ----
 

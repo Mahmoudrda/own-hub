@@ -16,6 +16,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
+import '../../../data/pending_answers.dart';
 import '../../../domain/week/week_key.dart';
 import 'today_day.dart';
 
@@ -46,6 +47,19 @@ abstract class TodayRepository {
   /// The current day. Synchronous, because Today must render from cache on open
   /// rather than waiting for a network that may not be there.
   TodayDay get day;
+
+  /// Whether "she has logged nothing" is a fact or only a silence.
+  ///
+  /// [day] answers out of memory whether anything has filled that memory or
+  /// not, and `T06` turns its emptiness into the sentence "Day one". That
+  /// sentence is wrong, briefly and confidently, for a woman signing in on a
+  /// new handset while `CloudStore` is still pulling her year of training. See
+  /// `lib/data/pending_answers.dart`.
+  ///
+  /// Concrete here rather than abstract because every implementation would
+  /// write the same line: the question is about [day], which every one of them
+  /// already answers.
+  DataState get dataState => dataStateOf(holdsNothing: !day.arc.hasAnyLog);
 
   Stream<TodayDay> watch();
 
@@ -150,6 +164,9 @@ class InMemoryTodayRepository implements TodayRepository {
 
   @override
   TodayDay get day => _day;
+
+  @override
+  DataState get dataState => dataStateOf(holdsNothing: !_day.arc.hasAnyLog);
 
   @override
   Stream<TodayDay> watch() => _days.stream;

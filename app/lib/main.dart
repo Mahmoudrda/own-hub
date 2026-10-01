@@ -190,15 +190,44 @@ class _OwnHubAppState extends State<OwnHubApp> {
   /// [_firstRunStack], so that finishing, skipping or closing is a pop back to
   /// the screen underneath rather than a push to a new one. See
   /// `lib/app_state/onboarding_state.dart`.
-  String _initialRoute() {
-    final supplied =
-        WidgetsBinding.instance.platformDispatcher.defaultRouteName;
-    final id = screenIdForRoute(supplied);
-    // A route the build does not resolve is treated exactly as an unknown one,
-    // so a deep link naming the admin console in a release binary opens the
-    // front door rather than the "no screen serves this" page. The console is
-    // already unreachable at `onGenerateRoute`; this is about what she sees.
-    if (id != null && AppRouter.resolvesInThisBuild(id)) return supplied;
+  String _initialRoute() => _openable(
+    WidgetsBinding.instance.platformDispatcher.defaultRouteName,
+  );
+
+  /// [name] if the app is willing to OPEN on it, else the front door.
+  ///
+  /// Two rules, and both are about the first thing a woman ever sees rather
+  /// than about reachability, which `onGenerateRoute` already decides.
+  ///
+  ///   * **A route this build does not resolve.** The admin console in a
+  ///     release binary. It is already unreachable; without this she would
+  ///     launch into the "no screen serves this" page instead of the app.
+  ///   * **A route whose feature is switched off.** `onGenerateRoute` answers
+  ///     one with `FeatureOff` — an app bar carrying the raw screen id and a
+  ///     sentence about a feature flag, in English, with no way back because
+  ///     there is nothing underneath it. Pushed onto a running app that is a
+  ///     dead end she can leave. As the opening screen it is the entire
+  ///     product. `community`, `coaching`, `marketplace` and `assistant` are
+  ///     all off in the first release, so every link anyone shares about them
+  ///     before the second release arrives exactly here. `resolvesInThisBuild`
+  ///     does not cover it: those screens are built, tested and resolvable,
+  ///     they are merely switched off.
+  ///
+  /// It is a separate method because it has to be applied in TWO places, and
+  /// the reason is a trap worth naming. `WidgetsApp` does not simply use the
+  /// `initialRoute` it is handed: when the platform supplied a route of its
+  /// own it prefers that one and ignores `initialRoute` entirely. So the
+  /// filtering this app did in `_initialRoute` alone never ran in the one case
+  /// it was written for — a deep link — and the admin-console guard above has
+  /// been quietly ineffective for as long as it has existed. [_firstRunStack]
+  /// is where the name actually arrives, so that is where it must also hold.
+  static String _openable(String name) {
+    final id = screenIdForRoute(name);
+    if (id != null &&
+        AppRouter.resolvesInThisBuild(id) &&
+        AppRouter.screenIsOn(id)) {
+      return name;
+    }
     return _frontDoor;
   }
 
@@ -229,7 +258,13 @@ class _OwnHubAppState extends State<OwnHubApp> {
   /// front door — a build launched straight onto a named screen for a
   /// screenshot, or a notification landing on `T03`, is left exactly where it
   /// was sent.
-  List<Route<dynamic>> _firstRunStack(String initial) {
+  List<Route<dynamic>> _firstRunStack(String supplied) {
+    // Filtered HERE, not only in `_initialRoute`. `WidgetsApp` prefers the
+    // platform's own route over the `initialRoute` it was given, so on the one
+    // path that matters — a deep link — this is the only place the decision
+    // can be made. See [_openable].
+    final initial = _openable(supplied);
+
     Route<dynamic> routeFor(String name) =>
         AppRouter.onGenerateRoute(RouteSettings(name: name)) ??
         AppRouter.onUnknownRoute(RouteSettings(name: name));

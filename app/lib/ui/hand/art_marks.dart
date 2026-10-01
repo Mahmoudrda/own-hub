@@ -15,13 +15,30 @@
 /// `assets/art/LICENCE.md` keeps that finding as history. Read it before ever
 /// adding a stock asset to this product.
 ///
-/// Drawing them settles the question by construction. A [CustomPainter] in the
-/// app's existing hand language is licence-clean, costs nothing in binary size,
-/// scales to any density without three WebP variants, takes its colour from the
-/// theme, and looks more like this product than any stock pack could: the old
-/// set was flat saturated vector art in magenta and lime that sat on the warm
-/// page like a sticker, while these are pen drawings on the same page the rest
-/// of the Annotated Edition is written on.
+/// Drawing them settles the question by construction. A [CustomPainter] is
+/// licence-clean, costs nothing in binary size, scales to any density without
+/// three WebP variants, and takes its colours from the product rather than from
+/// whatever palette a stock contributor happened to use.
+///
+/// ## They were line drawings first, and that was the wrong answer
+///
+/// The first version of this file drew all 32 in a single thin rose ink. The
+/// owner looked at it and rejected it, and he was right: what he had asked for
+/// was clean, flat, colourful illustrations, and a page of one-ink line
+/// drawings is none of those three.
+///
+/// The licensed sets were then compared properly — Microsoft Fluent Emoji
+/// (MIT), Twemoji, OpenMoji, Noto — and the table in `assets/art/LICENCE.md`
+/// records why none of them could be used. The short version is that it was
+/// never the licence that was binding. Fluent Emoji is MIT and its objects are
+/// excellent; its people all have a face, a skin tone and visible hair, and
+/// twelve of the marks below are a woman's body. No openly licensed flat
+/// illustration set draws a faceless, hairless human figure.
+///
+/// So the geometry stayed and the paint changed. See `art_palette.dart`: every
+/// mark has a solid fill and a deeper line, plus a second colour where part of
+/// a shape is not the colour of the rest of it. The marks are flat and
+/// colourful now, and still cost nothing.
 ///
 /// This is the same move `food_marks.dart` already made for the recipe cards,
 /// extended across the whole product. Where a shape already exists there — a
@@ -46,12 +63,19 @@
 ///
 /// ## How a figure is drawn, and the one thing left out of it
 ///
-/// Eleven marks are a woman's body. Every one of them has a **plain circle for
-/// a head**: no face, no hair, no covering. That is a decision, not an
-/// omission. This app is for women in Egypt, where whether a woman's hair is
-/// covered is hers to decide and not a thing an empty-state drawing should
-/// take a position on. The old pack drew loose hair on every figure. A circle
-/// says "a woman training" and stops there.
+/// Twelve marks are her — eleven whole bodies and one flexed arm. Every figure
+/// has a **plain circle for a head**: no face, no hair, no covering. Every one
+/// is also a **single flat colour**, head and limbs alike, so there is no skin
+/// tone either. That is a decision, not an omission. This app is for women in
+/// Egypt, where whether a woman's hair is covered is hers to decide and not a
+/// thing an empty-state drawing should take a position on. The Canva pack drew
+/// loose hair, a bare midriff and a specific complexion on every figure, and so
+/// does every licensed set that was considered as its replacement. A rose
+/// pictogram says "a woman training" and stops there.
+///
+/// `app_art_test.dart` asserts it rather than trusting it: every name in
+/// [figures] is [ArtTones.rose] and none of them has an entry in [accentFor],
+/// because it takes a second colour to draw a face or a covering.
 ///
 /// Every mark stands on the same baseline, [handMarkBaseline], so two marks
 /// side by side in [ScreenArtStrip] sit on the pencil rule under them instead
@@ -89,6 +113,7 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 
 import '../../theme/hand_tokens.dart';
+import 'art_palette.dart';
 import 'food_marks.dart';
 import 'hand_geometry.dart';
 
@@ -149,7 +174,14 @@ class ArtMarkPainter extends CustomPainter {
   });
 
   final String markKey;
+
+  /// The page's pen. Since the set became coloured this is only the fallback
+  /// for a name with no entry in [toneFor] — which, because `app_art_test`
+  /// fails the build on one, means in practice never. It is kept because
+  /// [ArtMark] still takes it and because a mark drawn in one ink is what the
+  /// recipe cards still want.
   final Color ink;
+
   final HandLevel level;
   final bool rtl;
 
@@ -176,6 +208,115 @@ class ArtMarkPainter extends CustomPainter {
   /// A map rather than six `case`s because the pairing is a fact the tests
   /// need: [facing] and `FoodMarkPainter.facing` have to agree about these six
   /// or a borrowed mark flips in one place and not the other.
+  /// The marks that are a body rather than a thing.
+  ///
+  /// They are drawn with a heavier nib than the objects, and the reason is
+  /// structural rather than decorative. An object is mostly closed shapes, so
+  /// colouring the set gave it a solid body straight away — a bag, a bowl, an
+  /// apple all filled in. A figure is a small filled torso with four open
+  /// polylines coming off it, and an open polyline cannot be filled, so at the
+  /// object's nib the women came out as spindly wire next to solid fruit. The
+  /// limbs ARE the figure, so the limbs have to carry an object's worth of
+  /// weight.
+  ///
+  /// [figureNib] is the multiplier. It is applied to whatever [pen] is handed
+  /// in rather than baked into [artPen], so a test that swaps the pen still
+  /// sees every mark move with it.
+  static const Set<String> figures = {
+    'running',
+    'dance',
+    'strong_arms',
+    'squat_weights',
+    'lunge_kneeling',
+    'lunge_warrior',
+    'plank',
+    'stretch_seated',
+    'side_stretch',
+    'rest_floor',
+    'meditation',
+    'overhead_raise',
+  };
+
+  /// How much heavier a figure's nib is than an object's. See [figures].
+  static const double figureNib = 1.9;
+
+  /// What colour each mark is, and where a second colour goes.
+  ///
+  /// The whole set is painted from the twelve tones in `art_palette.dart`
+  /// rather than from one colour each: thirty-two unrelated colours is a swatch
+  /// sheet, and two bowls of leaves on one screen have to look like they came
+  /// from the same hand.
+  ///
+  /// **Every figure is [ArtTones.rose], head included.** There is no skin tone
+  /// in this set and no hair, for the reason set out at the top of this file
+  /// and in `art_palette.dart`: whether a woman covers her hair is hers to
+  /// decide, and so is what colour she is.
+  ///
+  /// `app_art_test.dart` asserts every name in `AppArt.all` has an entry, so a
+  /// mark cannot be added and silently come out in the fallback ink.
+  static const Map<String, ArtTone> toneFor = {
+    // Her: one colour, always.
+    'running': ArtTones.rose,
+    'dance': ArtTones.rose,
+    'strong_arms': ArtTones.rose,
+    'squat_weights': ArtTones.rose,
+    'lunge_kneeling': ArtTones.rose,
+    'lunge_warrior': ArtTones.rose,
+    'plank': ArtTones.rose,
+    'stretch_seated': ArtTones.rose,
+    'side_stretch': ArtTones.rose,
+    'rest_floor': ArtTones.rose,
+    'meditation': ArtTones.rose,
+    'overhead_raise': ArtTones.rose,
+    // Kit. Metal is slate, what she wears or carries is not, so a strip of
+    // three pieces of equipment is not three grey objects.
+    'dumbbells': ArtTones.slate,
+    'boxing_gloves': ArtTones.ember,
+    'yoga_mat': ArtTones.teal,
+    'trainers': ArtTones.plum,
+    'gym_bag': ArtTones.berry,
+    'spin_bike': ArtTones.slate,
+    'headphones': ArtTones.plum,
+    // Food. Leaves green, bread amber, crockery cream, meat and red fruit
+    // ember — the colour says what it is before the shape does.
+    'bowl_salad': ArtTones.leaf,
+    'buddha_bowl': ArtTones.cream,
+    'plate_mixed': ArtTones.cream,
+    'steak': ArtTones.ember,
+    'toast_egg': ArtTones.cream,
+    'breakfast': ArtTones.amber,
+    'bruschetta': ArtTones.amber,
+    'pasta': ArtTones.slate,
+    'fruit_basket': ArtTones.amber,
+    'apple': ArtTones.ember,
+    'grapes': ArtTones.berry,
+    'watermelon': ArtTones.ember,
+    'nuts': ArtTones.amber,
+  };
+
+  /// The second colour, for the marks that have a part which is not the colour
+  /// of the rest: an apple's leaf, a yolk in its white, the leaves in a bowl.
+  ///
+  /// Deliberately short. A mark with three colours in it at 92 pt is a diagram.
+  static const Map<String, ArtTone> accentFor = {
+    'buddha_bowl': ArtTones.leaf,
+    'toast_egg': ArtTones.yolk,
+    'breakfast': ArtTones.yolk,
+    'bruschetta': ArtTones.leaf,
+    'apple': ArtTones.leaf,
+    'grapes': ArtTones.leaf,
+    'watermelon': ArtTones.leaf,
+    'fruit_basket': ArtTones.ember,
+    'plate_mixed': ArtTones.leaf,
+    'bowl_salad': ArtTones.cream,
+    'steak': ArtTones.cream,
+    'pasta': ArtTones.ember,
+    'trainers': ArtTones.rose,
+    'spin_bike': ArtTones.rose,
+    'gym_bag': ArtTones.rose,
+    'boxing_gloves': ArtTones.cream,
+  };
+
   static const Map<String, String> borrowed = {
     'bowl_salad': FoodMarks.saladBowl,
     'steak': FoodMarks.steak,
@@ -228,27 +369,48 @@ class ArtMarkPainter extends CustomPainter {
     // is drawn. A mark that shivered on every rebuild would read as a glitch
     // rather than as a hand.
     final seed = handSeed(['art-mark', markKey]);
+    // The mark's own two colours. Everything below draws through `tone` and
+    // `accent` and never reaches for `ink` again, so changing what a mark is
+    // made of is an edit to [toneFor] rather than to its geometry.
+    final tone = toneFor[markKey] ?? ArtTone(ink.withValues(alpha: 0.12), ink);
+    final accent = accentFor[markKey] ?? tone;
+    final nib =
+        pen.widthFor(s) * (figures.contains(markKey) ? figureNib : 1.0);
     final stroke = Paint()
-      ..color = ink
+      ..color = tone.line
       ..style = PaintingStyle.stroke
-      ..strokeWidth = pen.widthFor(s)
+      ..strokeWidth = nib
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     final fill = Paint()
-      ..color = ink.withValues(alpha: 0.12)
+      ..color = tone.fill
       ..style = PaintingStyle.fill;
     final solid = Paint()
-      ..color = ink
+      ..color = tone.line
+      ..style = PaintingStyle.fill;
+    final accentStroke = Paint()
+      ..color = accent.line
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = nib
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final accentFill = Paint()
+      ..color = accent.fill
       ..style = PaintingStyle.fill;
 
-    void line(List<Offset> pts, {bool close = false, bool filled = false}) {
+    void line(
+      List<Offset> pts, {
+      bool close = false,
+      bool filled = false,
+      bool second = false,
+    }) {
       final scaled = [for (final p in pts) Offset(p.dx * s, p.dy * s)];
       final path = smoothPath(
         perturbLoop(scaled, seed: seed, wobble: pen.wobbleFor(s, level)),
         close: close,
       );
-      if (filled) canvas.drawPath(path, fill);
-      canvas.drawPath(path, stroke);
+      if (filled) canvas.drawPath(path, second ? accentFill : fill);
+      canvas.drawPath(path, second ? accentStroke : stroke);
     }
 
     void oval(
@@ -257,6 +419,7 @@ class ArtMarkPainter extends CustomPainter {
       double ry, {
       bool filled = false,
       bool ink = false,
+      bool second = false,
     }) {
       final pts = <Offset>[
         for (var i = 0; i <= 22; i++)
@@ -276,11 +439,15 @@ class ArtMarkPainter extends CustomPainter {
         );
         return;
       }
-      line(pts, close: true, filled: filled);
+      line(pts, close: true, filled: filled, second: second);
     }
 
-    void circle(Offset centre, double r, {bool filled = false}) =>
-        oval(centre, r, r, filled: filled);
+    void circle(
+      Offset centre,
+      double r, {
+      bool filled = false,
+      bool second = false,
+    }) => oval(centre, r, r, filled: filled, second: second);
 
     /// A head. Always a plain circle: see the note at the top of this file.
     void head(Offset centre, [double r = 0.082]) =>
@@ -295,6 +462,13 @@ class ArtMarkPainter extends CustomPainter {
       markKey: foodKey,
       ink: ink,
       level: level,
+      // The colours go down with the pen, for the same reason the pen does: a
+      // borrowed `pot` sitting next to a native `buddha_bowl` at the top of
+      // E05 in one ink while the bowl beside it is painted would be two
+      // illustrators in one header strip again, in a second medium. The recipe
+      // cards pass neither and stay the one-ink drawings they were drawn as.
+      tone: tone,
+      accent: accentFor[markKey],
       // This file's pen, not the recipe card's. Without it the borrowed shape
       // is drawn 23% thicker and with 1.64x the wobble of the native mark next
       // to it, which is two illustrators in one header strip.
@@ -669,12 +843,12 @@ class ArtMarkPainter extends CustomPainter {
           const Offset(0.40, 0.64), const Offset(0.74, 0.62),
           const Offset(0.72, handMarkBaseline),
           const Offset(0.57, 0.875), const Offset(0.42, 0.86),
-        ], close: true, filled: true);
-        line([const Offset(0.41, 0.80), const Offset(0.73, 0.78)]);
+        ], close: true, filled: true, second: true);
+        line([const Offset(0.41, 0.80), const Offset(0.73, 0.78)], second: true);
         // The lacing up the inside of the cuff.
-        line([const Offset(0.57, 0.64), const Offset(0.56, 0.86)]);
-        line([const Offset(0.50, 0.69), const Offset(0.64, 0.68)]);
-        line([const Offset(0.50, 0.76), const Offset(0.64, 0.75)]);
+        line([const Offset(0.57, 0.64), const Offset(0.56, 0.86)], second: true);
+        line([const Offset(0.50, 0.69), const Offset(0.64, 0.68)], second: true);
+        line([const Offset(0.50, 0.76), const Offset(0.64, 0.75)], second: true);
 
       case 'yoga_mat':
         // Rolled, not laid flat: a flat mat at 92 pt is a rectangle, and a
@@ -707,7 +881,7 @@ class ArtMarkPainter extends CustomPainter {
           const Offset(0.07, 0.75), const Offset(0.91, 0.75),
           const Offset(0.91, handMarkBaseline),
           const Offset(0.07, 0.87),
-        ], close: true, filled: true);
+        ], close: true, filled: true, second: true);
         // Laces across the tongue, and one long line for the shoe's side
         // panel, which is the detail that says trainer rather than slipper.
         line([const Offset(0.37, 0.53), const Offset(0.45, 0.48)]);
@@ -745,13 +919,13 @@ class ArtMarkPainter extends CustomPainter {
         line([
           const Offset(0.37, 0.51), const Offset(0.42, 0.30),
           const Offset(0.50, 0.26),
-        ]);
+        ], second: true);
         line([
           const Offset(0.63, 0.51), const Offset(0.58, 0.30),
           const Offset(0.50, 0.26),
-        ]);
+        ], second: true);
         // The grip where the two are held together.
-        line([const Offset(0.45, 0.31), const Offset(0.55, 0.31)]);
+        line([const Offset(0.45, 0.31), const Offset(0.55, 0.31)], second: true);
 
       case 'spin_bike':
         // Both wheels on the rule, so the bike stands rather than leans: the
@@ -765,8 +939,8 @@ class ArtMarkPainter extends CustomPainter {
         ]);
         line([const Offset(0.50, 0.46), const Offset(0.66, 0.34)]);
         line([const Offset(0.36, 0.48), const Offset(0.54, 0.44)]);
-        line([const Offset(0.58, 0.31), const Offset(0.78, 0.30)]);
-        line([const Offset(0.66, 0.34), const Offset(0.68, 0.31)]);
+        line([const Offset(0.58, 0.31), const Offset(0.78, 0.30)], second: true);
+        line([const Offset(0.66, 0.34), const Offset(0.68, 0.31)], second: true);
 
       case 'headphones':
         line([
@@ -802,19 +976,19 @@ class ArtMarkPainter extends CustomPainter {
         circle(const Offset(0.50, 0.53), 0.27);
         line([const Offset(0.50, 0.26), const Offset(0.50, 0.80)]);
         line([const Offset(0.23, 0.53), const Offset(0.77, 0.53)]);
-        circle(const Offset(0.38, 0.41), 0.05);
-        circle(const Offset(0.62, 0.43), 0.04);
-        circle(const Offset(0.40, 0.66), 0.04);
-        circle(const Offset(0.63, 0.65), 0.05);
+        circle(const Offset(0.38, 0.41), 0.05, filled: true, second: true);
+        circle(const Offset(0.62, 0.43), 0.04, filled: true, second: true);
+        circle(const Offset(0.40, 0.66), 0.04, filled: true, second: true);
+        circle(const Offset(0.63, 0.65), 0.05, filled: true, second: true);
 
       case 'plate_mixed':
         oval(const Offset(0.44, 0.58), 0.32, 0.30, filled: true);
         oval(const Offset(0.44, 0.58), 0.24, 0.22);
-        circle(const Offset(0.36, 0.52), 0.07, filled: true);
+        circle(const Offset(0.36, 0.52), 0.07, filled: true, second: true);
         line([
           const Offset(0.48, 0.50), const Offset(0.60, 0.58),
           const Offset(0.46, 0.68), const Offset(0.38, 0.64),
-        ], close: true, filled: true);
+        ], close: true, filled: true, second: true);
         line([const Offset(0.84, 0.32), const Offset(0.82, handMarkBaseline)]);
         line([const Offset(0.79, 0.30), const Offset(0.80, 0.44)]);
         line([const Offset(0.89, 0.30), const Offset(0.87, 0.44)]);
@@ -829,9 +1003,9 @@ class ArtMarkPainter extends CustomPainter {
         line([const Offset(0.18, 0.67), const Offset(0.82, 0.67)]);
         line([const Offset(0.38, 0.55), const Offset(0.36, 0.87)]);
         line([const Offset(0.62, 0.55), const Offset(0.64, 0.87)]);
-        circle(const Offset(0.33, 0.44), 0.11, filled: true);
-        circle(const Offset(0.55, 0.39), 0.13, filled: true);
-        circle(const Offset(0.73, 0.46), 0.09, filled: true);
+        circle(const Offset(0.33, 0.44), 0.11, filled: true, second: true);
+        circle(const Offset(0.55, 0.39), 0.13, filled: true, second: true);
+        circle(const Offset(0.73, 0.46), 0.09, filled: true, second: true);
         line([const Offset(0.55, 0.26), const Offset(0.70, 0.20)]);
 
       case 'apple':
@@ -842,11 +1016,11 @@ class ArtMarkPainter extends CustomPainter {
           const Offset(0.61, 0.85), const Offset(0.50, handMarkBaseline),
           const Offset(0.39, 0.85), const Offset(0.25, 0.66),
         ], close: true, filled: true);
-        line([const Offset(0.50, 0.35), const Offset(0.53, 0.18)]);
+        line([const Offset(0.50, 0.35), const Offset(0.53, 0.18)], second: true);
         line([
           const Offset(0.53, 0.22), const Offset(0.68, 0.14),
           const Offset(0.66, 0.27),
-        ], close: true, filled: true);
+        ], close: true, filled: true, second: true);
 
       case 'grapes':
         circle(const Offset(0.34, 0.47), 0.10, filled: true);
@@ -855,11 +1029,11 @@ class ArtMarkPainter extends CustomPainter {
         circle(const Offset(0.43, 0.62), 0.10, filled: true);
         circle(const Offset(0.61, 0.64), 0.10, filled: true);
         circle(const Offset(0.51, handMarkBaseline - 0.10), 0.10, filled: true);
-        line([const Offset(0.52, 0.34), const Offset(0.50, 0.18)]);
+        line([const Offset(0.52, 0.34), const Offset(0.50, 0.18)], second: true);
         line([
           const Offset(0.50, 0.22), const Offset(0.34, 0.14),
           const Offset(0.36, 0.27),
-        ], close: true, filled: true);
+        ], close: true, filled: true, second: true);
 
       case 'watermelon':
         line([
@@ -870,10 +1044,13 @@ class ArtMarkPainter extends CustomPainter {
         line([
           const Offset(0.20, 0.63), const Offset(0.50, 0.31),
           const Offset(0.80, 0.63),
-        ]);
-        circle(const Offset(0.40, 0.58), 0.032, filled: true);
-        circle(const Offset(0.58, 0.55), 0.032, filled: true);
-        circle(const Offset(0.50, 0.73), 0.032, filled: true);
+        ], second: true);
+        // Solid in the LINE colour, not the fill: a seed filled with the same
+        // flesh colour it sits on is an outline of a seed, which at 30 pt
+        // beside a list row is nothing at all.
+        oval(const Offset(0.40, 0.58), 0.032, 0.032, ink: true);
+        oval(const Offset(0.58, 0.55), 0.032, 0.032, ink: true);
+        oval(const Offset(0.50, 0.73), 0.032, 0.032, ink: true);
 
       case 'nuts':
         line([

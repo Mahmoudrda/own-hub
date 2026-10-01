@@ -64,6 +64,7 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 
 import '../../theme/hand_tokens.dart';
+import 'art_palette.dart';
 import 'hand_geometry.dart';
 
 /// The rule every mark stands on: the lowest ink in the 0..1 box.
@@ -214,11 +215,28 @@ class FoodMarkPainter extends CustomPainter {
     this.level = HandLevel.expressive,
     this.rtl = false,
     this.pen = HandMarkPen.recipeCard,
+    this.tone,
+    this.accent,
   });
 
   final String markKey;
   final Color ink;
   final HandLevel level;
+
+  /// The two colours to paint this shape in, or null to draw it in one [ink]
+  /// the way the recipe cards do.
+  ///
+  /// The recipe book is a pen-and-paper object and stays one ink. The same
+  /// shapes borrowed by `art_marks.dart` are illustrations on a product
+  /// screen, and those are painted — see `art_palette.dart` for why the two
+  /// are allowed to differ. Null is the recipe card; non-null is the header
+  /// strip.
+  final ArtTone? tone;
+
+  /// A second colour for the one or two parts of a shape that are not the
+  /// colour of the rest of it: a yolk, a drizzle, the leaves in a bowl. Null
+  /// means the shape is painted entirely in [tone].
+  final ArtTone? accent;
 
   /// Whether the page is read right to left. Only the marks in [facing] turn
   /// round; see the note there.
@@ -268,27 +286,52 @@ class FoodMarkPainter extends CustomPainter {
     // is drawn. A mark that shivered on every rebuild would read as a glitch
     // rather than as a hand.
     final seed = handSeed(['food-mark', markKey]);
+    // One ink on a recipe card, two colours in a header strip. `tone` is the
+    // whole difference: everything below asks it for its colours and does not
+    // otherwise know which of the two it is drawing.
+    final lineColour = tone?.line ?? ink;
+    final fillColour = tone?.fill ?? ink.withValues(alpha: 0.13);
     final stroke = Paint()
-      ..color = ink
+      ..color = lineColour
       ..style = PaintingStyle.stroke
       ..strokeWidth = pen.widthFor(s)
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     final fill = Paint()
-      ..color = ink.withValues(alpha: 0.13)
+      ..color = fillColour
+      ..style = PaintingStyle.fill;
+    final accentStroke = Paint()
+      ..color = accent?.line ?? lineColour
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = pen.widthFor(s)
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final accentFill = Paint()
+      ..color = accent?.fill ?? fillColour
       ..style = PaintingStyle.fill;
 
-    void line(List<Offset> pts, {bool close = false, bool filled = false}) {
+    void line(
+      List<Offset> pts, {
+      bool close = false,
+      bool filled = false,
+      bool second = false,
+    }) {
       final scaled = [for (final p in pts) Offset(p.dx * s, p.dy * s)];
       final path = smoothPath(
         perturbLoop(scaled, seed: seed, wobble: pen.wobbleFor(s, level)),
         close: close,
       );
-      if (filled) canvas.drawPath(path, fill);
-      canvas.drawPath(path, stroke);
+      if (filled) canvas.drawPath(path, second ? accentFill : fill);
+      canvas.drawPath(path, second ? accentStroke : stroke);
     }
 
-    void oval(Offset centre, double rx, double ry, {bool filled = false}) {
+    void oval(
+      Offset centre,
+      double rx,
+      double ry, {
+      bool filled = false,
+      bool second = false,
+    }) {
       final pts = <Offset>[
         for (var i = 0; i <= 22; i++)
           Offset(
@@ -296,11 +339,24 @@ class FoodMarkPainter extends CustomPainter {
             centre.dy + ry * math.sin(i / 22 * 2 * math.pi),
           ),
       ];
-      line(pts, close: true, filled: filled);
+      line(pts, close: true, filled: filled, second: second);
     }
 
-    void circle(Offset centre, double r, {bool filled = false}) =>
-        oval(centre, r, r, filled: filled);
+    void circle(
+      Offset centre,
+      double r, {
+      bool filled = false,
+      bool second = false,
+    }) => oval(centre, r, r, filled: filled, second: second);
+
+    // True only when this shape is being painted for `art_marks.dart`'s header
+    // strip rather than drawn for a recipe card. The six borrowed shapes below
+    // use it to add a fill that a flat colour illustration needs and a
+    // pen-and-paper card does not: the salad's leaves, the egg's white, the
+    // bread's topping. A card passes no tone, `painted` is false, and every one
+    // of those shapes comes out exactly as it was drawn and reviewed -- which
+    // `food_marks_test.dart` is what checks.
+    final painted = tone != null;
 
     switch (markKey) {
       case FoodMarks.cakeSlice:
@@ -345,7 +401,7 @@ class FoodMarkPainter extends CustomPainter {
           line([
             Offset(0.20, y), Offset(0.30, y - 0.10), Offset(0.70, y - 0.10),
             Offset(0.80, y), Offset(0.70, y + 0.08), Offset(0.30, y + 0.08),
-          ], close: true, filled: i == 0);
+          ], close: true, filled: i == 0 || painted, second: painted && i == 2);
         }
 
       case FoodMarks.jar:
@@ -380,10 +436,10 @@ class FoodMarkPainter extends CustomPainter {
           const Offset(0.70, handMarkBaseline),
           const Offset(0.50, handMarkBaseline),
           const Offset(0.30, handMarkBaseline),
-        ], close: true, filled: true);
-        circle(const Offset(0.36, 0.42), 0.10);
-        circle(const Offset(0.56, 0.38), 0.12);
-        circle(const Offset(0.72, 0.44), 0.08);
+        ], close: true, filled: true, second: true);
+        circle(const Offset(0.36, 0.42), 0.10, filled: painted);
+        circle(const Offset(0.56, 0.38), 0.12, filled: painted);
+        circle(const Offset(0.72, 0.44), 0.08, filled: painted);
 
       case FoodMarks.sandwich:
         line([
@@ -401,8 +457,8 @@ class FoodMarkPainter extends CustomPainter {
           const Offset(0.58, 0.26), const Offset(0.84, 0.42),
           const Offset(0.82, 0.70), const Offset(0.56, handMarkBaseline),
           const Offset(0.26, 0.80),
-        ], close: true);
-        circle(const Offset(0.48, 0.54), 0.15, filled: true);
+        ], close: true, filled: painted);
+        circle(const Offset(0.48, 0.54), 0.15, filled: true, second: true);
 
       case FoodMarks.fries:
         line([
@@ -450,9 +506,9 @@ class FoodMarkPainter extends CustomPainter {
         ]);
         // Scorched bubbles: open and unequal, against the cookie's three solid
         // chips, so the two are still different at 28 pt.
-        circle(const Offset(0.60, 0.52), 0.055);
-        circle(const Offset(0.44, 0.62), 0.032);
-        circle(const Offset(0.72, 0.66), 0.022);
+        circle(const Offset(0.60, 0.52), 0.055, filled: painted, second: true);
+        circle(const Offset(0.44, 0.62), 0.032, filled: painted, second: true);
+        circle(const Offset(0.72, 0.66), 0.022, filled: painted, second: true);
 
       case FoodMarks.pot:
         line([
@@ -462,7 +518,7 @@ class FoodMarkPainter extends CustomPainter {
           const Offset(0.30, handMarkBaseline),
         ], close: true, filled: true);
         line([const Offset(0.16, 0.44), const Offset(0.84, 0.44)]);
-        line([const Offset(0.44, 0.34), const Offset(0.56, 0.34)]);
+        line([const Offset(0.44, 0.34), const Offset(0.56, 0.34)], second: true);
 
       case FoodMarks.pan:
         circle(const Offset(0.46, 0.60), 0.28, filled: true);
@@ -500,7 +556,7 @@ class FoodMarkPainter extends CustomPainter {
           const Offset(0.48, 0.28), const Offset(0.72, 0.30),
           const Offset(0.86, 0.46), const Offset(0.78, 0.49),
           const Offset(0.66, 0.38), const Offset(0.48, 0.36),
-        ], close: true);
+        ], close: true, filled: painted, second: true);
         // Grill marks: three, leaning together. Two parallel strokes on a
         // rounded shape is what QA read as a bread roll.
         line([const Offset(0.34, 0.54), const Offset(0.48, 0.48)]);
@@ -546,5 +602,7 @@ class FoodMarkPainter extends CustomPainter {
       old.ink != ink ||
       old.level != level ||
       old.rtl != rtl ||
-      old.pen != pen;
+      old.pen != pen ||
+      old.tone != tone ||
+      old.accent != accent;
 }

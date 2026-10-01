@@ -22,10 +22,13 @@
 ///  * **There is no way back into setup by accident.** The `O` routes are gone
 ///    from the history the moment she leaves them, so a back gesture on Home
 ///    cannot walk her into question four.
-///  * **Home is honest the instant she finishes.** Every routed screen is
-///    wrapped in a `ListenableBuilder` on `AppChanges`, so the bump at the end
-///    of [finish] redraws the Home already sitting underneath with her own
-///    weekly target on it.
+///  * **Home is honest by the time she sees it.** Every routed screen is
+///    wrapped in a `RedrawOnChange` on `AppChanges`, so the bump at the end of
+///    [finish] reaches the Home already sitting underneath. Home is covered at
+///    that instant, so the redraw happens on the first frame of the pop that
+///    uncovers it rather than while it is buried — which is the same thing from
+///    where she is standing, and five screens cheaper. See
+///    `lib/app_state/app_changes.dart`.
 ///
 /// ## What her answers actually reach
 ///

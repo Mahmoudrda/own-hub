@@ -62,6 +62,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/widgets.dart';
 
+import '../data/pending_answers.dart';
 import '../features/signup/domain/auth_repository.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
@@ -186,6 +187,8 @@ class CloudStore {
     }
     _running = true;
 
+    expectFirstAnswer();
+
     await _loadLedger();
 
     _auth = AppRouter.authRepository.watch().listen(
@@ -203,6 +206,9 @@ class CloudStore {
   void stop() {
     _pending?.cancel();
     _pending = null;
+    // Whatever was expected is not coming now. A screen must never be left
+    // holding its tongue by a store that has been shut down.
+    _firstAnswer();
     if (!_running) return;
     _running = false;
     unawaited(_auth?.cancel());
@@ -273,6 +279,8 @@ class CloudStore {
   /// Back to a fresh instance, holding nothing. Tests only.
   @visibleForTesting
   void reset() {
+    // `stop()` releases the pending answer, so a reset store never leaves a
+    // screen waiting on a pull that will never be attempted.
     stop();
     _transport = null;
     ledgerStorage = const PreferencesSnapshotStorage(key: kCloudLedgerKey);
@@ -299,6 +307,9 @@ class CloudStore {
         unawaited(_link(uid));
       case AuthSignedOut():
       case AuthAwaitingCode():
+        // No account is an answer. The phone is the whole of her data, it was
+        // read before the first frame, and nothing else is coming.
+        _firstAnswer();
         // Signing out stops the pushing and keeps the ledger: she may sign back
         // into the same account on the same handset, and re-uploading a year of
         // sessions to say nothing new is the cost of forgetting.
@@ -318,6 +329,47 @@ class CloudStore {
   /// `cloud_documents.dart` — so an empty cloud changes nothing, and the push
   /// that follows is what puts her week where losing the phone stops costing it.
   Future<void> _link(String uid) async {
+    try {
+      await _linkOnce(uid);
+    } finally {
+      // Pulled, refused or failed: all three are answers, and a screen holding
+      // its tongue has to be released by every one of them.
+      _firstAnswer();
+    }
+  }
+
+  /// Whether the one answer [start] is waiting for has been given.
+  ///
+  /// A latch rather than a counter. `retryLink` and a second sign-in both reach
+  /// [_link] again, and a second pull is not a second reason to make Home go
+  /// quiet: by then she has been shown something, and taking it back would be
+  /// the flicker this exists to prevent.
+  bool _firstAnswerGiven = true;
+
+  /// Starts waiting for whatever a sign-in is going to say about her history.
+  ///
+  /// Called by [start], synchronously and before any await, because `main()`
+  /// calls [start] BEFORE `runApp` — this is the only point early enough to
+  /// stop `T06` saying "Day 1" in the first frame and withdrawing it when the
+  /// pull lands. See `lib/data/pending_answers.dart`.
+  ///
+  /// Visible for testing as well because a widget test cannot bring Firebase
+  /// up, and [start] returns before this line without it. The paths worth
+  /// proving are the ones that RELEASE the wait: a pull that lands, one that is
+  /// refused, one that fails, a sign-out, and a stop.
+  @visibleForTesting
+  void expectFirstAnswer() {
+    _firstAnswerGiven = false;
+    PendingAnswers.expect();
+  }
+
+  void _firstAnswer() {
+    if (_firstAnswerGiven) return;
+    _firstAnswerGiven = true;
+    PendingAnswers.answered();
+  }
+
+  Future<void> _linkOnce(String uid) async {
     _uid = uid;
     _status = CloudStatus.linking;
     mergedFromCloud = 0;

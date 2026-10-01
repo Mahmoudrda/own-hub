@@ -17,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/theme/app_art.dart';
 import 'package:own_hub/theme/hand_tokens.dart';
 import 'package:own_hub/ui/hand/art_marks.dart';
+import 'package:own_hub/ui/hand/art_palette.dart';
 import 'package:own_hub/ui/hand/food_marks.dart';
 
 /// Paints [markKey] into an image and returns the pixels, so two marks can be
@@ -55,6 +56,8 @@ Future<ByteData> _foodPixels(
   double side = 96,
   HandMarkPen pen = HandMarkPen.recipeCard,
   HandLevel level = HandLevel.expressive,
+  ArtTone? tone,
+  ArtTone? accent,
 }) async {
   final size = Size(side, side);
   final recorder = ui.PictureRecorder();
@@ -65,6 +68,8 @@ Future<ByteData> _foodPixels(
     rtl: rtl,
     pen: pen,
     level: level,
+    tone: tone,
+    accent: accent,
   ).paint(canvas, size);
   final image = await recorder.endRecording().toImage(
     side.toInt(),
@@ -215,6 +220,56 @@ void main() {
     });
   });
 
+  test('every mark has colours, and they are a real name', () {
+    // A name with no entry in `toneFor` still draws -- it falls back to one
+    // flat ink -- so the failure is a mark that is quietly the wrong medium
+    // next to a painted one in the same header strip, which is exactly the
+    // defect the pen parameter exists to stop in the other direction.
+    final uncoloured = AppArt.all
+        .where((n) => !ArtMarkPainter.toneFor.containsKey(n))
+        .toList();
+    expect(uncoloured, isEmpty, reason: 'these marks have no tone');
+
+    // And nothing is coloured that is not drawn.
+    expect(
+      ArtMarkPainter.toneFor.keys.toSet().difference(AppArt.all.toSet()),
+      isEmpty,
+    );
+    expect(
+      ArtMarkPainter.accentFor.keys.toSet().difference(AppArt.all.toSet()),
+      isEmpty,
+    );
+    expect(
+      ArtMarkPainter.figures.difference(AppArt.all.toSet()),
+      isEmpty,
+    );
+  });
+
+  test('every figure is rose, and nothing else is', () {
+    // The one decision in this set that is not about taste. Twelve marks are a
+    // woman's body and every one of them is a single flat colour, head
+    // included: no skin tone, no hair, no face, no garment. Whether a woman in
+    // Egypt covers her hair is hers to decide, and an empty-state drawing has
+    // no business answering it -- which is also why Microsoft Fluent Emoji was
+    // turned down despite being MIT. See `assets/art/LICENCE.md`.
+    //
+    // Asserting the colour rather than the absence is what makes this
+    // checkable: a second tone appearing on a figure is how a face or a
+    // covering would arrive, because it takes a second colour to draw one.
+    for (final name in ArtMarkPainter.figures) {
+      expect(
+        ArtMarkPainter.toneFor[name],
+        ArtTones.rose,
+        reason: '$name is a figure drawn in something other than one rose',
+      );
+      expect(
+        ArtMarkPainter.accentFor.containsKey(name),
+        isFalse,
+        reason: '$name is a figure with a second colour on it',
+      );
+    }
+  });
+
   test('every mark this painter faces is a real name', () {
     expect(
       ArtMarkPainter.facing.difference(AppArt.all.toSet()),
@@ -272,9 +327,24 @@ void main() {
         isNot(_digest(await _pixels('buddha_bowl'))),
         reason: 'a native mark ignored the pen it was given',
       );
+      // The colours are handed down with the pen now, so the comparison has to
+      // hand them down too -- otherwise this would only be re-measuring that a
+      // painted pot and an unpainted one are different pictures, which is the
+      // point of `art_palette.dart` rather than a bug.
+      final tone = ArtMarkPainter.toneFor['pasta'];
+      final accent = ArtMarkPainter.accentFor['pasta'];
+      expect(tone, isNotNull, reason: 'pasta lost its colours');
+
       expect(
         _digest(await _pixels('pasta', pen: fat)),
-        _digest(await _foodPixels(FoodMarks.pot, pen: fat)),
+        _digest(
+          await _foodPixels(
+            FoodMarks.pot,
+            pen: fat,
+            tone: tone,
+            accent: accent,
+          ),
+        ),
         reason: 'the borrowed shape was not drawn with the pen handed down',
       );
 
@@ -282,7 +352,14 @@ void main() {
       // than the card's.
       expect(
         _digest(await _pixels('pasta')),
-        _digest(await _foodPixels(FoodMarks.pot, pen: ArtMarkPainter.artPen)),
+        _digest(
+          await _foodPixels(
+            FoodMarks.pot,
+            pen: ArtMarkPainter.artPen,
+            tone: tone,
+            accent: accent,
+          ),
+        ),
       );
       final borrowed = await _pixels('pasta');
       final onACard = await _foodPixels(FoodMarks.pot);
@@ -296,8 +373,18 @@ void main() {
       // 0.026 against the card's 0.032, so the same path must cover visibly
       // less of the box. The bounds are wide because a stroke that crosses
       // itself does not count twice.
-      final ratio = _inkedPixels(borrowed) / _inkedPixels(onACard);
-      expect(ratio, lessThan(0.95), reason: 'borrowed pen is not thinner');
+      //
+      // Both sides are PAINTED for this one. Measured against the card's own
+      // one-ink render the ratio would be about 3, because a solid fill covers
+      // far more of the box than a 13% wash -- which measures the palette, not
+      // the pen. Same shape, same colours, one difference: the nib.
+      final sameShapeCardPen = await _foodPixels(
+        FoodMarks.pot,
+        tone: tone,
+        accent: accent,
+      );
+      final ratio = _inkedPixels(borrowed) / _inkedPixels(sameShapeCardPen);
+      expect(ratio, lessThan(0.99), reason: 'borrowed pen is not thinner');
       expect(ratio, greaterThan(0.6), reason: 'borrowed pen is far too thin');
     });
   });

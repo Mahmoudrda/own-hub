@@ -1,4 +1,28 @@
-# Uncomment this line to define a global platform for your project
+# The real floor of this build, and `IPHONEOS_DEPLOYMENT_TARGET` in
+# `Runner.xcodeproj/project.pbxproj` is kept equal to it.
+#
+# It used to disagree: the app target said 15.0 while this said 15.5, and the
+# disagreement was not cosmetic. CocoaPods applies the number below to every
+# pod it builds — 33 framework targets at last count, GoogleUtilities, nanopb,
+# FBLPromises and GoogleDataTransport among them, all of which Firebase pulls
+# in and all of which are embedded in the shipped .app. The App Store, however,
+# reads `MinimumOSVersion` off the APP target. So a build that said 15.0 was
+# offered to every iPhone on 15.0 through 15.4, where dyld then refuses to load
+# frameworks built against 15.5: a crash on launch, on a device Apple told her
+# the app supported.
+#
+# Where 15.5 comes from is worth knowing, because it is not Flutter and it is
+# not Firebase. `Flutter.podspec` declares 15.0. The only two podspecs in the
+# whole graph that declare 15.5 are `google_mlkit_face_detection` and
+# `google_mlkit_commons` — the face detector behind identity verification,
+# which `FeatureFlags.shipped` has switched OFF. A feature nobody can reach is
+# setting the oldest iPhone the product runs on.
+#
+# This matters for the stated range. An iPhone 7 tops out at iOS 15.8, so it
+# clears 15.5 — but only once she has updated. Dropping the two ML Kit plugins
+# while verification is dark would put the floor back to 15.0 and hand back
+# roughly 12 MB of an arm64 install (see the APK breakdown). That is a product
+# decision, not a build setting, so it is written here rather than taken.
 platform :ios, '15.5'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.

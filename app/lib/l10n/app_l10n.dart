@@ -13788,6 +13788,12 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Nothing is planned for this week yet. Pick a dinner for any day below.'**
   String get nothingIsPlannedForThisWeekYet;
+
+  /// No description provided for @lookingForWhatYouHaveLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for what you have logged.'**
+  String get lookingForWhatYouHaveLogged;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

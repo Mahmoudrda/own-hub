@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Own Hub brand mark: "The Outfit Monogram", concept 02 of the identity
+  sheet the owner chose on 30 September 2026.
+
+  Drawn here as geometry, never traced: every number below is a construction
+  value, so the mark is exact at 20 px and at 20 metres. Rebuild the raster
+  icons from this file with `app/tool/render_brand_icons.py`, never by
+  scaling a PNG.
+
+  CONSTRUCTION, in a 1000 x 1000 box centred on (500, 500)
+    ring outer radius      390
+    ring band              125          (inner radius 265)
+    blade axis             55 deg above the horizontal, through the centre
+    blade half-length      604.5        = 1.55 x the ring radius, so it overshoots
+    blade half-width       52           at the centre, tapering to a point
+    blade clearance        30           cut out of the ring on every side
+
+  The blade is two quadratic Beziers between the same two tips. A quadratic
+  Bezier IS a parabola, and the sheet's blade measures as a parabola. Half
+  its width falls off as 1 - (t/L)^2 along the axis, so the control points
+  sit at the centre, one blade width out on either side. Nothing is
+  approximated.
+
+  The ring is one circle with a thick stroke, with the blade (fattened by the
+  clearance) masked out of it. Change the mask's stroke-width to change the
+  clearance; change the circle's stroke-width to change the band.
+
+  Ink box: x 110 to 890, y 4.82 to 995.18. Colour: Own Hub rose #A24661.
+  To recolour, change the two "#A24661" values below and nothing else.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"
+     width="1000" height="1000" role="img" aria-label="Own Hub">
+  <defs>
+    <!-- White keeps the ring, black removes it: the blade plus 30 of air. -->
+    <mask id="blade-clearance" maskUnits="userSpaceOnUse"
+          x="0" y="0" width="1000" height="1000">
+      <rect width="1000" height="1000" fill="#fff"/>
+      <path d="M 153.27 995.18 Q 585.19 559.65 846.73 4.82 Q 414.81 440.35 153.27 995.18 Z"
+            fill="#000" stroke="#000" stroke-width="60" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+
+  <!-- The ring: stroke 125 wide on a circle of radius 327.5, so its outer
+       edge lands at 390 and its inner edge at 265. -->
+  <circle cx="500" cy="500" r="327.5"
+          fill="none" stroke="#A24661" stroke-width="125" mask="url(#blade-clearance)"/>
+
+  <!-- The blade, lower-left tip to upper-right tip. -->
+  <path d="M 153.27 995.18 Q 585.19 559.65 846.73 4.82 Q 414.81 440.35 153.27 995.18 Z" fill="#A24661"/>
+</svg>

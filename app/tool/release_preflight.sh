@@ -122,7 +122,12 @@ echo
 echo "-- the built bundle, when there is one --"
 AAB=build/app/outputs/bundle/release/app-release.aab
 if [ -f "$AAB" ]; then
+  # Removed when this block ends, however it ends. Without the trap this left
+  # 82 MB of unpacked native libraries in the temp directory on every run, and
+  # seven of them were found there: a gate that fills the disk is a gate that
+  # eventually kills the build it was run to protect.
   tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
   unzip -q -o "$AAB" 'base/lib/*' -d "$tmp" 2>/dev/null || true
   libs=$(find "$tmp/base/lib/arm64-v8a" "$tmp/base/lib/x86_64" -name '*.so' 2>/dev/null)
   if [ -n "$libs" ]; then
@@ -151,6 +156,36 @@ if [ -f "$AAB" ]; then
   esac
 else
   na "bundle checks (16 KB alignment, signing)" "no app-release.aab built yet"
+fi
+
+echo
+echo "-- the APK that gets passed around --"
+#
+# Play never ships a universal APK: it splits the AAB per device, so a Play
+# install of this app is about 42 MB. An APK sent over WhatsApp is the whole
+# file, and in Egypt that is how a build actually reaches someone.
+#
+# Measured on the universal APK this repository built: 98.9 MB, carrying all
+# three CPU families. A phone runs exactly one of them, so 56.5 MB of any copy
+# that reaches a handset is machine code it cannot execute. The rule is written
+# down here rather than remembered: a universal APK is never the artefact handed
+# out. `flutter build apk --release --split-per-abi`, and send the arm64-v8a
+# one.
+APKS=build/app/outputs/flutter-apk
+universal="$APKS/app-release.apk"
+split=$(ls "$APKS"/app-{arm64-v8a,armeabi-v7a,x86_64}-release.apk 2>/dev/null | head -1)
+if [ -n "$split" ]; then
+  arm64="$APKS/app-arm64-v8a-release.apk"
+  if [ -f "$arm64" ]; then
+    ok "split APKs built ($(du -h "$arm64" | cut -f1 | tr -d " ") for arm64-v8a)"
+  else
+    bad "split APKs built, but no arm64-v8a one - that is the file to hand out"
+  fi
+elif [ -f "$universal" ]; then
+  size=$(du -h "$universal" | cut -f1 | tr -d " ")
+  bad "the only APK here is the universal one ($size); 56.5 MB of it is for CPUs the phone does not have - rebuild with --split-per-abi before handing an APK to anybody"
+else
+  na "APK check" "no APK built; the AAB is the Play artefact"
 fi
 
 echo

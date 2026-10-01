@@ -42,6 +42,49 @@
 /// has time, and the debounce means there is rarely more than one change
 /// outstanding anyway.
 ///
+/// ## What a write costs, and why it is still on the main isolate
+///
+/// [_write] calls `jsonEncode(AppSnapshot.capture())` on the main isolate, so
+/// the cost grows with everything she has ever done. Measured on the document
+/// the app really writes (`test/qa/round6/r6_01_snapshot_cost_test.dart`), at
+/// two years of training — 400 sessions of five moves and three sets — the
+/// encode was **10.5 ms** on a laptop. `app_snapshot.dart` then stopped writing
+/// every prescription twice, which took the same document from 1802 KB to 953
+/// KB and the encode to **6.6 ms**. A 2020 budget Android runs Dart four to six
+/// times slower, so that is roughly 42-63 ms a write before, 26-40 ms after.
+///
+/// Moving the encode to another isolate was measured and **not** adopted. The
+/// snapshot has to reach the worker, and `compute` copies the whole object
+/// graph out of this isolate to send it — a copy this isolate pays for, and one
+/// that costs about what the encode costs.
+///
+/// Measured as the longest gap a 1 ms ticker went unserved while each ran,
+/// which is the stall a frame would be dropped in rather than a median, so it
+/// is a worse number than the 6.6 ms above and not comparable to it:
+///
+/// | history | `jsonEncode` here | `compute(jsonEncode, …)` |
+/// |---|---|---|
+/// | 400 sessions | 10.6 ms | 7.2 ms |
+/// | 800 sessions | 15.0 ms | 23.0 ms |
+///
+/// A third of a saving at two years, a loss at four, plus an isolate spawn on
+/// every write and a second copy of her entire history live in memory while it
+/// runs. The honest answer is that the encode belongs where it is until the
+/// snapshot is written incrementally rather than whole — at which point the
+/// isolate stops being the question.
+///
+/// ## Nothing is pruned, capped, or expired, and that is deliberate
+///
+/// `train` is 99.7% of the document at two years, and it is 542 KB of the
+/// prescriptions she was given and 409 KB of the outcomes she logged. Both are
+/// hers. Neither is derivable from anything else on this phone: last year's
+/// assignment is not kept anywhere a cap could rebuild it from.
+///
+/// It is also the source `cloud_documents.dart` uploads from, so a record
+/// dropped here is dropped before it was ever backed up — a cap would delete
+/// her history exactly once, silently, and for good. A slow write is the
+/// better failure.
+///
 /// ## When it reads
 ///
 /// Once, in `main()`, before `runApp`. The first screen she sees is already
@@ -154,6 +197,11 @@ class LocalPersistence {
   bool _running = false;
   _FlushOnPause? _observer;
 
+  /// How many times [erase] has been asked for. Compared, never read for its
+  /// value — see [_write], which uses a change in it to detect that a deletion
+  /// overtook a write it had already handed to the platform.
+  int _erasures = 0;
+
   /// True while this is listening for changes.
   bool get isRunning => _running;
 
@@ -222,7 +270,19 @@ class LocalPersistence {
   /// still leave every in-memory store empty and the screen saying so. The
   /// returned future is for a caller that wants to know when the phone is
   /// clear; the tests are the ones that want it.
+  ///
+  /// Cancelling the timer is not on its own enough, and for a while this file
+  /// claimed it was. The timer is only the window before `_write` STARTS;
+  /// `_changed` fires it with `unawaited(_write())`, and `_write` then suspends
+  /// at `await storage.write(...)`. A deletion arriving in that suspension
+  /// cancels a timer that has already fired, erases the key, and then the write
+  /// it never knew about completes and puts the whole document back — so she
+  /// deletes her account, and her entire week is waiting for her at the next
+  /// launch. That is exactly the "fixed blocker into a broken one" this method
+  /// exists to prevent. [_erasures] closes it: it is bumped here, before the
+  /// first await, and `_write` re-erases if it changed underneath it.
   Future<void> erase() async {
+    _erasures++;
     _pending?.cancel();
     _pending = null;
     try {
@@ -250,6 +310,9 @@ class LocalPersistence {
   }
 
   Future<void> _write() async {
+    // Read before the first await, so it names the state of the world this
+    // write belongs to. See [erase].
+    final erasuresWhenStarted = _erasures;
     String snapshot;
     try {
       snapshot = jsonEncode(AppSnapshot.capture());
@@ -263,6 +326,20 @@ class LocalPersistence {
       await storage.write(snapshot);
     } catch (error) {
       lastFailure = error;
+      return;
+    }
+    // A deletion landed while the platform was holding this write. The
+    // document on the phone is now one `erase` already removed once, so remove
+    // it again rather than leave her deleted week sitting there. Bounded: an
+    // erase bumps the counter once, so at most one extra removal per racing
+    // write, and a write that starts after the erase sees an unchanged counter
+    // and is left alone — she is using the app again, and that is her data.
+    if (_erasures != erasuresWhenStarted) {
+      try {
+        await storage.erase();
+      } catch (error) {
+        lastFailure = error;
+      }
     }
   }
 }

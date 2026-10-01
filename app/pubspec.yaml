@@ -207,25 +207,30 @@ flutter:
 
 # ---------------------------------------------------------------- app icon
 #
-# Configuration is here and ready; the PACKAGE is deliberately NOT added as a
-# dependency yet, because the 1024x1024 master does not exist and adding a dep
-# that cannot run only risks breaking `pub get` for everyone.
+# The icon is the Own Hub mark, and the mark is geometry: the master is
+# assets/brand/ownhub-mark.svg and both PNGs below are rendered from it, at
+# their final size, by tool/render_brand_icons.py. Nothing is cropped or
+# upscaled out of a bitmap, which is why the diagonal is still a clean edge at
+# 20 px. After any change to the master:
 #
-# When the owner supplies assets/icon/icon-1024.png (PNG, no alpha, no
-# transparency, no rounded corners -- the OS masks it, and Apple rejects an
-# icon with an alpha channel), do exactly this:
-#
-#   1. add to dev_dependencies:   flutter_launcher_icons: ^0.14.0
-#   2. flutter pub get
-#   3. dart run flutter_launcher_icons
+#   1. python3 tool/render_brand_icons.py
+#   2. dart run flutter_launcher_icons
 #
 # Then verify: ios/Runner/Assets.xcassets/AppIcon.appiconset/ has a 1024 entry,
 # and android/app/src/main/res/mipmap-*/ic_launcher.png exist.
+#
+# icon-1024.png carries no alpha and no rounded corners. The OS applies the
+# mask, and Apple rejects an icon with an alpha channel.
+#
+# adaptive_icon_background was #FFFFFF while icon-foreground.png was a mark in
+# near-white paper, which on Android is a white mark on a white tile: an icon
+# nobody can see. The background is now the rose the iOS tile has always used,
+# so both platforms show the same thing.
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/icon-1024.png"
   remove_alpha_ios: true
-  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_background: "#A24661"
   adaptive_icon_foreground: "assets/icon/icon-foreground.png"
   min_sdk_android: 24

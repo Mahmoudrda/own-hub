@@ -46,6 +46,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../domain/flags/feature_flags.dart';
+import '../../../data/pending_answers.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
@@ -423,9 +424,15 @@ class _EatViewState extends State<EatView> {
         },
       ),
       body: AppScaffold(
-        children: view.isDayOne
-            ? _dayOne(context, l10n, view)
-            : _today(context, l10n, view),
+        // Three branches where there were two. `_dayOne` is a confident
+        // sentence about a woman who has never logged a meal, and it is a lie
+        // to one whose meals are still being pulled down. See
+        // `lib/data/pending_answers.dart`.
+        children: switch ((view.isDayOne, _repo.dataState)) {
+          (true, DataState.unknown) => _stillLooking(l10n),
+          (true, _) => _dayOne(context, l10n, view),
+          (false, _) => _today(context, l10n, view),
+        },
       ),
     );
   }
@@ -604,6 +611,24 @@ class _EatViewState extends State<EatView> {
     _offerUndo(handle);
     widget.onLogged?.call(handle);
   }
+
+  // ------------------------------------------------------- E09, unanswered ----
+
+  /// Eat while nothing has yet said whether she has eaten here before.
+  ///
+  /// The masthead stays, because the name of the section is true whatever a
+  /// pull says. The "Day 1" pill, the empty state and the starters go, because
+  /// each of them states that she is beginning.
+  ///
+  /// No spinner: this screen never had one, and a sentence is the honest way to
+  /// say "we do not know yet" without implying she should sit and wait.
+  List<Widget> _stillLooking(AppL10n l10n) => [
+    _masthead(l10n),
+    Text(
+      l10n.lookingForWhatYouHaveLogged,
+      style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+    ),
+  ];
 
   // ---------------------------------------------------------------- E09 ----
 

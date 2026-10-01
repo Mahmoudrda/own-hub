@@ -1,9 +1,11 @@
 /// The illustration set, by name.
 ///
-/// Thirty-two marks, **drawn in code** by `lib/ui/hand/art_marks.dart`. There
-/// is no image file behind any of them and no third-party licence attached to
-/// any of them. Read the header of that file for how a mark is built, and
-/// `assets/art/LICENCE.md` for why the set that used to live here is gone.
+/// Thirty-two marks, **drawn and painted in code** by
+/// `lib/ui/hand/art_marks.dart`, in the colours `lib/ui/hand/art_palette.dart`
+/// mixes. There is no image file behind any of them and no third-party licence
+/// attached to any of them. Read the header of that file for how a mark is
+/// built, and `assets/art/LICENCE.md` for why the set that used to live here is
+/// gone and why no licensed set could replace it.
 ///
 /// ## What this set replaced
 ///

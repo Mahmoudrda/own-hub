@@ -402,10 +402,12 @@ class AppRouter {
       builder: built == null
           ? (_) => NotBuiltYet(screenId: id, title: route.title)
           // Redrawn whenever shared state changes, so a screen underneath
-          // another is current again the moment she comes back to it.
-          : (_) => ListenableBuilder(
-              listenable: AppChanges.instance,
-              builder: (context, _) =>
+          // another is current again the moment she comes back to it — and,
+          // since `RedrawOnChange` replaced the `ListenableBuilder` that was
+          // here, not while it is buried under one. See `app_changes.dart` for
+          // what the plain listener cost at six screens deep.
+          : (_) => RedrawOnChange(
+              builder: (context) =>
                   ScreenScope(screenId: id, child: built(context)),
             ),
     );
@@ -4319,8 +4321,10 @@ class AppRouter {
   /// The repository `C12` listens to, with the submit done exactly once.
   ///
   /// The submit cannot go in the builder body: the builder is inside a
-  /// `ListenableBuilder` and runs again on every change anywhere in the app, so
-  /// an unguarded call would start a new paid check on each rebuild. It cannot
+  /// `RedrawOnChange` and runs again on every change made while this screen is
+  /// the one on top, so an unguarded call would start a new paid check on each
+  /// rebuild. The guard is not weakened by that screen being the one on top —
+  /// `C12` is where she waits, so it is on top for the whole of it. It cannot
   /// go in `CheckingView` either without that screen deciding when a check
   /// starts, which is the router's job — `C15` is the other caller and it
   /// submits a different method.
