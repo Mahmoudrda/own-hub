@@ -179,3 +179,41 @@ def test_the_callable_message_is_a_code_never_the_digits(monkeypatch):
     assert caught.value.code == https_fn.FunctionsErrorCode.FAILED_PRECONDITION
     assert caught.value.message == reasons.SEX_DIGIT_MALE
     assert MALE_ADULT not in str(caught.value)
+
+
+# ------------------------------------------------ N11: approve must be a bool
+
+
+@pytest.mark.parametrize("approve", ["false", "true", 1, 0, None, [], {"x": 1}])
+def test_approve_that_is_not_a_bool_is_refused(approve, monkeypatch):
+    import main
+    from firebase_functions import https_fn
+    from tests.test_entrypoints import inner, request
+
+    fake = FakeReviewStore()
+    flag_id = _booked(fake, id_hmac="h1")
+    monkeypatch.setattr(main.store, "FirestoreReviewStore", lambda: fake)
+    with pytest.raises(https_fn.HttpsError) as caught:
+        inner("decide_verification_flag")(
+            request({"flagId": flag_id, "approve": approve}, uid="rev",
+                    token={"womanReviewer": True})
+        )
+    assert caught.value.code == https_fn.FunctionsErrorCode.INVALID_ARGUMENT
+    assert caught.value.message == reasons.INTERNAL_ERROR
+    assert fake.minted == []
+    assert fake.flags[flag_id]["state"] == decisions.PENDING_REVIEW
+
+
+def test_missing_approve_is_refused_too(monkeypatch):
+    import main
+    from firebase_functions import https_fn
+    from tests.test_entrypoints import inner, request
+
+    fake = FakeReviewStore()
+    flag_id = _booked(fake, id_hmac="h1")
+    monkeypatch.setattr(main.store, "FirestoreReviewStore", lambda: fake)
+    with pytest.raises(https_fn.HttpsError) as caught:
+        inner("decide_verification_flag")(
+            request({"flagId": flag_id}, uid="rev", token={"womanReviewer": True})
+        )
+    assert caught.value.code == https_fn.FunctionsErrorCode.INVALID_ARGUMENT

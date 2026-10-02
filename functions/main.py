@@ -841,12 +841,18 @@ def decide_verification_flag(request: https_fn.CallableRequest) -> dict:
     started = time.monotonic()
     reviewer_uid = _require_woman_reviewer(request)
     data = _body(request)
+    approve = data.get("approve")
+    if not isinstance(approve, bool):
+        # N11: bool("false") is True. Only a real JSON boolean decides.
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
     result = _review_call(
         review.decide,
         store.FirestoreReviewStore(),
         reviewer_uid,
         data.get("flagId"),
-        bool(data.get("approve")),
+        approve,
         data.get("nid"),
     )
     logs.decision(
