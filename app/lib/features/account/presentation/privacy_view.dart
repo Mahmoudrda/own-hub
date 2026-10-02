@@ -53,6 +53,7 @@ import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/app_toggle.dart';
+import '../../signup/domain/review_request.dart';
 import '../domain/health_backup.dart';
 import '../domain/media_blur_policy.dart';
 import '../domain/privacy_settings.dart';
@@ -327,7 +328,10 @@ class _PrivacyViewState extends State<PrivacyView> {
           ),
           if (_healthFailed)
             Text(
-              l10n.weCouldNotReachOwnHubSo,
+              classifyCallFailure(backup.lastFailure ?? Object()) ==
+                      CallFailureKind.appCannotReach
+                  ? l10n.thisCopyOfTheAppCannotReach_mr83s
+                  : l10n.weCouldNotReachOwnHubSo,
               key: const ValueKey('health-backup-error'),
               style: AppText.bodyM.copyWith(color: AppColors.error),
             ),

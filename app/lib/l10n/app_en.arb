@@ -3140,5 +3140,17 @@
   "healthBackupIsOffOnThisPhone": "Health backup is off on this phone, so nothing more is uploaded. We could not reach Own Hub, so the copy in your account will be removed when you are back online.",
   "yourCheckIsDone": "Your check is done",
   "youAreVerifiedOpenOwnHubTo": "You are verified. Open Own Hub to carry on.",
-  "openOwnHub": "Open Own Hub"
+  "openOwnHub": "Open Own Hub",
+  "thisCopyOfTheAppCannotReach_1dlg6": "This copy of the app cannot reach Own Hub, so your agreement was not saved and the camera has not opened. Please install the latest version from the App Store or Google Play.",
+  "thisCopyOfTheAppCannotReach_mr83s": "This copy of the app cannot reach Own Hub, so your health backup was not changed. Please install the latest version from the App Store or Google Play.",
+  "youCanAlsoDeleteYourAccountOn": "You can also delete your account on our website: {url}",
+  "@youCanAlsoDeleteYourAccountOn": {
+    "description": "Shown when this copy of the app cannot reach Own Hub to delete her account. The address of the public delete-account page.",
+    "placeholders": {
+      "url": {
+        "type": "String",
+        "example": "https://ownhub.app/delete-account"
+      }
+    }
+  }
 }

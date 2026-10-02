@@ -158,11 +158,17 @@ class HealthBackupController {
 
   bool get enabled => preference.enabled;
 
+  /// Why the last [enable] did not go through, or null. Read by A03 to tell
+  /// "no connection" from "this copy of the app is refused" (R3).
+  Object? lastFailure;
+
   /// True when the server recorded her consent and the backup is now on.
   Future<bool> enable() async {
+    lastFailure = null;
     try {
       await store.record(granted: true);
-    } catch (_) {
+    } catch (error) {
+      lastFailure = error;
       return false;
     }
     await preference.set(true);

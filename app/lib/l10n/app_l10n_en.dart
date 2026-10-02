@@ -7727,4 +7727,17 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get openOwnHub => 'Open Own Hub';
+
+  @override
+  String get thisCopyOfTheAppCannotReach_1dlg6 =>
+      'This copy of the app cannot reach Own Hub, so your agreement was not saved and the camera has not opened. Please install the latest version from the App Store or Google Play.';
+
+  @override
+  String get thisCopyOfTheAppCannotReach_mr83s =>
+      'This copy of the app cannot reach Own Hub, so your health backup was not changed. Please install the latest version from the App Store or Google Play.';
+
+  @override
+  String youCanAlsoDeleteYourAccountOn(String url) {
+    return 'You can also delete your account on our website: $url';
+  }
 }

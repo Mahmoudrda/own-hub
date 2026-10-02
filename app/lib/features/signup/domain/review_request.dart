@@ -72,6 +72,23 @@ class VerificationCallFailure implements Exception {
   String toString() => 'VerificationCallFailure($code, $reason)';
 }
 
+/// A callable's error code and message, read for a woman who is or is not
+/// signed in. `unauthenticated` while signed in is App Check refusing this
+/// copy of the app (R3), so it reads as `app_check_missing`.
+VerificationCallFailure callFailureOf(
+  String code,
+  String? message, {
+  required bool signedIn,
+}) {
+  if (code == 'unauthenticated' && signedIn) {
+    return const VerificationCallFailure(
+      'failed-precondition',
+      ServerReason.appCheckMissing,
+    );
+  }
+  return VerificationCallFailure(code, message);
+}
+
 /// The server reason codes the client acts on (contract `errorReasons`, plus
 /// `review_already_open`, which start_verification raises).
 abstract final class ServerReason {

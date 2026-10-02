@@ -463,6 +463,7 @@ if (fs.existsSync(dictPath)) {
     "{n} min in all": {"description": "A recipe's total time, beside the hands-on figure, for a dish under two hours.", "placeholders": {"n": {"type": "String", "example": "50"}}},
     "{count, plural, one{About 1 hour in all} other{About {count} hours in all}}": {"description": "A recipe's total time once it passes two hours. Rounded to the hour and said to be rounded, because 1,445 minutes is true and unreadable.", "placeholders": {"count": {"type": "int", "example": "24"}}},
     "Your video call is booked for {time}.": {"description": "C14 once a woman reviewer has booked the live video check. time is the booked date and time, already formatted for her locale.", "placeholders": {"time": {"type": "String", "example": "Mon, 5 Oct, 10:00"}}},
+    "You can also delete your account on our website: {url}": {"description": "Shown when this copy of the app cannot reach Own Hub to delete her account. The address of the public delete-account page.", "placeholders": {"url": {"type": "String", "example": "https://ownhub.app/delete-account"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

@@ -38,6 +38,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../config/legal_links.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -68,7 +69,13 @@ class YourDataSheet extends StatefulWidget {
     super.key,
     required this.onDelete,
     this.hasAccount = false,
+    this.webDeletionUrl = LegalLinks.deleteAccount,
   });
+
+  /// The public delete-account page. Named when this copy of the app is
+  /// refused (R3), so she still has a way to delete that needs no update.
+  /// Empty until the site is published, and then nothing is shown.
+  final String webDeletionUrl;
 
   final Future<AccountDeletionResult> Function() onDelete;
 
@@ -161,6 +168,15 @@ class _YourDataSheetState extends State<YourDataSheet> {
               style: AppText.bodyM.copyWith(color: AppColors.error),
             ),
           ),
+          if (_refused == AccountDeletionResult.appCannotReach &&
+              widget.webDeletionUrl.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            SelectableText(
+              l10n.youCanAlsoDeleteYourAccountOn(widget.webDeletionUrl),
+              key: const ValueKey('your-data-web-deletion'),
+              style: quiet,
+            ),
+          ],
         ],
 
         const SizedBox(height: 16),

@@ -3140,5 +3140,17 @@
   "healthBackupIsOffOnThisPhone": "النسخ الاحتياطي للبيانات الصحية متوقف على هذا الهاتف، فلن يُرفع شيء بعد الآن. تعذّر الوصول إلى Own Hub، لذلك ستُحذف النسخة الموجودة في حسابكِ عند عودتكِ إلى الاتصال.",
   "yourCheckIsDone": "اكتمل التحقق",
   "youAreVerifiedOpenOwnHubTo": "تم التحقق منكِ. افتحي Own Hub لتُكملي.",
-  "openOwnHub": "افتحي Own Hub"
+  "openOwnHub": "افتحي Own Hub",
+  "thisCopyOfTheAppCannotReach_1dlg6": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُحفظ موافقتكِ ولم تُفتح الكاميرا. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
+  "thisCopyOfTheAppCannotReach_mr83s": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
+  "youCanAlsoDeleteYourAccountOn": "يمكنكِ أيضًا حذف حسابكِ من موقعنا: {url}",
+  "@youCanAlsoDeleteYourAccountOn": {
+    "description": "Shown when this copy of the app cannot reach Own Hub to delete her account. The address of the public delete-account page.",
+    "placeholders": {
+      "url": {
+        "type": "String",
+        "example": "https://ownhub.app/delete-account"
+      }
+    }
+  }
 }

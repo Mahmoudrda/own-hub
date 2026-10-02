@@ -14034,6 +14034,24 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Open Own Hub'**
   String get openOwnHub;
+
+  /// No description provided for @thisCopyOfTheAppCannotReach_1dlg6.
+  ///
+  /// In en, this message translates to:
+  /// **'This copy of the app cannot reach Own Hub, so your agreement was not saved and the camera has not opened. Please install the latest version from the App Store or Google Play.'**
+  String get thisCopyOfTheAppCannotReach_1dlg6;
+
+  /// No description provided for @thisCopyOfTheAppCannotReach_mr83s.
+  ///
+  /// In en, this message translates to:
+  /// **'This copy of the app cannot reach Own Hub, so your health backup was not changed. Please install the latest version from the App Store or Google Play.'**
+  String get thisCopyOfTheAppCannotReach_mr83s;
+
+  /// Shown when this copy of the app cannot reach Own Hub to delete her account. The address of the public delete-account page.
+  ///
+  /// In en, this message translates to:
+  /// **'You can also delete your account on our website: {url}'**
+  String youCanAlsoDeleteYourAccountOn(String url);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

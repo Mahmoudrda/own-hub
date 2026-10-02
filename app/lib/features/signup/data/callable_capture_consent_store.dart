@@ -23,6 +23,7 @@ import 'package:meta/meta.dart';
 
 import '../../../app_state/firebase_boot.dart';
 import '../domain/capture_consent.dart';
+import 'callable_failure.dart';
 
 /// The callable that mints a consent record.
 const String kRecordConsentCallable = 'record_consent';
@@ -31,11 +32,14 @@ class CallableCaptureConsentStore implements CaptureConsentStore {
   CallableCaptureConsentStore({
     FirebaseFirestore? firestore,
     FirebaseFunctions? functions,
+    bool Function()? signedIn,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _functions = functions ?? FirebaseBoot.functions;
+       _functions = functions ?? FirebaseBoot.functions,
+       _signedIn = signedIn ?? firebaseUserSignedIn;
 
   final FirebaseFirestore _firestore;
   final FirebaseFunctions _functions;
+  final bool Function() _signedIn;
 
   /// The body `record_consent` accepts: the version as an int, under
   /// `consentVersion`, and nothing else.
@@ -90,6 +94,10 @@ class CallableCaptureConsentStore implements CaptureConsentStore {
     // only copy of it worth anything, and the timestamp is the server's. A
     // payload carrying all three would be three fields an attacker can choose.
     final callable = _functions.httpsCallable(kRecordConsentCallable);
-    await callable.call<Object?>(payloadFor(consent.version));
+    try {
+      await callable.call<Object?>(payloadFor(consent.version));
+    } on FirebaseFunctionsException catch (error) {
+      throw callFailureFrom(error, signedIn: _signedIn);
+    }
   }
 }

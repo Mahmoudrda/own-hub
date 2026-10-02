@@ -63,9 +63,9 @@ import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../app_state/firebase_boot.dart';
 import '../domain/liveness_challenge.dart';
-import '../domain/review_request.dart';
 import '../domain/verification_evidence.dart';
 import '../domain/verification_provider.dart';
+import 'callable_failure.dart';
 
 /// Agreed with the backend. The two strings that have to be identical on both
 /// sides.
@@ -93,10 +93,13 @@ class CallableVerificationProvider implements VerificationProvider {
   CallableVerificationProvider({
     FirebaseFunctions? functions,
     DateTime Function()? now,
+    bool Function()? signedIn,
   }) : _functions = functions ?? FirebaseBoot.functions,
-       _now = now ?? DateTime.now;
+       _now = now ?? DateTime.now,
+       _signedIn = signedIn ?? firebaseUserSignedIn;
 
   final FirebaseFunctions _functions;
+  final bool Function() _signedIn;
 
   /// Injectable so a test can assert the computed deadline instead of racing
   /// the wall clock.
@@ -112,7 +115,7 @@ class CallableVerificationProvider implements VerificationProvider {
     try {
       response = await callable.call<Object?>();
     } on FirebaseFunctionsException catch (error) {
-      throw VerificationCallFailure(error.code, error.message);
+      throw callFailureFrom(error, signedIn: _signedIn);
     }
     final data = response.data;
     if (data is! Map) {
@@ -190,7 +193,7 @@ class CallableVerificationProvider implements VerificationProvider {
         ),
       );
     } on FirebaseFunctionsException catch (error) {
-      throw VerificationCallFailure(error.code, error.message);
+      throw callFailureFrom(error, signedIn: _signedIn);
     }
 
     return _decisionFrom(response.data);

@@ -7696,4 +7696,17 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get openOwnHub => 'افتحي Own Hub';
+
+  @override
+  String get thisCopyOfTheAppCannotReach_1dlg6 =>
+      'لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُحفظ موافقتكِ ولم تُفتح الكاميرا. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.';
+
+  @override
+  String get thisCopyOfTheAppCannotReach_mr83s =>
+      'لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.';
+
+  @override
+  String youCanAlsoDeleteYourAccountOn(String url) {
+    return 'يمكنكِ أيضًا حذف حسابكِ من موقعنا: $url';
+  }
 }

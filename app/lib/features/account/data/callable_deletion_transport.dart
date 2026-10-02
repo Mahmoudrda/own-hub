@@ -19,6 +19,8 @@ library;
 import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../app_state/firebase_boot.dart';
+import '../../signup/data/callable_failure.dart';
+import '../../signup/domain/review_request.dart';
 import '../domain/account_deletion_service.dart';
 
 /// Callable name, identical on both sides of the contract.
@@ -51,7 +53,11 @@ class CallableDeletionTransport implements DeletionTransport {
   CallableDeletionTransport({
     required this.isOnline,
     DeleteAccountCall? call,
-  }) : _call = call ?? _callFunction;
+    bool Function()? signedIn,
+  }) : _call = call ?? _callFunction,
+       _signedIn = signedIn ?? firebaseUserSignedIn;
+
+  final bool Function() _signedIn;
 
   /// Whether a call can be made at all: Firebase up and her account signed in.
   final bool Function() isOnline;
@@ -78,14 +84,18 @@ class CallableDeletionTransport implements DeletionTransport {
     try {
       data = await _call();
     } on FirebaseFunctionsException catch (error) {
+      // App Check refused this copy of the app: the server's own
+      // `app_check_missing`, or the framework's `unauthenticated` while she
+      // is signed in (R3). Nothing was deleted, and "could not reach" would
+      // send her to retry something a retry cannot fix.
+      final failure = callFailureFrom(error, signedIn: _signedIn);
+      if (classifyCallFailure(failure) == CallFailureKind.appCannotReach) {
+        throw const DeletionAppCannotReach();
+      }
       // Never reached the server, or reached it without a usable sign-in:
       // nothing was deleted anywhere.
       if (error.code == 'unavailable' || error.code == 'unauthenticated') {
         throw const DeletionOffline();
-      }
-      if (error.code == 'failed-precondition' &&
-          error.message == 'app_check_missing') {
-        throw const DeletionAppCannotReach();
       }
       // INTERNAL internal_error: the server recorded `failedRetryable` and its
       // sweeper finishes the deletion. Anything else is treated the same way:
@@ -106,9 +116,7 @@ class CallableDeletionTransport implements DeletionTransport {
     final raw = data is Map ? data['journal'] : null;
     if (raw is! List) return const <DeletionState>[];
     final byName = {for (final s in DeletionState.values) s.name: s};
-    return <DeletionState>[
-      for (final name in raw) ?byName[name],
-    ];
+    return <DeletionState>[for (final name in raw) ?byName[name]];
   }
 
   @override

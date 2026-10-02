@@ -11,17 +11,21 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:meta/meta.dart';
 
 import '../../../app_state/firebase_boot.dart';
+import '../../signup/data/callable_failure.dart';
 import '../domain/health_backup.dart';
 
 class CallableHealthConsentStore implements HealthConsentStore {
   CallableHealthConsentStore({
     FirebaseFirestore? firestore,
     FirebaseFunctions? functions,
+    bool Function()? signedIn,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _functions = functions ?? FirebaseBoot.functions;
+       _functions = functions ?? FirebaseBoot.functions,
+       _signedIn = signedIn ?? firebaseUserSignedIn;
 
   final FirebaseFirestore _firestore;
   final FirebaseFunctions _functions;
+  final bool Function() _signedIn;
 
   /// The body `record_health_consent` accepts.
   @visibleForTesting
@@ -47,7 +51,11 @@ class CallableHealthConsentStore implements HealthConsentStore {
   @override
   Future<void> record({required bool granted}) async {
     final callable = _functions.httpsCallable(kRecordHealthConsentCallable);
-    await callable.call<Object?>(payloadFor(granted: granted));
+    try {
+      await callable.call<Object?>(payloadFor(granted: granted));
+    } on FirebaseFunctionsException catch (error) {
+      throw callFailureFrom(error, signedIn: _signedIn);
+    }
   }
 
   @override

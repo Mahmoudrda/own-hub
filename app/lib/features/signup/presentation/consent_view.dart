@@ -35,6 +35,7 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_scaffold.dart';
 import '../domain/capture_consent.dart';
+import '../domain/review_request.dart';
 import 'widgets/verification_bullet.dart';
 
 class ConsentView extends StatefulWidget {
@@ -84,6 +85,9 @@ class _ConsentViewState extends State<ConsentView> {
   /// nothing, which reads as a broken app and teaches her to give up here.
   bool _failed = false;
 
+  /// True when the failure was this copy of the app being refused.
+  bool _appCannotReach = false;
+
   Future<void> _agree() async {
     if (_recording) return;
     setState(() {
@@ -99,7 +103,7 @@ class _ConsentViewState extends State<ConsentView> {
           agreedAt: clock(),
         ),
       );
-    } catch (_) {
+    } catch (error) {
       // The write failed, so nothing was recorded, so nothing may open. She
       // stays on this screen with the button live again and can try once more.
       // Advancing anyway would mean photographing a woman's ID card with no
@@ -108,6 +112,10 @@ class _ConsentViewState extends State<ConsentView> {
         setState(() {
           _recording = false;
           _failed = true;
+          // App Check refused this copy of the app (R3): a retry cannot fix
+          // that, an update can, so she is told which.
+          _appCannotReach =
+              classifyCallFailure(error) == CallFailureKind.appCannotReach;
         });
       }
       return;
@@ -127,7 +135,9 @@ class _ConsentViewState extends State<ConsentView> {
           Semantics(
             liveRegion: true,
             child: Text(
-              l10n.weCouldNotSaveYourAgreementSo,
+              _appCannotReach
+                  ? l10n.thisCopyOfTheAppCannotReach_1dlg6
+                  : l10n.weCouldNotSaveYourAgreementSo,
               key: const ValueKey('consent-error'),
               style: AppText.bodyM.copyWith(color: AppColors.error),
             ),
