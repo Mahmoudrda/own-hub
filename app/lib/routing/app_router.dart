@@ -1114,12 +1114,20 @@ class AppRouter {
     // whether she got here on a fresh install (Home is underneath) or from her
     // profile (A02 is). So it leaves setup properly rather than popping
     // silently and asking her the same four questions on the next launch.
-    'O01': (context) => GoalView(
-      repository: intakeRepository,
-      onContinue: () => goTo(context, 'O02'),
-      onSkip: () => goTo(context, 'O02'),
-      onBack: () => OnboardingState.instance.leaveSetup(context),
-      onClose: () => OnboardingState.instance.leaveSetup(context),
+    // Every way out of O01 clears the sign-up flag, the system back gesture
+    // included, so a later walk from A02 does not inherit it and end on
+    // Home (N15).
+    'O01': (context) => PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) OnboardingState.instance.enteredFromSignup = false;
+      },
+      child: GoalView(
+        repository: intakeRepository,
+        onContinue: () => goTo(context, 'O02'),
+        onSkip: () => goTo(context, 'O02'),
+        onBack: () => OnboardingState.instance.leaveSetup(context),
+        onClose: () => OnboardingState.instance.leaveSetup(context),
+      ),
     ),
     'O02': (context) => PlaceView(
       repository: intakeRepository,
@@ -1788,7 +1796,12 @@ class AppRouter {
       // or whose life changed, had to reinstall to say so. This row runs the
       // identical walk, and `O05` pops back here rather than to Home because
       // leaving setup returns her to wherever she entered it from.
-      onOpenTraining: () => goTo(context, 'O01'),
+      // Setup from her profile never ends on Home: whatever an earlier walk
+      // left in the sign-up flag, this one did not come from sign-up (N15).
+      onOpenTraining: () {
+        OnboardingState.instance.enteredFromSignup = false;
+        goTo(context, 'O01');
+      },
       onOpenLanguage: () => goTo(context, 'C02'),
       onOpenNotifications: () => goTo(context, 'A01'),
       onOpenPrivacy: () => goTo(context, 'A03'),

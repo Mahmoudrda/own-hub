@@ -126,4 +126,62 @@ void main() {
 
     expect(stack.names, <String>[_name('T01'), _name('R11')]);
   });
+
+  // N15. Backing out of O01 with the system back gesture used to leave
+  // enteredFromSignup set, so a later setup edit from A02 ended on Home
+  // instead of back on A02.
+  testWidgets('backing out of O01 clears the sign-up flag', (tester) async {
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(tester.view.reset);
+    final navigator = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigator,
+        onGenerateRoute: AppRouter.onGenerateRoute,
+        onUnknownRoute: AppRouter.onUnknownRoute,
+        initialRoute: _name('C16'),
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _tap(tester, 'I agree, let me in');
+    expect(OnboardingState.instance.enteredFromSignup, isTrue);
+
+    // The system back gesture, not the screen's own back arrow.
+    await navigator.currentState!.maybePop();
+    await tester.pumpAndSettle();
+    expect(OnboardingState.instance.enteredFromSignup, isFalse);
+  });
+
+  testWidgets('setup opened from A02 never inherits the sign-up flag', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(tester.view.reset);
+    final stack = _Stack();
+    final navigator = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigator,
+        navigatorObservers: [stack],
+        onGenerateRoute: AppRouter.onGenerateRoute,
+        onUnknownRoute: AppRouter.onUnknownRoute,
+        initialRoute: _name('A02'),
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+      ),
+    );
+    await tester.pumpAndSettle();
+    // A stale flag, as a back gesture out of an earlier walk left it.
+    OnboardingState.instance.enteredFromSignup = true;
+    await _tap(tester, 'Your training');
+    expect(stack.names.last, _name('O01'));
+    expect(OnboardingState.instance.enteredFromSignup, isFalse);
+
+    // So leaving it (OnboardingState.leaveSetup) pops back to A02 rather
+    // than clearing the stack to Home.
+  });
 }
