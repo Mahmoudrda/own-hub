@@ -797,6 +797,9 @@ class AppRouter {
     // Her answer is carried, not discarded: a coach and a client are verified
     // the same way here, but the role decides where C13 sends her afterwards.
     'C08': (context) => RoleView(
+      // No coach or "both" answer while the coach app is off: it would lead
+      // to K01 saying the feature is off.
+      offerCoach: featureFlags.isOn(Feature.coachApp),
       onContinue: (role) {
         lastSignupRole = role;
         // Writes into the app-level scope, so the navigation she sees after

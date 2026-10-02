@@ -7,6 +7,8 @@
 // different products, and that the screen no longer tells her the decision is
 // permanent.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -180,5 +182,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('while the coach app is off', () {
+    testWidgets('only the trainee answer is offered', (tester) async {
+      await tester.pumpWidget(_host(const RoleView(offerCoach: false)));
+      await tester.pumpAndSettle();
+
+      expect(find.text("I'm here to train"), findsOneWidget);
+      expect(find.text('I coach women'), findsNothing);
+      expect(find.text('I train and I coach'), findsNothing);
+    });
+
+    testWidgets('Continue sends trainee, whatever was preselected', (
+      tester,
+    ) async {
+      final chosen = <SignupRole>[];
+      await tester.pumpWidget(
+        _host(
+          RoleView(
+            offerCoach: false,
+            initialRole: SignupRole.both,
+            onContinue: chosen.add,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(chosen, <SignupRole>[SignupRole.trainee]);
+    });
+  });
+
+  test('the router offers the coach answers only when the coach app is on', () {
+    final router = File('lib/routing/app_router.dart').readAsStringSync();
+    final c08 = router.substring(router.indexOf("'C08': (context) => RoleView("));
+    expect(
+      c08.substring(0, c08.indexOf('onContinue')),
+      contains('offerCoach: featureFlags.isOn(Feature.coachApp)'),
+    );
   });
 }
