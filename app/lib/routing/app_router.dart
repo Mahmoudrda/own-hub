@@ -1954,9 +1954,10 @@ class AppRouter {
             if (result == null || !navigator.mounted) return;
             // Day one, literally: everything she opened on the way here is
             // about data that no longer exists, so the stack goes with it.
-            // The first route is Home while no account is required, and the
-            // front door when one is.
-            navigator.popUntil((route) => route.isFirst);
+            // The front door is computed now, after the wipe: Home while no
+            // account is required, C01 when one is (R2). Popping to the first
+            // route used to leave her on Home with the gate still open.
+            navigator.pushNamedAndRemoveUntil(frontDoor, (_) => false);
             showHonestNoticeOn(
               messenger,
               result == AccountDeletionResult.done ? gone : unfinished,
@@ -4558,6 +4559,19 @@ class AppRouter {
     await controller.retryPendingWithdraw();
     await controller.reconcile(uid);
   }
+
+  /// The app's own first screen, computed at the moment it is asked for.
+  ///
+  /// With an account required, the welcome screen (C01) is for a woman with
+  /// no account and no verification on this phone. A verified woman opens on
+  /// Home, and a signed-in one who is not verified yet also asks for Home,
+  /// where the gate sends her to the check (C09) or to C14.
+  static String get frontDoor =>
+      featureFlags.isOn(Feature.accountRequired) &&
+          !isVerified &&
+          signedInUid == null
+      ? appRoutes['C01']!.name
+      : appRoutes['T01']!.name;
 
   static String? get signedInUid => switch (authRepository.current) {
     AuthSignedIn(:final uid) => uid,

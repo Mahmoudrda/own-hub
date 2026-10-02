@@ -69,13 +69,21 @@ class ThisPhoneWipe implements LocalWipe {
   /// reason the service gives: a session still alive can write back into what
   /// is about to be cleared.
   @override
+  ///
+  /// Every source of "she is verified" goes first (R2): the claim, the session
+  /// result, the server state and this phone's memory of them. Left standing,
+  /// the gate stayed open for the rest of the session after her account was
+  /// gone.
+  ///
+  /// The fields are cleared synchronously inside the call; only the removal
+  /// of the stored keys is left to finish on its own, on the same terms as
+  /// the snapshot erase below: her deletion is never hostage to a platform
+  /// call.
   Future<void> signOut() async {
-    await AppRouter.authRepository.signOut();
+    unawaited(AppRouter.forgetVerification());
     AppRouter.lastSignupRole = null;
-    AppRouter.lastVerification = null;
     AppRouter.lastReviewerPath = null;
-    AppRouter.serverVerification = null;
-    AppRouter.awaitingReviewer = false;
+    await AppRouter.authRepository.signOut();
   }
 
   /// Stops the sync, then stops Firestore and empties what it kept on disk.

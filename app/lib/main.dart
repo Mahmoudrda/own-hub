@@ -290,12 +290,7 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
   /// her to the check (C09) or to the screen that says a reviewer will call
   /// (C14). Sending everyone to C01 put a verified woman on "Get started"
   /// every time she opened the app.
-  static String get _frontDoor =>
-      AppRouter.featureFlags.isOn(Feature.accountRequired) &&
-          !AppRouter.isVerified &&
-          AppRouter.signedInUid == null
-      ? appRoutes['C01']!.name
-      : appRoutes['T01']!.name;
+  static String get _frontDoor => AppRouter.frontDoor;
 
   /// The routes the app opens holding, newest last.
   ///
