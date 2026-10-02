@@ -481,6 +481,28 @@ def set_verification_state(
     A merge of `verification.*` keys only. No reason codes and no flag id: the
     map is hers to read (rules: isSelf) and must not teach anyone which check
     failed. The client can never write it (rules: verificationUntouched)."""
+    db().collection(config.COL_USERS).document(uid).set(
+        _verification_update(
+            state,
+            route=route,
+            scheduled_for=scheduled_for,
+            decided=decided,
+            reset_booking=reset_booking,
+        ),
+        merge=True,
+    )
+
+
+def _verification_update(
+    state: str,
+    *,
+    route=None,
+    scheduled_for=None,
+    decided: bool = False,
+    reset_booking: bool = False,
+) -> dict:
+    """The merge payload for users/{uid}.verification, for a plain write or a
+    transaction (R5: booking, rejection and expiry write it inside theirs)."""
     if state not in VERIFICATION_STATES:
         raise ValueError(f"unknown verification state {state!r}")
     fields: dict = {"state": state, "updatedAt": firestore.SERVER_TIMESTAMP}
@@ -495,9 +517,7 @@ def set_verification_state(
         fields["decidedAt"] = firestore.SERVER_TIMESTAMP
         if state == "approved":
             fields["imagesDeletedAt"] = firestore.SERVER_TIMESTAMP
-    db().collection(config.COL_USERS).document(uid).set(
-        {"verification": fields}, merge=True
-    )
+    return {"verification": fields}
 
 
 def verification_state(uid: str) -> Optional[str]:
@@ -543,6 +563,31 @@ def write_review_consent(uid: str, path: str) -> None:
             "path": path,
         }
     )
+
+
+def review_consent_given(uids) -> set:
+    """R4: which of `uids` have users/{uid}/consents/review-v{N}. One batched
+    read; existence is all that is looked at. get_all does not promise to
+    answer in request order, so results are matched back by path."""
+    by_path = {}
+    for uid in uids:
+        if uid:
+            ref = (
+                db()
+                .collection(config.COL_USERS)
+                .document(uid)
+                .collection(config.COL_CONSENTS)
+                .document(f"review-v{config.REVIEW_CONSENT_VERSION}")
+            )
+            by_path[ref.path] = (uid, ref)
+    if not by_path:
+        return set()
+    refs = [ref for _, ref in by_path.values()]
+    return {
+        by_path[snap.reference.path][0]
+        for snap in db().get_all(refs)
+        if snap.exists and snap.reference.path in by_path
+    }
 
 
 HEALTH_COLLECTIONS = ("checkins", "measurements", "cycle", "periods")
@@ -798,6 +843,9 @@ class FirestoreReviewStore:
     def write_review_consent(self, uid, path):
         write_review_consent(uid, path)
 
+    def review_consent_given(self, uids):
+        return review_consent_given(uids)
+
     def open_flag_id(self, uid):
         return verification_gate(uid).open_flag_id
 
@@ -825,22 +873,53 @@ class FirestoreReviewStore:
         return [(s.id, s.to_dict() or {}) for s in query.stream()]
 
     def mark_scheduled(self, flag_id, route, when, reviewer_uid, sla_expires_at):
-        db().collection(config.COL_FLAGS).document(flag_id).update(
-            {
-                "route": route,
-                "scheduledFor": when,
-                "slaExpiresAt": sla_expires_at,
-                "reviewerUid": reviewer_uid,
-                "scheduledAt": firestore.SERVER_TIMESTAMP,
-                "reasons": firestore.ArrayUnion([reasons.REVIEW_SCHEDULED]),
-            }
-        )
+        """R5: re-read the flag, refuse unless PENDING_REVIEW, then book it and
+        write her state `pending` with the booking, in ONE transaction. A
+        reject or expiry that committed first is never overwritten. Returns
+        None on commit, else REVIEW_NOT_PENDING with nothing written."""
+        flag_ref = db().collection(config.COL_FLAGS).document(flag_id)
+
+        @firestore.transactional
+        def txn(transaction):
+            flag = flag_ref.get(transaction=transaction)
+            data = (flag.to_dict() or {}) if flag.exists else {}
+            if data.get("state") != decisions.PENDING_REVIEW or not data.get("uid"):
+                return reasons.REVIEW_NOT_PENDING
+            transaction.update(
+                flag_ref,
+                {
+                    "route": route,
+                    "scheduledFor": when,
+                    "slaExpiresAt": sla_expires_at,
+                    "reviewerUid": reviewer_uid,
+                    "scheduledAt": firestore.SERVER_TIMESTAMP,
+                    "reasons": firestore.ArrayUnion([reasons.REVIEW_SCHEDULED]),
+                },
+            )
+            transaction.set(
+                db().collection(config.COL_USERS).document(data["uid"]),
+                _verification_update("pending", route=route, scheduled_for=when),
+                merge=True,
+            )
+            return None
+
+        return txn(db().transaction())
 
     def close_flag(
-        self, flag_id, *, uid, state, reviewer_uid, reviewer_reason, id_hmac=None
+        self,
+        flag_id,
+        *,
+        uid,
+        state,
+        reviewer_uid,
+        reviewer_reason,
+        id_hmac=None,
+        user_state=None,
     ):
         """N10: re-read, check PENDING_REVIEW, claim the registry (approval)
-        and close flag, job and openFlagId in ONE transaction. Returns None on
+        and close flag, job and openFlagId in ONE transaction. R5: with
+        `user_state` (a rejection) her verification state is written in the
+        same transaction, so a rejection is always enforced. Returns None on
         commit, or the refusal reason code with nothing written."""
         flag_ref = db().collection(config.COL_FLAGS).document(flag_id)
         job_ref = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
@@ -896,6 +975,12 @@ class FirestoreReviewStore:
                 and (ledger_snapshot.to_dict() or {}).get("openFlagId") == flag_id
             ):
                 transaction.set(ledger_ref, {"openFlagId": None}, merge=True)
+            if user_state is not None:
+                transaction.set(
+                    db().collection(config.COL_USERS).document(uid),
+                    _verification_update(user_state, decided=True),
+                    merge=True,
+                )
             return None
 
         return txn(db().transaction())
@@ -912,8 +997,8 @@ class FirestoreReviewStore:
 
     def expire_flag(self, flag_id, uid, now):
         """N10: expire only if still PENDING_REVIEW and still past its SLA at
-        `now`, re-checked inside one transaction with the job and openFlagId
-        writes. A booking moves slaExpiresAt (N6), so a flag booked after the
+        `now`, re-checked inside one transaction with the job, openFlagId and
+        (R5) her `retry` state writes. A booking moves slaExpiresAt (N6), so a flag booked after the
         sweep's query is left alone."""
         flag_ref = db().collection(config.COL_FLAGS).document(flag_id)
         job_ref = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
@@ -949,6 +1034,14 @@ class FirestoreReviewStore:
                 and (ledger_snapshot.to_dict() or {}).get("openFlagId") == flag_id
             ):
                 transaction.set(ledger_ref, {"openFlagId": None}, merge=True)
+            if uid:
+                # R5: her state moves to retry with the flag, booking cleared
+                # (N6), in the same transaction.
+                transaction.set(
+                    db().collection(config.COL_USERS).document(uid),
+                    _verification_update("retry", reset_booking=True),
+                    merge=True,
+                )
             return True
 
         return txn(db().transaction())

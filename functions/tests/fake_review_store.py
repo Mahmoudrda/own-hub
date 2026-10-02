@@ -51,6 +51,9 @@ class FakeReviewStore:
     def write_review_consent(self, uid, path):
         self.review_consents[uid] = path
 
+    def review_consent_given(self, uids):
+        return {uid for uid in uids if uid in self.review_consents}
+
     def _ledger(self, uid):
         return self.ledgers.setdefault(uid, {})
 
@@ -91,7 +94,11 @@ class FakeReviewStore:
         ][:limit]
 
     def mark_scheduled(self, flag_id, route, when, reviewer_uid, sla_expires_at):
-        self.flags[flag_id].update(
+        # Faithful to the store's single transaction: check, then write both.
+        flag = self.flags.get(flag_id, {})
+        if flag.get("state") != decisions.PENDING_REVIEW or not flag.get("uid"):
+            return reasons.REVIEW_NOT_PENDING
+        flag.update(
             {
                 "route": route,
                 "scheduledFor": when,
@@ -99,9 +106,14 @@ class FakeReviewStore:
                 "slaExpiresAt": sla_expires_at,
             }
         )
+        FakeReviewStore.set_verification_state(
+            self, flag["uid"], "pending", route=route, scheduled_for=when
+        )
+        return None
 
     def close_flag(
-        self, flag_id, *, uid, state, reviewer_uid, reviewer_reason, id_hmac=None
+        self, flag_id, *, uid, state, reviewer_uid, reviewer_reason, id_hmac=None,
+        user_state=None,
     ):
         # Faithful to the store's single transaction: check, then write all.
         if self.flags.get(flag_id, {}).get("state") != decisions.PENDING_REVIEW:
@@ -119,6 +131,8 @@ class FakeReviewStore:
             self.jobs[flag_id]["state"] = state
         if self._ledger(uid).get("openFlagId") == flag_id:
             self._ledger(uid)["openFlagId"] = None
+        if user_state is not None:
+            FakeReviewStore.set_verification_state(self, uid, user_state, decided=True)
         return None
 
     def stale_flags(self, now, limit):
@@ -137,6 +151,8 @@ class FakeReviewStore:
             self.jobs[flag_id]["state"] = decisions.RETRY_REQUIRED
         if uid and self._ledger(uid).get("openFlagId") == flag_id:
             self._ledger(uid)["openFlagId"] = None
+        if uid:
+            FakeReviewStore.set_verification_state(self, uid, "retry", reset_booking=True)
         return True
 
     def grant_bonus(self, uid, flag_id):
