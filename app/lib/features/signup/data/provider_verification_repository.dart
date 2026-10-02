@@ -213,10 +213,10 @@ class ProviderVerificationRepository implements VerificationRepository {
   /// What a call that did not return a decision means for her.
   ///
   /// A limit is a limit, never a review. A refusal the server already made is
-  /// shown as it is. Anything else (no network, a timeout, a server error) is
-  /// handed to a woman reviewer through `request_review`, and if that call
-  /// fails as well she is told nothing was decided and offered a retry, never
-  /// told she is queued.
+  /// shown as it is. Anything else (no network, a timeout, a server error)
+  /// OFFERS her a woman reviewer: C15 shows what the review means and she
+  /// asks for it herself. `request_review` is never called on her behalf
+  /// (R4), because asking for the call is her consent to it.
   Future<VerificationState> _afterFailure(Object error) async {
     final next = switch (classifyCallFailure(error)) {
       CallFailureKind.tryTomorrow => const VerificationState.tryTomorrow(),
@@ -229,13 +229,10 @@ class ProviderVerificationRepository implements VerificationRepository {
       CallFailureKind.retake => const VerificationState.retakeNeeded(),
       CallFailureKind.appCannotReach =>
         const VerificationState.appCannotReach(),
-      CallFailureKind.other => null,
+      CallFailureKind.other => const VerificationState.reviewOffered(),
     };
-    if (next != null) {
-      _emit(next);
-      return next;
-    }
-    return _askForReview(ReviewPath.error);
+    _emit(next);
+    return next;
   }
 
   /// Puts her in the review queue, or says honestly that it did not happen.

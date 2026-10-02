@@ -58,6 +58,7 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
+import '../domain/review_request.dart';
 import '../domain/server_verification.dart';
 
 class BeingCheckedView extends StatefulWidget {
@@ -70,7 +71,22 @@ class BeingCheckedView extends StatefulWidget {
     this.onTryAgain,
     this.onDeleteMyData,
     this.onSelectTab,
+    this.reviewAsked = true,
+    this.requester,
+    this.onAskedForCall,
   });
+
+  /// Whether she has asked for the reviewer's call. False when the automatic
+  /// check raised the flag by itself (R4): then this screen says plainly that
+  /// a reviewer can only call after she asks, and offers "Ask for the call".
+  final bool reviewAsked;
+
+  /// `request_review`, sent when she taps "Ask for the call". The server
+  /// answers `pending` against the flag already open and records her consent.
+  final ReviewRequester? requester;
+
+  /// She asked, and the server confirmed.
+  final VoidCallback? onAskedForCall;
 
   /// What the server last said, or null when it has said nothing yet (shown
   /// as pending).
@@ -106,6 +122,49 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
   StreamSubscription<ServerVerification?>? _subscription;
   ServerVerification? _live;
   bool _approvedSent = false;
+  late bool _asked = widget.reviewAsked;
+  bool _asking = false;
+
+  /// What went wrong with the last "Ask for the call", or null.
+  CallFailureKind? _askFailure;
+
+  Future<void> _askForCall() async {
+    final requester = widget.requester;
+    if (requester == null || _asking) return;
+    setState(() {
+      _asking = true;
+      _askFailure = null;
+    });
+    try {
+      // `error`: the automatic check could not decide. The server keeps the
+      // flag it already opened and records that she asked.
+      final answer = await requester.request(ReviewPath.error);
+      if (!mounted) return;
+      switch (answer) {
+        case ReviewRequestState.pending:
+          setState(() => _asked = true);
+          widget.onAskedForCall?.call();
+        case ReviewRequestState.approved:
+          setState(
+            () => _live = const ServerVerification(
+              ServerVerificationState.approved,
+            ),
+          );
+          _maybeApproved();
+      }
+    } catch (error) {
+      if (!mounted) return;
+      final kind = classifyCallFailure(error);
+      if (kind == CallFailureKind.reviewOpen) {
+        setState(() => _asked = true);
+        widget.onAskedForCall?.call();
+      } else {
+        setState(() => _askFailure = kind);
+      }
+    } finally {
+      if (mounted) setState(() => _asking = false);
+    }
+  }
 
   @override
   void initState() {
@@ -174,9 +233,19 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
         l10n.aShortVideoCallWithAWoman,
         booked != null
             ? l10n.yourVideoCallIsBookedForTime(_when(context, booked))
+            // PENDING COUNSEL: with "Your phone number is used only to
+            // arrange this call" below, this is the review consent wording
+            // (the same substance as C15), shown before she asks.
+            : !_asked && widget.requester != null
+            ? l10n.aReviewerCanOnlyCallYouAfter
             : l10n.aWomanReviewerFromOwnHubWill,
       ),
     };
+    final offerCall =
+        state == ServerVerificationState.pending &&
+        booked == null &&
+        !_asked &&
+        widget.requester != null;
     final waiting = state == ServerVerificationState.pending;
     final approved = state == ServerVerificationState.approved;
 
@@ -227,6 +296,25 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
           // The closed door, named as the point rather than as a punishment.
           // Only while a decision is still to come.
           if (waiting) Text(l10n.theAppOpensAsSoonAsYour, style: quiet),
+          if (offerCall) ...[
+            Text(l10n.yourPhoneNumberIsUsedOnlyTo, style: quiet),
+            if (_askFailure != null)
+              Semantics(
+                liveRegion: true,
+                child: Text(switch (_askFailure) {
+                  CallFailureKind.tryTomorrow =>
+                    l10n.youHaveAskedForAReviewerToo,
+                  CallFailureKind.appCannotReach =>
+                    l10n.thisCopyOfTheAppCannotReach_agbhf,
+                  _ => l10n.weCouldNotReachOwnHubSo_3usbb,
+                }, style: AppText.bodyM.copyWith(color: AppColors.error)),
+              ),
+            AppButton(
+              l10n.askForTheCall,
+              key: const ValueKey('c14-ask-for-the-call'),
+              onPressed: _asking ? null : _askForCall,
+            ),
+          ],
           if (approved && widget.onApproved != null)
             AppButton(
               l10n.openOwnHub,

@@ -278,32 +278,39 @@ void main() {
     await repository.dispose();
   });
 
-  test('an unreachable server asks for a woman reviewer, and shreds', () async {
-    final evidence = _filled();
-    final provider = _ScriptedProvider(<Object>[
-      const SocketException('no route to host'),
-    ]);
-    final reviews = _Reviews();
-    final repository = _repository(
-      provider,
-      evidence: evidence,
-      reviews: reviews,
-    );
+  test(
+    'an unreachable server offers a reviewer, asks nobody, and shreds',
+    () async {
+      final evidence = _filled();
+      final provider = _ScriptedProvider(<Object>[
+        const SocketException('no route to host'),
+      ]);
+      final reviews = _Reviews();
+      final repository = _repository(
+        provider,
+        evidence: evidence,
+        reviews: reviews,
+      );
 
-    await repository.submit(method: VerificationMethod.automatic);
-    final settled = await _settle(repository);
+      await repository.submit(method: VerificationMethod.automatic);
+      final settled = await _settle(repository);
 
-    expect(settled, isA<VerificationAwaitingReviewer>());
-    expect(reviews.asked, [
-      ReviewPath.error,
-    ], reason: 'she waits for a reviewer only once the server queued her');
-    expect(
-      evidence.isEmpty,
-      isTrue,
-      reason: 'rule 7 runs in a finally, so it survives the failure path too',
-    );
-    await repository.dispose();
-  });
+      // R4: no `request_review` until she has read the C15 wording and tapped.
+      expect(settled, isA<VerificationReviewOffered>());
+      expect(settled.isPending, isFalse);
+      expect(
+        reviews.asked,
+        isEmpty,
+        reason: 'she is offered a reviewer, never queued without asking',
+      );
+      expect(
+        evidence.isEmpty,
+        isTrue,
+        reason: 'rule 7 runs in a finally, so it survives the failure path too',
+      );
+      await repository.dispose();
+    },
+  );
 
   test('a connection that never opened is retried exactly once', () async {
     // "unavailable" is the one code that means nothing was charged, so the
@@ -329,7 +336,8 @@ void main() {
     final repository = _repository(provider);
 
     await repository.submit(method: VerificationMethod.automatic);
-    expect(await _settle(repository), isA<VerificationAwaitingReviewer>());
+    // R4: a reviewer is offered, not requested on her behalf.
+    expect(await _settle(repository), isA<VerificationReviewOffered>());
     expect(provider.sawByteCount, hasLength(1));
     await repository.dispose();
   });
@@ -567,7 +575,7 @@ void main() {
       },
     );
 
-    test('if asking for a reviewer fails too, nothing is claimed', () async {
+    test('a timeout claims nothing and asks nobody', () async {
       final reviews = _Reviews(<Object>[
         const VerificationCallFailure('unavailable'),
       ]);
@@ -579,8 +587,9 @@ void main() {
       );
       await repository.submit(method: VerificationMethod.automatic);
       final settled = await _settle(repository);
-      expect(settled, isA<VerificationUnreachable>());
+      expect(settled, isA<VerificationReviewOffered>());
       expect(settled.isPending, isFalse);
+      expect(reviews.asked, isEmpty);
       await repository.dispose();
     });
 

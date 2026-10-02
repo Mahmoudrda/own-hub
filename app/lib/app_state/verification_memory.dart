@@ -33,6 +33,12 @@ abstract final class VerificationMemory {
   static Future<void> rememberReviewAsked(String uid) =>
       _write(kReviewAskedUidKey, uid);
 
+  static Future<void> forgetReviewAsked() async {
+    try {
+      await (await SharedPreferences.getInstance()).remove(kReviewAskedUidKey);
+    } catch (_) {}
+  }
+
   /// Both facts gone. Never throws.
   static Future<void> forget() async {
     try {

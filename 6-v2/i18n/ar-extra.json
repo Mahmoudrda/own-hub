@@ -523,5 +523,8 @@
  "Open Own Hub": "افتحي Own Hub",
  "This copy of the app cannot reach Own Hub, so your agreement was not saved and the camera has not opened. Please install the latest version from the App Store or Google Play.": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُحفظ موافقتكِ ولم تُفتح الكاميرا. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
  "This copy of the app cannot reach Own Hub, so your health backup was not changed. Please install the latest version from the App Store or Google Play.": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
- "You can also delete your account on our website: {url}": "يمكنكِ أيضًا حذف حسابكِ من موقعنا: {url}"
+ "You can also delete your account on our website: {url}": "يمكنكِ أيضًا حذف حسابكِ من موقعنا: {url}",
+ "A reviewer can only call you after you ask for the call. If you ask, a woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.": "لا يمكن لمراجِعة أن تتصل بكِ إلا بعد أن تطلبي المكالمة. إن طلبتِها، ستتصل بكِ مراجِعة من Own Hub هاتفيًا لترتيب مكالمة فيديو قصيرة، وستتحقق معكِ من بطاقتكِ الشخصية خلال تلك المكالمة.",
+ "Ask for the call": "اطلبي المكالمة",
+ "The check did not finish": "لم يكتمل التحقق"
 }

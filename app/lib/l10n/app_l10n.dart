@@ -14052,6 +14052,24 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'You can also delete your account on our website: {url}'**
   String youCanAlsoDeleteYourAccountOn(String url);
+
+  /// No description provided for @aReviewerCanOnlyCallYouAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'A reviewer can only call you after you ask for the call. If you ask, a woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.'**
+  String get aReviewerCanOnlyCallYouAfter;
+
+  /// No description provided for @askForTheCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for the call'**
+  String get askForTheCall;
+
+  /// No description provided for @theCheckDidNotFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'The check did not finish'**
+  String get theCheckDidNotFinish;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

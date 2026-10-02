@@ -109,11 +109,16 @@ sealed class VerificationState {
   /// decided and she is not in any queue; she can try again.
   const factory VerificationState.unreachable() = VerificationUnreachable;
 
+  /// The call failed for a reason nobody classified (no network, a timeout,
+  /// a server error). Nothing was decided and she is in no queue. She is
+  /// offered a woman reviewer on C15, where she reads what the review means
+  /// and asks for it herself (R4). Never queued for her automatically.
+  const factory VerificationState.reviewOffered() = VerificationReviewOffered;
+
   /// App Check refused this copy of the app: it cannot reach Own Hub at all.
   /// She is told to install the latest version. Never a review, because the
   /// review call would be refused the same way.
-  const factory VerificationState.appCannotReach() =
-      VerificationAppCannotReach;
+  const factory VerificationState.appCannotReach() = VerificationAppCannotReach;
 
   /// Whether the community is open to her.
   bool get isVerified => this is VerificationVerified;
@@ -178,6 +183,10 @@ class VerificationRejected extends VerificationState {
 
 class VerificationUnreachable extends VerificationState {
   const VerificationUnreachable();
+}
+
+class VerificationReviewOffered extends VerificationState {
+  const VerificationReviewOffered();
 }
 
 class VerificationAppCannotReach extends VerificationState {

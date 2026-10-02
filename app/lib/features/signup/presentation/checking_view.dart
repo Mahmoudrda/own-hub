@@ -133,6 +133,12 @@ class _CheckingViewState extends State<CheckingView> {
       case VerificationUnreachable():
       case VerificationAppCannotReach():
         setState(() => _stop = state);
+      case VerificationReviewOffered():
+        // On to C15 with the "could not finish" wording, once. Coming back
+        // from it lands on the same offer here, not on another push.
+        final first = _stop is! VerificationReviewOffered;
+        setState(() => _stop = state);
+        if (first) widget.onAskForReviewer?.call();
       case VerificationNotStarted():
       case VerificationChecking():
         if (_stop != null) setState(() => _stop = null);
@@ -152,6 +158,16 @@ class _CheckingViewState extends State<CheckingView> {
       VerificationChecksUsedUp() => (
         l10n.noAutomaticChecksLeft,
         l10n.thisAccountHasUsedEveryAutomaticCheck,
+        widget.onAskForReviewer == null
+            ? null
+            : AppButton(
+                l10n.askForAWomanReviewer,
+                onPressed: widget.onAskForReviewer,
+              ),
+      ),
+      VerificationReviewOffered() => (
+        l10n.theCheckDidNotFinish,
+        l10n.theAutomaticCheckCouldNotStartJust,
         widget.onAskForReviewer == null
             ? null
             : AppButton(

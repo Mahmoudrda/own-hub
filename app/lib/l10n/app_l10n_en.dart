@@ -7740,4 +7740,14 @@ class AppL10nEn extends AppL10n {
   String youCanAlsoDeleteYourAccountOn(String url) {
     return 'You can also delete your account on our website: $url';
   }
+
+  @override
+  String get aReviewerCanOnlyCallYouAfter =>
+      'A reviewer can only call you after you ask for the call. If you ask, a woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.';
+
+  @override
+  String get askForTheCall => 'Ask for the call';
+
+  @override
+  String get theCheckDidNotFinish => 'The check did not finish';
 }

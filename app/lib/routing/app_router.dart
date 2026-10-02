@@ -1181,6 +1181,10 @@ class AppRouter {
       },
       onDeleteMyData: () => goTo(context, 'A02'),
       onSelectTab: (screenId) => goTo(context, screenId),
+      // R4: a flag the automatic check raised is not her asking for a call.
+      reviewAsked: reviewAsked,
+      requester: identityCheck.reviews,
+      onAskedForCall: markReviewAsked,
     ),
     // Which path she chose matters operationally — a video check and a partner
     // gym cost very different things — so it is recorded rather than dropped.
@@ -1192,6 +1196,7 @@ class AppRouter {
       path: pendingReviewPath,
       onBooked: (path) {
         lastReviewerPath = path;
+        markReviewAsked();
         awaitingReviewer = true;
         serverVerification = const ServerVerification(
           ServerVerificationState.pending,
@@ -4610,6 +4615,9 @@ class AppRouter {
     _identityCheck = _newIdentityCheck();
     consentRecorded = false;
     awaitingReviewer = false;
+    // A new attempt can raise a new flag; she asks for that call afresh.
+    reviewAsked = false;
+    unawaited(VerificationMemory.forgetReviewAsked());
     _automaticSubmitted = false;
 
     // Her stored agreement, if she already gave one to this wording. Read now,

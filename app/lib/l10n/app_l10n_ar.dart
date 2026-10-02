@@ -7709,4 +7709,14 @@ class AppL10nAr extends AppL10n {
   String youCanAlsoDeleteYourAccountOn(String url) {
     return 'يمكنكِ أيضًا حذف حسابكِ من موقعنا: $url';
   }
+
+  @override
+  String get aReviewerCanOnlyCallYouAfter =>
+      'لا يمكن لمراجِعة أن تتصل بكِ إلا بعد أن تطلبي المكالمة. إن طلبتِها، ستتصل بكِ مراجِعة من Own Hub هاتفيًا لترتيب مكالمة فيديو قصيرة، وستتحقق معكِ من بطاقتكِ الشخصية خلال تلك المكالمة.';
+
+  @override
+  String get askForTheCall => 'اطلبي المكالمة';
+
+  @override
+  String get theCheckDidNotFinish => 'لم يكتمل التحقق';
 }

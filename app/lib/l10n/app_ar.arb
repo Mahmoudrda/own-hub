@@ -3152,5 +3152,8 @@
         "example": "https://ownhub.app/delete-account"
       }
     }
-  }
+  },
+  "aReviewerCanOnlyCallYouAfter": "لا يمكن لمراجِعة أن تتصل بكِ إلا بعد أن تطلبي المكالمة. إن طلبتِها، ستتصل بكِ مراجِعة من Own Hub هاتفيًا لترتيب مكالمة فيديو قصيرة، وستتحقق معكِ من بطاقتكِ الشخصية خلال تلك المكالمة.",
+  "askForTheCall": "اطلبي المكالمة",
+  "theCheckDidNotFinish": "لم يكتمل التحقق"
 }

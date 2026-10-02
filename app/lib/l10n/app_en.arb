@@ -3152,5 +3152,8 @@
         "example": "https://ownhub.app/delete-account"
       }
     }
-  }
+  },
+  "aReviewerCanOnlyCallYouAfter": "A reviewer can only call you after you ask for the call. If you ask, a woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.",
+  "askForTheCall": "Ask for the call",
+  "theCheckDidNotFinish": "The check did not finish"
 }
