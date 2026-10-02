@@ -182,6 +182,7 @@ void main() {
   group('Firebase unavailable', () {
     test('a remembered verified woman uses the local product', () async {
       await VerificationMemory.rememberVerified('u1');
+      await VerificationMemory.rememberSignedIn('u1');
       AppRouter.verificationBackend = FakeBackend(ready: false, uid: null);
 
       await AppRouter.readVerificationAtLaunch();

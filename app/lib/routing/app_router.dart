@@ -655,21 +655,26 @@ class AppRouter {
   /// is bad.
   static Future<void> readVerificationClaim() async {
     final backend = verificationBackend;
+    final generation = _claimGeneration;
     _verifiedOnThisPhone = false;
     final remembered = await VerificationMemory.verifiedUid();
     if (!backend.isReady) {
       // No Firebase on this phone today. Her product is local-first, and a
-      // phone that proved her verified before opens it again (R1).
+      // phone that proved her verified before opens it again (R1), but only
+      // for the account last signed in on it (N5).
       _verifiedClaim = false;
-      _verifiedOnThisPhone = remembered != null;
+      _verifiedOnThisPhone =
+          remembered != null &&
+          remembered == await VerificationMemory.lastSignedInUid();
       return;
     }
     final uid = backend.currentUid;
     if (uid == null) {
       _verifiedClaim = false;
+      await VerificationMemory.forgetSignedIn();
       return;
     }
-    final generation = _claimGeneration;
+    await VerificationMemory.rememberSignedIn(uid);
     try {
       final verified = await backend.verifiedClaim().timeout(claimTimeout);
       if (!_stillAbout(uid, generation)) return;
@@ -764,6 +769,7 @@ class AppRouter {
     if (!_stillAbout(uid, generation)) return;
     _verifiedClaim = verified;
     _freshClaimRead = true;
+    unawaited(VerificationMemory.rememberSignedIn(uid));
     if (verified) {
       unawaited(VerificationMemory.rememberVerified(uid));
     } else {

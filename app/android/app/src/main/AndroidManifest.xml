@@ -43,10 +43,18 @@
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
 
+    <!-- No Android backup and no device-to-device transfer. Her data is
+         local-first, and moving it to a new phone is the Own Hub backup she
+         turns on herself. A restored copy would also carry this phone's
+         memory that she was verified onto a phone that never proved it.
+         tools:replace keeps a library from turning backup back on. -->
     <application
         android:label="Own Hub"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        tools:replace="android:allowBackup">
         <activity
             android:name=".MainActivity"
             android:exported="true"
