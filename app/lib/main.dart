@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_state/cloud_store.dart';
+import 'app_state/crash_reports.dart';
 import 'app_state/firebase_boot.dart';
 import 'app_state/local_persistence.dart';
 import 'app_state/onboarding_state.dart';
@@ -55,17 +55,16 @@ Future<void> main() async {
   await FirebaseBoot.start();
 
   // Crashes, reported in a release build only (see FirebaseBoot). The
-  // reports carry the error and its stack, never anything about her: no user
-  // identifier, no custom key, no log line is ever set.
+  // reports carry the error's type and its stack, never its message and
+  // never anything about her: no user identifier, no custom key, no log line
+  // is ever set (R8, see `lib/app_state/crash_reports.dart`).
   if (FirebaseBoot.crashReporting) {
     FlutterError.onError = (details) {
       FlutterError.presentError(details);
-      unawaited(FirebaseCrashlytics.instance.recordFlutterFatalError(details));
+      unawaited(CrashReports.flutterError(details));
     };
     PlatformDispatcher.instance.onError = (error, stack) {
-      unawaited(
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true),
-      );
+      unawaited(CrashReports.uncaught(error, stack));
       return true;
     };
   }
