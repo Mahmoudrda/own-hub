@@ -502,6 +502,29 @@ RETRY_REQUIRED rather than a rejection, because an undecided flag is OUR failure
 to review in time, not hers. Turning our backlog into her rejection would be the
 wrong way round."""
 
+# ------------------------------------------------- retention and deletion
+
+DECIDED_RECORD_RETENTION_DAYS = 180
+"""How long a DECIDED verification job or review flag is kept before the
+Firestore TTL policy deletes it (field `expireAt`). A job or flag still waiting
+on a review has no `expireAt` and is never swept. nidRegistry and the review
+access log get no TTL at all.
+
+PENDING COUNSEL (PDPL retention); not a legal opinion. 180 days is a
+placeholder chosen to cover disputes and a store review, not a number counsel
+has approved."""
+
+DELETED_ACCOUNT_MAY_REJOIN = False
+"""Whether deleting an account frees her national ID for a new account.
+
+False keeps today's behaviour: the registry entry is CLOSED (state 'closed',
+uid None), so the card cannot register again while no personal data stays
+linked to it. True deletes the entry instead.
+
+PENDING COUNSEL: the legal pre-review notes that a closed entry means a woman
+who deleted voluntarily can never rejoin, which VERIFICATION_SPEC.md may
+contradict. Not a legal opinion."""
+
 # --------------------------------------------------- collections and secrets
 
 COL_NID_REGISTRY = "nidRegistry"

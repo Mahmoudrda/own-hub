@@ -754,3 +754,44 @@ def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     import datetime as dt
 
     review.expire(store.FirestoreReviewStore(), dt.datetime.now(dt.timezone.utc))
+
+
+# ------------------------------------------------------------- deletion
+
+
+@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+def delete_account(request: https_fn.CallableRequest) -> dict:
+    """S4: delete her account and everything the manifest names. `{}` in.
+
+    Signed in is enough; NOT gated on `verified`. A woman who never finished
+    verification, or was rejected, has the same right to erasure (Protected
+    List 6). Returns {state: "done", journal: [...]} with the eight states of
+    contracts/identity_contract.json deletionJournal. On a failure the record
+    is left at `failedRetryable` and resume_account_deletions finishes it,
+    which matters because her Auth user is disabled at step two and she
+    cannot retry herself.
+    """
+    uid = _require_auth(request)
+    from account import deletion
+
+    try:
+        return deletion.run(uid, deletion.FirebaseBackend())
+    except Exception:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INTERNAL, reasons.INTERNAL_ERROR
+        )
+
+
+@scheduler_fn.on_schedule(schedule="every 15 minutes", region=config.REGION)
+def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
+    """Finish any deletion that stopped part way and has been idle 10 minutes."""
+    import datetime as dt
+
+    from account import deletion
+
+    cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(minutes=10)
+    for uid in deletion.unfinished(store.db(), cutoff):
+        try:
+            deletion.run(uid, deletion.FirebaseBackend())
+        except Exception:
+            continue

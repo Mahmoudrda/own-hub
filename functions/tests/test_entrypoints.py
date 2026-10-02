@@ -46,6 +46,7 @@ CALLABLES = {
     "decide_verification_flag",
     "request_review",
     "get_review_contact",
+    "delete_account",
 }
 
 
@@ -443,3 +444,37 @@ def test_an_unknown_version_is_refused_even_when_consent_is_on_file(monkeypatch,
         https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
     )
     assert error.message == reasons.CONSENT_MISSING
+
+
+def test_delete_account_needs_only_a_signed_in_account(monkeypatch, stubbed):
+    # Protected List 6: erasure is not gated on verification.
+    from account import deletion
+
+    ran = {}
+
+    class _Backend:
+        pass
+
+    monkeypatch.setattr(deletion, "FirebaseBackend", _Backend)
+    monkeypatch.setattr(
+        deletion, "run", lambda uid, backend: ran.setdefault("uid", uid) and {"state": "done", "journal": deletion.JOURNAL}
+    )
+    answer = inner("delete_account")(request({}, token={}))
+    assert ran["uid"] == "uid-1"
+    assert answer["state"] == "done"
+
+
+def test_delete_account_failure_is_internal_with_a_code(monkeypatch, stubbed):
+    from account import deletion
+
+    monkeypatch.setattr(deletion, "FirebaseBackend", lambda: object())
+
+    def boom(uid, backend):
+        raise RuntimeError("outage with details")
+
+    monkeypatch.setattr(deletion, "run", boom)
+    error = raises(
+        lambda: inner("delete_account")(request({})),
+        https_fn.FunctionsErrorCode.INTERNAL,
+    )
+    assert error.message == reasons.INTERNAL_ERROR

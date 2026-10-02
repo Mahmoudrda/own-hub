@@ -340,6 +340,7 @@ def test_the_callables_have_the_agreed_names():
         "get_review_contact",
         "schedule_verification_review",
         "decide_verification_flag",
+        "delete_account",
     ):
         assert name in defined, f"the Flutter side calls {name}"
 

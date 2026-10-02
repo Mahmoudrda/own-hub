@@ -320,6 +320,7 @@ _ALLOWED_JOB_FIELDS = frozenset(
         "decidedBy",
         "pepper_version",
         "schemaV",
+        "expireAt",
     }
 )
 """Spec §4's row 2, enumerated.
@@ -375,9 +376,12 @@ def job_payload(
     """The allowlisted job document, without writing it.
 
     Split out of write_job so a PENDING_REVIEW job can be written inside the
-    same transaction as its flag (one open flag per uid)."""
-    return _allowlisted(
-        {
+    same transaction as its flag (one open flag per uid).
+
+    S16: a decided job carries `expireAt` for the Firestore TTL policy. A job
+    waiting on review does not; it gets one when its flag is decided or
+    expires."""
+    payload = {
             "uid": uid,
             "state": decision.outcome,
             "reasons": list(decision.reasons),
@@ -394,6 +398,15 @@ def job_payload(
             "imagesDeletedAt": firestore.SERVER_TIMESTAMP,
             "decidedBy": "system",
         }
+    if decision.outcome != decisions.PENDING_REVIEW:
+        payload["expireAt"] = decided_expiry()
+    return _allowlisted(payload)
+
+
+def decided_expiry() -> dt.datetime:
+    """When a decided job or flag may be swept. PENDING COUNSEL, see config."""
+    return dt.datetime.now(dt.timezone.utc) + dt.timedelta(
+        days=config.DECIDED_RECORD_RETENTION_DAYS
     )
 
 
@@ -768,11 +781,14 @@ class FirestoreReviewStore:
                 "decidedBy": reviewer_uid,
                 "decidedAt": firestore.SERVER_TIMESTAMP,
                 "reviewerReason": reviewer_reason,
+                "expireAt": decided_expiry(),
             }
         )
         job = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
         if job.get().exists:
-            job.update({"state": state, "decidedBy": "reviewer"})
+            job.update(
+                {"state": state, "decidedBy": "reviewer", "expireAt": decided_expiry()}
+            )
         _clear_open_flag(uid, flag_id)
 
     def stale_flags(self, now, limit):
@@ -791,11 +807,12 @@ class FirestoreReviewStore:
                 "state": decisions.RETRY_REQUIRED,
                 "reasons": firestore.ArrayUnion([reasons.REVIEW_SLA_EXPIRED]),
                 "expiredAt": firestore.SERVER_TIMESTAMP,
+                "expireAt": decided_expiry(),
             }
         )
         job = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
         if job.get().exists:
-            job.update({"state": decisions.RETRY_REQUIRED})
+            job.update({"state": decisions.RETRY_REQUIRED, "expireAt": decided_expiry()})
         if uid:
             _clear_open_flag(uid, flag_id)
 
