@@ -62,8 +62,8 @@ Wire contract, agreed with the Flutter worker:
     IGNORED — see the note on `verify_identity`. `reasons` carries only the
     coarse user-safe hints from reasons.to_user_safe, never internal codes.
 
-Every callable checks, in this order and before doing any work: authentication,
-App Check, consent where required, attempt limits, the cost ledger. Spec §5.
+Every callable checks, in this order and before doing any work: App Check,
+authentication, consent where required, attempt limits, the cost ledger. Spec §5.
 """
 
 from __future__ import annotations
@@ -99,32 +99,35 @@ options.set_global_options(
     max_instances=config.MAX_INSTANCES,
 )
 
-# App Check is applied through `enforce_app_check=` on each decorator below.
-# firebase-functions 0.6.0 exposes it as a plain bool there and has no
-# AppCheckPolicy enum, so there is nothing to translate — but `_require_auth`
-# re-checks `request.app` anyway, because whether the decorator actually
-# enforced depends on a deploy-time option and a silently unenforced deploy
-# would not show up in any test.
+# App Check is enforced in `_require_auth`, NOT through `enforce_app_check=` on
+# the decorators (R3). With the decorator flag on, firebase-functions 0.6.0
+# answers a missing or invalid token with UNAUTHENTICATED "Unauthenticated"
+# before this code runs, so a phone that fails Play Integrity could never be
+# told the real cause. With it off the framework still VERIFIES any token sent
+# (firebase_functions/private/util.py `_on_call_check_app_token` calls
+# app_check.verify_token) and sets `request.app` only for a token that passed;
+# missing and invalid both leave it None. config.ENFORCE_APP_CHECK stays True
+# and the check stays fail-closed: no work and no billing without a valid token.
 
 
 # ----------------------------------------------------------------- helpers
 
 
 def _require_auth(request: https_fn.CallableRequest) -> str:
-    """Authentication, then App Check. Never assume the decorator did it.
+    """App Check, then authentication. This is THE App Check gate (R3).
 
-    `enforce_app_check` on the decorator is the real gate, but this is checked
-    again here because the decorator's behaviour depends on a deploy-time option
-    and a silently unenforced deploy is exactly the configuration mistake that
-    would not show up in any test.
+    Every callable calls this (directly or through the reviewer and admin
+    guards) before any other work. `request.app` is None for a missing or an
+    invalid token, so both get FAILED_PRECONDITION app_check_missing, which
+    the app can show her as the real cause.
     """
-    if request.auth is None or not request.auth.uid:
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.UNAUTHENTICATED, reasons.UNAUTHENTICATED
-        )
     if config.ENFORCE_APP_CHECK and request.app is None:
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.APP_CHECK_MISSING
+        )
+    if request.auth is None or not request.auth.uid:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.UNAUTHENTICATED, reasons.UNAUTHENTICATED
         )
     return request.auth.uid
 
@@ -260,7 +263,7 @@ def _deps() -> pipeline.Deps:
 # -------------------------------------------------------------- the flow
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def record_consent(request: https_fn.CallableRequest) -> dict:
     """Spec §2 step 1: persisted before any camera access.
 
@@ -285,7 +288,7 @@ def record_consent(request: https_fn.CallableRequest) -> dict:
     return {"ok": True, "consentVersion": config.CONSENT_VERSION}
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def record_health_consent(request: https_fn.CallableRequest) -> dict:
     """S17: her separate consent to back up health data to the cloud.
 
@@ -315,7 +318,7 @@ def record_health_consent(request: https_fn.CallableRequest) -> dict:
     return {"ok": True, "state": state}
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def start_verification(request: https_fn.CallableRequest) -> dict:
     """Mint a single-use, uid-bound liveness session.
 
@@ -376,7 +379,7 @@ def start_verification(request: https_fn.CallableRequest) -> dict:
     }
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def verify_identity(request: https_fn.CallableRequest) -> dict:
     """The whole of spec §2 steps 3 to 8, in one round trip.
 
@@ -745,7 +748,7 @@ def _body(request: https_fn.CallableRequest) -> dict:
     return data
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def request_review(request: https_fn.CallableRequest) -> dict:
     """She asks for a woman reviewer: {path: "niqab" | "declined" | "error"}.
 
@@ -772,7 +775,7 @@ def request_review(request: https_fn.CallableRequest) -> dict:
     return {"state": result.state}
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def list_verification_flags(request: https_fn.CallableRequest) -> dict:
     """The review queue, oldest first: reason codes, scores, and a handle.
 
@@ -792,7 +795,7 @@ def list_verification_flags(request: https_fn.CallableRequest) -> dict:
     return {"flags": rows}
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def get_review_contact(request: https_fn.CallableRequest) -> dict:
     """Her phone number, for the woman reviewer about to call her.
 
@@ -807,7 +810,7 @@ def get_review_contact(request: https_fn.CallableRequest) -> dict:
     )
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def schedule_verification_review(request: https_fn.CallableRequest) -> dict:
     """Book the live review: {flagId, route: "video"|"gym", scheduledFor}.
 
@@ -828,7 +831,7 @@ def schedule_verification_review(request: https_fn.CallableRequest) -> dict:
     )
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def decide_verification_flag(request: https_fn.CallableRequest) -> dict:
     """Record the outcome of a live review: {flagId, approve, nid?}.
 
@@ -890,7 +893,7 @@ def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
 # ------------------------------------------------------------- deletion
 
 
-@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+@https_fn.on_call()
 def delete_account(request: https_fn.CallableRequest) -> dict:
     """S4: delete her account and everything the manifest names. `{}` in.
 

@@ -16,9 +16,8 @@ Two defects found in this file's absence are the reason it exists:
 
 The function bodies are exercised with the decorators unwrapped, so these are
 about the code in main.py and not about the firebase-functions decorator. The
-decorator's own configuration is asserted separately, over the syntax tree,
-because `enforce_app_check` is a deploy-time option whose absence would not show
-up in any behavioural test.
+decorators are asserted separately, over the syntax tree: since R3 none may
+pass `enforce_app_check`, because main._require_auth is the App Check gate.
 """
 
 from __future__ import annotations
@@ -152,13 +151,17 @@ def raises(fn, code):
 # ------------------------------------------------------- App Check and auth
 
 
-def test_every_callable_declares_app_check_enforcement():
-    """`enforce_app_check` is a deploy-time option, so assert it in the source.
+_GUARDS = {"_require_auth", "_require_woman_reviewer", "_require_admin"}
 
-    A callable that lost this argument would behave identically in every
-    behavioural test and would be open to any script with a stolen ID token in
-    production. config.ENFORCE_APP_CHECK is True, and this checks that each
-    decorator actually reads it.
+
+def test_every_callable_runs_the_app_check_guard_before_anything_else():
+    """R3: App Check is enforced by main._require_auth, not the decorator.
+
+    `enforce_app_check=True` on the decorator makes firebase-functions answer
+    UNAUTHENTICATED before main.py runs, hiding app_check_missing from the app.
+    So no decorator may pass it, and the first call each callable makes (after
+    at most a timer) must be one of the guards that start with the App Check
+    check. tests/test_app_check_reason.py proves the behaviour end to end.
     """
     tree = ast.parse(open(_MAIN, encoding="utf-8").read())
     seen = set()
@@ -167,16 +170,23 @@ def test_every_callable_declares_app_check_enforcement():
         if not isinstance(node, ast.FunctionDef) or node.name not in CALLABLES:
             continue
         seen.add(node.name)
-        enforced = False
         for decorator in node.decorator_list:
-            if not isinstance(decorator, ast.Call):
-                continue
-            for keyword in decorator.keywords:
-                if keyword.arg == "enforce_app_check":
-                    enforced = True
-        assert enforced, f"{node.name} does not pass enforce_app_check"
+            if isinstance(decorator, ast.Call):
+                assert not any(
+                    k.arg == "enforce_app_check" for k in decorator.keywords
+                ), f"{node.name} passes enforce_app_check, which hides the reason"
+        first_guard = None
+        for stmt in node.body:
+            for call in ast.walk(stmt):
+                if isinstance(call, ast.Call) and isinstance(call.func, ast.Name):
+                    first_guard = call.func.id
+                    break
+            if first_guard is not None:
+                break
+        assert first_guard in _GUARDS, f"{node.name} first calls {first_guard}"
 
     assert seen == CALLABLES, f"callables not found in main.py: {CALLABLES - seen}"
+    assert config.ENFORCE_APP_CHECK is True
 
 
 @pytest.mark.parametrize("name", sorted(CALLABLES))
@@ -192,8 +202,7 @@ def test_no_callable_does_any_work_for_an_unauthenticated_caller(name, stubbed):
 
 @pytest.mark.parametrize("name", sorted(CALLABLES))
 def test_no_callable_does_any_work_without_an_app_check_token(name, stubbed):
-    # The decorator is the real gate, but main._require_auth re-checks because a
-    # silently unenforced deploy would not show up in any test.
+    # main._require_auth is the App Check gate (R3), the first thing run.
     fn = inner(name)
     raises(
         lambda: fn(request(body(), app=False)),
