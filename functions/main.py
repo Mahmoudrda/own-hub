@@ -777,8 +777,17 @@ def list_verification_flags(request: https_fn.CallableRequest) -> dict:
     """The review queue, oldest first: reason codes, scores, and a handle.
 
     Never an image, because none exists, and never a phone number.
+
+    N8: a woman reviewer may read it (she works the queue with her own
+    account through tools/review_queue.py, which holds no admin credentials);
+    an admin still may. Every read is written to the access log.
     """
-    reviewer_uid = _require_admin(request)
+    reviewer_uid = _require_auth(request)
+    token = request.auth.token or {}
+    if not (token.get("womanReviewer") or token.get("admin")):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.UNAUTHENTICATED
+        )
     rows = review.list_open(store.FirestoreReviewStore(), reviewer_uid)
     return {"flags": rows}
 

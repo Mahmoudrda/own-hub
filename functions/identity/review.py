@@ -5,10 +5,11 @@ woman reviewer. The queue holds reason codes, two scores and a scheduling
 handle. It never holds a photograph, a frame, a phone number or an ID number.
 
 Every function in this module takes a `ReviewStore`. The Cloud Functions in
-main.py and the reviewer command line tool in tools/review_queue.py call the
-SAME functions with the Firestore implementation (store.FirestoreReviewStore),
+main.py call them with the Firestore implementation (store.FirestoreReviewStore),
 so there is one code path for the access log, the state writes and the checks.
-Tests call them with an in-memory fake.
+The reviewer command line tool (tools/review_queue.py) calls those Cloud
+Functions over HTTPS with the reviewer's own ID token and holds no admin
+credentials. Tests call these functions with an in-memory fake.
 
 Errors are `ReviewError(kind, reason)`. `reason` is always a reason code from
 reasons.py, never a sentence and never anything she or the reviewer typed.

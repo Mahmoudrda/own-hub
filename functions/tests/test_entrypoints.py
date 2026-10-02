@@ -538,3 +538,14 @@ def test_the_per_uid_caps_sit_well_under_the_kill_switch():
     assert config.PER_UID_DAILY_START_LIMIT < config.DAILY_VERIFICATION_LIMIT
     assert config.PER_UID_DAILY_VERIFY_LIMIT < config.DAILY_VERIFICATION_LIMIT
     assert config.DAILY_VERIFICATION_LIMIT == 2_000, "the kill switch stays"
+
+
+@pytest.mark.parametrize("claims", [{"womanReviewer": True}, {"admin": True}])
+def test_a_woman_reviewer_or_an_admin_may_read_the_review_queue(claims, monkeypatch):
+    from tests.fake_review_store import FakeReviewStore
+
+    fake = FakeReviewStore()
+    monkeypatch.setattr(main.store, "FirestoreReviewStore", lambda: fake)
+    answer = inner("list_verification_flags")(request({}, uid="rev", token=claims))
+    assert answer == {"flags": []}
+    assert fake.access == [("rev", "*", "list")]
