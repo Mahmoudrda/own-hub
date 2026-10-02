@@ -3162,5 +3162,7 @@
   "yourSignInIsNoLongerValid_1cfl5": "Your sign-in is no longer valid, so your agreement was not saved and the camera has not opened. Please sign in again with your phone number.",
   "yourSignInIsNoLongerValid_1y16r": "Your sign-in is no longer valid, so you are not in the queue. Please sign in again with your phone number.",
   "yourSignInIsNoLongerValid_1ccq0": "Your sign-in is no longer valid, so your health backup was not changed. Please sign in again with your phone number.",
-  "yourSignInIsNoLongerValid_1g4zq": "Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again."
+  "yourSignInIsNoLongerValid_1g4zq": "Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again.",
+  "healthBackupIsOffOnThisPhone_1x622": "Health backup is off on this phone, so nothing more is uploaded. This copy of the app cannot reach Own Hub, so the copy in your account has not been removed yet. Please install the latest version from the App Store or Google Play.",
+  "healthBackupIsOffOnThisPhone_1x3p3": "Health backup is off on this phone, so nothing more is uploaded. Your sign-in is no longer valid, so the copy in your account has not been removed yet. Please sign in again with your phone number."
 }

@@ -342,7 +342,7 @@ class _PrivacyViewState extends State<PrivacyView> {
               key: const ValueKey('health-backup-error'),
               style: AppText.bodyM.copyWith(color: AppColors.error),
             ),
-          if (_healthFailed &&
+          if ((_healthFailed || _healthWithdrawPending) &&
               widget.onSignInAgain != null &&
               classifyCallFailure(backup.lastFailure ?? Object()) ==
                   CallFailureKind.signInAgain)
@@ -351,9 +351,18 @@ class _PrivacyViewState extends State<PrivacyView> {
               variant: AppButtonVariant.outlined,
               onPressed: widget.onSignInAgain,
             ),
+          // Off here either way. "When you are back online" only when the
+          // network is what stopped the removal: a refused copy of the app
+          // or a refused sign-in will not clear by reconnecting.
           if (_healthWithdrawPending)
             Text(
-              l10n.healthBackupIsOffOnThisPhone,
+              switch (classifyCallFailure(backup.lastFailure ?? Object())) {
+                CallFailureKind.appCannotReach =>
+                  l10n.healthBackupIsOffOnThisPhone_1x622,
+                CallFailureKind.signInAgain =>
+                  l10n.healthBackupIsOffOnThisPhone_1x3p3,
+                _ => l10n.healthBackupIsOffOnThisPhone,
+              },
               key: const ValueKey('health-backup-withdraw-pending'),
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),

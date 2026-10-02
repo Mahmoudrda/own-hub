@@ -14112,6 +14112,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again.'**
   String get yourSignInIsNoLongerValid_1g4zq;
+
+  /// No description provided for @healthBackupIsOffOnThisPhone_1x622.
+  ///
+  /// In en, this message translates to:
+  /// **'Health backup is off on this phone, so nothing more is uploaded. This copy of the app cannot reach Own Hub, so the copy in your account has not been removed yet. Please install the latest version from the App Store or Google Play.'**
+  String get healthBackupIsOffOnThisPhone_1x622;
+
+  /// No description provided for @healthBackupIsOffOnThisPhone_1x3p3.
+  ///
+  /// In en, this message translates to:
+  /// **'Health backup is off on this phone, so nothing more is uploaded. Your sign-in is no longer valid, so the copy in your account has not been removed yet. Please sign in again with your phone number.'**
+  String get healthBackupIsOffOnThisPhone_1x3p3;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -163,8 +163,9 @@ class HealthBackupController {
 
   bool get enabled => preference.enabled;
 
-  /// Why the last [enable] did not go through, or null. Read by A03 to tell
-  /// "no connection" from "this copy of the app is refused" (R3).
+  /// Why the last [enable], or the last withdrawal, did not go through, or
+  /// null. Read by A03 to tell "no connection" from "this copy of the app is
+  /// refused" (R3) and "sign in again" (N4).
   Object? lastFailure;
 
   /// True when the server recorded her consent and the backup is now on.
@@ -202,6 +203,7 @@ class HealthBackupController {
   /// retried ([retryPendingWithdraw], at start-up and when A03 opens), and
   /// she is told the cloud copy will be removed when she is back online.
   Future<bool> disable() async {
+    lastFailure = null;
     await preference.set(false);
     await preference.setWithdrawPending(true);
     onDisabled?.call();
@@ -217,7 +219,8 @@ class HealthBackupController {
     final attempt = () async {
       try {
         await store.record(granted: false);
-      } catch (_) {
+      } catch (error) {
+        lastFailure = error;
         return false;
       }
       await preference.setWithdrawPending(false);
