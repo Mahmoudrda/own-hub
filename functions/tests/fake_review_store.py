@@ -86,8 +86,15 @@ class FakeReviewStore:
             (k, v) for k, v in self.flags.items() if v["state"] == decisions.PENDING_REVIEW
         ][:limit]
 
-    def mark_scheduled(self, flag_id, route, when, reviewer_uid):
-        self.flags[flag_id].update({"route": route, "scheduledFor": when, "reviewerUid": reviewer_uid})
+    def mark_scheduled(self, flag_id, route, when, reviewer_uid, sla_expires_at):
+        self.flags[flag_id].update(
+            {
+                "route": route,
+                "scheduledFor": when,
+                "reviewerUid": reviewer_uid,
+                "slaExpiresAt": sla_expires_at,
+            }
+        )
 
     def close_flag(self, flag_id, *, uid, state, reviewer_uid, reviewer_reason):
         self.flags[flag_id].update(

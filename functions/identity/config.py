@@ -515,6 +515,17 @@ RETRY_REQUIRED rather than a rejection, because an undecided flag is OUR failure
 to review in time, not hers. Turning our backlog into her rejection would be the
 wrong way round."""
 
+REVIEW_BOOKING_GRACE_HOURS = 24
+"""N6: when a reviewer books a live review, the flag's slaExpiresAt moves to
+the booked time plus this grace (never earlier than it already was), so the
+hourly expiry sweep cannot expire a booked review before the call happens."""
+
+REVIEW_BOOKING_MAX_DAYS = 7
+"""N6: the furthest ahead a live review may be booked. A booking beyond it is
+refused (review_time_out_of_range), so the grace above cannot be used to park a
+flag open indefinitely."""
+
+
 # ------------------------------------------------- retention and deletion
 
 DECIDED_RECORD_RETENTION_DAYS = 180

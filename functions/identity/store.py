@@ -814,11 +814,12 @@ class FirestoreReviewStore:
         )
         return [(s.id, s.to_dict() or {}) for s in query.stream()]
 
-    def mark_scheduled(self, flag_id, route, when, reviewer_uid):
+    def mark_scheduled(self, flag_id, route, when, reviewer_uid, sla_expires_at):
         db().collection(config.COL_FLAGS).document(flag_id).update(
             {
                 "route": route,
                 "scheduledFor": when,
+                "slaExpiresAt": sla_expires_at,
                 "reviewerUid": reviewer_uid,
                 "scheduledAt": firestore.SERVER_TIMESTAMP,
                 "reasons": firestore.ArrayUnion([reasons.REVIEW_SCHEDULED]),

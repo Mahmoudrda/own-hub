@@ -109,7 +109,12 @@ class ReviewStore(Protocol):
     def list_open(self, limit: int) -> list[tuple[str, dict]]: ...
 
     def mark_scheduled(
-        self, flag_id: str, route: str, when: dt.datetime, reviewer_uid: str
+        self,
+        flag_id: str,
+        route: str,
+        when: dt.datetime,
+        reviewer_uid: str,
+        sla_expires_at: dt.datetime,
     ) -> None: ...
 
     def close_flag(
@@ -273,14 +278,37 @@ def parse_when(value: Any) -> dt.datetime:
     return when.astimezone(dt.timezone.utc)
 
 
+def _as_utc(value: Any) -> Optional[dt.datetime]:
+    if isinstance(value, dt.datetime):
+        return value if value.tzinfo else value.replace(tzinfo=dt.timezone.utc)
+    return None
+
+
 def schedule(
-    store: ReviewStore, reviewer_uid: str, flag_id: Any, route: Any, scheduled_for: Any
+    store: ReviewStore,
+    reviewer_uid: str,
+    flag_id: Any,
+    route: Any,
+    scheduled_for: Any,
+    *,
+    now: Optional[dt.datetime] = None,
 ) -> dict:
+    """Book the live review. N6: a booking may be at most
+    REVIEW_BOOKING_MAX_DAYS ahead, and it moves the flag's slaExpiresAt to the
+    booked time plus REVIEW_BOOKING_GRACE_HOURS (never earlier than it was), so
+    the expiry sweep cannot expire a booked review before the call."""
     if route not in config.REVIEW_ROUTES:
         raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
     when = parse_when(scheduled_for)
+    now = now or dt.datetime.now(dt.timezone.utc)
+    if when > now + dt.timedelta(days=config.REVIEW_BOOKING_MAX_DAYS):
+        raise ReviewError(INVALID, reasons.REVIEW_TIME_OUT_OF_RANGE)
     record = _pending_flag_for(store, reviewer_uid, flag_id)
-    store.mark_scheduled(flag_id, route, when, reviewer_uid)
+    sla = when + dt.timedelta(hours=config.REVIEW_BOOKING_GRACE_HOURS)
+    current = _as_utc(record.get("slaExpiresAt"))
+    if current is not None and current > sla:
+        sla = current
+    store.mark_scheduled(flag_id, route, when, reviewer_uid, sla)
     store.set_verification_state(
         record["uid"], STATE_PENDING, route=route, scheduled_for=when
     )
@@ -420,7 +448,9 @@ def expire(store: ReviewStore, now: dt.datetime, limit: int = 200) -> int:
         uid = data.get("uid")
         store.expire_flag(flag_id, uid)
         if uid:
-            store.set_verification_state(uid, STATE_RETRY)
+            # N6: the booking expired with the flag; C14 must not keep
+            # showing a call time that is no longer going to happen.
+            store.set_verification_state(uid, STATE_RETRY, reset_booking=True)
             store.grant_bonus(uid, flag_id)
         count += 1
     return count
