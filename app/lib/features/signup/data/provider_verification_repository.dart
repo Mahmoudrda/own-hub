@@ -43,7 +43,9 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../app_state/install_id.dart';
 import '../domain/liveness_challenge.dart';
+import '../domain/review_request.dart';
 import '../domain/verification.dart';
 import '../domain/verification_evidence.dart';
 import '../domain/verification_provider.dart';
@@ -58,8 +60,23 @@ class ProviderVerificationRepository implements VerificationRepository {
     required this.evidence,
     required this.refreshClaims,
     this.challenge,
+    this.reviews = const UnavailableReviewRequester(),
+    this.installId,
+    String Function()? operationIds,
     DateTime Function()? now,
-  }) : _now = now ?? DateTime.now;
+  }) : _now = now ?? DateTime.now,
+       _operationIds = operationIds ?? newOperationId;
+
+  /// `request_review`, called on the niqab path and when the automatic check
+  /// could not complete. Until it returns she is in no queue.
+  final ReviewRequester reviews;
+
+  /// This installation's random id, or null. A failure to read it never stops
+  /// a check: the server accepts a call without one.
+  final Future<String?> Function()? installId;
+
+  /// One uuid per attempt. Injectable so a test can see it reused on retry.
+  final String Function() _operationIds;
 
   final VerificationProvider provider;
   final VerificationEvidence evidence;
@@ -93,11 +110,11 @@ class ProviderVerificationRepository implements VerificationRepository {
   @override
   Future<VerificationState> submit({required VerificationMethod method}) async {
     if (method != VerificationMethod.automatic) {
-      // The niqab path and the direct human path. No camera has opened, there
-      // is nothing to send, and there is nothing to shred.
-      final waiting = VerificationState.awaitingReviewer(submittedAt: _now());
-      _emit(waiting);
-      return waiting;
+      // The niqab path and the direct human path. No camera has opened and
+      // there is nothing to shred. She is queued only once the server says
+      // so: until `request_review` returns, nobody will call her.
+      final next = await _askForReview(ReviewPath.niqab);
+      return next;
     }
 
     final startedAt = _now();
@@ -123,7 +140,17 @@ class ProviderVerificationRepository implements VerificationRepository {
         return;
       }
 
-      final decision = await _submitWithOneRetry(session.sessionId);
+      String? install;
+      try {
+        install = await installId?.call();
+      } catch (_) {
+        install = null;
+      }
+      final decision = await _submitWithOneRetry(
+        session.sessionId,
+        operationId: _operationIds(),
+        installId: install,
+      );
       if (kDebugMode && decision.reasons.isNotEmpty) {
         // Debug only, and it never leaves the device. This is the one place the
         // reason codes are visible at all, and it exists so that a developer
@@ -156,20 +183,24 @@ class ProviderVerificationRepository implements VerificationRepository {
         case VerificationOutcome.rejectedNotEligible:
         case VerificationOutcome.rejectedFailed:
         case VerificationOutcome.rejectedDuplicate:
-          // All three land in the same place, and she is told the same coarse
+          // All three land in the same place, and she is told the same plain
           // sentence. Separating them on screen would be the oracle the reason
-          // vocabulary was narrowed to remove.
-          _emit(const VerificationState.needsAnotherLook());
+          // vocabulary was narrowed to remove. The server has recorded a
+          // final `rejected` for every one of them that reaches the client
+          // (a first duplicate comes back as PENDING_REVIEW instead), so she
+          // is told the truth, with how to delete her data.
+          _emit(const VerificationState.rejected());
         case VerificationOutcome.retryCapture:
         case VerificationOutcome.retryRequired:
           _emit(const VerificationState.retakeNeeded());
       }
     } catch (error, stack) {
       if (kDebugMode) debugPrint('verification call failed: $error\n$stack');
-      // The call never completed, so nobody decided anything. She is not
-      // refused for her network: a woman reviewer picks it up on a video call,
-      // and there is no half-written case anywhere because nothing is stored.
-      _emit(VerificationState.awaitingReviewer(submittedAt: _now()));
+      // Shredded now rather than in the finally below, so the frames are not
+      // held in memory while `request_review` runs. The finally shreds again,
+      // which is harmless.
+      evidence.shred();
+      await _afterFailure(error);
     } finally {
       // Rule 7. Every path, including the ones above that threw.
       evidence.shred();
@@ -177,6 +208,67 @@ class ProviderVerificationRepository implements VerificationRepository {
       // against a challenge whose frames have already been spent.
       challenge = null;
     }
+  }
+
+  /// What a call that did not return a decision means for her.
+  ///
+  /// A limit is a limit, never a review. A refusal the server already made is
+  /// shown as it is. Anything else (no network, a timeout, a server error) is
+  /// handed to a woman reviewer through `request_review`, and if that call
+  /// fails as well she is told nothing was decided and offered a retry, never
+  /// told she is queued.
+  Future<VerificationState> _afterFailure(Object error) async {
+    final next = switch (classifyCallFailure(error)) {
+      CallFailureKind.tryTomorrow => const VerificationState.tryTomorrow(),
+      CallFailureKind.checksUsedUp => const VerificationState.checksUsedUp(),
+      CallFailureKind.consentMissing => const VerificationState.consentNeeded(),
+      CallFailureKind.reviewOpen => VerificationState.awaitingReviewer(
+        submittedAt: _now(),
+      ),
+      CallFailureKind.closed => const VerificationState.rejected(),
+      CallFailureKind.retake => const VerificationState.retakeNeeded(),
+      CallFailureKind.appCannotReach =>
+        const VerificationState.appCannotReach(),
+      CallFailureKind.other => null,
+    };
+    if (next != null) {
+      _emit(next);
+      return next;
+    }
+    return _askForReview(ReviewPath.error);
+  }
+
+  /// Puts her in the review queue, or says honestly that it did not happen.
+  Future<VerificationState> _askForReview(ReviewPath path) async {
+    VerificationState next;
+    try {
+      final answer = await reviews.request(path);
+      switch (answer) {
+        case ReviewRequestState.pending:
+          next = VerificationState.awaitingReviewer(submittedAt: _now());
+        case ReviewRequestState.approved:
+          // Already verified on the server: make the claim visible.
+          await _refreshWithRetries();
+          next = VerificationState.verified(
+            VerificationResult(
+              method: VerificationMethod.humanReview,
+              decidedAt: _now(),
+              imagesDeletedAt: _now(),
+            ),
+          );
+      }
+    } catch (error) {
+      if (kDebugMode) debugPrint('request_review failed: $error');
+      next = switch (classifyCallFailure(error)) {
+        CallFailureKind.closed => const VerificationState.rejected(),
+        CallFailureKind.tryTomorrow => const VerificationState.tryTomorrow(),
+        CallFailureKind.appCannotReach =>
+          const VerificationState.appCannotReach(),
+        _ => const VerificationState.unreachable(),
+      };
+    }
+    _emit(next);
+    return next;
   }
 
   /// One attempt, plus one retry when the call provably never landed.
@@ -189,20 +281,36 @@ class ProviderVerificationRepository implements VerificationRepository {
   /// the code for "the connection could not be established", and it is the one
   /// case where we know nothing was charged. A timeout is *not* retried,
   /// because a timeout may well have been a success we did not hear about.
-  Future<VerificationDecision> _submitWithOneRetry(String sessionId) async {
+  ///
+  /// Both calls carry the same [operationId], so even if the first did land
+  /// after all, the server recognises the second and does not bill OCR twice.
+  Future<VerificationDecision> _submitWithOneRetry(
+    String sessionId, {
+    required String operationId,
+    String? installId,
+  }) async {
     try {
-      return await provider.submit(evidence, sessionId);
+      return await provider.submit(
+        evidence,
+        sessionId,
+        operationId: operationId,
+        installId: installId,
+      );
     } catch (error) {
       if (!_worthRetrying(error)) rethrow;
       if (kDebugMode) debugPrint('verify_identity unavailable, retrying once');
-      return provider.submit(evidence, sessionId);
+      return provider.submit(
+        evidence,
+        sessionId,
+        operationId: operationId,
+        installId: installId,
+      );
     }
   }
 
   static bool _worthRetrying(Object error) {
-    // Matched on the code rather than the type so this file does not have to
-    // import the Firebase exception hierarchy to make a decision about
-    // retrying. `unavailable` is gRPC's "could not connect".
+    // `unavailable` is gRPC's "could not connect".
+    if (error is VerificationCallFailure) return error.code == 'unavailable';
     return error.toString().toLowerCase().contains('unavailable');
   }
 
@@ -230,6 +338,16 @@ class ProviderVerificationRepository implements VerificationRepository {
         }
       }
     }
+  }
+
+  /// Shows a state that a call made elsewhere already produced: a limit or a
+  /// refusal from `start_verification`. Never a decision in her favour: a
+  /// verified state can only come from [submit].
+  void settle(VerificationState next) {
+    if (next is VerificationVerified) {
+      throw ArgumentError('verification is never settled on the phone');
+    }
+    _emit(next);
   }
 
   void _emit(VerificationState next) {

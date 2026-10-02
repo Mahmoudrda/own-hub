@@ -1621,12 +1621,6 @@ abstract class AppL10n {
   /// **'12 of 20 taken'**
   String get n12Of20Taken;
 
-  /// No description provided for @n12PartnerGymsInCairoGizaAnd.
-  ///
-  /// In en, this message translates to:
-  /// **'12 partner gyms in Cairo, Giza and Alexandria.'**
-  String get n12PartnerGymsInCairoGizaAnd;
-
   /// No description provided for @n12SepTo11Oct1Session.
   ///
   /// In en, this message translates to:
@@ -2796,12 +2790,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Boiled eggs'**
   String get boiledEggs;
-
-  /// No description provided for @bookTheVideoCheck.
-  ///
-  /// In en, this message translates to:
-  /// **'Book the video check'**
-  String get bookTheVideoCheck;
 
   /// No description provided for @both.
   ///
@@ -4134,18 +4122,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'If you are in danger right now, call 122. This app cannot reach the police for you.'**
   String get ifYouAreInDangerRightNow;
-
-  /// No description provided for @ifYouDoNotShowYourFace.
-  ///
-  /// In en, this message translates to:
-  /// **'If you do not show your face to a camera, nothing here asks you to. Choose either one. Your ID card is still read the same way.'**
-  String get ifYouDoNotShowYourFace;
-
-  /// No description provided for @inPersonAtALadiesOnlyGym.
-  ///
-  /// In en, this message translates to:
-  /// **'In person at a ladies-only gym'**
-  String get inPersonAtALadiesOnlyGym;
 
   /// No description provided for @ingredientsAndAmounts.
   ///
@@ -13141,12 +13117,6 @@ abstract class AppL10n {
   /// **'A short video call with a woman'**
   String get aShortVideoCallWithAWoman;
 
-  /// No description provided for @weWillTextYouATimeIt.
-  ///
-  /// In en, this message translates to:
-  /// **'We will text you a time. It takes about two minutes and nothing is recorded.'**
-  String get weWillTextYouATimeIt;
-
   /// No description provided for @nothingYouPhotographedIsStoredItWas.
   ///
   /// In en, this message translates to:
@@ -13860,6 +13830,156 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Checked by Own Hub\'s own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.'**
   String get checkedByOwnHubsOwnSystemYour;
+
+  /// No description provided for @ifYouDoNotShowYourFace.
+  ///
+  /// In en, this message translates to:
+  /// **'If you do not show your face to a camera, nothing here asks you to. A woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.'**
+  String get ifYouDoNotShowYourFace;
+
+  /// No description provided for @askForAVideoCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for a video check'**
+  String get askForAVideoCheck;
+
+  /// No description provided for @theAutomaticCheckCouldNotStartJust.
+  ///
+  /// In en, this message translates to:
+  /// **'The automatic check could not start just now. You can ask a woman reviewer instead, or go back and try again.'**
+  String get theAutomaticCheckCouldNotStartJust;
+
+  /// No description provided for @weCouldNotReachOwnHubSo_3usbb.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not reach Own Hub, so you are not in the queue yet. Check your connection and try again.'**
+  String get weCouldNotReachOwnHubSo_3usbb;
+
+  /// No description provided for @youHaveAskedForAReviewerToo.
+  ///
+  /// In en, this message translates to:
+  /// **'You have asked for a reviewer too many times today. Please try again tomorrow.'**
+  String get youHaveAskedForAReviewerToo;
+
+  /// No description provided for @aWomanReviewerFromOwnHubWill.
+  ///
+  /// In en, this message translates to:
+  /// **'A woman reviewer from Own Hub will phone you to arrange a short video call. We do not send text messages about this.'**
+  String get aWomanReviewerFromOwnHubWill;
+
+  /// C14 once a woman reviewer has booked the live video check. time is the booked date and time, already formatted for her locale.
+  ///
+  /// In en, this message translates to:
+  /// **'Your video call is booked for {time}.'**
+  String yourVideoCallIsBookedForTime(String time);
+
+  /// No description provided for @yourReviewTimeRanOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Your review time ran out'**
+  String get yourReviewTimeRanOut;
+
+  /// No description provided for @weDidNotReachYourReviewIn.
+  ///
+  /// In en, this message translates to:
+  /// **'We did not reach your review in time. You can take the check again.'**
+  String get weDidNotReachYourReviewIn;
+
+  /// No description provided for @takeTheCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Take the check again'**
+  String get takeTheCheckAgain;
+
+  /// No description provided for @weCouldNotVerifyYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not verify your account'**
+  String get weCouldNotVerifyYourAccount;
+
+  /// No description provided for @youCanDeleteYourAccountAndEverything.
+  ///
+  /// In en, this message translates to:
+  /// **'You can delete your account and everything we hold about you from Profile and settings, under Your data.'**
+  String get youCanDeleteYourAccountAndEverything;
+
+  /// No description provided for @openProfileAndSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Profile and settings'**
+  String get openProfileAndSettings;
+
+  /// No description provided for @lookAroundWhileYouWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Look around while you wait'**
+  String get lookAroundWhileYouWait;
+
+  /// No description provided for @tryAgainTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again tomorrow'**
+  String get tryAgainTomorrow;
+
+  /// No description provided for @todaysLimitForIdentityChecksHasBeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s limit for identity checks has been reached. Nothing was decided, and nothing you photographed was kept. Please try again tomorrow.'**
+  String get todaysLimitForIdentityChecksHasBeen;
+
+  /// No description provided for @noAutomaticChecksLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'No automatic checks left'**
+  String get noAutomaticChecksLeft;
+
+  /// No description provided for @thisAccountHasUsedEveryAutomaticCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has used every automatic check it can. Nothing you photographed was kept. A woman reviewer can check you on a short video call instead.'**
+  String get thisAccountHasUsedEveryAutomaticCheck;
+
+  /// No description provided for @askForAWomanReviewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for a woman reviewer'**
+  String get askForAWomanReviewer;
+
+  /// No description provided for @weCouldNotReachOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not reach Own Hub'**
+  String get weCouldNotReachOwnHub;
+
+  /// No description provided for @nothingWasDecidedAndYouAreNot.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was decided and you are not in a queue. Check your connection and try again.'**
+  String get nothingWasDecidedAndYouAreNot;
+
+  /// No description provided for @yourPhoneNumberIsUsedOnlyTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone number is used only to arrange this call.'**
+  String get yourPhoneNumberIsUsedOnlyTo;
+
+  /// No description provided for @thisCopyOfTheAppCannotReach.
+  ///
+  /// In en, this message translates to:
+  /// **'This copy of the app cannot reach Own Hub'**
+  String get thisCopyOfTheAppCannotReach;
+
+  /// No description provided for @pleaseInstallTheLatestVersionFromThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Please install the latest version from the App Store or Google Play, then try again. Nothing was decided.'**
+  String get pleaseInstallTheLatestVersionFromThe;
+
+  /// No description provided for @thisCopyOfTheAppCannotReach_agbhf.
+  ///
+  /// In en, this message translates to:
+  /// **'This copy of the app cannot reach Own Hub, so you are not in the queue. Please install the latest version from the App Store or Google Play.'**
+  String get thisCopyOfTheAppCannotReach_agbhf;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -13,9 +13,12 @@
 /// application to keep this community safe and private. This view routes those
 /// states and never accuses.
 ///
-/// Known gap: the dictionary has no copy for the failed, provider-unavailable or
-/// offline states (G1 open question 7), so those are routed rather than
-/// narrated. The screen never invents an untranslated message.
+/// Three states are told on this screen rather than routed, because each is
+/// a stop and none is a review: a daily limit ("try again tomorrow"), an
+/// account that has used every automatic check, and a call that failed while
+/// asking for a reviewer failed too ("we could not reach Own Hub, nothing was
+/// decided"). A refusal goes to `C14`, which says so plainly; a missing
+/// agreement goes back to `C09b`.
 library;
 
 import 'dart:async';
@@ -38,7 +41,23 @@ class CheckingView extends StatefulWidget {
     this.onAwaitingReviewer,
     this.onRetake,
     this.onContinue,
+    this.onRejected,
+    this.onConsentNeeded,
+    this.onAskForReviewer,
+    this.onClose,
   });
+
+  /// The server refused her account for good: `C14`, which says so.
+  final VoidCallback? onRejected;
+
+  /// Her agreement is not on file: back to `C09b`.
+  final VoidCallback? onConsentNeeded;
+
+  /// No automatic checks left, and she chose a woman reviewer.
+  final VoidCallback? onAskForReviewer;
+
+  /// Leaves the "try again tomorrow" stop.
+  final VoidCallback? onClose;
 
   final VerificationRepository repository;
 
@@ -78,6 +97,9 @@ class CheckingView extends StatefulWidget {
 class _CheckingViewState extends State<CheckingView> {
   StreamSubscription<VerificationState>? _subscription;
 
+  /// A stop told on this screen, or null while the check runs.
+  VerificationState? _stop;
+
   @override
   void initState() {
     super.initState();
@@ -102,15 +124,77 @@ class _CheckingViewState extends State<CheckingView> {
         // Her move, not a reviewer's. See the note on `onRetake`: with nothing
         // wired up she goes to the video call rather than nowhere at all.
         (widget.onRetake ?? widget.onAwaitingReviewer)?.call();
+      case VerificationRejected():
+        (widget.onRejected ?? widget.onAwaitingReviewer)?.call();
+      case VerificationConsentNeeded():
+        widget.onConsentNeeded?.call();
+      case VerificationTryTomorrow():
+      case VerificationChecksUsedUp():
+      case VerificationUnreachable():
+      case VerificationAppCannotReach():
+        setState(() => _stop = state);
       case VerificationNotStarted():
       case VerificationChecking():
-        break;
+        if (_stop != null) setState(() => _stop = null);
     }
+  }
+
+  Widget _stopped(BuildContext context, VerificationState stop) {
+    final l10n = AppL10n.of(context);
+    final (String title, String body, Widget? action) = switch (stop) {
+      VerificationTryTomorrow() => (
+        l10n.tryAgainTomorrow,
+        l10n.todaysLimitForIdentityChecksHasBeen,
+        widget.onClose == null
+            ? null
+            : AppButton(l10n.close, onPressed: widget.onClose),
+      ),
+      VerificationChecksUsedUp() => (
+        l10n.noAutomaticChecksLeft,
+        l10n.thisAccountHasUsedEveryAutomaticCheck,
+        widget.onAskForReviewer == null
+            ? null
+            : AppButton(
+                l10n.askForAWomanReviewer,
+                onPressed: widget.onAskForReviewer,
+              ),
+      ),
+      VerificationAppCannotReach() => (
+        l10n.thisCopyOfTheAppCannotReach,
+        l10n.pleaseInstallTheLatestVersionFromThe,
+        widget.onClose == null
+            ? null
+            : AppButton(l10n.close, onPressed: widget.onClose),
+      ),
+      _ => (
+        l10n.weCouldNotReachOwnHub,
+        l10n.nothingWasDecidedAndYouAreNot,
+        widget.onRetake == null
+            ? null
+            : AppButton(l10n.tryAgain, onPressed: widget.onRetake),
+      ),
+    };
+    return AppScaffold(
+      appBar: const AppTopBar(),
+      footer: [?action],
+      children: [
+        Semantics(
+          liveRegion: true,
+          child: Text(title, style: AppText.headline),
+        ),
+        Text(
+          body,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final stop = _stop;
+    if (stop != null) return _stopped(context, stop);
 
     return AppScaffold(
       // No lead: there is no stepping back out of a running check.

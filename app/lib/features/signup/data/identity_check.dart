@@ -23,21 +23,60 @@ library;
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../domain/capture_consent.dart';
+import '../../../app_state/install_id.dart';
 import '../domain/id_capture.dart';
+import '../domain/review_request.dart';
 import '../domain/verification.dart';
 import '../domain/verification_evidence.dart';
 import '../domain/verification_provider.dart';
+import 'callable_review_request.dart';
 import 'callable_verification_provider.dart';
 import 'camera_capture_service.dart';
 import 'provider_verification_repository.dart';
+
+/// What happened when the liveness session was asked for.
+enum LivenessStart {
+  /// A runnable challenge is in hand: on to the selfie.
+  started,
+
+  /// The call failed for a reason that is not hers: offer a woman reviewer.
+  failed,
+
+  /// A daily limit: try again tomorrow, never review.
+  tryTomorrow,
+
+  /// Every automatic check this account may use has been used.
+  checksUsedUp,
+
+  /// The server has no record of her agreement.
+  consentNeeded,
+
+  /// A review is already open for her.
+  reviewOpen,
+
+  /// Her account was refused for good.
+  closed,
+
+  /// App Check refused this copy of the app.
+  appCannotReach,
+}
 
 class IdentityCheck {
   IdentityCheck({
     required this.consent,
     VerificationProvider? provider,
     ClaimRefresher? refreshClaims,
+    ReviewRequester? reviews,
+    Future<String?> Function()? installId,
   }) : _provider = provider ?? CallableVerificationProvider(),
-       _refreshClaims = refreshClaims ?? _refreshIdToken;
+       _refreshClaims = refreshClaims ?? _refreshIdToken,
+       reviews = reviews ?? CallableReviewRequester(),
+       _installId = installId ?? InstallId.read;
+
+  /// `request_review`, shared by C15 and the error branch of C12.
+  final ReviewRequester reviews;
+
+  final Future<String?> Function() _installId;
 
   /// Where her agreement is recorded. Read before `C10` opens anything.
   final CaptureConsentStore consent;
@@ -59,9 +98,15 @@ class IdentityCheck {
         provider: _provider,
         evidence: evidence,
         refreshClaims: _refreshClaims,
+        reviews: reviews,
+        installId: _installId,
       );
 
   VerificationRepository get verification => _verification;
+
+  /// The same repository, for the router to show a state that
+  /// `start_verification` produced. See `ProviderVerificationRepository.settle`.
+  ProviderVerificationRepository get verificationRepository => _verification;
 
   /// Mints the liveness challenge and hands it to both halves.
   ///
@@ -73,17 +118,25 @@ class IdentityCheck {
   /// Returns false when no session could be minted. `C11` then refuses and
   /// offers the video call rather than opening a camera for frames nothing can
   /// score.
-  Future<bool> startLiveness() async {
+  Future<LivenessStart> startLiveness() async {
     try {
       final challenge = await _provider.startSession();
-      if (!challenge.isRunnable) return false;
+      if (!challenge.isRunnable) return LivenessStart.failed;
       _capture.challenge = challenge;
       _verification.challenge = challenge;
-      return true;
-    } catch (_) {
+      return LivenessStart.started;
+    } catch (error) {
       // Logged by nobody on purpose: a failure here is not about her, and the
       // screen that called this says something true and moves on.
-      return false;
+      return switch (classifyCallFailure(error)) {
+        CallFailureKind.tryTomorrow => LivenessStart.tryTomorrow,
+        CallFailureKind.checksUsedUp => LivenessStart.checksUsedUp,
+        CallFailureKind.consentMissing => LivenessStart.consentNeeded,
+        CallFailureKind.reviewOpen => LivenessStart.reviewOpen,
+        CallFailureKind.closed => LivenessStart.closed,
+        CallFailureKind.appCannotReach => LivenessStart.appCannotReach,
+        CallFailureKind.retake || CallFailureKind.other => LivenessStart.failed,
+      };
     }
   }
 

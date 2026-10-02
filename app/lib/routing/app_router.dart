@@ -67,10 +67,13 @@ import '../features/onboarding/presentation/starting_program_view.dart';
 import '../features/signup/data/callable_capture_consent_store.dart';
 import '../features/signup/data/firebase_auth_repository.dart';
 import '../features/signup/data/identity_check.dart';
+import '../features/signup/data/verification_status_repository.dart';
 import '../features/signup/domain/auth_repository.dart';
 import '../features/signup/domain/capture_consent.dart';
 import '../features/signup/domain/id_capture.dart';
 import '../features/signup/domain/locale_preference.dart';
+import '../features/signup/domain/review_request.dart';
+import '../features/signup/domain/server_verification.dart';
 import '../features/signup/domain/verification.dart';
 import '../features/signup/domain/verification_provider.dart';
 import '../features/signup/presentation/being_checked_view.dart';
@@ -760,7 +763,14 @@ class AppRouter {
       onLookAround: () => goTo(context, 'C04'),
       onBack: () => Navigator.of(context).maybePop(),
     ),
-    'C04': (context) => LookAroundView(onJoin: () => goTo(context, 'C06')),
+    // Opened from C14 too, by a woman already signed up and waiting for her
+    // reviewer. "Join" must not start sign-up over again for her: it returns
+    // her to the waiting screen.
+    'C04': (context) => LookAroundView(
+      onJoin: () => signedInUid != null || awaitingReviewer
+          ? Navigator.of(context).maybePop()
+          : goTo(context, 'C06'),
+    ),
     // C05 is C04 with the join prompt raised, not a separate page. The route
     // exists so the design can be reviewed screen by screen.
     'C05': (context) => LookAroundView(
@@ -823,7 +833,10 @@ class AppRouter {
       // ID go is written down before a lens opens, never after.
       onScanId: () => goTo(context, 'C09b'),
       // The niqab path. Nothing on this route may ask for a selfie.
-      onNiqabPath: () => goTo(context, 'C15'),
+      onNiqabPath: () {
+        pendingReviewPath = ReviewPath.niqab;
+        goTo(context, 'C15');
+      },
       onBack: () => Navigator.of(context).maybePop(),
     ),
     // The consent step, between "one check and you are in" and the first lens.
@@ -845,7 +858,10 @@ class AppRouter {
       },
       // "I would rather not" is a real answer, and it leads somewhere: a woman
       // reviewer, no camera, no processor outside Egypt.
-      onDeclined: () => goTo(context, 'C15'),
+      onDeclined: () {
+        pendingReviewPath = ReviewPath.declined;
+        goTo(context, 'C15');
+      },
       onBack: () => Navigator.of(context).maybePop(),
     ),
     // Both sides of the card, in two passes of one screen.
@@ -884,13 +900,43 @@ class AppRouter {
         // She can close the capture while the call is in flight, and pushing
         // onto a dead navigator throws.
         if (!navigator.mounted || !context.mounted) return;
-        if (started) {
-          goTo(context, 'C11');
-        } else {
-          // No session, so there is nothing for a selfie to answer. She goes to
-          // the woman reviewer rather than spending two minutes on frames the
-          // server has no challenge to score.
-          goTo(context, 'C15');
+        final repository = identityCheck.verificationRepository;
+        switch (started) {
+          case LivenessStart.started:
+            goTo(context, 'C11');
+          case LivenessStart.failed:
+            // No session, so there is nothing for a selfie to answer. She is
+            // offered the woman reviewer rather than spending two minutes on
+            // frames the server has no challenge to score.
+            pendingReviewPath = ReviewPath.error;
+            goTo(context, 'C15');
+          case LivenessStart.tryTomorrow:
+          case LivenessStart.checksUsedUp:
+          case LivenessStart.appCannotReach:
+            // A limit, or a copy of the app the server refuses, told on C12
+            // without submitting anything. Never a review.
+            identityCheck.evidence.shred();
+            _automaticSubmitted = true;
+            repository.settle(switch (started) {
+              LivenessStart.tryTomorrow => const VerificationState.tryTomorrow(),
+              LivenessStart.checksUsedUp =>
+                const VerificationState.checksUsedUp(),
+              _ => const VerificationState.appCannotReach(),
+            });
+            goTo(context, 'C12');
+          case LivenessStart.consentNeeded:
+            consentRecorded = false;
+            goTo(context, 'C09b');
+          case LivenessStart.reviewOpen:
+            identityCheck.evidence.shred();
+            awaitingReviewer = true;
+            goTo(context, 'C14');
+          case LivenessStart.closed:
+            identityCheck.evidence.shred();
+            serverVerification = const ServerVerification(
+              ServerVerificationState.rejected,
+            );
+            goTo(context, 'C14');
         }
       },
       onClose: () => Navigator.of(context).maybePop(),
@@ -931,6 +977,30 @@ class AppRouter {
         goTo(context, 'C10');
       },
       onContinue: () => goTo(context, 'C13'),
+      // Refused for good. C14 says so plainly, with where to delete her data.
+      onRejected: () {
+        serverVerification = const ServerVerification(
+          ServerVerificationState.rejected,
+        );
+        goTo(context, 'C14');
+      },
+      // The server has no record of her agreement: ask again.
+      onConsentNeeded: () {
+        consentRecorded = false;
+        _automaticSubmitted = false;
+        goTo(context, 'C09b');
+      },
+      // No automatic checks left. A reviewer only if she asks for one.
+      onAskForReviewer: () {
+        pendingReviewPath = ReviewPath.error;
+        goTo(context, 'C15');
+      },
+      // The daily limit. Back to wherever the app starts; the gate holds her
+      // at the check until she is verified.
+      onClose: () {
+        _automaticSubmitted = false;
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      },
     ),
     'C13': (context) => YoureInView(
       // Her measured time, or nothing at all. Null is the honest answer when
@@ -948,16 +1018,51 @@ class AppRouter {
     // into screens [verificationGateCloses] now refuses. They are gone from the
     // widget as well as from here: a callback wired to nothing is a row waiting
     // to be drawn again by somebody who finds it.
-    'C14': (context) =>
-        BeingCheckedView(onSelectTab: (screenId) => goTo(context, screenId)),
+    'C14': (context) => BeingCheckedView(
+      status: serverVerification,
+      updates: verificationStatusUpdates(),
+      // A reviewer approved her while this screen was open. The claim only
+      // reaches the token on a refresh, so refresh, then go on to C13.
+      onApproved: () async {
+        final navigator = Navigator.of(context);
+        await refreshVerificationClaim();
+        if (!navigator.mounted || !context.mounted) return;
+        if (isVerified) goTo(context, 'C13');
+      },
+      onLookAround: () => goTo(context, 'C04'),
+      onTryAgain: () {
+        beginIdentityCheck();
+        goTo(context, 'C09');
+      },
+      onDeleteMyData: () => goTo(context, 'A02'),
+      onSelectTab: (screenId) => goTo(context, screenId),
+    ),
     // Which path she chose matters operationally — a video check and a partner
     // gym cost very different things — so it is recorded rather than dropped.
     // G1 flagged that the two share one VerificationMethod today (F8).
+    // She reaches C14 only after `request_review` answered. A failed call
+    // keeps her here with an honest retry.
     'C15': (context) => WomanReviewerView(
-      repository: identityCheck.verification,
+      requester: identityCheck.reviews,
+      path: pendingReviewPath,
       onBooked: (path) {
         lastReviewerPath = path;
         awaitingReviewer = true;
+        serverVerification = const ServerVerification(
+          ServerVerificationState.pending,
+        );
+        goTo(context, 'C14');
+      },
+      onAlreadyVerified: () async {
+        final navigator = Navigator.of(context);
+        await refreshVerificationClaim();
+        if (!navigator.mounted || !context.mounted) return;
+        goTo(context, isVerified ? 'C13' : 'C14');
+      },
+      onRejected: () {
+        serverVerification = const ServerVerification(
+          ServerVerificationState.rejected,
+        );
         goTo(context, 'C14');
       },
       onBack: () => Navigator.of(context).maybePop(),
@@ -4343,6 +4448,7 @@ class AppRouter {
       : IdentityCheck(
           consent: InMemoryCaptureConsentStore(),
           provider: const UnavailableVerificationProvider(),
+          reviews: const UnavailableReviewRequester(),
         );
 
   /// The three screens that open a camera.
@@ -4361,16 +4467,75 @@ class AppRouter {
   /// a woman who has agreed to nothing.
   static bool consentRecorded = false;
 
-  /// Whether a check has been handed to a person, as far as this session knows.
+  /// Whether she is held at `C14` rather than sent to the check.
   ///
-  /// Set by `C12` and `C15`, the only two screens that reach `C14`. It decides
-  /// which screen the gate sends her to — "a woman will call you" rather than
-  /// "here is why we check" — and nothing else.
+  /// Derived from the server: any `users/{uid}.verification.state` (pending,
+  /// retry, rejected, or approved but not yet in her token) means C14 is the
+  /// screen that tells her the truth, and that survives a restart because it
+  /// is read at start-up ([readVerificationStatus]). The session flag is the
+  /// local echo set the moment `C12` or `C15` hears the server queue her,
+  /// before the document read catches up.
+  static bool get awaitingReviewer =>
+      _awaitingInSession || serverVerification != null;
+  static set awaitingReviewer(bool value) => _awaitingInSession = value;
+  static bool _awaitingInSession = false;
+
+  /// What the server last said about her check, or null when it has said
+  /// nothing. See `features/signup/domain/server_verification.dart`.
+  static ServerVerification? serverVerification;
+
+  /// Which way she reached `C15`, sent to `request_review`.
+  static ReviewPath pendingReviewPath = ReviewPath.niqab;
+
+  /// Reads `users/{uid}.verification` at start-up (S8), after
+  /// [readVerificationClaim]. When the server says approved but the token
+  /// does not carry the claim yet, the token is refreshed and the claim read
+  /// again, so a woman approved by a reviewer while the app was closed opens
+  /// it into the product rather than into C14.
   ///
-  /// Session-scoped, like `lastSignupRole`. The durable answer is the
-  /// verification document the account worker is moving into Firestore; see the
-  /// note on [isVerified].
-  static bool awaitingReviewer = false;
+  /// Never throws and never blocks the launch beyond its five second bound.
+  static Future<void> readVerificationStatus() async {
+    if (!FirebaseBoot.isReady) return;
+    final uid = signedInUid;
+    if (uid == null) {
+      serverVerification = null;
+      return;
+    }
+    try {
+      serverVerification = await VerificationStatusRepository().read(uid);
+      if (serverVerification?.state == ServerVerificationState.approved &&
+          !_verifiedClaim) {
+        await refreshVerificationClaim();
+      }
+    } catch (_) {
+      // Nothing read: the claim alone decides, as before.
+    }
+  }
+
+  /// Forces a fresh ID token and re-reads the `verified` claim.
+  static Future<void> refreshVerificationClaim() async {
+    if (!FirebaseBoot.isReady) return;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      final token = await user
+          .getIdTokenResult(true)
+          .timeout(const Duration(seconds: 10));
+      _verifiedClaim = token.claims?['verified'] == true;
+    } catch (_) {
+      // Leaves the claim as it was. Fail closed.
+    }
+  }
+
+  /// Live `users/{uid}.verification` for C14, or null with no back end.
+  static Stream<ServerVerification?>? verificationStatusUpdates() {
+    final uid = signedInUid;
+    if (!FirebaseBoot.isReady || uid == null) return null;
+    return VerificationStatusRepository().watch(uid).map((next) {
+      if (next != null) serverVerification = next;
+      return next;
+    });
+  }
 
   /// Whether the automatic path has been submitted for this attempt.
   static bool _automaticSubmitted = false;

@@ -196,4 +196,106 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  group('stops told on this screen, never a review', () {
+    Future<FakeVerificationRepository> showStop(
+      WidgetTester tester,
+      VerificationState stop, {
+      VoidCallback? onAwaitingReviewer,
+      VoidCallback? onRetake,
+      VoidCallback? onAskForReviewer,
+      VoidCallback? onClose,
+    }) async {
+      final repository = FakeVerificationRepository();
+      await tester.pumpWidget(
+        _host(
+          CheckingView(
+            repository: repository,
+            onAwaitingReviewer: onAwaitingReviewer,
+            onRetake: onRetake,
+            onAskForReviewer: onAskForReviewer,
+            onClose: onClose,
+          ),
+        ),
+      );
+      repository.decide(stop);
+      await tester.pumpAndSettle();
+      return repository;
+    }
+
+    testWidgets('a daily limit says try again tomorrow', (tester) async {
+      var reviews = 0;
+      var closes = 0;
+      await showStop(
+        tester,
+        const VerificationState.tryTomorrow(),
+        onAwaitingReviewer: () => reviews++,
+        onClose: () => closes++,
+      );
+      expect(find.text('Try again tomorrow'), findsOneWidget);
+      expect(reviews, 0);
+      await tester.tap(find.text('Close'));
+      expect(closes, 1);
+    });
+
+    testWidgets('used-up checks offer a reviewer only if she asks', (
+      tester,
+    ) async {
+      var reviews = 0;
+      var asked = 0;
+      await showStop(
+        tester,
+        const VerificationState.checksUsedUp(),
+        onAwaitingReviewer: () => reviews++,
+        onAskForReviewer: () => asked++,
+      );
+      expect(find.text('No automatic checks left'), findsOneWidget);
+      expect(reviews, 0);
+      await tester.tap(find.text('Ask for a woman reviewer'));
+      expect(asked, 1);
+    });
+
+    testWidgets('unreachable says nothing was decided, and retries', (
+      tester,
+    ) async {
+      var retries = 0;
+      await showStop(
+        tester,
+        const VerificationState.unreachable(),
+        onRetake: () => retries++,
+      );
+      expect(find.text('We could not reach Own Hub'), findsOneWidget);
+      expect(find.textContaining('Nothing was decided'), findsOneWidget);
+      await tester.tap(find.text('Try again'));
+      expect(retries, 1);
+    });
+
+    testWidgets('a refused copy of the app is told to update', (tester) async {
+      var reviews = 0;
+      await showStop(
+        tester,
+        const VerificationState.appCannotReach(),
+        onAwaitingReviewer: () => reviews++,
+        onClose: () {},
+      );
+      expect(
+        find.text('This copy of the app cannot reach Own Hub'),
+        findsOneWidget,
+      );
+      expect(reviews, 0);
+    });
+
+    testWidgets('a refusal goes to the screen that says so', (tester) async {
+      var rejected = 0;
+      final repository = FakeVerificationRepository();
+      await tester.pumpWidget(
+        _host(
+          CheckingView(repository: repository, onRejected: () => rejected++),
+        ),
+      );
+      repository.decide(const VerificationState.rejected());
+      await tester.pumpAndSettle();
+      expect(rejected, 1);
+    });
+  });
 }

@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/signup/data/provider_verification_repository.dart';
 import 'package:own_hub/features/signup/domain/id_capture.dart';
 import 'package:own_hub/features/signup/domain/liveness_challenge.dart';
+import 'package:own_hub/features/signup/domain/review_request.dart';
 import 'package:own_hub/features/signup/domain/verification.dart';
 import 'package:own_hub/features/signup/domain/verification_evidence.dart';
 import 'package:own_hub/features/signup/domain/verification_provider.dart';
@@ -25,6 +26,8 @@ class _ScriptedProvider implements VerificationProvider {
 
   final List<String> sawSessionId = <String>[];
   final List<int> sawByteCount = <int>[];
+  final List<String?> sawOperationId = <String?>[];
+  final List<String?> sawInstallId = <String?>[];
 
   @override
   Future<LivenessChallenge> startSession() async =>
@@ -33,12 +36,34 @@ class _ScriptedProvider implements VerificationProvider {
   @override
   Future<VerificationDecision> submit(
     VerificationEvidence evidence,
-    String sessionId,
-  ) async {
+    String sessionId, {
+    String? operationId,
+    String? installId,
+  }) async {
     sawSessionId.add(sessionId);
+    sawOperationId.add(operationId);
+    sawInstallId.add(installId);
     sawByteCount.add(evidence.byteCount);
     final next = _answers.removeAt(0);
     if (next is VerificationDecision) return next;
+    throw next;
+  }
+}
+
+/// `request_review`, scripted. Answers pending unless told otherwise.
+class _Reviews implements ReviewRequester {
+  _Reviews([List<Object>? answers]) : _answers = answers;
+
+  final List<Object>? _answers;
+  final List<ReviewPath> asked = <ReviewPath>[];
+
+  @override
+  Future<ReviewRequestState> request(ReviewPath path) async {
+    asked.add(path);
+    final answers = _answers;
+    if (answers == null || answers.isEmpty) return ReviewRequestState.pending;
+    final next = answers.removeAt(0);
+    if (next is ReviewRequestState) return next;
     throw next;
   }
 }
@@ -61,9 +86,15 @@ ProviderVerificationRepository _repository(
   DateTime? expiresAt,
   Future<void> Function()? refreshClaims,
   List<String>? refreshes,
+  ReviewRequester? reviews,
+  Future<String?> Function()? installId,
 }) {
+  var op = 0;
   return ProviderVerificationRepository(
     provider: provider,
+    reviews: reviews ?? _Reviews(),
+    installId: installId,
+    operationIds: () => 'op-${++op}',
     evidence: evidence ?? _filled(),
     refreshClaims:
         refreshClaims ??
@@ -168,35 +199,41 @@ void main() {
     await repository.dispose();
   });
 
-  test('all three rejections land in the same place, saying the same thing',
-      () async {
-    // Separating them on screen would be the oracle the reason vocabulary was
-    // narrowed to remove. "Not eligible", "failed" and "duplicate" are very
-    // different internally and identical to her.
-    for (final outcome in <VerificationOutcome>[
-      VerificationOutcome.rejectedNotEligible,
-      VerificationOutcome.rejectedFailed,
-      VerificationOutcome.rejectedDuplicate,
-    ]) {
-      final provider = _ScriptedProvider(<Object>[
-        VerificationDecision(
-          outcome: outcome,
-          reasons: const <VerificationReason>{VerificationReason.contactSupport},
-        ),
-      ]);
-      final repository = _repository(provider);
-      await repository.submit(method: VerificationMethod.automatic);
-      final settled = await _settle(repository);
+  test(
+    'all three rejections land in the same place, saying the same thing',
+    () async {
+      // Separating them on screen would be the oracle the reason vocabulary was
+      // narrowed to remove. "Not eligible", "failed" and "duplicate" are very
+      // different internally and identical to her.
+      for (final outcome in <VerificationOutcome>[
+        VerificationOutcome.rejectedNotEligible,
+        VerificationOutcome.rejectedFailed,
+        VerificationOutcome.rejectedDuplicate,
+      ]) {
+        final provider = _ScriptedProvider(<Object>[
+          VerificationDecision(
+            outcome: outcome,
+            reasons: const <VerificationReason>{
+              VerificationReason.contactSupport,
+            },
+          ),
+        ]);
+        final repository = _repository(provider);
+        await repository.submit(method: VerificationMethod.automatic);
+        final settled = await _settle(repository);
 
-      expect(
-        settled,
-        isA<VerificationNeedsAnotherLook>(),
-        reason: '$outcome must not be told apart from the others on screen',
-      );
-      expect(settled.isPending, isTrue);
-      await repository.dispose();
-    }
-  });
+        // The server has recorded a final refusal for every one of these that
+        // reaches the client, so she is told so plainly (S8), in one sentence.
+        expect(
+          settled,
+          isA<VerificationRejected>(),
+          reason: '$outcome must not be told apart from the others on screen',
+        );
+        expect(settled.isPending, isFalse);
+        await repository.dispose();
+      }
+    },
+  );
 
   test('a retake is her move, not a reviewer\'s', () async {
     // Collapsing this into "a woman will call you" would spend a video call on
@@ -241,17 +278,25 @@ void main() {
     await repository.dispose();
   });
 
-  test('an unreachable server sends her to a video call, and shreds', () async {
+  test('an unreachable server asks for a woman reviewer, and shreds', () async {
     final evidence = _filled();
     final provider = _ScriptedProvider(<Object>[
       const SocketException('no route to host'),
     ]);
-    final repository = _repository(provider, evidence: evidence);
+    final reviews = _Reviews();
+    final repository = _repository(
+      provider,
+      evidence: evidence,
+      reviews: reviews,
+    );
 
     await repository.submit(method: VerificationMethod.automatic);
     final settled = await _settle(repository);
 
     expect(settled, isA<VerificationAwaitingReviewer>());
+    expect(reviews.asked, [
+      ReviewPath.error,
+    ], reason: 'she waits for a reviewer only once the server queued her');
     expect(
       evidence.isEmpty,
       isTrue,
@@ -308,13 +353,19 @@ void main() {
   test('the niqab path never sends anything', () async {
     final evidence = VerificationEvidence();
     final provider = _ScriptedProvider(<Object>[]);
-    final repository = _repository(provider, evidence: evidence);
+    final reviews = _Reviews();
+    final repository = _repository(
+      provider,
+      evidence: evidence,
+      reviews: reviews,
+    );
 
     final state = await repository.submit(
       method: VerificationMethod.niqabFriendly,
     );
 
     expect(state, isA<VerificationAwaitingReviewer>());
+    expect(reviews.asked, [ReviewPath.niqab]);
     expect(
       provider.sawByteCount,
       isEmpty,
@@ -378,10 +429,11 @@ void main() {
       // is what stops that being reintroduced by someone who thinks it would
       // help the server.
       final offenders = <String>[];
-      for (final file in Directory('lib')
-          .listSync(recursive: true)
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.dart'))) {
+      for (final file
+          in Directory('lib')
+              .listSync(recursive: true)
+              .whereType<File>()
+              .where((f) => f.path.endsWith('.dart'))) {
         final source = file.readAsStringSync();
         if (RegExp(
           r'\bLivenessOutcome\b|livenessOutcome|'
@@ -404,15 +456,189 @@ void main() {
       final source = File(
         'lib/features/signup/data/callable_verification_provider.dart',
       ).readAsStringSync();
-      final payload = RegExp(
-        r"'liveness':\s*<String, Object\?>\{([^}]*)\}",
-      ).firstMatch(source);
+      final payload = RegExp(r"'liveness':\s*<String, Object\?>\{([^}]*)\}")
+          .firstMatch(source);
       expect(payload, isNotNull, reason: 'the liveness payload moved');
       expect(
-        RegExp(r"'(\w+)'\s*:").allMatches(payload!.group(1)!).map(
-          (m) => m.group(1),
-        ),
+        RegExp(r"'(\w+)'\s*:")
+            .allMatches(payload!.group(1)!)
+            .map((m) => m.group(1)),
         <String>['sessionId'],
+      );
+    });
+  });
+
+  group('S3, S6, S12: what a failed call means', () {
+    Future<(VerificationState, _Reviews)> failWith(Object error) async {
+      final reviews = _Reviews();
+      final repository = _repository(
+        _ScriptedProvider(<Object>[error]),
+        reviews: reviews,
+      );
+      await repository.submit(method: VerificationMethod.automatic);
+      final settled = await _settle(repository);
+      await repository.dispose();
+      return (settled, reviews);
+    }
+
+    test('a daily limit is try-tomorrow, never a review', () async {
+      for (final reason in <String>[
+        'per_uid_daily_limit',
+        'daily_limit_reached',
+      ]) {
+        final (state, reviews) = await failWith(
+          VerificationCallFailure('resource-exhausted', reason),
+        );
+        expect(state, isA<VerificationTryTomorrow>(), reason: reason);
+        expect(reviews.asked, isEmpty, reason: reason);
+      }
+    });
+
+    test('the cost cap is told, and never queues a review by itself', () async {
+      final (state, reviews) = await failWith(
+        const VerificationCallFailure('resource-exhausted', 'cost_cap_reached'),
+      );
+      expect(state, isA<VerificationChecksUsedUp>());
+      expect(reviews.asked, isEmpty);
+    });
+
+    test('a missing consent goes back to the consent screen', () async {
+      final (state, reviews) = await failWith(
+        const VerificationCallFailure('failed-precondition', 'consent_missing'),
+      );
+      expect(state, isA<VerificationConsentNeeded>());
+      expect(reviews.asked, isEmpty);
+    });
+
+    test('a closed account is told so', () async {
+      final (state, _) = await failWith(
+        const VerificationCallFailure(
+          'failed-precondition',
+          'verification_closed',
+        ),
+      );
+      expect(state, isA<VerificationRejected>());
+    });
+
+    test(
+      'an open review is the waiting screen, with no second request',
+      () async {
+        final (state, reviews) = await failWith(
+          const VerificationCallFailure(
+            'failed-precondition',
+            'review_already_open',
+          ),
+        );
+        expect(state, isA<VerificationAwaitingReviewer>());
+        expect(reviews.asked, isEmpty);
+      },
+    );
+
+    test(
+      'photographs the server could not use are a retake, not a review',
+      () async {
+        for (final reason in <String>[
+          'image_undecodable',
+          'image_too_large',
+          'session_missing',
+          'liveness_failed',
+          'internal_error',
+        ]) {
+          final (state, reviews) = await failWith(
+            VerificationCallFailure('invalid-argument', reason),
+          );
+          expect(state, isA<VerificationRetakeNeeded>(), reason: reason);
+          expect(reviews.asked, isEmpty, reason: reason);
+        }
+      },
+    );
+
+    test(
+      'a copy of the app App Check refuses is told to update, never queued',
+      () async {
+        final (state, reviews) = await failWith(
+          const VerificationCallFailure(
+            'failed-precondition',
+            'app_check_missing',
+          ),
+        );
+        expect(state, isA<VerificationAppCannotReach>());
+        expect(reviews.asked, isEmpty);
+      },
+    );
+
+    test('if asking for a reviewer fails too, nothing is claimed', () async {
+      final reviews = _Reviews(<Object>[
+        const VerificationCallFailure('unavailable'),
+      ]);
+      final repository = _repository(
+        _ScriptedProvider(<Object>[
+          const VerificationCallFailure('deadline-exceeded'),
+        ]),
+        reviews: reviews,
+      );
+      await repository.submit(method: VerificationMethod.automatic);
+      final settled = await _settle(repository);
+      expect(settled, isA<VerificationUnreachable>());
+      expect(settled.isPending, isFalse);
+      await repository.dispose();
+    });
+
+    test('the niqab path that cannot reach the server says so', () async {
+      final repository = _repository(
+        _ScriptedProvider(<Object>[]),
+        reviews: _Reviews(<Object>[StateError('offline')]),
+      );
+      final state = await repository.submit(
+        method: VerificationMethod.niqabFriendly,
+      );
+      expect(state, isA<VerificationUnreachable>());
+      await repository.dispose();
+    });
+
+    test('one operation id per attempt, reused on the single retry', () async {
+      final provider = _ScriptedProvider(<Object>[
+        const VerificationCallFailure('unavailable'),
+        const VerificationDecision(outcome: VerificationOutcome.approved),
+      ]);
+      final repository = _repository(
+        provider,
+        installId: () async => 'install-abc',
+      );
+      await repository.submit(method: VerificationMethod.automatic);
+      expect(await _settle(repository), isA<VerificationVerified>());
+      expect(provider.sawOperationId, <String?>['op-1', 'op-1']);
+      expect(provider.sawInstallId, <String?>['install-abc', 'install-abc']);
+      await repository.dispose();
+    });
+
+    test('an install id that cannot be read never stops a check', () async {
+      final provider = _ScriptedProvider(<Object>[
+        const VerificationDecision(outcome: VerificationOutcome.approved),
+      ]);
+      final repository = _repository(
+        provider,
+        installId: () async => throw StateError('no preferences'),
+      );
+      await repository.submit(method: VerificationMethod.automatic);
+      expect(await _settle(repository), isA<VerificationVerified>());
+      expect(provider.sawInstallId, <String?>[null]);
+      await repository.dispose();
+    });
+
+    test('settle can never verify her', () {
+      final repository = _repository(_ScriptedProvider(<Object>[]));
+      expect(
+        () => repository.settle(
+          VerificationState.verified(
+            VerificationResult(
+              method: VerificationMethod.automatic,
+              decidedAt: DateTime(2026),
+              imagesDeletedAt: DateTime(2026),
+            ),
+          ),
+        ),
+        throwsArgumentError,
       );
     });
   });
@@ -423,11 +649,12 @@ void main() {
     // screen that switched on `retake_front` would be one deploy away from
     // switching on something that is not user-safe.
     final offenders = <String>[];
-    for (final file in Directory('lib')
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((f) => f.path.endsWith('.dart'))
-        .where((f) => f.path.contains('/presentation/'))) {
+    for (final file
+        in Directory('lib')
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'))
+            .where((f) => f.path.contains('/presentation/'))) {
       final source = file.readAsStringSync();
       if (source.contains('verification_provider.dart') ||
           RegExp(r'\bVerificationReason\b').hasMatch(source)) {
@@ -437,7 +664,8 @@ void main() {
     expect(
       offenders,
       isEmpty,
-      reason: 'Reason codes stop at the repository. A screen branches on the '
+      reason:
+          'Reason codes stop at the repository. A screen branches on the '
           'outcome and never on why.',
     );
   });

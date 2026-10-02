@@ -788,10 +788,6 @@ class AppL10nAr extends AppL10n {
   String get n12Of20Taken => '12 من 20 محجوزة';
 
   @override
-  String get n12PartnerGymsInCairoGizaAnd =>
-      '12 صالة شريكة في القاهرة والجيزة والإسكندرية.';
-
-  @override
   String get n12SepTo11Oct1Session =>
       '12 سبتمبر إلى 11 أكتوبر · تمرين واحد خلال أسبوعين';
 
@@ -1407,9 +1403,6 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get boiledEggs => 'بيض مسلوق';
-
-  @override
-  String get bookTheVideoCheck => 'احجزي تحقّق الفيديو';
 
   @override
   String get both => 'كلاهما';
@@ -2127,13 +2120,6 @@ class AppL10nAr extends AppL10n {
   @override
   String get ifYouAreInDangerRightNow =>
       'إن كنتِ في خطر الآن، اتصلي بالرقم 122. لا يستطيع هذا التطبيق الاتصال بالشرطة نيابة عنك.';
-
-  @override
-  String get ifYouDoNotShowYourFace =>
-      'إن كنتِ لا تكشفين وجهك أمام الكاميرا، فلا شيء هنا يطلب منك ذلك. اختاري أيًّا منهما، وتُقرأ بطاقتك بالطريقة نفسها.';
-
-  @override
-  String get inPersonAtALadiesOnlyGym => 'حضوريًا في صالة للنساء فقط';
 
   @override
   String get ingredientsAndAmounts => 'المكوّنات والمقادير';
@@ -7124,10 +7110,6 @@ class AppL10nAr extends AppL10n {
   String get aShortVideoCallWithAWoman => 'مكالمة فيديو قصيرة مع إحدى النساء';
 
   @override
-  String get weWillTextYouATimeIt =>
-      'سنرسل إليك رسالة بالموعد. تستغرق نحو دقيقتين ولا يُسجَّل شيء.';
-
-  @override
   String get nothingYouPhotographedIsStoredItWas =>
       'لا يُحفظ أي مما صوّرتِه. حُذف فور انتهاء الفحص.';
 
@@ -7589,4 +7571,95 @@ class AppL10nAr extends AppL10n {
   @override
   String get checkedByOwnHubsOwnSystemYour =>
       'يتم التحقّق عبر نظام Own Hub الخاص. لا تُحفظ صور بطاقتكِ ولا صورتكِ الذاتية أبدًا. اضغطي لتعرفي بدقة ما الذي يُحفظ.';
+
+  @override
+  String get ifYouDoNotShowYourFace =>
+      'إن كنتِ لا تكشفين وجهكِ أمام الكاميرا، فلا شيء هنا يطلب منكِ ذلك. ستتصل بكِ مراجِعة من Own Hub هاتفيًا لترتيب مكالمة فيديو قصيرة، وستتحقق معكِ من بطاقتكِ الشخصية خلال تلك المكالمة.';
+
+  @override
+  String get askForAVideoCheck => 'اطلبي تحقّقًا بالفيديو';
+
+  @override
+  String get theAutomaticCheckCouldNotStartJust =>
+      'تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تعودي وتحاولي مرة أخرى.';
+
+  @override
+  String get weCouldNotReachOwnHubSo_3usbb =>
+      'تعذّر الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار بعد. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
+
+  @override
+  String get youHaveAskedForAReviewerToo =>
+      'لقد طلبتِ مراجِعة مرات كثيرة اليوم. يُرجى المحاولة مرة أخرى غدًا.';
+
+  @override
+  String get aWomanReviewerFromOwnHubWill =>
+      'ستتصل بكِ مراجِعة من Own Hub هاتفيًا لترتيب مكالمة فيديو قصيرة. لا نرسل رسائل نصية بشأن ذلك.';
+
+  @override
+  String yourVideoCallIsBookedForTime(String time) {
+    return 'موعد مكالمة الفيديو الخاصة بكِ هو $time.';
+  }
+
+  @override
+  String get yourReviewTimeRanOut => 'انتهى وقت مراجعتكِ';
+
+  @override
+  String get weDidNotReachYourReviewIn =>
+      'لم نتمكّن من إجراء مراجعتكِ في الوقت المحدد. يمكنكِ إجراء التحقق مرة أخرى.';
+
+  @override
+  String get takeTheCheckAgain => 'أعيدي التحقق';
+
+  @override
+  String get weCouldNotVerifyYourAccount => 'لم نتمكّن من التحقق من حسابكِ';
+
+  @override
+  String get youCanDeleteYourAccountAndEverything =>
+      'يمكنكِ حذف حسابكِ وكل ما نحتفظ به عنكِ من «الملف الشخصي والإعدادات»، ضمن «بياناتك».';
+
+  @override
+  String get openProfileAndSettings => 'افتحي الملف الشخصي والإعدادات';
+
+  @override
+  String get lookAroundWhileYouWait => 'ألقي نظرة على التطبيق أثناء الانتظار';
+
+  @override
+  String get tryAgainTomorrow => 'حاولي مرة أخرى غدًا';
+
+  @override
+  String get todaysLimitForIdentityChecksHasBeen =>
+      'تم بلوغ الحد اليومي لعمليات التحقق من الهوية. لم يُتخذ أي قرار، ولم يُحفظ شيء مما صوّرتِه. يُرجى المحاولة مرة أخرى غدًا.';
+
+  @override
+  String get noAutomaticChecksLeft => 'لم تتبقَّ عمليات تحقق تلقائية';
+
+  @override
+  String get thisAccountHasUsedEveryAutomaticCheck =>
+      'استخدم هذا الحساب كل عمليات التحقق التلقائية المتاحة له. لم يُحفظ شيء مما صوّرتِه. ويمكن لمراجِعة أن تتحقق منكِ في مكالمة فيديو قصيرة بدلًا من ذلك.';
+
+  @override
+  String get askForAWomanReviewer => 'اطلبي مراجِعة';
+
+  @override
+  String get weCouldNotReachOwnHub => 'تعذّر الوصول إلى Own Hub';
+
+  @override
+  String get nothingWasDecidedAndYouAreNot =>
+      'لم يُتخذ أي قرار ولستِ في أي قائمة انتظار. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
+
+  @override
+  String get yourPhoneNumberIsUsedOnlyTo =>
+      'يُستخدم رقم هاتفكِ لترتيب هذه المكالمة فقط.';
+
+  @override
+  String get thisCopyOfTheAppCannotReach =>
+      'لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub';
+
+  @override
+  String get pleaseInstallTheLatestVersionFromThe =>
+      'يُرجى تثبيت أحدث إصدار من App Store أو Google Play، ثم المحاولة مرة أخرى. لم يُتخذ أي قرار.';
+
+  @override
+  String get thisCopyOfTheAppCannotReach_agbhf =>
+      'لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.';
 }

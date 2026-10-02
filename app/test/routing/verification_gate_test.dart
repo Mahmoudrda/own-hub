@@ -19,6 +19,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/features/signup/domain/server_verification.dart';
+
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/signup/domain/verification.dart';
 import 'package:own_hub/features/signup/presentation/welcome_view.dart';
@@ -32,9 +34,8 @@ FeatureFlags get _gated =>
     FeatureFlags.allOff.with_({for (final f in Feature.values) f: true});
 
 /// The name [route] actually resolved to, which is the gate's answer.
-String? _resolved(String name) => AppRouter.onGenerateRoute(
-  RouteSettings(name: name),
-)?.settings.name;
+String? _resolved(String name) =>
+    AppRouter.onGenerateRoute(RouteSettings(name: name))?.settings.name;
 
 void main() {
   final savedFlags = AppRouter.featureFlags;
@@ -224,6 +225,28 @@ void main() {
         gate('R01', signedIn: true, waiting: true),
         appRoutes['C14']!.name,
       );
+    });
+
+    test('waiting survives a restart: it is derived from the server (S8)', () {
+      // A fresh process: no session flag, only what the server said at
+      // start-up. Every server state that is not "verified in her token"
+      // holds her at C14, which tells her which one it is.
+      addTearDown(() {
+        AppRouter.serverVerification = null;
+        AppRouter.awaitingReviewer = false;
+      });
+      AppRouter.awaitingReviewer = false;
+      AppRouter.serverVerification = null;
+      expect(AppRouter.awaitingReviewer, isFalse);
+      for (final state in ServerVerificationState.values) {
+        AppRouter.serverVerification = ServerVerification(state);
+        expect(AppRouter.awaitingReviewer, isTrue, reason: '$state');
+        expect(
+          gate('R01', signedIn: true, waiting: AppRouter.awaitingReviewer),
+          appRoutes['C14']!.name,
+          reason: '$state',
+        );
+      }
     });
 
     test('verified, nowhere: she is let through', () {

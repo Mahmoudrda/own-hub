@@ -61,6 +61,12 @@ Future<void> main() async {
   // app. See `AppRouter.readVerificationClaim`.
   await AppRouter.readVerificationClaim();
 
+  // And what the server last said about her check (S8): waiting for a
+  // reviewer, booked, refused, or approved while the app was closed, in which
+  // case the token is refreshed here so the claim above becomes true. Bounded
+  // at five seconds and unable to fail the launch.
+  await AppRouter.readVerificationStatus();
+
   // The cloud copy of her week, started but deliberately NOT awaited.
   //
   // `start()` only attaches listeners and reads one preferences key; it does

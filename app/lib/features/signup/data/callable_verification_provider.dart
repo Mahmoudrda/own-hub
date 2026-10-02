@@ -27,8 +27,13 @@
 /// {"front":    "<base64 JPEG of the front of the national ID card>",
 ///  "back":     "<base64 JPEG of the back>",
 ///  "frames":   ["<base64 JPEG>", ...],
-///  "liveness": {"sessionId": "<opaque>"}}
+///  "liveness": {"sessionId": "<opaque>"},
+///  "installId": "<random id for this install; hashed by the server>",
+///  "operationId": "<uuid v4, one per attempt, reused on the one retry>"}
 /// ```
+///
+/// `niqabPath` is not sent. A woman who asks for a woman reviewer goes through
+/// `request_review` instead, which takes no images at all.
 ///
 /// **`liveness` carries a session id and nothing else.** There was an `outcome`
 /// field here and it is gone. The client must not compute or transmit a
@@ -58,6 +63,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../app_state/firebase_boot.dart';
 import '../domain/liveness_challenge.dart';
+import '../domain/review_request.dart';
 import '../domain/verification_evidence.dart';
 import '../domain/verification_provider.dart';
 
@@ -84,10 +90,11 @@ const String kVerifyIdentityRegion = kFunctionsRegion;
 const int _fallbackExpirySeconds = 90;
 
 class CallableVerificationProvider implements VerificationProvider {
-  CallableVerificationProvider({FirebaseFunctions? functions, DateTime Function()? now})
-    : _functions =
-          functions ?? FirebaseBoot.functions,
-      _now = now ?? DateTime.now;
+  CallableVerificationProvider({
+    FirebaseFunctions? functions,
+    DateTime Function()? now,
+  }) : _functions = functions ?? FirebaseBoot.functions,
+       _now = now ?? DateTime.now;
 
   final FirebaseFunctions _functions;
 
@@ -101,7 +108,12 @@ class CallableVerificationProvider implements VerificationProvider {
       kStartVerificationCallable,
       options: HttpsCallableOptions(timeout: const Duration(seconds: 30)),
     );
-    final response = await callable.call<Object?>();
+    final HttpsCallableResult<Object?> response;
+    try {
+      response = await callable.call<Object?>();
+    } on FirebaseFunctionsException catch (error) {
+      throw VerificationCallFailure(error.code, error.message);
+    }
     final data = response.data;
     if (data is! Map) {
       throw StateError('start_verification returned ${data.runtimeType}');
@@ -141,8 +153,10 @@ class CallableVerificationProvider implements VerificationProvider {
   @override
   Future<VerificationDecision> submit(
     VerificationEvidence evidence,
-    String sessionId,
-  ) async {
+    String sessionId, {
+    String? operationId,
+    String? installId,
+  }) async {
     final front = evidence.front;
     final back = evidence.back;
     if (front == null || back == null) {
@@ -161,19 +175,46 @@ class CallableVerificationProvider implements VerificationProvider {
       options: HttpsCallableOptions(timeout: const Duration(seconds: 60)),
     );
 
-    final response = await callable.call<Object?>(<String, Object?>{
-      'front': base64Encode(front),
-      'back': base64Encode(back),
-      'frames': <String>[
-        for (final frame in evidence.frames) base64Encode(frame),
-      ],
-      // A reference, not a verdict. There is no outcome field here and there
-      // must never be one again.
-      'liveness': <String, Object?>{'sessionId': sessionId},
-    });
+    final HttpsCallableResult<Object?> response;
+    try {
+      response = await callable.call<Object?>(
+        verifyPayload(
+          front: base64Encode(front),
+          back: base64Encode(back),
+          frames: <String>[
+            for (final frame in evidence.frames) base64Encode(frame),
+          ],
+          sessionId: sessionId,
+          operationId: operationId,
+          installId: installId,
+        ),
+      );
+    } on FirebaseFunctionsException catch (error) {
+      throw VerificationCallFailure(error.code, error.message);
+    }
 
     return _decisionFrom(response.data);
   }
+
+  /// The `verify_identity` body. Its keys are pinned to the contract's
+  /// `requestKeys` by test/contracts/identity_contract_test.dart.
+  static Map<String, Object?> verifyPayload({
+    required String front,
+    required String back,
+    required List<String> frames,
+    required String sessionId,
+    String? operationId,
+    String? installId,
+  }) => <String, Object?>{
+    'front': front,
+    'back': back,
+    'frames': frames,
+    // A reference, not a verdict. There is no outcome field here and there
+    // must never be one again.
+    'liveness': <String, Object?>{'sessionId': sessionId},
+    'installId': ?installId,
+    'operationId': ?operationId,
+  };
 
   /// Turns whatever came back into a decision, without trusting its shape.
   ///

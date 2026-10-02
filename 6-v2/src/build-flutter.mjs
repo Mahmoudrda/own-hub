@@ -462,6 +462,7 @@ if (fs.existsSync(dictPath)) {
     "{n} min hands on": {"description": "A recipe's active time. Overnight oats is five minutes of work and a day in the fridge, and the card stated 1,445.", "placeholders": {"n": {"type": "String", "example": "5"}}},
     "{n} min in all": {"description": "A recipe's total time, beside the hands-on figure, for a dish under two hours.", "placeholders": {"n": {"type": "String", "example": "50"}}},
     "{count, plural, one{About 1 hour in all} other{About {count} hours in all}}": {"description": "A recipe's total time once it passes two hours. Rounded to the hour and said to be rounded, because 1,445 minutes is true and unreadable.", "placeholders": {"count": {"type": "int", "example": "24"}}},
+    "Your video call is booked for {time}.": {"description": "C14 once a woman reviewer has booked the live video check. time is the booked date and time, already formatted for her locale.", "placeholders": {"time": {"type": "String", "example": "Mon, 5 Oct, 10:00"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

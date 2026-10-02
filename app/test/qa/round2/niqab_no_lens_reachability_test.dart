@@ -78,6 +78,15 @@ void main() {
     () {
       final blocks = _allBuilderBlocks();
 
+      // C09 is where she chooses again. C14 can send a woman whose review
+      // lapsed back to "take the check again" (S8), and C14's preview can
+      // lead to sign-up, which ends at C09 too. C09 offers the camera
+      // (through the C09b consent) AND this same niqab path, so reaching it
+      // is her choosing again, not the niqab path opening a lens. The walk
+      // therefore stops there, and the test below proves C09 still offers
+      // C15.
+      const freshChoice = <String>{'C09'};
+
       final visited = <String>{};
       final queue = <String>['C15'];
       final path = <String, String>{}; // child -> parent, for a readable trail
@@ -85,6 +94,7 @@ void main() {
       while (queue.isNotEmpty) {
         final id = queue.removeAt(0);
         if (!visited.add(id)) continue;
+        if (freshChoice.contains(id)) continue;
         final block = blocks[id];
         if (block == null) continue; // not a built screen; nothing to follow
         for (final target in _literalTargets(block)) {
@@ -98,7 +108,9 @@ void main() {
         final trails = reachedLenses.map((lens) {
           final trail = <String>[lens];
           var cur = lens;
-          while (path.containsKey(cur)) {
+          // Bounded: the graph has cycles, and an unbounded walk here hung the
+          // whole suite the first time this test failed.
+          while (path.containsKey(cur) && cur != 'C15' && trail.length < 40) {
             cur = path[cur]!;
             trail.insert(0, cur);
           }
@@ -124,6 +136,11 @@ void main() {
       expect(visited, contains('C14'));
     },
   );
+
+  test('C09, where she chooses again, still offers the niqab path', () {
+    final blocks = _allBuilderBlocks();
+    expect(_literalTargets(blocks['C09']!), contains('C15'));
+  });
 
   test('_opensALens itself is still exactly the three capture screens', () {
     final src = File('lib/routing/app_router.dart').readAsStringSync();

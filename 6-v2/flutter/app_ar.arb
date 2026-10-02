@@ -254,7 +254,6 @@
   "n12Of20": "12 من 20",
   "n12Of20Spots": "12 من 20 مكانًا",
   "n12Of20Taken": "12 من 20 محجوزة",
-  "n12PartnerGymsInCairoGizaAnd": "12 صالة شريكة في القاهرة والجيزة والإسكندرية.",
   "n12SepTo11Oct1Session": "12 سبتمبر إلى 11 أكتوبر · تمرين واحد خلال أسبوعين",
   "n12SpotsLeft": "تبقّى 12 مكانًا",
   "n124Videos": "124 فيديو",
@@ -450,7 +449,6 @@
   "body": "الجسم",
   "bodyPrivately": "جسمك، على انفراد",
   "boiledEggs": "بيض مسلوق",
-  "bookTheVideoCheck": "احجزي تحقّق الفيديو",
   "both": "كلاهما",
   "bothImagesAreDeletedAfterTheCheck": "تُحذف الصورتان بعد التحقّق. ونحتفظ بالنتيجة وحدها لا غير.",
   "boxSquatToAChair": "القرفصاء على كرسي",
@@ -673,8 +671,6 @@
   "imHereToTrain": "أنا هنا لأتدرّب",
   "idCheckedWomenOnlyReviewedByWomen": "بطاقة مُتحقَّق منها، نساء فقط، ومراجَعة من نساء",
   "ifYouAreInDangerRightNow": "إن كنتِ في خطر الآن، اتصلي بالرقم 122. لا يستطيع هذا التطبيق الاتصال بالشرطة نيابة عنك.",
-  "ifYouDoNotShowYourFace": "إن كنتِ لا تكشفين وجهك أمام الكاميرا، فلا شيء هنا يطلب منك ذلك. اختاري أيًّا منهما، وتُقرأ بطاقتك بالطريقة نفسها.",
-  "inPersonAtALadiesOnlyGym": "حضوريًا في صالة للنساء فقط",
   "ingredientsAndAmounts": "المكوّنات والمقادير",
   "irregularCyclesHormonalContraceptionAndPerimenop": "الدورات غير المنتظمة ووسائل منع الحمل الهرمونية وما قبل انقطاع الطمث، جميعها تستخدم هذا الوضع: تسجيلاتك، بلا تنبّؤ.",
   "irregularPeriods": "دورات غير منتظمة",
@@ -2853,7 +2849,6 @@
     }
   },
   "aShortVideoCallWithAWoman": "مكالمة فيديو قصيرة مع إحدى النساء",
-  "weWillTextYouATimeIt": "سنرسل إليك رسالة بالموعد. تستغرق نحو دقيقتين ولا يُسجَّل شيء.",
   "nothingYouPhotographedIsStoredItWas": "لا يُحفظ أي مما صوّرتِه. حُذف فور انتهاء الفحص.",
   "theAppOpensAsSoonAsYour": "يفتح التطبيق بمجرد انتهاء التحقق.",
   "nothingYouPhotographIsKeptBothSides": "لا نحتفظ بأي صورة تلتقطينها. يُحذف وجها البطاقة والصورة الذاتية فور انتهاء الفحص، أيًا كانت النتيجة.",
@@ -3102,5 +3097,39 @@
   "ifYouDoNotTurnItOn": "إذا لم تفعّليه فلن يتغيّر شيء آخر. تبقى بياناتكِ الصحية على هذا الهاتف فقط.",
   "iAgreeBackUpMyHealthData": "أوافق، انسخوا بياناتي الصحية احتياطيًا",
   "weCouldNotReachOwnHubSo": "تعذّر الوصول إلى Own Hub، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
-  "checkedByOwnHubsOwnSystemYour": "يتم التحقّق عبر نظام Own Hub الخاص. لا تُحفظ صور بطاقتكِ ولا صورتكِ الذاتية أبدًا. اضغطي لتعرفي بدقة ما الذي يُحفظ."
+  "checkedByOwnHubsOwnSystemYour": "يتم التحقّق عبر نظام Own Hub الخاص. لا تُحفظ صور بطاقتكِ ولا صورتكِ الذاتية أبدًا. اضغطي لتعرفي بدقة ما الذي يُحفظ.",
+  "ifYouDoNotShowYourFace": "إن كنتِ لا تكشفين وجهكِ أمام الكاميرا، فلا شيء هنا يطلب منكِ ذلك. ستتصل بكِ مراجِعة من Own Hub هاتفيًا لترتيب مكالمة فيديو قصيرة، وستتحقق معكِ من بطاقتكِ الشخصية خلال تلك المكالمة.",
+  "askForAVideoCheck": "اطلبي تحقّقًا بالفيديو",
+  "theAutomaticCheckCouldNotStartJust": "تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تعودي وتحاولي مرة أخرى.",
+  "weCouldNotReachOwnHubSo_3usbb": "تعذّر الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار بعد. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
+  "youHaveAskedForAReviewerToo": "لقد طلبتِ مراجِعة مرات كثيرة اليوم. يُرجى المحاولة مرة أخرى غدًا.",
+  "aWomanReviewerFromOwnHubWill": "ستتصل بكِ مراجِعة من Own Hub هاتفيًا لترتيب مكالمة فيديو قصيرة. لا نرسل رسائل نصية بشأن ذلك.",
+  "yourVideoCallIsBookedForTime": "موعد مكالمة الفيديو الخاصة بكِ هو {time}.",
+  "@yourVideoCallIsBookedForTime": {
+    "description": "C14 once a woman reviewer has booked the live video check. time is the booked date and time, already formatted for her locale.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "Mon, 5 Oct, 10:00"
+      }
+    }
+  },
+  "yourReviewTimeRanOut": "انتهى وقت مراجعتكِ",
+  "weDidNotReachYourReviewIn": "لم نتمكّن من إجراء مراجعتكِ في الوقت المحدد. يمكنكِ إجراء التحقق مرة أخرى.",
+  "takeTheCheckAgain": "أعيدي التحقق",
+  "weCouldNotVerifyYourAccount": "لم نتمكّن من التحقق من حسابكِ",
+  "youCanDeleteYourAccountAndEverything": "يمكنكِ حذف حسابكِ وكل ما نحتفظ به عنكِ من «الملف الشخصي والإعدادات»، ضمن «بياناتك».",
+  "openProfileAndSettings": "افتحي الملف الشخصي والإعدادات",
+  "lookAroundWhileYouWait": "ألقي نظرة على التطبيق أثناء الانتظار",
+  "tryAgainTomorrow": "حاولي مرة أخرى غدًا",
+  "todaysLimitForIdentityChecksHasBeen": "تم بلوغ الحد اليومي لعمليات التحقق من الهوية. لم يُتخذ أي قرار، ولم يُحفظ شيء مما صوّرتِه. يُرجى المحاولة مرة أخرى غدًا.",
+  "noAutomaticChecksLeft": "لم تتبقَّ عمليات تحقق تلقائية",
+  "thisAccountHasUsedEveryAutomaticCheck": "استخدم هذا الحساب كل عمليات التحقق التلقائية المتاحة له. لم يُحفظ شيء مما صوّرتِه. ويمكن لمراجِعة أن تتحقق منكِ في مكالمة فيديو قصيرة بدلًا من ذلك.",
+  "askForAWomanReviewer": "اطلبي مراجِعة",
+  "weCouldNotReachOwnHub": "تعذّر الوصول إلى Own Hub",
+  "nothingWasDecidedAndYouAreNot": "لم يُتخذ أي قرار ولستِ في أي قائمة انتظار. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
+  "yourPhoneNumberIsUsedOnlyTo": "يُستخدم رقم هاتفكِ لترتيب هذه المكالمة فقط.",
+  "thisCopyOfTheAppCannotReach": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub",
+  "pleaseInstallTheLatestVersionFromThe": "يُرجى تثبيت أحدث إصدار من App Store أو Google Play، ثم المحاولة مرة أخرى. لم يُتخذ أي قرار.",
+  "thisCopyOfTheAppCannotReach_agbhf": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تثبيت أحدث إصدار من App Store أو Google Play."
 }

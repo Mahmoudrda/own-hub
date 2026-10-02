@@ -252,14 +252,13 @@ void main() {
       expect(AppRouter.identityCheck.evidence, isNot(same(first.evidence)));
     });
 
-    test('the niqab path submits against the same check', () {
-      // `C15` used to hold a repository of its own. It matters that it does
-      // not: the outcome of the video-call path has to arrive on the same
-      // stream `C12` and `C14` are listening to.
-      expect(
-        _builderBlock('C15'),
-        contains('identityCheck.verification'),
-      );
+    test('the niqab path asks the same check for its reviewer', () {
+      // `C15` used to hold a repository of its own. It still must not: it
+      // sends `request_review` through the one requester the check holds, the
+      // same one C12's error branch uses, and the outcome reaches C14 through
+      // the server's verification state, not through a private copy (S3, S8).
+      expect(_builderBlock('C15'), contains('identityCheck.reviews'));
+      expect(_builderBlock('C15'), contains('pendingReviewPath'));
     });
   });
 

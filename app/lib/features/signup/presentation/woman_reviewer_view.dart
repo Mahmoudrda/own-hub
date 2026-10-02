@@ -10,17 +10,16 @@
 /// Nothing in this file imports the capture layer, which is what makes that
 /// structural rather than a promise.
 ///
-/// Both options submit [VerificationMethod.niqabFriendly], so the decision is
-/// recorded as a no-selfie path whichever she picks.
+/// The button calls `request_review` with the path she came by (niqab,
+/// declined camera, or after an error). She moves on to `C14` only once the
+/// server has answered: if the call fails she is told plainly that she is not
+/// in the queue yet, and the button stays live as a retry. Nothing here ever
+/// claims a place in a queue the server did not confirm.
 ///
-/// Two gaps carried from G1, neither of which this screen can close:
-///
-///  * The domain has one `niqabFriendly` method and no representation of G1's
-///    `reviewerPath` (`video` | `gym`), so which of the two she chose is
-///    reported through [onBooked] rather than stored in the domain type.
-///  * "Book the video check" has no booking backend and no named vendor, and
-///    "nothing is recorded" must be enforced by configuration and proven by a
-///    test — it is a promise in copy today.
+/// There is one option, the video check. The partner-gym card is gone: no
+/// partner gyms exist, and a screen offering them would be a promise nobody
+/// keeps. A woman reviewer phones her to arrange the call; no text message is
+/// sent, because nothing exists that could send one.
 library;
 
 import 'package:flutter/material.dart';
@@ -30,24 +29,37 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_scaffold.dart';
-import '../domain/verification.dart';
+import '../domain/review_request.dart';
 
-/// Which no-selfie check she chose. G1's `reviewerPath`; it has no home in the
-/// domain layer yet, so it is reported to the caller instead of invented there.
+/// Which no-selfie check she chose. Only the video check is offered; the
+/// value travels to the router, which records it.
 enum ReviewerPath { video, gym }
 
 class WomanReviewerView extends StatefulWidget {
   const WomanReviewerView({
     super.key,
-    required this.repository,
+    required this.requester,
+    this.path = ReviewPath.niqab,
     this.onBooked,
+    this.onAlreadyVerified,
+    this.onRejected,
     this.onBack,
   });
 
-  final VerificationRepository repository;
+  /// `request_review`.
+  final ReviewRequester requester;
 
-  /// Fired after the check has been submitted — on to `C14`.
+  /// Why she is here. Sent to the server, which records it on the flag.
+  final ReviewPath path;
+
+  /// Fired only after the server confirmed she is queued: on to `C14`.
   final ValueChanged<ReviewerPath>? onBooked;
+
+  /// The server says she is already verified.
+  final VoidCallback? onAlreadyVerified;
+
+  /// The server says her account was refused for good.
+  final VoidCallback? onRejected;
 
   final VoidCallback? onBack;
 
@@ -55,19 +67,43 @@ class WomanReviewerView extends StatefulWidget {
   State<WomanReviewerView> createState() => _WomanReviewerViewState();
 }
 
+/// What went wrong with the last tap, if anything.
+enum _Failure { none, unreachable, tooManyToday, appCannotReach }
+
 class _WomanReviewerViewState extends State<WomanReviewerView> {
-  /// The video check is preselected because it needs nothing but her phone.
-  ReviewerPath _path = ReviewerPath.video;
   bool _booking = false;
+  _Failure _failure = _Failure.none;
 
   Future<void> _book() async {
     if (_booking) return;
-    setState(() => _booking = true);
+    setState(() {
+      _booking = true;
+      _failure = _Failure.none;
+    });
     try {
-      // niqabFriendly for both options: neither ever captures a selfie.
-      await widget.repository.submit(method: VerificationMethod.niqabFriendly);
+      final answer = await widget.requester.request(widget.path);
       if (!mounted) return;
-      widget.onBooked?.call(_path);
+      switch (answer) {
+        case ReviewRequestState.pending:
+          widget.onBooked?.call(ReviewerPath.video);
+        case ReviewRequestState.approved:
+          widget.onAlreadyVerified?.call();
+      }
+    } catch (error) {
+      if (!mounted) return;
+      switch (classifyCallFailure(error)) {
+        case CallFailureKind.closed:
+          widget.onRejected?.call();
+        case CallFailureKind.reviewOpen:
+          widget.onBooked?.call(ReviewerPath.video);
+        case CallFailureKind.tryTomorrow:
+          setState(() => _failure = _Failure.tooManyToday);
+        case CallFailureKind.appCannotReach:
+          setState(() => _failure = _Failure.appCannotReach);
+        default:
+          // Never onBooked: she is not in the queue, and she is told so.
+          setState(() => _failure = _Failure.unreachable);
+      }
     } finally {
       if (mounted) setState(() => _booking = false);
     }
@@ -79,26 +115,35 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
 
     return AppScaffold(
       appBar: AppTopBar(onBack: widget.onBack),
-      footer: [AppButton(l10n.bookTheVideoCheck, onPressed: _book)],
+      footer: [
+        AppButton(l10n.askForAVideoCheck, onPressed: _booking ? null : _book),
+      ],
       children: [
         Text(l10n.checkedByAWomanNoPhotoKept, style: AppText.headline),
+        if (widget.path == ReviewPath.error)
+          Text(
+            l10n.theAutomaticCheckCouldNotStartJust,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
         Text(
           l10n.ifYouDoNotShowYourFace,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        // Shown before `request_review`, which records her agreement to the
+        // review route on the server (users/{uid}/consents/review-v1, written
+        // before the flag): who calls, how, and what her number is used for.
+        // This sentence and the one above are that consent's wording. PENDING COUNSEL: this wording is part of the consent
+        // mechanism the PDPC must approve, and needs a lawyer's sign-off.
+        Text(
+          l10n.yourPhoneNumberIsUsedOnlyTo,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         _PathCard(
           icon: Icons.videocam,
           title: l10n.aShortVideoCheck,
           body: l10n.twoMinutesWithAWomanReviewerNothing,
-          selected: _path == ReviewerPath.video,
-          onTap: () => setState(() => _path = ReviewerPath.video),
-        ),
-        _PathCard(
-          icon: Icons.fitness_center,
-          title: l10n.inPersonAtALadiesOnlyGym,
-          body: l10n.n12PartnerGymsInCairoGizaAnd,
-          selected: _path == ReviewerPath.gym,
-          onTap: () => setState(() => _path = ReviewerPath.gym),
+          selected: true,
+          onTap: () {},
         ),
         // `sageNote()`: only women review these checks.
         AppCard(
@@ -114,6 +159,18 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
             ),
           ],
         ),
+        if (_failure != _Failure.none)
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              switch (_failure) {
+                _Failure.tooManyToday => l10n.youHaveAskedForAReviewerToo,
+                _Failure.appCannotReach => l10n.thisCopyOfTheAppCannotReach_agbhf,
+                _ => l10n.weCouldNotReachOwnHubSo_3usbb,
+              },
+              style: AppText.bodyM.copyWith(color: AppColors.error),
+            ),
+          ),
       ],
     );
   }

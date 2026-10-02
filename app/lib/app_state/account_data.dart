@@ -69,6 +69,7 @@ import 'community_state.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
 import 'firebase_boot.dart';
+import 'install_id.dart';
 import 'local_persistence.dart';
 import 'workout_session_state.dart';
 
@@ -90,6 +91,8 @@ class ThisPhoneWipe implements LocalWipe {
     AppRouter.lastSignupRole = null;
     AppRouter.lastVerification = null;
     AppRouter.lastReviewerPath = null;
+    AppRouter.serverVerification = null;
+    AppRouter.awaitingReviewer = false;
   }
 
   /// Stops the sync, then stops Firestore and empties what it kept on disk.
@@ -149,6 +152,10 @@ class ThisPhoneWipe implements LocalWipe {
     // Her health backup choice. A new account on this handset starts from
     // the default, which is off: her health data stays on the phone.
     unawaited(HealthBackupPreference.instance.erase());
+
+    // This installation's random id. A new account on this handset gets a
+    // new one, so nothing links the two.
+    unawaited(InstallId.erase().catchError((Object _) {}));
 
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();

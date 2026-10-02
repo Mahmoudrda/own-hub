@@ -787,10 +787,6 @@ class AppL10nEn extends AppL10n {
   String get n12Of20Taken => '12 of 20 taken';
 
   @override
-  String get n12PartnerGymsInCairoGizaAnd =>
-      '12 partner gyms in Cairo, Giza and Alexandria.';
-
-  @override
   String get n12SepTo11Oct1Session => '12 Sep to 11 Oct · 1 session in 2 weeks';
 
   @override
@@ -1415,9 +1411,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get boiledEggs => 'Boiled eggs';
-
-  @override
-  String get bookTheVideoCheck => 'Book the video check';
 
   @override
   String get both => 'Both';
@@ -2137,13 +2130,6 @@ class AppL10nEn extends AppL10n {
   @override
   String get ifYouAreInDangerRightNow =>
       'If you are in danger right now, call 122. This app cannot reach the police for you.';
-
-  @override
-  String get ifYouDoNotShowYourFace =>
-      'If you do not show your face to a camera, nothing here asks you to. Choose either one. Your ID card is still read the same way.';
-
-  @override
-  String get inPersonAtALadiesOnlyGym => 'In person at a ladies-only gym';
 
   @override
   String get ingredientsAndAmounts => 'Ingredients and amounts';
@@ -7162,10 +7148,6 @@ class AppL10nEn extends AppL10n {
   String get aShortVideoCallWithAWoman => 'A short video call with a woman';
 
   @override
-  String get weWillTextYouATimeIt =>
-      'We will text you a time. It takes about two minutes and nothing is recorded.';
-
-  @override
   String get nothingYouPhotographedIsStoredItWas =>
       'Nothing you photographed is stored. It was deleted the moment the check finished.';
 
@@ -7620,4 +7602,95 @@ class AppL10nEn extends AppL10n {
   @override
   String get checkedByOwnHubsOwnSystemYour =>
       'Checked by Own Hub\'s own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.';
+
+  @override
+  String get ifYouDoNotShowYourFace =>
+      'If you do not show your face to a camera, nothing here asks you to. A woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.';
+
+  @override
+  String get askForAVideoCheck => 'Ask for a video check';
+
+  @override
+  String get theAutomaticCheckCouldNotStartJust =>
+      'The automatic check could not start just now. You can ask a woman reviewer instead, or go back and try again.';
+
+  @override
+  String get weCouldNotReachOwnHubSo_3usbb =>
+      'We could not reach Own Hub, so you are not in the queue yet. Check your connection and try again.';
+
+  @override
+  String get youHaveAskedForAReviewerToo =>
+      'You have asked for a reviewer too many times today. Please try again tomorrow.';
+
+  @override
+  String get aWomanReviewerFromOwnHubWill =>
+      'A woman reviewer from Own Hub will phone you to arrange a short video call. We do not send text messages about this.';
+
+  @override
+  String yourVideoCallIsBookedForTime(String time) {
+    return 'Your video call is booked for $time.';
+  }
+
+  @override
+  String get yourReviewTimeRanOut => 'Your review time ran out';
+
+  @override
+  String get weDidNotReachYourReviewIn =>
+      'We did not reach your review in time. You can take the check again.';
+
+  @override
+  String get takeTheCheckAgain => 'Take the check again';
+
+  @override
+  String get weCouldNotVerifyYourAccount => 'We could not verify your account';
+
+  @override
+  String get youCanDeleteYourAccountAndEverything =>
+      'You can delete your account and everything we hold about you from Profile and settings, under Your data.';
+
+  @override
+  String get openProfileAndSettings => 'Open Profile and settings';
+
+  @override
+  String get lookAroundWhileYouWait => 'Look around while you wait';
+
+  @override
+  String get tryAgainTomorrow => 'Try again tomorrow';
+
+  @override
+  String get todaysLimitForIdentityChecksHasBeen =>
+      'Today\'s limit for identity checks has been reached. Nothing was decided, and nothing you photographed was kept. Please try again tomorrow.';
+
+  @override
+  String get noAutomaticChecksLeft => 'No automatic checks left';
+
+  @override
+  String get thisAccountHasUsedEveryAutomaticCheck =>
+      'This account has used every automatic check it can. Nothing you photographed was kept. A woman reviewer can check you on a short video call instead.';
+
+  @override
+  String get askForAWomanReviewer => 'Ask for a woman reviewer';
+
+  @override
+  String get weCouldNotReachOwnHub => 'We could not reach Own Hub';
+
+  @override
+  String get nothingWasDecidedAndYouAreNot =>
+      'Nothing was decided and you are not in a queue. Check your connection and try again.';
+
+  @override
+  String get yourPhoneNumberIsUsedOnlyTo =>
+      'Your phone number is used only to arrange this call.';
+
+  @override
+  String get thisCopyOfTheAppCannotReach =>
+      'This copy of the app cannot reach Own Hub';
+
+  @override
+  String get pleaseInstallTheLatestVersionFromThe =>
+      'Please install the latest version from the App Store or Google Play, then try again. Nothing was decided.';
+
+  @override
+  String get thisCopyOfTheAppCannotReach_agbhf =>
+      'This copy of the app cannot reach Own Hub, so you are not in the queue. Please install the latest version from the App Store or Google Play.';
 }

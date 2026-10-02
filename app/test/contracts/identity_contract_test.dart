@@ -16,7 +16,11 @@ import 'package:own_hub/features/account/data/callable_health_consent_store.dart
 import 'package:own_hub/features/account/domain/health_backup.dart';
 import 'package:own_hub/features/signup/data/callable_capture_consent_store.dart';
 import 'package:own_hub/features/signup/data/callable_verification_provider.dart';
+import 'package:own_hub/features/signup/data/callable_review_request.dart';
+import 'package:own_hub/features/signup/data/verification_status_repository.dart';
 import 'package:own_hub/features/signup/domain/capture_consent.dart';
+import 'package:own_hub/features/signup/domain/review_request.dart';
+import 'package:own_hub/features/signup/domain/server_verification.dart';
 
 Map<String, dynamic> _contract() =>
     jsonDecode(File('../contracts/identity_contract.json').readAsStringSync())
@@ -121,6 +125,101 @@ void main() {
       expect(
         (doc['states'] as List).toSet(),
         HealthConsentState.values.map((s) => s.name).toSet(),
+      );
+    });
+  });
+
+  group('verify_identity (S12)', () {
+    test('the body carries exactly the keys the server reads', () {
+      final requestKeys =
+          ((callables['verify_identity'] as Map<String, dynamic>)['requestKeys']
+                  as List)
+              .cast<String>();
+      final body = CallableVerificationProvider.verifyPayload(
+        front: 'f',
+        back: 'b',
+        frames: const <String>['x'],
+        sessionId: 's',
+        operationId: '00000000-0000-4000-8000-000000000000',
+        installId: 'i',
+      );
+      expect(body.keys.toList()..sort(), requestKeys.toList()..sort());
+      expect(body.containsKey('niqabPath'), isFalse);
+    });
+  });
+
+  group('request_review (S3)', () {
+    final contractCall = callables['request_review'] as Map<String, dynamic>;
+
+    test('the callable name and the body match', () {
+      expect(callables.keys, contains(kRequestReviewCallable));
+      expect(
+        CallableReviewRequester.payloadFor(ReviewPath.niqab),
+        contractCall['request'],
+      );
+    });
+
+    test('every path the app can send is one the server accepts', () {
+      expect(
+        ReviewPath.values.map((p) => p.name).toSet(),
+        (contractCall['paths'] as List).cast<String>().toSet(),
+      );
+    });
+
+    test('the reasons the app acts on are the contract reasons', () {
+      final reasons = (contract['errorReasons'] as Map).values.toSet();
+      for (final reason in <String>[
+        ServerReason.perUidDailyLimit,
+        ServerReason.dailyLimitReached,
+        ServerReason.costCapReached,
+        ServerReason.consentMissing,
+        ServerReason.verificationClosed,
+        ServerReason.appCheckMissing,
+      ]) {
+        expect(reasons, contains(reason));
+      }
+    });
+  });
+
+  group('users/{uid}.verification (S8)', () {
+    final doc = documents['verificationState'] as Map<String, dynamic>;
+
+    test('the map name and states match', () {
+      expect(doc['path'], 'users/{uid}');
+      expect(doc['map'], kVerificationStateMap);
+      expect(
+        ServerVerificationState.values.map((s) => s.name).toSet(),
+        (doc['states'] as List).cast<String>().toSet(),
+      );
+      final fields = (doc['fields'] as List).cast<String>();
+      expect(
+        fields,
+        containsAll(<String>['state', 'reviewRoute', 'reviewScheduledFor']),
+      );
+    });
+
+    test('reads the server shape, and nothing it does not know', () {
+      final at = DateTime.utc(2026, 10, 5, 8);
+      final read = ServerVerification.fromUserDoc(<String, Object?>{
+        'verification': <String, Object?>{
+          'state': 'pending',
+          'reviewRoute': 'video',
+          'reviewScheduledFor': Timestamp.fromDate(at),
+          'updatedAt': Timestamp.fromDate(at),
+        },
+      }, toDateTime: firestoreDateTime);
+      expect(read?.state, ServerVerificationState.pending);
+      expect(read?.reviewRoute, 'video');
+      expect(read?.reviewScheduledFor?.toUtc(), at);
+
+      DateTime? never(Object? _) => null;
+      expect(ServerVerification.fromUserDoc(null, toDateTime: never), isNull);
+      expect(
+        ServerVerification.fromUserDoc(<String, Object?>{
+          'verification': <String, Object?>{'state': 'verified'},
+        }, toDateTime: never),
+        isNull,
+        reason: 'an unknown state is the server saying nothing',
       );
     });
   });

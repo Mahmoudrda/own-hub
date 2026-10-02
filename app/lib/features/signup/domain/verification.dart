@@ -89,6 +89,32 @@ sealed class VerificationState {
   /// is nobody's fault and must not read as one.
   const factory VerificationState.retakeNeeded() = VerificationRetakeNeeded;
 
+  /// A daily limit was reached, hers or the service's. She is told to try
+  /// again tomorrow. Never a review: a limit is not a reason to spend a
+  /// woman reviewer's call.
+  const factory VerificationState.tryTomorrow() = VerificationTryTomorrow;
+
+  /// Every automatic check this account may use has been used. She is told
+  /// so, and may ask for a woman reviewer herself; she is not queued for one.
+  const factory VerificationState.checksUsedUp() = VerificationChecksUsedUp;
+
+  /// The server has no record of her agreement: back to the consent screen.
+  const factory VerificationState.consentNeeded() = VerificationConsentNeeded;
+
+  /// The server refused her account for good. She is told plainly, with how
+  /// to delete her data. The same sentence for every reason (no oracle).
+  const factory VerificationState.rejected() = VerificationRejected;
+
+  /// The call failed and asking for a reviewer failed too. Nothing was
+  /// decided and she is not in any queue; she can try again.
+  const factory VerificationState.unreachable() = VerificationUnreachable;
+
+  /// App Check refused this copy of the app: it cannot reach Own Hub at all.
+  /// She is told to install the latest version. Never a review, because the
+  /// review call would be refused the same way.
+  const factory VerificationState.appCannotReach() =
+      VerificationAppCannotReach;
+
   /// Whether the community is open to her.
   bool get isVerified => this is VerificationVerified;
 
@@ -132,6 +158,30 @@ class VerificationNeedsAnotherLook extends VerificationState {
 
 class VerificationRetakeNeeded extends VerificationState {
   const VerificationRetakeNeeded();
+}
+
+class VerificationTryTomorrow extends VerificationState {
+  const VerificationTryTomorrow();
+}
+
+class VerificationChecksUsedUp extends VerificationState {
+  const VerificationChecksUsedUp();
+}
+
+class VerificationConsentNeeded extends VerificationState {
+  const VerificationConsentNeeded();
+}
+
+class VerificationRejected extends VerificationState {
+  const VerificationRejected();
+}
+
+class VerificationUnreachable extends VerificationState {
+  const VerificationUnreachable();
+}
+
+class VerificationAppCannotReach extends VerificationState {
+  const VerificationAppCannotReach();
 }
 
 /// What is kept after a successful check.

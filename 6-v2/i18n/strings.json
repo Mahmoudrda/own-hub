@@ -1392,10 +1392,6 @@
   "n": 1
  },
  {
-  "s": "12 partner gyms in Cairo, Giza and Alexandria.",
-  "n": 1
- },
- {
   "s": "12 Sep to 11 Oct · 1 session in 2 weeks",
   "n": 1
  },
@@ -2100,6 +2096,10 @@
   "n": 1
  },
  {
+  "s": "A woman reviewer from Own Hub will phone you to arrange a short video call. We do not send text messages about this.",
+  "n": 1
+ },
+ {
   "s": "A woman reviewer is looking",
   "n": 1
  },
@@ -2352,6 +2352,10 @@
   "n": 1
  },
  {
+  "s": "Ask for a video check",
+  "n": 1
+ },
+ {
   "s": "Ask Sara for something else",
   "n": 1
  },
@@ -2489,10 +2493,6 @@
  },
  {
   "s": "Boiled eggs",
-  "n": 1
- },
- {
-  "s": "Book the video check",
   "n": 1
  },
  {
@@ -3756,7 +3756,7 @@
   "n": 1
  },
  {
-  "s": "If you do not show your face to a camera, nothing here asks you to. Choose either one. Your ID card is still read the same way.",
+  "s": "If you do not show your face to a camera, nothing here asks you to. A woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.",
   "n": 1
  },
  {
@@ -3797,10 +3797,6 @@
  },
  {
   "s": "Import recipes.csv. Allergens and diet tags are required, and every photo named must be in the media upload.",
-  "n": 1
- },
- {
-  "s": "In person at a ladies-only gym",
   "n": 1
  },
  {
@@ -6488,10 +6484,6 @@
   "n": 1
  },
  {
-  "s": "Usually under two hours. We will text you.",
-  "n": 1
- },
- {
   "s": "Vaginal",
   "n": 1
  },
@@ -7177,6 +7169,10 @@
  },
  {
   "s": "Your patterns",
+  "n": 1
+ },
+ {
+  "s": "Your phone number is used only to arrange this call.",
   "n": 1
  },
  {

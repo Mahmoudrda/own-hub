@@ -17,6 +17,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'dart:async';
+
+import 'package:own_hub/features/signup/domain/server_verification.dart';
 import 'package:own_hub/features/signup/presentation/being_checked_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -48,10 +51,13 @@ void main() {
 
     expect(find.text('Being checked'), findsOneWidget);
     expect(find.text('A short video call with a woman'), findsOneWidget);
+    // Who calls, and how. No text message is promised, because nothing
+    // exists that could send one (S3).
     expect(
-      find.textContaining('nothing is recorded'),
+      find.textContaining('A woman reviewer from Own Hub will phone you'),
       findsOneWidget,
     );
+    expect(find.textContaining('We will text you'), findsNothing);
     // The model that no longer exists must not survive in the copy.
     expect(find.text('A woman reviewer is looking'), findsNothing);
   });
@@ -129,5 +135,137 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('S8: it shows what the server says', () {
+    testWidgets('a booked call shows its time', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          BeingCheckedView(
+            status: ServerVerification(
+              ServerVerificationState.pending,
+              reviewRoute: 'video',
+              reviewScheduledFor: DateTime(2026, 10, 5, 10),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Your video call is booked for'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('10:00'), findsOneWidget);
+    });
+
+    testWidgets('a rejection is told plainly, with where to delete', (
+      tester,
+    ) async {
+      var deletes = 0;
+      await tester.pumpWidget(
+        _host(
+          BeingCheckedView(
+            status: const ServerVerification(ServerVerificationState.rejected),
+            onDeleteMyData: () => deletes++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('We could not verify your account'), findsOneWidget);
+      expect(
+        find.textContaining('You can delete your account and everything'),
+        findsOneWidget,
+      );
+      // Not "the app opens soon": it will not.
+      expect(
+        find.textContaining('The app opens as soon as your check is done'),
+        findsNothing,
+      );
+      await tester.tap(find.text('Open Profile and settings'));
+      expect(deletes, 1);
+    });
+
+    testWidgets('a lapsed review lets her take the check again', (
+      tester,
+    ) async {
+      var retries = 0;
+      await tester.pumpWidget(
+        _host(
+          BeingCheckedView(
+            status: const ServerVerification(ServerVerificationState.retry),
+            onTryAgain: () => retries++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Your review time ran out'), findsOneWidget);
+      await tester.tap(find.text('Take the check again'));
+      expect(retries, 1);
+    });
+
+    testWidgets('while waiting she can look around (C04)', (tester) async {
+      var opened = 0;
+      await tester.pumpWidget(
+        _host(BeingCheckedView(onLookAround: () => opened++)),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Look around while you wait'));
+      expect(opened, 1);
+    });
+
+    testWidgets('a live update moves her on once, when approved', (
+      tester,
+    ) async {
+      final updates = StreamController<ServerVerification?>();
+      var approved = 0;
+      await tester.pumpWidget(
+        _host(
+          BeingCheckedView(
+            updates: updates.stream,
+            onApproved: () => approved++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      updates.add(
+        ServerVerification(
+          ServerVerificationState.pending,
+          reviewScheduledFor: DateTime(2026, 10, 5, 10),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Your video call is booked for'),
+        findsOneWidget,
+      );
+      updates.add(const ServerVerification(ServerVerificationState.approved));
+      await tester.pumpAndSettle();
+      updates.add(const ServerVerification(ServerVerificationState.approved));
+      await tester.pumpAndSettle();
+      expect(approved, 1);
+      await updates.close();
+    });
+
+    testWidgets('every variant fits at the largest text size in Arabic', (
+      tester,
+    ) async {
+      for (final state in ServerVerificationState.values) {
+        await tester.pumpWidget(
+          _host(
+            BeingCheckedView(
+              key: ValueKey(state),
+              status: ServerVerification(state),
+              onTryAgain: () {},
+              onDeleteMyData: () {},
+              onLookAround: () {},
+            ),
+            locale: const Locale('ar'),
+            textScale: 1.6,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: '$state');
+      }
+    });
   });
 }

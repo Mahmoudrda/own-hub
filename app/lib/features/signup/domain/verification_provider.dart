@@ -160,10 +160,16 @@ abstract class VerificationProvider {
   /// Throws on transport failure rather than returning an eighth outcome, so
   /// that "the server refused her" and "the call never arrived" cannot be
   /// confused at the call site.
+  ///
+  /// [operationId] is one uuid per attempt, reused on the single retry, so the
+  /// server recognises a retried call and never bills OCR twice. [installId]
+  /// is this installation's random id; the server hashes it before storing.
   Future<VerificationDecision> submit(
     VerificationEvidence evidence,
-    String sessionId,
-  );
+    String sessionId, {
+    String? operationId,
+    String? installId,
+  });
 }
 
 /// The implementation that refuses, and says why.
@@ -197,6 +203,8 @@ class UnavailableVerificationProvider implements VerificationProvider {
   @override
   Future<VerificationDecision> submit(
     VerificationEvidence evidence,
-    String sessionId,
-  ) async => throw StateError('no verification back end in this build');
+    String sessionId, {
+    String? operationId,
+    String? installId,
+  }) async => throw StateError('no verification back end in this build');
 }

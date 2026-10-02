@@ -254,7 +254,6 @@
   "n12Of20": "12 of 20",
   "n12Of20Spots": "12 of 20 spots",
   "n12Of20Taken": "12 of 20 taken",
-  "n12PartnerGymsInCairoGizaAnd": "12 partner gyms in Cairo, Giza and Alexandria.",
   "n12SepTo11Oct1Session": "12 Sep to 11 Oct · 1 session in 2 weeks",
   "n12SpotsLeft": "12 spots left",
   "n124Videos": "124 videos",
@@ -450,7 +449,6 @@
   "body": "Body",
   "bodyPrivately": "Body, privately",
   "boiledEggs": "Boiled eggs",
-  "bookTheVideoCheck": "Book the video check",
   "both": "Both",
   "bothImagesAreDeletedAfterTheCheck": "Both images are deleted after the check. We keep the result, nothing else.",
   "boxSquatToAChair": "Box squat to a chair",
@@ -673,8 +671,6 @@
   "imHereToTrain": "I'm here to train",
   "idCheckedWomenOnlyReviewedByWomen": "ID checked, women only, reviewed by women",
   "ifYouAreInDangerRightNow": "If you are in danger right now, call 122. This app cannot reach the police for you.",
-  "ifYouDoNotShowYourFace": "If you do not show your face to a camera, nothing here asks you to. Choose either one. Your ID card is still read the same way.",
-  "inPersonAtALadiesOnlyGym": "In person at a ladies-only gym",
   "ingredientsAndAmounts": "Ingredients and amounts",
   "irregularCyclesHormonalContraceptionAndPerimenop": "Irregular cycles, hormonal contraception and perimenopause all use this mode: your logs, no forecast.",
   "irregularPeriods": "Irregular periods",
@@ -2853,7 +2849,6 @@
     }
   },
   "aShortVideoCallWithAWoman": "A short video call with a woman",
-  "weWillTextYouATimeIt": "We will text you a time. It takes about two minutes and nothing is recorded.",
   "nothingYouPhotographedIsStoredItWas": "Nothing you photographed is stored. It was deleted the moment the check finished.",
   "theAppOpensAsSoonAsYour": "The app opens as soon as your check is done.",
   "nothingYouPhotographIsKeptBothSides": "Nothing you photograph is kept. Both sides of the card and the selfie are deleted as soon as the check finishes, whatever the result.",
@@ -3102,5 +3097,39 @@
   "ifYouDoNotTurnItOn": "If you do not turn it on, nothing else changes. Your health data simply stays on this phone only.",
   "iAgreeBackUpMyHealthData": "I agree, back up my health data",
   "weCouldNotReachOwnHubSo": "We could not reach Own Hub, so your health backup was not changed. Check your connection and try again.",
-  "checkedByOwnHubsOwnSystemYour": "Checked by Own Hub's own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept."
+  "checkedByOwnHubsOwnSystemYour": "Checked by Own Hub's own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.",
+  "ifYouDoNotShowYourFace": "If you do not show your face to a camera, nothing here asks you to. A woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.",
+  "askForAVideoCheck": "Ask for a video check",
+  "theAutomaticCheckCouldNotStartJust": "The automatic check could not start just now. You can ask a woman reviewer instead, or go back and try again.",
+  "weCouldNotReachOwnHubSo_3usbb": "We could not reach Own Hub, so you are not in the queue yet. Check your connection and try again.",
+  "youHaveAskedForAReviewerToo": "You have asked for a reviewer too many times today. Please try again tomorrow.",
+  "aWomanReviewerFromOwnHubWill": "A woman reviewer from Own Hub will phone you to arrange a short video call. We do not send text messages about this.",
+  "yourVideoCallIsBookedForTime": "Your video call is booked for {time}.",
+  "@yourVideoCallIsBookedForTime": {
+    "description": "C14 once a woman reviewer has booked the live video check. time is the booked date and time, already formatted for her locale.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "Mon, 5 Oct, 10:00"
+      }
+    }
+  },
+  "yourReviewTimeRanOut": "Your review time ran out",
+  "weDidNotReachYourReviewIn": "We did not reach your review in time. You can take the check again.",
+  "takeTheCheckAgain": "Take the check again",
+  "weCouldNotVerifyYourAccount": "We could not verify your account",
+  "youCanDeleteYourAccountAndEverything": "You can delete your account and everything we hold about you from Profile and settings, under Your data.",
+  "openProfileAndSettings": "Open Profile and settings",
+  "lookAroundWhileYouWait": "Look around while you wait",
+  "tryAgainTomorrow": "Try again tomorrow",
+  "todaysLimitForIdentityChecksHasBeen": "Today's limit for identity checks has been reached. Nothing was decided, and nothing you photographed was kept. Please try again tomorrow.",
+  "noAutomaticChecksLeft": "No automatic checks left",
+  "thisAccountHasUsedEveryAutomaticCheck": "This account has used every automatic check it can. Nothing you photographed was kept. A woman reviewer can check you on a short video call instead.",
+  "askForAWomanReviewer": "Ask for a woman reviewer",
+  "weCouldNotReachOwnHub": "We could not reach Own Hub",
+  "nothingWasDecidedAndYouAreNot": "Nothing was decided and you are not in a queue. Check your connection and try again.",
+  "yourPhoneNumberIsUsedOnlyTo": "Your phone number is used only to arrange this call.",
+  "thisCopyOfTheAppCannotReach": "This copy of the app cannot reach Own Hub",
+  "pleaseInstallTheLatestVersionFromThe": "Please install the latest version from the App Store or Google Play, then try again. Nothing was decided.",
+  "thisCopyOfTheAppCannotReach_agbhf": "This copy of the app cannot reach Own Hub, so you are not in the queue. Please install the latest version from the App Store or Google Play."
 }
