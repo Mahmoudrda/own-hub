@@ -44,6 +44,10 @@ CALLABLES = {
     "list_verification_flags",
     "schedule_verification_review",
     "decide_verification_flag",
+    "request_review",
+    "get_review_contact",
+    "delete_account",
+    "record_health_consent",
 }
 
 
@@ -99,6 +103,7 @@ def stubbed(monkeypatch):
     def daily(field="sessions"):
         calls["daily"] += 1
         calls["daily_field"] = field
+        calls.setdefault("order", []).append("global")
         return 1
 
     real_decode = main._decode_image
@@ -112,6 +117,15 @@ def stubbed(monkeypatch):
 
     monkeypatch.setattr(main.store, "has_consent", has_consent)
     monkeypatch.setattr(main.store, "daily_count_and_increment", daily)
+    monkeypatch.setattr(main.store, "verification_gate", lambda uid: main.store.Gate())
+
+    def per_uid(uid, field):
+        calls["per_uid"] = calls.get("per_uid", 0) + 1
+        calls["per_uid_field"] = field
+        calls.setdefault("order", []).append("per_uid")
+        return 1
+
+    monkeypatch.setattr(main.store, "uid_daily_count_and_increment", per_uid)
     monkeypatch.setattr(main, "_decode_image", counting_decode)
     monkeypatch.setattr(main, "_deps", no_deps)
     return calls
@@ -402,3 +416,125 @@ def test_consent_for_an_unrecognised_version_is_refused(stubbed):
         https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
     )
     assert error.message == reasons.CONSENT_MISSING
+
+
+# ------------------------------------------- S21: consent is recorded once
+
+
+def test_consent_already_on_file_is_a_no_op_with_the_same_answer(monkeypatch, stubbed):
+    writes = {"n": 0}
+    monkeypatch.setattr(main.store, "has_consent", lambda uid: True)
+    monkeypatch.setattr(
+        main.store, "write_consent", lambda uid: writes.__setitem__("n", writes["n"] + 1)
+    )
+    answer = inner("record_consent")(
+        request({"consentVersion": config.CONSENT_VERSION})
+    )
+    assert answer == {"ok": True, "consentVersion": config.CONSENT_VERSION}
+    assert writes["n"] == 0, "a second agreement must not write again"
+
+
+def test_first_consent_is_written_exactly_once(monkeypatch, stubbed):
+    writes = {"n": 0}
+    monkeypatch.setattr(main.store, "has_consent", lambda uid: False)
+    monkeypatch.setattr(
+        main.store, "write_consent", lambda uid: writes.__setitem__("n", writes["n"] + 1)
+    )
+    answer = inner("record_consent")(
+        request({"consentVersion": config.CONSENT_VERSION})
+    )
+    assert answer == {"ok": True, "consentVersion": config.CONSENT_VERSION}
+    assert writes["n"] == 1
+
+
+def test_an_unknown_version_is_refused_even_when_consent_is_on_file(monkeypatch, stubbed):
+    monkeypatch.setattr(main.store, "has_consent", lambda uid: True)
+    error = raises(
+        lambda: inner("record_consent")(request({"consentVersion": 2})),
+        https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+    )
+    assert error.message == reasons.CONSENT_MISSING
+
+
+def test_delete_account_needs_only_a_signed_in_account(monkeypatch, stubbed):
+    # Protected List 6: erasure is not gated on verification.
+    from account import deletion
+
+    ran = {}
+
+    class _Backend:
+        pass
+
+    monkeypatch.setattr(deletion, "FirebaseBackend", _Backend)
+    monkeypatch.setattr(
+        deletion, "run", lambda uid, backend: ran.setdefault("uid", uid) and {"state": "done", "journal": deletion.JOURNAL}
+    )
+    answer = inner("delete_account")(request({}, token={}))
+    assert ran["uid"] == "uid-1"
+    assert answer["state"] == "done"
+
+
+def test_delete_account_failure_is_internal_with_a_code(monkeypatch, stubbed):
+    from account import deletion
+
+    monkeypatch.setattr(deletion, "FirebaseBackend", lambda: object())
+
+    def boom(uid, backend):
+        raise RuntimeError("outage with details")
+
+    monkeypatch.setattr(deletion, "run", boom)
+    error = raises(
+        lambda: inner("delete_account")(request({})),
+        https_fn.FunctionsErrorCode.INTERNAL,
+    )
+    assert error.message == reasons.INTERNAL_ERROR
+
+
+# ------------------------------------------------- S6: per-uid caps first
+
+
+@pytest.mark.parametrize(
+    "name,field,limit",
+    [
+        ("start_verification", "starts", "PER_UID_DAILY_START_LIMIT"),
+        ("verify_identity", "verifies", "PER_UID_DAILY_VERIFY_LIMIT"),
+    ],
+)
+def test_one_account_over_its_daily_cap_never_touches_the_global_counter(
+    name, field, limit, monkeypatch, stubbed
+):
+    def over(uid, f):
+        stubbed["per_uid_field"] = f
+        return getattr(config, limit) + 1
+
+    monkeypatch.setattr(main.store, "uid_daily_count_and_increment", over)
+    error = raises(
+        lambda: inner(name)(request(body())),
+        https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+    )
+    assert error.message == reasons.PER_UID_DAILY_LIMIT
+    assert stubbed["per_uid_field"] == field
+    assert stubbed["daily"] == 0, "one account must not move the global counter"
+    assert stubbed["decoded"] == 0
+
+
+def test_the_global_counter_runs_after_the_per_uid_pass(stubbed):
+    with pytest.raises(AssertionError, match="pipeline was reached"):
+        inner("verify_identity")(request(body()))
+    assert stubbed["order"] == ["per_uid", "global"]
+
+
+def test_start_verification_checks_per_uid_then_global(monkeypatch, stubbed):
+    monkeypatch.setattr(
+        main.store, "FirestoreLedger", lambda: (_ for _ in ()).throw(AssertionError("x"))
+    )
+    with pytest.raises(AssertionError):
+        inner("start_verification")(request({}))
+    assert stubbed["order"] == ["per_uid", "global"]
+    assert stubbed["per_uid_field"] == "starts"
+
+
+def test_the_per_uid_caps_sit_well_under_the_kill_switch():
+    assert config.PER_UID_DAILY_START_LIMIT < config.DAILY_VERIFICATION_LIMIT
+    assert config.PER_UID_DAILY_VERIFY_LIMIT < config.DAILY_VERIFICATION_LIMIT
+    assert config.DAILY_VERIFICATION_LIMIT == 2_000, "the kill switch stays"

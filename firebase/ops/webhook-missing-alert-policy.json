@@ -1,0 +1,26 @@
+{
+  "displayName": "Own Hub: review webhook missing or failing",
+  "documentation": {
+    "content": "A woman was queued for a woman reviewer and no review-queue webhook is configured, so nobody was notified. Set the flag-webhook-url secret (or FLAG_WEBHOOK_URL) and grant the functions service account secretAccessor on it. Check the queue with tools/review_queue.py list.",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "conditions": [
+    {
+      "displayName": "Log entry with jsonPayload.event=flag_webhook_missing",
+      "conditionMatchedLog": {
+        "filter": "resource.type=\"cloud_run_revision\" AND jsonPayload.event=\"flag_webhook_missing\""
+      }
+    }
+  ],
+  "alertStrategy": {
+    "notificationRateLimit": {
+      "period": "3600s"
+    },
+    "autoClose": "604800s"
+  },
+  "notificationChannels": [
+    "projects/own-hub/notificationChannels/REPLACE_ME"
+  ],
+  "enabled": true
+}

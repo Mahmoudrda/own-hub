@@ -1,0 +1,31 @@
+{
+  "firestore": {
+    "rules": "firebase/firestore.rules",
+    "indexes": "firebase/firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "identity",
+      "runtime": "python312",
+      "ignore": [
+        ".venv",
+        "venv",
+        "__pycache__",
+        "*.pyc",
+        ".pytest_cache",
+        "tests",
+        "tools"
+      ]
+    }
+  ],
+  "emulators": {
+    "auth": { "port": 9299 },
+    "firestore": { "port": 8288, "websocketPort": 9350 },
+    "functions": { "port": 5101 },
+    "hub": { "port": 4410 },
+    "logging": { "port": 4510 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

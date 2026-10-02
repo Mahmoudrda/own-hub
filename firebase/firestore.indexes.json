@@ -85,6 +85,36 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "_why": "S13. expire_stale_reviews: verification_flags where state == PENDING_REVIEW and slaExpiresAt < now. Equality plus a range on a second field needs a composite; without it the hourly SLA job fails on every run and no stale review ever becomes RETRY_REQUIRED.",
+      "collectionGroup": "verification_flags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "slaExpiresAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The reviewer queue (list_verification_flags and tools/review_queue.py): open flags, oldest first, so the woman who has waited longest is called first.",
+      "collectionGroup": "verification_flags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -278,6 +308,27 @@
       "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
       "collectionGroup": "recipes",
       "fieldPath": "tier",
+      "indexes": []
+    },
+    {
+      "_why": "S16 TTL. A liveness session is single use and dead after CHALLENGE_TTL_SEC; Firestore TTL deletes it from expiresAt. Never queried on, so automatic indexing is off as well.",
+      "collectionGroup": "verificationSessions",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "S16 TTL. A verification job gets expireAt only once it is decided (config.DECIDED_RECORD_RETENTION_DAYS, pending counsel). A job still waiting on a review has none and is never swept. Never queried on.",
+      "collectionGroup": "verificationJobs",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "S16 TTL. A review flag gets expireAt only when it leaves PENDING_REVIEW (decided or expired). nidRegistry and verificationReviewAccess deliberately have no TTL. Never queried on.",
+      "collectionGroup": "verification_flags",
+      "fieldPath": "expireAt",
+      "ttl": true,
       "indexes": []
     }
   ]

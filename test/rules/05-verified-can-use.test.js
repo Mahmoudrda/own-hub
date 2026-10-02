@@ -22,7 +22,18 @@ const DAY2 = '2026-09-24';
 const WEEK = '2026-W39';
 const SCHEMA_V = 1;   // kCloudSchema in cloud_documents.dart
 
-before(async () => { await getEnv(); await clearAll(); });
+// S17: her health-data backup consent (written by record_health_consent in
+// production). These tests are about the gate and the field shapes, so they
+// run with consent granted; 12-health-consent covers the refusals.
+async function grantHealthConsent(who) {
+  await seed(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), `users/${who}/consents/health-v1`), {
+      version: 1, state: 'granted', at: new Date(), withdrawnAt: null,
+    });
+  });
+}
+
+before(async () => { await getEnv(); await clearAll(); await grantHealthConsent(HER); });
 after(async () => { const e = await getEnv(); await e.cleanup(); });
 
 describe('her own data — the shapes the client actually writes', () => {

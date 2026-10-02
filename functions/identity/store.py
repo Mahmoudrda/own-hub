@@ -20,7 +20,9 @@ rather than trusting every call site to remember.
 from __future__ import annotations
 
 import datetime as dt
+import random
 import threading
+from dataclasses import dataclass
 from typing import Optional
 
 from google.cloud import firestore
@@ -100,6 +102,7 @@ class FirestoreLedger:
             # it calls Vision. See Budget.operations for why checking it inside
             # `spend` is too late to stop the bill.
             operations=tuple(data.get("operations", []) or ()),
+            bonus_ocr_submissions=int(data.get("bonusOcrSubmissions", 0)),
         )
 
     def spend(
@@ -118,6 +121,7 @@ class FirestoreLedger:
                 ocr_submissions=int(data.get("ocr_submissions", 0)),
                 liveness_attempts=int(data.get("liveness_attempts", 0)),
                 operations=tuple(applied),
+                bonus_ocr_submissions=int(data.get("bonusOcrSubmissions", 0)),
             )
 
             # Idempotency. A retried tap carries the same operation_id and must
@@ -142,6 +146,7 @@ class FirestoreLedger:
                 ocr_submissions=updated.ocr_submissions,
                 liveness_attempts=updated.liveness_attempts,
                 operations=tuple((applied + [operation_id])[-50:]),
+                bonus_ocr_submissions=budget.bonus_ocr_submissions,
             )
             # Bounded: keeping every operation id forever would grow this
             # document without limit, and a Firestore document is capped at 1 MiB.
@@ -155,6 +160,10 @@ class FirestoreLedger:
                     "operations": (applied + [operation_id])[-50:],
                     "updatedAt": firestore.SERVER_TIMESTAMP,
                 },
+                # MERGE. The ledger document also carries openFlagId,
+                # duplicateFlagRaised, bonusOcrSubmissions and the per-uid
+                # daily counters; a full overwrite here would erase them.
+                merge=True,
             )
             return True, updated, None
 
@@ -312,6 +321,7 @@ _ALLOWED_JOB_FIELDS = frozenset(
         "decidedBy",
         "pepper_version",
         "schemaV",
+        "expireAt",
     }
 )
 """Spec §4's row 2, enumerated.
@@ -354,15 +364,32 @@ def write_job(uid: str, decision, outcome, attempt: int) -> str:
     reads this field to decide whether it may say "your ID and selfie were
     deleted after the check", and it now may.
     """
-    payload = _allowlisted(
-        {
+    payload = job_payload(
+        uid, decision, attempt, outcome.spent_micro_usd, outcome.provider_ids
+    )
+    _, reference = db().collection(config.COL_VERIFICATION_JOBS).add(payload)
+    return reference.id
+
+
+def job_payload(
+    uid: str, decision, attempt: int, spent_micro_usd: int = 0, provider_ids=None
+) -> dict:
+    """The allowlisted job document, without writing it.
+
+    Split out of write_job so a PENDING_REVIEW job can be written inside the
+    same transaction as its flag (one open flag per uid).
+
+    S16: a decided job carries `expireAt` for the Firestore TTL policy. A job
+    waiting on review does not; it gets one when its flag is decided or
+    expires."""
+    payload = {
             "uid": uid,
             "state": decision.outcome,
             "reasons": list(decision.reasons),
             "flags": list(decision.flags),
             "attempt": attempt,
-            "spent_micro_usd": outcome.spent_micro_usd,
-            "provider_ids": outcome.provider_ids,
+            "spent_micro_usd": spent_micro_usd,
+            "provider_ids": dict(provider_ids or {}),
             "liveness_band": _band_name(decision, "liveness"),
             "match_band": _band_name(decision, "match"),
             "pepper_version": config.PEPPER_VERSION,
@@ -372,9 +399,16 @@ def write_job(uid: str, decision, outcome, attempt: int) -> str:
             "imagesDeletedAt": firestore.SERVER_TIMESTAMP,
             "decidedBy": "system",
         }
+    if decision.outcome != decisions.PENDING_REVIEW:
+        payload["expireAt"] = decided_expiry()
+    return _allowlisted(payload)
+
+
+def decided_expiry() -> dt.datetime:
+    """When a decided job or flag may be swept. PENDING COUNSEL, see config."""
+    return dt.datetime.now(dt.timezone.utc) + dt.timedelta(
+        days=config.DECIDED_RECORD_RETENTION_DAYS
     )
-    _, reference = db().collection(config.COL_VERIFICATION_JOBS).add(payload)
-    return reference.id
 
 
 def _band_name(decision, which: str) -> str:
@@ -425,15 +459,54 @@ def write_user_verification(uid: str) -> None:
     fields on the user document that no client reads and that spec §4 does not
     allow.
     """
+    set_verification_state(uid, "approved", decided=True)
+
+
+VERIFICATION_STATES = frozenset({"approved", "pending", "rejected", "retry"})
+"""users/{uid}.verification.state (S8). Mirrors review.VERIFICATION_STATES and
+contracts/identity_contract.json documents.verificationState.states."""
+
+
+def set_verification_state(
+    uid: str,
+    state: str,
+    *,
+    route=None,
+    scheduled_for=None,
+    decided: bool = False,
+    reset_booking: bool = False,
+) -> None:
+    """S8: the one server-written place she can read where her check stands.
+
+    A merge of `verification.*` keys only. No reason codes and no flag id: the
+    map is hers to read (rules: isSelf) and must not teach anyone which check
+    failed. The client can never write it (rules: verificationUntouched)."""
+    if state not in VERIFICATION_STATES:
+        raise ValueError(f"unknown verification state {state!r}")
+    fields: dict = {"state": state, "updatedAt": firestore.SERVER_TIMESTAMP}
+    if reset_booking:
+        fields["reviewRoute"] = None
+        fields["reviewScheduledFor"] = None
+    if route is not None:
+        fields["reviewRoute"] = route
+    if scheduled_for is not None:
+        fields["reviewScheduledFor"] = scheduled_for
+    if decided:
+        fields["decidedAt"] = firestore.SERVER_TIMESTAMP
+        if state == "approved":
+            fields["imagesDeletedAt"] = firestore.SERVER_TIMESTAMP
     db().collection(config.COL_USERS).document(uid).set(
-        {
-            "verification": {
-                "decidedAt": firestore.SERVER_TIMESTAMP,
-                "imagesDeletedAt": firestore.SERVER_TIMESTAMP,
-            }
-        },
-        merge=True,
+        {"verification": fields}, merge=True
     )
+
+
+def verification_state(uid: str) -> Optional[str]:
+    snapshot = db().collection(config.COL_USERS).document(uid).get()
+    if not snapshot.exists:
+        return None
+    verification = (snapshot.to_dict() or {}).get("verification") or {}
+    state = verification.get("state") if isinstance(verification, dict) else None
+    return state if state in VERIFICATION_STATES else None
 
 
 def write_consent(uid: str) -> None:
@@ -450,6 +523,54 @@ def write_consent(uid: str) -> None:
             "version": config.CONSENT_VERSION,
             "at": firestore.SERVER_TIMESTAMP,
         }
+    )
+
+
+HEALTH_COLLECTIONS = ("checkins", "measurements", "cycle", "periods")
+HEALTH_PROFILE_KEYS = ("lifeStage", "allergies")
+
+
+def write_health_consent(uid: str, granted: bool) -> None:
+    """S17: users/{uid}/consents/health-v1. Server-written only.
+
+    Granted is a full set (a fresh grant after a withdrawal starts clean).
+    Withdrawn is a merge that keeps when it was first given."""
+    reference = (
+        db()
+        .collection(config.COL_USERS)
+        .document(uid)
+        .collection(config.COL_CONSENTS)
+        .document(f"health-v{config.HEALTH_CONSENT_VERSION}")
+    )
+    if granted:
+        reference.set(
+            {
+                "version": config.HEALTH_CONSENT_VERSION,
+                "state": "granted",
+                "at": firestore.SERVER_TIMESTAMP,
+                "withdrawnAt": None,
+            }
+        )
+    else:
+        reference.set(
+            {
+                "version": config.HEALTH_CONSENT_VERSION,
+                "state": "withdrawn",
+                "withdrawnAt": firestore.SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
+
+
+def purge_health_data(uid: str) -> None:
+    """She withdrew: delete the cloud copy of her health data. The copy on her
+    phone stays, because it is the source of truth (Protected List 11)."""
+    user = db().collection(config.COL_USERS).document(uid)
+    for name in HEALTH_COLLECTIONS:
+        db().recursive_delete(user.collection(name))
+    user.set(
+        {"profile": {key: firestore.DELETE_FIELD for key in HEALTH_PROFILE_KEYS}},
+        merge=True,
     )
 
 
@@ -500,39 +621,297 @@ def record_unknown_governorate(code: str) -> None:
 
 
 def daily_count_and_increment(field: str = "sessions") -> int:
-    """Spec §6's global kill switch counter.
+    """Spec §6's global kill switch counter, sharded (S6).
 
-    One document per UTC day. A distributed counter would be the textbook answer
-    at high write rates, and at 278 verifications a day it would be premature:
-    Firestore's per-document write limit is around one per second sustained, and
-    278/day is 0.003/second.
+    TWO FIELDS, and the second one is the one that matters. `sessions` counts
+    start_verification, which is free. `verifications` counts verify_identity,
+    the only callable that spends money; a caller who never starts a session
+    still reaches Cloud Vision, so the kill switch must count that door.
 
-    TWO FIELDS ON THE SAME DOCUMENT, and the second one is the one that matters.
-
-    `sessions` counts start_verification, which mints a challenge and costs
-    nothing. `verifications` counts verify_identity, which is the only callable
-    in this system that spends money — two Cloud Vision units per submission.
-
-    Counting only `sessions` put the kill switch on the free door. Nothing in
-    verify_identity's path requires a session to have been minted: OCR is step 3
-    and the liveness session is not consulted until step 6, so a caller who
-    never touches start_verification reaches both paid Vision calls with the
-    global limit never once consulted. Per-uid caps still bound one account, but
-    the blast-radius limit spec §6 asks for is a GLOBAL one, and a global limit
-    that only counts the free call cannot bound a bill.
+    One document per UTC day used to hold both counters in a read-modify-write
+    transaction. Every verification in the country contended on it. Now each
+    call adds one to a random shard, verificationStats/{day}_s{0..N-1}, with a
+    server-side Increment (no transaction, no contention), then reads all the
+    shards and returns the sum including this call. Per-uid caps are checked
+    before this, so one account cannot run it up.
     """
-    today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
-    reference = db().collection(config.COL_STATS).document(today)
+    from google.cloud import firestore as _fs
 
-    @firestore.transactional
-    def txn(transaction):
-        snapshot = reference.get(transaction=transaction)
-        count = int((snapshot.to_dict() or {}).get(field, 0)) if snapshot.exists else 0
-        transaction.set(reference, {field: count + 1}, merge=True)
-        return count + 1
-
-    return txn(db().transaction())
+    today = _today()
+    stats = db().collection(config.COL_STATS)
+    shard = random.randrange(config.DAILY_COUNTER_SHARDS)
+    stats.document(f"{today}_s{shard}").set({field: _fs.Increment(1)}, merge=True)
+    refs = [
+        stats.document(f"{today}_s{i}") for i in range(config.DAILY_COUNTER_SHARDS)
+    ]
+    total = 0
+    for snapshot in db().get_all(refs):
+        if snapshot.exists:
+            total += int((snapshot.to_dict() or {}).get(field, 0))
+    return total
 
 
 DAILY_VERIFY_FIELD = "verifications"
 """The counter verify_identity increments. See daily_count_and_increment."""
+
+
+# ------------------------------------------------------------ review loop
+
+
+def _today() -> str:
+    return dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+
+
+def uid_daily_count_and_increment(uid: str, field: str) -> int:
+    """One account's count of `field` today, after adding this call.
+
+    On verificationLedger/{uid}.daily = {day, starts, verifies, reviews}, reset
+    when the UTC day changes. Transactional and merge-only, so nothing else on
+    the ledger document is touched."""
+    reference = db().collection(config.COL_LEDGER).document(uid)
+    today = _today()
+
+    @firestore.transactional
+    def txn(transaction):
+        snapshot = reference.get(transaction=transaction)
+        data = snapshot.to_dict() if snapshot.exists else {}
+        daily = dict((data or {}).get("daily") or {})
+        if daily.get("day") != today:
+            daily = {"day": today}
+        count = int(daily.get(field, 0)) + 1
+        daily[field] = count
+        transaction.set(reference, {"daily": daily}, merge=True)
+        return count
+
+    return txn(db().transaction())
+
+
+@dataclass(frozen=True)
+class Gate:
+    """What verify_identity and start_verification must know before any work."""
+
+    state: Optional[str] = None
+    open_flag_id: Optional[str] = None
+    duplicate_flag_raised: bool = False
+
+
+def _pending_flag(flag_id: Optional[str], transaction=None) -> bool:
+    if not flag_id:
+        return False
+    snapshot = (
+        db().collection(config.COL_FLAGS).document(flag_id).get(transaction=transaction)
+    )
+    return bool(
+        snapshot.exists
+        and (snapshot.to_dict() or {}).get("state") == decisions.PENDING_REVIEW
+    )
+
+
+def verification_gate(uid: str) -> Gate:
+    ledger_snapshot = db().collection(config.COL_LEDGER).document(uid).get()
+    data = (ledger_snapshot.to_dict() or {}) if ledger_snapshot.exists else {}
+    open_id = data.get("openFlagId")
+    return Gate(
+        state=verification_state(uid),
+        open_flag_id=open_id if _pending_flag(open_id) else None,
+        duplicate_flag_raised=bool(data.get("duplicateFlagRaised")),
+    )
+
+
+def open_flag(
+    uid: str,
+    job: Optional[dict],
+    flag: dict,
+    *,
+    job_id: Optional[str] = None,
+    mark_duplicate: bool = False,
+) -> tuple[str, bool]:
+    """One open flag per uid (S7), in one transaction on the ledger document.
+
+    If `openFlagId` already points at a PENDING_REVIEW flag, returns it and
+    writes nothing. Otherwise writes the job (when given) and the flag under one
+    id, and records it as her open flag."""
+    ledger_ref = db().collection(config.COL_LEDGER).document(uid)
+    jobs = db().collection(config.COL_VERIFICATION_JOBS)
+    job_ref = jobs.document(job_id) if job_id else jobs.document()
+    flag_ref = db().collection(config.COL_FLAGS).document(job_ref.id)
+
+    @firestore.transactional
+    def txn(transaction):
+        snapshot = ledger_ref.get(transaction=transaction)
+        data = (snapshot.to_dict() or {}) if snapshot.exists else {}
+        current = data.get("openFlagId")
+        if current and _pending_flag(current, transaction):
+            return current, False
+        if job is not None:
+            transaction.set(job_ref, job)
+        payload = dict(flag)
+        payload["jobId"] = job_ref.id
+        payload["createdAt"] = firestore.SERVER_TIMESTAMP
+        transaction.set(flag_ref, payload)
+        update = {"openFlagId": job_ref.id, "updatedAt": firestore.SERVER_TIMESTAMP}
+        if mark_duplicate:
+            update["duplicateFlagRaised"] = True
+        transaction.set(ledger_ref, update, merge=True)
+        return job_ref.id, True
+
+    return txn(db().transaction())
+
+
+def _clear_open_flag(uid: str, flag_id: str) -> None:
+    reference = db().collection(config.COL_LEDGER).document(uid)
+
+    @firestore.transactional
+    def txn(transaction):
+        snapshot = reference.get(transaction=transaction)
+        if snapshot.exists and (snapshot.to_dict() or {}).get("openFlagId") == flag_id:
+            transaction.set(reference, {"openFlagId": None}, merge=True)
+
+    txn(db().transaction())
+
+
+class FirestoreReviewStore:
+    """review.ReviewStore over Firestore and Firebase Auth."""
+
+    def verification_state(self, uid):
+        return verification_state(uid)
+
+    def set_verification_state(self, uid, state, **kwargs):
+        set_verification_state(uid, state, **kwargs)
+
+    def uid_daily_count_and_increment(self, uid, field):
+        return uid_daily_count_and_increment(uid, field)
+
+    def open_flag_id(self, uid):
+        return verification_gate(uid).open_flag_id
+
+    def ocr_submissions(self, uid):
+        return FirestoreLedger().read(uid).ocr_submissions
+
+    def new_job_payload(self, uid, decision, attempt):
+        return job_payload(uid, decision, attempt)
+
+    def open_flag(self, uid, job_payload, flag_payload, **kwargs):
+        return open_flag(uid, job_payload, flag_payload, **kwargs)
+
+    def get_flag(self, flag_id):
+        snapshot = db().collection(config.COL_FLAGS).document(flag_id).get()
+        return (snapshot.to_dict() or {}) if snapshot.exists else None
+
+    def list_open(self, limit):
+        query = (
+            db()
+            .collection(config.COL_FLAGS)
+            .where("state", "==", decisions.PENDING_REVIEW)
+            .order_by("createdAt")
+            .limit(limit)
+        )
+        return [(s.id, s.to_dict() or {}) for s in query.stream()]
+
+    def mark_scheduled(self, flag_id, route, when, reviewer_uid):
+        db().collection(config.COL_FLAGS).document(flag_id).update(
+            {
+                "route": route,
+                "scheduledFor": when,
+                "reviewerUid": reviewer_uid,
+                "scheduledAt": firestore.SERVER_TIMESTAMP,
+                "reasons": firestore.ArrayUnion([reasons.REVIEW_SCHEDULED]),
+            }
+        )
+
+    def close_flag(self, flag_id, *, uid, state, reviewer_uid, reviewer_reason):
+        db().collection(config.COL_FLAGS).document(flag_id).update(
+            {
+                "state": state,
+                "decidedBy": reviewer_uid,
+                "decidedAt": firestore.SERVER_TIMESTAMP,
+                "reviewerReason": reviewer_reason,
+                "expireAt": decided_expiry(),
+            }
+        )
+        job = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
+        if job.get().exists:
+            job.update(
+                {"state": state, "decidedBy": "reviewer", "expireAt": decided_expiry()}
+            )
+        _clear_open_flag(uid, flag_id)
+
+    def stale_flags(self, now, limit):
+        query = (
+            db()
+            .collection(config.COL_FLAGS)
+            .where("state", "==", decisions.PENDING_REVIEW)
+            .where("slaExpiresAt", "<", now)
+            .limit(limit)
+        )
+        return [(s.id, s.to_dict() or {}) for s in query.stream()]
+
+    def expire_flag(self, flag_id, uid):
+        db().collection(config.COL_FLAGS).document(flag_id).update(
+            {
+                "state": decisions.RETRY_REQUIRED,
+                "reasons": firestore.ArrayUnion([reasons.REVIEW_SLA_EXPIRED]),
+                "expiredAt": firestore.SERVER_TIMESTAMP,
+                "expireAt": decided_expiry(),
+            }
+        )
+        job = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
+        if job.get().exists:
+            job.update({"state": decisions.RETRY_REQUIRED, "expireAt": decided_expiry()})
+        if uid:
+            _clear_open_flag(uid, flag_id)
+
+    def grant_bonus(self, uid, flag_id):
+        reference = db().collection(config.COL_LEDGER).document(uid)
+
+        @firestore.transactional
+        def txn(transaction):
+            snapshot = reference.get(transaction=transaction)
+            data = (snapshot.to_dict() or {}) if snapshot.exists else {}
+            budget = ledger.Budget(
+                spent_micro_usd=int(data.get("spent_micro_usd", 0)),
+                bonus_ocr_submissions=int(data.get("bonusOcrSubmissions", 0)),
+            )
+            granted = tuple(data.get("bonusGrantedFor", []) or ())
+            if not ledger.may_grant_bonus(budget, flag_id, granted):
+                return False
+            transaction.set(
+                reference,
+                {
+                    "bonusOcrSubmissions": budget.bonus_ocr_submissions + 1,
+                    "bonusGrantedFor": list(granted + (flag_id,))[-20:],
+                },
+                merge=True,
+            )
+            return True
+
+        return txn(db().transaction())
+
+    def claim(self, id_hmac, uid):
+        return FirestoreRegistry().claim(id_hmac, uid)
+
+    def mint_verified(self, uid):
+        mint_claims(uid, True)
+
+    def phone_for(self, uid):
+        from firebase_admin import auth
+
+        return auth.get_user(uid).phone_number
+
+    def log_access(self, reviewer_uid, flag_id, action):
+        db().collection(config.COL_REVIEW_ACCESS).add(
+            {
+                "flagId": flag_id,
+                "reviewerUid": reviewer_uid,
+                "action": action,
+                "at": firestore.SERVER_TIMESTAMP,
+            }
+        )
+
+    def pepper(self):
+        return pepper()
+
+    def notify(self, flag_id, codes):
+        from . import webhook
+
+        webhook.post_flag(flag_id, codes)

@@ -451,6 +451,19 @@ ledger.worst_case_micro_usd() computes this rather than restating it, so a
 future paid provider that breaks the ceiling fails a test instead of quietly
 overspending."""
 
+PER_UID_DAILY_START_LIMIT = 6
+PER_UID_DAILY_VERIFY_LIMIT = 6
+"""S6: one account's daily allowance of start_verification and verify_identity,
+checked BEFORE the global kill switch. Without them one account could run the
+global counter to DAILY_VERIFICATION_LIMIT and lock every other woman out for
+the day. Six covers a real woman's retakes (MAX_OCR_SUBMISSIONS is 4 for life);
+the client shows "try again tomorrow", never a review."""
+
+DAILY_COUNTER_SHARDS = 10
+"""S6: the global counter is spread over this many documents per day
+(verificationStats/{day}_s{n}) so concurrent verifications do not contend on
+one document's write limit. The kill switch compares the SUM."""
+
 DAILY_VERIFICATION_LIMIT = 2_000
 """Spec §6's global kill switch. New sessions past this get "try again later"
 and an alert.
@@ -478,6 +491,20 @@ REVIEW_ROUTES = ("video", "gym")
 """Mirrors the Flutter app's own `ReviewerPath` enum (`video` | `gym`) so both
 sides use the same words for the same thing."""
 
+REVIEW_REQUEST_PATHS = ("declined", "error", "niqab")
+"""The three ways she can ask for a woman reviewer without an automatic check
+deciding it for her (contracts/identity_contract.json, request_review.paths):
+
+  niqab     she chose the woman-reviewer route at C09 (NIQAB_PATH_REQUESTED)
+  declined  she declined the camera at C09b (CAMERA_DECLINED)
+  error     the automatic check could not run for her (REVIEW_REQUESTED_AFTER_ERROR)
+
+None of them carries an image, a frame or a phone number."""
+
+PER_UID_DAILY_REVIEW_LIMIT = 3
+"""request_review calls per account per UTC day. A real woman asks once; the
+cap bounds a script that would otherwise fill the queue and the webhook."""
+
 REVIEW_SLA_HOURS = 72
 """The window a flagged case must be decided in, carried over from spec §5's
 72-hour evidence ceiling even though there is no longer any evidence to expire.
@@ -487,6 +514,29 @@ cost cap.
 RETRY_REQUIRED rather than a rejection, because an undecided flag is OUR failure
 to review in time, not hers. Turning our backlog into her rejection would be the
 wrong way round."""
+
+# ------------------------------------------------- retention and deletion
+
+DECIDED_RECORD_RETENTION_DAYS = 180
+"""How long a DECIDED verification job or review flag is kept before the
+Firestore TTL policy deletes it (field `expireAt`). A job or flag still waiting
+on a review has no `expireAt` and is never swept. nidRegistry and the review
+access log get no TTL at all.
+
+PENDING COUNSEL (PDPL retention); not a legal opinion. 180 days is a
+placeholder chosen to cover disputes and a store review, not a number counsel
+has approved."""
+
+DELETED_ACCOUNT_MAY_REJOIN = False
+"""Whether deleting an account frees her national ID for a new account.
+
+False keeps today's behaviour: the registry entry is CLOSED (state 'closed',
+uid None), so the card cannot register again while no personal data stays
+linked to it. True deletes the entry instead.
+
+PENDING COUNSEL: the legal pre-review notes that a closed entry means a woman
+who deleted voluntarily can never rejoin, which VERIFICATION_SPEC.md may
+contradict. Not a legal opinion."""
 
 # --------------------------------------------------- collections and secrets
 
@@ -514,6 +564,15 @@ resource to match the prose would break a secret that already exists, so the
 mapping is recorded here instead.
 """
 
+SECRET_FLAG_WEBHOOK = "flag-webhook-url"
+"""Secret Manager secret holding the review-queue webhook URL (S14). The
+FLAG_WEBHOOK_URL environment variable overrides it."""
+
+FLAG_WEBHOOK_REQUIRED = True
+"""S14: in production a missing webhook is an ERROR log line on every flag
+(`flag_webhook_missing`), which the webhook-missing alert policy pages on. It
+never fails a verification."""
+
 PEPPER_VERSION = 1
 """Stored beside every hash, per spec §4.
 
@@ -527,3 +586,11 @@ CONSENT_VERSION = 1
 """Bumped whenever the consent text changes. Spec §4 allows exactly three fields
 in a consent record — uid, version, timestamp — so the version is the only thing
 tying a record to what she was actually shown."""
+
+HEALTH_CONSENT_VERSION = 1
+"""Version of the separate health-data and transfer-abroad consent (S17,
+PDPL Art. 12). Recorded at users/{uid}/consents/health-v1 by
+record_health_consent before her first cycle, check-in, measurement, period,
+life-stage or allergy write reaches the cloud; the rules refuse those writes
+without it. Bumped whenever that wording changes. The wording is PENDING
+COUNSEL and PDPC approval of the consent mechanism."""

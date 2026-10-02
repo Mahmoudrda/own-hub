@@ -20,7 +20,7 @@
 
 import { test, before, after, describe } from 'node:test';
 import {
-  getEnv, clearAll, verified, uid, observe, assert,
+  getEnv, clearAll, seed, verified, uid, observe, assert,
 } from './harness.js';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -31,7 +31,18 @@ const SCHEMA_V = 1;
 const BACKDATED = new Date('2020-01-01T00:00:00Z');
 const POSTDATED = new Date('2099-01-01T00:00:00Z');
 
-before(async () => { await getEnv(); await clearAll(); });
+// S17: her health-data backup consent (written by record_health_consent in
+// production). These tests are about the gate and the field shapes, so they
+// run with consent granted; 12-health-consent covers the refusals.
+async function grantHealthConsent(who) {
+  await seed(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), `users/${who}/consents/health-v1`), {
+      version: 1, state: 'granted', at: new Date(), withdrawnAt: null,
+    });
+  });
+}
+
+before(async () => { await getEnv(); await clearAll(); await grantHealthConsent(HER); });
 after(async () => { const e = await getEnv(); await e.cleanup(); });
 
 // Each entry: a base document that is otherwise valid for that collection,

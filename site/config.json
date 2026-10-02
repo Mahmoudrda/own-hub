@@ -127,6 +127,39 @@
       },
       "note": "To be added once counsel confirms the current channel."
     },
+    "pdpcPermit": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "Personal Data Protection Centre permit number and expiry",
+        "ar": "رقم تصريح مركز حماية البيانات الشخصية وتاريخ انتهائه"
+      },
+      "note": "PENDING COUNSEL. The permit or licence the PDPL requires before processing. Fill in once issued."
+    },
+    "videoCallService": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the video call service used for review calls",
+        "ar": "خدمة مكالمات الفيديو المستخدمة في المراجعة"
+      },
+      "note": "OWNER. Name the service the woman reviewers use (for example Google Meet or WhatsApp). It processes her image and voice during the call, so the policy must name it."
+    },
+    "videoCallServiceRegion": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "where that service processes the call",
+        "ar": "مكان معالجة تلك الخدمة للمكالمة"
+      },
+      "note": "OWNER. Where the video call service processes the call."
+    },
     "courtVenue": {
       "value": {
         "en": "",
@@ -177,7 +210,7 @@
         "en": "the countries data would reach, and the transfer mechanism",
         "ar": "الدول التي قد تصل إليها البيانات، وأساس النقل"
       },
-      "note": "Part B only. Counsel must confirm the transfer mechanism and any permit required, and then name the countries the data reaches."
+      "note": "PENDING COUNSEL. The transfer mechanism and permit for Germany and the European Union (Firestore, Functions, Vision) and the United States (Firebase Authentication). Fill in once counsel confirms."
     },
     "providerAuth": {
       "value": {
@@ -328,7 +361,7 @@
       "They are recorded here so that nothing written in the source documents is lost.",
       "Every one of them is still outstanding."
     ],
-    "legalReviewBanner": "privacy-policy.md, terms.md and delete-account.md each open with 'Draft for legal review. This is not legal advice. It has not been read by an Egyptian lawyer, and it must be before it is published.' That banner is not published on the website, because a published policy that announces it has not been reviewed is worse than no policy. THE REVIEW MUST HAPPEN BEFORE THIS SITE GOES LIVE.",
+    "legalReviewBanner": "Superseded on 2 October 2026 by the owner-approved fix plan: the privacy and delete-account pages now carry a visible 'Draft pending review by a licensed Egyptian lawyer' banner in both languages, because they describe the account build before counsel has signed it off. REMOVE THE BANNER ONLY AFTER COUNSEL APPROVES THE TEXT.",
     "storeFormsMustAgree": "privacy-policy.md A7: the day a server is connected, both store forms, the iOS privacy manifest and Part B of this policy must go live in the same release. A store form that disagrees with this page is a rejection.",
     "analyticsLawfulBasis": "privacy-policy.md B3: if analytics or diagnostics are ever added, counsel must decide whether the basis is consent or legitimate interest. If it is consent, the app needs an opt-in switch, and it does not have one.",
     "erasureVsSafetyRecords": "privacy-policy.md B6: does the PDPL right to erasure permit keeping a pseudonymous safety record and a re-registration block? One question for counsel, not two. The engineering can go either way.",

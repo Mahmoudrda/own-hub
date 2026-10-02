@@ -27,7 +27,9 @@ export const RULES_PATH = resolve(here, '../../firebase/firestore.rules');
 
 export const PROJECT_ID = 'own-hub';
 export const FIRESTORE_HOST = '127.0.0.1';
-export const FIRESTORE_PORT = 8088;
+// OWNHUB_RULES_FIRESTORE_PORT lets the suite run against a second emulator
+// (firebase.qa-emulator.json, 8288) without touching the one on 8088.
+export const FIRESTORE_PORT = Number(process.env.OWNHUB_RULES_FIRESTORE_PORT || 8088);
 
 let env = null;
 
