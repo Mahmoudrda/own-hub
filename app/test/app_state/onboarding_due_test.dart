@@ -29,7 +29,7 @@ void main() {
   );
 
   test('no account required: owed whenever setup is not done', () {
-    AppRouter.featureFlags = FeatureFlags.shipped.with_({
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
       Feature.accountRequired: false,
     });
     AppRouter.intakeRepository.reset();
@@ -39,7 +39,7 @@ void main() {
   test(
     'account required, not verified: not owed (C16 asks inside sign-up)',
     () {
-      AppRouter.featureFlags = FeatureFlags.shipped.with_({
+      AppRouter.featureFlags = FeatureFlags.allOff.with_({
         Feature.accountRequired: true,
       });
       AppRouter.intakeRepository.reset();
@@ -49,7 +49,7 @@ void main() {
   );
 
   test('account required, verified, setup not done: owed at launch', () {
-    AppRouter.featureFlags = FeatureFlags.shipped.with_({
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
       Feature.accountRequired: true,
     });
     AppRouter.intakeRepository.restore(Intake.defaults);
@@ -58,7 +58,7 @@ void main() {
   });
 
   test('account required, verified, setup done: not owed', () {
-    AppRouter.featureFlags = FeatureFlags.shipped.with_({
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
       Feature.accountRequired: true,
     });
     AppRouter.intakeRepository.restore(Intake.defaults, setupDone: true);
