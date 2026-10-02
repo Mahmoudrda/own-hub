@@ -271,8 +271,7 @@ class CloudStore {
   Future<void> forgetHealthUploads() async {
     _accepted.removeWhere(
       (path, _) =>
-          path.isEmpty ||
-          kHealthCollections.any((c) => path.startsWith('$c/')),
+          path.isEmpty || kHealthCollections.any((c) => path.startsWith('$c/')),
     );
     await _saveLedger();
   }
@@ -294,6 +293,22 @@ class CloudStore {
     final uid = _uid;
     if (uid == null || !_running) return;
     await _link(uid);
+  }
+
+  /// One pull and merge for [uid], waited on for at most [bound] (R9).
+  ///
+  /// For the moment right after sign-in, when the app has to choose between
+  /// setup and Home and her setup answers may be in the cloud rather than on
+  /// this phone. Past the bound the link carries on by itself and the choice
+  /// is made on what is here. Does nothing when the store is not running.
+  /// Never throws.
+  Future<void> linkWithin(String uid, Duration bound) async {
+    if (!_running) return;
+    try {
+      await _link(uid).timeout(bound);
+    } catch (_) {
+      // Slow or failed: the phone's answer stands.
+    }
   }
 
   /// Back to a fresh instance, holding nothing. Tests only.

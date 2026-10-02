@@ -916,6 +916,10 @@ class AppRouter {
         final navigator = Navigator.of(context);
         await readVerificationClaim();
         await readVerificationStatus();
+        // A returning verified woman with her backup on has her setup in the
+        // cloud. One bounded pull first, so she is not walked through setup
+        // again on a new phone (R9).
+        if (isVerified) await pullBeforeSetupChoice();
         if (!navigator.mounted || !context.mounted) return;
         if (!isVerified) {
           goTo(context, 'C08');
@@ -4563,6 +4567,26 @@ class AppRouter {
     // A withdrawal she made offline is sent now; the cloud copy goes then.
     await controller.retryPendingWithdraw();
     await controller.reconcile(uid);
+  }
+
+  /// How long C07 waits for the cloud before choosing setup or Home (R9).
+  static const Duration setupPullBound = Duration(seconds: 4);
+
+  /// The pull C07 waits on. Replaced in tests.
+  @visibleForTesting
+  static Future<void> Function(String uid, Duration bound) cloudPull =
+      CloudStore.instance.linkWithin;
+
+  /// One bounded pull of her cloud copy before C07 chooses setup or Home.
+  /// Returns within [setupPullBound] whatever the network does.
+  static Future<void> pullBeforeSetupChoice() async {
+    final uid = signedInUid ?? verificationBackend.currentUid;
+    if (uid == null || intakeRepository.setupDone) return;
+    try {
+      await cloudPull(uid, setupPullBound).timeout(setupPullBound);
+    } catch (_) {
+      // Out of time: the phone's answer stands.
+    }
   }
 
   /// The app's own first screen, computed at the moment it is asked for.
