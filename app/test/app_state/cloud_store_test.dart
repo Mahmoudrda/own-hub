@@ -695,6 +695,55 @@ void main() {
       );
     });
 
+    // N5. Off purges the cloud copy on the server; on again must send the
+    // whole history back, not only what changed since.
+    test('backup on, off, on again re-uploads the full health history',
+        () async {
+      await _fillEverything();
+      final cloud = _FakeCloud();
+      CloudStore.instance.transport = cloud;
+      await CloudStore.instance.linkFor(_uid);
+      await _settle();
+
+      bool health(CloudDoc d) =>
+          kHealthCollections.contains(d.collection) || d.isRoot;
+      final firstHealth = cloud.pushed.where(health).map((d) => d.path).toSet();
+      expect(firstHealth, isNotEmpty);
+
+      // Off: the server purges; this phone forgets what it had accepted.
+      await HealthBackupPreference.instance.set(false);
+      await CloudStore.instance.forgetHealthUploads();
+      // On again, nothing else changed.
+      await HealthBackupPreference.instance.set(true);
+      final before = cloud.pushed.length;
+      await CloudStore.instance.syncNow();
+      await _settle();
+
+      final again =
+          cloud.pushed.sublist(before).where(health).map((d) => d.path).toSet();
+      expect(again, firstHealth);
+    });
+
+    test('forgetting health uploads leaves the rest of the ledger alone',
+        () async {
+      await _fillEverything();
+      final cloud = _FakeCloud();
+      CloudStore.instance.transport = cloud;
+      await CloudStore.instance.linkFor(_uid);
+      await _settle();
+
+      await CloudStore.instance.forgetHealthUploads();
+      final before = cloud.pushed.length;
+      await CloudStore.instance.syncNow();
+      await _settle();
+      expect(
+        cloud.pushed
+            .sublist(before)
+            .where((d) => d.collection == 'sessions'),
+        isEmpty,
+      );
+    });
+
     test('deleting her account forgets the link and the ledger', () async {
       await _fillEverything();
       final cloud = _FakeCloud();

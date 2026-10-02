@@ -258,6 +258,25 @@ class CloudStore {
     }
   }
 
+  /// Forgets that the server holds her health documents and her root
+  /// document (N5).
+  ///
+  /// Turning the health backup off makes the server purge the cloud copy, but
+  /// this ledger still remembered every one of those documents as accepted,
+  /// so turning it back on uploaded only what had changed since: the rest of
+  /// her history was gone from the cloud for good. Called when the backup is
+  /// switched off and again just before it is switched on, so the next push
+  /// sends the whole history. The root document goes too, because it carries
+  /// her life stage and allergies only while the backup is on.
+  Future<void> forgetHealthUploads() async {
+    _accepted.removeWhere(
+      (path, _) =>
+          path.isEmpty ||
+          kHealthCollections.any((c) => path.startsWith('$c/')),
+    );
+    await _saveLedger();
+  }
+
   /// Tries again after something changed that this app cannot observe.
   ///
   /// There is exactly one such thing: the `verified` claim. It is minted by a

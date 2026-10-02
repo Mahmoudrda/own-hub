@@ -4386,7 +4386,14 @@ class AppRouter {
     if (!FirebaseBoot.isReady || signedInUid == null) return null;
     final controller = HealthBackupController(
       store: CallableHealthConsentStore(),
-      onEnabled: () => unawaited(CloudStore.instance.syncNow()),
+      // N5: the server purged the cloud copy when it was last switched off,
+      // so the whole history goes up again, not only what changed since.
+      onEnabled: () => unawaited(
+        CloudStore.instance.forgetHealthUploads().then(
+          (_) => CloudStore.instance.syncNow(),
+        ),
+      ),
+      onDisabled: () => unawaited(CloudStore.instance.forgetHealthUploads()),
     );
     // A03 is where she looks for it, so a withdrawal she made offline is
     // retried when it opens. Once per attempt, not on every redraw.
