@@ -90,6 +90,8 @@ class ReviewStore(Protocol):
 
     def uid_daily_count_and_increment(self, uid: str, field: str) -> int: ...
 
+    def write_review_consent(self, uid: str, path: str) -> None: ...
+
     def open_flag_id(self, uid: str) -> Optional[str]: ...
 
     def ocr_submissions(self, uid: str) -> int: ...
@@ -210,6 +212,10 @@ class RequestResult:
 def request(store: ReviewStore, uid: str, path: Any) -> RequestResult:
     """She asks for a woman reviewer: niqab, declined camera, or after an error.
 
+    Records users/{uid}/consents/review-v1 = {version, at, path} first (N7):
+    the request is the consent to be looked up and called. Wording PENDING
+    COUNSEL.
+
     Takes no images and no frames, so there is nothing here to store or leak.
     At most one open flag per account: a second request returns the open one.
     """
@@ -224,6 +230,12 @@ def request(store: ReviewStore, uid: str, path: Any) -> RequestResult:
 
     if store.uid_daily_count_and_increment(uid, "reviews") > config.PER_UID_DAILY_REVIEW_LIMIT:
         raise ReviewError(EXHAUSTED, reasons.PER_UID_DAILY_LIMIT)
+
+    # N7: asking for the call is her consent to it. Recorded server-side
+    # before any flag exists, so a woman who declined the camera at C09b is
+    # never phoned without a record that she asked to be. Wording PENDING
+    # COUNSEL (config.REVIEW_CONSENT_VERSION).
+    store.write_review_consent(uid, path)
 
     code = PATH_CODES[path]
     decision = decisions.Decision(decisions.PENDING_REVIEW, (code,), (code,))

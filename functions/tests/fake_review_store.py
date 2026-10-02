@@ -19,6 +19,7 @@ class FakeReviewStore:
         self.access: list[tuple] = []
         self.notified: list[tuple] = []
         self.phones: dict[str, str] = {}
+        self.review_consents: dict[str, str] = {}
         self.default_phone = phone
         self._ids = itertools.count(1)
 
@@ -46,6 +47,9 @@ class FakeReviewStore:
         key = (uid, field)
         self.daily[key] = self.daily.get(key, 0) + 1
         return self.daily[key]
+
+    def write_review_consent(self, uid, path):
+        self.review_consents[uid] = path
 
     def _ledger(self, uid):
         return self.ledgers.setdefault(uid, {})

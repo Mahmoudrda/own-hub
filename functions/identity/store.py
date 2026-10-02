@@ -526,6 +526,25 @@ def write_consent(uid: str) -> None:
     )
 
 
+def write_review_consent(uid: str, path: str) -> None:
+    """N7: users/{uid}/consents/review-v1 = {version, at, path}. Server-only.
+
+    Recorded by request_review before the flag is opened: asking for the call
+    is the consent to be phoned and reviewed live by a woman reviewer. The
+    wording the app shows before calling is PENDING COUNSEL. A full set, so a
+    later request records the path she chose last. Lives under users/{uid}, so
+    account deletion's recursive delete removes it (manifest row 10)."""
+    db().collection(config.COL_USERS).document(uid).collection(
+        config.COL_CONSENTS
+    ).document(f"review-v{config.REVIEW_CONSENT_VERSION}").set(
+        {
+            "version": config.REVIEW_CONSENT_VERSION,
+            "at": firestore.SERVER_TIMESTAMP,
+            "path": path,
+        }
+    )
+
+
 HEALTH_COLLECTIONS = ("checkins", "measurements", "cycle", "periods")
 HEALTH_PROFILE_KEYS = ("lifeStage", "allergies")
 
@@ -787,6 +806,9 @@ class FirestoreReviewStore:
 
     def uid_daily_count_and_increment(self, uid, field):
         return uid_daily_count_and_increment(uid, field)
+
+    def write_review_consent(self, uid, path):
+        write_review_consent(uid, path)
 
     def open_flag_id(self, uid):
         return verification_gate(uid).open_flag_id
