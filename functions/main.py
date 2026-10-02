@@ -557,6 +557,19 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
             decisions.PENDING_REVIEW, (reasons.DUPLICATE_ID,), (reasons.DUPLICATE_ID,)
         )
 
+    # N3: a failed liveness or face match with no attempts left is the machine
+    # being unable to tell, not a finding that she is not who she says. The
+    # brief promises a human review call when the automatic check is unsure, so
+    # it opens one review flag (one open flag per uid, state pending) instead of
+    # closing the account. `rejected` is kept for NOT_ELIGIBLE (digit 13 and the
+    # printed sex word agree, or underage), the second duplicate, and an
+    # explicit reviewer reject.
+    failed_check = decision.outcome == decisions.REJECTED_FAILED
+    if failed_check:
+        decision = decisions.Decision(
+            decisions.PENDING_REVIEW, decision.reasons, decision.reasons
+        )
+
     attempt = deps.ledger_store.read(uid).ocr_submissions
     if decision.outcome == decisions.PENDING_REVIEW:
         job_id = _raise_flag(
@@ -579,12 +592,12 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
         store.write_user_verification(uid)
     elif decision.outcome in (
         decisions.REJECTED_NOT_ELIGIBLE,
-        decisions.REJECTED_FAILED,
         decisions.REJECTED_DUPLICATE,
     ):
         # S8: final, and she is told so. No reason code reaches this map.
+        # REJECTED_FAILED never reaches here: it became a review above (N3).
         store.set_verification_state(uid, review.STATE_REJECTED, decided=True)
-    if decision.outcome == decisions.REJECTED_FAILED and outcome.id_hmac:
+    if failed_check and outcome.id_hmac:
         # Spec §3's cross-account signal: count failures against the CARD, not
         # the account, so a series of fresh sign-ups on one stolen card is
         # visible.
@@ -736,7 +749,10 @@ def _body(request: https_fn.CallableRequest) -> dict:
 def request_review(request: https_fn.CallableRequest) -> dict:
     """She asks for a woman reviewer: {path: "niqab" | "declined" | "error"}.
 
-    S3. Takes no images, no frames and no phone number. Writes a flag with the
+    S3. Takes no images, no frames and no phone number. N7: first records
+    users/{uid}/consents/review-v1 = {version, at, path}; asking for the call
+    is the consent to be looked up and called (the app shows the wording
+    before calling; wording PENDING COUNSEL). Then writes a flag with the
     path's reason code, at most one open flag per account, and sets her
     verification state to `pending`. Returns {state: "pending"}, or
     {state: "approved"} if she is already verified.
@@ -761,8 +777,17 @@ def list_verification_flags(request: https_fn.CallableRequest) -> dict:
     """The review queue, oldest first: reason codes, scores, and a handle.
 
     Never an image, because none exists, and never a phone number.
+
+    N8: a woman reviewer may read it (she works the queue with her own
+    account through tools/review_queue.py, which holds no admin credentials);
+    an admin still may. Every read is written to the access log.
     """
-    reviewer_uid = _require_admin(request)
+    reviewer_uid = _require_auth(request)
+    token = request.auth.token or {}
+    if not (token.get("womanReviewer") or token.get("admin")):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.UNAUTHENTICATED
+        )
     rows = review.list_open(store.FirestoreReviewStore(), reviewer_uid)
     return {"flags": rows}
 
@@ -816,12 +841,18 @@ def decide_verification_flag(request: https_fn.CallableRequest) -> dict:
     started = time.monotonic()
     reviewer_uid = _require_woman_reviewer(request)
     data = _body(request)
+    approve = data.get("approve")
+    if not isinstance(approve, bool):
+        # N11: bool("false") is True. Only a real JSON boolean decides.
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
     result = _review_call(
         review.decide,
         store.FirestoreReviewStore(),
         reviewer_uid,
         data.get("flagId"),
-        bool(data.get("approve")),
+        approve,
         data.get("nid"),
     )
     logs.decision(
@@ -841,11 +872,19 @@ def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     Our failure to review within 72 hours, not hers: her state becomes `retry`,
     and she earns one more OCR submission if it still fits under the cost cap.
     Nothing is ever reset. See review.expire.
+
+    Also finishes any approval whose verified claim failed to mint at decide
+    time (flag mintPending), then clears the mark. See review.retry_pending_mints.
     """
     import datetime as dt
 
-    count = review.expire(store.FirestoreReviewStore(), dt.datetime.now(dt.timezone.utc))
+    review_store = store.FirestoreReviewStore()
+    count = review.expire(review_store, dt.datetime.now(dt.timezone.utc))
     logs.decision("expire_stale_reviews", outcome=decisions.RETRY_REQUIRED, count=count)
+    # An approval whose verified claim could not be minted at decide time.
+    minted = review.retry_pending_mints(review_store)
+    if minted:
+        logs.decision("expire_stale_reviews", outcome=decisions.APPROVED, count=minted)
 
 
 # ------------------------------------------------------------- deletion
@@ -880,7 +919,8 @@ def delete_account(request: https_fn.CallableRequest) -> dict:
 
 @scheduler_fn.on_schedule(schedule="every 15 minutes", region=config.REGION)
 def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
-    """Finish any deletion that stopped part way and has been idle 10 minutes."""
+    """Finish any deletion that stopped part way and has been idle 10 minutes,
+    and run each finished deletion's one late sweep once it is due (N9)."""
     import datetime as dt
 
     from account import deletion
@@ -891,6 +931,13 @@ def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
         try:
             deletion.run(uid, deletion.FirebaseBackend())
             finished += 1
+        except Exception:
+            failed += 1
+    # N9: the one late sweep of users/{uid} and plans/{uid}, 65 minutes after
+    # done, for writes a still-valid token or a queued client made meanwhile.
+    for uid in deletion.due_resweeps(store.db(), dt.datetime.now(dt.timezone.utc)):
+        try:
+            deletion.resweep(uid, deletion.FirebaseBackend())
         except Exception:
             failed += 1
     logs.decision("resume_account_deletions", state="done", count=finished)

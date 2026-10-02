@@ -208,6 +208,9 @@ REVIEWER_IS_SUBJECT = "reviewer_is_subject"
 """A reviewer may never review her own case."""
 REVIEW_NOT_PENDING = "review_not_pending"
 """The flag has already been decided or has expired."""
+REVIEW_TIME_OUT_OF_RANGE = "review_time_out_of_range"
+"""A reviewer tried to book a live review further ahead than
+config.REVIEW_BOOKING_MAX_DAYS. Reviewer-facing only."""
 
 
 # ------------------------------------------------- what crosses the wire

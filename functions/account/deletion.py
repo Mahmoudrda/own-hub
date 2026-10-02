@@ -25,6 +25,12 @@ and the sweeper (main.resume_account_deletions) finishes it:
     done               deletionRequests/{uid} reduced to state and timestamps,
                        the retained proof of erasure (row 31)
 
+N9, after done: a still-valid ID token (up to an hour) or a queued offline
+write can partly recreate users/{uid} or plans/{uid}. `done` therefore records
+sweepAfter (config.DELETION_RESWEEP_MINUTES, 65, later) and the sweeper runs
+one more recursive delete of both once it is due (`resweep`), then replaces
+sweepAfter with sweptAt so it never runs again.
+
 Idempotent: every step tolerates having already run, so a re-run after a
 failure finishes the job rather than failing on what is already gone.
 
@@ -35,6 +41,7 @@ and verificationStats (counts with no uid).
 
 from __future__ import annotations
 
+import datetime as dt
 import secrets
 from typing import Protocol
 
@@ -57,12 +64,16 @@ UNFINISHED_STATES = [s for s in JOURNAL if s != "done"] + [FAILED_RETRYABLE]
 
 STORAGE_PREFIXES = ("user-media/{uid}/", "user-exports/{uid}/")
 PERSONAL_BUCKET = "own-hub-personal"
-DELETION_RECORD_FIELDS = frozenset({"state", "requestedAt", "updatedAt", "doneAt"})
+DELETION_RECORD_FIELDS = frozenset(
+    {"state", "requestedAt", "updatedAt", "doneAt", "sweepAfter", "sweptAt"}
+)
+"""State and timestamps only. sweepAfter and sweptAt are N9's second sweep."""
 
 
 class Backend(Protocol):
     def set_state(self, uid: str, state: str) -> None: ...
     def finish_record(self, uid: str) -> None: ...
+    def mark_swept(self, uid: str) -> None: ...
     def lock_auth(self, uid: str) -> None: ...
     def blocked_uids(self, uid: str) -> list[str]: ...
     def delete_blocked_by(self, other: str, uid: str) -> None: ...
@@ -131,6 +142,15 @@ def run(uid: str, backend: Backend) -> dict:
     return {"state": "done", "journal": list(JOURNAL)}
 
 
+def resweep(uid: str, backend: Backend) -> None:
+    """N9: the one late sweep of users/{uid} and plans/{uid}, then marked so it
+    never runs again. Idempotent: deleting what is already gone is a no-op."""
+    backend.delete_user_tree(uid)
+    if manifest.PLANS_RECURSIVE in {manifest.ACTIONS[row.number] for row in manifest.ROWS}:
+        backend.delete_plans_tree(uid)
+    backend.mark_swept(uid)
+
+
 class FirebaseBackend:
     """The live Backend: Firestore, Firebase Auth and Cloud Storage (delete only)."""
 
@@ -157,14 +177,29 @@ class FirebaseBackend:
 
         reference = self._record(uid)
         current = reference.get().to_dict() or {}
-        # A full set, not a merge: the record is REDUCED to these four keys.
+        # A full set, not a merge: the record is REDUCED to state and
+        # timestamps. sweepAfter schedules N9's one late sweep.
         reference.set(
             {
                 "state": "done",
                 "requestedAt": current.get("requestedAt") or firestore.SERVER_TIMESTAMP,
                 "updatedAt": firestore.SERVER_TIMESTAMP,
                 "doneAt": firestore.SERVER_TIMESTAMP,
+                "sweepAfter": dt.datetime.now(dt.timezone.utc)
+                + dt.timedelta(minutes=config.DELETION_RESWEEP_MINUTES),
             }
+        )
+
+    def mark_swept(self, uid):
+        from google.cloud import firestore
+
+        self._record(uid).set(
+            {
+                "sweepAfter": firestore.DELETE_FIELD,
+                "sweptAt": firestore.SERVER_TIMESTAMP,
+                "updatedAt": firestore.SERVER_TIMESTAMP,
+            },
+            merge=True,
         )
 
     def lock_auth(self, uid):
@@ -264,3 +299,13 @@ def unfinished(db, older_than) -> list[str]:
         if updated is None or updated < older_than:
             out.append(snapshot.id)
     return out
+
+
+def due_resweeps(db, now) -> list[str]:
+    """deletionRequests whose late sweep (N9) is due. A single-field range on
+    sweepAfter (auto-indexed); a swept record has no sweepAfter and so never
+    matches again."""
+    query = (
+        db.collection("deletionRequests").where("sweepAfter", "<=", now).limit(100)
+    )
+    return [snapshot.id for snapshot in query.stream()]

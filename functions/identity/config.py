@@ -515,6 +515,30 @@ RETRY_REQUIRED rather than a rejection, because an undecided flag is OUR failure
 to review in time, not hers. Turning our backlog into her rejection would be the
 wrong way round."""
 
+REVIEW_BOOKING_GRACE_HOURS = 24
+"""N6: when a reviewer books a live review, the flag's slaExpiresAt moves to
+the booked time plus this grace (never earlier than it already was), so the
+hourly expiry sweep cannot expire a booked review before the call happens."""
+
+REVIEW_BOOKING_MAX_DAYS = 7
+"""N6: the furthest ahead a live review may be booked. A booking beyond it is
+refused (review_time_out_of_range), so the grace above cannot be used to park a
+flag open indefinitely."""
+
+REVIEW_BOOKING_PAST_TOLERANCE_MINUTES = 5
+"""A booking earlier than now minus this is refused (review_time_out_of_range):
+a time already gone cannot be a call she will receive. The tolerance covers a
+reviewer booking "now" with a slightly slow clock."""
+
+MINT_ATTEMPTS = 3
+"""How many times decide tries to mint the verified claim and write her state
+after an approval has committed, before recording mintPending on the flag for
+the hourly job (expire_stale_reviews) to finish."""
+
+MINT_RETRY_BACKOFF_SEC = (0.5, 1.5)
+"""Pauses between those in-process attempts."""
+
+
 # ------------------------------------------------- retention and deletion
 
 DECIDED_RECORD_RETENTION_DAYS = 180
@@ -526,6 +550,13 @@ access log get no TTL at all.
 PENDING COUNSEL (PDPL retention); not a legal opinion. 180 days is a
 placeholder chosen to cover disputes and a store review, not a number counsel
 has approved."""
+
+DELETION_RESWEEP_MINUTES = 65
+"""N9: an ID token stays valid for up to an hour after her Auth user is
+disabled, and a client can hold queued offline writes, so users/{uid} and
+plans/{uid} can be partly rewritten after `done`. One more recursive delete of
+both runs this long after `done` (deletionRequests/{uid}.sweepAfter), performed
+once by resume_account_deletions."""
 
 DELETED_ACCOUNT_MAY_REJOIN = False
 """Whether deleting an account frees her national ID for a new account.
@@ -594,3 +625,11 @@ record_health_consent before her first cycle, check-in, measurement, period,
 life-stage or allergy write reaches the cloud; the rules refuse those writes
 without it. Bumped whenever that wording changes. The wording is PENDING
 COUNSEL and PDPC approval of the consent mechanism."""
+
+REVIEW_CONSENT_VERSION = 1
+"""N7: version of the review-route consent recorded by request_review at
+users/{uid}/consents/review-v1 = {version, at, path}. Asking for a woman
+reviewer IS the consent: the app shows the wording (her phone number is looked
+up and she is called by a woman reviewer, by video or at a ladies-only gym)
+immediately before it calls request_review. The wording is PENDING COUNSEL.
+Bumped whenever that wording changes."""

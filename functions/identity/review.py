@@ -5,10 +5,11 @@ woman reviewer. The queue holds reason codes, two scores and a scheduling
 handle. It never holds a photograph, a frame, a phone number or an ID number.
 
 Every function in this module takes a `ReviewStore`. The Cloud Functions in
-main.py and the reviewer command line tool in tools/review_queue.py call the
-SAME functions with the Firestore implementation (store.FirestoreReviewStore),
+main.py call them with the Firestore implementation (store.FirestoreReviewStore),
 so there is one code path for the access log, the state writes and the checks.
-Tests call them with an in-memory fake.
+The reviewer command line tool (tools/review_queue.py) calls those Cloud
+Functions over HTTPS with the reviewer's own ID token and holds no admin
+credentials. Tests call these functions with an in-memory fake.
 
 Errors are `ReviewError(kind, reason)`. `reason` is always a reason code from
 reasons.py, never a sentence and never anything she or the reviewer typed.
@@ -18,6 +19,7 @@ main.py maps `kind` onto an HttpsError code.
 from __future__ import annotations
 
 import datetime as dt
+import time
 from dataclasses import dataclass
 from typing import Any, Optional, Protocol
 
@@ -43,6 +45,13 @@ INVALID = "invalid-argument"
 PRECONDITION = "failed-precondition"
 EXHAUSTED = "resource-exhausted"
 NOT_FOUND = "not-found"
+
+
+_sleep = time.sleep
+
+
+def _now() -> dt.datetime:
+    return dt.datetime.now(dt.timezone.utc)
 
 
 class ReviewError(Exception):
@@ -90,6 +99,8 @@ class ReviewStore(Protocol):
 
     def uid_daily_count_and_increment(self, uid: str, field: str) -> int: ...
 
+    def write_review_consent(self, uid: str, path: str) -> None: ...
+
     def open_flag_id(self, uid: str) -> Optional[str]: ...
 
     def ocr_submissions(self, uid: str) -> int: ...
@@ -109,7 +120,12 @@ class ReviewStore(Protocol):
     def list_open(self, limit: int) -> list[tuple[str, dict]]: ...
 
     def mark_scheduled(
-        self, flag_id: str, route: str, when: dt.datetime, reviewer_uid: str
+        self,
+        flag_id: str,
+        route: str,
+        when: dt.datetime,
+        reviewer_uid: str,
+        sla_expires_at: dt.datetime,
     ) -> None: ...
 
     def close_flag(
@@ -120,13 +136,31 @@ class ReviewStore(Protocol):
         state: str,
         reviewer_uid: str,
         reviewer_reason: str,
-    ) -> None: ...
+        id_hmac: Optional[str] = None,
+    ) -> Optional[str]:
+        """One transaction: re-read the flag, refuse unless PENDING_REVIEW
+        (REVIEW_NOT_PENDING); with id_hmac, claim the registry for uid or
+        refuse with the dedupe reason; then close the flag and its job and
+        clear her openFlagId. Returns None on commit, else the reason code,
+        having written nothing."""
+        ...
 
     def stale_flags(self, now: dt.datetime, limit: int) -> list[tuple[str, dict]]: ...
 
-    def expire_flag(self, flag_id: str, uid: str) -> None: ...
+    def expire_flag(self, flag_id: str, uid: str, now: dt.datetime) -> bool:
+        """One transaction: expire only if still PENDING_REVIEW and still past
+        its slaExpiresAt at `now`. True when it expired the flag."""
+        ...
 
     def grant_bonus(self, uid: str, flag_id: str) -> bool: ...
+
+    def mark_mint_pending(self, flag_id: str) -> None: ...
+
+    def clear_mint_pending(self, flag_id: str) -> None: ...
+
+    def mint_pending_flags(self, limit: int) -> list[tuple[str, str]]:
+        """(flag_id, uid) for APPROVED flags whose mint has not landed."""
+        ...
 
     def claim(self, id_hmac: str, uid: str) -> dedupe.DedupeVerdict: ...
 
@@ -205,6 +239,10 @@ class RequestResult:
 def request(store: ReviewStore, uid: str, path: Any) -> RequestResult:
     """She asks for a woman reviewer: niqab, declined camera, or after an error.
 
+    Records users/{uid}/consents/review-v1 = {version, at, path} first (N7):
+    the request is the consent to be looked up and called. Wording PENDING
+    COUNSEL.
+
     Takes no images and no frames, so there is nothing here to store or leak.
     At most one open flag per account: a second request returns the open one.
     """
@@ -219,6 +257,12 @@ def request(store: ReviewStore, uid: str, path: Any) -> RequestResult:
 
     if store.uid_daily_count_and_increment(uid, "reviews") > config.PER_UID_DAILY_REVIEW_LIMIT:
         raise ReviewError(EXHAUSTED, reasons.PER_UID_DAILY_LIMIT)
+
+    # N7: asking for the call is her consent to it. Recorded server-side
+    # before any flag exists, so a woman who declined the camera at C09b is
+    # never phoned without a record that she asked to be. Wording PENDING
+    # COUNSEL (config.REVIEW_CONSENT_VERSION).
+    store.write_review_consent(uid, path)
 
     code = PATH_CODES[path]
     decision = decisions.Decision(decisions.PENDING_REVIEW, (code,), (code,))
@@ -273,14 +317,40 @@ def parse_when(value: Any) -> dt.datetime:
     return when.astimezone(dt.timezone.utc)
 
 
+def _as_utc(value: Any) -> Optional[dt.datetime]:
+    if isinstance(value, dt.datetime):
+        return value if value.tzinfo else value.replace(tzinfo=dt.timezone.utc)
+    return None
+
+
 def schedule(
-    store: ReviewStore, reviewer_uid: str, flag_id: Any, route: Any, scheduled_for: Any
+    store: ReviewStore,
+    reviewer_uid: str,
+    flag_id: Any,
+    route: Any,
+    scheduled_for: Any,
+    *,
+    now: Optional[dt.datetime] = None,
 ) -> dict:
+    """Book the live review. A booking may not be in the past (more than
+    REVIEW_BOOKING_PAST_TOLERANCE_MINUTES ago). N6: a booking may be at most
+    REVIEW_BOOKING_MAX_DAYS ahead, and it moves the flag's slaExpiresAt to the
+    booked time plus REVIEW_BOOKING_GRACE_HOURS (never earlier than it was), so
+    the expiry sweep cannot expire a booked review before the call."""
     if route not in config.REVIEW_ROUTES:
         raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
     when = parse_when(scheduled_for)
+    now = now or _now()
+    if when < now - dt.timedelta(minutes=config.REVIEW_BOOKING_PAST_TOLERANCE_MINUTES):
+        raise ReviewError(INVALID, reasons.REVIEW_TIME_OUT_OF_RANGE)
+    if when > now + dt.timedelta(days=config.REVIEW_BOOKING_MAX_DAYS):
+        raise ReviewError(INVALID, reasons.REVIEW_TIME_OUT_OF_RANGE)
     record = _pending_flag_for(store, reviewer_uid, flag_id)
-    store.mark_scheduled(flag_id, route, when, reviewer_uid)
+    sla = when + dt.timedelta(hours=config.REVIEW_BOOKING_GRACE_HOURS)
+    current = _as_utc(record.get("slaExpiresAt"))
+    if current is not None and current > sla:
+        sla = current
+    store.mark_scheduled(flag_id, route, when, reviewer_uid, sla)
     store.set_verification_state(
         record["uid"], STATE_PENDING, route=route, scheduled_for=when
     )
@@ -332,8 +402,10 @@ def decide(
 
     Refuses unless the flag is still PENDING_REVIEW, the reviewer is not the
     woman being reviewed, and a live review was booked. Approval claims the
-    registry FIRST: if the claim fails (the card belongs to another account, or
-    the registration is closed) nothing is minted and the flag stays open.
+    registry in the same transaction that closes the flag: if the claim fails
+    (the card belongs to another account, or the registration is closed) or
+    the flag is no longer pending, nothing is written, nothing is minted and
+    the flag stays as it was.
     """
     record = _pending_flag_for(store, reviewer_uid, flag_id)
     uid = record["uid"]
@@ -342,6 +414,10 @@ def decide(
         # case there is no evidence for, which this design removes.
         raise ReviewError(PRECONDITION, reasons.INTERNAL_ERROR)
 
+    # N10: the flag is re-read and closed in ONE transaction keyed on
+    # state == PENDING_REVIEW (with the registry claim, on approval), so two
+    # reviewers, or a reviewer and the expiry sweep, cannot both decide it.
+    # Nothing is minted and her state is not written unless it commits.
     if approve:
         id_hmac = record.get("id_hmac")
         if not id_hmac:
@@ -349,33 +425,65 @@ def decide(
                 store, nid_digits, today or dt.date.today()
             )
         nid_digits = None
-        verdict = store.claim(id_hmac, uid)
-        if not verdict.ok:
-            raise ReviewError(PRECONDITION, verdict.reason or reasons.DUPLICATE_ID)
-        store.mint_verified(uid)
-        store.set_verification_state(uid, STATE_APPROVED, decided=True)
-        store.close_flag(
+        refusal = store.close_flag(
             flag_id,
             uid=uid,
             state=decisions.APPROVED,
             reviewer_uid=reviewer_uid,
             reviewer_reason=reasons.REVIEWER_APPROVED,
+            id_hmac=id_hmac,
         )
+        if refusal:
+            raise ReviewError(PRECONDITION, refusal)
+        # The approval is committed. A failed mint must not lose it: retry a
+        # few times here, then leave mintPending on the flag for the hourly
+        # job (retry_pending_mints).
+        if not _mint_and_approve(store, uid):
+            store.mark_mint_pending(flag_id)
         outcome = decisions.APPROVED
         codes = (reasons.REVIEWER_APPROVED,)
     else:
-        store.set_verification_state(uid, STATE_REJECTED, decided=True)
-        store.close_flag(
+        refusal = store.close_flag(
             flag_id,
             uid=uid,
             state=decisions.REJECTED_FAILED,
             reviewer_uid=reviewer_uid,
             reviewer_reason=reasons.REVIEWER_REJECTED,
         )
+        if refusal:
+            raise ReviewError(PRECONDITION, refusal)
+        store.set_verification_state(uid, STATE_REJECTED, decided=True)
         outcome = "rejected"
         codes = (reasons.REVIEWER_REJECTED,)
     store.log_access(reviewer_uid, flag_id, "decide")
     return DecideResult(outcome, uid, codes)
+
+
+def _mint_and_approve(store: ReviewStore, uid: str, attempts: Optional[int] = None) -> bool:
+    """Mint the verified claim (merge, never replace: store.mint_claims) and
+    write her state approved. True once both landed."""
+    attempts = attempts or config.MINT_ATTEMPTS
+    for attempt in range(attempts):
+        try:
+            store.mint_verified(uid)
+            store.set_verification_state(uid, STATE_APPROVED, decided=True)
+            return True
+        except Exception:
+            if attempt + 1 < attempts:
+                backoff = config.MINT_RETRY_BACKOFF_SEC
+                _sleep(backoff[min(attempt, len(backoff) - 1)])
+    return False
+
+
+def retry_pending_mints(store: ReviewStore, limit: int = 100) -> int:
+    """The hourly job's half of the mint retry: finish every APPROVED flag
+    still marked mintPending, then clear the mark. Returns how many landed."""
+    done = 0
+    for flag_id, uid in store.mint_pending_flags(limit):
+        if uid and _mint_and_approve(store, uid, attempts=1):
+            store.clear_mint_pending(flag_id)
+            done += 1
+    return done
 
 
 def list_open(store: ReviewStore, reviewer_uid: str, limit: int = 50) -> list[dict]:
@@ -418,9 +526,14 @@ def expire(store: ReviewStore, now: dt.datetime, limit: int = 200) -> int:
     count = 0
     for flag_id, data in store.stale_flags(now, limit):
         uid = data.get("uid")
-        store.expire_flag(flag_id, uid)
+        # N10: re-checked inside the transaction. A flag booked (SLA moved)
+        # or decided since the query is left alone.
+        if not store.expire_flag(flag_id, uid, now):
+            continue
         if uid:
-            store.set_verification_state(uid, STATE_RETRY)
+            # N6: the booking expired with the flag; C14 must not keep
+            # showing a call time that is no longer going to happen.
+            store.set_verification_state(uid, STATE_RETRY, reset_booking=True)
             store.grant_bonus(uid, flag_id)
         count += 1
     return count

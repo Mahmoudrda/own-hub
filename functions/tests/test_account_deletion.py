@@ -67,7 +67,13 @@ class FakeBackend:
             "requestedAt": self.record.get("requestedAt"),
             "updatedAt": "t",
             "doneAt": "t",
+            "sweepAfter": "t+65m",
         }
+
+    def mark_swept(self, uid):
+        self._step("mark_swept")
+        self.record.pop("sweepAfter", None)
+        self.record["sweptAt"] = "t"
 
     def lock_auth(self, uid):
         self._step("lock_auth")
@@ -194,7 +200,8 @@ def test_reports_are_pseudonymised_with_one_token():
 def test_the_deletion_record_keeps_only_state_and_timestamps():
     fake = FakeBackend()
     deletion.run("her", fake)
-    assert set(fake.record) == deletion.DELETION_RECORD_FIELDS
+    assert set(fake.record) <= deletion.DELETION_RECORD_FIELDS
+    assert set(fake.record) == {"state", "requestedAt", "updatedAt", "doneAt", "sweepAfter"}
     assert fake.record["state"] == "done"
 
 

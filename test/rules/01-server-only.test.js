@@ -103,6 +103,26 @@ describe('the consent record', () => {
     await assertFails(deleteDoc(doc(db, `users/${uid.her}/consents/c1`)));
   });
 
+  test('N7: the review-route consent is hers to read, never to write, even unverified', async () => {
+    await seed(async (ctx) => {
+      await setDoc(
+        doc(ctx.firestore(), `users/${uid.her}/consents/review-v1`),
+        { version: 1, at: new Date(), path: 'declined' },
+      );
+    });
+    const db = await unverified(uid.her);
+    await assertSucceeds(getDoc(doc(db, `users/${uid.her}/consents/review-v1`)));
+    await assertFails(
+      setDoc(doc(db, `users/${uid.her}/consents/review-v1`), { version: 1, path: 'niqab' }),
+    );
+    await assertFails(
+      updateDoc(doc(db, `users/${uid.her}/consents/review-v1`), { path: 'niqab' }),
+    );
+    await assertFails(deleteDoc(doc(db, `users/${uid.her}/consents/review-v1`)));
+    const other = await verified(uid.other);
+    await assertFails(getDoc(doc(other, `users/${uid.her}/consents/review-v1`)));
+  });
+
   test("a client may not read or write ANOTHER woman's consents", async () => {
     const db = await verified(uid.other);
     await assertFails(getDoc(doc(db, `users/${uid.her}/consents/c1`)));
