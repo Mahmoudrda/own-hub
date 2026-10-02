@@ -478,6 +478,20 @@ REVIEW_ROUTES = ("video", "gym")
 """Mirrors the Flutter app's own `ReviewerPath` enum (`video` | `gym`) so both
 sides use the same words for the same thing."""
 
+REVIEW_REQUEST_PATHS = ("declined", "error", "niqab")
+"""The three ways she can ask for a woman reviewer without an automatic check
+deciding it for her (contracts/identity_contract.json, request_review.paths):
+
+  niqab     she chose the woman-reviewer route at C09 (NIQAB_PATH_REQUESTED)
+  declined  she declined the camera at C09b (CAMERA_DECLINED)
+  error     the automatic check could not run for her (REVIEW_REQUESTED_AFTER_ERROR)
+
+None of them carries an image, a frame or a phone number."""
+
+PER_UID_DAILY_REVIEW_LIMIT = 3
+"""request_review calls per account per UTC day. A real woman asks once; the
+cap bounds a script that would otherwise fill the queue and the webhook."""
+
 REVIEW_SLA_HOURS = 72
 """The window a flagged case must be decided in, carried over from spec §5's
 72-hour evidence ceiling even though there is no longer any evidence to expire.

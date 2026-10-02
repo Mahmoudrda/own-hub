@@ -63,6 +63,20 @@ class Budget:
     straight from the request body), so that was an attacker-controlled way to
     suppress the debit, not a rare accident."""
 
+    bonus_ocr_submissions: int = 0
+    """Extra OCR submissions granted when OUR review queue missed its SLA.
+
+    S7: an undecided flag past REVIEW_SLA_HOURS is our failure, not hers, so
+    expiry grants exactly one more photograph of the card, and only while the
+    cumulative spend stays under COST_CAP_MICRO_USD (see `may_grant_bonus`).
+    Nothing ever resets `spent_micro_usd` or the counters; the bonus raises the
+    ceiling the counter is compared against instead.
+
+    Consequence worth stating: if her liveness attempts are already used, the
+    bonus submission passes OCR and then meets `decide_budget_refusal`, which
+    opens a second review. That is the intended "our backlog failed her"
+    outcome, not a loop: each grant is tied to one expired flag."""
+
     @property
     def remaining(self) -> int:
         return config.COST_CAP_MICRO_USD - self.spent_micro_usd
@@ -90,7 +104,9 @@ def check(budget: Budget, kind: str, cost: int) -> Optional[Refusal]:
     case that sits ON the cap, which spec §9.4 requires be refused BEFORE the
     provider is contacted rather than after.
     """
-    if kind == OCR_SUBMISSION and budget.ocr_submissions >= config.MAX_OCR_SUBMISSIONS:
+    if kind == OCR_SUBMISSION and budget.ocr_submissions >= (
+        config.MAX_OCR_SUBMISSIONS + budget.bonus_ocr_submissions
+    ):
         return Refusal(reasons.ATTEMPT_LIMIT_OCR)
     if (
         kind == LIVENESS_ATTEMPT
@@ -109,6 +125,24 @@ def apply(budget: Budget, kind: str, cost: int) -> Budget:
         ocr_submissions=budget.ocr_submissions + (1 if kind == OCR_SUBMISSION else 0),
         liveness_attempts=budget.liveness_attempts
         + (1 if kind == LIVENESS_ATTEMPT else 0),
+        bonus_ocr_submissions=budget.bonus_ocr_submissions,
+    )
+
+
+def may_grant_bonus(budget: Budget, flag_id: str, granted_for: tuple = ()) -> bool:
+    """S7: may an expired review earn her one more OCR submission?
+
+    Only if a whole submission (front and back) still fits under the cost cap,
+    and only once per expired flag. The cap is never raised and the spend is
+    never reset: the grant is a second chance inside the same ceiling.
+    """
+    from . import providers
+
+    if flag_id in tuple(granted_for or ()):
+        return False
+    return (
+        budget.spent_micro_usd + 2 * providers.COST_OCR_PER_IMAGE
+        <= config.COST_CAP_MICRO_USD
     )
 
 

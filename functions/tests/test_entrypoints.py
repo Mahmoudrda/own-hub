@@ -44,6 +44,8 @@ CALLABLES = {
     "list_verification_flags",
     "schedule_verification_review",
     "decide_verification_flag",
+    "request_review",
+    "get_review_contact",
 }
 
 
@@ -112,6 +114,7 @@ def stubbed(monkeypatch):
 
     monkeypatch.setattr(main.store, "has_consent", has_consent)
     monkeypatch.setattr(main.store, "daily_count_and_increment", daily)
+    monkeypatch.setattr(main.store, "verification_gate", lambda uid: main.store.Gate())
     monkeypatch.setattr(main, "_decode_image", counting_decode)
     monkeypatch.setattr(main, "_deps", no_deps)
     return calls

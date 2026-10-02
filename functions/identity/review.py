@@ -1,0 +1,426 @@
+"""The human review loop, as plain functions over an injected store.
+
+What review IS here, since no image is ever stored: a live encounter with a
+woman reviewer. The queue holds reason codes, two scores and a scheduling
+handle. It never holds a photograph, a frame, a phone number or an ID number.
+
+Every function in this module takes a `ReviewStore`. The Cloud Functions in
+main.py and the reviewer command line tool in tools/review_queue.py call the
+SAME functions with the Firestore implementation (store.FirestoreReviewStore),
+so there is one code path for the access log, the state writes and the checks.
+Tests call them with an in-memory fake.
+
+Errors are `ReviewError(kind, reason)`. `reason` is always a reason code from
+reasons.py, never a sentence and never anything she or the reviewer typed.
+main.py maps `kind` onto an HttpsError code.
+"""
+
+from __future__ import annotations
+
+import datetime as dt
+from dataclasses import dataclass
+from typing import Any, Optional, Protocol
+
+from . import config, decisions, dedupe, nid, reasons
+
+# The four states of users/{uid}.verification.state. Server-written only; the
+# rules' verificationUntouched() keeps the client out. No reason codes and no
+# flag id ever go into this map: it is hers to read.
+STATE_APPROVED = "approved"
+STATE_PENDING = "pending"
+STATE_REJECTED = "rejected"
+STATE_RETRY = "retry"
+VERIFICATION_STATES = frozenset({STATE_APPROVED, STATE_PENDING, STATE_REJECTED, STATE_RETRY})
+
+PATH_CODES = {
+    "niqab": reasons.NIQAB_PATH_REQUESTED,
+    "declined": reasons.CAMERA_DECLINED,
+    "error": reasons.REVIEW_REQUESTED_AFTER_ERROR,
+}
+
+# ReviewError kinds, mapped to HttpsError codes by main.py.
+INVALID = "invalid-argument"
+PRECONDITION = "failed-precondition"
+EXHAUSTED = "resource-exhausted"
+NOT_FOUND = "not-found"
+
+
+class ReviewError(Exception):
+    def __init__(self, kind: str, reason: str):
+        super().__init__(reason)
+        self.kind = kind
+        self.reason = reason
+
+
+# What a flag document may hold. Asserted by tests against every flag written,
+# so a phone, an image or a raw number cannot quietly join it.
+FLAG_FIELDS = frozenset(
+    {
+        "uid",
+        "jobId",
+        "state",
+        "flags",
+        "reasons",
+        "id_hmac",
+        "liveness_confidence",
+        "match_similarity",
+        "scoreScales",
+        "route",
+        "scheduledFor",
+        "createdAt",
+        "slaExpiresAt",
+        "requestedWomanReviewer",
+    }
+)
+
+
+class ReviewStore(Protocol):
+    def verification_state(self, uid: str) -> Optional[str]: ...
+
+    def set_verification_state(
+        self,
+        uid: str,
+        state: str,
+        *,
+        route: Optional[str] = None,
+        scheduled_for: Optional[dt.datetime] = None,
+        decided: bool = False,
+        reset_booking: bool = False,
+    ) -> None: ...
+
+    def uid_daily_count_and_increment(self, uid: str, field: str) -> int: ...
+
+    def open_flag_id(self, uid: str) -> Optional[str]: ...
+
+    def ocr_submissions(self, uid: str) -> int: ...
+
+    def open_flag(
+        self,
+        uid: str,
+        job_payload: Optional[dict],
+        flag_payload: dict,
+        *,
+        job_id: Optional[str] = None,
+        mark_duplicate: bool = False,
+    ) -> tuple[str, bool]: ...
+
+    def get_flag(self, flag_id: str) -> Optional[dict]: ...
+
+    def list_open(self, limit: int) -> list[tuple[str, dict]]: ...
+
+    def mark_scheduled(
+        self, flag_id: str, route: str, when: dt.datetime, reviewer_uid: str
+    ) -> None: ...
+
+    def close_flag(
+        self,
+        flag_id: str,
+        *,
+        uid: str,
+        state: str,
+        reviewer_uid: str,
+        reviewer_reason: str,
+    ) -> None: ...
+
+    def stale_flags(self, now: dt.datetime, limit: int) -> list[tuple[str, dict]]: ...
+
+    def expire_flag(self, flag_id: str, uid: str) -> None: ...
+
+    def grant_bonus(self, uid: str, flag_id: str) -> bool: ...
+
+    def claim(self, id_hmac: str, uid: str) -> dedupe.DedupeVerdict: ...
+
+    def mint_verified(self, uid: str) -> None: ...
+
+    def phone_for(self, uid: str) -> Optional[str]: ...
+
+    def log_access(self, reviewer_uid: str, flag_id: str, action: str) -> None: ...
+
+    def pepper(self) -> bytes: ...
+
+    def notify(self, flag_id: str, codes) -> None: ...
+
+    def new_job_payload(self, uid: str, decision: decisions.Decision, attempt: int) -> dict: ...
+
+
+def sla_deadline(now: Optional[dt.datetime] = None) -> dt.datetime:
+    now = now or dt.datetime.now(dt.timezone.utc)
+    return now + dt.timedelta(hours=config.REVIEW_SLA_HOURS)
+
+
+def flag_payload(
+    uid: str,
+    job_id: Optional[str],
+    decision: decisions.Decision,
+    *,
+    id_hmac: Optional[str] = None,
+    liveness_confidence: Optional[float] = None,
+    match_similarity: Optional[float] = None,
+    now: Optional[dt.datetime] = None,
+    created_at: Any = None,
+) -> dict:
+    """The flag document. Codes, scores and a scheduling handle; nothing else.
+
+    `jobId` is filled in by the store when the job id is minted inside the
+    transaction (the flag and the job share one id).
+    """
+    payload = {
+        "uid": uid,
+        "jobId": job_id,
+        "state": decisions.PENDING_REVIEW,
+        "flags": list(decision.flags),
+        "reasons": list(decision.reasons),
+        "id_hmac": id_hmac,
+        # Scores, not images. A reviewer about to spend fifteen minutes on a
+        # video call should see whether the case is borderline or nowhere near.
+        "liveness_confidence": liveness_confidence,
+        "match_similarity": match_similarity,
+        "scoreScales": {
+            "liveness": config.ACTIVE_THRESHOLDS.liveness_scale,
+            "match": config.ACTIVE_THRESHOLDS.match_scale,
+        },
+        "route": None,
+        "scheduledFor": None,
+        "createdAt": created_at,
+        "slaExpiresAt": sla_deadline(now),
+        # She asked for the woman-reviewer route herself. Surfaced so the queue
+        # can route it to a woman reviewer without asking her again.
+        "requestedWomanReviewer": reasons.NIQAB_PATH_REQUESTED in decision.flags,
+    }
+    assert set(payload) <= FLAG_FIELDS
+    return payload
+
+
+# ------------------------------------------------------------- request
+
+
+@dataclass(frozen=True)
+class RequestResult:
+    state: str
+    flag_id: Optional[str] = None
+    created: bool = False
+    code: Optional[str] = None
+
+
+def request(store: ReviewStore, uid: str, path: Any) -> RequestResult:
+    """She asks for a woman reviewer: niqab, declined camera, or after an error.
+
+    Takes no images and no frames, so there is nothing here to store or leak.
+    At most one open flag per account: a second request returns the open one.
+    """
+    if not isinstance(path, str) or path not in config.REVIEW_REQUEST_PATHS:
+        raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
+
+    state = store.verification_state(uid)
+    if state == STATE_APPROVED:
+        return RequestResult(STATE_APPROVED)
+    if state == STATE_REJECTED:
+        raise ReviewError(PRECONDITION, reasons.VERIFICATION_CLOSED)
+
+    if store.uid_daily_count_and_increment(uid, "reviews") > config.PER_UID_DAILY_REVIEW_LIMIT:
+        raise ReviewError(EXHAUSTED, reasons.PER_UID_DAILY_LIMIT)
+
+    code = PATH_CODES[path]
+    decision = decisions.Decision(decisions.PENDING_REVIEW, (code,), (code,))
+    job = store.new_job_payload(uid, decision, store.ocr_submissions(uid))
+    flag_id, created = store.open_flag(uid, job, flag_payload(uid, None, decision))
+    if created:
+        store.set_verification_state(uid, STATE_PENDING, reset_booking=True)
+        store.notify(flag_id, decision.flags)
+    return RequestResult(STATE_PENDING, flag_id, created, code)
+
+
+# ------------------------------------------------------------- reviewer
+
+
+def _pending_flag_for(store: ReviewStore, reviewer_uid: str, flag_id: Any) -> dict:
+    if not isinstance(flag_id, str) or not flag_id:
+        raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
+    record = store.get_flag(flag_id)
+    if record is None:
+        raise ReviewError(NOT_FOUND, reasons.INTERNAL_ERROR)
+    if record.get("state") != decisions.PENDING_REVIEW:
+        raise ReviewError(PRECONDITION, reasons.REVIEW_NOT_PENDING)
+    if record.get("uid") == reviewer_uid:
+        raise ReviewError(PRECONDITION, reasons.REVIEWER_IS_SUBJECT)
+    return record
+
+
+def contact(store: ReviewStore, reviewer_uid: str, flag_id: Any) -> dict:
+    """Her phone number, looked up from Firebase Auth at the moment of calling.
+
+    Never copied onto the flag, never logged, never stored. Every lookup is
+    written to the review access log, so a curious reviewer leaves a trace.
+    """
+    record = _pending_flag_for(store, reviewer_uid, flag_id)
+    store.log_access(reviewer_uid, flag_id, "contact")
+    phone = store.phone_for(record["uid"])
+    if not phone:
+        raise ReviewError(NOT_FOUND, reasons.INTERNAL_ERROR)
+    return {"phone": phone}
+
+
+def parse_when(value: Any) -> dt.datetime:
+    """ISO-8601 with an explicit offset. A time with no zone is ambiguous."""
+    if not isinstance(value, str) or not value:
+        raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
+    try:
+        when = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
+    if when.tzinfo is None:
+        raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
+    return when.astimezone(dt.timezone.utc)
+
+
+def schedule(
+    store: ReviewStore, reviewer_uid: str, flag_id: Any, route: Any, scheduled_for: Any
+) -> dict:
+    if route not in config.REVIEW_ROUTES:
+        raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
+    when = parse_when(scheduled_for)
+    record = _pending_flag_for(store, reviewer_uid, flag_id)
+    store.mark_scheduled(flag_id, route, when, reviewer_uid)
+    store.set_verification_state(
+        record["uid"], STATE_PENDING, route=route, scheduled_for=when
+    )
+    store.log_access(reviewer_uid, flag_id, f"schedule:{route}")
+    return {"ok": True, "route": route}
+
+
+def _hmac_from_typed_digits(store: ReviewStore, digits: Any, today: dt.date) -> str:
+    """The NID the reviewer read on the live call, turned into the registry key.
+
+    The digits exist only in this frame. They are never stored, logged or
+    echoed; every refusal is a reason code.
+    """
+    if not isinstance(digits, str) or not digits.strip():
+        raise ReviewError(PRECONDITION, reasons.NID_UNREADABLE)
+    parsed, failure = nid.first_valid(digits, today=today)
+    if parsed is None:
+        raise ReviewError(PRECONDITION, failure or reasons.NID_UNREADABLE)
+    try:
+        if parsed.sex_from_digit != "female":
+            raise ReviewError(PRECONDITION, reasons.SEX_DIGIT_MALE)
+        age = parsed.age_on(today)
+        if age < config.MIN_AGE:
+            raise ReviewError(PRECONDITION, reasons.UNDERAGE)
+        if age > config.MAX_AGE_PLAUSIBLE:
+            raise ReviewError(PRECONDITION, reasons.AGE_IMPLAUSIBLE)
+        return dedupe.hash_and_forget(parsed.number, store.pepper())
+    finally:
+        del parsed
+
+
+@dataclass(frozen=True)
+class DecideResult:
+    outcome: str
+    uid: str
+    reasons: tuple
+
+
+def decide(
+    store: ReviewStore,
+    reviewer_uid: str,
+    flag_id: Any,
+    approve: bool,
+    nid_digits: Any = None,
+    *,
+    today: Optional[dt.date] = None,
+) -> DecideResult:
+    """Record the outcome of a live review. S19.
+
+    Refuses unless the flag is still PENDING_REVIEW, the reviewer is not the
+    woman being reviewed, and a live review was booked. Approval claims the
+    registry FIRST: if the claim fails (the card belongs to another account, or
+    the registration is closed) nothing is minted and the flag stays open.
+    """
+    record = _pending_flag_for(store, reviewer_uid, flag_id)
+    uid = record["uid"]
+    if record.get("route") not in config.REVIEW_ROUTES:
+        # A decision with no booked review behind it is a desk decision on a
+        # case there is no evidence for, which this design removes.
+        raise ReviewError(PRECONDITION, reasons.INTERNAL_ERROR)
+
+    if approve:
+        id_hmac = record.get("id_hmac")
+        if not id_hmac:
+            id_hmac = _hmac_from_typed_digits(
+                store, nid_digits, today or dt.date.today()
+            )
+        nid_digits = None
+        verdict = store.claim(id_hmac, uid)
+        if not verdict.ok:
+            raise ReviewError(PRECONDITION, verdict.reason or reasons.DUPLICATE_ID)
+        store.mint_verified(uid)
+        store.set_verification_state(uid, STATE_APPROVED, decided=True)
+        store.close_flag(
+            flag_id,
+            uid=uid,
+            state=decisions.APPROVED,
+            reviewer_uid=reviewer_uid,
+            reviewer_reason=reasons.REVIEWER_APPROVED,
+        )
+        outcome = decisions.APPROVED
+        codes = (reasons.REVIEWER_APPROVED,)
+    else:
+        store.set_verification_state(uid, STATE_REJECTED, decided=True)
+        store.close_flag(
+            flag_id,
+            uid=uid,
+            state=decisions.REJECTED_FAILED,
+            reviewer_uid=reviewer_uid,
+            reviewer_reason=reasons.REVIEWER_REJECTED,
+        )
+        outcome = "rejected"
+        codes = (reasons.REVIEWER_REJECTED,)
+    store.log_access(reviewer_uid, flag_id, "decide")
+    return DecideResult(outcome, uid, codes)
+
+
+def list_open(store: ReviewStore, reviewer_uid: str, limit: int = 50) -> list[dict]:
+    """The queue: codes, scores and a handle. Never an image, never a phone."""
+    rows = []
+    for flag_id, data in store.list_open(limit):
+        rows.append(
+            {
+                "flagId": flag_id,
+                "flags": data.get("flags", []),
+                "reasons": data.get("reasons", []),
+                "livenessConfidence": data.get("liveness_confidence"),
+                "matchSimilarity": data.get("match_similarity"),
+                "scoreScales": data.get("scoreScales"),
+                "route": data.get("route"),
+                "scheduledFor": str(data.get("scheduledFor") or ""),
+                "createdAt": str(data.get("createdAt")),
+                "slaExpiresAt": str(data.get("slaExpiresAt") or ""),
+                "requestedWomanReviewer": reasons.NIQAB_PATH_REQUESTED
+                in data.get("flags", []),
+                # Whether approving needs the NID read on the live call. The
+                # hash itself never leaves the server.
+                "needsNidOnCall": not data.get("id_hmac"),
+            }
+        )
+    store.log_access(reviewer_uid, "*", "list")
+    return rows
+
+
+# ------------------------------------------------------------- expiry
+
+
+def expire(store: ReviewStore, now: dt.datetime, limit: int = 200) -> int:
+    """Past the SLA a flag becomes RETRY_REQUIRED: our failure, not hers.
+
+    S7: she earns exactly one more OCR submission per expired flag, and only
+    while a whole submission still fits under COST_CAP_MICRO_USD. Nothing is
+    ever reset.
+    """
+    count = 0
+    for flag_id, data in store.stale_flags(now, limit):
+        uid = data.get("uid")
+        store.expire_flag(flag_id, uid)
+        if uid:
+            store.set_verification_state(uid, STATE_RETRY)
+            store.grant_bonus(uid, flag_id)
+        count += 1
+    return count

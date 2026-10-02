@@ -332,7 +332,15 @@ def test_the_callables_have_the_agreed_names():
     source = open(_MAIN, encoding="utf-8").read()
     tree = ast.parse(source)
     defined = {n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)}
-    for name in ("record_consent", "start_verification", "verify_identity"):
+    for name in (
+        "record_consent",
+        "start_verification",
+        "verify_identity",
+        "request_review",
+        "get_review_contact",
+        "schedule_verification_review",
+        "decide_verification_flag",
+    ):
         assert name in defined, f"the Flutter side calls {name}"
 
 

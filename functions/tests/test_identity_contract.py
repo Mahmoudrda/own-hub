@@ -81,7 +81,7 @@ def test_the_verification_consent_document_is_the_one_the_store_writes(monkeypat
 
 
 # Widened as each callable lands; at the end it is every key in the contract.
-_LANDED = {"record_consent", "start_verification", "verify_identity"}
+_LANDED = {"record_consent", "start_verification", "verify_identity", "request_review"}
 
 
 def test_every_contract_callable_exists_in_main():
@@ -98,3 +98,42 @@ def test_every_error_reason_is_a_reasons_constant():
     }
     for key, value in contract()["errorReasons"].items():
         assert value in values, f"{key}={value!r} is not in reasons.py"
+
+
+def test_review_paths_match():
+    paths = contract()["callables"]["request_review"]["paths"]
+    assert set(config.REVIEW_REQUEST_PATHS) == set(paths)
+
+
+def test_verification_states_match():
+    from identity import review, store
+
+    doc = contract()["documents"]["verificationState"]
+    assert store.VERIFICATION_STATES == set(doc["states"])
+    assert review.VERIFICATION_STATES == set(doc["states"])
+    assert doc["path"] == "users/{uid}" and doc["map"] == "verification"
+
+
+def test_verification_state_fields_are_within_the_contract(monkeypatch):
+    from identity import store
+
+    written = {}
+
+    class _Doc:
+        def set(self, payload, merge=False):
+            written.update(payload["verification"])
+
+    class _Col:
+        def document(self, _):
+            return _Doc()
+
+    class _Db:
+        def collection(self, _):
+            return _Col()
+
+    monkeypatch.setattr(store, "db", lambda: _Db())
+    store.set_verification_state(
+        "u", "approved", route="video", scheduled_for="t", decided=True
+    )
+    allowed = set(contract()["documents"]["verificationState"]["fields"])
+    assert set(written) <= allowed, set(written) - allowed

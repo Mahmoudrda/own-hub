@@ -83,7 +83,9 @@ from identity import (
     providers,
     providers_selfhosted,
     reasons,
+    review,
     store,
+    webhook,
 )
 
 firebase_admin.initialize_app()
@@ -292,6 +294,17 @@ def start_verification(request: https_fn.CallableRequest) -> dict:
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
         )
 
+    gate = store.verification_gate(uid)
+    if gate.state == review.STATE_REJECTED:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.VERIFICATION_CLOSED
+        )
+    if gate.open_flag_id:
+        # A review is already waiting for her. The client routes this to C14.
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.REVIEW_ALREADY_OPEN
+        )
+
     # Spec §6's global kill switch, checked before anything is minted.
     if store.daily_count_and_increment() > config.DAILY_VERIFICATION_LIMIT:
         raise https_fn.HttpsError(
@@ -356,6 +369,20 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
         )
+
+    # Closed or already waiting, decided before any counter moves or any byte
+    # is decoded. S7: one open flag per uid, and a rejected account is final.
+    gate = store.verification_gate(uid)
+    if gate.state == review.STATE_REJECTED:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.VERIFICATION_CLOSED
+        )
+    if gate.open_flag_id:
+        return {
+            "outcome": decisions.PENDING_REVIEW,
+            "reasons": [],
+            "refreshToken": False,
+        }
 
     # Spec §6's global kill switch, on the door that actually costs money.
     #
@@ -450,8 +477,26 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
                 decisions.REJECTED_DUPLICATE, (verdict.reason or reasons.DUPLICATE_ID,)
             )
 
+    # S7: the first duplicate gets exactly one human review, because a woman
+    # whose card was registered by someone else needs a human path. A second
+    # duplicate is final. REGISTRATION_CLOSED is not reviewable at all.
+    duplicate_review = (
+        decision.outcome == decisions.REJECTED_DUPLICATE
+        and reasons.DUPLICATE_ID in decision.reasons
+        and not gate.duplicate_flag_raised
+    )
+    if duplicate_review:
+        decision = decisions.Decision(
+            decisions.PENDING_REVIEW, (reasons.DUPLICATE_ID,), (reasons.DUPLICATE_ID,)
+        )
+
     attempt = deps.ledger_store.read(uid).ocr_submissions
-    job_id = store.write_job(uid, decision, outcome, attempt)
+    if decision.outcome == decisions.PENDING_REVIEW:
+        job_id = _raise_flag(
+            uid, decision, outcome, attempt, mark_duplicate=duplicate_review
+        )
+    else:
+        job_id = store.write_job(uid, decision, outcome, attempt)
 
     if outcome.unknown_governorate_code:
         # She is not flagged for this and never should be: an unknown code is a
@@ -465,9 +510,14 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
     if decision.outcome == decisions.APPROVED:
         store.mint_claims(uid, True)
         store.write_user_verification(uid)
-    elif decision.outcome == decisions.PENDING_REVIEW:
-        _raise_flag(uid, job_id, decision, outcome)
-    elif decision.outcome in (decisions.REJECTED_FAILED,) and outcome.id_hmac:
+    elif decision.outcome in (
+        decisions.REJECTED_NOT_ELIGIBLE,
+        decisions.REJECTED_FAILED,
+        decisions.REJECTED_DUPLICATE,
+    ):
+        # S8: final, and she is told so. No reason code reaches this map.
+        store.set_verification_state(uid, review.STATE_REJECTED, decided=True)
+    if decision.outcome == decisions.REJECTED_FAILED and outcome.id_hmac:
         # Spec §3's cross-account signal: count failures against the CARD, not
         # the account, so a series of fresh sign-ups on one stolen card is
         # visible.
@@ -479,72 +529,38 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
     return _response(decision)
 
 
-def _raise_flag(uid: str, job_id: str, decision, outcome) -> None:
+def _raise_flag(uid: str, decision, outcome, attempt: int, *, mark_duplicate=False):
     """Spec §5's admin review flow: a flag record with reason codes and no PII.
+
+    The job and the flag are written in one transaction with her ledger, so
+    there is at most one open flag per uid (S7). If one is already open (a race
+    with another request), nothing new is written and the open one stands.
 
     The webhook carries only the flag id and the reason codes. It goes to a
     third-party chat service, so anything richer would be identity data sitting
     in someone else's message history.
     """
-    from google.cloud import firestore
-
-    payload = {
-        "uid": uid,
-        "jobId": job_id,
-        "state": decisions.PENDING_REVIEW,
-        "flags": list(decision.flags),
-        "reasons": list(decision.reasons),
-        "id_hmac": outcome.id_hmac,
-        # Scores, not images. Spec §4 row 2 allowlists scores, and a reviewer
-        # about to spend fifteen minutes on a video call should be able to see
-        # whether the case is borderline-at-79 or nowhere-near-at-40. There is
-        # nothing else for her to look at: no photograph exists.
-        "liveness_confidence": outcome.liveness_confidence,
-        "match_similarity": outcome.match_similarity,
-        "scoreScales": {
-            "liveness": config.ACTIVE_THRESHOLDS.liveness_scale,
-            "match": config.ACTIVE_THRESHOLDS.match_scale,
-        },
-        "route": None,
-        "scheduledFor": None,
-        "createdAt": firestore.SERVER_TIMESTAMP,
-        "slaExpiresAt": _sla_deadline(),
-    }
-
-    store.db().collection(config.COL_FLAGS).document(job_id).set(payload)
-    _post_flag_webhook(job_id, decision.flags)
+    job = store.job_payload(
+        uid, decision, attempt, outcome.spent_micro_usd, outcome.provider_ids
+    )
+    flag = review.flag_payload(
+        uid,
+        None,
+        decision,
+        id_hmac=outcome.id_hmac,
+        liveness_confidence=outcome.liveness_confidence,
+        match_similarity=outcome.match_similarity,
+    )
+    flag_id, created = store.open_flag(uid, job, flag, mark_duplicate=mark_duplicate)
+    if created:
+        store.set_verification_state(uid, review.STATE_PENDING, reset_booking=True)
+        _post_flag_webhook(flag_id, decision.flags)
+    return flag_id
 
 
 def _post_flag_webhook(flag_id: str, flags) -> None:
-    """Spec §5: the flag id and reason codes only.
-
-    Best effort. A chat webhook being down must never fail a verification that
-    has already been decided, so every failure here is swallowed — the flag
-    document is the durable record and the webhook is only a notification.
-    """
-    import os
-    import json
-    import urllib.request
-
-    url = os.environ.get("FLAG_WEBHOOK_URL")
-    if not url:
-        return
-    try:
-        body = json.dumps({"flagId": flag_id, "reasons": list(flags)}).encode()
-        req = urllib.request.Request(
-            url, data=body, headers={"Content-Type": "application/json"}
-        )
-        urllib.request.urlopen(req, timeout=5).close()
-    except Exception:
-        pass
-
-
-def _sla_deadline():
-    import datetime as dt
-
-    return dt.datetime.now(dt.timezone.utc) + dt.timedelta(
-        hours=config.REVIEW_SLA_HOURS
-    )
+    """Spec §5: the flag id and reason codes only. See identity/webhook.py."""
+    webhook.post_flag(flag_id, flags)
 
 
 # ---------------------------------------------------------------- the review
@@ -610,194 +626,131 @@ def _require_woman_reviewer(request: https_fn.CallableRequest) -> str:
 
 
 def _log_review_access(reviewer_uid: str, flag_id: str, action: str) -> None:
-    from google.cloud import firestore
+    """Every use of the queue leaves a trace. See store.FirestoreReviewStore."""
+    store.FirestoreReviewStore().log_access(reviewer_uid, flag_id, action)
 
-    store.db().collection(config.COL_REVIEW_ACCESS).add(
-        {
-            "flagId": flag_id,
-            "reviewerUid": reviewer_uid,
-            "action": action,
-            "at": firestore.SERVER_TIMESTAMP,
-        }
-    )
+
+_REVIEW_ERROR_CODES = {
+    review.INVALID: https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+    review.PRECONDITION: https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+    review.EXHAUSTED: https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+    review.NOT_FOUND: https_fn.FunctionsErrorCode.NOT_FOUND,
+}
+
+
+def _review_call(fn, *args, **kwargs):
+    """Run a review.* function and turn a ReviewError into an HttpsError.
+
+    The message is always the reason code and nothing else: never a phone, an
+    NID or anything a reviewer typed."""
+    try:
+        return fn(*args, **kwargs)
+    except review.ReviewError as error:
+        raise https_fn.HttpsError(_REVIEW_ERROR_CODES[error.kind], error.reason)
+
+
+def _body(request: https_fn.CallableRequest) -> dict:
+    data = request.data or {}
+    if not isinstance(data, dict):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    return data
+
+
+@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+def request_review(request: https_fn.CallableRequest) -> dict:
+    """She asks for a woman reviewer: {path: "niqab" | "declined" | "error"}.
+
+    S3. Takes no images, no frames and no phone number. Writes a flag with the
+    path's reason code, at most one open flag per account, and sets her
+    verification state to `pending`. Returns {state: "pending"}, or
+    {state: "approved"} if she is already verified.
+    """
+    uid = _require_auth(request)
+    data = _body(request)
+    result = _review_call(review.request, store.FirestoreReviewStore(), uid, data.get("path"))
+    return {"state": result.state}
 
 
 @https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
 def list_verification_flags(request: https_fn.CallableRequest) -> dict:
-    """The review queue: reason codes, scores, and a scheduling handle.
+    """The review queue, oldest first: reason codes, scores, and a handle.
 
-    Never an image, because none exists. `scoreScales` travels with the scores
-    so a reviewer reading "79" knows which scale it is on — the same unit
-    confusion that `config.ThresholdSet` guards against in code would otherwise
-    reappear in a human's head.
+    Never an image, because none exists, and never a phone number.
     """
     reviewer_uid = _require_admin(request)
-    query = (
-        store.db()
-        .collection(config.COL_FLAGS)
-        .where("state", "==", decisions.PENDING_REVIEW)
-        .limit(50)
-    )
-    rows = []
-    for snapshot in query.stream():
-        data = snapshot.to_dict() or {}
-        rows.append(
-            {
-                "flagId": snapshot.id,
-                "flags": data.get("flags", []),
-                "reasons": data.get("reasons", []),
-                "livenessConfidence": data.get("liveness_confidence"),
-                "matchSimilarity": data.get("match_similarity"),
-                "scoreScales": data.get("scoreScales"),
-                "route": data.get("route"),
-                "scheduledFor": str(data.get("scheduledFor") or ""),
-                "createdAt": str(data.get("createdAt")),
-                "slaExpiresAt": str(data.get("slaExpiresAt") or ""),
-                # She asked for the woman-reviewer route herself. Surfaced so the
-                # queue can route it to a woman reviewer without her having to be
-                # asked again, and without an admin opening it first.
-                "requestedWomanReviewer": reasons.NIQAB_PATH_REQUESTED
-                in data.get("flags", []),
-            }
-        )
-    _log_review_access(reviewer_uid, "*", "list")
+    rows = review.list_open(store.FirestoreReviewStore(), reviewer_uid)
     return {"flags": rows}
 
 
 @https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
-def schedule_verification_review(request: https_fn.CallableRequest) -> dict:
-    """Book the live review. Spec §5's queue, rebuilt around an encounter.
+def get_review_contact(request: https_fn.CallableRequest) -> dict:
+    """Her phone number, for the woman reviewer about to call her.
 
-    Request: {flagId, route: "video"|"gym", scheduledFor: ISO-8601}
-
-    Only a woman reviewer may book, for both routes. A gym visit is still a
-    woman meeting a woman in a women-only space; the route changes the venue,
-    not who is qualified to do it.
-
-    `scheduledFor` is stored as a handle, not as a calendar integration. What
-    the product needs from the server is a durable record that a review was
-    booked and when — the booking itself lives wherever the reviewers already
-    keep their diary, and building a scheduler here would be inventing a
-    calendar nobody asked for.
+    Looked up from Firebase Auth at the moment of calling, never copied onto
+    the flag, never logged. Each lookup is written to the review access log.
+    Refused unless the flag is PENDING_REVIEW and the reviewer is not her.
     """
     reviewer_uid = _require_woman_reviewer(request)
-    data = request.data or {}
-    flag_id = data.get("flagId")
-    route = data.get("route")
-    if route not in config.REVIEW_ROUTES:
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
-        )
-    if not flag_id:
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
-        )
-
-    from google.cloud import firestore
-
-    reference = store.db().collection(config.COL_FLAGS).document(flag_id)
-    if not reference.get().exists:
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.NOT_FOUND, reasons.INTERNAL_ERROR
-        )
-    reference.update(
-        {
-            "route": route,
-            "scheduledFor": data.get("scheduledFor"),
-            "reviewerUid": reviewer_uid,
-            "scheduledAt": firestore.SERVER_TIMESTAMP,
-            "reasons": firestore.ArrayUnion([reasons.REVIEW_SCHEDULED]),
-        }
+    data = _body(request)
+    return _review_call(
+        review.contact, store.FirestoreReviewStore(), reviewer_uid, data.get("flagId")
     )
-    _log_review_access(reviewer_uid, flag_id, f"schedule:{route}")
-    return {"ok": True, "route": route}
+
+
+@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+def schedule_verification_review(request: https_fn.CallableRequest) -> dict:
+    """Book the live review: {flagId, route: "video"|"gym", scheduledFor}.
+
+    `scheduledFor` is ISO-8601 with an explicit offset. Only a woman reviewer
+    may book; the flag must be PENDING_REVIEW and must not be her own. Her
+    verification map gains reviewRoute and reviewScheduledFor so C14 can show
+    the booked time.
+    """
+    reviewer_uid = _require_woman_reviewer(request)
+    data = _body(request)
+    return _review_call(
+        review.schedule,
+        store.FirestoreReviewStore(),
+        reviewer_uid,
+        data.get("flagId"),
+        data.get("route"),
+        data.get("scheduledFor"),
+    )
 
 
 @https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
 def decide_verification_flag(request: https_fn.CallableRequest) -> dict:
-    """Record the outcome of a live review.
+    """Record the outcome of a live review: {flagId, approve, nid?}.
 
-    Request: {flagId, approve: bool}
-
-    Requires the `womanReviewer` claim, not `admin`. The decision follows an
-    encounter with a woman; the person who had the encounter is the person who
-    records it, and there is no desk-based path because there is nothing on a
-    desk to look at.
+    S19. Requires the `womanReviewer` claim, a PENDING_REVIEW flag, a reviewer
+    who is not the subject, and a booked route. Approval claims the registry
+    first and mints nothing if the claim fails. A flag with no id_hmac (the
+    niqab, declined and error paths) needs `nid`: the 14 digits the reviewer
+    read on the live call. They are hashed and dropped, never stored or logged.
     """
     reviewer_uid = _require_woman_reviewer(request)
-    data = request.data or {}
-    flag_id = data.get("flagId")
-    approve = bool(data.get("approve"))
-
-    reference = store.db().collection(config.COL_FLAGS).document(flag_id)
-    snapshot = reference.get()
-    if not snapshot.exists:
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.NOT_FOUND, reasons.INTERNAL_ERROR
-        )
-    record = snapshot.to_dict() or {}
-    uid = record.get("uid")
-
-    if record.get("route") not in config.REVIEW_ROUTES:
-        # A decision with no booked review behind it is a desk decision on a
-        # case there is no evidence for, which is exactly what this design
-        # removes. Refusing keeps the audit trail honest.
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.INTERNAL_ERROR
-        )
-
-    if approve:
-        if record.get("id_hmac"):
-            store.FirestoreRegistry().claim(record["id_hmac"], uid)
-        store.mint_claims(uid, True)
-        store.write_user_verification(uid)
-
-    from google.cloud import firestore
-
-    reference.update(
-        {
-            "state": decisions.APPROVED if approve else decisions.REJECTED_FAILED,
-            "decidedBy": reviewer_uid,
-            "decidedAt": firestore.SERVER_TIMESTAMP,
-            "reviewerReason": reasons.REVIEWER_APPROVED
-            if approve
-            else reasons.REVIEWER_REJECTED,
-        }
+    data = _body(request)
+    result = _review_call(
+        review.decide,
+        store.FirestoreReviewStore(),
+        reviewer_uid,
+        data.get("flagId"),
+        bool(data.get("approve")),
+        data.get("nid"),
     )
-    _log_review_access(reviewer_uid, flag_id, "decide")
-    return {"ok": True, "outcome": decisions.APPROVED if approve else "rejected"}
+    return {"ok": True, "outcome": result.outcome}
 
 
 @scheduler_fn.on_schedule(schedule="every 1 hours", region=config.REGION)
 def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     """A flagged case undecided past the SLA becomes RETRY_REQUIRED.
 
-    RETRY_REQUIRED, not a rejection, and the reasoning is the whole of it: an
-    undecided flag is OUR failure to review within 72 hours, not hers. Turning
-    our own backlog into her rejection would be the wrong way round, and she
-    gets one fresh attempt, still inside the cost cap.
-
-    There is nothing to purge. The spec §5 version of this job deleted evidence
-    on the same schedule; the evidence never exists now, so all that remains is
-    the state transition.
+    Our failure to review within 72 hours, not hers: her state becomes `retry`,
+    and she earns one more OCR submission if it still fits under the cost cap.
+    Nothing is ever reset. See review.expire.
     """
     import datetime as dt
 
-    from google.cloud import firestore
-
-    now = dt.datetime.now(dt.timezone.utc)
-    query = (
-        store.db()
-        .collection(config.COL_FLAGS)
-        .where("state", "==", decisions.PENDING_REVIEW)
-        .where("slaExpiresAt", "<", now)
-        .limit(200)
-    )
-    for snapshot in query.stream():
-        snapshot.reference.update(
-            {
-                "state": decisions.RETRY_REQUIRED,
-                "reasons": firestore.ArrayUnion([reasons.REVIEW_SLA_EXPIRED]),
-                "expiredAt": firestore.SERVER_TIMESTAMP,
-            }
-        )
+    review.expire(store.FirestoreReviewStore(), dt.datetime.now(dt.timezone.utc))
