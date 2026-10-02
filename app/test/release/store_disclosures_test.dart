@@ -80,6 +80,30 @@ void main() {
       );
     });
 
+    test('no storage writes, no push receiver', () {
+      // camerax writes only to the app cache, there is no push, and phone
+      // auth, App Check and Crashlytics do not use c2dm.
+      for (final permission in const [
+        'android.permission.WRITE_EXTERNAL_STORAGE',
+        'com.google.android.c2dm.permission.RECEIVE',
+      ]) {
+        expect(
+          manifest,
+          contains(
+            '<uses-permission android:name="$permission" '
+            'tools:node="remove" />',
+          ),
+          reason: permission,
+        );
+      }
+      final safety = File('android/play-data-safety.txt').readAsStringSync();
+      expect(safety, isNot(contains('WRITE_EXTERNAL_STORAGE')));
+      expect(safety, isNot(contains('c2dm')));
+      final preflight = File('tool/release_preflight.sh').readAsStringSync();
+      expect(preflight, contains('WRITE_EXTERNAL_STORAGE'));
+      expect(preflight, contains('c2dm.permission.RECEIVE'));
+    });
+
     test('the camera records no sound', () {
       expect(
         File(

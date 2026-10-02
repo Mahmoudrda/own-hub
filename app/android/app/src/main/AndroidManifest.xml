@@ -20,9 +20,15 @@
          camera plugin declares RECORD_AUDIO for video, and this app records no
          sound (enableAudio is false in camera_capture_service.dart); a library
          can also bring READ_EXTERNAL_STORAGE. Neither may reach a store build:
-         each is a Data safety declaration for a capability we do not use. -->
+         each is a Data safety declaration for a capability we do not use.
+         WRITE_EXTERNAL_STORAGE goes too: camerax writes only to the app's
+         cache. So does the c2dm RECEIVE permission Firebase libraries bring:
+         there is no push, and phone auth, App Check and Crashlytics do not
+         use it. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" tools:node="remove" />
 
     <!-- Not required, so the app still installs on a handset with no camera or
          no autofocus. Google Play filters installs on any hardware feature a

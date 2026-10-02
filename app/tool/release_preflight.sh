@@ -79,6 +79,8 @@ check "privacy manifest declares OtherUserContent" "grep -q NSPrivacyCollectedDa
 check "privacy manifest declares OtherDataTypes" "grep -q NSPrivacyCollectedDataTypeOtherDataTypes ios/Runner/PrivacyInfo.xcprivacy"
 check "RECORD_AUDIO stripped from the merged manifest" "grep -q 'RECORD_AUDIO\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "READ_EXTERNAL_STORAGE stripped"     "grep -q 'READ_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
+check "WRITE_EXTERNAL_STORAGE stripped"    "grep -q 'WRITE_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
+check "c2dm RECEIVE stripped"              "grep -q 'c2dm.permission.RECEIVE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "no false 'licensed provider' claim" "! grep -q 'licensed Egyptian provider' lib/l10n/app_en.arb"
 check "App Check is activated"             "grep -q FirebaseAppCheck lib/app_state/firebase_boot.dart"
 check "crash reporting is declared as CrashData" \
