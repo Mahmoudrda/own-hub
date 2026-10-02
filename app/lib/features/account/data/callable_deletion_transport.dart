@@ -38,6 +38,13 @@ class DeletionAppCannotReach implements Exception {
   const DeletionAppCannotReach();
 }
 
+/// The server did not accept her sign-in (N4): a rejected ID token, or an
+/// account that did not sign in with a phone. Nothing was deleted; she is
+/// told to sign in again with her phone number.
+class DeletionSignInAgain implements Exception {
+  const DeletionSignInAgain();
+}
+
 /// The request reached the server and did not finish there. The server
 /// records it and its sweeper finishes the deletion (every 15 minutes, once a
 /// request has been idle for 10), so the honest message is "it will finish".
@@ -50,14 +57,8 @@ class DeletionUnfinished implements Exception {
 typedef DeleteAccountCall = Future<Object?> Function();
 
 class CallableDeletionTransport implements DeletionTransport {
-  CallableDeletionTransport({
-    required this.isOnline,
-    DeleteAccountCall? call,
-    bool Function()? signedIn,
-  }) : _call = call ?? _callFunction,
-       _signedIn = signedIn ?? firebaseUserSignedIn;
-
-  final bool Function() _signedIn;
+  CallableDeletionTransport({required this.isOnline, DeleteAccountCall? call})
+    : _call = call ?? _callFunction;
 
   /// Whether a call can be made at all: Firebase up and her account signed in.
   final bool Function() isOnline;
@@ -84,17 +85,20 @@ class CallableDeletionTransport implements DeletionTransport {
     try {
       data = await _call();
     } on FirebaseFunctionsException catch (error) {
-      // App Check refused this copy of the app: the server's own
-      // `app_check_missing`, or the framework's `unauthenticated` while she
-      // is signed in (R3). Nothing was deleted, and "could not reach" would
-      // send her to retry something a retry cannot fix.
-      final failure = callFailureFrom(error, signedIn: _signedIn);
-      if (classifyCallFailure(failure) == CallFailureKind.appCannotReach) {
-        throw const DeletionAppCannotReach();
+      // App Check refused this copy of the app (`app_check_missing`, R3), or
+      // the server did not accept her sign-in (N4). Nothing was deleted, and
+      // "could not reach" would send her to retry something a retry cannot
+      // fix.
+      switch (classifyCallFailure(callFailureFrom(error))) {
+        case CallFailureKind.appCannotReach:
+          throw const DeletionAppCannotReach();
+        case CallFailureKind.signInAgain:
+          throw const DeletionSignInAgain();
+        default:
+          break;
       }
-      // Never reached the server, or reached it without a usable sign-in:
-      // nothing was deleted anywhere.
-      if (error.code == 'unavailable' || error.code == 'unauthenticated') {
+      // Never reached the server: nothing was deleted anywhere.
+      if (error.code == 'unavailable') {
         throw const DeletionOffline();
       }
       // INTERNAL internal_error: the server recorded `failedRetryable` and its

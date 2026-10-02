@@ -135,6 +135,10 @@ enum AccountDeletionResult {
   /// App Check refused this copy of the app: nothing was deleted.
   appCannotReach,
 
+  /// The server did not accept her sign-in: nothing was deleted. She signs
+  /// in again with her phone number, or uses the web deletion page.
+  signInAgain,
+
   /// The server has the request and did not finish it; its sweeper will.
   /// This phone is cleared. Never reported as done.
   unfinished,

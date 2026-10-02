@@ -526,5 +526,12 @@
  "You can also delete your account on our website: {url}": "يمكنكِ أيضًا حذف حسابكِ من موقعنا: {url}",
  "A reviewer can only call you after you ask for the call. If you ask, a woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.": "لا يمكن لمراجِعة أن تتصل بكِ إلا بعد أن تطلبي المكالمة. إن طلبتِها، ستتصل بكِ مراجِعة من Own Hub هاتفيًا لترتيب مكالمة فيديو قصيرة، وستتحقق معكِ من بطاقتكِ الشخصية خلال تلك المكالمة.",
  "Ask for the call": "اطلبي المكالمة",
- "The check did not finish": "لم يكتمل التحقق"
+ "The check did not finish": "لم يكتمل التحقق",
+ "Please sign in again": "يُرجى تسجيل الدخول مرة أخرى",
+ "Sign in again": "سجّلي الدخول مرة أخرى",
+ "Your sign-in is no longer valid, so nothing was decided. Sign in again with your phone number, then carry on with your check.": "لم يعد تسجيل دخولكِ صالحًا، لذلك لم يُتّخذ أي قرار. سجّلي الدخول مرة أخرى برقم هاتفكِ، ثم أكملي التحقق.",
+ "Your sign-in is no longer valid, so your agreement was not saved and the camera has not opened. Please sign in again with your phone number.": "لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُحفظ موافقتكِ ولم تُفتح الكاميرا. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.",
+ "Your sign-in is no longer valid, so you are not in the queue. Please sign in again with your phone number.": "لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.",
+ "Your sign-in is no longer valid, so your health backup was not changed. Please sign in again with your phone number.": "لم يعد تسجيل دخولكِ صالحًا، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.",
+ "Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again.": "لم يعد تسجيل دخولكِ صالحًا، لذلك لم يُحذف شيء. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ ثم المحاولة من جديد."
 }

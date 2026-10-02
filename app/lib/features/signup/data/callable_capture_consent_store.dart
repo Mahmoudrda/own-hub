@@ -32,14 +32,11 @@ class CallableCaptureConsentStore implements CaptureConsentStore {
   CallableCaptureConsentStore({
     FirebaseFirestore? firestore,
     FirebaseFunctions? functions,
-    bool Function()? signedIn,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _functions = functions ?? FirebaseBoot.functions,
-       _signedIn = signedIn ?? firebaseUserSignedIn;
+       _functions = functions ?? FirebaseBoot.functions;
 
   final FirebaseFirestore _firestore;
   final FirebaseFunctions _functions;
-  final bool Function() _signedIn;
 
   /// The body `record_consent` accepts: the version as an int, under
   /// `consentVersion`, and nothing else.
@@ -97,7 +94,7 @@ class CallableCaptureConsentStore implements CaptureConsentStore {
     try {
       await callable.call<Object?>(payloadFor(consent.version));
     } on FirebaseFunctionsException catch (error) {
-      throw callFailureFrom(error, signedIn: _signedIn);
+      throw callFailureFrom(error);
     }
   }
 }

@@ -106,6 +106,7 @@ class _YourDataSheetState extends State<YourDataSheet> {
     switch (result) {
       case AccountDeletionResult.offline:
       case AccountDeletionResult.appCannotReach:
+      case AccountDeletionResult.signInAgain:
         setState(() {
           _deleting = false;
           _refused = result;
@@ -161,14 +162,17 @@ class _YourDataSheetState extends State<YourDataSheet> {
           const SizedBox(height: 10),
           Semantics(
             liveRegion: true,
-            child: Text(
-              _refused == AccountDeletionResult.appCannotReach
-                  ? l10n.thisCopyOfTheAppCannotReach_qzcpf
-                  : l10n.weCouldNotReachOwnHubSo_yfi5n,
-              style: AppText.bodyM.copyWith(color: AppColors.error),
-            ),
+            child: Text(switch (_refused) {
+              AccountDeletionResult.appCannotReach =>
+                l10n.thisCopyOfTheAppCannotReach_qzcpf,
+              AccountDeletionResult.signInAgain =>
+                l10n.yourSignInIsNoLongerValid_1g4zq,
+              _ => l10n.weCouldNotReachOwnHubSo_yfi5n,
+            }, style: AppText.bodyM.copyWith(color: AppColors.error)),
           ),
-          if (_refused == AccountDeletionResult.appCannotReach &&
+          // A way to delete that needs neither an update nor a sign-in.
+          if ((_refused == AccountDeletionResult.appCannotReach ||
+                  _refused == AccountDeletionResult.signInAgain) &&
               widget.webDeletionUrl.isNotEmpty) ...[
             const SizedBox(height: 6),
             SelectableText(

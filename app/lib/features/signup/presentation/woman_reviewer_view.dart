@@ -44,7 +44,11 @@ class WomanReviewerView extends StatefulWidget {
     this.onAlreadyVerified,
     this.onRejected,
     this.onBack,
+    this.onSignInAgain,
   });
+
+  /// The server did not accept her sign-in: out to sign in again (N4).
+  final VoidCallback? onSignInAgain;
 
   /// `request_review`.
   final ReviewRequester requester;
@@ -68,7 +72,7 @@ class WomanReviewerView extends StatefulWidget {
 }
 
 /// What went wrong with the last tap, if anything.
-enum _Failure { none, unreachable, tooManyToday, appCannotReach }
+enum _Failure { none, unreachable, tooManyToday, appCannotReach, signInAgain }
 
 class _WomanReviewerViewState extends State<WomanReviewerView> {
   bool _booking = false;
@@ -100,6 +104,8 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
           setState(() => _failure = _Failure.tooManyToday);
         case CallFailureKind.appCannotReach:
           setState(() => _failure = _Failure.appCannotReach);
+        case CallFailureKind.signInAgain:
+          setState(() => _failure = _Failure.signInAgain);
         default:
           // Never onBooked: she is not in the queue, and she is told so.
           setState(() => _failure = _Failure.unreachable);
@@ -162,14 +168,18 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
         if (_failure != _Failure.none)
           Semantics(
             liveRegion: true,
-            child: Text(
-              switch (_failure) {
-                _Failure.tooManyToday => l10n.youHaveAskedForAReviewerToo,
-                _Failure.appCannotReach => l10n.thisCopyOfTheAppCannotReach_agbhf,
-                _ => l10n.weCouldNotReachOwnHubSo_3usbb,
-              },
-              style: AppText.bodyM.copyWith(color: AppColors.error),
-            ),
+            child: Text(switch (_failure) {
+              _Failure.tooManyToday => l10n.youHaveAskedForAReviewerToo,
+              _Failure.appCannotReach => l10n.thisCopyOfTheAppCannotReach_agbhf,
+              _Failure.signInAgain => l10n.yourSignInIsNoLongerValid_1y16r,
+              _ => l10n.weCouldNotReachOwnHubSo_3usbb,
+            }, style: AppText.bodyM.copyWith(color: AppColors.error)),
+          ),
+        if (_failure == _Failure.signInAgain && widget.onSignInAgain != null)
+          AppButton(
+            l10n.signInAgain,
+            variant: AppButtonVariant.outlined,
+            onPressed: widget.onSignInAgain,
           ),
       ],
     );

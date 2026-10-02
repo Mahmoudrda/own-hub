@@ -329,6 +329,8 @@ Future<AccountDeletionResult> deleteAccount({
     return AccountDeletionResult.offline;
   } on DeletionAppCannotReach {
     return AccountDeletionResult.appCannotReach;
+  } on DeletionSignInAgain {
+    return AccountDeletionResult.signInAgain;
   } catch (_) {
     // The server has the request (DeletionUnfinished, or a journal that did
     // not reach `done` in time). Her account is locked there and the sweeper

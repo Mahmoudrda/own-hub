@@ -71,7 +71,11 @@ class PrivacyView extends StatefulWidget {
     this.onOpenTerms,
     this.onSelectTab,
     this.healthBackup,
+    this.onSignInAgain,
   });
+
+  /// The server did not accept her sign-in: out to sign in again (N4).
+  final VoidCallback? onSignInAgain;
 
   final PrivacySettingsService service;
 
@@ -328,12 +332,24 @@ class _PrivacyViewState extends State<PrivacyView> {
           ),
           if (_healthFailed)
             Text(
-              classifyCallFailure(backup.lastFailure ?? Object()) ==
-                      CallFailureKind.appCannotReach
-                  ? l10n.thisCopyOfTheAppCannotReach_mr83s
-                  : l10n.weCouldNotReachOwnHubSo,
+              switch (classifyCallFailure(backup.lastFailure ?? Object())) {
+                CallFailureKind.appCannotReach =>
+                  l10n.thisCopyOfTheAppCannotReach_mr83s,
+                CallFailureKind.signInAgain =>
+                  l10n.yourSignInIsNoLongerValid_1ccq0,
+                _ => l10n.weCouldNotReachOwnHubSo,
+              },
               key: const ValueKey('health-backup-error'),
               style: AppText.bodyM.copyWith(color: AppColors.error),
+            ),
+          if (_healthFailed &&
+              widget.onSignInAgain != null &&
+              classifyCallFailure(backup.lastFailure ?? Object()) ==
+                  CallFailureKind.signInAgain)
+            AppButton(
+              l10n.signInAgain,
+              variant: AppButtonVariant.outlined,
+              onPressed: widget.onSignInAgain,
             ),
           if (_healthWithdrawPending)
             Text(

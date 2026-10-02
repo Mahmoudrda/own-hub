@@ -7750,4 +7750,30 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get theCheckDidNotFinish => 'The check did not finish';
+
+  @override
+  String get pleaseSignInAgain => 'Please sign in again';
+
+  @override
+  String get signInAgain => 'Sign in again';
+
+  @override
+  String get yourSignInIsNoLongerValid =>
+      'Your sign-in is no longer valid, so nothing was decided. Sign in again with your phone number, then carry on with your check.';
+
+  @override
+  String get yourSignInIsNoLongerValid_1cfl5 =>
+      'Your sign-in is no longer valid, so your agreement was not saved and the camera has not opened. Please sign in again with your phone number.';
+
+  @override
+  String get yourSignInIsNoLongerValid_1y16r =>
+      'Your sign-in is no longer valid, so you are not in the queue. Please sign in again with your phone number.';
+
+  @override
+  String get yourSignInIsNoLongerValid_1ccq0 =>
+      'Your sign-in is no longer valid, so your health backup was not changed. Please sign in again with your phone number.';
+
+  @override
+  String get yourSignInIsNoLongerValid_1g4zq =>
+      'Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again.';
 }

@@ -1045,6 +1045,7 @@ class AppRouter {
         goTo(context, 'C15');
       },
       onBack: () => Navigator.of(context).maybePop(),
+      onSignInAgain: () => unawaited(signInAgain(context)),
     ),
     // Both sides of the card, in two passes of one screen.
     //
@@ -1095,8 +1096,10 @@ class AppRouter {
           case LivenessStart.tryTomorrow:
           case LivenessStart.checksUsedUp:
           case LivenessStart.appCannotReach:
-            // A limit, or a copy of the app the server refuses, told on C12
-            // without submitting anything. Never a review.
+          case LivenessStart.signInAgain:
+            // A limit, a copy of the app the server refuses, or a sign-in it
+            // does not accept, told on C12 without submitting anything. Never
+            // a review.
             identityCheck.evidence.shred();
             _automaticSubmitted = true;
             repository.settle(switch (started) {
@@ -1104,6 +1107,8 @@ class AppRouter {
                 const VerificationState.tryTomorrow(),
               LivenessStart.checksUsedUp =>
                 const VerificationState.checksUsedUp(),
+              LivenessStart.signInAgain =>
+                const VerificationState.signInAgain(),
               _ => const VerificationState.appCannotReach(),
             });
             goTo(context, 'C12');
@@ -1187,6 +1192,7 @@ class AppRouter {
         _automaticSubmitted = false;
         Navigator.of(context).pushNamedAndRemoveUntil(frontDoor, (_) => false);
       },
+      onSignInAgain: () => unawaited(signInAgain(context)),
     ),
     'C13': (context) => YoureInView(
       // Her measured time, or nothing at all. Null is the honest answer when
@@ -1226,6 +1232,7 @@ class AppRouter {
       reviewAsked: reviewAsked,
       requester: identityCheck.reviews,
       onAskedForCall: markReviewAsked,
+      onSignInAgain: () => unawaited(signInAgain(context)),
     ),
     // Which path she chose matters operationally — a video check and a partner
     // gym cost very different things — so it is recorded rather than dropped.
@@ -1257,6 +1264,7 @@ class AppRouter {
         goTo(context, 'C14');
       },
       onBack: () => Navigator.of(context).maybePop(),
+      onSignInAgain: () => unawaited(signInAgain(context)),
     ),
     'C16': (context) => PledgeView(
       // Setup after sign-up ends on Home with the sign-up stack cleared, not
@@ -2030,6 +2038,7 @@ class AppRouter {
       onOpenTerms: () => unawaited(openExternalLink(context, LegalLinks.terms)),
       onSelectTab: (screenId) => goTo(context, screenId),
       healthBackup: healthBackupController(),
+      onSignInAgain: () => unawaited(signInAgain(context)),
     ),
     // Four of A04's five rows drew a chevron and had no callback at all, which
     // on the safety screen is the worst place in the product for a control
@@ -4661,6 +4670,25 @@ class AppRouter {
       ServerVerificationState.approved,
     );
     unawaited(refreshVerificationClaim());
+  }
+
+  /// The server did not accept her sign-in (N4): a rejected ID token (a
+  /// disabled, deleted or revoked account), or an account that did not sign
+  /// in with a phone. Signs this phone out of it the way deletion does, so
+  /// every source of "verified" goes too, and opens the phone number screen
+  /// (`C06`) over the front door (`C01`). Her own week on this phone stays.
+  static Future<void> signInAgain(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    try {
+      await const ThisPhoneWipe().signOut();
+    } catch (_) {
+      // Signed out or not, the way forward is the same screen.
+    }
+    if (!navigator.mounted) return;
+    unawaited(
+      navigator.pushNamedAndRemoveUntil(appRoutes['C01']!.name, (_) => false),
+    );
+    unawaited(navigator.pushNamed(appRoutes['C06']!.name));
   }
 
   static String? get signedInUid => switch (authRepository.current) {

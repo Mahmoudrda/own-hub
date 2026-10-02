@@ -14070,6 +14070,48 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'The check did not finish'**
   String get theCheckDidNotFinish;
+
+  /// No description provided for @pleaseSignInAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in again'**
+  String get pleaseSignInAgain;
+
+  /// No description provided for @signInAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again'**
+  String get signInAgain;
+
+  /// No description provided for @yourSignInIsNoLongerValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in is no longer valid, so nothing was decided. Sign in again with your phone number, then carry on with your check.'**
+  String get yourSignInIsNoLongerValid;
+
+  /// No description provided for @yourSignInIsNoLongerValid_1cfl5.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in is no longer valid, so your agreement was not saved and the camera has not opened. Please sign in again with your phone number.'**
+  String get yourSignInIsNoLongerValid_1cfl5;
+
+  /// No description provided for @yourSignInIsNoLongerValid_1y16r.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in is no longer valid, so you are not in the queue. Please sign in again with your phone number.'**
+  String get yourSignInIsNoLongerValid_1y16r;
+
+  /// No description provided for @yourSignInIsNoLongerValid_1ccq0.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in is no longer valid, so your health backup was not changed. Please sign in again with your phone number.'**
+  String get yourSignInIsNoLongerValid_1ccq0;
+
+  /// No description provided for @yourSignInIsNoLongerValid_1g4zq.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again.'**
+  String get yourSignInIsNoLongerValid_1g4zq;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

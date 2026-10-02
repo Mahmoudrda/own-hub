@@ -1,11 +1,16 @@
-// R3, client: `unauthenticated` from a callable while she is signed in is App
-// Check refusing this copy of the app, not "offline", not "sign in again" and
-// not a reason to queue her for review.
+// R3 and N4, client. Two refusals, told apart by the server's own codes:
 //
-// With `ENFORCE_APP_CHECK` the callable framework rejects a missing or invalid
-// App Check token as UNAUTHENTICATED before the function's own check can say
-// `app_check_missing`. Every callable the app makes is driven here through a
-// fake `FirebaseFunctions` that answers exactly that.
+//   * App Check refusing this copy of the app arrives as FAILED_PRECONDITION
+//     `app_check_missing`. She is told to install the latest version: not
+//     "offline", not "sign in again", and not a reason to queue her for review.
+//   * UNAUTHENTICATED now only ever means her ID token was rejected (a
+//     disabled, deleted or revoked account), and PERMISSION_DENIED
+//     `phone_sign_in_required` means the account did not sign in with a phone.
+//     Both send her to sign in again with her phone number. Neither is ever
+//     read as App Check.
+//
+// Every callable the app makes is driven here through a fake
+// `FirebaseFunctions` that answers with the refusal under test.
 
 import 'dart:typed_data';
 
@@ -30,19 +35,31 @@ import 'package:own_hub/features/signup/domain/verification_evidence.dart';
 import 'package:own_hub/features/signup/presentation/consent_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 
-FirebaseFunctionsException get _refused =>
+FirebaseFunctionsException get _refused => FirebaseFunctionsException(
+  code: 'failed-precondition',
+  message: ServerReason.appCheckMissing,
+);
+
+FirebaseFunctionsException get _tokenRejected =>
     FirebaseFunctionsException(code: 'unauthenticated', message: 'x');
 
 class _RefusingCallable extends Fake implements HttpsCallable {
+  _RefusingCallable(this.error);
+  final FirebaseFunctionsException error;
+
   @override
   Future<HttpsCallableResult<T>> call<T>([dynamic parameters]) async =>
-      throw _refused;
+      throw error;
 }
 
 class _RefusingFunctions extends Fake implements FirebaseFunctions {
+  _RefusingFunctions([FirebaseFunctionsException? error])
+    : error = error ?? _refused;
+  final FirebaseFunctionsException error;
+
   @override
   HttpsCallable httpsCallable(String name, {HttpsCallableOptions? options}) =>
-      _RefusingCallable();
+      _RefusingCallable(error);
 }
 
 class _NoFirestore extends Fake implements FirebaseFirestore {}
@@ -53,55 +70,93 @@ Matcher get _appCannotReach => isA<VerificationCallFailure>().having(
   CallFailureKind.appCannotReach,
 );
 
-Matcher get _notAppCannotReach => isA<VerificationCallFailure>().having(
+Matcher get _signInAgain => isA<VerificationCallFailure>().having(
   classifyCallFailure,
   'kind',
-  isNot(CallFailureKind.appCannotReach),
+  CallFailureKind.signInAgain,
 );
 
 void main() {
   final functions = _RefusingFunctions();
 
-  test('the mapping: signed in means App Check, signed out does not', () {
+  test('the mapping: App Check is its own code, a rejected sign-in is not '
+      'App Check', () {
     expect(
-      callFailureOf('unauthenticated', 'x', signedIn: true),
+      callFailureOf('failed-precondition', ServerReason.appCheckMissing),
       _appCannotReach,
     );
+    expect(callFailureOf('unauthenticated', 'x'), _signInAgain);
+    expect(callFailureOf('unauthenticated', null), _signInAgain);
     expect(
-      callFailureOf('unauthenticated', 'x', signedIn: false),
-      _notAppCannotReach,
+      callFailureOf('permission-denied', ServerReason.phoneSignInRequired),
+      _signInAgain,
     );
     expect(
-      callFailureOf('unavailable', null, signedIn: true),
-      _notAppCannotReach,
+      classifyCallFailure(callFailureOf('permission-denied', 'other')),
+      CallFailureKind.other,
+    );
+    expect(
+      classifyCallFailure(callFailureOf('unavailable', null)),
+      CallFailureKind.other,
+    );
+  });
+
+  test('every adapter reads a rejected sign-in as sign in again', () async {
+    final rejecting = _RefusingFunctions(_tokenRejected);
+    await expectLater(
+      CallableCaptureConsentStore(
+        firestore: _NoFirestore(),
+        functions: rejecting,
+      ).record(
+        CaptureConsent(
+          uid: 'u1',
+          version: kCaptureConsentVersion,
+          agreedAt: DateTime.utc(2026, 10, 2),
+        ),
+      ),
+      throwsA(_signInAgain),
+    );
+    await expectLater(
+      CallableHealthConsentStore(
+        firestore: _NoFirestore(),
+        functions: rejecting,
+      ).record(granted: true),
+      throwsA(_signInAgain),
+    );
+    await expectLater(
+      CallableVerificationProvider(functions: rejecting).startSession(),
+      throwsA(_signInAgain),
+    );
+    await expectLater(
+      CallableReviewRequester(functions: rejecting).request(ReviewPath.error),
+      throwsA(_signInAgain),
+    );
+    await expectLater(
+      CallableDeletionTransport(
+        isOnline: () => true,
+        call: () async => throw _tokenRejected,
+      ).requestDeletion(),
+      throwsA(isA<DeletionSignInAgain>()),
     );
   });
 
   test('record_consent', () async {
-    final signedIn = CallableCaptureConsentStore(
+    final store = CallableCaptureConsentStore(
       firestore: _NoFirestore(),
       functions: functions,
-      signedIn: () => true,
     );
     final consent = CaptureConsent(
       uid: 'u1',
       version: kCaptureConsentVersion,
       agreedAt: DateTime.utc(2026, 10, 2),
     );
-    await expectLater(signedIn.record(consent), throwsA(_appCannotReach));
-    final signedOut = CallableCaptureConsentStore(
-      firestore: _NoFirestore(),
-      functions: functions,
-      signedIn: () => false,
-    );
-    await expectLater(signedOut.record(consent), throwsA(_notAppCannotReach));
+    await expectLater(store.record(consent), throwsA(_appCannotReach));
   });
 
   test('record_health_consent, and A03 can tell', () async {
     final store = CallableHealthConsentStore(
       firestore: _NoFirestore(),
       functions: functions,
-      signedIn: () => true,
     );
     await expectLater(store.record(granted: true), throwsA(_appCannotReach));
 
@@ -115,10 +170,7 @@ void main() {
   });
 
   test('start_verification and verify_identity', () async {
-    final provider = CallableVerificationProvider(
-      functions: functions,
-      signedIn: () => true,
-    );
+    final provider = CallableVerificationProvider(functions: functions);
     await expectLater(provider.startSession(), throwsA(_appCannotReach));
 
     final evidence = VerificationEvidence()
@@ -131,10 +183,7 @@ void main() {
   });
 
   test('request_review', () async {
-    final requester = CallableReviewRequester(
-      functions: functions,
-      signedIn: () => true,
-    );
+    final requester = CallableReviewRequester(functions: functions);
     await expectLater(
       requester.request(ReviewPath.error),
       throwsA(_appCannotReach),
@@ -146,7 +195,6 @@ void main() {
       final transport = CallableDeletionTransport(
         isOnline: () => true,
         call: () async => throw _refused,
-        signedIn: () => true,
       );
       await expectLater(
         transport.requestDeletion(),
@@ -157,7 +205,6 @@ void main() {
           transport: CallableDeletionTransport(
             isOnline: () => true,
             call: () async => throw _refused,
-            signedIn: () => true,
           ),
           wipe: RecordingLocalWipe(),
           quiesce: () async {},
@@ -166,11 +213,11 @@ void main() {
       );
     });
 
-    test('signed out it stays a refusal with nothing deleted', () async {
+    test('a connection that never got through stays offline', () async {
       final transport = CallableDeletionTransport(
         isOnline: () => true,
-        call: () async => throw _refused,
-        signedIn: () => false,
+        call: () async =>
+            throw FirebaseFunctionsException(code: 'unavailable', message: ''),
       );
       await expectLater(
         transport.requestDeletion(),
@@ -216,7 +263,6 @@ void main() {
     final store = CallableCaptureConsentStore(
       firestore: _NoFirestore(),
       functions: functions,
-      signedIn: () => true,
     );
     await tester.binding.setSurfaceSize(const Size(800, 2400));
     addTearDown(() => tester.binding.setSurfaceSize(null));

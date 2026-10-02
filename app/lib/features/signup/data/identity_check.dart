@@ -59,6 +59,9 @@ enum LivenessStart {
 
   /// App Check refused this copy of the app.
   appCannotReach,
+
+  /// The server did not accept her sign-in: sign in again.
+  signInAgain,
 }
 
 class IdentityCheck {
@@ -135,6 +138,7 @@ class IdentityCheck {
         CallFailureKind.reviewOpen => LivenessStart.reviewOpen,
         CallFailureKind.closed => LivenessStart.closed,
         CallFailureKind.appCannotReach => LivenessStart.appCannotReach,
+        CallFailureKind.signInAgain => LivenessStart.signInAgain,
         CallFailureKind.retake || CallFailureKind.other => LivenessStart.failed,
       };
     }

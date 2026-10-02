@@ -74,7 +74,11 @@ class BeingCheckedView extends StatefulWidget {
     this.reviewAsked = true,
     this.requester,
     this.onAskedForCall,
+    this.onSignInAgain,
   });
+
+  /// The server did not accept her sign-in: out to sign in again (N4).
+  final VoidCallback? onSignInAgain;
 
   /// Whether she has asked for the reviewer's call. False when the automatic
   /// check raised the flag by itself (R4): then this screen says plainly that
@@ -306,8 +310,17 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
                     l10n.youHaveAskedForAReviewerToo,
                   CallFailureKind.appCannotReach =>
                     l10n.thisCopyOfTheAppCannotReach_agbhf,
+                  CallFailureKind.signInAgain =>
+                    l10n.yourSignInIsNoLongerValid_1y16r,
                   _ => l10n.weCouldNotReachOwnHubSo_3usbb,
                 }, style: AppText.bodyM.copyWith(color: AppColors.error)),
+              ),
+            if (_askFailure == CallFailureKind.signInAgain &&
+                widget.onSignInAgain != null)
+              AppButton(
+                l10n.signInAgain,
+                variant: AppButtonVariant.outlined,
+                onPressed: widget.onSignInAgain,
               ),
             AppButton(
               l10n.askForTheCall,

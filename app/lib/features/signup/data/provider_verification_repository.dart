@@ -229,6 +229,7 @@ class ProviderVerificationRepository implements VerificationRepository {
       CallFailureKind.retake => const VerificationState.retakeNeeded(),
       CallFailureKind.appCannotReach =>
         const VerificationState.appCannotReach(),
+      CallFailureKind.signInAgain => const VerificationState.signInAgain(),
       CallFailureKind.other => const VerificationState.reviewOffered(),
     };
     _emit(next);
@@ -261,6 +262,7 @@ class ProviderVerificationRepository implements VerificationRepository {
         CallFailureKind.tryTomorrow => const VerificationState.tryTomorrow(),
         CallFailureKind.appCannotReach =>
           const VerificationState.appCannotReach(),
+        CallFailureKind.signInAgain => const VerificationState.signInAgain(),
         _ => const VerificationState.unreachable(),
       };
     }

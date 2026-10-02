@@ -120,6 +120,10 @@ sealed class VerificationState {
   /// review call would be refused the same way.
   const factory VerificationState.appCannotReach() = VerificationAppCannotReach;
 
+  /// The server did not accept her sign-in (N4). Nothing was decided; she
+  /// signs in again with her phone number. Never a review.
+  const factory VerificationState.signInAgain() = VerificationSignInAgain;
+
   /// Whether the community is open to her.
   bool get isVerified => this is VerificationVerified;
 
@@ -191,6 +195,10 @@ class VerificationReviewOffered extends VerificationState {
 
 class VerificationAppCannotReach extends VerificationState {
   const VerificationAppCannotReach();
+}
+
+class VerificationSignInAgain extends VerificationState {
+  const VerificationSignInAgain();
 }
 
 /// What is kept after a successful check.

@@ -7719,4 +7719,30 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get theCheckDidNotFinish => 'لم يكتمل التحقق';
+
+  @override
+  String get pleaseSignInAgain => 'يُرجى تسجيل الدخول مرة أخرى';
+
+  @override
+  String get signInAgain => 'سجّلي الدخول مرة أخرى';
+
+  @override
+  String get yourSignInIsNoLongerValid =>
+      'لم يعد تسجيل دخولكِ صالحًا، لذلك لم يُتّخذ أي قرار. سجّلي الدخول مرة أخرى برقم هاتفكِ، ثم أكملي التحقق.';
+
+  @override
+  String get yourSignInIsNoLongerValid_1cfl5 =>
+      'لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُحفظ موافقتكِ ولم تُفتح الكاميرا. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.';
+
+  @override
+  String get yourSignInIsNoLongerValid_1y16r =>
+      'لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.';
+
+  @override
+  String get yourSignInIsNoLongerValid_1ccq0 =>
+      'لم يعد تسجيل دخولكِ صالحًا، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.';
+
+  @override
+  String get yourSignInIsNoLongerValid_1g4zq =>
+      'لم يعد تسجيل دخولكِ صالحًا، لذلك لم يُحذف شيء. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ ثم المحاولة من جديد.';
 }

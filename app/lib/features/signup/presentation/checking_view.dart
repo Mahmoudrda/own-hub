@@ -45,7 +45,11 @@ class CheckingView extends StatefulWidget {
     this.onConsentNeeded,
     this.onAskForReviewer,
     this.onClose,
+    this.onSignInAgain,
   });
+
+  /// The server did not accept her sign-in: out to sign in again (N4).
+  final VoidCallback? onSignInAgain;
 
   /// The server refused her account for good: `C14`, which says so.
   final VoidCallback? onRejected;
@@ -132,6 +136,7 @@ class _CheckingViewState extends State<CheckingView> {
       case VerificationChecksUsedUp():
       case VerificationUnreachable():
       case VerificationAppCannotReach():
+      case VerificationSignInAgain():
         setState(() => _stop = state);
       case VerificationReviewOffered():
         // On to C15 with the "could not finish" wording, once. Coming back
@@ -181,6 +186,13 @@ class _CheckingViewState extends State<CheckingView> {
         widget.onClose == null
             ? null
             : AppButton(l10n.close, onPressed: widget.onClose),
+      ),
+      VerificationSignInAgain() => (
+        l10n.pleaseSignInAgain,
+        l10n.yourSignInIsNoLongerValid,
+        widget.onSignInAgain == null
+            ? null
+            : AppButton(l10n.signInAgain, onPressed: widget.onSignInAgain),
       ),
       _ => (
         l10n.weCouldNotReachOwnHub,

@@ -47,7 +47,11 @@ class ConsentView extends StatefulWidget {
     this.onDeclined,
     this.onBack,
     this.now,
+    this.onSignInAgain,
   });
+
+  /// The server did not accept her sign-in: out to sign in again (N4).
+  final VoidCallback? onSignInAgain;
 
   /// Whose consent this is. The record is meaningless without it, so it is
   /// required rather than nullable: a screen that could write a consent record
@@ -85,8 +89,8 @@ class _ConsentViewState extends State<ConsentView> {
   /// nothing, which reads as a broken app and teaches her to give up here.
   bool _failed = false;
 
-  /// True when the failure was this copy of the app being refused.
-  bool _appCannotReach = false;
+  /// What the last failure was, read from the server's answer.
+  CallFailureKind? _failure;
 
   Future<void> _agree() async {
     if (_recording) return;
@@ -112,10 +116,10 @@ class _ConsentViewState extends State<ConsentView> {
         setState(() {
           _recording = false;
           _failed = true;
-          // App Check refused this copy of the app (R3): a retry cannot fix
-          // that, an update can, so she is told which.
-          _appCannotReach =
-              classifyCallFailure(error) == CallFailureKind.appCannotReach;
+          // App Check refused this copy of the app (R3), or the server did
+          // not accept her sign-in (N4): a retry cannot fix either, so she is
+          // told what can.
+          _failure = classifyCallFailure(error);
         });
       }
       return;
@@ -135,12 +139,24 @@ class _ConsentViewState extends State<ConsentView> {
           Semantics(
             liveRegion: true,
             child: Text(
-              _appCannotReach
-                  ? l10n.thisCopyOfTheAppCannotReach_1dlg6
-                  : l10n.weCouldNotSaveYourAgreementSo,
+              switch (_failure) {
+                CallFailureKind.appCannotReach =>
+                  l10n.thisCopyOfTheAppCannotReach_1dlg6,
+                CallFailureKind.signInAgain =>
+                  l10n.yourSignInIsNoLongerValid_1cfl5,
+                _ => l10n.weCouldNotSaveYourAgreementSo,
+              },
               key: const ValueKey('consent-error'),
               style: AppText.bodyM.copyWith(color: AppColors.error),
             ),
+          ),
+        if (_failed &&
+            _failure == CallFailureKind.signInAgain &&
+            widget.onSignInAgain != null)
+          AppButton(
+            l10n.signInAgain,
+            variant: AppButtonVariant.outlined,
+            onPressed: widget.onSignInAgain,
           ),
         AppButton(
           l10n.iAgreeStartTheCamera,

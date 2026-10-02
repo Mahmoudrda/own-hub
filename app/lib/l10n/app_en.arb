@@ -3155,5 +3155,12 @@
   },
   "aReviewerCanOnlyCallYouAfter": "A reviewer can only call you after you ask for the call. If you ask, a woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.",
   "askForTheCall": "Ask for the call",
-  "theCheckDidNotFinish": "The check did not finish"
+  "theCheckDidNotFinish": "The check did not finish",
+  "pleaseSignInAgain": "Please sign in again",
+  "signInAgain": "Sign in again",
+  "yourSignInIsNoLongerValid": "Your sign-in is no longer valid, so nothing was decided. Sign in again with your phone number, then carry on with your check.",
+  "yourSignInIsNoLongerValid_1cfl5": "Your sign-in is no longer valid, so your agreement was not saved and the camera has not opened. Please sign in again with your phone number.",
+  "yourSignInIsNoLongerValid_1y16r": "Your sign-in is no longer valid, so you are not in the queue. Please sign in again with your phone number.",
+  "yourSignInIsNoLongerValid_1ccq0": "Your sign-in is no longer valid, so your health backup was not changed. Please sign in again with your phone number.",
+  "yourSignInIsNoLongerValid_1g4zq": "Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again."
 }

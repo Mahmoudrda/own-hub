@@ -13,14 +13,10 @@ import '../domain/review_request.dart';
 import 'callable_failure.dart';
 
 class CallableReviewRequester implements ReviewRequester {
-  CallableReviewRequester({
-    FirebaseFunctions? functions,
-    bool Function()? signedIn,
-  }) : _functions = functions ?? FirebaseBoot.functions,
-       _signedIn = signedIn ?? firebaseUserSignedIn;
+  CallableReviewRequester({FirebaseFunctions? functions})
+    : _functions = functions ?? FirebaseBoot.functions;
 
   final FirebaseFunctions _functions;
-  final bool Function() _signedIn;
 
   /// The request body. Pinned to the contract by
   /// test/contracts/identity_contract_test.dart.
@@ -38,7 +34,7 @@ class CallableReviewRequester implements ReviewRequester {
     try {
       response = await callable.call<Object?>(payloadFor(path));
     } on FirebaseFunctionsException catch (error) {
-      throw callFailureFrom(error, signedIn: _signedIn);
+      throw callFailureFrom(error);
     }
     final data = response.data;
     final state = data is Map ? reviewRequestStateFrom(data['state']) : null;

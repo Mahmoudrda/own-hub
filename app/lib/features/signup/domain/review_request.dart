@@ -72,22 +72,13 @@ class VerificationCallFailure implements Exception {
   String toString() => 'VerificationCallFailure($code, $reason)';
 }
 
-/// A callable's error code and message, read for a woman who is or is not
-/// signed in. `unauthenticated` while signed in is App Check refusing this
-/// copy of the app (R3), so it reads as `app_check_missing`.
-VerificationCallFailure callFailureOf(
-  String code,
-  String? message, {
-  required bool signedIn,
-}) {
-  if (code == 'unauthenticated' && signedIn) {
-    return const VerificationCallFailure(
-      'failed-precondition',
-      ServerReason.appCheckMissing,
-    );
-  }
-  return VerificationCallFailure(code, message);
-}
+/// A callable's error code and message, in the domain's words.
+///
+/// Taken as the server sent them. App Check refusals arrive as
+/// `failed-precondition` `app_check_missing`, so `unauthenticated` is no
+/// longer read as App Check: it means her ID token was rejected (N4).
+VerificationCallFailure callFailureOf(String code, String? message) =>
+    VerificationCallFailure(code, message);
 
 /// The server reason codes the client acts on (contract `errorReasons`, plus
 /// `review_already_open`, which start_verification raises).
@@ -99,6 +90,7 @@ abstract final class ServerReason {
   static const String verificationClosed = 'verification_closed';
   static const String reviewAlreadyOpen = 'review_already_open';
   static const String appCheckMissing = 'app_check_missing';
+  static const String phoneSignInRequired = 'phone_sign_in_required';
   static const String imageUndecodable = 'image_undecodable';
   static const String imageTooLarge = 'image_too_large';
   static const String sessionMissing = 'session_missing';
@@ -132,6 +124,12 @@ enum CallFailureKind {
   /// refused the same way, so she is told to update the app instead.
   appCannotReach,
 
+  /// The server did not accept her sign-in: her ID token was rejected (a
+  /// disabled, deleted or revoked account), or the account did not sign in
+  /// with a phone number. She is told to sign in again with her phone number.
+  /// Never a review and never "update the app".
+  signInAgain,
+
   /// Anything else: network, timeout, server error, App Check.
   other,
 }
@@ -140,6 +138,12 @@ CallFailureKind classifyCallFailure(Object error) {
   if (error is! VerificationCallFailure) return CallFailureKind.other;
   final reason = error.reason;
   switch (error.code) {
+    case 'unauthenticated':
+      return CallFailureKind.signInAgain;
+    case 'permission-denied':
+      return reason == ServerReason.phoneSignInRequired
+          ? CallFailureKind.signInAgain
+          : CallFailureKind.other;
     case 'resource-exhausted':
       if (reason == ServerReason.costCapReached) {
         return CallFailureKind.checksUsedUp;

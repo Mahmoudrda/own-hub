@@ -93,13 +93,10 @@ class CallableVerificationProvider implements VerificationProvider {
   CallableVerificationProvider({
     FirebaseFunctions? functions,
     DateTime Function()? now,
-    bool Function()? signedIn,
   }) : _functions = functions ?? FirebaseBoot.functions,
-       _now = now ?? DateTime.now,
-       _signedIn = signedIn ?? firebaseUserSignedIn;
+       _now = now ?? DateTime.now;
 
   final FirebaseFunctions _functions;
-  final bool Function() _signedIn;
 
   /// Injectable so a test can assert the computed deadline instead of racing
   /// the wall clock.
@@ -115,7 +112,7 @@ class CallableVerificationProvider implements VerificationProvider {
     try {
       response = await callable.call<Object?>();
     } on FirebaseFunctionsException catch (error) {
-      throw callFailureFrom(error, signedIn: _signedIn);
+      throw callFailureFrom(error);
     }
     final data = response.data;
     if (data is! Map) {
@@ -193,7 +190,7 @@ class CallableVerificationProvider implements VerificationProvider {
         ),
       );
     } on FirebaseFunctionsException catch (error) {
-      throw callFailureFrom(error, signedIn: _signedIn);
+      throw callFailureFrom(error);
     }
 
     return _decisionFrom(response.data);
