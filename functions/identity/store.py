@@ -525,6 +525,54 @@ def write_consent(uid: str) -> None:
     )
 
 
+HEALTH_COLLECTIONS = ("checkins", "measurements", "cycle", "periods")
+HEALTH_PROFILE_KEYS = ("lifeStage", "allergies")
+
+
+def write_health_consent(uid: str, granted: bool) -> None:
+    """S17: users/{uid}/consents/health-v1. Server-written only.
+
+    Granted is a full set (a fresh grant after a withdrawal starts clean).
+    Withdrawn is a merge that keeps when it was first given."""
+    reference = (
+        db()
+        .collection(config.COL_USERS)
+        .document(uid)
+        .collection(config.COL_CONSENTS)
+        .document(f"health-v{config.HEALTH_CONSENT_VERSION}")
+    )
+    if granted:
+        reference.set(
+            {
+                "version": config.HEALTH_CONSENT_VERSION,
+                "state": "granted",
+                "at": firestore.SERVER_TIMESTAMP,
+                "withdrawnAt": None,
+            }
+        )
+    else:
+        reference.set(
+            {
+                "version": config.HEALTH_CONSENT_VERSION,
+                "state": "withdrawn",
+                "withdrawnAt": firestore.SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
+
+
+def purge_health_data(uid: str) -> None:
+    """She withdrew: delete the cloud copy of her health data. The copy on her
+    phone stays, because it is the source of truth (Protected List 11)."""
+    user = db().collection(config.COL_USERS).document(uid)
+    for name in HEALTH_COLLECTIONS:
+        db().recursive_delete(user.collection(name))
+    user.set(
+        {"profile": {key: firestore.DELETE_FIELD for key in HEALTH_PROFILE_KEYS}},
+        merge=True,
+    )
+
+
 def has_consent(uid: str) -> bool:
     snapshot = (
         db()

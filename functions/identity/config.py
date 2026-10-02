@@ -564,3 +564,11 @@ CONSENT_VERSION = 1
 """Bumped whenever the consent text changes. Spec §4 allows exactly three fields
 in a consent record — uid, version, timestamp — so the version is the only thing
 tying a record to what she was actually shown."""
+
+HEALTH_CONSENT_VERSION = 1
+"""Version of the separate health-data and transfer-abroad consent (S17,
+PDPL Art. 12). Recorded at users/{uid}/consents/health-v1 by
+record_health_consent before her first cycle, check-in, measurement, period,
+life-stage or allergy write reaches the cloud; the rules refuse those writes
+without it. Bumped whenever that wording changes. The wording is PENDING
+COUNSEL and PDPC approval of the consent mechanism."""

@@ -129,6 +129,23 @@ service cloud.firestore {
       return signedIn() && request.auth.token.admin == true;
     }
 
+    // S17 / PDPL Art. 12. Her separate consent to back up health data, written
+    // only by the record_health_consent callable. Cycle, period, check-in and
+    // measurement writes, and the lifeStage and allergies profile keys, are
+    // refused without it. Deletes never need it: withdrawing must always be
+    // able to remove what is there. Two billed reads on those writes only.
+    function hasHealthConsent(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid)/consents/health-v1)
+        && get(/databases/$(database)/documents/users/$(uid)/consents/health-v1).data.state == 'granted';
+    }
+
+    // S17: the profile may carry lifeStage or allergies only with that consent.
+    function profileHealthOk(uid) {
+      return !touches(['profile'])
+        || !request.resource.data.profile.keys().hasAny(['lifeStage', 'allergies'])
+        || hasHealthConsent(uid);
+    }
+
     // The set of keys this write touches.
     //
     // **`resource` is null on a create.** Firestore's own field-level guide
@@ -457,6 +474,7 @@ service cloud.firestore {
                     && validProfile()
                     && validPrivacy()
                     && validNotify()
+                    && profileHealthOk(uid)
                     && stampedIfTouched();
 
       // G2 owns profile; G7 owns privacy and notify. Neither may reach the other
@@ -471,6 +489,7 @@ service cloud.firestore {
                     && validProfile()
                     && validPrivacy()
                     && validNotify()
+                    && profileHealthOk(uid)
                     && stampedIfTouched();
 
       // Deletion is a Cloud Function that purges by manifest; Firestore does not
@@ -489,6 +508,7 @@ service cloud.firestore {
       match /checkins/{day} {
         allow read: if isSelfVerified(uid);
         allow create, update: if isSelfVerified(uid)
+                              && hasHealthConsent(uid)
                               && isDay(day)
                               && noRunCounter()
                               && request.resource.data.keys().hasOnly([
@@ -671,6 +691,7 @@ service cloud.firestore {
       match /measurements/{day} {
         allow read: if isSelfVerified(uid);
         allow create, update: if isSelfVerified(uid)
+                              && hasHealthConsent(uid)
                               && isDay(day)
                               && noRunCounter()
                               && requiredMeta()
@@ -732,6 +753,7 @@ service cloud.firestore {
         allow get:  if isSelfVerified(uid);
         allow list: if false;
         allow create, update: if isSelfVerified(uid)
+                              && hasHealthConsent(uid)
                               && docId == 'current'
                               && noRunCounter()
                               && freshStamp()
@@ -769,6 +791,7 @@ service cloud.firestore {
         allow get:  if isSelfVerified(uid);
         allow list: if isSelfVerified(uid);            // Y08's bounded range, owner only
         allow create, update: if isSelfVerified(uid)
+                              && hasHealthConsent(uid)
                               && noRunCounter()
                               && freshStamp()
                               && periodOk(request.resource.data);

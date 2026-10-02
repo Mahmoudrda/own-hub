@@ -80,11 +80,8 @@ def test_the_verification_consent_document_is_the_one_the_store_writes(monkeypat
     assert written["fields"] == set(doc["fields"])
 
 
-_NOT_YET = {"record_health_consent"}  # item 7 removes this line's entry
-
-
 def test_every_contract_callable_exists_in_main():
-    missing = set(contract()["callables"]) - _NOT_YET - _defined_functions()
+    missing = set(contract()["callables"]) - _defined_functions()
     assert not missing, f"main.py does not define {sorted(missing)}"
 
 
@@ -141,3 +138,10 @@ def test_the_deletion_journal_matches():
     from account import deletion
 
     assert deletion.JOURNAL == contract()["deletionJournal"]
+
+
+def test_health_consent_version_and_doc_id_match():
+    doc = contract()["documents"]["healthConsent"]
+    assert doc["path"] == f"users/{{uid}}/consents/health-v{config.HEALTH_CONSENT_VERSION}"
+    request = contract()["callables"]["record_health_consent"]["request"]
+    assert request["consentVersion"] == config.HEALTH_CONSENT_VERSION

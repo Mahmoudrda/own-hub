@@ -280,6 +280,34 @@ def record_consent(request: https_fn.CallableRequest) -> dict:
 
 
 @https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
+def record_health_consent(request: https_fn.CallableRequest) -> dict:
+    """S17: her separate consent to back up health data to the cloud.
+
+    Request {consentVersion: 1, granted: bool}. Granting records
+    users/{uid}/consents/health-v1 with state "granted"; the rules refuse
+    cycle, period, check-in, measurement, life-stage and allergy writes until
+    it exists. Withdrawing records "withdrawn" and deletes the cloud copy of
+    those collections and profile keys. Not gated on verification: it is a
+    privacy control (Protected List 6).
+    """
+    uid = _require_auth(request)
+    data = request.data or {}
+    if not isinstance(data, dict) or not isinstance(data.get("granted"), bool):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    if data.get("consentVersion") != config.HEALTH_CONSENT_VERSION:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
+        )
+    granted = data["granted"]
+    store.write_health_consent(uid, granted)
+    if not granted:
+        store.purge_health_data(uid)
+    return {"ok": True, "state": "granted" if granted else "withdrawn"}
+
+
+@https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
 def start_verification(request: https_fn.CallableRequest) -> dict:
     """Mint a single-use, uid-bound liveness session.
 

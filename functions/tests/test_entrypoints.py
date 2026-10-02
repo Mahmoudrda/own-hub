@@ -47,6 +47,7 @@ CALLABLES = {
     "request_review",
     "get_review_contact",
     "delete_account",
+    "record_health_consent",
 }
 
 
