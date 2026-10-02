@@ -666,8 +666,14 @@ def uid_daily_count_and_increment(uid: str, field: str) -> int:
     """One account's count of `field` today, after adding this call.
 
     On verificationLedger/{uid}.daily = {day, starts, verifies, reviews}, reset
-    when the UTC day changes. Transactional and merge-only, so nothing else on
-    the ledger document is touched."""
+    when the UTC day changes. Transactional, and nothing else on the ledger
+    document is touched.
+
+    merge=["daily"], NOT merge=True. Firestore's merge=True on a nested map is
+    a leaf merge (update mask daily.day, daily.starts), so yesterday's
+    daily.verifies and daily.reviews would survive the day change and the
+    per-uid daily cap would become a lifetime cap. Naming the field replaces
+    the whole map. tests/test_store_merge_semantics.py pins this."""
     reference = db().collection(config.COL_LEDGER).document(uid)
     today = _today()
 
@@ -680,7 +686,7 @@ def uid_daily_count_and_increment(uid: str, field: str) -> int:
             daily = {"day": today}
         count = int(daily.get(field, 0)) + 1
         daily[field] = count
-        transaction.set(reference, {"daily": daily}, merge=True)
+        transaction.set(reference, {"daily": daily}, merge=["daily"])
         return count
 
     return txn(db().transaction())
