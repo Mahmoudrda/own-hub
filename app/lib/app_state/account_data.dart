@@ -269,6 +269,7 @@ Future<void> deleteEverythingOnThisPhone({
 Future<AccountDeletionResult> deleteAccount({
   DeletionTransport? transport,
   LocalWipe wipe = const ThisPhoneWipe(),
+  Future<void> Function() quiesce = quiesceCloudWrites,
 }) async {
   final signedIn = AppRouter.signedInUid != null;
   final realTransport =
@@ -283,6 +284,15 @@ Future<AccountDeletionResult> deleteAccount({
     await deleteEverythingOnThisPhone(wipe: wipe);
     return AccountDeletionResult.done;
   }
+
+  // N9: offline there is nothing to stop and nothing will be deleted, so the
+  // phone is left exactly as it is.
+  if (!realTransport.online) return AccountDeletionResult.offline;
+  // N9: before the server purges, no write may still be able to leave this
+  // phone. A queued Firestore write that synced after the purge would
+  // recreate users/{uid}. So the sync stops and the offline queue is
+  // cleared first. (The server also sweeps a second time.)
+  await quiesce();
 
   final service = AccountDeletionService(
     transport: realTransport,
@@ -319,6 +329,23 @@ Future<AccountDeletionResult> deleteAccount({
     return AccountDeletionResult.unfinished;
   } finally {
     unawaited(service.dispose());
+  }
+}
+
+/// Stops every client write before `delete_account` runs (N9): the cloud
+/// sync, then Firestore itself, then its offline queue and cache.
+///
+/// If the call then fails for want of a connection, nothing was deleted and
+/// her data is still on this phone; the sync starts again at the next launch.
+Future<void> quiesceCloudWrites() async {
+  CloudStore.instance.stop();
+  if (!FirebaseBoot.isReady) return;
+  try {
+    await FirebaseFirestore.instance.terminate();
+    await FirebaseFirestore.instance.clearPersistence();
+  } catch (_) {
+    // A client that will not shut down must not block her deletion; the
+    // server's second sweep covers a late write.
   }
 }
 

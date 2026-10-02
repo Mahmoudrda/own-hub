@@ -206,4 +206,41 @@ void main() {
       },
     );
   });
+
+  group('N9: no client write can follow the purge', () {
+    test('writes are stopped and the offline queue cleared before the call',
+        () async {
+      final order = <String>[];
+      final result = await deleteAccount(
+        transport: CallableDeletionTransport(
+          isOnline: () => true,
+          call: () async {
+            order.add('delete_account');
+            return <String, Object?>{'state': 'done', 'journal': _journal};
+          },
+        ),
+        wipe: RecordingLocalWipe(),
+        quiesce: () async => order.add('quiesce'),
+      );
+      expect(result, AccountDeletionResult.done);
+      expect(order, <String>['quiesce', 'delete_account']);
+    });
+
+    test('offline, nothing is quiesced and nothing is called', () async {
+      final order = <String>[];
+      final result = await deleteAccount(
+        transport: CallableDeletionTransport(
+          isOnline: () => false,
+          call: () async {
+            order.add('delete_account');
+            return null;
+          },
+        ),
+        wipe: RecordingLocalWipe(),
+        quiesce: () async => order.add('quiesce'),
+      );
+      expect(result, AccountDeletionResult.offline);
+      expect(order, isEmpty);
+    });
+  });
 }
