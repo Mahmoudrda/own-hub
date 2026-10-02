@@ -175,8 +175,33 @@ void main() {
         ServerReason.consentMissing,
         ServerReason.verificationClosed,
         ServerReason.appCheckMissing,
+        ServerReason.reviewAlreadyOpen,
+        ServerReason.imageUndecodable,
+        ServerReason.imageTooLarge,
+        ServerReason.sessionMissing,
+        ServerReason.livenessFailed,
+        ServerReason.internalError,
       ]) {
-        expect(reasons, contains(reason));
+        expect(reasons, contains(reason), reason: reason);
+      }
+    });
+
+    test('every reason code the client declares is pinned (N13)', () {
+      // Read from the source, so a code added to ServerReason without a row
+      // in the contract fails here rather than on a woman's phone.
+      final reasons = (contract['errorReasons'] as Map).values.toSet();
+      final source = File(
+        'lib/features/signup/domain/review_request.dart',
+      ).readAsStringSync();
+      final block = source.substring(
+        source.indexOf('abstract final class ServerReason'),
+      );
+      final declared = RegExp(
+        r"static const String \w+ = '([a-z_]+)';",
+      ).allMatches(block.substring(0, block.indexOf('}'))).map((m) => m[1]!);
+      expect(declared, isNotEmpty);
+      for (final code in declared) {
+        expect(reasons, contains(code), reason: code);
       }
     });
   });
