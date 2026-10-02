@@ -27,4 +27,15 @@ def _no_real_firestore(monkeypatch):
     monkeypatch.setattr(webhook, "_url_cache", None)
     monkeypatch.delenv("FLAG_WEBHOOK_URL", raising=False)
     monkeypatch.delenv("FUNCTIONS_EMULATOR", raising=False)
+
+    # Bookings are refused in the past and beyond a 7-day horizon. Tests book
+    # fixed dates (2026-10-05), so "now" for scheduling is pinned to the day
+    # they were written; tests that care pass now= explicitly.
+    import datetime as dt
+
+    from identity import review
+
+    monkeypatch.setattr(
+        review, "_now", lambda: dt.datetime(2026, 10, 2, 12, tzinfo=dt.timezone.utc)
+    )
     yield

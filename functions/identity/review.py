@@ -50,6 +50,10 @@ NOT_FOUND = "not-found"
 _sleep = time.sleep
 
 
+def _now() -> dt.datetime:
+    return dt.datetime.now(dt.timezone.utc)
+
+
 class ReviewError(Exception):
     def __init__(self, kind: str, reason: str):
         super().__init__(reason)
@@ -328,14 +332,17 @@ def schedule(
     *,
     now: Optional[dt.datetime] = None,
 ) -> dict:
-    """Book the live review. N6: a booking may be at most
+    """Book the live review. A booking may not be in the past (more than
+    REVIEW_BOOKING_PAST_TOLERANCE_MINUTES ago). N6: a booking may be at most
     REVIEW_BOOKING_MAX_DAYS ahead, and it moves the flag's slaExpiresAt to the
     booked time plus REVIEW_BOOKING_GRACE_HOURS (never earlier than it was), so
     the expiry sweep cannot expire a booked review before the call."""
     if route not in config.REVIEW_ROUTES:
         raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
     when = parse_when(scheduled_for)
-    now = now or dt.datetime.now(dt.timezone.utc)
+    now = now or _now()
+    if when < now - dt.timedelta(minutes=config.REVIEW_BOOKING_PAST_TOLERANCE_MINUTES):
+        raise ReviewError(INVALID, reasons.REVIEW_TIME_OUT_OF_RANGE)
     if when > now + dt.timedelta(days=config.REVIEW_BOOKING_MAX_DAYS):
         raise ReviewError(INVALID, reasons.REVIEW_TIME_OUT_OF_RANGE)
     record = _pending_flag_for(store, reviewer_uid, flag_id)

@@ -525,6 +525,11 @@ REVIEW_BOOKING_MAX_DAYS = 7
 refused (review_time_out_of_range), so the grace above cannot be used to park a
 flag open indefinitely."""
 
+REVIEW_BOOKING_PAST_TOLERANCE_MINUTES = 5
+"""A booking earlier than now minus this is refused (review_time_out_of_range):
+a time already gone cannot be a call she will receive. The tolerance covers a
+reviewer booking "now" with a slightly slow clock."""
+
 MINT_ATTEMPTS = 3
 """How many times decide tries to mint the verified claim and write her state
 after an approval has committed, before recording mintPending on the flag for

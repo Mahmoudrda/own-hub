@@ -68,3 +68,23 @@ def test_the_firestore_store_writes_the_new_sla(monkeypatch):
     store.FirestoreReviewStore().mark_scheduled("f-1", "video", NOW, "rev", sla)
     flag = db.docs[f"{config.COL_FLAGS}/f-1"]
     assert flag["slaExpiresAt"] == sla and flag["route"] == "video"
+
+
+def test_a_booking_in_the_past_is_refused():
+    fake = FakeReviewStore()
+    flag_id = _open(fake)
+    past = NOW - dt.timedelta(minutes=config.REVIEW_BOOKING_PAST_TOLERANCE_MINUTES, seconds=1)
+    with pytest.raises(review.ReviewError) as caught:
+        review.schedule(fake, "rev", flag_id, "video", past.isoformat(), now=NOW)
+    assert caught.value.kind == review.INVALID
+    assert caught.value.reason == reasons.REVIEW_TIME_OUT_OF_RANGE
+    assert fake.flags[flag_id]["route"] is None
+    assert config.REVIEW_BOOKING_PAST_TOLERANCE_MINUTES == 5
+
+
+def test_a_booking_just_inside_the_tolerance_is_accepted():
+    fake = FakeReviewStore()
+    flag_id = _open(fake)
+    recent = NOW - dt.timedelta(minutes=4)
+    review.schedule(fake, "rev", flag_id, "video", recent.isoformat(), now=NOW)
+    assert fake.flags[flag_id]["route"] == "video"
