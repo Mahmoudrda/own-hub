@@ -627,6 +627,10 @@ class AppRouter {
   /// the last approval the server reported ([markApprovedByServer]).
   static bool _freshClaimRead = false;
 
+  /// Bumped by [forgetVerification]. A claim read started under an older
+  /// generation answers for a session that has ended, and is dropped (N6).
+  static int _claimGeneration = 0;
+
   /// Where the claim and the server state are read from. Replaced in tests.
   @visibleForTesting
   static VerificationBackend verificationBackend =
@@ -665,8 +669,10 @@ class AppRouter {
       _verifiedClaim = false;
       return;
     }
+    final generation = _claimGeneration;
     try {
       final verified = await backend.verifiedClaim().timeout(claimTimeout);
+      if (!_stillAbout(uid, generation)) return;
       _verifiedClaim = verified;
       _freshClaimRead = true;
       if (verified) {
@@ -675,6 +681,7 @@ class AppRouter {
         await VerificationMemory.forget();
       }
     } catch (error) {
+      if (!_stillAbout(uid, generation)) return;
       _verifiedClaim = false;
       if (!isUnreachableFailure(error)) return;
       if (remembered == uid) {
@@ -736,15 +743,25 @@ class AppRouter {
     final backend = verificationBackend;
     final uid = backend.currentUid;
     if (!backend.isReady || uid == null) return;
+    final generation = _claimGeneration;
     try {
-      _settleClaim(uid, await backend.verifiedClaim().timeout(claimTimeout));
+      final verified = await backend.verifiedClaim().timeout(claimTimeout);
+      _settleClaim(uid, verified, generation);
     } catch (_) {
       // Unreadable now: nothing changes.
     }
   }
 
-  /// A claim read from a token the server just issued.
-  static void _settleClaim(String uid, bool verified) {
+  /// Whether a read started for [uid] under [generation] still speaks for the
+  /// session in hand: nobody forgot her verification since, and the same uid
+  /// is signed in.
+  static bool _stillAbout(String uid, int generation) =>
+      generation == _claimGeneration && verificationBackend.currentUid == uid;
+
+  /// A claim read from a token the server just issued, for [uid], started
+  /// under [generation]. A stale read changes nothing (N6).
+  static void _settleClaim(String uid, bool verified, int generation) {
+    if (!_stillAbout(uid, generation)) return;
     _verifiedClaim = verified;
     _freshClaimRead = true;
     if (verified) {
@@ -759,6 +776,7 @@ class AppRouter {
   /// session result, the server state, the phone's memory and the review
   /// flags. Called on sign-out and on account deletion.
   static Future<void> forgetVerification() async {
+    _claimGeneration++;
     _verifiedClaim = false;
     _verifiedOnThisPhone = false;
     _freshClaimRead = false;
@@ -4806,11 +4824,12 @@ class AppRouter {
     final backend = verificationBackend;
     final uid = backend.currentUid;
     if (!backend.isReady || uid == null) return;
+    final generation = _claimGeneration;
     try {
       final verified = await backend
           .verifiedClaim(forceRefresh: true)
           .timeout(const Duration(seconds: 10));
-      _settleClaim(uid, verified);
+      _settleClaim(uid, verified, generation);
     } catch (_) {
       // Leaves the claim as it was. Fail closed.
     }
