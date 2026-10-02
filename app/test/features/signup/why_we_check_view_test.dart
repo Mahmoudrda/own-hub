@@ -50,7 +50,10 @@ void main() {
     );
     expect(find.textContaining('deleted after the check'), findsOneWidget);
     expect(find.textContaining('about 90 seconds'), findsOneWidget);
-    expect(find.textContaining('licensed Egyptian provider'), findsOneWidget);
+    // Who checks, stated truthfully: Own Hub's own system, not a licensed
+    // Egyptian provider (there is none), and the photos are never stored.
+    expect(find.textContaining("Own Hub's own system"), findsOneWidget);
+    expect(find.textContaining('licensed Egyptian provider'), findsNothing);
   });
 
   testWidgets('RULE 8 — it says out loud that her face is never judged', (

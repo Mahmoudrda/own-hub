@@ -1529,10 +1529,6 @@ class AppL10nEn extends AppL10n {
   String get checkIns => 'Check-ins';
 
   @override
-  String get checkedByALicensedEgyptianProviderTap =>
-      'Checked by a licensed Egyptian provider. Tap to read exactly what is stored.';
-
-  @override
   String get checkedByAWomanNoPhotoKept => 'Checked by a woman, no photo kept';
 
   @override
@@ -7620,4 +7616,8 @@ class AppL10nEn extends AppL10n {
   @override
   String get weCouldNotReachOwnHubSo =>
       'We could not reach Own Hub, so your health backup was not changed. Check your connection and try again.';
+
+  @override
+  String get checkedByOwnHubsOwnSystemYour =>
+      'Checked by Own Hub\'s own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.';
 }

@@ -93,7 +93,7 @@ class WhyWeCheckView extends StatelessWidget {
           ],
         ),
         Text(
-          l10n.checkedByALicensedEgyptianProviderTap,
+          l10n.checkedByOwnHubsOwnSystemYour,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],

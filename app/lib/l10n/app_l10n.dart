@@ -2995,12 +2995,6 @@ abstract class AppL10n {
   /// **'Check-ins'**
   String get checkIns;
 
-  /// No description provided for @checkedByALicensedEgyptianProviderTap.
-  ///
-  /// In en, this message translates to:
-  /// **'Checked by a licensed Egyptian provider. Tap to read exactly what is stored.'**
-  String get checkedByALicensedEgyptianProviderTap;
-
   /// No description provided for @checkedByAWomanNoPhotoKept.
   ///
   /// In en, this message translates to:
@@ -13860,6 +13854,12 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'We could not reach Own Hub, so your health backup was not changed. Check your connection and try again.'**
   String get weCouldNotReachOwnHubSo;
+
+  /// No description provided for @checkedByOwnHubsOwnSystemYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked by Own Hub\'s own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.'**
+  String get checkedByOwnHubsOwnSystemYour;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

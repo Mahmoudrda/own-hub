@@ -1521,10 +1521,6 @@ class AppL10nAr extends AppL10n {
   String get checkIns => 'المتابعات';
 
   @override
-  String get checkedByALicensedEgyptianProviderTap =>
-      'يتم التحقّق عبر مزوّد مصري مرخّص. اضغطي لتعرفي بدقة ما الذي يُحفظ.';
-
-  @override
   String get checkedByAWomanNoPhotoKept => 'تراجعها امرأة، ولا تُحفظ أي صورة';
 
   @override
@@ -7589,4 +7585,8 @@ class AppL10nAr extends AppL10n {
   @override
   String get weCouldNotReachOwnHubSo =>
       'تعذّر الوصول إلى Own Hub، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
+
+  @override
+  String get checkedByOwnHubsOwnSystemYour =>
+      'يتم التحقّق عبر نظام Own Hub الخاص. لا تُحفظ صور بطاقتكِ ولا صورتكِ الذاتية أبدًا. اضغطي لتعرفي بدقة ما الذي يُحفظ.';
 }

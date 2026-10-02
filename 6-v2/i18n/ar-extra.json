@@ -486,5 +486,6 @@
  "This is health data, so we only back it up with your clear agreement. You can turn it off at any time, and turning it off deletes the copy from your account.": "هذه بيانات صحية، لذلك لا ننسخها إلا بموافقتكِ الصريحة. يمكنكِ إيقاف هذا الخيار في أي وقت، وإيقافه يحذف النسخة من حسابكِ.",
  "If you do not turn it on, nothing else changes. Your health data simply stays on this phone only.": "إذا لم تفعّليه فلن يتغيّر شيء آخر. تبقى بياناتكِ الصحية على هذا الهاتف فقط.",
  "I agree, back up my health data": "أوافق، انسخوا بياناتي الصحية احتياطيًا",
- "We could not reach Own Hub, so your health backup was not changed. Check your connection and try again.": "تعذّر الوصول إلى Own Hub، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. تحقّقي من اتصالكِ ثم حاولي مرة أخرى."
+ "We could not reach Own Hub, so your health backup was not changed. Check your connection and try again.": "تعذّر الوصول إلى Own Hub، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
+ "Checked by Own Hub's own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.": "يتم التحقّق عبر نظام Own Hub الخاص. لا تُحفظ صور بطاقتكِ ولا صورتكِ الذاتية أبدًا. اضغطي لتعرفي بدقة ما الذي يُحفظ."
 }

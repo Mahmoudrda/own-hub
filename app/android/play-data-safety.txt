@@ -1,0 +1,79 @@
+Own Hub: Google Play Data safety answers (account build)
+=======================================================
+
+Copy these answers into Play Console > App content > Data safety. They must
+match ios/Runner/PrivacyInfo.xcprivacy, the App Store App Privacy answers and
+the published privacy policy. Wording of the policy is pending review by a
+licensed Egyptian lawyer.
+
+Overview
+--------
+Does the app collect or share any of the required user data types?  Yes
+Is all user data encrypted in transit?                              Yes
+Do you provide a way for users to request that their data is deleted?  Yes
+  (in the app: Profile and settings > delete account; and on the web page
+   listed under LegalLinks.deleteAccount once it is published)
+Is data shared with third parties?                                  No
+  (Google Cloud / Firebase act as service providers processing on our behalf,
+   which Play does not count as sharing)
+
+Data types collected
+--------------------
+For every type below: Collected = yes, Shared = no, Processed ephemerally as
+noted, Required unless noted, Purpose = App functionality (and Account
+management where marked).
+
+Personal info
+  - Phone number
+      Collected. Required. Purpose: Account management, App functionality.
+      Used for sign-in by SMS code (Firebase Authentication).
+  - User IDs
+      Collected. Required. Purpose: Account management, App functionality.
+      The Firebase uid her account and documents are keyed by.
+  - Other info: government ID number
+      Collected, NOT stored in readable form. Required for verification.
+      Purpose: App functionality (fraud prevention: one card, one account).
+      Only a keyed one-way hash of the national ID number is kept.
+
+Health and fitness
+  - Fitness info
+      Collected for verified accounts (workouts, sessions, meals). Required.
+      Purpose: App functionality.
+  - Health info
+      Collected ONLY if she turns on "Back up my health data" (off by default,
+      with its own consent): cycle and period dates, daily check-ins, body
+      measurements including weight, pregnancy, postpartum or injury stage,
+      allergies. Optional. Purpose: App functionality.
+      Otherwise this stays on the phone and is not collected.
+
+Photos and videos
+  - Photos
+      Collected and processed ephemerally: both sides of her national ID card
+      and a live selfie, for the women-only identity check. Never stored.
+      Required for automatic verification (a woman-reviewer video call is the
+      alternative). Purpose: App functionality (fraud prevention).
+
+App info and performance
+  - (none collected today; add "Crash logs, Diagnostics, not linked" if crash
+     reporting ships)
+
+Device or other IDs
+  - Device or other IDs
+      Collected (Firebase installation identifier; App Check attestation).
+      Required. Purpose: App functionality, Fraud prevention / security.
+
+Not collected
+-------------
+Location, contacts, messages, audio, files and docs, calendar, web browsing,
+financial info, app activity outside the above, and photos from the gallery
+(the app cannot read the gallery).
+
+Health apps declaration (Play Console > App content > Health apps)
+-----------------------------------------------------------------
+Categories: Activity and fitness; Nutrition and weight management; Period
+tracking. The app is not a medical device and does not diagnose, treat or
+prevent any condition.
+
+Target audience
+---------------
+18 and over only. Verification refuses anyone under 18.
