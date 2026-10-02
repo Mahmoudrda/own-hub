@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- The only permission this app asks for, and the only one it needs.
          Android shows its own sentence on the runtime prompt and gives us no
          string to put in it, so the explanation lives on the consent screen
@@ -14,6 +15,14 @@
          women-only gate has to survive. It is also a Play Data Safety
          declaration and a policy conversation we would have to have for a
          capability the product does not want. -->
+
+    <!-- Stripped from the MERGED manifest, because plugins add them. The
+         camera plugin declares RECORD_AUDIO for video, and this app records no
+         sound (enableAudio is false in camera_capture_service.dart); a library
+         can also bring READ_EXTERNAL_STORAGE. Neither may reach a store build:
+         each is a Data safety declaration for a capability we do not use. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
 
     <!-- Not required, so the app still installs on a handset with no camera or
          no autofocus. Google Play filters installs on any hardware feature a

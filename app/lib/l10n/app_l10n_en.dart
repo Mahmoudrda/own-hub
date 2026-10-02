@@ -1529,10 +1529,6 @@ class AppL10nEn extends AppL10n {
   String get checkIns => 'Check-ins';
 
   @override
-  String get checkedByALicensedEgyptianProviderTap =>
-      'Checked by a licensed Egyptian provider. Tap to read exactly what is stored.';
-
-  @override
   String get checkedByAWomanNoPhotoKept => 'Checked by a woman, no photo kept';
 
   @override
@@ -7579,4 +7575,49 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get lookingForWhatYouHaveLogged => 'Looking for what you have logged.';
+
+  @override
+  String get weCouldNotSaveYourAgreementSo =>
+      'We could not save your agreement, so the camera has not opened. Check your connection and try again.';
+
+  @override
+  String get backUpMyHealthData => 'Back up my health data';
+
+  @override
+  String get offYourCycleCheckInsMeasurementsLife =>
+      'Off. Your cycle, check-ins, measurements, life stage and allergies stay on this phone only.';
+
+  @override
+  String get onACopyIsKeptInYour =>
+      'On. A copy is kept in your Own Hub account, stored in Germany.';
+
+  @override
+  String get backUpYourHealthData => 'Back up your health data?';
+
+  @override
+  String get ifYouTurnThisOnACopy =>
+      'If you turn this on, a copy of your cycle and period dates, daily check-ins, body measurements including weight, your pregnancy, postpartum or injury stage, and your allergies is kept in your Own Hub account, so it comes back if you change phones.';
+
+  @override
+  String get theCopyIsStoredOnGoogleCloud =>
+      'The copy is stored on Google Cloud in Frankfurt, Germany, which is outside Egypt. The phone number you sign in with is held by Firebase Authentication, which may store it in the United States.';
+
+  @override
+  String get thisIsHealthDataSoWeOnly =>
+      'This is health data, so we only back it up with your clear agreement. You can turn it off at any time, and turning it off deletes the copy from your account.';
+
+  @override
+  String get ifYouDoNotTurnItOn =>
+      'If you do not turn it on, nothing else changes. Your health data simply stays on this phone only.';
+
+  @override
+  String get iAgreeBackUpMyHealthData => 'I agree, back up my health data';
+
+  @override
+  String get weCouldNotReachOwnHubSo =>
+      'We could not reach Own Hub, so your health backup was not changed. Check your connection and try again.';
+
+  @override
+  String get checkedByOwnHubsOwnSystemYour =>
+      'Checked by Own Hub\'s own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.';
 }

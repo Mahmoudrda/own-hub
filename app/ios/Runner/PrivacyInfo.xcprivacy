@@ -6,17 +6,34 @@
 	  Own Hub privacy manifest.
 
 	  WHAT THIS BINARY DOES TODAY. `Firebase.initializeApp` runs on every launch
-	  (`lib/app_state/firebase_boot.dart`), and pubspec carries five Firebase
-	  packages: firebase_core, firebase_auth, cloud_firestore, firebase_storage
-	  and cloud_functions. Firebase mints an installation identifier and sends it
+	  (`lib/app_state/firebase_boot.dart`), and pubspec carries six Firebase
+	  packages: firebase_core, firebase_auth, cloud_firestore, firebase_storage,
+	  cloud_functions and firebase_app_check. Firebase mints an installation identifier and sends it
 	  with every call it makes, so the app collects a device identifier whether
 	  or not a woman ever signs in. Apple's category for that is DeviceID, and it
 	  is declared below.
 
-	  Not linked, and not tracking. `Feature.accountRequired` is off in this
-	  build, so there is no sign-up, no account and nothing to link the
-	  identifier to; there are no ad SDKs, no analytics SDK and no third party it
-	  is shared with. NSPrivacyTracking stays false.
+	  DeviceID is not linked and not tracking: there are no ad SDKs, no
+	  analytics SDK and no third party it is shared with. NSPrivacyTracking
+	  stays false.
+
+	  THE ACCOUNT BUILD. Sign-up and identity verification ship at launch, so
+	  the data an account collects is declared here, all LINKED (to her
+	  account), none tracking, purpose AppFunctionality:
+	    - PhoneNumber: sign-in by SMS code (Firebase Authentication).
+	    - UserID: the Firebase uid her account and documents are keyed by.
+	    - HealthFitness: workouts and meals sync for a verified account; her
+	      cycle, period dates, check-ins, measurements, life stage and
+	      allergies only if she turns on "Back up my health data" (off by
+	      default, its own consent). Apple treats menstrual data as sensitive
+	      health data, and the App Store Connect answers must match.
+	    - OtherUserContent: both sides of her national ID card and one selfie,
+	      sent to our own check and discarded. Never stored. "Deleted
+	      afterwards" is not an exemption from declaring them.
+	    - OtherDataTypes: the national ID number read from the card; only a
+	      keyed one-way hash of it is kept, to stop one card being used twice.
+	  CrashData is added if and when crash reporting ships. SensitiveInfo only
+	  if counsel asks for it.
 
 	  NSPrivacyAccessedAPITypes is empty for the APP TARGET only. Every
 	  required-reason API this product touches is touched by a package that ships
@@ -25,24 +42,8 @@
 	  pods declare disk space, file timestamp, boot time and user defaults. If
 	  the app target ever reads one of those APIs directly, it belongs here.
 
-	  THE RELEASE THAT FLIPS `accountRequired` MUST ADD, before submission:
-	    - NSPrivacyCollectedDataTypePhoneNumber   (sign-in, LINKED, not tracking)
-	    - NSPrivacyCollectedDataTypeUserID        (the Firebase uid, LINKED)
-	    - NSPrivacyCollectedDataTypeHealthFitness (workouts, meals and My cycle,
-	      LINKED. Apple treats menstrual data as sensitive health data, so this
-	      one is not optional and the App Store Connect answers must match)
-	    - and, for as long as identity verification is live, the photographs the
-	      camera permission string already describes: both sides of a national ID
-	      card and one selfie. Apple's categories are
-	      NSPrivacyCollectedDataTypeOtherUserContent for the images and
-	      NSPrivacyCollectedDataTypeOtherDataTypes for the government ID, both
-	      LINKED, purpose AppFunctionality. They are deleted after the check, and
-	      "deleted afterwards" is not an exemption from declaring them.
-	    - NSPrivacyCollectedDataTypeCrashData only if Crashlytics ever ships. It
-	      is not in pubspec today.
-
 	  This file, the App Privacy answers in App Store Connect and
-	  docs/release/privacy-policy.md must say the same thing. A mismatch between
+	  the published privacy policy must say the same thing. A mismatch between
 	  the three is one of the most common rejections. Verify with Xcode:
 	  Product > Archive > Organizer > Generate Privacy Report.
 	-->
@@ -57,6 +58,66 @@
 			<string>NSPrivacyCollectedDataTypeDeviceID</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePhoneNumber</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeUserID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeHealthFitness</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherUserContent</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherDataTypes</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>

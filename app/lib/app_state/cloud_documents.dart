@@ -64,6 +64,7 @@ import 'package:flutter/foundation.dart';
 import '../domain/training/prescribed_set.dart';
 import '../domain/week/week_key.dart';
 import '../features/account/domain/dietary_profile.dart';
+import '../features/account/domain/health_backup.dart';
 import '../features/cycle/domain/cycle_document.dart';
 import '../features/cycle/domain/period_entry.dart';
 import '../features/cycle/domain/today_check_in.dart';
@@ -167,19 +168,28 @@ abstract final class CloudDocuments {
   /// Reads the live stores and touches nothing. Cheap enough to call on every
   /// debounce: the caller compares what comes back against what the server has
   /// already accepted and writes only the difference.
-  static List<CloudDoc> capture() => <CloudDoc>[
-    _userDoc(),
-    ..._sessions(),
-    ..._mealDays(),
-    _eatPrefsDoc(),
-    ..._mealPlans(),
-    ..._checkIns(),
-    ..._measurements(),
-    ?_cycleDoc(),
-    ..._periods(),
-    ..._notices(),
-    _firstWeekDoc(),
-  ];
+  ///
+  /// Her health data (check-ins, measurements, cycle, periods, and the
+  /// `lifeStage` and `allergies` keys of her profile) is included only while
+  /// she has opted in to the health backup. Off, those keys are absent, not
+  /// null, because the rules test for their presence. See
+  /// `features/account/domain/health_backup.dart`.
+  static List<CloudDoc> capture() {
+    final health = HealthBackupPreference.instance.enabled;
+    return <CloudDoc>[
+      _userDoc(includeHealth: health),
+      ..._sessions(),
+      ..._mealDays(),
+      _eatPrefsDoc(),
+      ..._mealPlans(),
+      if (health) ..._checkIns(),
+      if (health) ..._measurements(),
+      if (health) ?_cycleDoc(),
+      if (health) ..._periods(),
+      ..._notices(),
+      _firstWeekDoc(),
+    ];
+  }
 
   /// Folds [remote] into the live stores under the rule at the top of this
   /// file, and answers how many records it took from the cloud.
@@ -235,7 +245,17 @@ abstract final class CloudDocuments {
   /// been agreed. Reading them would mean inventing one here — a schema guessed
   /// from a collection name, which is the thing the rules file itself warns
   /// against two hundred lines from the bottom.
-  static const List<String> readableCollections = <String>[
+  ///
+  /// The four health collections are asked for only while the health backup
+  /// is on; off, the phone's copy is the only one that counts.
+  static List<String> get readableCollections => <String>[
+    for (final name in _allReadableCollections)
+      if (HealthBackupPreference.instance.enabled ||
+          !kHealthCollections.contains(name))
+        name,
+  ];
+
+  static const List<String> _allReadableCollections = <String>[
     'sessions',
     'meals',
     'eatPrefs',
@@ -251,7 +271,7 @@ abstract final class CloudDocuments {
 
 // ------------------------------------------------------------ users/{uid} ---
 
-CloudDoc _userDoc() {
+CloudDoc _userDoc({required bool includeHealth}) {
   final intake = AppRouter.intakeRepository.read();
   final dietary = AppRouter.dietaryRepository.read();
   final privacy = AppRouter.privacyRepository.settings();
@@ -275,12 +295,13 @@ CloudDoc _userDoc() {
         'equipment': [for (final item in intake.equipment) item.wireName],
         'days': intake.days,
         'minutes': intake.minutes,
-        'lifeStage': intake.lifeStage.wireName,
+        if (includeHealth) 'lifeStage': intake.lifeStage.wireName,
         'setupDone': AppRouter.intakeRepository.setupDone,
         // Null is her never having been asked and an empty list is her
         // answering "nothing". Collapsing the two is how an allergy guard
         // silently turns itself off, so the null travels.
-        'allergies': dietary.allergies?.map((a) => a.wireName).toList(),
+        if (includeHealth)
+          'allergies': dietary.allergies?.map((a) => a.wireName).toList(),
         'dietary': dietary.dietary?.map((d) => d.wireName).toList(),
         'language': AppRouter.localePreference.read()?.code,
       },

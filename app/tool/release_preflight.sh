@@ -51,6 +51,7 @@ check "compileSdk pinned to 36"            "grep -q 'compileSdk = 36' android/ap
 check "targetSdk pinned to 36"             "grep -q 'targetSdk = 36' android/app/build.gradle.kts"
 check "R8 minification enabled"            "grep -q 'isMinifyEnabled = true' android/app/build.gradle.kts"
 check "proguard rules exist"               "[ -f android/app/proguard-rules.pro ]"
+check "release signing refuses the debug key" "grep -q 'GradleException' android/app/build.gradle.kts"
 if [ -f android/key.properties ]; then
   ok "release keystore configured"
 else
@@ -71,6 +72,16 @@ check "privacy manifest declares Firebase's device id" \
       "! grep -q '^  firebase_core:' pubspec.yaml || grep -q NSPrivacyCollectedDataTypeDeviceID ios/Runner/PrivacyInfo.xcprivacy"
 check "privacy manifest makes no zero-collection claim" \
       "! grep -qiE 'carries no Firebase|COLLECTS NOTHING' ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares PhoneNumber" "grep -q NSPrivacyCollectedDataTypePhoneNumber ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares UserID" "grep -q NSPrivacyCollectedDataTypeUserID ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares HealthFitness" "grep -q NSPrivacyCollectedDataTypeHealthFitness ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares OtherUserContent" "grep -q NSPrivacyCollectedDataTypeOtherUserContent ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares OtherDataTypes" "grep -q NSPrivacyCollectedDataTypeOtherDataTypes ios/Runner/PrivacyInfo.xcprivacy"
+check "RECORD_AUDIO stripped from the merged manifest" "grep -q 'RECORD_AUDIO\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
+check "READ_EXTERNAL_STORAGE stripped"     "grep -q 'READ_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
+check "no false 'licensed provider' claim" "! grep -q 'licensed Egyptian provider' lib/l10n/app_en.arb"
+check "App Check is activated"             "grep -q FirebaseAppCheck lib/app_state/firebase_boot.dart"
+check "Play Data safety answers written"   "[ -f android/play-data-safety.txt ]"
 check "export compliance declared"         "grep -q ITSAppUsesNonExemptEncryption ios/Runner/Info.plist"
 check "ExportOptions.plist present"        "[ -f ios/ExportOptions.plist ]"
 check "team id filled in"                  "! grep -q 'YOUR_TEAM_ID' ios/ExportOptions.plist"

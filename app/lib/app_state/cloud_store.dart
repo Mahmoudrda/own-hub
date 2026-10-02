@@ -63,6 +63,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/widgets.dart';
 
 import '../data/pending_answers.dart';
+import '../features/account/domain/health_backup.dart';
 import '../features/signup/domain/auth_repository.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
@@ -397,6 +398,16 @@ class CloudStore {
       // own queue and leave with the network.
     } catch (error) {
       lastFailure = error;
+    }
+
+    // Health documents are taken from the cloud only while she has the
+    // health backup on. Off, the phone's own copy is the only one, and a
+    // stale cloud copy must not be folded back into it.
+    if (remote != null && !HealthBackupPreference.instance.enabled) {
+      remote = <CloudDoc>[
+        for (final doc in remote)
+          if (!kHealthCollections.contains(doc.collection)) doc,
+      ];
     }
 
     if (remote != null && remote.isNotEmpty) {

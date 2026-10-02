@@ -483,7 +483,6 @@
   "cheap": "Cheap",
   "checkIn1Of3SessionsSecond": "Check-in · 1 of 3 sessions · second quiet week",
   "checkIns": "Check-ins",
-  "checkedByALicensedEgyptianProviderTap": "Checked by a licensed Egyptian provider. Tap to read exactly what is stored.",
   "checkedByAWomanNoPhotoKept": "Checked by a woman, no photo kept",
   "checking": "Checking",
   "checkingYourCard": "Checking your card",
@@ -3091,5 +3090,17 @@
   "weSaveYourAnswerWithTheRest": "We save your answer with the rest of your setup. Nothing in your sessions changes from it yet.",
   "nobodyHasSignedOffWhatIsIn_127cj": "Nobody has signed off what is in these dishes yet, so none is shown. That is our check, not your list.",
   "nothingIsPlannedForThisWeekYet": "Nothing is planned for this week yet. Pick a dinner for any day below.",
-  "lookingForWhatYouHaveLogged": "Looking for what you have logged."
+  "lookingForWhatYouHaveLogged": "Looking for what you have logged.",
+  "weCouldNotSaveYourAgreementSo": "We could not save your agreement, so the camera has not opened. Check your connection and try again.",
+  "backUpMyHealthData": "Back up my health data",
+  "offYourCycleCheckInsMeasurementsLife": "Off. Your cycle, check-ins, measurements, life stage and allergies stay on this phone only.",
+  "onACopyIsKeptInYour": "On. A copy is kept in your Own Hub account, stored in Germany.",
+  "backUpYourHealthData": "Back up your health data?",
+  "ifYouTurnThisOnACopy": "If you turn this on, a copy of your cycle and period dates, daily check-ins, body measurements including weight, your pregnancy, postpartum or injury stage, and your allergies is kept in your Own Hub account, so it comes back if you change phones.",
+  "theCopyIsStoredOnGoogleCloud": "The copy is stored on Google Cloud in Frankfurt, Germany, which is outside Egypt. The phone number you sign in with is held by Firebase Authentication, which may store it in the United States.",
+  "thisIsHealthDataSoWeOnly": "This is health data, so we only back it up with your clear agreement. You can turn it off at any time, and turning it off deletes the copy from your account.",
+  "ifYouDoNotTurnItOn": "If you do not turn it on, nothing else changes. Your health data simply stays on this phone only.",
+  "iAgreeBackUpMyHealthData": "I agree, back up my health data",
+  "weCouldNotReachOwnHubSo": "We could not reach Own Hub, so your health backup was not changed. Check your connection and try again.",
+  "checkedByOwnHubsOwnSystemYour": "Checked by Own Hub's own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept."
 }

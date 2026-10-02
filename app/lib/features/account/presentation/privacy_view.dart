@@ -20,6 +20,17 @@
 /// reported, not invented. A screen that stays quiet is better than one that
 /// claims a deletion which has not happened.
 ///
+/// # Health backup (S17)
+///
+/// Her cycle, check-ins, measurements, life stage and allergies stay on the
+/// phone by default. The "Back up my health data" row is drawn only when there
+/// is an account to back up to ([PrivacyView.healthBackup] is non-null).
+/// Turning it on opens a sheet that names the data, where it goes (Frankfurt,
+/// and the United States for the sign-in phone number) and that it can be
+/// turned off; agreeing records the consent on the server first and only then
+/// starts the backup. The sheet wording is PENDING COUNSEL REVIEW (PDPL health
+/// data and transfer-abroad consent) and is not a legal opinion.
+///
 /// # Offline
 ///
 /// A queued switch shows a quiet "Saved on your phone" chip and never a spinner
@@ -42,6 +53,7 @@ import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/app_toggle.dart';
+import '../domain/health_backup.dart';
 import '../domain/media_blur_policy.dart';
 import '../domain/privacy_settings.dart';
 import '../domain/verification_claim.dart';
@@ -57,9 +69,14 @@ class PrivacyView extends StatefulWidget {
     this.onOpenPrivacyPolicy,
     this.onOpenTerms,
     this.onSelectTab,
+    this.healthBackup,
   });
 
   final PrivacySettingsService service;
+
+  /// The health backup switch, or null when there is no account to back up
+  /// to (signed out, or no back end), in which case the row is not drawn.
+  final HealthBackupController? healthBackup;
 
   /// Read from `users/{uid}.verification`, which is already cached from T01.
   final VerificationRecord verification;
@@ -86,6 +103,60 @@ class _PrivacyViewState extends State<PrivacyView> {
   final Set<PrivacyKey> _queued = <PrivacyKey>{};
 
   late PrivacySettings _settings = widget.service.current;
+
+  /// True while the health consent call is in flight.
+  bool _healthBusy = false;
+
+  /// True after the health consent call failed; nothing changed.
+  bool _healthFailed = false;
+
+  Future<void> _toggleHealth(bool turnOn) async {
+    final controller = widget.healthBackup;
+    if (controller == null || _healthBusy) return;
+    if (turnOn) {
+      final agreed = await _confirmHealthBackup();
+      if (!agreed || !mounted) return;
+    }
+    setState(() {
+      _healthBusy = true;
+      _healthFailed = false;
+    });
+    final ok = turnOn ? await controller.enable() : await controller.disable();
+    if (!mounted) return;
+    setState(() {
+      _healthBusy = false;
+      _healthFailed = !ok;
+    });
+  }
+
+  /// The health and transfer-abroad consent. A sheet, never a dialog.
+  /// Wording PENDING COUNSEL REVIEW.
+  Future<bool> _confirmHealthBackup() async {
+    final l10n = AppL10n.of(context);
+    final body = AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant);
+
+    final result = await showAppSheet<bool>(
+      context: context,
+      children: [
+        Text(l10n.backUpYourHealthData, style: AppText.titleL),
+        Text(l10n.ifYouTurnThisOnACopy, style: body),
+        Text(l10n.theCopyIsStoredOnGoogleCloud, style: body),
+        Text(l10n.thisIsHealthDataSoWeOnly, style: body),
+        Text(l10n.ifYouDoNotTurnItOn, style: body),
+        AppButton(
+          l10n.notNow,
+          variant: AppButtonVariant.outlined,
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        AppButton(
+          l10n.iAgreeBackUpMyHealthData,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+
+    return result ?? false;
+  }
 
   Future<void> _toggle(PrivacyKey key, bool value) async {
     // Rule 6: turning the blur OFF states the consequence first. Turning it on
@@ -225,6 +296,34 @@ class _PrivacyViewState extends State<PrivacyView> {
           ),
           onTap: widget.onOpenCycleSharing,
         ),
+
+        // Health data stays on the phone unless she opts in, server first.
+        if (widget.healthBackup case final backup?) ...[
+          AppListItem(
+            leading: const Icon(
+              Icons.backup_outlined,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.backUpMyHealthData,
+            subtitle: backup.enabled
+                ? l10n.onACopyIsKeptInYour
+                : l10n.offYourCycleCheckInsMeasurementsLife,
+            trailing: AppToggle(
+              key: const ValueKey('health-backup-toggle'),
+              value: backup.enabled,
+              semanticLabel: l10n.backUpMyHealthData,
+              onChanged: _healthBusy ? null : (value) => _toggleHealth(value),
+            ),
+            onTap: _healthBusy ? null : () => _toggleHealth(!backup.enabled),
+          ),
+          if (_healthFailed)
+            Text(
+              l10n.weCouldNotReachOwnHubSo,
+              key: const ValueKey('health-backup-error'),
+              style: AppText.bodyM.copyWith(color: AppColors.error),
+            ),
+        ],
 
         // The two public pages the stores require to be reachable from inside
         // the app, not only from the listing. They appear once the pages have

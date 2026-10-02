@@ -79,9 +79,17 @@ class _ConsentViewState extends State<ConsentView> {
   /// and push `C10` twice.
   bool _recording = false;
 
+  /// True after a write failed. She is told plainly that nothing was saved
+  /// and the camera did not open, instead of a button that silently does
+  /// nothing, which reads as a broken app and teaches her to give up here.
+  bool _failed = false;
+
   Future<void> _agree() async {
     if (_recording) return;
-    setState(() => _recording = true);
+    setState(() {
+      _recording = true;
+      _failed = false;
+    });
     final clock = widget.now ?? DateTime.now;
     try {
       await widget.store.record(
@@ -96,7 +104,12 @@ class _ConsentViewState extends State<ConsentView> {
       // stays on this screen with the button live again and can try once more.
       // Advancing anyway would mean photographing a woman's ID card with no
       // record that she ever agreed to it.
-      if (mounted) setState(() => _recording = false);
+      if (mounted) {
+        setState(() {
+          _recording = false;
+          _failed = true;
+        });
+      }
       return;
     }
     if (!mounted) return;
@@ -110,6 +123,15 @@ class _ConsentViewState extends State<ConsentView> {
     return AppScaffold(
       appBar: AppTopBar(onBack: widget.onBack),
       footer: [
+        if (_failed)
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              l10n.weCouldNotSaveYourAgreementSo,
+              key: const ValueKey('consent-error'),
+              style: AppText.bodyM.copyWith(color: AppColors.error),
+            ),
+          ),
         AppButton(
           l10n.iAgreeStartTheCamera,
           icon: Icons.photo_camera,

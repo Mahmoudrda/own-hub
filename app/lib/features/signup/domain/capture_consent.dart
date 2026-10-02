@@ -13,7 +13,7 @@
 /// twice, while "she consented to [kCaptureConsentVersion]" can be checked
 /// against a text we still have.
 ///
-/// **Why a version string and not a boolean.** A boolean means that rewriting
+/// **Why a version number and not a boolean.** A boolean means that rewriting
 /// the consent copy silently re-uses an old agreement for new terms, which is
 /// the exact failure that makes consent records worthless in an audit. A
 /// version means the next change to the wording invalidates the old record and
@@ -23,19 +23,28 @@ library;
 
 import 'package:meta/meta.dart';
 
-/// The wording she is agreeing to, by date.
+/// The wording she is agreeing to, by number.
+///
+/// Version 1 is the consent wording dated 2026-09-25.
 ///
 /// **Bump this whenever the consent copy changes in either language**, and in
 /// particular whenever the list of processors changes. Adding a processor to
 /// that screen without bumping this would leave every existing woman recorded
 /// as having agreed to something she was never shown.
 ///
+/// **It is an int, and it must move together with the server's
+/// `config.CONSENT_VERSION`** (functions/identity/config.py). The server
+/// refuses any other value with `consent_missing`, and the record it writes
+/// lives at `users/{uid}/consents/verification-v<version>`. The shared
+/// fixture `contracts/identity_contract.json` pins both sides; the Dart and
+/// Python contract tests fail if either drifts.
+///
 /// Not bumped for the revision that removed Amazon Web Services from the
 /// screen and replaced the 72 hour retention line with "nothing is kept". Both
-/// changes happened on this date, before any build reached a handset, so there
+/// changes happened on 2026-09-25, before any build reached a handset, so there
 /// is no record anywhere that was taken against the superseded wording. The
 /// next change to this text will not have that excuse.
-const String kCaptureConsentVersion = '2026-09-25';
+const int kCaptureConsentVersion = 1;
 
 /// One agreement, as it is stored.
 @immutable
@@ -49,7 +58,7 @@ class CaptureConsent {
   final String uid;
 
   /// The [kCaptureConsentVersion] in force when she tapped agree.
-  final String version;
+  final int version;
 
   final DateTime agreedAt;
 
