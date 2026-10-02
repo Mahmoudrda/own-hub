@@ -63,7 +63,10 @@ def test_expiry_clears_the_booking_from_her_state():
 def test_the_firestore_store_writes_the_new_sla(monkeypatch):
     db = fake_firestore.FakeFirestore()
     monkeypatch.setattr(store, "db", lambda: db)
-    db.collection(config.COL_FLAGS).document("f-1").set({"state": "PENDING_REVIEW"})
+    monkeypatch.setattr(store.firestore, "transactional", fake_firestore.transactional)
+    db.collection(config.COL_FLAGS).document("f-1").set(
+        {"uid": "her", "state": "PENDING_REVIEW"}
+    )
     sla = NOW + dt.timedelta(days=3)
     store.FirestoreReviewStore().mark_scheduled("f-1", "video", NOW, "rev", sla)
     flag = db.docs[f"{config.COL_FLAGS}/f-1"]

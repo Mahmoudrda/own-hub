@@ -130,7 +130,11 @@ class ReviewStore(Protocol):
         when: dt.datetime,
         reviewer_uid: str,
         sla_expires_at: dt.datetime,
-    ) -> None: ...
+    ) -> Optional[str]:
+        """R5, one transaction: re-read the flag, refuse unless PENDING_REVIEW
+        (REVIEW_NOT_PENDING), then book it and write her state pending with
+        the route and time. None on commit, else the reason, nothing written."""
+        ...
 
     def close_flag(
         self,
@@ -141,19 +145,22 @@ class ReviewStore(Protocol):
         reviewer_uid: str,
         reviewer_reason: str,
         id_hmac: Optional[str] = None,
+        user_state: Optional[str] = None,
     ) -> Optional[str]:
         """One transaction: re-read the flag, refuse unless PENDING_REVIEW
         (REVIEW_NOT_PENDING); with id_hmac, claim the registry for uid or
-        refuse with the dedupe reason; then close the flag and its job and
-        clear her openFlagId. Returns None on commit, else the reason code,
-        having written nothing."""
+        refuse with the dedupe reason; then close the flag and its job, clear
+        her openFlagId and, with user_state, write her verification state
+        (decided). Returns None on commit, else the reason code, having
+        written nothing."""
         ...
 
     def stale_flags(self, now: dt.datetime, limit: int) -> list[tuple[str, dict]]: ...
 
     def expire_flag(self, flag_id: str, uid: str, now: dt.datetime) -> bool:
         """One transaction: expire only if still PENDING_REVIEW and still past
-        its slaExpiresAt at `now`. True when it expired the flag."""
+        its slaExpiresAt at `now`; with it, her state becomes retry and her
+        booking is cleared. True when it expired the flag."""
         ...
 
     def grant_bonus(self, uid: str, flag_id: str) -> bool: ...
@@ -361,10 +368,12 @@ def schedule(
     current = _as_utc(record.get("slaExpiresAt"))
     if current is not None and current > sla:
         sla = current
-    store.mark_scheduled(flag_id, route, when, reviewer_uid, sla)
-    store.set_verification_state(
-        record["uid"], STATE_PENDING, route=route, scheduled_for=when
-    )
+    # R5: the booking and her `pending` state commit together, and only while
+    # the flag is still PENDING_REVIEW, so a concurrent reject or expiry is
+    # never overwritten.
+    refusal = store.mark_scheduled(flag_id, route, when, reviewer_uid, sla)
+    if refusal:
+        raise ReviewError(PRECONDITION, refusal)
     store.log_access(reviewer_uid, flag_id, f"schedule:{route}")
     return {"ok": True, "route": route}
 
@@ -460,10 +469,11 @@ def decide(
             state=decisions.REJECTED_FAILED,
             reviewer_uid=reviewer_uid,
             reviewer_reason=reasons.REVIEWER_REJECTED,
+            # R5: her rejected state commits with the close.
+            user_state=STATE_REJECTED,
         )
         if refusal:
             raise ReviewError(PRECONDITION, refusal)
-        store.set_verification_state(uid, STATE_REJECTED, decided=True)
         outcome = "rejected"
         codes = (reasons.REVIEWER_REJECTED,)
     store.log_access(reviewer_uid, flag_id, "decide")
@@ -546,12 +556,11 @@ def expire(store: ReviewStore, now: dt.datetime, limit: int = 200) -> int:
         uid = data.get("uid")
         # N10: re-checked inside the transaction. A flag booked (SLA moved)
         # or decided since the query is left alone.
+        # R5: expire_flag writes her `retry` state, booking cleared (N6), in
+        # the same transaction as the flag.
         if not store.expire_flag(flag_id, uid, now):
             continue
         if uid:
-            # N6: the booking expired with the flag; C14 must not keep
-            # showing a call time that is no longer going to happen.
-            store.set_verification_state(uid, STATE_RETRY, reset_booking=True)
             store.grant_bonus(uid, flag_id)
         count += 1
     return count
