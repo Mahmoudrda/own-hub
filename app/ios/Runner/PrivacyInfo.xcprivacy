@@ -8,7 +8,7 @@
 	  WHAT THIS BINARY DOES TODAY. `Firebase.initializeApp` runs on every launch
 	  (`lib/app_state/firebase_boot.dart`), and pubspec carries six Firebase
 	  packages: firebase_core, firebase_auth, cloud_firestore, firebase_storage,
-	  cloud_functions and firebase_app_check. Firebase mints an installation identifier and sends it
+	  cloud_functions, firebase_app_check and firebase_crashlytics. Firebase mints an installation identifier and sends it
 	  with every call it makes, so the app collects a device identifier whether
 	  or not a woman ever signs in. Apple's category for that is DeviceID, and it
 	  is declared below.
@@ -32,8 +32,11 @@
 	      afterwards" is not an exemption from declaring them.
 	    - OtherDataTypes: the national ID number read from the card; only a
 	      keyed one-way hash of it is kept, to stop one card being used twice.
-	  CrashData is added if and when crash reporting ships. SensitiveInfo only
-	  if counsel asks for it.
+	  CrashData: Firebase Crashlytics, release builds only. NOT linked: the app
+	  never sets a user identifier, a custom key or a log line (a source guard
+	  test enforces that), so a crash report carries the stack trace and the
+	  device and OS, not her account. Not tracking. Purpose AppFunctionality.
+	  SensitiveInfo only if counsel asks for it.
 
 	  NSPrivacyAccessedAPITypes is empty for the APP TARGET only. Every
 	  required-reason API this product touches is touched by a package that ships
@@ -118,6 +121,18 @@
 			<string>NSPrivacyCollectedDataTypeOtherDataTypes</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeCrashData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>

@@ -81,6 +81,11 @@ check "RECORD_AUDIO stripped from the merged manifest" "grep -q 'RECORD_AUDIO\" 
 check "READ_EXTERNAL_STORAGE stripped"     "grep -q 'READ_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "no false 'licensed provider' claim" "! grep -q 'licensed Egyptian provider' lib/l10n/app_en.arb"
 check "App Check is activated"             "grep -q FirebaseAppCheck lib/app_state/firebase_boot.dart"
+check "crash reporting is declared as CrashData" \
+      "! grep -q '^  firebase_crashlytics:' pubspec.yaml || grep -q NSPrivacyCollectedDataTypeCrashData ios/Runner/PrivacyInfo.xcprivacy"
+check "crash reporting is off in debug and at native start" \
+      "! grep -q '^  firebase_crashlytics:' pubspec.yaml || (grep -q 'firebase_crashlytics_collection_enabled' android/app/src/main/AndroidManifest.xml && grep -q FirebaseCrashlyticsCollectionEnabled ios/Runner/Info.plist)"
+check "crash reports carry no identity"    "! grep -rqE '\.(setUserIdentifier|setCustomKey)\(' lib"
 check "Play Data safety answers written"   "[ -f android/play-data-safety.txt ]"
 check "export compliance declared"         "grep -q ITSAppUsesNonExemptEncryption ios/Runner/Info.plist"
 check "ExportOptions.plist present"        "[ -f ios/ExportOptions.plist ]"

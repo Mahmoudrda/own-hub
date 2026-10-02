@@ -3,6 +3,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
@@ -94,6 +95,16 @@ abstract final class FirebaseBoot {
   /// True when it is worth attempting a network call at all.
   static bool get isReady => _status == BackendStatus.ready;
 
+  static bool _crashReporting = false;
+
+  /// Whether crash reports are being collected: a release build whose
+  /// Firebase started. False in every debug run and every test.
+  static bool get crashReporting => _crashReporting;
+
+  /// Whether a build collects crash reports. Release only.
+  @visibleForTesting
+  static bool crashCollectionFor({required bool release}) => release;
+
   static Future<void> start() async {
     if (_status != BackendStatus.notAttempted) return;
     try {
@@ -129,6 +140,19 @@ abstract final class FirebaseBoot {
       if (kDebugMode) {
         debugPrint('App Check did not activate: $error\n$stack');
       }
+    }
+
+    // Crash reports, in a release build only. Collection is off in the native
+    // config (AndroidManifest meta-data, Info.plist) so nothing is sent before
+    // this line, and a debug or profile build never turns it on. Nothing
+    // about her is attached: no user identifier, no custom key, no log line.
+    try {
+      await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+        crashCollectionFor(release: kReleaseMode),
+      );
+      _crashReporting = kReleaseMode;
+    } catch (error) {
+      if (kDebugMode) debugPrint('Crash reporting not configured: $error');
     }
 
     if (kDebugMode && _kEmulatorHost.isNotEmpty) {
@@ -208,5 +232,6 @@ abstract final class FirebaseBoot {
     _failure = null;
     _appCheckFailure = null;
     _functions = null;
+    _crashReporting = false;
   }
 }

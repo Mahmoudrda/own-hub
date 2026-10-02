@@ -76,6 +76,12 @@ dependencies:
   google_mlkit_face_detection: ^0.15.1
   cloud_functions: ^6.5.0
   firebase_app_check: ^0.4.8
+  # Crash reports, release builds only. No user identifier, no custom keys,
+  # no breadcrumb logs (a source guard test enforces it). Collection is off at
+  # native start-up and turned on from Dart only in release; see
+  # lib/app_state/firebase_boot.dart. Declared as CrashData (not linked) in
+  # ios/Runner/PrivacyInfo.xcprivacy and in android/play-data-safety.txt.
+  firebase_crashlytics: ^5.4.0
 
 dev_dependencies:
   flutter_test:

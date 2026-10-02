@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -52,6 +53,22 @@ Future<void> main() async {
   // first frame is already drawn from her own data, so a dead network costs
   // her nothing she can see. See `lib/app_state/firebase_boot.dart`.
   await FirebaseBoot.start();
+
+  // Crashes, reported in a release build only (see FirebaseBoot). The
+  // reports carry the error and its stack, never anything about her: no user
+  // identifier, no custom key, no log line is ever set.
+  if (FirebaseBoot.crashReporting) {
+    FlutterError.onError = (details) {
+      FlutterError.presentError(details);
+      unawaited(FirebaseCrashlytics.instance.recordFlutterFatalError(details));
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      unawaited(
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true),
+      );
+      return true;
+    };
+  }
 
   // Has the server already let her in? Read once, here, because
   // `AppRouter.onGenerateRoute` is synchronous and the whole-app gate has to

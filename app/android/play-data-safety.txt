@@ -54,8 +54,14 @@ Photos and videos
       alternative). Purpose: App functionality (fraud prevention).
 
 App info and performance
-  - (none collected today; add "Crash logs, Diagnostics, not linked" if crash
-     reporting ships)
+  - Crash logs
+      Collected in release builds only (Firebase Crashlytics). Not linked to
+      her account: no user identifier, custom key or log line is ever set.
+      Purpose: App functionality (fixing crashes).
+  - Diagnostics
+      Collected with a crash report: device model, OS version, app version,
+      free memory and disk at the moment of the crash. Not linked. Purpose:
+      App functionality.
 
 Device or other IDs
   - Device or other IDs
