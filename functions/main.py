@@ -269,7 +269,11 @@ def record_consent(request: https_fn.CallableRequest) -> dict:
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
         )
-    store.write_consent(uid)
+    # S21: agreeing twice is a no-op. The first record already proves what she
+    # was shown and when; a second write would only move the timestamp and
+    # let a tight loop turn this callable into a free Firestore write pump.
+    if not store.has_consent(uid):
+        store.write_consent(uid)
     return {"ok": True, "consentVersion": config.CONSENT_VERSION}
 
 

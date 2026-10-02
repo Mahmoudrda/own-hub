@@ -189,6 +189,26 @@ ladies-only gym visit. Since no image is ever stored, this is what review IS."""
 
 INTERNAL_ERROR = "internal_error"
 
+# ------------------------------------------- review loop and abuse limits
+# Stable wire values (contracts/identity_contract.json). Add, never rename.
+
+CAMERA_DECLINED = "camera_declined"
+"""She declined the camera at C09b and asked for a woman reviewer instead."""
+REVIEW_REQUESTED_AFTER_ERROR = "review_requested_after_error"
+"""The automatic check could not run for her (a network or server error) and
+she asked for a woman reviewer rather than trying again."""
+PER_UID_DAILY_LIMIT = "per_uid_daily_limit"
+"""One account's daily allowance of a verification callable is used up. Checked
+BEFORE the global kill switch so one account cannot exhaust it for everyone."""
+VERIFICATION_CLOSED = "verification_closed"
+"""Her verification has been rejected for good; no further attempt is taken."""
+REVIEW_ALREADY_OPEN = "review_already_open"
+"""She already has a review waiting. One open review per account."""
+REVIEWER_IS_SUBJECT = "reviewer_is_subject"
+"""A reviewer may never review her own case."""
+REVIEW_NOT_PENDING = "review_not_pending"
+"""The flag has already been decided or has expired."""
+
 
 # ------------------------------------------------- what crosses the wire
 #
@@ -238,6 +258,7 @@ _TO_USER_SAFE = {
     DUPLICATE_ID: CONTACT_SUPPORT,
     REGISTRATION_CLOSED: CONTACT_SUPPORT,
     DAILY_LIMIT_REACHED: TRY_AGAIN_LATER,
+    PER_UID_DAILY_LIMIT: TRY_AGAIN_LATER,
     DUPLICATE_SUBMISSION: TRY_AGAIN_LATER,
     LIVENESS_PROVIDER_ERROR: TRY_AGAIN_LATER,
     MATCH_PROVIDER_ERROR: TRY_AGAIN_LATER,

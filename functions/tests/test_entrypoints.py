@@ -402,3 +402,41 @@ def test_consent_for_an_unrecognised_version_is_refused(stubbed):
         https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
     )
     assert error.message == reasons.CONSENT_MISSING
+
+
+# ------------------------------------------- S21: consent is recorded once
+
+
+def test_consent_already_on_file_is_a_no_op_with_the_same_answer(monkeypatch, stubbed):
+    writes = {"n": 0}
+    monkeypatch.setattr(main.store, "has_consent", lambda uid: True)
+    monkeypatch.setattr(
+        main.store, "write_consent", lambda uid: writes.__setitem__("n", writes["n"] + 1)
+    )
+    answer = inner("record_consent")(
+        request({"consentVersion": config.CONSENT_VERSION})
+    )
+    assert answer == {"ok": True, "consentVersion": config.CONSENT_VERSION}
+    assert writes["n"] == 0, "a second agreement must not write again"
+
+
+def test_first_consent_is_written_exactly_once(monkeypatch, stubbed):
+    writes = {"n": 0}
+    monkeypatch.setattr(main.store, "has_consent", lambda uid: False)
+    monkeypatch.setattr(
+        main.store, "write_consent", lambda uid: writes.__setitem__("n", writes["n"] + 1)
+    )
+    answer = inner("record_consent")(
+        request({"consentVersion": config.CONSENT_VERSION})
+    )
+    assert answer == {"ok": True, "consentVersion": config.CONSENT_VERSION}
+    assert writes["n"] == 1
+
+
+def test_an_unknown_version_is_refused_even_when_consent_is_on_file(monkeypatch, stubbed):
+    monkeypatch.setattr(main.store, "has_consent", lambda uid: True)
+    error = raises(
+        lambda: inner("record_consent")(request({"consentVersion": 2})),
+        https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+    )
+    assert error.message == reasons.CONSENT_MISSING
