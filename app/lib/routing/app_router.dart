@@ -788,7 +788,29 @@ class AppRouter {
       // Only while no account is required, like every other test affordance.
       // Against a real provider there is no such code and none is claimed.
       testCode: testingAidsAllowed ? testCodeOf(authRepository) : null,
-      onConfirmed: () => goTo(context, 'C08'),
+      // A woman who is already verified (signing in again, or on a new phone)
+      // is not sent through the ID check a second time. Her claim and her
+      // server state are read now, since they were read at launch for a
+      // different sign-in. Setup is walked only if it is not done here, which
+      // is the case on a new phone with the health backup off (N2): her life
+      // stage did not travel, so she is asked.
+      onConfirmed: () async {
+        final navigator = Navigator.of(context);
+        await readVerificationClaim();
+        await readVerificationStatus();
+        if (!navigator.mounted || !context.mounted) return;
+        if (!isVerified) {
+          goTo(context, 'C08');
+        } else if (intakeRepository.setupDone) {
+          navigator.pushNamedAndRemoveUntil(
+            appRoutes['T01']!.name,
+            (_) => false,
+          );
+        } else {
+          OnboardingState.instance.enteredFromSignup = true;
+          goTo(context, 'O01');
+        }
+      },
       // "Send it again" has to answer. In this build nothing is sent, so the
       // answer names the code instead of promising a message.
       onResent: () => showHonestNotice(context, switch (featureFlags.isOn(

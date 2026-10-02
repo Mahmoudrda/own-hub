@@ -832,6 +832,65 @@ void main() {
       expect(CloudDocuments.readableCollections, contains('sessions'));
     });
 
+    // N2. A reinstall with the backup off: the cloud profile has no
+    // lifeStage key. Folding it as "setup done, life stage none" would give a
+    // pregnant, postpartum or injured woman the standard programme without
+    // asking. Her other answers come back; setup stays owed so she is asked.
+    test('a cloud profile with no life stage does not mark setup as done',
+        () async {
+      AppRouter.intakeRepository.reset();
+      final cloud = _FakeCloud()
+        ..stored.add(
+          const CloudDoc(
+            collection: '',
+            id: '',
+            data: <String, Object?>{
+              'profile': <String, Object?>{
+                'goal': 'stronger',
+                'days': 4,
+                'minutes': 30,
+                'setupDone': true,
+              },
+            },
+          ),
+        );
+      CloudStore.instance.transport = cloud;
+      await CloudStore.instance.linkFor(_uid);
+
+      expect(AppRouter.intakeRepository.setupDone, isFalse);
+      expect(AppRouter.intakeRepository.read().days, 4,
+          reason: 'her other answers still come back');
+      expect(AppRouter.dietaryRepository.read().allergies, isNull,
+          reason: 'allergies are unknown, so she is asked again');
+    });
+
+    test('a cloud profile that carries her life stage restores it as done',
+        () async {
+      AppRouter.intakeRepository.reset();
+      final cloud = _FakeCloud()
+        ..stored.add(
+          const CloudDoc(
+            collection: '',
+            id: '',
+            data: <String, Object?>{
+              'profile': <String, Object?>{
+                'goal': 'stronger',
+                'days': 4,
+                'minutes': 30,
+                'lifeStage': 'postpartum',
+                'setupDone': true,
+              },
+            },
+          ),
+        );
+      CloudStore.instance.transport = cloud;
+      await CloudStore.instance.linkFor(_uid);
+
+      expect(AppRouter.intakeRepository.setupDone, isTrue);
+      expect(
+          AppRouter.intakeRepository.read().lifeStage, LifeStage.postpartum);
+    });
+
     test('a health document from the cloud is not folded into the phone',
         () async {
       final cloud = _FakeCloud()

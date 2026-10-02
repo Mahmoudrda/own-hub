@@ -356,10 +356,22 @@ int _foldUser(List<CloudDoc> docs) {
     minutes: Intake.allowedMinutes.contains(minutes)
         ? minutes
         : defaults.minutes,
+    // Kept as this phone has it when the cloud has none: never replaced by
+    // the default "none" from a profile that simply did not carry it.
     lifeStage:
-        _wire(LifeStage.values, profile['lifeStage']) ?? defaults.lifeStage,
+        _wire(LifeStage.values, profile['lifeStage']) ??
+        AppRouter.intakeRepository.read().lifeStage,
   );
-  AppRouter.intakeRepository.restore(intake, setupDone: true);
+  // N2. With the health backup off the cloud profile carries no lifeStage
+  // (and no allergies). Her other answers come back, but setup is NOT marked
+  // done, so she is asked the life-stage question again (and Eat asks her
+  // allergies, which stay unknown). Marking it done here would hand a
+  // pregnant, postpartum or injured woman the standard programme on a new
+  // phone without a word.
+  AppRouter.intakeRepository.restore(
+    intake,
+    setupDone: profile.containsKey('lifeStage'),
+  );
 
   Set<AllergenTag>? allergies;
   if (_list(profile['allergies']) case final stored?) {

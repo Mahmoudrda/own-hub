@@ -72,12 +72,16 @@ class OnboardingState {
 
   /// True while the four questions are still owed to her.
   ///
-  /// Only ever true where there is no sign-up to ask them inside. With an
-  /// account required, `C16` hands her to `O01` at the end of registration and
-  /// a second walk stacked on Home would be the same questions twice.
+  /// With no account required, whenever setup is not done. With an account
+  /// required, only once she is verified: before that `C16` hands her to
+  /// `O01` at the end of registration. A verified woman whose setup is not
+  /// done is one who came back on a new phone with the health backup off
+  /// (N2): her life stage did not travel, so she is asked again at launch
+  /// rather than given the standard programme.
   bool get isDue =>
-      !AppRouter.featureFlags.isOn(Feature.accountRequired) &&
-      !AppRouter.intakeRepository.setupDone;
+      !AppRouter.intakeRepository.setupDone &&
+      (!AppRouter.featureFlags.isOn(Feature.accountRequired) ||
+          AppRouter.isVerified);
 
   /// Records that the walk is over and applies what she answered.
   ///
