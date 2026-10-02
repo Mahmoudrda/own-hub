@@ -116,7 +116,7 @@ class DeletionRow {
   String toString() => '$number. $path (${method.name})';
 }
 
-/// All 37 rows, verbatim from G7 §7.3.
+/// All 41 rows: G7 §7.3, plus rows 38-41 added since.
 ///
 /// Rows 10–14 and 23 were added after reading the G1, G3 and G5 plans, and rows
 /// 32–34 after G4 and G6 landed. §7.3 is blunt about what that means: "a human
@@ -417,6 +417,34 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
         'cascade-delete a subcollection, so a collection added ahead of its '
         'feature is exactly the kind that gets left behind on the server while '
         'A02 tells her nothing survived',
+  ),
+
+  // Rows 39-41: the server's own records of her identity check, added with
+  // the real `delete_account` callable. Each is found by her uid and removed
+  // by the deletion Function (contracts/deletion_manifest.json). The NID
+  // registry is NOT here: that is row 23, closed rather than deleted.
+  DeletionRow(
+    number: 39,
+    path: 'verification_flags where uid == {uid}',
+    owner: 'G1',
+    method: DeletionMethod.groupHook,
+    note:
+        'any review flag for her: reason codes and scores only, never an '
+        'image or a phone number',
+  ),
+  DeletionRow(
+    number: 40,
+    path: 'verificationLedger/{uid}',
+    owner: 'G1',
+    method: DeletionMethod.groupHook,
+    note: 'her check budget, attempt counts and daily counters',
+  ),
+  DeletionRow(
+    number: 41,
+    path: 'verificationSessions where uid == {uid}',
+    owner: 'G1',
+    method: DeletionMethod.groupHook,
+    note: 'single-use liveness challenges minted for her',
   ),
 ];
 

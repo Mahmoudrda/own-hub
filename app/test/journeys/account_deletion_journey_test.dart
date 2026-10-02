@@ -12,11 +12,11 @@
 //
 // # What is asserted, and what is not
 //
-// There is no server in this build, so nothing here asserts a purge, a
-// pseudonymised report or a retained proof of erasure: those three manifest
-// rows belong to a backend that does not exist, and the sheet says so rather
-// than claiming them. What is asserted is the only claim this build can keep:
-// everything she put into it is gone from it.
+// A widget test has no Firebase and no signed-in account, so this walks the
+// no-account branch of `deleteAccount`: this phone is the whole of her data.
+// The server branch (the `delete_account` callable, the journal replay, the
+// wipe on `authLocked`, and the honest offline and unfinished answers) is
+// proved in test/features/account/callable_deletion_transport_test.dart.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -206,11 +206,13 @@ void main() {
         find.textContaining('Deleting takes away everything you have put'),
         findsOneWidget,
       );
+      // With no account she is told the phone is the whole of it, and the
+      // old "there is no server" sentence is gone: the account build has one.
       expect(
-        find.textContaining('There is no server yet'),
+        find.textContaining('You have no account on this phone'),
         findsOneWidget,
-        reason: 'a purge this build cannot do must not be implied',
       );
+      expect(find.textContaining('There is no server yet'), findsNothing);
     });
 
     testWidgets('and names the download as missing instead of offering it', (

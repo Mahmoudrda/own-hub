@@ -19,16 +19,21 @@
 /// explanation does the thing. Asking again afterwards would be a second
 /// confirmation of a decision she has already read the consequences of.
 ///
-/// # It says what this build can and cannot do
+/// # It says what deleting does, and what it did
 ///
-/// There is no server in this build, so there is nothing to download and
-/// nothing held anywhere but the handset. The sheet says both plainly instead
-/// of offering an export button that would spin and produce nothing, which is
-/// the failure mode 2.1 is actually about.
+/// With an account, deleting removes it from the server and clears this
+/// phone, and the sheet names the three things kept on purpose. With no
+/// account, this phone is the whole of it. The download is still said rather
+/// than offered: there is no export yet, and a button that produced nothing
+/// is the failure mode 2.1 is about.
+///
+/// While the server works she is told so. If there is no connection she is
+/// told nothing was deleted and the sheet stays open; the router tells her
+/// the rest (done, or "it will finish within the hour").
 ///
 /// The deletion itself is not here: `lib/features/**` describes what a woman
-/// sees. The router hands in [onDelete], which runs
-/// `deleteEverythingOnThisPhone()` in `lib/app_state/account_data.dart`.
+/// sees. The router hands in [onDelete], which runs `deleteAccount()` in
+/// `lib/app_state/account_data.dart`.
 library;
 
 import 'package:flutter/material.dart';
@@ -39,26 +44,36 @@ import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_sheet.dart';
+import '../domain/account_deletion_service.dart';
 
-/// Shows the sheet. Returns true once she has asked for the deletion.
+/// Shows the sheet. Returns what the deletion came to, or null when she
+/// cancelled. Never [AccountDeletionResult.offline] or
+/// [AccountDeletionResult.appCannotReach]: those keep the sheet open.
 ///
 /// [onDelete] is awaited **before** the sheet closes, so nothing can be tapped
 /// against a half-cleared store.
-Future<bool> showYourDataSheet(
+Future<AccountDeletionResult?> showYourDataSheet(
   BuildContext context, {
-  required Future<void> Function() onDelete,
-}) async {
-  final asked = await showAppSheet<bool>(
+  required Future<AccountDeletionResult> Function() onDelete,
+  bool hasAccount = false,
+}) {
+  return showAppSheet<AccountDeletionResult>(
     context: context,
-    children: [YourDataSheet(onDelete: onDelete)],
+    children: [YourDataSheet(onDelete: onDelete, hasAccount: hasAccount)],
   );
-  return asked ?? false;
 }
 
 class YourDataSheet extends StatefulWidget {
-  const YourDataSheet({super.key, required this.onDelete});
+  const YourDataSheet({
+    super.key,
+    required this.onDelete,
+    this.hasAccount = false,
+  });
 
-  final Future<void> Function() onDelete;
+  final Future<AccountDeletionResult> Function() onDelete;
+
+  /// Whether there is an account on the server to delete as well.
+  final bool hasAccount;
 
   @override
   State<YourDataSheet> createState() => _YourDataSheetState();
@@ -70,12 +85,28 @@ class _YourDataSheetState extends State<YourDataSheet> {
   /// bar can be drawn for work nobody acknowledged.
   bool _deleting = false;
 
+  /// Why nothing was deleted, when nothing was.
+  AccountDeletionResult? _refused;
+
   Future<void> _delete() async {
     if (_deleting) return;
-    setState(() => _deleting = true);
-    await widget.onDelete();
+    setState(() {
+      _deleting = true;
+      _refused = null;
+    });
+    final result = await widget.onDelete();
     if (!mounted) return;
-    Navigator.of(context).pop(true);
+    switch (result) {
+      case AccountDeletionResult.offline:
+      case AccountDeletionResult.appCannotReach:
+        setState(() {
+          _deleting = false;
+          _refused = result;
+        });
+      case AccountDeletionResult.done:
+      case AccountDeletionResult.unfinished:
+        Navigator.of(context).pop(result);
+    }
   }
 
   @override
@@ -100,12 +131,37 @@ class _YourDataSheetState extends State<YourDataSheet> {
           style: AppText.bodyM,
         ),
         const SizedBox(height: 10),
-        Text(l10n.thisBuildKeepsEverythingOnThisPhone, style: quiet),
+        Text(
+          widget.hasAccount
+              ? l10n.deletingYourAccountRemovesItFromOur
+              : l10n.youHaveNoAccountOnThisPhone,
+          style: quiet,
+        ),
         const SizedBox(height: 10),
 
         // The download. Said, not offered: a button here would be the dead
         // control this sheet exists to remove.
         Text(l10n.downloadingACopyOfYourDataIs, style: quiet),
+
+        if (_deleting && widget.hasAccount) ...[
+          const SizedBox(height: 10),
+          Semantics(
+            liveRegion: true,
+            child: Text(l10n.deletingYourAccountThisCanTakeA, style: quiet),
+          ),
+        ],
+        if (_refused != null) ...[
+          const SizedBox(height: 10),
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              _refused == AccountDeletionResult.appCannotReach
+                  ? l10n.thisCopyOfTheAppCannotReach_qzcpf
+                  : l10n.weCouldNotReachOwnHubSo_yfi5n,
+              style: AppText.bodyM.copyWith(color: AppColors.error),
+            ),
+          ),
+        ],
 
         const SizedBox(height: 16),
         AppButton(l10n.deleteEverything, onPressed: _deleting ? null : _delete),
@@ -113,7 +169,7 @@ class _YourDataSheetState extends State<YourDataSheet> {
         AppButton(
           l10n.cancel,
           variant: AppButtonVariant.outlined,
-          onPressed: _deleting ? null : () => Navigator.of(context).pop(false),
+          onPressed: _deleting ? null : () => Navigator.of(context).pop(),
         ),
       ],
     );

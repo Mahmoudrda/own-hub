@@ -49,7 +49,7 @@ Set<String> _subcollectionsInRules() {
 
 void main() {
   group('the manifest is intact', () {
-    test('38 rows, numbered 1 to 38 with no gaps and no duplicates', () {
+    test('41 rows, numbered 1 to 41 with no gaps and no duplicates', () {
       // 34 until check (e) below ran for the first time and found three
       // collections nobody had enumerated in three passes by eye.
       //
@@ -58,10 +58,14 @@ void main() {
       // written, which is the guard doing exactly its job: a subcollection
       // added ahead of the feature that reads it is the kind most likely to be
       // left on the server after she deletes her account.
-      expect(kDeletionManifest, hasLength(38));
+      //
+      // 41 with the server's verification records for her (flags, ledger,
+      // sessions), added with the real `delete_account` callable and held to
+      // contracts/deletion_manifest.json by the parity test.
+      expect(kDeletionManifest, hasLength(41));
 
       final numbers = kDeletionManifest.map((r) => r.number).toList()..sort();
-      expect(numbers, [for (var i = 1; i <= 38; i++) i]);
+      expect(numbers, [for (var i = 1; i <= 41; i++) i]);
     });
 
     test('every row names a path and an owner', () {

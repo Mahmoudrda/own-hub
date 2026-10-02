@@ -1,57 +1,40 @@
-/// Deleting her account, for real, in a build that has no server.
+/// Deleting her account, for real: on the server and on this phone.
 ///
-/// ## Why this is not [AccountDeletionService]
+/// ## Two halves, one order
 ///
-/// `account_deletion_service.dart` is the right machine and it cannot run here.
-/// It is built around a [DeletionTransport]: `request()` refuses when there is
-/// no connection, and **every** state after `requested` arrives on
-/// `serverStates()`, because G7 §4 is "no optimistic state, no local tombstone,
-/// no progress bar that is not backed by a server ack". There is no
-/// `requestAccountDeletion` callable in this build and no Firestore behind it,
-/// so the only way to drive that service here would be to feed it a fake
-/// transport emitting states no server ever acknowledged. That is precisely the
-/// lie the service exists to make unrepresentable, and faking it would be worse
-/// than not using it.
+/// [deleteAccount] is what A02's "Your data" sheet runs. With an account
+/// signed in and Firebase up, it drives [AccountDeletionService] over the
+/// real transport (`CallableDeletionTransport`, the `delete_account`
+/// callable). The server purges every row of the deletion manifest, closes
+/// the ID registry entry, pseudonymises reports, keeps a record that the
+/// deletion happened, and deletes her Firebase Auth user last. The service
+/// runs the handset half, [ThisPhoneWipe], when the server acknowledges
+/// `authLocked`, in [kLocalWipeOrder]. Progress is only what the server
+/// acknowledged (G7 §4): no optimistic state, no local tombstone.
 ///
-/// What **is** reused is the half of the deletion that was always local:
-/// [LocalWipe], the five handset steps the service runs on `authLocked`, and
-/// [kLocalWipeOrder], the order it runs them in. [ThisPhoneWipe] implements that
-/// interface honestly for a build whose entire database is a handful of
-/// in-memory stores, and [deleteEverythingOnThisPhone] runs the steps in the
-/// documented order. When Firebase lands, this class is what
-/// `AccountDeletionService(localWipe: …)` should be given, and the screen above
-/// it changes from calling this function to calling `request()`.
+/// With no account (or no Firebase), the phone is the whole of her data and
+/// [deleteEverythingOnThisPhone] runs the same five steps on its own.
 ///
-/// ## What "everything" means in this build
+/// ## What survives, said on the sheet
+///
+/// Three rows survive on purpose and the sheet names them: the registry entry
+/// for her ID card, closed so it cannot open another account (row 23); reports
+/// with her uid replaced (row 30); and the record that the deletion happened
+/// (row 31).
+///
+/// ## The handset steps
 ///
 /// Every store listed below, plus the one document they are written to on the
 /// handset, is the whole of what this PHONE holds about her. The comments name
 /// the [kDeletionManifest] row each step covers, so a collection added later
-/// without a line here is a visible omission rather than an invisible one, which
-/// is the same property §7.3 (a) asks of the manifest itself.
-///
-/// **There is now a server copy, and this does not delete it.**
-/// `lib/app_state/cloud_store.dart` mirrors her week into `users/{uid}` once she
-/// is signed in and verified. Firestore does not cascade and the rules deny a
-/// client delete of `users/{uid}` outright, so purging those documents is the
-/// deletion Function's work against the manifest — exactly as it always was.
-/// What the steps below reach is this handset: the stores, the snapshot,
-/// Firestore's own offline cache and mutation queue, and the record of which of
-/// her documents the server has already accepted. The sheet above this still
-/// says plainly which rows are the server's rather than claiming a purge that
-/// did not happen.
-///
-/// The rows this build **cannot** reach are the ones that are not on this phone:
-/// nothing is pseudonymised (row 30), nothing is closed (row 23) and no proof of
-/// erasure is retained (row 31), because there is nowhere to retain it. Those
-/// three are the server's, and the sheet that calls this says so in plain words
-/// rather than claiming a purge that did not happen.
+/// without a line here is a visible omission rather than an invisible one.
 library;
 
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../features/account/data/callable_deletion_transport.dart';
 import '../features/account/domain/account_deletion_service.dart';
 import '../features/account/domain/deletion_manifest.dart';
 import '../features/account/domain/dietary_profile.dart';
@@ -270,6 +253,73 @@ Future<void> deleteEverythingOnThisPhone({
   await wipe.purgeLocalMeasurements();
   await wipe.destroyPhotoStoreKey();
   AppChanges.bump();
+}
+
+/// Deletes her account: on the server when there is one, and always on this
+/// phone once the server has it.
+///
+/// * No account, or no Firebase: this phone is the whole of it, so it is
+///   cleared and the answer is [AccountDeletionResult.done].
+/// * The server reports `done`: the service has already wiped this phone on
+///   `authLocked`; the stores are cleared once more and redrawn. `done`.
+/// * No connection, or App Check refuses this copy of the app: nothing was
+///   deleted anywhere and nothing here is touched.
+/// * The server has it and did not finish: its sweeper will. This phone is
+///   cleared now, and she is told it will finish, never that it is done.
+Future<AccountDeletionResult> deleteAccount({
+  DeletionTransport? transport,
+  LocalWipe wipe = const ThisPhoneWipe(),
+}) async {
+  final signedIn = AppRouter.signedInUid != null;
+  final realTransport =
+      transport ??
+      (FirebaseBoot.isReady && signedIn
+          ? CallableDeletionTransport(
+              isOnline: () =>
+                  FirebaseBoot.isReady && AppRouter.signedInUid != null,
+            )
+          : null);
+  if (realTransport == null) {
+    await deleteEverythingOnThisPhone(wipe: wipe);
+    return AccountDeletionResult.done;
+  }
+
+  final service = AccountDeletionService(
+    transport: realTransport,
+    localWipe: wipe,
+  );
+  final finished = service.states.firstWhere(
+    (state) =>
+        state == DeletionState.done || state == DeletionState.failedRetryable,
+  );
+  // Awaited only on the accepted path; elsewhere its "no element" on
+  // dispose must not surface as an unhandled error.
+  finished.ignore();
+  try {
+    final outcome = await service.request();
+    if (outcome == DeletionOutcome.refusedOffline) {
+      return AccountDeletionResult.offline;
+    }
+    final last = await finished.timeout(const Duration(seconds: 30));
+    // Once more, in full: the stores the service's wipe reached are cleared
+    // already, and this redraws every screen from empty.
+    await deleteEverythingOnThisPhone(wipe: wipe);
+    return last == DeletionState.done
+        ? AccountDeletionResult.done
+        : AccountDeletionResult.unfinished;
+  } on DeletionOffline {
+    return AccountDeletionResult.offline;
+  } on DeletionAppCannotReach {
+    return AccountDeletionResult.appCannotReach;
+  } catch (_) {
+    // The server has the request (DeletionUnfinished, or a journal that did
+    // not reach `done` in time). Her account is locked there and the sweeper
+    // finishes it, so this phone is cleared now.
+    await deleteEverythingOnThisPhone(wipe: wipe);
+    return AccountDeletionResult.unfinished;
+  } finally {
+    unawaited(service.dispose());
+  }
 }
 
 /// The one thing a screen may say afterwards, and the reason it may.

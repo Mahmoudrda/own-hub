@@ -6919,10 +6919,6 @@ class AppL10nEn extends AppL10n {
       'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers. It happens at once, and none of it can be brought back.';
 
   @override
-  String get thisBuildKeepsEverythingOnThisPhone =>
-      'This build keeps everything on this phone, so deleting clears the phone. There is no server yet, and nothing of yours is held anywhere else.';
-
-  @override
   String get downloadingACopyOfYourDataIs =>
       'Downloading a copy of your data is not built yet, so there is no button for it here.';
 
@@ -7693,4 +7689,28 @@ class AppL10nEn extends AppL10n {
   @override
   String get thisCopyOfTheAppCannotReach_agbhf =>
       'This copy of the app cannot reach Own Hub, so you are not in the queue. Please install the latest version from the App Store or Google Play.';
+
+  @override
+  String get deletingYourAccountRemovesItFromOur =>
+      'Deleting your account removes it from our servers and clears this phone. Three things are kept: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, and a record that the deletion happened.';
+
+  @override
+  String get youHaveNoAccountOnThisPhone =>
+      'You have no account on this phone, so everything is stored here, and deleting clears it.';
+
+  @override
+  String get deletingYourAccountThisCanTakeA =>
+      'Deleting your account. This can take a minute.';
+
+  @override
+  String get weCouldNotReachOwnHubSo_yfi5n =>
+      'We could not reach Own Hub, so nothing was deleted. Check your connection and try again.';
+
+  @override
+  String get thisCopyOfTheAppCannotReach_qzcpf =>
+      'This copy of the app cannot reach Own Hub, so nothing was deleted. Please install the latest version from the App Store or Google Play.';
+
+  @override
+  String get yourDeletionDidNotFinishOnOur =>
+      'Your deletion did not finish on our side. It will finish automatically within the hour. This phone has been cleared.';
 }

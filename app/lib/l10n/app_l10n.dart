@@ -12727,12 +12727,6 @@ abstract class AppL10n {
   /// **'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers. It happens at once, and none of it can be brought back.'**
   String get deletingTakesAwayEverythingYouHavePut;
 
-  /// No description provided for @thisBuildKeepsEverythingOnThisPhone.
-  ///
-  /// In en, this message translates to:
-  /// **'This build keeps everything on this phone, so deleting clears the phone. There is no server yet, and nothing of yours is held anywhere else.'**
-  String get thisBuildKeepsEverythingOnThisPhone;
-
   /// No description provided for @downloadingACopyOfYourDataIs.
   ///
   /// In en, this message translates to:
@@ -13980,6 +13974,42 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'This copy of the app cannot reach Own Hub, so you are not in the queue. Please install the latest version from the App Store or Google Play.'**
   String get thisCopyOfTheAppCannotReach_agbhf;
+
+  /// No description provided for @deletingYourAccountRemovesItFromOur.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting your account removes it from our servers and clears this phone. Three things are kept: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, and a record that the deletion happened.'**
+  String get deletingYourAccountRemovesItFromOur;
+
+  /// No description provided for @youHaveNoAccountOnThisPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no account on this phone, so everything is stored here, and deleting clears it.'**
+  String get youHaveNoAccountOnThisPhone;
+
+  /// No description provided for @deletingYourAccountThisCanTakeA.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting your account. This can take a minute.'**
+  String get deletingYourAccountThisCanTakeA;
+
+  /// No description provided for @weCouldNotReachOwnHubSo_yfi5n.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not reach Own Hub, so nothing was deleted. Check your connection and try again.'**
+  String get weCouldNotReachOwnHubSo_yfi5n;
+
+  /// No description provided for @thisCopyOfTheAppCannotReach_qzcpf.
+  ///
+  /// In en, this message translates to:
+  /// **'This copy of the app cannot reach Own Hub, so nothing was deleted. Please install the latest version from the App Store or Google Play.'**
+  String get thisCopyOfTheAppCannotReach_qzcpf;
+
+  /// No description provided for @yourDeletionDidNotFinishOnOur.
+  ///
+  /// In en, this message translates to:
+  /// **'Your deletion did not finish on our side. It will finish automatically within the hour. This phone has been cleared.'**
+  String get yourDeletionDidNotFinishOnOur;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

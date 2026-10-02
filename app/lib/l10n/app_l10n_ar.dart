@@ -6886,10 +6886,6 @@ class AppL10nAr extends AppL10n {
       'الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك ومنشوراتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه.';
 
   @override
-  String get thisBuildKeepsEverythingOnThisPhone =>
-      'هذه النسخة تحفظ كل شيء على هذا الهاتف، لذا يمسح الحذف الهاتف. لا يوجد خادم بعد، ولا شيء من بياناتك محفوظ في مكان آخر.';
-
-  @override
   String get downloadingACopyOfYourDataIs =>
       'تنزيل نسخة من بياناتك غير مبني بعد، فلا يوجد زر له هنا.';
 
@@ -7662,4 +7658,28 @@ class AppL10nAr extends AppL10n {
   @override
   String get thisCopyOfTheAppCannotReach_agbhf =>
       'لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.';
+
+  @override
+  String get deletingYourAccountRemovesItFromOur =>
+      'يؤدي حذف حسابكِ إلى إزالته من خوادمنا ومسح هذا الهاتف. ونحتفظ بثلاثة أشياء: سجلٌّ مغلق بأن بطاقتكِ الشخصية قد استُخدمت، فلا يمكن فتح حساب آخر بها، والبلاغات بعد حذف اسمكِ منها، وسجلٌّ بأن الحذف قد تمّ.';
+
+  @override
+  String get youHaveNoAccountOnThisPhone =>
+      'لا يوجد حساب لكِ على هذا الهاتف، لذا فكل شيء محفوظ هنا، والحذف يمسحه.';
+
+  @override
+  String get deletingYourAccountThisCanTakeA =>
+      'جارٍ حذف حسابكِ. قد يستغرق ذلك دقيقة.';
+
+  @override
+  String get weCouldNotReachOwnHubSo_yfi5n =>
+      'تعذّر الوصول إلى Own Hub، لذلك لم يُحذف شيء. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
+
+  @override
+  String get thisCopyOfTheAppCannotReach_qzcpf =>
+      'لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم يُحذف شيء. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.';
+
+  @override
+  String get yourDeletionDidNotFinishOnOur =>
+      'لم يكتمل الحذف لدينا بعد، وسيكتمل تلقائيًا خلال ساعة. وقد مُسح هذا الهاتف.';
 }

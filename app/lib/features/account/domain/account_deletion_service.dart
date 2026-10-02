@@ -123,6 +123,23 @@ enum DeletionOutcome {
   alreadyInProgress,
 }
 
+/// What A02's deletion came to, as she is told it.
+enum AccountDeletionResult {
+  /// The server reported `done` (or there was no account, and this phone was
+  /// the whole of it). This phone is cleared.
+  done,
+
+  /// No connection: nothing was deleted anywhere.
+  offline,
+
+  /// App Check refused this copy of the app: nothing was deleted.
+  appCannotReach,
+
+  /// The server has the request and did not finish it; its sweeper will.
+  /// This phone is cleared. Never reported as done.
+  unfinished,
+}
+
 /// The callable and the progress channel.
 ///
 /// `requestAccountDeletion` is a **callable, not a write**, which is what makes

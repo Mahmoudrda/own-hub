@@ -2104,7 +2104,6 @@
  "That page could not be opened. Try again later.": "تعذّر فتح الصفحة. حاولي مرة أخرى لاحقًا.",
  "Delete your account and everything in it": "احذفي حسابك وكل ما فيه",
  "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers. It happens at once, and none of it can be brought back.": "الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك ومنشوراتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه.",
- "This build keeps everything on this phone, so deleting clears the phone. There is no server yet, and nothing of yours is held anywhere else.": "هذه النسخة تحفظ كل شيء على هذا الهاتف، لذا يمسح الحذف الهاتف. لا يوجد خادم بعد، ولا شيء من بياناتك محفوظ في مكان آخر.",
  "Downloading a copy of your data is not built yet, so there is no button for it here.": "تنزيل نسخة من بياناتك غير مبني بعد، فلا يوجد زر له هنا.",
  "Delete everything": "احذفي كل شيء",
  "Your data is gone. The app is back to its first day.": "اختفت بياناتك. عاد التطبيق إلى يومه الأول.",
@@ -2312,5 +2311,11 @@
  "Your phone number is used only to arrange this call.": "يُستخدم رقم هاتفكِ لترتيب هذه المكالمة فقط.",
  "This copy of the app cannot reach Own Hub": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub",
  "Please install the latest version from the App Store or Google Play, then try again. Nothing was decided.": "يُرجى تثبيت أحدث إصدار من App Store أو Google Play، ثم المحاولة مرة أخرى. لم يُتخذ أي قرار.",
- "This copy of the app cannot reach Own Hub, so you are not in the queue. Please install the latest version from the App Store or Google Play.": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تثبيت أحدث إصدار من App Store أو Google Play."
+ "This copy of the app cannot reach Own Hub, so you are not in the queue. Please install the latest version from the App Store or Google Play.": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
+ "Deleting your account removes it from our servers and clears this phone. Three things are kept: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, and a record that the deletion happened.": "يؤدي حذف حسابكِ إلى إزالته من خوادمنا ومسح هذا الهاتف. ونحتفظ بثلاثة أشياء: سجلٌّ مغلق بأن بطاقتكِ الشخصية قد استُخدمت، فلا يمكن فتح حساب آخر بها، والبلاغات بعد حذف اسمكِ منها، وسجلٌّ بأن الحذف قد تمّ.",
+ "You have no account on this phone, so everything is stored here, and deleting clears it.": "لا يوجد حساب لكِ على هذا الهاتف، لذا فكل شيء محفوظ هنا، والحذف يمسحه.",
+ "Deleting your account. This can take a minute.": "جارٍ حذف حسابكِ. قد يستغرق ذلك دقيقة.",
+ "We could not reach Own Hub, so nothing was deleted. Check your connection and try again.": "تعذّر الوصول إلى Own Hub، لذلك لم يُحذف شيء. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
+ "This copy of the app cannot reach Own Hub, so nothing was deleted. Please install the latest version from the App Store or Google Play.": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم يُحذف شيء. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
+ "Your deletion did not finish on our side. It will finish automatically within the hour. This phone has been cleared.": "لم يكتمل الحذف لدينا بعد، وسيكتمل تلقائيًا خلال ساعة. وقد مُسح هذا الهاتف."
 }

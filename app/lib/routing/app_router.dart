@@ -116,6 +116,7 @@ import '../features/train/presentation/swap_move_view.dart';
 import '../features/train/presentation/train_view.dart';
 import '../features/train/presentation/workout_day_view.dart';
 import '../features/train/presentation/workout_library_view.dart';
+import '../features/account/domain/account_deletion_service.dart';
 import '../features/account/data/callable_health_consent_store.dart';
 import '../features/account/domain/dietary_profile.dart';
 import '../features/account/domain/health_backup.dart';
@@ -1782,18 +1783,25 @@ class AppRouter {
         final navigator = Navigator.of(context);
         final messenger = ScaffoldMessenger.maybeOf(context);
         final gone = AppL10n.of(context).yourDataIsGoneTheAppIs;
+        final unfinished = AppL10n.of(context).yourDeletionDidNotFinishOnOur;
         unawaited(
           showYourDataSheet(
             context,
-            onDelete: deleteEverythingOnThisPhone,
-          ).then((deleted) {
-            if (!deleted || !navigator.mounted) return;
+            // The server deletion when there is an account, and this phone
+            // always once the server has the request. See `deleteAccount`.
+            onDelete: deleteAccount,
+            hasAccount: FirebaseBoot.isReady && signedInUid != null,
+          ).then((result) {
+            if (result == null || !navigator.mounted) return;
             // Day one, literally: everything she opened on the way here is
             // about data that no longer exists, so the stack goes with it.
             // The first route is Home while no account is required, and the
             // front door when one is.
             navigator.popUntil((route) => route.isFirst);
-            showHonestNoticeOn(messenger, gone);
+            showHonestNoticeOn(
+              messenger,
+              result == AccountDeletionResult.done ? gone : unfinished,
+            );
           }),
         );
       },
