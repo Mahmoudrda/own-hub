@@ -30,6 +30,7 @@ import 'package:own_hub/app_state/local_persistence.dart';
 import 'package:own_hub/data/pending_answers.dart';
 import 'package:own_hub/domain/training/prescribed_set.dart';
 import 'package:own_hub/domain/week/week_key.dart';
+import 'package:own_hub/features/account/domain/health_backup.dart';
 import 'package:own_hub/features/cycle/domain/cycle_document.dart';
 import 'package:own_hub/features/cycle/domain/period_entry.dart';
 import 'package:own_hub/features/cycle/domain/today_check_in.dart';
@@ -53,6 +54,12 @@ void main() {
     CloudStore.instance.reset();
     CloudStore.instance.ledgerStorage = _MemoryStorage();
     await const ThisPhoneWipe().clearPersistence();
+    // Everything below except the last group describes a woman who opted in
+    // to the health backup: with it on, her check-ins, measurements, cycle,
+    // periods, life stage and allergies are in the capture and every one of
+    // them still has to pass the rules. Off is the default and has its own
+    // group at the bottom.
+    await HealthBackupPreference.instance.set(true);
   });
 
   tearDown(() async {
@@ -779,6 +786,69 @@ void main() {
       CloudStore.instance.stop();
 
       expect(PendingAnswers.settled, isTrue);
+    });
+  });
+
+  // =========================================================================
+  group('health data stays on the phone unless she opted in', () {
+    setUp(() => HealthBackupPreference.instance.set(false));
+
+    test('the capture holds no health collection and no health profile key',
+        () async {
+      await _fillEverything();
+      final docs = CloudDocuments.capture();
+      for (final doc in docs) {
+        expect(kHealthCollections, isNot(contains(doc.collection)),
+            reason: doc.toString());
+      }
+      final root = docs.firstWhere((d) => d.isRoot);
+      final profile = root.data['profile']! as Map<String, Object?>;
+      // Absent, not null: the rules test for the keys' presence.
+      expect(profile.containsKey('lifeStage'), isFalse);
+      expect(profile.containsKey('allergies'), isFalse);
+      // The rest of her profile still travels.
+      expect(profile.containsKey('goal'), isTrue);
+    });
+
+    test('with it on, the same stores do produce them', () async {
+      await HealthBackupPreference.instance.set(true);
+      await _fillEverything();
+      final docs = CloudDocuments.capture();
+      final collections = {for (final d in docs) d.collection};
+      expect(collections, containsAll(<String>['checkins', 'periods']));
+      final root = docs.firstWhere((d) => d.isRoot);
+      final profile = root.data['profile']! as Map<String, Object?>;
+      expect(profile.containsKey('lifeStage'), isTrue);
+      expect(profile.containsKey('allergies'), isTrue);
+    });
+
+    test('the pull does not ask for the health collections', () {
+      expect(
+        CloudDocuments.readableCollections.toSet().intersection(
+          kHealthCollections,
+        ),
+        isEmpty,
+      );
+      expect(CloudDocuments.readableCollections, contains('sessions'));
+    });
+
+    test('a health document from the cloud is not folded into the phone',
+        () async {
+      final cloud = _FakeCloud()
+        ..stored.add(
+          const CloudDoc(
+            collection: 'periods',
+            id: '2026-08-01',
+            data: <String, Object?>{'start': '2026-08-01'},
+          ),
+        );
+      CloudStore.instance.transport = cloud;
+      await CloudStore.instance.linkFor(_uid);
+      expect(CloudStore.instance.mergedFromCloud, 0);
+      expect(
+        cloud.pushed.where((d) => kHealthCollections.contains(d.collection)),
+        isEmpty,
+      );
     });
   });
 }

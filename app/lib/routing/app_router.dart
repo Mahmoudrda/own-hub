@@ -16,6 +16,7 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import '../app_state/account_data.dart';
 import '../app_state/app_changes.dart';
 import '../app_state/blocking.dart';
+import '../app_state/cloud_store.dart';
 // Read, never written: `FirebaseBoot.isReady` is what decides whether the
 // identity check can be built against real Cloud Functions or has to refuse
 // honestly. See `_newIdentityCheck`.
@@ -112,7 +113,9 @@ import '../features/train/presentation/swap_move_view.dart';
 import '../features/train/presentation/train_view.dart';
 import '../features/train/presentation/workout_day_view.dart';
 import '../features/train/presentation/workout_library_view.dart';
+import '../features/account/data/callable_health_consent_store.dart';
 import '../features/account/domain/dietary_profile.dart';
+import '../features/account/domain/health_backup.dart';
 import '../features/account/domain/notifications.dart';
 import '../features/account/domain/privacy_settings.dart';
 import '../features/account/domain/safety.dart';
@@ -1674,6 +1677,7 @@ class AppRouter {
           unawaited(openExternalLink(context, LegalLinks.privacyPolicy)),
       onOpenTerms: () => unawaited(openExternalLink(context, LegalLinks.terms)),
       onSelectTab: (screenId) => goTo(context, screenId),
+      healthBackup: healthBackupController(),
     ),
     // Four of A04's five rows drew a chevron and had no callback at all, which
     // on the safety screen is the worst place in the product for a control
@@ -4207,6 +4211,26 @@ class AppRouter {
   ///
   /// Synchronous on purpose: `onGenerateRoute` cannot await, and the gate below
   /// has to answer before a route is built rather than a frame later.
+  /// The health backup switch for A03, or null when there is no account to
+  /// back up to. Built only when Firebase is up and she is signed in, because
+  /// the consent store touches Firebase in its constructor.
+  static HealthBackupController? healthBackupController() {
+    if (!FirebaseBoot.isReady || signedInUid == null) return null;
+    return HealthBackupController(
+      store: CallableHealthConsentStore(),
+      onEnabled: () => unawaited(CloudStore.instance.syncNow()),
+    );
+  }
+
+  /// Start-up: if this phone thinks the health backup is on but the server
+  /// holds no granted consent, turn it off here. The server wins.
+  static Future<void> reconcileHealthBackup() async {
+    final uid = signedInUid;
+    final controller = healthBackupController();
+    if (uid == null || controller == null) return;
+    await controller.reconcile(uid);
+  }
+
   static String? get signedInUid => switch (authRepository.current) {
     AuthSignedIn(:final uid) => uid,
     _ => null,

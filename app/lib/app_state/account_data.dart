@@ -55,6 +55,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../features/account/domain/account_deletion_service.dart';
 import '../features/account/domain/deletion_manifest.dart';
 import '../features/account/domain/dietary_profile.dart';
+import '../features/account/domain/health_backup.dart';
 import '../features/cycle/domain/today_check_in.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
@@ -144,6 +145,10 @@ class ThisPhoneWipe implements LocalWipe {
     // handset would inherit a ledger claiming her documents were already
     // uploaded — and would never upload them.
     unawaited(CloudStore.instance.forget());
+
+    // Her health backup choice. A new account on this handset starts from
+    // the default, which is off: her health data stays on the phone.
+    unawaited(HealthBackupPreference.instance.erase());
 
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();

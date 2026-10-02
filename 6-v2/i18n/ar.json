@@ -2282,5 +2282,15 @@
  "Nobody has signed off what is in these dishes yet, so none is shown. That is our check, not your list.": "لم يوقّع أحد بعد على مكوّنات هذه الأطباق، فلا يظهر منها شيء. هذه مراجعتنا نحن، لا قائمتكِ.",
  "Nothing is planned for this week yet. Pick a dinner for any day below.": "لا شيء مخطَّط لهذا الأسبوع بعد. اختاري عشاءً لأي يوم في الأسفل.",
  "Looking for what you have logged.": "نبحث عمّا سجّلتِه.",
- "We could not save your agreement, so the camera has not opened. Check your connection and try again.": "تعذّر حفظ موافقتكِ، لذلك لم تُفتح الكاميرا. تحقّقي من اتصالكِ ثم حاولي مرة أخرى."
+ "We could not save your agreement, so the camera has not opened. Check your connection and try again.": "تعذّر حفظ موافقتكِ، لذلك لم تُفتح الكاميرا. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
+ "Back up my health data": "نسخ بياناتي الصحية احتياطيًا",
+ "Off. Your cycle, check-ins, measurements, life stage and allergies stay on this phone only.": "متوقف. تبقى دورتكِ وتسجيلاتكِ اليومية وقياساتكِ ومرحلتكِ الحياتية وحساسيّاتكِ على هذا الهاتف فقط.",
+ "On. A copy is kept in your Own Hub account, stored in Germany.": "مفعّل. تُحفظ نسخة في حسابكِ على Own Hub، مخزّنة في ألمانيا.",
+ "Back up your health data?": "هل تريدين نسخ بياناتكِ الصحية احتياطيًا؟",
+ "If you turn this on, a copy of your cycle and period dates, daily check-ins, body measurements including weight, your pregnancy, postpartum or injury stage, and your allergies is kept in your Own Hub account, so it comes back if you change phones.": "إذا فعّلتِ هذا الخيار، تُحفظ في حسابكِ على Own Hub نسخة من مواعيد دورتكِ وأيام الطمث، وتسجيلاتكِ اليومية، وقياسات جسمكِ بما فيها الوزن، ومرحلة الحمل أو ما بعد الولادة أو الإصابة، وحساسيّاتكِ، لتعود إليكِ إذا غيّرتِ هاتفكِ.",
+ "The copy is stored on Google Cloud in Frankfurt, Germany, which is outside Egypt. The phone number you sign in with is held by Firebase Authentication, which may store it in the United States.": "تُخزَّن هذه النسخة على Google Cloud في فرانكفورت بألمانيا، أي خارج مصر. أما رقم الهاتف الذي تسجّلين الدخول به فتحتفظ به خدمة Firebase Authentication، وقد تخزّنه في الولايات المتحدة.",
+ "This is health data, so we only back it up with your clear agreement. You can turn it off at any time, and turning it off deletes the copy from your account.": "هذه بيانات صحية، لذلك لا ننسخها إلا بموافقتكِ الصريحة. يمكنكِ إيقاف هذا الخيار في أي وقت، وإيقافه يحذف النسخة من حسابكِ.",
+ "If you do not turn it on, nothing else changes. Your health data simply stays on this phone only.": "إذا لم تفعّليه فلن يتغيّر شيء آخر. تبقى بياناتكِ الصحية على هذا الهاتف فقط.",
+ "I agree, back up my health data": "أوافق، انسخوا بياناتي الصحية احتياطيًا",
+ "We could not reach Own Hub, so your health backup was not changed. Check your connection and try again.": "تعذّر الوصول إلى Own Hub، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. تحقّقي من اتصالكِ ثم حاولي مرة أخرى."
 }

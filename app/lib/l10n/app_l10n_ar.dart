@@ -7551,4 +7551,42 @@ class AppL10nAr extends AppL10n {
   @override
   String get weCouldNotSaveYourAgreementSo =>
       'تعذّر حفظ موافقتكِ، لذلك لم تُفتح الكاميرا. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
+
+  @override
+  String get backUpMyHealthData => 'نسخ بياناتي الصحية احتياطيًا';
+
+  @override
+  String get offYourCycleCheckInsMeasurementsLife =>
+      'متوقف. تبقى دورتكِ وتسجيلاتكِ اليومية وقياساتكِ ومرحلتكِ الحياتية وحساسيّاتكِ على هذا الهاتف فقط.';
+
+  @override
+  String get onACopyIsKeptInYour =>
+      'مفعّل. تُحفظ نسخة في حسابكِ على Own Hub، مخزّنة في ألمانيا.';
+
+  @override
+  String get backUpYourHealthData => 'هل تريدين نسخ بياناتكِ الصحية احتياطيًا؟';
+
+  @override
+  String get ifYouTurnThisOnACopy =>
+      'إذا فعّلتِ هذا الخيار، تُحفظ في حسابكِ على Own Hub نسخة من مواعيد دورتكِ وأيام الطمث، وتسجيلاتكِ اليومية، وقياسات جسمكِ بما فيها الوزن، ومرحلة الحمل أو ما بعد الولادة أو الإصابة، وحساسيّاتكِ، لتعود إليكِ إذا غيّرتِ هاتفكِ.';
+
+  @override
+  String get theCopyIsStoredOnGoogleCloud =>
+      'تُخزَّن هذه النسخة على Google Cloud في فرانكفورت بألمانيا، أي خارج مصر. أما رقم الهاتف الذي تسجّلين الدخول به فتحتفظ به خدمة Firebase Authentication، وقد تخزّنه في الولايات المتحدة.';
+
+  @override
+  String get thisIsHealthDataSoWeOnly =>
+      'هذه بيانات صحية، لذلك لا ننسخها إلا بموافقتكِ الصريحة. يمكنكِ إيقاف هذا الخيار في أي وقت، وإيقافه يحذف النسخة من حسابكِ.';
+
+  @override
+  String get ifYouDoNotTurnItOn =>
+      'إذا لم تفعّليه فلن يتغيّر شيء آخر. تبقى بياناتكِ الصحية على هذا الهاتف فقط.';
+
+  @override
+  String get iAgreeBackUpMyHealthData =>
+      'أوافق، انسخوا بياناتي الصحية احتياطيًا';
+
+  @override
+  String get weCouldNotReachOwnHubSo =>
+      'تعذّر الوصول إلى Own Hub، لذلك لم يتغيّر النسخ الاحتياطي لبياناتكِ الصحية. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
 }

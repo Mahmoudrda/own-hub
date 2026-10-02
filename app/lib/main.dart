@@ -8,6 +8,7 @@ import 'app_state/cloud_store.dart';
 import 'app_state/firebase_boot.dart';
 import 'app_state/local_persistence.dart';
 import 'app_state/onboarding_state.dart';
+import 'features/account/domain/health_backup.dart';
 import 'domain/flags/feature_flags.dart';
 import 'domain/identity/user_roles.dart';
 import 'l10n/app_l10n.dart';
@@ -72,7 +73,20 @@ Future<void> main() async {
   // With no account, no Firebase, or no verified claim it does nothing at all,
   // and the app is exactly what it was before any of this existed. See
   // `lib/app_state/cloud_store.dart`.
-  unawaited(CloudStore.instance.start());
+  //
+  // Her health backup choice is read first (a local key, no network). If it
+  // is on, the server's consent record is checked before the sync starts, so
+  // a phone that thinks it may back up her health data cannot push it after
+  // the server withdrew the consent. Off, the check returns at once.
+  await HealthBackupPreference.instance.load();
+  unawaited(() async {
+    try {
+      await AppRouter.reconcileHealthBackup();
+    } catch (_) {
+      // The rules refuse health writes without the consent anyway.
+    }
+    await CloudStore.instance.start();
+  }());
 
   runApp(const OwnHubApp());
 }

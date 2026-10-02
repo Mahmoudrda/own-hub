@@ -12,6 +12,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/features/account/data/callable_health_consent_store.dart';
+import 'package:own_hub/features/account/domain/health_backup.dart';
 import 'package:own_hub/features/signup/data/callable_capture_consent_store.dart';
 import 'package:own_hub/features/signup/data/callable_verification_provider.dart';
 import 'package:own_hub/features/signup/domain/capture_consent.dart';
@@ -95,5 +97,31 @@ void main() {
     ]) {
       expect(callables.keys, contains(name), reason: name);
     }
+  });
+
+  group('record_health_consent', () {
+    test('the body and the callable name match', () {
+      final callable =
+          callables[kRecordHealthConsentCallable] as Map<String, dynamic>?;
+      expect(callable, isNotNull);
+      expect(
+        CallableHealthConsentStore.payloadFor(granted: true),
+        callable!['request'],
+      );
+    });
+
+    test('the document path, version and states match', () {
+      final doc = documents['healthConsent'] as Map<String, dynamic>;
+      expect('users/{uid}/consents/$kHealthConsentDocId', doc['path']);
+      expect(
+        (callables[kRecordHealthConsentCallable]
+            as Map<String, dynamic>)['request']['consentVersion'],
+        kHealthConsentVersion,
+      );
+      expect(
+        (doc['states'] as List).toSet(),
+        HealthConsentState.values.map((s) => s.name).toSet(),
+      );
+    });
   });
 }
