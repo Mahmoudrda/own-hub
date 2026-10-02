@@ -1141,11 +1141,16 @@ class AppRouter {
         pendingReviewPath = ReviewPath.error;
         goTo(context, 'C15');
       },
-      // The daily limit. Back to wherever the app starts; the gate holds her
-      // at the check until she is verified.
+      // The daily limit, or a copy of the app that cannot reach Own Hub. To
+      // the front door computed now, with the sign-up stack cleared (R10):
+      // Home for a signed-in woman, where the gate holds her at the check.
+      // Popping to the first route put her on C01 "Get started" while signed
+      // in.
       onClose: () {
         _automaticSubmitted = false;
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(frontDoor, (_) => false);
       },
     ),
     'C13': (context) => YoureInView(
@@ -1172,10 +1177,7 @@ class AppRouter {
       // and on reconnect, never only once, and a failed one does not hold her
       // on a "waiting" screen.
       onApproved: () {
-        serverVerification = const ServerVerification(
-          ServerVerificationState.approved,
-        );
-        unawaited(refreshVerificationClaim());
+        markApprovedByServer();
         goTo(context, 'C13');
       },
       onLookAround: () => goTo(context, 'C04'),
@@ -1207,11 +1209,11 @@ class AppRouter {
         );
         goTo(context, 'C14');
       },
-      onAlreadyVerified: () async {
-        final navigator = Navigator.of(context);
-        await refreshVerificationClaim();
-        if (!navigator.mounted || !context.mounted) return;
-        goTo(context, isVerified ? 'C13' : 'C14');
+      // The server says she is already verified. That is evidence on its own
+      // (R1): a refresh that fails must not put her on C14 pending (R10).
+      onAlreadyVerified: () {
+        markApprovedByServer();
+        goTo(context, 'C13');
       },
       onRejected: () {
         serverVerification = const ServerVerification(
@@ -4595,12 +4597,31 @@ class AppRouter {
   /// no account and no verification on this phone. A verified woman opens on
   /// Home, and a signed-in one who is not verified yet also asks for Home,
   /// where the gate sends her to the check (C09) or to C14.
-  static String get frontDoor =>
-      featureFlags.isOn(Feature.accountRequired) &&
-          !isVerified &&
-          signedInUid == null
+  static String get frontDoor => frontDoorFor(
+    accountRequired: featureFlags.isOn(Feature.accountRequired),
+    verified: isVerified,
+    signedIn: signedInUid != null,
+  );
+
+  /// [frontDoor] as a function of the three facts it turns on.
+  @visibleForTesting
+  static String frontDoorFor({
+    required bool accountRequired,
+    required bool verified,
+    required bool signedIn,
+  }) => accountRequired && !verified && !signedIn
       ? appRoutes['C01']!.name
       : appRoutes['T01']!.name;
+
+  /// The server said she is approved (C14 live update, or C15 hearing
+  /// "already verified"). That opens the product by itself ([isVerified]);
+  /// the token refresh is started and retried later if it fails.
+  static void markApprovedByServer() {
+    serverVerification = const ServerVerification(
+      ServerVerificationState.approved,
+    );
+    unawaited(refreshVerificationClaim());
+  }
 
   static String? get signedInUid => switch (authRepository.current) {
     AuthSignedIn(:final uid) => uid,
