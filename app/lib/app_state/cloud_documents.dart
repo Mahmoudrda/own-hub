@@ -179,7 +179,7 @@ abstract final class CloudDocuments {
     return <CloudDoc>[
       _userDoc(includeHealth: health),
       ..._sessions(),
-      ..._mealDays(),
+      ..._mealDays(includeHealth: health),
       _eatPrefsDoc(),
       ..._mealPlans(),
       if (health) ..._checkIns(),
@@ -536,7 +536,7 @@ List<LoggedSet> _readLoggedSets(Object? raw) => <LoggedSet>[
 
 // ------------------------------------------------------------------ meals ---
 
-Iterable<CloudDoc> _mealDays() sync* {
+Iterable<CloudDoc> _mealDays({required bool includeHealth}) sync* {
   for (final entry in AppRouter.mealRepository.store.days.entries) {
     if (!_isDayId(entry.key)) continue;
     final day = entry.value;
@@ -552,7 +552,9 @@ Iterable<CloudDoc> _mealDays() sync* {
       final kept = items.length <= kSlotItemCap
           ? items
           : items.sublist(0, kSlotItemCap);
-      slots[slot.name] = [for (final item in kept) _mealItem(item)];
+      slots[slot.name] = [
+        for (final item in kept) _mealItem(item, includeHealth: includeHealth),
+      ];
       for (final item in kept) {
         kcal += item.kcal;
         protein += item.proteinG;
@@ -632,7 +634,13 @@ MealDay? _readMealDay(String dayId, Map<String, Object?> row) {
   );
 }
 
-Map<String, Object?> _mealItem(MealItem item) => <String, Object?>{
+/// One logged item. [includeHealth] false (the backup off) leaves out
+/// `allergenOverride`, the allergens she chose to eat anyway: it is allergy
+/// data, and the copy says allergies stay on the phone (N12).
+Map<String, Object?> _mealItem(
+  MealItem item, {
+  required bool includeHealth,
+}) => <String, Object?>{
   'itemId': item.itemId,
   'foodId': item.foodId,
   'servings': item.servings,
@@ -649,7 +657,7 @@ Map<String, Object?> _mealItem(MealItem item) => <String, Object?>{
       'idx': ref.idx,
     },
   'helpingOf': ?item.helpingOf,
-  'allergenOverride': item.allergenOverride,
+  if (includeHealth) 'allergenOverride': item.allergenOverride,
 };
 
 MealItem? _readMealItem(Object? raw) {

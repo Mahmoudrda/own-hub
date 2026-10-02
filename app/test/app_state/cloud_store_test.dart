@@ -859,6 +859,25 @@ void main() {
       expect(profile.containsKey('goal'), isTrue);
     });
 
+    // N12. The allergens she chose to eat anyway are allergy data. With the
+    // backup off the copy says allergies stay on the phone, so meal items go
+    // up without them.
+    test('meal items carry no allergen override while it is off', () async {
+      await _fillEverything();
+      final items = _mealItems(CloudDocuments.capture());
+      expect(items, isNotEmpty, reason: 'the fixture logs a meal');
+      for (final item in items) {
+        expect(item.containsKey('allergenOverride'), isFalse);
+      }
+    });
+
+    test('and do carry it while it is on', () async {
+      await HealthBackupPreference.instance.set(true);
+      await _fillEverything();
+      final items = _mealItems(CloudDocuments.capture());
+      expect(items.every((i) => i.containsKey('allergenOverride')), isTrue);
+    });
+
     test('with it on, the same stores do produce them', () async {
       await HealthBackupPreference.instance.set(true);
       await _fillEverything();
@@ -960,6 +979,13 @@ void main() {
     });
   });
 }
+
+List<Map<String, Object?>> _mealItems(List<CloudDoc> docs) => <Map<String, Object?>>[
+  for (final doc in docs.where((d) => d.collection == 'meals'))
+    for (final slot
+        in (doc.data['slots']! as Map<String, Object?>).values)
+      for (final item in slot! as List<Object?>) item! as Map<String, Object?>,
+];
 
 // ------------------------------------------------------------------ fakes ---
 
