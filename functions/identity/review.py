@@ -128,11 +128,21 @@ class ReviewStore(Protocol):
         state: str,
         reviewer_uid: str,
         reviewer_reason: str,
-    ) -> None: ...
+        id_hmac: Optional[str] = None,
+    ) -> Optional[str]:
+        """One transaction: re-read the flag, refuse unless PENDING_REVIEW
+        (REVIEW_NOT_PENDING); with id_hmac, claim the registry for uid or
+        refuse with the dedupe reason; then close the flag and its job and
+        clear her openFlagId. Returns None on commit, else the reason code,
+        having written nothing."""
+        ...
 
     def stale_flags(self, now: dt.datetime, limit: int) -> list[tuple[str, dict]]: ...
 
-    def expire_flag(self, flag_id: str, uid: str) -> None: ...
+    def expire_flag(self, flag_id: str, uid: str, now: dt.datetime) -> bool:
+        """One transaction: expire only if still PENDING_REVIEW and still past
+        its slaExpiresAt at `now`. True when it expired the flag."""
+        ...
 
     def grant_bonus(self, uid: str, flag_id: str) -> bool: ...
 
@@ -373,8 +383,10 @@ def decide(
 
     Refuses unless the flag is still PENDING_REVIEW, the reviewer is not the
     woman being reviewed, and a live review was booked. Approval claims the
-    registry FIRST: if the claim fails (the card belongs to another account, or
-    the registration is closed) nothing is minted and the flag stays open.
+    registry in the same transaction that closes the flag: if the claim fails
+    (the card belongs to another account, or the registration is closed) or
+    the flag is no longer pending, nothing is written, nothing is minted and
+    the flag stays as it was.
     """
     record = _pending_flag_for(store, reviewer_uid, flag_id)
     uid = record["uid"]
@@ -383,6 +395,10 @@ def decide(
         # case there is no evidence for, which this design removes.
         raise ReviewError(PRECONDITION, reasons.INTERNAL_ERROR)
 
+    # N10: the flag is re-read and closed in ONE transaction keyed on
+    # state == PENDING_REVIEW (with the registry claim, on approval), so two
+    # reviewers, or a reviewer and the expiry sweep, cannot both decide it.
+    # Nothing is minted and her state is not written unless it commits.
     if approve:
         id_hmac = record.get("id_hmac")
         if not id_hmac:
@@ -390,29 +406,31 @@ def decide(
                 store, nid_digits, today or dt.date.today()
             )
         nid_digits = None
-        verdict = store.claim(id_hmac, uid)
-        if not verdict.ok:
-            raise ReviewError(PRECONDITION, verdict.reason or reasons.DUPLICATE_ID)
-        store.mint_verified(uid)
-        store.set_verification_state(uid, STATE_APPROVED, decided=True)
-        store.close_flag(
+        refusal = store.close_flag(
             flag_id,
             uid=uid,
             state=decisions.APPROVED,
             reviewer_uid=reviewer_uid,
             reviewer_reason=reasons.REVIEWER_APPROVED,
+            id_hmac=id_hmac,
         )
+        if refusal:
+            raise ReviewError(PRECONDITION, refusal)
+        store.mint_verified(uid)
+        store.set_verification_state(uid, STATE_APPROVED, decided=True)
         outcome = decisions.APPROVED
         codes = (reasons.REVIEWER_APPROVED,)
     else:
-        store.set_verification_state(uid, STATE_REJECTED, decided=True)
-        store.close_flag(
+        refusal = store.close_flag(
             flag_id,
             uid=uid,
             state=decisions.REJECTED_FAILED,
             reviewer_uid=reviewer_uid,
             reviewer_reason=reasons.REVIEWER_REJECTED,
         )
+        if refusal:
+            raise ReviewError(PRECONDITION, refusal)
+        store.set_verification_state(uid, STATE_REJECTED, decided=True)
         outcome = "rejected"
         codes = (reasons.REVIEWER_REJECTED,)
     store.log_access(reviewer_uid, flag_id, "decide")
@@ -459,7 +477,10 @@ def expire(store: ReviewStore, now: dt.datetime, limit: int = 200) -> int:
     count = 0
     for flag_id, data in store.stale_flags(now, limit):
         uid = data.get("uid")
-        store.expire_flag(flag_id, uid)
+        # N10: re-checked inside the transaction. A flag booked (SLA moved)
+        # or decided since the query is left alone.
+        if not store.expire_flag(flag_id, uid, now):
+            continue
         if uid:
             # N6: the booking expired with the flag; C14 must not keep
             # showing a call time that is no longer going to happen.

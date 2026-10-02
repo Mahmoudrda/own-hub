@@ -783,18 +783,6 @@ def open_flag(
     return txn(db().transaction())
 
 
-def _clear_open_flag(uid: str, flag_id: str) -> None:
-    reference = db().collection(config.COL_LEDGER).document(uid)
-
-    @firestore.transactional
-    def txn(transaction):
-        snapshot = reference.get(transaction=transaction)
-        if snapshot.exists and (snapshot.to_dict() or {}).get("openFlagId") == flag_id:
-            transaction.set(reference, {"openFlagId": None}, merge=True)
-
-    txn(db().transaction())
-
-
 class FirestoreReviewStore:
     """review.ReviewStore over Firestore and Firebase Auth."""
 
@@ -848,22 +836,69 @@ class FirestoreReviewStore:
             }
         )
 
-    def close_flag(self, flag_id, *, uid, state, reviewer_uid, reviewer_reason):
-        db().collection(config.COL_FLAGS).document(flag_id).update(
-            {
-                "state": state,
-                "decidedBy": reviewer_uid,
-                "decidedAt": firestore.SERVER_TIMESTAMP,
-                "reviewerReason": reviewer_reason,
-                "expireAt": decided_expiry(),
-            }
+    def close_flag(
+        self, flag_id, *, uid, state, reviewer_uid, reviewer_reason, id_hmac=None
+    ):
+        """N10: re-read, check PENDING_REVIEW, claim the registry (approval)
+        and close flag, job and openFlagId in ONE transaction. Returns None on
+        commit, or the refusal reason code with nothing written."""
+        flag_ref = db().collection(config.COL_FLAGS).document(flag_id)
+        job_ref = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
+        ledger_ref = db().collection(config.COL_LEDGER).document(uid)
+        registry_ref = (
+            db().collection(config.COL_NID_REGISTRY).document(id_hmac) if id_hmac else None
         )
-        job = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
-        if job.get().exists:
-            job.update(
-                {"state": state, "decidedBy": "reviewer", "expireAt": decided_expiry()}
+
+        @firestore.transactional
+        def txn(transaction):
+            flag = flag_ref.get(transaction=transaction)
+            if not flag.exists or (flag.to_dict() or {}).get("state") != decisions.PENDING_REVIEW:
+                return reasons.REVIEW_NOT_PENDING
+            job = job_ref.get(transaction=transaction)
+            ledger_snapshot = ledger_ref.get(transaction=transaction)
+            claim_payload = None
+            if registry_ref is not None:
+                entry_snapshot = registry_ref.get(transaction=transaction)
+                existing = None
+                if entry_snapshot.exists:
+                    data = entry_snapshot.to_dict() or {}
+                    existing = dedupe.RegistryEntry(
+                        uid=data.get("uid"),
+                        state=data.get("state", dedupe.STATE_ACTIVE),
+                        pepper_version=int(data.get("pepper_version", 0)),
+                    )
+                verdict = dedupe.judge(existing, uid)
+                if not verdict.ok:
+                    return verdict.reason or reasons.DUPLICATE_ID
+                if not verdict.is_reverification:
+                    claim_payload = dedupe.registry_document(uid)
+                    claim_payload["createdAt"] = firestore.SERVER_TIMESTAMP
+            # Writes only after every read.
+            if claim_payload is not None:
+                transaction.set(registry_ref, claim_payload)
+            transaction.update(
+                flag_ref,
+                {
+                    "state": state,
+                    "decidedBy": reviewer_uid,
+                    "decidedAt": firestore.SERVER_TIMESTAMP,
+                    "reviewerReason": reviewer_reason,
+                    "expireAt": decided_expiry(),
+                },
             )
-        _clear_open_flag(uid, flag_id)
+            if job.exists:
+                transaction.update(
+                    job_ref,
+                    {"state": state, "decidedBy": "reviewer", "expireAt": decided_expiry()},
+                )
+            if (
+                ledger_snapshot.exists
+                and (ledger_snapshot.to_dict() or {}).get("openFlagId") == flag_id
+            ):
+                transaction.set(ledger_ref, {"openFlagId": None}, merge=True)
+            return None
+
+        return txn(db().transaction())
 
     def stale_flags(self, now, limit):
         query = (
@@ -875,20 +910,48 @@ class FirestoreReviewStore:
         )
         return [(s.id, s.to_dict() or {}) for s in query.stream()]
 
-    def expire_flag(self, flag_id, uid):
-        db().collection(config.COL_FLAGS).document(flag_id).update(
-            {
-                "state": decisions.RETRY_REQUIRED,
-                "reasons": firestore.ArrayUnion([reasons.REVIEW_SLA_EXPIRED]),
-                "expiredAt": firestore.SERVER_TIMESTAMP,
-                "expireAt": decided_expiry(),
-            }
-        )
-        job = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
-        if job.get().exists:
-            job.update({"state": decisions.RETRY_REQUIRED, "expireAt": decided_expiry()})
-        if uid:
-            _clear_open_flag(uid, flag_id)
+    def expire_flag(self, flag_id, uid, now):
+        """N10: expire only if still PENDING_REVIEW and still past its SLA at
+        `now`, re-checked inside one transaction with the job and openFlagId
+        writes. A booking moves slaExpiresAt (N6), so a flag booked after the
+        sweep's query is left alone."""
+        flag_ref = db().collection(config.COL_FLAGS).document(flag_id)
+        job_ref = db().collection(config.COL_VERIFICATION_JOBS).document(flag_id)
+        ledger_ref = db().collection(config.COL_LEDGER).document(uid) if uid else None
+
+        @firestore.transactional
+        def txn(transaction):
+            flag = flag_ref.get(transaction=transaction)
+            data = (flag.to_dict() or {}) if flag.exists else {}
+            sla = data.get("slaExpiresAt")
+            if data.get("state") != decisions.PENDING_REVIEW or sla is None or not sla < now:
+                return False
+            job = job_ref.get(transaction=transaction)
+            ledger_snapshot = (
+                ledger_ref.get(transaction=transaction) if ledger_ref is not None else None
+            )
+            transaction.update(
+                flag_ref,
+                {
+                    "state": decisions.RETRY_REQUIRED,
+                    "reasons": firestore.ArrayUnion([reasons.REVIEW_SLA_EXPIRED]),
+                    "expiredAt": firestore.SERVER_TIMESTAMP,
+                    "expireAt": decided_expiry(),
+                },
+            )
+            if job.exists:
+                transaction.update(
+                    job_ref, {"state": decisions.RETRY_REQUIRED, "expireAt": decided_expiry()}
+                )
+            if (
+                ledger_snapshot is not None
+                and ledger_snapshot.exists
+                and (ledger_snapshot.to_dict() or {}).get("openFlagId") == flag_id
+            ):
+                transaction.set(ledger_ref, {"openFlagId": None}, merge=True)
+            return True
+
+        return txn(db().transaction())
 
     def grant_bonus(self, uid, flag_id):
         reference = db().collection(config.COL_LEDGER).document(uid)

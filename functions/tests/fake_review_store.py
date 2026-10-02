@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import itertools
 
-from identity import dedupe, decisions, ledger, store
+from identity import dedupe, decisions, ledger, reasons, store
 
 
 class FakeReviewStore:
@@ -100,7 +100,18 @@ class FakeReviewStore:
             }
         )
 
-    def close_flag(self, flag_id, *, uid, state, reviewer_uid, reviewer_reason):
+    def close_flag(
+        self, flag_id, *, uid, state, reviewer_uid, reviewer_reason, id_hmac=None
+    ):
+        # Faithful to the store's single transaction: check, then write all.
+        if self.flags.get(flag_id, {}).get("state") != decisions.PENDING_REVIEW:
+            return reasons.REVIEW_NOT_PENDING
+        if id_hmac:
+            verdict = dedupe.judge(self.registry.get(id_hmac), uid)
+            if not verdict.ok:
+                return verdict.reason or reasons.DUPLICATE_ID
+            if not verdict.is_reverification:
+                self.registry[id_hmac] = dedupe.RegistryEntry(uid, dedupe.STATE_ACTIVE, 1)
         self.flags[flag_id].update(
             {"state": state, "decidedBy": reviewer_uid, "reviewerReason": reviewer_reason}
         )
@@ -108,6 +119,7 @@ class FakeReviewStore:
             self.jobs[flag_id]["state"] = state
         if self._ledger(uid).get("openFlagId") == flag_id:
             self._ledger(uid)["openFlagId"] = None
+        return None
 
     def stale_flags(self, now, limit):
         return [
@@ -116,12 +128,16 @@ class FakeReviewStore:
             if v["state"] == decisions.PENDING_REVIEW and v["slaExpiresAt"] < now
         ][:limit]
 
-    def expire_flag(self, flag_id, uid):
-        self.flags[flag_id]["state"] = decisions.RETRY_REQUIRED
+    def expire_flag(self, flag_id, uid, now):
+        flag = self.flags.get(flag_id, {})
+        if flag.get("state") != decisions.PENDING_REVIEW or not flag["slaExpiresAt"] < now:
+            return False
+        flag["state"] = decisions.RETRY_REQUIRED
         if flag_id in self.jobs:
             self.jobs[flag_id]["state"] = decisions.RETRY_REQUIRED
         if uid and self._ledger(uid).get("openFlagId") == flag_id:
             self._ledger(uid)["openFlagId"] = None
+        return True
 
     def grant_bonus(self, uid, flag_id):
         data = self._ledger(uid)
