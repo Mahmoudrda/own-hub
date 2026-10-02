@@ -545,6 +545,31 @@ def write_review_consent(uid: str, path: str) -> None:
     )
 
 
+def review_consent_given(uids) -> set:
+    """R4: which of `uids` have users/{uid}/consents/review-v{N}. One batched
+    read; existence is all that is looked at. get_all does not promise to
+    answer in request order, so results are matched back by path."""
+    by_path = {}
+    for uid in uids:
+        if uid:
+            ref = (
+                db()
+                .collection(config.COL_USERS)
+                .document(uid)
+                .collection(config.COL_CONSENTS)
+                .document(f"review-v{config.REVIEW_CONSENT_VERSION}")
+            )
+            by_path[ref.path] = (uid, ref)
+    if not by_path:
+        return set()
+    refs = [ref for _, ref in by_path.values()]
+    return {
+        by_path[snap.reference.path][0]
+        for snap in db().get_all(refs)
+        if snap.exists and snap.reference.path in by_path
+    }
+
+
 HEALTH_COLLECTIONS = ("checkins", "measurements", "cycle", "periods")
 HEALTH_PROFILE_KEYS = ("lifeStage", "allergies")
 
@@ -797,6 +822,9 @@ class FirestoreReviewStore:
 
     def write_review_consent(self, uid, path):
         write_review_consent(uid, path)
+
+    def review_consent_given(self, uids):
+        return review_consent_given(uids)
 
     def open_flag_id(self, uid):
         return verification_gate(uid).open_flag_id

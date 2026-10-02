@@ -801,7 +801,8 @@ def get_review_contact(request: https_fn.CallableRequest) -> dict:
 
     Looked up from Firebase Auth at the moment of calling, never copied onto
     the flag, never logged. Each lookup is written to the review access log.
-    Refused unless the flag is PENDING_REVIEW and the reviewer is not her.
+    Refused unless the flag is PENDING_REVIEW, the reviewer is not her, and
+    she asked for the call (R4: review_consent_missing otherwise).
     """
     reviewer_uid = _require_woman_reviewer(request)
     data = _body(request)

@@ -27,8 +27,11 @@ https://europe-west3-own-hub.cloudfunctions.net . Against the QA emulator:
 http://127.0.0.1:5101/own-hub/europe-west3 .
 
 Commands:
-    list                                       open flags, oldest first
-    contact  --flag F                          her phone number (logged)
+    list                                       open flags, oldest first;
+                                               consent=yes once she asked
+                                               for the call
+    contact  --flag F                          her phone number (logged);
+                                               refused until consent=yes
     schedule --flag F --route video --at 2026-10-05T10:00:00+02:00
     decide   --flag F --reject
     decide   --flag F --approve                asks for the NID read on the call
@@ -51,6 +54,7 @@ import urllib.request
 
 DEFAULT_BASE = "https://europe-west3-own-hub.cloudfunctions.net"
 DUPLICATE_ID = "duplicate_id"
+REVIEW_CONSENT_MISSING = "review_consent_missing"
 
 
 class CallError(Exception):
@@ -137,9 +141,16 @@ def main(argv=None, *, client=None, read_nid=None, read_token=None, out=print) -
                 out(
                     f"{row['flagId']}  {','.join(row.get('flags', []))}  route={row.get('route')}"
                     f"  at={row.get('scheduledFor') or '-'}  sla={row.get('slaExpiresAt')}"
-                    f"  nidOnCall={'yes' if row.get('needsNidOnCall') else 'no'}{note}"
+                    f"  nidOnCall={'yes' if row.get('needsNidOnCall') else 'no'}"
+                    f"  consent={'yes' if row.get('consentGiven') else 'no'}{note}"
                 )
         elif args.command == "contact":
+            # R4: never ask for her phone before she asked for the call. The
+            # server refuses too; this keeps the request from being made.
+            rows = client.call("list_verification_flags", {}).get("flags", [])
+            row = next((r for r in rows if r.get("flagId") == args.flag), None)
+            if row is not None and row.get("consentGiven") is not True:
+                raise CallError("FAILED_PRECONDITION", REVIEW_CONSENT_MISSING)
             out(client.call("get_review_contact", {"flagId": args.flag})["phone"])
         elif args.command == "schedule":
             client.call(
@@ -161,7 +172,9 @@ def main(argv=None, *, client=None, read_nid=None, read_token=None, out=print) -
             data = None
             out(f"decided: {result.get('outcome')}")
     except CallError as error:
-        if error.reason == DUPLICATE_ID:
+        if error.reason == REVIEW_CONSENT_MISSING:
+            out(f"refused: {REVIEW_CONSENT_MISSING} (she has not asked for the call yet)")
+        elif error.reason == DUPLICATE_ID:
             out("refused: duplicate_id (card registered to another account: escalate to the owner)")
         else:
             out(f"refused: {error.reason or error.status}")

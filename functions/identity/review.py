@@ -101,6 +101,10 @@ class ReviewStore(Protocol):
 
     def write_review_consent(self, uid: str, path: str) -> None: ...
 
+    def review_consent_given(self, uids: list) -> set:
+        """The subset of `uids` with users/{uid}/consents/review-v{N}."""
+        ...
+
     def open_flag_id(self, uid: str) -> Optional[str]: ...
 
     def ocr_submissions(self, uid: str) -> int: ...
@@ -295,8 +299,15 @@ def contact(store: ReviewStore, reviewer_uid: str, flag_id: Any) -> dict:
 
     Never copied onto the flag, never logged, never stored. Every lookup is
     written to the review access log, so a curious reviewer leaves a trace.
+
+    R4: refused with review_consent_missing until she has asked for the call
+    (request_review records users/{uid}/consents/review-v{N}). A flag the
+    pipeline raised on its own carries no consent until she taps "Ask for the
+    call" in the app.
     """
     record = _pending_flag_for(store, reviewer_uid, flag_id)
+    if record["uid"] not in store.review_consent_given([record["uid"]]):
+        raise ReviewError(PRECONDITION, reasons.REVIEW_CONSENT_MISSING)
     store.log_access(reviewer_uid, flag_id, "contact")
     phone = store.phone_for(record["uid"])
     if not phone:
@@ -489,7 +500,11 @@ def retry_pending_mints(store: ReviewStore, limit: int = 100) -> int:
 def list_open(store: ReviewStore, reviewer_uid: str, limit: int = 50) -> list[dict]:
     """The queue: codes, scores and a handle. Never an image, never a phone."""
     rows = []
-    for flag_id, data in store.list_open(limit):
+    open_flags = store.list_open(limit)
+    consented = store.review_consent_given(
+        sorted({data.get("uid") for _, data in open_flags if data.get("uid")})
+    )
+    for flag_id, data in open_flags:
         rows.append(
             {
                 "flagId": flag_id,
@@ -507,6 +522,9 @@ def list_open(store: ReviewStore, reviewer_uid: str, limit: int = 50) -> list[di
                 # Whether approving needs the NID read on the live call. The
                 # hash itself never leaves the server.
                 "needsNidOnCall": not data.get("id_hmac"),
+                # R4: whether she asked for the call. A boolean only; the
+                # reviewer may not fetch her phone until it is true.
+                "consentGiven": data.get("uid") in consented,
             }
         )
     store.log_access(reviewer_uid, "*", "list")

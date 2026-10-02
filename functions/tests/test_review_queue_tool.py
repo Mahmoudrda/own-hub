@@ -102,7 +102,7 @@ def test_the_whole_loop_on_a_niqab_flag(monkeypatch):
     assert fake.minted == ["her"]
     assert FEMALE_ADULT not in " ".join(lines)
     actions = [a for _, _, a in fake.access]
-    assert actions == ["contact", "schedule:video", "list", "decide"]
+    assert actions == ["list", "contact", "schedule:video", "list", "decide"]
     assert {who for who, _, _ in fake.access} == {"rev"}
 
 

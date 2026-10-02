@@ -51,6 +51,9 @@ class FakeReviewStore:
     def write_review_consent(self, uid, path):
         self.review_consents[uid] = path
 
+    def review_consent_given(self, uids):
+        return {uid for uid in uids if uid in self.review_consents}
+
     def _ledger(self, uid):
         return self.ledgers.setdefault(uid, {})
 

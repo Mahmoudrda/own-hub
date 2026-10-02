@@ -211,6 +211,11 @@ REVIEW_NOT_PENDING = "review_not_pending"
 REVIEW_TIME_OUT_OF_RANGE = "review_time_out_of_range"
 """A reviewer tried to book a live review further ahead than
 config.REVIEW_BOOKING_MAX_DAYS. Reviewer-facing only."""
+REVIEW_CONSENT_MISSING = "review_consent_missing"
+"""R4: a reviewer asked for her phone number before she asked for the call
+(users/{uid}/consents/review-v{REVIEW_CONSENT_VERSION} does not exist). A
+machine-raised flag has no consent until she taps "Ask for the call".
+Reviewer-facing only."""
 
 
 # ------------------------------------------------- what crosses the wire
