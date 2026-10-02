@@ -979,6 +979,27 @@ class FirestoreReviewStore:
 
         return txn(db().transaction())
 
+    def mark_mint_pending(self, flag_id):
+        db().collection(config.COL_FLAGS).document(flag_id).update({"mintPending": True})
+
+    def clear_mint_pending(self, flag_id):
+        db().collection(config.COL_FLAGS).document(flag_id).update(
+            {"mintPending": firestore.DELETE_FIELD}
+        )
+
+    def mint_pending_flags(self, limit):
+        """Single-field equality on mintPending (auto-indexed). APPROVED is
+        checked here so a stray mark on any other flag mints nothing."""
+        query = (
+            db().collection(config.COL_FLAGS).where("mintPending", "==", True).limit(limit)
+        )
+        out = []
+        for snapshot in query.stream():
+            data = snapshot.to_dict() or {}
+            if data.get("state") == decisions.APPROVED:
+                out.append((snapshot.id, data.get("uid")))
+        return out
+
     def claim(self, id_hmac, uid):
         return FirestoreRegistry().claim(id_hmac, uid)
 

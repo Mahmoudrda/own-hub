@@ -19,6 +19,7 @@ main.py maps `kind` onto an HttpsError code.
 from __future__ import annotations
 
 import datetime as dt
+import time
 from dataclasses import dataclass
 from typing import Any, Optional, Protocol
 
@@ -44,6 +45,9 @@ INVALID = "invalid-argument"
 PRECONDITION = "failed-precondition"
 EXHAUSTED = "resource-exhausted"
 NOT_FOUND = "not-found"
+
+
+_sleep = time.sleep
 
 
 class ReviewError(Exception):
@@ -145,6 +149,14 @@ class ReviewStore(Protocol):
         ...
 
     def grant_bonus(self, uid: str, flag_id: str) -> bool: ...
+
+    def mark_mint_pending(self, flag_id: str) -> None: ...
+
+    def clear_mint_pending(self, flag_id: str) -> None: ...
+
+    def mint_pending_flags(self, limit: int) -> list[tuple[str, str]]:
+        """(flag_id, uid) for APPROVED flags whose mint has not landed."""
+        ...
 
     def claim(self, id_hmac: str, uid: str) -> dedupe.DedupeVerdict: ...
 
@@ -416,8 +428,11 @@ def decide(
         )
         if refusal:
             raise ReviewError(PRECONDITION, refusal)
-        store.mint_verified(uid)
-        store.set_verification_state(uid, STATE_APPROVED, decided=True)
+        # The approval is committed. A failed mint must not lose it: retry a
+        # few times here, then leave mintPending on the flag for the hourly
+        # job (retry_pending_mints).
+        if not _mint_and_approve(store, uid):
+            store.mark_mint_pending(flag_id)
         outcome = decisions.APPROVED
         codes = (reasons.REVIEWER_APPROVED,)
     else:
@@ -435,6 +450,33 @@ def decide(
         codes = (reasons.REVIEWER_REJECTED,)
     store.log_access(reviewer_uid, flag_id, "decide")
     return DecideResult(outcome, uid, codes)
+
+
+def _mint_and_approve(store: ReviewStore, uid: str, attempts: Optional[int] = None) -> bool:
+    """Mint the verified claim (merge, never replace: store.mint_claims) and
+    write her state approved. True once both landed."""
+    attempts = attempts or config.MINT_ATTEMPTS
+    for attempt in range(attempts):
+        try:
+            store.mint_verified(uid)
+            store.set_verification_state(uid, STATE_APPROVED, decided=True)
+            return True
+        except Exception:
+            if attempt + 1 < attempts:
+                backoff = config.MINT_RETRY_BACKOFF_SEC
+                _sleep(backoff[min(attempt, len(backoff) - 1)])
+    return False
+
+
+def retry_pending_mints(store: ReviewStore, limit: int = 100) -> int:
+    """The hourly job's half of the mint retry: finish every APPROVED flag
+    still marked mintPending, then clear the mark. Returns how many landed."""
+    done = 0
+    for flag_id, uid in store.mint_pending_flags(limit):
+        if uid and _mint_and_approve(store, uid, attempts=1):
+            store.clear_mint_pending(flag_id)
+            done += 1
+    return done
 
 
 def list_open(store: ReviewStore, reviewer_uid: str, limit: int = 50) -> list[dict]:

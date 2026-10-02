@@ -872,11 +872,19 @@ def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     Our failure to review within 72 hours, not hers: her state becomes `retry`,
     and she earns one more OCR submission if it still fits under the cost cap.
     Nothing is ever reset. See review.expire.
+
+    Also finishes any approval whose verified claim failed to mint at decide
+    time (flag mintPending), then clears the mark. See review.retry_pending_mints.
     """
     import datetime as dt
 
-    count = review.expire(store.FirestoreReviewStore(), dt.datetime.now(dt.timezone.utc))
+    review_store = store.FirestoreReviewStore()
+    count = review.expire(review_store, dt.datetime.now(dt.timezone.utc))
     logs.decision("expire_stale_reviews", outcome=decisions.RETRY_REQUIRED, count=count)
+    # An approval whose verified claim could not be minted at decide time.
+    minted = review.retry_pending_mints(review_store)
+    if minted:
+        logs.decision("expire_stale_reviews", outcome=decisions.APPROVED, count=minted)
 
 
 # ------------------------------------------------------------- deletion

@@ -525,6 +525,14 @@ REVIEW_BOOKING_MAX_DAYS = 7
 refused (review_time_out_of_range), so the grace above cannot be used to park a
 flag open indefinitely."""
 
+MINT_ATTEMPTS = 3
+"""How many times decide tries to mint the verified claim and write her state
+after an approval has committed, before recording mintPending on the flag for
+the hourly job (expire_stale_reviews) to finish."""
+
+MINT_RETRY_BACKOFF_SEC = (0.5, 1.5)
+"""Pauses between those in-process attempts."""
+
 
 # ------------------------------------------------- retention and deletion
 

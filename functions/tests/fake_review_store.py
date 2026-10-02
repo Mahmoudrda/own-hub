@@ -152,6 +152,19 @@ class FakeReviewStore:
         data["bonusGrantedFor"] = list(granted + (flag_id,))
         return True
 
+    def mark_mint_pending(self, flag_id):
+        self.flags[flag_id]["mintPending"] = True
+
+    def clear_mint_pending(self, flag_id):
+        self.flags[flag_id].pop("mintPending", None)
+
+    def mint_pending_flags(self, limit):
+        return [
+            (k, v.get("uid"))
+            for k, v in self.flags.items()
+            if v.get("mintPending") and v.get("state") == decisions.APPROVED
+        ][:limit]
+
     def claim(self, id_hmac, uid):
         verdict = dedupe.judge(self.registry.get(id_hmac), uid)
         if verdict.ok and not verdict.is_reverification:
