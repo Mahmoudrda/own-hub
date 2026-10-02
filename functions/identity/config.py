@@ -564,6 +564,15 @@ resource to match the prose would break a secret that already exists, so the
 mapping is recorded here instead.
 """
 
+SECRET_FLAG_WEBHOOK = "flag-webhook-url"
+"""Secret Manager secret holding the review-queue webhook URL (S14). The
+FLAG_WEBHOOK_URL environment variable overrides it."""
+
+FLAG_WEBHOOK_REQUIRED = True
+"""S14: in production a missing webhook is an ERROR log line on every flag
+(`flag_webhook_missing`), which the webhook-missing alert policy pages on. It
+never fails a verification."""
+
 PEPPER_VERSION = 1
 """Stored beside every hash, per spec §4.
 

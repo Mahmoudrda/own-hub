@@ -70,6 +70,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import time
 import uuid
 from typing import Any, Optional
 
@@ -81,6 +82,7 @@ from identity import (
     decisions,
     pipeline,
     providers,
+    logs,
     providers_selfhosted,
     reasons,
     review,
@@ -202,6 +204,10 @@ def _operation_id(raw: Any) -> str:
     return str(uuid.uuid4())
 
 
+def _ms(started: float) -> int:
+    return int((time.monotonic() - started) * 1000)
+
+
 def _response(decision: decisions.Decision) -> dict:
     """The agreed wire envelope: `{outcome, reasons}`.
 
@@ -304,7 +310,9 @@ def record_health_consent(request: https_fn.CallableRequest) -> dict:
     store.write_health_consent(uid, granted)
     if not granted:
         store.purge_health_data(uid)
-    return {"ok": True, "state": "granted" if granted else "withdrawn"}
+    state = "granted" if granted else "withdrawn"
+    logs.decision("record_health_consent", state=state)
+    return {"ok": True, "state": state}
 
 
 @https_fn.on_call(enforce_app_check=config.ENFORCE_APP_CHECK)
@@ -345,6 +353,7 @@ def start_verification(request: https_fn.CallableRequest) -> dict:
 
     # Spec §6's global kill switch, checked before anything is minted.
     if store.daily_count_and_increment() > config.DAILY_VERIFICATION_LIMIT:
+        logs.warn("daily_limit_reached", field="sessions")
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.DAILY_LIMIT_REACHED
         )
@@ -391,6 +400,7 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
 
     Response: `{outcome, reasons, refreshToken}`. See `_response`.
     """
+    started = time.monotonic()
     uid = _require_auth(request)
     data = request.data or {}
     if not isinstance(data, dict):
@@ -416,6 +426,12 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.VERIFICATION_CLOSED
         )
     if gate.open_flag_id:
+        logs.decision(
+            "verify_identity",
+            outcome=decisions.PENDING_REVIEW,
+            reasons=[reasons.REVIEW_ALREADY_OPEN],
+            latencyMs=_ms(started),
+        )
         return {
             "outcome": decisions.PENDING_REVIEW,
             "reasons": [],
@@ -448,6 +464,9 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
         store.daily_count_and_increment(store.DAILY_VERIFY_FIELD)
         > config.DAILY_VERIFICATION_LIMIT
     ):
+        # The alert policy in firebase/ops/kill-switch-alert-policy.json
+        # matches this event.
+        logs.warn("daily_limit_reached", field=store.DAILY_VERIFY_FIELD)
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.DAILY_LIMIT_REACHED
         )
@@ -574,6 +593,13 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
     # The images go out of scope here and are collected. Nothing above wrote
     # them anywhere; this is belt and braces on an already-empty promise.
     del card_front, card_back, frames, inputs, outcome
+    logs.decision(
+        "verify_identity",
+        outcome=decision.outcome,
+        reasons=list(decision.reasons),
+        latencyMs=_ms(started),
+        jobId=job_id,
+    )
     return _response(decision)
 
 
@@ -715,9 +741,18 @@ def request_review(request: https_fn.CallableRequest) -> dict:
     verification state to `pending`. Returns {state: "pending"}, or
     {state: "approved"} if she is already verified.
     """
+    started = time.monotonic()
     uid = _require_auth(request)
     data = _body(request)
     result = _review_call(review.request, store.FirestoreReviewStore(), uid, data.get("path"))
+    logs.decision(
+        "request_review",
+        outcome=decisions.PENDING_REVIEW if result.state == review.STATE_PENDING else result.state,
+        state=result.state,
+        reasons=[result.code] if result.code else [],
+        latencyMs=_ms(started),
+        flagId=result.flag_id,
+    )
     return {"state": result.state}
 
 
@@ -778,6 +813,7 @@ def decide_verification_flag(request: https_fn.CallableRequest) -> dict:
     niqab, declined and error paths) needs `nid`: the 14 digits the reviewer
     read on the live call. They are hashed and dropped, never stored or logged.
     """
+    started = time.monotonic()
     reviewer_uid = _require_woman_reviewer(request)
     data = _body(request)
     result = _review_call(
@@ -787,6 +823,13 @@ def decide_verification_flag(request: https_fn.CallableRequest) -> dict:
         data.get("flagId"),
         bool(data.get("approve")),
         data.get("nid"),
+    )
+    logs.decision(
+        "decide_verification_flag",
+        outcome=result.outcome,
+        reasons=list(result.reasons),
+        latencyMs=_ms(started),
+        flagId=data.get("flagId") if isinstance(data.get("flagId"), str) else None,
     )
     return {"ok": True, "outcome": result.outcome}
 
@@ -801,7 +844,8 @@ def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     """
     import datetime as dt
 
-    review.expire(store.FirestoreReviewStore(), dt.datetime.now(dt.timezone.utc))
+    count = review.expire(store.FirestoreReviewStore(), dt.datetime.now(dt.timezone.utc))
+    logs.decision("expire_stale_reviews", outcome=decisions.RETRY_REQUIRED, count=count)
 
 
 # ------------------------------------------------------------- deletion
@@ -822,12 +866,16 @@ def delete_account(request: https_fn.CallableRequest) -> dict:
     uid = _require_auth(request)
     from account import deletion
 
+    started = time.monotonic()
     try:
-        return deletion.run(uid, deletion.FirebaseBackend())
+        result = deletion.run(uid, deletion.FirebaseBackend())
     except Exception:
+        logs.error("account_deletion_failed", state=deletion.FAILED_RETRYABLE)
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INTERNAL, reasons.INTERNAL_ERROR
         )
+    logs.decision("delete_account", state=result["state"], latencyMs=_ms(started))
+    return result
 
 
 @scheduler_fn.on_schedule(schedule="every 15 minutes", region=config.REGION)
@@ -838,8 +886,13 @@ def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
     from account import deletion
 
     cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(minutes=10)
+    finished = failed = 0
     for uid in deletion.unfinished(store.db(), cutoff):
         try:
             deletion.run(uid, deletion.FirebaseBackend())
+            finished += 1
         except Exception:
-            continue
+            failed += 1
+    logs.decision("resume_account_deletions", state="done", count=finished)
+    if failed:
+        logs.error("account_deletion_failed", state=deletion.FAILED_RETRYABLE, count=failed)

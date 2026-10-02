@@ -1,4 +1,4 @@
-"""Suite-wide guard: no test may open a real Firestore client.
+"""Suite-wide guard: no test may open a real Firestore client or read a secret.
 
 The store module creates `firestore.Client(project="own-hub")` lazily. On a
 machine with Application Default Credentials that is the production project, so
@@ -17,4 +17,14 @@ def _no_real_firestore(monkeypatch):
         raise AssertionError("a test reached store.db(): stub the store call instead")
 
     monkeypatch.setattr(store, "db", refuse)
+
+    from identity import webhook
+
+    def no_secret():
+        raise AssertionError("a test reached Secret Manager: stub webhook._secret_url")
+
+    monkeypatch.setattr(webhook, "_secret_url", no_secret)
+    monkeypatch.setattr(webhook, "_url_cache", None)
+    monkeypatch.delenv("FLAG_WEBHOOK_URL", raising=False)
+    monkeypatch.delenv("FUNCTIONS_EMULATOR", raising=False)
     yield

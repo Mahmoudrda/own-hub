@@ -1,0 +1,26 @@
+{
+  "displayName": "Own Hub: verification kill switch reached",
+  "documentation": {
+    "content": "The global DAILY_VERIFICATION_LIMIT (functions/identity/config.py) was exceeded today. New verifications are refused with daily_limit_reached until 00:00 UTC. Normal traffic is far below the limit, so check for an automated caller before raising it.",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "conditions": [
+    {
+      "displayName": "Log entry with jsonPayload.event=daily_limit_reached",
+      "conditionMatchedLog": {
+        "filter": "resource.type=\"cloud_run_revision\" AND jsonPayload.event=\"daily_limit_reached\""
+      }
+    }
+  ],
+  "alertStrategy": {
+    "notificationRateLimit": {
+      "period": "3600s"
+    },
+    "autoClose": "604800s"
+  },
+  "notificationChannels": [
+    "projects/own-hub/notificationChannels/REPLACE_ME"
+  ],
+  "enabled": true
+}
