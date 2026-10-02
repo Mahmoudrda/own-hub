@@ -166,6 +166,12 @@ ledger.Budget.already_applied and pipeline._run."""
 CONSENT_MISSING = "consent_missing"
 APP_CHECK_MISSING = "app_check_missing"
 UNAUTHENTICATED = "unauthenticated"
+PHONE_SIGN_IN_REQUIRED = "phone_sign_in_required"
+"""N1: the caller is signed in, but not with a phone number (email/password,
+Google, Apple, anonymous). The women-facing callables take a phone sign-in
+only, so an account with no SMS step cannot multiply the per-uid caps or
+reach the review queue. Reviewers and admins may also use "password".
+delete_account takes any provider (Protected List 6)."""
 IMAGE_TOO_LARGE = "image_too_large"
 IMAGE_UNDECODABLE = "image_undecodable"
 

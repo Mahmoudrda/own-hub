@@ -56,7 +56,8 @@ CALLABLES = {
 class FakeAuth:
     def __init__(self, uid="uid-1", token=None):
         self.uid = uid
-        self.token = token or {}
+        # N1: a phone sign-in unless the test says otherwise.
+        self.token = {"firebase": {"sign_in_provider": "phone"}, **(token or {})}
 
 
 class FakeApp:

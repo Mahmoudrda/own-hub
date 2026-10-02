@@ -70,6 +70,15 @@ export const uid = {
   fresh: 'w_fresh_0010',
 };
 
+// N1: every account in this product signs in with her phone number, so the
+// default token says so. The rules refuse owned-data writes from any other
+// provider (email/password, Google, Apple are enabled in the console).
+const PHONE = { firebase: { sign_in_provider: 'phone', identities: {} } };
+
+function ctx(e, who, claims) {
+  return e.authenticatedContext(who, { ...PHONE, ...claims }).firestore();
+}
+
 export async function anon() {
   const e = await getEnv();
   return e.unauthenticatedContext().firestore();
@@ -78,32 +87,40 @@ export async function anon() {
 /** Signed in, no `verified` claim. The state every woman is in during sign-up. */
 export async function unverified(who) {
   const e = await getEnv();
-  return e.authenticatedContext(who, {}).firestore();
+  return ctx(e, who, {});
 }
 
 export async function verified(who, extra = {}) {
   const e = await getEnv();
-  return e.authenticatedContext(who, { verified: true, ...extra }).firestore();
+  return ctx(e, who, { verified: true, ...extra });
 }
 
 export async function verifiedCoach(who) {
   const e = await getEnv();
-  return e
-    .authenticatedContext(who, { verified: true, coachV: 'active' })
-    .firestore();
+  return ctx(e, who, { verified: true, coachV: 'active' });
 }
 
 /** A coach account whose own verification has not landed yet. */
 export async function unverifiedCoach(who) {
   const e = await getEnv();
-  return e.authenticatedContext(who, { coachV: 'active' }).firestore();
+  return ctx(e, who, { coachV: 'active' });
 }
 
 export async function admin(who) {
   const e = await getEnv();
-  return e
-    .authenticatedContext(who, { verified: true, admin: true })
-    .firestore();
+  return ctx(e, who, { verified: true, admin: true });
+}
+
+/**
+ * N1: the same claims, signed in with another provider ('password',
+ * 'google.com', 'apple.com', ...). No SMS step stood behind this account.
+ */
+export async function otherProvider(who, provider, claims = {}) {
+  const e = await getEnv();
+  return ctx(e, who, {
+    firebase: { sign_in_provider: provider, identities: {} },
+    ...claims,
+  });
 }
 
 /** Seeds documents with rules bypassed, the way a Cloud Function would. */

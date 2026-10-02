@@ -113,13 +113,35 @@ options.set_global_options(
 # ----------------------------------------------------------------- helpers
 
 
-def _require_auth(request: https_fn.CallableRequest) -> str:
-    """App Check, then authentication. This is THE App Check gate (R3).
+# N1: sign-in providers each kind of caller may use. Email/password, Google and
+# Apple are enabled in the console, so the women-facing callables check the
+# provider themselves. Staff (reviewers, admins) may also use a password.
+USER_PROVIDERS = ("phone",)
+STAFF_PROVIDERS = ("phone", "password")
 
-    Every callable calls this (directly or through the reviewer and admin
-    guards) before any other work. `request.app` is None for a missing or an
-    invalid token, so both get FAILED_PRECONDITION app_check_missing, which
-    the app can show her as the real cause.
+
+def _sign_in_provider(request: https_fn.CallableRequest) -> Optional[str]:
+    token = request.auth.token or {}
+    firebase = token.get("firebase") if isinstance(token, dict) else None
+    if not isinstance(firebase, dict):
+        return None
+    return firebase.get("sign_in_provider")
+
+
+def _require_auth(
+    request: https_fn.CallableRequest,
+    providers: Optional[tuple] = USER_PROVIDERS,
+) -> str:
+    """App Check, then authentication, then the sign-in provider (N1).
+
+    This is THE App Check gate (R3). Every callable calls this (directly or
+    through the reviewer and admin guards) before any other work.
+    `request.app` is None for a missing or an invalid token, so both get
+    FAILED_PRECONDITION app_check_missing, which the app can show her as the
+    real cause.
+
+    `providers` defaults to phone only. None skips the provider check, which
+    only delete_account uses: anyone with an account may erase it.
     """
     if config.ENFORCE_APP_CHECK and request.app is None:
         raise https_fn.HttpsError(
@@ -128,6 +150,10 @@ def _require_auth(request: https_fn.CallableRequest) -> str:
     if request.auth is None or not request.auth.uid:
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.UNAUTHENTICATED, reasons.UNAUTHENTICATED
+        )
+    if providers is not None and _sign_in_provider(request) not in providers:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.PHONE_SIGN_IN_REQUIRED
         )
     return request.auth.uid
 
@@ -687,7 +713,7 @@ def _require_admin(request: https_fn.CallableRequest) -> str:
     A client cannot grant itself admin any more than it can grant itself a
     verified badge.
     """
-    uid = _require_auth(request)
+    uid = _require_auth(request, STAFF_PROVIDERS)
     if not (request.auth.token or {}).get("admin"):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.UNAUTHENTICATED
@@ -707,7 +733,7 @@ def _require_woman_reviewer(request: https_fn.CallableRequest) -> str:
     Minted out of band by staff. There is no self-service path, exactly like
     `admin`.
     """
-    uid = _require_auth(request)
+    uid = _require_auth(request, STAFF_PROVIDERS)
     if not (request.auth.token or {}).get("womanReviewer"):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.UNAUTHENTICATED
@@ -785,7 +811,7 @@ def list_verification_flags(request: https_fn.CallableRequest) -> dict:
     account through tools/review_queue.py, which holds no admin credentials);
     an admin still may. Every read is written to the access log.
     """
-    reviewer_uid = _require_auth(request)
+    reviewer_uid = _require_auth(request, STAFF_PROVIDERS)
     token = request.auth.token or {}
     if not (token.get("womanReviewer") or token.get("admin")):
         raise https_fn.HttpsError(
@@ -906,7 +932,9 @@ def delete_account(request: https_fn.CallableRequest) -> dict:
     which matters because her Auth user is disabled at step two and she
     cannot retry herself.
     """
-    uid = _require_auth(request)
+    # N1: any sign-in provider. Erasure is open to every account that exists
+    # (Protected List 6); App Check and auth still apply.
+    uid = _require_auth(request, providers=None)
     from account import deletion
 
     started = time.monotonic()
