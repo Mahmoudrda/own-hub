@@ -218,3 +218,45 @@ def test_not_eligible_only_when_digit_and_word_both_say_male():
         Signals(sex_from_digit="male", sex_from_word=None, ocr_retries_exhausted=True)
     )
     assert unreadable_last is None
+
+
+# ------------------------------------- N3: a failed check goes to a human
+
+
+def _failed_deps():
+    from identity import config, ledger
+
+    worn = tp.FakeLedger(ledger.Budget(liveness_attempts=config.MAX_LIVENESS_ATTEMPTS - 1))
+    return tp.build(ledger_store=worn, match=tp.CountingMatch(similarity=5.0))
+
+
+def test_a_failed_check_with_no_attempts_left_opens_one_review_not_a_rejection(
+    monkeypatch, writes
+):
+    recorded = []
+    monkeypatch.setattr(
+        main.store.FirestoreBehaviour, "record_failure", lambda self, h: recorded.append(h)
+    )
+    deps, session = _failed_deps()
+    _wire(monkeypatch, deps)
+    answer = _verify(session)
+
+    assert answer["outcome"] == decisions.PENDING_REVIEW
+    assert answer["refreshToken"] is False
+    assert len(writes["flags"]) == 1
+    raised = writes["flags"][0]
+    assert raised["mark_duplicate"] is False
+    assert raised["flag"]["flags"] == [reasons.MATCH_FAILED]
+    assert writes["states"] == [review.STATE_PENDING]
+    assert review.STATE_REJECTED not in writes["states"]
+    assert writes["jobs"] == [] and writes["minted"] == []
+    # The card still carries the failure signal for spec §3.
+    assert len(recorded) == 1
+
+
+def test_a_failed_check_while_a_review_is_open_opens_nothing_new(monkeypatch, writes):
+    writes["gate"] = main.store.Gate(open_flag_id="f-1")
+    deps, session = _failed_deps()
+    _wire(monkeypatch, deps)
+    assert _verify(session)["outcome"] == decisions.PENDING_REVIEW
+    assert writes["flags"] == [] and writes["states"] == []

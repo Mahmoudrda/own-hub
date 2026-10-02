@@ -557,6 +557,19 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
             decisions.PENDING_REVIEW, (reasons.DUPLICATE_ID,), (reasons.DUPLICATE_ID,)
         )
 
+    # N3: a failed liveness or face match with no attempts left is the machine
+    # being unable to tell, not a finding that she is not who she says. The
+    # brief promises a human review call when the automatic check is unsure, so
+    # it opens one review flag (one open flag per uid, state pending) instead of
+    # closing the account. `rejected` is kept for NOT_ELIGIBLE (digit 13 and the
+    # printed sex word agree, or underage), the second duplicate, and an
+    # explicit reviewer reject.
+    failed_check = decision.outcome == decisions.REJECTED_FAILED
+    if failed_check:
+        decision = decisions.Decision(
+            decisions.PENDING_REVIEW, decision.reasons, decision.reasons
+        )
+
     attempt = deps.ledger_store.read(uid).ocr_submissions
     if decision.outcome == decisions.PENDING_REVIEW:
         job_id = _raise_flag(
@@ -579,12 +592,12 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
         store.write_user_verification(uid)
     elif decision.outcome in (
         decisions.REJECTED_NOT_ELIGIBLE,
-        decisions.REJECTED_FAILED,
         decisions.REJECTED_DUPLICATE,
     ):
         # S8: final, and she is told so. No reason code reaches this map.
+        # REJECTED_FAILED never reaches here: it became a review above (N3).
         store.set_verification_state(uid, review.STATE_REJECTED, decided=True)
-    if decision.outcome == decisions.REJECTED_FAILED and outcome.id_hmac:
+    if failed_check and outcome.id_hmac:
         # Spec §3's cross-account signal: count failures against the CARD, not
         # the account, so a series of fresh sign-ups on one stolen card is
         # visible.
