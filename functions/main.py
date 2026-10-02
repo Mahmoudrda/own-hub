@@ -333,6 +333,16 @@ def start_verification(request: https_fn.CallableRequest) -> dict:
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.REVIEW_ALREADY_OPEN
         )
 
+    # S6: her own daily allowance first, so one account can never run the
+    # global counter up for everyone else.
+    if (
+        store.uid_daily_count_and_increment(uid, "starts")
+        > config.PER_UID_DAILY_START_LIMIT
+    ):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.PER_UID_DAILY_LIMIT
+        )
+
     # Spec §6's global kill switch, checked before anything is minted.
     if store.daily_count_and_increment() > config.DAILY_VERIFICATION_LIMIT:
         raise https_fn.HttpsError(
@@ -411,6 +421,16 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
             "reasons": [],
             "refreshToken": False,
         }
+
+    # S6: her own daily allowance before the global counter. Order:
+    # auth, body, consent, closed/open review, per-uid cap, global, decode.
+    if (
+        store.uid_daily_count_and_increment(uid, "verifies")
+        > config.PER_UID_DAILY_VERIFY_LIMIT
+    ):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.PER_UID_DAILY_LIMIT
+        )
 
     # Spec §6's global kill switch, on the door that actually costs money.
     #

@@ -20,6 +20,7 @@ rather than trusting every call site to remember.
 from __future__ import annotations
 
 import datetime as dt
+import random
 import threading
 from dataclasses import dataclass
 from typing import Optional
@@ -620,38 +621,34 @@ def record_unknown_governorate(code: str) -> None:
 
 
 def daily_count_and_increment(field: str = "sessions") -> int:
-    """Spec §6's global kill switch counter.
+    """Spec §6's global kill switch counter, sharded (S6).
 
-    One document per UTC day. A distributed counter would be the textbook answer
-    at high write rates, and at 278 verifications a day it would be premature:
-    Firestore's per-document write limit is around one per second sustained, and
-    278/day is 0.003/second.
+    TWO FIELDS, and the second one is the one that matters. `sessions` counts
+    start_verification, which is free. `verifications` counts verify_identity,
+    the only callable that spends money; a caller who never starts a session
+    still reaches Cloud Vision, so the kill switch must count that door.
 
-    TWO FIELDS ON THE SAME DOCUMENT, and the second one is the one that matters.
-
-    `sessions` counts start_verification, which mints a challenge and costs
-    nothing. `verifications` counts verify_identity, which is the only callable
-    in this system that spends money — two Cloud Vision units per submission.
-
-    Counting only `sessions` put the kill switch on the free door. Nothing in
-    verify_identity's path requires a session to have been minted: OCR is step 3
-    and the liveness session is not consulted until step 6, so a caller who
-    never touches start_verification reaches both paid Vision calls with the
-    global limit never once consulted. Per-uid caps still bound one account, but
-    the blast-radius limit spec §6 asks for is a GLOBAL one, and a global limit
-    that only counts the free call cannot bound a bill.
+    One document per UTC day used to hold both counters in a read-modify-write
+    transaction. Every verification in the country contended on it. Now each
+    call adds one to a random shard, verificationStats/{day}_s{0..N-1}, with a
+    server-side Increment (no transaction, no contention), then reads all the
+    shards and returns the sum including this call. Per-uid caps are checked
+    before this, so one account cannot run it up.
     """
-    today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
-    reference = db().collection(config.COL_STATS).document(today)
+    from google.cloud import firestore as _fs
 
-    @firestore.transactional
-    def txn(transaction):
-        snapshot = reference.get(transaction=transaction)
-        count = int((snapshot.to_dict() or {}).get(field, 0)) if snapshot.exists else 0
-        transaction.set(reference, {field: count + 1}, merge=True)
-        return count + 1
-
-    return txn(db().transaction())
+    today = _today()
+    stats = db().collection(config.COL_STATS)
+    shard = random.randrange(config.DAILY_COUNTER_SHARDS)
+    stats.document(f"{today}_s{shard}").set({field: _fs.Increment(1)}, merge=True)
+    refs = [
+        stats.document(f"{today}_s{i}") for i in range(config.DAILY_COUNTER_SHARDS)
+    ]
+    total = 0
+    for snapshot in db().get_all(refs):
+        if snapshot.exists:
+            total += int((snapshot.to_dict() or {}).get(field, 0))
+    return total
 
 
 DAILY_VERIFY_FIELD = "verifications"

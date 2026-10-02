@@ -451,6 +451,19 @@ ledger.worst_case_micro_usd() computes this rather than restating it, so a
 future paid provider that breaks the ceiling fails a test instead of quietly
 overspending."""
 
+PER_UID_DAILY_START_LIMIT = 6
+PER_UID_DAILY_VERIFY_LIMIT = 6
+"""S6: one account's daily allowance of start_verification and verify_identity,
+checked BEFORE the global kill switch. Without them one account could run the
+global counter to DAILY_VERIFICATION_LIMIT and lock every other woman out for
+the day. Six covers a real woman's retakes (MAX_OCR_SUBMISSIONS is 4 for life);
+the client shows "try again tomorrow", never a review."""
+
+DAILY_COUNTER_SHARDS = 10
+"""S6: the global counter is spread over this many documents per day
+(verificationStats/{day}_s{n}) so concurrent verifications do not contend on
+one document's write limit. The kill switch compares the SUM."""
+
 DAILY_VERIFICATION_LIMIT = 2_000
 """Spec §6's global kill switch. New sessions past this get "try again later"
 and an alert.

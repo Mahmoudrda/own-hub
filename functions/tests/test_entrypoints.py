@@ -103,6 +103,7 @@ def stubbed(monkeypatch):
     def daily(field="sessions"):
         calls["daily"] += 1
         calls["daily_field"] = field
+        calls.setdefault("order", []).append("global")
         return 1
 
     real_decode = main._decode_image
@@ -117,6 +118,14 @@ def stubbed(monkeypatch):
     monkeypatch.setattr(main.store, "has_consent", has_consent)
     monkeypatch.setattr(main.store, "daily_count_and_increment", daily)
     monkeypatch.setattr(main.store, "verification_gate", lambda uid: main.store.Gate())
+
+    def per_uid(uid, field):
+        calls["per_uid"] = calls.get("per_uid", 0) + 1
+        calls["per_uid_field"] = field
+        calls.setdefault("order", []).append("per_uid")
+        return 1
+
+    monkeypatch.setattr(main.store, "uid_daily_count_and_increment", per_uid)
     monkeypatch.setattr(main, "_decode_image", counting_decode)
     monkeypatch.setattr(main, "_deps", no_deps)
     return calls
@@ -479,3 +488,53 @@ def test_delete_account_failure_is_internal_with_a_code(monkeypatch, stubbed):
         https_fn.FunctionsErrorCode.INTERNAL,
     )
     assert error.message == reasons.INTERNAL_ERROR
+
+
+# ------------------------------------------------- S6: per-uid caps first
+
+
+@pytest.mark.parametrize(
+    "name,field,limit",
+    [
+        ("start_verification", "starts", "PER_UID_DAILY_START_LIMIT"),
+        ("verify_identity", "verifies", "PER_UID_DAILY_VERIFY_LIMIT"),
+    ],
+)
+def test_one_account_over_its_daily_cap_never_touches_the_global_counter(
+    name, field, limit, monkeypatch, stubbed
+):
+    def over(uid, f):
+        stubbed["per_uid_field"] = f
+        return getattr(config, limit) + 1
+
+    monkeypatch.setattr(main.store, "uid_daily_count_and_increment", over)
+    error = raises(
+        lambda: inner(name)(request(body())),
+        https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+    )
+    assert error.message == reasons.PER_UID_DAILY_LIMIT
+    assert stubbed["per_uid_field"] == field
+    assert stubbed["daily"] == 0, "one account must not move the global counter"
+    assert stubbed["decoded"] == 0
+
+
+def test_the_global_counter_runs_after_the_per_uid_pass(stubbed):
+    with pytest.raises(AssertionError, match="pipeline was reached"):
+        inner("verify_identity")(request(body()))
+    assert stubbed["order"] == ["per_uid", "global"]
+
+
+def test_start_verification_checks_per_uid_then_global(monkeypatch, stubbed):
+    monkeypatch.setattr(
+        main.store, "FirestoreLedger", lambda: (_ for _ in ()).throw(AssertionError("x"))
+    )
+    with pytest.raises(AssertionError):
+        inner("start_verification")(request({}))
+    assert stubbed["order"] == ["per_uid", "global"]
+    assert stubbed["per_uid_field"] == "starts"
+
+
+def test_the_per_uid_caps_sit_well_under_the_kill_switch():
+    assert config.PER_UID_DAILY_START_LIMIT < config.DAILY_VERIFICATION_LIMIT
+    assert config.PER_UID_DAILY_VERIFY_LIMIT < config.DAILY_VERIFICATION_LIMIT
+    assert config.DAILY_VERIFICATION_LIMIT == 2_000, "the kill switch stays"
