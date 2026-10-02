@@ -905,7 +905,8 @@ def delete_account(request: https_fn.CallableRequest) -> dict:
 
 @scheduler_fn.on_schedule(schedule="every 15 minutes", region=config.REGION)
 def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
-    """Finish any deletion that stopped part way and has been idle 10 minutes."""
+    """Finish any deletion that stopped part way and has been idle 10 minutes,
+    and run each finished deletion's one late sweep once it is due (N9)."""
     import datetime as dt
 
     from account import deletion
@@ -916,6 +917,13 @@ def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
         try:
             deletion.run(uid, deletion.FirebaseBackend())
             finished += 1
+        except Exception:
+            failed += 1
+    # N9: the one late sweep of users/{uid} and plans/{uid}, 65 minutes after
+    # done, for writes a still-valid token or a queued client made meanwhile.
+    for uid in deletion.due_resweeps(store.db(), dt.datetime.now(dt.timezone.utc)):
+        try:
+            deletion.resweep(uid, deletion.FirebaseBackend())
         except Exception:
             failed += 1
     logs.decision("resume_account_deletions", state="done", count=finished)

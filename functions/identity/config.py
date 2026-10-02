@@ -538,6 +538,13 @@ PENDING COUNSEL (PDPL retention); not a legal opinion. 180 days is a
 placeholder chosen to cover disputes and a store review, not a number counsel
 has approved."""
 
+DELETION_RESWEEP_MINUTES = 65
+"""N9: an ID token stays valid for up to an hour after her Auth user is
+disabled, and a client can hold queued offline writes, so users/{uid} and
+plans/{uid} can be partly rewritten after `done`. One more recursive delete of
+both runs this long after `done` (deletionRequests/{uid}.sweepAfter), performed
+once by resume_account_deletions."""
+
 DELETED_ACCOUNT_MAY_REJOIN = False
 """Whether deleting an account frees her national ID for a new account.
 
