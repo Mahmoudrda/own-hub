@@ -99,10 +99,11 @@ class ReviewStore(Protocol):
 
     def uid_daily_count_and_increment(self, uid: str, field: str) -> int: ...
 
-    def write_review_consent(self, uid: str, path: str) -> None: ...
+    def write_review_consent(self, uid: str, path: str, flag_id: str) -> None: ...
 
-    def review_consent_given(self, uids: list) -> set:
-        """The subset of `uids` with users/{uid}/consents/review-v{N}."""
+    def review_consented_flags(self, pairs: list) -> set:
+        """N3: of the (uid, flag_id) pairs, the flag ids whose subject's
+        users/{uid}/consents/review-v{N} names that flag."""
         ...
 
     def open_flag_id(self, uid: str) -> Optional[str]: ...
@@ -150,17 +151,18 @@ class ReviewStore(Protocol):
         """One transaction: re-read the flag, refuse unless PENDING_REVIEW
         (REVIEW_NOT_PENDING); with id_hmac, claim the registry for uid or
         refuse with the dedupe reason; then close the flag and its job, clear
-        her openFlagId and, with user_state, write her verification state
-        (decided). Returns None on commit, else the reason code, having
-        written nothing."""
+        her openFlagId, delete her review consent (N3) and, with user_state,
+        write her verification state (decided). Returns None on commit, else
+        the reason code, having written nothing."""
         ...
 
     def stale_flags(self, now: dt.datetime, limit: int) -> list[tuple[str, dict]]: ...
 
     def expire_flag(self, flag_id: str, uid: str, now: dt.datetime) -> bool:
         """One transaction: expire only if still PENDING_REVIEW and still past
-        its slaExpiresAt at `now`; with it, her state becomes retry and her
-        booking is cleared. True when it expired the flag."""
+        its slaExpiresAt at `now`; with it, her state becomes retry, her
+        booking is cleared and her review consent is deleted (N3). True when
+        it expired the flag."""
         ...
 
     def grant_bonus(self, uid: str, flag_id: str) -> bool: ...
@@ -250,9 +252,10 @@ class RequestResult:
 def request(store: ReviewStore, uid: str, path: Any) -> RequestResult:
     """She asks for a woman reviewer: niqab, declined camera, or after an error.
 
-    Records users/{uid}/consents/review-v1 = {version, at, path} first (N7):
-    the request is the consent to be looked up and called. Wording PENDING
-    COUNSEL.
+    Records users/{uid}/consents/review-v1 = {version, at, path, flagId}
+    (N7): the request is the consent to be looked up and called. Wording
+    PENDING COUNSEL. N3: the consent names the flag it was given for, the
+    open one or the one opened here, and covers that flag only.
 
     Takes no images and no frames, so there is nothing here to store or leak.
     At most one open flag per account: a second request returns the open one.
@@ -269,16 +272,17 @@ def request(store: ReviewStore, uid: str, path: Any) -> RequestResult:
     if store.uid_daily_count_and_increment(uid, "reviews") > config.PER_UID_DAILY_REVIEW_LIMIT:
         raise ReviewError(EXHAUSTED, reasons.PER_UID_DAILY_LIMIT)
 
-    # N7: asking for the call is her consent to it. Recorded server-side
-    # before any flag exists, so a woman who declined the camera at C09b is
-    # never phoned without a record that she asked to be. Wording PENDING
-    # COUNSEL (config.REVIEW_CONSENT_VERSION).
-    store.write_review_consent(uid, path)
-
     code = PATH_CODES[path]
     decision = decisions.Decision(decisions.PENDING_REVIEW, (code,), (code,))
     job = store.new_job_payload(uid, decision, store.ocr_submissions(uid))
     flag_id, created = store.open_flag(uid, job, flag_payload(uid, None, decision))
+
+    # N7: asking for the call is her consent to it. N3: bound to THIS flag,
+    # so it never carries over to a later automatic flag. Written after the
+    # flag because the id is minted there; until it lands, contact() refuses,
+    # so she is never phoned without a record that she asked to be. Wording
+    # PENDING COUNSEL (config.REVIEW_CONSENT_VERSION).
+    store.write_review_consent(uid, path, flag_id)
     if created:
         store.set_verification_state(uid, STATE_PENDING, reset_booking=True)
         store.notify(flag_id, decision.flags)
@@ -310,10 +314,11 @@ def contact(store: ReviewStore, reviewer_uid: str, flag_id: Any) -> dict:
     R4: refused with review_consent_missing until she has asked for the call
     (request_review records users/{uid}/consents/review-v{N}). A flag the
     pipeline raised on its own carries no consent until she taps "Ask for the
-    call" in the app.
+    call" in the app. N3: the consent must name THIS flag; one given for an
+    earlier flag does not count.
     """
     record = _pending_flag_for(store, reviewer_uid, flag_id)
-    if record["uid"] not in store.review_consent_given([record["uid"]]):
+    if flag_id not in store.review_consented_flags([(record["uid"], flag_id)]):
         raise ReviewError(PRECONDITION, reasons.REVIEW_CONSENT_MISSING)
     store.log_access(reviewer_uid, flag_id, "contact")
     phone = store.phone_for(record["uid"])
@@ -511,8 +516,8 @@ def list_open(store: ReviewStore, reviewer_uid: str, limit: int = 50) -> list[di
     """The queue: codes, scores and a handle. Never an image, never a phone."""
     rows = []
     open_flags = store.list_open(limit)
-    consented = store.review_consent_given(
-        sorted({data.get("uid") for _, data in open_flags if data.get("uid")})
+    consented = store.review_consented_flags(
+        [(data.get("uid"), flag_id) for flag_id, data in open_flags if data.get("uid")]
     )
     for flag_id, data in open_flags:
         rows.append(
@@ -532,9 +537,10 @@ def list_open(store: ReviewStore, reviewer_uid: str, limit: int = 50) -> list[di
                 # Whether approving needs the NID read on the live call. The
                 # hash itself never leaves the server.
                 "needsNidOnCall": not data.get("id_hmac"),
-                # R4: whether she asked for the call. A boolean only; the
-                # reviewer may not fetch her phone until it is true.
-                "consentGiven": data.get("uid") in consented,
+                # R4: whether she asked for the call about THIS flag (N3). A
+                # boolean only; the reviewer may not fetch her phone until it
+                # is true.
+                "consentGiven": flag_id in consented,
             }
         )
     store.log_access(reviewer_uid, "*", "list")

@@ -546,48 +546,60 @@ def write_consent(uid: str) -> None:
     )
 
 
-def write_review_consent(uid: str, path: str) -> None:
-    """N7: users/{uid}/consents/review-v1 = {version, at, path}. Server-only.
+def _review_consent_ref(uid: str):
+    return (
+        db()
+        .collection(config.COL_USERS)
+        .document(uid)
+        .collection(config.COL_CONSENTS)
+        .document(f"review-v{config.REVIEW_CONSENT_VERSION}")
+    )
 
-    Recorded by request_review before the flag is opened: asking for the call
-    is the consent to be phoned and reviewed live by a woman reviewer. The
-    wording the app shows before calling is PENDING COUNSEL. A full set, so a
-    later request records the path she chose last. Lives under users/{uid}, so
-    account deletion's recursive delete removes it (manifest row 10)."""
-    db().collection(config.COL_USERS).document(uid).collection(
-        config.COL_CONSENTS
-    ).document(f"review-v{config.REVIEW_CONSENT_VERSION}").set(
+
+def write_review_consent(uid: str, path: str, flag_id: str) -> None:
+    """N7: users/{uid}/consents/review-v1 = {version, at, path, flagId}.
+    Server-only.
+
+    Recorded by request_review against the open flag, or the one it just
+    opened: asking for the call is the consent to be phoned and reviewed live
+    by a woman reviewer. The wording the app shows before calling is PENDING
+    COUNSEL. N3: `flagId` binds it to that flag only, and close_flag and
+    expire_flag delete it, so it never carries over to a later automatic
+    flag. A full set, so a later request records the path she chose last.
+    Lives under users/{uid}, so account deletion's recursive delete removes it
+    (manifest row 10)."""
+    _review_consent_ref(uid).set(
         {
             "version": config.REVIEW_CONSENT_VERSION,
             "at": firestore.SERVER_TIMESTAMP,
             "path": path,
+            "flagId": flag_id,
         }
     )
 
 
-def review_consent_given(uids) -> set:
-    """R4: which of `uids` have users/{uid}/consents/review-v{N}. One batched
-    read; existence is all that is looked at. get_all does not promise to
-    answer in request order, so results are matched back by path."""
-    by_path = {}
-    for uid in uids:
-        if uid:
-            ref = (
-                db()
-                .collection(config.COL_USERS)
-                .document(uid)
-                .collection(config.COL_CONSENTS)
-                .document(f"review-v{config.REVIEW_CONSENT_VERSION}")
-            )
-            by_path[ref.path] = (uid, ref)
-    if not by_path:
+def review_consented_flags(pairs) -> set:
+    """R4 and N3: of the (uid, flag_id) pairs, the flag ids whose subject's
+    users/{uid}/consents/review-v{N} names that flag. One batched read;
+    get_all does not promise to answer in request order, so results are
+    matched back by path."""
+    wanted: dict = {}
+    refs = {}
+    for uid, flag_id in pairs:
+        if uid and flag_id:
+            ref = _review_consent_ref(uid)
+            refs[ref.path] = ref
+            wanted.setdefault(ref.path, set()).add(flag_id)
+    if not refs:
         return set()
-    refs = [ref for _, ref in by_path.values()]
-    return {
-        by_path[snap.reference.path][0]
-        for snap in db().get_all(refs)
-        if snap.exists and snap.reference.path in by_path
-    }
+    out = set()
+    for snap in db().get_all(list(refs.values())):
+        if not snap.exists or snap.reference.path not in wanted:
+            continue
+        flag_id = (snap.to_dict() or {}).get("flagId")
+        if flag_id in wanted[snap.reference.path]:
+            out.add(flag_id)
+    return out
 
 
 HEALTH_COLLECTIONS = ("checkins", "measurements", "cycle", "periods")
@@ -840,11 +852,11 @@ class FirestoreReviewStore:
     def uid_daily_count_and_increment(self, uid, field):
         return uid_daily_count_and_increment(uid, field)
 
-    def write_review_consent(self, uid, path):
-        write_review_consent(uid, path)
+    def write_review_consent(self, uid, path, flag_id):
+        write_review_consent(uid, path, flag_id)
 
-    def review_consent_given(self, uids):
-        return review_consent_given(uids)
+    def review_consented_flags(self, pairs):
+        return review_consented_flags(pairs)
 
     def open_flag_id(self, uid):
         return verification_gate(uid).open_flag_id
@@ -975,6 +987,8 @@ class FirestoreReviewStore:
                 and (ledger_snapshot.to_dict() or {}).get("openFlagId") == flag_id
             ):
                 transaction.set(ledger_ref, {"openFlagId": None}, merge=True)
+            # N3: her consent covered this flag only.
+            transaction.delete(_review_consent_ref(uid))
             if user_state is not None:
                 transaction.set(
                     db().collection(config.COL_USERS).document(uid),
@@ -1035,6 +1049,8 @@ class FirestoreReviewStore:
             ):
                 transaction.set(ledger_ref, {"openFlagId": None}, merge=True)
             if uid:
+                # N3: her consent covered this flag only.
+                transaction.delete(_review_consent_ref(uid))
                 # R5: her state moves to retry with the flag, booking cleared
                 # (N6), in the same transaction.
                 transaction.set(

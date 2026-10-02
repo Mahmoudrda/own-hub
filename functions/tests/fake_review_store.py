@@ -19,7 +19,7 @@ class FakeReviewStore:
         self.access: list[tuple] = []
         self.notified: list[tuple] = []
         self.phones: dict[str, str] = {}
-        self.review_consents: dict[str, str] = {}
+        self.review_consents: dict[str, dict] = {}
         self.default_phone = phone
         self._ids = itertools.count(1)
 
@@ -48,11 +48,15 @@ class FakeReviewStore:
         self.daily[key] = self.daily.get(key, 0) + 1
         return self.daily[key]
 
-    def write_review_consent(self, uid, path):
-        self.review_consents[uid] = path
+    def write_review_consent(self, uid, path, flag_id):
+        self.review_consents[uid] = {"path": path, "flagId": flag_id}
 
-    def review_consent_given(self, uids):
-        return {uid for uid in uids if uid in self.review_consents}
+    def review_consented_flags(self, pairs):
+        return {
+            flag_id
+            for uid, flag_id in pairs
+            if self.review_consents.get(uid, {}).get("flagId") == flag_id
+        }
 
     def _ledger(self, uid):
         return self.ledgers.setdefault(uid, {})
@@ -131,6 +135,7 @@ class FakeReviewStore:
             self.jobs[flag_id]["state"] = state
         if self._ledger(uid).get("openFlagId") == flag_id:
             self._ledger(uid)["openFlagId"] = None
+        self.review_consents.pop(uid, None)
         if user_state is not None:
             FakeReviewStore.set_verification_state(self, uid, user_state, decided=True)
         return None
@@ -152,6 +157,7 @@ class FakeReviewStore:
         if uid and self._ledger(uid).get("openFlagId") == flag_id:
             self._ledger(uid)["openFlagId"] = None
         if uid:
+            self.review_consents.pop(uid, None)
             FakeReviewStore.set_verification_state(self, uid, "retry", reset_booking=True)
         return True
 

@@ -778,12 +778,13 @@ def _body(request: https_fn.CallableRequest) -> dict:
 def request_review(request: https_fn.CallableRequest) -> dict:
     """She asks for a woman reviewer: {path: "niqab" | "declined" | "error"}.
 
-    S3. Takes no images, no frames and no phone number. N7: first records
-    users/{uid}/consents/review-v1 = {version, at, path}; asking for the call
-    is the consent to be looked up and called (the app shows the wording
-    before calling; wording PENDING COUNSEL). Then writes a flag with the
-    path's reason code, at most one open flag per account, and sets her
-    verification state to `pending`. Returns {state: "pending"}, or
+    S3. Takes no images, no frames and no phone number. Writes a flag with
+    the path's reason code, at most one open flag per account, and sets her
+    verification state to `pending`. N7: then records
+    users/{uid}/consents/review-v1 = {version, at, path, flagId}; asking for
+    the call is the consent to be looked up and called (the app shows the
+    wording before calling; wording PENDING COUNSEL). N3: the consent names
+    that flag and covers it only. Returns {state: "pending"}, or
     {state: "approved"} if she is already verified.
     """
     started = time.monotonic()
