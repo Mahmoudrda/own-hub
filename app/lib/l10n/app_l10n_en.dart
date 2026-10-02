@@ -7784,4 +7784,8 @@ class AppL10nEn extends AppL10n {
   @override
   String get healthBackupIsOffOnThisPhone_1x3p3 =>
       'Health backup is off on this phone, so nothing more is uploaded. Your sign-in is no longer valid, so the copy in your account has not been removed yet. Please sign in again with your phone number.';
+
+  @override
+  String get theAutomaticCheckCouldNotStartJust_1od6p =>
+      'The automatic check could not start just now. You can ask a woman reviewer instead, or try again.';
 }

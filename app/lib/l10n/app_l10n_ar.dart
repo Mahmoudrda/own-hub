@@ -7753,4 +7753,8 @@ class AppL10nAr extends AppL10n {
   @override
   String get healthBackupIsOffOnThisPhone_1x3p3 =>
       'النسخ الاحتياطي للبيانات الصحية متوقف على هذا الهاتف، فلن يُرفع شيء بعد الآن. لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُحذف النسخة الموجودة في حسابكِ بعد. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.';
+
+  @override
+  String get theAutomaticCheckCouldNotStartJust_1od6p =>
+      'تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تحاولي مرة أخرى.';
 }

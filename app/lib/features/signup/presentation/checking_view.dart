@@ -172,7 +172,7 @@ class _CheckingViewState extends State<CheckingView> {
       ),
       VerificationReviewOffered() => (
         l10n.theCheckDidNotFinish,
-        l10n.theAutomaticCheckCouldNotStartJust,
+        l10n.theAutomaticCheckCouldNotStartJust_1od6p,
         widget.onAskForReviewer == null
             ? null
             : AppButton(
@@ -202,9 +202,19 @@ class _CheckingViewState extends State<CheckingView> {
             : AppButton(l10n.tryAgain, onPressed: widget.onRetake),
       ),
     };
+    // The offer's other way forward. This screen has no back control, so
+    // "try again" is a button here, not a direction to go back.
+    final tryAgain =
+        stop is VerificationReviewOffered && widget.onRetake != null
+        ? AppButton(
+            l10n.tryAgain,
+            variant: AppButtonVariant.outlined,
+            onPressed: widget.onRetake,
+          )
+        : null;
     return AppScaffold(
       appBar: const AppTopBar(),
-      footer: [?action],
+      footer: [?action, ?tryAgain],
       children: [
         Semantics(
           liveRegion: true,

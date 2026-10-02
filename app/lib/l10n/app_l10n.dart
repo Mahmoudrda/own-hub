@@ -14124,6 +14124,12 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Health backup is off on this phone, so nothing more is uploaded. Your sign-in is no longer valid, so the copy in your account has not been removed yet. Please sign in again with your phone number.'**
   String get healthBackupIsOffOnThisPhone_1x3p3;
+
+  /// No description provided for @theAutomaticCheckCouldNotStartJust_1od6p.
+  ///
+  /// In en, this message translates to:
+  /// **'The automatic check could not start just now. You can ask a woman reviewer instead, or try again.'**
+  String get theAutomaticCheckCouldNotStartJust_1od6p;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {
