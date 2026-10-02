@@ -51,6 +51,7 @@ check "compileSdk pinned to 36"            "grep -q 'compileSdk = 36' android/ap
 check "targetSdk pinned to 36"             "grep -q 'targetSdk = 36' android/app/build.gradle.kts"
 check "R8 minification enabled"            "grep -q 'isMinifyEnabled = true' android/app/build.gradle.kts"
 check "proguard rules exist"               "[ -f android/app/proguard-rules.pro ]"
+check "release signing refuses the debug key" "grep -q 'GradleException' android/app/build.gradle.kts"
 if [ -f android/key.properties ]; then
   ok "release keystore configured"
 else

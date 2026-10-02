@@ -13,15 +13,33 @@ plugins {
 // Release signing, read from a file that is never committed.
 //
 // `android/key.properties` is produced by `keytool` (see docs/release/). When it
-// is ABSENT the release build falls back to the debug key, so `flutter build`
-// keeps working on a machine that has no keystore -- which is every machine
-// until the owner generates one. The store upload is the only thing that needs
-// the real key, and `tool/release_preflight.sh` fails if it is missing.
+// is ABSENT a release build FAILS, loudly, instead of signing with the debug
+// key: a debug-signed release cannot be uploaded to Play and must never be
+// passed around as if it were the real app. Debug builds and tests are not
+// affected. For a local QA build that will never be uploaded, opt in to debug
+// signing explicitly with OWNHUB_ALLOW_DEBUG_SIGNING=1 (environment) or
+// -PallowDebugSigning=true. `tool/release_preflight.sh` also fails without the
+// real key.
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 val hasReleaseKeystore = keystorePropertiesFile.exists()
 if (hasReleaseKeystore) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+val allowDebugSigning =
+    providers.environmentVariable("OWNHUB_ALLOW_DEBUG_SIGNING").orNull == "1" ||
+        project.findProperty("allowDebugSigning") == "true"
+
+gradle.taskGraph.whenReady {
+    if (!hasReleaseKeystore && !allowDebugSigning &&
+        allTasks.any { it.name.contains("Release") }
+    ) {
+        throw GradleException(
+            "android/key.properties is missing: refusing to build a release signed " +
+                "with the debug key. Set OWNHUB_ALLOW_DEBUG_SIGNING=1 only for a local " +
+                "QA build that will never be uploaded.",
+        )
+    }
 }
 
 android {
@@ -67,8 +85,10 @@ android {
         release {
             signingConfig = if (hasReleaseKeystore) {
                 signingConfigs.getByName("release")
-            } else {
+            } else if (allowDebugSigning) {
                 signingConfigs.getByName("debug")
+            } else {
+                null
             }
             isMinifyEnabled = true
             isShrinkResources = true
