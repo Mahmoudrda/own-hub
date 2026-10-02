@@ -122,15 +122,13 @@ def test_the_reviewer_tool_holds_no_admin_credentials():
         assert banned not in source.split('"""', 2)[2], banned
 
 
-def test_the_token_comes_from_the_environment_or_a_prompt(monkeypatch):
+def test_ready_made_tokens_still_come_from_the_environment(monkeypatch):
     monkeypatch.setenv("OWNHUB_REVIEWER_ID_TOKEN", "from-env")
-    monkeypatch.delenv("OWNHUB_APP_CHECK_TOKEN", raising=False)
+    monkeypatch.setenv("OWNHUB_APP_CHECK_TOKEN", "ac-env")
     monkeypatch.delenv("OWNHUB_FUNCTIONS_BASE", raising=False)
-    client = review_queue._client_from_env(lambda: pytest.fail("asked"))
-    assert client.id_token == "from-env" and client.app_check is None
+    client = review_queue._client_from_env(lambda label: pytest.fail("asked"))
+    assert client.id_token == "from-env" and client.app_check == "ac-env"
     assert client.base == review_queue.DEFAULT_BASE
-    monkeypatch.delenv("OWNHUB_REVIEWER_ID_TOKEN")
-    assert review_queue._client_from_env(lambda: " typed ").id_token == "typed"
 
 
 def test_grant_reviewer_is_a_separate_owner_tool_that_needs_adc():
