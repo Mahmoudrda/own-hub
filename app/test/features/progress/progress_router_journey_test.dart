@@ -33,6 +33,7 @@ import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/routing/app_routes.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/features/signup/domain/verification.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -51,7 +52,23 @@ Widget _app(String screenId) {
   );
 }
 
+
+/// The shipped build closes the whole app until she is verified. This file is
+/// about the product behind the gate, so she is walked as a verified woman,
+/// through the same seam C12 sets when the server approves her. The flags
+/// stay exactly as shipped.
+void _asVerifiedWoman() {
+  AppRouter.lastVerification = VerificationResult(
+    method: VerificationMethod.automatic,
+    decidedAt: DateTime(2026, 10, 2),
+    imagesDeletedAt: DateTime(2026, 10, 2),
+  );
+  addTearDown(() => AppRouter.lastVerification = null);
+}
+
 void main() {
+  setUp(_asVerifiedWoman);
+
   testWidgets('P01 counts the milestones that actually exist', (tester) async {
     _phone(tester);
     await tester.pumpWidget(_app('P01'));

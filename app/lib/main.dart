@@ -269,8 +269,17 @@ class _OwnHubAppState extends State<OwnHubApp> {
   }
 
   /// The app's own first screen, with nothing supplied from outside.
+  ///
+  /// With an account required, the welcome screen is for a woman who has no
+  /// account on this phone yet. A verified woman opens on Home, and a signed
+  /// in one who is not verified yet also asks for Home, where the gate sends
+  /// her to the check (C09) or to the screen that says a reviewer will call
+  /// (C14). Sending everyone to C01 put a verified woman on "Get started"
+  /// every time she opened the app.
   static String get _frontDoor =>
-      AppRouter.featureFlags.isOn(Feature.accountRequired)
+      AppRouter.featureFlags.isOn(Feature.accountRequired) &&
+          !AppRouter.isVerified &&
+          AppRouter.signedInUid == null
       ? appRoutes['C01']!.name
       : appRoutes['T01']!.name;
 

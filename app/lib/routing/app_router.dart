@@ -637,8 +637,8 @@ class AppRouter {
   /// The route she should be on instead of [screenId], or null to let her
   /// through.
   ///
-  /// Null is the answer in the shipping build today, for every screen, because
-  /// `Feature.accountRequired` is off.
+  /// In the shipped build `Feature.accountRequired` is on, so every product
+  /// screen answers with the sign-up chain until she is verified.
   static String? verificationGate(String screenId) => gateDestination(
     screenId,
     gateClosed: featureFlags.isOn(Feature.accountRequired),
@@ -719,23 +719,19 @@ class AppRouter {
   /// condition is true in the build that goes to the stores. The gate is the
   /// build mode now, which no flag and no runtime switch can turn back on.
   ///
-  /// # Do not turn `Feature.accountRequired` on yet
+  /// # `Feature.accountRequired` is on in the shipped build
   ///
-  /// It is now the switch that closes the whole app: [verificationGate] refuses
+  /// It is the switch that closes the whole app: [verificationGate] refuses
   /// every product route to an account that has not passed the check, which is
-  /// the gate the owner asked for. It is wired, tested and **deliberately left
-  /// off**, and the order of the two steps is the point.
+  /// the gate the owner asked for, and it ships on (2026-10-02). With it on,
+  /// this getter is false in every build, so no testing aid can appear.
   ///
-  /// Turning it on before `functions/` is deployed locks out every user,
-  /// silently, including the owner. There would be nothing that could approve
-  /// anybody: `start_verification` and `verify_identity` would answer
-  /// `not-found`, `IdentityCheck.startLiveness` would return false, and every
-  /// woman in the product would land on `C14` waiting for a video call that
-  /// nothing books. The app would look completely normal from the outside.
-  ///
-  /// So the release order is: deploy the functions, verify one real account end
-  /// to end against them, and only then flip this one flag — here, or on `Z14`.
-  /// Nothing else has to change for the app to close.
+  /// The order of the release steps still matters. A build with this on, run
+  /// against a project where `functions/` is not deployed, locks out every
+  /// woman, silently: `start_verification` and `verify_identity` would answer
+  /// `not-found` and everyone would wait on `C14` for a call nothing books.
+  /// So: deploy the functions, verify one real account end to end against
+  /// them, and only then release this build.
   static bool get testingAidsAllowed =>
       kDebugMode && !featureFlags.isOn(Feature.accountRequired);
 

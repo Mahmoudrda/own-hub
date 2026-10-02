@@ -63,15 +63,15 @@ void main() {
     // defaults is the one whose subject IS the defaults.
     setUp(() => AppRouter.featureFlags = FeatureFlags.everything);
 
-    test('the flag is off in the shipped defaults, and that is deliberate', () {
-      // The only reading of the defaults in this file, and the reason it is
-      // here rather than in `feature_flags_test`: this is the file somebody
-      // opens to find out why the gate does nothing. It does nothing because
-      // `functions/` is not deployed, and turning it on before it is would
-      // refuse every woman in the product with nothing anywhere able to
-      // approve her. The day that flag moves, this line is one of the places
-      // that has to be read again.
-      expect(FeatureFlags.shipped.isOn(Feature.accountRequired), isFalse);
+    test('the flag is ON in the shipped defaults, and that is deliberate', () {
+      // The only reading of the defaults in this file. It used to assert the
+      // flag was off, because `functions/` was not deployed and turning it on
+      // would have refused every woman with nothing able to approve her. The
+      // owner turned it on for launch (2026-10-02); the release order is
+      // deploy the functions, verify one real account end to end, then
+      // release this build. The group around this test still proves the
+      // open-gate behaviour on a world built from `FeatureFlags.everything`.
+      expect(FeatureFlags.shipped.isOn(Feature.accountRequired), isTrue);
     });
 
     test('every product route still resolves to itself', () {

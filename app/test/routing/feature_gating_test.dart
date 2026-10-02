@@ -67,7 +67,9 @@ void main() {
     });
 
     test('the flows that need a back end are dark', () {
-      for (final flow in ['signup', 'admin', 'community', 'coach', 'coachplan',
+      // 'signup' left this list on 2026-10-02: sign-up ships at launch, and
+      // the test below asserts its flow is on.
+      for (final flow in ['admin', 'community', 'coach', 'coachplan',
                           'coachbrand', 'coached', 'coaching', 'assistant']) {
         final f = AppRouter.featureForFlow(flow);
         expect(f, isNotNull, reason: flow);
@@ -80,6 +82,12 @@ void main() {
         );
       }
     });
+  });
+
+  test('sign-up ships at launch, so its flow is lit', () {
+    final f = AppRouter.featureForFlow('signup');
+    expect(f, isNotNull);
+    expect(FeatureFlags.shipped.isOn(f!), isTrue);
   });
 
   group('a switched-off screen cannot be reached, even by deep link', () {

@@ -26,6 +26,7 @@ import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/routing/app_routes.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/features/signup/domain/verification.dart';
 
 /// The app as it will be submitted: every feature on, an account required.
 FeatureFlags get _release =>
@@ -38,6 +39,20 @@ Future<void> _open(WidgetTester tester, String id) async {
       .state<NavigatorState>(find.byType(Navigator).first)
       .pushNamed(appDestinations[id]!.name);
   await tester.pumpAndSettle();
+}
+
+
+/// The shipped build closes the whole app until she is verified. This file is
+/// about the product behind the gate, so she is walked as a verified woman,
+/// through the same seam C12 sets when the server approves her. The flags
+/// stay exactly as shipped.
+void _asVerifiedWoman() {
+  AppRouter.lastVerification = VerificationResult(
+    method: VerificationMethod.automatic,
+    decidedAt: DateTime(2026, 10, 2),
+    imagesDeletedAt: DateTime(2026, 10, 2),
+  );
+  addTearDown(() => AppRouter.lastVerification = null);
 }
 
 void main() {
@@ -221,6 +236,10 @@ void main() {
       tester,
     ) async {
       AppRouter.featureFlags = FeatureFlags.shipped;
+      // Verified: with the gate closed in the shipped build, Home is where a
+      // verified woman opens. A signed-out one opens on the front door, which
+      // `the testing scaffolding cannot ship` covers.
+      _asVerifiedWoman();
       // Setup behind her, so the front door is what is under test here rather
       // than the four questions that open over it on a first launch. That
       // launch is walked end to end in `test/journeys/onboarding_journey_test`.
@@ -238,8 +257,8 @@ void main() {
         find.text(l10n.startDay1),
         findsOneWidget,
         reason:
-            'no account, so Home is the front door — and with nothing logged '
-            'Home is T06, whose one action is "Start day 1"',
+            'a verified woman opens on Home, and with nothing logged Home is '
+            'T06, whose one action is "Start day 1"',
       );
       expect(
         find.text(l10n.community),
@@ -342,9 +361,10 @@ const List<String> _switchedOff = [
   'assistant',
   'unblock',
   'blocked',
-  'sign up',
-  'verified',
-  'verification',
+  // 'sign up', 'verified' and 'verification' were here while the first
+  // release shipped without accounts. Sign-up and verification ship at
+  // launch now (Feature.signUp and Feature.verification on), so a sentence
+  // that names them describes something this build has.
 ];
 
 /// Sentences that contain one of those words and are nonetheless true here.
@@ -383,7 +403,10 @@ List<String> _namesSwitchedOff(String text) {
 
 void _shippingFlagsTests() {
   group('the first release names nothing it has switched off', () {
-    setUp(() => AppRouter.featureFlags = FeatureFlags.shipped);
+    setUp(() {
+      AppRouter.featureFlags = FeatureFlags.shipped;
+      _asVerifiedWoman();
+    });
 
     final ids = [
       for (final e in appDestinations.entries)
@@ -433,7 +456,10 @@ void _shippingFlagsTests() {
   });
 
   group('the controls that used to lead nowhere', () {
-    setUp(() => AppRouter.featureFlags = FeatureFlags.shipped);
+    setUp(() {
+      AppRouter.featureFlags = FeatureFlags.shipped;
+      _asVerifiedWoman();
+    });
 
     testWidgets('Home does not offer the assistant or a group', (tester) async {
       await _open(tester, 'T01');

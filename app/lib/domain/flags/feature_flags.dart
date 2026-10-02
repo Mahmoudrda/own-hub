@@ -171,14 +171,23 @@ class FeatureFlags {
   /// Turning one back on is one line here. Turning several back on is the
   /// second release, once Firebase is standing.
   static const FeatureFlags shipped = FeatureFlags(<Feature, bool>{
-    // No accounts in the first release, so no sign-up and no verification.
-    // The screens still exist and are still tested; they are simply not a door
-    // anyone walks through yet. Note that "no account required" is now the
-    // shipping shape, so it can no longer be what guards a testing aid: see
-    // `AppRouter.testingAidsAllowed`.
-    Feature.accountRequired: false,
-    Feature.signUp: false,
-    Feature.verification: false,
+    // Sign-up and verification ship at launch (owner decision, 2026-10-02):
+    // a woman signs up with her phone number and is verified as a woman with
+    // her national ID and a live selfie, or by a woman reviewer on a short
+    // video call, before the app opens. The whole-app gate closes on
+    // `accountRequired` (see `AppRouter.verificationGate`).
+    //
+    // RELEASE ORDER (G7), which this line depends on: deploy `functions/`,
+    // the rules and the indexes, verify one real account end to end on a
+    // Play closed-track build, and only then release a build with these on.
+    // With the functions absent every woman would wait on C14 for a review
+    // nothing can book.
+    //
+    // With `accountRequired` on, `AppRouter.testingAidsAllowed` is false in
+    // every build, debug included.
+    Feature.accountRequired: true,
+    Feature.signUp: true,
+    Feature.verification: true,
 
     // The first release, and all of it works with no network at all.
     Feature.today: true,

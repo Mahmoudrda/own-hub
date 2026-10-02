@@ -39,10 +39,11 @@ void main() {
       // to live, verification needs a provider, the community needs a
       // moderator and a queue, coaching needs two real accounts and money,
       // the assistant needs a model behind a Function.
+      //
+      // accountRequired, signUp and verification left this list on
+      // 2026-10-02: their back end (functions/) exists and the owner ships
+      // them at launch. The test above asserts they are on.
       for (final f in [
-        Feature.accountRequired,
-        Feature.signUp,
-        Feature.verification,
         Feature.community,
         Feature.communityPosts,
         Feature.communityVideo,
@@ -73,12 +74,16 @@ void main() {
       expect(FeatureFlags.shipped.isOn(Feature.adminConsole), isFalse);
     });
 
-    test('no account is required, because there are no accounts yet', () {
-      // Recorded so the position is a decision rather than an accident. Note
-      // what changed with it: this flag is no longer what separates a testing
-      // build from a real one, because the first release ships with it off.
-      // `AppRouter.testingAidsAllowed` is the separation now.
-      expect(FeatureFlags.shipped.isOn(Feature.accountRequired), isFalse);
+    test('an account is required, with sign-up and verification, at launch',
+        () {
+      // Recorded so the position is a decision rather than an accident. The
+      // owner decided (2026-10-02) that sign-up and verification are live at
+      // launch, so the whole-app gate is closed in the shipped build. It
+      // used to read "no account is required, because there are no accounts
+      // yet"; the back end now exists (functions/, deployed before release).
+      expect(FeatureFlags.shipped.isOn(Feature.accountRequired), isTrue);
+      expect(FeatureFlags.shipped.isOn(Feature.signUp), isTrue);
+      expect(FeatureFlags.shipped.isOn(Feature.verification), isTrue);
     });
 
     test('the exploring shape still turns everything on', () {
