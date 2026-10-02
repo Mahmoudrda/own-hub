@@ -188,7 +188,7 @@
         "en": "minimum age",
         "ar": "الحد الأدنى للسن"
       },
-      "note": "16 or 18, set by counsel. It is not enforceable in this release, which has no account. Whatever number counsel sets must appear identically here, in the app, and in both store age ratings from the release that introduces accounts onwards."
+      "note": "Counsel to confirm. The privacy and terms pages say 18, and the national ID check enforces it at sign-up. Whatever number counsel sets must appear identically here, in the app, on the privacy and terms pages, and in both store age ratings."
     },
     "rightsResponseWindow": {
       "value": {
@@ -298,10 +298,10 @@
         "en": "how long messages with a coach are kept",
         "ar": "مدة الاحتفاظ بالرسائل مع المدرّبة"
       },
-      "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker, because in a release with no server nothing is retained at all.",
+      "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker. No page uses this token at present.",
       "fallback": {
-        "en": "Nothing is kept, because nothing leaves your phone in this version. A period will be set with counsel before any server exists.",
-        "ar": "لا يُحتفظ بشيء، لأن لا شيء يغادر هاتفك في هذا الإصدار. وستُحدَّد المدة مع المستشار القانوني قبل وجود أي خادم."
+        "en": "Nothing is kept, because there is no coaching and no messaging in this version. A period will be set with counsel before coaching exists.",
+        "ar": "لا يُحتفظ بشيء، إذ لا يوجد تدريب شخصي ولا مراسلة في هذا الإصدار. وستُحدَّد المدة مع المستشار القانوني قبل وجود التدريب الشخصي."
       }
     },
     "retentionSafetyReports": {
@@ -313,10 +313,10 @@
         "en": "how long safety reports are kept",
         "ar": "مدة الاحتفاظ ببلاغات السلامة"
       },
-      "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker, because in a release with no server nothing is retained at all.",
+      "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker. No page uses this token at present.",
       "fallback": {
-        "en": "Nothing is kept, because nothing leaves your phone in this version. A period will be set with counsel before any server exists.",
-        "ar": "لا يُحتفظ بشيء، لأن لا شيء يغادر هاتفك في هذا الإصدار. وستُحدَّد المدة مع المستشار القانوني قبل وجود أي خادم."
+        "en": "The period is still to be set with counsel.",
+        "ar": "لم تُحدَّد المدة بعد، وستُحدَّد مع المستشار القانوني."
       }
     },
     "retentionPaymentRecords": {
@@ -328,7 +328,7 @@
         "en": "how long payment and invoice records are kept",
         "ar": "مدة الاحتفاظ بسجلات الدفع والفواتير"
       },
-      "note": "Part B only. The period Egyptian tax law requires. This is an exception to deletion and the policy says so plainly. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker, because in a release with no server nothing is retained at all.",
+      "note": "Part B only. The period Egyptian tax law requires. This is an exception to deletion and the policy says so plainly. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker. No page uses this token at present.",
       "fallback": {
         "en": "Nothing is kept, because there is nothing to buy and no payment of any kind in this version. When payments exist, Egyptian invoicing and tax rules set the period, and it is an exception to deletion.",
         "ar": "لا يُحتفظ بشيء، إذ لا شيء يُشترى ولا توجد أي مدفوعات في هذا الإصدار. وحين توجد المدفوعات، تُحدِّد قواعد الفوترة والضرائب المصرية المدة، وهي استثناء من الحذف."

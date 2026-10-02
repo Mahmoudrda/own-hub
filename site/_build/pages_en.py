@@ -92,10 +92,11 @@ def build(cfg, lang, mailto_link):
 
     # ------------------------------------------------------------ index ----
     pages["index"] = {
-        "title": "Own Hub — a fitness app for women in Egypt",
+        "title": "Own Hub · a fitness app for women in Egypt",
         "description": (
-            "Own Hub is a free fitness app for women in Egypt. There is no "
-            "account and no server: everything you log stays on your own phone."
+            "Own Hub is a free fitness app for women in Egypt, and only for "
+            "women. Every member is checked once, and her ID and selfie photos "
+            "are never stored."
         ),
         "body": """
     <section class="wrap hero">
@@ -104,23 +105,24 @@ def build(cfg, lang, mailto_link):
         <p class="eyebrow">Fitness for women, in Egypt</p>
         <h1>Own Hub</h1>
         <p class="lede">Own Hub is a fitness app built for women in Egypt, and
-        only for women. There is no account here: no sign-up, no password and
-        no phone number, so the app was never told who you are. It has no
-        server either, which means it collects nothing, sends nothing anywhere,
-        and asks for no permission at all &mdash; the released Android build does
-        not even ask to use the internet. Everything you log is written to your
-        own handset so it is still there tomorrow, and one button in your
-        profile erases all of it at once. Own Hub is free, and there is nothing
-        in it to buy.</p>
+        only for women. You join with your Egyptian mobile number and a code
+        sent by SMS, and you are checked once, with your national ID card and a
+        live selfie, so that every member is a woman. The check runs on our own
+        server in Frankfurt, Germany, and the photographs of your card and your
+        face are never stored. Your training and meals are kept with your
+        account, so a new phone does not mean starting again. Your cycle,
+        check-ins, measurements and weight stay on your phone unless you choose
+        to back them up. Own Hub is free, and there is nothing in it to
+        buy.</p>
         <p>Own Hub was founded by {{brandFounder}}, a woman in Egypt building
         for women in Egypt. There is no biography to read here and nothing to
-        take on trust: the app asks you for nothing, keeps nothing of yours, and
-        the pages below set out exactly how.</p>
+        take on trust: the pages below set out exactly what the app keeps, where
+        it keeps it, and for how long.</p>
       </div>
       <ul class="facts" aria-label="Own Hub at a glance">
-        <li><b>No account</b><span>No sign-up, no password, no phone number. It opens straight onto your own day.</span></li>
-        <li><b>No server</b><span>There is no network library in the app. It cannot send anything anywhere.</span></li>
-        <li><b>No permissions</b><span>No camera, no photos, no microphone, no location, no health data, no notifications.</span></li>
+        <li><b>Women only</b><span>Checked once with your national ID and a live selfie, or by a woman reviewer on a short video call. The photos are never stored.</span></li>
+        <li><b>Your health stays with you</b><span>Cycle, check-ins, measurements and weight stay on your phone unless you turn on backup yourself.</span></li>
+        <li><b>One permission</b><span>The camera, for the women-only check. No photo library, no microphone, no location, no health data.</span></li>
         <li><b>Free</b><span>No adverts, no purchases, no subscriptions. Nothing in it is for sale.</span></li>
         <li><b>Arabic and English</b><span>The whole app in both, right to left included.</span></li>
       </ul>
@@ -164,10 +166,12 @@ def build(cfg, lang, mailto_link):
           body measurements nobody else sees.</p>
         </li>
         <li>
-          <h3>It stays on your phone</h3>
-          <p>Own Hub has no server. What you log is written to your own handset,
-          no other app can read it, and nothing uploads it. Profile, then
-          <b>Your data</b>, erases every bit of it at once.</p>
+          <h3>Kept for you, and only you</h3>
+          <p>Once you are verified, your training and meals are kept with your
+          account in Frankfurt, and only you can read them. Your cycle and
+          health information stays on your phone unless you back it up.
+          Profile, then <b>Your data</b>, deletes your account and everything in
+          it.</p>
         </li>
       </ul>
     </section>
@@ -185,11 +189,9 @@ def build(cfg, lang, mailto_link):
 
         <div class="callout quiet">
           <p><b>What is not in this version.</b> There is no community and no
-          coaching: nothing in the app connects you to another person. There is
-          no sign-in, no identity check and no camera. There is no assistant,
-          and nothing you write is sent to any service. There is no export of
-          your data yet, and the app says so rather than showing a button that
-          would produce nothing.</p>
+          coaching: nothing in the app connects you to another member. There is
+          no assistant. There is no export of your data yet, and the app says so
+          rather than showing a button that would produce nothing.</p>
         </div>
 
         <p>The app is in Arabic and English, right to left included. You can
@@ -202,10 +204,10 @@ def build(cfg, lang, mailto_link):
 """ + h2("doors", "The rest of this site") + """
       </div>
       <ul class="doorways">
-        <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, which is nothing, and why you can check that for yourself.</span></a></li>
+        <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, where it is kept, and why your ID and selfie photos are never stored.</span></a></li>
         <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, what it is not, and the medical warning worth reading even if you skip the rest.</span></a></li>
         <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person, when she reads, and answers to the things women write in about.</span></a></li>
-        <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to erase everything from inside the app, and how to ask without installing it.</span></a></li>
+        <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to delete your account from inside the app, and how to ask without installing it.</span></a></li>
       </ul>
     </section>
 """,
@@ -622,10 +624,11 @@ def build(cfg, lang, mailto_link):
     ])
 
     pages["terms"] = {
-        "title": "Terms of Use — Own Hub",
+        "title": "Terms of Use · Own Hub",
         "description": (
             "The terms for using Own Hub: a free fitness app for women in "
-            "Egypt, with no account, no community, no coaching and nothing to buy."
+            "Egypt, with a women-only account, no community, no coaching and "
+            "nothing to buy."
         ),
         "body": """
     <div class="wrap">
@@ -637,7 +640,7 @@ def build(cfg, lang, mailto_link):
           <code>com.ownhub.app</code>.<br>
           <b>Last updated:</b> {{effectiveDate}}
         </p>
-
+""" + draft_banner + """
 """ + terms_toc + """
 
 """ + h2("t1", "1. Who you are agreeing with", "no-rule") + """
@@ -653,9 +656,13 @@ def build(cfg, lang, mailto_link):
         <p>A fitness app for women in Egypt. It lets you follow workouts, log
         what you train and eat, set a weekly goal, track measurements you enter
         yourself, and record your menstrual cycle.</p>
-        <p><b>This version has no account.</b> There is nothing to sign up for,
-        no password and no profile that anyone else can see. Everything you put
-        into it is written to your own phone and stays there.</p>
+        <p><b>You need an account, and you are checked once.</b> You sign up
+        with your Egyptian mobile number and a code sent by SMS. There is no
+        password and no profile that anyone else can see. Your training and
+        meals are kept on your phone and, once you are verified, with your
+        account. Your cycle and health information stays on your phone unless
+        you turn on backup yourself. The <a href="/privacy">Privacy Policy</a>
+        sets out exactly what is kept and where.</p>
         <p><b>It is free, and there is nothing in it to buy.</b> No adverts, no
         in-app purchases, no subscriptions, and no payment of any kind inside or
         outside the app.</p>
@@ -667,12 +674,19 @@ def build(cfg, lang, mailto_link):
 """ + h2("t3", "3. Who may use it") + """
         <p>Own Hub is made for women in Egypt, and that is the product&rsquo;s
         purpose.</p>
-        <p><b>In this version the app does not check, because there is no
-        account to attach a check to.</b> We are saying that plainly rather than
-        implying a gate that does not exist. When accounts arrive, membership is
-        confirmed through the Egyptian national ID, which carries sex and date of
-        birth in the ID number itself. We do not judge appearance and we do not
-        classify faces.</p>
+        <p><b>You must be a woman aged 18 or over who holds an Egyptian national
+        ID card.</b> Membership is confirmed once, when you join, through the
+        Egyptian national ID, which carries sex and date of birth in the ID
+        number itself, and a live selfie that is compared with the portrait on
+        the card. If the automatic check is unsure, or you choose the niqab
+        route, a woman reviewer phones you to arrange a short video check. The
+        photographs of your card and your face are never stored. We never guess
+        your sex or your age from your face.</p>
+        <ul>
+          <li>One account per person.</li>
+          <li>You may not use anyone else&rsquo;s identity documents, or let
+          anyone else use your account.</li>
+        </ul>
 
 """ + h2("t4", "4. Own Hub is not medical advice") + """
         <div class="callout">
@@ -709,16 +723,22 @@ def build(cfg, lang, mailto_link):
         replaces reading a label or asking whoever cooked it.</p>
 
 """ + h2("t6", "6. Your data, and your phone") + """
-        <p>There is no account and no server in this version, so there is
-        nothing for you to secure with us and nothing for us to lose.</p>
+        <p>Your account is tied to your mobile number. Signing in needs a code
+        sent by SMS to that number, so keep your phone and your SIM card
+        safe.</p>
         <ul>
-          <li><b>What you log lives on your phone.</b> Anyone who can unlock your
+          <li><b>What you log is on your phone.</b> Anyone who can unlock your
           phone can open the app and read it. If that matters to you, use your
           phone&rsquo;s own lock.</li>
-          <li><b>You can erase everything at once</b>, from Profile, then Your
-          data. It is immediate and it cannot be undone.</li>
-          <li><b>We cannot recover anything.</b> We never had it. If you delete
-          it, or lose the phone, or delete the app, it is gone.</li>
+          <li><b>Your training and meals are also kept with your account</b>
+          once you are verified, so they come back when you sign in on a new
+          phone. Your cycle and health information comes back only if you
+          turned on health backup; otherwise it stays on the old phone.</li>
+          <li><b>You can delete your account and your data</b>, from Profile,
+          then Your data. Deletion completes on our server, and it cannot be
+          undone.</li>
+          <li><b>We cannot recover anything after deletion.</b> Once your
+          account is deleted, your logs and your history are gone.</li>
           <li>Downloading a copy of your data is not built in this version, and
           the app says so rather than offering a button that produces
           nothing.</li>
@@ -730,8 +750,9 @@ def build(cfg, lang, mailto_link):
         <p>You may not:</p>
         <ul>
           <li>Break the app: no scraping, no automated access, no reverse
-          engineering, no attempt to defeat the parts of the product that are
-          switched off, and no security testing without our written
+          engineering, no attempt to defeat the women-only check or the parts
+          of the product that are switched off, and no security testing without
+          our written
           permission.</li>
           <li>Redistribute the app, its content, its exercise library or its food
           data as your own.</li>
@@ -742,9 +763,10 @@ def build(cfg, lang, mailto_link):
         there is nowhere to post.</p>
 
 """ + h2("t8", "8. Content you make") + """
-        <p><b>What you log is yours.</b> We do not claim ownership of it, and in
-        this version we do not have a copy of it, because it never leaves your
-        phone.</p>
+        <p><b>What you log is yours.</b> We do not claim ownership of it. We
+        keep a copy of your training and meals, and of your health information
+        only if you turn on backup, for one purpose: so that you do not lose
+        them.</p>
 
 """ + h2("t9", "9. Nothing is for sale here") + """
         <p>The app is free. There are no in-app purchases, no subscriptions, no
@@ -754,9 +776,10 @@ def build(cfg, lang, mailto_link):
         itself.</p>
 
 """ + h2("t10", "10. Ending it") + """
-        <p><b>You can stop at any time.</b> Delete everything from Profile, then
-        Your data, or delete the app, or both. You do not owe us a reason, and
-        there is no account for us to close.</p>
+        <p><b>You can stop at any time.</b> Delete your account from Profile,
+        then Your data. You do not owe us a reason. Deleting the app alone does
+        not delete your account; the <a href="/delete-account">deletion
+        page</a> explains both ways to do it, with the app and without it.</p>
 
 """ + h2("t11", "11. The app is provided as it is") + """
         <p>We work to keep Own Hub accurate and available, but we do not promise
@@ -772,10 +795,6 @@ def build(cfg, lang, mailto_link):
         not invent them under time pressure, and each will be published with the
         release that needs it.</p>
 """ + kv([
-            ("Accounts and verification",
-             "One account per person, the membership rule and the minimum age "
-             "from section 3, and the rule that you may not use anyone "
-             "else&rsquo;s identity documents."),
             ("The community",
              "No harassment, threats, abuse, hateful or sexual content about "
              "another member. No screenshotting or reposting another "
@@ -805,8 +824,9 @@ def build(cfg, lang, mailto_link):
           exercise you chose to do, from food you chose to eat, or from following
           general guidance in the app instead of seeing a doctor.</li>
           <li>We are not liable for indirect or consequential loss, lost data,
-          lost profits or lost opportunity. In this version your data is on your
-          phone alone, and keeping your phone is your side of that.</li>
+          lost profits or lost opportunity. Your cycle and health information is
+          on your phone alone unless you turn on backup, and keeping your phone
+          is your side of that.</li>
           <li>Where liability cannot be excluded, it is limited to
           {{liabilityCap}}</li>
         </ul>
@@ -846,9 +866,10 @@ def build(cfg, lang, mailto_link):
         {{legalEntity}}, {{legalAddress}}</p>
 """ + kv([
             ("Date", "{{effectiveDate}}"),
-            ("Version", "1.0"),
+            ("Version", "2.0"),
             ("What changed",
-             "First published, for a release with no account, no community, no "
+             "Accounts and the women-only check. Replaces version 1.0, which was "
+             "written for a release with no account. Still no community, no "
              "coaching and no payments."),
         ]) + """
       </div>
@@ -858,7 +879,7 @@ def build(cfg, lang, mailto_link):
 
     # ---------------------------------------------------------- support ----
     pages["support"] = {
-        "title": "Support — Own Hub",
+        "title": "Support · Own Hub",
         "description": (
             "How to reach Own Hub, what to put in your message, when you will "
             "get a reply, and answers to the things women write in about."
@@ -882,8 +903,9 @@ def build(cfg, lang, mailto_link):
           <p><b>Sunday to Thursday, 9:00 to 17:00 Cairo time. A reply within one
           working day. Not monitored at night.</b></p>
           <p>If you write on a Friday or a Saturday, or after 17:00, your message
-          is read on the next working day. Nothing about the app depends on that
-          reply: it keeps working while you wait, because it never needed us.</p>
+          is read on the next working day. The app keeps working while you wait,
+          and your women-only check does not wait on this mailbox: if your
+          check needs a person, a woman reviewer phones you.</p>
         </div>
         <p>If something in the app is hurting you or frightening you, do not wait
         for an email. Stop, and if you think it is an emergency contact emergency
@@ -905,35 +927,45 @@ def build(cfg, lang, mailto_link):
              "more than a paragraph."),
         ]) + """
         <p><b>Please do not send anything you would not want in an ordinary
-        email.</b> We never need your ID, your photograph, your measurements or
-        your cycle history to answer a question, and we will never ask you for
-        them. There is no password to reset, because the app has none.</p>
+        email.</b> We never need your ID, your photograph, your measurements,
+        your cycle history or the code we send you by SMS to answer a question,
+        and we will never ask you for them. There is no password to reset,
+        because the app has none: you sign in with a code sent to your
+        phone.</p>
 
 """ + h2("questions", "The questions people actually write in about") + """
         <div class="qa">
 """ + h3("q-restore", "I deleted everything. Can you bring it back?") + """
-          <p>No, and neither can anyone else. Deleting from Profile, then Your
-          data, is immediate, and there is no restore and no grace period. We
-          never had a copy, because the app has no server and sends us nothing,
-          so there is nothing on our side to recover from. The same is true if
-          you lose the phone or uninstall the app.</p>
+          <p>No, and neither can anyone else. Deleting your account from
+          Profile, then Your data, deletes it from our servers and from your
+          phone, and there is no restore and no grace period. The
+          <a href="/delete-account">deletion page</a> lists the three things
+          that are kept on purpose, and none of them is your logs.</p>
+          <p>If you lost your phone or uninstalled the app without deleting
+          your account, sign in again with the same number: your training and
+          meals come back. Your cycle and health information comes back only if
+          you had turned on health backup.</p>
 
 """ + h3("q-newphone", "I am changing phone. Does my history come with me?") + """
-          <p>Not from us. Your logs live in the app&rsquo;s own private storage
-          on the handset, and Own Hub has no account and no cloud backup, so
-          there is nothing for us to move. A full device-to-device transfer or a
-          full phone backup restored onto the new handset may carry it across,
-          but that is your phone&rsquo;s own feature and we cannot promise what
-          it does. There is no export in this version, and the app says so rather
-          than offering a button that would produce nothing.</p>
+          <p>Sign in on the new phone with the same mobile number. Your training
+          and meals are kept with your verified account, so they come back.
+          Your cycle, check-ins, measurements and weight are kept on the phone
+          only, unless you turned on <b>Back up my health data</b> in Profile,
+          then Privacy; if you did, they come back too. If you did not, they
+          stay on the old phone. There is no export in this version, and the app
+          says so rather than offering a button that would produce
+          nothing.</p>
 
 """ + h3("q-signin", "Where do I sign in? Where is the community?") + """
-          <p>There is nothing to sign in to. This version has no account, no
-          password and no phone number, and it opens straight onto your own Home.
-          There is no community, no coaching and no assistant in it either:
-          nothing in the app connects you to another person, and nothing in it
-          can be bought. If you were expecting one of those, you were reading
-          about a later version that is not out.</p>
+          <p>You sign in with your Egyptian mobile number and a code sent by
+          SMS. There is no password. The first time, you are also checked once
+          with your national ID card and a live selfie; if the automatic check
+          is unsure, or you choose the niqab route, a woman reviewer phones you
+          to arrange a short video check. There is no community, no coaching
+          and no assistant in this version: nothing in the app connects you to
+          another member, and nothing in it can be bought. If you were expecting
+          one of those, you were reading about a later version that is not
+          out.</p>
 
 """ + h3("q-language", "How do I switch between Arabic and English?") + """
           <p>Profile, then Language. Pick the one you want and the whole app
@@ -941,24 +973,31 @@ def build(cfg, lang, mailto_link):
           close the app, and you can change it as often as you like.</p>
 
 """ + h3("q-privacy", "What do you know about me?") + """
-          <p>Nothing at all. The app has no network code in it, the released
-          Android build does not even ask for permission to use the internet, and
-          there is no analytics, crash reporting or advertising library anywhere
-          in it. We could not tell you how many women use the app beyond what
-          Apple and Google count for their own stores. The
-          <a href="/privacy">Privacy Policy</a> explains why you can check that
-          for yourself rather than take our word for it.</p>
+          <p>Your mobile number, which Google Firebase Authentication holds in
+          the United States so that you can sign in. The result of your
+          women-only check, and a one-way keyed code made from your ID number so
+          that one card cannot open two accounts. We never keep the photographs
+          of your card or your face, and we never keep the ID number itself.
+          Once you are verified, your training and meals, kept in Frankfurt,
+          Germany, where only your account can read them. Your cycle, check-ins,
+          measurements, life stage, allergies and weight only if you turn on
+          health backup yourself.</p>
+          <p>If the app crashes, Firebase Crashlytics receives a crash report
+          with no account identifier, name or phone number. There is no
+          analytics and no advertising library in the app. The
+          <a href="/privacy">Privacy Policy</a> sets out every item, who handles
+          it and where.</p>
         </div>
 
 """ + h2("elsewhere", "The other things you might be looking for") + """
         <ul>
-          <li><a href="/delete-account">Delete your data</a> &mdash; how to erase
-          everything from inside the app, and how to ask us without installing
+          <li><a href="/delete-account">Delete your data</a>: how to delete your
+          account from inside the app, and how to ask us without installing
           it.</li>
-          <li><a href="/privacy">Privacy Policy</a> &mdash; what the app
-          collects, which is nothing.</li>
-          <li><a href="/terms">Terms of Use</a> &mdash; including the medical
-          warning, which is worth reading before you start training.</li>
+          <li><a href="/privacy">Privacy Policy</a>: what the app collects,
+          where it is kept, and for how long.</li>
+          <li><a href="/terms">Terms of Use</a>: including the medical warning,
+          which is worth reading before you start training.</li>
         </ul>
       </div>
     </div>
@@ -1095,7 +1134,7 @@ def build(cfg, lang, mailto_link):
 
     # -------------------------------------------------------------- 404 ----
     pages["404"] = {
-        "title": "Page not found — Own Hub",
+        "title": "Page not found · Own Hub",
         "description": "That address is not on this site. Here is everything that is.",
         "body": """
     <div class="wrap lost">
@@ -1107,10 +1146,10 @@ def build(cfg, lang, mailto_link):
       </div>
       <ul class="doorways">
         <li><a href="/"><span class="t">Home</span><span class="d">What Own Hub is.</span></a></li>
-        <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, which is nothing.</span></a></li>
+        <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, and where it is kept.</span></a></li>
         <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, and what it is not.</span></a></li>
         <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person.</span></a></li>
-        <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to erase everything.</span></a></li>
+        <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to delete your account.</span></a></li>
       </ul>
     </div>
 """,
