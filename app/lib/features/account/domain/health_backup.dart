@@ -82,6 +82,10 @@ class HealthBackupPreference {
   /// She turned it off and the server has not confirmed the withdrawal yet.
   bool get withdrawPending => _withdrawPending;
 
+  /// The withdrawal being sent right now, or null. Shared by every
+  /// controller, so turning the backup on can wait for it (R6).
+  Future<bool>? withdrawInFlight;
+
   Future<void> setWithdrawPending(bool pending) async {
     _withdrawPending = pending;
     try {
@@ -124,6 +128,7 @@ class HealthBackupPreference {
   void resetForTest() {
     _enabled = false;
     _withdrawPending = false;
+    withdrawInFlight = null;
   }
 }
 
@@ -163,12 +168,24 @@ class HealthBackupController {
   Object? lastFailure;
 
   /// True when the server recorded her consent and the backup is now on.
+  ///
+  /// A withdrawal she made earlier and that never reached the server is
+  /// superseded here (R6): any retry already in flight is let finish first,
+  /// then the pending flag is cleared BEFORE the grant is sent, so no later
+  /// retry can withdraw the consent she has just given and purge the backup
+  /// she has just turned on. If the grant fails, the withdrawal she asked for
+  /// is pending again.
   Future<bool> enable() async {
     lastFailure = null;
+    final inFlight = preference.withdrawInFlight;
+    if (inFlight != null) await inFlight;
+    final wasPending = preference.withdrawPending;
+    if (wasPending) await preference.setWithdrawPending(false);
     try {
       await store.record(granted: true);
     } catch (error) {
       lastFailure = error;
+      if (wasPending) await preference.setWithdrawPending(true);
       return false;
     }
     await preference.set(true);
@@ -193,15 +210,25 @@ class HealthBackupController {
 
   /// Sends a withdrawal that did not reach the server. True when nothing is
   /// pending any more. Never throws.
-  Future<bool> retryPendingWithdraw() async {
-    if (!preference.withdrawPending) return true;
-    try {
-      await store.record(granted: false);
-    } catch (_) {
-      return false;
-    }
-    await preference.setWithdrawPending(false);
-    return true;
+  Future<bool> retryPendingWithdraw() {
+    if (!preference.withdrawPending) return Future.value(true);
+    final running = preference.withdrawInFlight;
+    if (running != null) return running;
+    final attempt = () async {
+      try {
+        await store.record(granted: false);
+      } catch (_) {
+        return false;
+      }
+      await preference.setWithdrawPending(false);
+      return true;
+    }();
+    preference.withdrawInFlight = attempt;
+    return attempt.whenComplete(() {
+      if (identical(preference.withdrawInFlight, attempt)) {
+        preference.withdrawInFlight = null;
+      }
+    });
   }
 
   /// The server wins: if this phone thinks the backup is on but the server

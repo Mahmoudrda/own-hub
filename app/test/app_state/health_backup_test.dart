@@ -42,6 +42,70 @@ void main() {
     pref.resetForTest();
   });
 
+  group('R6: a stale withdrawal never purges a backup she turned back on', () {
+    test(
+      'off offline, on online, then reconcile: the backup stays on',
+      () async {
+        final store = _FakeStore(state: HealthConsentState.granted);
+        final controller = HealthBackupController(store: store);
+        await pref.set(true);
+
+        // Off, with no network: off here, the withdrawal remembered.
+        store.fail = true;
+        expect(await controller.disable(), isFalse);
+        expect(pref.withdrawPending, isTrue);
+
+        // Back online, on again.
+        store.fail = false;
+        expect(await controller.enable(), isTrue);
+        expect(pref.withdrawPending, isFalse);
+
+        // What start-up and A03 do next.
+        expect(await controller.retryPendingWithdraw(), isTrue);
+        await controller.reconcile('u1');
+
+        expect(pref.enabled, isTrue);
+        expect(store.state, HealthConsentState.granted);
+        expect(
+          store.calls.last,
+          isTrue,
+          reason: 'no withdrawal after the grant',
+        );
+        pref.resetForTest();
+        await pref.load();
+        expect(
+          pref.withdrawPending,
+          isFalse,
+          reason: 'and not after a restart',
+        );
+      },
+    );
+
+    test('a withdrawal already in flight finishes before the grant', () async {
+      final store = _FakeStore(state: HealthConsentState.granted);
+      final controller = HealthBackupController(store: store);
+      await pref.set(false);
+      await pref.setWithdrawPending(true);
+
+      final retry = controller.retryPendingWithdraw();
+      expect(await controller.enable(), isTrue);
+      await retry;
+
+      expect(store.calls, [false, true]);
+      expect(store.state, HealthConsentState.granted);
+      expect(pref.enabled, isTrue);
+      expect(pref.withdrawPending, isFalse);
+    });
+
+    test('a failed grant keeps the withdrawal she asked for', () async {
+      final store = _FakeStore(fail: true);
+      final controller = HealthBackupController(store: store);
+      await pref.setWithdrawPending(true);
+      expect(await controller.enable(), isFalse);
+      expect(pref.withdrawPending, isTrue);
+    });
+  });
+
   test('off by default, including after a load with nothing stored', () async {
     expect(pref.enabled, isFalse);
     await pref.load();
