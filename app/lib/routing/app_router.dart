@@ -607,15 +607,25 @@ class AppRouter {
   ///     Offline first: her own week is on this phone. Server data stays
   ///     behind the rules, which read the real claim.
   ///
+  /// Those two count only while no fresh claim has been read in this session
+  /// ([_freshClaimRead]). Once a token has been read, its claim is the truth:
+  /// staff can revoke a claim after approval while the document still says
+  /// `approved`, and a fresh `false` must close the gate (N2).
+  ///
   /// No evidence at all still means no product (Protected List 4).
   static bool get isVerified =>
       _verifiedClaim ||
       lastVerification != null ||
-      serverVerification?.state == ServerVerificationState.approved ||
-      _verifiedOnThisPhone;
+      (!_freshClaimRead &&
+          (serverVerification?.state == ServerVerificationState.approved ||
+              _verifiedOnThisPhone));
 
   static bool _verifiedClaim = false;
   static bool _verifiedOnThisPhone = false;
+
+  /// Whether a claim has been read from a token in this session, newer than
+  /// the last approval the server reported ([markApprovedByServer]).
+  static bool _freshClaimRead = false;
 
   /// Where the claim and the server state are read from. Replaced in tests.
   @visibleForTesting
@@ -658,6 +668,7 @@ class AppRouter {
     try {
       final verified = await backend.verifiedClaim().timeout(claimTimeout);
       _verifiedClaim = verified;
+      _freshClaimRead = true;
       if (verified) {
         await VerificationMemory.rememberVerified(uid);
       } else if (remembered == uid) {
@@ -735,11 +746,12 @@ class AppRouter {
   /// A claim read from a token the server just issued.
   static void _settleClaim(String uid, bool verified) {
     _verifiedClaim = verified;
+    _freshClaimRead = true;
     if (verified) {
       unawaited(VerificationMemory.rememberVerified(uid));
-    } else if (_verifiedOnThisPhone) {
+    } else {
       _verifiedOnThisPhone = false;
-      unawaited(VerificationMemory.forget());
+      unawaited(VerificationMemory.forgetVerified());
     }
   }
 
@@ -749,6 +761,7 @@ class AppRouter {
   static Future<void> forgetVerification() async {
     _verifiedClaim = false;
     _verifiedOnThisPhone = false;
+    _freshClaimRead = false;
     lastVerification = null;
     serverVerification = null;
     awaitingReviewer = false;
@@ -1148,9 +1161,7 @@ class AppRouter {
       // in.
       onClose: () {
         _automaticSubmitted = false;
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil(frontDoor, (_) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil(frontDoor, (_) => false);
       },
     ),
     'C13': (context) => YoureInView(
@@ -4616,7 +4627,12 @@ class AppRouter {
   /// The server said she is approved (C14 live update, or C15 hearing
   /// "already verified"). That opens the product by itself ([isVerified]);
   /// the token refresh is started and retried later if it fails.
+  ///
+  /// The approval is newer than any claim read before it, so it stands until
+  /// the refresh it starts reads a claim: a fresh `false` then closes the
+  /// gate again (N2), and a refresh the network refuses leaves her in (R10).
   static void markApprovedByServer() {
+    _freshClaimRead = false;
     serverVerification = const ServerVerification(
       ServerVerificationState.approved,
     );

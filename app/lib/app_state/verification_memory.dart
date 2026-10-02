@@ -27,6 +27,13 @@ abstract final class VerificationMemory {
   static Future<void> rememberVerified(String uid) =>
       _write(kVerifiedUidKey, uid);
 
+  /// Drops the verified fact only, keeping "review asked". Never throws.
+  static Future<void> forgetVerified() async {
+    try {
+      await (await SharedPreferences.getInstance()).remove(kVerifiedUidKey);
+    } catch (_) {}
+  }
+
   /// The uid that asked for a reviewer's call on this phone, or null.
   static Future<String?> reviewAskedUid() => _read(kReviewAskedUidKey);
 
