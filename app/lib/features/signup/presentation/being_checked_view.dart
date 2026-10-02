@@ -79,7 +79,8 @@ class BeingCheckedView extends StatefulWidget {
   /// Live updates while this screen is open.
   final Stream<ServerVerification?>? updates;
 
-  /// A reviewer approved her. Called once.
+  /// A reviewer approved her. Called once when the approval arrives, and
+  /// again each time she taps "Open Own Hub".
   final VoidCallback? onApproved;
 
   /// The `C04` preview, while she waits.
@@ -162,6 +163,13 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
         l10n.yourReviewTimeRanOut,
         l10n.weDidNotReachYourReviewIn,
       ),
+      // Approved is never "waiting" (R1). The server let her in; the button
+      // takes her to the product, however many times the first attempt to
+      // refresh her token failed.
+      ServerVerificationState.approved => (
+        l10n.yourCheckIsDone,
+        l10n.youAreVerifiedOpenOwnHubTo,
+      ),
       _ => (
         l10n.aShortVideoCallWithAWoman,
         booked != null
@@ -169,9 +177,8 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
             : l10n.aWomanReviewerFromOwnHubWill,
       ),
     };
-    final waiting =
-        state == ServerVerificationState.pending ||
-        state == ServerVerificationState.approved;
+    final waiting = state == ServerVerificationState.pending;
+    final approved = state == ServerVerificationState.approved;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -190,7 +197,11 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    waiting ? Icons.hourglass_top : Icons.info_outline,
+                    waiting
+                        ? Icons.hourglass_top
+                        : approved
+                        ? Icons.check_circle
+                        : Icons.info_outline,
                     size: 26,
                     color: AppColors.amber,
                   ),
@@ -216,6 +227,12 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
           // The closed door, named as the point rather than as a punishment.
           // Only while a decision is still to come.
           if (waiting) Text(l10n.theAppOpensAsSoonAsYour, style: quiet),
+          if (approved && widget.onApproved != null)
+            AppButton(
+              l10n.openOwnHub,
+              key: const ValueKey('c14-open-own-hub'),
+              onPressed: widget.onApproved,
+            ),
           if (state == ServerVerificationState.retry &&
               widget.onTryAgain != null)
             AppButton(l10n.takeTheCheckAgain, onPressed: widget.onTryAgain),

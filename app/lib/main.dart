@@ -70,19 +70,18 @@ Future<void> main() async {
     };
   }
 
-  // Has the server already let her in? Read once, here, because
+  // Has the server already let her in? Read here, because
   // `AppRouter.onGenerateRoute` is synchronous and the whole-app gate has to
-  // answer before the first route is built rather than a frame later. It cannot
-  // fail the launch either: no Firebase, no signed-in user or no network all
-  // leave the claim false, and false means she meets the check rather than the
-  // app. See `AppRouter.readVerificationClaim`.
-  await AppRouter.readVerificationClaim();
-
-  // And what the server last said about her check (S8): waiting for a
-  // reviewer, booked, refused, or approved while the app was closed, in which
-  // case the token is refreshed here so the claim above becomes true. Bounded
-  // at five seconds and unable to fail the launch.
-  await AppRouter.readVerificationStatus();
+  // answer before the first route is built rather than a frame later. Then
+  // what the server last said about her check (S8): waiting for a reviewer,
+  // booked, refused, or approved while the app was closed.
+  //
+  // Bounded as a whole at five seconds and unable to fail the launch. A
+  // verified woman with no network is not locked out: the token read falls
+  // back to what this phone proved before (R1). No evidence still means the
+  // check rather than the app. See `AppRouter.readVerificationAtLaunch`.
+  await AppRouter.readVerificationAtLaunch();
+  AppRouter.watchVerificationToken();
 
   // The cloud copy of her week, started but deliberately NOT awaited.
   //
@@ -156,7 +155,22 @@ class OwnHubApp extends StatefulWidget {
   State<OwnHubApp> createState() => _OwnHubAppState();
 }
 
-class _OwnHubAppState extends State<OwnHubApp> {
+class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// Back in the foreground: a refresh the network refused at launch is
+  /// tried again (R1). Does nothing when nothing is owed.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(AppRouter.refreshVerificationIfOwed());
+    }
+  }
+
   /// The language she has already chosen, else the one her phone is set to,
   /// else English.
   ///
@@ -205,6 +219,7 @@ class _OwnHubAppState extends State<OwnHubApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _locale.dispose();
     _roles.dispose();
     super.dispose();
@@ -227,9 +242,8 @@ class _OwnHubAppState extends State<OwnHubApp> {
   /// [_firstRunStack], so that finishing, skipping or closing is a pop back to
   /// the screen underneath rather than a push to a new one. See
   /// `lib/app_state/onboarding_state.dart`.
-  String _initialRoute() => _openable(
-    WidgetsBinding.instance.platformDispatcher.defaultRouteName,
-  );
+  String _initialRoute() =>
+      _openable(WidgetsBinding.instance.platformDispatcher.defaultRouteName);
 
   /// [name] if the app is willing to OPEN on it, else the front door.
   ///

@@ -7686,4 +7686,14 @@ class AppL10nAr extends AppL10n {
   @override
   String get healthBackupIsOffOnThisPhone =>
       'النسخ الاحتياطي للبيانات الصحية متوقف على هذا الهاتف، فلن يُرفع شيء بعد الآن. تعذّر الوصول إلى Own Hub، لذلك ستُحذف النسخة الموجودة في حسابكِ عند عودتكِ إلى الاتصال.';
+
+  @override
+  String get yourCheckIsDone => 'اكتمل التحقق';
+
+  @override
+  String get youAreVerifiedOpenOwnHubTo =>
+      'تم التحقق منكِ. افتحي Own Hub لتُكملي.';
+
+  @override
+  String get openOwnHub => 'افتحي Own Hub';
 }

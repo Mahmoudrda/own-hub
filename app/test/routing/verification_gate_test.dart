@@ -229,8 +229,9 @@ void main() {
 
     test('waiting survives a restart: it is derived from the server (S8)', () {
       // A fresh process: no session flag, only what the server said at
-      // start-up. Every server state that is not "verified in her token"
-      // holds her at C14, which tells her which one it is.
+      // start-up. Pending, retry and rejected hold her at C14, which tells
+      // her which one it is. Approved does not (R1): it is the server's
+      // decision, never shown as waiting, and it lets her through.
       addTearDown(() {
         AppRouter.serverVerification = null;
         AppRouter.awaitingReviewer = false;
@@ -240,6 +241,11 @@ void main() {
       expect(AppRouter.awaitingReviewer, isFalse);
       for (final state in ServerVerificationState.values) {
         AppRouter.serverVerification = ServerVerification(state);
+        if (state == ServerVerificationState.approved) {
+          expect(AppRouter.awaitingReviewer, isFalse);
+          expect(AppRouter.isVerified, isTrue);
+          continue;
+        }
         expect(AppRouter.awaitingReviewer, isTrue, reason: '$state');
         expect(
           gate('R01', signedIn: true, waiting: AppRouter.awaitingReviewer),

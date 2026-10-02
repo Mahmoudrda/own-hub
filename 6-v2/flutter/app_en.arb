@@ -3137,5 +3137,8 @@
   "thisCopyOfTheAppCannotReach_qzcpf": "This copy of the app cannot reach Own Hub, so nothing was deleted. Please install the latest version from the App Store or Google Play.",
   "yourDeletionDidNotFinishOnOur": "Your deletion did not finish on our side. It will finish automatically within the hour. This phone has been cleared.",
   "yourWorkoutsMealsAndSetupAnswersAre": "Your workouts, meals and setup answers are saved to your Own Hub account once you are verified. Your cycle, check-ins, weight and other health details stay on this phone unless you turn on the health backup. Photos of your ID card and your selfie are never stored.",
-  "healthBackupIsOffOnThisPhone": "Health backup is off on this phone, so nothing more is uploaded. We could not reach Own Hub, so the copy in your account will be removed when you are back online."
+  "healthBackupIsOffOnThisPhone": "Health backup is off on this phone, so nothing more is uploaded. We could not reach Own Hub, so the copy in your account will be removed when you are back online.",
+  "yourCheckIsDone": "Your check is done",
+  "youAreVerifiedOpenOwnHubTo": "You are verified. Open Own Hub to carry on.",
+  "openOwnHub": "Open Own Hub"
 }

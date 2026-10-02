@@ -7717,4 +7717,14 @@ class AppL10nEn extends AppL10n {
   @override
   String get healthBackupIsOffOnThisPhone =>
       'Health backup is off on this phone, so nothing more is uploaded. We could not reach Own Hub, so the copy in your account will be removed when you are back online.';
+
+  @override
+  String get yourCheckIsDone => 'Your check is done';
+
+  @override
+  String get youAreVerifiedOpenOwnHubTo =>
+      'You are verified. Open Own Hub to carry on.';
+
+  @override
+  String get openOwnHub => 'Open Own Hub';
 }

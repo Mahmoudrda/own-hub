@@ -4,7 +4,6 @@ import 'dart:async';
 // claim the Cloud Function mints and the security rules read, so it is the one
 // answer to "has she passed the check" that the client cannot forge. See
 // `AppRouter.readVerificationClaim`.
-import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 // `kReleaseMode` — the admin console is compiled out of reach in a release
 // binary. See `AppRouter.resolvesInThisBuild`.
 import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
@@ -21,6 +20,7 @@ import '../app_state/cloud_store.dart';
 // identity check can be built against real Cloud Functions or has to refuse
 // honestly. See `_newIdentityCheck`.
 import '../app_state/firebase_boot.dart';
+import '../app_state/verification_memory.dart';
 import '../config/care_links.dart';
 import '../config/legal_links.dart';
 import '../app_state/coach_portfolio_state.dart';
@@ -67,7 +67,7 @@ import '../features/onboarding/presentation/starting_program_view.dart';
 import '../features/signup/data/callable_capture_consent_store.dart';
 import '../features/signup/data/firebase_auth_repository.dart';
 import '../features/signup/data/identity_check.dart';
-import '../features/signup/data/verification_status_repository.dart';
+import '../features/signup/data/verification_backend.dart';
 import '../features/signup/domain/auth_repository.dart';
 import '../features/signup/domain/capture_consent.dart';
 import '../features/signup/domain/id_capture.dart';
@@ -596,42 +596,164 @@ class AppRouter {
   /// made by a Cloud Function; there is no branch that grants access on
   /// anything the phone worked out.
   ///
-  /// The gap worth naming: a verified woman who reopens the app while offline
-  /// has a cached ID token, so the claim is still readable, but a woman whose
-  /// token was minted before her approval and who has no network gets `false`
-  /// until a refresh succeeds. She sees `C14` rather than the app. That is the
-  /// durable-status seam — a Firestore-backed verification record — and it
-  /// belongs in `app_state/`, which another worker owns today.
-  static bool get isVerified => _verifiedClaim || lastVerification != null;
+  /// Two more readings, for a woman the network cannot answer for (R1):
+  ///
+  ///   * [serverVerification] saying `approved`. Only the server writes that
+  ///     state, and a woman it names is never shown "waiting": she is let in
+  ///     and the token refresh is retried on resume and on reconnect.
+  ///   * [_verifiedOnThisPhone]: a fresh token proved this uid verified on
+  ///     this phone before ([VerificationMemory]), and today the token cannot
+  ///     be read for want of a network, or Firebase did not come up at all.
+  ///     Offline first: her own week is on this phone. Server data stays
+  ///     behind the rules, which read the real claim.
+  ///
+  /// No evidence at all still means no product (Protected List 4).
+  static bool get isVerified =>
+      _verifiedClaim ||
+      lastVerification != null ||
+      serverVerification?.state == ServerVerificationState.approved ||
+      _verifiedOnThisPhone;
 
   static bool _verifiedClaim = false;
+  static bool _verifiedOnThisPhone = false;
+
+  /// Where the claim and the server state are read from. Replaced in tests.
+  @visibleForTesting
+  static VerificationBackend verificationBackend =
+      const FirebaseVerificationBackend();
+
+  /// How long [readVerificationClaim] waits for a token.
+  static const Duration claimTimeout = Duration(seconds: 3);
 
   /// Re-reads the `verified` custom claim from her ID token.
   ///
-  /// Called once from `main()`, after `FirebaseBoot.start()`, so the answer is
-  /// already in hand by the time the first route is generated —
-  /// [onGenerateRoute] is synchronous and cannot wait for a token.
+  /// Called from `main()` through [readVerificationAtLaunch], after
+  /// `FirebaseBoot.start()`, so the answer is already in hand by the time the
+  /// first route is generated: [onGenerateRoute] is synchronous and cannot
+  /// wait for a token.
   ///
-  /// Never throws and never blocks the launch: no Firebase, no user, or a
-  /// network that will not answer all leave the claim false, which costs an
-  /// unverified woman nothing and costs a verified one a screen she can get
-  /// past by finishing the check again. The alternative — assuming verified on
-  /// a failed read — would be a women-only gate that opens whenever the network
+  /// Never throws and never waits more than [claimTimeout] for the token. A
+  /// fresh `true` is remembered for this uid on this phone; a fresh `false`
+  /// forgets it. A token that cannot be read for a network reason falls back
+  /// to that memory, or to a cached `approved` state; any other failure, no
+  /// user, or no memory leaves her unverified. Assuming verified on a bare
+  /// failed read would be a women-only gate that opens whenever the network
   /// is bad.
   static Future<void> readVerificationClaim() async {
-    if (!FirebaseBoot.isReady) return;
+    final backend = verificationBackend;
+    _verifiedOnThisPhone = false;
+    final remembered = await VerificationMemory.verifiedUid();
+    if (!backend.isReady) {
+      // No Firebase on this phone today. Her product is local-first, and a
+      // phone that proved her verified before opens it again (R1).
+      _verifiedClaim = false;
+      _verifiedOnThisPhone = remembered != null;
+      return;
+    }
+    final uid = backend.currentUid;
+    if (uid == null) {
+      _verifiedClaim = false;
+      return;
+    }
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        _verifiedClaim = false;
+      final verified = await backend.verifiedClaim().timeout(claimTimeout);
+      _verifiedClaim = verified;
+      if (verified) {
+        await VerificationMemory.rememberVerified(uid);
+      } else if (remembered == uid) {
+        await VerificationMemory.forget();
+      }
+    } catch (error) {
+      _verifiedClaim = false;
+      if (!isUnreachableFailure(error)) return;
+      if (remembered == uid) {
+        _verifiedOnThisPhone = true;
         return;
       }
-      final token = await user.getIdTokenResult();
-      _verifiedClaim = token.claims?['verified'] == true;
-    } catch (_) {
-      // Deliberately silent, and deliberately false. See above.
-      _verifiedClaim = false;
+      try {
+        final cached = await backend.cachedStatus(uid);
+        if (cached != null) serverVerification = cached;
+      } catch (_) {}
     }
+  }
+
+  /// Everything about her check that `main()` reads before the first frame,
+  /// bounded by [bound] as a whole. Whatever is still running when it runs
+  /// out finishes in the background and lands in the same fields.
+  static Future<void> readVerificationAtLaunch({
+    Duration bound = const Duration(seconds: 5),
+  }) async {
+    try {
+      await () async {
+        await readVerificationClaim();
+        await readVerificationStatus();
+      }().timeout(bound);
+    } catch (_) {
+      // Out of time. The claim read is bounded on its own, so its fallback
+      // has already been applied.
+    }
+  }
+
+  /// Retries the token refresh when the server says approved, or this phone
+  /// remembers her verified, but the token in hand does not carry the claim.
+  /// Called on resume. Never throws.
+  static Future<void> refreshVerificationIfOwed() async {
+    if (_verifiedClaim) return;
+    final backend = verificationBackend;
+    if (!backend.isReady || backend.currentUid == null) return;
+    if (serverVerification?.state != ServerVerificationState.approved &&
+        !_verifiedOnThisPhone) {
+      return;
+    }
+    await refreshVerificationClaim();
+  }
+
+  static StreamSubscription<Object?>? _tokenWatch;
+
+  /// Follows every new ID token, so a refresh Firebase makes by itself once
+  /// she is back online carries the claim into the gate. Called once from
+  /// `main()`.
+  static void watchVerificationToken() {
+    unawaited(_tokenWatch?.cancel());
+    _tokenWatch = verificationBackend.tokenChanges().listen(
+      (_) => unawaited(_rereadClaimQuietly()),
+      onError: (Object _) {},
+    );
+  }
+
+  static Future<void> _rereadClaimQuietly() async {
+    final backend = verificationBackend;
+    final uid = backend.currentUid;
+    if (!backend.isReady || uid == null) return;
+    try {
+      _settleClaim(uid, await backend.verifiedClaim().timeout(claimTimeout));
+    } catch (_) {
+      // Unreadable now: nothing changes.
+    }
+  }
+
+  /// A claim read from a token the server just issued.
+  static void _settleClaim(String uid, bool verified) {
+    _verifiedClaim = verified;
+    if (verified) {
+      unawaited(VerificationMemory.rememberVerified(uid));
+    } else if (_verifiedOnThisPhone) {
+      _verifiedOnThisPhone = false;
+      unawaited(VerificationMemory.forget());
+    }
+  }
+
+  /// Every source of "she is verified" back to nothing (R2): the claim, the
+  /// session result, the server state, the phone's memory and the review
+  /// flags. Called on sign-out and on account deletion.
+  static Future<void> forgetVerification() async {
+    _verifiedClaim = false;
+    _verifiedOnThisPhone = false;
+    lastVerification = null;
+    serverVerification = null;
+    awaitingReviewer = false;
+    reviewAsked = false;
+    await VerificationMemory.forget();
   }
 
   /// The route she should be on instead of [screenId], or null to let her
@@ -937,7 +1059,8 @@ class AppRouter {
             identityCheck.evidence.shred();
             _automaticSubmitted = true;
             repository.settle(switch (started) {
-              LivenessStart.tryTomorrow => const VerificationState.tryTomorrow(),
+              LivenessStart.tryTomorrow =>
+                const VerificationState.tryTomorrow(),
               LivenessStart.checksUsedUp =>
                 const VerificationState.checksUsedUp(),
               _ => const VerificationState.appCannotReach(),
@@ -1040,13 +1163,16 @@ class AppRouter {
     'C14': (context) => BeingCheckedView(
       status: serverVerification,
       updates: verificationStatusUpdates(),
-      // A reviewer approved her while this screen was open. The claim only
-      // reaches the token on a refresh, so refresh, then go on to C13.
-      onApproved: () async {
-        final navigator = Navigator.of(context);
-        await refreshVerificationClaim();
-        if (!navigator.mounted || !context.mounted) return;
-        if (isVerified) goTo(context, 'C13');
+      // A reviewer approved her. `approved` from the server opens the product
+      // by itself (R1); the token refresh is tried here and again on resume
+      // and on reconnect, never only once, and a failed one does not hold her
+      // on a "waiting" screen.
+      onApproved: () {
+        serverVerification = const ServerVerification(
+          ServerVerificationState.approved,
+        );
+        unawaited(refreshVerificationClaim());
+        goTo(context, 'C13');
       },
       onLookAround: () => goTo(context, 'C04'),
       onTryAgain: () {
@@ -1613,32 +1739,34 @@ class AppRouter {
     // *food* pack because no recipe exists behind it — see `recipe_view.dart`.
     // Branching here rather than inside one widget keeps every test written
     // against the old page pointed at the old page.
-    'E06': (context) => _rahmaRecipe(context) ?? RecipeView(
-      constraints: eatConstraints,
-      repository: mealRepository,
-      session: EatAppState.instance.session,
-      foodId: EatAppState.instance.openFoodId,
-      title: EatAppState.instance.recipeTitle(AppL10n.of(context)),
-      saved: EatAppState.instance.isSaved(EatAppState.instance.openFoodId),
-      onBack: () => Navigator.of(context).maybePop(),
-      onBookmark: () => EatAppState.instance.toggleSaved(
-        context,
-        EatAppState.instance.openFoodId,
-      ),
-      // No recipe pack exists, so there are no steps to show — see
-      // `recipe_view.dart`. Said out loud rather than left as a dead button.
-      onShare: () => showHonestNotice(
-        context,
-        AppL10n.of(context).sharingIsNotConnectedInThisBuild,
-      ),
-      onSeeSteps: () => showHonestNotice(
-        context,
-        AppL10n.of(context).theStepsForThisDishHaveNot,
-      ),
-      onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
-      onBlocked: (refused) =>
-          EatAppState.instance.explainRefusal(context, refused),
-    ),
+    'E06': (context) =>
+        _rahmaRecipe(context) ??
+        RecipeView(
+          constraints: eatConstraints,
+          repository: mealRepository,
+          session: EatAppState.instance.session,
+          foodId: EatAppState.instance.openFoodId,
+          title: EatAppState.instance.recipeTitle(AppL10n.of(context)),
+          saved: EatAppState.instance.isSaved(EatAppState.instance.openFoodId),
+          onBack: () => Navigator.of(context).maybePop(),
+          onBookmark: () => EatAppState.instance.toggleSaved(
+            context,
+            EatAppState.instance.openFoodId,
+          ),
+          // No recipe pack exists, so there are no steps to show — see
+          // `recipe_view.dart`. Said out loud rather than left as a dead button.
+          onShare: () => showHonestNotice(
+            context,
+            AppL10n.of(context).sharingIsNotConnectedInThisBuild,
+          ),
+          onSeeSteps: () => showHonestNotice(
+            context,
+            AppL10n.of(context).theStepsForThisDishHaveNot,
+          ),
+          onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
+          onBlocked: (refused) =>
+              EatAppState.instance.explainRefusal(context, refused),
+        ),
     'E07': (context) => WeekPlanView(
       repository: mealRepository,
       onBack: () => Navigator.of(context).maybePop(),
@@ -4366,6 +4494,7 @@ class AppRouter {
   static FeatureFlags featureFlags = FeatureFlags.shipped;
 
   static final LocalePreference localePreference = InMemoryLocalePreference();
+
   /// Real phone sign-in, against the `own-hub` Firebase project.
   ///
   /// `static final` is lazy in Dart, so `FirebaseAuth.instance` is not touched
@@ -4406,8 +4535,7 @@ class AppRouter {
     );
     // A03 is where she looks for it, so a withdrawal she made offline is
     // retried when it opens. Once per attempt, not on every redraw.
-    if (HealthBackupPreference.instance.withdrawPending &&
-        !_withdrawRetrying) {
+    if (HealthBackupPreference.instance.withdrawPending && !_withdrawRetrying) {
       _withdrawRetrying = true;
       unawaited(
         controller.retryPendingWithdraw().whenComplete(
@@ -4538,7 +4666,9 @@ class AppRouter {
   /// local echo set the moment `C12` or `C15` hears the server queue her,
   /// before the document read catches up.
   static bool get awaitingReviewer =>
-      _awaitingInSession || serverVerification != null;
+      _awaitingInSession ||
+      (serverVerification != null &&
+          serverVerification!.state != ServerVerificationState.approved);
   static set awaitingReviewer(bool value) => _awaitingInSession = value;
   static bool _awaitingInSession = false;
 
@@ -4549,22 +4679,36 @@ class AppRouter {
   /// Which way she reached `C15`, sent to `request_review`.
   static ReviewPath pendingReviewPath = ReviewPath.niqab;
 
+  /// Whether she has asked for a reviewer's call (C15, or "Ask for the call"
+  /// on C14). A flag the automatic check raised by itself is not her asking:
+  /// until she does, C14 says a reviewer can only call after she asks (R4).
+  static bool reviewAsked = false;
+
+  /// Records that she asked, for this session and on this phone.
+  static void markReviewAsked() {
+    reviewAsked = true;
+    final uid = signedInUid;
+    if (uid != null) unawaited(VerificationMemory.rememberReviewAsked(uid));
+  }
+
   /// Reads `users/{uid}.verification` at start-up (S8), after
   /// [readVerificationClaim]. When the server says approved but the token
   /// does not carry the claim yet, the token is refreshed and the claim read
-  /// again, so a woman approved by a reviewer while the app was closed opens
-  /// it into the product rather than into C14.
+  /// again. `approved` itself already opens the product ([isVerified]).
   ///
-  /// Never throws and never blocks the launch beyond its five second bound.
+  /// Never throws. Bounded as part of [readVerificationAtLaunch].
   static Future<void> readVerificationStatus() async {
-    if (!FirebaseBoot.isReady) return;
-    final uid = signedInUid;
+    final backend = verificationBackend;
+    if (!backend.isReady) return;
+    final uid = backend.currentUid;
     if (uid == null) {
       serverVerification = null;
       return;
     }
     try {
-      serverVerification = await VerificationStatusRepository().read(uid);
+      reviewAsked = await VerificationMemory.reviewAskedUid() == uid;
+      final read = await backend.readStatus(uid);
+      if (read != null) serverVerification = read;
       if (serverVerification?.state == ServerVerificationState.approved &&
           !_verifiedClaim) {
         await refreshVerificationClaim();
@@ -4576,14 +4720,14 @@ class AppRouter {
 
   /// Forces a fresh ID token and re-reads the `verified` claim.
   static Future<void> refreshVerificationClaim() async {
-    if (!FirebaseBoot.isReady) return;
+    final backend = verificationBackend;
+    final uid = backend.currentUid;
+    if (!backend.isReady || uid == null) return;
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-      final token = await user
-          .getIdTokenResult(true)
+      final verified = await backend
+          .verifiedClaim(forceRefresh: true)
           .timeout(const Duration(seconds: 10));
-      _verifiedClaim = token.claims?['verified'] == true;
+      _settleClaim(uid, verified);
     } catch (_) {
       // Leaves the claim as it was. Fail closed.
     }
@@ -4591,9 +4735,10 @@ class AppRouter {
 
   /// Live `users/{uid}.verification` for C14, or null with no back end.
   static Stream<ServerVerification?>? verificationStatusUpdates() {
-    final uid = signedInUid;
-    if (!FirebaseBoot.isReady || uid == null) return null;
-    return VerificationStatusRepository().watch(uid).map((next) {
+    final backend = verificationBackend;
+    final uid = backend.currentUid;
+    if (!backend.isReady || uid == null) return null;
+    return backend.watchStatus(uid)?.map((next) {
       if (next != null) serverVerification = next;
       return next;
     });
@@ -4618,7 +4763,9 @@ class AppRouter {
       _automaticSubmitted = true;
       // Not awaited: `submit` returns the state to show *while* the check runs
       // and `C12` is already listening for the outcome.
-      unawaited(check.verification.submit(method: VerificationMethod.automatic));
+      unawaited(
+        check.verification.submit(method: VerificationMethod.automatic),
+      );
     }
     return check.verification;
   }
@@ -5592,9 +5739,7 @@ class NotBuiltYet extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.surfaceLow,
       appBar: AppBar(
-        title: screenId.isEmpty
-            ? null
-            : Text(screenId, style: AppText.titleM),
+        title: screenId.isEmpty ? null : Text(screenId, style: AppText.titleM),
       ),
       body: Center(
         child: Padding(

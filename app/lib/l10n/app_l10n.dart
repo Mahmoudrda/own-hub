@@ -14016,6 +14016,24 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Health backup is off on this phone, so nothing more is uploaded. We could not reach Own Hub, so the copy in your account will be removed when you are back online.'**
   String get healthBackupIsOffOnThisPhone;
+
+  /// No description provided for @yourCheckIsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Your check is done'**
+  String get yourCheckIsDone;
+
+  /// No description provided for @youAreVerifiedOpenOwnHubTo.
+  ///
+  /// In en, this message translates to:
+  /// **'You are verified. Open Own Hub to carry on.'**
+  String get youAreVerifiedOpenOwnHubTo;
+
+  /// No description provided for @openOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Own Hub'**
+  String get openOwnHub;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -47,6 +47,22 @@ class VerificationStatusRepository {
     }
   }
 
+  /// The on-device cache only, bounded at one second. For launch with no
+  /// network, where a server read would spend the whole start-up budget.
+  Future<ServerVerification?> readCached(String uid) async {
+    try {
+      final cached = await _doc(uid)
+          .get(const GetOptions(source: Source.cache))
+          .timeout(const Duration(seconds: 1));
+      return ServerVerification.fromUserDoc(
+        cached.data(),
+        toDateTime: firestoreDateTime,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Live updates while C14 is open, so a reviewer's booking or decision
   /// reaches her without a restart. Errors end the stream quietly.
   Stream<ServerVerification?> watch(String uid) => _doc(uid)
