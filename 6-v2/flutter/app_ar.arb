@@ -3091,5 +3091,6 @@
   "weSaveYourAnswerWithTheRest": "نحفظ إجابتكِ مع بقية إعدادكِ. ولا يتغيّر شيء في تمارينكِ بسببها حتى الآن.",
   "nobodyHasSignedOffWhatIsIn_127cj": "لم يوقّع أحد بعد على مكوّنات هذه الأطباق، فلا يظهر منها شيء. هذه مراجعتنا نحن، لا قائمتكِ.",
   "nothingIsPlannedForThisWeekYet": "لا شيء مخطَّط لهذا الأسبوع بعد. اختاري عشاءً لأي يوم في الأسفل.",
-  "lookingForWhatYouHaveLogged": "نبحث عمّا سجّلتِه."
+  "lookingForWhatYouHaveLogged": "نبحث عمّا سجّلتِه.",
+  "weCouldNotSaveYourAgreementSo": "تعذّر حفظ موافقتكِ، لذلك لم تُفتح الكاميرا. تحقّقي من اتصالكِ ثم حاولي مرة أخرى."
 }

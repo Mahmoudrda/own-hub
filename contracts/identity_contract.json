@@ -1,0 +1,126 @@
+{
+  "callables": {
+    "delete_account": {
+      "requestKeys": [],
+      "responseKeys": [
+        "journal",
+        "state"
+      ]
+    },
+    "record_consent": {
+      "request": {
+        "consentVersion": 1
+      },
+      "response": {
+        "consentVersion": 1,
+        "ok": true
+      }
+    },
+    "record_health_consent": {
+      "request": {
+        "consentVersion": 1,
+        "granted": true
+      },
+      "response": {
+        "ok": true,
+        "state": "granted"
+      }
+    },
+    "request_review": {
+      "paths": [
+        "declined",
+        "error",
+        "niqab"
+      ],
+      "request": {
+        "path": "niqab"
+      },
+      "responseKeys": [
+        "state"
+      ]
+    },
+    "start_verification": {
+      "requestKeys": [],
+      "responseKeys": [
+        "expiresInSec",
+        "sessionId",
+        "steps"
+      ]
+    },
+    "verify_identity": {
+      "requestKeys": [
+        "back",
+        "frames",
+        "front",
+        "installId",
+        "liveness",
+        "operationId"
+      ],
+      "responseKeys": [
+        "outcome",
+        "reasons",
+        "refreshToken"
+      ]
+    }
+  },
+  "contractVersion": 1,
+  "deletionJournal": [
+    "requested",
+    "authLocked",
+    "purgingFirestore",
+    "purgingStorage",
+    "purgingGroupHooks",
+    "purgingThirdParty",
+    "authDeleted",
+    "done"
+  ],
+  "documents": {
+    "healthConsent": {
+      "fields": [
+        "at",
+        "state",
+        "version",
+        "withdrawnAt"
+      ],
+      "path": "users/{uid}/consents/health-v1",
+      "states": [
+        "granted",
+        "withdrawn"
+      ]
+    },
+    "verificationConsent": {
+      "fields": [
+        "at",
+        "version"
+      ],
+      "path": "users/{uid}/consents/verification-v1"
+    },
+    "verificationState": {
+      "fields": [
+        "decidedAt",
+        "imagesDeletedAt",
+        "reviewRoute",
+        "reviewScheduledFor",
+        "state",
+        "updatedAt"
+      ],
+      "map": "verification",
+      "path": "users/{uid}",
+      "states": [
+        "approved",
+        "pending",
+        "rejected",
+        "retry"
+      ]
+    }
+  },
+  "errorReasons": {
+    "appCheckMissing": "app_check_missing",
+    "consentMissing": "consent_missing",
+    "costCapReached": "cost_cap_reached",
+    "dailyLimitReached": "daily_limit_reached",
+    "perUidDailyLimit": "per_uid_daily_limit",
+    "verificationClosed": "verification_closed"
+  },
+  "region": "europe-west3"
+}

@@ -134,10 +134,20 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const ValueKey('consent-error')), findsNothing);
     await tester.tap(find.text('I agree, start the camera'));
     await tester.pumpAndSettle();
 
     expect(agreed, isEmpty);
+    // She is told, in words, that nothing was saved and nothing opened. A
+    // button that silently does nothing reads as a broken app.
+    expect(
+      find.text(
+        'We could not save your agreement, so the camera has not opened. '
+        'Check your connection and try again.',
+      ),
+      findsOneWidget,
+    );
     // And she can try again rather than being stranded.
     await tester.tap(find.text('I agree, start the camera'));
     await tester.pumpAndSettle();
@@ -198,6 +208,24 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the failure notice fits in Arabic at the largest text size', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        ConsentView(uid: 'u1', store: _RefusingStore()),
+        locale: const Locale('ar'),
+        textScale: 1.6,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('أوافق وأبدأ التصوير'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('consent-error')), findsOneWidget);
+    expect(find.textContaining('تعذّر حفظ موافقتكِ'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   test('a record for older wording does not count as consent', () async {
     // Rewriting the consent copy must not silently re-use an old agreement for
     // new terms, which is the failure that makes consent records worthless.
@@ -205,7 +233,7 @@ void main() {
     await store.record(
       CaptureConsent(
         uid: 'u1',
-        version: '2020-01-01',
+        version: 0,
         agreedAt: DateTime.utc(2020),
       ),
     );

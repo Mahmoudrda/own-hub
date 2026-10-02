@@ -7579,4 +7579,8 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get lookingForWhatYouHaveLogged => 'Looking for what you have logged.';
+
+  @override
+  String get weCouldNotSaveYourAgreementSo =>
+      'We could not save your agreement, so the camera has not opened. Check your connection and try again.';
 }

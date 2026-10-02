@@ -7547,4 +7547,8 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get lookingForWhatYouHaveLogged => 'نبحث عمّا سجّلتِه.';
+
+  @override
+  String get weCouldNotSaveYourAgreementSo =>
+      'تعذّر حفظ موافقتكِ، لذلك لم تُفتح الكاميرا. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
 }

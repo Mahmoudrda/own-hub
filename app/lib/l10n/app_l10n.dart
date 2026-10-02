@@ -13794,6 +13794,12 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Looking for what you have logged.'**
   String get lookingForWhatYouHaveLogged;
+
+  /// No description provided for @weCouldNotSaveYourAgreementSo.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not save your agreement, so the camera has not opened. Check your connection and try again.'**
+  String get weCouldNotSaveYourAgreementSo;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {
