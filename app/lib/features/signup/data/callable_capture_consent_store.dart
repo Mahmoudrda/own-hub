@@ -21,8 +21,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:meta/meta.dart';
 
+import '../../../app_state/firebase_boot.dart';
 import '../domain/capture_consent.dart';
-import 'callable_verification_provider.dart' show kVerifyIdentityRegion;
 
 /// The callable that mints a consent record.
 const String kRecordConsentCallable = 'record_consent';
@@ -32,9 +32,7 @@ class CallableCaptureConsentStore implements CaptureConsentStore {
     FirebaseFirestore? firestore,
     FirebaseFunctions? functions,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _functions =
-           functions ??
-           FirebaseFunctions.instanceFor(region: kVerifyIdentityRegion);
+       _functions = functions ?? FirebaseBoot.functions;
 
   final FirebaseFirestore _firestore;
   final FirebaseFunctions _functions;

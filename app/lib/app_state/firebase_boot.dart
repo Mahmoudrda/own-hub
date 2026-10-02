@@ -1,3 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -25,6 +29,37 @@ enum BackendStatus {
   unavailable,
 }
 
+/// The region every callable is deployed to. The functions run in Frankfurt
+/// beside Firestore; a client pointed anywhere else gets `not-found`.
+const String kFunctionsRegion = 'europe-west3';
+
+/// A debug App Check token registered in the Firebase console, passed with
+/// `--dart-define=OWNHUB_APP_CHECK_DEBUG_TOKEN=...`. Empty means the SDK makes
+/// one up and logs it (logcat on Android, the Xcode console on iOS) so it can
+/// be registered. Only ever read in a debug or profile build.
+const String _kAppCheckDebugToken = String.fromEnvironment(
+  'OWNHUB_APP_CHECK_DEBUG_TOKEN',
+);
+
+/// The host running the local Firebase emulators, for example `10.0.2.2` from
+/// an Android emulator. Honoured in debug builds only; a release build always
+/// talks to production.
+const String _kEmulatorHost = String.fromEnvironment('OWNHUB_EMULATOR_HOST');
+
+/// Which App Check providers a build attests with.
+///
+/// Pulled out as a value so the choice can be tested without platform
+/// channels: the one mistake that matters here is a release build shipping
+/// with a debug provider, which would let anyone holding the token through
+/// App Check.
+@immutable
+class AppCheckChoice {
+  const AppCheckChoice({required this.android, required this.apple});
+
+  final AndroidAppCheckProvider android;
+  final AppleAppCheckProvider apple;
+}
+
 /// Brings Firebase up without ever being able to fail the launch.
 ///
 /// `Firebase.initializeApp` throws on a surprising number of real phones: a
@@ -41,12 +76,20 @@ enum BackendStatus {
 abstract final class FirebaseBoot {
   static BackendStatus _status = BackendStatus.notAttempted;
   static Object? _failure;
+  static Object? _appCheckFailure;
+  static FirebaseFunctions? _functions;
 
   static BackendStatus get status => _status;
 
   /// The error that stopped Firebase, or null. For honest error copy and for
   /// the console in a debug build, never for display verbatim to a woman.
   static Object? get failure => _failure;
+
+  /// The error that stopped App Check from activating, or null. Firebase can
+  /// be up while App Check is not; every callable will then be refused by the
+  /// server (`ENFORCE_APP_CHECK` is on), and the screen that made the call
+  /// says so. Kept for the debug console, never shown verbatim.
+  static Object? get appCheckFailure => _appCheckFailure;
 
   /// True when it is worth attempting a network call at all.
   static bool get isReady => _status == BackendStatus.ready;
@@ -67,7 +110,76 @@ abstract final class FirebaseBoot {
       if (kDebugMode) {
         debugPrint('Firebase did not start: $error\n$stack');
       }
+      return;
     }
+
+    // App Check, immediately after initializeApp and before anything can call
+    // a function. The server enforces it on every callable, so without this
+    // no build reaches sign-up's back end at all. Its own try, because a
+    // failure here must not fail the launch either: the app still opens on
+    // local data, and the callable that is refused says so honestly.
+    try {
+      final choice = appCheckChoiceFor(release: kReleaseMode);
+      await FirebaseAppCheck.instance.activate(
+        providerAndroid: choice.android,
+        providerApple: choice.apple,
+      );
+    } catch (error, stack) {
+      _appCheckFailure = error;
+      if (kDebugMode) {
+        debugPrint('App Check did not activate: $error\n$stack');
+      }
+    }
+
+    if (kDebugMode && _kEmulatorHost.isNotEmpty) {
+      try {
+        await FirebaseAuth.instance.useAuthEmulator(_kEmulatorHost, 9299);
+        FirebaseFirestore.instance.useFirestoreEmulator(_kEmulatorHost, 8288);
+      } catch (error) {
+        debugPrint('Emulators not wired: $error');
+      }
+    }
+  }
+
+  /// The App Check providers for a build.
+  ///
+  /// Chosen by [kReleaseMode] at the call site, never by a feature flag: a
+  /// store build attests with Play Integrity and App Attest (DeviceCheck on
+  /// the older phones App Attest does not cover), and only a debug or profile
+  /// build uses the debug providers.
+  @visibleForTesting
+  static AppCheckChoice appCheckChoiceFor({
+    required bool release,
+    String debugToken = _kAppCheckDebugToken,
+  }) {
+    if (release) {
+      return const AppCheckChoice(
+        android: AndroidPlayIntegrityProvider(),
+        apple: AppleAppAttestWithDeviceCheckFallbackProvider(),
+      );
+    }
+    final token = debugToken.isEmpty ? null : debugToken;
+    return AppCheckChoice(
+      android: AndroidDebugProvider(debugToken: token),
+      apple: AppleDebugProvider(debugToken: token),
+    );
+  }
+
+  /// Cloud Functions in [kFunctionsRegion], pointed at the local emulator in a
+  /// debug build started with `OWNHUB_EMULATOR_HOST`.
+  ///
+  /// Every callable client goes through this, so the region and the emulator
+  /// wiring live in one place. It touches Firebase, so read it only when a
+  /// call is about to be made, never in a constructor that a widget test
+  /// builds.
+  static FirebaseFunctions get functions {
+    final existing = _functions;
+    if (existing != null) return existing;
+    final created = FirebaseFunctions.instanceFor(region: kFunctionsRegion);
+    if (kDebugMode && _kEmulatorHost.isNotEmpty) {
+      created.useFunctionsEmulator(_kEmulatorHost, 5101);
+    }
+    return _functions = created;
   }
 
   /// Anything that belongs to a woman: her progress photographs, and the ID
@@ -94,5 +206,7 @@ abstract final class FirebaseBoot {
   static void resetForTest() {
     _status = BackendStatus.notAttempted;
     _failure = null;
+    _appCheckFailure = null;
+    _functions = null;
   }
 }

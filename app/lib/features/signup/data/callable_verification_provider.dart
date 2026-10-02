@@ -56,6 +56,7 @@ import 'dart:convert';
 
 import 'package:cloud_functions/cloud_functions.dart';
 
+import '../../../app_state/firebase_boot.dart';
 import '../domain/liveness_challenge.dart';
 import '../domain/verification_evidence.dart';
 import '../domain/verification_provider.dart';
@@ -72,7 +73,7 @@ const String kVerifyIdentityCallable = 'verify_identity';
 /// Egyptian women names the places her data goes, and a function left in the
 /// default `us-central1` would add the United States to that list in exchange
 /// for nothing.
-const String kVerifyIdentityRegion = 'europe-west3';
+const String kVerifyIdentityRegion = kFunctionsRegion;
 
 /// How long a session is assumed good for when the server does not say.
 ///
@@ -85,8 +86,7 @@ const int _fallbackExpirySeconds = 90;
 class CallableVerificationProvider implements VerificationProvider {
   CallableVerificationProvider({FirebaseFunctions? functions, DateTime Function()? now})
     : _functions =
-          functions ??
-          FirebaseFunctions.instanceFor(region: kVerifyIdentityRegion),
+          functions ?? FirebaseBoot.functions,
       _now = now ?? DateTime.now;
 
   final FirebaseFunctions _functions;
