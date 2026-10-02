@@ -960,7 +960,12 @@ class AppRouter {
       onBack: () => Navigator.of(context).maybePop(),
     ),
     'C16': (context) => PledgeView(
-      onAgree: () => goTo(context, 'O01'),
+      // Setup after sign-up ends on Home with the sign-up stack cleared, not
+      // back on this pledge. See `OnboardingState.leaveSetup`.
+      onAgree: () {
+        OnboardingState.instance.enteredFromSignup = true;
+        goTo(context, 'O01');
+      },
       onBack: () => Navigator.of(context).maybePop(),
     ),
 
@@ -1009,16 +1014,41 @@ class AppRouter {
     // The end of the walk. All three doors leave setup first, so the questions
     // are gone from the history whichever one she takes and no back gesture can
     // walk her into them again.
+    //
+    // After sign-up (`enteredFromSignup`) she lands on Home with the sign-up
+    // stack cleared: "Start tomorrow" gives `[T01]`, "Start now" `[T01, R03]`.
     'O05': (context) => StartingProgramView(
       repository: intakeRepository,
       onStartNow: () {
+        if (OnboardingState.instance.enteredFromSignup) {
+          OnboardingState.instance.leaveSetupToHome(
+            context,
+            home: 'T01',
+            then: 'R03',
+          );
+          return;
+        }
         OnboardingState.instance.leaveSetup(context);
         goTo(context, 'R03');
       },
-      onStartTomorrow: () => OnboardingState.instance.leaveSetup(context),
+      onStartTomorrow: () {
+        if (OnboardingState.instance.enteredFromSignup) {
+          OnboardingState.instance.leaveSetupToHome(context, home: 'T01');
+          return;
+        }
+        OnboardingState.instance.leaveSetup(context);
+      },
       // Goes to the workout library, not a picker — no picker exists among
       // the 161 screens. Recorded as F4 in PHASE1-FINDINGS.md.
       onPickDifferentProgram: () {
+        if (OnboardingState.instance.enteredFromSignup) {
+          OnboardingState.instance.leaveSetupToHome(
+            context,
+            home: 'T01',
+            then: 'R11',
+          );
+          return;
+        }
         OnboardingState.instance.leaveSetup(context);
         goTo(context, 'R11');
       },

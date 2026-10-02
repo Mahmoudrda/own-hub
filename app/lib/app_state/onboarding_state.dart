@@ -63,6 +63,10 @@ class OnboardingState {
 
   static final OnboardingState instance = OnboardingState._();
 
+  /// True when the walk was entered from the end of sign-up (`C16`), set
+  /// there before `O01` opens, and cleared when she leaves the walk.
+  bool enteredFromSignup = false;
+
   /// Pure, and holds nothing: the goal it decides is assigned by [finish].
   static const WeeklyGoalService _goals = WeeklyGoalService();
 
@@ -137,12 +141,41 @@ class OnboardingState {
   /// her profile goes back to her profile and a woman on her first launch goes
   /// back to Home. `route.isFirst` is the floor: the navigator is never emptied,
   /// whatever the history turns out to hold.
+  ///
+  /// Except after sign-up. There the screen she came from is `C16`, the
+  /// pledge, with the whole sign-up stack under it; popping back to it would
+  /// leave her on a screen she has already agreed to. So a walk entered from
+  /// sign-up ([enteredFromSignup]) leaves to Home instead, with that stack
+  /// cleared.
   void leaveSetup(BuildContext context) {
+    if (enteredFromSignup) {
+      leaveSetupToHome(context);
+      return;
+    }
     finish();
     final setupRoutes = {for (final id in kSetupScreenIds) appRoutes[id]!.name};
     Navigator.of(context).popUntil(
       (route) =>
           route.isFirst || !setupRoutes.contains(route.settings.name ?? ''),
     );
+  }
+
+  /// Leaves the walk for Home, with everything underneath cleared, and then
+  /// opens [then] over Home if given.
+  ///
+  /// The way out of setup at the end of sign-up: the sign-up screens and the
+  /// pledge are behind her, so nothing of them may stay in the history for a
+  /// back gesture to find. "Start now" lands as `[T01, R03]`, so finishing
+  /// day one goes back to Home rather than to the pledge.
+  void leaveSetupToHome(
+    BuildContext context, {
+    String home = 'T01',
+    String? then,
+  }) {
+    finish();
+    enteredFromSignup = false;
+    final navigator = Navigator.of(context);
+    navigator.pushNamedAndRemoveUntil(appRoutes[home]!.name, (_) => false);
+    if (then != null) navigator.pushNamed(appRoutes[then]!.name);
   }
 }
