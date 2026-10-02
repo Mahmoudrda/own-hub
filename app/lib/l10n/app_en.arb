@@ -2744,7 +2744,6 @@
       }
     }
   },
-  "yourLogsWeightAndPhotosStayOn": "Your logs, weight and photos stay on this phone.",
   "deletingTakesAwayEverythingYouHavePut_g3hy0": "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers. It happens at once, and none of it can be brought back.",
   "yourTrainingWeekByWeek": "Your training, week by week",
   "thisAppCountsWeeksNotDaysAnd": "This app counts weeks, not days, and only what you log yourself.",
@@ -3136,5 +3135,7 @@
   "deletingYourAccountThisCanTakeA": "Deleting your account. This can take a minute.",
   "weCouldNotReachOwnHubSo_yfi5n": "We could not reach Own Hub, so nothing was deleted. Check your connection and try again.",
   "thisCopyOfTheAppCannotReach_qzcpf": "This copy of the app cannot reach Own Hub, so nothing was deleted. Please install the latest version from the App Store or Google Play.",
-  "yourDeletionDidNotFinishOnOur": "Your deletion did not finish on our side. It will finish automatically within the hour. This phone has been cleared."
+  "yourDeletionDidNotFinishOnOur": "Your deletion did not finish on our side. It will finish automatically within the hour. This phone has been cleared.",
+  "yourWorkoutsMealsAndSetupAnswersAre": "Your workouts, meals and setup answers are saved to your Own Hub account once you are verified. Your cycle, check-ins, weight and other health details stay on this phone unless you turn on the health backup. Photos of your ID card and your selfie are never stored.",
+  "healthBackupIsOffOnThisPhone": "Health backup is off on this phone, so nothing more is uploaded. We could not reach Own Hub, so the copy in your account will be removed when you are back online."
 }

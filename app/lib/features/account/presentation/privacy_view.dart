@@ -110,6 +110,10 @@ class _PrivacyViewState extends State<PrivacyView> {
   /// True after the health consent call failed; nothing changed.
   bool _healthFailed = false;
 
+  /// True after turning it off when the server could not be reached: off on
+  /// this phone, the cloud copy removed once she is back online.
+  bool _healthWithdrawPending = false;
+
   Future<void> _toggleHealth(bool turnOn) async {
     final controller = widget.healthBackup;
     if (controller == null || _healthBusy) return;
@@ -120,12 +124,16 @@ class _PrivacyViewState extends State<PrivacyView> {
     setState(() {
       _healthBusy = true;
       _healthFailed = false;
+      _healthWithdrawPending = false;
     });
     final ok = turnOn ? await controller.enable() : await controller.disable();
     if (!mounted) return;
     setState(() {
       _healthBusy = false;
-      _healthFailed = !ok;
+      // Turning it on changes nothing unless the server agreed. Turning it
+      // off always takes effect here; only the cloud removal can wait.
+      _healthFailed = turnOn && !ok;
+      _healthWithdrawPending = !turnOn && !ok;
     });
   }
 
@@ -230,13 +238,13 @@ class _PrivacyViewState extends State<PrivacyView> {
       children: [
         // The note names what the switches below are for. With none of them
         // drawn it would be a sentence about members and a choice she does
-        // not have, so it is replaced by the thing that is true instead:
-        // there is no server in the first release and nothing leaves the
-        // handset.
+        // not have, so it is replaced by the thing that is true instead: what
+        // goes to her account, what stays on the phone, and that photos of
+        // her ID card and selfie are never stored.
         AppSageNote(
           _community
               ? l10n.yourLogsWeightPhotosAndPhoneNumber
-              : l10n.yourLogsWeightAndPhotosStayOn,
+              : l10n.yourWorkoutsMealsAndSetupAnswersAre,
         ),
 
         // Every switch here answers "who else sees this". The first three ask
@@ -322,6 +330,12 @@ class _PrivacyViewState extends State<PrivacyView> {
               l10n.weCouldNotReachOwnHubSo,
               key: const ValueKey('health-backup-error'),
               style: AppText.bodyM.copyWith(color: AppColors.error),
+            ),
+          if (_healthWithdrawPending)
+            Text(
+              l10n.healthBackupIsOffOnThisPhone,
+              key: const ValueKey('health-backup-withdraw-pending'),
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
         ],
 

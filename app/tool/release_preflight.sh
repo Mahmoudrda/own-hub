@@ -55,7 +55,7 @@ check "release signing refuses the debug key" "grep -q 'GradleException' android
 if [ -f android/key.properties ]; then
   ok "release keystore configured"
 else
-  bad "release keystore configured (android/key.properties missing - release builds fall back to DEBUG signing and Play will reject the upload)"
+  bad "release keystore configured (android/key.properties missing - a release build now stops with an error instead of signing; OWNHUB_ALLOW_DEBUG_SIGNING=1 makes a debug-signed QA build that must never be uploaded)"
 fi
 
 echo

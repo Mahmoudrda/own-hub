@@ -6949,10 +6949,6 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get yourLogsWeightAndPhotosStayOn =>
-      'Your logs, weight and photos stay on this phone.';
-
-  @override
   String get deletingTakesAwayEverythingYouHavePut_g3hy0 =>
       'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers. It happens at once, and none of it can be brought back.';
 
@@ -7713,4 +7709,12 @@ class AppL10nEn extends AppL10n {
   @override
   String get yourDeletionDidNotFinishOnOur =>
       'Your deletion did not finish on our side. It will finish automatically within the hour. This phone has been cleared.';
+
+  @override
+  String get yourWorkoutsMealsAndSetupAnswersAre =>
+      'Your workouts, meals and setup answers are saved to your Own Hub account once you are verified. Your cycle, check-ins, weight and other health details stay on this phone unless you turn on the health backup. Photos of your ID card and your selfie are never stored.';
+
+  @override
+  String get healthBackupIsOffOnThisPhone =>
+      'Health backup is off on this phone, so nothing more is uploaded. We could not reach Own Hub, so the copy in your account will be removed when you are back online.';
 }

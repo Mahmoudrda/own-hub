@@ -84,37 +84,90 @@ void main() {
     expect(synced, 0);
   });
 
-  test('turning it off withdraws first; a failure changes nothing', () async {
+  test('turning it off stops uploads here at once, even offline', () async {
+    // C4(d). It used to change nothing when the withdraw call failed, which
+    // left her health data uploading after she said stop. Now the phone stops
+    // first; the server withdrawal (and the cloud purge) follows when it can.
     await pref.set(true);
     final store = _FakeStore(fail: true);
-    final controller = HealthBackupController(store: store);
-    expect(await controller.disable(), isFalse);
-    expect(pref.enabled, isTrue);
+    var stopped = 0;
+    final controller = HealthBackupController(
+      store: store,
+      onDisabled: () => stopped++,
+    );
+    expect(await controller.disable(), isFalse, reason: 'server not reached');
+    expect(pref.enabled, isFalse, reason: 'off on this phone regardless');
+    expect(stopped, 1);
+    expect(pref.withdrawPending, isTrue);
+    expect(
+      (await SharedPreferences.getInstance()).getBool(
+        kHealthWithdrawPendingKey,
+      ),
+      isTrue,
+      reason: 'remembered across a restart',
+    );
 
+    // Back online: the retry sends the withdrawal and clears the marker.
     store.fail = false;
-    expect(await controller.disable(), isTrue);
+    expect(await controller.retryPendingWithdraw(), isTrue);
     expect(store.calls.last, isFalse);
+    expect(pref.withdrawPending, isFalse);
     expect(pref.enabled, isFalse);
   });
 
-  test('the server wins: a withdrawn or missing consent switches it off',
-      () async {
-    for (final serverState in <HealthConsentState?>[
-      HealthConsentState.withdrawn,
-      null,
-    ]) {
+  test('a pending withdrawal survives a restart and is retried', () async {
+    await pref.set(true);
+    await HealthBackupController(store: _FakeStore(fail: true)).disable();
+    pref.resetForTest();
+    await pref.load();
+    expect(pref.enabled, isFalse);
+    expect(pref.withdrawPending, isTrue);
+
+    final store = _FakeStore();
+    expect(
+      await HealthBackupController(store: store).retryPendingWithdraw(),
+      isTrue,
+    );
+    expect(store.calls, <bool>[false]);
+  });
+
+  test('with nothing pending, the retry calls nobody', () async {
+    final store = _FakeStore();
+    expect(
+      await HealthBackupController(store: store).retryPendingWithdraw(),
+      isTrue,
+    );
+    expect(store.calls, isEmpty);
+  });
+
+  test('online, turning it off withdraws and leaves nothing pending', () async {
+    await pref.set(true);
+    final store = _FakeStore();
+    expect(await HealthBackupController(store: store).disable(), isTrue);
+    expect(store.calls, <bool>[false]);
+    expect(pref.enabled, isFalse);
+    expect(pref.withdrawPending, isFalse);
+  });
+
+  test(
+    'the server wins: a withdrawn or missing consent switches it off',
+    () async {
+      for (final serverState in <HealthConsentState?>[
+        HealthConsentState.withdrawn,
+        null,
+      ]) {
+        await pref.set(true);
+        await HealthBackupController(store: _FakeStore(state: serverState))
+            .reconcile('u1');
+        expect(pref.enabled, isFalse, reason: '$serverState');
+      }
       await pref.set(true);
       await HealthBackupController(
-        store: _FakeStore(state: serverState),
+        store: _FakeStore(state: HealthConsentState.granted),
       ).reconcile('u1');
-      expect(pref.enabled, isFalse, reason: '$serverState');
-    }
-    await pref.set(true);
-    await HealthBackupController(
-      store: _FakeStore(state: HealthConsentState.granted),
-    ).reconcile('u1');
-    expect(pref.enabled, isTrue);
-  });
+      expect(pref.enabled, isTrue);
+    },
+  );
 
   test('deleting everything on the phone forgets the choice', () async {
     await pref.set(true);

@@ -12775,12 +12775,6 @@ abstract class AppL10n {
   /// **'of {total}'**
   String ofTotal(String total);
 
-  /// No description provided for @yourLogsWeightAndPhotosStayOn.
-  ///
-  /// In en, this message translates to:
-  /// **'Your logs, weight and photos stay on this phone.'**
-  String get yourLogsWeightAndPhotosStayOn;
-
   /// No description provided for @deletingTakesAwayEverythingYouHavePut_g3hy0.
   ///
   /// In en, this message translates to:
@@ -14010,6 +14004,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Your deletion did not finish on our side. It will finish automatically within the hour. This phone has been cleared.'**
   String get yourDeletionDidNotFinishOnOur;
+
+  /// No description provided for @yourWorkoutsMealsAndSetupAnswersAre.
+  ///
+  /// In en, this message translates to:
+  /// **'Your workouts, meals and setup answers are saved to your Own Hub account once you are verified. Your cycle, check-ins, weight and other health details stay on this phone unless you turn on the health backup. Photos of your ID card and your selfie are never stored.'**
+  String get yourWorkoutsMealsAndSetupAnswersAre;
+
+  /// No description provided for @healthBackupIsOffOnThisPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Health backup is off on this phone, so nothing more is uploaded. We could not reach Own Hub, so the copy in your account will be removed when you are back online.'**
+  String get healthBackupIsOffOnThisPhone;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

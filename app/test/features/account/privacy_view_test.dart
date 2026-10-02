@@ -6,9 +6,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/features/account/domain/health_backup.dart';
 import 'package:own_hub/features/account/domain/privacy_settings.dart';
 import 'package:own_hub/features/account/domain/verification_claim.dart';
 import 'package:own_hub/features/account/presentation/privacy_view.dart';
@@ -308,4 +310,76 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  group('health backup off, offline (C4)', () {
+    testWidgets('it is off here at once, and she is told the cloud copy '
+        'goes when she is back online', (tester) async {
+      _phone(tester);
+      SharedPreferences.setMockInitialValues(const <String, Object>{});
+      final pref = HealthBackupPreference.instance..resetForTest();
+      await pref.set(true);
+      addTearDown(pref.resetForTest);
+      final controller = HealthBackupController(store: _OfflineHealthStore());
+
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+            healthBackup: controller,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('health-backup-toggle')),
+      );
+      await tester.tap(find.byKey(const ValueKey('health-backup-toggle')));
+      await tester.pumpAndSettle();
+
+      expect(pref.enabled, isFalse);
+      expect(
+        find.byKey(const ValueKey('health-backup-withdraw-pending')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('health-backup-error')), findsNothing);
+    });
+
+    testWidgets('the note says what syncs, what stays, and what is never '
+        'stored', (tester) async {
+      _phone(tester);
+      AppRouter.featureFlags = FeatureFlags.allOff;
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          'saved to your Own Hub account once you are '
+          'verified',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          'Photos of your ID card and your selfie are never '
+          'stored',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('stay on this phone.'), findsNothing);
+    });
+  });
+}
+
+class _OfflineHealthStore implements HealthConsentStore {
+  @override
+  Future<void> record({required bool granted}) async =>
+      throw StateError('unavailable');
+
+  @override
+  Future<HealthConsentState?> current(String uid) async => null;
 }

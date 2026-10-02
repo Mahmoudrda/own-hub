@@ -6914,10 +6914,6 @@ class AppL10nAr extends AppL10n {
   }
 
   @override
-  String get yourLogsWeightAndPhotosStayOn =>
-      'سجلاتك ووزنك وصورك تبقى على هذا الهاتف.';
-
-  @override
   String get deletingTakesAwayEverythingYouHavePut_g3hy0 =>
       'الحذف يزيل كل ما وضعتِه في التطبيق: وجباتك وتمارينك وقياساتك ودورتك وإجاباتك. يحدث في الحال، ولا يمكن استرجاع أي منه.';
 
@@ -7682,4 +7678,12 @@ class AppL10nAr extends AppL10n {
   @override
   String get yourDeletionDidNotFinishOnOur =>
       'لم يكتمل الحذف لدينا بعد، وسيكتمل تلقائيًا خلال ساعة. وقد مُسح هذا الهاتف.';
+
+  @override
+  String get yourWorkoutsMealsAndSetupAnswersAre =>
+      'تُحفظ تمارينكِ ووجباتكِ وإجاباتكِ عند الإعداد في حسابكِ على Own Hub بعد التحقق منكِ. وتبقى دورتكِ وتسجيلاتكِ اليومية ووزنكِ وسائر بياناتكِ الصحية على هذا الهاتف ما لم تفعّلي النسخ الاحتياطي للبيانات الصحية. ولا تُحفظ أبدًا صور بطاقتكِ الشخصية ولا صورتكِ الذاتية.';
+
+  @override
+  String get healthBackupIsOffOnThisPhone =>
+      'النسخ الاحتياطي للبيانات الصحية متوقف على هذا الهاتف، فلن يُرفع شيء بعد الآن. تعذّر الوصول إلى Own Hub، لذلك ستُحذف النسخة الموجودة في حسابكِ عند عودتكِ إلى الاتصال.';
 }

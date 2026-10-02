@@ -34,6 +34,12 @@ const String kRecordHealthConsentCallable = 'record_health_consent';
 /// The SharedPreferences key holding whether the backup is on.
 const String kHealthBackupKey = 'own_hub.health_backup';
 
+/// Set when she turned the backup off but the server has not yet confirmed
+/// the withdrawal (and the purge of the cloud copy). Retried at start-up and
+/// whenever A03 opens, until it succeeds.
+const String kHealthWithdrawPendingKey =
+    'own_hub.health_backup_withdraw_pending';
+
 /// The collections that only leave the phone with her health consent.
 const Set<String> kHealthCollections = <String>{
   'checkins',
@@ -63,11 +69,30 @@ class HealthBackupPreference {
   /// A missing or unreadable value is off.
   Future<void> load() async {
     try {
-      _enabled =
-          (await SharedPreferences.getInstance()).getBool(kHealthBackupKey) ??
-          false;
+      final prefs = await SharedPreferences.getInstance();
+      _enabled = prefs.getBool(kHealthBackupKey) ?? false;
+      _withdrawPending = prefs.getBool(kHealthWithdrawPendingKey) ?? false;
     } catch (_) {
       _enabled = false;
+    }
+  }
+
+  bool _withdrawPending = false;
+
+  /// She turned it off and the server has not confirmed the withdrawal yet.
+  bool get withdrawPending => _withdrawPending;
+
+  Future<void> setWithdrawPending(bool pending) async {
+    _withdrawPending = pending;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (pending) {
+        await prefs.setBool(kHealthWithdrawPendingKey, true);
+      } else {
+        await prefs.remove(kHealthWithdrawPendingKey);
+      }
+    } catch (_) {
+      // Still pending in memory for this session.
     }
   }
 
@@ -87,13 +112,19 @@ class HealthBackupPreference {
   /// Back to off, and the key gone. Part of deleting everything on the phone.
   Future<void> erase() async {
     _enabled = false;
+    _withdrawPending = false;
     try {
-      await (await SharedPreferences.getInstance()).remove(kHealthBackupKey);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(kHealthBackupKey);
+      await prefs.remove(kHealthWithdrawPendingKey);
     } catch (_) {}
   }
 
   @visibleForTesting
-  void resetForTest() => _enabled = false;
+  void resetForTest() {
+    _enabled = false;
+    _withdrawPending = false;
+  }
 }
 
 /// Where her health consent is granted, withdrawn and read back.
@@ -112,7 +143,12 @@ class HealthBackupController {
     required this.store,
     HealthBackupPreference? preference,
     this.onEnabled,
+    this.onDisabled,
   }) : preference = preference ?? HealthBackupPreference.instance;
+
+  /// Called the moment it is switched off on this phone, before the server
+  /// answers.
+  final VoidCallback? onDisabled;
 
   final HealthConsentStore store;
   final HealthBackupPreference preference;
@@ -134,15 +170,31 @@ class HealthBackupController {
     return true;
   }
 
-  /// True when the server withdrew the consent (and deleted the cloud copy)
-  /// and the backup is now off.
+  /// Turns the backup off. Health uploads stop on this phone at once,
+  /// whatever the network does: the preference is off before the server is
+  /// asked. Then the server withdraws the consent and deletes the cloud copy.
+  ///
+  /// True when the server confirmed. False means the call did not get
+  /// through: the backup is still off here, the withdrawal is remembered and
+  /// retried ([retryPendingWithdraw], at start-up and when A03 opens), and
+  /// she is told the cloud copy will be removed when she is back online.
   Future<bool> disable() async {
+    await preference.set(false);
+    await preference.setWithdrawPending(true);
+    onDisabled?.call();
+    return retryPendingWithdraw();
+  }
+
+  /// Sends a withdrawal that did not reach the server. True when nothing is
+  /// pending any more. Never throws.
+  Future<bool> retryPendingWithdraw() async {
+    if (!preference.withdrawPending) return true;
     try {
       await store.record(granted: false);
     } catch (_) {
       return false;
     }
-    await preference.set(false);
+    await preference.setWithdrawPending(false);
     return true;
   }
 

@@ -110,7 +110,7 @@ const C09 = phone(
       + bullet('face', 'A selfie is matched to the photo on the card, only to prove the card is yours.')
       + bullet('delete', 'Both images are deleted after the check. We keep the result, nothing else.')
       + bullet('schedule', 'It takes about 90 seconds.'), { v: 'sage', gap: 12 })
-    + m('Checked by a licensed Egyptian provider. Tap to read exactly what is stored.')
+    + m("Checked by Own Hub's own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.")
   , { pad: '0 16px 0', gap: 12 })
   + footer(btn('Scan my ID', { h: 56, ic: 'id_card', go: 'C10' }) + btn('I wear niqab, check me another way', { v: 'text', h: 48, size: 15, go: 'C15' })));
 

@@ -4362,11 +4362,25 @@ class AppRouter {
   /// the consent store touches Firebase in its constructor.
   static HealthBackupController? healthBackupController() {
     if (!FirebaseBoot.isReady || signedInUid == null) return null;
-    return HealthBackupController(
+    final controller = HealthBackupController(
       store: CallableHealthConsentStore(),
       onEnabled: () => unawaited(CloudStore.instance.syncNow()),
     );
+    // A03 is where she looks for it, so a withdrawal she made offline is
+    // retried when it opens. Once per attempt, not on every redraw.
+    if (HealthBackupPreference.instance.withdrawPending &&
+        !_withdrawRetrying) {
+      _withdrawRetrying = true;
+      unawaited(
+        controller.retryPendingWithdraw().whenComplete(
+          () => _withdrawRetrying = false,
+        ),
+      );
+    }
+    return controller;
   }
+
+  static bool _withdrawRetrying = false;
 
   /// Start-up: if this phone thinks the health backup is on but the server
   /// holds no granted consent, turn it off here. The server wins.
@@ -4374,6 +4388,8 @@ class AppRouter {
     final uid = signedInUid;
     final controller = healthBackupController();
     if (uid == null || controller == null) return;
+    // A withdrawal she made offline is sent now; the cloud copy goes then.
+    await controller.retryPendingWithdraw();
     await controller.reconcile(uid);
   }
 
