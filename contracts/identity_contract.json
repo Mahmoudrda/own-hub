@@ -88,6 +88,14 @@
         "withdrawn"
       ]
     },
+    "reviewConsent": {
+      "fields": [
+        "at",
+        "path",
+        "version"
+      ],
+      "path": "users/{uid}/consents/review-v1"
+    },
     "verificationConsent": {
       "fields": [
         "at",
@@ -119,7 +127,13 @@
     "consentMissing": "consent_missing",
     "costCapReached": "cost_cap_reached",
     "dailyLimitReached": "daily_limit_reached",
+    "internalError": "internal_error",
     "perUidDailyLimit": "per_uid_daily_limit",
+    "reviewAlreadyOpen": "review_already_open",
+    "reviewNotPending": "review_not_pending",
+    "reviewTimeOutOfRange": "review_time_out_of_range",
+    "reviewerIsSubject": "reviewer_is_subject",
+    "unauthenticated": "unauthenticated",
     "verificationClosed": "verification_closed"
   },
   "region": "europe-west3"

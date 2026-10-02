@@ -145,3 +145,9 @@ def test_health_consent_version_and_doc_id_match():
     assert doc["path"] == f"users/{{uid}}/consents/health-v{config.HEALTH_CONSENT_VERSION}"
     request = contract()["callables"]["record_health_consent"]["request"]
     assert request["consentVersion"] == config.HEALTH_CONSENT_VERSION
+
+
+def test_review_consent_document_matches_the_contract():
+    doc = contract()["documents"]["reviewConsent"]
+    assert doc["path"] == f"users/{{uid}}/consents/review-v{config.REVIEW_CONSENT_VERSION}"
+    assert sorted(doc["fields"]) == ["at", "path", "version"]
