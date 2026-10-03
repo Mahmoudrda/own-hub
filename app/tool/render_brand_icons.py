@@ -14,7 +14,11 @@ makes them by resizing the 1024 px bitmap, and a 20:1 downsample of a hairline
 diagonal is a grey smear however good the filter is; `--resample` redraws each
 generated file from the vector at its own pixel size instead.
 
-Without `--resample` it writes two files and only two:
+`--logo` writes the in-app logo instead (see `render_logo`):
+
+    python3 tool/render_brand_icons.py --logo
+
+Without `--resample` or `--logo` it writes two files and only two:
 
   assets/icon/icon-1024.png        iOS and the Android legacy icon. Opaque,
                                    square, no rounded corners: Apple applies
@@ -170,11 +174,30 @@ def resample(ring_icon, ring_fg, ink, ground):
     print('  redrew %d generated icons from the vector' % len(targets))
 
 
+# The in-app logo on C01: the app tile, drawn at the size it is shown, once per
+# device pixel ratio Flutter picks assets for. Rendering each density from the
+# vector keeps it sharp at 3x without shipping a 1024 px bitmap to scale down.
+LOGO = os.path.join(APP, 'assets', 'brand', 'logo')
+LOGO_DP = 88
+LOGO_RATIOS = (1, 2, 3)
+
+
+def render_logo(ink, ground, ring):
+    for ratio in LOGO_RATIOS:
+        folder = LOGO if ratio == 1 else os.path.join(LOGO, '%d.0x' % ratio)
+        os.makedirs(folder, exist_ok=True)
+        px = LOGO_DP * ratio
+        render(compose(px, ink, ground, ring), px,
+               os.path.join(folder, 'ownhub-tile.png'))
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--size', type=int, default=1024)
     p.add_argument('--resample', action='store_true',
                    help='also redraw what flutter_launcher_icons generated')
+    p.add_argument('--logo', action='store_true',
+                   help='write only the in-app logo, at 1x, 2x and 3x')
     # The app icon: the ring a little over half the tile, which puts the blade
     # tips about 14% in from the top and bottom edges.
     p.add_argument('--ring', type=float, default=0.56)
@@ -182,8 +205,11 @@ def main():
     p.add_argument('--ground', default=ROSE)
     args = p.parse_args()
 
-    os.makedirs(ICONS, exist_ok=True)
     print('rendering from', os.path.relpath(MASTER, APP))
+    if args.logo:
+        render_logo(args.ink, args.ground, args.ring)
+        return
+    os.makedirs(ICONS, exist_ok=True)
     render(compose(args.size, args.ink, args.ground, args.ring),
            args.size, os.path.join(ICONS, 'icon-1024.png'))
 

@@ -25,6 +25,9 @@ import '../../../ui/hand/hand.dart';
 class WelcomeView extends StatelessWidget {
   const WelcomeView({super.key, this.onGetStarted, this.onSignIn});
 
+  /// The Own Hub tile, with its 2.0x and 3.0x variants beside it.
+  static const String logoAsset = 'assets/brand/logo/ownhub-tile.png';
+
   final VoidCallback? onGetStarted;
   final VoidCallback? onSignIn;
 
@@ -48,22 +51,23 @@ class WelcomeView extends StatelessWidget {
       ],
       children: [
         const AppSpacer(),
+        // The brand mark, the Concept 02 monogram on the rose tile, as on the
+        // home screen. Rendered from the vector at 1x, 2x and 3x, so it is
+        // drawn at its own size and never scaled. Decorative: the name is
+        // read out from the caption below it.
         Center(
-          child: Container(
-            width: 88,
-            height: 88,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: const Icon(
-              Icons.self_improvement,
-              size: 48,
-              color: Color(0xFFFFFFFF),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: Image.asset(
+              WelcomeView.logoAsset,
+              width: 88,
+              height: 88,
+              filterQuality: FilterQuality.medium,
+              excludeFromSemantics: true,
             ),
           ),
         ),
-        // TODO(owner): replace with the Own Hub wordmark asset when it exists.
+        // The mark has no wordmark of its own, so the name stays under it.
         Text(
           'Own Hub',
           textAlign: TextAlign.center,

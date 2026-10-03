@@ -166,6 +166,9 @@ flutter:
     - assets/art/
     - assets/art/2.0x/
     - assets/art/3.0x/
+    # The logo on C01: the app tile, rendered from assets/brand/ownhub-mark.svg
+    # at 88 px and its 2x and 3x by `tool/render_brand_icons.py --logo`.
+    - assets/brand/logo/ownhub-tile.png
     # Licence texts for the two OFL hand faces, shown on the licences page.
     - assets/fonts/OFL-LaBelleAurore.txt
     - assets/fonts/OFL-ArefRuqaa.txt
