@@ -40,6 +40,16 @@ const String kHealthBackupKey = 'own_hub.health_backup';
 const String kHealthWithdrawPendingKey =
     'own_hub.health_backup_withdraw_pending';
 
+/// The uid of the account whose withdrawal is pending.
+///
+/// The marker is about one account's consent, not about the phone. Without
+/// this, a different account signing in on the same handset would have its
+/// own consent withdrawn by the retry. A marker with no uid (written before
+/// this key existed) belongs to nobody this phone can name, so it is dropped
+/// rather than replayed against whoever is signed in.
+const String kHealthWithdrawPendingUidKey =
+    'own_hub.health_backup_withdraw_pending_uid';
+
 /// The collections that only leave the phone with her health consent.
 const Set<String> kHealthCollections = <String>{
   'checkins',
@@ -72,28 +82,47 @@ class HealthBackupPreference {
       final prefs = await SharedPreferences.getInstance();
       _enabled = prefs.getBool(kHealthBackupKey) ?? false;
       _withdrawPending = prefs.getBool(kHealthWithdrawPendingKey) ?? false;
+      _withdrawPendingUid = prefs.getString(kHealthWithdrawPendingUidKey);
     } catch (_) {
       _enabled = false;
     }
   }
 
   bool _withdrawPending = false;
+  String? _withdrawPendingUid;
 
   /// She turned it off and the server has not confirmed the withdrawal yet.
   bool get withdrawPending => _withdrawPending;
+
+  /// Whose withdrawal is pending, or null when none is or it was written
+  /// without one.
+  String? get withdrawPendingUid =>
+      _withdrawPending ? _withdrawPendingUid : null;
+
+  /// Whether a withdrawal is pending for exactly this account.
+  bool withdrawPendingFor(String? uid) =>
+      _withdrawPending && _withdrawPendingUid == uid;
 
   /// The withdrawal being sent right now, or null. Shared by every
   /// controller, so turning the backup on can wait for it (R6).
   Future<bool>? withdrawInFlight;
 
-  Future<void> setWithdrawPending(bool pending) async {
+  /// Marks [uid]'s withdrawal as pending, or clears the marker.
+  Future<void> setWithdrawPending(bool pending, {String? uid}) async {
     _withdrawPending = pending;
+    _withdrawPendingUid = pending ? uid : null;
     try {
       final prefs = await SharedPreferences.getInstance();
       if (pending) {
         await prefs.setBool(kHealthWithdrawPendingKey, true);
+        if (uid == null) {
+          await prefs.remove(kHealthWithdrawPendingUidKey);
+        } else {
+          await prefs.setString(kHealthWithdrawPendingUidKey, uid);
+        }
       } else {
         await prefs.remove(kHealthWithdrawPendingKey);
+        await prefs.remove(kHealthWithdrawPendingUidKey);
       }
     } catch (_) {
       // Still pending in memory for this session.
@@ -117,10 +146,12 @@ class HealthBackupPreference {
   Future<void> erase() async {
     _enabled = false;
     _withdrawPending = false;
+    _withdrawPendingUid = null;
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(kHealthBackupKey);
       await prefs.remove(kHealthWithdrawPendingKey);
+      await prefs.remove(kHealthWithdrawPendingUidKey);
     } catch (_) {}
   }
 
@@ -128,6 +159,7 @@ class HealthBackupPreference {
   void resetForTest() {
     _enabled = false;
     _withdrawPending = false;
+    _withdrawPendingUid = null;
     withdrawInFlight = null;
   }
 }
@@ -149,7 +181,12 @@ class HealthBackupController {
     HealthBackupPreference? preference,
     this.onEnabled,
     this.onDisabled,
+    this.uid,
   }) : preference = preference ?? HealthBackupPreference.instance;
+
+  /// The signed-in account this controller acts for. A pending withdrawal is
+  /// sent only when it was made by this account, and dropped when it was not.
+  final String? uid;
 
   /// Called the moment it is switched off on this phone, before the server
   /// answers.
@@ -180,13 +217,14 @@ class HealthBackupController {
     lastFailure = null;
     final inFlight = preference.withdrawInFlight;
     if (inFlight != null) await inFlight;
-    final wasPending = preference.withdrawPending;
+    await _forgetAnotherAccountsWithdrawal();
+    final wasPending = preference.withdrawPendingFor(uid);
     if (wasPending) await preference.setWithdrawPending(false);
     try {
       await store.record(granted: true);
     } catch (error) {
       lastFailure = error;
-      if (wasPending) await preference.setWithdrawPending(true);
+      if (wasPending) await preference.setWithdrawPending(true, uid: uid);
       return false;
     }
     await preference.set(true);
@@ -205,15 +243,34 @@ class HealthBackupController {
   Future<bool> disable() async {
     lastFailure = null;
     await preference.set(false);
-    await preference.setWithdrawPending(true);
+    await preference.setWithdrawPending(true, uid: uid);
     onDisabled?.call();
     return retryPendingWithdraw();
   }
 
   /// Sends a withdrawal that did not reach the server. True when nothing is
   /// pending any more. Never throws.
+  ///
+  /// A withdrawal another account made on this phone is never sent: the
+  /// account has changed, so the marker is cleared instead.
   Future<bool> retryPendingWithdraw() {
     if (!preference.withdrawPending) return Future.value(true);
+    // Synchronous up to here on purpose: an [enable] started right after this
+    // call must find the attempt in [withdrawInFlight] (R6).
+    if (!preference.withdrawPendingFor(uid)) {
+      return preference.setWithdrawPending(false).then((_) => true);
+    }
+    return _sendPendingWithdraw();
+  }
+
+  /// Clears a pending withdrawal that is not this account's.
+  Future<void> _forgetAnotherAccountsWithdrawal() async {
+    if (preference.withdrawPending && !preference.withdrawPendingFor(uid)) {
+      await preference.setWithdrawPending(false);
+    }
+  }
+
+  Future<bool> _sendPendingWithdraw() {
     final running = preference.withdrawInFlight;
     if (running != null) return running;
     final attempt = () async {

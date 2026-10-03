@@ -4580,6 +4580,8 @@ class AppRouter {
     if (!FirebaseBoot.isReady || signedInUid == null) return null;
     final controller = HealthBackupController(
       store: CallableHealthConsentStore(),
+      // A pending withdrawal is retried only for the account that made it.
+      uid: signedInUid,
       // N5: the server purged the cloud copy when it was last switched off,
       // so the whole history goes up again, not only what changed since.
       onEnabled: () => unawaited(

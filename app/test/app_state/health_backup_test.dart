@@ -106,6 +106,103 @@ void main() {
     });
   });
 
+  group('a pending withdrawal belongs to the account that asked for it', () {
+    // The marker used to be per phone. A different account signing in on the
+    // same handset (the sign-in-again path, a shared phone) would have had
+    // its own health consent withdrawn, and its cloud copy purged, by the
+    // start-up retry of somebody else's "off".
+
+    Future<void> offlineOffAs(String uid) async {
+      await pref.set(true);
+      await HealthBackupController(
+        store: _FakeStore(fail: true),
+        uid: uid,
+      ).disable();
+      pref.resetForTest();
+      await pref.load();
+    }
+
+    test('the uid is stored with the marker and survives a restart', () async {
+      await offlineOffAs('uid-a');
+      expect(pref.withdrawPending, isTrue);
+      expect(pref.withdrawPendingUid, 'uid-a');
+      expect(
+        (await SharedPreferences.getInstance()).getString(
+          kHealthWithdrawPendingUidKey,
+        ),
+        'uid-a',
+      );
+    });
+
+    test('another account signing in is never withdrawn', () async {
+      await offlineOffAs('uid-a');
+
+      final store = _FakeStore(state: HealthConsentState.granted);
+      expect(
+        await HealthBackupController(
+          store: store,
+          uid: 'uid-b',
+        ).retryPendingWithdraw(),
+        isTrue,
+      );
+      expect(store.calls, isEmpty, reason: 'B never asked for a withdrawal');
+      expect(store.state, HealthConsentState.granted);
+      expect(pref.withdrawPending, isFalse, reason: 'cleared: account changed');
+      expect(
+        (await SharedPreferences.getInstance()).getBool(
+          kHealthWithdrawPendingKey,
+        ),
+        isNull,
+      );
+    });
+
+    test('the same account signing back in is withdrawn', () async {
+      await offlineOffAs('uid-a');
+
+      final store = _FakeStore(state: HealthConsentState.granted);
+      expect(
+        await HealthBackupController(
+          store: store,
+          uid: 'uid-a',
+        ).retryPendingWithdraw(),
+        isTrue,
+      );
+      expect(store.calls, <bool>[false]);
+      expect(pref.withdrawPending, isFalse);
+    });
+
+    test(
+      "a failed grant by another account does not inherit A's marker",
+      () async {
+        await offlineOffAs('uid-a');
+
+        final store = _FakeStore(fail: true);
+        expect(
+          await HealthBackupController(store: store, uid: 'uid-b').enable(),
+          isFalse,
+        );
+        expect(store.calls, <bool>[true], reason: 'no withdrawal sent for A');
+        expect(pref.withdrawPending, isFalse);
+      },
+    );
+
+    test('a marker written before uids were stored is not replayed', () async {
+      SharedPreferences.setMockInitialValues(const <String, Object>{
+        kHealthWithdrawPendingKey: true,
+      });
+      pref.resetForTest();
+      await pref.load();
+
+      final store = _FakeStore(state: HealthConsentState.granted);
+      await HealthBackupController(
+        store: store,
+        uid: 'uid-b',
+      ).retryPendingWithdraw();
+      expect(store.calls, isEmpty);
+      expect(pref.withdrawPending, isFalse);
+    });
+  });
+
   test('off by default, including after a load with nothing stored', () async {
     expect(pref.enabled, isFalse);
     await pref.load();
