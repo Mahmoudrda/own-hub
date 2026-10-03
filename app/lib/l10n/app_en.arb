@@ -3165,5 +3165,14 @@
   "yourSignInIsNoLongerValid_1g4zq": "Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again.",
   "healthBackupIsOffOnThisPhone_1x622": "Health backup is off on this phone, so nothing more is uploaded. This copy of the app cannot reach Own Hub, so the copy in your account has not been removed yet. Please install the latest version from the App Store or Google Play.",
   "healthBackupIsOffOnThisPhone_1x3p3": "Health backup is off on this phone, so nothing more is uploaded. Your sign-in is no longer valid, so the copy in your account has not been removed yet. Please sign in again with your phone number.",
-  "theAutomaticCheckCouldNotStartJust_1od6p": "The automatic check could not start just now. You can ask a woman reviewer instead, or try again."
+  "theAutomaticCheckCouldNotStartJust_1od6p": "The automatic check could not start just now. You can ask a woman reviewer instead, or try again.",
+  "quietWorkoutsForHomeFoodYouAlready_u7fo9": "Quiet workouts for home, food you already cook, and a space only verified women can enter.",
+  "everyAccountIsVerifiedWithIdBefore_p7ucu": "Every account is verified with ID before she gets in.",
+  "yourFullProgramOpensAfterTheCheck": "Your full program opens after the check",
+  "joinAndPassTheCheckOnceThen": "Join and pass the check once. Then your plan, every workout and every recipe are yours.",
+  "byJoiningYouAgreeToTheOwn": "By joining you agree to the Own Hub rules.",
+  "workoutsRecipesAndYourProgressFree": "Workouts, recipes and your progress. Free.",
+  "thisIsWhatKeepsOwnHubWomen": "This is what keeps Own Hub women only: every woman is verified before she gets in.",
+  "yourNumberYourIdAndYourLogs_10nei": "Your number, your ID and your logs stay private.",
+  "ownHubIsForTrainingNotFor": "Own Hub is for training, not for selling."
 }

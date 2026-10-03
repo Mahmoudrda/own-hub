@@ -52,7 +52,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -101,13 +103,16 @@ class YoureInView extends StatelessWidget {
       scrollable: false,
       footer: [
         AppButton(l10n.readTheThreeRules, onPressed: onReadTheRules),
-        AppButton(
-          l10n.imACoachSetUpMyProfile,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: onCoachSetup,
-        ),
+        // K01 is the coach app's first screen. With the coach app off it
+        // would open the "not in this build" panel.
+        if (AppRouter.featureFlags.isOn(Feature.coachApp))
+          AppButton(
+            l10n.imACoachSetUpMyProfile,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onCoachSetup,
+          ),
       ],
       children: [
         const AppSpacer(),
@@ -180,7 +185,11 @@ class YoureInView extends StatelessWidget {
             ),
             VerificationBullet(
               icon: Icons.visibility_off,
-              text: l10n.yourNumberYourIdAndYourLogs,
+              // "Members" are the community's; with it off there is nobody
+              // to be shown to, so the line says what is true.
+              text: AppRouter.featureFlags.isOn(Feature.community)
+                  ? l10n.yourNumberYourIdAndYourLogs
+                  : l10n.yourNumberYourIdAndYourLogs_10nei,
             ),
           ],
         ),

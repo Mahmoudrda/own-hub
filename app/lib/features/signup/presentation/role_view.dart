@@ -28,8 +28,10 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/identity/user_roles.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -119,7 +121,9 @@ class _RoleViewState extends State<RoleView> {
         _RoleCard(
           icon: Icons.self_improvement,
           title: l10n.imHereToTrain,
-          body: l10n.workoutsRecipesAndTheCommunityFree,
+          body: AppRouter.featureFlags.isOn(Feature.community)
+              ? l10n.workoutsRecipesAndTheCommunityFree
+              : l10n.workoutsRecipesAndYourProgressFree,
           selected: _role == SignupRole.trainee,
           onTap: () => setState(() => _role = SignupRole.trainee),
         ),

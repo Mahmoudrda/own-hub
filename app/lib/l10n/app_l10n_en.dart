@@ -7788,4 +7788,40 @@ class AppL10nEn extends AppL10n {
   @override
   String get theAutomaticCheckCouldNotStartJust_1od6p =>
       'The automatic check could not start just now. You can ask a woman reviewer instead, or try again.';
+
+  @override
+  String get quietWorkoutsForHomeFoodYouAlready_u7fo9 =>
+      'Quiet workouts for home, food you already cook, and a space only verified women can enter.';
+
+  @override
+  String get everyAccountIsVerifiedWithIdBefore_p7ucu =>
+      'Every account is verified with ID before she gets in.';
+
+  @override
+  String get yourFullProgramOpensAfterTheCheck =>
+      'Your full program opens after the check';
+
+  @override
+  String get joinAndPassTheCheckOnceThen =>
+      'Join and pass the check once. Then your plan, every workout and every recipe are yours.';
+
+  @override
+  String get byJoiningYouAgreeToTheOwn =>
+      'By joining you agree to the Own Hub rules.';
+
+  @override
+  String get workoutsRecipesAndYourProgressFree =>
+      'Workouts, recipes and your progress. Free.';
+
+  @override
+  String get thisIsWhatKeepsOwnHubWomen =>
+      'This is what keeps Own Hub women only: every woman is verified before she gets in.';
+
+  @override
+  String get yourNumberYourIdAndYourLogs_10nei =>
+      'Your number, your ID and your logs stay private.';
+
+  @override
+  String get ownHubIsForTrainingNotFor =>
+      'Own Hub is for training, not for selling.';
 }

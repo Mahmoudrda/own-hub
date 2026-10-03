@@ -14130,6 +14130,60 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'The automatic check could not start just now. You can ask a woman reviewer instead, or try again.'**
   String get theAutomaticCheckCouldNotStartJust_1od6p;
+
+  /// No description provided for @quietWorkoutsForHomeFoodYouAlready_u7fo9.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet workouts for home, food you already cook, and a space only verified women can enter.'**
+  String get quietWorkoutsForHomeFoodYouAlready_u7fo9;
+
+  /// No description provided for @everyAccountIsVerifiedWithIdBefore_p7ucu.
+  ///
+  /// In en, this message translates to:
+  /// **'Every account is verified with ID before she gets in.'**
+  String get everyAccountIsVerifiedWithIdBefore_p7ucu;
+
+  /// No description provided for @yourFullProgramOpensAfterTheCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Your full program opens after the check'**
+  String get yourFullProgramOpensAfterTheCheck;
+
+  /// No description provided for @joinAndPassTheCheckOnceThen.
+  ///
+  /// In en, this message translates to:
+  /// **'Join and pass the check once. Then your plan, every workout and every recipe are yours.'**
+  String get joinAndPassTheCheckOnceThen;
+
+  /// No description provided for @byJoiningYouAgreeToTheOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'By joining you agree to the Own Hub rules.'**
+  String get byJoiningYouAgreeToTheOwn;
+
+  /// No description provided for @workoutsRecipesAndYourProgressFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts, recipes and your progress. Free.'**
+  String get workoutsRecipesAndYourProgressFree;
+
+  /// No description provided for @thisIsWhatKeepsOwnHubWomen.
+  ///
+  /// In en, this message translates to:
+  /// **'This is what keeps Own Hub women only: every woman is verified before she gets in.'**
+  String get thisIsWhatKeepsOwnHubWomen;
+
+  /// No description provided for @yourNumberYourIdAndYourLogs_10nei.
+  ///
+  /// In en, this message translates to:
+  /// **'Your number, your ID and your logs stay private.'**
+  String get yourNumberYourIdAndYourLogs_10nei;
+
+  /// No description provided for @ownHubIsForTrainingNotFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub is for training, not for selling.'**
+  String get ownHubIsForTrainingNotFor;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

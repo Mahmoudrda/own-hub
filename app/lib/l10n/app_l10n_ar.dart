@@ -7757,4 +7757,38 @@ class AppL10nAr extends AppL10n {
   @override
   String get theAutomaticCheckCouldNotStartJust_1od6p =>
       'تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تحاولي مرة أخرى.';
+
+  @override
+  String get quietWorkoutsForHomeFoodYouAlready_u7fo9 =>
+      'تمارين هادئة للمنزل، وطعام تطبخينه أصلًا، ومساحة لا تدخلها إلا النساء الموثّقات.';
+
+  @override
+  String get everyAccountIsVerifiedWithIdBefore_p7ucu =>
+      'يُوثَّق كل حساب بالبطاقة قبل أن تدخل صاحبته.';
+
+  @override
+  String get yourFullProgramOpensAfterTheCheck =>
+      'برنامجك الكامل يُفتح بعد التحقّق';
+
+  @override
+  String get joinAndPassTheCheckOnceThen =>
+      'انضمّي واجتازي التحقّق مرة واحدة، وبعدها تصبح خطتك وكل التمارين وكل الوصفات لكِ.';
+
+  @override
+  String get byJoiningYouAgreeToTheOwn => 'بانضمامك توافقين على قواعد Own Hub.';
+
+  @override
+  String get workoutsRecipesAndYourProgressFree =>
+      'تمارين ووصفات وتقدّمك. مجانًا.';
+
+  @override
+  String get thisIsWhatKeepsOwnHubWomen =>
+      'هذا ما يُبقي Own Hub للنساء فقط: تُوثَّق كل امرأة قبل أن تدخل.';
+
+  @override
+  String get yourNumberYourIdAndYourLogs_10nei =>
+      'يبقى رقمك وبطاقتك وتسجيلاتك خاصة بكِ.';
+
+  @override
+  String get ownHubIsForTrainingNotFor => 'Own Hub للتدريب، لا للبيع.';
 }

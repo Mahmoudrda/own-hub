@@ -17,7 +17,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -123,6 +125,14 @@ class _LookAroundViewState extends State<LookAroundView> {
           ),
         ];
 
+    final community = AppRouter.featureFlags.isOn(Feature.community);
+    // The Coaches tab browses coaches, which only exist with the coach app.
+    final tabs = [
+      l10n.workouts,
+      l10n.recipes,
+      if (AppRouter.featureFlags.isOn(Feature.coachApp)) l10n.coaches,
+    ];
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       // She is browsing as a guest, so the bar shows where she is without
@@ -146,8 +156,8 @@ class _LookAroundViewState extends State<LookAroundView> {
             ],
           ),
           AppSegmented(
-            items: [l10n.workouts, l10n.recipes, l10n.coaches],
-            selectedIndex: _tab,
+            items: tabs,
+            selectedIndex: _tab.clamp(0, tabs.length - 1),
             onChanged: (i) => setState(() => _tab = i),
           ),
           for (final workout in workouts)
@@ -184,12 +194,16 @@ class _LookAroundViewState extends State<LookAroundView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n.membersAndTheirPostsAreBehindThe,
+                          community
+                              ? l10n.membersAndTheirPostsAreBehindThe
+                              : l10n.yourFullProgramOpensAfterTheCheck,
                           style: AppText.titleM,
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          l10n.weKeepTheCommunityForVerifiedWomen,
+                          community
+                              ? l10n.weKeepTheCommunityForVerifiedWomen
+                              : l10n.joinAndPassTheCheckOnceThen,
                           style: AppText.bodyM.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),

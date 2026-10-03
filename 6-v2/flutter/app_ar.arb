@@ -3165,5 +3165,14 @@
   "yourSignInIsNoLongerValid_1g4zq": "لم يعد تسجيل دخولكِ صالحًا، لذلك لم يُحذف شيء. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ ثم المحاولة من جديد.",
   "healthBackupIsOffOnThisPhone_1x622": "النسخ الاحتياطي للبيانات الصحية متوقف على هذا الهاتف، فلن يُرفع شيء بعد الآن. لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُحذف النسخة الموجودة في حسابكِ بعد. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
   "healthBackupIsOffOnThisPhone_1x3p3": "النسخ الاحتياطي للبيانات الصحية متوقف على هذا الهاتف، فلن يُرفع شيء بعد الآن. لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُحذف النسخة الموجودة في حسابكِ بعد. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.",
-  "theAutomaticCheckCouldNotStartJust_1od6p": "تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تحاولي مرة أخرى."
+  "theAutomaticCheckCouldNotStartJust_1od6p": "تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تحاولي مرة أخرى.",
+  "quietWorkoutsForHomeFoodYouAlready_u7fo9": "تمارين هادئة للمنزل، وطعام تطبخينه أصلًا، ومساحة لا تدخلها إلا النساء الموثّقات.",
+  "everyAccountIsVerifiedWithIdBefore_p7ucu": "يُوثَّق كل حساب بالبطاقة قبل أن تدخل صاحبته.",
+  "yourFullProgramOpensAfterTheCheck": "برنامجك الكامل يُفتح بعد التحقّق",
+  "joinAndPassTheCheckOnceThen": "انضمّي واجتازي التحقّق مرة واحدة، وبعدها تصبح خطتك وكل التمارين وكل الوصفات لكِ.",
+  "byJoiningYouAgreeToTheOwn": "بانضمامك توافقين على قواعد Own Hub.",
+  "workoutsRecipesAndYourProgressFree": "تمارين ووصفات وتقدّمك. مجانًا.",
+  "thisIsWhatKeepsOwnHubWomen": "هذا ما يُبقي Own Hub للنساء فقط: تُوثَّق كل امرأة قبل أن تدخل.",
+  "yourNumberYourIdAndYourLogs_10nei": "يبقى رقمك وبطاقتك وتسجيلاتك خاصة بكِ.",
+  "ownHubIsForTrainingNotFor": "Own Hub للتدريب، لا للبيع."
 }

@@ -8,8 +8,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/signup/presentation/look_around_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_segmented.dart';
 import 'package:own_hub/ui/app_sheet.dart';
@@ -32,6 +34,16 @@ Widget _host(
 }
 
 void main() {
+  // These cases describe the screen with every feature it can mention switched
+  // on. The release shape, where copy about dark features is replaced or
+  // hidden, is proved in flag_aware_promises_test.dart.
+  late FeatureFlags saved;
+  setUp(() {
+    saved = AppRouter.featureFlags;
+    AppRouter.featureFlags = FeatureFlags.everything;
+  });
+  tearDown(() => AppRouter.featureFlags = saved);
+
   group('C04 — what a guest may see', () {
     testWidgets('a taste of the library, and the way in', (tester) async {
       await tester.pumpWidget(_host(const LookAroundView()));

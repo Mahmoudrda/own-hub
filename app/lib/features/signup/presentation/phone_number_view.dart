@@ -22,7 +22,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_field.dart';
@@ -112,7 +114,9 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
       footer: [
         AppButton(l10n.sendMeACode, onPressed: _canSend ? _send : null),
         Text(
-          l10n.byJoiningYouAgreeToTheCommunity,
+          AppRouter.featureFlags.isOn(Feature.community)
+              ? l10n.byJoiningYouAgreeToTheCommunity
+              : l10n.byJoiningYouAgreeToTheOwn,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],

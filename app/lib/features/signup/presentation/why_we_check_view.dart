@@ -22,7 +22,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -64,7 +66,9 @@ class WhyWeCheckView extends StatelessWidget {
       children: [
         Text(l10n.oneCheckThenYouAreIn, style: AppText.display),
         Text(
-          l10n.thisIsTheWholeReasonTheCommunity,
+          AppRouter.featureFlags.isOn(Feature.community)
+              ? l10n.thisIsTheWholeReasonTheCommunity
+              : l10n.thisIsWhatKeepsOwnHubWomen,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         AppCard(

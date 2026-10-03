@@ -536,5 +536,14 @@
  "Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again.": "لم يعد تسجيل دخولكِ صالحًا، لذلك لم يُحذف شيء. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ ثم المحاولة من جديد.",
  "Health backup is off on this phone, so nothing more is uploaded. This copy of the app cannot reach Own Hub, so the copy in your account has not been removed yet. Please install the latest version from the App Store or Google Play.": "النسخ الاحتياطي للبيانات الصحية متوقف على هذا الهاتف، فلن يُرفع شيء بعد الآن. لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُحذف النسخة الموجودة في حسابكِ بعد. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
  "Health backup is off on this phone, so nothing more is uploaded. Your sign-in is no longer valid, so the copy in your account has not been removed yet. Please sign in again with your phone number.": "النسخ الاحتياطي للبيانات الصحية متوقف على هذا الهاتف، فلن يُرفع شيء بعد الآن. لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُحذف النسخة الموجودة في حسابكِ بعد. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.",
- "The automatic check could not start just now. You can ask a woman reviewer instead, or try again.": "تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تحاولي مرة أخرى."
+ "The automatic check could not start just now. You can ask a woman reviewer instead, or try again.": "تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تحاولي مرة أخرى.",
+ "Quiet workouts for home, food you already cook, and a space only verified women can enter.": "تمارين هادئة للمنزل، وطعام تطبخينه أصلًا، ومساحة لا تدخلها إلا النساء الموثّقات.",
+ "Every account is verified with ID before she gets in.": "يُوثَّق كل حساب بالبطاقة قبل أن تدخل صاحبته.",
+ "Your full program opens after the check": "برنامجك الكامل يُفتح بعد التحقّق",
+ "Join and pass the check once. Then your plan, every workout and every recipe are yours.": "انضمّي واجتازي التحقّق مرة واحدة، وبعدها تصبح خطتك وكل التمارين وكل الوصفات لكِ.",
+ "By joining you agree to the Own Hub rules.": "بانضمامك توافقين على قواعد Own Hub.",
+ "Workouts, recipes and your progress. Free.": "تمارين ووصفات وتقدّمك. مجانًا.",
+ "This is what keeps Own Hub women only: every woman is verified before she gets in.": "هذا ما يُبقي Own Hub للنساء فقط: تُوثَّق كل امرأة قبل أن تدخل.",
+ "Your number, your ID and your logs stay private.": "يبقى رقمك وبطاقتك وتسجيلاتك خاصة بكِ.",
+ "Own Hub is for training, not for selling.": "Own Hub للتدريب، لا للبيع."
 }

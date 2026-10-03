@@ -12,7 +12,9 @@ import '../../../theme/app_art.dart';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
@@ -85,14 +87,24 @@ class WhatsInsideView extends StatelessWidget {
         _Promise(
           icon: Icons.verified_user,
           title: l10n.womenOnlyEveryMemberChecked,
-          body: l10n.everyAccountIsVerifiedWithIdBefore,
+          // "A single post" names the community; with it off the promise is
+          // the check itself.
+          body: AppRouter.featureFlags.isOn(Feature.community)
+              ? l10n.everyAccountIsVerifiedWithIdBefore
+              : l10n.everyAccountIsVerifiedWithIdBefore_p7ucu,
         ),
-        const HandRule(seed: 33, height: 8),
-        _Promise(
-          icon: Icons.sports_gymnastics,
-          title: l10n.coachesWhoGetIt,
-          body: l10n.verifiedWomenCoachesPaidMonthlyInEgyptian,
-        ),
+        // Coaches she pays monthly need the coach app, the directory and a
+        // payment rail. `payments` sits under `marketplace`, so one check on
+        // each end covers all three.
+        if (AppRouter.featureFlags.isOn(Feature.coachApp) &&
+            AppRouter.featureFlags.isOn(Feature.payments)) ...[
+          const HandRule(seed: 33, height: 8),
+          _Promise(
+            icon: Icons.sports_gymnastics,
+            title: l10n.coachesWhoGetIt,
+            body: l10n.verifiedWomenCoachesPaidMonthlyInEgyptian,
+          ),
+        ],
       ],
     );
   }

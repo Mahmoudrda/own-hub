@@ -12,9 +12,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/identity/user_roles.dart';
 import 'package:own_hub/features/signup/presentation/role_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_card.dart';
 
@@ -41,6 +43,16 @@ AppCard _cardBehind(WidgetTester tester, String label) =>
     );
 
 void main() {
+  // These cases describe the screen with every feature it can mention switched
+  // on. The release shape, where copy about dark features is replaced or
+  // hidden, is proved in flag_aware_promises_test.dart.
+  late FeatureFlags saved;
+  setUp(() {
+    saved = AppRouter.featureFlags;
+    AppRouter.featureFlags = FeatureFlags.everything;
+  });
+  tearDown(() => AppRouter.featureFlags = saved);
+
   testWidgets('offers all three, and says what each one is', (tester) async {
     await tester.pumpWidget(_host(const RoleView()));
     await tester.pumpAndSettle();
@@ -216,7 +228,9 @@ void main() {
 
   test('the router offers the coach answers only when the coach app is on', () {
     final router = File('lib/routing/app_router.dart').readAsStringSync();
-    final c08 = router.substring(router.indexOf("'C08': (context) => RoleView("));
+    final c08 = router.substring(
+      router.indexOf("'C08': (context) => RoleView("),
+    );
     expect(
       c08.substring(0, c08.indexOf('onContinue')),
       contains('offerCoach: featureFlags.isOn(Feature.coachApp)'),

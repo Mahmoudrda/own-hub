@@ -14,7 +14,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
@@ -95,7 +97,12 @@ class WelcomeView extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            l10n.quietWorkoutsForHomeFoodYouAlready,
+            // The community is a promise only while it is switched on. Off,
+            // the line keeps what is true at launch: the space is women only
+            // because every account passes the check.
+            AppRouter.featureFlags.isOn(Feature.community)
+                ? l10n.quietWorkoutsForHomeFoodYouAlready
+                : l10n.quietWorkoutsForHomeFoodYouAlready_u7fo9,
             textAlign: TextAlign.center,
             style: AppText.body.copyWith(
               height: 24 / 16,
