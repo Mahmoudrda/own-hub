@@ -628,7 +628,7 @@ COUNSEL and PDPC approval of the consent mechanism."""
 
 REVIEW_CONSENT_VERSION = 1
 """N7: version of the review-route consent recorded by request_review at
-users/{uid}/consents/review-v1 = {version, at, path}. Asking for a woman
+users/{uid}/consents/review-v1 = {version, at, path, flagId}. Asking for a woman
 reviewer IS the consent: the app shows the wording (her phone number is looked
 up and she is called by a woman reviewer, by video or at a ladies-only gym)
 immediately before it calls request_review. The wording is PENDING COUNSEL.

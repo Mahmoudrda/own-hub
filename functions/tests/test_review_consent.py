@@ -1,5 +1,6 @@
 """N7: asking for a woman reviewer records a server-side review-route consent,
-users/{uid}/consents/review-v1 = {version, at, path}, before any flag exists."""
+users/{uid}/consents/review-v1 = {version, at, path, flagId}. N3: it names the
+flag it was given for, so it is written once that flag's id exists."""
 
 from __future__ import annotations
 
@@ -15,9 +16,9 @@ class OrderedFake(FakeReviewStore):
         super().__init__()
         self.events = []
 
-    def write_review_consent(self, uid, path):
+    def write_review_consent(self, uid, path, flag_id):
         self.events.append("consent")
-        super().write_review_consent(uid, path)
+        super().write_review_consent(uid, path, flag_id)
 
     def open_flag(self, *args, **kwargs):
         self.events.append("flag")
@@ -25,11 +26,11 @@ class OrderedFake(FakeReviewStore):
 
 
 @pytest.mark.parametrize("path", ["niqab", "declined", "error"])
-def test_requesting_review_records_the_consent_before_the_flag(path):
+def test_requesting_review_records_the_consent_for_the_flag(path):
     fake = OrderedFake()
-    review.request(fake, "her", path)
-    assert fake.review_consents == {"her": path}
-    assert fake.events == ["consent", "flag"]
+    flag_id = review.request(fake, "her", path).flag_id
+    assert fake.review_consents == {"her": {"path": path, "flagId": flag_id}}
+    assert fake.events == ["flag", "consent"]
 
 
 def test_no_consent_is_recorded_when_nothing_is_opened():
@@ -47,15 +48,20 @@ def test_no_consent_is_recorded_when_nothing_is_opened():
 def test_the_firestore_store_writes_exactly_version_at_path(monkeypatch):
     db = fake_firestore.FakeFirestore()
     monkeypatch.setattr(store, "db", lambda: db)
-    store.write_review_consent("her", "declined")
+    store.write_review_consent("her", "declined", "f1")
     doc = db.docs[f"{config.COL_USERS}/her/{config.COL_CONSENTS}/review-v1"]
-    assert doc == {"version": config.REVIEW_CONSENT_VERSION, "at": db.now, "path": "declined"}
+    assert doc == {
+        "version": config.REVIEW_CONSENT_VERSION,
+        "at": db.now,
+        "path": "declined",
+        "flagId": "f1",
+    }
     assert config.REVIEW_CONSENT_VERSION == 1
 
 
 def test_the_consent_lives_under_users_so_account_deletion_takes_it(monkeypatch):
     db = fake_firestore.FakeFirestore()
     monkeypatch.setattr(store, "db", lambda: db)
-    store.write_review_consent("her", "niqab")
+    store.write_review_consent("her", "niqab", "f1")
     db.recursive_delete(db.collection(config.COL_USERS).document("her"))
     assert not any(path.startswith(f"{config.COL_USERS}/her") for path in db.docs)

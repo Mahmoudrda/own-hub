@@ -95,6 +95,6 @@ def test_a_valid_app_check_token_gets_past_the_check(wired, monkeypatch):
         fn_util._app_check, "verify_token", lambda token: {"sub": "app-1"}
     )
     status, body = _call("list_verification_flags", "good")
-    # Past App Check, the ordinary account is refused for the claim instead.
+    # Past App Check, the account is refused (N1 provider or reviewer claim).
     assert status == 403, body
     assert body["error"]["status"] == "PERMISSION_DENIED"

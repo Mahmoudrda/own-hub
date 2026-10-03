@@ -59,7 +59,7 @@ def test_asking_for_the_call_on_an_open_machine_flag_records_consent_only():
     assert result.state == review.STATE_PENDING
     assert result.flag_id == flag_id and result.created is False
     assert len(fake.flags) == 1, "no second flag"
-    assert fake.review_consents == {"her": "error"}
+    assert fake.review_consents == {"her": {"path": "error", "flagId": flag_id}}
     assert fake.notified == [], "the open flag was already announced"
     assert review.contact(fake, "rev", flag_id) == {"phone": "+201005550132"}
 
@@ -91,10 +91,11 @@ def test_the_firestore_store_reads_the_consent_document(monkeypatch):
     db = fake_firestore.FakeFirestore()
     monkeypatch.setattr(store, "db", lambda: db)
     reviews = store.FirestoreReviewStore()
-    assert reviews.review_consent_given(["her", "other"]) == set()
-    store.write_review_consent("her", "niqab")
-    assert reviews.review_consent_given(["her", "other"]) == {"her"}
-    assert reviews.review_consent_given([]) == set()
+    pairs = [("her", "f1"), ("other", "f2")]
+    assert reviews.review_consented_flags(pairs) == set()
+    store.write_review_consent("her", "niqab", "f1")
+    assert reviews.review_consented_flags(pairs) == {"f1"}
+    assert reviews.review_consented_flags([]) == set()
 
 
 def test_the_reviewer_tool_shows_consent_and_will_not_fetch_contact_without_it(
