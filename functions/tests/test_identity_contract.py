@@ -150,4 +150,4 @@ def test_health_consent_version_and_doc_id_match():
 def test_review_consent_document_matches_the_contract():
     doc = contract()["documents"]["reviewConsent"]
     assert doc["path"] == f"users/{{uid}}/consents/review-v{config.REVIEW_CONSENT_VERSION}"
-    assert sorted(doc["fields"]) == ["at", "path", "version"]
+    assert sorted(doc["fields"]) == ["at", "flagId", "path", "version"]

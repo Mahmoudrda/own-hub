@@ -91,6 +91,7 @@
     "reviewConsent": {
       "fields": [
         "at",
+        "flagId",
         "path",
         "version"
       ],
@@ -132,6 +133,7 @@
     "internalError": "internal_error",
     "livenessFailed": "liveness_failed",
     "perUidDailyLimit": "per_uid_daily_limit",
+    "phoneSignInRequired": "phone_sign_in_required",
     "reviewAlreadyOpen": "review_already_open",
     "reviewConsentMissing": "review_consent_missing",
     "reviewNotPending": "review_not_pending",
