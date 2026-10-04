@@ -950,7 +950,13 @@ def delete_account(request: https_fn.CallableRequest) -> dict:
 
     started = time.monotonic()
     try:
-        result = deletion.run(uid, deletion.FirebaseBackend())
+        # B3: a deletion with a very large community footprint stops its scan
+        # before the client's 60-second timeout and the sweeper finishes it.
+        result = deletion.run(
+            uid,
+            deletion.FirebaseBackend(),
+            deadline=deletion.deadline_after(config.DELETION_CALL_BUDGET_SEC),
+        )
     except Exception:
         logs.error("account_deletion_failed", state=deletion.FAILED_RETRYABLE)
         raise https_fn.HttpsError(
@@ -969,18 +975,27 @@ def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
     from account import deletion
 
     cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(minutes=10)
+    # B3: one budget for the whole run, under TIMEOUT_SEC. A deletion that is
+    # not reached, or whose scan runs out of time, keeps its state and cursor
+    # and is picked up by the next run.
+    deadline = deletion.deadline_after(config.DELETION_SWEEP_BUDGET_SEC)
     finished = failed = 0
     for uid in deletion.unfinished(store.db(), cutoff):
+        if deletion.expired(deadline):
+            break
         try:
-            deletion.run(uid, deletion.FirebaseBackend())
+            deletion.run(uid, deletion.FirebaseBackend(), deadline=deadline)
             finished += 1
         except Exception:
             failed += 1
-    # N9: the one late sweep of users/{uid} and plans/{uid}, 65 minutes after
-    # done, for writes a still-valid token or a queued client made meanwhile.
+    # N9: the one late sweep of users/{uid}, plans/{uid}, her Storage and her
+    # community data, 65 minutes after done, for writes a still-valid token or
+    # a queued client made meanwhile.
     for uid in deletion.due_resweeps(store.db(), dt.datetime.now(dt.timezone.utc)):
+        if deletion.expired(deadline):
+            break
         try:
-            deletion.resweep(uid, deletion.FirebaseBackend())
+            deletion.resweep(uid, deletion.FirebaseBackend(), deadline=deadline)
         except Exception:
             failed += 1
     logs.decision("resume_account_deletions", state="done", count=finished)

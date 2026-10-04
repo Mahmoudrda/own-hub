@@ -477,7 +477,7 @@ def test_delete_account_needs_only_a_signed_in_account(monkeypatch, stubbed):
 
     monkeypatch.setattr(deletion, "FirebaseBackend", _Backend)
     monkeypatch.setattr(
-        deletion, "run", lambda uid, backend: ran.setdefault("uid", uid) and {"state": "done", "journal": deletion.JOURNAL}
+        deletion, "run", lambda uid, backend, deadline=None: ran.setdefault("uid", uid) and {"state": "done", "journal": deletion.JOURNAL}
     )
     answer = inner("delete_account")(request({}, token={}))
     assert ran["uid"] == "uid-1"

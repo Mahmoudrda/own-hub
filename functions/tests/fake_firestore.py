@@ -92,6 +92,9 @@ class FakeFirestore:
     def transaction(self):
         return Transaction(self)
 
+    def document(self, path):
+        return DocumentRef(self, path)
+
     def get_all(self, refs):
         for ref in refs:
             yield ref.get()
@@ -163,11 +166,12 @@ class FakeFirestore:
 
 
 class CollectionRef:
-    def __init__(self, db, path, filters=(), order=None, limit_n=None, group=False):
+    def __init__(self, db, path, filters=(), order=None, limit_n=None, group=False, after=None):
         self.db, self.path = db, path
         self.id = path.rsplit("/", 1)[-1]
         self._filters, self._order, self._limit = list(filters), order, limit_n
         self._group = group
+        self._after = after
 
     @property
     def parent(self):
@@ -191,17 +195,25 @@ class CollectionRef:
     def where(self, field, op=None, value=None, *, filter=None):
         return CollectionRef(
             self.db, self.path, self._filters + [(field, op, value)], self._order,
-            self._limit, self._group,
+            self._limit, self._group, self._after,
         )
 
     def order_by(self, field, **_):
         return CollectionRef(
-            self.db, self.path, self._filters, field, self._limit, self._group
+            self.db, self.path, self._filters, field, self._limit, self._group, self._after
         )
 
     def limit(self, n):
         return CollectionRef(
-            self.db, self.path, self._filters, self._order, n, self._group
+            self.db, self.path, self._filters, self._order, n, self._group, self._after
+        )
+
+    def start_after(self, fields):
+        """Only the `__name__` cursor the deletion scan uses: a DocumentRef."""
+        assert self._order == "__name__", "a cursor needs order_by('__name__')"
+        return CollectionRef(
+            self.db, self.path, self._filters, self._order, self._limit, self._group,
+            fields["__name__"].path,
         )
 
     def select(self, field_paths):
@@ -238,9 +250,11 @@ class CollectionRef:
         rows = []
         for path, data in sorted(self.db.docs.items()):
             if self._contains(path):
+                if self._after is not None and path <= self._after:
+                    continue
                 if self._matches(data):
                     rows.append(Snapshot(DocumentRef(self.db, path), data))
-        if self._order:
+        if self._order and self._order != "__name__":
             rows.sort(key=lambda s: str(s.get(self._order)))
         if self._limit is not None:
             rows = rows[: self._limit]

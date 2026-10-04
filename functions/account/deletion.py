@@ -46,7 +46,8 @@ from __future__ import annotations
 
 import datetime as dt
 import secrets
-from typing import Protocol
+import time
+from typing import Optional, Protocol
 
 from identity import config
 
@@ -81,6 +82,27 @@ DELETION_RECORD_FIELDS = frozenset(
 )
 """State and timestamps only. sweepAfter and sweptAt are N9's second sweep."""
 
+SCAN_PHASES = ("following", "comments", "likes", "results")
+"""B3: the collection groups the hook scans, in order. Her entries are found by
+document id (following, likes) or by the projected field (comments.authorUid,
+results.clientUid). A filtered collection-group query would need a
+single-field index override, and firestore.indexes.json carries exemptions
+only, so the scan stays and is paged instead."""
+_SCAN_FIELDS = {"following": None, "comments": "authorUid", "likes": None, "results": "clientUid"}
+SCAN_DONE = "done"
+
+_clock = time.monotonic
+"""Seconds. Deadlines passed to run, resweep and purge_group_hook are readings
+of this clock."""
+
+
+def expired(deadline: Optional[float]) -> bool:
+    return deadline is not None and _clock() >= deadline
+
+
+def deadline_after(seconds: float) -> float:
+    return _clock() + seconds
+
 
 class Backend(Protocol):
     def set_state(self, uid: str, state: str) -> None: ...
@@ -94,7 +116,7 @@ class Backend(Protocol):
     def delete_storage_prefix(self, bucket: str | None, prefix: str) -> None: ...
     def delete_where_uid(self, collection: str, uid: str) -> None: ...
     def delete_doc(self, collection: str, doc_id: str) -> None: ...
-    def purge_group_hook(self, uid: str) -> None: ...
+    def purge_group_hook(self, uid: str, deadline: Optional[float] = None) -> bool: ...
     def close_registry(self, uid: str, may_rejoin: bool) -> None: ...
     def pseudonymise_reports(self, uid: str, token: str) -> None: ...
     def delete_auth(self, uid: str) -> None: ...
@@ -105,8 +127,14 @@ def pseudonym() -> str:
     return f"deleted-{secrets.token_hex(8)}"
 
 
-def run(uid: str, backend: Backend) -> dict:
+def run(uid: str, backend: Backend, deadline: Optional[float] = None) -> dict:
     """Delete her account. Returns {state: "done", journal: [...]}.
+
+    B3: with a `deadline` (a reading of `_clock`), the community scan stops
+    when it passes, its cursor saved. The record then stays at
+    `purgingGroupHooks` (an unfinished state the sweeper resumes) and this
+    returns {state: "purgingGroupHooks", journal: [... "purgingGroupHooks"]},
+    which the app reads as "not done yet, it will finish".
 
     Raises whatever the backend raised after recording `failedRetryable`; the
     caller turns that into INTERNAL and the sweeper finishes the job.
@@ -136,7 +164,9 @@ def run(uid: str, backend: Backend) -> dict:
         backend.delete_doc(config.COL_LEDGER, uid)
         # Row 26 (N14). Unconditional: erasure must not depend on a manifest
         # row still being present.
-        backend.purge_group_hook(uid)
+        if backend.purge_group_hook(uid, deadline) is False:
+            paused = JOURNAL[: JOURNAL.index("purgingGroupHooks") + 1]
+            return {"state": "purgingGroupHooks", "journal": paused}
         backend.close_registry(uid, config.DELETED_ACCOUNT_MAY_REJOIN)
         backend.pseudonymise_reports(uid, pseudonym())
 
@@ -164,15 +194,19 @@ def purge_storage(uid: str, backend: Backend) -> None:
             backend.delete_storage_prefix(bucket, prefix.format(uid=uid))
 
 
-def resweep(uid: str, backend: Backend) -> None:
-    """N9: the one late sweep of users/{uid}, plans/{uid} and her Storage
-    prefixes, then marked so it never runs again. Idempotent: deleting what is
-    already gone is a no-op, and a failure leaves sweepAfter set so the
-    sweeper tries again."""
+def resweep(uid: str, backend: Backend, deadline: Optional[float] = None) -> None:
+    """N9: the one late sweep of users/{uid}, plans/{uid}, her Storage
+    prefixes and her community data (B3: a like or comment a still-valid token
+    wrote behind the scan cursor), then marked so it never runs again.
+    Idempotent: deleting what is already gone is a no-op. A failure, or a
+    community scan that runs out of time, leaves sweepAfter set so the sweeper
+    tries again, from the saved cursor."""
     backend.delete_user_tree(uid)
     if manifest.PLANS_RECURSIVE in {manifest.ACTIONS[row.number] for row in manifest.ROWS}:
         backend.delete_plans_tree(uid)
     purge_storage(uid, backend)
+    if backend.purge_group_hook(uid, deadline) is False:
+        return
     backend.mark_swept(uid)
 
 
@@ -221,6 +255,7 @@ class FirebaseBackend:
         self._record(uid).set(
             {
                 "sweepAfter": firestore.DELETE_FIELD,
+                "hookCursor": firestore.DELETE_FIELD,
                 "sweptAt": firestore.SERVER_TIMESTAMP,
                 "updatedAt": firestore.SERVER_TIMESTAMP,
             },
@@ -280,7 +315,7 @@ class FirebaseBackend:
     def delete_doc(self, collection, doc_id):
         self.db.collection(collection).document(doc_id).delete()
 
-    def purge_group_hook(self, uid):
+    def purge_group_hook(self, uid, deadline=None):
         """Row 26 (N14): her community, coach and assistant data.
 
         The most protective default. DELETED: publicProfiles/{uid}, her
@@ -306,6 +341,11 @@ class FirebaseBackend:
         their collection group with a projection, not by a filtered query: a
         collection-group filter needs a single-field index override, and
         firestore.indexes.json only carries exemptions. Idempotent.
+
+        B3: the scan is paged (config.DELETION_SCAN_PAGE, by document name)
+        and stops once `deadline` passes, saving {phase, after} on
+        deletionRequests/{uid}.hookCursor. A later call resumes from it.
+        Returns True when everything is done, False when it ran out of time.
         """
         from google.cloud import firestore
 
@@ -315,25 +355,16 @@ class FirebaseBackend:
 
         # Follow graph: hers, then every pointer to her on anyone else's.
         db.recursive_delete(db.collection("followGraph").document(uid))
-        for snapshot in self._scan("following"):
-            if snapshot.id == uid:
-                snapshot.reference.delete()
         graphs = db.collection("followGraph")
         for field, value in (("followingKeys", f"a:{uid}"), ("hiddenAuthors", uid)):
             for snapshot in graphs.where(field, "array_contains", value).stream():
                 snapshot.reference.update({field: firestore.ArrayRemove([value])})
 
         # Her posts, with every comment and like under them.
+        # (The pointers to her on other women's follow lists are the
+        # `following` phase of the scan below.)
         for snapshot in db.collection("posts").where("authorUid", "==", uid).stream():
             db.recursive_delete(snapshot.reference)
-        # What is left is on other women's posts. Each removal takes its
-        # post's counter down in the same transaction (B2).
-        for snapshot in self._scan("comments", "authorUid"):
-            if (snapshot.to_dict() or {}).get("authorUid") == uid:
-                self._tombstone_comment(snapshot.reference, uid)
-        for snapshot in self._scan("likes"):
-            if snapshot.id == uid:
-                self._remove_like(snapshot.reference)
 
         for group in db.collection("groups").select([]).stream():
             group.reference.collection("members").document(uid).delete()
@@ -344,9 +375,76 @@ class FirebaseBackend:
                 db.recursive_delete(snapshot.reference)
 
         db.recursive_delete(db.collection("coaches").document(uid))
-        for snapshot in self._scan("results", "clientUid"):
+
+        # What is left is on other women's posts, follow lists and coach
+        # pages. Each like or comment removal takes its post's counter down in
+        # the same transaction (B2).
+        return self._scan_phases(uid, deadline)
+
+    def _purge_found(self, phase, snapshot, uid):
+        if phase == "following":
+            if snapshot.id == uid:
+                snapshot.reference.delete()
+        elif phase == "comments":
+            if (snapshot.to_dict() or {}).get("authorUid") == uid:
+                self._tombstone_comment(snapshot.reference, uid)
+        elif phase == "likes":
+            if snapshot.id == uid:
+                self._remove_like(snapshot.reference)
+        elif phase == "results":
             if (snapshot.to_dict() or {}).get("clientUid") == uid:
                 snapshot.reference.delete()
+
+    def _scan_phases(self, uid, deadline):
+        """B3: every SCAN_PHASES group, a page at a time, from the saved cursor."""
+        saved = (self._record(uid).get().to_dict() or {}).get("hookCursor") or {}
+        phase = saved.get("phase")
+        if phase == SCAN_DONE:
+            return True
+        start = SCAN_PHASES.index(phase) if phase in SCAN_PHASES else 0
+        after = saved.get("after") if phase in SCAN_PHASES else None
+        page_size = config.DELETION_SCAN_PAGE
+        for index in range(start, len(SCAN_PHASES)):
+            group = SCAN_PHASES[index]
+            field = _SCAN_FIELDS[group]
+            while True:
+                if expired(deadline):
+                    self._save_cursor(uid, group, after)
+                    return False
+                query = (
+                    self.db.collection_group(group)
+                    .select([field] if field else [])
+                    .order_by("__name__")
+                )
+                if after:
+                    query = query.start_after({"__name__": self.db.document(after)})
+                page = list(query.limit(page_size).stream())
+                for snapshot in page:
+                    self._purge_found(group, snapshot, uid)
+                    after = snapshot.reference.path
+                    if expired(deadline):
+                        self._save_cursor(uid, group, after)
+                        return False
+                if len(page) < page_size:
+                    break
+                self._save_cursor(uid, group, after)
+            after = None
+            following = SCAN_PHASES[index + 1] if index + 1 < len(SCAN_PHASES) else SCAN_DONE
+            self._save_cursor(uid, following, None)
+        return True
+
+    def _save_cursor(self, uid, phase, after):
+        """On her deletion record, beside the state. Removed when the record
+        is reduced at `done` and again when the late sweep is marked."""
+        from google.cloud import firestore
+
+        self._record(uid).set(
+            {
+                "hookCursor": {"phase": phase, "after": after},
+                "updatedAt": firestore.SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
 
     def _remove_like(self, like_ref):
         """B2: delete her like and take counts.likes on its post down by one,
@@ -389,9 +487,6 @@ class FirebaseBackend:
             _decrement(transaction, post, "comments")
 
         txn(self.db.transaction())
-
-    def _scan(self, group, field=None):
-        return self.db.collection_group(group).select([field] if field else []).stream()
 
     def close_registry(self, uid, may_rejoin):
         from google.cloud import firestore
