@@ -22,6 +22,8 @@ Controls, because there is no App Check on the web:
     it joined and nothing is written;
   * DAILY_LIMIT_PER_IP attempts per IP per day, valid or not, counted on
     waitlistRate/{ipHash}_{day} (expires after two days);
+  * GLOBAL_DAILY_LIMIT new entries a day across everyone, a cost ceiling,
+    counted on waitlistRate/all_{day};
   * a duplicate contact answers exactly like a first join, so the endpoint
     cannot be used to learn who is on the list;
   * no log line carries a contact, an IP or its hash.
@@ -51,7 +53,18 @@ SECRET_IP_KEY = "waitlist-ip-key"
 """Secret Manager secret holding the HMAC key for IPs. Separate from the NID
 pepper on purpose: a different purpose gets a different key."""
 
-DAILY_LIMIT_PER_IP = 5
+DAILY_LIMIT_PER_IP = 50
+"""C3, the owner's decision: Egyptian mobile carriers put many women behind one
+public address (carrier NAT), so 5 would turn real sign-ups away."""
+GLOBAL_DAILY_LIMIT = 5000
+"""C3: new waitlist entries a day, across everyone. A cost ceiling. Past it
+every valid submission is answered "try again later" and nothing is written:
+the honest option, because the form never says "joined" for something it did
+not keep and nothing is queued or slowed in secret. A contact already on the
+list is answered "later" too, so the ceiling cannot be used to learn who is
+on the list. Counted on waitlistRate/all_{day}, under the same two-day TTL as
+the per-IP counters."""
+GLOBAL_COUNTER_PREFIX = "all_"
 TRUSTED_PUBLIC_HOPS = 0
 """B4: public X-Forwarded-For entries Google appends AFTER the client's own.
 
@@ -223,6 +236,11 @@ def handle(request: Request, store, key: Callable[[], bytes], now: dt.datetime) 
             return answer("invalid")
         kind, contact = parsed
 
+        # C3: before the duplicate check, so past the ceiling a known contact
+        # and a new one get the same answer.
+        if store.new_entries_today(now.date().isoformat()) >= GLOBAL_DAILY_LIMIT:
+            return answer("later")
+
         if not store.has_contact(contact):
             store.add(
                 {
@@ -267,8 +285,25 @@ class FirestoreWaitlist:
         query = self.db.collection(COLLECTION).where("contact", "==", contact).limit(1)
         return any(True for _ in query.stream())
 
+    def _day_counter(self, day: str):
+        return self.db.collection(RATE_COLLECTION).document(f"{GLOBAL_COUNTER_PREFIX}{day}")
+
+    def new_entries_today(self, day: str) -> int:
+        snapshot = self._day_counter(day).get()
+        return int((snapshot.to_dict() or {}).get("count", 0)) if snapshot.exists else 0
+
     def add(self, entry: dict) -> None:
+        from google.cloud import firestore
+
         self.db.collection(COLLECTION).document().set(entry)
+        at = entry.get("at") or dt.datetime.now(dt.timezone.utc)
+        self._day_counter(at.date().isoformat()).set(
+            {
+                "count": firestore.Increment(1),
+                "expireAt": at + dt.timedelta(days=RATE_RETENTION_DAYS),
+            },
+            merge=True,
+        )
 
 
 _key_cache: Optional[bytes] = None
