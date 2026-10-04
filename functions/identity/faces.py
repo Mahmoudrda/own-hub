@@ -30,10 +30,18 @@ import threading
 from dataclasses import dataclass
 from typing import Optional
 
-import cv2
-import numpy as np
+from . import config, imagesize
 
-from . import config
+# T24, second guard. OpenCV reads its own decode ceilings once, when the library
+# loads, so they are set here, before `import cv2`. The header check in decode()
+# is the first guard; this one holds even if a buffer ever reached imdecode
+# without it. Assigned, not setdefault: nothing in the environment may raise it.
+os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = str(config.MAX_PIXELS)
+os.environ["OPENCV_IO_MAX_IMAGE_WIDTH"] = str(config.MAX_IMAGE_SIDE)
+os.environ["OPENCV_IO_MAX_IMAGE_HEIGHT"] = str(config.MAX_IMAGE_SIDE)
+
+import cv2  # noqa: E402
+import numpy as np  # noqa: E402
 
 _MODELS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
 _YUNET = os.path.join(_MODELS_DIR, "face_detection_yunet_2023mar.onnx")
@@ -74,20 +82,30 @@ class ImageRejected(ValueError):
 
 
 def decode(image_bytes: bytes) -> np.ndarray:
-    """JPEG/PNG bytes to a BGR array, downscaled to the working resolution.
+    """JPEG/PNG/WebP bytes to a BGR array, downscaled to the working resolution.
 
-    The pixel-count check happens AFTER decode and BEFORE any processing, and it
-    has to be in that order: a JPEG's byte size says nothing about how many
-    pixels it holds, so a 2 MB file can decompress to gigabytes of array. That
-    is a real denial-of-service against any endpoint accepting images, and the
-    byte-length check in main.py does not catch it.
+    The size is read from the HEADER and checked BEFORE cv2.imdecode is called
+    (T24). A JPEG's byte size says nothing about how many pixels it holds, so a
+    file of a few hundred bytes can declare 20000x20000 and decompress to over a
+    gigabyte of array, which is enough to kill a 1 GB instance. Checking after
+    decode, as this used to, had already allocated it. A buffer without a
+    readable JPEG, PNG or WebP header is never decoded at all.
     """
     from . import reasons
 
+    refused = imagesize.refusal(image_bytes)
+    if refused is not None:
+        raise ImageRejected(refused)
+
     buffer = np.frombuffer(image_bytes, dtype=np.uint8)
-    image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
+    try:
+        image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
+    except cv2.error:
+        # OpenCV's own ceiling (set above) refused it.
+        raise ImageRejected(reasons.IMAGE_TOO_LARGE)
     if image is None:
         raise ImageRejected(reasons.IMAGE_UNDECODABLE)
+    # Kept: the decoded size must agree with the ceiling whatever the header said.
     height, width = image.shape[:2]
     if height * width > config.MAX_PIXELS:
         raise ImageRejected(reasons.IMAGE_TOO_LARGE)

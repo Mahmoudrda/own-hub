@@ -80,6 +80,7 @@ from firebase_functions import https_fn, options, scheduler_fn
 from identity import (
     config,
     decisions,
+    imagesize,
     pipeline,
     providers,
     logs,
@@ -181,13 +182,22 @@ def _decode_image(value: Any, budget_left: dict) -> bytes:
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.IMAGE_TOO_LARGE
         )
     try:
-        return base64.b64decode(value, validate=True)
+        raw = base64.b64decode(value, validate=True)
     except Exception:
         # Bare, and nothing from the exception propagates: a base64 error
         # message can quote the offending input, which here is image data.
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.IMAGE_UNDECODABLE
         )
+    # T24: a header declaring more pixels than the ceiling is a decompression
+    # bomb. Refused here, before any paid call and before any pixel decode.
+    # Only the too-large case is refused at the door; bytes with no readable
+    # header are refused by faces.decode, which never decodes them either.
+    if imagesize.refusal(raw) == reasons.IMAGE_TOO_LARGE:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.IMAGE_TOO_LARGE
+        )
+    return raw
 
 
 def _install_hash(raw: Optional[str]) -> Optional[str]:
