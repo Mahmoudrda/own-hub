@@ -53,7 +53,9 @@ List<String> recipeProblems(Recipe recipe, {required Set<String> sectionIds}) {
   if (recipe.status == RecipeStatus.published) {
     if (!recipe.allergensReviewed) fail('published without a signature');
     for (final i in recipe.ingredients) {
-      if (i.foodId == null) fail('published with an ingredient nobody can look up');
+      if (i.foodId == null) {
+        fail('published with an ingredient nobody can look up');
+      }
       if (!i.optional &&
           !i.servingSideOnly &&
           i.gramsBasis == GramsBasis.unknown) {

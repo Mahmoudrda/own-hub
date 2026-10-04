@@ -217,28 +217,32 @@ void main() {
       );
     });
 
-    test('a read that fails halfway swaps nothing and caches nothing',
-        () async {
-      final source = _remote()..failOn = 'rahma_new_dish';
-      final cache = _MemoryStorage();
-      final sync = _sync(source: source, cache: cache);
+    test(
+      'a read that fails halfway swaps nothing and caches nothing',
+      () async {
+        final source = _remote()..failOn = 'rahma_new_dish';
+        final cache = _MemoryStorage();
+        final sync = _sync(source: source, cache: cache);
 
-      final result = await sync.refresh();
-      expect(result.outcome, RecipeRefreshOutcome.failed);
-      expect(result.book, isNull);
-      expect(cache.value, isNull);
-      expect((await sync.load()).contentVersion, 1);
-    });
+        final result = await sync.refresh();
+        expect(result.outcome, RecipeRefreshOutcome.failed);
+        expect(result.book, isNull);
+        expect(cache.value, isNull);
+        expect((await sync.load()).contentVersion, 1);
+      },
+    );
 
-    test('the same version reads one small document and nothing else',
-        () async {
-      final source = _remote(version: 1);
-      final result = await _sync(source: source).refresh();
-      expect(result.outcome, RecipeRefreshOutcome.upToDate);
-      expect(source.versionReads, 1);
-      expect(source.indexReads, 0);
-      expect(source.recipeReads, 0);
-    });
+    test(
+      'the same version reads one small document and nothing else',
+      () async {
+        final source = _remote(version: 1);
+        final result = await _sync(source: source).refresh();
+        expect(result.outcome, RecipeRefreshOutcome.upToDate);
+        expect(source.versionReads, 1);
+        expect(source.indexReads, 0);
+        expect(source.recipeReads, 0);
+      },
+    );
 
     test('a pro row is not fetched while nothing can be sold', () async {
       final source = _remote();
@@ -357,27 +361,33 @@ void main() {
       expect(source.versionReads, 2);
     });
 
-    test('a failed check backs off instead of retrying on every open',
-        () async {
-      final source = _remote()..offline = const SocketException('no signal');
-      final clock = _Clock();
-      final sync = _sync(source: source, clock: clock);
-      await sync.refresh();
-      await sync.refresh();
-      expect(source.versionReads, 1);
-      clock.now = clock.now.add(const Duration(hours: 2));
-      source.offline = null;
-      expect((await sync.refresh()).outcome, RecipeRefreshOutcome.updated);
-      expect(source.versionReads, 2);
-    });
+    test(
+      'a failed check backs off instead of retrying on every open',
+      () async {
+        final source = _remote()..offline = const SocketException('no signal');
+        final clock = _Clock();
+        final sync = _sync(source: source, clock: clock);
+        await sync.refresh();
+        await sync.refresh();
+        expect(source.versionReads, 1);
+        clock.now = clock.now.add(const Duration(hours: 2));
+        source.offline = null;
+        expect((await sync.refresh()).outcome, RecipeRefreshOutcome.updated);
+        expect(source.versionReads, 2);
+      },
+    );
 
     test('a full fetch happens only on a version bump', () async {
       final source = _remote();
       final cache = _MemoryStorage();
       final checks = _MemoryStorage();
       final clock = _Clock();
-      await _sync(source: source, cache: cache, checks: checks, clock: clock)
-          .refresh();
+      await _sync(
+        source: source,
+        cache: cache,
+        checks: checks,
+        clock: clock,
+      ).refresh();
       final fetched = source.recipeReads;
       expect(source.indexReads, 1);
 
@@ -395,44 +405,50 @@ void main() {
   });
 
   group('the allergy filter still applies', () {
-    test('an unsigned remote recipe is hidden from a woman with an allergy',
-        () async {
-      final source = _remote();
-      source.recipes['rahma_signed_nuts'] = {
-        ...source.recipes['rahma_new_dish']!,
-        'recipeId': 'rahma_signed_nuts',
-        'allergensDerived': ['tree_nuts'],
-        'allergensFinal': ['tree_nuts'],
-        'allergenReviewedBy': 'qa_dietitian',
-      };
-      source.recipes['rahma_signed_plain'] = {
-        ...source.recipes['rahma_new_dish']!,
-        'recipeId': 'rahma_signed_plain',
-        'allergenReviewedBy': 'qa_dietitian',
-      };
-      (source.index!['rows']! as List).addAll(<Object?>[
-        {'recipeId': 'rahma_signed_nuts', 'status': 'review', 'tier': 'free'},
-        {'recipeId': 'rahma_signed_plain', 'status': 'review', 'tier': 'free'},
-      ]);
-      final book = (await _sync(source: source).refresh()).book!;
+    test(
+      'an unsigned remote recipe is hidden from a woman with an allergy',
+      () async {
+        final source = _remote();
+        source.recipes['rahma_signed_nuts'] = {
+          ...source.recipes['rahma_new_dish']!,
+          'recipeId': 'rahma_signed_nuts',
+          'allergensDerived': ['tree_nuts'],
+          'allergensFinal': ['tree_nuts'],
+          'allergenReviewedBy': 'qa_dietitian',
+        };
+        source.recipes['rahma_signed_plain'] = {
+          ...source.recipes['rahma_new_dish']!,
+          'recipeId': 'rahma_signed_plain',
+          'allergenReviewedBy': 'qa_dietitian',
+        };
+        (source.index!['rows']! as List).addAll(<Object?>[
+          {'recipeId': 'rahma_signed_nuts', 'status': 'review', 'tier': 'free'},
+          {
+            'recipeId': 'rahma_signed_plain',
+            'status': 'review',
+            'tier': 'free',
+          },
+        ]);
+        final book = (await _sync(source: source).refresh()).book!;
 
-      const allergic = DietaryConstraints(
-        allergies: {'tree_nuts'},
-        dietary: <String>{},
-      );
-      final shown = AllergyGuard(allergic).screenRecipes(book.recipes);
-      final ids = shown.map((r) => r.recipeId).toSet();
-      expect(ids, isNot(contains('rahma_new_dish')));
-      expect(ids, isNot(contains('rahma_signed_nuts')));
-      expect(ids, contains('rahma_signed_plain'));
+        const allergic = DietaryConstraints(
+          allergies: {'tree_nuts'},
+          dietary: <String>{},
+        );
+        final shown = AllergyGuard(allergic).screenRecipes(book.recipes);
+        final ids = shown.map((r) => r.recipeId).toSet();
+        expect(ids, isNot(contains('rahma_new_dish')));
+        expect(ids, isNot(contains('rahma_signed_nuts')));
+        expect(ids, contains('rahma_signed_plain'));
 
-      // Without a declared allergy the unsigned dish is still there, as the
-      // seeded ones are.
-      final everyone = AllergyGuard(DietaryConstraints.none)
-          .screenRecipes(book.recipes)
-          .map((r) => r.recipeId);
-      expect(everyone, contains('rahma_new_dish'));
-    });
+        // Without a declared allergy the unsigned dish is still there, as the
+        // seeded ones are.
+        final everyone = AllergyGuard(DietaryConstraints.none)
+            .screenRecipes(book.recipes)
+            .map((r) => r.recipeId);
+        expect(everyone, contains('rahma_new_dish'));
+      },
+    );
   });
 
   group('the same rules as the seed', () {
@@ -458,10 +474,7 @@ void main() {
         ],
       });
       expect(plain['allergenReviewedAt'], '2026-09-01T00:00:00.000Z');
-      expect(
-        ((plain['steps']! as List).first as Map)['textAr'],
-        'كما هي',
-      );
+      expect(((plain['steps']! as List).first as Map)['textAr'], 'كما هي');
     });
   });
 }
