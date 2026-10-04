@@ -168,7 +168,7 @@ def test_any_account_may_delete_itself(provider, monkeypatch):
     ran = []
     monkeypatch.setattr(deletion, "FirebaseBackend", lambda: object())
     monkeypatch.setattr(
-        deletion, "run", lambda uid, backend: ran.append(uid) or {"state": "done"}
+        deletion, "run", lambda uid, backend, deadline=None: ran.append(uid) or {"state": "done"}
     )
     answer = _call("delete_account", request({}, token=_token(provider)))
     assert ran == ["uid-1"]

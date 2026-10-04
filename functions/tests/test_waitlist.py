@@ -113,6 +113,9 @@ class FakeStore:
     def add(self, entry):
         self.entries.append(dict(entry))
 
+    def new_entries_today(self, day):
+        return sum(1 for e in self.entries if e["at"].date().isoformat() == day)
+
 
 def req(fields=None, *, method="POST", origin=None, form=False, ip=IP, too_large=False):
     payload = {"contact": "01012345678", "consent": True, "lang": "en"}
@@ -217,10 +220,10 @@ def test_an_empty_honeypot_is_fine():
 # ------------------------------------------------------------ rate limit
 
 
-def test_the_sixth_attempt_from_one_ip_in_a_day_is_refused():
+def test_the_attempt_past_the_cap_from_one_ip_in_a_day_is_refused():
     store = FakeStore()
     for n in range(join.DAILY_LIMIT_PER_IP):
-        response, _ = handle(req({"contact": f"0101234567{n}"}), store)
+        response, _ = handle(req({"contact": f"010{n:08d}"}), store)
         assert response.status == 200
     response, _ = handle(req({"contact": "01099999999"}), store)
     assert response.status == 429 and body(response) == {"ok": False, "error": "later"}
@@ -243,8 +246,9 @@ def test_another_ip_has_its_own_allowance():
     assert response.status == 200
 
 
-def test_the_cap_is_five_a_day():
-    assert join.DAILY_LIMIT_PER_IP == 5
+def test_the_cap_is_fifty_a_day():
+    # C3: Egyptian mobile carriers put many women behind one public address.
+    assert join.DAILY_LIMIT_PER_IP == 50
 
 
 # ------------------------------------------------------------- duplicates

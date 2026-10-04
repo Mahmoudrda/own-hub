@@ -22,6 +22,8 @@ Controls, because there is no App Check on the web:
     it joined and nothing is written;
   * DAILY_LIMIT_PER_IP attempts per IP per day, valid or not, counted on
     waitlistRate/{ipHash}_{day} (expires after two days);
+  * GLOBAL_DAILY_LIMIT new entries a day across everyone, a cost ceiling,
+    counted on waitlistRate/all_{day};
   * a duplicate contact answers exactly like a first join, so the endpoint
     cannot be used to learn who is on the list;
   * no log line carries a contact, an IP or its hash.
@@ -32,6 +34,7 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import hmac
+import ipaddress
 import json
 import re
 import threading
@@ -50,7 +53,26 @@ SECRET_IP_KEY = "waitlist-ip-key"
 """Secret Manager secret holding the HMAC key for IPs. Separate from the NID
 pepper on purpose: a different purpose gets a different key."""
 
-DAILY_LIMIT_PER_IP = 5
+DAILY_LIMIT_PER_IP = 50
+"""C3, the owner's decision: Egyptian mobile carriers put many women behind one
+public address (carrier NAT), so 5 would turn real sign-ups away."""
+GLOBAL_DAILY_LIMIT = 5000
+"""C3: new waitlist entries a day, across everyone. A cost ceiling. Past it
+every valid submission is answered "try again later" and nothing is written:
+the honest option, because the form never says "joined" for something it did
+not keep and nothing is queued or slowed in secret. A contact already on the
+list is answered "later" too, so the ceiling cannot be used to learn who is
+on the list. Counted on waitlistRate/all_{day}, under the same two-day TTL as
+the per-IP counters."""
+GLOBAL_COUNTER_PREFIX = "all_"
+TRUSTED_PUBLIC_HOPS = 0
+"""B4: public X-Forwarded-For entries Google appends AFTER the client's own.
+
+0 for the Cloud Run URL the form posts to today (europe-west3-own-hub.
+cloudfunctions.net, a gen2 function): the front end appends only the address
+it saw, so the client is the last public entry. 1 if an external Application
+Load Balancer is ever put in front, which appends "<client>, <its own
+address>". See client_ip."""
 RETENTION_DAYS = 180
 RATE_RETENTION_DAYS = 2
 MAX_BODY_BYTES = 4096
@@ -92,6 +114,46 @@ def normalise(raw) -> Optional[tuple]:
     if not _EG_MOBILE.match(national):
         return None
     return ("phone", "+20" + national)
+
+
+def _public(entry: str):
+    """One X-Forwarded-For entry as a public address, or None."""
+    text = entry.strip()
+    if text.startswith("["):  # [v6]:port
+        text = text[1:].split("]", 1)[0]
+    elif text.count(":") == 1:  # v4:port
+        text = text.split(":", 1)[0]
+    try:
+        address = ipaddress.ip_address(text)
+    except ValueError:
+        return None
+    if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped:
+        address = address.ipv4_mapped
+    return address if address.is_global else None
+
+
+def client_ip(forwarded: Optional[str], remote_addr: Optional[str], trusted_hops: Optional[int] = None) -> str:
+    """B4: the address the per-IP cap is counted on.
+
+    A client may send any X-Forwarded-For; Google's front end APPENDS what it
+    saw, so everything to the left of that is the client's own text and is
+    never trusted. Read from the right: skip entries that are not public
+    addresses (an internal Google hop, a private or carrier-NAT address,
+    junk), drop TRUSTED_PUBLIC_HOPS more, and the next one is the client.
+    Nothing a client prepends can move it, so spoofing buys no attempts.
+
+    IPv6 is returned as its /64: one home or phone is given a whole /64 and
+    could otherwise rotate through it for a fresh allowance each time.
+    Falls back to the peer address when no entry is usable.
+    """
+    hops = TRUSTED_PUBLIC_HOPS if trusted_hops is None else trusted_hops
+    public = [a for a in (_public(e) for e in (forwarded or "").split(",")) if a is not None]
+    chosen = public[-1 - hops] if len(public) > hops else _public(remote_addr or "")
+    if chosen is None:
+        return (remote_addr or "").strip()
+    if isinstance(chosen, ipaddress.IPv6Address):
+        return str(ipaddress.ip_network(f"{chosen}/64", strict=False))
+    return str(chosen)
 
 
 def ip_hash(key: bytes, ip: str) -> str:
@@ -174,6 +236,11 @@ def handle(request: Request, store, key: Callable[[], bytes], now: dt.datetime) 
             return answer("invalid")
         kind, contact = parsed
 
+        # C3: before the duplicate check, so past the ceiling a known contact
+        # and a new one get the same answer.
+        if store.new_entries_today(now.date().isoformat()) >= GLOBAL_DAILY_LIMIT:
+            return answer("later")
+
         if not store.has_contact(contact):
             store.add(
                 {
@@ -218,8 +285,25 @@ class FirestoreWaitlist:
         query = self.db.collection(COLLECTION).where("contact", "==", contact).limit(1)
         return any(True for _ in query.stream())
 
+    def _day_counter(self, day: str):
+        return self.db.collection(RATE_COLLECTION).document(f"{GLOBAL_COUNTER_PREFIX}{day}")
+
+    def new_entries_today(self, day: str) -> int:
+        snapshot = self._day_counter(day).get()
+        return int((snapshot.to_dict() or {}).get("count", 0)) if snapshot.exists else 0
+
     def add(self, entry: dict) -> None:
+        from google.cloud import firestore
+
         self.db.collection(COLLECTION).document().set(entry)
+        at = entry.get("at") or dt.datetime.now(dt.timezone.utc)
+        self._day_counter(at.date().isoformat()).set(
+            {
+                "count": firestore.Increment(1),
+                "expireAt": at + dt.timedelta(days=RATE_RETENTION_DAYS),
+            },
+            merge=True,
+        )
 
 
 _key_cache: Optional[bytes] = None
@@ -255,10 +339,8 @@ def from_flask(request) -> Request:
         else:
             parsed = request.get_json(silent=True)
             fields = parsed if isinstance(parsed, dict) else {}
-    # Google's front end APPENDS the connecting address, so the last entry is
-    # the one a client cannot forge.
-    forwarded = request.headers.get("X-Forwarded-For", "")
-    ip = forwarded.split(",")[-1].strip() if forwarded else (request.remote_addr or "")
+    # B4: read from the right, past internal hops. See client_ip.
+    ip = client_ip(request.headers.get("X-Forwarded-For", ""), request.remote_addr)
     return Request(
         method=request.method,
         origin=request.headers.get("Origin"),

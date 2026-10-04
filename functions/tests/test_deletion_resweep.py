@@ -16,8 +16,38 @@ from identity import config, store
 from tests import fake_firestore
 
 
+class _Blob:
+    def __init__(self, objects, key):
+        self._objects, self._key = objects, key
+
+    def delete(self):
+        self._objects.discard(self._key)
+
+
+class _Bucket:
+    def __init__(self, objects, name):
+        self._objects, self._name = objects, name
+
+    def list_blobs(self, prefix):
+        return [
+            _Blob(self._objects, (b, p))
+            for b, p in sorted(self._objects, key=str)
+            if b == self._name and p.startswith(prefix)
+        ]
+
+
 @pytest.fixture
-def fs(monkeypatch):
+def objects(monkeypatch):
+    """Cloud Storage, in memory: {(bucket or None, path)}. Never the network."""
+    from firebase_admin import storage
+
+    held: set = set()
+    monkeypatch.setattr(storage, "bucket", lambda name=None, app=None: _Bucket(held, name))
+    return held
+
+
+@pytest.fixture
+def fs(monkeypatch, objects):
     db = fake_firestore.FakeFirestore()
     monkeypatch.setattr(store, "db", lambda: db)
     return db
@@ -95,3 +125,35 @@ def test_resume_account_deletions_performs_due_sweeps(fs, monkeypatch):
     ) else main.resume_account_deletions(None)
     assert _her_docs(fs) == []
     assert "sweepAfter" not in _record(fs)
+
+
+def test_the_second_sweep_purges_uploads_made_after_done(fs, objects):
+    """B1: a still-valid token can upload after the purge, in either bucket."""
+    backend = deletion.FirebaseBackend()
+    backend.finish_record("her")
+    for bucket in (None, deletion.PERSONAL_BUCKET):
+        objects.add((bucket, "user-media/her/late.jpg"))
+        objects.add((bucket, "coach-docs/her/late.jpg"))
+        objects.add((bucket, "user-media/other/keep.jpg"))
+    deletion.resweep("her", backend)
+    assert sorted(objects, key=str) == sorted(
+        [(None, "user-media/other/keep.jpg"), (deletion.PERSONAL_BUCKET, "user-media/other/keep.jpg")],
+        key=str,
+    )
+
+
+def test_the_second_sweep_pseudonymises_reports_filed_after_done(fs):
+    """C2: reports need only a sign-in, so a still-valid token can file one
+    after the first purge. The late sweep pseudonymises it too."""
+    backend = deletion.FirebaseBackend()
+    backend.finish_record("her")
+    fs.collection("reports").document("late").set(
+        {"reporterUid": "her", "subjectUid": "x", "state": "submitted"}
+    )
+    fs.collection("reports").document("about").set({"reporterUid": "y", "subjectUid": "her"})
+    fs.collection("reports").document("theirs").set({"reporterUid": "y", "subjectUid": "x"})
+    deletion.resweep("her", backend)
+    assert "her" not in repr({p: v for p, v in fs.docs.items() if p.startswith("reports/")})
+    assert fs.docs["reports/late"]["reporterUid"].startswith("deleted-")
+    assert fs.docs["reports/about"]["subjectUid"].startswith("deleted-")
+    assert fs.docs["reports/theirs"] == {"reporterUid": "y", "subjectUid": "x"}

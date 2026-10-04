@@ -39,7 +39,7 @@ FLAGS = "flags"                            # verification_flags where uid ==
 SESSIONS = "sessions"                      # verificationSessions where uid ==
 LEDGER = "ledger"                          # verificationLedger/{uid}
 REGISTRY = "registry"                      # nidRegistry where uid == : closed
-STORAGE = "storage"                        # user-media/{uid}/, user-exports/{uid}/
+STORAGE = "storage"                        # deletion.STORAGE_PREFIXES, both buckets
 GROUP_HOOK = "group_hook"                  # row 26: community, coach, assistant (N14)
 THIRD_PARTY = "third_party"                # no identifier is ever sent
 AUTH = "auth"                              # disabled first, deleted last

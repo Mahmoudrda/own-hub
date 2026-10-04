@@ -75,7 +75,7 @@ import uuid
 from typing import Any, Optional
 
 import firebase_admin
-from firebase_functions import https_fn, options, scheduler_fn
+from firebase_functions import firestore_fn, https_fn, options, scheduler_fn
 
 from identity import (
     config,
@@ -950,7 +950,13 @@ def delete_account(request: https_fn.CallableRequest) -> dict:
 
     started = time.monotonic()
     try:
-        result = deletion.run(uid, deletion.FirebaseBackend())
+        # B3: a deletion with a very large community footprint stops its scan
+        # before the client's 60-second timeout and the sweeper finishes it.
+        result = deletion.run(
+            uid,
+            deletion.FirebaseBackend(),
+            deadline=deletion.deadline_after(config.DELETION_CALL_BUDGET_SEC),
+        )
     except Exception:
         logs.error("account_deletion_failed", state=deletion.FAILED_RETRYABLE)
         raise https_fn.HttpsError(
@@ -969,23 +975,62 @@ def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
     from account import deletion
 
     cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(minutes=10)
+    # B3: one budget for the whole run, under TIMEOUT_SEC. A deletion that is
+    # not reached, or whose scan runs out of time, keeps its state and cursor
+    # and is picked up by the next run.
+    deadline = deletion.deadline_after(config.DELETION_SWEEP_BUDGET_SEC)
     finished = failed = 0
     for uid in deletion.unfinished(store.db(), cutoff):
+        if deletion.expired(deadline):
+            break
         try:
-            deletion.run(uid, deletion.FirebaseBackend())
+            deletion.run(uid, deletion.FirebaseBackend(), deadline=deadline)
             finished += 1
         except Exception:
             failed += 1
-    # N9: the one late sweep of users/{uid} and plans/{uid}, 65 minutes after
-    # done, for writes a still-valid token or a queued client made meanwhile.
+    # N9: the one late sweep of users/{uid}, plans/{uid}, her Storage and her
+    # community data, 65 minutes after done, for writes a still-valid token or
+    # a queued client made meanwhile.
     for uid in deletion.due_resweeps(store.db(), dt.datetime.now(dt.timezone.utc)):
+        if deletion.expired(deadline):
+            break
         try:
-            deletion.resweep(uid, deletion.FirebaseBackend())
+            deletion.resweep(uid, deletion.FirebaseBackend(), deadline=deadline)
         except Exception:
             failed += 1
     logs.decision("resume_account_deletions", state="done", count=finished)
     if failed:
         logs.error("account_deletion_failed", state=deletion.FAILED_RETRYABLE, count=failed)
+
+
+# ------------------------------------------------------------- post counters
+
+
+def _count_change(event) -> None:
+    from community import counts
+
+    change = event.data
+    before = change.before.to_dict() if change.before is not None and change.before.exists else None
+    after = change.after.to_dict() if change.after is not None and change.after.exists else None
+    counts.on_change(store.db(), event.id, event.document, before, after)
+
+
+@firestore_fn.on_document_written(
+    document="posts/{postId}/likes/{likeId}", region=config.REGION
+)
+def post_like_counter(event) -> None:
+    """C1: posts/{postId}.counts.likes, the only writer of it. Idempotent per
+    event id; never below 0. See community/counts.py."""
+    _count_change(event)
+
+
+@firestore_fn.on_document_written(
+    document="posts/{postId}/comments/{commentId}", region=config.REGION
+)
+def post_comment_counter(event) -> None:
+    """C1: posts/{postId}.counts.comments, live comments only (a tombstone is
+    not one). Idempotent per event id; never below 0."""
+    _count_change(event)
 
 
 # ------------------------------------------------------------- waitlist

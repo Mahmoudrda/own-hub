@@ -562,6 +562,20 @@ plans/{uid} can be partly rewritten after `done`. One more recursive delete of
 both runs this long after `done` (deletionRequests/{uid}.sweepAfter), performed
 once by resume_account_deletions."""
 
+DELETION_SCAN_PAGE = 500
+"""B3: documents per page when deletion scans the comments, likes, following
+and results collection groups. Paged by document name with a cursor saved on
+deletionRequests/{uid}.hookCursor, so no single read is unbounded."""
+
+DELETION_CALL_BUDGET_SEC = 40
+"""B3: how long delete_account spends on the community scan before it saves
+its cursor and answers. Under the client's 60-second timeout; the sweeper
+finishes the rest and the app already says "it will finish"."""
+
+DELETION_SWEEP_BUDGET_SEC = 90
+"""B3: how long one resume_account_deletions run works in total, under
+TIMEOUT_SEC. Work left over is resumed from its cursor on the next run."""
+
 DELETED_ACCOUNT_MAY_REJOIN = False
 """Whether deleting an account frees her national ID for a new account.
 

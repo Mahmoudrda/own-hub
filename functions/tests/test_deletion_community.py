@@ -27,6 +27,7 @@ THIRD = "uid-three"
 def fs(monkeypatch):
     db = fake_firestore.FakeFirestore()
     monkeypatch.setattr(store, "db", lambda: db)
+    monkeypatch.setattr(store.firestore, "transactional", fake_firestore.transactional)
     return db
 
 
@@ -165,6 +166,9 @@ def test_her_relationships_on_either_side_are_deleted(fs):
 
 def test_nothing_of_hers_survives_the_hook(fs):
     docs = purge(fs)
+    # deletionRequests/{uid} is the deletion's own record (B3 keeps its scan
+    # cursor there while it runs); it is reduced at `done`.
+    docs = {p: v for p, v in docs.items() if not p.startswith("deletionRequests/")}
     leftovers = [p for p in docs if HER in p] + [
         p for p, v in docs.items() if HER in repr(v)
     ]

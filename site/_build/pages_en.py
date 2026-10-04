@@ -1241,8 +1241,9 @@ def build(cfg, lang, mailto_link):
         <h1>Please try again later</h1>
         <p class="lede">We could not add you just now, and nothing was
         saved.</p>
-        <p>Either this connection has already sent several requests today, or
-        something went wrong on our side. Please try again tomorrow.</p>
+        <p>This connection may have already sent many requests today, the
+        waitlist may be full for today, or something went wrong on our side.
+        Please try again tomorrow.</p>
         <div class="btn-row"><a class="btn ghost" href="/">Back to the home page</a></div>
       </div>
     </div>
