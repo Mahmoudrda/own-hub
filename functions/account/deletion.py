@@ -332,10 +332,11 @@ class FirebaseBackend:
         overwritten with exactly {deleted: true}, no text and no uid. A comment
         id that spells her uid is not kept as the tombstone's id.
 
-        B2: each removed like and each tombstoned comment takes counts.likes or
-        counts.comments on its post down by one in the same transaction, never
-        below 0. Follower and following counts are not stored (the app counts
-        edges), so deleting the edges keeps them true.
+        Counts: this deletes and tombstones only. posts.counts is kept by the
+        Firestore triggers those writes fire (C1, community/counts.py), the one
+        owner of the arithmetic, so nothing is decremented twice. Follower and
+        following counts are not stored (the app counts edges), so deleting the
+        edges keeps them true.
 
         Comments, likes, following edges and results are found by scanning
         their collection group with a projection, not by a filtered query: a
@@ -377,8 +378,7 @@ class FirebaseBackend:
         db.recursive_delete(db.collection("coaches").document(uid))
 
         # What is left is on other women's posts, follow lists and coach
-        # pages. Each like or comment removal takes its post's counter down in
-        # the same transaction (B2).
+        # pages. The counter triggers (C1) take each post's counts down.
         return self._scan_phases(uid, deadline)
 
     def _purge_found(self, phase, snapshot, uid):
@@ -447,44 +447,27 @@ class FirebaseBackend:
         )
 
     def _remove_like(self, like_ref):
-        """B2: delete her like and take counts.likes on its post down by one,
-        atomically. A like already gone changes nothing, so a re-run never
-        decrements twice."""
-        from google.cloud import firestore
-
-        post_ref = like_ref.parent.parent
-
-        @firestore.transactional
-        def txn(transaction):
-            like = like_ref.get(transaction=transaction)
-            post = post_ref.get(transaction=transaction) if post_ref is not None else None
-            if not like.exists:
-                return
-            transaction.delete(like_ref)
-            _decrement(transaction, post, "likes")
-
-        txn(self.db.transaction())
+        """Delete her like. counts.likes is the trigger's job (C1), not this."""
+        like_ref.delete()
 
     def _tombstone_comment(self, comment_ref, uid):
-        """B2: replace her comment with exactly {deleted: true} and take
-        counts.comments on its post down by one, atomically. A comment id that
-        spells her uid is not kept as the tombstone's id. Re-checks the author
-        inside the transaction, so a re-run never decrements twice."""
+        """Replace her comment with exactly {deleted: true}. A comment id that
+        spells her uid is not kept as the tombstone's id; the new tombstone and
+        the delete of the old one commit together. Re-checks the author inside
+        the transaction, so a re-run changes nothing. counts.comments is the
+        trigger's job (C1): a tombstone is not a live comment."""
         from google.cloud import firestore
 
-        post_ref = comment_ref.parent.parent
         target = comment_ref.parent.document() if uid in comment_ref.id else comment_ref
 
         @firestore.transactional
         def txn(transaction):
             comment = comment_ref.get(transaction=transaction)
-            post = post_ref.get(transaction=transaction) if post_ref is not None else None
             if not comment.exists or (comment.to_dict() or {}).get("authorUid") != uid:
                 return
             transaction.set(target, {"deleted": True})
             if target.path != comment_ref.path:
                 transaction.delete(comment_ref)
-            _decrement(transaction, post, "comments")
 
         txn(self.db.transaction())
 
@@ -514,18 +497,6 @@ class FirebaseBackend:
             auth.delete_user(uid)
         except auth.UserNotFoundError:
             pass
-
-
-def _decrement(transaction, post, field) -> None:
-    """counts.<field> on a post, down by one and never below 0. A post that is
-    gone, or that has no such count, is left alone: no counter is invented."""
-    if post is None or not post.exists or not post.reference.path.startswith("posts/"):
-        return
-    counts = (post.to_dict() or {}).get("counts")
-    current = counts.get(field) if isinstance(counts, dict) else None
-    if isinstance(current, bool) or not isinstance(current, (int, float)):
-        return
-    transaction.update(post.reference, {f"counts.{field}": max(0, int(current) - 1)})
 
 
 def unfinished(db, older_than) -> list[str]:

@@ -95,7 +95,8 @@ def test_a_paged_scan_still_finds_everything(fs):
     assert deletion.FirebaseBackend().purge_group_hook(HER) is True
     assert _hers_left(fs) == []
     for i in range(7):
-        assert fs.docs[f"posts/q{i}"]["counts"] == {"likes": 1, "comments": 1}
+        # Untouched by the purge: the counter triggers own counts (C1).
+        assert fs.docs[f"posts/q{i}"]["counts"] == {"likes": 2, "comments": 2}
         assert fs.docs[f"posts/q{i}/comments/t{i}"] == {"authorUid": THIRD, "body": "theirs"}
 
 
@@ -119,7 +120,8 @@ def test_the_budget_pauses_the_hook_and_saves_a_cursor(fs, monkeypatch):
         pytest.fail("never finished")
     assert [p for p in _hers_left(fs) if not p.startswith("deletionRequests/")] == []
     for i in range(7):
-        assert fs.docs[f"posts/q{i}"]["counts"] == {"likes": 1, "comments": 1}
+        # Untouched by the purge: the counter triggers own counts (C1).
+        assert fs.docs[f"posts/q{i}"]["counts"] == {"likes": 2, "comments": 2}
     assert fs.docs[f"deletionRequests/{HER}"]["hookCursor"]["phase"] == "done"
 
 
@@ -161,7 +163,8 @@ def test_the_late_sweep_runs_the_hook_again(fs, monkeypatch):
     deletion.resweep(HER, backend)
     assert fs.docs["posts/late/comments/c"] == {"deleted": True}
     assert f"posts/late/likes/{HER}" not in fs.docs
-    assert fs.docs["posts/late"]["counts"] == {"likes": 0, "comments": 0}
+    # Untouched by the sweep: the counter triggers own counts (C1).
+    assert fs.docs["posts/late"]["counts"] == {"likes": 1, "comments": 1}
     record = fs.docs[f"deletionRequests/{HER}"]
     assert "sweptAt" in record and set(record) <= deletion.DELETION_RECORD_FIELDS
 

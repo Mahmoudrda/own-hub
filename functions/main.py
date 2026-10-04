@@ -75,7 +75,7 @@ import uuid
 from typing import Any, Optional
 
 import firebase_admin
-from firebase_functions import https_fn, options, scheduler_fn
+from firebase_functions import firestore_fn, https_fn, options, scheduler_fn
 
 from identity import (
     config,
@@ -1001,6 +1001,36 @@ def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
     logs.decision("resume_account_deletions", state="done", count=finished)
     if failed:
         logs.error("account_deletion_failed", state=deletion.FAILED_RETRYABLE, count=failed)
+
+
+# ------------------------------------------------------------- post counters
+
+
+def _count_change(event) -> None:
+    from community import counts
+
+    change = event.data
+    before = change.before.to_dict() if change.before is not None and change.before.exists else None
+    after = change.after.to_dict() if change.after is not None and change.after.exists else None
+    counts.on_change(store.db(), event.id, event.document, before, after)
+
+
+@firestore_fn.on_document_written(
+    document="posts/{postId}/likes/{likeId}", region=config.REGION
+)
+def post_like_counter(event) -> None:
+    """C1: posts/{postId}.counts.likes, the only writer of it. Idempotent per
+    event id; never below 0. See community/counts.py."""
+    _count_change(event)
+
+
+@firestore_fn.on_document_written(
+    document="posts/{postId}/comments/{commentId}", region=config.REGION
+)
+def post_comment_counter(event) -> None:
+    """C1: posts/{postId}.counts.comments, live comments only (a tombstone is
+    not one). Idempotent per event id; never below 0."""
+    _count_change(event)
 
 
 # ------------------------------------------------------------- waitlist
