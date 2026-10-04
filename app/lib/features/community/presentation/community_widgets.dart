@@ -366,7 +366,10 @@ class PostActionBar extends StatelessWidget {
   }
 }
 
-class _Count extends StatelessWidget {
+class _Count extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => '_Count';
+
   const _Count({
     required this.icon,
     required this.colour,

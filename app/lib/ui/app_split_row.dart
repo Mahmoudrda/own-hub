@@ -12,7 +12,12 @@ library;
 
 import 'package:flutter/material.dart';
 
-class AppSplitRow extends StatelessWidget {
+import 'hand/hand_seed_name.dart';
+
+class AppSplitRow extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppSplitRow';
+
   const AppSplitRow({
     super.key,
     required this.start,

@@ -40,6 +40,7 @@ import '../../../ui/app_scaffold.dart';
 import '../domain/block_registry.dart';
 import '../domain/block_validator.dart';
 import '../domain/portfolio_publisher.dart';
+import '../../../ui/hand/hand_seed_name.dart';
 
 class PublishView extends StatelessWidget {
   const PublishView({
@@ -219,7 +220,10 @@ class PublishView extends StatelessWidget {
 }
 
 /// One line of the diff. Section name, and the verb where one is minted.
-class _ChangeRow extends StatelessWidget {
+class _ChangeRow extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => '_ChangeRow';
+
   const _ChangeRow({required this.change});
 
   final BlockChange change;
@@ -258,7 +262,10 @@ class _ChangeRow extends StatelessWidget {
 /// picker actually meets. The rest are still the section's name and an error
 /// glyph: that tells her **where** without telling her **why**, which is a gap
 /// rather than a fabrication, and the missing sentences are reported.
-class _RefusalRow extends StatelessWidget {
+class _RefusalRow extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => '_RefusalRow';
+
   const _RefusalRow({required this.refusal});
 
   final PublishRefusal refusal;

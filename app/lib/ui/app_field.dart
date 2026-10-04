@@ -19,7 +19,10 @@ import 'hand/hand.dart';
 import 'hand/hand_geometry.dart' show wobblyLine;
 import 'hand/hand_painters.dart' show paintInk, paintPencil, strokePrefix;
 
-class AppField extends StatefulWidget {
+class AppField extends StatefulWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppField';
+
   const AppField({
     super.key,
     this.controller,

@@ -96,7 +96,10 @@ class WeekBarsChart extends StatelessWidget {
 /// That is the case where the dictionary holds only a fixed string ("14 of 20")
 /// and the woman's own number is different: the bar still shows her real
 /// progress, and no sentence states a number that is not hers.
-class MiniStat extends StatelessWidget {
+class MiniStat extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'MiniStat';
+
   const MiniStat({
     super.key,
     required this.label,

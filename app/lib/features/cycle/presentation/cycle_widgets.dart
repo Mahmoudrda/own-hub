@@ -7,6 +7,7 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_nav_bar.dart';
+import '../../../ui/hand/hand_seed_name.dart';
 import '../../today/presentation/today_cards.dart' show openScreen;
 
 /// The hub's three tabs. **Calendar is absent in symptom-only mode** — Y14 has
@@ -95,7 +96,10 @@ class CycleNavBar extends StatelessWidget {
 /// `AppListItem` already provides the row; this is the layout Y02, Y10 and Y12
 /// use for a switch, kept here so four screens cannot end up with four
 /// spacings.
-class CycleSwitchRow extends StatelessWidget {
+class CycleSwitchRow extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'CycleSwitchRow';
+
   const CycleSwitchRow({
     super.key,
     required this.title,

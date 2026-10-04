@@ -168,7 +168,10 @@ class CyclePatternsView extends StatelessWidget {
   }
 }
 
-class _Chart extends StatelessWidget {
+class _Chart extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => '_Chart';
+
   const _Chart({required this.bars, required this.l10n});
 
   final List<PatternBar> bars;

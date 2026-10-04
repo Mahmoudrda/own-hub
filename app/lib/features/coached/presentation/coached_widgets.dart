@@ -57,7 +57,10 @@ class CoachedNavBar extends StatelessWidget {
 ///
 /// `coachRow()` in the prototype. The verified tick sits next to her name
 /// because that is what she is being trusted for.
-class CoachRow extends StatelessWidget {
+class CoachRow extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'CoachRow';
+
   const CoachRow({
     super.key,
     required this.name,
@@ -393,7 +396,10 @@ class _Column extends StatelessWidget {
 /// [state] is the delivery state as she reads it — "Delivered", "Read", or the
 /// queued wording. It is a string rather than an enum because the words are the
 /// dictionary's and the widget must not choose between them.
-class ChatBubble extends StatelessWidget {
+class ChatBubble extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'ChatBubble';
+
   const ChatBubble({
     super.key,
     this.text,
@@ -605,7 +611,10 @@ class PlanUpdatedChip extends StatelessWidget {
 }
 
 /// A row of key and value — `kv()` in the prototype.
-class CoachedKeyValue extends StatelessWidget {
+class CoachedKeyValue extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'CoachedKeyValue';
+
   const CoachedKeyValue({
     super.key,
     required this.label,

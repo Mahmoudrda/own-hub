@@ -8,6 +8,7 @@ export 'draw_on.dart';
 export 'food_marks.dart';
 export 'hand_geometry.dart' show handSeed;
 export 'hand_marks.dart';
+export 'hand_seed_name.dart';
 export 'hand_painters.dart'
     show
         ArrowPainter,

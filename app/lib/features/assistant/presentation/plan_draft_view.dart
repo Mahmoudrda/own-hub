@@ -123,7 +123,10 @@ class PlanDraftView extends StatelessWidget {
 }
 
 /// A label and a count, from the structure of the draft.
-class _Count extends StatelessWidget {
+class _Count extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => '_Count';
+
   const _Count({required this.label, required this.value});
 
   final String label;

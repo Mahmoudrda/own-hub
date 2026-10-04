@@ -120,7 +120,10 @@ class AppChip extends StatelessWidget {
 /// [selected] holds the indexes that are on, so the same widget serves a
 /// single-choice row (one index) and a multiple-choice row (several) without a
 /// mode flag deciding which it is today.
-class AppChipRow extends StatelessWidget {
+class AppChipRow extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppChipRow';
+
   const AppChipRow({
     super.key,
     required this.items,

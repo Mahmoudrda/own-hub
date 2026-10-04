@@ -39,7 +39,10 @@ enum AppButtonVariant {
   text,
 }
 
-class AppButton extends StatelessWidget {
+class AppButton extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppButton';
+
   const AppButton(
     this.label, {
     super.key,

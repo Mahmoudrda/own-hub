@@ -194,6 +194,9 @@ double handLooseRadius(double r) => (r * 0.9).clamp(10.0, 22.0);
 
 /// A seed from what a card holds, so the same card is drawn the same way on
 /// every visit and its neighbours are drawn differently.
+///
+/// Each child is named with [handSeedNameOf], never its `runtimeType`, which
+/// an obfuscated release build renames.
 int handSeedForChildren(
   BuildContext context,
   List<Widget> children,
@@ -201,7 +204,7 @@ int handSeedForChildren(
 ) {
   final parts = <Object?>[ScreenScope.of(context), salt, children.length];
   for (final c in children.take(3)) {
-    parts.add(c.runtimeType.toString());
+    parts.add(handSeedNameOf(c));
     if (c is Text) parts.add(c.data);
   }
   return handSeed(parts);
@@ -209,7 +212,7 @@ int handSeedForChildren(
 
 /// A block of related content. `card()` in the prototype: 16px padding, 12px
 /// between children, and the large radius rather than the medium one.
-class AppCard extends StatelessWidget {
+class AppCard extends StatelessWidget implements HandSeedName {
   const AppCard({
     super.key,
     required this.children,
@@ -230,6 +233,9 @@ class AppCard extends StatelessWidget {
 
   /// Which hand draws it. Usually left to the card's own contents.
   final int? seed;
+
+  @override
+  String get handSeedName => 'AppCard';
 
   @override
   Widget build(BuildContext context) {

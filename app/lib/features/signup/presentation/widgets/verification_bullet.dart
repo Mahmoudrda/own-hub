@@ -13,8 +13,12 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_tokens.dart';
+import '../../../../ui/hand/hand_seed_name.dart';
 
-class VerificationBullet extends StatelessWidget {
+class VerificationBullet extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'VerificationBullet';
+
   const VerificationBullet({super.key, required this.icon, required this.text});
 
   final IconData icon;

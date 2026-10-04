@@ -12,7 +12,10 @@ import '../theme/app_tokens.dart';
 import 'app_card.dart' show kCardHatchOpacity;
 import 'hand/hand.dart';
 
-class AppSageNote extends StatelessWidget {
+class AppSageNote extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppSageNote';
+
   const AppSageNote(this.text, {super.key});
 
   final String text;
