@@ -135,9 +135,11 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
                 ),
                 if (recipe.titleAr != null) ...[
                   const SizedBox(height: 6),
-                  Text(
-                    recipe.titleAr!,
-                    style: AppText.titleM.copyWith(color: BookInk.roseTitle),
+                  _Hers(
+                    child: Text(
+                      recipe.titleAr!,
+                      style: AppText.titleM.copyWith(color: BookInk.roseTitle),
+                    ),
                   ),
                 ],
                 const SizedBox(height: 12),
@@ -158,13 +160,21 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
                 else
                   // The page. One block, her line breaks, nothing extracted and
                   // nothing reordered.
-                  Text(
-                    recipe.bodyAr,
-                    style: AppText.body.copyWith(color: BookInk.ink),
+                  _Hers(
+                    child: Text(
+                      recipe.bodyAr,
+                      style: AppText.body.copyWith(color: BookInk.ink),
+                    ),
                   ),
                 if (recipe.closingAr != null && _tab == 0) ...[
                   const SizedBox(height: 14),
-                  HandNote(recipe.closingAr!, size: 19, color: BookInk.ink),
+                  _Hers(
+                    child: HandNote(
+                      recipe.closingAr!,
+                      size: 19,
+                      color: BookInk.ink,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -230,6 +240,24 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
       ),
     );
   }
+}
+
+/// Rahma's own words, right to left whatever the app's language.
+///
+/// Her text is Egyptian Arabic with English words inside it, numbered as she
+/// numbered it. In a left-to-right column the number landed on the wrong side
+/// and mixed lines broke apart. Full width, so a short line still starts at
+/// the right edge. Only the direction changes; her text is never touched.
+class _Hers extends StatelessWidget {
+  const _Hers({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: Directionality(textDirection: TextDirection.rtl, child: child),
+  );
 }
 
 /// Her ingredients and steps, lifted out of the card.
@@ -339,17 +367,21 @@ class _Structured extends StatelessWidget {
           for (final step in steps) _StepRow(step: step),
           for (final component in recipe.components) ...[
             const SizedBox(height: 14),
-            Text(
-              component.headingAr,
-              style: AppText.titleS.copyWith(color: BookInk.ink),
+            _Hers(
+              child: Text(
+                component.headingAr,
+                style: AppText.titleS.copyWith(color: BookInk.ink),
+              ),
             ),
             for (final step in component.steps) _StepRow(step: step),
           ],
           for (final variant in recipe.variants) ...[
             const SizedBox(height: 14),
-            Text(
-              variant.labelAr,
-              style: AppText.titleS.copyWith(color: BookInk.ink),
+            _Hers(
+              child: Text(
+                variant.labelAr,
+                style: AppText.titleS.copyWith(color: BookInk.ink),
+              ),
             ),
             for (final step in variant.steps) _StepRow(step: step),
           ],
@@ -406,35 +438,41 @@ class _IngredientRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final app = Directionality.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 8,
-        children: [
-          // `qtyLine`, not `qtyTextAr`: her phrase may cross one of the
-          // book's line breaks, and a row that wrapped where the page wrapped
-          // read as two ingredients.
-          Text(
-            ingredient.qtyLine,
-            style: AppText.body.copyWith(color: BookInk.ink),
-          ),
-          if (ingredient.grams != null)
+      child: _Hers(
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          children: [
+            // `qtyLine`, not `qtyTextAr`: her phrase may cross one of the
+            // book's line breaks, and a row that wrapped where the page wrapped
+            // read as two ingredients.
             Text(
-              l10n.nG(countLabel(ingredient.grams!)),
-              style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+              ingredient.qtyLine,
+              style: AppText.body.copyWith(color: BookInk.ink),
             ),
-          if (ingredient.optional)
-            Text(
-              l10n.optional,
-              style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
-            ),
-          if (ingredient.brandHint != null)
-            Text(
-              ingredient.brandHint!,
-              style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
-            ),
-        ],
+            // The app's labels, in the app's direction.
+            if (ingredient.grams != null)
+              Text(
+                l10n.nG(countLabel(ingredient.grams!)),
+                textDirection: app,
+                style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+              ),
+            if (ingredient.optional)
+              Text(
+                l10n.optional,
+                textDirection: app,
+                style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+              ),
+            if (ingredient.brandHint != null)
+              Text(
+                ingredient.brandHint!,
+                style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -453,26 +491,35 @@ class _StepRow extends StatelessWidget {
     final body = large
         ? AppText.body.copyWith(fontSize: 21, height: 1.5, color: BookInk.ink)
         : AppText.body.copyWith(color: BookInk.ink);
+    final app = Directionality.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(step.textAr, style: body),
-          if (step.minutes != null || step.tempC != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 5),
-              child: Wrap(
-                spacing: 8,
-                children: [
-                  if (step.minutes != null)
-                    _Chip(label: l10n.nMin(countLabel(step.minutes!))),
-                  if (step.tempC != null)
-                    _Chip(label: l10n.tempDegrees(countLabel(step.tempC!))),
-                ],
+      child: _Hers(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(step.textAr, style: body),
+            if (step.minutes != null || step.tempC != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 5),
+                child: Wrap(
+                  spacing: 8,
+                  children: [
+                    if (step.minutes != null)
+                      _Chip(
+                        label: l10n.nMin(countLabel(step.minutes!)),
+                        direction: app,
+                      ),
+                    if (step.tempC != null)
+                      _Chip(
+                        label: l10n.tempDegrees(countLabel(step.tempC!)),
+                        direction: app,
+                      ),
+                  ],
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -533,9 +580,12 @@ class _CookMode extends StatelessWidget {
 
 /// A timer or temperature chip on a step. Her ink on her paper, hairline edge.
 class _Chip extends StatelessWidget {
-  const _Chip({required this.label});
+  const _Chip({required this.label, this.direction});
 
   final String label;
+
+  /// The app's direction, kept when the chip sits inside her text.
+  final TextDirection? direction;
 
   @override
   Widget build(BuildContext context) {
@@ -545,7 +595,11 @@ class _Chip extends StatelessWidget {
         border: Border.all(color: BookInk.hairline),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
-      child: Text(label, style: AppText.label.copyWith(color: BookInk.inkSoft)),
+      child: Text(
+        label,
+        textDirection: direction,
+        style: AppText.label.copyWith(color: BookInk.inkSoft),
+      ),
     );
   }
 }
