@@ -77,6 +77,10 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
       'It pushes every destination through the real router as the app '
       'actually ships, so the defaults are the point of the walk rather than '
       'an inherited convenience.',
+  'test/store/store_screenshots_test.dart':
+      'The store screenshots must show the product as it ships, so the '
+      'shipped flags are its subject. It overrides only `accountRequired`, '
+      'so the screens open without a verified account.',
 };
 
 List<File> _testFiles() => Directory('test')
