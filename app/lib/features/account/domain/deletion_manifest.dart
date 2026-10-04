@@ -298,7 +298,9 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     path: 'G1 onAccountDelete(uid)',
     owner: 'G1, called by G7',
     method: DeletionMethod.groupHook,
-    note: 'covers rows 10, 22 and 23',
+    note:
+        'runs the community, coach and assistant purge on the server '
+        '(purge_group_hook)',
   ),
   DeletionRow(
     number: 27,
