@@ -297,6 +297,11 @@ class FirebaseBackend:
         overwritten with exactly {deleted: true}, no text and no uid. A comment
         id that spells her uid is not kept as the tombstone's id.
 
+        B2: each removed like and each tombstoned comment takes counts.likes or
+        counts.comments on its post down by one in the same transaction, never
+        below 0. Follower and following counts are not stored (the app counts
+        edges), so deleting the edges keeps them true.
+
         Comments, likes, following edges and results are found by scanning
         their collection group with a projection, not by a filtered query: a
         collection-group filter needs a single-field index override, and
@@ -321,19 +326,14 @@ class FirebaseBackend:
         # Her posts, with every comment and like under them.
         for snapshot in db.collection("posts").where("authorUid", "==", uid).stream():
             db.recursive_delete(snapshot.reference)
-        # What is left is on other women's posts.
+        # What is left is on other women's posts. Each removal takes its
+        # post's counter down in the same transaction (B2).
         for snapshot in self._scan("comments", "authorUid"):
-            if (snapshot.to_dict() or {}).get("authorUid") != uid:
-                continue
-            tombstone = {"deleted": True}
-            if uid in snapshot.id:
-                snapshot.reference.parent.document().set(tombstone)
-                snapshot.reference.delete()
-            else:
-                snapshot.reference.set(tombstone)
+            if (snapshot.to_dict() or {}).get("authorUid") == uid:
+                self._tombstone_comment(snapshot.reference, uid)
         for snapshot in self._scan("likes"):
             if snapshot.id == uid:
-                snapshot.reference.delete()
+                self._remove_like(snapshot.reference)
 
         for group in db.collection("groups").select([]).stream():
             group.reference.collection("members").document(uid).delete()
@@ -347,6 +347,48 @@ class FirebaseBackend:
         for snapshot in self._scan("results", "clientUid"):
             if (snapshot.to_dict() or {}).get("clientUid") == uid:
                 snapshot.reference.delete()
+
+    def _remove_like(self, like_ref):
+        """B2: delete her like and take counts.likes on its post down by one,
+        atomically. A like already gone changes nothing, so a re-run never
+        decrements twice."""
+        from google.cloud import firestore
+
+        post_ref = like_ref.parent.parent
+
+        @firestore.transactional
+        def txn(transaction):
+            like = like_ref.get(transaction=transaction)
+            post = post_ref.get(transaction=transaction) if post_ref is not None else None
+            if not like.exists:
+                return
+            transaction.delete(like_ref)
+            _decrement(transaction, post, "likes")
+
+        txn(self.db.transaction())
+
+    def _tombstone_comment(self, comment_ref, uid):
+        """B2: replace her comment with exactly {deleted: true} and take
+        counts.comments on its post down by one, atomically. A comment id that
+        spells her uid is not kept as the tombstone's id. Re-checks the author
+        inside the transaction, so a re-run never decrements twice."""
+        from google.cloud import firestore
+
+        post_ref = comment_ref.parent.parent
+        target = comment_ref.parent.document() if uid in comment_ref.id else comment_ref
+
+        @firestore.transactional
+        def txn(transaction):
+            comment = comment_ref.get(transaction=transaction)
+            post = post_ref.get(transaction=transaction) if post_ref is not None else None
+            if not comment.exists or (comment.to_dict() or {}).get("authorUid") != uid:
+                return
+            transaction.set(target, {"deleted": True})
+            if target.path != comment_ref.path:
+                transaction.delete(comment_ref)
+            _decrement(transaction, post, "comments")
+
+        txn(self.db.transaction())
 
     def _scan(self, group, field=None):
         return self.db.collection_group(group).select([field] if field else []).stream()
@@ -377,6 +419,18 @@ class FirebaseBackend:
             auth.delete_user(uid)
         except auth.UserNotFoundError:
             pass
+
+
+def _decrement(transaction, post, field) -> None:
+    """counts.<field> on a post, down by one and never below 0. A post that is
+    gone, or that has no such count, is left alone: no counter is invented."""
+    if post is None or not post.exists or not post.reference.path.startswith("posts/"):
+        return
+    counts = (post.to_dict() or {}).get("counts")
+    current = counts.get(field) if isinstance(counts, dict) else None
+    if isinstance(current, bool) or not isinstance(current, (int, float)):
+        return
+    transaction.update(post.reference, {f"counts.{field}": max(0, int(current) - 1)})
 
 
 def unfinished(db, older_than) -> list[str]:

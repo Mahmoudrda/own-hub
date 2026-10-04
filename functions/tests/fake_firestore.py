@@ -169,6 +169,13 @@ class CollectionRef:
         self._filters, self._order, self._limit = list(filters), order, limit_n
         self._group = group
 
+    @property
+    def parent(self):
+        """The document this collection hangs off, or None at the root."""
+        if "/" not in self.path or self._group:
+            return None
+        return DocumentRef(self.db, self.path.rsplit("/", 1)[0])
+
     def document(self, doc_id=None):
         if doc_id is None:
             import uuid

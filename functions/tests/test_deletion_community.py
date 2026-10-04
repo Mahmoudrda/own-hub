@@ -27,6 +27,7 @@ THIRD = "uid-three"
 def fs(monkeypatch):
     db = fake_firestore.FakeFirestore()
     monkeypatch.setattr(store, "db", lambda: db)
+    monkeypatch.setattr(store.firestore, "transactional", fake_firestore.transactional)
     return db
 
 
