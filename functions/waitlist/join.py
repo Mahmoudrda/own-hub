@@ -32,6 +32,7 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import hmac
+import ipaddress
 import json
 import re
 import threading
@@ -51,6 +52,14 @@ SECRET_IP_KEY = "waitlist-ip-key"
 pepper on purpose: a different purpose gets a different key."""
 
 DAILY_LIMIT_PER_IP = 5
+TRUSTED_PUBLIC_HOPS = 0
+"""B4: public X-Forwarded-For entries Google appends AFTER the client's own.
+
+0 for the Cloud Run URL the form posts to today (europe-west3-own-hub.
+cloudfunctions.net, a gen2 function): the front end appends only the address
+it saw, so the client is the last public entry. 1 if an external Application
+Load Balancer is ever put in front, which appends "<client>, <its own
+address>". See client_ip."""
 RETENTION_DAYS = 180
 RATE_RETENTION_DAYS = 2
 MAX_BODY_BYTES = 4096
@@ -92,6 +101,46 @@ def normalise(raw) -> Optional[tuple]:
     if not _EG_MOBILE.match(national):
         return None
     return ("phone", "+20" + national)
+
+
+def _public(entry: str):
+    """One X-Forwarded-For entry as a public address, or None."""
+    text = entry.strip()
+    if text.startswith("["):  # [v6]:port
+        text = text[1:].split("]", 1)[0]
+    elif text.count(":") == 1:  # v4:port
+        text = text.split(":", 1)[0]
+    try:
+        address = ipaddress.ip_address(text)
+    except ValueError:
+        return None
+    if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped:
+        address = address.ipv4_mapped
+    return address if address.is_global else None
+
+
+def client_ip(forwarded: Optional[str], remote_addr: Optional[str], trusted_hops: Optional[int] = None) -> str:
+    """B4: the address the per-IP cap is counted on.
+
+    A client may send any X-Forwarded-For; Google's front end APPENDS what it
+    saw, so everything to the left of that is the client's own text and is
+    never trusted. Read from the right: skip entries that are not public
+    addresses (an internal Google hop, a private or carrier-NAT address,
+    junk), drop TRUSTED_PUBLIC_HOPS more, and the next one is the client.
+    Nothing a client prepends can move it, so spoofing buys no attempts.
+
+    IPv6 is returned as its /64: one home or phone is given a whole /64 and
+    could otherwise rotate through it for a fresh allowance each time.
+    Falls back to the peer address when no entry is usable.
+    """
+    hops = TRUSTED_PUBLIC_HOPS if trusted_hops is None else trusted_hops
+    public = [a for a in (_public(e) for e in (forwarded or "").split(",")) if a is not None]
+    chosen = public[-1 - hops] if len(public) > hops else _public(remote_addr or "")
+    if chosen is None:
+        return (remote_addr or "").strip()
+    if isinstance(chosen, ipaddress.IPv6Address):
+        return str(ipaddress.ip_network(f"{chosen}/64", strict=False))
+    return str(chosen)
 
 
 def ip_hash(key: bytes, ip: str) -> str:
@@ -255,10 +304,8 @@ def from_flask(request) -> Request:
         else:
             parsed = request.get_json(silent=True)
             fields = parsed if isinstance(parsed, dict) else {}
-    # Google's front end APPENDS the connecting address, so the last entry is
-    # the one a client cannot forge.
-    forwarded = request.headers.get("X-Forwarded-For", "")
-    ip = forwarded.split(",")[-1].strip() if forwarded else (request.remote_addr or "")
+    # B4: read from the right, past internal hops. See client_ip.
+    ip = client_ip(request.headers.get("X-Forwarded-For", ""), request.remote_addr)
     return Request(
         method=request.method,
         origin=request.headers.get("Origin"),
