@@ -23,6 +23,59 @@ import '../../../ui/hand/hand.dart';
 import '../domain/train_repository.dart';
 import 'train_widgets.dart';
 
+/// [move] with its name and prescription read in the language on screen now.
+///
+/// A session keeps the moves it was started with, and their strings were read
+/// from the dictionary at that moment, so a woman who switched language
+/// mid-session saw the old language on R07 while R03 beside it was translated.
+/// An authored move is found again by its exercise id, and a prescription by
+/// the sets it describes (a swapped move keeps the prescription it replaced).
+/// Anything not authored here is shown exactly as stored.
+PlannedMove localisedMove(AppL10n l10n, PlannedMove move) {
+  String? name;
+  String? label;
+  for (final authored in sampleWorkoutDay(l10n).moves) {
+    if (authored.exerciseId == move.exerciseId) {
+      name = authored.name;
+      if (_sameLoad(authored.sets, move.sets)) {
+        label = authored.prescriptionLabel;
+      }
+    }
+  }
+  if (label == null) {
+    for (final authored in sampleWorkoutDay(l10n).moves) {
+      if (_sameLoad(authored.sets, move.sets)) {
+        label = authored.prescriptionLabel;
+        break;
+      }
+    }
+  }
+  if (name == null && label == null) return move;
+  return PlannedMove(
+    exerciseId: move.exerciseId,
+    name: name ?? move.name,
+    prescriptionLabel: label ?? move.prescriptionLabel,
+    sets: move.sets,
+    cues: move.cues,
+    quiet: move.quiet,
+    needsEquipment: move.needsEquipment,
+    floorOnly: move.floorOnly,
+    videoAssetId: move.videoAssetId,
+  );
+}
+
+bool _sameLoad(List<PrescribedSet> a, List<PrescribedSet> b) {
+  if (a.length != b.length || a.isEmpty) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i].reps != b[i].reps ||
+        a[i].holdSeconds != b[i].holdSeconds ||
+        a[i].weightKg != b[i].weightKg) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// The design's day, resolved from the dictionary.
 ///
 /// Public so the router's session state trains the SAME day this screen

@@ -44,6 +44,7 @@ import '../domain/train_repository.dart';
 import '../domain/weight_label.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
+import 'workout_day_view.dart' show localisedMove;
 
 class MidSetView extends StatefulWidget {
   const MidSetView({
@@ -289,7 +290,8 @@ class _MidSetViewState extends State<MidSetView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final move = widget.move ?? _defaultMove(l10n);
+    // In the language on screen now, not the one the session started in.
+    final move = localisedMove(l10n, widget.move ?? _defaultMove(l10n));
     final prescribed = _prescribedOf(move);
 
     return AppScaffold(
