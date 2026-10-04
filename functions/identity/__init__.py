@@ -4,6 +4,7 @@ Module map, in the order spec §2's pipeline runs them:
 
     nid.py        pure parser for the 14-digit number   (no I/O, spec §8)
     arabic.py     pure reader for the printed النوع word (no I/O)
+    imagesize.py  pure header reader: image size before any decode (T24)
     providers.py  the three paid seams, plus mocks and the unfilled AWS slot
     config.py     every dial, with its score scale attached
     decisions.py  spec §3's matrix, as one pure function

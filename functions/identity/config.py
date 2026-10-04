@@ -90,11 +90,15 @@ MAX_IMAGE_BYTES = 8 * 1024 * 1024
 MAX_TOTAL_BYTES = 24 * 1024 * 1024
 """Checked on base64 length BEFORE decoding. A decompression bomb is a real
 attack against any endpoint that takes an image: a 2 MB JPEG can expand to
-gigabytes of pixels and kill the instance. Pixel dimensions are re-checked after
-decode in faces.py, because a JPEG's byte size says nothing about how many
-pixels it holds."""
+gigabytes of pixels and kill the instance. Pixel dimensions are then read from
+the image HEADER (imagesize.py) before anything is decoded, because a JPEG's
+byte size says nothing about how many pixels it holds (T24)."""
 
 MAX_PIXELS = 40_000_000
+MAX_IMAGE_SIDE = 10_000
+"""Per-side ceiling, read from the header with MAX_PIXELS. A 48 MP phone frame
+is 8000x6000; nothing a camera produces is longer than this on one side. Both
+are also handed to OpenCV itself (faces.py) as a second guard."""
 WORKING_LONG_EDGE = 1024
 """Every image is downscaled to this on its longest edge before detection.
 

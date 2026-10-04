@@ -121,6 +121,10 @@ class FakeBackend:
             else:
                 self.registry[key].update({"state": "closed", "uid": None})
 
+    def purge_group_hook(self, uid):
+        self._step("purge_group_hook")
+        self.community_purged = True
+
     def pseudonymise_reports(self, uid, token):
         self._step("pseudonymise_reports")
         for report in self.reports.values():

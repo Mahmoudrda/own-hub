@@ -1536,6 +1536,12 @@ service cloud.firestore {
     // The caps are 5 questions per woman per day and 6 drafts per coach.
     match /assistantQuota/{uid}     { allow read, write: if false; }
 
+    // W1. The launch waitlist: phone numbers and emails of people who are not
+    // members. Written only by the join_waitlist Function; its per-IP counter
+    // likewise. No client, admin included, reads or writes either.
+    match /waitlist/{entryId}       { allow read, write: if false; }
+    match /waitlistRate/{key}       { allow read, write: if false; }
+
     // STILL MISSING, and deliberately not guessed at:
     //   planDrafts, media, enquiries, payments.
     // Each is referenced by Phase 3 code, and each needs its shape settled

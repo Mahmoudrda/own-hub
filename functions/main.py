@@ -80,6 +80,7 @@ from firebase_functions import https_fn, options, scheduler_fn
 from identity import (
     config,
     decisions,
+    imagesize,
     pipeline,
     providers,
     logs,
@@ -181,13 +182,22 @@ def _decode_image(value: Any, budget_left: dict) -> bytes:
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.IMAGE_TOO_LARGE
         )
     try:
-        return base64.b64decode(value, validate=True)
+        raw = base64.b64decode(value, validate=True)
     except Exception:
         # Bare, and nothing from the exception propagates: a base64 error
         # message can quote the offending input, which here is image data.
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.IMAGE_UNDECODABLE
         )
+    # T24: a header declaring more pixels than the ceiling is a decompression
+    # bomb. Refused here, before any paid call and before any pixel decode.
+    # Only the too-large case is refused at the door; bytes with no readable
+    # header are refused by faces.decode, which never decodes them either.
+    if imagesize.refusal(raw) == reasons.IMAGE_TOO_LARGE:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.IMAGE_TOO_LARGE
+        )
+    return raw
 
 
 def _install_hash(raw: Optional[str]) -> Optional[str]:
@@ -976,3 +986,34 @@ def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
     logs.decision("resume_account_deletions", state="done", count=finished)
     if failed:
         logs.error("account_deletion_failed", state=deletion.FAILED_RETRYABLE, count=failed)
+
+
+# ------------------------------------------------------------- waitlist
+
+
+def _waitlist_store():
+    from waitlist import join
+
+    return join.FirestoreWaitlist(store.db())
+
+
+@https_fn.on_request(
+    region=config.REGION,
+    memory=options.MemoryOption.MB_256,
+    max_instances=3,
+)
+def join_waitlist(request: https_fn.Request) -> https_fn.Response:
+    """W1: the public site's waitlist form. No App Check, because it is the
+    web: strict validation, a honeypot and a per-IP cap instead. All of it is
+    in waitlist/join.py; this only adapts Flask to it."""
+    import datetime as dt
+
+    from waitlist import join
+
+    result = join.handle(
+        join.from_flask(request),
+        _waitlist_store(),
+        join.ip_key,
+        dt.datetime.now(dt.timezone.utc),
+    )
+    return https_fn.Response(result.body, status=result.status, headers=result.headers)

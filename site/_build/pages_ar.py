@@ -82,6 +82,32 @@ DELETE_BODY = """مرحبًا،
 """
 
 
+
+FORM = '''
+        <form class="waitlist" action="{{waitlistEndpoint}}" method="post"
+              accept-charset="utf-8">
+          <input type="hidden" name="lang" value="ar">
+          <p class="field">
+            <label for="contact">رقم الهاتف المحمول أو البريد الإلكتروني</label>
+            <input id="contact" name="contact" type="text" dir="ltr" required
+                   maxlength="254" autocomplete="on" spellcheck="false"
+                   aria-describedby="contact-hint">
+            <span class="hint" id="contact-hint">رقم محمول مصري يبدأ بـ 010 أو 011 أو 012 أو 015، أو عنوان بريد إلكتروني.</span>
+          </p>
+          <p class="hp" aria-hidden="true">
+            <label for="website">اتركي هذا الحقل فارغًا</label>
+            <input id="website" name="website" type="text" tabindex="-1"
+                   autocomplete="off">
+          </p>
+          <p class="check">
+            <input id="consent" name="consent" type="checkbox" value="yes" required>
+            <label for="consent"><b>أوافق.</b> سنراسلك مرة واحدة عند افتتاح Own Hub، ثم نحذف بيانات التواصل الخاصة بك.</label>
+          </p>
+          <div class="btn-row"><button class="btn" type="submit">انضمّي إلى القائمة</button></div>
+        </form>
+'''
+
+
 # ---------------------------------------------------------------- build ----
 
 def build(cfg, lang, mailto_link):
@@ -116,6 +142,7 @@ def build(cfg, lang, mailto_link):
         <p>أسّست {{brandFounder}} تطبيق Own Hub، وهي امرأة في مصر تبني لنساء مصر. لا
         سيرة ذاتية تقرئينها هنا ولا شيء تأخذينه على الثقة: الصفحات أدناه تشرح
         بالضبط ما يحتفظ به التطبيق، وأين يحتفظ به، وإلى متى.</p>
+        <div class="btn-row"><a class="btn" href="/ar/waitlist">انضمّي إلى قائمة الانتظار</a></div>
       </div>
       <ul class="facts" aria-label="‏Own Hub في سطور">
         <li><b>للنساء فقط</b><span>تحقُّق مرة واحدة برقمك القومي وصورة ذاتية حية، أو على يد مراجِعة في مكالمة فيديو قصيرة. ولا تُخزَّن الصور أبدًا.</span></li>
@@ -410,6 +437,18 @@ def build(cfg, lang, mailto_link):
           Crashlytics الخطأ وطراز الجهاز ونظام التشغيل وإصدار التطبيق، دون أي
           معرّف للحساب أو اسم أو رقم هاتف.</li>
         </ul>
+
+""" + h3("c-waitlist", "٣.٧ قائمة الانتظار على هذا الموقع") + """
+        <p>إذا انضممتِ إلى قائمة الانتظار على هذا الموقع، نحتفظ برقم الهاتف
+        المحمول أو عنوان البريد الإلكتروني الذي تقدّمينه، واللغة التي
+        اخترتِها، وموافقتك، ووقت انضمامك. ونستخدم ذلك لغرض واحد: أن نراسلك مرة
+        واحدة عند افتتاح Own Hub، ثم نحذفه. وإن لم يحدث ذلك، يُحذف تلقائيًا بعد
+        180 يومًا من انضمامك، وهي مدة بانتظار تأكيد المستشار القانوني. ولحماية
+        النموذج من إساءة الاستخدام، نحتفظ أيضًا برمز مشتق بمفتاح سري من عنوان
+        الإنترنت الخاص بك، لا بالعنوان نفسه، وبعدد المحاولات الصادرة منه، ويُحذف
+        هذا العدد بعد يومين. وتُخزَّن هذه البيانات في Google Cloud Firestore في
+        فرانكفورت بألمانيا، ولا يستطيع أي تطبيق أو متصفح قراءتها. ولمغادرة
+        القائمة قبل ذلك، راسلينا على {{mailto:contactPrivacy}}.</p>
 
 """ + h2("where", "٤. من يتعامل مع بياناتك وأين") + """
         <p>لا نبيع بياناتك، ولا نشاركها مع المعلنين أو تجّار البيانات أو شركات
@@ -1042,6 +1081,78 @@ def build(cfg, lang, mailto_link):
     }
 
     # -------------------------------------------------------------- 404 ----
+    # --------------------------------------------------------- waitlist ----
+    pages["waitlist"] = {
+        "title": "قائمة الانتظار · Own Hub",
+        "description": (
+            "اتركي رقم هاتفك المحمول المصري أو بريدك الإلكتروني، وسنراسلك مرة "
+            "واحدة عند افتتاح Own Hub."
+        ),
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>انضمّي إلى قائمة الانتظار</h1>
+        <p class="lede">لم يُفتح Own Hub بعد. اتركي رقم هاتفك المحمول المصري أو
+        بريدك الإلكتروني، وسنراسلك مرة واحدة عند افتتاحه.</p>
+""" + FORM + """
+        <p>هذا كل ما نطلبه. فقائمة الانتظار ليست حسابًا، وما نحتفظ به ومدة
+        الاحتفاظ به مبيَّنان في <a href="/ar/privacy#c-waitlist">سياسة
+        الخصوصية</a>.</p>
+      </div>
+    </div>
+""",
+    }
+
+    pages["waitlist-joined"] = {
+        "title": "أنتِ على القائمة · Own Hub",
+        "description": "أنتِ على قائمة انتظار Own Hub.",
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>أنتِ على القائمة</h1>
+        <p class="lede">شكرًا لكِ. سنراسلك مرة واحدة عند افتتاح Own Hub، ثم
+        نحذف بيانات التواصل الخاصة بك.</p>
+        <p>وإن كنتِ قد انضممتِ من قبل بالرقم أو البريد نفسه، فأنتِ على القائمة
+        مرة واحدة فقط.</p>
+        <div class="btn-row"><a class="btn ghost" href="/ar/">العودة إلى الصفحة الأولى</a></div>
+      </div>
+    </div>
+""",
+    }
+
+    pages["waitlist-check"] = {
+        "title": "لم يكتمل الطلب · Own Hub",
+        "description": "تعذّر استخدام ما أُرسل عبر نموذج قائمة الانتظار.",
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>لم يكتمل الطلب</h1>
+        <p class="lede">تعذّر علينا استخدام ما أُرسل، فلم يُحفظ شيء.</p>
+        <p>يُرجى إدخال رقم محمول مصري من أحد عشر رقمًا يبدأ بـ 010 أو 011 أو
+        012 أو 015، أو عنوان بريد إلكتروني، ثم وضع علامة في المربع
+        للموافقة.</p>
+        <div class="btn-row"><a class="btn" href="/ar/waitlist">حاولي مرة أخرى</a></div>
+      </div>
+    </div>
+""",
+    }
+
+    pages["waitlist-later"] = {
+        "title": "يُرجى المحاولة لاحقًا · Own Hub",
+        "description": "تعذّر على قائمة الانتظار استقبال هذا الطلب الآن.",
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>يُرجى المحاولة لاحقًا</h1>
+        <p class="lede">تعذّرت إضافتك الآن، ولم يُحفظ شيء.</p>
+        <p>فإمّا أن هذا الاتصال أرسل عدة طلبات اليوم، وإمّا أن خللًا حدث من
+        جهتنا. يُرجى المحاولة غدًا.</p>
+        <div class="btn-row"><a class="btn ghost" href="/ar/">العودة إلى الصفحة الأولى</a></div>
+      </div>
+    </div>
+""",
+    }
+
     pages["404"] = {
         "title": "الصفحة غير موجودة · Own Hub",
         "description": "هذا العنوان ليس في هذا الموقع. وهذه كل صفحاته.",
@@ -1050,10 +1161,11 @@ def build(cfg, lang, mailto_link):
       <div class="prose">
         <h1>هذه الصفحة ليست هنا</h1>
         <p class="lede">العنوان الذي تتبّعتِه غير موجود في هذا الموقع، وهو لا
-        يضم سوى خمس صفحات. وإحدى هذه الصفحات هي المقصودة على الأرجح.</p>
+        يضم سوى ست صفحات. وإحدى هذه الصفحات هي المقصودة على الأرجح.</p>
       </div>
       <ul class="doorways">
         <li><a href="/ar/"><span class="t">الصفحة الأولى</span><span class="d">ما هو Own Hub.</span></a></li>
+        <li><a href="/ar/waitlist"><span class="t">قائمة الانتظار</span><span class="d">لتعرفي مرة واحدة حين يُفتح Own Hub.</span></a></li>
         <li><a href="/ar/privacy"><span class="t">سياسة الخصوصية</span><span class="d">ما يجمعه التطبيق، وأين يُحفظ.</span></a></li>
         <li><a href="/ar/terms"><span class="t">شروط الاستخدام</span><span class="d">ما هو Own Hub، وما ليس هو.</span></a></li>
         <li><a href="/ar/support"><span class="t">الدعم</span><span class="d">كيف تصلين إلى إنسان.</span></a></li>

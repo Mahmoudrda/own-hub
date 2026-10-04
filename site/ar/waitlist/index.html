@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>قائمة الانتظار · Own Hub</title>
+  <meta name="description" content="اتركي رقم هاتفك المحمول المصري أو بريدك الإلكتروني، وسنراسلك مرة واحدة عند افتتاح Own Hub.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FFF8F9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1A1316" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <link rel="canonical" href="/ar/waitlist">
+  <link rel="alternate" hreflang="en" href="/waitlist">
+  <link rel="alternate" hreflang="ar" href="/ar/waitlist">
+  <link rel="alternate" hreflang="x-default" href="/waitlist">
+</head>
+<body>
+  <a class="skip" href="#main">انتقلي إلى المحتوى الأساسي</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <a class="brand" href="/ar/" aria-label="Own Hub، الصفحة الأولى">
+        <span class="mark" aria-hidden="true">OH</span>
+        <span class="name">Own Hub</span>
+      </a>
+      <a class="lang-switch" href="/waitlist" lang="en"
+         hreflang="en" aria-label="التبديل إلى الإنجليزية">English</a>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+    <div class="wrap">
+      <div class="prose">
+        <h1>انضمّي إلى قائمة الانتظار</h1>
+        <p class="lede">لم يُفتح Own Hub بعد. اتركي رقم هاتفك المحمول المصري أو
+        بريدك الإلكتروني، وسنراسلك مرة واحدة عند افتتاحه.</p>
+
+        <form class="waitlist" action="https://europe-west3-own-hub.cloudfunctions.net/join_waitlist" method="post"
+              accept-charset="utf-8">
+          <input type="hidden" name="lang" value="ar">
+          <p class="field">
+            <label for="contact">رقم الهاتف المحمول أو البريد الإلكتروني</label>
+            <input id="contact" name="contact" type="text" dir="ltr" required
+                   maxlength="254" autocomplete="on" spellcheck="false"
+                   aria-describedby="contact-hint">
+            <span class="hint" id="contact-hint">رقم محمول مصري يبدأ بـ 010 أو 011 أو 012 أو 015، أو عنوان بريد إلكتروني.</span>
+          </p>
+          <p class="hp" aria-hidden="true">
+            <label for="website">اتركي هذا الحقل فارغًا</label>
+            <input id="website" name="website" type="text" tabindex="-1"
+                   autocomplete="off">
+          </p>
+          <p class="check">
+            <input id="consent" name="consent" type="checkbox" value="yes" required>
+            <label for="consent"><b>أوافق.</b> سنراسلك مرة واحدة عند افتتاح Own Hub، ثم نحذف بيانات التواصل الخاصة بك.</label>
+          </p>
+          <div class="btn-row"><button class="btn" type="submit">انضمّي إلى القائمة</button></div>
+        </form>
+
+        <p>هذا كل ما نطلبه. فقائمة الانتظار ليست حسابًا، وما نحتفظ به ومدة
+        الاحتفاظ به مبيَّنان في <a href="/ar/privacy#c-waitlist">سياسة
+        الخصوصية</a>.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <nav aria-label="صفحات هذا الموقع">
+        <ul>
+        <li><a href="/ar/">الصفحة الأولى</a></li>
+        <li><a href="/ar/waitlist">قائمة الانتظار</a></li>
+        <li><a href="/ar/privacy">الخصوصية</a></li>
+        <li><a href="/ar/terms">الشروط</a></li>
+        <li><a href="/ar/support">الدعم</a></li>
+        <li><a href="/ar/delete-account">حذف بياناتك</a></li>
+          <li><a href="/waitlist" lang="en" hreflang="en">English</a></li>
+        </ul>
+      </nav>
+      <p>ناشر Own Hub: محمود رضا، مصر.</p>
+      <p>هذا الموقع لا يضع أي ملفّ تعريف ارتباط، ولا يشغّل أي سكريبت، ولا يحمّل شيئًا من أي جهة أخرى، ولا يحصي زيارة. والخط يُقدَّم من هذا الموقع نفسه: <a href="/assets/fonts/OFL-Rubik.txt">Rubik، بموجب رخصة الخطوط المفتوحة SIL 1.1</a>.</p>
+    </div>
+  </footer>
+</body>
+</html>

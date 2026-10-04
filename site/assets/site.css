@@ -609,6 +609,66 @@ dl.kv dd > :last-child {
   background: var(--rose-wash);
 }
 
+/* ---------- Waitlist form ---------- */
+button.btn {
+  font: inherit;
+  cursor: pointer;
+}
+.waitlist {
+  margin-block: 1.5rem;
+}
+.waitlist .field {
+  display: grid;
+  gap: 0.4rem;
+}
+.waitlist label {
+  font-weight: 500;
+}
+.waitlist input[type="text"] {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 2px solid var(--rule-strong);
+  border-radius: 10px;
+  min-block-size: 48px;
+  padding: 0.6rem 0.9rem;
+  inline-size: 100%;
+  max-inline-size: 28rem;
+}
+.waitlist input[type="text"]:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-color: var(--focus);
+}
+.waitlist .hint {
+  color: var(--ink-soft);
+  font-size: 0.9375em;
+}
+.waitlist .check {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.waitlist .check input {
+  flex: none;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  margin-block-start: 0.2rem;
+  accent-color: var(--rose);
+}
+.waitlist .check label {
+  font-weight: 400;
+}
+/* The honeypot: present for a bot that fills every field, invisible and
+   unreachable for a person. */
+.waitlist .hp {
+  position: absolute;
+  inset-inline-start: -10000px;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+}
+
 /* ---------- Home page ---------- */
 .hero {
   padding-block: 2.5rem 1rem;
