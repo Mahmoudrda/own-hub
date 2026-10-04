@@ -39,6 +39,13 @@ const String kRecipeCacheKey = 'own_hub.recipes';
 /// daily check does not rewrite 200 KB of recipes.
 const String kRecipeCheckKey = 'own_hub.recipes_checked_at';
 
+/// Every key the recipe library keeps on the phone. The local erase
+/// (`ThisPhoneWipe.clearPersistence`) removes each of them.
+const List<String> kRecipeCacheKeys = <String>[
+  kRecipeCacheKey,
+  kRecipeCheckKey,
+];
+
 /// Which index document is read. The rows are the same in every locale today
 /// (see `tool/build_recipe_index.py`), and the book carries both titles.
 const String kRecipeIndexLocale = 'en';

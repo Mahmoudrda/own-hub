@@ -40,6 +40,7 @@ import '../features/account/domain/deletion_manifest.dart';
 import '../features/account/domain/dietary_profile.dart';
 import '../features/account/domain/health_backup.dart';
 import '../features/cycle/domain/today_check_in.dart';
+import '../features/eat/data/recipe_sync.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
 import 'cloud_store.dart';
@@ -147,6 +148,15 @@ class ThisPhoneWipe implements LocalWipe {
     // This installation's random id. A new account on this handset gets a
     // new one, so nothing links the two.
     unawaited(InstallId.erase().catchError((Object _) {}));
+
+    // The recipe library her signed-in session fetched, and when it last
+    // checked. Public content, but kept on this phone because of her
+    // account, so a deleted account leaves neither behind.
+    for (final key in kRecipeCacheKeys) {
+      unawaited(
+        PreferencesSnapshotStorage(key: key).erase().catchError((Object _) {}),
+      );
+    }
 
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();
