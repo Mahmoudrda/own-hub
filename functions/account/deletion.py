@@ -11,9 +11,10 @@ and the sweeper (main.resume_account_deletions) finishes it:
                        blocked (row 17, read before row 16 is deleted), then
                        users/{uid} recursively (rows 1-8, 10-16, 18, 19, 32,
                        35-38) and plans/{uid} (rows 20, 21)
-    purgingStorage     user-media/{uid}/ and user-exports/{uid}/ in the default
-                       bucket and in own-hub-personal (rows 24, 25). DELETE
-                       only: nothing here ever writes to Storage
+    purgingStorage     user-media/{uid}/, user-exports/{uid}/ and
+                       coach-docs/{uid}/ in the default bucket and in
+                       own-hub-personal (rows 24, 25; see STORAGE_PREFIXES).
+                       DELETE only: nothing here ever writes to Storage
     purgingGroupHooks  verificationJobs, verification_flags and
                        verificationSessions where uid == (rows 22, 39, 41),
                        verificationLedger/{uid} (row 40), the community, coach
@@ -29,8 +30,9 @@ and the sweeper (main.resume_account_deletions) finishes it:
 N9, after done: a still-valid ID token (up to an hour) or a queued offline
 write can partly recreate users/{uid} or plans/{uid}. `done` therefore records
 sweepAfter (config.DELETION_RESWEEP_MINUTES, 65, later) and the sweeper runs
-one more recursive delete of both once it is due (`resweep`), then replaces
-sweepAfter with sweptAt so it never runs again.
+one more recursive delete of both, and one more purge of every Storage prefix
+(a still-valid token can upload too), once it is due (`resweep`), then
+replaces sweepAfter with sweptAt so it never runs again.
 
 Idempotent: every step tolerates having already run, so a re-run after a
 failure finishes the job rather than failing on what is already gone.
@@ -63,7 +65,16 @@ JOURNAL = [
 FAILED_RETRYABLE = "failedRetryable"
 UNFINISHED_STATES = [s for s in JOURNAL if s != "done"] + [FAILED_RETRYABLE]
 
-STORAGE_PREFIXES = ("user-media/{uid}/", "user-exports/{uid}/")
+STORAGE_PREFIXES = ("user-media/{uid}/", "user-exports/{uid}/", "coach-docs/{uid}/")
+"""Every Storage place that holds her files (B1).
+
+user-media/{uid}/ is the one prefix the community and coach-media groups own
+(G7 §1.3): post media, profile photos, coach portfolio media, message
+attachments and voice notes. user-exports/{uid}/ is her data export.
+coach-docs/{uid}/ holds a coach's certificate scans (G12 §6). ID and selfie
+images and progress photos have no Storage path at all. A new uid-keyed path
+in storage.rules or the app fails tests/test_deletion_storage.py until it is
+added here."""
 PERSONAL_BUCKET = "own-hub-personal"
 DELETION_RECORD_FIELDS = frozenset(
     {"state", "requestedAt", "updatedAt", "doneAt", "sweepAfter", "sweptAt"}
@@ -116,9 +127,7 @@ def run(uid: str, backend: Backend) -> dict:
             backend.delete_plans_tree(uid)
 
         backend.set_state(uid, "purgingStorage")
-        for bucket in (None, PERSONAL_BUCKET):
-            for prefix in STORAGE_PREFIXES:
-                backend.delete_storage_prefix(bucket, prefix.format(uid=uid))
+        purge_storage(uid, backend)
 
         backend.set_state(uid, "purgingGroupHooks")
         backend.delete_where_uid(config.COL_VERIFICATION_JOBS, uid)
@@ -147,12 +156,23 @@ def run(uid: str, backend: Backend) -> dict:
     return {"state": "done", "journal": list(JOURNAL)}
 
 
+def purge_storage(uid: str, backend: Backend) -> None:
+    """Every prefix in STORAGE_PREFIXES, in both buckets. A bucket that does
+    not exist counts as empty (FirebaseBackend.delete_storage_prefix)."""
+    for bucket in (None, PERSONAL_BUCKET):
+        for prefix in STORAGE_PREFIXES:
+            backend.delete_storage_prefix(bucket, prefix.format(uid=uid))
+
+
 def resweep(uid: str, backend: Backend) -> None:
-    """N9: the one late sweep of users/{uid} and plans/{uid}, then marked so it
-    never runs again. Idempotent: deleting what is already gone is a no-op."""
+    """N9: the one late sweep of users/{uid}, plans/{uid} and her Storage
+    prefixes, then marked so it never runs again. Idempotent: deleting what is
+    already gone is a no-op, and a failure leaves sweepAfter set so the
+    sweeper tries again."""
     backend.delete_user_tree(uid)
     if manifest.PLANS_RECURSIVE in {manifest.ACTIONS[row.number] for row in manifest.ROWS}:
         backend.delete_plans_tree(uid)
+    purge_storage(uid, backend)
     backend.mark_swept(uid)
 
 
