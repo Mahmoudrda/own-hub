@@ -42,6 +42,9 @@ class LockScreenNudgeView extends StatefulWidget {
     this.onSomethingElse,
   });
 
+  /// The brand tile C01 shows, bundled at 1x, 2x and 3x.
+  static const String appIconAsset = 'assets/brand/logo/ownhub-tile.png';
+
   final TodayRepository? repository;
   final LogCommandBus? bus;
 
@@ -151,20 +154,22 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
           children: [
             Row(
               children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
+                // Where a notification draws the app's icon: the same brand
+                // tile C01 shows, at 28 px with the tile's own corner ratio
+                // (28 on 88). Decorative, because the name is beside it.
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(9),
+                  child: Image.asset(
+                    LockScreenNudgeView.appIconAsset,
+                    width: 28,
+                    height: 28,
+                    filterQuality: FilterQuality.medium,
+                    excludeFromSemantics: true,
                   ),
-                  child: Icon(Icons.restaurant, size: 15, color: white),
                 ),
                 const SizedBox(width: 8),
-                // TODO(owner): replace with the Own Hub wordmark asset when it
-                // exists. A notification shows the application's name, which is
-                // a proper noun and is not translated — same treatment as C01.
+                // The application's name, a proper noun and not translated,
+                // as on C01.
                 Expanded(
                   child: Text(
                     'Own Hub',

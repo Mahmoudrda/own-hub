@@ -5,9 +5,12 @@
 // is that the tap is a log and not a prompt — a confirmation here would defeat
 // the entire point of the surface.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/features/signup/presentation/welcome_view.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/lock_screen_nudge_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -173,5 +176,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the app icon is the Own Hub tile, not a stock glyph', (
+    tester,
+  ) async {
+    _phone(tester);
+    await tester.pumpWidget(_host(_view()));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.restaurant), findsNothing);
+    expect(LockScreenNudgeView.appIconAsset, WelcomeView.logoAsset);
+    final icon = find.byWidgetPredicate(
+      (w) =>
+          w is Image &&
+          w.image is AssetImage &&
+          (w.image as AssetImage).assetName == LockScreenNudgeView.appIconAsset,
+    );
+    expect(icon, findsOneWidget);
+    final image = tester.widget<Image>(icon);
+    expect(image.width, 28);
+    expect(image.height, 28);
+    expect(
+      image.excludeFromSemantics,
+      isTrue,
+      reason: 'decorative: the app name is written beside it',
+    );
+    final clip = tester.widget<ClipRRect>(
+      find.ancestor(of: icon, matching: find.byType(ClipRRect)).first,
+    );
+    expect(clip.borderRadius, BorderRadius.circular(9));
+    expect(find.text('Own Hub'), findsOneWidget);
+  });
+
+  test('the placeholder note is gone', () {
+    final source = File(
+      'lib/features/today/presentation/lock_screen_nudge_view.dart',
+    ).readAsStringSync();
+    expect(source, isNot(contains('TODO')));
+    expect(source, isNot(contains('Icons.restaurant')));
   });
 }
