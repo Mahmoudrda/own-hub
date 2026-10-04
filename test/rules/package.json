@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Firestore security-rules suite for Own Hub. Runs against the already-running emulator.",
   "scripts": {
-    "test": "node --test --test-concurrency=1 --test-reporter=spec ./*.test.js"
+    "test": "node --test --test-concurrency=1 --test-reporter=spec ./*.test.js",
+    "test:storage": "cd storage && cp ../../../firebase/storage.rules storage.rules.copy && PATH=${JAVA_HOME:-/opt/homebrew/opt/openjdk@21}/bin:$PATH firebase emulators:exec --config firebase.json --project demo-own-hub --only storage 'node --test --test-concurrency=1 --test-reporter=spec ./storage.test.js'"
   },
   "dependencies": {
     "@firebase/rules-unit-testing": "^4.0.1",

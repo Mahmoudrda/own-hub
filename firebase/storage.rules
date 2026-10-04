@@ -8,9 +8,10 @@
 //
 // # Other groups own the other paths
 //
-// ID and selfie capture, community post media and coach portfolio media are not
-// mine to author. They add their own `match` blocks ABOVE the catch-all. Until
-// they do, they are denied — which is the correct direction to fail.
+// ID and selfie capture have no path (see below). Her media (user-media/{uid})
+// and coach certificates (coach-docs/{uid}) have blocks of their own (C5). New
+// paths add their own `match` blocks ABOVE the catch-all. Until they do, they
+// are denied, which is the correct direction to fail.
 //
 // # Two absences that are deliberate, and must stay
 //
@@ -55,6 +56,18 @@ service firebase.storage {
       return request.resource.contentType.matches('video/.*');
     }
 
+    function isAudio() {
+      return request.resource.contentType.matches('audio/.*');
+    }
+
+    function isPdf() {
+      return request.resource.contentType == 'application/pdf';
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
     // ------------------------------------------------ the content library
     //
     // Exercise demonstrations, recipe photographs, programme artwork. Uploaded
@@ -80,15 +93,52 @@ service firebase.storage {
     //
     // Deletion manifest row 25 deletes this prefix. Objects also expire after
     // 24 hours, so an export left on a shared device stops working by itself.
-    //
-    // `user-media/{uid}/**` from G7 §1.3 is deliberately NOT added here. Its
-    // owners are the community and coach-media groups, and neither is planned
-    // yet; opening the path before its rules exist is how a media bucket ends
-    // up governed by nothing. It stays denied by the catch-all until the group
-    // that owns it writes its block.
     match /user-exports/{uid}/{allPaths=**} {
-      allow read:  if signedIn() && request.auth.uid == uid;
+      allow read:  if isOwner(uid);
       allow write: if false;
+    }
+
+    // --------------------------------------------------------- her media
+    //
+    // C5. G7 §1.3's one prefix for a woman's own media: post photos, her
+    // profile photo, coach portfolio media, message attachments and voice
+    // notes. Deleted with her account in both buckets, and again by the late
+    // sweep (functions/account/deletion.py STORAGE_PREFIXES).
+    //
+    // READ IS OWNER-ONLY. That is the most private option the app supports
+    // today: no screen downloads another woman's file yet, and the app has no
+    // sub-path that says which file is a public post photo and which is a
+    // voice note to one coach. When the feed, a coach page or a chat starts
+    // showing her media to someone else, that feature adds a narrow read for
+    // its own sub-path here; until then nobody but her can open anything.
+    //
+    // Writing is hers alone and needs the verified claim, like every
+    // community write in Firestore. An image up to 10 MB or audio up to 5 MB;
+    // nothing else (no video, no documents, no unknown type). Deleting stays
+    // open to her without the claim: taking her own photo down must not
+    // depend on a claim she might lose (the same exception as posts).
+    match /user-media/{uid}/{allPaths=**} {
+      allow read:   if isOwner(uid);
+      allow create, update: if isOwner(uid)
+                    && request.auth.token.get('verified', false) == true
+                    && ((isImage() && request.resource.size < 10 * 1024 * 1024)
+                        || (isAudio() && request.resource.size < 5 * 1024 * 1024));
+      allow delete: if isOwner(uid);
+    }
+
+    // ------------------------------------------------ coach certificates
+    //
+    // C5. K02: a coach's certificate scans, under coach-docs/{coachUid}/
+    // (coach_credentials.dart builds exactly this path). A PDF or an image up
+    // to 10 MB, written by her. Read by her and by an admin reviewing the
+    // credential; never by clients or other coaches.
+    match /coach-docs/{uid}/{allPaths=**} {
+      allow read:   if isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid)
+                    && request.auth.token.get('verified', false) == true
+                    && (isImage() || isPdf())
+                    && request.resource.size < 10 * 1024 * 1024;
+      allow delete: if isOwner(uid);
     }
 
     // ------------------------------------------------------------- default
