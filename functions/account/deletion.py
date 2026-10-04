@@ -16,9 +16,10 @@ and the sweeper (main.resume_account_deletions) finishes it:
                        only: nothing here ever writes to Storage
     purgingGroupHooks  verificationJobs, verification_flags and
                        verificationSessions where uid == (rows 22, 39, 41),
-                       verificationLedger/{uid} (row 40), the registry entry
-                       CLOSED not deleted (row 23), reports pseudonymised
-                       (row 30)
+                       verificationLedger/{uid} (row 40), the community, coach
+                       and assistant data (row 26, purge_group_hook), the
+                       registry entry CLOSED not deleted (row 23), reports
+                       pseudonymised (row 30)
     purgingThirdParty  nothing to call: no analytics SDK ships, and crash
                        reports never carry a user id (rows 27, 28)
     authDeleted        the Auth user deleted LAST (row 29)
@@ -82,6 +83,7 @@ class Backend(Protocol):
     def delete_storage_prefix(self, bucket: str | None, prefix: str) -> None: ...
     def delete_where_uid(self, collection: str, uid: str) -> None: ...
     def delete_doc(self, collection: str, doc_id: str) -> None: ...
+    def purge_group_hook(self, uid: str) -> None: ...
     def close_registry(self, uid: str, may_rejoin: bool) -> None: ...
     def pseudonymise_reports(self, uid: str, token: str) -> None: ...
     def delete_auth(self, uid: str) -> None: ...
@@ -123,6 +125,9 @@ def run(uid: str, backend: Backend) -> dict:
         backend.delete_where_uid(config.COL_FLAGS, uid)
         backend.delete_where_uid(config.COL_SESSIONS, uid)
         backend.delete_doc(config.COL_LEDGER, uid)
+        # Row 26 (N14). Unconditional: erasure must not depend on a manifest
+        # row still being present.
+        backend.purge_group_hook(uid)
         backend.close_registry(uid, config.DELETED_ACCOUNT_MAY_REJOIN)
         backend.pseudonymise_reports(uid, pseudonym())
 
@@ -254,6 +259,77 @@ class FirebaseBackend:
 
     def delete_doc(self, collection, doc_id):
         self.db.collection(collection).document(doc_id).delete()
+
+    def purge_group_hook(self, uid):
+        """Row 26 (N14): her community, coach and assistant data.
+
+        The most protective default. DELETED: publicProfiles/{uid}, her
+        followGraph tree and every edge pointing at her (the following/{uid}
+        edge documents and the a:{uid} key and hiddenAuthors entries on other
+        women's key sets), her posts with everything under them, her likes,
+        her group memberships, every relationship she is a party to (as client
+        or coach) with its messages and reviews, coaches/{uid} with everything
+        under it, results about her on other coaches' pages, and
+        assistantQuota/{uid}.
+
+        Her comments on ANOTHER woman's post are replaced, not removed, so that
+        woman's thread does not silently lose a turn: the document is
+        overwritten with exactly {deleted: true}, no text and no uid. A comment
+        id that spells her uid is not kept as the tombstone's id.
+
+        Comments, likes, following edges and results are found by scanning
+        their collection group with a projection, not by a filtered query: a
+        collection-group filter needs a single-field index override, and
+        firestore.indexes.json only carries exemptions. Idempotent.
+        """
+        from google.cloud import firestore
+
+        db = self.db
+        db.collection("publicProfiles").document(uid).delete()
+        db.collection("assistantQuota").document(uid).delete()
+
+        # Follow graph: hers, then every pointer to her on anyone else's.
+        db.recursive_delete(db.collection("followGraph").document(uid))
+        for snapshot in self._scan("following"):
+            if snapshot.id == uid:
+                snapshot.reference.delete()
+        graphs = db.collection("followGraph")
+        for field, value in (("followingKeys", f"a:{uid}"), ("hiddenAuthors", uid)):
+            for snapshot in graphs.where(field, "array_contains", value).stream():
+                snapshot.reference.update({field: firestore.ArrayRemove([value])})
+
+        # Her posts, with every comment and like under them.
+        for snapshot in db.collection("posts").where("authorUid", "==", uid).stream():
+            db.recursive_delete(snapshot.reference)
+        # What is left is on other women's posts.
+        for snapshot in self._scan("comments", "authorUid"):
+            if (snapshot.to_dict() or {}).get("authorUid") != uid:
+                continue
+            tombstone = {"deleted": True}
+            if uid in snapshot.id:
+                snapshot.reference.parent.document().set(tombstone)
+                snapshot.reference.delete()
+            else:
+                snapshot.reference.set(tombstone)
+        for snapshot in self._scan("likes"):
+            if snapshot.id == uid:
+                snapshot.reference.delete()
+
+        for group in db.collection("groups").select([]).stream():
+            group.reference.collection("members").document(uid).delete()
+
+        relationships = db.collection("relationships")
+        for field in ("clientUid", "coachUid"):
+            for snapshot in relationships.where(field, "==", uid).stream():
+                db.recursive_delete(snapshot.reference)
+
+        db.recursive_delete(db.collection("coaches").document(uid))
+        for snapshot in self._scan("results", "clientUid"):
+            if (snapshot.to_dict() or {}).get("clientUid") == uid:
+                snapshot.reference.delete()
+
+    def _scan(self, group, field=None):
+        return self.db.collection_group(group).select([field] if field else []).stream()
 
     def close_registry(self, uid, may_rejoin):
         from google.cloud import firestore

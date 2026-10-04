@@ -85,6 +85,10 @@ class FakeFirestore:
     def collection(self, name):
         return CollectionRef(self, name)
 
+    def collection_group(self, name):
+        """Every collection called `name`, at any depth (N14)."""
+        return CollectionRef(self, name, group=True)
+
     def transaction(self):
         return Transaction(self)
 
@@ -159,10 +163,11 @@ class FakeFirestore:
 
 
 class CollectionRef:
-    def __init__(self, db, path, filters=(), order=None, limit_n=None):
+    def __init__(self, db, path, filters=(), order=None, limit_n=None, group=False):
         self.db, self.path = db, path
         self.id = path.rsplit("/", 1)[-1]
         self._filters, self._order, self._limit = list(filters), order, limit_n
+        self._group = group
 
     def document(self, doc_id=None):
         if doc_id is None:
@@ -178,14 +183,23 @@ class CollectionRef:
 
     def where(self, field, op=None, value=None, *, filter=None):
         return CollectionRef(
-            self.db, self.path, self._filters + [(field, op, value)], self._order, self._limit
+            self.db, self.path, self._filters + [(field, op, value)], self._order,
+            self._limit, self._group,
         )
 
     def order_by(self, field, **_):
-        return CollectionRef(self.db, self.path, self._filters, field, self._limit)
+        return CollectionRef(
+            self.db, self.path, self._filters, field, self._limit, self._group
+        )
 
     def limit(self, n):
-        return CollectionRef(self.db, self.path, self._filters, self._order, n)
+        return CollectionRef(
+            self.db, self.path, self._filters, self._order, n, self._group
+        )
+
+    def select(self, field_paths):
+        # A projection changes what is returned, not which documents match.
+        return self
 
     def _matches(self, data):
         for field, op, value in self._filters:
@@ -200,13 +214,23 @@ class CollectionRef:
                 return False
             if op == "in" and have not in value:
                 return False
+            if op == "array_contains" and not (
+                isinstance(have, list) and value in have
+            ):
+                return False
         return True
 
-    def stream(self, transaction=None):
+    def _contains(self, path):
+        if self._group:
+            parts = path.split("/")
+            return len(parts) % 2 == 0 and parts[-2] == self.path
         depth = self.path.count("/") + 1
+        return path.startswith(self.path + "/") and path.count("/") == depth
+
+    def stream(self, transaction=None):
         rows = []
         for path, data in sorted(self.db.docs.items()):
-            if path.startswith(self.path + "/") and path.count("/") == depth:
+            if self._contains(path):
                 if self._matches(data):
                     rows.append(Snapshot(DocumentRef(self.db, path), data))
         if self._order:
@@ -223,6 +247,10 @@ class DocumentRef:
     def __init__(self, db, path):
         self.db, self.path = db, path
         self.id = path.rsplit("/", 1)[-1]
+
+    @property
+    def parent(self):
+        return CollectionRef(self.db, self.path.rsplit("/", 1)[0])
 
     def collection(self, name):
         return CollectionRef(self.db, f"{self.path}/{name}")

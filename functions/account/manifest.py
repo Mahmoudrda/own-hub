@@ -40,7 +40,7 @@ SESSIONS = "sessions"                      # verificationSessions where uid ==
 LEDGER = "ledger"                          # verificationLedger/{uid}
 REGISTRY = "registry"                      # nidRegistry where uid == : closed
 STORAGE = "storage"                        # user-media/{uid}/, user-exports/{uid}/
-GROUP_HOOK = "group_hook"                  # row 26: rows 10, 22, 23 together
+GROUP_HOOK = "group_hook"                  # row 26: community, coach, assistant (N14)
 THIRD_PARTY = "third_party"                # no identifier is ever sent
 AUTH = "auth"                              # disabled first, deleted last
 REPORTS = "reports"                        # pseudonymised
