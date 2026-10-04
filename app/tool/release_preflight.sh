@@ -121,6 +121,9 @@ check "the firebase_options exclusion is not hiding a model key" \
 echo
 echo "-- release build hygiene --"
 check "no bare print() in lib/"            "! grep -rn --include='*.dart' -E '^[[:space:]]*print\(' lib | grep -q ."
+# R11: an obfuscated build without its symbols gives unreadable crash reports.
+check "release builds go through tool/build_release.sh" \
+      "[ -x tool/build_release.sh ] && grep -q -- '--obfuscate' tool/build_release.sh && grep -q -- '--split-debug-info' tool/build_release.sh"
 
 echo
 echo "-- the four public pages --"
@@ -156,6 +159,13 @@ if [ -f "$AAB" ]; then
     else
       ok "every 64-bit library is 16 KB aligned"
     fi
+  fi
+  # Built by tool/build_release.sh, so its Dart symbols exist to upload.
+  version=$(grep -E '^version: ' pubspec.yaml | head -1 | awk '{print $2}')
+  if [ -d "build/symbols/$version" ]; then
+    ok "symbols kept for $version (upload them; see tool/build_release.sh)"
+  else
+    bad "no build/symbols/$version: this bundle was not built with tool/build_release.sh, so its crash reports cannot be read"
   fi
   # Which key signed it, read from the signature block's own name: Gradle
   # names it after the key alias, so a debug fallback is META-INF/ANDROIDD.RSA
