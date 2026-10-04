@@ -334,6 +334,14 @@
         "ar": "لا يُحتفظ بشيء، إذ لا شيء يُشترى ولا توجد أي مدفوعات في هذا الإصدار. وحين توجد المدفوعات، تُحدِّد قواعد الفوترة والضرائب المصرية المدة، وهي استثناء من الحذف."
       }
     },
+    "waitlistEndpoint": {
+      "value": "https://europe-west3-own-hub.cloudfunctions.net/join_waitlist",
+      "label": {
+        "en": "waitlist address",
+        "ar": "عنوان قائمة الانتظار"
+      },
+      "note": "Where the waitlist form posts: the join_waitlist Cloud Function. It changes only if the function is renamed or moved. _headers allows forms to post to this origin and nowhere else."
+    },
     "storeUrlIos": {
       "value": "",
       "label": {

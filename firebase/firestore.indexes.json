@@ -330,6 +330,20 @@
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []
+    },
+    {
+      "_why": "W1 TTL. A waitlist entry is deleted 180 days after she joined (pending counsel); it exists only to send one message when Own Hub opens. Never queried on.",
+      "collectionGroup": "waitlist",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "W1 TTL. The per-IP daily counter for the waitlist is deleted after two days. Never queried on.",
+      "collectionGroup": "waitlistRate",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
     }
   ]
 }

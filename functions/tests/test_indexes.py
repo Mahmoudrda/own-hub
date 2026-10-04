@@ -38,7 +38,7 @@ def test_the_reviewer_queue_has_its_composite_index():
     assert _composite("verification_flags", ["state", "createdAt"])
 
 
-def test_ttl_policies_are_declared_for_the_three_expiring_collections():
+def test_ttl_policies_are_declared_for_the_expiring_collections():
     ttl = {
         (o["collectionGroup"], o["fieldPath"])
         for o in _spec()["fieldOverrides"]
@@ -48,6 +48,9 @@ def test_ttl_policies_are_declared_for_the_three_expiring_collections():
         ("verificationSessions", "expiresAt"),
         ("verificationJobs", "expireAt"),
         ("verification_flags", "expireAt"),
+        # W1: 180 days for a waitlist entry, two days for its per-IP counter.
+        ("waitlist", "expireAt"),
+        ("waitlistRate", "expireAt"),
     }
 
 

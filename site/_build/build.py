@@ -38,7 +38,15 @@ PATHS = {
     "terms": ("/terms", "/ar/terms"),
     "support": ("/support", "/ar/support"),
     "delete-account": ("/delete-account", "/ar/delete-account"),
+    "waitlist": ("/waitlist", "/ar/waitlist"),
+    "waitlist-joined": ("/waitlist/joined", "/ar/waitlist/joined"),
+    "waitlist-check": ("/waitlist/check", "/ar/waitlist/check"),
+    "waitlist-later": ("/waitlist/later", "/ar/waitlist/later"),
 }
+
+# The pages the waitlist form lands on. Reached only by submitting the form,
+# so they are kept out of search results and out of the sitemap.
+NOINDEX = {"waitlist-joined", "waitlist-check", "waitlist-later"}
 
 FILES = {
     "index": ("index.html", "ar/index.html"),
@@ -46,6 +54,10 @@ FILES = {
     "terms": ("terms/index.html", "ar/terms/index.html"),
     "support": ("support/index.html", "ar/support/index.html"),
     "delete-account": ("delete-account/index.html", "ar/delete-account/index.html"),
+    "waitlist": ("waitlist/index.html", "ar/waitlist/index.html"),
+    "waitlist-joined": ("waitlist/joined/index.html", "ar/waitlist/joined/index.html"),
+    "waitlist-check": ("waitlist/check/index.html", "ar/waitlist/check/index.html"),
+    "waitlist-later": ("waitlist/later/index.html", "ar/waitlist/later/index.html"),
 }
 
 CHROME = {
@@ -59,6 +71,7 @@ CHROME = {
         "footerNav": "Pages on this site",
         "nav": [
             ("/", "Home"),
+            ("/waitlist", "Waitlist"),
             ("/privacy", "Privacy"),
             ("/terms", "Terms"),
             ("/support", "Support"),
@@ -83,6 +96,7 @@ CHROME = {
         "footerNav": "صفحات هذا الموقع",
         "nav": [
             ("/ar/", "الصفحة الأولى"),
+            ("/ar/waitlist", "قائمة الانتظار"),
             ("/ar/privacy", "الخصوصية"),
             ("/ar/terms", "الشروط"),
             ("/ar/support", "الدعم"),
@@ -225,7 +239,7 @@ def mailto_link(cfg: Config, lang: str, key: str, subject: str, body: str,
 
 def head_links(cfg: Config, page: str, lang: str) -> str:
     """hreflang and canonical. Absolute once a real domain is configured."""
-    if page == "404":
+    if page == "404" or page in NOINDEX:
         return '  <meta name="robots" content="noindex, follow">\n'
 
     en_path, ar_path = PATHS[page]
@@ -324,6 +338,8 @@ def build_sitemap(cfg: Config) -> None:
     iso = to_iso(lastmod)
     rows = []
     for page, (en_path, ar_path) in PATHS.items():
+        if page in NOINDEX:
+            continue
         for path, lang, alt, alt_lang in (
             (en_path, "en", ar_path, "ar"),
             (ar_path, "ar", en_path, "en"),

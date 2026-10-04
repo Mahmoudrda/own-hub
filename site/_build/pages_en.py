@@ -80,6 +80,32 @@ Thank you.
 """
 
 
+
+FORM = '''
+        <form class="waitlist" action="{{waitlistEndpoint}}" method="post"
+              accept-charset="utf-8">
+          <input type="hidden" name="lang" value="en">
+          <p class="field">
+            <label for="contact">Mobile number or email</label>
+            <input id="contact" name="contact" type="text" dir="ltr" required
+                   maxlength="254" autocomplete="on" spellcheck="false"
+                   aria-describedby="contact-hint">
+            <span class="hint" id="contact-hint">An Egyptian mobile number starting 010, 011, 012 or 015, or an email address.</span>
+          </p>
+          <p class="hp" aria-hidden="true">
+            <label for="website">Leave this empty</label>
+            <input id="website" name="website" type="text" tabindex="-1"
+                   autocomplete="off">
+          </p>
+          <p class="check">
+            <input id="consent" name="consent" type="checkbox" value="yes" required>
+            <label for="consent"><b>I agree.</b> We will message you once when Own Hub opens, then delete your contact.</label>
+          </p>
+          <div class="btn-row"><button class="btn" type="submit">Join the waitlist</button></div>
+        </form>
+'''
+
+
 # ---------------------------------------------------------------- build ----
 
 def build(cfg, lang, mailto_link):
@@ -118,6 +144,7 @@ def build(cfg, lang, mailto_link):
         for women in Egypt. There is no biography to read here and nothing to
         take on trust: the pages below set out exactly what the app keeps, where
         it keeps it, and for how long.</p>
+        <div class="btn-row"><a class="btn" href="/waitlist">Join the waitlist</a></div>
       </div>
       <ul class="facts" aria-label="Own Hub at a glance">
         <li><b>Women only</b><span>Checked once with your national ID and a live selfie, or by a woman reviewer on a short video call. The photos are never stored.</span></li>
@@ -436,6 +463,19 @@ def build(cfg, lang, mailto_link):
           receives the error, device model, operating system and app version.
           No account identifier, name or phone number is attached.</li>
         </ul>
+
+""" + h3("c-waitlist", "3.7 The waitlist on this website") + """
+        <p>If you join the waitlist on this website, we keep the mobile number
+        or email address you give, the language you chose, your agreement and
+        when you joined. We use it for one thing: to message you once when Own
+        Hub opens, and then we delete it. If that has not happened, it is
+        deleted automatically 180 days after you joined, a period pending
+        counsel&rsquo;s confirmation. To protect the form from abuse we also
+        keep a keyed code made from your internet address, never the address
+        itself, and a count of attempts from it that is deleted after two days.
+        It is stored in Google Cloud Firestore in Frankfurt, Germany, and no app
+        or browser can read it. To leave the waitlist sooner, write to
+        {{mailto:contactPrivacy}}.</p>
 
 """ + h2("where", "4. Who handles it, and where") + """
         <p>We do not sell your data and do not share it with advertisers, data
@@ -1133,6 +1173,82 @@ def build(cfg, lang, mailto_link):
     }
 
     # -------------------------------------------------------------- 404 ----
+    # --------------------------------------------------------- waitlist ----
+    # W1. A plain form, no script: the join_waitlist Function answers with a
+    # redirect to one of the three pages after this one.
+    pages["waitlist"] = {
+        "title": "Join the waitlist · Own Hub",
+        "description": (
+            "Leave your Egyptian mobile number or your email, and we will "
+            "message you once when Own Hub opens."
+        ),
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>Join the waitlist</h1>
+        <p class="lede">Own Hub is not open yet. Leave your Egyptian mobile
+        number or your email address, and we will message you once when it
+        opens.</p>
+""" + FORM + """
+        <p>That is all we ask for. The waitlist is not an account, and what we
+        keep, and for how long, is set out in the
+        <a href="/privacy#c-waitlist">privacy policy</a>.</p>
+      </div>
+    </div>
+""",
+    }
+
+    pages["waitlist-joined"] = {
+        "title": "You are on the list · Own Hub",
+        "description": "You are on the Own Hub waitlist.",
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>You are on the list</h1>
+        <p class="lede">Thank you. We will message you once, when Own Hub
+        opens, and then delete your contact.</p>
+        <p>If you had already joined with the same number or email, you are
+        still on the list only once.</p>
+        <div class="btn-row"><a class="btn ghost" href="/">Back to the home page</a></div>
+      </div>
+    </div>
+""",
+    }
+
+    pages["waitlist-check"] = {
+        "title": "That did not go through · Own Hub",
+        "description": "The waitlist form could not use what was sent.",
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>That did not go through</h1>
+        <p class="lede">We could not use what was sent, so nothing was
+        saved.</p>
+        <p>Please enter an Egyptian mobile number, eleven digits starting 010,
+        011, 012 or 015, or an email address, and tick the box to agree.</p>
+        <div class="btn-row"><a class="btn" href="/waitlist">Try again</a></div>
+      </div>
+    </div>
+""",
+    }
+
+    pages["waitlist-later"] = {
+        "title": "Please try again later · Own Hub",
+        "description": "The waitlist could not take this request just now.",
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>Please try again later</h1>
+        <p class="lede">We could not add you just now, and nothing was
+        saved.</p>
+        <p>Either this connection has already sent several requests today, or
+        something went wrong on our side. Please try again tomorrow.</p>
+        <div class="btn-row"><a class="btn ghost" href="/">Back to the home page</a></div>
+      </div>
+    </div>
+""",
+    }
+
     pages["404"] = {
         "title": "Page not found · Own Hub",
         "description": "That address is not on this site. Here is everything that is.",
@@ -1141,11 +1257,12 @@ def build(cfg, lang, mailto_link):
       <div class="prose">
         <h1>That page is not here</h1>
         <p class="lede">The address you followed does not exist on this site,
-        which has only five pages. One of these is almost certainly the one you
+        which has only six pages. One of these is almost certainly the one you
         wanted.</p>
       </div>
       <ul class="doorways">
         <li><a href="/"><span class="t">Home</span><span class="d">What Own Hub is.</span></a></li>
+        <li><a href="/waitlist"><span class="t">Join the waitlist</span><span class="d">Hear once when Own Hub opens.</span></a></li>
         <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, and where it is kept.</span></a></li>
         <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, and what it is not.</span></a></li>
         <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person.</span></a></li>

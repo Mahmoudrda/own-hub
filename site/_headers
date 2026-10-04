@@ -1,11 +1,13 @@
 # Own Hub — security headers for a static site with no scripts.
+# form-action: the waitlist form posts to the join_waitlist Cloud Function,
+# which answers with a redirect back to this site ('self'). Nowhere else.
 # Netlify and Cloudflare Pages read this file. On another host, translate the
 # same rules into its own configuration: the Content-Security-Policy is the
 # one that matters, because it is what makes "this page phones nobody" a rule
 # the browser enforces rather than a claim on the page.
 
 /*
-  Content-Security-Policy: default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'self' https://europe-west3-own-hub.cloudfunctions.net; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload

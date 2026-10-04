@@ -74,4 +74,18 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/delete-account"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/delete-account"/>
   </url>
+  <url>
+    <loc>https://ownhub.example/waitlist</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/waitlist"/>
+  </url>
+  <url>
+    <loc>https://ownhub.example/ar/waitlist</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/waitlist"/>
+  </url>
 </urlset>

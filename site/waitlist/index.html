@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Join the waitlist · Own Hub</title>
+  <meta name="description" content="Leave your Egyptian mobile number or your email, and we will message you once when Own Hub opens.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FFF8F9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1A1316" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <link rel="canonical" href="/waitlist">
+  <link rel="alternate" hreflang="en" href="/waitlist">
+  <link rel="alternate" hreflang="ar" href="/ar/waitlist">
+  <link rel="alternate" hreflang="x-default" href="/waitlist">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the main content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="Own Hub, home">
+        <span class="mark" aria-hidden="true">OH</span>
+        <span class="name">Own Hub</span>
+      </a>
+      <a class="lang-switch" href="/ar/waitlist" lang="ar"
+         hreflang="ar" aria-label="Switch to Arabic">العربية</a>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+    <div class="wrap">
+      <div class="prose">
+        <h1>Join the waitlist</h1>
+        <p class="lede">Own Hub is not open yet. Leave your Egyptian mobile
+        number or your email address, and we will message you once when it
+        opens.</p>
+
+        <form class="waitlist" action="https://europe-west3-own-hub.cloudfunctions.net/join_waitlist" method="post"
+              accept-charset="utf-8">
+          <input type="hidden" name="lang" value="en">
+          <p class="field">
+            <label for="contact">Mobile number or email</label>
+            <input id="contact" name="contact" type="text" dir="ltr" required
+                   maxlength="254" autocomplete="on" spellcheck="false"
+                   aria-describedby="contact-hint">
+            <span class="hint" id="contact-hint">An Egyptian mobile number starting 010, 011, 012 or 015, or an email address.</span>
+          </p>
+          <p class="hp" aria-hidden="true">
+            <label for="website">Leave this empty</label>
+            <input id="website" name="website" type="text" tabindex="-1"
+                   autocomplete="off">
+          </p>
+          <p class="check">
+            <input id="consent" name="consent" type="checkbox" value="yes" required>
+            <label for="consent"><b>I agree.</b> We will message you once when Own Hub opens, then delete your contact.</label>
+          </p>
+          <div class="btn-row"><button class="btn" type="submit">Join the waitlist</button></div>
+        </form>
+
+        <p>That is all we ask for. The waitlist is not an account, and what we
+        keep, and for how long, is set out in the
+        <a href="/privacy#c-waitlist">privacy policy</a>.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <nav aria-label="Pages on this site">
+        <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/waitlist">Waitlist</a></li>
+        <li><a href="/privacy">Privacy</a></li>
+        <li><a href="/terms">Terms</a></li>
+        <li><a href="/support">Support</a></li>
+        <li><a href="/delete-account">Delete your data</a></li>
+          <li><a href="/ar/waitlist" lang="ar" hreflang="ar">العربية</a></li>
+        </ul>
+      </nav>
+      <p>Own Hub is published by Mahmoud Reda, Egypt.</p>
+      <p>This website sets no cookie, runs no script, loads nothing from anyone else, and counts no visit. The typeface is served from this site: <a href="/assets/fonts/OFL-Rubik.txt">Rubik, under the SIL Open Font Licence 1.1</a>.</p>
+    </div>
+  </footer>
+</body>
+</html>
