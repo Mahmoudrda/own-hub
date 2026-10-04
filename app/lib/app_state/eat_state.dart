@@ -33,8 +33,14 @@
 /// Home keeps whatever it opened with.
 library;
 
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseFirestore;
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/widgets.dart';
 
+import '../features/eat/data/firestore_recipe_source.dart';
+import '../features/eat/data/recipe_sync.dart';
 import '../features/eat/data/seeded_recipe_library.dart';
 import '../features/eat/domain/allergy_guard.dart';
 import '../features/eat/domain/item_id.dart';
@@ -51,6 +57,7 @@ import '../l10n/app_l10n.dart';
 import '../routing/app_router.dart';
 import '../ui/app_undo_snackbar.dart';
 import 'app_changes.dart';
+import 'firebase_boot.dart';
 import 'honest_notice.dart';
 
 /// A plate she has actually eaten, with the figure her own log carried.
@@ -131,12 +138,63 @@ class EatAppState {
   /// call it. The failure path is deliberately silent: a bundle read that fails
   /// leaves [recipeBook] empty, which every caller already handles, and there is
   /// nothing a woman could do about it.
+  ///
+  /// With no [library] given it reads [recipeSync]: the seed, or the last
+  /// complete remote set cached on the phone, and then asks
+  /// [refreshRecipes] whether the server has a newer one. That check is
+  /// rate-limited inside [RecipeSync], so calling this from a build costs
+  /// nothing after the first time.
   void ensureRecipeBook({RecipeLibrary? library}) {
-    if (_bookLoad != null) return;
-    _bookLoad = (library ?? SeededRecipeLibrary()).load().then((book) {
-      recipeBook = book;
-      AppChanges.bump();
-    }, onError: (_) {});
+    _bookLoad ??= (library ?? recipeSync).load().then(
+      _adopt,
+      onError: (_) {},
+    );
+    if (library == null) unawaited(refreshRecipes());
+  }
+
+  /// The bundled seed with the Firestore library laid over it.
+  RecipeSync get recipeSync => _recipeSync ??= RecipeSync(
+    seed: SeededRecipeLibrary(),
+    source: _liveRecipeSource,
+  );
+  RecipeSync? _recipeSync;
+
+  /// Swaps a newer library in for the open screens. Never throws.
+  ///
+  /// Called at start-up and on Eat open. When Eat has not been opened yet the
+  /// new set is only cached, and the first open reads it from there.
+  Future<void> refreshRecipes() async {
+    try {
+      final book = (await recipeSync.refresh()).book;
+      if (book != null && _bookLoad != null) _adopt(book);
+    } catch (_) {
+      // The seed is already the answer.
+    }
+  }
+
+  /// One reference swap of a finished book, so no screen can see half of one.
+  /// An older book never replaces a newer one, whichever read lands last.
+  void _adopt(RecipeBook book) {
+    if (recipeBook.recipes.isNotEmpty &&
+        book.contentVersion < recipeBook.contentVersion) {
+      return;
+    }
+    recipeBook = book;
+    AppChanges.bump();
+  }
+
+  /// Firestore, only when a read could succeed: Firebase is up and a verified
+  /// account is signed in (the rules read `isVerified()`). Otherwise null, and
+  /// nothing is read or billed.
+  static RecipeRemoteSource? _liveRecipeSource() {
+    try {
+      if (!FirebaseBoot.isReady) return null;
+      if (FirebaseAuth.instance.currentUser == null) return null;
+      if (!AppRouter.isVerified) return null;
+      return FirestoreRecipeSource(FirebaseFirestore.instance);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Puts a book in place without touching the bundle. Tests only.

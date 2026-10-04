@@ -30,8 +30,8 @@
 /// from one structural decision.
 ///
 /// [RecipeLibrary] is the port that shape is written against. [SeededRecipeLibrary]
-/// is the half that exists today — the bundle — and [mergeByVersion] is the rule
-/// the Firestore half will use when it arrives: **the seed is the floor.** A
+/// is the bundle, `RecipeSync` in `recipe_sync.dart` is the Firestore half, and
+/// [mergeByVersion] is the rule it uses: **the seed is the floor.** A
 /// remote row replaces a seeded one only when its `version` is higher, so a
 /// truncated or rolled-back server document can never take a recipe away from a
 /// phone that already had it.
@@ -137,8 +137,8 @@ class RecipeBook {
   }
 }
 
-/// Where recipes come from. One implementation today; the Firestore one is
-/// described in the file note and is not written yet.
+/// Where recipes come from. [SeededRecipeLibrary] is the bundle;
+/// `RecipeSync` (`recipe_sync.dart`) lays the Firestore library over it.
 abstract class RecipeLibrary {
   Future<RecipeBook> load();
 }

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'app_state/cloud_store.dart';
 import 'app_state/crash_reports.dart';
+import 'app_state/eat_state.dart';
 import 'app_state/firebase_boot.dart';
 import 'app_state/local_persistence.dart';
 import 'app_state/onboarding_state.dart';
@@ -110,6 +111,13 @@ Future<void> main() async {
   }());
 
   runApp(const OwnHubApp());
+
+  // The once-a-day recipe library check, after the first frame so it can
+  // never delay it. Offline or signed out it reads nothing and the bundled
+  // seed stays the library.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(EatAppState.instance.refreshRecipes()),
+  );
 }
 
 /// Every OFL face bundled in `assets/fonts/`. The licence asks that its text
