@@ -117,7 +117,7 @@
     },
     {
       "number": 24,
-      "path": "Storage user-media/{uid}/**",
+      "path": "Storage user-media/{uid}/** and coach-docs/{uid}/**",
       "method": "prefixDelete"
     },
     {

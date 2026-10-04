@@ -37,6 +37,32 @@ void main() {
     expect(fromJson.difference(fromDart), isEmpty);
   });
 
+  test('every Storage prefix the server purges is named by a row', () {
+    // functions/account/deletion.py is the code that empties the buckets.
+    // A prefix it purges that no row names is a deletion the manifest, and
+    // so the deletion sheet, never mentions.
+    final source = File('../functions/account/deletion.py').readAsStringSync();
+    final tuple = RegExp(r'STORAGE_PREFIXES\s*=\s*\(([^)]*)\)')
+        .firstMatch(source);
+    expect(tuple, isNotNull, reason: 'STORAGE_PREFIXES not found');
+    final prefixes = [
+      for (final m in RegExp(r'"([^"]+)"').allMatches(tuple!.group(1)!))
+        m.group(1)!.replaceAll(RegExp(r'/$'), ''),
+    ];
+    expect(prefixes, isNotEmpty);
+    final storageRows = [
+      for (final r in rows)
+        if ((r['path'] as String).startsWith('Storage ')) r['path'] as String,
+    ];
+    for (final prefix in prefixes) {
+      expect(
+        storageRows.any((path) => path.contains('$prefix/**')),
+        isTrue,
+        reason: '$prefix is purged by the server but named by no row',
+      );
+    }
+  });
+
   test('the same count, numbered the same way', () {
     expect(kDeletionManifest, hasLength(rows.length));
     expect(

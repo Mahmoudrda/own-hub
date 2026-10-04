@@ -283,9 +283,10 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
   ),
   DeletionRow(
     number: 24,
-    path: 'Storage user-media/{uid}/**',
+    path: 'Storage user-media/{uid}/** and coach-docs/{uid}/**',
     owner: 'media groups',
     method: DeletionMethod.prefixDelete,
+    note: 'her media, and a coach\'s certificate scans; exports are row 25',
   ),
   DeletionRow(
     number: 25,
