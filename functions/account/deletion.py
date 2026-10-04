@@ -196,7 +196,7 @@ def purge_storage(uid: str, backend: Backend) -> None:
 
 def resweep(uid: str, backend: Backend, deadline: Optional[float] = None) -> None:
     """N9: the one late sweep of users/{uid}, plans/{uid}, her Storage
-    prefixes and her community data (B3: a like or comment a still-valid token
+    prefixes, reports she filed or was named in (C2) and her community data (B3: a like or comment a still-valid token
     wrote behind the scan cursor), then marked so it never runs again.
     Idempotent: deleting what is already gone is a no-op. A failure, or a
     community scan that runs out of time, leaves sweepAfter set so the sweeper
@@ -205,6 +205,9 @@ def resweep(uid: str, backend: Backend, deadline: Optional[float] = None) -> Non
     if manifest.PLANS_RECURSIVE in {manifest.ACTIONS[row.number] for row in manifest.ROWS}:
         backend.delete_plans_tree(uid)
     purge_storage(uid, backend)
+    # C2: a report needs only a sign-in, so a still-valid token can file one
+    # after the first purge. A fresh token: not linkable to the first run's.
+    backend.pseudonymise_reports(uid, pseudonym())
     if backend.purge_group_hook(uid, deadline) is False:
         return
     backend.mark_swept(uid)

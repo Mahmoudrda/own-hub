@@ -140,3 +140,20 @@ def test_the_second_sweep_purges_uploads_made_after_done(fs, objects):
         [(None, "user-media/other/keep.jpg"), (deletion.PERSONAL_BUCKET, "user-media/other/keep.jpg")],
         key=str,
     )
+
+
+def test_the_second_sweep_pseudonymises_reports_filed_after_done(fs):
+    """C2: reports need only a sign-in, so a still-valid token can file one
+    after the first purge. The late sweep pseudonymises it too."""
+    backend = deletion.FirebaseBackend()
+    backend.finish_record("her")
+    fs.collection("reports").document("late").set(
+        {"reporterUid": "her", "subjectUid": "x", "state": "submitted"}
+    )
+    fs.collection("reports").document("about").set({"reporterUid": "y", "subjectUid": "her"})
+    fs.collection("reports").document("theirs").set({"reporterUid": "y", "subjectUid": "x"})
+    deletion.resweep("her", backend)
+    assert "her" not in repr({p: v for p, v in fs.docs.items() if p.startswith("reports/")})
+    assert fs.docs["reports/late"]["reporterUid"].startswith("deleted-")
+    assert fs.docs["reports/about"]["subjectUid"].startswith("deleted-")
+    assert fs.docs["reports/theirs"] == {"reporterUid": "y", "subjectUid": "x"}
