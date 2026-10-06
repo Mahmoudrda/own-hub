@@ -56,6 +56,7 @@ import 'crash_consent.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
 import 'firebase_boot.dart';
+import 'home_widget_sync.dart';
 import 'install_id.dart';
 import 'pledge.dart';
 import 'coach_invite_state.dart';
@@ -93,6 +94,9 @@ class ThisPhoneWipe implements LocalWipe {
     RoleState.instance.reset();
     AppRouter.lastReviewerPath = null;
     await AppRouter.authRepository.signOut();
+    // The Home Screen and Lock Screen widgets go back to "Open Own Hub to
+    // start". Not awaited, on the same terms as the snapshot erase below.
+    unawaited(HomeWidgetSync.instance.clear());
   }
 
   /// Stops the sync, then stops Firestore and empties what it kept on disk.
@@ -142,6 +146,11 @@ class ThisPhoneWipe implements LocalWipe {
     // that is slow, wedged or missing must still leave every store below empty
     // and the sheet still has to close and say so.
     unawaited(LocalPersistence.instance.erase());
+
+    // The widgets' copy of her week in the App Group, for the same reason:
+    // left behind, her count would stay on the Home Screen after the account
+    // it belongs to is gone.
+    unawaited(HomeWidgetSync.instance.clear());
 
     // The record of which of her documents the server has already accepted, for
     // the same reason and on the same terms. Left behind, a new account on this

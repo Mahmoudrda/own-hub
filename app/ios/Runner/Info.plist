@@ -59,7 +59,28 @@
 				<string>com.googleusercontent.apps.681714989950-ig46eu1jg345idchla73e8f8v0s9gr86</string>
 			</array>
 		</dict>
+		<!-- The Home Screen and Lock Screen widgets open the app with
+		     ownhub://widget?homeWidget=1&to=T01 (or R03, P01, E01).
+		     lib/app_state/widget_links.dart maps `to` through a whitelist and
+		     pushes it through the router, so the verification gate applies. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.ownhub.app.widget</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ownhub</string>
+			</array>
+		</dict>
 	</array>
+	<!-- Flutter's own deep linking is off. Left on, it would push every URL
+	     the app is opened with as a route name, so a widget URL would land on
+	     the unknown-route page, and Flutter documents that it breaks plugins
+	     that handle links themselves (home_widget, and the Firebase phone
+	     auth callback above). -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 	<!-- Firebase phone auth verifies the app with a silent push before it
 	     falls back to reCAPTCHA. A silent push reaches the app only with this
 	     background mode. It shows nothing and asks for no permission. -->

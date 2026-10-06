@@ -15330,6 +15330,90 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Type what you ate'**
   String get typeWhatYouAte;
+
+  /// No description provided for @yourWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week'**
+  String get yourWeek;
+
+  /// No description provided for @sessionsThisWeekAtAGlanceNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions this week, at a glance. Nothing about your cycle or body.'**
+  String get sessionsThisWeekAtAGlanceNothing;
+
+  /// No description provided for @todaysWorkoutAndMealOneTapAway.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s workout and meal, one tap away.'**
+  String get todaysWorkoutAndMealOneTapAway;
+
+  /// Lock Screen inline widget. Sessions this week against her weekly target. Never a daily count.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {target} this week'**
+  String doneOfTargetThisWeek(int done, int target);
+
+  /// VoiceOver label for the widget's week segments and gauge.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions this week: {done} of {target}'**
+  String sessionsThisWeekDoneOfTarget(int done, int target);
+
+  /// No description provided for @yourFirstSessionIsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first session is ready'**
+  String get yourFirstSessionIsReady;
+
+  /// No description provided for @todaysWorkoutIsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s workout is ready'**
+  String get todaysWorkoutIsReady;
+
+  /// No description provided for @todayIsUnderWay.
+  ///
+  /// In en, this message translates to:
+  /// **'Today is under way'**
+  String get todayIsUnderWay;
+
+  /// No description provided for @sessionLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Session logged'**
+  String get sessionLogged;
+
+  /// No description provided for @aMealIsLoggedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'A meal is logged today'**
+  String get aMealIsLoggedToday;
+
+  /// No description provided for @logAMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Log a meal'**
+  String get logAMeal;
+
+  /// No description provided for @openOwnHubForToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Own Hub for today'**
+  String get openOwnHubForToday;
+
+  /// No description provided for @openOwnHubToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Own Hub to start'**
+  String get openOwnHubToStart;
+
+  /// No description provided for @yourWeekShowsHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week shows here'**
+  String get yourWeekShowsHere;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

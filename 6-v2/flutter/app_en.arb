@@ -3458,5 +3458,45 @@
   "theCameraCouldNotStartCloseThis": "The camera could not start. Close this and try again.",
   "weCouldNotSendYourCertificateCheck": "We could not send your certificate. Check your connection and try again.",
   "coachingIsNotOpenYetSoYour": "Coaching is not open yet, so your certificate was not sent.",
-  "typeWhatYouAte": "Type what you ate"
+  "typeWhatYouAte": "Type what you ate",
+  "yourWeek": "Your week",
+  "sessionsThisWeekAtAGlanceNothing": "Sessions this week, at a glance. Nothing about your cycle or body.",
+  "todaysWorkoutAndMealOneTapAway": "Today's workout and meal, one tap away.",
+  "doneOfTargetThisWeek": "{done} of {target} this week",
+  "@doneOfTargetThisWeek": {
+    "description": "Lock Screen inline widget. Sessions this week against her weekly target. Never a daily count.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "example": "1"
+      },
+      "target": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "sessionsThisWeekDoneOfTarget": "Sessions this week: {done} of {target}",
+  "@sessionsThisWeekDoneOfTarget": {
+    "description": "VoiceOver label for the widget's week segments and gauge.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "example": "1"
+      },
+      "target": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "yourFirstSessionIsReady": "Your first session is ready",
+  "todaysWorkoutIsReady": "Today's workout is ready",
+  "todayIsUnderWay": "Today is under way",
+  "sessionLogged": "Session logged",
+  "aMealIsLoggedToday": "A meal is logged today",
+  "logAMeal": "Log a meal",
+  "openOwnHubForToday": "Open Own Hub for today",
+  "openOwnHubToStart": "Open Own Hub to start",
+  "yourWeekShowsHere": "Your week shows here"
 }

@@ -840,8 +840,11 @@ class AppRouter {
   /// under [generation]. A stale read changes nothing (N6).
   static void _settleClaim(String uid, bool verified, int generation) {
     if (!_stillAbout(uid, generation)) return;
+    final wasVerified = isVerified;
     _verifiedClaim = verified;
     _freshClaimRead = true;
+    // The gate moved: the widgets open or close with it (home_widget_sync).
+    if (isVerified != wasVerified) AppChanges.bump();
     unawaited(VerificationMemory.rememberSignedIn(uid));
     if (verified) {
       unawaited(VerificationMemory.rememberVerified(uid));

@@ -3458,5 +3458,45 @@
   "theCameraCouldNotStartCloseThis": "تعذّر تشغيل الكاميرا. أغلقي هذه الشاشة وحاولي مرة أخرى.",
   "weCouldNotSendYourCertificateCheck": "تعذّر إرسال شهادتكِ. تحقّقي من اتصالكِ وحاولي مرة أخرى.",
   "coachingIsNotOpenYetSoYour": "التدريب الشخصي غير متاح بعد، لذلك لم تُرسَل شهادتكِ.",
-  "typeWhatYouAte": "اكتبي ما تناولتِه"
+  "typeWhatYouAte": "اكتبي ما تناولتِه",
+  "yourWeek": "أسبوعكِ",
+  "sessionsThisWeekAtAGlanceNothing": "تمارين هذا الأسبوع في لمحة. لا شيء عن دورتكِ أو جسمكِ.",
+  "todaysWorkoutAndMealOneTapAway": "تمرين اليوم ووجبتكِ، على بُعد لمسة.",
+  "doneOfTargetThisWeek": "{done} من {target} هذا الأسبوع",
+  "@doneOfTargetThisWeek": {
+    "description": "Lock Screen inline widget. Sessions this week against her weekly target. Never a daily count.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "example": "1"
+      },
+      "target": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "sessionsThisWeekDoneOfTarget": "تمارين هذا الأسبوع: {done} من {target}",
+  "@sessionsThisWeekDoneOfTarget": {
+    "description": "VoiceOver label for the widget's week segments and gauge.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "example": "1"
+      },
+      "target": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "yourFirstSessionIsReady": "تمرينكِ الأول جاهز",
+  "todaysWorkoutIsReady": "تمرين اليوم جاهز",
+  "todayIsUnderWay": "يومكِ بدأ",
+  "sessionLogged": "سُجِّل التمرين",
+  "aMealIsLoggedToday": "سجّلتِ وجبة اليوم",
+  "logAMeal": "سجّلي وجبة",
+  "openOwnHubForToday": "افتحي Own Hub ليومكِ",
+  "openOwnHubToStart": "افتحي Own Hub للبدء",
+  "yourWeekShowsHere": "سيظهر أسبوعكِ هنا"
 }

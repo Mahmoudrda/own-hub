@@ -8473,4 +8473,52 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get typeWhatYouAte => 'اكتبي ما تناولتِه';
+
+  @override
+  String get yourWeek => 'أسبوعكِ';
+
+  @override
+  String get sessionsThisWeekAtAGlanceNothing =>
+      'تمارين هذا الأسبوع في لمحة. لا شيء عن دورتكِ أو جسمكِ.';
+
+  @override
+  String get todaysWorkoutAndMealOneTapAway =>
+      'تمرين اليوم ووجبتكِ، على بُعد لمسة.';
+
+  @override
+  String doneOfTargetThisWeek(int done, int target) {
+    return '$done من $target هذا الأسبوع';
+  }
+
+  @override
+  String sessionsThisWeekDoneOfTarget(int done, int target) {
+    return 'تمارين هذا الأسبوع: $done من $target';
+  }
+
+  @override
+  String get yourFirstSessionIsReady => 'تمرينكِ الأول جاهز';
+
+  @override
+  String get todaysWorkoutIsReady => 'تمرين اليوم جاهز';
+
+  @override
+  String get todayIsUnderWay => 'يومكِ بدأ';
+
+  @override
+  String get sessionLogged => 'سُجِّل التمرين';
+
+  @override
+  String get aMealIsLoggedToday => 'سجّلتِ وجبة اليوم';
+
+  @override
+  String get logAMeal => 'سجّلي وجبة';
+
+  @override
+  String get openOwnHubForToday => 'افتحي Own Hub ليومكِ';
+
+  @override
+  String get openOwnHubToStart => 'افتحي Own Hub للبدء';
+
+  @override
+  String get yourWeekShowsHere => 'سيظهر أسبوعكِ هنا';
 }

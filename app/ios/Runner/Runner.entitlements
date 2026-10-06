@@ -6,5 +6,11 @@
 	<string>development</string>
 	<key>com.apple.developer.devicecheck.appattest-environment</key>
 	<string>production</string>
+	<!-- Shared with the widget extension (OwnHubWidgets), which reads the
+	     one payload lib/app_state/home_widget_sync.dart writes here. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.ownhub.app</string>
+	</array>
 </dict>
 </plist>

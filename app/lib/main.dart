@@ -10,9 +10,11 @@ import 'app_state/crash_reports.dart';
 import 'app_state/debug_analytics_sink.dart';
 import 'app_state/eat_state.dart';
 import 'app_state/firebase_boot.dart';
+import 'app_state/home_widget_sync.dart';
 import 'app_state/local_persistence.dart';
 import 'app_state/onboarding_state.dart';
 import 'app_state/role_state.dart';
+import 'app_state/widget_links.dart';
 import 'config/legal_links.dart';
 import 'features/account/domain/health_backup.dart';
 import 'domain/analytics/analytics_gateway.dart';
@@ -107,6 +109,21 @@ Future<void> main() async {
   // check rather than the app. See `AppRouter.readVerificationAtLaunch`.
   await AppRouter.readVerificationAtLaunch();
   AppRouter.watchVerificationToken();
+
+  // The Home Screen and Lock Screen widgets, iOS only. They read this week's
+  // count and today's state from the same repository Home draws, and only
+  // while she is signed in and verified; otherwise they say "Open Own Hub to
+  // start". Started after the verification read above, so the first payload
+  // it writes already knows whether she is let in. See
+  // `lib/app_state/home_widget_sync.dart`.
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+    HomeWidgetSync.instance.start(
+      readDay: () => AppRouter.todayRepository.day,
+      isOpen: () => AppRouter.isVerified && AppRouter.signedInUid != null,
+      locale: AppRouter.localePreference.read()?.locale,
+    );
+    WidgetLinks.enabled = true;
+  }
 
   // A code her coach sent, kept through a check that finished while the app
   // was closed. Nothing happens without one. Not awaited.
@@ -217,12 +234,22 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // language she left. Nothing happens when she has none.
     _reapplyReminders();
     _locale.addListener(_reapplyReminders);
+    // The widgets speak the language she chose here, not the phone's.
+    _relabelWidgets();
+    _locale.addListener(_relabelWidgets);
+    // A tap on a widget opens its screen, once there is a navigator to push
+    // it on. Nothing happens off iOS.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(WidgetLinks.start(_navigatorKey)),
+    );
     // Every change of side, chosen at C08 or switched from her picture, is
     // kept for the next launch (R1-P17).
     _roles.addListener(_keepRoles);
   }
 
   void _keepRoles() => RoleState.instance.keep(_roles.value);
+
+  void _relabelWidgets() => HomeWidgetSync.instance.useLocale(_locale.value);
 
   void _reapplyReminders() => unawaited(
     AppRouter.reapplyTrainingReminders(lookupAppL10n(_locale.value)),
@@ -287,6 +314,7 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _locale.removeListener(_reapplyReminders);
+    _locale.removeListener(_relabelWidgets);
     _locale.dispose();
     _roles.removeListener(_keepRoles);
     _roles.dispose();

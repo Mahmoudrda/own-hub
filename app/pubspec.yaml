@@ -96,6 +96,14 @@ dependencies:
   flutter_local_notifications: ^22.3.1
   timezone: ^0.11.1
   flutter_timezone: ^5.1.1
+  # The Home Screen and Lock Screen widgets (ios/OwnHubWidgets). Writes one
+  # JSON string to the App Group group.com.ownhub.app: this week's session
+  # count against her target, today's state and whether a meal is logged,
+  # never her cycle, life stage, body or programme
+  # (lib/features/today/domain/widget_projection.dart). It stays on the phone.
+  # The package ships no privacy manifest, so ios/Runner/PrivacyInfo.xcprivacy
+  # declares the UserDefaults reason 1C8F.1 for it.
+  home_widget: ^0.10.0
 
 dev_dependencies:
   flutter_test:

@@ -8513,4 +8513,52 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get typeWhatYouAte => 'Type what you ate';
+
+  @override
+  String get yourWeek => 'Your week';
+
+  @override
+  String get sessionsThisWeekAtAGlanceNothing =>
+      'Sessions this week, at a glance. Nothing about your cycle or body.';
+
+  @override
+  String get todaysWorkoutAndMealOneTapAway =>
+      'Today\'s workout and meal, one tap away.';
+
+  @override
+  String doneOfTargetThisWeek(int done, int target) {
+    return '$done of $target this week';
+  }
+
+  @override
+  String sessionsThisWeekDoneOfTarget(int done, int target) {
+    return 'Sessions this week: $done of $target';
+  }
+
+  @override
+  String get yourFirstSessionIsReady => 'Your first session is ready';
+
+  @override
+  String get todaysWorkoutIsReady => 'Today\'s workout is ready';
+
+  @override
+  String get todayIsUnderWay => 'Today is under way';
+
+  @override
+  String get sessionLogged => 'Session logged';
+
+  @override
+  String get aMealIsLoggedToday => 'A meal is logged today';
+
+  @override
+  String get logAMeal => 'Log a meal';
+
+  @override
+  String get openOwnHubForToday => 'Open Own Hub for today';
+
+  @override
+  String get openOwnHubToStart => 'Open Own Hub to start';
+
+  @override
+  String get yourWeekShowsHere => 'Your week shows here';
 }

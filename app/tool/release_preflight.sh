@@ -62,6 +62,13 @@ echo
 echo "-- Apple hard requirements --"
 check "privacy manifest present"           "[ -f ios/Runner/PrivacyInfo.xcprivacy ]"
 check "privacy manifest in Xcode target"   "grep -q 'PrivacyInfo.xcprivacy' ios/Runner.xcodeproj/project.pbxproj"
+# The widget extension is its own bundle with its own executable, so it needs
+# its own manifest. Both read the App Group through UserDefaults: 1C8F.1.
+check "widget privacy manifest present"    "[ -f ios/OwnHubWidgets/PrivacyInfo.xcprivacy ]"
+check "widget privacy manifest in Xcode target" "grep -q 'PrivacyInfo.xcprivacy in Resources' ios/Runner.xcodeproj/project.pbxproj && grep -q 'path = OwnHubWidgets;' ios/Runner.xcodeproj/project.pbxproj"
+check "widget manifest declares 1C8F.1"    "grep -q '1C8F.1' ios/OwnHubWidgets/PrivacyInfo.xcprivacy"
+check "app manifest declares 1C8F.1"       "grep -q '1C8F.1' ios/Runner/PrivacyInfo.xcprivacy"
+check "both targets share the App Group"   "grep -q 'group.com.ownhub.app' ios/Runner/Runner.entitlements && grep -q 'group.com.ownhub.app' ios/OwnHubWidgets/OwnHubWidgets.entitlements"
 # Present is not the same as true. The manifest shipped declaring zero collected
 # data types, with a header saying the app "carries no Firebase", on a binary
 # with five Firebase packages and `Firebase.initializeApp` on every launch.

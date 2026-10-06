@@ -473,6 +473,8 @@ if (fs.existsSync(dictPath)) {
     "Join me on Own Hub, the training app for women only. When you sign up, tap I have a code from my coach and enter {code}.": {"description": "The WhatsApp message a coach sends to invite a client. {code} is her eight-character invite code.", "placeholders": {"code": {"type": "String", "example": "ABCD2345"}}},
     "We could not open WhatsApp. Your code is {code}.": {"description": "Shown when WhatsApp could not open, so the coach can share her code another way.", "placeholders": {"code": {"type": "String", "example": "ABCD2345"}}},
     "I coach women and would like to coach on Own Hub. Name: {name}. City: {city}. I coach: {specialty}.": {"description": "The message a coach sends to the team from the interest form while coaching is closed.", "placeholders": {"name": {"type": "String", "example": "Salma"}, "city": {"type": "String", "example": "Cairo"}, "specialty": {"type": "String", "example": "postpartum strength"}}},
+    "{done} of {target} this week": {"description": "Lock Screen inline widget. Sessions this week against her weekly target. Never a daily count.", "placeholders": {"done": {"type": "int", "example": "1"}, "target": {"type": "int", "example": "3"}}},
+    "Sessions this week: {done} of {target}": {"description": "VoiceOver label for the widget's week segments and gauge.", "placeholders": {"done": {"type": "int", "example": "1"}, "target": {"type": "int", "example": "3"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };
