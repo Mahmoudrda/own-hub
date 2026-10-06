@@ -17,8 +17,9 @@
 ///
 /// **Nothing of hers is in a queue being looked at.** The photographs are
 /// deleted outright when the check finishes, whatever the outcome, so there is
-/// no encrypted bundle and no reviewer studying her ID card. Review is a short
-/// video call with a woman, the same two minutes `C15` already offers. The old
+/// no encrypted bundle and no reviewer studying her ID card. Review is a woman
+/// from Own Hub who reviews her case and contacts her by phone within 72
+/// hours, the same route `C15` offers. There is no video service. The old
 /// headline, "A woman reviewer is looking", described a model that no longer
 /// exists and would have been a lie on the one screen where she is most
 /// reliant on being told the truth.
@@ -35,7 +36,8 @@
 /// restart, shows the booked time once a reviewer books it, and moves on the
 /// moment a reviewer approves her. Four variants, all honest:
 ///
-///  * pending: a woman reviewer will phone her to arrange a short video call.
+///  * pending: a woman from Own Hub reviews her case and contacts her by phone
+///    within 72 hours.
 ///    No text message is promised, because nothing exists that sends one.
 ///  * booked: the time, in her locale.
 ///  * retry: we did not reach her review in time; she can take the check
@@ -52,6 +54,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/push_registration.dart' show PushOptIn;
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -75,17 +78,42 @@ class BeingCheckedView extends StatefulWidget {
     this.requester,
     this.onAskedForCall,
     this.onSignInAgain,
+    this.savedWeek,
+    this.onBuildWeek,
+    this.onNotifyMe,
+    this.onOpenSettings,
   });
+
+  /// "Tell me when I'm in": asks for notifications and registers this phone
+  /// for the one push the server sends when a woman reviewer approves her.
+  /// Null in a build with nothing to register with.
+  final Future<PushOptIn> Function()? onNotifyMe;
+
+  /// The phone's settings for this app, after she said no to notifications.
+  final VoidCallback? onOpenSettings;
+
+  /// "Build your week while we check": the one-screen "Your week", for a
+  /// woman who reached this wait without one (she signed in with an account
+  /// she already had, or took the niqab path first). Offered only while she
+  /// waits and only when [savedWeek] is null. Setup is open before the check,
+  /// so nothing behind the gate opens.
+  final VoidCallback? onBuildWeek;
+
+  /// Her week as she saved it before signing up ("3 days a week, 20 minutes
+  /// a session, at home"), or null when she has not built one. Shown while she
+  /// waits, so the one thing that is already hers is on the screen that asks
+  /// her to wait.
+  final String? savedWeek;
 
   /// The server did not accept her sign-in: out to sign in again (N4).
   final VoidCallback? onSignInAgain;
 
   /// Whether she has asked for the reviewer's call. False when the automatic
   /// check raised the flag by itself (R4): then this screen says plainly that
-  /// a reviewer can only call after she asks, and offers "Ask for the call".
+  /// a reviewer can only call after she asks, and offers "Ask a woman to contact me".
   final bool reviewAsked;
 
-  /// `request_review`, sent when she taps "Ask for the call". The server
+  /// `request_review`, sent when she taps "Ask a woman to contact me". The server
   /// answers `pending` against the flag already open and records her consent.
   final ReviewRequester? requester;
 
@@ -131,6 +159,22 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
 
   /// What went wrong with the last "Ask for the call", or null.
   CallFailureKind? _askFailure;
+
+  /// What came of "Tell me when I'm in", or null before she asked.
+  PushOptIn? _push;
+  bool _askingPush = false;
+
+  Future<void> _notifyMe() async {
+    final ask = widget.onNotifyMe;
+    if (ask == null || _askingPush) return;
+    setState(() => _askingPush = true);
+    final answer = await ask();
+    if (!mounted) return;
+    setState(() {
+      _push = answer;
+      _askingPush = false;
+    });
+  }
 
   Future<void> _askForCall() async {
     final requester = widget.requester;
@@ -234,15 +278,17 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
         l10n.youAreVerifiedOpenOwnHubTo,
       ),
       _ => (
-        l10n.aShortVideoCallWithAWoman,
+        l10n.aWomanFromOwnHubWillReview,
         booked != null
-            ? l10n.yourVideoCallIsBookedForTime(_when(context, booked))
+            ? l10n.aWomanFromOwnHubWillContact(_when(context, booked))
             // PENDING COUNSEL: with "Your phone number is used only to
-            // arrange this call" below, this is the review consent wording
-            // (the same substance as C15), shown before she asks.
+            // arrange your check" below, this is the review consent wording
+            // (review-v2, the same substance as C15), shown before she asks.
+            // No video: a woman from Own Hub reviews and contacts her within
+            // config.REVIEW_SLA_HOURS (72).
             : !_asked && widget.requester != null
-            ? l10n.aReviewerCanOnlyCallYouAfter
-            : l10n.aWomanReviewerFromOwnHubWill,
+            ? l10n.aWomanFromOwnHubCanContact
+            : l10n.aWomanFromOwnHubReviewsYour,
       ),
     };
     final offerCall =
@@ -293,6 +339,28 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
               ),
             ],
           ),
+          if (widget.savedWeek case final week?
+              when state != ServerVerificationState.rejected)
+            AppCard(
+              key: const ValueKey('c14-saved-week'),
+              variant: AppCardVariant.sage,
+              borderRadius: AppRadius.md,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              children: [
+                Text(
+                  l10n.yourWeekIsSaved,
+                  style: AppText.titleM.copyWith(
+                    color: AppColors.onTertiaryContainer,
+                  ),
+                ),
+                Text(
+                  week,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onTertiaryContainer,
+                  ),
+                ),
+              ],
+            ),
           // Rule 7, at the moment she is most likely to wonder where her
           // photographs went. Nothing was filed, nothing is waiting, nobody is
           // looking at a picture of her.
@@ -301,7 +369,7 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
           // Only while a decision is still to come.
           if (waiting) Text(l10n.theAppOpensAsSoonAsYour, style: quiet),
           if (offerCall) ...[
-            Text(l10n.yourPhoneNumberIsUsedOnlyTo, style: quiet),
+            Text(l10n.yourPhoneNumberIsUsedOnlyTo_thda4, style: quiet),
             if (_askFailure != null)
               Semantics(
                 liveRegion: true,
@@ -323,7 +391,7 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
                 onPressed: widget.onSignInAgain,
               ),
             AppButton(
-              l10n.askForTheCall,
+              l10n.askAWomanToContactMe,
               key: const ValueKey('c14-ask-for-the-call'),
               onPressed: _asking ? null : _askForCall,
             ),
@@ -342,6 +410,47 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
             AppButton(
               l10n.openProfileAndSettings,
               onPressed: widget.onDeleteMyData,
+            ),
+          // She may close the app for days. One push, when the check is done,
+          // and only if she asks for it here.
+          if (waiting && widget.onNotifyMe != null) ...[
+            if (_push == null) ...[
+              Text(l10n.turnOnNotificationsSoWeCanTell, style: quiet),
+              AppButton(
+                l10n.tellMeWhenImIn,
+                key: const ValueKey('c14-notify-me'),
+                variant: AppButtonVariant.outlined,
+                onPressed: _askingPush ? null : _notifyMe,
+              ),
+            ] else
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  switch (_push!) {
+                    PushOptIn.on => l10n.weWillTellYouOnThisPhone,
+                    PushOptIn.denied => l10n.notificationsAreOffForOwnHubOn,
+                    PushOptIn.unavailable =>
+                      l10n.notificationsCannotReachThisPhoneOpenOwn,
+                  },
+                  key: const ValueKey('c14-notify-answer'),
+                  style: quiet,
+                ),
+              ),
+            if (_push == PushOptIn.denied && widget.onOpenSettings != null)
+              AppButton(
+                l10n.openSettings,
+                variant: AppButtonVariant.text,
+                onPressed: widget.onOpenSettings,
+              ),
+          ],
+          if (waiting &&
+              widget.savedWeek == null &&
+              widget.onBuildWeek != null)
+            AppButton(
+              l10n.buildYourWeekWhileWeCheck,
+              key: const ValueKey('c14-build-week'),
+              variant: AppButtonVariant.outlined,
+              onPressed: widget.onBuildWeek,
             ),
           if (waiting && widget.onLookAround != null)
             AppButton(

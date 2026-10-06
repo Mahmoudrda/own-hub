@@ -82,6 +82,20 @@ dependencies:
   # lib/app_state/firebase_boot.dart. Declared as CrashData (not linked) in
   # ios/Runner/PrivacyInfo.xcprivacy and in android/play-data-safety.txt.
   firebase_crashlytics: ^5.4.0
+  # One push: "your check is done", sent by functions/identity/push.py when a
+  # woman reviewer approves her. Asked for on C14 only when she taps "Tell me
+  # when I'm in", never at launch. The token is written to
+  # users/{uid}/devices/{hash of the token} (rules: key whitelist) and deleted
+  # with her account. Declared as DeviceID in ios/Runner/PrivacyInfo.xcprivacy
+  # and in android/play-data-safety.txt.
+  firebase_messaging: ^16.7.0
+  # Training reminders on the days she chose, offered once on R10 after her
+  # first finished session and changed in A01. Scheduled on the phone, so
+  # nothing about them leaves it (lib/app_state/reminder_scheduler.dart).
+  # timezone and flutter_timezone place them at her local time.
+  flutter_local_notifications: ^22.3.1
+  timezone: ^0.11.1
+  flutter_timezone: ^5.1.1
 
 dev_dependencies:
   flutter_test:

@@ -24,6 +24,16 @@ def _no_real_firestore(monkeypatch):
         raise AssertionError("a test reached Secret Manager: stub webhook._secret_url")
 
     monkeypatch.setattr(webhook, "_secret_url", no_secret)
+
+    # M13: no test reads the store reviewer list from Secret Manager. Nobody
+    # is a reviewer unless a test says so.
+    monkeypatch.setattr(store, "store_reviewer_uids", lambda: frozenset())
+    monkeypatch.setattr(store, "store_reviewer_phones", lambda: frozenset())
+    # verify_identity marks itself in flight on the ledger (request_review
+    # refuses meanwhile). A no-op unless a test says otherwise; the store
+    # functions themselves are tested against the fake Firestore.
+    monkeypatch.setattr(store, "mark_verify_in_flight", lambda uid, now=None: None)
+    monkeypatch.setattr(store, "clear_verify_in_flight", lambda uid: None)
     monkeypatch.setattr(webhook, "_url_cache", None)
     monkeypatch.delenv("FLAG_WEBHOOK_URL", raising=False)
     monkeypatch.delenv("FUNCTIONS_EMULATOR", raising=False)

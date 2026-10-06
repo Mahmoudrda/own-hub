@@ -393,6 +393,16 @@ void main() {
     });
   });
 
+  test('the front door opens the tour, and the tour opens sign-up', () {
+    // Sign-up is a one-time flow, so the depth measure below skips it. These
+    // edges are still the first a woman walks, and the parser can only see
+    // them while each `goTo` names its screen literally.
+    final edges = _navGraph().edges;
+    expect(edges['C01'], containsAll(<String>['C04', 'O03', 'O05', 'C06']));
+    expect(edges['C04'], containsAll(<String>['O03', 'O05', 'C06']));
+    expect(edges['C05'], containsAll(<String>['O03', 'O05', 'C06']));
+  });
+
   test('every built tab root wires its own bottom bar', () {
     // The defect this exists for: `TodayView` declares `onSelectTab` and hands
     // its `AppNavBar` an `onSelect` that calls it — and the `T01` route block

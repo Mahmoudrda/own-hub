@@ -103,6 +103,9 @@ class CoachSetupViewModel {
   /// not answer at all.
   PayoutMethodState payout;
 
+  /// She chose "Add payout later" on `K05` rather than a method.
+  bool payoutLater = false;
+
   List<Certificate> get certificates => List.unmodifiable(_certificates);
 
   void addCertificate(Certificate certificate) {
@@ -172,6 +175,7 @@ class CoachSetupViewModel {
     ).hasSubmittedAny,
     hasPayoutMethod: payout.isUsable,
     hasCapacity: capacityMax != null,
+    payoutDeferred: payoutLater,
   );
 }
 

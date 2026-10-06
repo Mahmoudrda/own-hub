@@ -138,9 +138,16 @@ void main() {
   testWidgets('R1-12a R12 names today, not Tuesday', (t) async {
     phone(t);
     await open(t, appDestinations['R12']!.name, locale: const Locale('en'));
+    // With no session, R12 names the day it is opened. Asserting today's name
+    // (rather than "not Tuesday") keeps the check true on every day of the week.
+    const names = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+      'Sunday',
+    ];
+    final today = names[DateTime.now().weekday - 1];
     expect(
       paintedText(t),
-      isNot(anyElement(contains("That's Tuesday done"))),
+      anyElement(contains("That's $today done")),
       reason: 'the exact defect commit 5e78faa fixed elsewhere',
     );
   });

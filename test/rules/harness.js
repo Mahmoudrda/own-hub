@@ -33,12 +33,45 @@ export const FIRESTORE_PORT = Number(process.env.OWNHUB_RULES_FIRESTORE_PORT || 
 
 let env = null;
 
+// APL-16. The community and the coach app are switched off in the deployed
+// rules (`communityLive()` and `coachLive()` return false), and
+// 16-dormant-features proves every gated write is refused with the file
+// exactly as it ships. The suites that test the rules BEHIND those switches
+// (blocking, escalation, field validation) would otherwise test nothing but
+// the switch, so they load the same file with both switches turned on, which
+// is what the rules will be on the day the features ship. Nothing else in the
+// text differs, and this refuses to run if the two lines are not found.
+const SWITCHES = [
+  ['function communityLive() {\n      return false;\n    }',
+   'function communityLive() {\n      return true;\n    }'],
+  ['function coachLive() {\n      return false;\n    }',
+   'function coachLive() {\n      return true;\n    }'],
+];
+
+export function withDormantFeaturesOn(source) {
+  let out = source;
+  for (const [off, on] of SWITCHES) {
+    assert.ok(out.includes(off), `rules switch not found: ${off.split('\n')[0]}`);
+    out = out.replace(off, on);
+  }
+  return out;
+}
+
+let live = false;
+
+/** Call once, before anything else, in a file that tests the gated rules. */
+export function switchDormantFeaturesOn() {
+  assert.equal(env, null, 'switch the features on before the first getEnv()');
+  live = true;
+}
+
 export async function getEnv() {
   if (env) return env;
+  const source = readFileSync(RULES_PATH, 'utf8');
   env = await initializeTestEnvironment({
     projectId: PROJECT_ID,
     firestore: {
-      rules: readFileSync(RULES_PATH, 'utf8'),
+      rules: live ? withDormantFeaturesOn(source) : source,
       host: FIRESTORE_HOST,
       port: FIRESTORE_PORT,
     },

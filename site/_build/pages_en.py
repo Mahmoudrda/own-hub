@@ -74,7 +74,8 @@ Please delete my Own Hub account and the data you hold about me.
 
 The phone number on my account:
 
-You can phone that number to confirm this request is mine.
+Please send the one-time code to that number so I can confirm this
+request is mine.
 
 Thank you.
 """
@@ -116,6 +117,24 @@ def build(cfg, lang, mailto_link):
 
     pages = {}
 
+    # Download buttons, drawn only once a store link is set in config.json.
+    store_links = []
+    if cfg.store_url("storeUrlIos"):
+        store_links.append(
+            f'<a class="btn ghost" href="{cfg.store_url("storeUrlIos")}" '
+            'rel="noopener">Download on the App Store</a>'
+        )
+    if cfg.store_url("storeUrlAndroid"):
+        store_links.append(
+            f'<a class="btn ghost" href="{cfg.store_url("storeUrlAndroid")}" '
+            'rel="noopener">Get it on Google Play</a>'
+        )
+    store_row = (
+        '\n        <div class="btn-row store-links" role="group" '
+        'aria-label="Download Own Hub">' + "".join(store_links) + "</div>"
+        if store_links else ""
+    )
+
     # ------------------------------------------------------------ index ----
     pages["index"] = {
         "title": "Own Hub · a fitness app for women in Egypt",
@@ -144,12 +163,12 @@ def build(cfg, lang, mailto_link):
         for women in Egypt. There is no biography to read here and nothing to
         take on trust: the pages below set out exactly what the app keeps, where
         it keeps it, and for how long.</p>
-        <div class="btn-row"><a class="btn" href="/waitlist">Join the waitlist</a></div>
+        <div class="btn-row"><a class="btn" href="/waitlist">Join the waitlist</a></div>""" + store_row + """
       </div>
       <ul class="facts" aria-label="Own Hub at a glance">
-        <li><b>Women only</b><span>Checked once with your national ID and a live selfie, or by a woman reviewer on a short video call. The photos are never stored.</span></li>
+        <li><b>Women only</b><span>Checked once with your national ID and a live selfie, or, if the check cannot decide, by a woman from Own Hub who contacts you to arrange it. The photos are never stored.</span></li>
         <li><b>Your health stays with you</b><span>Cycle, check-ins, measurements and weight stay on your phone unless you turn on backup yourself.</span></li>
-        <li><b>One permission</b><span>The camera, for the women-only check. No photo library, no microphone, no location, no health data.</span></li>
+        <li><b>One permission</b><span>The camera, for the women-only check. No photo library, no microphone, no location, no access to Apple Health or Health Connect.</span></li>
         <li><b>Free</b><span>No adverts, no purchases, no subscriptions. Nothing in it is for sale.</span></li>
         <li><b>Arabic and English</b><span>The whole app in both, right to left included.</span></li>
       </ul>
@@ -159,6 +178,8 @@ def build(cfg, lang, mailto_link):
     <section class="wrap" aria-labelledby="inside">
       <div class="prose">
 """ + h2("inside", "What is inside it") + """
+        <p>Before you join, tap &ldquo;Show me around&rdquo; in the app to see
+        it with a sample week. No account, and nothing is saved.</p>
       </div>
       <ul class="pillars">
         <li>
@@ -195,7 +216,7 @@ def build(cfg, lang, mailto_link):
         <li>
           <h3>Kept for you, and only you</h3>
           <p>Once you are verified, your training and meals are kept with your
-          account in Frankfurt, and only you can read them. Your cycle and
+          account in Frankfurt, and no other member can see them. Your cycle and
           health information stays on your phone unless you back it up.
           Profile, then <b>Your data</b>, deletes your account and everything in
           it.</p>
@@ -217,8 +238,8 @@ def build(cfg, lang, mailto_link):
         <div class="callout quiet">
           <p><b>What is not in this version.</b> There is no community and no
           coaching: nothing in the app connects you to another member. There is
-          no assistant. There is no export of your data yet, and the app says so
-          rather than showing a button that would produce nothing.</p>
+          no assistant. To get a copy of your data, ask from Profile, then Your
+          data, and we send it to you.</p>
         </div>
 
         <p>The app is in Arabic and English, right to left included. You can
@@ -233,7 +254,7 @@ def build(cfg, lang, mailto_link):
       <ul class="doorways">
         <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, where it is kept, and why your ID and selfie photos are never stored.</span></a></li>
         <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, what it is not, and the medical warning worth reading even if you skip the rest.</span></a></li>
-        <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person, when she reads, and answers to the things women write in about.</span></a></li>
+        <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person, the hours messages are read, and answers to the things women write in about.</span></a></li>
         <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to delete your account from inside the app, and how to ask without installing it.</span></a></li>
       </ul>
     </section>
@@ -241,47 +262,40 @@ def build(cfg, lang, mailto_link):
     }
 
     # ---------------------------------------------------------- privacy ----
-    # The account build: phone sign-in, a women-only check with a national ID
-    # and a live selfie, and cloud storage of her logs. Based on
-    # docs/release/privacy-policy.proposed.md (2 October 2026), corrected to
-    # what the code does after the council fixes. PENDING COUNSEL SIGN-OFF:
-    # the banner below stays until a licensed Egyptian lawyer has approved it.
-    draft_banner = """
-        <div class="callout" role="note">
-          <p><b>Draft pending review by a licensed Egyptian lawyer.</b> This page
-          describes the version of Own Hub with accounts and the women-only
-          check. It has not yet been approved by counsel, and it may change
-          before it is final.</p>
-        </div>
-"""
+    # Privacy Policy v3.0 (compliance plan, 6 October 2026). No drafting note
+    # is published, not even as an HTML comment: build.py strips any that
+    # slips in. A value only the owner can supply is a {{token}} from
+    # config.json. The owner publishes without a draft banner; legal review
+    # happens on the published text.
+    draft_banner = ""
 
     privacy_toc = toc("On this page", [
         ("a", "short-version", "The short version"),
         ("a", "who-we-are", "1. Who is responsible for your data"),
-        ("a", "who-can-use", "2. Who can use Own Hub"),
-        ("a", "collect", "3. What we collect, and why"),
-        ("a", "where", "4. Who handles it, and where"),
+        ("a", "who-can-use", "2. Who can use Own Hub, and why it is for women only"),
+        ("a", "collect", "3. What we collect, why, and on what basis"),
+        ("a", "where", "4. Who handles your data, and where"),
         ("a", "transfers", "5. Transfers outside Egypt"),
         ("a", "retention", "6. How long we keep it"),
         ("a", "deletion", "7. Deleting your account"),
         ("a", "rights", "8. Your rights"),
         ("a", "security", "9. Security"),
         ("a", "does-not", "10. What Own Hub does not do"),
-        ("a", "changes", "11. Changes to this policy"),
+        ("a", "children", "11. Children"),
+        ("a", "changes", "12. Changes to this policy"),
+        ("a", "language", "13. Language"),
+        ("a", "contact", "14. Contact"),
     ])
 
     who_rows = [
-        ("App", "Own Hub, iOS and Android, bundle id <code>com.ownhub.app</code>"),
-        ("Controller", "{{legalEntity}}, an individual publishing Own Hub in his own name"),
-        ("Country", "{{legalAddress}}"),
+        ("Controller", "{{legalEntity}}, an individual publishing Own Hub in his own "
+                       "name. He is personally responsible for complying with the law."),
+        ("Address", "{{legalAddress}}"),
         ("Privacy contact", "{{mailto:contactPrivacy}}"),
         ("Personal Data Protection Centre permit", "{{pdpcPermit}}"),
     ]
     if cfg.plain("commercialRegistration", lang):
-        who_rows.append(
-            ("Commercial registration and tax card number",
-             "{{commercialRegistration}}")
-        )
+        who_rows.append(("Commercial registration", "{{commercialRegistration}}"))
     if cfg.plain("dataProtectionOfficer", lang):
         who_rows.append(("Data protection officer", "{{dataProtectionOfficer}}"))
 
@@ -290,197 +304,291 @@ def build(cfg, lang, mailto_link):
         "description": (
             "How Own Hub handles your phone number, the women-only check, and "
             "your training, meals and health information. ID and selfie photos "
-            "are never stored."
+            "are never stored, and nothing is used to train AI."
         ),
         "body": """
     <div class="wrap">
       <div class="prose">
         <h1>Privacy Policy</h1>
         <p class="meta">
-          <b>Effective date:</b> {{effectiveDate}}<br>
-          <b>Version:</b> 2.0<br>
+          <b>Version:</b> 3.0<br>
+          <b>Effective date:</b> {{policyEffectiveDate}}<br>
           <b>Applies to:</b> Own Hub for iOS and Android, bundle id
           <code>com.ownhub.app</code>, and this website.
         </p>
+        <p>If the English and Arabic versions of this policy differ, the Arabic
+        version applies.</p>
 """ + draft_banner + """
 """ + privacy_toc + """
 
 """ + h2("short-version", "The short version", "no-rule") + """
         <div class="callout calm">
           <ul>
-            <li>Own Hub is a fitness app for women in Egypt aged 18 and over. To
-            keep it women only, we check your Egyptian national ID card and a
+            <li>Own Hub is a fitness app for women in Egypt aged 18 and over.
+            Membership is for women only, for women&rsquo;s safety and privacy.
+            To keep it that way, we check your Egyptian national ID card and a
             live selfie once, when you join.</li>
-            <li><b>The photographs of your card and your selfie are never
-            stored.</b> They are read in memory on our server in Frankfurt,
-            Germany, and discarded when the check ends. We keep the result, and
-            a one-way keyed code made from your ID number so that one card
-            cannot open two accounts.</li>
-            <li><b>Your cycle, periods, daily check-ins, measurements and
-            weight, pregnancy or postpartum status, injuries and allergies stay
-            on your phone.</b> They are copied to our servers only if you turn
-            on health backup yourself, after a separate consent. Turning it off
-            deletes the copy.</li>
-            <li>Your workouts and meals are copied to Google Cloud servers in
-            Frankfurt once your account is verified, so you do not lose them if
-            you lose your phone. Only you can read them.</li>
-            <li>Your phone number is handled by Google Firebase Authentication,
-            which runs in the United States.</li>
-            <li>We do not sell your data, show no adverts, use no advertising or
-            analytics tools, and never use your health information for
-            marketing.</li>
-            <li>You can delete your account and your data from inside the app at
-            any time.</li>
+            <li><b>The photographs of your card and your face are never
+            stored.</b> Our server in Frankfurt, Germany reads them in memory
+            and discards them when the check ends. We keep the result for 180
+            days. We also keep a keyed code made from your ID number, so that
+            one card cannot open two accounts.</li>
+            <li><b>Your cycle, check-ins, measurements, weight, pregnancy or
+            postpartum stage and allergies stay on your phone,</b> unless you
+            turn on health backup yourself.</li>
+            <li>Once you are verified, your workouts and meals are copied to
+            Google Cloud in Frankfurt, so a new phone does not mean starting
+            again. No other member can see them.</li>
+            <li>To send your sign-in code, your phone number goes to Google
+            Firebase in the United States.</li>
+            <li>We do not sell your data. There are no adverts, no tracking and
+            no analytics. Crash reports are sent only if you allow them.</li>
+            <li><b>We never use your data to train AI, ours or anyone&rsquo;s.</b></li>
+            <li>You can delete your account in the app at any time, and ask us
+            for a copy of your data.</li>
           </ul>
         </div>
 
 """ + h2("who-we-are", "1. Who is responsible for your data") + """
-        <p>The controller of your personal data, meaning the person who
-        decides how and why it is used, is:</p>
 """ + kv(who_rows) + """
-        <p>{{brandFounder}} is Own Hub&rsquo;s founder and the author of its
-        recipes. She is not the controller of your data.</p>
-        <p>The people who review verification cases by video call are women
-        acting on the controller&rsquo;s instructions and bound by
-        confidentiality.</p>
+        <p>{{brandFounder}} is Own Hub&rsquo;s founder and coach, and the face
+        of the brand. She is not the controller of your data and has no access
+        to your account data.</p>
+        <p>The women who review verification cases act on the
+        controller&rsquo;s instructions and are bound by a written
+        confidentiality agreement.</p>
 
-""" + h2("who-can-use", "2. Who can use Own Hub") + """
-        <p>Own Hub is for women aged <b>18 or over</b> who hold an Egyptian
-        national ID card. We do not knowingly collect data from anyone under
-        18. Your age and sex are read from your national ID number during the
-        check. If the check shows that you are under 18, your application is
-        refused.</p>
+""" + h2("who-can-use", "2. Who can use Own Hub, and why it is for women only") + """
+        <p>Own Hub is for women aged 18 or over who hold an Egyptian national
+        ID card. It is a women-only space for one reason: so that women in
+        Egypt can train, follow their bodies and their cycles, and look after
+        their health somewhere they feel safe and their privacy is protected.
+        This reflects the Constitution&rsquo;s protection of women, of private
+        life, of health and of everyone&rsquo;s right to sport (Articles 11, 18,
+        57, 59 and 84). It is not a judgement about anyone else.</p>
+        <p>Your sex and your age are read from the digits of your national ID
+        number. We never guess them from your face.</p>
+        <p>We do not knowingly collect data from anyone under 18. If the check
+        shows that you are under 18, your application is refused. The refusal
+        is kept as section 6 describes.</p>
 
-""" + h2("collect", "3. What we collect, and why") + """
+""" + h2("collect", "3. What we collect, why, and on what basis") + """
+        <p>Each basis below is one that Egypt&rsquo;s Personal Data Protection
+        Law allows (Law 151/2020, Articles 2, 6 and 12).</p>
 """ + h3("c-account", "3.1 Your account") + """
         <ul>
-          <li><b>Your mobile number</b>, to create your account and sign you in
-          with a one-time code sent by SMS.</li>
-          <li><b>An account identifier</b> we generate, to link your data to
-          your account.</li>
-          <li><b>Your language and settings</b> (privacy switches, notification
-          preferences and quiet hours), to run the app the way you set it.</li>
+          <li><b>Your mobile number.</b> Used to create your account and sign
+          you in with a code sent by SMS, and to phone you if you ask a woman
+          reviewer to check you.</li>
+          <li><b>An account identifier we generate.</b> Used to link your data
+          to your account.</li>
+          <li><b>Your language, settings and setup answers.</b> This covers your
+          privacy switches, notification preferences and quiet hours, your
+          goal, where you train, your equipment, your training days and
+          minutes, and your dietary preferences. Used to run the app the way
+          you set it.</li>
+          <li><b>Basis:</b> performing our agreement with you (the Terms of
+          Use).</li>
         </ul>
 
-""" + h3("c-check", "3.2 Checking that you are a woman aged 18 or over") + """
+""" + h3("c-agreements", "3.2 Your agreements") + """
+        <p>When you sign up, we record which versions of the Terms of Use and
+        this policy you accepted, in which language, from which app version,
+        and when. We keep a similar record for each separate consent you give:
+        the identity check, health backup and a review by a woman.</p>
+        <ul>
+          <li><b>Basis:</b> a legal obligation. The Executive Regulations of the
+          Personal Data Protection Law require us to keep a record of each
+          consent, with its date and form.</li>
+        </ul>
+
+""" + h3("c-check", "3.3 Checking that you are a woman aged 18 or over") + """
         <p>This happens once, when you join, and only after you have read a
-        separate screen and agreed to it. Nothing about the camera starts
-        before that agreement is recorded on our server. The camera is the only
-        way to take the photographs: the app cannot upload a picture that is
-        already on your phone.</p>
+        separate screen and agreed to it. The camera does not start until our
+        server has recorded that agreement. The camera is the only way to take
+        the photographs: the app cannot upload a picture that is already on
+        your phone.</p>
         <ul>
-          <li><b>Photographs of the front and back of your ID card.</b> Sent over
-          an encrypted connection to our server in Frankfurt, Germany. The text
-          on the card is read by Google Cloud Vision through its European Union
-          endpoint. <b>We do not store the images anywhere.</b></li>
-          <li><b>A short live selfie</b>, taken while you follow prompts chosen
-          by our server. It is used to check that a live person is present and
-          that the face matches the portrait on the card. The comparison runs on
-          our own server and does not use any outside face recognition service.
-          <b>We do not store the selfie or any face measurement.</b></li>
+          <li><b>Photographs of the front and back of your ID card.</b> Sent
+          over an encrypted connection to our server in Frankfurt, Germany.
+          Google Cloud Vision reads the text on the card through its European
+          Union endpoint. The images are not stored anywhere.</li>
+          <li><b>A short live selfie,</b> taken while you follow prompts chosen
+          by our server. It checks that a live person is present and that the
+          face matches the portrait on the card. The comparison runs on our own
+          server, with no outside face recognition service. We do not store the
+          selfie or any face measurement.</li>
           <li><b>Your national ID number.</b> Used to confirm your sex (from the
-          digit the Civil Status authority set in the number) and your age (from
-          the date of birth encoded in it), then turned into a one-way keyed
-          code with a secret key held separately in Google Secret Manager.
-          <b>The number itself is not stored.</b></li>
-          <li><b>Your name and date of birth as printed on the card</b> are read
-          only to cross-check the number. <b>Not stored.</b></li>
-          <li><b>The result</b>: approved, refused, or sent to a woman reviewer,
-          with reason codes, coarse score bands, the attempt number and the
-          dates. Your account shows you only whether your check is pending,
-          approved, refused or ready to try again, never the reason codes.</li>
-          <li><b>Fraud signals</b>: a count of failed attempts per ID code, and a
-          scrambled identifier for the app installation, so that one
-          installation trying many different cards can be noticed.</li>
-          <li><b>Your consent</b>: the version of the wording you accepted, and
-          when.</li>
+          digit the Civil Status authority sets in the number) and your age
+          (from the birth date encoded in it). It is then turned into a one-way
+          keyed code, with a secret key held separately in Google Secret
+          Manager. The number itself is not stored.</li>
+          <li><b>Your name and date of birth</b> as printed on the card. Read
+          only to cross-check the number, and not stored.</li>
+          <li><b>The result:</b> approved, refused, or sent to a woman reviewer.
+          It comes with reason codes, coarse score bands (never raw scores),
+          the attempt number and the dates. The app shows you whether your
+          check is pending, approved, refused or ready to try again.</li>
+          <li><b>Fraud signals:</b> a count of failed attempts for each ID
+          code; and a scrambled code for the app installation, together with
+          the last ID codes tried from it, so that one installation trying many
+          cards can be noticed.</li>
+          <li><b>Basis:</b> your explicit consent, given in writing on the
+          screen before the camera opens. The face match is biometric data,
+          which the law treats as sensitive. Because a face match is sensitive
+          data, the law also requires a permit from the Personal Data
+          Protection Centre. Ours is shown in section 1.</li>
+          <li>You can refuse. If you do, you can still ask a woman reviewer to
+          check you (section 3.4). Without a check you cannot open a verified
+          account, because a women-only membership is the purpose of the
+          service.</li>
         </ul>
-        <p>We never guess your sex from your face. The decision about sex comes
-        from your national ID.</p>
-        <p>Legal basis: your explicit consent, given on the screen before the
-        camera opens. You can refuse. If you refuse, you cannot join Own Hub,
-        because a women-only membership is the purpose of the service.</p>
 
-""" + h3("c-review", "3.3 Review by a woman") + """
-        <p>If the automatic check is unsure, if you wear niqab and prefer a
-        woman reviewer, if you decline the camera, or if the check cannot run
-        for a technical reason, your case is reviewed by a woman in a short
-        live video call over {{videoCallService}}.</p>
+""" + h3("c-review", "3.4 Review by a woman") + """
+        <p>Your case goes to a woman reviewer in four situations: the automatic
+        check is unsure; you wear niqab and prefer a woman reviewer; you
+        decline the camera; or the check cannot run for a technical
+        reason.</p>
         <ul>
-          <li>The review queue holds reason codes and scores. It never holds a
-          photograph, and it never holds your phone number.</li>
-          <li>When a reviewer is ready to call you, she looks up your number
-          from your account at that moment. Every lookup is recorded with the
-          reviewer and the time, so that access leaves a trace.</li>
-          <li><b>The call is not recorded.</b> The reviewer records only her
-          decision and the date.</li>
-          <li>If your case has no ID code yet (for example because you chose
-          the niqab route), the reviewer may ask you to read your ID number
-          during the call. It is turned into the keyed code at once and is never
-          stored or written to any log.</li>
-          <li>We do not send text messages about your review. A woman reviewer
-          phones you.</li>
+          <li><b>Your request.</b> When you ask for this, we record your request
+          and the route you chose (section 3.2).</li>
+          <li><b>The queue.</b> The review queue holds reason codes and score
+          bands. It never holds a photograph or your phone number.</li>
+          <li><b>The contact.</b> A woman from Own Hub reviews your case. When
+          she is ready to contact you, she looks up your number at that moment.
+          Each lookup is recorded with the reviewer and the time. She phones you
+          within 72 hours of your request to finish your check with you. There
+          is no video call.</li>
+          <li><b>Nothing is recorded.</b> The check is not recorded, and the
+          reviewer writes down only her decision and the date.</li>
+          <li><b>Your ID number.</b> If your case has no ID code yet, the
+          reviewer may ask you to read out your ID number. It is turned into
+          the keyed code at once, and is never stored or written to a log.</li>
+          <li><b>Our team&rsquo;s alert.</b> When a case enters the queue, our
+          team gets an alert containing only the case number and the reason
+          codes. It is sent through {{chatService}}.</li>
+          <li><b>Basis:</b> your consent, given when you ask for the review.</li>
         </ul>
 
-""" + h3("c-training", "3.4 Your training and meals") + """
+""" + h3("c-training", "3.5 Your training and meals") + """
         <p>Workouts, sets, weights and repetitions, weekly goals, personal
-        bests, meals you log and your eating preferences stay on your phone,
-        and once your account is verified a copy is also stored in Google Cloud
-        Firestore in Frankfurt, Germany, under your account, so it survives a
-        lost or replaced phone. Security rules on the server mean only your own
-        signed-in, verified account can read it.</p>
+        bests, the meals you log, your usual plates, your protein target and
+        your meal plans stay on your phone. Once your account is verified, a
+        copy is also kept in Google Cloud Firestore in Frankfurt, Germany, so
+        that it survives a lost or replaced phone. Server security rules let
+        only your own verified account read it. No other member can see
+        it.</p>
+        <p>Your Ramadan setting stays on your phone only.</p>
+        <ul>
+          <li><b>Basis:</b> performing our agreement with you.</li>
+        </ul>
 
-""" + h3("c-health", "3.5 Your health information stays on your phone") + """
-        <p>Your cycle settings, period days, daily check-ins (for example
-        energy, sleep, bloating, pain and bleeding), body measurements and
-        weight, your life stage (pregnancy, postpartum or training around an
-        injury) and the allergies you tell us about are <b>kept on your phone
-        only</b>, by default.</p>
+""" + h3("c-health", "3.6 Your health information stays on your phone") + """
+        <p>By default, these are kept on your phone only: your cycle settings
+        and period days; your daily check-ins (for example energy, sleep,
+        bloating, pain and bleeding); your body measurements and weight; your
+        life stage (pregnancy, postpartum or training around an injury); and
+        the allergies you tell us about.</p>
         <p>You can choose to back them up. In <b>Profile</b>, then
         <b>Privacy</b>, <b>Back up my health data</b> asks for a separate
-        consent that names this health information and the countries it would
-        be stored in. Only after our server has recorded that consent is any of
-        it copied, and our server&rsquo;s security rules refuse it without
-        that consent. If you turn backup off, we delete the copy on our servers
-        straight away; the copy on your phone stays.</p>
+        consent. That consent names this information and the countries where
+        it would be stored. Nothing is copied until our server has recorded
+        the consent, and our server&rsquo;s security rules refuse the copy
+        without it. If you turn backup off, we delete the copy on our servers
+        straight away. The copy on your phone stays.</p>
         <p><b>Your cycle and health information is never used for advertising
-        or marketing, never sold, and never sent to any analytics
-        service.</b></p>
-
-""" + h3("c-technical", "3.6 Technical data") + """
+        or marketing, never sold, never sent to any analytics service, and
+        never used to train AI.</b></p>
         <ul>
-          <li><b>Sign-in</b>: Google Firebase Authentication receives your IP
-          address and device details when you sign in, for security.</li>
-          <li><b>Genuine app check</b>: Google Play Integrity (Android) or Apple
-          App Attest (iOS), through Firebase App Check, confirms that requests
-          come from the real app, to stop automated abuse of the check.</li>
-          <li><b>Selfie guidance</b>: Google ML Kit, the on-device face
-          detection that guides the selfie camera, sends Google device model,
-          operating system, app version, an installation identifier and
-          performance events. Your images do not leave the phone through ML
-          Kit.</li>
-          <li><b>Crash reports</b>: if the app crashes, Firebase Crashlytics
-          receives the error, device model, operating system and app version.
-          No account identifier, name or phone number is attached.</li>
+          <li><b>Basis:</b> your explicit consent, given in writing in the
+          app, which the law requires for health data, and our permit from the
+          Centre (section 1).</li>
         </ul>
 
-""" + h3("c-waitlist", "3.7 The waitlist on this website") + """
-        <p>If you join the waitlist on this website, we keep the mobile number
-        or email address you give, the language you chose, your agreement and
-        when you joined. We use it for one thing: to message you once when Own
-        Hub opens, and then we delete it. If that has not happened, it is
-        deleted automatically 180 days after you joined, a period pending
-        counsel&rsquo;s confirmation. To protect the form from abuse we also
-        keep a keyed code made from your internet address, never the address
-        itself, and a count of attempts from it that is deleted after two days.
-        It is stored in Google Cloud Firestore in Frankfurt, Germany, and no app
-        or browser can read it. To leave the waitlist sooner, write to
-        {{mailto:contactPrivacy}}.</p>
+""" + h3("c-technical", "3.7 Technical data") + """
+        <ul>
+          <li><b>Sign-in security.</b> When you sign in, Google Firebase
+          Authentication receives your IP address and device details. To stop
+          abuse of text messages, Firebase may confirm that the request comes
+          from a real device, using Google Play Integrity, an Apple push
+          notification, or a reCAPTCHA check page.</li>
+          <li><b>Genuine-app check.</b> From the first time you open the app,
+          Firebase App Check uses Google Play Integrity (Android) or Apple App
+          Attest (iOS) to confirm that requests come from the real Own Hub app.
+          Firebase gives the installation a random identifier for this.</li>
+          <li><b>Selfie guidance.</b> Google ML Kit detects your face on the
+          phone to guide the selfie camera. Your images do not leave the phone
+          through ML Kit. ML Kit sends Google the device model, operating
+          system, app version, an installation identifier and performance
+          events.</li>
+          <li><b>Crash reports, only if you allow them.</b> You can allow them
+          on the sign-up screen, or later in Profile, then Privacy. They are off
+          until you do. What Firebase Crashlytics receives when the app
+          crashes: the type of error and where in the code it happened, your
+          device model, operating system, app version, free memory and storage,
+          and an installation identifier. What is never attached: your account
+          identifier, your name or your phone number. If you turn them off,
+          reports waiting on your phone are deleted.</li>
+          <li><b>Our server logs.</b> These record outcomes and reason codes.
+          They never record your phone number or your ID number, and they never
+          place your account identifier beside an outcome.</li>
+          <li><b>Basis:</b> keeping the service secure and working, which the
+          law allows (Law 151/2020, Article 6, point 4), except crash reports,
+          which need your consent. ML Kit runs only on the selfie screen, after
+          you have agreed to the check.</li>
+        </ul>
 
-""" + h2("where", "4. Who handles it, and where") + """
-        <p>We do not sell your data and do not share it with advertisers, data
-        brokers or marketing companies. These service providers process data
-        only on our instructions:</p>
+""" + h3("c-ai", "3.8 Artificial intelligence") + """
+        <ul>
+          <li><b>We never use your data to train AI models, ours or
+          anyone&rsquo;s.</b></li>
+          <li>Google Cloud Vision reads the text on your ID card only to run the
+          check. It reads the card in memory and does not keep the image. Under
+          Google Cloud&rsquo;s terms, Google may not use that data to train its
+          own models.</li>
+          <li>The face comparison uses open-source models that run on our own
+          server. Their authors trained them before Own Hub existed. They are
+          not trained or adjusted with your face.</li>
+          <li>There is no AI assistant in this version of Own Hub. If we add
+          one, we will ask for your separate agreement first, naming the
+          provider, before anything is sent to it.</li>
+        </ul>
+
+""" + h3("c-messages", "3.9 Messages you send us") + """
+        <p>If you write to us, we keep your message and your email address so
+        that we can answer you. These are deleted {{supportRetention}} after the
+        conversation ends.</p>
+
+""" + h3("c-waitlist", "3.10 The waitlist and this website") + """
+        <p><b>If you joined the waitlist on this website,</b> we keep the mobile
+        number or email address you gave, the language you chose, your
+        agreement and the date you joined.</p>
+        <ul>
+          <li>We use it for one thing: to message you once when Own Hub opens.
+          Then we delete it.</li>
+          <li>If that has not happened, it is deleted automatically 180 days
+          after you joined.</li>
+          <li>So that we can prove you agreed, we keep a keyed code made from
+          your contact, the version of the wording you agreed to, and the date,
+          for 3 years after the last message we send you.</li>
+          <li>To protect the form from abuse, we keep a keyed code made from
+          your internet address (never the address itself) and a count of
+          attempts from it. Both are deleted after two days.</li>
+          <li>It is all stored in Google Cloud Firestore in Frankfurt,
+          Germany. To leave the waitlist sooner, write to
+          {{mailto:contactPrivacy}}.</li>
+        </ul>
+        <p><b>This website</b> sets no cookies, runs no scripts and counts no
+        visits. The company that hosts it, listed in section 4, receives the
+        standard data any website receives, such as your IP address and browser type, in
+        order to deliver the pages.</p>
+
+""" + h2("where", "4. Who handles your data, and where") + """
+        <p>We do not sell your data, and we do not share it with advertisers,
+        data brokers or marketing companies. The service providers below
+        process data only on our instructions. Google processes data for us
+        under the Google Cloud Data Processing Addendum and the Firebase Data
+        Processing and Security Terms.</p>
 """ + cards([
             ("Google Firebase Authentication", [
                 ("Handles", "Your phone number, IP address and device details"),
@@ -490,8 +598,8 @@ def build(cfg, lang, mailto_link):
                 ("Handles", "Your phone number and the sign-in code"),
                 ("Where", "Egypt, and the route Google uses"),
             ]),
-            ("Google Cloud Firestore, Cloud Functions and Secret Manager", [
-                ("Handles", "Your account, your training and meals, health "
+            ("Google Cloud Firestore, Cloud Functions, Cloud Storage and Secret Manager", [
+                ("Handles", "Your account, training and meals, health "
                             "information if you turn on backup, verification "
                             "results and the keyed ID code"),
                 ("Where", "Frankfurt, Germany (europe-west3)"),
@@ -500,100 +608,157 @@ def build(cfg, lang, mailto_link):
                 ("Handles", "The text on your ID card, during the check only"),
                 ("Where", "European Union"),
             ]),
-            ("Google Play Integrity and Apple App Attest", [
-                ("Handles", "Confirmation that the app is genuine"),
-                ("Where", "Google and Apple systems"),
+            ("Google Play Integrity, Apple App Attest, reCAPTCHA, Firebase App Check", [
+                ("Handles", "Confirmation that the app and the device are genuine"),
+                ("Where", "Google data centres worldwide, which include the "
+                          "United States, and Apple servers for App Attest"),
             ]),
-            ("Google ML Kit and Firebase Crashlytics", [
-                ("Handles", "Device, performance and crash data listed in 3.6"),
-                ("Where", "Google systems"),
+            ("Google ML Kit", [
+                ("Handles", "Device and performance data (section 3.7)"),
+                ("Where", "Google data centres worldwide, which include the "
+                          "United States"),
             ]),
-            ("{{videoCallService}}", [
-                ("Handles", "Your image and voice during a review call, if you "
-                            "have one"),
-                ("Where", "{{videoCallServiceRegion}}"),
+            ("Firebase Crashlytics, only if you allow it", [
+                ("Handles", "Crash data (section 3.7)"),
+                ("Where", "Google data centres worldwide, which include the "
+                          "United States"),
+            ]),
+            ("{{cap:chatService}}", [
+                ("Handles", "A case number and reason codes only"),
+                ("Where", "{{chatServiceRegion}}"),
+            ]),
+            ("{{cap:emailProvider}}", [
+                ("Handles", "Messages you send us"),
+                ("Where", "{{emailProviderRegion}}"),
+            ]),
+            ("{{cap:hostingProvider}}", [
+                ("Handles", "Standard website request data"),
+                ("Where", "{{hostingProviderRegion}}"),
             ]),
         ]) + """
         <p>We may also disclose data where Egyptian law requires it, for
-        example in answer to a lawful order of a court or a competent
-        authority.</p>
+        example in answer to a lawful order from a court or a competent
+        authority. If Own Hub is ever transferred to another publisher, we will
+        tell you in the app before it happens, ask for your consent where the
+        law requires it, and the new publisher will need its own permit from
+        the Personal Data Protection Centre.</p>
 
 """ + h2("transfers", "5. Transfers outside Egypt") + """
-        <p>Your data is stored and processed outside Egypt: in Germany and the
-        European Union for your account, your logs and your verification, and
-        in the United States for your phone number. Egypt&rsquo;s Personal Data
-        Protection Law No. 151 of 2020 allows transfers abroad only with a
-        licence or permit from the Personal Data Protection Centre and, under
-        its Executive Regulations, with your consent. We ask for that consent,
-        naming these countries, before your data leaves your phone, and again
-        separately before any health information does.
-        {{transferCountries}}</p>
+        <p>Your data is stored and processed outside Egypt:</p>
+        <ul>
+          <li><b>Germany and the European Union:</b> your account, your training
+          and meals, any health backup, and your verification.</li>
+          <li><b>The United States:</b> your phone number, for sign-in.</li>
+          <li><b>Google data centres worldwide, which include the United
+          States:</b> the device checks, ML Kit performance data, and crash
+          reports if you allow them. Google does not let us choose one country
+          for these.</li>
+        </ul>
+        <p>Egypt&rsquo;s Personal Data Protection Law No. 151 of 2020 allows
+        transfers abroad only under a permit from the Personal Data Protection
+        Centre, and with your consent. We ask for that consent on
+        the sign-up screen, naming these countries, before your phone number is
+        sent. We ask again, separately, before any health information is backed
+        up.</p>
+        <p>Permit: {{pdpcPermit}}</p>
+        <p>Safeguards: {{transferCountries}}</p>
 
 """ + h2("retention", "6. How long we keep it") + """
-        <ul>
-          <li><b>ID card photographs and selfie</b>: not stored. Discarded in
-          memory when the check ends, whatever the result.</li>
-          <li><b>The single-use selfie session</b>: valid for five minutes, then
-          deleted automatically.</li>
-          <li><b>Your account, settings, training, meals, any health backup and
-          your consent records</b>: until you delete them or delete your
-          account.</li>
-          <li><b>Verification results and review records</b>: deleted
-          automatically 180 days after the case is decided, or earlier if you
-          delete your account. A case still waiting for review is kept until it
-          is decided. The 180 days are pending counsel&rsquo;s confirmation.</li>
-          <li><b>The keyed code of your ID number</b>: see section 7.</li>
-          <li><b>The reviewer access log</b>: which reviewer opened which case,
-          and when. It holds no photograph, no phone number and no ID number,
-          and it is kept as an audit trail.</li>
-          <li><b>Daily totals of verifications</b>, with no link to any person:
-          kept.</li>
-          <li><b>A record that a deletion was carried out</b>, reduced to its
-          status and dates: kept as proof that your request was honoured.</li>
-          <li><b>Backups held by Google</b>: removed within Google&rsquo;s own
-          deletion window.</li>
-        </ul>
+""" + kv([
+            ("ID card photographs, selfie, name and date of birth from the card, your raw ID number",
+             "Never stored. Discarded from memory when the check ends, whatever the result."),
+            ("The single-use selfie session", "5 minutes, then deleted automatically"),
+            ("Verification result and review case",
+             "180 days after the case is decided, or earlier if you delete your "
+             "account. A case still waiting for review is kept until it is decided."),
+            ("The keyed code of your ID number",
+             "While your account exists. After you delete your account it is "
+             "closed, not deleted: it is no longer linked to any account, it is "
+             "kept with no end date, and the same card cannot be used to open a "
+             "new account."),
+            ("Count of failed attempts per ID code, and the scrambled installation record",
+             "180 days after the last attempt. Not linked to your account."),
+            ("Reviewer access log (which reviewer opened which case, and when)",
+             "1 year. It holds no photograph, phone number or ID number."),
+            ("Your account, settings, training, meals, any health backup and your consent records",
+             "Until you delete them or delete your account"),
+            ("The record that a deletion was carried out (status and dates only)",
+             "{{deletionRecordRetention}}, as proof that your request was honoured"),
+            ("Daily totals of verifications, with no link to any person", "Kept"),
+            ("Our server logs", "{{serverLogRetention}}"),
+            ("Crash reports, if you allow them", "{{crashReportRetention}}"),
+            ("Messages you send us", "{{supportRetention}}"),
+            ("Waitlist contact",
+             "180 days at most. The proof that you agreed is kept for 3 years "
+             "after the last message we send you (section 3.10)."),
+            ("Backups held by Google", "Removed within about 6 months (180 days) of deletion"),
+        ]) + """
 
 """ + h2("deletion", "7. Deleting your account") + """
-        <p>In the app: <b>Profile</b>, then <b>Your data</b>, then the delete
-        option. Our server locks your sign-in first, deletes your account and
-        the data in section 3, and deletes your sign-in record last; your phone
-        is wiped at the same time. If anything interrupts it, it finishes
-        automatically within the hour. The
-        <a href="/delete-account">deletion page</a> explains every step, and how
-        to ask without the app.</p>
-        <p><b>Three things survive on purpose:</b></p>
+        <p><b>In the app:</b> <b>Profile</b>, then <b>Your data</b>, then
+        <b>Delete everything</b>. You do not need to be verified to do
+        this.</p>
         <ul>
-          <li><b>The keyed code of your ID number is closed, not deleted.</b> The
-          link to your account is removed, and the same card cannot open a new
-          account. Whether a woman who deleted her account may rejoin is a
-          question we have put to counsel.</li>
-          <li><b>Safety reports</b> you made, or that were made about you, keep
-          the report but replace your account identifier with a random
-          code.</li>
-          <li><b>The record that your deletion was carried out</b>, reduced to
-          its status and dates.</li>
+          <li>Our server locks your sign-in first.</li>
+          <li>It then deletes your account and the data in section 3, and
+          deletes your sign-in record, including your phone number, last.</li>
+          <li>Your phone is cleared at the same time.</li>
+          <li>It usually takes under a minute. If anything interrupts it, it
+          finishes on its own within the hour.</li>
+        </ul>
+        <p><b>Without the app:</b> use the
+        <a href="/delete-account">deletion page</a> on this website. It
+        explains how to ask by email. We confirm that the request comes from
+        the owner of the number on the account ({{deletionVerifyMethod}}), then
+        delete within {{deletionWindow}} and confirm in writing.</p>
+        <p><b>What remains after deletion, on purpose:</b></p>
+        <ul>
+          <li>the closed keyed code of your ID number (section 6);</li>
+          <li>the failed-attempt count and the installation record, until their
+          180 days end, linked to no account;</li>
+          <li>reviewer access log entries for your case, until their year
+          ends;</li>
+          <li>the record that the deletion was carried out.</li>
+        </ul>
+        <p>Crash reports and ML Kit data are never linked to your account.
+        Google deletes them on its own schedule.</p>
+        <p><b>Deleting only part of your data:</b></p>
+        <ul>
+          <li>turn off health backup (this deletes the cloud copy);</li>
+          <li>delete your cycle data on its own, from cycle settings;</li>
+          <li>remove items from a day&rsquo;s log, and delete individual
+          measurements.</li>
         </ul>
 
 """ + h2("rights", "8. Your rights") + """
-        <p>Under Egypt&rsquo;s Personal Data Protection Law No. 151 of 2020 you
+        <p>Under Egypt&rsquo;s Personal Data Protection Law No. 151 of 2020, you
         have the right to:</p>
         <ul>
-          <li>know what personal data we hold about you and obtain a copy of
+          <li>know what personal data we hold about you, and get a copy of
           it;</li>
           <li>have it corrected or completed;</li>
           <li>have it erased;</li>
           <li>withdraw your consent at any time, without affecting processing
-          that took place before;</li>
+          that took place before. You can turn off crash reports and health
+          backup yourself in Profile, then Privacy;</li>
           <li>object to processing, or ask us to restrict it;</li>
           <li>be told of any breach of your personal data.</li>
         </ul>
-        <p>To use any of these rights, write to {{mailto:contactPrivacy}}. We
-        will answer within {{rightsResponseWindow}}. A copy of your data is not
-        yet available as a button in the app, so we will send it to you by
-        email on request.</p>
-        <p>If you are not satisfied with our answer, you can complain to
-        Egypt&rsquo;s Personal Data Protection Centre. {{pdpcContact}}</p>
+        <p><b>A copy of your data:</b></p>
+        <ul>
+          <li>How to ask: in the app (<b>Profile</b>, then <b>Your data</b>, then
+          <b>Ask for a copy</b>), or write to {{mailto:contactPrivacy}}.</li>
+          <li>What you get: a file a computer can read, plus a summary in your
+          language.</li>
+          <li>How you get it: {{exportDelivery}}.</li>
+          <li>Health information that is only on your phone is not held by us.
+          You can see it in the app.</li>
+        </ul>
+        <p><b>Response time:</b> we answer every request within
+        {{rightsResponseWindow}}. Requests are free.</p>
+        <p><b>Complaints:</b> if you are not satisfied with our answer, you can
+        complain to Egypt&rsquo;s Personal Data Protection Centre:
+        {{pdpcContact}}</p>
 
 """ + h2("security", "9. Security") + """
         <ul>
@@ -601,42 +766,67 @@ def build(cfg, lang, mailto_link):
           password to steal.</li>
           <li>Data travels over encrypted connections, and Google encrypts it
           where it is stored.</li>
-          <li>Server rules mean your account can read only your own data, and
-          the app cannot mark itself as verified. Only our server can do
-          that.</li>
-          <li>Verification images are never written to disk, logs or storage by
-          us. Our logs record outcomes and reason codes, never your phone
-          number, your ID number or your account identifier beside an
-          outcome.</li>
+          <li>Server rules let your account read only your own data, and the app
+          cannot mark itself as verified. Only our server can do that.</li>
+          <li>We never write verification images to disk, logs or
+          storage.</li>
           <li>The secret key behind the ID code is held in Google Secret
           Manager, separate from the database.</li>
+          <li>Access to our systems is limited to the people who run Own Hub,
+          and every lookup of a phone number for a review is recorded.</li>
           <li>No system is perfectly secure. If a breach affects your personal
           data, we will notify the Personal Data Protection Centre within 72
           hours of becoming aware of it, and tell you within three working days
-          after that.</li>
+          after that, by SMS or email.</li>
+          <li>The publisher, who runs Own Hub&rsquo;s systems, can technically
+          reach stored data. He opens an individual account&rsquo;s data only
+          to answer your request, to fix a fault, to investigate misuse, or when
+          the law requires it.</li>
         </ul>
 
 """ + h2("does-not", "10. What Own Hub does not do") + """
         <ul>
-          <li>No adverts, no advertising identifiers, no tracking across other
-          apps or websites.</li>
+          <li>No adverts, no advertising identifiers, and no tracking across
+          other apps or websites.</li>
           <li>No analytics software.</li>
+          <li>No sale of your data.</li>
+          <li>No training of AI on your data.</li>
           <li>No access to your contacts, location, photo library, microphone,
-          or Apple Health or Health Connect.</li>
+          text messages, or Apple Health or Health Connect. The app itself
+          never uses your microphone, and there is no video review.</li>
           <li>Nothing that guesses your sex, age or anything else about you from
           your face.</li>
         </ul>
 
-""" + h2("changes", "11. Changes to this policy") + """
-        <p>We will publish any change here with its date. If a change means
-        collecting something new or using your data in a new way, we will tell
-        you in the app before it takes effect and ask for your consent where
-        the law requires it.</p>
-        <p><b>Version 2.0, {{effectiveDate}}</b>: accounts, the women-only
-        check, cloud storage of your training and meals, and optional health
-        backup. Replaces the version written for a build with no server.</p>
+""" + h2("children", "11. Children") + """
+        <p>Own Hub is not for anyone under 18. We do not knowingly keep data
+        about children. If you believe a child has an account, write to us and
+        we will delete it.</p>
 
-        <p><b>Questions:</b> {{mailto:contactPrivacy}}</p>
+""" + h2("changes", "12. Changes to this policy") + """
+        <p>We publish every change here, with its date and version.</p>
+        <ul>
+          <li><b>Material changes</b> require your agreement in the app before
+          they apply to you. A material change is one that collects something
+          new, uses your data for a new purpose, adds a new country or a new
+          kind of provider, or reduces your rights.</li>
+          <li><b>Other changes</b> are announced in the app.</li>
+        </ul>
+        <p>Version history:</p>
+        <ul>
+          <li><b>3.0, {{policyEffectiveDate}}:</b> acceptance recorded at
+          sign-up, crash reports by consent, AI statement, full retention
+          periods, copy of your data on request.</li>
+          <li><b>2.0, 24 September 2026:</b> accounts and the women-only
+          check.</li>
+        </ul>
+
+""" + h2("language", "13. Language") + """
+        <p>This policy is published in Arabic and English. If they differ, the
+        Arabic version applies.</p>
+
+""" + h2("contact", "14. Contact") + """
+        <p>{{mailto:contactPrivacy}} &middot; {{legalEntity}}, {{legalAddress}}</p>
       </div>
     </div>
 """,
@@ -644,23 +834,24 @@ def build(cfg, lang, mailto_link):
 
     # ------------------------------------------------------------ terms ----
     terms_toc = toc("On this page", [
-        ("a", "t1", "1. Who you are agreeing with"),
+        ("a", "t1", "1. Who you are agreeing with, and how"),
         ("a", "t2", "2. What Own Hub is, in this version"),
-        ("a", "t3", "3. Who may use it"),
+        ("a", "t3", "3. Who may use it, and why it is for women only"),
         ("a", "t4", "4. Own Hub is not medical advice"),
         ("a", "t5", "5. Allergies and food"),
-        ("a", "t6", "6. Your data, and your phone"),
+        ("a", "t6", "6. Your account and your data"),
         ("a", "t7", "7. What you may not do"),
-        ("a", "t8", "8. Content you make"),
-        ("a", "t9", "9. Nothing is for sale here"),
+        ("a", "t8", "8. What you make is yours"),
+        ("a", "t9", "9. Free"),
         ("a", "t10", "10. Ending it"),
         ("a", "t11", "11. The app is provided as it is"),
-        ("a", "t12", "12. What changes when the rest of the product arrives"),
+        ("a", "t12", "12. Later features"),
         ("a", "t13", "13. Limits on what we owe you"),
         ("a", "t14", "14. Changes to these Terms"),
-        ("a", "t15", "15. Law and disputes"),
-        ("a", "t16", "16. The rest"),
-        ("a", "t17", "17. Contact"),
+        ("a", "t15", "15. Law, disputes and language"),
+        ("a", "t16", "16. Apple and Google"),
+        ("a", "t17", "17. The rest"),
+        ("a", "t18", "18. Contact"),
     ])
 
     pages["terms"] = {
@@ -668,249 +859,255 @@ def build(cfg, lang, mailto_link):
         "description": (
             "The terms for using Own Hub: a free fitness app for women in "
             "Egypt, with a women-only account, no community, no coaching and "
-            "nothing to buy."
+            "nothing to buy. Not a medical device."
         ),
         "body": """
     <div class="wrap">
       <div class="prose">
         <h1>Terms of Use</h1>
         <p class="meta">
-          <b>Effective date:</b> {{effectiveDate}}<br>
+          <b>Version:</b> 3.0<br>
+          <b>Effective date:</b> {{policyEffectiveDate}}<br>
           <b>Applies to:</b> Own Hub for iOS and Android, bundle id
-          <code>com.ownhub.app</code>.<br>
-          <b>Last updated:</b> {{effectiveDate}}
+          <code>com.ownhub.app</code>.
         </p>
+        <p>If the English and Arabic versions of these Terms differ, the Arabic
+        version applies.</p>
 """ + draft_banner + """
 """ + terms_toc + """
 
-""" + h2("t1", "1. Who you are agreeing with", "no-rule") + """
-        <p>Own Hub was founded by {{brandFounder}} and is published and
-        developed by {{legalEntity}}, {{legalAddress}}. In these Terms,
-        &ldquo;we&rdquo; and &ldquo;us&rdquo; mean the publisher named here, and
-        &ldquo;you&rdquo; means the person using the app.</p>
-        <p>Contact: {{mailto:contactSupport}}</p>
-        <p>By downloading or using Own Hub you accept these Terms. If you do not
-        accept them, do not use the app.</p>
+""" + h2("t1", "1. Who you are agreeing with, and how", "no-rule") + """
+        <ul>
+          <li>Own Hub was founded by {{brandFounder}}. It is published and
+          developed by {{legalEntity}}, {{legalAddress}}.</li>
+          <li>In these Terms, &ldquo;we&rdquo; and &ldquo;us&rdquo; mean that
+          publisher, and &ldquo;you&rdquo; means the person using the app.</li>
+          <li>Contact: {{mailto:contactSupport}}</li>
+          <li><b>How you accept:</b> by tapping &ldquo;Agree and send me a
+          code&rdquo; when you sign up. Before you tap, the screen links to
+          these Terms and to the Privacy Policy. We record the version you
+          accepted, the language, the app version and the time. If you do not
+          accept, do not create an account. We keep this record securely, so it
+          can show what you accepted and when.</li>
+        </ul>
 
 """ + h2("t2", "2. What Own Hub is, in this version") + """
-        <p>A fitness app for women in Egypt. It lets you follow workouts, log
-        what you train and eat, set a weekly goal, track measurements you enter
-        yourself, and record your menstrual cycle.</p>
-        <p><b>You need an account, and you are checked once.</b> You sign up
-        with your Egyptian mobile number and a code sent by SMS. There is no
-        password and no profile that anyone else can see. Your training and
-        meals are kept on your phone and, once you are verified, with your
-        account. Your cycle and health information stays on your phone unless
-        you turn on backup yourself. The <a href="/privacy">Privacy Policy</a>
-        sets out exactly what is kept and where.</p>
-        <p><b>It is free, and there is nothing in it to buy.</b> No adverts, no
-        in-app purchases, no subscriptions, and no payment of any kind inside or
-        outside the app.</p>
-        <p><b>It has no community and no coaching in this version.</b> Nothing
-        connects you to another person. <a href="#t12">Section 12</a> describes
-        what changes if those arrive, and they will arrive only in a later
-        version, with a later version of these Terms.</p>
-
-""" + h2("t3", "3. Who may use it") + """
-        <p>Own Hub is made for women in Egypt, and that is the product&rsquo;s
-        purpose.</p>
-        <p><b>You must be a woman aged 18 or over who holds an Egyptian national
-        ID card.</b> Membership is confirmed once, when you join, through the
-        Egyptian national ID, which carries sex and date of birth in the ID
-        number itself, and a live selfie that is compared with the portrait on
-        the card. If the automatic check is unsure, or you choose the niqab
-        route, a woman reviewer phones you to arrange a short video check. The
-        photographs of your card and your face are never stored. We never guess
-        your sex or your age from your face.</p>
         <ul>
-          <li>One account per person.</li>
-          <li>You may not use anyone else&rsquo;s identity documents, or let
-          anyone else use your account.</li>
+          <li><b>A fitness app for women in Egypt.</b> You can follow workouts,
+          log what you train and eat, set a weekly goal, track measurements you
+          enter yourself, and record your menstrual cycle.</li>
+          <li><b>You need an account, and you are checked once.</b> You sign up
+          with your Egyptian mobile number and a code sent by SMS. There is no
+          password, and there is no profile that anyone else can see.</li>
+          <li><b>It is free.</b> There are no adverts, no in-app purchases, no
+          subscriptions and no payments of any kind.</li>
+          <li><b>What is not in this version:</b> no community, no coaching and
+          no AI assistant. Nothing in the app connects you to another person.
+          If any of these arrives, it will come in a later version, with
+          updated Terms that you will be asked to accept.</li>
+        </ul>
+
+""" + h2("t3", "3. Who may use it, and why it is for women only") + """
+        <ul>
+          <li>Own Hub is for women aged 18 or over who hold an Egyptian national
+          ID card. It is a women-only space for one reason: so that women in
+          Egypt can train, follow their bodies and their cycles, and look after
+          their health somewhere they feel safe and their privacy is protected.
+          This reflects the Constitution&rsquo;s protection of women, of private
+          life, of health and of everyone&rsquo;s right to sport (Articles 11,
+          18, 57, 59 and 84). It is not a judgement about anyone else.</li>
+          <li>You must be a woman aged 18 or over who holds an Egyptian national
+          ID card.</li>
+          <li>If you are 18, 19 or 20: Egyptian civil law gives full contractual
+          capacity at 21. Own Hub is free and asks nothing of you in money, and
+          nothing in these Terms takes away any right the law gives you because
+          of your age.</li>
+          <li><b>How membership is confirmed:</b> once, when you join. Your sex
+          and age are read from your national ID number. A live selfie is
+          compared with the portrait on your card. If the automatic check
+          cannot decide, or you choose the niqab route, a woman from Own Hub
+          reviews your case and contacts you by phone within 72 hours to finish
+          your check. The photographs of your
+          card and your face are never stored. We never guess your sex or your
+          age from your face.</li>
+          <li>One account per person. You may not use anyone else&rsquo;s
+          identity documents, or let anyone else use your account.</li>
         </ul>
 
 """ + h2("t4", "4. Own Hub is not medical advice") + """
-        <div class="callout">
-          <p><b>Read this section even if you skip the rest.</b></p>
-          <ul>
-            <li>Own Hub is a fitness and wellbeing app. It is <b>not a medical
-            device, not a diagnosis, and not a substitute for a doctor.</b>
-            Nothing in it is a clinical opinion about you.</li>
-            <li>Workouts, meal suggestions, calorie and macro figures, and
-            anything the app shows about your cycle are general guidance. They
-            are not prescriptions.</li>
-            <li><b>Talk to a doctor before you start</b>, especially if you are
-            pregnant or recently gave birth, have a heart, joint, bone or
-            blood-pressure condition, diabetes, an eating disorder, are
-            recovering from surgery or injury, or take medication that affects
-            exercise.</li>
-            <li><b>Stop exercising if something hurts, and get medical help if
-            you need it.</b> Nothing in the app can require you to continue. The
-            app never penalises you for stopping or for resting.</li>
-            <li>Where the app shows guidance about severe symptoms, such as heavy
-            bleeding or severe pain, <b>it is telling you to seek care, not
-            treating you.</b> If you think it is an emergency, contact emergency
-            services or go to a hospital. Do not wait for an app.</li>
-            <li>The app does not know your medical history. It only knows what
-            you typed into it.</li>
-          </ul>
-        </div>
+        <p><b>Read this section even if you skip the rest.</b></p>
+        <ul>
+          <li>Own Hub is a fitness and wellbeing app. <b>It is not a medical
+          device.</b> It does not diagnose, treat, cure or prevent any
+          condition, and it is not a substitute for a doctor.</li>
+          <li>Workouts, meal suggestions, calorie and macro figures, and
+          anything the app shows about your cycle are general guidance, not
+          prescriptions. Cycle dates are estimates.</li>
+          <li><b>Talk to a doctor before you start</b>, especially if any of
+          these apply to you: you are pregnant or have recently given birth;
+          you have a heart, joint, bone or blood-pressure condition, diabetes,
+          or an eating disorder; you are recovering from surgery or an injury;
+          you take medication that affects exercise.</li>
+          <li>Stop exercising if something hurts, and get medical help if you
+          need it. The app never penalises you for stopping or resting.</li>
+          <li>Where the app shows guidance about severe symptoms, it is telling
+          you to seek care, not treating you. In an emergency, contact
+          emergency services or go to a hospital.</li>
+        </ul>
 
 """ + h2("t5", "5. Allergies and food") + """
-        <p>The app carries an allergy guard that refuses to say a dish is safe
-        when it cannot tell. <b>It fails towards refusing rather than towards
-        reassuring</b>, which is the right way round.</p>
-        <p>You are responsible for checking what you eat. Nothing in the app
+        <p>The app refuses to say a dish is safe when it cannot tell. You are
+        still responsible for checking what you eat. Nothing in the app
         replaces reading a label or asking whoever cooked it.</p>
 
-""" + h2("t6", "6. Your data, and your phone") + """
-        <p>Your account is tied to your mobile number. Signing in needs a code
-        sent by SMS to that number, so keep your phone and your SIM card
-        safe.</p>
+""" + h2("t6", "6. Your account and your data") + """
         <ul>
-          <li><b>What you log is on your phone.</b> Anyone who can unlock your
-          phone can open the app and read it. If that matters to you, use your
-          phone&rsquo;s own lock.</li>
-          <li><b>Your training and meals are also kept with your account</b>
-          once you are verified, so they come back when you sign in on a new
-          phone. Your cycle and health information comes back only if you
-          turned on health backup; otherwise it stays on the old phone.</li>
-          <li><b>You can delete your account and your data</b>, from Profile,
-          then Your data. Deletion completes on our server, and it cannot be
-          undone.</li>
-          <li><b>We cannot recover anything after deletion.</b> Once your
-          account is deleted, your logs and your history are gone.</li>
-          <li>Downloading a copy of your data is not built in this version, and
-          the app says so rather than offering a button that produces
-          nothing.</li>
+          <li>Your account is tied to your mobile number, so keep your phone and
+          SIM card safe. Anyone who can unlock your phone can open the
+          app.</li>
+          <li>The <a href="/privacy">Privacy Policy</a> explains what we keep,
+          where, and for how long.</li>
+          <li><b>Deleting:</b> you can delete your account and data at any time,
+          from Profile, then Your data. Deletion cannot be undone.</li>
+          <li><b>A copy of your data:</b> ask from the same place, or by email.
+          We send it as the Privacy Policy describes.</li>
         </ul>
-        <p>The <a href="/privacy">Privacy Policy</a> explains all of this in more
-        detail.</p>
 
 """ + h2("t7", "7. What you may not do") + """
         <p>You may not:</p>
         <ul>
-          <li>Break the app: no scraping, no automated access, no reverse
-          engineering, no attempt to defeat the women-only check or the parts
-          of the product that are switched off, and no security testing without
-          our written
-          permission.</li>
-          <li>Redistribute the app, its content, its exercise library or its food
-          data as your own.</li>
-          <li>Use Own Hub for anything illegal under Egyptian law.</li>
+          <li>defeat or try to defeat the women-only check;</li>
+          <li>use someone else&rsquo;s ID card or face;</li>
+          <li>scrape the app, access it automatically, reverse engineer it, or
+          test its security without our written permission;</li>
+          <li>reach features that are switched off;</li>
+          <li>redistribute the app, its exercise library or its food data as
+          your own;</li>
+          <li>use Own Hub for anything illegal under Egyptian law.</li>
         </ul>
-        <p>When the community arrives, <a href="#t12">section 12</a> adds the
-        rules that come with it. They are not in force in this version, because
-        there is nowhere to post.</p>
 
-""" + h2("t8", "8. Content you make") + """
-        <p><b>What you log is yours.</b> We do not claim ownership of it. We
-        keep a copy of your training and meals, and of your health information
-        only if you turn on backup, for one purpose: so that you do not lose
-        them.</p>
+""" + h2("t8", "8. What you make is yours") + """
+        <p>What you log is yours, and we do not claim ownership of it. We keep
+        a copy only to provide the service, as the Privacy Policy describes.
+        The app&rsquo;s content (exercise instructions, programmes, recipes,
+        food data, design) belongs to us or to the people who licensed it to
+        us.</p>
 
-""" + h2("t9", "9. Nothing is for sale here") + """
-        <p>The app is free. There are no in-app purchases, no subscriptions, no
-        external payments, and no price shown anywhere in this version. If a
-        future version adds paid coaching, it will do so with its own terms,
-        shown to you before anything is charged, and nothing will renew by
-        itself.</p>
+""" + h2("t9", "9. Free") + """
+        <p>The app is free. If a future version adds anything paid, it will
+        come with its own terms, shown before anything is charged, and nothing
+        will renew without your clear agreement.</p>
 
 """ + h2("t10", "10. Ending it") + """
-        <p><b>You can stop at any time.</b> Delete your account from Profile,
-        then Your data. You do not owe us a reason. Deleting the app alone does
-        not delete your account; the <a href="/delete-account">deletion
-        page</a> explains both ways to do it, with the app and without it.</p>
+        <ul>
+          <li><b>You</b> can stop at any time by deleting your account. Deleting
+          the app alone does not delete your account.</li>
+          <li><b>We</b> may suspend or close an account that breaks section 3 or
+          section 7. Before we do, we tell you why and give you a chance to
+          reply, unless the law, an order from an authority or someone&rsquo;s
+          safety prevents it. You keep your right to a copy of your data.</li>
+        </ul>
 
 """ + h2("t11", "11. The app is provided as it is") + """
-        <p>We work to keep Own Hub accurate and available, but we do not promise
-        that it is free of errors, that it will always be available, or that any
-        particular result will follow from using it. Exercise and diet outcomes
-        depend on you, and on things neither of us controls.</p>
-        <p>Content in the app, including exercise instructions, food data and
-        cycle information, is general information.</p>
+        <p>We work to keep Own Hub accurate and available, but we do not
+        promise that it is free of errors, that it will always be available, or
+        that any particular result will follow from using it.</p>
 
-""" + h2("t12", "12. What changes when the rest of the product arrives") + """
-        <p>These clauses are <b>not in force in this version</b>. They are
-        written down now so that the version that switches each feature on does
-        not invent them under time pressure, and each will be published with the
-        release that needs it.</p>
-""" + kv([
-            ("The community",
-             "No harassment, threats, abuse, hateful or sexual content about "
-             "another member. No screenshotting or reposting another "
-             "member&rsquo;s content anywhere. No medical advice to other "
-             "members. No selling, advertising, spam or recruiting. We may remove "
-             "content and act before reviewing where a woman&rsquo;s safety is at "
-             "stake. Reporting and blocking must both actually work before this "
-             "clause is published."),
-            ("Coaching",
-             "Coaches are independent professionals, not our employees. Enquiry "
-             "first, then acceptance, then payment. One month at a time, nothing "
-             "renews automatically, the price is shown before you pay, and the "
-             "card is entered on the payment provider&rsquo;s own page, never in "
-             "the app. Refunds, cancellation, the coach agreement and complaints "
-             "are separate documents counsel must draft, shown before the first "
-             "payment."),
-            ("Any payment",
-             "The invoicing and tax-record retention Egyptian law requires, which "
-             "is an exception to deletion and which the Privacy Policy must then "
-             "say plainly."),
-        ]) + """
+""" + h2("t12", "12. Later features") + """
+        <p>Community, coaching, an AI assistant and payments are not part of
+        this version. Each will come with its own rules, published with the
+        release that switches it on, and you will be asked to accept them
+        before you use it.</p>
 
 """ + h2("t13", "13. Limits on what we owe you") + """
-        <p>To the fullest extent Egyptian law allows:</p>
         <ul>
-          <li>We are not liable for injury, illness or loss that results from
-          exercise you chose to do, from food you chose to eat, or from following
+          <li>We are not responsible for injury, illness or loss that results
+          from exercise you chose to do, food you chose to eat, or following
           general guidance in the app instead of seeing a doctor.</li>
-          <li>We are not liable for indirect or consequential loss, lost data,
-          lost profits or lost opportunity. Your cycle and health information is
-          on your phone alone unless you turn on backup, and keeping your phone
-          is your side of that.</li>
-          <li>Where liability cannot be excluded, it is limited to
-          {{liabilityCap}}</li>
+          <li>Because Own Hub is free, we are responsible for harm caused by our
+          fraud or gross negligence, and for anything else Egyptian law makes us
+          responsible for whatever these Terms say.</li>
+          <li>Nothing in these Terms limits our responsibility for fraud, gross
+          negligence or harm caused outside this agreement, or reduces any right
+          you have under the Consumer Protection Law.</li>
         </ul>
-        <p><b>Nothing here excludes liability that Egyptian law does not allow us
-        to exclude</b>, including for death or personal injury caused by our own
-        negligence, or for fraud.</p>
 
 """ + h2("t14", "14. Changes to these Terms") + """
-        <p>We may update these Terms. We will post the new version here with the
-        date, and where a change matters we will tell you in the app before it
-        takes effect. Continuing to use Own Hub after that means you accept the
-        new version.</p>
+        <ul>
+          <li><b>Material changes:</b> we ask you to accept them in the app
+          before they apply to you. If you do not accept, you can delete your
+          account.</li>
+          <li><b>Other changes:</b> we publish them here with the date and tell
+          you in the app.</li>
+          <li>Continuing to use the app alone never counts as accepting a
+          material change.</li>
+        </ul>
 
-""" + h2("t15", "15. Law and disputes") + """
-        <p>These Terms are governed by the laws of the Arab Republic of Egypt.
-        Disputes go to the courts of {{courtVenue}}</p>
-        <p>Own Hub is offered in Egypt.</p>
+""" + h2("t15", "15. Law, disputes and language") + """
+        <ul>
+          <li>These Terms are governed by the laws of the Arab Republic of
+          Egypt.</li>
+          <li>Disputes go to {{courtVenue}}.</li>
+          <li>These Terms are published in Arabic and English, and the Arabic
+          version applies if they differ.</li>
+          <li>Own Hub is made for, and offered in, Egypt.</li>
+        </ul>
 
-""" + h2("t16", "16. The rest") + """
+""" + h2("t16", "16. Apple and Google") + """
+        <ul>
+          <li>These Terms are between you and the publisher only, not Apple or
+          Google. The publisher alone, not Apple, is responsible for the app and
+          its content, its maintenance and support, any product claims, and any
+          claim that the app infringes someone else&rsquo;s rights.</li>
+          <li>You get a personal, non-transferable licence to use the app on
+          Apple devices you own or control, as the App Store&rsquo;s Usage Rules
+          allow.</li>
+          <li>Apple has no obligation to provide maintenance or support for the
+          app.</li>
+          <li>If the app fails to meet any warranty that applies, you may tell
+          Apple, and Apple will refund any price you paid for it (the app is
+          free). To the extent the law allows, Apple has no other warranty
+          obligation for the app.</li>
+          <li>The publisher, not Apple, is responsible for investigating,
+          defending, settling and discharging any claim that the app infringes
+          someone&rsquo;s intellectual property, and for any product liability,
+          legal or regulatory, consumer protection or privacy claim.</li>
+          <li>Questions, complaints or claims about the app go to the publisher:
+          {{legalEntity}}, {{legalAddress}}, {{mailto:contactSupport}}.</li>
+          <li>You confirm that you are not in a country subject to a United
+          States Government embargo, and that you are not on a United States
+          Government list of prohibited or restricted parties.</li>
+          <li>Apple and its subsidiaries are third-party beneficiaries of these
+          Terms and may enforce them against you.</li>
+          <li>You must follow any third-party terms that apply when you use the
+          app, for example your mobile operator&rsquo;s.</li>
+          <li>Your use of the App Store or Google Play is also governed by their
+          own terms.</li>
+        </ul>
+
+""" + h2("t17", "17. The rest") + """
         <ul>
           <li>If a court finds one clause unenforceable, the rest stays in
           force.</li>
           <li>Not enforcing a clause once does not waive it.</li>
-          <li>These Terms, plus the <a href="/privacy">Privacy Policy</a>, are
-          the whole agreement between us about Own Hub.</li>
-          <li>You may not transfer your rights under these Terms. We may transfer
-          ours if the business is sold.</li>
-          <li>Apple and Google are not parties to these Terms and are not
-          responsible for Own Hub. Your use of their stores is governed by their
-          own terms.</li>
+          <li>These Terms and the Privacy Policy are the whole agreement between
+          us about Own Hub.</li>
+          <li>You may not transfer your rights under these Terms. We may
+          transfer ours only together with Own Hub, after telling you in the
+          app, and only to a publisher that holds its own permit from the
+          Personal Data Protection Centre.</li>
           <li>Own Hub uses the Rubik, La Belle Aurore and Aref Ruqaa typefaces
           under the SIL Open Font Licence 1.1.</li>
         </ul>
 
-""" + h2("t17", "17. Contact") + """
-        <p>{{mailto:contactSupport}}<br>
-        {{legalEntity}}, {{legalAddress}}</p>
+""" + h2("t18", "18. Contact") + """
+        <p>{{mailto:contactSupport}} &middot; {{legalEntity}}, {{legalAddress}}</p>
 """ + kv([
-            ("Date", "{{effectiveDate}}"),
-            ("Version", "2.0"),
+            ("Version", "3.0"),
+            ("Date", "{{policyEffectiveDate}}"),
             ("What changed",
-             "Accounts and the women-only check. Replaces version 1.0, which was "
-             "written for a release with no account. Still no community, no "
-             "coaching and no payments."),
+             "Acceptance at sign-up, Arabic prevails, store terms, AI assistant "
+             "listed as a later feature. Replaces version 2.0."),
         ]) + """
       </div>
     </div>
@@ -992,16 +1189,17 @@ def build(cfg, lang, mailto_link):
           Your cycle, check-ins, measurements and weight are kept on the phone
           only, unless you turned on <b>Back up my health data</b> in Profile,
           then Privacy; if you did, they come back too. If you did not, they
-          stay on the old phone. There is no export in this version, and the app
-          says so rather than offering a button that would produce
-          nothing.</p>
+          stay on the old phone. You can ask for a copy of your data from
+          Profile, then Your data, then Ask for a copy, and we send it to
+          you.</p>
 
 """ + h3("q-signin", "Where do I sign in? Where is the community?") + """
           <p>You sign in with your Egyptian mobile number and a code sent by
           SMS. There is no password. The first time, you are also checked once
           with your national ID card and a live selfie; if the automatic check
-          is unsure, or you choose the niqab route, a woman reviewer phones you
-          to arrange a short video check. There is no community, no coaching
+          is unsure, or you choose the niqab route, a woman from Own Hub
+          reviews your case and contacts you by phone within 72 hours to finish
+          your check. There is no community, no coaching
           and no assistant in this version: nothing in the app connects you to
           another member, and nothing in it can be bought. If you were expecting
           one of those, you were reading about a later version that is not
@@ -1019,11 +1217,12 @@ def build(cfg, lang, mailto_link):
           that one card cannot open two accounts. We never keep the photographs
           of your card or your face, and we never keep the ID number itself.
           Once you are verified, your training and meals, kept in Frankfurt,
-          Germany, where only your account can read them. Your cycle, check-ins,
+          Germany, where no other member can see them. Your cycle, check-ins,
           measurements, life stage, allergies and weight only if you turn on
           health backup yourself.</p>
-          <p>If the app crashes, Firebase Crashlytics receives a crash report
-          with no account identifier, name or phone number. There is no
+          <p>If you allow crash reports, Firebase Crashlytics receives a report
+          when the app crashes, with no account identifier, name or phone
+          number. They are off until you allow them. There is no
           analytics and no advertising library in the app. The
           <a href="/privacy">Privacy Policy</a> sets out every item, who handles
           it and where.</p>
@@ -1106,8 +1305,8 @@ def build(cfg, lang, mailto_link):
         The button below opens a message to {{mailtoplain:contactPrivacy}} with
         the text already written. Include the phone number on the account.</p>
         <div class="btn-row">""" + delete_button + """</div>
-        <p>Before deleting, we will phone that number to confirm the request is
-        yours, then complete the deletion within {{rightsResponseWindow}} and
+        <p>We send a one-time code by SMS to the number on the account. Reply to
+        our email with the code, and we delete within {{deletionWindow}} and
         confirm in writing. You never need to send us your ID, a photograph or
         any health information, and we will never ask you for them.</p>
 
@@ -1130,22 +1329,26 @@ def build(cfg, lang, mailto_link):
         <ul>
           <li><b>The keyed code of your ID number is closed, not deleted.</b> It
           no longer points to any account, and it stops the same card opening a
-          new account. Whether a woman who deleted her account may rejoin is a
-          question we have put to counsel.</li>
+          new account. It is kept with no end date, so the same card cannot be
+          used to join again.</li>
           <li><b>Safety reports</b> you made, or that were made about you, are
           kept for the safety of other members, with your account identifier
           replaced by a random code.</li>
           <li><b>A record that your deletion was carried out</b>, reduced to its
           status and dates, as proof that your request was honoured.</li>
         </ul>
+        <p>Two more things are not linked to your account and expire on their
+        own: the count of failed check attempts and the scrambled installation
+        record, deleted 180 days after the last attempt, and the log of which
+        reviewer opened your case, deleted after one year.</p>
         <p>Google removes its own backups within its own deletion window.</p>
 
 """ + h2("cannot-undo", "It cannot be undone") + """
         <p>There is no restore and no grace period. Once it is done, your logs
         and your history are gone.</p>
-        <p><b>Downloading a copy first is not built into the app yet.</b> If you
-        want a copy, write to {{mailto:contactPrivacy}} before you delete and we
-        will send it to you by email.</p>
+        <p><b>Want a copy first?</b> Ask from Profile, then Your data, then Ask
+        for a copy, or write to {{mailto:contactPrivacy}} before you delete, and
+        we send it to you.</p>
 
 """ + h2("some-of-it", "Delete only some of it") + """
         <ul>
@@ -1153,8 +1356,8 @@ def build(cfg, lang, mailto_link):
           That deletes the copy of your health information on our servers and
           keeps the one on your phone.</li>
           <li><b>Cycle data can be deleted on its own</b>, from cycle settings.</li>
-          <li>You can delete individual logs, meals and measurements as you
-          go.</li>
+          <li>You can remove items from a day&rsquo;s log and delete individual
+          measurements.</li>
         </ul>
 
 """ + h2("rights", "Your rights") + """

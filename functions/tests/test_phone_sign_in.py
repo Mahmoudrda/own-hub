@@ -26,6 +26,10 @@ USER_CALLABLES = (
     "start_verification",
     "verify_identity",
     "request_review",
+    "record_signup_role",
+    "submit_coach_certificate",
+    "create_coach_invite",
+    "accept_coach_invite",
 )
 STAFF_CALLABLES = (
     "list_verification_flags",

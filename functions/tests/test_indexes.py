@@ -51,13 +51,20 @@ def test_ttl_policies_are_declared_for_the_expiring_collections():
         # W1: 180 days for a waitlist entry, two days for its per-IP counter.
         ("waitlist", "expireAt"),
         ("waitlistRate", "expireAt"),
+        # M9: the fraud signals and the reviewer access log expire too.
+        ("verificationBehaviour", "expireAt"),
+        ("verificationInstalls", "expireAt"),
+        ("verificationReviewAccess", "expireAt"),
+        # M11: the proof she agreed to the waitlist wording, three years.
+        ("waitlistConsentProof", "expireAt"),
     }
 
 
-def test_no_ttl_on_the_registry_or_the_access_log():
+def test_no_ttl_on_the_registry():
+    # The registry entry is closed, not deleted, and has no clock of its own.
     for o in _spec()["fieldOverrides"]:
         if o.get("ttl"):
-            assert o["collectionGroup"] not in {"nidRegistry", "verificationReviewAccess"}
+            assert o["collectionGroup"] != "nidRegistry"
 
 
 def test_every_entry_says_why_and_every_override_exempts():

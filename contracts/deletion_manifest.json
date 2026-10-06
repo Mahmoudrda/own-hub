@@ -204,6 +204,46 @@
       "number": 41,
       "path": "verificationSessions where uid == {uid}",
       "method": "groupHook"
+    },
+    {
+      "number": 42,
+      "path": "verificationBehaviour/{idHmac}",
+      "method": "ttl"
+    },
+    {
+      "number": 43,
+      "path": "verificationInstalls/{installHash}",
+      "method": "ttl"
+    },
+    {
+      "number": 44,
+      "path": "verificationReviewAccess where flagId in her flags",
+      "method": "ttl"
+    },
+    {
+      "number": 45,
+      "path": "posts/{postId} where authorUid == uid, with comments and likes",
+      "method": "groupHook"
+    },
+    {
+      "number": 46,
+      "path": "posts/*/comments where authorUid == uid",
+      "method": "groupHook"
+    },
+    {
+      "number": 47,
+      "path": "coaches/{uid}/** (profile, offers, portfolio, results, ads, splits, certificates)",
+      "method": "groupHook"
+    },
+    {
+      "number": 48,
+      "path": "relationships where coachUid or clientUid == uid, with messages and reviews",
+      "method": "groupHook"
+    },
+    {
+      "number": 49,
+      "path": "coachInvites where coachUid == uid",
+      "method": "groupHook"
     }
   ]
 }

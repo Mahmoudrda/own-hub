@@ -7824,4 +7824,693 @@ class AppL10nEn extends AppL10n {
   @override
   String get ownHubIsForTrainingNotFor =>
       'Own Hub is for training, not for selling.';
+
+  @override
+  String get yourTrainingYourFoodYourCycleWomen =>
+      'Your training, your food, your cycle. Women only.';
+
+  @override
+  String get setUpMyWeek => 'Set up my week';
+
+  @override
+  String get n1Of3YourWeek => '1 of 3 · Your week';
+
+  @override
+  String get n2Of3YourNumber => '2 of 3 · Your number';
+
+  @override
+  String get n3Of3QuickCheck => '3 of 3 · Quick check';
+
+  @override
+  String get onlyYouSeeThisItStaysOn =>
+      'Only you see this. It stays on this phone.';
+
+  @override
+  String get seeMyWeek => 'See my week';
+
+  @override
+  String get builtFromYourAnswers => 'Built from your answers';
+
+  @override
+  String get oneQuickCheckKeepsOwnHubWomen =>
+      'One quick check keeps Own Hub women only. Then day 1 is yours.';
+
+  @override
+  String get saveMyWeekAndJoin => 'Save my week and join';
+
+  @override
+  String get thatNumberDoesNotLookRightCheck =>
+      'That number does not look right. Check it and try again.';
+
+  @override
+  String get noConnectionYourNumberIsStillHere =>
+      'No connection. Your number is still here, try again when you are back online.';
+
+  @override
+  String get weCouldNotSendTheCodeTry =>
+      'We could not send the code. Try again in a moment.';
+
+  @override
+  String get thatCodeDidNotMatchCheckThe =>
+      'That code did not match. Check the message and type it again.';
+
+  @override
+  String get thatCodeHasExpiredAskForA_1vzf3 =>
+      'That code has expired. Ask for a new one below.';
+
+  @override
+  String get noConnectionTryAgainWhenYouAre =>
+      'No connection. Try again when you are back online.';
+
+  @override
+  String get weCouldNotCheckTheCodeTry =>
+      'We could not check the code. Try again in a moment.';
+
+  @override
+  String get checkingYourCode => 'Checking your code';
+
+  @override
+  String get editNumber => 'Edit number';
+
+  @override
+  String get cameraAccessIsOff => 'Camera access is off';
+
+  @override
+  String get ownHubNeedsTheCameraToRead =>
+      'Own Hub needs the camera to read your card. You can turn it on in Settings, or a woman from Own Hub can check you another way.';
+
+  @override
+  String get ownHubNeedsTheCameraForA =>
+      'Own Hub needs the camera for a short selfie. You can turn it on in Settings, or a woman from Own Hub can check you another way.';
+
+  @override
+  String get theCameraCouldNotStartThisIs =>
+      'The camera could not start. This is not about you. Try again, or a woman from Own Hub can check you another way.';
+
+  @override
+  String get checkMeAnotherWay => 'Check me another way';
+
+  @override
+  String get noConnectionYourPhotosAreStillHere =>
+      'No connection. Your photos are still here, try again.';
+
+  @override
+  String get bothSidesOfYourCardTaken => 'Both sides of your card taken';
+
+  @override
+  String get selfieTaken => 'Selfie taken';
+
+  @override
+  String get matchingYourSelfieToYourCard =>
+      'Matching your selfie to your card';
+
+  @override
+  String get takingLongerThanUsualYourConnectionMay =>
+      'Taking longer than usual. Your connection may be slow. You can keep waiting here.';
+
+  @override
+  String get goToHome => 'Go to Home';
+
+  @override
+  String get planThisWeeksDinners => 'Plan this week\'s dinners';
+
+  @override
+  String get fiveEgyptianDinnersAndOneShoppingList =>
+      'Five Egyptian dinners and one shopping list';
+
+  @override
+  String get trackMyCycle => 'Track my cycle';
+
+  @override
+  String get optionalAndItStaysOnThisPhone =>
+      'Optional, and it stays on this phone';
+
+  @override
+  String nextSessionNumberOnAnyDayThis(String number) {
+    return 'Next: session $number, on any day this week';
+  }
+
+  @override
+  String get day1WasNotWrittenForPregnancy =>
+      'Day 1 was not written for pregnancy. Please ask your doctor before you start, and skip any move that does not feel right.';
+
+  @override
+  String get day1WasNotWrittenForThe =>
+      'Day 1 was not written for the weeks after a birth. Please wait for your doctor\'s OK, and skip any move that does not feel right.';
+
+  @override
+  String get iHaveMyDoctorsOkStart => 'I have my doctor\'s OK, start';
+
+  @override
+  String get notToday => 'Not today';
+
+  @override
+  String get yourWeekIsSaved => 'Your week is saved';
+
+  @override
+  String get homeYourDayAtAGlance => 'Home, your day at a glance';
+
+  @override
+  String get ownHubIsAFitnessAppFor =>
+      'Own Hub is a fitness app for women only. Home shows today\'s workout, what you have eaten and how your week is going. This week is a sample, so tap anything.';
+
+  @override
+  String get quietSessionsYouCanDoAtHome =>
+      'Quiet sessions you can do at home. Each move shows its sets and what to aim for. Trained without your phone? You can log it afterwards.';
+
+  @override
+  String get duringAWorkout => 'During a workout';
+
+  @override
+  String get oneMoveAtATimeTapWhen =>
+      'One move at a time. Tap when a set is done, and Own Hub keeps count and times your rest.';
+
+  @override
+  String get homeCookingYouAlreadyKnowWrittenBy =>
+      'Home cooking you already know, written by coach Rahma Mohsen. Open the first recipe to see one in full.';
+
+  @override
+  String get yourWeekOfDinners => 'Your week of dinners';
+
+  @override
+  String get aWeekOfDinnersPlannedForYou =>
+      'A week of dinners planned for you, with one shopping list that covers them all.';
+
+  @override
+  String get yourCycleIfYouWantIt => 'Your cycle, if you want it';
+
+  @override
+  String get logYourPeriodAndHowYouFeel =>
+      'Log your period and how you feel. On harder days Own Hub can suggest a gentler session. Cycle data stays on your phone unless you choose to back it up.';
+
+  @override
+  String get yourWeeksYourPersonalBestsAndYour =>
+      'Your weeks, your personal bests and your milestones, counted only from what you log.';
+
+  @override
+  String get thatIsOwnHub => 'That is Own Hub';
+
+  @override
+  String get toMakeItYoursJoinWithYour =>
+      'To make it yours, join with your phone number.';
+
+  @override
+  String get ownHubIsForWomenOnlySo =>
+      'Own Hub is for women only, so we check your ID once, with a quick selfie. The photos are deleted after the check.';
+
+  @override
+  String get firstOneScreenToBuildYourWeek =>
+      'First, one screen to build your week. Own Hub opens for you once the check is done.';
+
+  @override
+  String get makeItMine => 'Make it mine';
+
+  @override
+  String get seeTheTourAgain => 'See the tour again';
+
+  @override
+  String get sampleNothingIsSaved => 'Sample · nothing is saved';
+
+  @override
+  String get joinOwnHub => 'Join Own Hub';
+
+  @override
+  String get leaveTheTour => 'Leave the tour';
+
+  @override
+  String get backToMyCheck => 'Back to my check';
+
+  @override
+  String get joinToMakeThisYours => 'Join to make this yours';
+
+  @override
+  String get keepLooking => 'Keep looking';
+
+  @override
+  String get showMeAround => 'Show me around';
+
+  @override
+  String get skipTheTourAndJoin => 'Skip the tour and join';
+
+  @override
+  String get theTourUsesASampleWeekNo =>
+      'The tour uses a sample week. No account, and nothing is saved.';
+
+  @override
+  String get firstYourWeekThenYourNumberAnd =>
+      'First your week, then your number and a quick check that you are a woman. About two minutes, once.';
+
+  @override
+  String get homeCookingYouAlreadyKnowWrittenBy_7q8w1 =>
+      'Home cooking you already know, written by coach Rahma Mohsen. The recipes open with your account.';
+
+  @override
+  String get toSendYourCodeYourNumberGoes =>
+      'To send your code, your number goes to Google Firebase in the United States. Your account and training are kept by Google Cloud in Frankfurt, Germany.';
+
+  @override
+  String get sendCrashReports => 'Send crash reports';
+
+  @override
+  String get optionalHelpsUsFixTheAppNo =>
+      'Optional. Helps us fix the app. No name, number or account is attached. You can change this in Privacy.';
+
+  @override
+  String get agreeAndSendMeACode => 'Agree and send me a code';
+
+  @override
+  String get byTappingAgreeAndSendMeA =>
+      'By tapping Agree and send me a code, you accept the Terms of Use and the Privacy Policy.';
+
+  @override
+  String get weHaveUpdatedOurTermsAndPrivacy =>
+      'We have updated our Terms and Privacy Policy';
+
+  @override
+  String get pleaseReadWhatChangedToKeepUsing =>
+      'Please read what changed. To keep using Own Hub, agree to the new versions.';
+
+  @override
+  String get yourAgreementIsNowRecordedWhenYou =>
+      'Your agreement is now recorded when you sign up, with the language and the app version.';
+
+  @override
+  String get crashReportsAreSentOnlyIfYou =>
+      'Crash reports are sent only if you allow them. They are off until you do.';
+
+  @override
+  String get youCanAskForACopyOf =>
+      'You can ask for a copy of your data, and the policy says how long each kind is kept.';
+
+  @override
+  String get agreeAndContinue => 'Agree and continue';
+
+  @override
+  String get deleteMyAccountInstead => 'Delete my account instead';
+
+  @override
+  String get weCouldNotSaveYourAgreementCheck =>
+      'We could not save your agreement. Check your connection and try again.';
+
+  @override
+  String get crashReports => 'Crash reports';
+
+  @override
+  String get onIfTheAppCrashesTheError =>
+      'On. If the app crashes, the error and your phone model are sent to Firebase. Nothing about you is attached.';
+
+  @override
+  String get offNothingIsSentWhenTheApp =>
+      'Off. Nothing is sent when the app crashes.';
+
+  @override
+  String get yourPhotosGoToOurServerIn =>
+      'Your photos go to our server in Frankfurt, Germany. Google Cloud Vision reads the text on the card in the European Union.';
+
+  @override
+  String get yourFaceIsMatchedOnOurOwn =>
+      'Your face is matched on our own server. No outside face service sees it.';
+
+  @override
+  String get noPhotoIsEverStoredBothSides =>
+      'No photo is ever stored. Both sides of the card and the selfie are deleted from memory when the check ends, whatever the result.';
+
+  @override
+  String get weKeepTheResultAndItsReasons =>
+      'We keep the result and its reasons for 180 days, and a keyed code of your ID number so one card opens one account. The code cannot be turned back into your number.';
+
+  @override
+  String get ifTheCheckCannotDecideYouCan =>
+      'If the check cannot decide, you can ask a woman from Own Hub to check you instead.';
+
+  @override
+  String get readThePrivacyPolicy => 'Read the Privacy Policy';
+
+  @override
+  String get ownHubIsAFitnessAndWellbeing =>
+      'Own Hub is a fitness and wellbeing app. It is not a medical device and does not diagnose, treat, cure or prevent any condition. Check with your doctor before you start, especially if you are pregnant or have recently given birth.';
+
+  @override
+  String get usuallyACoupleOfMinutesIfA =>
+      'Usually a couple of minutes. If a woman needs to check, up to 3 days.';
+
+  @override
+  String get bothImagesAreDeletedAfterTheCheck_8iuyd =>
+      'Both images are deleted after the check. We keep the result and a keyed code of your ID number.';
+
+  @override
+  String get yourIdAndSelfieWereDeletedAfter_nl9hl =>
+      'Your ID and selfie were deleted after the check. We keep the result and a keyed code of your ID number.';
+
+  @override
+  String get aWomanReviewerChecksYourCardWith =>
+      'A woman reviewer checks your card with you. Nothing is recorded. She keeps only her decision and the date.';
+
+  @override
+  String get askAWomanToCheckMe => 'Ask a woman to check me';
+
+  @override
+  String get aCheckWithAWoman => 'A check with a woman';
+
+  @override
+  String get emailUsReadSundayToThursday9 =>
+      'Email us. Read Sunday to Thursday, 9:00 to 17:00 Cairo time.';
+
+  @override
+  String get wantACopyOfYourDataAsk =>
+      'Want a copy of your data? Ask us and we will send it to you.';
+
+  @override
+  String get askForACopy => 'Ask for a copy';
+
+  @override
+  String get copyOfMyOwnHubData => 'Copy of my Own Hub data';
+
+  @override
+  String get thePhoneNumberOnMyAccount => 'The phone number on my account:';
+
+  @override
+  String get deletingTakesAwayEverythingYouHavePut_7ytu4 =>
+      'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers.';
+
+  @override
+  String get deletingTakesAwayEverythingYouHavePut_1uwbl =>
+      'Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers.';
+
+  @override
+  String get deletingUsuallyTakesUnderAMinuteIf =>
+      'Deleting usually takes under a minute. If it is interrupted, it finishes on its own within the hour, and none of it can be brought back.';
+
+  @override
+  String get deletingYourAccountThisUsuallyTakesUnder =>
+      'Deleting your account. This usually takes under a minute.';
+
+  @override
+  String get deletingYourAccountRemovesItFromOur_1xldi =>
+      'Deleting your account removes it from our servers and clears this phone. Some things are kept on purpose: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, and a record that the deletion happened. Failed check attempts and a scrambled code for this installation, linked to no account, are deleted 180 days after the last attempt, and the log of which reviewer opened your case after one year.';
+
+  @override
+  String get weTextYouASixDigitCode_18wn2 =>
+      'We text you a six-digit code. No other member ever sees your number.';
+
+  @override
+  String get yourPhoneNumberIsUsedOnlyTo_thda4 =>
+      'Your phone number is used only to arrange your check.';
+
+  @override
+  String get aWomanFromOwnHubWillReview =>
+      'A woman from Own Hub will review your check';
+
+  @override
+  String get aWomanFromOwnHubReviewsYour =>
+      'A woman from Own Hub reviews your case and contacts you by phone within 72 hours. We do not send text messages about this.';
+
+  @override
+  String aWomanFromOwnHubWillContact(String time) {
+    return 'A woman from Own Hub will contact you on $time.';
+  }
+
+  @override
+  String get aWomanFromOwnHubCanContact =>
+      'A woman from Own Hub can contact you only after you ask her to. If you ask, she reviews your case and contacts you by phone within 72 hours to finish your check.';
+
+  @override
+  String get askAWomanToContactMe => 'Ask a woman to contact me';
+
+  @override
+  String get ifYouDoNotShowYourFace_1pr0p =>
+      'If you do not show your face to a camera, nothing here asks you to. A woman from Own Hub reviews your case and contacts you by phone within 72 hours to check your ID card with you.';
+
+  @override
+  String get thisAccountHasUsedEveryAutomaticCheck_rc3un =>
+      'This account has used every automatic check it can. Nothing you photographed was kept. A woman from Own Hub can review your case instead and contact you within 72 hours.';
+
+  @override
+  String get yourAutomaticCheckIsStillRunningSo =>
+      'Your automatic check is still running, so nothing was sent. You will be moved on when it finishes. If nothing happens, ask again in a minute.';
+
+  @override
+  String get theMatchUsuallyTakesUnderAMinute =>
+      'The match usually takes under a minute. If it needs a person, a woman reviewer takes it from here.';
+
+  @override
+  String get buildYourWeekWhileWeCheck => 'Build your week while we check';
+
+  @override
+  String get saveMyWeek => 'Save my week';
+
+  @override
+  String get breakingThemCanCloseYourAccountYou =>
+      'Breaking them can close your account. You can read them again any time.';
+
+  @override
+  String get firstYourWeekThenYourNumberAnd_flrzo =>
+      'First your week, then your number and a quick check that you are a woman.';
+
+  @override
+  String get weJustNeedYourNumberAndA_1jn4g =>
+      'We just need your number and a quick check that you are a woman.';
+
+  @override
+  String daysAWeekDaysMinutesASession_1a2wl(String days, String minutes) {
+    return 'Days a week: $days · Minutes a session: $minutes';
+  }
+
+  @override
+  String get n8WeeksForBeginners => '8 weeks · for beginners';
+
+  @override
+  String pickADinnerForDay(String day) {
+    return 'Pick a dinner for $day';
+  }
+
+  @override
+  String get changeThisDinner => 'Change this dinner';
+
+  @override
+  String get fillMyWeekFromRahmasRecipes =>
+      'Fill my week from Rahma\'s recipes';
+
+  @override
+  String get yourCycleOnThisPhone => 'Your cycle, on this phone';
+
+  @override
+  String get yourIdPhotoAndSelfieHaveBeen_1qfoh =>
+      'Your ID photo and selfie have been deleted. We keep the result, its reasons and a keyed code of your ID number.';
+
+  @override
+  String verifiedInSecondsSecondsYourIdPhoto_mbpt8(int seconds) {
+    return 'Verified in $seconds seconds. Your ID photo and selfie have been deleted. We keep the result, its reasons and a keyed code of your ID number.';
+  }
+
+  @override
+  String get tellMeWhenImIn => 'Tell me when I\'m in';
+
+  @override
+  String get weWillTellYouOnThisPhone =>
+      'We will tell you on this phone when your check is done.';
+
+  @override
+  String get notificationsAreOffForOwnHubOn =>
+      'Notifications are off for Own Hub on this phone. You can turn them on in Settings.';
+
+  @override
+  String get notificationsCannotReachThisPhoneOpenOwn =>
+      'Notifications cannot reach this phone. Open Own Hub to see when your check is done.';
+
+  @override
+  String get aReminderOnYourTrainingDays => 'A reminder on your training days?';
+
+  @override
+  String get oneQuietNoteOnTheDaysYou =>
+      'One quiet note on the days you pick, at the time you pick. You can change it or turn it off in Notifications.';
+
+  @override
+  String get chooseMyDays => 'Choose my days';
+
+  @override
+  String get trainingReminders => 'Training reminders';
+
+  @override
+  String sessionsInYourWeekCountPickThe(String count) {
+    return 'Sessions in your week: $count. Pick the days that suit you.';
+  }
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get changeTime => 'Change time';
+
+  @override
+  String get remindMe => 'Remind me';
+
+  @override
+  String get turnRemindersOff => 'Turn reminders off';
+
+  @override
+  String get pickAtLeastOneDay => 'Pick at least one day.';
+
+  @override
+  String get remindersAreOn => 'Reminders are on.';
+
+  @override
+  String get remindersAreOff => 'Reminders are off.';
+
+  @override
+  String get remindersCannotBeSetOnThisPhone =>
+      'Reminders cannot be set on this phone.';
+
+  @override
+  String get yourSessionIsReadyWhenYouAre =>
+      'Your session is ready when you are.';
+
+  @override
+  String get aNoteOnTheDaysYouChose => 'A note on the days you chose to train.';
+
+  @override
+  String get aSampleWeekOfFiveDinnersJoin =>
+      'A sample week of five dinners. Join to plan your own.';
+
+  @override
+  String get deleteWhatISavedOnThisPhone => 'Delete what I saved on this phone';
+
+  @override
+  String get deleteWhatYouSavedOnThisPhone =>
+      'Delete what you saved on this phone?';
+
+  @override
+  String get yourWeekYourLifeStageAndAnything =>
+      'Your week, your life stage and anything else you saved here are deleted from this phone. You can build your week again at any time.';
+
+  @override
+  String get keepIt => 'Keep it';
+
+  @override
+  String get deleteIt => 'Delete it';
+
+  @override
+  String get deletedFromThisPhone => 'Deleted from this phone.';
+
+  @override
+  String get setUpMyCoachProfile => 'Set up my coach profile';
+
+  @override
+  String get addPayoutLater => 'Add payout later';
+
+  @override
+  String get buildYourFirstPlan => 'Build your first plan';
+
+  @override
+  String get readyForYourFirstClientWhileWe =>
+      'Ready for your first client while we check your certificates.';
+
+  @override
+  String get inviteAClient => 'Invite a client';
+
+  @override
+  String get alreadyCoachingSomeoneSendHerYourCode =>
+      'Already coaching someone? Send her your code on WhatsApp.';
+
+  @override
+  String joinMeOnOwnHubTheTraining(String code) {
+    return 'Join me on Own Hub, the training app for women only. When you sign up, tap I have a code from my coach and enter $code.';
+  }
+
+  @override
+  String get iHaveACodeFromMyCoach => 'I have a code from my coach';
+
+  @override
+  String get yourCoachsCode => 'Your coach\'s code';
+
+  @override
+  String get saveTheCode => 'Save the code';
+
+  @override
+  String get savedOnceYouAreInWeWill =>
+      'Saved. Once you are in, we will connect you with your coach.';
+
+  @override
+  String get thatCodeDoesNotLookRightCheck =>
+      'That code does not look right. Check it and try again.';
+
+  @override
+  String get yourCoachHasYourRequest => 'Your coach has your request.';
+
+  @override
+  String get yourCoachsCodeDidNotWorkAsk =>
+      'Your coach\'s code did not work. Ask her for a new one.';
+
+  @override
+  String get weCouldNotMakeYourCodeTry =>
+      'We could not make your code. Try again in a moment.';
+
+  @override
+  String weCouldNotOpenWhatsappYourCode(String code) {
+    return 'We could not open WhatsApp. Your code is $code.';
+  }
+
+  @override
+  String get weOpenCoachingSoon => 'We open coaching soon';
+
+  @override
+  String get tellUsAboutYouAndWeWill =>
+      'Tell us about you and we will call you.';
+
+  @override
+  String get whatYouCoach => 'What you coach';
+
+  @override
+  String get sendOnWhatsapp => 'Send on WhatsApp';
+
+  @override
+  String get sendByEmail => 'Send by email';
+
+  @override
+  String get thisOpensAMessageToOurTeam =>
+      'This opens a message to our team. Nothing is sent until you send it yourself.';
+
+  @override
+  String iCoachWomenAndWouldLikeTo(String name, String city, String specialty) {
+    return 'I coach women and would like to coach on Own Hub. Name: $name. City: $city. I coach: $specialty.';
+  }
+
+  @override
+  String get coachingOnOwnHub => 'Coaching on Own Hub';
+
+  @override
+  String get weCouldNotOpenAMessageOn =>
+      'We could not open a message on this phone.';
+
+  @override
+  String get iAgreeToTheseThreeRules => 'I agree to these three rules';
+
+  @override
+  String get asACoachYouAgreeToThe =>
+      'As a coach you agree to the same three rules as every woman here.';
+
+  @override
+  String get photographYourCertificate => 'Photograph your certificate';
+
+  @override
+  String get takeThePhoto => 'Take the photo';
+
+  @override
+  String get layItFlatInGoodLightWith =>
+      'Lay it flat in good light, with every word readable.';
+
+  @override
+  String get theCameraCouldNotStartCloseThis =>
+      'The camera could not start. Close this and try again.';
+
+  @override
+  String get weCouldNotSendYourCertificateCheck =>
+      'We could not send your certificate. Check your connection and try again.';
+
+  @override
+  String get coachingIsNotOpenYetSoYour =>
+      'Coaching is not open yet, so your certificate was not sent.';
+
+  @override
+  String get typeWhatYouAte => 'Type what you ate';
 }

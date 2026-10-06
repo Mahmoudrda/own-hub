@@ -10,6 +10,19 @@
 ///    swept it into the dictionary and even produced an Arabic translation for
 ///    it, which is how you can tell it was never meant to be read aloud. The
 ///    product is named now, so the slot holds the name until there is an asset.
+///
+/// It says what the app does in one line while the community is off ("Your
+/// training, your food, your cycle. Women only."), and its first button is
+/// "Show me around": a short tour of the real app with a sample week (`C04`),
+/// before she is asked for anything. The line under it says so plainly: no
+/// account, nothing saved. "Skip the tour and join" is for the woman who
+/// already knows she wants in, and starts with her week before her number.
+/// The language is two chips at the top rather than a screen of its own.
+///
+/// A woman who built her week before signing up and then stopped has her
+/// answers, her life stage among them, kept on this phone. "Delete what I
+/// saved on this phone" is her way to remove them without an account, asked
+/// once in a sheet before anything is deleted.
 library;
 
 import 'package:flutter/material.dart';
@@ -20,16 +33,79 @@ import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_sheet.dart';
 import '../../../ui/hand/hand.dart';
+import '../domain/locale_preference.dart';
+import 'language_view.dart' show LanguageToggle;
 
 class WelcomeView extends StatelessWidget {
-  const WelcomeView({super.key, this.onGetStarted, this.onSignIn});
+  const WelcomeView({
+    super.key,
+    this.onLookAround,
+    this.onGetStarted,
+    this.onSignIn,
+    this.preference,
+    this.onDeleteSaved,
+    this.onCoachInterest,
+    this.onInviteCode,
+  });
+
+  /// Where her language is kept. Null draws no language chips.
+  final LocalePreference? preference;
 
   /// The Own Hub tile, with its 2.0x and 3.0x variants beside it.
   static const String logoAsset = 'assets/brand/logo/ownhub-tile.png';
 
+  /// "Show me around": the tour, `C04`.
+  final VoidCallback? onLookAround;
+
+  /// "Skip the tour and join": her week, then her number.
   final VoidCallback? onGetStarted;
   final VoidCallback? onSignIn;
+
+  /// Deletes what she saved on this phone before she had an account. Null,
+  /// which is the case unless she is signed out with her week built here,
+  /// draws no button.
+  final Future<void> Function()? onDeleteSaved;
+
+  /// "I coach women": the coach interest form, while the coach app is off and
+  /// `C08` is not asked. Null draws no link.
+  final VoidCallback? onCoachInterest;
+
+  /// "I have a code from my coach", while the coach app is on. Null draws no
+  /// link.
+  final VoidCallback? onInviteCode;
+
+  /// Asks before deleting. Keeping is the filled answer: nothing is lost by
+  /// tapping it by mistake.
+  Future<void> _confirmDelete(BuildContext context) async {
+    final delete = onDeleteSaved;
+    if (delete == null) return;
+    final l10n = AppL10n.of(context);
+    final confirmed = await showAppSheet<bool>(
+      context: context,
+      children: [
+        Text(l10n.deleteWhatYouSavedOnThisPhone, style: AppText.titleL),
+        Text(
+          l10n.yourWeekYourLifeStageAndAnything,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        AppButton(
+          l10n.keepIt,
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        AppButton(
+          l10n.deleteIt,
+          variant: AppButtonVariant.outlined,
+          height: 48,
+          fontSize: 15,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+    if (confirmed != true || !context.mounted) return;
+    await delete();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +116,24 @@ class WelcomeView extends StatelessWidget {
       // view — it fills the viewport and scrolls only when it must.
       scrollable: false,
       footer: [
-        AppButton(l10n.getStarted, onPressed: onGetStarted),
+        AppButton(l10n.showMeAround, onPressed: onLookAround),
+        // What the tour is, said before she takes it: nothing is asked of her
+        // and nothing she does in it is kept.
+        Text(
+          l10n.theTourUsesASampleWeekNo,
+          textAlign: TextAlign.center,
+          style: AppText.bodyM.copyWith(
+            fontSize: 13,
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
+        AppButton(
+          l10n.skipTheTourAndJoin,
+          variant: AppButtonVariant.text,
+          height: 48,
+          fontSize: 15,
+          onPressed: onGetStarted,
+        ),
         AppButton(
           l10n.iAlreadyHaveAnAccount,
           variant: AppButtonVariant.text,
@@ -48,8 +141,37 @@ class WelcomeView extends StatelessWidget {
           fontSize: 15,
           onPressed: onSignIn,
         ),
+        if (onInviteCode != null)
+          AppButton(
+            l10n.iHaveACodeFromMyCoach,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: onInviteCode,
+          ),
+        if (onCoachInterest != null)
+          AppButton(
+            l10n.iCoachWomen,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: onCoachInterest,
+          ),
+        if (onDeleteSaved != null)
+          AppButton(
+            l10n.deleteWhatISavedOnThisPhone,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: () => _confirmDelete(context),
+          ),
       ],
       children: [
+        if (preference case final preference?)
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: LanguageToggle(preference: preference),
+          ),
         const AppSpacer(),
         // The brand mark, the Concept 02 monogram on the rose tile, as on the
         // home screen. Rendered from the vector at 1x, 2x and 3x, so it is
@@ -90,7 +212,11 @@ class WelcomeView extends StatelessWidget {
               delay: const Duration(milliseconds: 240),
               gap: 6,
               child: Text(
-                l10n.aRoomFullOfWomenTrainingLike,
+                // What the app does, while the room it used to promise is
+                // switched off.
+                AppRouter.featureFlags.isOn(Feature.community)
+                    ? l10n.aRoomFullOfWomenTrainingLike
+                    : l10n.yourTrainingYourFoodYourCycleWomen,
                 textAlign: TextAlign.center,
                 textWidthBasis: TextWidthBasis.longestLine,
                 style: EditorialType.cover,

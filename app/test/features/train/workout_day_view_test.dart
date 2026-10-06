@@ -91,6 +91,18 @@ void main() {
     expect(find.text('I already did it'), findsOneWidget);
   });
 
+  testWidgets('"More" is drawn only when it does something', (tester) async {
+    await tester.pumpWidget(_host(const WorkoutDayView()));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('More'), findsNothing);
+
+    var opened = 0;
+    await tester.pumpWidget(_host(WorkoutDayView(onMore: () => opened++)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('More'));
+    expect(opened, 1);
+  });
+
   testWidgets('starting creates the session, then moves on', (tester) async {
     final repository = InMemoryTrainRepository();
     var started = 0;

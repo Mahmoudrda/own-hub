@@ -16,6 +16,18 @@ What is stored, in waitlist/{autoId}, and nothing else:
     ipHash    HMAC-SHA256 of the IP under a secret key, never the IP itself
     expireAt  at + 180 days; a Firestore TTL deletes it (pending counsel)
 
+And the proof that she agreed (M11), in waitlistConsentProof/{code}, where
+the code is an HMAC of her contact under a key derived from the IP key for
+this one purpose, so the contact itself is not in it:
+
+    wordingVersion  CONSENT_WORDING_VERSION, the consent sentence she ticked
+    lang            "en" | "ar"
+    at              when she agreed
+    expireAt        at + 180 days + 3 years; a Firestore TTL deletes it
+
+It outlives the entry on purpose: the entry is deleted once she is messaged,
+and the proof that she asked to be is what remains.
+
 Controls, because there is no App Check on the web:
   * POST only, a 4 KB body cap, strict validation of every field;
   * a honeypot field a person never sees: filled means a bot, which is told
@@ -75,6 +87,17 @@ Load Balancer is ever put in front, which appends "<client>, <its own
 address>". See client_ip."""
 RETENTION_DAYS = 180
 RATE_RETENTION_DAYS = 2
+PROOF_COLLECTION = "waitlistConsentProof"
+PROOF_RETENTION_DAYS = RETENTION_DAYS + 3 * 365
+"""M11: how long the proof of her agreement is kept. PDPL Art. 18 asks for
+it to be kept 3 years from the last message sent. The one message goes out
+before her entry is deleted, so 180 days after she joined at the latest, and
+the proof is kept 3 years past that day. The privacy policy (section 3.10)
+says "3 years after the last message we send you"."""
+CONSENT_WORDING_VERSION = 1
+"""The waitlist consent sentence by number: "I agree. We will message you once
+when Own Hub opens, then delete your contact." Bump it whenever that sentence
+changes on either language's page."""
 MAX_BODY_BYTES = 4096
 HONEYPOT_FIELD = "website"
 LANGS = ("en", "ar")
@@ -158,6 +181,13 @@ def client_ip(forwarded: Optional[str], remote_addr: Optional[str], trusted_hops
 
 def ip_hash(key: bytes, ip: str) -> str:
     return hmac.new(key, (ip or "").encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def proof_id(key: bytes, contact: str) -> str:
+    """The consent proof's document id: an HMAC of the normalised contact
+    under a sub-key of the IP key, so the two codes can never be compared."""
+    sub_key = hmac.new(key, b"waitlist-consent-proof", hashlib.sha256).digest()
+    return hmac.new(sub_key, contact.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
 def allowed_origin(origin: Optional[str]) -> bool:
@@ -253,6 +283,15 @@ def handle(request: Request, store, key: Callable[[], bytes], now: dt.datetime) 
                     "expireAt": now + dt.timedelta(days=RETENTION_DAYS),
                 }
             )
+            store.record_consent_proof(
+                proof_id(key(), contact),
+                {
+                    "wordingVersion": CONSENT_WORDING_VERSION,
+                    "lang": lang,
+                    "at": now,
+                    "expireAt": now + dt.timedelta(days=PROOF_RETENTION_DAYS),
+                },
+            )
         return answer("joined")
     except Exception:
         from identity import logs
@@ -291,6 +330,9 @@ class FirestoreWaitlist:
     def new_entries_today(self, day: str) -> int:
         snapshot = self._day_counter(day).get()
         return int((snapshot.to_dict() or {}).get("count", 0)) if snapshot.exists else 0
+
+    def record_consent_proof(self, proof_id_: str, proof: dict) -> None:
+        self.db.collection(PROOF_COLLECTION).document(proof_id_).set(proof)
 
     def add(self, entry: dict) -> None:
         from google.cloud import firestore

@@ -7,8 +7,9 @@
 /// explicitly, before anything opens, and the agreement is written down.
 ///
 /// **What is recorded, and nothing else.** A uid, the version of the text she
-/// agreed to, and when. Not the text, not a device fingerprint, not an IP
-/// address, not her name. The version is what makes the record worth keeping:
+/// agreed to, when, the language it was shown in and the app version that
+/// showed it. Not the text, not a device fingerprint, not an IP address, not
+/// her name. The version is what makes the record worth keeping:
 /// "she consented" is unanswerable a year later when the wording has changed
 /// twice, while "she consented to [kCaptureConsentVersion]" can be checked
 /// against a text we still have.
@@ -27,6 +28,12 @@ import 'package:meta/meta.dart';
 ///
 /// Version 1 is the consent wording dated 2026-09-25.
 ///
+/// Version 2 (privacy policy v3, 6 October 2026) names Frankfurt and the EU
+/// Cloud Vision endpoint, says the face match runs on our own server, states
+/// the 180-day result and the keyed ID code, and offers a woman from Own Hub
+/// when the check cannot decide. A woman verified under version 1 is not
+/// asked again; one still on her way through sees version 2.
+///
 /// **Bump this whenever the consent copy changes in either language**, and in
 /// particular whenever the list of processors changes. Adding a processor to
 /// that screen without bumping this would leave every existing woman recorded
@@ -44,7 +51,7 @@ import 'package:meta/meta.dart';
 /// changes happened on 2026-09-25, before any build reached a handset, so there
 /// is no record anywhere that was taken against the superseded wording. The
 /// next change to this text will not have that excuse.
-const int kCaptureConsentVersion = 1;
+const int kCaptureConsentVersion = 2;
 
 /// One agreement, as it is stored.
 @immutable
@@ -53,6 +60,8 @@ class CaptureConsent {
     required this.uid,
     required this.version,
     required this.agreedAt,
+    this.locale,
+    this.appVersion,
   });
 
   final String uid;
@@ -61,6 +70,12 @@ class CaptureConsent {
   final int version;
 
   final DateTime agreedAt;
+
+  /// `en` or `ar`: the language the wording was shown in. Null when unknown.
+  final String? locale;
+
+  /// The app version that showed it. Null when unknown.
+  final String? appVersion;
 
   /// Whether this record still covers what the screen says today.
   bool get isCurrent => version == kCaptureConsentVersion;

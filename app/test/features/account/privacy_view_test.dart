@@ -21,7 +21,8 @@ import 'package:own_hub/ui/app_toggle.dart';
 /// The shipped English sentence for rule 7, written out so the test fails if
 /// the dictionary entry is ever repointed at different words.
 const _rule7 =
-    'Your ID and selfie were deleted after the check. Only the result is kept.';
+    'Your ID and selfie were deleted after the check. We keep the result and '
+    'a keyed code of your ID number.';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -63,6 +64,51 @@ void main() {
     }),
   );
   tearDown(() => AppRouter.featureFlags = savedFlags);
+
+  group('M3: crash reports, only with her consent', () {
+    testWidgets('off by default, and the switch says what it means', (
+      tester,
+    ) async {
+      _phone(tester);
+      final choices = <bool>[];
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+            onCrashReportsChanged: (allowed) async => choices.add(allowed),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final toggle = find.byKey(const ValueKey('crash-reports-toggle'));
+      await tester.ensureVisible(toggle);
+      expect(tester.widget<AppToggle>(toggle).value, isFalse);
+      expect(
+        find.text('Off. Nothing is sent when the app crashes.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(choices, [true]);
+      expect(find.textContaining('Nothing about you is attached'), findsOneWidget);
+
+      await tester.ensureVisible(toggle);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(choices, [true, false]);
+    });
+
+    testWidgets('no row without a place to record the choice', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(PrivacyView(service: PrivacySettingsService(InMemoryPrivacyRepository()))),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('crash-reports-toggle')), findsNothing);
+    });
+  });
 
   group('the switches', () {
     testWidgets('four switches, and only the blur starts on', (tester) async {

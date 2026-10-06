@@ -1,85 +1,121 @@
-Own Hub: Google Play Data safety answers (account build)
-=======================================================
+Own Hub: Google Play Data safety answers (account build, privacy policy v3)
+=======================================================================
 
 Copy these answers into Play Console > App content > Data safety. They must
 match ios/Runner/PrivacyInfo.xcprivacy, the App Store App Privacy answers and
-the published privacy policy. Wording of the policy is pending review by a
-licensed Egyptian lawyer.
+the published privacy policy (v3, sections 3 to 5). Wording of the policy is
+pending review by a licensed Egyptian lawyer. After any change, regenerate the
+Xcode privacy report and compare all four line by line before submitting.
 
 Overview
 --------
 Does the app collect or share any of the required user data types?  Yes
 Is all user data encrypted in transit?                              Yes
 Do you provide a way for users to request that their data is deleted?  Yes
-  (in the app: Profile and settings > delete account; and on the web page
-   listed under LegalLinks.deleteAccount once it is published)
+  In the app: Profile > Your data > Delete everything.
+  On the web: {baseUrl}/delete-account/ (LegalLinks.deleteAccount).
 Is data shared with third parties?                                  No
-  (Google Cloud / Firebase act as service providers processing on our behalf,
-   which Play does not count as sharing)
+  Google Cloud and Firebase, the SMS route and the chat service for review
+  alerts act as service providers processing on our behalf, which Play does
+  not count as sharing. There is no video service: a woman from Own Hub
+  reviews the case and contacts her by phone.
+Independent security review                                          No
 
 Data types collected
 --------------------
-For every type below: Collected = yes, Shared = no, Processed ephemerally as
-noted, Required unless noted, Purpose = App functionality (and Account
-management where marked).
+For every type below: Collected = yes, Shared = no. Ephemeral, required or
+optional, and purposes as noted.
 
 Personal info
+  - Name
+      Collected, processed ephemerally: read from the ID card in memory to
+      cross-check the ID number, never stored. Required.
+      Purpose: Fraud prevention, security and compliance.
   - Phone number
-      Collected. Required. Purpose: Account management, App functionality.
-      Used for sign-in by SMS code (Firebase Authentication).
+      Collected. Not ephemeral. Required.
+      Purpose: Account management, App functionality, Fraud prevention.
+      Sign-in by SMS code (Firebase Authentication), and so a woman from
+      Own Hub can contact her by phone when she asks for a review.
   - User IDs
-      Collected. Required. Purpose: Account management, App functionality.
+      Collected. Not ephemeral. Required.
+      Purpose: Account management, App functionality.
       The Firebase uid her account and documents are keyed by.
-  - Other info: government ID number
-      Collected, NOT stored in readable form. Required for verification.
-      Purpose: App functionality (fraud prevention: one card, one account).
-      Only a keyed one-way hash of the national ID number is kept.
+  - Other info: national ID number, and the sex and age read from it
+      Collected. Kept only as a keyed one-way code. Required.
+      Purpose: Fraud prevention, security and compliance; App functionality.
 
 Health and fitness
   - Fitness info
-      Collected for verified accounts (workouts, sessions, meals). Required.
-      Purpose: App functionality.
+      Collected for verified accounts (workouts, sessions, meals, plans).
+      Required. Purpose: App functionality.
   - Health info
-      Collected ONLY if she turns on "Back up my health data" (off by default,
-      with its own consent): cycle and period dates, daily check-ins, body
-      measurements including weight, pregnancy, postpartum or injury stage,
-      allergies. Optional. Purpose: App functionality.
+      Collected ONLY when she turns on "Back up my health data" (off by
+      default, with its own consent): cycle and period dates, daily check-ins,
+      body measurements including weight, pregnancy, postpartum or injury
+      stage, allergies. Optional. Purpose: App functionality.
       Otherwise this stays on the phone and is not collected.
 
 Photos and videos
   - Photos
       Collected and processed ephemerally: both sides of her national ID card
-      and a live selfie, for the women-only identity check. Never stored.
-      Required for automatic verification (a woman-reviewer video call is the
-      alternative). Purpose: App functionality (fraud prevention).
+      and the selfie frames, for the women-only check. Never stored.
+      Required, with a woman-reviewer alternative.
+      Purpose: Fraud prevention, security and compliance; App functionality.
 
 App info and performance
   - Crash logs
-      Collected in release builds only (Firebase Crashlytics). Not linked to
-      her account: no user identifier, custom key or log line is ever set.
-      Purpose: App functionality (fixing crashes).
+      Collected only with her consent (off by default; a switch at sign-up
+      and in Privacy). Firebase Crashlytics. Not linked to her account: no
+      user identifier, custom key or log line is ever set. Optional.
+      Purpose: Analytics.
   - Diagnostics
-      Collected with a crash report: device model, OS version, app version,
-      free memory and disk at the moment of the crash. Not linked. Purpose:
-      App functionality.
+      ML Kit performance events, and the device details sent with a crash
+      report. Required. Purpose: Analytics.
 
 Device or other IDs
   - Device or other IDs
-      Collected (Firebase installation identifier; App Check attestation).
-      Required. Purpose: App functionality, Fraud prevention / security.
+      Collected: Firebase installation identifier, App Check attestation, and
+      a hashed install id kept for fraud signals. Required.
+      Purpose: Fraud prevention, security and compliance; App functionality.
+      Also the push token (Firebase Cloud Messaging), only if she taps "Tell
+      me when I'm in" while a woman reviewer has her check and allows
+      notifications. Optional. Purpose: App functionality. It is used for
+      one notification, "your check is done", and deleted with her account.
 
 Not collected
 -------------
-Location, contacts, messages, audio, files and docs, calendar, web browsing,
-financial info, app activity outside the above, and photos from the gallery
-(the app cannot read the gallery).
+Location, contacts, messages (the SMS code is read by the SMS Retriever, not
+READ_SMS), audio, files and docs, calendar, web browsing, financial info, app
+activity, and photos from the gallery (the app cannot read the gallery).
+There is no video review. A woman from Own Hub who reviews a case contacts
+her by phone, outside the app; nothing from that contact is collected by the
+app.
+Training reminders are scheduled on the phone (local notifications, opt-in,
+asked after her first finished session). The days and time she picks stay on
+the phone; nothing about them is sent to Own Hub. The manifest carries
+RECEIVE_BOOT_COMPLETED so they survive a restart; no exact-alarm permission.
 
 Health apps declaration (Play Console > App content > Health apps)
 -----------------------------------------------------------------
 Categories: Activity and fitness; Nutrition and weight management; Period
-tracking. The app is not a medical device and does not diagnose, treat or
-prevent any condition.
+tracking. Pregnancy and postpartum are fitness adaptations used with her
+doctor's clearance (pending counsel). The app is not a medical device and
+does not diagnose, treat, cure or prevent any condition.
 
 Target audience
 ---------------
-18 and over only. Verification refuses anyone under 18.
+18 and over only, with Restrict Minor Access on. Verification refuses anyone
+under 18.
+
+Content rating
+--------------
+No user-generated content and no chat in this version.
+
+App access
+----------
+The +20 Firebase test number with its fixed code, and the reviewer allow-list
+(owner action), plus Review Notes.
+
+Privacy policy URL
+------------------
+{baseUrl}/privacy/

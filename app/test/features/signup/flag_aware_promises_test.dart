@@ -162,56 +162,86 @@ void main() {
     });
   });
 
-  group('C04 Look around', () {
-    testWidgets('release flags: no Coaches tab, no members card; Join stays', (
+  group('C04 the tour', () {
+    // The tour draws the product's own screens, so the product's own flags
+    // are on here, as they are at launch.
+    const product = {
+      Feature.today: true,
+      Feature.train: true,
+      Feature.eat: true,
+      Feature.progress: true,
+      Feature.cycle: true,
+    };
+
+    testWidgets('release flags: nothing switched off is shown; Join stays', (
       tester,
     ) async {
       var joined = 0;
-      await _pump(tester, LookAroundView(onJoin: () => joined++));
+      await _pump(
+        tester,
+        LookAroundView(onJoin: () => joined++),
+        on: product,
+      );
+      expect(find.text(en.community), findsNothing);
       expect(find.text(en.coaches), findsNothing);
-      expect(find.text(en.membersAndTheirPostsAreBehindThe), findsNothing);
-      expect(find.text(en.weKeepTheCommunityForVerifiedWomen), findsNothing);
-      expect(find.text(en.yourFullProgramOpensAfterTheCheck), findsOneWidget);
-      expect(find.text(en.joinAndPassTheCheckOnceThen), findsOneWidget);
-      await tester.tap(find.text(en.joinAboutTwoMinutes));
+      expect(find.byTooltip(en.askSomething), findsNothing);
+      expect(find.text(en.sampleNothingIsSaved), findsOneWidget);
+      await tester.tap(find.text(en.joinOwnHub));
       expect(joined, 1);
     });
 
-    testWidgets('release flags, Arabic: no Coaches tab, true card', (
+    testWidgets('release flags, Arabic: the same, in her language', (
       tester,
     ) async {
-      await _pump(tester, const LookAroundView(), locale: const Locale('ar'));
-      expect(find.text(ar.coaches), findsNothing);
-      expect(find.text(ar.membersAndTheirPostsAreBehindThe), findsNothing);
-      expect(find.text(ar.yourFullProgramOpensAfterTheCheck), findsOneWidget);
+      await _pump(
+        tester,
+        const LookAroundView(),
+        on: product,
+        locale: const Locale('ar'),
+      );
+      expect(find.text(ar.community), findsNothing);
+      expect(find.text(ar.sampleNothingIsSaved), findsOneWidget);
+      expect(find.text(ar.joinOwnHub), findsOneWidget);
     });
 
-    testWidgets('coach app on: the Coaches tab returns', (tester) async {
-      await _pump(tester, const LookAroundView(), on: _coachApp);
-      expect(find.text(en.coaches), findsOneWidget);
+    testWidgets('coach app on: still no coach in the tour', (tester) async {
+      await _pump(
+        tester,
+        const LookAroundView(),
+        on: {...product, ..._coachApp},
+      );
+      expect(find.text(en.coaches), findsNothing);
     });
 
-    testWidgets('community on: the members card returns', (tester) async {
-      await _pump(tester, const LookAroundView(), on: _community);
-      expect(find.text(en.membersAndTheirPostsAreBehindThe), findsOneWidget);
-      expect(find.text(en.weKeepTheCommunityForVerifiedWomen), findsOneWidget);
+    testWidgets('community on: the real bar carries it, behind the join', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        const LookAroundView(),
+        on: {...product, ..._community},
+      );
+      expect(find.text(en.community), findsOneWidget);
+      await tester.tap(find.text(en.community));
+      await tester.pumpAndSettle();
+      expect(find.text(en.joinToMakeThisYours), findsOneWidget);
     });
   });
 
   group('C06 Phone number', () {
     Widget view() => PhoneNumberView(repository: FakeAuthRepository());
 
-    testWidgets('release flags: Own Hub rules, not community rules', (
+    testWidgets('release flags: the Terms and Privacy, not community rules', (
       tester,
     ) async {
       await _pump(tester, view());
       expect(find.text(en.byJoiningYouAgreeToTheCommunity), findsNothing);
-      expect(find.text(en.byJoiningYouAgreeToTheOwn), findsOneWidget);
+      expect(find.text(en.byTappingAgreeAndSendMeA), findsOneWidget);
     });
 
     testWidgets('release flags, Arabic', (tester) async {
       await _pump(tester, view(), locale: const Locale('ar'));
-      expect(find.text(ar.byJoiningYouAgreeToTheOwn), findsOneWidget);
+      expect(find.text(ar.byTappingAgreeAndSendMeA), findsOneWidget);
     });
 
     testWidgets('community on: community rules return', (tester) async {
@@ -274,13 +304,13 @@ void main() {
 
     testWidgets('release flags, Arabic', (tester) async {
       await _pump(tester, const YoureInView(), locale: const Locale('ar'));
-      expect(find.text(ar.imACoachSetUpMyProfile), findsNothing);
+      expect(find.text(ar.setUpMyCoachProfile), findsNothing);
       expect(find.text(ar.yourNumberYourIdAndYourLogs_10nei), findsOneWidget);
     });
 
     testWidgets('coach app on: the coach set-up returns', (tester) async {
       await _pump(tester, const YoureInView(), on: _coachApp);
-      expect(find.text(en.imACoachSetUpMyProfile), findsOneWidget);
+      expect(find.text(en.setUpMyCoachProfile), findsOneWidget);
     });
 
     testWidgets('community on: the members line returns', (tester) async {

@@ -17,6 +17,7 @@
 /// confirm anything (§2 rule 9).
 library;
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../theme/app_art.dart';
 
 import 'dart:async';
@@ -42,6 +43,8 @@ import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_scope.dart';
 import '../../../theme/screen_art.dart';
+import '../../onboarding/domain/intake.dart';
+import '../../onboarding/presentation/her_answers.dart';
 import '../domain/today_day.dart';
 import '../domain/today_repository.dart';
 import 'today_cards.dart';
@@ -68,7 +71,39 @@ class TodayView extends StatefulWidget {
     this.onTellUsWhatYouEat,
     this.onOpenBeginnersGroup,
     this.onSelectTab,
+    this.intake,
+    this.intakePlaceAnswered = false,
+    this.onOpenWeekPlan,
+    this.offerCycleSetup = false,
+    this.onTrackCycle,
+    this.onNotNowCycle,
+    this.onCountWalk,
   });
+
+  /// Her setup answers. On day one they are read back above "Start day 1",
+  /// so the week she just saw built is the week Home names.
+  final Intake? intake;
+
+  /// Whether she was asked where she trains. False after the one-screen
+  /// "Your week", which never asks: the line then names no place.
+  final bool intakePlaceAnswered;
+
+  /// "Plan this week's dinners": `E07`, the week plan and its shopping list.
+  final VoidCallback? onOpenWeekPlan;
+
+  /// Whether day one offers "Track my cycle". The router turns it off once
+  /// My cycle is set up or she has said "Not now".
+  final bool offerCycleSetup;
+
+  /// "Track my cycle": `Y01`.
+  final VoidCallback? onTrackCycle;
+
+  /// "Not now" on the cycle row. Hides it for good.
+  final VoidCallback? onNotNowCycle;
+
+  /// "Count it" on the walk row. Supplied, it replaces counting the walk:
+  /// the row stays on screen and nothing is written.
+  final VoidCallback? onCountWalk;
 
   /// Injectable so a test — and later Firestore — can supply the day.
   final TodayRepository? repository;
@@ -168,7 +203,7 @@ class _TodayViewState extends State<TodayView> {
   /// After 20:00 an unlogged session is likelier to have happened than to be
   /// about to, so the two buttons swap weight. This is a rendering of the same
   /// day state, not a sixth state (plan G3 §3.1).
-  bool get _isEvening => (widget.now ?? DateTime.now()).hour >= 20;
+  bool get _isEvening => (widget.now ?? AppClock.now()).hour >= 20;
 
   /// The walk row's sentence, carrying the duration only when there is one.
   ///
@@ -419,7 +454,7 @@ class _TodayViewState extends State<TodayView> {
         variant: AppButtonVariant.text,
         height: 44,
         fontSize: 15,
-        onPressed: _countWalk,
+        onPressed: widget.onCountWalk ?? _countWalk,
       ),
     );
     final icon = HandIconRing(
@@ -554,6 +589,18 @@ class _TodayViewState extends State<TodayView> {
         l10n.thisAppCountsWeeksNotDaysAnd,
         style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
       ),
+      // Her week, as she set it. The same line O05 showed her, so what she
+      // saved and what Home says cannot disagree.
+      if (widget.intake case final intake?)
+        Text(
+          herAnswersLine(
+            l10n,
+            intake,
+            placeAnswered: widget.intakePlaceAnswered,
+          ),
+          key: const ValueKey('day-one-her-week'),
+          style: AppText.titleM.copyWith(color: AppColors.onPrimaryContainer),
+        ),
       const SizedBox(height: 4),
       AppButton(
         l10n.startDay1,
@@ -613,6 +660,43 @@ class _TodayViewState extends State<TodayView> {
         // T06.
         onTap: () => openScreen(context, 'E01', widget.onTellUsWhatYouEat),
       ),
+      // Planning her food is a reason she installed the app, and on day one
+      // the week plan had no door from Home or Eat.
+      if (AppRouter.screenIsOn('E07'))
+        AppListItem(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          leading: const Icon(
+            Icons.calendar_view_week,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.planThisWeeksDinners,
+          subtitle: l10n.fiveEgyptianDinnersAndOneShoppingList,
+          trailing: chevron,
+          onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
+        ),
+      // My cycle was four taps deep behind her avatar. Optional, and said so;
+      // gone once it is set up or she says not now.
+      if (widget.offerCycleSetup && AppRouter.screenIsOn('Y01'))
+        AppListItem(
+          key: const ValueKey('day-one-track-cycle'),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          leading: const Icon(
+            Icons.water_drop_outlined,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.trackMyCycle,
+          subtitle: l10n.optionalAndItStaysOnThisPhone,
+          trailing: TextButton(
+            onPressed: widget.onNotNowCycle,
+            child: Text(
+              l10n.notNow,
+              style: AppText.label.copyWith(color: AppColors.primaryDim),
+            ),
+          ),
+          onTap: () => openScreen(context, 'Y01', widget.onTrackCycle),
+        ),
       // The community is dark in the first release, so on day one this row
       // named a group she cannot join and opened the "switched off" panel.
       // Not drawn rather than drawn and disabled: the rest of day one is three

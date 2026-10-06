@@ -82,6 +82,27 @@ void main() {
       expect(find.text('Friday'), findsOneWidget);
     });
 
+    testWidgets('a lead given replaces the line, and with no way to pick a '
+        'dinner the rows offer no swap', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          WeekPlanView(
+            repository: _seeded(),
+            now: _tuesday,
+            lead: 'A sample week.',
+            onOpenRecipe: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('A sample week.'), findsOneWidget);
+      expect(find.textContaining('Five dinners, built from'), findsNothing);
+      expect(find.byIcon(Icons.swap_horiz), findsNothing);
+      expect(find.byIcon(Icons.chevron_right), findsNWidgets(5));
+    });
+
     testWidgets('the one-shop card leads to the list', (tester) async {
       _phone(tester);
       await tester.pumpWidget(

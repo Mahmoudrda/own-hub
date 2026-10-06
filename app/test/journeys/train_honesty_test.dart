@@ -25,6 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/training/prescribed_set.dart';
+import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/train/domain/set_history.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/presentation/workout_day_view.dart';
@@ -292,6 +293,47 @@ void main() {
       await _open(tester, 'R02');
       expect(find.text('Postpartum rebuild'), findsNothing);
       expect(find.text('Your training'), findsOneWidget);
+    });
+  });
+
+  // B10. Day one was not written for a pregnancy or for the weeks after a
+  // birth, and nothing in this build is clinically reviewed for either. R03
+  // says so before she starts, and only for those two answers.
+  group('R03 asks for her doctor first, when it should', () {
+    tearDown(() => AppRouter.intakeRepository.reset());
+
+    for (final stage in LifeStage.values) {
+      final asks = stage == LifeStage.pregnant || stage == LifeStage.postpartum;
+      testWidgets('${stage.name}: ${asks ? 'the card' : 'no card'}', (
+        tester,
+      ) async {
+        AppRouter.intakeRepository.restore(Intake(lifeStage: stage));
+        await _open(tester, 'R03');
+
+        final card = find.byKey(const ValueKey('r03-doctor-first'));
+        if (asks) {
+          expect(card, findsOneWidget);
+          expect(find.text("I have my doctor's OK, start"), findsOneWidget);
+          expect(find.text('Not today'), findsOneWidget);
+          expect(find.text("Start, everything's ready"), findsNothing);
+        } else {
+          expect(card, findsNothing);
+          expect(find.text("I have my doctor's OK, start"), findsNothing);
+        }
+      });
+    }
+
+    testWidgets('"Not today" leaves without starting anything', (tester) async {
+      AppRouter.intakeRepository.restore(
+        const Intake(lifeStage: LifeStage.pregnant),
+      );
+      await _open(tester, 'R03');
+
+      await tester.tap(find.text('Not today'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(WorkoutDayView), findsNothing);
+      expect(WorkoutSessionState.instance.session, isNull);
     });
   });
 }

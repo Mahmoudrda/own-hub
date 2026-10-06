@@ -16,6 +16,7 @@ import '../app_state/account_data.dart';
 import '../app_state/app_changes.dart';
 import '../app_state/blocking.dart';
 import '../app_state/cloud_store.dart';
+import '../app_state/crash_consent.dart';
 // Read, never written: `FirebaseBoot.isReady` is what decides whether the
 // identity check can be built against real Cloud Functions or has to refuse
 // honestly. See `_newIdentityCheck`.
@@ -23,6 +24,7 @@ import '../app_state/firebase_boot.dart';
 import '../app_state/verification_memory.dart';
 import '../config/care_links.dart';
 import '../config/legal_links.dart';
+import '../app_state/coach_invite_state.dart';
 import '../app_state/coach_portfolio_state.dart';
 import '../app_state/coach_profile_state.dart';
 import '../app_state/coached_life_state.dart';
@@ -31,15 +33,24 @@ import '../app_state/coaching_link_state.dart';
 import '../app_state/community_state.dart';
 import '../app_state/cycle_state.dart';
 import '../app_state/eat_state.dart';
+import '../app_state/demo_mode.dart';
 import '../app_state/honest_notice.dart';
 import '../app_state/onboarding_state.dart';
+import '../app_state/pledge.dart';
+import '../app_state/push_registration.dart';
+import '../app_state/reminder_scheduler.dart';
+import '../app_state/role_state.dart';
+import '../app_state/open_app_settings.dart';
 import '../app_state/open_link.dart';
 import '../app_state/workout_session_state.dart';
+import '../domain/clock/app_clock.dart';
 import '../domain/rewards/level_curve.dart';
 import '../features/testing/presentation/all_screens_view.dart';
 
+import '../domain/analytics/analytics_gateway.dart';
 import '../domain/flags/feature_flags.dart';
 import '../domain/format/number_label.dart' show countLabel;
+import '../ui/app_step_progress.dart';
 import '../ui/app_undo_snackbar.dart';
 import '../ui/screen_scope.dart';
 import '../domain/identity/user_roles.dart';
@@ -47,6 +58,7 @@ import '../domain/rewards/personal_best_ledger.dart';
 import '../domain/week/week_key.dart';
 import '../features/eat/domain/allergy_guard.dart';
 import '../features/eat/domain/meal_repository.dart';
+import '../features/eat/domain/meal_repository.dart' as eat_plan show PlanDay;
 import '../features/eat/presentation/allergy_question_view.dart';
 import '../features/eat/presentation/eat_sample_library.dart';
 import '../features/eat/presentation/eat_view.dart';
@@ -60,26 +72,34 @@ import '../features/eat/presentation/type_it_view.dart';
 import '../features/eat/presentation/week_plan_view.dart';
 import '../features/onboarding/domain/intake_repository.dart';
 import '../features/onboarding/presentation/goal_view.dart';
+import '../features/onboarding/presentation/her_answers.dart';
 import '../features/onboarding/presentation/life_stage_view.dart';
 import '../features/onboarding/presentation/place_view.dart';
 import '../features/onboarding/presentation/schedule_view.dart';
 import '../features/onboarding/presentation/starting_program_view.dart';
 import '../features/signup/data/callable_capture_consent_store.dart';
+import '../features/signup/data/callable_legal_acceptance_store.dart';
 import '../features/signup/data/firebase_auth_repository.dart';
 import '../features/signup/data/identity_check.dart';
 import '../features/signup/data/verification_backend.dart';
 import '../features/signup/domain/auth_repository.dart';
 import '../features/signup/domain/capture_consent.dart';
 import '../features/signup/domain/id_capture.dart';
+import '../features/signup/domain/legal_acceptance.dart';
 import '../features/signup/domain/locale_preference.dart';
 import '../features/signup/domain/review_request.dart';
 import '../features/signup/domain/server_verification.dart';
 import '../features/signup/domain/verification.dart';
 import '../features/signup/domain/verification_provider.dart';
+import '../features/coach/domain/coach_invite.dart';
+import '../features/coach/presentation/certificate_camera_view.dart';
 import '../features/signup/presentation/being_checked_view.dart';
+import '../features/signup/presentation/coach_interest_sheet.dart';
+import '../features/signup/presentation/invite_code_sheet.dart';
 import '../features/signup/presentation/checking_view.dart';
 import '../features/signup/presentation/code_view.dart';
 import '../features/signup/presentation/consent_view.dart';
+import '../features/signup/presentation/demo/demo_stops.dart' show DemoStop;
 import '../features/signup/presentation/id_capture_view.dart';
 import '../features/signup/presentation/language_view.dart';
 import '../features/signup/presentation/look_around_view.dart';
@@ -105,7 +125,9 @@ import '../features/train/domain/set_history.dart';
 import '../features/train/domain/train_repository.dart';
 import '../features/train/presentation/change_set_view.dart';
 import '../features/train/presentation/exercise_video_view.dart';
+import '../features/train/domain/training_reminders.dart';
 import '../features/train/presentation/finished_view.dart';
+import '../features/train/presentation/reminder_sheet.dart';
 import '../features/train/presentation/follow_along_view.dart';
 import '../features/train/presentation/logged_from_memory_view.dart';
 import '../features/train/presentation/mid_set_view.dart';
@@ -123,6 +145,7 @@ import '../features/account/domain/health_backup.dart';
 import '../features/account/domain/notifications.dart';
 import '../features/account/domain/privacy_settings.dart';
 import '../features/account/domain/safety.dart';
+import '../features/account/presentation/legal_update_sheet.dart';
 import '../features/account/presentation/notifications_view.dart';
 import '../features/account/presentation/privacy_view.dart';
 import '../features/account/presentation/profile_view.dart';
@@ -336,6 +359,26 @@ String? screenIdForRoute(String routeName) {
 }
 
 class AppRouter {
+  /// Where the funnel events go: sign-up started, setup saved, check submitted
+  /// and decided, first session and first meal, the screens of sign-up,
+  /// setup and Today, and the tour's stops and joins. Nowhere until an analytics service is chosen; `main()`
+  /// prints them in a debug build, and a test swaps in a recording sink.
+  ///
+  /// Never called from the cycle flow, and no screen of it is reported:
+  /// `cycle_no_analytics_call_sites_test` holds that for the feature itself
+  /// and [_reportsScreenViews] holds it here.
+  static AnalyticsGateway analytics = const AnalyticsGateway(
+    NullAnalyticsSink(),
+  );
+
+  /// The flows whose screen views are reported. Sign-up, setup and Today:
+  /// enough to see where women stop between installing and day one.
+  static const Set<String> _reportsScreenViews = {
+    'signup',
+    'onboarding',
+    'today',
+  };
+
   /// Resolves a route name to a page. Returns null for anything that is not a
   /// destination, so a first-run state fails loudly at the navigator rather than
   /// quietly rendering an empty-state screen over real data.
@@ -397,6 +440,15 @@ class AppRouter {
     if (_opensALens.contains(id) && !consentRecorded) {
       return onGenerateRoute(
         RouteSettings(name: appDestinations['C09b']!.name),
+      );
+    }
+
+    if (_reportsScreenViews.contains(route.flow)) {
+      unawaited(
+        analytics.track(AnalyticsEvent.screenViewed, {
+          AnalyticsProp.screenId: AnalyticsValue.token(id),
+          AnalyticsProp.flow: AnalyticsValue.token(route.flow),
+        }),
       );
     }
 
@@ -504,6 +556,15 @@ class AppRouter {
   /// screen somebody wants reachable early.
   static const Set<String> ungatedScreens = {'C02'};
 
+  /// Screens with a switch of their own, inside their flow's.
+  ///
+  /// `E03` is Eat's, but saying a meal needs a speech recogniser this build
+  /// does not have, so it answers to [Feature.voiceLogging] (whose parent is
+  /// [Feature.eat]). Every microphone on Eat asks [screenIsOn] for `E03`.
+  static const Map<String, Feature> screenFeatures = {
+    'E03': Feature.voiceLogging,
+  };
+
   /// Whether a control that leads to [screenId] may be drawn at all.
   ///
   /// The one question every screen asks before it renders a row, a chip, a
@@ -523,7 +584,9 @@ class AppRouter {
   static bool screenIsOn(String screenId) {
     if (ungatedScreens.contains(screenId)) return true;
     final flow = appRoutes[screenId]?.flow;
-    final feature = flow == null ? null : featureForFlow(flow);
+    final feature =
+        screenFeatures[screenId] ??
+        (flow == null ? null : featureForFlow(flow));
     return feature == null || featureFlags.isOn(feature);
   }
 
@@ -534,10 +597,20 @@ class AppRouter {
   // open while she waited. They are not any more. Nothing opens until the check
   // completes, and `C14` says exactly that.
   //
-  // **This is built and switched off.** The gate closes when
-  // `Feature.accountRequired` is on, and that flag is off in
-  // `FeatureFlags.shipped` — see the note on [testingAidsAllowed] for the
-  // release ordering, which is the whole reason it is still off.
+  // **This is built and switched on.** The gate closes when
+  // `Feature.accountRequired` is on, and that flag ships on in
+  // `FeatureFlags.shipped` (2026-10-02). See the note on [testingAidsAllowed]
+  // for the release ordering that has to come before a build with it on.
+  //
+  // The setup questions (`onboarding`) are open before verification, which is
+  // what lets a new woman build her week on `O03` and `O05` before she is asked
+  // for her number. Nothing behind the gate moved.
+  //
+  // Nor did the tour move it. `C04` shows the real Home, Train, Eat, My cycle
+  // and Progress screens before sign-up, but it is a `signup` screen that
+  // builds them itself with a sample week, and [goTo] refuses every route
+  // asked for inside it. No product route opens for a woman who is not
+  // verified, from the tour or from anywhere else.
 
   /// Flows a woman reaches before, or instead of, being verified.
   ///
@@ -790,6 +863,10 @@ class AppRouter {
     serverVerification = null;
     awaitingReviewer = false;
     reviewAsked = false;
+    OnboardingState.instance
+      ..beforeSignup = false
+      ..shortSetupAfterSignup = false
+      ..whileWaiting = false;
     await VerificationMemory.forget();
   }
 
@@ -837,12 +914,13 @@ class AppRouter {
     //     the app opens when the check is done. Sending her back to "here is
     //     why we check" would read as though the check she completed never
     //     happened.
-    //   * otherwise — `C09`, the check itself, which is the one thing standing
-    //     between her and the app.
+    //   * otherwise — `C09b`, the check itself, which is the one thing
+    //     standing between her and the app. It opens with C09's promise and
+    //     carries C09's niqab link, so she reads it once, on one screen.
     final id = switch ((signedIn, waitingOnAReviewer)) {
       (false, _) => 'C01',
       (_, true) => 'C14',
-      _ => 'C09',
+      _ => 'C09b',
     };
     return appDestinations[id]?.name;
   }
@@ -872,11 +950,12 @@ class AppRouter {
   /// the product: the index of every screen, the sign-in code printed on the
   /// screen that asks for it, the test payment rail.
   ///
-  /// They used to key off [Feature.accountRequired] alone, which was right
-  /// while that flag was the difference between a testing build and a real one.
-  /// It is not any more: the first release ships without accounts, so that
-  /// condition is true in the build that goes to the stores. The gate is the
-  /// build mode now, which no flag and no runtime switch can turn back on.
+  /// They used to key off [Feature.accountRequired] alone. They now need a
+  /// debug build as well, so no flag and no runtime switch can turn them on in
+  /// a release. `accountRequired` ships on, so this getter is false in every
+  /// build of the shipped configuration, debug included; it is true only in a
+  /// debug build of a configuration with no account required, such as
+  /// [FeatureFlags.everything].
   ///
   /// # `Feature.accountRequired` is on in the shipped build
   ///
@@ -898,19 +977,71 @@ class AppRouter {
   /// the gap between what is designed and what is built is visible rather than
   /// guessed at — and this map is the honest measure of progress.
   static final Map<String, WidgetBuilder> _built = {
+    // "Show me around" opens the tour (`C04`): the real screens with a sample
+    // week, before she is asked for anything. "Skip the tour and join" is the
+    // value-first start without it: her week before her number. The short
+    // setup (`O03`, then `O05`) is open before verification, so the gate is
+    // untouched; a woman who already built her week and closed the app goes
+    // straight back to it. The language is two chips on this screen, so a
+    // first run no longer passes `C02`.
+    //
+    // One literal `goTo` per destination, so `nav_reachability_test` can see
+    // both edges (see the note at Y03's tabs).
     'C01': (context) => WelcomeView(
-      onGetStarted: () => goTo(context, 'C02'),
+      preference: localePreference,
+      onLookAround: () => goTo(context, 'C04'),
+      onGetStarted: () {
+        OnboardingState.instance
+          ..beforeSignup = true
+          ..whileWaiting = false;
+        unawaited(analytics.track(AnalyticsEvent.signUpStarted));
+        if (intakeRepository.setupDone) {
+          goTo(context, 'O05');
+        } else {
+          goTo(context, 'O03');
+        }
+      },
       onSignIn: () => goTo(context, 'C06'),
+      // While the coach app is off a coach is not asked at C08, so she says
+      // so here and the team hears from her (R1-P25). While it is on, a woman
+      // her coach invited keeps the code for after her check (R1-P18).
+      onCoachInterest: featureFlags.isOn(Feature.coachApp)
+          ? null
+          : () => showCoachInterestSheet(context, open: openOutside),
+      onInviteCode: featureFlags.isOn(Feature.coachApp)
+          ? () => unawaited(keepInviteCode(context))
+          : null,
+      // Her week, built before sign-up, stays on this phone if she stops
+      // there. This is the way to remove it without an account: the same
+      // wipe as A02's, then the front door again, drawn from empty.
+      onDeleteSaved: intakeRepository.setupDone && signedInUid == null
+          ? () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.maybeOf(context);
+              final done = AppL10n.of(context).deletedFromThisPhone;
+              await deleteEverythingOnThisPhone();
+              OnboardingState.instance.beforeSignup = false;
+              if (!navigator.mounted) return;
+              unawaited(
+                navigator.pushNamedAndRemoveUntil(
+                  appRoutes['C01']!.name,
+                  (_) => false,
+                ),
+              );
+              showHonestNoticeOn(messenger, done);
+            }
+          : null,
     ),
-    // Reachable from her profile as well as from the welcome screen, and in
-    // the first release only from her profile — see `ungatedScreens`. So it
-    // needs a way back, and "Continue" has to mean "done" when the screen it
-    // continues to is dark, or the one setting that survives a dark sign-up
-    // flow would end on the switched-off panel.
+    // Reached from her profile: the language is two chips on C01, so a first
+    // run never passes it (`ungatedScreens`). For a signed-in woman
+    // "Continue" is "done" and goes back where she came from. It used to
+    // continue to C03, "What's inside / Create my account", which told a
+    // signed-in, verified woman to create the account she was already using.
+    // Only with no account does it still lead on to the pitch.
     'C02': (context) => LanguageView(
       preference: localePreference,
       onBack: () => Navigator.of(context).maybePop(),
-      onContinue: screenIsOn('C03')
+      onContinue: screenIsOn('C03') && signedInUid == null
           ? () => goTo(context, 'C03')
           : () => Navigator.of(context).maybePop(),
     ),
@@ -919,24 +1050,52 @@ class AppRouter {
       onLookAround: () => goTo(context, 'C04'),
       onBack: () => Navigator.of(context).maybePop(),
     ),
-    // Opened from C14 too, by a woman already signed up and waiting for her
-    // reviewer. "Join" must not start sign-up over again for her: it returns
-    // her to the waiting screen.
-    'C04': (context) => LookAroundView(
-      onJoin: () => signedInUid != null || awaitingReviewer
-          ? Navigator.of(context).maybePop()
-          : goTo(context, 'C06'),
+    // The tour: the real Home, Train, Eat, My cycle and Progress screens with
+    // a sample week, before she has an account. It is in the `signup` flow,
+    // so the gate is untouched: the tour builds those screens itself, inside
+    // `DemoScope`, and never routes to one. See `look_around_view.dart`.
+    //
+    // Every exit is built here, above the scope, so none of them is caught by
+    // it. "Join" and "Make it mine" start the same value-first sign-up as
+    // C01's "Skip the tour and join": her week, then her number. Back from
+    // `O03` returns her to the stop she left, because the tour stays under it.
+    //
+    // Opened from C14 too, by a woman already signed up and waiting on her
+    // check. "Join" must not start sign-up over again for her: it reads
+    // "Back to my check" and returns her there. `pop` rather than `maybePop`
+    // for the exits, because the tour holds system back to walk its stops.
+    //
+    // The ids stay written out here, not in `_lookAround`, so the navigation
+    // graph `nav_reachability_test` reads still sees these edges.
+    'C04': (context) => _lookAround(
+      context,
+      toSignUp: () => intakeRepository.setupDone
+          ? goTo(context, 'O05')
+          : goTo(context, 'O03'),
+      toSignIn: () => goTo(context, 'C06'),
     ),
-    // C05 is C04 with the join prompt raised, not a separate page. The route
-    // exists so the design can be reviewed screen by screen.
-    'C05': (context) => LookAroundView(
+    // C05 is C04 with the join sheet raised, not a separate page. The route
+    // exists so the design can be reviewed screen by screen, and shares C04's
+    // exits, so a woman waiting on her check is never sent to sign up again.
+    'C05': (context) => _lookAround(
+      context,
       openJoinPrompt: true,
-      onJoin: () => goTo(context, 'C06'),
+      toSignUp: () => intakeRepository.setupDone
+          ? goTo(context, 'O05')
+          : goTo(context, 'O03'),
+      toSignIn: () => goTo(context, 'C06'),
     ),
+    // Her tap here is the acceptance of the Terms and the Privacy Policy
+    // (M1), written to this phone before the code is sent and to the server
+    // once the code is accepted. The documents open in her language.
     'C06': (context) => PhoneNumberView(
       repository: authRepository,
       onCodeSent: () => goTo(context, 'C07'),
       onBack: () => Navigator.of(context).maybePop(),
+      onOpenTerms: openTermsFor(context),
+      onOpenPrivacy: openPrivacyFor(context),
+      crashReportsInitially: CrashConsent.instance.allowed,
+      onCrashReportsChosen: CrashConsent.instance.set,
     ),
     'C07': (context) => CodeView(
       repository: authRepository,
@@ -949,17 +1108,42 @@ class AppRouter {
       // different sign-in. Setup is walked only if it is not done here, which
       // is the case on a new phone with the health backup off (N2): her life
       // stage did not travel, so she is asked.
+      //
+      // With the coach app off there is one role to choose, so `C08` is not
+      // asked: she is a trainee, the check begins here, and she goes straight
+      // to the one screen that explains it and asks for her agreement.
       onConfirmed: () async {
         final navigator = Navigator.of(context);
+        // She has an account now: the short setup is no longer "before".
+        OnboardingState.instance.beforeSignup = false;
         await readVerificationClaim();
         await readVerificationStatus();
+        // The acceptance she made at C06 goes to the server now that she has
+        // an account. If it cannot be shown to cover the versions in force,
+        // she answers the legal update sheet before anything else (M1).
+        await reconcileLegal();
+        if (!navigator.mounted || !context.mounted) return;
+        if (!await answerLegalUpdate(context)) return;
         // A returning verified woman with her backup on has her setup in the
         // cloud. One bounded pull first, so she is not walked through setup
         // again on a new phone (R9).
         if (isVerified) await pullBeforeSetupChoice();
+        // A verified woman on a new phone: the side of the app she holds,
+        // from the server's copy (R1-P17). Only while there is a coach side.
+        if (!context.mounted) return;
+        if (isVerified) await restoreRolesFromServer(context);
         if (!navigator.mounted || !context.mounted) return;
-        if (!isVerified) {
+        if (!isVerified && featureFlags.isOn(Feature.coachApp)) {
           goTo(context, 'C08');
+        } else if (!isVerified) {
+          lastSignupRole = SignupRole.trainee;
+          RoleScope.maybeOf(context)?.value = SignupRole.trainee.toRoles();
+          beginIdentityCheck();
+          goTo(context, 'C09b');
+        } else if (frontDoor != appRoutes['T01']!.name) {
+          // A coach opens on her own side: K01 until her setup is in, K07
+          // after. Setup questions are a trainee's, so they are not asked.
+          navigator.pushNamedAndRemoveUntil(frontDoor, (_) => false);
         } else if (intakeRepository.setupDone) {
           navigator.pushNamedAndRemoveUntil(
             appRoutes['T01']!.name,
@@ -985,6 +1169,7 @@ class AppRouter {
         AppL10n.of(context).tooManyTriesWaitAMinuteThen,
       ),
       onBack: () => Navigator.of(context).maybePop(),
+      onEditNumber: () => Navigator.of(context).maybePop(),
     ),
     // Her answer is carried, not discarded: a coach and a client are verified
     // the same way here, but the role decides where C13 sends her afterwards.
@@ -1000,6 +1185,12 @@ class AppRouter {
         // records, and picking "coach" still earns nothing until the coach
         // application and its certificate checks pass.
         RoleScope.maybeOf(context)?.value = role.toRoles();
+        // Kept past a relaunch on this phone, and on the server for a new
+        // one (R1-P17). The server copy is best effort: the phone's stands.
+        RoleState.instance.keep(role.toRoles());
+        if (signedInUid != null) {
+          unawaited(roleRecordStore.record(role).catchError((Object _) {}));
+        }
         // The check begins here rather than at the first camera: C09 is already
         // part of it, and the niqab path leaves from C09 without ever opening a
         // lens. One [IdentityCheck] now covers everything from "why we check"
@@ -1013,7 +1204,11 @@ class AppRouter {
       // Not straight to the camera. `C09b` is the consent step, and it is the
       // only door into `C10`: her agreement to where her face and her national
       // ID go is written down before a lens opens, never after.
-      onScanId: () => goTo(context, 'C09b'),
+      // C09b repeats this screen's promise for a woman who arrives there
+      // straight, so from here it is told not to: one promise, read once.
+      onScanId: () => Navigator.of(
+        context,
+      ).pushNamed(appRoutes['C09b']!.name, arguments: _fromWhyWeCheck),
       // The niqab path. Nothing on this route may ask for a selfie.
       onNiqabPath: () {
         pendingReviewPath = ReviewPath.niqab;
@@ -1028,9 +1223,21 @@ class AppRouter {
     // record written against the stand-in is written into the in-memory store
     // (see `_newIdentityCheck`), so it is a rehearsal and not a consent record
     // claiming to be about somebody.
+    //
+    // It opens with C09's promise (what is read, what is matched, how long),
+    // so the first run is one screen, not two. The disclosure under it is the
+    // v2 text, every bullet visible. The niqab path leaves from here too.
     'C09b': (context) => ConsentView(
       uid: signedInUid ?? _selfUid,
       store: identityCheck.consent,
+      showPromise:
+          ModalRoute.of(context)?.settings.arguments != _fromWhyWeCheck,
+      title: signupPhaseLabel(AppL10n.of(context), SignupPhase.check),
+      onOpenPrivacy: openPrivacyFor(context),
+      onNiqabPath: () {
+        pendingReviewPath = ReviewPath.niqab;
+        goTo(context, 'C15');
+      },
       // Only ever after the write returned. `ConsentView` enforces that half;
       // this records it for the guard in `onGenerateRoute`, so a deep link
       // straight to `/signup/c10` cannot skip the screen she just agreed on.
@@ -1053,10 +1260,22 @@ class AppRouter {
     // `C10` and `C10b` fill the same `VerificationEvidence` that `C12` submits.
     // Two services would mean two evidence holders, and the failure would
     // surface three files away as "the server says the card is missing".
+    //
+    // A camera that cannot run is never a dead end: "Open settings" when she
+    // turned access off, "Try again" otherwise, and on either a woman reviewer
+    // with no camera. Whatever was photographed so far is dropped first.
     'C10': (context) => IdCaptureView(
       captureService: identityCheck.capture,
       onCaptured: () => goTo(context, 'C10b'),
       onClose: () => Navigator.of(context).maybePop(),
+      onOpenSettings: () => unawaited(openAppSettings()),
+      onAskReviewer: (reason) {
+        identityCheck.evidence.shred();
+        pendingReviewPath = reason == CaptureUnavailableReason.permissionDenied
+            ? ReviewPath.declined
+            : ReviewPath.error;
+        goTo(context, 'C15');
+      },
     ),
     // The back. It prints her sex as a word, أنثى or ذكر, which is the
     // independent reading the 13th digit of the number is cross-checked
@@ -1077,16 +1296,28 @@ class AppRouter {
       // navigation graph from the literal ids each builder mentions, and an
       // edge hidden inside a function is an edge no measurement can see. The
       // Cycle tabs are commented at the foot of this file for the same reason.
-      onCaptured: () async {
+      onHandOff: () async {
         final navigator = Navigator.of(context);
         final started = await identityCheck.startLiveness();
+        _trackLivenessStart(started);
         // She can close the capture while the call is in flight, and pushing
         // onto a dead navigator throws.
-        if (!navigator.mounted || !context.mounted) return;
+        if (!navigator.mounted || !context.mounted) {
+          return CaptureHandOff.moved;
+        }
         final repository = identityCheck.verificationRepository;
         switch (started) {
           case LivenessStart.started:
+            _livenessOffline = 0;
             goTo(context, 'C11');
+          case LivenessStart.offline:
+            // A dropped connection is a retry, not a review. Her photographs
+            // stay where they are, and after two retries that fail too a
+            // woman reviewer is offered beside "Try again".
+            _livenessOffline++;
+            return _livenessOffline >= 3
+                ? CaptureHandOff.offlineOfferReviewer
+                : CaptureHandOff.offline;
           case LivenessStart.failed:
             // No session, so there is nothing for a selfie to answer. She is
             // offered the woman reviewer rather than spending two minutes on
@@ -1126,13 +1357,30 @@ class AppRouter {
             );
             goTo(context, 'C14');
         }
+        return CaptureHandOff.moved;
       },
       onClose: () => Navigator.of(context).maybePop(),
+      onOpenSettings: () => unawaited(openAppSettings()),
+      onAskReviewer: (reason) {
+        identityCheck.evidence.shred();
+        pendingReviewPath = reason == CaptureUnavailableReason.permissionDenied
+            ? ReviewPath.declined
+            : ReviewPath.error;
+        goTo(context, 'C15');
+      },
     ),
     'C11': (context) => SelfieCaptureView(
       captureService: identityCheck.capture,
       onCaptured: () => goTo(context, 'C12'),
       onClose: () => Navigator.of(context).maybePop(),
+      onOpenSettings: () => unawaited(openAppSettings()),
+      onAskReviewer: (reason) {
+        identityCheck.evidence.shred();
+        pendingReviewPath = reason == CaptureUnavailableReason.permissionDenied
+            ? ReviewPath.declined
+            : ReviewPath.error;
+        goTo(context, 'C15');
+      },
     ),
     // The submit for the automatic path happens as this screen opens.
     //
@@ -1144,14 +1392,20 @@ class AppRouter {
     // were captured into.
     'C12': (context) => CheckingView(
       repository: _checkingRepository(),
+      // C13 becomes the root: nothing of sign-up stays behind "You're in" for
+      // a back gesture to find, the camera least of all.
       onVerified: (result) {
+        _trackDecided('verified');
         // Kept so C13 can state a measured duration instead of inventing one.
         lastVerification = result;
-        goTo(context, 'C13');
+        unawaited(redeemPendingInvite());
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(appRoutes['C13']!.name, (_) => false);
       },
       // Both "waiting for a reviewer" and "needs another look" land on the
       // same screen. Neither is a rejection (DECISIONS.md D8).
       onAwaitingReviewer: () {
+        _trackDecided('reviewer');
         awaitingReviewer = true;
         goTo(context, 'C14');
       },
@@ -1161,12 +1415,18 @@ class AppRouter {
       // why the guard is lifted rather than left standing from the attempt
       // that asked her to do this.
       onRetake: () {
+        _trackDecided('retake');
         _automaticSubmitted = false;
         goTo(context, 'C10');
       },
-      onContinue: () => goTo(context, 'C13'),
+      // "Try again" on a slow check: her choice, so no decision is recorded.
+      onTryAgain: () {
+        _automaticSubmitted = false;
+        goTo(context, 'C10');
+      },
       // Refused for good. C14 says so plainly, with where to delete her data.
       onRejected: () {
+        _trackDecided('rejected');
         serverVerification = const ServerVerification(
           ServerVerificationState.rejected,
         );
@@ -1178,9 +1438,16 @@ class AppRouter {
         _automaticSubmitted = false;
         goTo(context, 'C09b');
       },
-      // No automatic checks left. A reviewer only if she asks for one.
+      // No automatic checks left, a check that could not finish, or a slow
+      // one. A reviewer only if she asks for one. C15 opens over this screen,
+      // so a verdict that still arrives routes from here.
       onAskForReviewer: () {
         pendingReviewPath = ReviewPath.error;
+        goTo(context, 'C15');
+      },
+      onAskForReviewerWhileChecking: () {
+        pendingReviewPath = ReviewPath.error;
+        reviewAskedWhileChecking = true;
         goTo(context, 'C15');
       },
       // The daily limit, or a copy of the app that cannot reach Own Hub. To
@@ -1194,6 +1461,9 @@ class AppRouter {
       },
       onSignInAgain: () => unawaited(signInAgain(context)),
     ),
+    // With the community off the primary is "Start day 1": her week over Home
+    // when she built it before signing up, else the short "Your week" first
+    // and then day one. The pledge waits for the community it is about.
     'C13': (context) => YoureInView(
       // Her measured time, or nothing at all. Null is the honest answer when
       // the check was never timed — this screen used to state the prototype's
@@ -1201,6 +1471,29 @@ class AppRouter {
       verifiedInSeconds: lastVerification?.took?.inSeconds,
       onReadTheRules: () => goTo(context, 'C16'),
       onCoachSetup: () => goTo(context, 'K01'),
+      isCoach:
+          lastSignupRole == SignupRole.coach ||
+          lastSignupRole == SignupRole.both,
+      alsoTrains: lastSignupRole != SignupRole.coach,
+      onStartDay1: () {
+        final navigator = Navigator.of(context);
+        if (intakeRepository.setupDone) {
+          navigator.pushNamedAndRemoveUntil(
+            appRoutes['T01']!.name,
+            (_) => false,
+          );
+          navigator.pushNamed(appRoutes['R03']!.name);
+          return;
+        }
+        OnboardingState.instance
+          ..enteredFromSignup = true
+          ..shortSetupAfterSignup = true
+          ..whileWaiting = false;
+        goTo(context, 'O03');
+      },
+      onGoHome: () =>
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false),
     ),
     // Nothing is open to her while she waits.
     //
@@ -1212,6 +1505,15 @@ class AppRouter {
     // to be drawn again by somebody who finds it.
     'C14': (context) => BeingCheckedView(
       status: serverVerification,
+      // The week she built before signing up, so the wait has something of
+      // hers on it.
+      savedWeek: intakeRepository.setupDone
+          ? herAnswersLine(
+              AppL10n.of(context),
+              intakeRepository.read(),
+              placeAnswered: intakeRepository.placeAnswered,
+            )
+          : null,
       updates: verificationStatusUpdates(),
       // A reviewer approved her. `approved` from the server opens the product
       // by itself (R1); the token refresh is tried here and again on resume
@@ -1219,12 +1521,34 @@ class AppRouter {
       // on a "waiting" screen.
       onApproved: () {
         markApprovedByServer();
-        goTo(context, 'C13');
+        unawaited(redeemPendingInvite());
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(appRoutes['C13']!.name, (_) => false);
       },
       onLookAround: () => goTo(context, 'C04'),
+      // One push, "your check is done", only if she asks for it here.
+      onNotifyMe: signedInUid == null
+          ? null
+          : () => pushRegistrar.optIn(
+              uid: signedInUid!,
+              locale: Localizations.localeOf(context).languageCode,
+            ),
+      onOpenSettings: () => unawaited(openAppSettings()),
+      // A woman waiting with no week of hers yet builds it here: the short
+      // "Your week" (O03, O05), which ends back on this screen.
+      onBuildWeek: intakeRepository.setupDone
+          ? null
+          : () {
+              OnboardingState.instance
+                ..beforeSignup = false
+                ..shortSetupAfterSignup = true
+                ..whileWaiting = true;
+              goTo(context, 'O03');
+            },
+      // Straight to the check, which carries C09's promise and niqab link.
       onTryAgain: () {
         beginIdentityCheck();
-        goTo(context, 'C09');
+        goTo(context, 'C09b');
       },
       onDeleteMyData: () => goTo(context, 'A02'),
       onSelectTab: (screenId) => goTo(context, screenId),
@@ -1242,6 +1566,7 @@ class AppRouter {
     'C15': (context) => WomanReviewerView(
       requester: identityCheck.reviews,
       path: pendingReviewPath,
+      checkStillRunning: reviewAskedWhileChecking,
       onBooked: (path) {
         lastReviewerPath = path;
         markReviewAsked();
@@ -1255,7 +1580,9 @@ class AppRouter {
       // (R1): a refresh that fails must not put her on C14 pending (R10).
       onAlreadyVerified: () {
         markApprovedByServer();
-        goTo(context, 'C13');
+        unawaited(redeemPendingInvite());
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(appRoutes['C13']!.name, (_) => false);
       },
       onRejected: () {
         serverVerification = const ServerVerification(
@@ -1270,6 +1597,7 @@ class AppRouter {
       // Setup after sign-up ends on Home with the sign-up stack cleared, not
       // back on this pledge. See `OnboardingState.leaveSetup`.
       onAgree: () {
+        recordPledge(context);
         OnboardingState.instance.enteredFromSignup = true;
         goTo(context, 'O01');
       },
@@ -1293,6 +1621,9 @@ class AppRouter {
     // Every way out of O01 clears the sign-up flag, the system back gesture
     // included, so a later walk from A02 does not inherit it and end on
     // Home (N15).
+    //
+    // No Skip on any question. Every answer is preselected, so Skip did
+    // exactly what Continue does; the X in the corner is the way out.
     'O01': (context) => PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) OnboardingState.instance.enteredFromSignup = false;
@@ -1300,7 +1631,6 @@ class AppRouter {
       child: GoalView(
         repository: intakeRepository,
         onContinue: () => goTo(context, 'O02'),
-        onSkip: () => goTo(context, 'O02'),
         onBack: () => OnboardingState.instance.leaveSetup(context),
         onClose: () => OnboardingState.instance.leaveSetup(context),
       ),
@@ -1308,21 +1638,34 @@ class AppRouter {
     'O02': (context) => PlaceView(
       repository: intakeRepository,
       onContinue: () => goTo(context, 'O03'),
-      onSkip: () => goTo(context, 'O03'),
       onBack: () => Navigator.of(context).maybePop(),
       onClose: () => OnboardingState.instance.leaveSetup(context),
     ),
-    'O03': (context) => ScheduleView(
-      repository: intakeRepository,
-      onContinue: () => goTo(context, 'O04'),
-      onSkip: () => goTo(context, 'O04'),
-      onBack: () => Navigator.of(context).maybePop(),
-      onClose: () => OnboardingState.instance.leaveSetup(context),
-    ),
+    // Two shapes. The four-question walk (O01 to O05) is unchanged. The short
+    // "Your week" is this one screen with her life stage on it, then O05:
+    // before she has an account (from C01), or after her check when she had
+    // not built her week yet (from C13). Every answer is preselected, so there
+    // is no Skip; before sign-up there is no Home to close to either.
+    'O03': (context) => OnboardingState.instance.shortSetup
+        ? ScheduleView(
+            repository: intakeRepository,
+            includeLifeStage: true,
+            titleOverride: OnboardingState.instance.beforeSignup
+                ? signupPhaseLabel(AppL10n.of(context), SignupPhase.week)
+                : '',
+            continueLabel: AppL10n.of(context).seeMyWeek,
+            onContinue: () => goTo(context, 'O05'),
+            onBack: () => Navigator.of(context).maybePop(),
+          )
+        : ScheduleView(
+            repository: intakeRepository,
+            onContinue: () => goTo(context, 'O04'),
+            onBack: () => Navigator.of(context).maybePop(),
+            onClose: () => OnboardingState.instance.leaveSetup(context),
+          ),
     'O04': (context) => LifeStageView(
       repository: intakeRepository,
       onContinue: () => goTo(context, 'O05'),
-      onSkip: () => goTo(context, 'O05'),
       onBack: () => Navigator.of(context).maybePop(),
       onClose: () => OnboardingState.instance.leaveSetup(context),
     ),
@@ -1332,42 +1675,73 @@ class AppRouter {
     //
     // After sign-up (`enteredFromSignup`) she lands on Home with the sign-up
     // stack cleared: "Start tomorrow" gives `[T01]`, "Start now" `[T01, R03]`.
-    'O05': (context) => StartingProgramView(
-      repository: intakeRepository,
-      onStartNow: () {
-        if (OnboardingState.instance.enteredFromSignup) {
-          OnboardingState.instance.leaveSetupToHome(
-            context,
-            home: 'T01',
-            then: 'R03',
-          );
-          return;
-        }
-        OnboardingState.instance.leaveSetup(context);
-        goTo(context, 'R03');
-      },
-      onStartTomorrow: () {
-        if (OnboardingState.instance.enteredFromSignup) {
-          OnboardingState.instance.leaveSetupToHome(context, home: 'T01');
-          return;
-        }
-        OnboardingState.instance.leaveSetup(context);
-      },
-      // Goes to the workout library, not a picker — no picker exists among
-      // the 161 screens. Recorded as F4 in PHASE1-FINDINGS.md.
-      onPickDifferentProgram: () {
-        if (OnboardingState.instance.enteredFromSignup) {
-          OnboardingState.instance.leaveSetupToHome(
-            context,
-            home: 'T01',
-            then: 'R11',
-          );
-          return;
-        }
-        OnboardingState.instance.leaveSetup(context);
-        goTo(context, 'R11');
-      },
-    ),
+    //
+    // Before sign-up it ends in "Save my week and join": her week is marked
+    // done and her weekly target applied here, on the phone, and then she is
+    // asked for her number. Nothing behind the gate opens.
+    'O05': (context) => OnboardingState.instance.whileWaiting
+        // Built while a reviewer has her check (from C14): saved, and back
+        // to the wait. Day one opens with the app.
+        ? StartingProgramView(
+            repository: intakeRepository,
+            onBack: () => Navigator.of(context).maybePop(),
+            title: '',
+            onSaveMyWeek: () {
+              OnboardingState.instance.finish();
+              // whileWaiting is only set by C14's own button, so C14 is in
+              // the stack: back to it by name, never to whatever is first.
+              Navigator.of(context)
+                  .popUntil(ModalRoute.withName(appRoutes['C14']!.name));
+            },
+          )
+        : OnboardingState.instance.beforeSignup
+        ? StartingProgramView(
+            repository: intakeRepository,
+            beforeSignup: true,
+            title: signupPhaseLabel(AppL10n.of(context), SignupPhase.week),
+            onBack: () => Navigator.of(context).maybePop(),
+            onSaveAndJoin: () {
+              OnboardingState.instance.finish();
+              unawaited(analytics.track(AnalyticsEvent.intakeCompleted));
+              goTo(context, 'C06');
+            },
+          )
+        : StartingProgramView(
+            repository: intakeRepository,
+            onStartNow: () {
+              if (OnboardingState.instance.enteredFromSignup) {
+                OnboardingState.instance.leaveSetupToHome(
+                  context,
+                  home: 'T01',
+                  then: 'R03',
+                );
+                return;
+              }
+              OnboardingState.instance.leaveSetup(context);
+              goTo(context, 'R03');
+            },
+            onStartTomorrow: () {
+              if (OnboardingState.instance.enteredFromSignup) {
+                OnboardingState.instance.leaveSetupToHome(context, home: 'T01');
+                return;
+              }
+              OnboardingState.instance.leaveSetup(context);
+            },
+            // Goes to the workout library, not a picker — no picker exists among
+            // the 161 screens. Recorded as F4 in PHASE1-FINDINGS.md.
+            onPickDifferentProgram: () {
+              if (OnboardingState.instance.enteredFromSignup) {
+                OnboardingState.instance.leaveSetupToHome(
+                  context,
+                  home: 'T01',
+                  then: 'R11',
+                );
+                return;
+              }
+              OnboardingState.instance.leaveSetup(context);
+              goTo(context, 'R11');
+            },
+          ),
 
     // Today. T06 is a state inside T01, never a route. T08 is a state inside
     // T07 too, and is built below anyway: see the note at its entry.
@@ -1410,8 +1784,23 @@ class AppRouter {
       // it is the only screen the design routes to T07 from. Leaving this
       // unwired was why T07 was built, routable, and reachable by nobody.
       onOpenFirstWeek: () => goTo(context, 'T07'),
-      onTellUsWhatYouEat: () => goTo(context, 'E02'),
+      // Eat, where day one offers one-tap starter plates. It opened E02, a
+      // blank field to type into, which is the slowest way to log a meal.
+      onTellUsWhatYouEat: () => goTo(context, 'E01'),
       onOpenBeginnersGroup: () => goTo(context, 'M01'),
+      // Day one names her week and offers the two things she came for besides
+      // training: planning dinners, and her cycle.
+      intake: intakeRepository.read(),
+      intakePlaceAnswered: intakeRepository.placeAnswered,
+      onOpenWeekPlan: () => goTo(context, 'E07'),
+      offerCycleSetup:
+          cycleRepository.current == null &&
+          !OnboardingState.instance.cycleRowDismissed,
+      onTrackCycle: () => goTo(context, 'Y01'),
+      onNotNowCycle: () {
+        OnboardingState.instance.cycleRowDismissed = true;
+        AppChanges.bump();
+      },
       // The bottom bar on the app's landing tab. Without this, TodayView's
       // AppNavBar had nothing to call and tapping Train, Community or Eat from
       // Home did nothing at all — on the first screen she sees after sign-up.
@@ -1544,10 +1933,20 @@ class AppRouter {
     ),
     'R03': (context) => WorkoutDayView(
       repository: trainRepository,
+      // Pregnant or after a birth: day one was not written for her, and the
+      // screen says so before she starts.
+      lifeStage: intakeRepository.read().lifeStage,
       onBack: () => Navigator.of(context).maybePop(),
       // Starts the session this screen is listing, so R07 opens on its first
       // move and its first set rather than on a fixed example.
       onStart: () {
+        unawaited(
+          analytics.track(AnalyticsEvent.sessionStarted, {
+            AnalyticsProp.isFirstTime: AnalyticsValue.flag(
+              todayRepository.day.isDayOne,
+            ),
+          }),
+        );
         WorkoutSessionState.instance.start(
           sampleWorkoutDay(AppL10n.of(context)),
           trainRepository,
@@ -1681,8 +2080,22 @@ class AppRouter {
       sessionsThisWeek: todayRepository.day.week.sessionsLogged,
       sessionsPrescribed: todayRepository.day.week.sessionsTarget,
       levelProgressPercent: _levelProgressPercent,
-      onBackToToday: () => goTo(context, 'T01'),
+      // Home with the session's screens cleared, so a back gesture from Home
+      // does not walk back through the finished workout.
+      onBackToToday: () =>
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false),
+      onPlanDinners: () => goTo(context, 'E07'),
       onShare: () => goTo(context, 'M03'),
+      // Reminders on her training days, offered once, after a session she
+      // finished. "Not now" is an answer: the offer is not made again, and
+      // Notifications (A01) keeps the way in.
+      offerReminders: ReminderState.instance.offerDue,
+      onChooseReminderDays: () => unawaited(openTrainingReminders(context)),
+      onDismissReminderOffer: () {
+        ReminderState.instance.offered = true;
+        AppChanges.bump();
+      },
     ),
     // The row she taps is the session she gets.
     //
@@ -1724,6 +2137,7 @@ class AppRouter {
       repository: mealRepository,
       session: EatAppState.instance.session,
       onOpenRecipes: () => goTo(context, 'E05'),
+      onOpenWeekPlan: () => goTo(context, 'E07'),
       onType: () => goTo(context, 'E02'),
       onSpeak: () => goTo(context, 'E03'),
       onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
@@ -1759,6 +2173,7 @@ class AppRouter {
       session: EatAppState.instance.session,
       justLogged: handleFrom(context),
       onOpenRecipes: () => goTo(context, 'E05'),
+      onOpenWeekPlan: () => goTo(context, 'E07'),
       onType: () => goTo(context, 'E02'),
       onSpeak: () => goTo(context, 'E03'),
       onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
@@ -1785,6 +2200,26 @@ class AppRouter {
       },
       onOpenWeekPlan: () => goTo(context, 'E07'),
       onSelectTab: (screenId) => goTo(context, screenId),
+      // Pick mode, opened from a day on E07: the recipe she taps goes on that
+      // day, and she is back on the week.
+      pickLabel: switch (_pickDayOf(context)) {
+        final day? => AppL10n.of(
+          context,
+        ).pickADinnerForDay(weekdayLabelFor(AppL10n.of(context), day)),
+        null => null,
+      },
+      onPick: switch (_pickDayOf(context)) {
+        final day? => (recipeId) async {
+          final navigator = Navigator.of(context);
+          await mealRepository.swapDinner(
+            weekId: WeekKey.of(AppClock.now()).id,
+            day: day,
+            recipeId: recipeId,
+          );
+          if (navigator.mounted) navigator.maybePop();
+        },
+        null => null,
+      },
     ),
     // One route, two pages, because they are two different kinds of thing.
     //
@@ -1823,6 +2258,14 @@ class AppRouter {
         ),
     'E07': (context) => WeekPlanView(
       repository: mealRepository,
+      // A day is chosen on E05 in pick mode; the week reads itself again
+      // once she is back.
+      onPickDinner: (day) => Navigator.of(
+        context,
+      ).pushNamed(appRoutes['E05']!.name, arguments: day),
+      fillFrom: rahmaDinners(),
+      recipeTitle: (recipeId) =>
+          EatAppState.instance.recipeBook.byId(recipeId)?.titleEn,
       onBack: () => Navigator.of(context).maybePop(),
       onOpenRecipe: (recipeId) {
         EatAppState.instance.openRecipeId = recipeId;
@@ -1948,6 +2391,10 @@ class AppRouter {
       // less reachable: privacy is still two taps from Home.
       onOpenSettings: () => goTo(context, 'A02'),
       onSelectTab: (screenId) => goTo(context, screenId),
+      remindersOn: ReminderState.instance.schedule != null,
+      onOpenReminders: featureFlags.isOn(Feature.train)
+          ? () => unawaited(openTrainingReminders(context))
+          : null,
     ),
     'A02': (context) => ProfileView(
       dietaryRepository: dietaryRepository,
@@ -1977,7 +2424,11 @@ class AppRouter {
       // Setup from her profile never ends on Home: whatever an earlier walk
       // left in the sign-up flag, this one did not come from sign-up (N15).
       onOpenTraining: () {
-        OnboardingState.instance.enteredFromSignup = false;
+        OnboardingState.instance
+          ..enteredFromSignup = false
+          ..shortSetupAfterSignup = false
+          ..beforeSignup = false
+          ..whileWaiting = false;
         goTo(context, 'O01');
       },
       onOpenLanguage: () => goTo(context, 'C02'),
@@ -1989,36 +2440,7 @@ class AppRouter {
       // stores require an action. It is a sheet rather than a destination:
       // there is no screen id for deletion among the 161, and HANDOFF rule 16
       // forbids minting one for a state.
-      onOpenYourData: () {
-        // All three captured before the sheet opens: after the pop below this
-        // builder's context is gone, while the navigator and the messenger
-        // both live above it and survive.
-        final navigator = Navigator.of(context);
-        final messenger = ScaffoldMessenger.maybeOf(context);
-        final gone = AppL10n.of(context).yourDataIsGoneTheAppIs;
-        final unfinished = AppL10n.of(context).yourDeletionDidNotFinishOnOur;
-        unawaited(
-          showYourDataSheet(
-            context,
-            // The server deletion when there is an account, and this phone
-            // always once the server has the request. See `deleteAccount`.
-            onDelete: deleteAccount,
-            hasAccount: FirebaseBoot.isReady && signedInUid != null,
-          ).then((result) {
-            if (result == null || !navigator.mounted) return;
-            // Day one, literally: everything she opened on the way here is
-            // about data that no longer exists, so the stack goes with it.
-            // The front door is computed now, after the wipe: Home while no
-            // account is required, C01 when one is (R2). Popping to the first
-            // route used to leave her on Home with the gate still open.
-            navigator.pushNamedAndRemoveUntil(frontDoor, (_) => false);
-            showHonestNoticeOn(
-              messenger,
-              result == AccountDeletionResult.done ? gone : unfinished,
-            );
-          }),
-        );
-      },
+      onOpenYourData: () => openYourData(context),
       // Every screen, one tap away, in a build that is not going to a store.
       onOpenAllScreens: !testingAidsAllowed
           ? null
@@ -2033,12 +2455,15 @@ class AppRouter {
       onOpenCycleSharing: () => goTo(context, 'Y12'),
       // The published pages. Both stores want the policy reachable from inside
       // the app; the rows only exist once `LegalLinks` has an address.
-      onOpenPrivacyPolicy: () =>
-          unawaited(openExternalLink(context, LegalLinks.privacyPolicy)),
-      onOpenTerms: () => unawaited(openExternalLink(context, LegalLinks.terms)),
+      // In her language: the Arabic pages live under /ar/.
+      onOpenPrivacyPolicy: openPrivacyFor(context),
+      onOpenTerms: openTermsFor(context),
       onSelectTab: (screenId) => goTo(context, screenId),
       healthBackup: healthBackupController(),
       onSignInAgain: () => unawaited(signInAgain(context)),
+      // Crash reports by consent (M3), off unless she allowed them.
+      crashReportsAllowed: CrashConsent.instance.allowed,
+      onCrashReportsChanged: CrashConsent.instance.set,
     ),
     // Four of A04's five rows drew a chevron and had no callback at all, which
     // on the safety screen is the worst place in the product for a control
@@ -2360,8 +2785,9 @@ class AppRouter {
         unawaited(CycleAppState.instance.afterSetUp());
         goTo(context, 'Y03');
       },
-      // Skipping costs nothing, and lands her back on Home.
-      onSkip: () => goTo(context, 'T01'),
+      // Skipping costs nothing, and lands her back where she came from. It
+      // pushed a second Home on top of the first.
+      onSkip: () => Navigator.of(context).maybePop(),
     ),
     'Y02': (context) => CycleDatesView(
       repository: cycleRepository,
@@ -2517,14 +2943,14 @@ class AppRouter {
     ),
     'Y08': (context) => CycleCalendarView(
       cycle: cycleRepository.current,
-      year: DateTime.now().year,
-      month: DateTime.now().month,
+      year: AppClock.now().year,
+      month: AppClock.now().month,
       // The calendar drew no logged days and no check-in days at all, because
       // neither list was ever passed.
       periods: periodsSoFar,
       checkInDays: todayCheckIn == TodayCheckIn.absent
           ? const <String>{}
-          : <String>{dayId(DateTime.now())},
+          : <String>{dayId(AppClock.now())},
       onBack: () => Navigator.of(context).maybePop(),
       onSettings: () => goTo(context, 'Y12'),
       onLogPeriod: () => goTo(context, 'Y09'),
@@ -2561,7 +2987,7 @@ class AppRouter {
       recentStarts: cycleRepository.current?.recentStarts ?? const <String>[],
       checkIns: todayCheckIn == TodayCheckIn.absent
           ? const <String, TodayCheckIn>{}
-          : <String, TodayCheckIn>{dayId(DateTime.now()): todayCheckIn},
+          : <String, TodayCheckIn>{dayId(AppClock.now()): todayCheckIn},
       easierWhenLowEnergy:
           cycleRepository.current?.adaptation.easierWhenLowEnergy ?? false,
       onBack: () => Navigator.of(context).maybePop(),
@@ -2620,7 +3046,18 @@ class AppRouter {
     // and change nothing on screen, which is worse than a control that
     // visibly does not work. They arrive with the state holder these screens
     // need, not before it.
-    'M01': (context) => FeedView(
+    // The rules come first. A woman who has not agreed to them (C16) is shown
+    // them in place of the feed, and the feed takes their place once she
+    // agrees: nothing in the community is open before that.
+    'M01': (context) => !PledgeState.instance.agreed
+        ? PledgeView(
+            onAgree: () {
+              recordPledge(context);
+              AppChanges.bump();
+            },
+            onBack: () => Navigator.of(context).maybePop(),
+          )
+        : FeedView(
       model: communityFeedModel(AppL10n.of(context)),
       // The only way this screen re-reads. There is no listener in community
       // by design, so refreshing is her gesture and nothing else.
@@ -2988,7 +3425,11 @@ class AppRouter {
     // capacity of ninety is refused here too.
     'K01': (context) => CoachBasicsView(
       model: coachSetupModel,
+      // The community's three rules, agreed here rather than on C16: a coach
+      // goes from C13 straight to this screen (R1-P16).
+      rulesAgreed: PledgeState.instance.agreed,
       onContinue: () {
+        if (!PledgeState.instance.agreed) recordPledge(context);
         CoachProfileState.instance.saveSetup();
         goTo(context, 'K02');
       },
@@ -3001,18 +3442,20 @@ class AppRouter {
     'K02': (context) => CoachCertificatesView(
       model: coachSetupModel,
       now: DateTime.now(),
-      // In test mode a certificate is recorded without a photo — there is no
-      // file picker here — and `K02` draws the row as a test that nobody has
-      // reviewed. With an account required this is null and the row is inert.
+      // A photo of the certificate, taken live and sent for a woman reviewer
+      // (R1-P15). In a build with testing aids a certificate is recorded
+      // without one, and `K02` draws the row as a test nobody has reviewed.
       onAddCertificate: CoachProfileState.isTestMode
           ? (credentialId) =>
                 CoachProfileState.instance.addTestCertificate(credentialId)
-          : null,
+          : (credentialId) =>
+                unawaited(addCertificatePhoto(context, credentialId)),
       onContinue: () {
         CoachProfileState.instance.saveSetup();
         goTo(context, 'K03');
       },
-      onBack: () => goTo(context, 'K01'),
+      // Back is back: K01 is already under this screen (M3).
+      onBack: () => Navigator.of(context).maybePop(),
       onSaveAndClose: () {
         CoachProfileState.instance.saveSetup();
         goTo(context, 'K07');
@@ -3024,7 +3467,7 @@ class AppRouter {
         CoachProfileState.instance.saveSetup();
         goTo(context, 'K04');
       },
-      onBack: () => goTo(context, 'K02'),
+      onBack: () => Navigator.of(context).maybePop(),
       onSaveAndClose: () {
         CoachProfileState.instance.saveSetup();
         goTo(context, 'K07');
@@ -3041,7 +3484,7 @@ class AppRouter {
         CoachProfileState.instance.saveSetup();
         goTo(context, 'K05');
       },
-      onBack: () => goTo(context, 'K03'),
+      onBack: () => Navigator.of(context).maybePop(),
       onSaveAndClose: () {
         CoachProfileState.instance.saveSetup();
         goTo(context, 'K07');
@@ -3061,7 +3504,13 @@ class AppRouter {
         CoachProfileState.instance.completeSetup();
         goTo(context, 'K06');
       },
-      onBack: () => goTo(context, 'K04'),
+      // "Add payout later": the application goes in without a payout method,
+      // which she adds before she can be paid (R1-P15).
+      onPayoutLater: () {
+        CoachProfileState.instance.completeSetup(payoutLater: true);
+        goTo(context, 'K06');
+      },
+      onBack: () => Navigator.of(context).maybePop(),
       onSaveAndClose: () {
         CoachProfileState.instance.saveSetup();
         goTo(context, 'K07');
@@ -3092,6 +3541,14 @@ class AppRouter {
       onOpenPortfolio: () => goTo(context, 'B01'),
       onOpenPublicProfile: () => goTo(context, 'K18'),
       onOpenFirstWeek: () => goTo(context, 'K25'),
+      // K06's promise kept on her desk: she builds while she is checked.
+      onBuildFirstPlan: () => goTo(context, 'K20'),
+      // Her code for a woman she already coaches. Only once she may accept
+      // a client: the server mints no code before then (R1-P18).
+      onInviteClient:
+          coachRepository.profileUnbilled.verification.mayAcceptClients
+          ? () => unawaited(shareCoachInvite(context))
+          : null,
       // A row on her desk leads somewhere different depending on why it is
       // waiting, and the row only hands back its relationship id — so the
       // reason is looked up here and each arm carries its own literal. A
@@ -4495,8 +4952,46 @@ class AppRouter {
   ) {
     final route = appDestinations[screenId];
     if (route == null) return;
+    // Every meal she logs, from Home or from Eat, arrives on E04 through here.
+    // Her first is the one held while Home is still on day one: the write is
+    // in its five-second undo window as this runs.
+    if (screenId == 'E04') {
+      unawaited(
+        analytics.track(AnalyticsEvent.mealLogged, {
+          AnalyticsProp.isFirstTime: AnalyticsValue.flag(
+            todayRepository.day.isDayOne,
+          ),
+        }),
+      );
+    }
     Navigator.of(context).pushNamed(route.name, arguments: handle);
   }
+
+  /// One coarse word per liveness start, from a closed vocabulary. A refused
+  /// account or an open review is `other`: that is a verification state, and
+  /// verification results never reach analytics.
+  static void _trackLivenessStart(LivenessStart started) => unawaited(
+    analytics.track(AnalyticsEvent.livenessStartOutcome, {
+      AnalyticsProp.outcome: AnalyticsValue.token(livenessStartToken(started)),
+    }),
+  );
+
+  /// The word [_trackLivenessStart] sends for [started].
+  @visibleForTesting
+  static String livenessStartToken(LivenessStart started) => switch (started) {
+    LivenessStart.started => 'started',
+    LivenessStart.offline => 'offline',
+    LivenessStart.failed => 'failed',
+    LivenessStart.tryTomorrow || LivenessStart.checksUsedUp => 'limit',
+    _ => 'other',
+  };
+
+  /// The check's outcome as a token: verified, reviewer, retake or rejected.
+  static void _trackDecided(String outcome) => unawaited(
+    analytics.track(AnalyticsEvent.verificationDecided, {
+      AnalyticsProp.outcome: AnalyticsValue.token(outcome),
+    }),
+  );
 
   /// The handle for the route currently being built, if it was pushed with one.
   static LogHandle? handleFrom(BuildContext context) {
@@ -4637,27 +5132,275 @@ class AppRouter {
     }
   }
 
+  // ------------------------------------------- Terms and Privacy (M1)
+
+  /// The navigator of the running app, for the one sheet that can arrive
+  /// from outside any screen: the legal update at launch. Set by the app's
+  /// own state, one key per app, so a second app built in the same process
+  /// (a test) gets a fresh navigator rather than the first one's.
+  static GlobalKey<NavigatorState>? navigatorKey;
+
+  /// Where acceptances are recorded. The callable when Firebase is up, an
+  /// in-memory store otherwise. Replaced in tests.
+  @visibleForTesting
+  static LegalAcceptanceStore? legalStoreOverride;
+
+  static LegalAcceptanceStore get legalStore =>
+      legalStoreOverride ??
+      (FirebaseBoot.isReady
+          ? CallableLegalAcceptanceStore()
+          : _localLegalStore);
+
+  static final InMemoryLegalAcceptanceStore _localLegalStore =
+      InMemoryLegalAcceptanceStore();
+
+  /// True when the signed-in account has not accepted the Terms and Privacy
+  /// Policy in force, so the legal update sheet must be answered.
+  static bool legalUpdateDue = false;
+
+  /// Sends a pending acceptance, or asks the server whether she has
+  /// accepted the versions in force. Does nothing signed out or without a
+  /// back end, and never fails: not knowing is asked again next time.
+  static Future<void> reconcileLegal() async {
+    final uid = signedInUid;
+    if (uid == null || (!FirebaseBoot.isReady && legalStoreOverride == null)) {
+      return;
+    }
+    final status = await reconcileLegalAcceptance(
+      store: legalStore,
+      uid: uid,
+    ).timeout(const Duration(seconds: 10), onTimeout: () => LegalStatus.unknown);
+    legalUpdateDue = status == LegalStatus.needsAgreement;
+  }
+
+  /// The two documents in her language, or null while they have no address.
+  static VoidCallback? openTermsFor(BuildContext context) =>
+      LegalLinks.terms.isEmpty
+      ? null
+      : () => unawaited(
+          openExternalLink(
+            context,
+            LegalLinks.localised(
+              LegalLinks.terms,
+              Localizations.localeOf(context).languageCode,
+            ),
+          ),
+        );
+
+  static VoidCallback? openPrivacyFor(BuildContext context) =>
+      LegalLinks.privacyPolicy.isEmpty
+      ? null
+      : () => unawaited(
+          openExternalLink(
+            context,
+            LegalLinks.localised(
+              LegalLinks.privacyPolicy,
+              Localizations.localeOf(context).languageCode,
+            ),
+          ),
+        );
+
+  /// The legal update sheet, when it is due. True when she may go on: it was
+  /// not due, or she agreed. False when she chose to delete her account
+  /// instead, in which case Your data is open.
+  static Future<bool> answerLegalUpdate(BuildContext context) async {
+    if (!legalUpdateDue) return true;
+    final locale = Localizations.localeOf(context).languageCode;
+    final agreed = await showLegalUpdateSheet(
+      context,
+      onOpenTerms: openTermsFor(context),
+      onOpenPrivacy: openPrivacyFor(context),
+      onAgree: () async {
+        try {
+          await legalStore.record(LegalAcceptance.now(locale));
+          await PendingLegalAcceptance.erase();
+          legalUpdateDue = false;
+          return true;
+        } catch (_) {
+          return false;
+        }
+      },
+    );
+    if (!agreed && context.mounted) openYourData(context);
+    return agreed;
+  }
+
+  /// At launch, for a signed-in woman: the pending acceptance is sent, and
+  /// the sheet is shown over whatever opened if the versions in force are
+  /// not accepted. Not awaited by the launch: the first frame never waits on
+  /// the network.
+  static Future<void> checkLegalAtLaunch() async {
+    await reconcileLegal();
+    if (!legalUpdateDue) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = navigatorKey?.currentState?.overlay?.context;
+      if (context == null || !legalUpdateDue) return;
+      unawaited(answerLegalUpdate(context));
+    });
+  }
+
   /// The app's own first screen, computed at the moment it is asked for.
   ///
   /// With an account required, the welcome screen (C01) is for a woman with
   /// no account and no verification on this phone. A verified woman opens on
   /// Home, and a signed-in one who is not verified yet also asks for Home,
   /// where the gate sends her to the check (C09) or to C14.
+  ///
+  /// A woman looking at the coach side (a coach only, or one who switched to
+  /// it) opens on her own side once she is in: `K01` until her setup has been
+  /// submitted, her desk (`K07`) after (R1-P17). Only while the coach app is
+  /// on.
   static String get frontDoor => frontDoorFor(
     accountRequired: featureFlags.isOn(Feature.accountRequired),
     verified: isVerified,
     signedIn: signedInUid != null,
+    coachSide:
+        featureFlags.isOn(Feature.coachApp) &&
+        RoleState.instance.roles?.active == AppRole.coach,
+    coachSetupDone: CoachProfileState.instance.isSetupComplete,
   );
 
-  /// [frontDoor] as a function of the three facts it turns on.
+  /// [frontDoor] as a function of the facts it turns on.
   @visibleForTesting
   static String frontDoorFor({
     required bool accountRequired,
     required bool verified,
     required bool signedIn,
-  }) => accountRequired && !verified && !signedIn
-      ? appRoutes['C01']!.name
-      : appRoutes['T01']!.name;
+    bool coachSide = false,
+    bool coachSetupDone = false,
+  }) {
+    if (accountRequired && !verified && !signedIn) {
+      return appRoutes['C01']!.name;
+    }
+    // Signed in and not verified yet: Home, where the gate holds her at the
+    // check whichever side she chose.
+    if (coachSide && (verified || !accountRequired)) {
+      return coachSetupDone ? appRoutes['K07']!.name : appRoutes['K01']!.name;
+    }
+    return appRoutes['T01']!.name;
+  }
+
+  // ------------------------------------------------ roles and invites
+
+  /// Where her role choice is recorded and read back (R1-P17). The callable
+  /// and her user document when Firebase is up, memory otherwise.
+  @visibleForTesting
+  static RoleRecordStore? roleRecordStoreOverride;
+
+  static RoleRecordStore get roleRecordStore =>
+      roleRecordStoreOverride ??
+      (FirebaseBoot.isReady ? FirebaseRoleRecordStore() : _localRoleStore);
+
+  static final InMemoryRoleRecordStore _localRoleStore =
+      InMemoryRoleRecordStore();
+
+  /// A verified woman whose phone has no roles: the server's copy, if it has
+  /// one, becomes hers. Bounded inside the store; never throws.
+  static Future<void> restoreRolesFromServer(BuildContext context) async {
+    final uid = signedInUid;
+    if (uid == null ||
+        !featureFlags.isOn(Feature.coachApp) ||
+        RoleState.instance.roles != null) {
+      return;
+    }
+    final scope = RoleScope.maybeOf(context);
+    final kept = await roleRecordStore.read(uid);
+    if (kept == null) return;
+    RoleState.instance.keep(kept);
+    scope?.value = kept;
+  }
+
+  /// Invite codes: hers to share as a coach, or hers to redeem (R1-P18).
+  @visibleForTesting
+  static CoachInviteStore? coachInviteStoreOverride;
+
+  static CoachInviteStore get coachInviteStore =>
+      coachInviteStoreOverride ??
+      (FirebaseBoot.isReady ? CallableCoachInviteStore() : _localInviteStore);
+
+  static final InMemoryCoachInviteStore _localInviteStore =
+      InMemoryCoachInviteStore();
+
+  /// `C01`: the code her coach sent, kept on this phone until she is in.
+  static Future<void> keepInviteCode(BuildContext context) async {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final saved = AppL10n.of(context).savedOnceYouAreInWeWill;
+    final code = await showInviteCodeSheet(
+      context,
+      initial: CoachInviteState.instance.pendingCode,
+    );
+    if (code == null) return;
+    CoachInviteState.instance.keepPending(code);
+    showHonestNoticeOn(messenger, saved);
+  }
+
+  /// Once she has passed the check, the code she kept is redeemed once (see
+  /// [CoachInviteState.redeem]) and she is told how it went.
+  static Future<void> redeemPendingInvite() async {
+    final outcome = await CoachInviteState.instance.redeem(
+      coachInviteStore,
+      allowed:
+          featureFlags.isOn(Feature.coachApp) &&
+          isVerified &&
+          signedInUid != null,
+    );
+    if (outcome == null || outcome == InviteRedemption.unreachable) return;
+    final context = navigatorKey?.currentState?.overlay?.context;
+    if (context == null || !context.mounted) return;
+    final l10n = AppL10n.of(context);
+    showHonestNotice(
+      context,
+      outcome == InviteRedemption.linked
+          ? l10n.yourCoachHasYourRequest
+          : l10n.yourCoachsCodeDidNotWorkAsk,
+    );
+  }
+
+  /// `K07`'s "Invite a client": her code, in a WhatsApp message she sends to
+  /// whoever she chooses. Said plainly when it cannot be made or opened.
+  static Future<void> shareCoachInvite(BuildContext context) async {
+    final l10n = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final String code;
+    try {
+      code = await coachInviteStore.create();
+    } catch (_) {
+      showHonestNoticeOn(messenger, l10n.weCouldNotMakeYourCodeTry);
+      return;
+    }
+    final shown = displayInviteCode(code);
+    final opened = await openOutside(
+      whatsAppShareUri(l10n.joinMeOnOwnHubTheTraining(shown)),
+    );
+    if (!opened) {
+      showHonestNoticeOn(messenger, l10n.weCouldNotOpenWhatsappYourCode(shown));
+    }
+  }
+
+  /// `K02`: the camera, then the upload, then a word if it did not go.
+  static Future<void> addCertificatePhoto(
+    BuildContext context,
+    String credentialId,
+  ) async {
+    final l10n = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final jpeg = await photographCertificate(context);
+    if (jpeg == null) return;
+    final result = await CoachProfileState.instance.submitCertificatePhoto(
+      credentialId: credentialId,
+      jpeg: jpeg,
+      signedInUid: signedInUid,
+    );
+    switch (result) {
+      case CertificateSubmission.sent:
+        return;
+      case CertificateSubmission.refused:
+        showHonestNoticeOn(messenger, l10n.coachingIsNotOpenYetSoYour);
+      case CertificateSubmission.unreachable:
+      case CertificateSubmission.invalid:
+        showHonestNoticeOn(messenger, l10n.weCouldNotSendYourCertificateCheck);
+    }
+  }
 
   /// The server said she is approved (C14 live update, or C15 hearing
   /// "already verified"). That opens the product by itself ([isVerified]);
@@ -4692,6 +5435,68 @@ class AppRouter {
     );
     unawaited(navigator.pushNamed(appRoutes['C06']!.name));
   }
+
+  /// A02's "Your data" sheet, also opened by "Delete my account instead" on
+  /// the legal update sheet.
+  static void openYourData(BuildContext context) {
+    // All three captured before the sheet opens: after the pop below this
+    // builder's context is gone, while the navigator and the messenger
+    // both live above it and survive.
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final gone = AppL10n.of(context).yourDataIsGoneTheAppIs;
+    final unfinished = AppL10n.of(context).yourDeletionDidNotFinishOnOur;
+    unawaited(
+      showYourDataSheet(
+        context,
+        // The server deletion when there is an account, and this phone
+        // always once the server has the request. See `deleteAccount`.
+        onDelete: deleteAccount,
+        hasAccount: FirebaseBoot.isReady && signedInUid != null,
+        onOpenPrivacy: openPrivacyFor(context),
+        onAskForCopy: askForACopyFor(context),
+      ).then((result) {
+        if (result == null || !navigator.mounted) return;
+        // Day one, literally: everything she opened on the way here is
+        // about data that no longer exists, so the stack goes with it.
+        // The front door is computed now, after the wipe: Home while no
+        // account is required, C01 when one is (R2). Popping to the first
+        // route used to leave her on Home with the gate still open.
+        legalUpdateDue = false;
+        navigator.pushNamedAndRemoveUntil(frontDoor, (_) => false);
+        showHonestNoticeOn(
+          messenger,
+          result == AccountDeletionResult.done ? gone : unfinished,
+        );
+      }),
+    );
+  }
+
+  /// "Ask for a copy" (M8): an email to the privacy mailbox, in her
+  /// language, asking only for the phone number on the account. Null when
+  /// there is no mailbox.
+  static VoidCallback? askForACopyFor(BuildContext context) {
+    if (LegalLinks.privacyEmail.isEmpty) return null;
+    final l10n = AppL10n.of(context);
+    final uri = Uri(
+      scheme: 'mailto',
+      path: LegalLinks.privacyEmail,
+      query: _mailQuery({
+        'subject': l10n.copyOfMyOwnHubData,
+        'body': '${l10n.thePhoneNumberOnMyAccount} ',
+      }),
+    );
+    return () => unawaited(openExternalLink(context, uri.toString()));
+  }
+
+  /// A mailto query with spaces as %20, which every mail app reads (a `+`
+  /// is shown literally by some).
+  static String _mailQuery(Map<String, String> fields) => fields.entries
+      .map(
+        (e) =>
+            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+      )
+      .join('&');
 
   static String? get signedInUid => switch (authRepository.current) {
     AuthSignedIn(:final uid) => uid,
@@ -4728,6 +5533,7 @@ class AppRouter {
   static void beginIdentityCheck() {
     _identityCheck?.abandon();
     _identityCheck = _newIdentityCheck();
+    _livenessOffline = 0;
     consentRecorded = false;
     awaitingReviewer = false;
     // A new attempt can raise a new flag; she asks for that call afresh.
@@ -4786,6 +5592,10 @@ class AppRouter {
   /// structurally rather than by promise.
   static const Set<String> _opensALens = {'C10', 'C10b', 'C11'};
 
+  /// Liveness starts in this attempt that failed for want of a network. The
+  /// reviewer is offered beside "Try again" from the third.
+  static int _livenessOffline = 0;
+
   /// Whether her agreement has been written down in this sign-up.
   ///
   /// The screen that writes it is `C09b`, and it only reports back once the
@@ -4813,8 +5623,127 @@ class AppRouter {
   /// nothing. See `features/signup/domain/server_verification.dart`.
   static ServerVerification? serverVerification;
 
+  /// The route argument `C09` pushes `C09b` with, so `C09b` does not repeat
+  /// the promise she has just read.
+  static const String _fromWhyWeCheck = 'fromWhyWeCheck';
+
+  /// Where `record_pledge` goes. Firebase's when it is up; with no back end
+  /// the agreement stays on this phone. Replaceable in tests.
+  static PledgeStore? _pledgeStore;
+  static PledgeStore get pledgeStore => _pledgeStore ??= FirebaseBoot.isReady
+      ? CallablePledgeStore()
+      : const LocalOnlyPledgeStore();
+  @visibleForTesting
+  static set pledgeStore(PledgeStore? value) => _pledgeStore = value;
+
+  /// She agreed to the community's rules: kept on this phone at once, and
+  /// sent to the server when she is signed in. The phone's record is what
+  /// opens the community; the server's is the dated consent record, and a
+  /// call that fails is not retried.
+  static void recordPledge(BuildContext context) {
+    PledgeState.instance.agree();
+    final locale = Localizations.localeOf(context).languageCode;
+    if (signedInUid != null) {
+      unawaited(
+        pledgeStore.record(locale: locale).catchError((Object _) {}),
+      );
+    }
+  }
+
+  /// Schedules her training reminders on this phone. The plugin on a phone,
+  /// nothing in a test or on a desktop. Replaceable in tests.
+  static ReminderScheduler? _reminderScheduler;
+  static ReminderScheduler get reminderScheduler =>
+      _reminderScheduler ??= ReminderScheduler.forPlatform();
+  static set reminderScheduler(ReminderScheduler? value) =>
+      _reminderScheduler = value;
+
+  /// The words a reminder carries, in [l10n]'s language.
+  static ReminderText reminderText(AppL10n l10n) => ReminderText(
+    title: 'Own Hub',
+    body: l10n.yourSessionIsReadyWhenYouAre,
+    channelName: l10n.trainingReminders,
+    channelDescription: l10n.aNoteOnTheDaysYouChose,
+  );
+
+  /// The training reminders sheet, from `R10` or `A01`.
+  ///
+  /// Opening it answers `R10`'s offer, whatever she does next. Permission is
+  /// asked when she taps "Remind me" and nowhere else; her days are kept only
+  /// once the phone has agreed to show them, so the app never says reminders
+  /// are on while the phone blocks every one.
+  static Future<void> openTrainingReminders(BuildContext context) async {
+    final state = ReminderState.instance;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final l10n = AppL10n.of(context);
+    state.offered = true;
+    AppChanges.bump();
+    await showReminderSheet(
+      context,
+      sessionsAWeek: todayRepository.day.week.sessionsTarget,
+      current: state.schedule,
+      onSave: (reminders) async {
+        final permission = await reminderScheduler.requestPermission();
+        if (permission != ReminderPermission.granted) return permission;
+        try {
+          await reminderScheduler.schedule(reminders, reminderText(l10n));
+        } catch (_) {
+          return ReminderPermission.unavailable;
+        }
+        state.schedule = reminders;
+        AppChanges.bump();
+        showHonestNoticeOn(messenger, l10n.remindersAreOn);
+        return ReminderPermission.granted;
+      },
+      onTurnOff: () async {
+        state.schedule = null;
+        AppChanges.bump();
+        try {
+          await reminderScheduler.cancel();
+        } catch (_) {}
+        showHonestNoticeOn(messenger, l10n.remindersAreOff);
+      },
+      onOpenSettings: () => unawaited(openAppSettings()),
+    );
+  }
+
+  /// Sets her reminders again at launch, in the language the app opens in.
+  /// The phone keeps them by itself; this repairs a restored backup, a new
+  /// time zone or a changed language. Asks for nothing.
+  static Future<void> reapplyTrainingReminders(AppL10n l10n) async {
+    final reminders = ReminderState.instance.schedule;
+    if (reminders == null) return;
+    try {
+      await reminderScheduler.schedule(reminders, reminderText(l10n));
+    } catch (_) {}
+  }
+
+  /// Registers this phone for the approval push (`C14`). Firebase's when it
+  /// is up, else one that says push cannot reach this phone. Replaceable in
+  /// tests.
+  static PushRegistrar? _pushRegistrar;
+  static PushRegistrar get pushRegistrar => _pushRegistrar ??=
+      FirebaseBoot.isReady
+      ? FirebasePushRegistrar()
+      : const UnavailablePushRegistrar();
+  @visibleForTesting
+  static set pushRegistrar(PushRegistrar? value) => _pushRegistrar = value;
+
   /// Which way she reached `C15`, sent to `request_review`.
-  static ReviewPath pendingReviewPath = ReviewPath.niqab;
+  ///
+  /// Setting it clears [reviewAskedWhileChecking], so only the slow-check
+  /// button on `C12`, which sets that flag after this, ever leaves it on.
+  static ReviewPath get pendingReviewPath => _pendingReviewPath;
+  static set pendingReviewPath(ReviewPath path) {
+    _pendingReviewPath = path;
+    reviewAskedWhileChecking = false;
+  }
+
+  static ReviewPath _pendingReviewPath = ReviewPath.niqab;
+
+  /// True when she asked for a reviewer from a slow `C12`, while her check
+  /// was still running. `C15` then does not say the check "could not start".
+  static bool reviewAskedWhileChecking = false;
 
   /// Whether she has asked for a reviewer's call (C15, or "Ask for the call"
   /// on C14). A flag the automatic check raised by itself is not her asking:
@@ -4899,6 +5828,7 @@ class AppRouter {
     final check = identityCheck;
     if (!_automaticSubmitted) {
       _automaticSubmitted = true;
+      unawaited(analytics.track(AnalyticsEvent.verificationSubmitted));
       // Not awaited: `submit` returns the state to show *while* the check runs
       // and `C12` is already listening for the outcome.
       unawaited(
@@ -5131,7 +6061,7 @@ class AppRouter {
     rewards: progressStore.rewards,
     // This week's own document, so P01 counts the sessions she actually
     // logged. Without it P01 said "0 of 3" to a woman whose Home said 1.
-    currentWeek: progressStore.weeks[WeekKey.of(DateTime.now()).id],
+    currentWeek: progressStore.weeks[WeekKey.of(AppClock.now()).id],
     // The same catalogue P02 renders, so P01's tile and P02's list cannot
     // disagree about how many milestones exist — the failure that put "Level 7"
     // on Home while Progress showed no tier at all.
@@ -5141,11 +6071,32 @@ class AppRouter {
   /// Seeded with this week's plan, so E07 and E08 have something to draw.
   static final InMemoryMealRepository mealRepository = InMemoryMealRepository(
     plans: {
-      WeekKey.of(DateTime.now()).id: sampleMealPlan(
-        WeekKey.of(DateTime.now()).id,
+      WeekKey.of(AppClock.now()).id: sampleMealPlan(
+        WeekKey.of(AppClock.now()).id,
       ),
     },
   );
+
+  /// The day `E05` was opened to choose a dinner for, carried as the route's
+  /// argument so the ordinary library never inherits it.
+  static eat_plan.PlanDay? _pickDayOf(BuildContext context) {
+    final day = ModalRoute.of(context)?.settings.arguments;
+    return day is eat_plan.PlanDay ? day : null;
+  }
+
+  /// What "Fill my week" on `E07` may use: Rahma's dinners, then her lunches,
+  /// that the allergy guard lets through. Nothing until she has answered the
+  /// allergy question, because her book is not shown before that either.
+  static List<String> rahmaDinners() {
+    if (!dietaryRepository.read().asked) return const <String>[];
+    final book = (EatAppState.instance..ensureRecipeBook()).recipeBook;
+    final guard = AllergyGuard(eatConstraints);
+    return <String>[
+      for (final section in const ['comfy_dinner', 'lunchy_junky_yum'])
+        for (final recipe in guard.screenRecipes(book.inSection(section)))
+          recipe.recipeId,
+    ];
+  }
 
   /// **The one place the product states what it knows about her allergies.**
   ///
@@ -5199,6 +6150,78 @@ class AppRouter {
     final profile = dietaryRepository.read();
     return profile.asked ? profile.toConstraints() : DietaryConstraints.none;
   }
+
+  /// The tour, as `C04` and `C05` build it. See the note on `C04` above.
+  ///
+  /// Her week, then her number: `O03`, or `O05` when her week is already
+  /// built. A woman already signed up and waiting on her check is taken back
+  /// to it instead, past Rahma's recipe if she is on it.
+  ///
+  /// When the tour is the first screen (a link opened it), there is nothing
+  /// under it to go back to, so the exits open the front door in its place
+  /// rather than doing nothing.
+  static Widget _lookAround(
+    BuildContext context, {
+    required VoidCallback toSignUp,
+    required VoidCallback toSignIn,
+    bool openJoinPrompt = false,
+  }) {
+    final waiting = signedInUid != null || awaitingReviewer;
+    void leave() {
+      final navigator = Navigator.of(context);
+      if (navigator.canPop()) {
+        navigator.pop();
+      } else {
+        navigator.pushReplacementNamed(frontDoor);
+      }
+    }
+
+    return LookAroundView(
+      waiting: waiting,
+      setupDone: intakeRepository.setupDone,
+      openJoinPrompt: openJoinPrompt,
+      onJoin: () {
+        if (waiting) {
+          // Past Rahma's recipe first, if the tour pushed it.
+          final tour = ModalRoute.of(context);
+          if (tour != null) {
+            Navigator.of(context).popUntil((route) => route == tour);
+          }
+          leave();
+          return;
+        }
+        OnboardingState.instance
+          ..beforeSignup = true
+          ..whileWaiting = false;
+        unawaited(analytics.track(AnalyticsEvent.signUpStarted));
+        toSignUp();
+      },
+      onSignIn: toSignIn,
+      onLeave: leave,
+      // The tour's funnel: which stops she reached and where she joined. Two
+      // tokens each, nothing about her. A woman waiting on her check is not
+      // joining, so her "Back to my check" is not counted as a join.
+      onStopViewed: (stop) => unawaited(
+        analytics.track(AnalyticsEvent.tourStopViewed, {
+          AnalyticsProp.tourStop: _tourStopToken(stop),
+        }),
+      ),
+      onJoinFrom: (source, stop) {
+        if (waiting) return;
+        unawaited(
+          analytics.track(AnalyticsEvent.tourJoinTapped, {
+            AnalyticsProp.source: AnalyticsValue.token(source.name),
+            AnalyticsProp.tourStop: _tourStopToken(stop),
+          }),
+        );
+      },
+    );
+  }
+
+  /// A tour stop as analytics carries it: `1` to `7`, or `end`.
+  static AnalyticsValue _tourStopToken(int stop) => AnalyticsValue.token(
+    stop < DemoStop.values.length ? '${stop + 1}' : 'end',
+  );
 
   /// One of Rahma's cards, or null when the id she tapped is not one of hers.
   ///
@@ -5816,7 +6839,18 @@ class AppRouter {
 
   /// Navigates by screen id rather than by route string, so a screen never has
   /// to know another screen's path.
+  ///
+  /// Inside the tour (`C04`) it navigates nowhere. The tour draws the real
+  /// screens, and a control on one of them that its caller left unwired falls
+  /// through `openScreen` to here; under [DemoScope] that opens the join sheet
+  /// instead, so no screen behind the check can be pushed from inside the
+  /// tour, whatever a screen forgets to wire. The tour's own exits are built
+  /// above the scope and are not caught.
   static void goTo(BuildContext context, String screenId) {
+    if (DemoScope.maybeOf(context) case final demo?) {
+      demo.requestJoin(context);
+      return;
+    }
     final route = appDestinations[screenId];
     if (route == null) return;
     Navigator.of(context).pushNamed(route.name);

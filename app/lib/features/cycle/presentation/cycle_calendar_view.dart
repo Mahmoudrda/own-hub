@@ -34,6 +34,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -96,7 +97,7 @@ class CycleCalendarView extends StatelessWidget {
       cycle: cycle,
       periods: periods,
       checkInDays: checkInDays,
-      today: now ?? DateTime.now(),
+      today: now ?? AppClock.now(),
       labels: CalendarLabels(
         // "day 1" exists as a fixed string only; any other day renders its
         // number rather than a sentence naming the wrong one.

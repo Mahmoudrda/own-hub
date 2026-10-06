@@ -28,6 +28,7 @@
 #   1. Dart symbols:
 #        flutter build ipa --release --obfuscate \
 #          --split-debug-info=build/symbols/<version>-ios \
+#          --dart-define=APP_VERSION=<version> \
 #          --export-options-plist=ios/ExportOptions.plist
 #        firebase crashlytics:symbols:upload \
 #          --app=1:681714989950:ios:0e2cab381dd5cd91fbd12f build/symbols/<version>-ios
@@ -73,9 +74,13 @@ fi
 
 echo "== Own Hub release build $VERSION =="
 
-flutter build appbundle --release --obfuscate --split-debug-info="$SYMBOLS"
+# The version recorded beside every acceptance and consent she gives
+# (lib/features/signup/domain/legal_acceptance.dart, kAppVersion).
+DEFINES=(--dart-define=APP_VERSION="$VERSION")
 
-flutter build apk --release --split-per-abi --obfuscate --split-debug-info="$SYMBOLS/apk"
+flutter build appbundle --release --obfuscate --split-debug-info="$SYMBOLS" "${DEFINES[@]}"
+
+flutter build apk --release --split-per-abi --obfuscate --split-debug-info="$SYMBOLS/apk" "${DEFINES[@]}"
 
 same=1
 for f in "$SYMBOLS"/apk/*.symbols; do

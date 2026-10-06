@@ -148,7 +148,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         final l10n = AppL10n.of(tester.element(find.byType(WomanReviewerView)));
-        await tester.tap(find.text(l10n.askForAVideoCheck));
+        await tester.tap(find.text(l10n.askAWomanToCheckMe));
         await tester.pumpAndSettle();
         expect(find.text(l10n.yourSignInIsNoLongerValid_1y16r), findsOneWidget);
         expect(find.text(l10n.thisCopyOfTheAppCannotReach_agbhf), findsNothing);
@@ -156,7 +156,7 @@ void main() {
         expect(signIn, 1);
       });
 
-      testWidgets('C14 "Ask for the call" says sign in again', (tester) async {
+      testWidgets('C14 "Ask a woman to contact me" says sign in again', (tester) async {
         _tall(tester);
         var signIn = 0;
         await tester.pumpWidget(

@@ -45,6 +45,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../data/pending_answers.dart';
 import '../../../domain/format/number_label.dart';
@@ -115,6 +116,7 @@ class EatView extends StatefulWidget {
     this.plannedMeal,
     this.yesterdaysLunch,
     this.onOpenRecipes,
+    this.onOpenWeekPlan,
     this.onType,
     this.onSpeak,
     this.onLogged,
@@ -172,6 +174,9 @@ class EatView extends StatefulWidget {
   final SuggestionView? yesterdaysLunch;
 
   final VoidCallback? onOpenRecipes;
+
+  /// `E07`, this week's dinners and the shopping list.
+  final VoidCallback? onOpenWeekPlan;
   final VoidCallback? onType;
   final VoidCallback? onSpeak;
 
@@ -205,7 +210,7 @@ class _EatViewState extends State<EatView> {
   /// day total moves." Undo removes them again, because nothing was written.
   final List<MealItem> _pending = <MealItem>[];
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
   String get _dayId => _dayIdOf(_now);
 
   static String _dayIdOf(DateTime at) =>
@@ -530,7 +535,7 @@ class _EatViewState extends State<EatView> {
         // Home takes the same line once something is logged, for the same
         // reason: the time is already printed beside it.
         Text(
-          mealSlotName(l10n, EatDayViewModel.slotAt(DateTime.now())),
+          mealSlotName(l10n, EatDayViewModel.slotAt(AppClock.now())),
           style: AppText.titleM,
         ),
       for (final suggestion in view.suggestions)
@@ -651,6 +656,27 @@ class _EatViewState extends State<EatView> {
         body: l10n.logSomethingTwiceAndItBecomesA,
       ),
       _box(l10n),
+      // Planning her food is a reason she installed the app. On day one the
+      // tab offered starter plates and nothing else: no week plan and no
+      // recipes, so both were three screens away.
+      if (AppRouter.screenIsOn('E07'))
+        AppListItem(
+          key: const ValueKey('eat-day-one-week-plan'),
+          leading: const Icon(
+            Icons.calendar_view_week,
+            size: 23,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.planThisWeeksDinners,
+          subtitle: l10n.fiveEgyptianDinnersAndOneShoppingList,
+          trailing: const Icon(
+            Icons.chevron_right,
+            size: 22,
+            color: AppColors.onSurfaceVariant,
+          ),
+          onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
+        ),
+      _rahmaShelf(l10n),
       if (_screenedToNothing(view.starters))
         _guardNote(l10n)
       else ...[
@@ -862,10 +888,18 @@ class _EatViewState extends State<EatView> {
     );
   }
 
-  Widget _box(AppL10n l10n) => SayOrTypeBox(
-    label: l10n.sayOrTypeWhatYouAte,
-    micTooltip: l10n.weNeedTheMicrophoneToHearWhat,
-    onType: () => openScreen(context, 'E02', widget.onType),
-    onSpeak: () => openScreen(context, 'E03', widget.onSpeak),
-  );
+  // The microphone is drawn only when saying a meal is on in this build. With
+  // `Feature.voiceLogging` off there is no recogniser and no microphone
+  // permission, so the box offers typing and says only that.
+  Widget _box(AppL10n l10n) => AppRouter.screenIsOn('E03')
+      ? SayOrTypeBox(
+          label: l10n.sayOrTypeWhatYouAte,
+          micTooltip: l10n.weNeedTheMicrophoneToHearWhat,
+          onType: () => openScreen(context, 'E02', widget.onType),
+          onSpeak: () => openScreen(context, 'E03', widget.onSpeak),
+        )
+      : SayOrTypeBox(
+          label: l10n.typeWhatYouAte,
+          onType: () => openScreen(context, 'E02', widget.onType),
+        );
 }

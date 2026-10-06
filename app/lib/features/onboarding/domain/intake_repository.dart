@@ -35,6 +35,13 @@ abstract class IntakeRepository {
   /// complete, valid intake, which is what lets day one show a real programme.
   Intake read();
 
+  /// Whether she has answered where she trains (`O02`).
+  ///
+  /// The one-screen "Your week" never asks it, so her place stays the
+  /// default, home. Nothing may read that default back to her as her answer:
+  /// `herAnswersLine` drops the place when this is false.
+  bool get placeAnswered;
+
   /// Writes **only** the fields named, and returns the merged result.
   ///
   /// An omitted argument is not "set this to null" — it is "do not touch this".
@@ -57,10 +64,18 @@ abstract class IntakeRepository {
 /// and nothing else" is the assertion that proves the per-step merge is real
 /// rather than a whole-object save wearing a merge's name.
 class InMemoryIntakeRepository implements IntakeRepository {
-  InMemoryIntakeRepository([Intake? initial])
-    : _intake = initial ?? Intake.defaults;
+  /// An [initial] intake counts as answered unless [placeAnswered] says
+  /// otherwise; with none she has answered nothing.
+  InMemoryIntakeRepository([Intake? initial, bool? placeAnswered])
+    : _intake = initial ?? Intake.defaults,
+      _placeAnswered = placeAnswered ?? initial != null;
 
   Intake _intake;
+
+  bool _placeAnswered;
+
+  @override
+  bool get placeAnswered => _placeAnswered;
 
   /// The field names touched by each [merge], oldest first.
   final List<Set<String>> writes = [];
@@ -106,6 +121,7 @@ class InMemoryIntakeRepository implements IntakeRepository {
       if (lifeStage != null) 'lifeStage',
     });
 
+    if (place != null) _placeAnswered = true;
     _intake = _intake.copyWith(
       goal: goal,
       place: place,
@@ -128,9 +144,17 @@ class InMemoryIntakeRepository implements IntakeRepository {
   /// argument rather than a separate call because restoring her answers and
   /// forgetting that she had answered them is not a state this app should be
   /// able to reach.
-  void restore(Intake intake, {bool setupDone = false}) {
+  ///
+  /// [placeAnswered] defaults to false for the same reason: a document that
+  /// does not say she was asked where she trains is read as not asked.
+  void restore(
+    Intake intake, {
+    bool setupDone = false,
+    bool placeAnswered = false,
+  }) {
     _intake = intake;
     _setupDone = setupDone;
+    _placeAnswered = placeAnswered;
   }
 
   /// Back to a woman who has answered nothing.
@@ -141,6 +165,7 @@ class InMemoryIntakeRepository implements IntakeRepository {
   void reset() {
     _intake = Intake.defaults;
     _setupDone = false;
+    _placeAnswered = false;
     writes.clear();
   }
 }

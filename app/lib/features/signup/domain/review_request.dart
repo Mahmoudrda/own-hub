@@ -6,10 +6,29 @@
 /// has returned she is NOT in any queue, and no screen may say she is.
 library;
 
+import 'dart:async' show TimeoutException;
+
 import 'package:meta/meta.dart';
 
 /// Callable name, identical on both sides of the contract.
 const String kRequestReviewCallable = 'request_review';
+
+/// Version of the review-route consent wording shown on `C15` and `C14`
+/// before she asks for a woman reviewer. Asking IS the consent, and the server
+/// records it at `users/{uid}/consents/review-v<version>`.
+///
+/// Version 2 (6 October 2026) drops the promise of a video call, because no
+/// video service exists: a woman from Own Hub reviews her case and contacts
+/// her by phone within 72 hours (`config.REVIEW_SLA_HOURS`).
+///
+/// **Bump this whenever that wording changes in either language, together with
+/// the server's `config.REVIEW_CONSENT_VERSION`.** The shared fixture
+/// `contracts/identity_contract.json` pins both; the Dart and Python contract
+/// tests fail if either drifts.
+const int kReviewConsentVersion = 2;
+
+/// The consent document's id under `users/{uid}/consents`.
+const String kReviewConsentDocId = 'review-v$kReviewConsentVersion';
 
 /// Why she asked for a person. The enum names are the wire values.
 enum ReviewPath {
@@ -96,7 +115,19 @@ abstract final class ServerReason {
   static const String sessionMissing = 'session_missing';
   static const String livenessFailed = 'liveness_failed';
   static const String internalError = 'internal_error';
+
+  /// `request_review` while her automatic check is still running. Nothing
+  /// was opened; she may ask again once the check has answered.
+  static const String verificationInProgress = 'verification_in_progress';
 }
+
+/// True when [error] is `request_review` refusing because her automatic check
+/// has not answered yet. Asked before [classifyCallFailure], which would read
+/// it as a failure to reach the server.
+bool isCheckStillRunning(Object error) =>
+    error is VerificationCallFailure &&
+    error.code == 'failed-precondition' &&
+    error.reason == ServerReason.verificationInProgress;
 
 /// What a failed call means for her next screen.
 enum CallFailureKind {
@@ -132,6 +163,19 @@ enum CallFailureKind {
 
   /// Anything else: network, timeout, server error, App Check.
   other,
+}
+
+/// True when [error] means the network did not answer, rather than that the
+/// server said anything: a callable that was `unavailable` or ran out of time.
+///
+/// Kept apart from [CallFailureKind] on purpose. Every caller of
+/// [classifyCallFailure] decides what `other` means for its own screen, and a
+/// new kind would change all of them at once. The one place that needs the
+/// difference, the start of the liveness session, asks this first.
+bool isNetworkCallFailure(Object error) {
+  if (error is TimeoutException) return true;
+  return error is VerificationCallFailure &&
+      const {'unavailable', 'deadline-exceeded'}.contains(error.code);
 }
 
 CallFailureKind classifyCallFailure(Object error) {

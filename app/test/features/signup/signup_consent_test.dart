@@ -117,6 +117,33 @@ void main() {
       expect(_showing(tester), 'C09b');
     });
 
+    // R1-P14: the promise is read once. From C09 the consent screen does not
+    // repeat it; reached straight (the gate, C14's "Try again") it opens with
+    // it.
+    testWidgets('from C09 the promise is not said twice', (tester) async {
+      await _open(tester, 'C09');
+      await tester.tap(find.text('Scan my ID'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<ConsentView>(find.byType(ConsentView)).showPromise,
+        isFalse,
+      );
+    });
+
+    testWidgets('reached straight, C09b opens with the promise', (
+      tester,
+    ) async {
+      await _open(tester, 'C09b');
+      expect(
+        tester.widget<ConsentView>(find.byType(ConsentView)).showPromise,
+        isTrue,
+      );
+      // And the niqab way stays on it.
+      expect(_builderBlock('C09b'), contains('onNiqabPath'));
+      expect(_builderBlock('C14'), contains("goTo(context, 'C09b')"));
+      expect(_builderBlock('C14'), isNot(contains("goTo(context, 'C09')")));
+    });
+
     testWidgets('and a deep link straight to the camera lands there too', (
       tester,
     ) async {

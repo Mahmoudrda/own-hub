@@ -15,6 +15,7 @@
 /// worth.
 library;
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../theme/app_art.dart';
 
 import 'package:flutter/material.dart';
@@ -34,11 +35,13 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/train_repository.dart';
+import 'reminder_sheet.dart';
 
 class FinishedView extends StatelessWidget {
   const FinishedView({
     super.key,
     this.onBackToToday,
+    this.onPlanDinners,
     this.onShare,
     this.session,
     this.finishedOn,
@@ -46,9 +49,25 @@ class FinishedView extends StatelessWidget {
     this.sessionsPrescribed = 3,
     this.levelProgressPercent = 50,
     this.eligibility = const PersonalBestEligibility(),
+    this.offerReminders = false,
+    this.onChooseReminderDays,
+    this.onDismissReminderOffer,
   });
 
+  /// The one-time offer of training reminders, after the first session she
+  /// finishes. Never shown again once she has answered it.
+  final bool offerReminders;
+
+  /// Opens the reminders sheet.
+  final VoidCallback? onChooseReminderDays;
+
+  /// "Not now": the offer is not made again. Notifications still has it.
+  final VoidCallback? onDismissReminderOffer;
+
   final VoidCallback? onBackToToday;
+
+  /// "Plan this week's dinners", the next step's second way on: `E07`.
+  final VoidCallback? onPlanDinners;
 
   /// Community. Hands over an intent only — no post is written from here.
   final VoidCallback? onShare;
@@ -143,7 +162,7 @@ class FinishedView extends StatelessWidget {
                 // Her day, not the prototype's Tuesday. `finishedOn` defaults
                 // to now, so a screen built with nothing still names today.
                 l10n.thatsDayDone(
-                  weekdayLabel(l10n, finishedOn ?? DateTime.now()),
+                  weekdayLabel(l10n, finishedOn ?? AppClock.now()),
                 ),
                 style: AppText.display,
               ),
@@ -207,7 +226,9 @@ class FinishedView extends StatelessWidget {
                 case final String line)
               Text(
                 line,
-                style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
           ],
         ),
@@ -256,6 +277,43 @@ class FinishedView extends StatelessWidget {
                 ],
               ),
             ],
+          ),
+        // The next step, while her week still has sessions left in it. The
+        // reason to come back is her own week, and it is said in the week's
+        // terms: the next session, any day this week. Never a day count.
+        if (sessionsThisWeek < sessionsPrescribed)
+          AppCard(
+            key: const ValueKey('r10-next-step'),
+            variant: AppCardVariant.sage,
+            borderRadius: AppRadius.md,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            children: [
+              Text(
+                l10n.nextSessionNumberOnAnyDayThis(
+                  countLabel(sessionsThisWeek + 1),
+                ),
+                style: AppText.bodyM.copyWith(color: AppColors.onSurface),
+              ),
+              if (AppRouter.screenIsOn('E07') && onPlanDinners != null)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: AppButton(
+                    l10n.planThisWeeksDinners,
+                    variant: AppButtonVariant.text,
+                    height: 40,
+                    fontSize: 15,
+                    onPressed: onPlanDinners,
+                  ),
+                ),
+            ],
+          ),
+        // Asked here and only here, once: she has just finished a session,
+        // so a note on her training days is about something she already
+        // does. Her own days and time, and nothing until she taps.
+        if (offerReminders)
+          ReminderOfferCard(
+            onChooseDays: onChooseReminderDays,
+            onNotNow: onDismissReminderOffer,
           ),
       ],
     );

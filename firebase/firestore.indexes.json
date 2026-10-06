@@ -325,7 +325,7 @@
       "indexes": []
     },
     {
-      "_why": "S16 TTL. A review flag gets expireAt only when it leaves PENDING_REVIEW (decided or expired). nidRegistry and verificationReviewAccess deliberately have no TTL. Never queried on.",
+      "_why": "S16 TTL. A review flag gets expireAt only when it leaves PENDING_REVIEW (decided or expired). nidRegistry deliberately has no TTL. Never queried on.",
       "collectionGroup": "verification_flags",
       "fieldPath": "expireAt",
       "ttl": true,
@@ -341,6 +341,34 @@
     {
       "_why": "W1 TTL. The per-IP daily counter for the waitlist is deleted after two days. Never queried on.",
       "collectionGroup": "waitlistRate",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "M9 TTL. The failure count per keyed ID code expires config.SIGNAL_RETENTION_DAYS (180, pending counsel) after its last write; every write moves expireAt. Not linked to an account (deletion manifest row 42). Never queried on.",
+      "collectionGroup": "verificationBehaviour",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "M9 TTL. The hashed installation record expires config.SIGNAL_RETENTION_DAYS (180, pending counsel) after its last write. Not linked to an account (deletion manifest row 43). Never queried on.",
+      "collectionGroup": "verificationInstalls",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "M9 TTL. A reviewer access log entry is deleted config.ACCESS_LOG_RETENTION_DAYS (365, pending counsel) after it was written (deletion manifest row 44). Never queried on.",
+      "collectionGroup": "verificationReviewAccess",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "M11 TTL. The proof that she agreed to the waitlist wording (a keyed code of her contact, the wording version, the language and the date) is deleted three years after she joined (pending counsel). Never queried on.",
+      "collectionGroup": "waitlistConsentProof",
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []

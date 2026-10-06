@@ -101,6 +101,7 @@ class FakeStore:
     def __init__(self):
         self.attempts: dict = {}
         self.entries: list = []
+        self.proofs: dict = {}
 
     def count_attempt(self, ip_hash, day, now):
         key = (ip_hash, day)
@@ -112,6 +113,9 @@ class FakeStore:
 
     def add(self, entry):
         self.entries.append(dict(entry))
+
+    def record_consent_proof(self, proof_id, proof):
+        self.proofs[proof_id] = dict(proof)
 
     def new_entries_today(self, day):
         return sum(1 for e in self.entries if e["at"].date().isoformat() == day)
@@ -470,3 +474,60 @@ def test_the_waitlist_never_logs_a_contact():
     for node in ast.walk(tree):
         if isinstance(node, ast.Call) and ast.unparse(node.func).startswith("logs."):
             assert not any(k.arg in {"contact", "ip", "ipHash"} for k in node.keywords)
+
+
+# ----------------------------------------------- M11: proof of her agreement
+
+
+def test_a_join_records_a_proof_of_the_wording_she_agreed_to():
+    _, store = handle(req({"lang": "ar"}))
+    ((proof_id, proof),) = store.proofs.items()
+    assert proof_id == join.proof_id(KEY, "+201012345678")
+    assert set(proof) == {"wordingVersion", "lang", "at", "expireAt"}
+    assert proof["wordingVersion"] == join.CONSENT_WORDING_VERSION
+    assert proof["lang"] == "ar"
+    assert proof["at"] == NOW
+    assert proof["expireAt"] == NOW + dt.timedelta(days=180 + 3 * 365)
+
+
+def test_the_proof_outlives_the_last_possible_message_by_three_years():
+    # PDPL Art. 18: 3 years from the last message. The one message is sent
+    # while her entry exists, so no later than RETENTION_DAYS after joining.
+    _, store = handle(req())
+    ((_, proof),) = store.proofs.items()
+    last_message = NOW + dt.timedelta(days=join.RETENTION_DAYS)
+    assert proof["expireAt"] == last_message + dt.timedelta(days=3 * 365)
+
+
+def test_the_proof_holds_no_contact_and_no_ip():
+    _, store = handle(req())
+    text = repr(store.proofs)
+    assert "1012345678" not in text and IP not in text
+    assert join.ip_hash(KEY, IP) not in text
+
+
+def test_the_proof_code_is_not_the_ip_code_or_a_plain_hash():
+    import hashlib
+
+    contact = "+201012345678"
+    code = join.proof_id(KEY, contact)
+    assert code != join.ip_hash(KEY, contact)
+    assert code != hashlib.sha256(contact.encode()).hexdigest()
+    assert code == join.proof_id(KEY, contact)
+
+
+def test_nothing_is_proved_without_consent_or_for_a_duplicate():
+    _, store = handle(req({"consent": False}))
+    assert store.proofs == {}
+    store = FakeStore()
+    handle(req(), store)
+    handle(req(), store)
+    assert len(store.proofs) == 1
+
+
+def test_the_proof_collection_is_closed_to_every_client():
+    rules = open(
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "firebase", "firestore.rules"),
+        encoding="utf-8",
+    ).read()
+    assert "match /waitlistConsentProof/{key} { allow read, write: if false; }" in rules

@@ -33,6 +33,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -73,7 +74,7 @@ class _LogPeriodViewState extends State<LogPeriodView> {
   /// The reasons the last attempt was refused. Empty until she tries.
   Set<PeriodProblem> _problems = const <PeriodProblem>{};
 
-  DateTime get _today => dayOnly(widget.now ?? DateTime.now());
+  DateTime get _today => dayOnly(widget.now ?? AppClock.now());
 
   Future<void> _pickStart() async {
     final picked = await showDatePicker(

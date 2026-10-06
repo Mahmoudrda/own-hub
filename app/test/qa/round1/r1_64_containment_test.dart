@@ -61,8 +61,8 @@ void main() {
       await boot(t, locale: const Locale('en'));
       runs.add(paintedText(t).join('|'));
       // and Home underneath
-      await tapLabel(t, 'Skip'); await tapLabel(t, 'Skip');
-      await tapLabel(t, 'Skip'); await tapLabel(t, 'Skip');
+      await tapLabel(t, 'Continue'); await tapLabel(t, 'Continue');
+      await tapLabel(t, 'Continue'); await tapLabel(t, 'Continue');
       await tapLabel(t, 'I will start tomorrow');
       runs.add(paintedText(t).join('|'));
     }

@@ -42,6 +42,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 
 import '../../../data/pending_answers.dart';
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/week/week_key.dart';
 import 'plate_rollup.dart';
 
@@ -964,7 +965,7 @@ class InMemoryMealRepository implements MealRepository {
         ...plan.groceries,
         // Distinct map keys, last-write-wins per key — so two devices ticking
         // two different lines both survive (§4.4).
-        itemKey: line.copyWith(ticked: ticked, tickedAt: DateTime.now()),
+        itemKey: line.copyWith(ticked: ticked, tickedAt: AppClock.now()),
       },
     );
   }

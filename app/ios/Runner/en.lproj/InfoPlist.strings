@@ -6,4 +6,4 @@
    Must stay in step with NSCameraUsageDescription in Info.plist and with
    ar.lproj/InfoPlist.strings. There is no photo-library key here, in either
    locale, because this app never asks for the library. */
-"NSCameraUsageDescription" = "Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman. Nothing is uploaded until you tap send, and the photographs are deleted after the check.";
+"NSCameraUsageDescription" = "Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman. Nothing is uploaded until you tap send. The photographs are read in memory and never stored.";

@@ -19,6 +19,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -71,7 +72,7 @@ class _CycleDatesViewState extends State<CycleDatesView> {
 
   late CycleAdaptation _adaptation = CycleAdaptation.y02Defaults;
 
-  DateTime get _today => widget.now ?? DateTime.now();
+  DateTime get _today => widget.now ?? AppClock.now();
 
   Future<void> _save() async {
     final repository = widget.repository;

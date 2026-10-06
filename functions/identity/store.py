@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import datetime as dt
 import random
+import re
 import threading
 from dataclasses import dataclass
 from typing import Optional
@@ -81,6 +82,81 @@ def pepper() -> bytes:
                 response = client.access_secret_version(request={"name": name})
                 _pepper_cache = response.payload.data
     return _pepper_cache
+
+
+_reviewer_cache: Optional[tuple[float, frozenset]] = None
+_reviewer_phone_cache: Optional[tuple[float, frozenset]] = None
+
+
+def parse_reviewer_uids(raw: str) -> frozenset:
+    """Uids from the secret's text: comma or newline separated, blanks and
+    anything that is not a plausible Firebase uid dropped."""
+    out = set()
+    for part in re.split(r"[,\s]+", raw or ""):
+        part = part.strip()
+        if re.fullmatch(r"[A-Za-z0-9_-]{6,128}", part):
+            out.add(part)
+    return frozenset(out)
+
+
+def parse_reviewer_phones(raw: str) -> frozenset:
+    """E.164 numbers from the secret's text, one per line or comma separated.
+
+    Spaces and dashes inside a number are ignored, so "+20 100 000 0000" and
+    "+201000000000" are the same entry. Anything that is not a full
+    international number starting with "+" is dropped: a bare local number
+    could match the wrong person's token."""
+    out = set()
+    for line in re.split(r"[,\n;]+", raw or ""):
+        number = re.sub(r"[\s\-()]", "", line)
+        if re.fullmatch(r"\+[1-9][0-9]{7,14}", number):
+            out.add(number)
+    return frozenset(out)
+
+
+def _read_reviewer_secret(secret_id: str, parse, cache_name: str) -> frozenset:
+    """One cached, fail-closed read of a reviewer allow-list secret."""
+    import time as _time
+
+    cached = globals()[cache_name]
+    now = _time.monotonic()
+    if cached is not None and now - cached[0] < config.REVIEWER_UIDS_CACHE_SEC:
+        return cached[1]
+    values: frozenset = frozenset()
+    try:
+        from google.cloud import secretmanager
+
+        client = secretmanager.SecretManagerServiceClient()
+        name = f"projects/own-hub/secrets/{secret_id}/versions/latest"
+        response = client.access_secret_version(request={"name": name})
+        values = parse(response.payload.data.decode("utf-8"))
+    except Exception:  # noqa: BLE001 - fail closed: nobody is a reviewer
+        values = frozenset()
+    globals()[cache_name] = (now, values)
+    return values
+
+
+def store_reviewer_uids() -> frozenset:
+    """M13: the store review accounts, from Secret Manager. Empty on any
+    failure, so an unreadable secret lets nobody through."""
+    return _read_reviewer_secret(
+        config.SECRET_REVIEWER_UIDS, parse_reviewer_uids, "_reviewer_cache"
+    )
+
+
+def store_reviewer_phones() -> frozenset:
+    """M13: the store review phone numbers, from Secret Manager. A reviewer who
+    deletes her account and signs in again with the same test number gets a
+    new uid; the number is what stays the same. Empty on any failure."""
+    return _read_reviewer_secret(
+        config.SECRET_REVIEWER_PHONES, parse_reviewer_phones, "_reviewer_phone_cache"
+    )
+
+
+_real_store_reviewer_uids = store_reviewer_uids
+_real_store_reviewer_phones = store_reviewer_phones
+"""The unstubbed readers, for the fail-closed tests (conftest replaces
+`store_reviewer_uids` and `store_reviewer_phones` in every test)."""
 
 
 # ------------------------------------------------------------------ ledger
@@ -278,6 +354,8 @@ class FirestoreBehaviour:
         return len((snapshot.to_dict() or {}).get("hmacs", []))
 
     def record_attempt(self, id_hmac: str, install_id_hash: Optional[str]) -> None:
+        """M9: every write moves `expireAt` on by config.SIGNAL_RETENTION_DAYS,
+        so an installation that stops trying is swept by the TTL policy."""
         if not install_id_hash:
             return
         reference = db().collection("verificationInstalls").document(install_id_hash)
@@ -290,16 +368,40 @@ class FirestoreBehaviour:
                 seen.append(id_hmac)
             transaction.set(
                 reference,
-                {"hmacs": seen[-10:], "updatedAt": firestore.SERVER_TIMESTAMP},
+                {
+                    "hmacs": seen[-10:],
+                    "updatedAt": firestore.SERVER_TIMESTAMP,
+                    "expireAt": signal_expiry(),
+                },
             )
 
         txn(db().transaction())
 
     def record_failure(self, id_hmac: str) -> None:
+        """M9: the count lives config.SIGNAL_RETENTION_DAYS past its last
+        failure, then the TTL policy on `expireAt` deletes it."""
         db().collection("verificationBehaviour").document(id_hmac).set(
-            {"failures": firestore.Increment(1), "updatedAt": firestore.SERVER_TIMESTAMP},
+            {
+                "failures": firestore.Increment(1),
+                "updatedAt": firestore.SERVER_TIMESTAMP,
+                "expireAt": signal_expiry(),
+            },
             merge=True,
         )
+
+
+def signal_expiry() -> dt.datetime:
+    """When a fraud signal may be swept. PENDING COUNSEL, see config."""
+    return dt.datetime.now(dt.timezone.utc) + dt.timedelta(
+        days=config.SIGNAL_RETENTION_DAYS
+    )
+
+
+def access_log_expiry() -> dt.datetime:
+    """When a reviewer access log entry may be swept. PENDING COUNSEL."""
+    return dt.datetime.now(dt.timezone.utc) + dt.timedelta(
+        days=config.ACCESS_LOG_RETENTION_DAYS
+    )
 
 
 # ------------------------------------------------------- the allowlist guard
@@ -475,22 +577,41 @@ def set_verification_state(
     scheduled_for=None,
     decided: bool = False,
     reset_booking: bool = False,
-) -> None:
+    keep_approved: bool = False,
+) -> bool:
     """S8: the one server-written place she can read where her check stands.
 
     A merge of `verification.*` keys only. No reason codes and no flag id: the
     map is hers to read (rules: isSelf) and must not teach anyone which check
-    failed. The client can never write it (rules: verificationUntouched)."""
-    db().collection(config.COL_USERS).document(uid).set(
-        _verification_update(
-            state,
-            route=route,
-            scheduled_for=scheduled_for,
-            decided=decided,
-            reset_booking=reset_booking,
-        ),
-        merge=True,
+    failed. The client can never write it (rules: verificationUntouched).
+
+    With `keep_approved`, the write is a transaction that leaves an `approved`
+    state alone: verify_identity's own outcome may never turn an approval that
+    landed while it ran back into `pending` or `rejected`. Returns False when
+    it left the state as it was."""
+    ref = db().collection(config.COL_USERS).document(uid)
+    update = _verification_update(
+        state,
+        route=route,
+        scheduled_for=scheduled_for,
+        decided=decided,
+        reset_booking=reset_booking,
     )
+    if not keep_approved or state == "approved":
+        ref.set(update, merge=True)
+        return True
+
+    @firestore.transactional
+    def txn(transaction):
+        snapshot = ref.get(transaction=transaction)
+        data = (snapshot.to_dict() or {}) if snapshot.exists else {}
+        current = data.get("verification") or {}
+        if isinstance(current, dict) and current.get("state") == "approved":
+            return False
+        transaction.set(ref, update, merge=True)
+        return True
+
+    return txn(db().transaction())
 
 
 def _verification_update(
@@ -529,20 +650,176 @@ def verification_state(uid: str) -> Optional[str]:
     return state if state in VERIFICATION_STATES else None
 
 
-def write_consent(uid: str) -> None:
-    """Spec §2 step 1 / §4 row 3: uid, consent version, timestamp. Nothing else.
+VERIFY_IN_FLIGHT_FIELD = "verifyInFlightUntil"
+"""On verificationLedger/{uid}: until when a verify_identity call for her may
+still be running. Server-only, like the rest of the ledger."""
 
-    Not the text she agreed to, not her IP, not her device. The version is the
-    only thing tying the record to what she was shown, which is why
-    config.CONSENT_VERSION must be bumped whenever that text changes.
+
+def _ledger_ref(uid: str):
+    return db().collection(config.COL_LEDGER).document(uid)
+
+
+def mark_verify_in_flight(uid: str, now: Optional[dt.datetime] = None) -> None:
+    """verify_identity has started for her. request_review refuses until
+    clear_verify_in_flight, or until config.VERIFY_IN_FLIGHT_SEC have passed."""
+    now = now or dt.datetime.now(dt.timezone.utc)
+    until = now + dt.timedelta(seconds=config.VERIFY_IN_FLIGHT_SEC)
+    _ledger_ref(uid).set({VERIFY_IN_FLIGHT_FIELD: until}, merge=True)
+
+
+def clear_verify_in_flight(uid: str) -> None:
+    _ledger_ref(uid).set({VERIFY_IN_FLIGHT_FIELD: None}, merge=True)
+
+
+def verify_in_flight(uid: str, now: Optional[dt.datetime] = None) -> bool:
+    snapshot = _ledger_ref(uid).get()
+    if not snapshot.exists:
+        return False
+    until = (snapshot.to_dict() or {}).get(VERIFY_IN_FLIGHT_FIELD)
+    if not isinstance(until, dt.datetime):
+        return False
+    if until.tzinfo is None:
+        until = until.replace(tzinfo=dt.timezone.utc)
+    return until > (now or dt.datetime.now(dt.timezone.utc))
+
+
+def write_consent(
+    uid: str, locale: Optional[str] = None, app_version: Optional[str] = None
+) -> None:
+    """Spec §2 step 1 / §4 row 3: the consent version and a timestamp, plus
+    (version 2) the language the wording was shown in and the app version
+    that showed it. Five fields at most, counting the uid in the path.
+
+    Not the text she agreed to, not her IP, not her device. The version is
+    what ties the record to what she was shown, which is why
+    config.CONSENT_VERSION must be bumped whenever that text changes. A
+    locale or app version that does not pass `consent_extras` is left out
+    rather than stored.
     """
+    payload = {
+        "version": config.CONSENT_VERSION,
+        "at": firestore.SERVER_TIMESTAMP,
+    }
+    payload.update(consent_extras(locale, app_version))
     db().collection(config.COL_USERS).document(uid).collection(
         config.COL_CONSENTS
-    ).document(f"verification-v{config.CONSENT_VERSION}").set(
-        {
-            "version": config.CONSENT_VERSION,
-            "at": firestore.SERVER_TIMESTAMP,
-        }
+    ).document(f"verification-v{config.CONSENT_VERSION}").set(payload)
+
+
+def valid_locale(value) -> bool:
+    return isinstance(value, str) and value in config.CONSENT_LOCALES
+
+
+def valid_app_version(value) -> bool:
+    return isinstance(value, str) and re.match(config.APP_VERSION_PATTERN, value) is not None
+
+
+def consent_extras(locale, app_version) -> dict:
+    """The optional `locale` and `appVersion` of a consent record, each only
+    if it is one of the allowed shapes."""
+    extras = {}
+    if valid_locale(locale):
+        extras["locale"] = locale
+    if valid_app_version(app_version):
+        extras["appVersion"] = app_version
+    return extras
+
+
+LEGAL_ACCEPTANCE_FIELDS = (
+    "termsVersion",
+    "privacyVersion",
+    "locale",
+    "appVersion",
+    "platform",
+    "clientAcceptedAt",
+    "at",
+)
+"""Every field a legal acceptance record may hold, and nothing else."""
+
+
+def legal_acceptance_doc_id(
+    terms_version: Optional[int] = None, privacy_version: Optional[int] = None
+) -> str:
+    terms = config.TERMS_VERSION if terms_version is None else terms_version
+    privacy = config.PRIVACY_VERSION if privacy_version is None else privacy_version
+    return f"legal-t{terms}-p{privacy}"
+
+
+def _legal_ref(uid: str):
+    return (
+        db()
+        .collection(config.COL_USERS)
+        .document(uid)
+        .collection(config.COL_CONSENTS)
+        .document(legal_acceptance_doc_id())
+    )
+
+
+PLEDGE_FIELDS = ("version", "at", "locale", "appVersion")
+"""Every field a pledge record may hold, and nothing else."""
+
+
+def pledge_doc_id(version: Optional[int] = None) -> str:
+    return f"pledge-v{config.PLEDGE_VERSION if version is None else version}"
+
+
+def write_pledge(
+    uid: str, locale: Optional[str] = None, app_version: Optional[str] = None
+) -> bool:
+    """C16: she agreed to the community's rules. Written once per version; an
+    agreement already on file is left as it was. Returns True when written."""
+    ref = (
+        db()
+        .collection(config.COL_USERS)
+        .document(uid)
+        .collection(config.COL_CONSENTS)
+        .document(pledge_doc_id())
+    )
+    if ref.get().exists:
+        return False
+    payload = {"version": config.PLEDGE_VERSION, "at": firestore.SERVER_TIMESTAMP}
+    payload.update(consent_extras(locale, app_version))
+    assert set(payload) <= set(PLEDGE_FIELDS)
+    ref.set(payload)
+    return True
+
+
+def has_legal_acceptance(uid: str) -> bool:
+    """Whether she has accepted the current Terms and Privacy Policy."""
+    return _legal_ref(uid).get().exists
+
+
+def legal_acceptance_payload(
+    locale: str, app_version: str, platform: str, client_accepted_at
+) -> dict:
+    """M1: users/{uid}/consents/legal-t{T}-p{P}. Allow-listed fields only.
+
+    `clientAcceptedAt` is when her phone says she tapped (milliseconds since
+    the epoch, possibly some time before the code arrived); `at` is when the
+    server recorded it. Both are kept because they answer different
+    questions."""
+    payload = {
+        "termsVersion": config.TERMS_VERSION,
+        "privacyVersion": config.PRIVACY_VERSION,
+        "locale": locale,
+        "appVersion": app_version,
+        "platform": platform,
+        "clientAcceptedAt": client_accepted_at,
+        "at": firestore.SERVER_TIMESTAMP,
+    }
+    extra = set(payload) - set(LEGAL_ACCEPTANCE_FIELDS)
+    if extra:
+        raise ValueError(f"not permitted in a legal acceptance: {sorted(extra)}")
+    return payload
+
+
+def write_legal_acceptance(
+    uid: str, locale: str, app_version: str, platform: str, client_accepted_at
+) -> None:
+    """Server-only, like every consent record. Lives under users/{uid}, so
+    account deletion's recursive delete removes it (manifest row 10)."""
+    _legal_ref(uid).set(
+        legal_acceptance_payload(locale, app_version, platform, client_accepted_at)
     )
 
 
@@ -557,7 +834,7 @@ def _review_consent_ref(uid: str):
 
 
 def write_review_consent(uid: str, path: str, flag_id: str) -> None:
-    """N7: users/{uid}/consents/review-v1 = {version, at, path, flagId}.
+    """N7: users/{uid}/consents/review-v2 = {version, at, path, flagId}.
     Server-only.
 
     Recorded by request_review against the open flag, or the one it just
@@ -849,6 +1126,9 @@ class FirestoreReviewStore:
     def set_verification_state(self, uid, state, **kwargs):
         set_verification_state(uid, state, **kwargs)
 
+    def verify_in_flight(self, uid):
+        return verify_in_flight(uid)
+
     def uid_daily_count_and_increment(self, uid, field):
         return uid_daily_count_and_increment(uid, field)
 
@@ -1127,6 +1407,7 @@ class FirestoreReviewStore:
                 "reviewerUid": reviewer_uid,
                 "action": action,
                 "at": firestore.SERVER_TIMESTAMP,
+                "expireAt": access_log_expiry(),
             }
         )
 
@@ -1137,3 +1418,10 @@ class FirestoreReviewStore:
         from . import webhook
 
         webhook.post_flag(flag_id, codes)
+
+    def notify_approved(self, uid):
+        from firebase_admin import messaging
+
+        from . import push
+
+        push.send_approved(uid, db(), messaging)

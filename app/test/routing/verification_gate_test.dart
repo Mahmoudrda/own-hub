@@ -23,6 +23,7 @@ import 'package:own_hub/features/signup/domain/server_verification.dart';
 
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/signup/domain/verification.dart';
+import 'package:own_hub/features/signup/presentation/look_around_view.dart';
 import 'package:own_hub/features/signup/presentation/welcome_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -34,6 +35,16 @@ FeatureFlags get _gated =>
     FeatureFlags.allOff.with_({for (final f in Feature.values) f: true});
 
 /// The name [route] actually resolved to, which is the gate's answer.
+/// The name of every route pushed, in order.
+class _Names extends NavigatorObserver {
+  _Names(this.names);
+  final List<String?> names;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      names.add(route.settings.name);
+}
+
 String? _resolved(String name) =>
     AppRouter.onGenerateRoute(RouteSettings(name: name))?.settings.name;
 
@@ -175,6 +186,37 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('with the tour open, a deep link into Home is still the '
+        'front door', (tester) async {
+      // The tour draws the real Home with a sample week. Drawing it is not
+      // opening it: the route behind the gate answers exactly as before.
+      tester.view.physicalSize = const Size(1170, 2532);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.reset);
+      final names = <String?>[];
+      final navigator = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorKey: navigator,
+          navigatorObservers: [_Names(names)],
+          onGenerateRoute: AppRouter.onGenerateRoute,
+          onUnknownRoute: AppRouter.onUnknownRoute,
+          initialRoute: appDestinations['C04']!.name,
+          localizationsDelegates: AppL10n.localizationsDelegates,
+          supportedLocales: AppL10n.supportedLocales,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(LookAroundView), findsOneWidget);
+
+      navigator.currentState!.pushNamed(appDestinations['T01']!.name);
+      await tester.pumpAndSettle();
+
+      expect(names.last, appDestinations['C01']!.name);
+      expect(find.byType(WelcomeView), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     test('a verified woman walks straight through', () {
       // `lastVerification` is the in-session half of `AppRouter.isVerified` —
       // what `C12` received a moment ago, which has to count immediately or a
@@ -214,8 +256,10 @@ void main() {
       expect(gate('R01'), appRoutes['C01']!.name);
     });
 
+    // R1-P14: straight to C09b, which opens with C09's promise, rather than
+    // to C09 and then the same promise again on C09b.
     test('signed in and not started, to the check itself', () {
-      expect(gate('R01', signedIn: true), appRoutes['C09']!.name);
+      expect(gate('R01', signedIn: true), appRoutes['C09b']!.name);
     });
 
     test('waiting on a woman reviewer, to the screen that says so', () {

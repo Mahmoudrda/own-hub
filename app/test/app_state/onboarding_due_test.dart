@@ -65,4 +65,22 @@ void main() {
     AppRouter.lastVerification = verified;
     expect(OnboardingState.instance.isDue, isFalse);
   });
+
+  // The value-first order: she builds her week on O03 and O05 before she has
+  // an account. "Save my week and join" runs `finish()`, so once she is
+  // verified the walk is not owed again and she is not asked twice.
+  test('week built before sign-up: not owed after verification', () {
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.accountRequired: true,
+    });
+    AppRouter.intakeRepository.reset();
+    OnboardingState.instance.beforeSignup = true;
+    addTearDown(() => OnboardingState.instance.beforeSignup = false);
+
+    OnboardingState.instance.finish();
+    expect(OnboardingState.instance.isDue, isFalse, reason: 'not verified');
+
+    AppRouter.lastVerification = verified;
+    expect(OnboardingState.instance.isDue, isFalse, reason: 'already done');
+  });
 }

@@ -44,6 +44,7 @@ import '../domain/intake_repository.dart';
 import '../domain/starting_program.dart';
 import 'intake_option.dart';
 import 'intake_step_scaffold.dart';
+import '../../../ui/medical_disclaimer.dart';
 
 class LifeStageView extends StatefulWidget {
   const LifeStageView({
@@ -115,24 +116,7 @@ class _LifeStageViewState extends State<LifeStageView> {
     // postpartum programme is authored and the selector reads the field, these
     // sentences come back on their own.
     final shapesTraining = lifeStageShapesTraining();
-    final options = <(LifeStage, String, String)>[
-      (LifeStage.none, l10n.nothingRightNow, ''),
-      (
-        LifeStage.postpartum,
-        l10n.afterABirth,
-        shapesTraining ? l10n.pelvicFloorFirstOnceYourDoctorSays : '',
-      ),
-      (
-        LifeStage.pregnant,
-        l10n.pregnant,
-        shapesTraining ? l10n.gentlerMovementsNothingOnTheBelly : '',
-      ),
-      (
-        LifeStage.painInjury,
-        l10n.aKneeBackOrShoulder,
-        shapesTraining ? l10n.weAvoidWhatHurtsWeDoNot : '',
-      ),
-    ];
+    final options = lifeStageOptions(l10n);
 
     return IntakeStepScaffold(
       step: 4,
@@ -181,7 +165,38 @@ class _LifeStageViewState extends State<LifeStageView> {
               ),
             ],
           ),
+        // The only screen that asks about a pregnancy says what the app is.
+        const MedicalDisclaimer(),
       ],
     );
   }
+}
+
+/// The four answers to "Anything we should train around?", with the line each
+/// one may carry.
+///
+/// Shared with the short "Your week" (`O03` before sign-up), which asks the
+/// same question on one screen. The rule in the note inside
+/// [_LifeStageViewState.build] holds for both: a row promises nothing about
+/// training while [lifeStageShapesTraining] is false.
+List<(LifeStage, String, String)> lifeStageOptions(AppL10n l10n) {
+  final shapesTraining = lifeStageShapesTraining();
+  return <(LifeStage, String, String)>[
+    (LifeStage.none, l10n.nothingRightNow, ''),
+    (
+      LifeStage.postpartum,
+      l10n.afterABirth,
+      shapesTraining ? l10n.pelvicFloorFirstOnceYourDoctorSays : '',
+    ),
+    (
+      LifeStage.pregnant,
+      l10n.pregnant,
+      shapesTraining ? l10n.gentlerMovementsNothingOnTheBelly : '',
+    ),
+    (
+      LifeStage.painInjury,
+      l10n.aKneeBackOrShoulder,
+      shapesTraining ? l10n.weAvoidWhatHurtsWeDoNot : '',
+    ),
+  ];
 }

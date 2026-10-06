@@ -25,6 +25,7 @@ library;
 
 import 'package:meta/meta.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../domain/meal_repository.dart';
 
 /// One row of E07 — a weekday and the recipe planned for it.
@@ -135,7 +136,7 @@ class WeekPlanViewModel {
               if (line.itemKey == itemKey)
                 line.copyWith(
                   ticked: ticked,
-                  tickedAt: ticked ? DateTime.now() : null,
+                  tickedAt: ticked ? AppClock.now() : null,
                 )
               else
                 line,

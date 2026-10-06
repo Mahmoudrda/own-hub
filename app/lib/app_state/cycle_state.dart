@@ -22,6 +22,7 @@ library;
 
 import 'dart:async';
 
+import '../domain/clock/app_clock.dart';
 import '../features/cycle/domain/cycle_document.dart';
 import '../features/cycle/domain/day_suggestion.dart';
 import '../features/cycle/domain/symptom_context.dart';
@@ -48,7 +49,7 @@ class CycleAppState {
   /// Months back (negative) or forward from the current one, for Y08.
   int _monthOffset = 0;
 
-  static String _today() => AppRouter.dayId(DateTime.now());
+  static String _today() => AppRouter.dayId(AppClock.now());
 
   /// Every check-in she has saved, today's included.
   Map<String, TodayCheckIn> get checkIns => <String, TodayCheckIn>{
@@ -75,7 +76,7 @@ class CycleAppState {
 
   /// The month Y08 is showing.
   ({int year, int month}) shownMonth([DateTime? now]) {
-    final at = now ?? DateTime.now();
+    final at = now ?? AppClock.now();
     final shown = DateTime(at.year, at.month + _monthOffset);
     return (year: shown.year, month: shown.month);
   }

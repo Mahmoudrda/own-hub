@@ -3,9 +3,16 @@
     "rules": "firebase/firestore.rules",
     "indexes": "firebase/firestore.indexes.json"
   },
-  "storage": {
-    "rules": "firebase/storage.rules"
-  },
+  "storage": [
+    {
+      "bucket": "own-hub-personal",
+      "rules": "firebase/storage.rules"
+    },
+    {
+      "bucket": "own-hub.firebasestorage.app",
+      "rules": "firebase/storage.library.rules"
+    }
+  ],
   "functions": [
     {
       "source": "functions",
@@ -23,11 +30,22 @@
     }
   ],
   "emulators": {
-    "auth": { "port": 9099 },
-    "firestore": { "port": 8080 },
-    "storage": { "port": 9199 },
-    "functions": { "port": 5001 },
-    "ui": { "enabled": true, "port": 4000 },
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "storage": {
+      "port": 9199
+    },
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    },
     "singleProjectMode": true
   }
 }

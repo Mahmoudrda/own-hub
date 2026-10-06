@@ -39,6 +39,7 @@ import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseFirestore;
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/widgets.dart';
 
+import '../domain/clock/app_clock.dart';
 import '../features/eat/data/firestore_recipe_source.dart';
 import '../features/eat/data/recipe_sync.dart';
 import '../features/eat/data/seeded_recipe_library.dart';
@@ -327,7 +328,7 @@ class EatAppState {
   }) {
     if (entries.isEmpty) return null;
     final l10n = AppL10n.of(context);
-    final now = at ?? DateTime.now();
+    final now = at ?? AppClock.now();
     final slot = EatDayViewModel.slotAt(now);
 
     final outcome =

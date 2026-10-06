@@ -200,12 +200,17 @@ void main() {
 
     testWidgets('Skip writes nothing', (tester) async {
       final repository = InMemoryIntakeRepository();
-      await tester.pumpWidget(_host(PlaceView(repository: repository)));
+      // Skip is drawn only where it leads somewhere.
+      var skipped = 0;
+      await tester.pumpWidget(
+        _host(PlaceView(repository: repository, onSkip: () => skipped++)),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Skip'));
       await tester.pumpAndSettle();
 
+      expect(skipped, 1);
       expect(repository.writes, isEmpty);
     });
 

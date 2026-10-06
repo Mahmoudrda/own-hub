@@ -47,6 +47,12 @@ CALLABLES = {
     "get_review_contact",
     "delete_account",
     "record_health_consent",
+    "record_legal_acceptance",
+    "record_pledge",
+    "record_signup_role",
+    "submit_coach_certificate",
+    "create_coach_invite",
+    "accept_coach_invite",
 }
 
 
@@ -435,7 +441,9 @@ def test_consent_already_on_file_is_a_no_op_with_the_same_answer(monkeypatch, st
     writes = {"n": 0}
     monkeypatch.setattr(main.store, "has_consent", lambda uid: True)
     monkeypatch.setattr(
-        main.store, "write_consent", lambda uid: writes.__setitem__("n", writes["n"] + 1)
+        main.store,
+        "write_consent",
+        lambda uid, *extras: writes.__setitem__("n", writes["n"] + 1),
     )
     answer = inner("record_consent")(
         request({"consentVersion": config.CONSENT_VERSION})
@@ -448,7 +456,9 @@ def test_first_consent_is_written_exactly_once(monkeypatch, stubbed):
     writes = {"n": 0}
     monkeypatch.setattr(main.store, "has_consent", lambda uid: False)
     monkeypatch.setattr(
-        main.store, "write_consent", lambda uid: writes.__setitem__("n", writes["n"] + 1)
+        main.store,
+        "write_consent",
+        lambda uid, *extras: writes.__setitem__("n", writes["n"] + 1),
     )
     answer = inner("record_consent")(
         request({"consentVersion": config.CONSENT_VERSION})
@@ -460,7 +470,9 @@ def test_first_consent_is_written_exactly_once(monkeypatch, stubbed):
 def test_an_unknown_version_is_refused_even_when_consent_is_on_file(monkeypatch, stubbed):
     monkeypatch.setattr(main.store, "has_consent", lambda uid: True)
     error = raises(
-        lambda: inner("record_consent")(request({"consentVersion": 2})),
+        lambda: inner("record_consent")(
+            request({"consentVersion": config.CONSENT_VERSION + 1})
+        ),
         https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
     )
     assert error.message == reasons.CONSENT_MISSING
@@ -559,3 +571,26 @@ def test_a_woman_reviewer_or_an_admin_may_read_the_review_queue(claims, monkeypa
     answer = inner("list_verification_flags")(request({}, uid="rev", token=claims))
     assert answer == {"flags": []}
     assert fake.access == [("rev", "*", "list")]
+
+
+# ------------------------------- M4: version 2 records language and app version
+
+
+def test_consent_passes_the_language_and_app_version_on(monkeypatch, stubbed):
+    seen = []
+    monkeypatch.setattr(main.store, "has_consent", lambda uid: False)
+    monkeypatch.setattr(
+        main.store, "write_consent", lambda uid, *extras: seen.append(extras)
+    )
+    inner("record_consent")(
+        request({"consentVersion": config.CONSENT_VERSION, "locale": "ar", "appVersion": "1.0.0+3"})
+    )
+    assert seen == [("ar", "1.0.0+3")]
+
+
+def test_the_consent_record_keeps_only_well_formed_extras():
+    from identity import store
+
+    assert store.consent_extras("ar", "1.0.0+3") == {"locale": "ar", "appVersion": "1.0.0+3"}
+    assert store.consent_extras("fr", "1.0 beta") == {}
+    assert store.consent_extras(None, None) == {}

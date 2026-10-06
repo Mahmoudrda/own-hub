@@ -17,8 +17,13 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/app_snapshot.dart';
+import 'package:own_hub/app_state/coach_profile_state.dart';
+import 'package:own_hub/app_state/onboarding_state.dart';
+import 'package:own_hub/app_state/role_state.dart';
 import 'package:own_hub/config/legal_links.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/domain/identity/user_roles.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -40,7 +45,6 @@ Future<void> _open(WidgetTester tester, String id) async {
       .pushNamed(appDestinations[id]!.name);
   await tester.pumpAndSettle();
 }
-
 
 /// The shipped build closes the whole app until she is verified. This file is
 /// about the product behind the gate, so she is walked as a verified woman,
@@ -209,12 +213,19 @@ void main() {
       expect(named, 0);
     });
 
-    testWidgets('and Android still explains its own autofill', (tester) async {
+    // The Android sentence promised the message would be read for her, and
+    // C07 holds no subscription that acts on it, so she waited for digits
+    // anyway. Both platforms now say the one true sentence.
+    testWidgets('and Android is not promised an autofill C07 ignores', (
+      tester,
+    ) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       await _open(tester, 'C07');
       final named = find.textContaining('Android').evaluate().length;
+      final checks = find.textContaining('sixth digit lands').evaluate().length;
       debugDefaultTargetPlatformOverride = null;
-      expect(named, 1);
+      expect(named, 0);
+      expect(checks, 1);
     });
 
     test('no row opens a page that has no address', () {
@@ -270,6 +281,54 @@ void main() {
         findsNothing,
         reason: 'the index of every screen is not part of the product',
       );
+    });
+
+    test('APL-16: the server refuses what the first release switches off', () {
+      // Off in the app was not off on the server: a verified account could
+      // write posts, comments, coach pages and messages straight to the API.
+      // Both rules files and the coach callables carry their own switch, and
+      // all of them must stay off for as long as the app's flags are.
+      final shipped = FeatureFlags.shipped;
+      expect(shipped.isOn(Feature.community), isFalse);
+      expect(shipped.isOn(Feature.coachApp), isFalse);
+      for (final path in [
+        '../firebase/firestore.rules',
+        '../firebase/storage.rules',
+      ]) {
+        final rules = File(path).readAsStringSync();
+        for (final name in ['communityLive', 'coachLive']) {
+          expect(
+            RegExp('function $name\\(\\) \\{\\s*return false;\\s*\\}')
+                .hasMatch(rules),
+            isTrue,
+            reason: '$name() must return false in $path',
+          );
+        }
+      }
+      expect(
+        File('../functions/coaching/__init__.py').readAsStringSync(),
+        contains('COACH_APP_LIVE = False'),
+      );
+    });
+
+    test('R1-P17: a coach is still a coach after a relaunch', () {
+      // Her side of the app and her application are part of what the phone
+      // keeps, and the front door and the setup questions read them.
+      addTearDown(RoleState.instance.reset);
+      addTearDown(CoachProfileState.instance.reset);
+      _asVerifiedWoman();
+      RoleState.instance.roles = UserRoles.coach;
+
+      final snapshot = AppSnapshot.capture();
+      expect(snapshot['roles'], isNotNull);
+      expect(launchRoles(AppRouter.featureFlags), UserRoles.coach);
+      expect(AppRouter.frontDoor, appRoutes['K01']!.name);
+      expect(OnboardingState.instance.isDue, isFalse);
+
+      // The first release has no coach side, so none of it applies.
+      AppRouter.featureFlags = FeatureFlags.shipped;
+      expect(launchRoles(AppRouter.featureFlags), UserRoles.trainee);
+      expect(AppRouter.frontDoor, appRoutes['T01']!.name);
     });
 
     test('the testing aids key off the build, not off a flag', () {
@@ -401,6 +460,13 @@ List<String> _namesSwitchedOff(String text) {
   ];
 }
 
+/// False for a screen whose own switch ([AppRouter.screenFeatures]) is off in
+/// the shipped build, though its flow ships.
+bool _shipsItsOwnSwitch(String id) {
+  final feature = AppRouter.screenFeatures[id];
+  return feature == null || FeatureFlags.shipped.isOn(feature);
+}
+
 void _shippingFlagsTests() {
   group('the first release names nothing it has switched off', () {
     setUp(() {
@@ -410,8 +476,24 @@ void _shippingFlagsTests() {
 
     final ids = [
       for (final e in appDestinations.entries)
-        if (_shippingFlows.contains(e.value.flow)) e.key,
+        if (_shippingFlows.contains(e.value.flow) && _shipsItsOwnSwitch(e.key))
+          e.key,
     ];
+
+    // E03 is Eat's, but saying a meal has a switch of its own and it is off,
+    // so the screen is dark rather than walked.
+    final darkScreens = AppRouter.screenFeatures.keys.where(
+      (id) => !_shipsItsOwnSwitch(id),
+    );
+    for (final id in darkScreens) {
+      testWidgets('$id is switched off in this release', (tester) async {
+        tester.view.physicalSize = const Size(1170, 2532);
+        tester.view.devicePixelRatio = 3;
+        addTearDown(tester.view.reset);
+        await _open(tester, id);
+        expect(find.byType(FeatureOff), findsOneWidget);
+      });
+    }
 
     test('there are screens to walk', () {
       expect(ids.length, greaterThan(30), reason: 'the six shipping flows');

@@ -36,8 +36,10 @@ def test_region_matches():
 
 def test_record_consent_request_is_the_server_version():
     request = contract()["callables"]["record_consent"]["request"]
-    assert request == {"consentVersion": config.CONSENT_VERSION}
+    assert request["consentVersion"] == config.CONSENT_VERSION
     assert isinstance(request["consentVersion"], int)
+    assert set(request) == {"consentVersion", "locale", "appVersion"}
+    assert request["locale"] in config.CONSENT_LOCALES
 
 
 def test_record_consent_response_is_what_main_returns():
@@ -73,7 +75,7 @@ def test_the_verification_consent_document_is_the_one_the_store_writes(monkeypat
             return _Col(name)
 
     monkeypatch.setattr(store, "db", lambda: _Db())
-    store.write_consent("{uid}")
+    store.write_consent("{uid}", "en", "1.0.0+1")
 
     doc = contract()["documents"]["verificationConsent"]
     assert written["path"] == doc["path"]
@@ -151,3 +153,19 @@ def test_review_consent_document_matches_the_contract():
     doc = contract()["documents"]["reviewConsent"]
     assert doc["path"] == f"users/{{uid}}/consents/review-v{config.REVIEW_CONSENT_VERSION}"
     assert sorted(doc["fields"]) == ["at", "flagId", "path", "version"]
+
+
+def test_the_legal_acceptance_matches_the_contract(monkeypatch):
+    from identity import store
+
+    callable_ = contract()["callables"]["record_legal_acceptance"]
+    assert callable_["request"]["termsVersion"] == config.TERMS_VERSION
+    assert callable_["request"]["privacyVersion"] == config.PRIVACY_VERSION
+    assert callable_["response"] == {
+        "ok": True,
+        "termsVersion": config.TERMS_VERSION,
+        "privacyVersion": config.PRIVACY_VERSION,
+    }
+    doc = contract()["documents"]["legalAcceptance"]
+    assert doc["path"] == f"users/{{uid}}/consents/{store.legal_acceptance_doc_id()}"
+    assert set(doc["fields"]) == set(store.LEGAL_ACCEPTANCE_FIELDS)

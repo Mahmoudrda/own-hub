@@ -65,6 +65,12 @@ be documented; this is the Vision half of that."""
 
 MEMORY_MIB = 1024
 TIMEOUT_SEC = 120
+VERIFY_IN_FLIGHT_SEC = TIMEOUT_SEC + 30
+"""How long a running verify_identity holds her account against
+request_review. The marker is cleared when the call ends; this bound is for a
+call that never reached its own clean-up (an instance killed at the timeout),
+so a crashed check cannot keep her from a reviewer for longer than one call
+could have run."""
 MAX_INSTANCES = 20
 """A cost ceiling, not a capacity plan. 50,000 verifications over six months is
 about 12 an hour. Twenty concurrent instances is far above any honest peak and
@@ -555,6 +561,24 @@ PENDING COUNSEL (PDPL retention); not a legal opinion. 180 days is a
 placeholder chosen to cover disputes and a store review, not a number counsel
 has approved."""
 
+SIGNAL_RETENTION_DAYS = 180
+"""How long the two fraud signals live after their last write: the failure
+count per ID hash (verificationBehaviour) and the hashed installation record
+(verificationInstalls). Every write moves `expireAt` to now plus this, and the
+Firestore TTL policy on `expireAt` deletes what has gone quiet. Neither is
+linked to an account, so deletion leaves them to this clock (manifest rows 42
+and 43). Privacy policy v3 section 6 states this period.
+
+PENDING COUNSEL (PDPL retention); not a legal opinion."""
+
+ACCESS_LOG_RETENTION_DAYS = 365
+"""How long a reviewer access log entry (verificationReviewAccess) is kept
+before the TTL policy on `expireAt` deletes it. It holds a flag id, a reviewer
+uid, an action and a time: no photograph, phone number or ID number. Manifest
+row 44. Privacy policy v3 section 6 states this period.
+
+PENDING COUNSEL (PDPL retention); not a legal opinion."""
+
 DELETION_RESWEEP_MINUTES = 65
 """N9: an ID token stays valid for up to an hour after her Auth user is
 disabled, and a client can hold queued offline writes, so users/{uid} and
@@ -613,6 +637,27 @@ resource to match the prose would break a secret that already exists, so the
 mapping is recorded here instead.
 """
 
+SECRET_REVIEWER_UIDS = "store-reviewer-uids"
+"""M13: the Secret Manager secret listing the uids of App Store and Google
+Play review accounts, comma or newline separated. A listed uid that reaches
+verify_identity with a recorded consent is approved without the pipeline
+running (no image is read), and every such approval is logged and recorded
+as `reviewerBypass` in the review access log. A missing, empty or unreadable
+secret means nobody is listed: the check fails closed. Owner action: create
+the +20 test number in Firebase Auth and put its uid here only while a store
+review is open."""
+
+SECRET_REVIEWER_PHONES = "store-reviewer-phones"
+"""M13: the Secret Manager secret listing the store review test numbers in
+E.164 form (+20...), one per line or comma separated. Matched against the
+phone number in the caller's verified ID token, so a reviewer who deletes her
+account and signs in again with the same test number (a new uid) still gets
+through. Same rules as SECRET_REVIEWER_UIDS: every use is logged and recorded
+as `reviewerBypass`, and a missing, empty or unreadable secret lists nobody."""
+
+REVIEWER_UIDS_CACHE_SEC = 300
+"""How long each reviewer list is cached per instance."""
+
 SECRET_FLAG_WEBHOOK = "flag-webhook-url"
 """Secret Manager secret holding the review-queue webhook URL (S14). The
 FLAG_WEBHOOK_URL environment variable overrides it."""
@@ -631,10 +676,46 @@ again, which quietly breaks the one-card-one-account rule. With it, a rotation
 can compute both and migrate.
 """
 
-CONSENT_VERSION = 1
-"""Bumped whenever the consent text changes. Spec §4 allows exactly three fields
-in a consent record — uid, version, timestamp — so the version is the only thing
-tying a record to what she was actually shown."""
+CONSENT_VERSION = 2
+"""Bumped whenever the consent text changes. The version is what ties a record
+to what she was actually shown.
+
+Version 2 (privacy policy v3): the C09b wording names Frankfurt and the EU
+Cloud Vision endpoint, the self-hosted face match, the 180-day result and the
+keyed ID code, and a woman from Own Hub as the fallback. The record now also
+carries the language she read it in and the app version that showed it, so
+"which words did she see" has an answer. Women verified under version 1 are
+not asked again: only start_verification and verify_identity read it."""
+
+CONSENT_LOCALES = ("en", "ar")
+"""The languages a consent or an acceptance can be recorded in."""
+
+APP_VERSION_PATTERN = r"^[0-9.+]{1,32}$"
+"""What an app version may look like in a consent record: digits, dots and a
+plus, as in `1.0.0+12`. Anything else is dropped (consent) or refused (legal
+acceptance) rather than stored, because a free-text field written from the
+client is a place for anything at all to land."""
+
+TERMS_VERSION = 3
+"""The material version of the Terms of Use she accepts at C06 (M1). Moves
+together with the app's `kTermsVersion` (lib/features/signup/domain/
+legal_acceptance.dart); release_preflight.sh fails if they differ. Bump only
+for a material change: the app then shows the legal update sheet at launch.
+A wording fix is a document number (3.0 to 3.1) and does not move this."""
+
+PRIVACY_VERSION = 3
+"""The material version of the Privacy Policy accepted with the Terms. Same
+rules as TERMS_VERSION, mirrored by the app's `kPrivacyVersion`."""
+
+LEGAL_PLATFORMS = ("android", "ios")
+"""Where an acceptance may come from."""
+
+PLEDGE_VERSION = 1
+"""The version of the community's three rules she agrees to on C16
+("How we treat each other"). Moves with the app's `kPledgeVersion`
+(lib/app_state/pledge.dart). Recorded once at users/{uid}/consents/pledge-v{N};
+bump it when the rules change in either language, and every woman is shown
+them again before the community opens."""
 
 HEALTH_CONSENT_VERSION = 1
 """Version of the separate health-data and transfer-abroad consent (S17,
@@ -644,10 +725,15 @@ life-stage or allergy write reaches the cloud; the rules refuse those writes
 without it. Bumped whenever that wording changes. The wording is PENDING
 COUNSEL and PDPC approval of the consent mechanism."""
 
-REVIEW_CONSENT_VERSION = 1
+REVIEW_CONSENT_VERSION = 2
 """N7: version of the review-route consent recorded by request_review at
-users/{uid}/consents/review-v1 = {version, at, path, flagId}. Asking for a woman
-reviewer IS the consent: the app shows the wording (her phone number is looked
-up and she is called by a woman reviewer, by video or at a ladies-only gym)
-immediately before it calls request_review. The wording is PENDING COUNSEL.
-Bumped whenever that wording changes."""
+users/{uid}/consents/review-v2 = {version, at, path, flagId}. Asking for a woman
+reviewer IS the consent: the app shows the wording (a woman from Own Hub
+reviews her case, looks up her phone number and contacts her by phone within
+REVIEW_SLA_HOURS) immediately before it calls request_review. The wording is
+PENDING COUNSEL. Bumped whenever that wording changes, together with the app's
+`kReviewConsentVersion`.
+
+Version 2 (6 October 2026) removed the promise of a video call: no video
+service exists. A version-1 record (review-v1) is no longer read, so a flag
+asked for under the old wording needs her to ask again before contact()."""

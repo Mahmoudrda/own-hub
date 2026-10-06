@@ -20,6 +20,8 @@ class FakeReviewStore:
         self.notified: list[tuple] = []
         self.phones: dict[str, str] = {}
         self.review_consents: dict[str, dict] = {}
+        self.verifying: set[str] = set()
+        self.approved_pushes: list[str] = []
         self.default_phone = phone
         self._ids = itertools.count(1)
 
@@ -42,6 +44,12 @@ class FakeReviewStore:
             current["reviewScheduledFor"] = scheduled_for
         if decided:
             current["decidedAt"] = "ts"
+
+    def notify_approved(self, uid):
+        self.approved_pushes.append(uid)
+
+    def verify_in_flight(self, uid):
+        return uid in self.verifying
 
     def uid_daily_count_and_increment(self, uid, field):
         key = (uid, field)

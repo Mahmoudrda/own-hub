@@ -27,10 +27,42 @@ abstract final class LegalLinks {
   /// Data safety, Data deletion.
   static const String deleteAccount = '';
 
+  /// The privacy mailbox: where "Ask for a copy" in Your data writes to.
+  /// The same address as `contactPrivacy` in `site/config.json`, which the
+  /// privacy policy publishes; test/release/legal_links_test.dart holds the
+  /// two together.
+  static const String privacyEmail = 'mahmoud.reda.acc@gmail.com';
+
   /// True once every page has an address.
   static bool get allSet =>
       privacyPolicy.isNotEmpty &&
       terms.isNotEmpty &&
       support.isNotEmpty &&
       deleteAccount.isNotEmpty;
+
+  /// [url] in her language. The site publishes every page twice, the Arabic
+  /// one under `/ar/`, so `https://…/privacy` becomes `https://…/ar/privacy`.
+  /// Empty stays empty, and a page already under `/ar/` is left alone.
+  static String localised(String url, String languageCode) {
+    if (url.isEmpty || languageCode != 'ar') return url;
+    final uri = Uri.tryParse(url);
+    if (uri == null || !uri.hasScheme) return url;
+    if (uri.path == '/ar' || uri.path.startsWith('/ar/')) return url;
+    final path = uri.path.isEmpty || uri.path == '/' ? '/' : uri.path;
+    return uri.replace(path: path == '/' ? '/ar/' : '/ar$path').toString();
+  }
+
+  /// Stops a release build whose public pages have no address (M2). The
+  /// stores require the policy to be reachable from inside the app, and
+  /// `tool/release_preflight.sh` fails on the same condition; this makes a
+  /// build that skipped the preflight fail at its first launch instead of in
+  /// review.
+  static void requireForRelease({required bool release}) {
+    if (release && !allSet) {
+      throw StateError(
+        'LegalLinks are empty: fill lib/config/legal_links.dart before a '
+        'release build.',
+      );
+    }
+  }
 }

@@ -61,6 +61,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 
+import '../domain/clock/app_clock.dart';
 import '../domain/training/prescribed_set.dart';
 import '../domain/week/week_key.dart';
 import '../features/account/domain/dietary_profile.dart';
@@ -711,7 +712,9 @@ CloudDoc _eatPrefsDoc() {
         for (final entry in prefs.plates.entries.take(kPlateCap))
           entry.key: _plate(entry.value),
       },
-      'ramadanMode': prefs.ramadanMode.name,
+      // No `ramadanMode`: whether she is fasting stays on this phone (M10,
+      // privacy policy v3, 3.5). The rules may still allow the key; this
+      // phone never sends it.
       'proteinTargetGOverride': ?prefs.proteinTargetGOverride,
       'libVersion': prefs.libVersion,
       'updatedAt': kServerTime,
@@ -739,11 +742,10 @@ int _foldEatPrefs(List<CloudDoc> docs) {
   }
 
   // The scalars beside them are singletons, so the cloud only speaks where this
-  // phone has said nothing: `auto` is the Ramadan pill's untouched state and a
-  // null protein target is the unowned one.
-  final ramadan = local.ramadanMode == RamadanMode.auto
-      ? _pick(RamadanMode.values, row['ramadanMode']) ?? RamadanMode.auto
-      : local.ramadanMode;
+  // phone has said nothing: a null protein target is the unowned one. Her
+  // Ramadan setting is never read from the cloud: it stays on this phone
+  // (M10), and an old copy written before that is ignored.
+  final ramadan = local.ramadanMode;
   final target =
       local.proteinTargetGOverride ?? _int(row['proteinTargetGOverride']);
 
@@ -930,7 +932,7 @@ int _foldCheckIns(List<CloudDoc> docs) {
   // Today's check-in is a fact about today and nothing else (G9 §3.3). A
   // check-in pulled for an earlier day stays in the map for Y10's chart and is
   // never carried forward as though she had logged it this morning.
-  final todayId = AppRouter.dayId(DateTime.now());
+  final todayId = AppRouter.dayId(AppClock.now());
   AppRouter.todayCheckIn = merged[todayId] ?? TodayCheckIn.absent;
   return taken;
 }
@@ -1144,7 +1146,7 @@ Iterable<CloudDoc> _periods() sync* {
 
 int _foldPeriods(List<CloudDoc> docs) {
   final store = AppRouter.cycleRepository.store;
-  final today = DateTime.now();
+  final today = AppClock.now();
   var taken = 0;
   for (final doc in docs) {
     if (store.periods.containsKey(doc.id)) continue;

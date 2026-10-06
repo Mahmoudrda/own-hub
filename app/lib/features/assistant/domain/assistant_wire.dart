@@ -33,8 +33,8 @@
 /// ## What is deliberately absent from the payload
 ///
 /// [AssistantSubject] is an allowlist, not a filter over her document. Her name,
-/// photos, weight, measurements, ID result, phone and **cycle data** have no
-/// field to travel in — and cycle is absent *whatever the sharing switch says*,
+/// photos, weight, measurements, ID result, phone, **allergies** and **cycle
+/// data** have no field to travel in — and cycle is absent *whatever the sharing switch says*,
 /// because the switch is never consulted by code that cannot express the value.
 /// `assistant_payload_test.dart` asserts the serialised body against
 /// `kForbiddenPayloadKeys`.
@@ -44,6 +44,13 @@
 /// `deep_knee_flexion`), so the clinical fact never travels while the constraint
 /// it implies still applies. `ClientConstraints.derivedAvoid` already does that
 /// derivation.
+///
+/// Her allergies are health data, and they do not travel either. Food is
+/// screened on the phone: `AssistantPack.screenFoods` is `AllergyGuard.screen`,
+/// run against her stored answer before anything is ranked, so a dish she
+/// cannot eat is not in the candidate set and the model never needs the list.
+/// The privacy policy (§3.8) promises a separate agreement before anything of
+/// hers reaches a model; an allergy list is not sent even then.
 library;
 
 import 'package:meta/meta.dart';
@@ -74,9 +81,10 @@ enum AssistantTool {
   /// `ExerciseCandidateFilter` — never by asking the model nicely.
   searchExerciseLibrary,
 
-  /// `{query, slot, excludeAllergens[], dietTags[], maxCostEGP, limit}`.
-  /// Allergens are excluded by `AllergyGuard` before ranking; unverified rows
-  /// are returned without totals rather than with invented ones.
+  /// `{query, slot, dietTags[], maxCostEGP, limit}`. No allergen input: her
+  /// allergens are excluded on the phone by `AllergyGuard` before ranking, so
+  /// the list never leaves it. Unverified rows are returned without totals
+  /// rather than with invented ones.
   searchFoodLibrary,
 
   /// `{fromExerciseId, toExerciseId, reasonKey}`. **Proposes; does not write.**
@@ -124,7 +132,6 @@ class AssistantSubject {
     required this.locale,
     required this.equipment,
     required this.avoid,
-    required this.allergies,
     required this.dietary,
     required this.sessionMinutes,
     required this.place,
@@ -149,9 +156,6 @@ class AssistantSubject {
       locale: locale,
       equipment: Set.unmodifiable(equipment),
       avoid: Set.unmodifiable(constraints.avoid),
-      allergies: constraints.allergies == null
-          ? null
-          : Set.unmodifiable(constraints.allergies!),
       dietary: constraints.dietary == null
           ? null
           : Set.unmodifiable(constraints.dietary!),
@@ -169,9 +173,6 @@ class AssistantSubject {
   /// The resolved avoid set. Carries the *constraint*, never the clinical fact
   /// that produced it.
   final Set<ContraindicationTag> avoid;
-
-  /// Null means unreadable — never "she has none". `AllergyGuard`'s distinction.
-  final Set<String>? allergies;
 
   /// Null means unreadable.
   final Set<String>? dietary;
@@ -191,7 +192,6 @@ class AssistantSubject {
     'locale': locale,
     'equipment': equipment.toList()..sort(),
     'avoid': [for (final tag in avoid) tag.wireName]..sort(),
-    if (allergies != null) 'allergies': allergies!.toList()..sort(),
     if (dietary != null) 'dietary': dietary!.toList()..sort(),
     if (sessionMinutes != null) 'sessionMinutes': sessionMinutes,
     if (place != null) 'place': place,
@@ -201,13 +201,15 @@ class AssistantSubject {
 /// The safety facts the subject is built from.
 ///
 /// A narrow view over `ClientConstraints` so this layer never holds the whole
-/// assessment — and so a caller cannot pass the life stage by accident.
+/// assessment — and so a caller cannot pass the life stage, or her allergies,
+/// by accident. Allergies are applied on the phone (see the file note).
 @immutable
 class ClientSafetyFacts {
-  const ClientSafetyFacts({required this.avoid, this.allergies, this.dietary});
+  const ClientSafetyFacts({required this.avoid, this.dietary});
 
   final Set<ContraindicationTag> avoid;
-  final Set<String>? allergies;
+
+  /// Null means unreadable — never "she has none".
   final Set<String>? dietary;
 }
 

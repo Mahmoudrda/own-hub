@@ -234,7 +234,16 @@ class RecipesView extends StatefulWidget {
     this.onOpenLetter,
     this.onAnswerAllergies,
     this.onSelectTab,
+    this.pickLabel,
+    this.onPick,
   });
+
+  /// Pick mode, opened from a day on `E07`: the line that says which day
+  /// ("Pick a dinner for Monday"). Null is the ordinary library.
+  final String? pickLabel;
+
+  /// Pick mode: the recipe she tapped goes on the day, instead of opening.
+  final ValueChanged<String>? onPick;
 
   final List<RecipeRow>? recipes;
 
@@ -371,6 +380,14 @@ class _RecipesViewState extends State<RecipesView> {
       ),
       body: AppScaffold(
         children: [
+          if (widget.pickLabel case final label?)
+            Text(
+              label,
+              key: const ValueKey('e05-pick-label'),
+              style: AppText.titleM.copyWith(
+                color: AppColors.onPrimaryContainer,
+              ),
+            ),
           if (_searching)
             AppField(
               label: l10n.searchRecipes,
@@ -422,37 +439,46 @@ class _RecipesViewState extends State<RecipesView> {
                 size: 22,
                 color: AppColors.onSurfaceVariant,
               ),
-              onTap: () {
-                final open = widget.onOpenRecipe;
-                if (open != null) {
-                  open(recipe.recipeId);
-                  return;
-                }
-                openScreen(context, 'E06');
-              },
+              onTap: () => _choose(recipe.recipeId),
             ),
           // The week is a different kind of thing from a recipe, so it sits
           // on a flat tint below the ruled list rather than as one more line.
-          AppListItem(
-            variant: AppCardVariant.filled,
-            leading: const Icon(
-              Icons.shopping_cart,
-              size: 24,
-              color: AppColors.primaryDim,
+          if (widget.onPick == null)
+            AppListItem(
+              variant: AppCardVariant.filled,
+              leading: const Icon(
+                Icons.shopping_cart,
+                size: 24,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.thisWeeksPlanAndList,
+              subtitle: l10n.n5DinnersOneShop,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
             ),
-            title: l10n.thisWeeksPlanAndList,
-            subtitle: l10n.n5DinnersOneShop,
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
-            ),
-            onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
-          ),
           ..._book(l10n, filter),
         ],
       ),
     );
+  }
+
+  /// A tap on a recipe: onto the day in pick mode, else open it.
+  void _choose(String recipeId) {
+    final pick = widget.onPick;
+    if (pick != null) {
+      pick(recipeId);
+      return;
+    }
+    final open = widget.onOpenRecipe;
+    if (open != null) {
+      open(recipeId);
+      return;
+    }
+    openScreen(context, 'E06');
   }
 
   /// Why the app's own four rows are not on screen.
@@ -613,17 +639,7 @@ class _RecipesViewState extends State<RecipesView> {
         if (bySection[section.sectionId]!.isNotEmpty) ...[
           _SectionDivider(section: section),
           for (final recipe in bySection[section.sectionId]!)
-            _RahmaCard(
-              recipe: recipe,
-              onTap: () {
-                final open = widget.onOpenRecipe;
-                if (open != null) {
-                  open(recipe.recipeId);
-                  return;
-                }
-                openScreen(context, 'E06');
-              },
-            ),
+            _RahmaCard(recipe: recipe, onTap: () => _choose(recipe.recipeId)),
         ],
       // The empty state has to name the reason it is empty, and the two reasons
       // are not the same sentence.

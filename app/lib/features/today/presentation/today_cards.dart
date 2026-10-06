@@ -13,6 +13,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../eat/domain/meal_repository.dart' show MealSlot;
 import '../../eat/presentation/eat_day_view_model.dart' show EatDayViewModel;
@@ -180,7 +181,7 @@ String mealHeading(
   DateTime? now,
   bool hasUsual = false,
 }) {
-  final slot = EatDayViewModel.slotAt(loggedAt ?? now ?? DateTime.now());
+  final slot = EatDayViewModel.slotAt(loggedAt ?? now ?? AppClock.now());
   if (loggedAt != null) return mealSlotName(l10n, slot);
   // "Your usual" is a claim about a habit, and a woman on a fresh install has
   // none: T01, T02 and E04 all headed the card "Lunch, your usual" over an
@@ -208,12 +209,8 @@ String mealHeading(
 /// fires for a meal she has had three times or more, so in the product it is
 /// always true here; a review surface opened with nothing gets the plain slot
 /// name rather than a habit she has not shown.
-String mealNudgeHeading(
-  AppL10n l10n, {
-  DateTime? now,
-  bool hasUsual = false,
-}) {
-  final slot = EatDayViewModel.slotAt(now ?? DateTime.now());
+String mealNudgeHeading(AppL10n l10n, {DateTime? now, bool hasUsual = false}) {
+  final slot = EatDayViewModel.slotAt(now ?? AppClock.now());
   if (!hasUsual) return mealSlotName(l10n, slot);
   return switch (slot) {
     MealSlot.breakfast => l10n.breakfastYourUsual_1lb0u,

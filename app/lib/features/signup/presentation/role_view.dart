@@ -111,12 +111,8 @@ class _RoleViewState extends State<RoleView> {
       ],
       children: [
         Text(l10n.whichOneAreYou, style: AppText.display),
-        Text(
-          // Was "by messaging us". D11 makes this hers to change, so the copy
-          // stops sending her to support for it.
-          l10n.youCanChangeThisLaterInYour,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
+        // "You can change this later in your profile" went: her profile has
+        // no role to change, so it was a promise nothing kept.
         const SizedBox(height: 4),
         _RoleCard(
           icon: Icons.self_improvement,

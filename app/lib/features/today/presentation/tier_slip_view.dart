@@ -47,6 +47,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/rewards/level_curve.dart';
 import '../../../domain/rewards/rewards.dart';
 import '../../../domain/rewards/stated_figure.dart';
@@ -130,7 +131,7 @@ class _TierSlipViewState extends State<TierSlipView> {
     // Today, not the prototype's Monday. See the same fix in
     // `quiet_week_view.dart`: the router passes no `date`, so this screen
     // greeted every woman with 14 September 2026.
-    _date = widget.date ?? DateTime.now();
+    _date = widget.date ?? AppClock.now();
     final week = WeekKey.of(_date);
 
     // Two conditions, and the order matters. There must be a tier to talk

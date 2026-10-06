@@ -34,6 +34,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../app_state/firebase_boot.dart';
 import '../domain/auth_repository.dart';
+import '../domain/digits.dart';
+
+export '../domain/digits.dart' show asciiDigits;
 
 /// Egypt's country calling code, without the plus.
 const String _egyptDiallingCode = '20';
@@ -79,12 +82,11 @@ const Duration _autoRetrievalTimeout = Duration(seconds: 30);
 ///     0020100123456 7  the international prefix dialled from a landline
 ///     ٠١٠٠١٢٣٤٥٦٧      Arabic-Indic digits from an Arabic keyboard
 ///
-/// The Arabic-Indic case cannot be produced by `C06` today, because that screen
-/// filters the field to ASCII digits before it decides whether the button is
-/// live. It is handled anyway: the app is used in Arabic by most of the women
-/// it is for, and a number that is silently rejected as "too short" while it
-/// plainly reads as eleven digits on screen is the kind of defect nobody can
-/// report usefully.
+/// `C06` counts digits with the same [asciiDigits], so an Arabic keyboard's
+/// number lights the button and arrives here intact: the app is used in Arabic
+/// by most of the women it is for, and a number silently rejected as "too
+/// short" while it plainly reads as eleven digits is the kind of defect nobody
+/// can report usefully.
 String egyptianE164(String input) {
   var digits = asciiDigits(input);
 
@@ -113,34 +115,12 @@ String egyptianE164(String input) {
   return '+$_egyptDiallingCode$digits';
 }
 
-/// The digits in [input], with Arabic-Indic and Persian forms folded onto
-/// `0`–`9` and everything else dropped.
-///
-/// Exposed because both the number and the six-digit code need it: an Arabic
-/// keyboard produces `٠١٢`, and `int.parse` and Firebase alike only read ASCII.
-String asciiDigits(String input) {
-  const int ascii0 = 0x30;
-  const int arabicIndic0 = 0x0660;
-  const int extendedArabicIndic0 = 0x06F0;
-
-  final buffer = StringBuffer();
-  for (final rune in input.runes) {
-    if (rune >= ascii0 && rune <= ascii0 + 9) {
-      buffer.writeCharCode(rune);
-    } else if (rune >= arabicIndic0 && rune <= arabicIndic0 + 9) {
-      buffer.writeCharCode(ascii0 + rune - arabicIndic0);
-    } else if (rune >= extendedArabicIndic0 && rune <= extendedArabicIndic0 + 9) {
-      buffer.writeCharCode(ascii0 + rune - extendedArabicIndic0);
-    }
-  }
-  return buffer.toString();
-}
-
 class FirebaseAuthRepository implements AuthRepository {
   /// [auth] is for tests, which pass a stand-in so nothing reaches the network.
   /// In the app it is left null and resolved from [FirebaseBoot], which may
   /// legitimately have nothing to give.
-  FirebaseAuthRepository({FirebaseAuth? auth}) : _auth = auth ?? _resolveAuth() {
+  FirebaseAuthRepository({FirebaseAuth? auth})
+    : _auth = auth ?? _resolveAuth() {
     final firebase = _auth;
     if (firebase == null) return;
 

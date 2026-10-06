@@ -25,6 +25,26 @@ import {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const RULES = readFileSync(resolve(here, '../../../firebase/storage.rules'), 'utf8');
+
+// APL-16: user-media and coach-docs are switched off as they ship
+// (`communityLive()` and `coachLive()` return false). The tests above the last
+// section are about the rules behind those switches, so they load the file with
+// both turned on, which is what it will be when the features ship. The last
+// section reloads it exactly as it ships and proves nothing can be written.
+const SWITCHES = [
+  ['function communityLive() {\n      return false;\n    }',
+   'function communityLive() {\n      return true;\n    }'],
+  ['function coachLive() {\n      return false;\n    }',
+   'function coachLive() {\n      return true;\n    }'],
+];
+function switchedOn(source) {
+  let out = source;
+  for (const [off, on] of SWITCHES) {
+    if (!out.includes(off)) throw new Error(`storage rules switch not found: ${off}`);
+    out = out.replace(off, on);
+  }
+  return out;
+}
 const PORT = Number(process.env.OWNHUB_RULES_STORAGE_PORT || 9399);
 const BUCKET = 'demo-own-hub.appspot.com';
 
@@ -34,11 +54,16 @@ const MB = 1024 * 1024;
 
 let env;
 
-before(async () => {
+async function load(rules) {
+  if (env) await env.cleanup();
   env = await initializeTestEnvironment({
     projectId: 'demo-own-hub',
-    storage: { rules: RULES, host: '127.0.0.1', port: PORT },
+    storage: { rules, host: '127.0.0.1', port: PORT },
   });
+}
+
+before(async () => {
+  await load(switchedOn(RULES));
 });
 
 after(async () => {
@@ -151,4 +176,31 @@ test('the content library is unchanged: read when signed in, written by admin', 
   await assertFails(getBytes(ref(anon(), 'content/recipes/r1/a.jpg')));
   await assertSucceeds(put(admin(), 'content/recipes/r1/b.jpg', 16, 'image/jpeg'));
   await assertFails(put(her(), 'content/recipes/r1/c.jpg', 16, 'image/jpeg'));
+});
+
+// ------------------------------------------------- as the rules ship (APL-16)
+
+test('as shipped: nothing can be written to her media or to coach-docs', async () => {
+  await load(RULES);
+  await env.clearStorage();
+  await assertFails(put(her(), `user-media/${HER}/posts/p1.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(her(), `user-media/${HER}/voice/v1.m4a`, 1024, 'audio/mp4'));
+  await assertFails(put(her(), `coach-docs/${HER}/c1`, 1024, 'application/pdf'));
+  await assertFails(put(her(), `coach-docs/${HER}/c2.jpg`, 1024, 'image/jpeg'));
+});
+
+test('as shipped: what is already there can still be read and deleted by her', async () => {
+  await seed(`user-media/${HER}/p.jpg`);
+  await seed(`coach-docs/${HER}/c1`, 'application/pdf');
+  await assertSucceeds(getBytes(ref(her(), `user-media/${HER}/p.jpg`)));
+  await assertSucceeds(deleteObject(ref(her({}), `user-media/${HER}/p.jpg`)));
+  await assertSucceeds(deleteObject(ref(her(), `coach-docs/${HER}/c1`)));
+});
+
+test('as shipped: the switches read false', () => {
+  for (const name of ['communityLive', 'coachLive']) {
+    if (!new RegExp(`function ${name}\\(\\) \\{\\s*return false;\\s*\\}`).test(RULES)) {
+      throw new Error(`${name}() must return false in the shipped storage.rules`);
+    }
+  }
 });

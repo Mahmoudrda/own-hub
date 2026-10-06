@@ -17,6 +17,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/rewards/stated_figure.dart';
 import '../../../l10n/app_l10n.dart';
@@ -76,7 +77,7 @@ class LoggedFromMemoryView extends StatelessWidget {
     final named = loggedOn;
     if (named != null) return named;
     final dated = session?.dateKey;
-    return (dated == null ? null : DateTime.tryParse(dated)) ?? DateTime.now();
+    return (dated == null ? null : DateTime.tryParse(dated)) ?? AppClock.now();
   }
 
   @override

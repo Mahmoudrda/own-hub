@@ -62,6 +62,8 @@ class CoachSetupScaffold extends StatelessWidget {
     this.onBack,
     this.onSaveAndClose,
     this.showSaveAndClose = true,
+    this.secondaryLabel,
+    this.onSecondary,
   });
 
   final CoachSetupStep step;
@@ -86,6 +88,11 @@ class CoachSetupScaffold extends StatelessWidget {
 
   /// `K06` has nothing to save and nothing to close.
   final bool showSaveAndClose;
+
+  /// A second way on, under the primary: `K05`'s "Add payout later". Drawn
+  /// only when both are given.
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +121,14 @@ class CoachSetupScaffold extends StatelessWidget {
           height: 56,
           onPressed: onPrimary,
         ),
+        if (secondaryLabel != null && onSecondary != null)
+          AppButton(
+            secondaryLabel!,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: onSecondary,
+          ),
         if (showSaveAndClose)
           AppButton(
             l10n.saveAndClose,

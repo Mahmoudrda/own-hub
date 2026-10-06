@@ -69,7 +69,29 @@ class YoureInView extends StatelessWidget {
     this.verifiedInSeconds,
     this.onReadTheRules,
     this.onCoachSetup,
+    this.onStartDay1,
+    this.onGoHome,
+    this.isCoach = true,
+    this.alsoTrains = true,
   });
+
+  /// "Start day 1": the first workout, over Home. The primary while the
+  /// community is off, because a pledge about a room that does not exist yet
+  /// is the wrong thing to hand her at this moment.
+  final VoidCallback? onStartDay1;
+
+  /// "Go to Home", the quieter way on.
+  final VoidCallback? onGoHome;
+
+  /// Whether she signed up as a coach (or as both). The coach link is hers
+  /// only; a trainee is not offered a profile setup she did not ask for.
+  final bool isCoach;
+
+  /// Whether she trains here too (she chose "both"). A coach's primary action
+  /// is her profile; for a woman who also trains, the trainee way on stays as
+  /// the second action. A coach only is not offered day one of a programme she
+  /// did not ask for.
+  final bool alsoTrains;
 
   /// Her name, if she has given one. Null is expected and handled: setup runs
   /// after verification, so on a first run she usually has no name yet.
@@ -88,8 +110,8 @@ class YoureInView extends StatelessWidget {
   /// is the moment she is most likely to believe what it tells her.
   final int? verifiedInSeconds;
 
-  /// On to `C16`, the community pledge. The community does not open until she
-  /// has accepted it.
+  /// On to `C16`, the community pledge, while the community is on. The
+  /// community does not open until she has accepted it.
   final VoidCallback? onReadTheRules;
 
   /// A coach's branch: `K01`, her profile setup.
@@ -98,21 +120,48 @@ class YoureInView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final community = AppRouter.featureFlags.isOn(Feature.community);
+    // She signed up to coach: her profile is the next thing she does, so it is
+    // the primary. K01 is the coach app's first screen, and with the coach app
+    // off it would open the "not in this build" panel, so it is offered only
+    // while the coach app is on. The community's rules are part of K01 for a
+    // coach, so her way on does not pass through C16.
+    final coachFirst = isCoach && AppRouter.featureFlags.isOn(Feature.coachApp);
+    final trainee = !coachFirst || alsoTrains;
+    final traineeVariant = coachFirst
+        ? AppButtonVariant.outlined
+        : AppButtonVariant.filled;
 
     return AppScaffold(
       scrollable: false,
       footer: [
-        AppButton(l10n.readTheThreeRules, onPressed: onReadTheRules),
-        // K01 is the coach app's first screen. With the coach app off it
-        // would open the "not in this build" panel.
-        if (AppRouter.featureFlags.isOn(Feature.coachApp))
+        if (coachFirst)
           AppButton(
-            l10n.imACoachSetUpMyProfile,
+            l10n.setUpMyCoachProfile,
+            icon: Icons.badge_outlined,
+            onPressed: onCoachSetup,
+          ),
+        if (trainee && community)
+          AppButton(
+            l10n.readTheThreeRules,
+            variant: traineeVariant,
+            onPressed: onReadTheRules,
+          ),
+        if (trainee && !community) ...[
+          AppButton(
+            l10n.startDay1,
+            icon: Icons.play_arrow,
+            variant: traineeVariant,
+            onPressed: onStartDay1,
+          ),
+          AppButton(
+            l10n.goToHome,
             variant: AppButtonVariant.text,
             height: 44,
             fontSize: 15,
-            onPressed: onCoachSetup,
+            onPressed: onGoHome,
           ),
+        ],
       ],
       children: [
         const AppSpacer(),
@@ -163,11 +212,15 @@ class YoureInView extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
-            // Rule 7, stated to her face: the images are gone, the result is
-            // not. The duration is claimed only when it was actually measured.
+            // Rule 7, stated to her face: the images are gone. What stays is
+            // said whole: the result, its reasons and the keyed code of her ID
+            // number, as C09b disclosed. "The result and nothing else" was
+            // untrue. The duration is claimed only when it was measured.
             verifiedInSeconds == null
-                ? l10n.yourIdPhotoAndSelfieHaveBeen
-                : l10n.verifiedInSecondsSecondsYourIdPhoto(verifiedInSeconds!),
+                ? l10n.yourIdPhotoAndSelfieHaveBeen_1qfoh
+                : l10n.verifiedInSecondsSecondsYourIdPhoto_mbpt8(
+                    verifiedInSeconds!,
+                  ),
             textAlign: TextAlign.center,
             style: AppText.body.copyWith(
               height: 24 / 16,

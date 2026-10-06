@@ -42,6 +42,11 @@ enum LivenessStart {
   /// The call failed for a reason that is not hers: offer a woman reviewer.
   failed,
 
+  /// The network did not answer. Her photographs are still held, and she can
+  /// try again from the same screen. A dropped connection is not a reason to
+  /// queue her for a person.
+  offline,
+
   /// A daily limit: try again tomorrow, never review.
   tryTomorrow,
 
@@ -131,6 +136,7 @@ class IdentityCheck {
     } catch (error) {
       // Logged by nobody on purpose: a failure here is not about her, and the
       // screen that called this says something true and moves on.
+      if (isNetworkCallFailure(error)) return LivenessStart.offline;
       return switch (classifyCallFailure(error)) {
         CallFailureKind.tryTomorrow => LivenessStart.tryTomorrow,
         CallFailureKind.checksUsedUp => LivenessStart.checksUsedUp,

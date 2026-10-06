@@ -39,7 +39,7 @@ class PledgeView extends StatelessWidget {
       footer: [
         AppButton(l10n.iAgreeLetMeIn, onPressed: onAgree),
         Text(
-          l10n.breakOneAndYouLoseYourPlace,
+          l10n.breakingThemCanCloseYourAccountYou,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],

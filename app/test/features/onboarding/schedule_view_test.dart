@@ -167,12 +167,17 @@ void main() {
       tester,
     ) async {
       final repository = InMemoryIntakeRepository();
-      await tester.pumpWidget(_host(ScheduleView(repository: repository)));
+      // Skip is drawn only where it leads somewhere.
+      var skipped = 0;
+      await tester.pumpWidget(
+        _host(ScheduleView(repository: repository, onSkip: () => skipped++)),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Skip'));
       await tester.pumpAndSettle();
 
+      expect(skipped, 1);
       expect(repository.writes, isEmpty);
       expect(repository.read().days, 3);
     });
@@ -234,5 +239,73 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('the short "Your week", before sign-up', () {
+    testWidgets('one screen: days, minutes and life stage in one write', (
+      tester,
+    ) async {
+      final repository = InMemoryIntakeRepository();
+      var continued = 0;
+      await tester.pumpWidget(
+        _host(
+          ScheduleView(
+            repository: repository,
+            includeLifeStage: true,
+            titleOverride: '1 of 3 · Your week',
+            continueLabel: 'See my week',
+            onBack: () {},
+            onContinue: () => continued++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 of 3 · Your week'), findsOneWidget);
+      expect(find.text('Anything we should train around?'), findsOneWidget);
+      expect(
+        find.text('Only you see this. It stays on this phone.'),
+        findsOneWidget,
+      );
+      // Everything is preselected, so there is nothing to skip, and before
+      // she has an account there is no Home to close to.
+      expect(find.text('Skip'), findsNothing);
+      expect(find.byIcon(Icons.close), findsNothing);
+
+      await tester.tap(find.text('4'));
+      final pregnant = find.text('Pregnant');
+      await tester.ensureVisible(pregnant);
+      await tester.tap(pregnant);
+      await tester.pumpAndSettle();
+      final see = find.text('See my week');
+      await tester.ensureVisible(see);
+      await tester.tap(see);
+      await tester.pumpAndSettle();
+
+      expect(continued, 1);
+      expect(repository.writes, [
+        {'days', 'minutes', 'lifeStage'},
+      ]);
+      expect(repository.read().days, 4);
+      expect(repository.read().lifeStage, LifeStage.pregnant);
+    });
+
+    testWidgets('does not overflow in Arabic at the largest text size', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          ScheduleView(
+            repository: InMemoryIntakeRepository(),
+            includeLifeStage: true,
+            titleOverride: '1 من 3 · أسبوعكِ',
+          ),
+          locale: const Locale('ar'),
+          textScale: 1.6,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
   });
 }

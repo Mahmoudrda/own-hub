@@ -31,6 +31,12 @@
 /// starts the backup. The sheet wording is PENDING COUNSEL REVIEW (PDPL health
 /// data and transfer-abroad consent) and is not a legal opinion.
 ///
+/// # Crash reports (privacy policy v3, 3.7)
+///
+/// Sent only if she allows them, and off until she does. The row is drawn
+/// when the router hands in [PrivacyView.onCrashReportsChanged]; turning it
+/// off also deletes any report still waiting on the phone.
+///
 /// # Offline
 ///
 /// A queued switch shows a quiet "Saved on your phone" chip and never a spinner
@@ -72,7 +78,15 @@ class PrivacyView extends StatefulWidget {
     this.onSelectTab,
     this.healthBackup,
     this.onSignInAgain,
+    this.crashReportsAllowed = false,
+    this.onCrashReportsChanged,
   });
+
+  /// Whether she has allowed crash reports.
+  final bool crashReportsAllowed;
+
+  /// Records and applies her crash-report choice. Null hides the row.
+  final Future<void> Function(bool allowed)? onCrashReportsChanged;
 
   /// The server did not accept her sign-in: out to sign in again (N4).
   final VoidCallback? onSignInAgain;
@@ -108,6 +122,15 @@ class _PrivacyViewState extends State<PrivacyView> {
   final Set<PrivacyKey> _queued = <PrivacyKey>{};
 
   late PrivacySettings _settings = widget.service.current;
+
+  late bool _crashReports = widget.crashReportsAllowed;
+
+  Future<void> _toggleCrashReports(bool value) async {
+    final change = widget.onCrashReportsChanged;
+    if (change == null) return;
+    setState(() => _crashReports = value);
+    await change(value);
+  }
 
   /// True while the health consent call is in flight.
   bool _healthBusy = false;
@@ -156,6 +179,16 @@ class _PrivacyViewState extends State<PrivacyView> {
         Text(l10n.theCopyIsStoredOnGoogleCloud, style: body),
         Text(l10n.thisIsHealthDataSoWeOnly, style: body),
         Text(l10n.ifYouDoNotTurnItOn, style: body),
+        // The policy, one tap away. The wording above is unchanged, so the
+        // consent it records is still health-v1.
+        if (widget.onOpenPrivacyPolicy != null)
+          AppButton(
+            l10n.readThePrivacyPolicy,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: widget.onOpenPrivacyPolicy,
+          ),
         AppButton(
           l10n.notNow,
           variant: AppButtonVariant.outlined,
@@ -368,6 +401,27 @@ class _PrivacyViewState extends State<PrivacyView> {
             ),
         ],
 
+        // Crash reports, only with her consent. Off by default.
+        if (widget.onCrashReportsChanged != null)
+          AppListItem(
+            leading: const Icon(
+              Icons.bug_report_outlined,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.crashReports,
+            subtitle: _crashReports
+                ? l10n.onIfTheAppCrashesTheError
+                : l10n.offNothingIsSentWhenTheApp,
+            trailing: AppToggle(
+              key: const ValueKey('crash-reports-toggle'),
+              value: _crashReports,
+              semanticLabel: l10n.crashReports,
+              onChanged: (value) => _toggleCrashReports(value),
+            ),
+            onTap: () => _toggleCrashReports(!_crashReports),
+          ),
+
         // The two public pages the stores require to be reachable from inside
         // the app, not only from the listing. They appear once the pages have
         // an address: a row that opens nothing is worse than no row, and
@@ -409,7 +463,7 @@ class _PrivacyViewState extends State<PrivacyView> {
         // is no `else` branch here.
         if (view.mayStateImagesDeleted)
           Text(
-            l10n.yourIdAndSelfieWereDeletedAfter,
+            l10n.yourIdAndSelfieWereDeletedAfter_nl9hl,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
       ],

@@ -10,6 +10,7 @@
     "Values written as a bare string are language-neutral (dates, emails, URLs, numbers)."
   ],
   "baseUrl": "https://ownhub.example",
+  "release": false,
   "values": {
     "effectiveDate": {
       "value": "24 September 2026",
@@ -106,116 +107,94 @@
     },
     "dataProtectionOfficer": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "Mahmoud Reda acts as data protection officer himself, as the law requires of an individual who holds a permit. Contact: mahmoud.reda.acc@gmail.com",
+        "ar": "يتولى محمود رضا بنفسه مهام مسؤول حماية البيانات، كما يقتضي القانون من الشخص الطبيعي الحاصل على تصريح. للتواصل: mahmoud.reda.acc@gmail.com"
       },
       "label": {
         "en": "data protection officer",
         "ar": "مسؤول حماية البيانات"
       },
       "optional": true,
-      "note": "Optional: name and contact, or leave empty if the PDPC does not require one for this entity. Empty means the row is not drawn at all, with no marker."
+      "note": "Executive Regulations Art. 38 and PDPL Art. 8: a permit holder acts as his own data protection officer. Change the address together with contactPrivacy."
     },
     "pdpcContact": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "Website portal.pdpc.gov.eg · email info@pdpc.gov.eg · hotline 17372.",
+        "ar": "الموقع portal.pdpc.gov.eg · البريد الإلكتروني info@pdpc.gov.eg · الخط الساخن 17372."
       },
       "label": {
         "en": "contact details for Egypt's Personal Data Protection Centre",
         "ar": "بيانات التواصل مع المركز المصري لحماية البيانات الشخصية"
       },
-      "note": "To be added once counsel confirms the current channel."
+      "note": "From the Centre's own portal (Contact Us / Make a complaint). The Centre publishes no postal address."
     },
     "pdpcPermit": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "Not yet issued. We will publish the permit number and its expiry date here as soon as the Personal Data Protection Centre issues it.",
+        "ar": "لم يصدر بعد. سننشر رقم التصريح وتاريخ انتهائه هنا فور إصداره من مركز حماية البيانات الشخصية."
       },
       "label": {
         "en": "Personal Data Protection Centre permit number and expiry",
         "ar": "رقم تصريح مركز حماية البيانات الشخصية وتاريخ انتهائه"
       },
-      "note": "PENDING COUNSEL. The permit or licence the PDPL requires before processing. Fill in once issued."
-    },
-    "videoCallService": {
-      "value": {
-        "en": "",
-        "ar": ""
-      },
-      "label": {
-        "en": "the video call service used for review calls",
-        "ar": "خدمة مكالمات الفيديو المستخدمة في المراجعة"
-      },
-      "note": "OWNER. Name the service the woman reviewers use (for example Google Meet or WhatsApp). It processes her image and voice during the call, so the policy must name it."
-    },
-    "videoCallServiceRegion": {
-      "value": {
-        "en": "",
-        "ar": ""
-      },
-      "label": {
-        "en": "where that service processes the call",
-        "ar": "مكان معالجة تلك الخدمة للمكالمة"
-      },
-      "note": "OWNER. Where the video call service processes the call."
+      "note": "OWNER. An individual can hold a permit, never a licence (PDPL Art. 1). Once issued, replace with: Permit no. [number], valid until [date] / تصريح رقم [الرقم]، ساري حتى [التاريخ]."
     },
     "courtVenue": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "the competent courts in Cairo, including the Cairo Economic Court for the matters the law assigns to it. This does not take away your right to bring a claim before any other Egyptian court the law allows you to use",
+        "ar": "المحاكم المختصة في القاهرة، ومنها المحكمة الاقتصادية بالقاهرة في المسائل التي يُسندها إليها القانون. ولا يمس ذلك حقك في رفع دعواك أمام أي محكمة مصرية أخرى يتيحها لك القانون"
       },
       "label": {
         "en": "the governorate or court that hears disputes",
         "ar": "المحافظة أو المحكمة المختصة بنظر النزاعات"
       },
-      "note": "For example Cairo."
+      "note": "Procedure Code art. 62; Economic Courts Law 120/2008 art. 6."
     },
     "liabilityCap": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "the amount of damage Egyptian law obliges us to make good. Because Own Hub is free, we set no other cap",
+        "ar": "مقدار الضرر الذي يُلزمنا القانون المصري بجبره. ولأن Own Hub مجاني، فلا نضع أي حد آخر"
       },
       "label": {
         "en": "the cap on liability",
         "ar": "الحد الأقصى للمسؤولية"
       },
-      "note": "Counsel to set. The app is free, so the usual 'the amount you paid us' cap comes to zero. Counsel should decide whether that stands under Egyptian law, or whether a nominal figure is needed."
+      "note": "Not used by terms v3: the cap bullet was removed (Civil Code art. 217, Consumer Protection Law Art. 28). Kept filled in case a template uses it again."
     },
     "minimumAge": {
-      "value": "",
+      "value": "18",
       "label": {
         "en": "minimum age",
         "ar": "الحد الأدنى للسن"
       },
-      "note": "Counsel to confirm. The privacy and terms pages say 18, and the national ID check enforces it at sign-up. Whatever number counsel sets must appear identically here, in the app, on the privacy and terms pages, and in both store age ratings."
+      "note": "Constitution art. 80; Executive Regulations Art. 15; MIN_AGE in functions/identity/config.py."
     },
     "rightsResponseWindow": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "6 working days",
+        "ar": "ستة أيام عمل"
       },
       "label": {
         "en": "the response window for a data request",
         "ar": "المدة التي نردّ خلالها على طلبك"
       },
-      "note": "The window the PDPL executive regulations require. The app and this page must say the same number."
+      "note": "PDPL Art. 32."
     },
     "transferCountries": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "Germany and the European Union: Google Cloud in Frankfurt (europe-west3) and the Cloud Vision EU endpoint, where Google stores and processes data only in the EU. The United States: Firebase Authentication, which Google runs only from US data centres. Google data centres worldwide, which include the United States: Firebase App Check, Google ML Kit performance data, and Firebase Crashlytics if you allow it. Google does not let us choose one country for these. Each transfer needs your consent, which we ask for before it happens, and our transfer permit from the Personal Data Protection Centre. Google acts only on our instructions under its data processing terms, encrypts the data in transit and at rest, and may not use it to train AI models. The Centre has not yet published a list of countries it considers adequate.",
+        "ar": "ألمانيا والاتحاد الأوروبي: خدمات Google Cloud في فرانكفورت (europe-west3)، ونقطة الاتصال الأوروبية لخدمة Cloud Vision، حيث تخزّن Google البيانات وتعالجها داخل الاتحاد الأوروبي فقط. الولايات المتحدة: خدمة Firebase Authentication، التي تشغّلها Google من مراكز بيانات أمريكية فقط. مراكز بيانات Google حول العالم، ومنها الولايات المتحدة: Firebase App Check، وبيانات الأداء الخاصة بـ Google ML Kit، وFirebase Crashlytics إن سمحتِ بها، ولا تتيح Google اختيار دولة واحدة لهذه الخدمات. لا يتم أي نقل إلا بموافقتك التي نطلبها قبل حدوثه، وبموجب تصريح النقل الصادر لنا من مركز حماية البيانات الشخصية. وتعالج Google البيانات وفق تعليماتنا فقط بموجب شروط معالجة البيانات لديها، وتشفّرها أثناء النقل والتخزين، ولا يجوز لها استخدامها لتدريب نماذج الذكاء الاصطناعي. ولم يصدر المركز بعد قائمة بالدول التي يعدّها توفر مستوى حماية كافيًا."
       },
       "label": {
         "en": "the countries data would reach, and the transfer mechanism",
         "ar": "الدول التي قد تصل إليها البيانات، وأساس النقل"
       },
-      "note": "PENDING COUNSEL. The transfer mechanism and permit for Germany and the European Union (Firestore, Functions, Vision) and the United States (Firebase Authentication). Fill in once counsel confirms."
+      "note": "PDPL Art. 14 and 15; Executive Regulations Art. 16; firebase.google.com/support/privacy."
     },
     "providerAuth": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "Google Firebase Authentication",
+        "ar": "Google Firebase Authentication"
       },
       "label": {
         "en": "the authentication provider",
@@ -225,8 +204,8 @@
     },
     "providerAuthRegion": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "United States",
+        "ar": "الولايات المتحدة"
       },
       "label": {
         "en": "the region it processes in",
@@ -236,8 +215,8 @@
     },
     "providerDatabase": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "Google Cloud Firestore and Cloud Storage",
+        "ar": "Google Cloud Firestore وCloud Storage"
       },
       "label": {
         "en": "the database and storage provider",
@@ -247,8 +226,8 @@
     },
     "providerDatabaseRegion": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "Frankfurt, Germany (europe-west3)",
+        "ar": "فرانكفورت، ألمانيا (europe-west3)"
       },
       "label": {
         "en": "the region it stores in",
@@ -258,8 +237,8 @@
     },
     "providerIdentity": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "Our own server on Google Cloud Functions, with Google Cloud Vision for reading the card",
+        "ar": "خادمنا الخاص على Google Cloud Functions، مع Google Cloud Vision لقراءة البطاقة"
       },
       "label": {
         "en": "the identity verification provider",
@@ -269,8 +248,8 @@
     },
     "providerIdentityRegion": {
       "value": {
-        "en": "",
-        "ar": ""
+        "en": "Germany and the EU. Images are never stored, and are not processed in Egypt.",
+        "ar": "ألمانيا والاتحاد الأوروبي. لا تُخزَّن الصور، ولا تُعالَج داخل مصر."
       },
       "label": {
         "en": "where it processes, and whether images stay in Egypt",
@@ -300,8 +279,8 @@
       },
       "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker. No page uses this token at present.",
       "fallback": {
-        "en": "Nothing is kept, because there is no coaching and no messaging in this version. A period will be set with counsel before coaching exists.",
-        "ar": "لا يُحتفظ بشيء، إذ لا يوجد تدريب شخصي ولا مراسلة في هذا الإصدار. وستُحدَّد المدة مع المستشار القانوني قبل وجود التدريب الشخصي."
+        "en": "Nothing is kept, because there is no coaching and no messaging in this version. A period will be set and published before coaching exists.",
+        "ar": "لا يُحتفظ بشيء، إذ لا يوجد تدريب شخصي ولا مراسلة في هذا الإصدار. وستُحدَّد المدة وتُنشر قبل إطلاق التدريب الشخصي."
       }
     },
     "retentionSafetyReports": {
@@ -315,8 +294,8 @@
       },
       "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker. No page uses this token at present.",
       "fallback": {
-        "en": "The period is still to be set with counsel.",
-        "ar": "لم تُحدَّد المدة بعد، وستُحدَّد مع المستشار القانوني."
+        "en": "There are no safety reports in this version, because there is no community. A period will be set and published before the community opens.",
+        "ar": "لا توجد بلاغات سلامة في هذا الإصدار، إذ لا يوجد مجتمع. وستُحدَّد المدة وتُنشر قبل افتتاح المجتمع."
       }
     },
     "retentionPaymentRecords": {
@@ -359,6 +338,160 @@
       },
       "optional": true,
       "note": "Optional. Empty means no download button is drawn on the home page, and no marker either."
+    },
+    "policyEffectiveDate": {
+      "value": {
+        "en": "the day this version of the app is released",
+        "ar": "يوم إصدار هذا الإصدار من التطبيق"
+      },
+      "label": {
+        "en": "the date version 3.0 takes effect",
+        "ar": "تاريخ سريان الإصدار 3.0"
+      },
+      "note": "OWNER. Replace with the real date once the PDPC permit is issued and the v3 build is live; it must not be earlier than either."
+    },
+    "hostingProvider": {
+      "value": {
+        "en": "our website host",
+        "ar": "مزوّد استضافة موقعنا"
+      },
+      "label": {
+        "en": "the website host",
+        "ar": "مزوّد استضافة الموقع"
+      },
+      "note": "OWNER. Neutral wording until the host is confirmed. Replace with its name (for example Cloudflare Pages) and its region below."
+    },
+    "hostingProviderRegion": {
+      "value": {
+        "en": "the host's servers, which may be outside Egypt",
+        "ar": "خوادم المزوّد، وقد تكون خارج مصر"
+      },
+      "label": {
+        "en": "where the host processes requests",
+        "ar": "مكان معالجة المزوّد للطلبات"
+      },
+      "note": "OWNER. Where the website host processes requests."
+    },
+    "chatService": {
+      "value": {
+        "en": "a team chat service",
+        "ar": "خدمة محادثة للفريق"
+      },
+      "label": {
+        "en": "the chat service for review alerts",
+        "ar": "خدمة المحادثة لتنبيهات المراجعة"
+      },
+      "note": "OWNER. Neutral wording until the service is named. Replace with its name, or remove the alert sentence in privacy 3.4 and the card in section 4 if the review alert is switched off."
+    },
+    "chatServiceRegion": {
+      "value": {
+        "en": "the chat service's servers, which may be outside Egypt",
+        "ar": "خوادم خدمة المحادثة، وقد تكون خارج مصر"
+      },
+      "label": {
+        "en": "where the chat service processes",
+        "ar": "مكان معالجة خدمة المحادثة"
+      },
+      "note": "OWNER. Where the chat service processes the alert."
+    },
+    "emailProvider": {
+      "value": {
+        "en": "Google (Gmail)",
+        "ar": "Google (Gmail)"
+      },
+      "label": {
+        "en": "the email provider",
+        "ar": "مزوّد البريد الإلكتروني"
+      },
+      "note": "The privacy and support mailbox is a Gmail address. Change to Google Workspace if the mailbox moves to the Own Hub domain."
+    },
+    "emailProviderRegion": {
+      "value": {
+        "en": "Google data centres worldwide, which include the United States",
+        "ar": "مراكز بيانات Google حول العالم، ومنها الولايات المتحدة"
+      },
+      "label": {
+        "en": "where the email provider stores mail",
+        "ar": "مكان تخزين البريد لدى المزوّد"
+      },
+      "note": "OWNER. Where the email provider stores messages."
+    },
+    "deletionVerifyMethod": {
+      "value": {
+        "en": "a one-time code we send by SMS to that number, which you send back to us",
+        "ar": "رمز يُستخدم مرة واحدة نرسله برسالة نصية إلى ذلك الرقم، وتعيدينه إلينا"
+      },
+      "label": {
+        "en": "how we confirm a deletion or copy request is hers",
+        "ar": "طريقة التأكد من أن طلب الحذف أو النسخة صادر عن صاحبة الحساب"
+      },
+      "note": "OWNER and LAWYER. For example: a one-time code sent by SMS to the number on the account. Used on the privacy and deletion pages."
+    },
+    "deletionWindow": {
+      "value": {
+        "en": "6 working days of your request",
+        "ar": "ستة أيام عمل من تاريخ طلبك"
+      },
+      "label": {
+        "en": "how long we take to delete after a request by email",
+        "ar": "المدة التي نحذف خلالها بعد طلب بالبريد"
+      },
+      "note": "PDPL Art. 32."
+    },
+    "supportRetention": {
+      "value": {
+        "en": "1 year",
+        "ar": "سنة واحدة"
+      },
+      "label": {
+        "en": "how long messages you send us are kept",
+        "ar": "مدة الاحتفاظ بالرسائل التي ترسلينها إلينا"
+      },
+      "note": "LAWYER. For example 2 years after the conversation ends."
+    },
+    "deletionRecordRetention": {
+      "value": {
+        "en": "3 years",
+        "ar": "ثلاث سنوات"
+      },
+      "label": {
+        "en": "how long the record of a deletion is kept",
+        "ar": "مدة الاحتفاظ بسجل تنفيذ الحذف"
+      },
+      "note": "Civil Code art. 172; Executive Regulations Art. 3 and 14."
+    },
+    "serverLogRetention": {
+      "value": {
+        "en": "30 days",
+        "ar": "30 يومًا"
+      },
+      "label": {
+        "en": "how long server logs are kept",
+        "ar": "مدة الاحتفاظ بسجلات الخادم"
+      },
+      "note": "The live _Default log bucket setting."
+    },
+    "crashReportRetention": {
+      "value": {
+        "en": "90 days, after which Google starts removing them from its live and backup systems",
+        "ar": "90 يومًا، تبدأ Google بعدها حذفها من أنظمتها الحية والاحتياطية"
+      },
+      "label": {
+        "en": "how long crash reports are kept",
+        "ar": "مدة الاحتفاظ بتقارير الأعطال"
+      },
+      "note": "firebase.google.com/support/privacy."
+    },
+    "exportDelivery": {
+      "value": {
+        "en": "by email to the address you wrote from, as a password-protected file. We send the password separately, by SMS to the number on the account",
+        "ar": "بالبريد الإلكتروني إلى العنوان الذي راسلتِنا منه، في ملف محمي بكلمة مرور، ونرسل كلمة المرور منفصلة برسالة نصية إلى الرقم المسجّل في الحساب"
+      },
+      "label": {
+        "en": "how a copy of your data is delivered",
+        "ar": "طريقة تسليم نسخة بياناتك"
+      },
+      "note": "LAWYER. For example: a password-protected file by email, with the password sent by SMS."
     }
   },
   "_draftingNotesNotPublished": {
@@ -369,7 +502,7 @@
       "They are recorded here so that nothing written in the source documents is lost.",
       "Every one of them is still outstanding."
     ],
-    "legalReviewBanner": "Superseded on 2 October 2026 by the owner-approved fix plan: the privacy and delete-account pages now carry a visible 'Draft pending review by a licensed Egyptian lawyer' banner in both languages, because they describe the account build before counsel has signed it off. REMOVE THE BANNER ONLY AFTER COUNSEL APPROVES THE TEXT.",
+    "legalReviewBanner": "Superseded on 2 October 2026 by the owner-approved fix plan: the privacy, terms and delete-account pages carry a visible 'Draft pending review by a licensed Egyptian lawyer' banner in both languages. REMOVE THE BANNER ONLY AFTER COUNSEL APPROVES THE TEXT. Set release to true only then: tests/test_site_build.py and the app's release preflight refuse a release with any marker or banner left.",
     "storeFormsMustAgree": "privacy-policy.md A7: the day a server is connected, both store forms, the iOS privacy manifest and Part B of this policy must go live in the same release. A store form that disagrees with this page is a rejection.",
     "analyticsLawfulBasis": "privacy-policy.md B3: if analytics or diagnostics are ever added, counsel must decide whether the basis is consent or legitimate interest. If it is consent, the app needs an opt-in switch, and it does not have one.",
     "erasureVsSafetyRecords": "privacy-policy.md B6: does the PDPL right to erasure permit keeping a pseudonymous safety record and a re-registration block? One question for counsel, not two. The engineering can go either way.",
@@ -382,6 +515,10 @@
     "fontLicencesInApp": "terms.md section 16: the SIL OFL licence texts for Rubik, La Belle Aurore and Aref Ruqaa must be reachable from inside the app. Two of the three are bundled and registered today, and no screen displays them. The website carries Rubik's copy at /assets/fonts/OFL-Rubik.txt, which does not discharge the in-app requirement.",
     "monitoredMailbox": "delete-account.md: the deletion address needs a monitored mailbox, not a procedure.",
     "exportWhenBuilt": "delete-account.md: when an export is built, add it to this page and to the sheet in the app in the same release. A page that offers an export that does not exist is worse than a page that does not offer one.",
-    "publishingChecklist": "delete-account.md carries a publishing checklist addressed to the owner. It is not published. It is reproduced in the handover notes instead."
+    "publishingChecklist": "delete-account.md carries a publishing checklist addressed to the owner. It is not published. It is reproduced in the handover notes instead.",
+    "termsV2Section12": "terms v2 section 12 ('What changes when the rest of the product arrives') carried owner drafting notes about community, coaching and payments rules. Replaced in v3 by 'Later features', which promises separate rules and acceptance per feature. The notes are recorded here, not published.",
+    "lawyerMarkers": "Privacy and terms v3.0 carry no [LAWYER] or [OWNER] note, visible or as an HTML comment: the values from the 6 October 2026 legal research were applied, and build.py strips any such comment that slips into a page. The citations behind each value are in the owner's local legal-values file, not in this repository.",
+    "ownerChecks": "Owner facts the pages state that only the owner can confirm: Rahma Mohsen has no access to account data (privacy 1); every woman reviewer has signed a written confidentiality agreement (privacy 1); the review routes in privacy 3.4 and terms 3 all run at launch; the website host and the team chat service are named in place of the neutral wording above; a postal correspondence address replaces 'Egypt' (Consumer Protection Law Art. 5, Apple minimum term 8).",
+    "closedIdCode": "Privacy 6 and the delete page say the closed ID code is kept with no end date and the same card cannot join again, which is what the code does (DELETED_ACCOUNT_MAY_REJOIN = False). The legal research recommends closing it for 3 years and letting a woman who deleted her own account rejoin; that needs a code change before the wording can change."
   }
 }

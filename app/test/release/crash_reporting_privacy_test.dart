@@ -79,14 +79,24 @@ void main() {
     });
   });
 
-  test('only a release build collects', () {
-    expect(FirebaseBoot.crashCollectionFor(release: true), isTrue);
-    expect(FirebaseBoot.crashCollectionFor(release: false), isFalse);
+  test('only a release build collects, and only with her consent', () {
+    expect(
+      FirebaseBoot.crashCollectionFor(release: true, allowed: true),
+      isTrue,
+    );
+    expect(
+      FirebaseBoot.crashCollectionFor(release: true, allowed: false),
+      isFalse,
+    );
+    expect(
+      FirebaseBoot.crashCollectionFor(release: false, allowed: true),
+      isFalse,
+    );
     final boot = File('lib/app_state/firebase_boot.dart').readAsStringSync();
     expect(
       boot,
-      contains('crashCollectionFor(release: kReleaseMode)'),
-      reason: 'the build mode decides, never a flag',
+      contains('crashCollectionFor(release: kReleaseMode, allowed: allowed)'),
+      reason: 'the build mode and her choice decide, never a flag',
     );
   });
 

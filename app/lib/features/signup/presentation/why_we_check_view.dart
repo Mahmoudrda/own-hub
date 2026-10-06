@@ -88,18 +88,18 @@ class WhyWeCheckView extends StatelessWidget {
             // most likely to believe it.
             VerificationBullet(
               icon: Icons.delete_outline,
-              text: l10n.bothImagesAreDeletedAfterTheCheck,
+              text: l10n.bothImagesAreDeletedAfterTheCheck_8iuyd,
             ),
             VerificationBullet(
               icon: Icons.schedule,
-              text: l10n.itTakesAbout90Seconds,
+              text: l10n.usuallyACoupleOfMinutesIfA,
             ),
           ],
         ),
-        Text(
-          l10n.checkedByOwnHubsOwnSystemYour,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
+        // The "Checked by Own Hub's own system ... Tap to read" line went: it
+        // could not be tapped, and the next screen names Google Cloud as the
+        // processor, so it read as a contradiction at the step where trust
+        // matters most. The disclosure on C09b is the one account of it.
       ],
     );
   }

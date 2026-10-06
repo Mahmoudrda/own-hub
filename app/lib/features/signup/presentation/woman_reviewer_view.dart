@@ -16,10 +16,12 @@
 /// in the queue yet, and the button stays live as a retry. Nothing here ever
 /// claims a place in a queue the server did not confirm.
 ///
-/// There is one option, the video check. The partner-gym card is gone: no
-/// partner gyms exist, and a screen offering them would be a promise nobody
-/// keeps. A woman reviewer phones her to arrange the call; no text message is
-/// sent, because nothing exists that could send one.
+/// There is one option, a check with a woman from Own Hub. The partner-gym
+/// card is gone: no partner gyms exist, and a screen offering them would be a
+/// promise nobody keeps. No video service exists either, so nothing here
+/// promises a video call: she reviews the case and contacts her by phone
+/// within 72 hours (config.REVIEW_SLA_HOURS). No text message is sent, because
+/// nothing exists that could send one.
 library;
 
 import 'package:flutter/material.dart';
@@ -40,6 +42,7 @@ class WomanReviewerView extends StatefulWidget {
     super.key,
     required this.requester,
     this.path = ReviewPath.niqab,
+    this.checkStillRunning = false,
     this.onBooked,
     this.onAlreadyVerified,
     this.onRejected,
@@ -55,6 +58,10 @@ class WomanReviewerView extends StatefulWidget {
 
   /// Why she is here. Sent to the server, which records it on the flag.
   final ReviewPath path;
+
+  /// She came from a slow `C12` whose check had not answered yet, so the
+  /// "could not start" line would be untrue.
+  final bool checkStillRunning;
 
   /// Fired only after the server confirmed she is queued: on to `C14`.
   final ValueChanged<ReviewerPath>? onBooked;
@@ -72,7 +79,14 @@ class WomanReviewerView extends StatefulWidget {
 }
 
 /// What went wrong with the last tap, if anything.
-enum _Failure { none, unreachable, tooManyToday, appCannotReach, signInAgain }
+enum _Failure {
+  none,
+  unreachable,
+  tooManyToday,
+  appCannotReach,
+  signInAgain,
+  checkStillRunning,
+}
 
 class _WomanReviewerViewState extends State<WomanReviewerView> {
   bool _booking = false;
@@ -95,6 +109,12 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
       }
     } catch (error) {
       if (!mounted) return;
+      // Asked from a slow C12 while the check is still deciding. Not a
+      // failure to reach us: the verdict routes from C12 underneath.
+      if (isCheckStillRunning(error)) {
+        setState(() => _failure = _Failure.checkStillRunning);
+        return;
+      }
       switch (classifyCallFailure(error)) {
         case CallFailureKind.closed:
           widget.onRejected?.call();
@@ -122,32 +142,32 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
     return AppScaffold(
       appBar: AppTopBar(onBack: widget.onBack),
       footer: [
-        AppButton(l10n.askForAVideoCheck, onPressed: _booking ? null : _book),
+        AppButton(l10n.askAWomanToCheckMe, onPressed: _booking ? null : _book),
       ],
       children: [
         Text(l10n.checkedByAWomanNoPhotoKept, style: AppText.headline),
-        if (widget.path == ReviewPath.error)
+        if (widget.path == ReviewPath.error && !widget.checkStillRunning)
           Text(
             l10n.theAutomaticCheckCouldNotStartJust,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
         Text(
-          l10n.ifYouDoNotShowYourFace,
+          l10n.ifYouDoNotShowYourFace_1pr0p,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         // Shown before `request_review`, which records her agreement to the
-        // review route on the server (users/{uid}/consents/review-v1, written
+        // review route on the server (users/{uid}/consents/review-v2, written
         // before the flag): who calls, how, and what her number is used for.
         // This sentence and the one above are that consent's wording. PENDING COUNSEL: this wording is part of the consent
         // mechanism the PDPC must approve, and needs a lawyer's sign-off.
         Text(
-          l10n.yourPhoneNumberIsUsedOnlyTo,
+          l10n.yourPhoneNumberIsUsedOnlyTo_thda4,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         _PathCard(
-          icon: Icons.videocam,
-          title: l10n.aShortVideoCheck,
-          body: l10n.twoMinutesWithAWomanReviewerNothing,
+          icon: Icons.support_agent,
+          title: l10n.aCheckWithAWoman,
+          body: l10n.aWomanReviewerChecksYourCardWith,
           selected: true,
           onTap: () {},
         ),
@@ -172,8 +192,15 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
               _Failure.tooManyToday => l10n.youHaveAskedForAReviewerToo,
               _Failure.appCannotReach => l10n.thisCopyOfTheAppCannotReach_agbhf,
               _Failure.signInAgain => l10n.yourSignInIsNoLongerValid_1y16r,
+              _Failure.checkStillRunning =>
+                l10n.yourAutomaticCheckIsStillRunningSo,
               _ => l10n.weCouldNotReachOwnHubSo_3usbb,
-            }, style: AppText.bodyM.copyWith(color: AppColors.error)),
+            }, style: AppText.bodyM.copyWith(
+              // Waiting on her own check is not an error.
+              color: _failure == _Failure.checkStillRunning
+                  ? AppColors.onSurfaceVariant
+                  : AppColors.error,
+            )),
           ),
         if (_failure == _Failure.signInAgain && widget.onSignInAgain != null)
           AppButton(

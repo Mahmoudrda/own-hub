@@ -17,6 +17,7 @@ import 'package:own_hub/features/signup/domain/verification_fake.dart';
 import 'package:own_hub/features/signup/presentation/checking_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_button.dart';
 
 Widget _host(
   Widget child, {
@@ -64,9 +65,188 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Checking your card'), findsWidgets);
-    expect(find.text('Card read'), findsOneWidget);
-    expect(find.text('Selfie matched to the card'), findsOneWidget);
-    expect(find.text('Final check'), findsOneWidget);
+    expect(find.text('Both sides of your card taken'), findsOneWidget);
+    expect(find.text('Selfie taken'), findsOneWidget);
+    expect(find.text('Matching your selfie to your card'), findsOneWidget);
+  });
+
+  // The judge's first blocker: a live Continue on this screen opened "You're
+  // in" before any verdict existed.
+  testWidgets('there is no button while the check runs', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AppButton), findsNothing);
+    expect(find.text('Continue'), findsNothing);
+  });
+
+  testWidgets('after 20 seconds it says the check is slow, and waits', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byKey(const ValueKey('checking-slow')), findsNothing);
+
+    await tester.pump(const Duration(seconds: 19));
+    expect(find.byKey(const ValueKey('checking-slow')), findsNothing);
+
+    await tester.pump(const Duration(seconds: 1));
+    expect(
+      find.text(
+        'Taking longer than usual. Your connection may be slow. '
+        'You can keep waiting here.',
+      ),
+      findsOneWidget,
+    );
+    // Nothing wired, so still no way forward but the verdict.
+    expect(find.byType(AppButton), findsNothing);
+  });
+
+  // The judge's 'Ask a woman reviewer' and 'Try again', once the check is
+  // slow and never before: neither claims a verdict.
+  testWidgets('after 20 seconds she may ask a woman reviewer or try again', (
+    tester,
+  ) async {
+    var asked = 0;
+    var askedWhileChecking = 0;
+    var retried = 0;
+    var retaken = 0;
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+          onAskForReviewer: () => asked++,
+          onAskForReviewerWhileChecking: () => askedWhileChecking++,
+          onTryAgain: () => retried++,
+          onRetake: () => retaken++,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 19));
+    expect(find.byKey(const ValueKey('checking-ask-reviewer')), findsNothing);
+    expect(find.byKey(const ValueKey('checking-try-again')), findsNothing);
+    expect(find.byType(AppButton), findsNothing);
+
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Ask for a woman reviewer'), findsOneWidget);
+    expect(find.text('Try again'), findsOneWidget);
+    expect(find.text('Continue'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('checking-ask-reviewer')));
+    await tester.tap(find.byKey(const ValueKey('checking-try-again')));
+    expect(askedWhileChecking, 1);
+    expect(retried, 1);
+    expect(asked, 0, reason: 'the slow button is told apart from a stop');
+    expect(retaken, 0, reason: 'trying again is her choice, not a verdict');
+  });
+
+  testWidgets('the slow buttons fall back to the plain callbacks', (
+    tester,
+  ) async {
+    var asked = 0;
+    var retaken = 0;
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+          onAskForReviewer: () => asked++,
+          onRetake: () => retaken++,
+        ),
+      ),
+    );
+    await tester.pump(CheckingView.slowAfter);
+    await tester.tap(find.byKey(const ValueKey('checking-ask-reviewer')));
+    await tester.tap(find.byKey(const ValueKey('checking-try-again')));
+    expect((asked, retaken), (1, 1));
+  });
+
+  testWidgets('the slow buttons in Arabic', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+          onAskForReviewer: () {},
+          onRetake: () {},
+        ),
+        locale: const Locale('ar'),
+      ),
+    );
+    await tester.pump(CheckingView.slowAfter);
+    expect(find.text('اطلبي مراجِعة'), findsOneWidget);
+    expect(find.text('حاولي مرة أخرى'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a verdict after the slow line still routes', (tester) async {
+    final repository = FakeVerificationRepository(
+      const VerificationState.checking(),
+    );
+    var verified = 0;
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: repository,
+          onVerified: (_) => verified++,
+          onAskForReviewer: () {},
+        ),
+      ),
+    );
+    await tester.pump(CheckingView.slowAfter);
+    repository.decide(_verified());
+    await tester.pumpAndSettle();
+    expect(verified, 1);
+  });
+
+  testWidgets('the back gesture cannot leave a running check', (tester) async {
+    final navigator = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigator,
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+        home: const Scaffold(body: Text('camera')),
+      ),
+    );
+    navigator.currentState!.push(
+      MaterialPageRoute<void>(
+        builder: (_) => CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final popped = await navigator.currentState!.maybePop();
+    await tester.pumpAndSettle();
+
+    expect(popped, isTrue, reason: 'the pop was asked for and refused');
+    expect(find.text('Checking your card'), findsWidgets);
+    expect(find.text('camera'), findsNothing);
   });
 
   testWidgets('promises the woman reviewer before it is needed', (
@@ -174,7 +354,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('نراجع بطاقتك'), findsWidgets);
-    expect(find.text('قُرئت البطاقة'), findsOneWidget);
+    expect(find.text('تم تصوير وجهَي بطاقتكِ'), findsOneWidget);
     expect(find.text('Checking your card'), findsNothing);
   });
 

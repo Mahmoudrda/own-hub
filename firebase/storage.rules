@@ -68,6 +68,20 @@ service firebase.storage {
       return signedIn() && request.auth.uid == uid;
     }
 
+    // The two dormant features, off here as in firestore.rules (APL-16).
+    // Nothing in the first release writes to user-media or coach-docs, and
+    // with these false nothing can: a verified account calling the API
+    // directly is refused. Deleting her own file stays open. Each moves with
+    // its app flag (`Feature.community`, `Feature.coachApp`) and with the
+    // functions of the same name in firestore.rules, in the same release.
+    function communityLive() {
+      return false;
+    }
+
+    function coachLive() {
+      return false;
+    }
+
     // ------------------------------------------------ the content library
     //
     // Exercise demonstrations, recipe photographs, programme artwork. Uploaded
@@ -119,7 +133,8 @@ service firebase.storage {
     // depend on a claim she might lose (the same exception as posts).
     match /user-media/{uid}/{allPaths=**} {
       allow read:   if isOwner(uid);
-      allow create, update: if isOwner(uid)
+      allow create, update: if (communityLive() || coachLive())
+                    && isOwner(uid)
                     && request.auth.token.get('verified', false) == true
                     && ((isImage() && request.resource.size < 10 * 1024 * 1024)
                         || (isAudio() && request.resource.size < 5 * 1024 * 1024));
@@ -134,7 +149,8 @@ service firebase.storage {
     // credential; never by clients or other coaches.
     match /coach-docs/{uid}/{allPaths=**} {
       allow read:   if isOwner(uid) || isAdmin();
-      allow create, update: if isOwner(uid)
+      allow create, update: if coachLive()
+                    && isOwner(uid)
                     && request.auth.token.get('verified', false) == true
                     && (isImage() || isPdf())
                     && request.resource.size < 10 * 1024 * 1024;

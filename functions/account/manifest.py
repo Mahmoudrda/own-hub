@@ -46,6 +46,9 @@ AUTH = "auth"                              # disabled first, deleted last
 REPORTS = "reports"                        # pseudonymised
 DELETION_RECORD = "deletion_record"        # retained: state and timestamps
 HANDSET = "handset"                        # local to the phone; no server copy
+TTL = "ttl"                                # not linked to her: expires on its own
+                                           # clock (config.SIGNAL_RETENTION_DAYS,
+                                           # ACCESS_LOG_RETENTION_DAYS, field expireAt)
 
 ACTIONS: dict[int, str] = {
     1: USERS_RECURSIVE, 2: USERS_RECURSIVE, 3: USERS_RECURSIVE, 4: USERS_RECURSIVE,
@@ -71,6 +74,10 @@ ACTIONS: dict[int, str] = {
     39: FLAGS,
     40: LEDGER,
     41: SESSIONS,
+    42: TTL, 43: TTL, 44: TTL,
+    # Community and coach data, named row by row (APL-16). All five run inside
+    # row 26's purge_group_hook.
+    45: GROUP_HOOK, 46: GROUP_HOOK, 47: GROUP_HOOK, 48: GROUP_HOOK, 49: GROUP_HOOK,
 }
 
 

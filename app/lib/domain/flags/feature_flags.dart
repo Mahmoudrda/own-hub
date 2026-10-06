@@ -22,9 +22,12 @@
 ///
 /// ## Defaults
 ///
-/// **Everything is on except [Feature.accountRequired]**, at the owner's
-/// instruction, so the whole product can be walked end to end without an
-/// account. That one must be switched back on before a public release.
+/// [FeatureFlags.shipped] is what the stores get: sign-up, verification and
+/// the whole-app gate ([Feature.accountRequired]) on, with Today, Train, Eat,
+/// Progress, My cycle and the privacy centre. The community, the coach app,
+/// the marketplace and the assistant are off until their back ends exist.
+/// [FeatureFlags.everything] is the other shape: every feature on and no
+/// account required, so the whole product can be walked end to end in tests.
 ///
 /// Three of these were previously off for reasons worth re-reading before a
 /// public release, because they are not preferences:
@@ -72,6 +75,13 @@ enum Feature {
 
   // ----------------------------------------------------------- Phase 2
   eat,
+
+  /// Logging a meal by saying it (`E03` and every microphone that leads
+  /// there). **Off**: no speech recogniser is wired, the release manifest
+  /// strips `RECORD_AUDIO`, and the privacy policy and site say the app never
+  /// uses the microphone. A microphone drawn on Eat would be a feature the
+  /// build does not have. Its parent is [eat].
+  voiceLogging,
   progress,
   cycle,
   privacyCentre,
@@ -140,6 +150,7 @@ enum Feature {
     communityVoiceNotes ||
     communityFollowerCounts => community,
     payments => marketplace,
+    voiceLogging => eat,
     recipeTiering => payments,
     _ => null,
   };
@@ -173,8 +184,9 @@ class FeatureFlags {
   static const FeatureFlags shipped = FeatureFlags(<Feature, bool>{
     // Sign-up and verification ship at launch (owner decision, 2026-10-02):
     // a woman signs up with her phone number and is verified as a woman with
-    // her national ID and a live selfie, or by a woman reviewer on a short
-    // video call, before the app opens. The whole-app gate closes on
+    // her national ID and a live selfie, or by a woman reviewer from Own Hub
+    // who reviews her case and contacts her by phone (no video), before the
+    // app opens. The whole-app gate closes on
     // `accountRequired` (see `AppRouter.verificationGate`).
     //
     // RELEASE ORDER (G7), which this line depends on: deploy `functions/`,
@@ -196,6 +208,10 @@ class FeatureFlags {
     Feature.progress: true,
     Feature.cycle: true,
     Feature.privacyCentre: true,
+
+    // No recogniser, no microphone permission, and a privacy policy that says
+    // the microphone is never used. She types what she ate.
+    Feature.voiceLogging: false,
 
     // The console is for the people who run the product, not for the women
     // using it. It is also compiled out of a release build entirely.
@@ -226,9 +242,9 @@ class FeatureFlags {
   /// ships in. The crawler, the journeys and the large-text sweep build it so
   /// that a screen which is off in the first release is still walked and still
   /// proved, instead of quietly rotting until the release that turns it on.
-  static FeatureFlags get everything =>
-      allOff.with_(<Feature, bool>{for (final f in Feature.values) f: true})
-          .with_(<Feature, bool>{Feature.accountRequired: false});
+  static FeatureFlags get everything => allOff
+      .with_(<Feature, bool>{for (final f in Feature.values) f: true})
+      .with_(<Feature, bool>{Feature.accountRequired: false});
 
   /// Everything off. Useful in tests that assert a screen is unreachable.
   static final FeatureFlags allOff = FeatureFlags(<Feature, bool>{

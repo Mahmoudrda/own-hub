@@ -118,7 +118,29 @@ const Map<String, ({String file, String guard})> _sourceGuardedEdges = {
     file: 'lib/routing/app_router.dart',
     guard: "onContinue: screenIsOn('C03')",
   ),
+  // EatView (E01, E04) and TypeItView (E02) draw the microphone only while
+  // E03, saying a meal, is on (`Feature.voiceLogging`); with it off they offer
+  // typing alone and `onSpeak` is never invoked.
+  'E01->E03': (
+    file: 'lib/features/eat/presentation/eat_view.dart',
+    guard: "AppRouter.screenIsOn('E03')",
+  ),
+  'E04->E03': (
+    file: 'lib/features/eat/presentation/eat_view.dart',
+    guard: "AppRouter.screenIsOn('E03')",
+  ),
+  'E02->E03': (
+    file: 'lib/features/eat/presentation/type_it_view.dart',
+    guard: "AppRouter.screenIsOn('E03')",
+  ),
   // FinishedView (R10) draws the "share" action only while M03 is on.
+  // "Save my week and join" exists only while she is building her week
+  // before sign-up, which only C01 (sign-up) can start. With sign-up dark the
+  // flag is never set and O05 draws its ordinary three exits.
+  'O05->C06': (
+    file: 'lib/routing/app_router.dart',
+    guard: ": OnboardingState.instance.beforeSignup\n        ? StartingProgramView(",
+  ),
   'R10->M03': (
     file: 'lib/features/train/presentation/finished_view.dart',
     guard: "if (AppRouter.screenIsOn('M03'))",

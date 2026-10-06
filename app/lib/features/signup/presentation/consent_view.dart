@@ -18,9 +18,21 @@
 /// of which version she agreed to is written down, and only then does `C10`
 /// become reachable.
 ///
-/// **What is recorded is a uid, a version and a timestamp.** Not the text, not a
-/// device fingerprint, not an IP address. See `domain/capture_consent.dart` for
-/// why the version is the field that makes the record worth anything.
+/// **What is recorded is a uid, a version, a timestamp, the language and the
+/// app version.** Not the text, not a device fingerprint, not an IP address.
+/// See `domain/capture_consent.dart` for why the version is the field that
+/// makes the record worth anything. The wording is version 2 (privacy policy
+/// v3): Frankfurt and the EU Vision endpoint, a face match on our own server,
+/// the 180-day result and the keyed ID code, and a woman from Own Hub as the
+/// fallback. The privacy policy is one tap away under the list.
+///
+/// **On the first run it is also the promise.** With [showPromise] the screen
+/// opens with `C09`'s title and three plain lines (what is read, what is
+/// matched, how long it takes), then the disclosure exactly as before, every
+/// bullet visible. One screen instead of two, and the promise is not part of
+/// the wording she agrees to. The niqab path leaves from
+/// here too ([onNiqabPath]). `C09` stays as the screen the gate sends a
+/// returning woman to.
 ///
 /// **Declining is a real option and not a dead end.** "I would rather not" goes
 /// to `C15`, the woman-reviewer path, which needs no camera and no processor
@@ -35,6 +47,7 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_scaffold.dart';
 import '../domain/capture_consent.dart';
+import '../domain/legal_acceptance.dart';
 import '../domain/review_request.dart';
 import 'widgets/verification_bullet.dart';
 
@@ -48,7 +61,23 @@ class ConsentView extends StatefulWidget {
     this.onBack,
     this.now,
     this.onSignInAgain,
+    this.showPromise = false,
+    this.onNiqabPath,
+    this.title,
+    this.onOpenPrivacy,
   });
+
+  /// Opens the privacy policy in her language. Null while it has no address.
+  final VoidCallback? onOpenPrivacy;
+
+  /// Opens with `C09`'s promise above the disclosure.
+  final bool showPromise;
+
+  /// "I wear niqab, check me another way": `C15`, no selfie on that route.
+  final VoidCallback? onNiqabPath;
+
+  /// The bar title: "3 of 3 · Quick check" on the way through sign-up.
+  final String? title;
 
   /// The server did not accept her sign-in: out to sign in again (N4).
   final VoidCallback? onSignInAgain;
@@ -99,12 +128,15 @@ class _ConsentViewState extends State<ConsentView> {
       _failed = false;
     });
     final clock = widget.now ?? DateTime.now;
+    final locale = Localizations.localeOf(context).languageCode;
     try {
       await widget.store.record(
         CaptureConsent(
           uid: widget.uid,
           version: kCaptureConsentVersion,
           agreedAt: clock(),
+          locale: locale == 'ar' ? 'ar' : 'en',
+          appVersion: kAppVersion,
         ),
       );
     } catch (error) {
@@ -133,7 +165,7 @@ class _ConsentViewState extends State<ConsentView> {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
-      appBar: AppTopBar(onBack: widget.onBack),
+      appBar: AppTopBar(title: widget.title ?? '', onBack: widget.onBack),
       footer: [
         if (_failed)
           Semantics(
@@ -163,6 +195,14 @@ class _ConsentViewState extends State<ConsentView> {
           icon: Icons.photo_camera,
           onPressed: _recording ? null : _agree,
         ),
+        if (widget.onNiqabPath != null)
+          AppButton(
+            l10n.iWearNiqabCheckMeAnotherWay,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: widget.onNiqabPath,
+          ),
         AppButton(
           l10n.iWouldRatherNot,
           variant: AppButtonVariant.text,
@@ -172,7 +212,33 @@ class _ConsentViewState extends State<ConsentView> {
         ),
       ],
       children: [
-        Text(l10n.beforeTheCameraOpens, style: AppText.display),
+        if (widget.showPromise) ...[
+          Text(l10n.oneCheckThenYouAreIn, style: AppText.display),
+          AppCard(
+            variant: AppCardVariant.sage,
+            children: [
+              // The card itself says she is a woman; we never guess from her
+              // face.
+              VerificationBullet(
+                icon: Icons.badge,
+                text: l10n.weReadYourNationalIdCardThe,
+              ),
+              VerificationBullet(
+                icon: Icons.face,
+                text: l10n.aSelfieIsMatchedToThePhoto,
+              ),
+              VerificationBullet(
+                icon: Icons.schedule,
+                text: l10n.usuallyACoupleOfMinutesIfA,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+        ],
+        Text(
+          l10n.beforeTheCameraOpens,
+          style: widget.showPromise ? AppText.headline : AppText.display,
+        ),
         Text(
           l10n.youWillPhotographTheFrontAndBack,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
@@ -181,37 +247,35 @@ class _ConsentViewState extends State<ConsentView> {
           variant: AppCardVariant.sage,
           children: [
             // Named, not implied. "Processed securely" is what a privacy page
-            // says when it does not want to say Frankfurt.
-            //
-            // Google Cloud alone. An earlier draft also named Amazon Web
-            // Services, for a liveness service the owner has since ruled out
-            // for good. A consent screen naming a processor we do not use is
-            // not a harmless leftover: it is consent to something that is not
-            // happening, and it would have to be withdrawn and re-taken.
+            // says when it does not want to say Frankfurt. Google Cloud alone:
+            // a consent screen naming a processor we do not use is consent to
+            // something that is not happening.
             VerificationBullet(
               icon: Icons.cloud_outlined,
-              text: l10n.thePhotographsAreProcessedByGoogleCloud_tqchn,
+              text: l10n.yourPhotosGoToOurServerIn,
             ),
-            // The keyed hash is the part worth understanding: it is what we
-            // keep instead of her ID number, and it cannot be turned back into
-            // one. It is also what stops the same card being used twice.
+            // The face match runs on our own server with open models. No
+            // outside face recognition service is called.
             VerificationBullet(
-              icon: Icons.lock_outline,
-              text: l10n.ifYourCheckIsApprovedOrRefused,
+              icon: Icons.face_retouching_natural,
+              text: l10n.yourFaceIsMatchedOnOurOwn,
             ),
-            // Nothing is kept, for anybody, ever. There is no retention
-            // window and no encrypted bundle sitting somewhere for 72 hours:
-            // the photographs are deleted outright whatever the outcome.
+            // Nothing is kept, for anybody, ever: the photographs are deleted
+            // outright whatever the outcome.
             VerificationBullet(
               icon: Icons.delete_outline,
-              text: l10n.nothingYouPhotographIsKeptBothSides,
+              text: l10n.noPhotoIsEverStoredBothSides,
             ),
-            // Which is why review is a conversation and not a queue. No woman
-            // reviewer is ever sent a photograph of her, because there is no
-            // photograph of her to send.
+            // What IS kept, and for how long: the result for 180 days, and
+            // the keyed code that stops one card opening two accounts.
             VerificationBullet(
-              icon: Icons.videocam_outlined,
-              text: l10n.ifAWomanNeedsToCheckIt,
+              icon: Icons.lock_outline,
+              text: l10n.weKeepTheResultAndItsReasons,
+            ),
+            // Which is why review is a person and not a queue of photographs.
+            VerificationBullet(
+              icon: Icons.support_agent,
+              text: l10n.ifTheCheckCannotDecideYouCan,
             ),
             // Said out loud because it is a restriction people expect to be a
             // bug. She cannot upload an old picture, and neither can anybody
@@ -222,6 +286,14 @@ class _ConsentViewState extends State<ConsentView> {
             ),
           ],
         ),
+        if (widget.onOpenPrivacy != null)
+          AppButton(
+            l10n.readThePrivacyPolicy,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: widget.onOpenPrivacy,
+          ),
       ],
     );
   }

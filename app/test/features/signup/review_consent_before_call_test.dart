@@ -5,8 +5,8 @@
 //    `request_review(error)` on her behalf. Now C12 offers a reviewer and
 //    sends her to C15, where the wording is and the button is hers to tap.
 //  * A flag the automatic check raised itself (PENDING_REVIEW) lands on C14.
-//    Until she taps "Ask for the call", C14 says plainly that a reviewer can
-//    only call after she asks.
+//    Until she taps "Ask a woman to contact me", C14 says plainly that a woman
+//    from Own Hub can only contact her after she asks.
 
 import 'dart:async';
 
@@ -69,9 +69,9 @@ void main() {
       await tester.pump();
       final l10n = AppL10n.of(tester.element(find.byType(BeingCheckedView)));
 
-      expect(find.text(l10n.aReviewerCanOnlyCallYouAfter), findsOneWidget);
-      expect(find.text(l10n.yourPhoneNumberIsUsedOnlyTo), findsOneWidget);
-      expect(find.text(l10n.aWomanReviewerFromOwnHubWill), findsNothing);
+      expect(find.text(l10n.aWomanFromOwnHubCanContact), findsOneWidget);
+      expect(find.text(l10n.yourPhoneNumberIsUsedOnlyTo_thda4), findsOneWidget);
+      expect(find.text(l10n.aWomanFromOwnHubReviewsYour), findsNothing);
       expect(requester.asked, isEmpty, reason: 'nothing is sent on arrival');
 
       await tester.ensureVisible(
@@ -82,7 +82,7 @@ void main() {
 
       expect(requester.asked, [ReviewPath.error]);
       expect(asked, 1);
-      expect(find.text(l10n.aWomanReviewerFromOwnHubWill), findsOneWidget);
+      expect(find.text(l10n.aWomanFromOwnHubReviewsYour), findsOneWidget);
       expect(find.byKey(const ValueKey('c14-ask-for-the-call')), findsNothing);
     });
 
@@ -124,7 +124,7 @@ void main() {
       );
       await tester.pump();
       final l10n = AppL10n.of(tester.element(find.byType(BeingCheckedView)));
-      expect(find.text(l10n.aWomanReviewerFromOwnHubWill), findsOneWidget);
+      expect(find.text(l10n.aWomanFromOwnHubReviewsYour), findsOneWidget);
       expect(find.byKey(const ValueKey('c14-ask-for-the-call')), findsNothing);
     });
   });

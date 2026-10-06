@@ -92,10 +92,7 @@ void main() {
       final service = _DrivenService();
       await tester.pumpWidget(
         _host(
-          IdCaptureView(
-            captureService: service,
-            side: CaptureTarget.idBack,
-          ),
+          IdCaptureView(captureService: service, side: CaptureTarget.idBack),
         ),
       );
       await tester.pumpAndSettle();
@@ -130,9 +127,7 @@ void main() {
       tester,
     ) async {
       final service = _DrivenService();
-      await tester.pumpWidget(
-        _host(IdCaptureView(captureService: service)),
-      );
+      await tester.pumpWidget(_host(IdCaptureView(captureService: service)));
       await tester.pumpAndSettle();
 
       // Null most of the time, and that is the design: a viewfinder with a
@@ -168,7 +163,9 @@ void main() {
       // One shared sentence would have had to be vague enough to be useless in
       // both places.
       final cardService = _DrivenService();
-      await tester.pumpWidget(_host(IdCaptureView(captureService: cardService)));
+      await tester.pumpWidget(
+        _host(IdCaptureView(captureService: cardService)),
+      );
       await tester.pumpAndSettle();
       cardService.opened.single.emit(
         const CaptureState.framing(
@@ -230,10 +227,7 @@ void main() {
       var captured = 0;
       await tester.pumpWidget(
         _host(
-          IdCaptureView(
-            captureService: service,
-            onCaptured: () => captured++,
-          ),
+          IdCaptureView(captureService: service, onCaptured: () => captured++),
         ),
       );
       await tester.pumpAndSettle();
@@ -510,4 +504,153 @@ void main() {
       expect(session.current, isA<CaptureUnavailable>());
     });
   });
+
+  // A5. A camera that cannot run used to leave an empty frame and a disabled
+  // button. Every reason now says what happened and offers a way forward.
+  group('a camera that cannot run is never a dead end', () {
+    for (final reason in CaptureUnavailableReason.values) {
+      for (final selfie in [false, true]) {
+        testWidgets('${reason.name}, ${selfie ? 'selfie' : 'card'}', (
+          tester,
+        ) async {
+          var settings = 0;
+          final askedWith = <CaptureUnavailableReason>[];
+          final service = UnavailableCaptureService(reason: reason);
+          await tester.pumpWidget(
+            _host(
+              selfie
+                  ? SelfieCaptureView(
+                      captureService: service,
+                      onOpenSettings: () => settings++,
+                      onAskReviewer: askedWith.add,
+                    )
+                  : IdCaptureView(
+                      captureService: service,
+                      onOpenSettings: () => settings++,
+                      onAskReviewer: askedWith.add,
+                    ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(
+            find.byKey(const ValueKey('capture-unavailable')),
+            findsOneWidget,
+          );
+          final primary = tester.widget<AppWhiteButton>(
+            find.byType(AppWhiteButton),
+          );
+          expect(primary.onPressed, isNotNull, reason: 'never a dead button');
+
+          if (reason == CaptureUnavailableReason.permissionDenied) {
+            expect(find.text('Camera access is off'), findsOneWidget);
+            await tester.tap(find.text('Open settings'));
+            await tester.pumpAndSettle();
+            expect(settings, 1);
+          } else {
+            expect(find.text('Try again'), findsOneWidget);
+          }
+
+          await tester.tap(find.text('Check me another way'));
+          await tester.pumpAndSettle();
+          expect(askedWith, [reason]);
+        });
+      }
+    }
+
+    testWidgets('back from Settings, the camera is asked for again', (
+      tester,
+    ) async {
+      final service = _CountingUnavailable();
+      await tester.pumpWidget(
+        _host(IdCaptureView(captureService: service, onOpenSettings: () {})),
+      );
+      await tester.pumpAndSettle();
+      expect(service.opens, 1);
+
+      await tester.tap(find.text('Open settings'));
+      await tester.pumpAndSettle();
+      for (final state in const [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused,
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+      }
+      await tester.pumpAndSettle();
+
+      expect(service.opens, 2);
+    });
+  });
+
+  // A6. A dropped connection as the liveness session starts keeps her on the
+  // back of the card with her photographs, and offers a person only after
+  // retries have failed too.
+  group('a network blip at the hand-off is a retry, not a review', () {
+    testWidgets('offline keeps her here, and Try again asks again', (
+      tester,
+    ) async {
+      final service = _DrivenService();
+      final answers = <CaptureHandOff>[
+        CaptureHandOff.offline,
+        CaptureHandOff.offline,
+        CaptureHandOff.offlineOfferReviewer,
+        CaptureHandOff.moved,
+      ];
+      var handOffs = 0;
+      var reviewer = 0;
+      await tester.pumpWidget(
+        _host(
+          IdCaptureView(
+            captureService: service,
+            side: CaptureTarget.idBack,
+            onHandOff: () async => answers[handOffs++],
+            onAskReviewer: (_) => reviewer++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      service.opened.single.emit(const CaptureState.captured());
+      await tester.pumpAndSettle();
+
+      expect(handOffs, 1);
+      expect(
+        find.text('No connection. Your photos are still here, try again.'),
+        findsOneWidget,
+      );
+      expect(find.text('Check me another way'), findsNothing);
+
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(handOffs, 2, reason: 'asked again, without a new photograph');
+      expect(service.opened, hasLength(1), reason: 'the camera stayed shut');
+      expect(find.text('Check me another way'), findsNothing);
+
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(handOffs, 3);
+      expect(find.text('Check me another way'), findsOneWidget);
+
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(handOffs, 4);
+      expect(reviewer, 0);
+    });
+  });
+}
+
+/// Refuses the camera every time, and counts how often it was asked.
+class _CountingUnavailable implements CaptureService {
+  int opens = 0;
+
+  @override
+  Future<CaptureSession> open(CaptureTarget target) async {
+    opens++;
+    return const UnavailableCaptureService(
+      reason: CaptureUnavailableReason.permissionDenied,
+    ).open(target);
+  }
 }

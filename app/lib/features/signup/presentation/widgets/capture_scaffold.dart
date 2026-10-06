@@ -16,6 +16,12 @@
 /// printed across a card is a sentence she cannot read and a card she cannot
 /// see. Null most of the time, and that is the design: a viewfinder that always
 /// has an instruction on it teaches her to stop reading the instruction.
+///
+/// When the camera cannot run ([unavailable]), the cut-out and the disabled
+/// shutter give way to a message and two ways forward. Camera access she turned
+/// off gets "Open settings"; anything else gets "Try again". Both get "Check me
+/// another way", a woman reviewer with no camera. A woman who tapped "Don't
+/// allow" used to meet an empty frame and a dead button, with nothing said.
 library;
 
 import '../../../../ui/screen_art_strip.dart';
@@ -46,7 +52,28 @@ class CaptureScaffold extends StatelessWidget {
     this.guidance,
     this.onAction,
     this.onClose,
+    this.unavailable,
+    this.isSelfie = false,
+    this.onOpenSettings,
+    this.onRetry,
+    this.onAskReviewer,
   });
+
+  /// Why the camera cannot run, or null while it can.
+  final CaptureUnavailableReason? unavailable;
+
+  /// Which sentence explains a camera that is off: the card's or the selfie's.
+  final bool isSelfie;
+
+  /// Opens this app's page in the phone's settings. Offered only for
+  /// [CaptureUnavailableReason.permissionDenied].
+  final VoidCallback? onOpenSettings;
+
+  /// Opens the camera again. Offered for every other reason.
+  final VoidCallback? onRetry;
+
+  /// A woman reviewer instead of the camera.
+  final VoidCallback? onAskReviewer;
 
   /// Shown in the bar, in white.
   final String title;
@@ -74,6 +101,71 @@ class CaptureScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final reason = unavailable;
+    final refused = reason == CaptureUnavailableReason.permissionDenied;
+    final String? stopTitle = reason == null
+        ? null
+        : refused
+        ? l10n.cameraAccessIsOff
+        : null;
+    final String? stopBody = reason == null
+        ? null
+        : refused
+        ? (isSelfie
+              ? l10n.ownHubNeedsTheCameraForA
+              : l10n.ownHubNeedsTheCameraToRead)
+        : reason == CaptureUnavailableReason.offline
+        ? l10n.noConnectionYourPhotosAreStillHere
+        : l10n.theCameraCouldNotStartThisIs;
+    final Widget shownFrame = reason == null
+        ? frame
+        : Container(
+            width: 132,
+            height: 132,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: Color(0x33FFFFFF),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              reason == CaptureUnavailableReason.offline
+                  ? Icons.wifi_off
+                  : Icons.no_photography_outlined,
+              size: 56,
+              color: _onDark,
+            ),
+          );
+    final List<Widget> actions = reason == null
+        ? [
+            AppWhiteButton(
+              actionLabel,
+              height: 52,
+              fontSize: 15,
+              onPressed: onAction,
+            ),
+          ]
+        : [
+            AppWhiteButton(
+              refused ? l10n.openSettings : l10n.tryAgain,
+              height: 52,
+              fontSize: 15,
+              onPressed: refused ? onOpenSettings : onRetry,
+            ),
+            if (onAskReviewer != null)
+              TextButton(
+                onPressed: onAskReviewer,
+                style: TextButton.styleFrom(
+                  foregroundColor: _onDark,
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: Text(
+                  l10n.checkMeAnotherWay,
+                  style: AppText.titleM.copyWith(color: _onDark, fontSize: 15),
+                ),
+              ),
+          ];
+
     return Scaffold(
       backgroundColor: AppColors.inverseSurface,
       appBar: AppBar(
@@ -107,26 +199,41 @@ class CaptureScaffold extends StatelessWidget {
                     // outside the router.
                     const ScreenArtStrip(size: 84),
                     const SizedBox(height: 12),
-                    frame,
+                    shownFrame,
                     const SizedBox(height: 18),
-                    Text(
-                      headline,
-                      textAlign: TextAlign.center,
-                      style: AppText.titleM.copyWith(color: _onDark),
-                    ),
-                    const SizedBox(height: 18),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 300),
-                      child: Text(
-                        body,
+                    if (reason != null)
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          stopTitle ?? stopBody!,
+                          key: const ValueKey('capture-unavailable'),
+                          textAlign: TextAlign.center,
+                          style: AppText.titleM.copyWith(color: _onDark),
+                        ),
+                      )
+                    else
+                      Text(
+                        headline,
                         textAlign: TextAlign.center,
-                        style: AppText.bodyM.copyWith(
-                          height: 22 / 15,
-                          color: _onDarkVariant,
+                        style: AppText.titleM.copyWith(color: _onDark),
+                      ),
+                    // A refused camera has a title and a body; any other stop
+                    // says it in one sentence, above.
+                    if (reason == null || stopTitle != null) ...[
+                      const SizedBox(height: 18),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: Text(
+                          reason == null ? body : stopBody!,
+                          textAlign: TextAlign.center,
+                          style: AppText.bodyM.copyWith(
+                            height: 22 / 15,
+                            color: _onDarkVariant,
+                          ),
                         ),
                       ),
-                    ),
-                    if (guidance != null) ...[
+                    ],
+                    if (reason == null && guidance != null) ...[
                       const SizedBox(height: 16),
                       // Announced as well as drawn. The guidance is the only
                       // part of this screen that changes while she is holding
@@ -159,11 +266,10 @@ class CaptureScaffold extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-              child: AppWhiteButton(
-                actionLabel,
-                height: 52,
-                fontSize: 15,
-                onPressed: onAction,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: actions,
               ),
             ),
           ],
@@ -186,20 +292,20 @@ String captureGuidanceText(
   CaptureGuidance guidance, {
   required bool isSelfie,
 }) => switch (guidance) {
-      CaptureGuidance.holdSteady =>
-        isSelfie ? l10n.holdStill : l10n.holdTheCardStill,
-      CaptureGuidance.moveCloser => l10n.moveALittleCloser,
-      CaptureGuidance.moveBack => l10n.moveBackALittle,
-      CaptureGuidance.moreLight => l10n.thereIsNotEnoughLight,
-      CaptureGuidance.lessGlare => l10n.tiltTheCardToCutTheGlare,
-      CaptureGuidance.centreYourFace => l10n.bringYourFaceIntoTheCircle,
-      CaptureGuidance.onlyOneFace => l10n.onlyOneFaceInTheFrame,
-      CaptureGuidance.showTheFront => l10n.showTheFrontOfTheCard,
-      CaptureGuidance.lookStraight => l10n.lookStraightAhead,
-      CaptureGuidance.blink => l10n.blinkSlowly,
-      CaptureGuidance.turnLeft => l10n.turnYourHeadSlightlyToTheLeft,
-      CaptureGuidance.turnRight => l10n.turnYourHeadSlightlyToTheRight,
-    };
+  CaptureGuidance.holdSteady =>
+    isSelfie ? l10n.holdStill : l10n.holdTheCardStill,
+  CaptureGuidance.moveCloser => l10n.moveALittleCloser,
+  CaptureGuidance.moveBack => l10n.moveBackALittle,
+  CaptureGuidance.moreLight => l10n.thereIsNotEnoughLight,
+  CaptureGuidance.lessGlare => l10n.tiltTheCardToCutTheGlare,
+  CaptureGuidance.centreYourFace => l10n.bringYourFaceIntoTheCircle,
+  CaptureGuidance.onlyOneFace => l10n.onlyOneFaceInTheFrame,
+  CaptureGuidance.showTheFront => l10n.showTheFrontOfTheCard,
+  CaptureGuidance.lookStraight => l10n.lookStraightAhead,
+  CaptureGuidance.blink => l10n.blinkSlowly,
+  CaptureGuidance.turnLeft => l10n.turnYourHeadSlightlyToTheLeft,
+  CaptureGuidance.turnRight => l10n.turnYourHeadSlightlyToTheRight,
+};
 
 /// The label drawn inside a cut-out where the camera image will go.
 ///

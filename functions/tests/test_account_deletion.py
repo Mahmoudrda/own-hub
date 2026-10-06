@@ -234,7 +234,7 @@ def test_a_failure_part_way_is_recorded_and_a_rerun_finishes(step):
 
 def test_every_manifest_row_has_a_server_action():
     rows = manifest.load(_JSON)
-    assert [r.number for r in rows] == list(range(1, 42))
+    assert [r.number for r in rows] == list(range(1, 50))
     assert set(manifest.ACTIONS) == {r.number for r in rows}
     manifest.check(rows)
 
@@ -287,3 +287,23 @@ def test_a_missing_bucket_is_treated_as_empty(monkeypatch):
     backend = deletion.FirebaseBackend.__new__(deletion.FirebaseBackend)
     backend.delete_storage_prefix(None, "user-media/her/")
     backend.delete_storage_prefix("own-hub-personal", "user-media/her/")
+
+
+def test_the_ttl_rows_are_the_unlinked_signals_and_the_access_log():
+    rows = {r.number: r for r in manifest.load(_JSON)}
+    assert rows[42].path == "verificationBehaviour/{idHmac}"
+    assert rows[43].path == "verificationInstalls/{installHash}"
+    assert rows[44].path == "verificationReviewAccess where flagId in her flags"
+    assert {rows[n].method for n in (42, 43, 44)} == {"ttl"}
+    assert {manifest.ACTIONS[n] for n in (42, 43, 44)} == {manifest.TTL}
+
+
+def test_the_community_and_coach_rows_run_in_the_group_hook():
+    # APL-16: posts, her comments, coach pages, relationships and invite codes
+    # are named one by one, and all of them are purge_group_hook's work.
+    rows = {r.number: r for r in manifest.load(_JSON)}
+    assert rows[45].path.startswith("posts/{postId} where authorUid == uid")
+    assert rows[47].path.startswith("coaches/{uid}/**")
+    assert rows[49].path == "coachInvites where coachUid == uid"
+    assert {rows[n].method for n in range(45, 50)} == {"groupHook"}
+    assert {manifest.ACTIONS[n] for n in range(45, 50)} == {manifest.GROUP_HOOK}

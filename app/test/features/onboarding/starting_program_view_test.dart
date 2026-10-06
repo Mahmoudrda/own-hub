@@ -55,8 +55,61 @@ void main() {
       // "Built from your four answers", so the screen whose whole job is to
       // prove the answers counted told every woman she had chosen the same
       // thing.
+      //
+      // A repository nobody has answered into: she was never asked where she
+      // trains, so the line names no place (R1-P10, R1-P22).
+      expect(
+        find.text('Days a week: 3 · Minutes a session: 15'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('At home'), findsNothing);
+    });
+
+    testWidgets('the place is read back only once she has answered it', (
+      tester,
+    ) async {
+      final repository = InMemoryIntakeRepository();
+      await repository.merge(place: TrainingPlace.home);
+      await tester.pumpWidget(
+        _host(StartingProgramView(repository: repository)),
+      );
+      await tester.pumpAndSettle();
       expect(
         find.text('Days a week: 3 · Minutes a session: 15 · At home'),
+        findsOneWidget,
+      );
+      expect(find.text('8 weeks · quiet · no equipment'), findsOneWidget);
+    });
+
+    testWidgets('a gym answer is not promised "no equipment"', (tester) async {
+      for (final place in [TrainingPlace.ladiesGym, TrainingPlace.both]) {
+        await tester.pumpWidget(
+          _host(
+            StartingProgramView(
+              key: ValueKey(place),
+              repository: InMemoryIntakeRepository(Intake(place: place)),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.textContaining('no equipment'), findsNothing);
+        expect(find.text('8 weeks · for beginners'), findsOneWidget);
+      }
+    });
+
+    testWidgets('the short setup never claims a place in Arabic either', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          StartingProgramView(repository: InMemoryIntakeRepository()),
+          locale: const Locale('ar'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('في المنزل'), findsNothing);
+      expect(
+        find.text('أيام التمرين في الأسبوع: 3 · مدة الحصة بالدقائق: 15'),
         findsOneWidget,
       );
     });
@@ -188,10 +241,29 @@ void main() {
     });
   });
 
+  // Two programmes, so "Pick a different program" is a real choice. With the
+  // shipped catalogue of one it is not drawn: see the next group.
+  const twoProgrammes = <StartingProgram>[
+    beginnerFoundations,
+    StartingProgram(
+      programId: 'postpartum_rebuild',
+      weeks: 8,
+      daysPerWeek: 3,
+      sessionLength: 15,
+      quiet: true,
+      equipment: {},
+    ),
+  ];
+
   group('one primary action, and two real alternatives', () {
     testWidgets('all three are on the screen', (tester) async {
       await tester.pumpWidget(
-        _host(StartingProgramView(repository: InMemoryIntakeRepository())),
+        _host(
+          StartingProgramView(
+            repository: InMemoryIntakeRepository(),
+            catalogue: twoProgrammes,
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -208,6 +280,7 @@ void main() {
         _host(
           StartingProgramView(
             repository: InMemoryIntakeRepository(),
+            catalogue: twoProgrammes,
             onStartNow: () => now++,
             onStartTomorrow: () => tomorrow++,
             // As designed, this leads to R11 — the Workout library, not a picker.
@@ -226,6 +299,19 @@ void main() {
       expect(now, 1);
       expect(tomorrow, 1);
       expect(different, 1);
+    });
+
+    testWidgets('with one programme there is nothing to pick between', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(StartingProgramView(repository: InMemoryIntakeRepository())),
+      );
+      await tester.pumpAndSettle();
+
+      expect(kStartingProgramCatalogue, hasLength(1));
+      expect(find.text('Pick a different program'), findsNothing);
+      expect(find.text('I will start tomorrow'), findsOneWidget);
     });
 
     testWidgets('the primary action meets the minimum tap target', (
@@ -281,5 +367,61 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('before sign-up', () {
+    testWidgets('one way on, said in her words, and what comes next', (
+      tester,
+    ) async {
+      var joined = 0;
+      await tester.pumpWidget(
+        _host(
+          StartingProgramView(
+            repository: InMemoryIntakeRepository(
+              const Intake(days: 4, minutes: 20),
+            ),
+            beforeSignup: true,
+            title: '1 of 3 · Your week',
+            onBack: () {},
+            onSaveAndJoin: () => joined++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 of 3 · Your week'), findsOneWidget);
+      expect(find.text('Built from your answers'), findsOneWidget);
+      expect(find.text('Built from your four answers'), findsNothing);
+      expect(
+        find.text(
+          'One quick check keeps Own Hub women only. Then day 1 is yours.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Start day 1 now'), findsNothing);
+      expect(find.text('I will start tomorrow'), findsNothing);
+      expect(find.text('Pick a different program'), findsNothing);
+
+      await tester.tap(find.text('Save my week and join'));
+      await tester.pumpAndSettle();
+      expect(joined, 1);
+    });
+
+    testWidgets('reads in Arabic', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          StartingProgramView(
+            repository: InMemoryIntakeRepository(),
+            beforeSignup: true,
+          ),
+          locale: const Locale('ar'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('احفظي أسبوعي وانضمّي'), findsOneWidget);
+      expect(find.text('مبنيّ على إجاباتكِ'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

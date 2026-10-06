@@ -55,6 +55,8 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
     Feature.today,
     Feature.train,
     Feature.eat,
+    // Under `eat`: the microphone on Eat and E03.
+    Feature.voiceLogging,
     Feature.progress,
     Feature.cycle,
     Feature.privacyCentre,

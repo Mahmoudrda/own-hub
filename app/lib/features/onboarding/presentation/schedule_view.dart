@@ -23,6 +23,14 @@
 /// from the integers in [Intake.allowedDays] and [Intake.allowedMinutes] rather
 /// than from translated strings, so "3" cannot become "٣" on one screen and stay
 /// "3" on the next.
+///
+/// # The short "Your week"
+///
+/// With [includeLifeStage] this is the one setup screen a new woman meets
+/// before she has an account: days, minutes, and what to train around, all
+/// preselected, written in one merge. Asking about a pregnancy before her
+/// first session is the safety reason the question is here and not later. The
+/// answer stays on this phone, and the screen says so.
 library;
 
 import 'package:flutter/material.dart';
@@ -35,6 +43,8 @@ import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
 import 'intake_option.dart';
 import 'intake_step_scaffold.dart';
+import 'life_stage_view.dart' show lifeStageOptions;
+import '../../../ui/medical_disclaimer.dart';
 
 class ScheduleView extends StatefulWidget {
   const ScheduleView({
@@ -44,9 +54,21 @@ class ScheduleView extends StatefulWidget {
     this.onSkip,
     this.onBack,
     this.onClose,
+    this.includeLifeStage = false,
+    this.titleOverride,
+    this.continueLabel,
   });
 
   final IntakeRepository repository;
+
+  /// Adds the life-stage question and the "stays on this phone" note.
+  final bool includeLifeStage;
+
+  /// See [IntakeStepScaffold.titleOverride].
+  final String? titleOverride;
+
+  /// See [IntakeStepScaffold.continueLabel].
+  final String? continueLabel;
   final VoidCallback? onContinue;
   final VoidCallback? onSkip;
   final VoidCallback? onBack;
@@ -59,6 +81,7 @@ class ScheduleView extends StatefulWidget {
 class _ScheduleViewState extends State<ScheduleView> {
   late int _days;
   late int _minutes;
+  late LifeStage _lifeStage;
 
   @override
   void initState() {
@@ -66,10 +89,15 @@ class _ScheduleViewState extends State<ScheduleView> {
     final intake = widget.repository.read();
     _days = intake.days;
     _minutes = intake.minutes;
+    _lifeStage = intake.lifeStage;
   }
 
   Future<void> _continue() async {
-    await widget.repository.merge(days: _days, minutes: _minutes);
+    await widget.repository.merge(
+      days: _days,
+      minutes: _minutes,
+      lifeStage: widget.includeLifeStage ? _lifeStage : null,
+    );
     if (!mounted) return;
     widget.onContinue?.call();
   }
@@ -86,6 +114,8 @@ class _ScheduleViewState extends State<ScheduleView> {
       onSkip: widget.onSkip,
       onBack: widget.onBack,
       onClose: widget.onClose,
+      titleOverride: widget.titleOverride,
+      continueLabel: widget.continueLabel,
       children: [
         IntakeAnswerGroup(
           label: l10n.daysAWeek,
@@ -125,6 +155,35 @@ class _ScheduleViewState extends State<ScheduleView> {
             ),
           ],
         ),
+        if (widget.includeLifeStage) ...[
+          IntakeAnswerGroup(
+            label: l10n.anythingWeShouldTrainAround,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final (stage, title, subtitle) in lifeStageOptions(l10n))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: IntakeOption(
+                      title: title,
+                      subtitle: subtitle,
+                      selected: _lifeStage == stage,
+                      onTap: () => setState(() => _lifeStage = stage),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Text(
+            l10n.onlyYouSeeThisItStaysOn,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          // Inline, no extra step, once she says she is pregnant or has
+          // recently given birth.
+          if (_lifeStage == LifeStage.pregnant ||
+              _lifeStage == LifeStage.postpartum)
+            const MedicalDisclaimer(),
+        ],
       ],
     );
   }

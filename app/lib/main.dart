@@ -5,12 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_state/cloud_store.dart';
+import 'app_state/crash_consent.dart';
 import 'app_state/crash_reports.dart';
+import 'app_state/debug_analytics_sink.dart';
 import 'app_state/eat_state.dart';
 import 'app_state/firebase_boot.dart';
 import 'app_state/local_persistence.dart';
 import 'app_state/onboarding_state.dart';
+import 'app_state/role_state.dart';
+import 'config/legal_links.dart';
 import 'features/account/domain/health_backup.dart';
+import 'domain/analytics/analytics_gateway.dart';
 import 'domain/flags/feature_flags.dart';
 import 'domain/identity/user_roles.dart';
 import 'l10n/app_l10n.dart';
@@ -36,6 +41,21 @@ Future<void> main() async {
   );
   LicenseRegistry.addLicense(_handFontLicences);
 
+  // The four public pages must have addresses before a store build runs at
+  // all (M2): a release build with an empty privacy URL stops here, as the
+  // preflight would have. A debug build only says so, so development is not
+  // blocked on a domain.
+  LegalLinks.requireForRelease(release: kReleaseMode);
+  if (kDebugMode && !LegalLinks.allSet) {
+    debugPrint('LegalLinks are empty: a release build will refuse to start.');
+  }
+
+  // The funnel, on the debug console while testing. A release build sends it
+  // nowhere until an analytics service is chosen.
+  if (kDebugMode) {
+    AppRouter.analytics = const AnalyticsGateway(DebugPrintAnalyticsSink());
+  }
+
   // Her week, read off this phone BEFORE the first frame.
   //
   // Awaited here rather than loaded from a screen so that the first thing she
@@ -49,14 +69,19 @@ Future<void> main() async {
   await LocalPersistence.instance.load();
   LocalPersistence.instance.start();
 
+  // Her crash-report choice, read before Firebase so collection is set from
+  // it at once. Off unless she allowed it (privacy policy v3, 3.7).
+  await CrashConsent.instance.load();
+
   // The back end, brought up AFTER her local week and unable to fail the
   // launch. The order matters: whatever Firebase does or does not do, the
   // first frame is already drawn from her own data, so a dead network costs
   // her nothing she can see. See `lib/app_state/firebase_boot.dart`.
   await FirebaseBoot.start();
 
-  // Crashes, reported in a release build only (see FirebaseBoot). The
-  // reports carry the error's type and its stack, never its message and
+  // Crashes, reported in a release build only, and only once she has allowed
+  // it: the handlers are wired here and `CrashReports` returns at once
+  // without her consent (see FirebaseBoot and CrashConsent). The reports carry the error's type and its stack, never its message and
   // never anything about her: no user identifier, no custom key, no log line
   // is ever set (R8, see `lib/app_state/crash_reports.dart`).
   if (FirebaseBoot.crashReporting) {
@@ -82,6 +107,16 @@ Future<void> main() async {
   // check rather than the app. See `AppRouter.readVerificationAtLaunch`.
   await AppRouter.readVerificationAtLaunch();
   AppRouter.watchVerificationToken();
+
+  // A code her coach sent, kept through a check that finished while the app
+  // was closed. Nothing happens without one. Not awaited.
+  unawaited(AppRouter.redeemPendingInvite());
+
+  // Her acceptance of the Terms and Privacy Policy (M1): a pending one from
+  // C06 is sent, and if the versions in force are not accepted the legal
+  // update sheet opens over the first screen. Not awaited: the first frame
+  // never waits on the network.
+  unawaited(AppRouter.checkLegalAtLaunch());
 
   // The cloud copy of her week, started but deliberately NOT awaited.
   //
@@ -153,6 +188,11 @@ class LocaleScope extends InheritedNotifier<ValueNotifier<Locale>> {
 
   static ValueNotifier<Locale> of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<LocaleScope>()!.notifier!;
+
+  /// The same, or null where the app's scope is not above [context], which is
+  /// a screen built on its own in a test.
+  static ValueNotifier<Locale>? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<LocaleScope>()?.notifier;
 }
 
 class OwnHubApp extends StatefulWidget {
@@ -163,11 +203,30 @@ class OwnHubApp extends StatefulWidget {
 }
 
 class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
+  /// This app's navigator, lent to the router for the launch-time legal
+  /// update sheet. Owned here so every app gets its own.
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
   @override
   void initState() {
     super.initState();
+    AppRouter.navigatorKey = _navigatorKey;
     WidgetsBinding.instance.addObserver(this);
+    // Her training reminders, set again in the language the app opens in and
+    // again whenever she changes it, so a reminder never arrives in the
+    // language she left. Nothing happens when she has none.
+    _reapplyReminders();
+    _locale.addListener(_reapplyReminders);
+    // Every change of side, chosen at C08 or switched from her picture, is
+    // kept for the next launch (R1-P17).
+    _roles.addListener(_keepRoles);
   }
+
+  void _keepRoles() => RoleState.instance.keep(_roles.value);
+
+  void _reapplyReminders() => unawaited(
+    AppRouter.reapplyTrainingReminders(lookupAppL10n(_locale.value)),
+  );
 
   /// Back in the foreground: a refresh the network refused at launch is
   /// tried again (R1). Does nothing when nothing is owed.
@@ -217,17 +276,19 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
   /// in, so she is a guest. She holds both roles only where there is a coach
   /// side to hold: the first release ships without one, and a picture that
   /// switches to an app that is switched off is a door into nothing.
+  ///
+  /// What she chose before is restored first (R1-P17): it used to start as a
+  /// trainee on every launch, so a coach came back to the trainee side.
   final ValueNotifier<UserRoles> _roles = ValueNotifier(
-    AppRouter.featureFlags.isOn(Feature.accountRequired) ||
-            !AppRouter.featureFlags.isOn(Feature.coachApp)
-        ? UserRoles.trainee
-        : UserRoles.both,
+    launchRoles(AppRouter.featureFlags),
   );
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _locale.removeListener(_reapplyReminders);
     _locale.dispose();
+    _roles.removeListener(_keepRoles);
     _roles.dispose();
     super.dispose();
   }
@@ -357,6 +418,7 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
         child: ValueListenableBuilder<Locale>(
           valueListenable: _locale,
           builder: (context, locale, _) => MaterialApp(
+            navigatorKey: _navigatorKey,
             onGenerateTitle: (context) => 'Own Hub',
             debugShowCheckedModeBanner: false,
             locale: locale,

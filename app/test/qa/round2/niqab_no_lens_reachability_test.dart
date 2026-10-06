@@ -85,7 +85,14 @@ void main() {
       // is her choosing again, not the niqab path opening a lens. The walk
       // therefore stops there, and the test below proves C09 still offers
       // C15.
-      const freshChoice = <String>{'C09'};
+      //
+      // C09b is the same kind of screen now: on the first run it carries C09's
+      // promise above the consent, and offers the camera, the niqab path and
+      // "I would rather not" side by side. A walk from C14's preview through
+      // sign-up reaches it rather than C09, and reaching it is her choosing
+      // again, with her agreement still required before any lens. The test
+      // below proves it still offers C15.
+      const freshChoice = <String>{'C09', 'C09b'};
 
       final visited = <String>{};
       final queue = <String>['C15'];
@@ -140,6 +147,14 @@ void main() {
   test('C09, where she chooses again, still offers the niqab path', () {
     final blocks = _allBuilderBlocks();
     expect(_literalTargets(blocks['C09']!), contains('C15'));
+  });
+
+  test('C09b, where she chooses on the first run, offers C15 too', () {
+    final blocks = _allBuilderBlocks();
+    final targets = _literalTargets(blocks['C09b']!);
+    expect(targets, contains('C15'));
+    // Both ways to a reviewer: the niqab link and "I would rather not".
+    expect(targets.where((t) => t == 'C15').length, greaterThanOrEqualTo(2));
   });
 
   test('_opensALens itself is still exactly the three capture screens', () {

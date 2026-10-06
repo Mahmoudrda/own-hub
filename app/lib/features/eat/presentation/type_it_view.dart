@@ -21,9 +21,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_field.dart';
@@ -107,7 +109,10 @@ class _TypeItViewState extends State<TypeItView> {
   /// straight back.
   TypeItState? _state;
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
+
+  /// Whether saying a meal is on in this build (`E03`).
+  bool get _voice => widget.onSpeak != null && AppRouter.screenIsOn('E03');
 
   @override
   void initState() {
@@ -258,14 +263,18 @@ class _TypeItViewState extends State<TypeItView> {
         AppField(
           controller: _controller,
           onChanged: _onChanged,
-          hint: l10n.sayOrTypeWhatYouAte,
-          trailing: IconButton(
-            onPressed: widget.onSpeak,
-            tooltip: l10n.weNeedTheMicrophoneToHearWhat,
-            iconSize: 22,
-            color: AppColors.primaryDim,
-            icon: const Icon(Icons.mic),
-          ),
+          // No microphone while saying a meal is off in this build
+          // (`Feature.voiceLogging`): there is nothing to hear her with.
+          hint: _voice ? l10n.sayOrTypeWhatYouAte : l10n.typeWhatYouAte,
+          trailing: _voice
+              ? IconButton(
+                  onPressed: widget.onSpeak,
+                  tooltip: l10n.weNeedTheMicrophoneToHearWhat,
+                  iconSize: 22,
+                  color: AppColors.primaryDim,
+                  icon: const Icon(Icons.mic),
+                )
+              : null,
         ),
         if (state.items.isNotEmpty)
           Text(

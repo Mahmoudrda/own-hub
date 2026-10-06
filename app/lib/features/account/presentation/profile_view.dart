@@ -57,6 +57,7 @@ import 'allergen_labels.dart';
 import '../domain/privacy_settings.dart';
 import '../domain/verification_claim.dart';
 import 'account_view_models.dart';
+import '../../../ui/medical_disclaimer.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({
@@ -274,6 +275,8 @@ class _ProfileViewState extends State<ProfileView> {
             subtitle: l10n.openAnyScreenForTesting,
             onTap: widget.onOpenAllScreens,
           ),
+        // About Own Hub, at the foot of the page: what the app is not.
+        const MedicalDisclaimer(),
       ],
     );
   }

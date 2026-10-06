@@ -198,6 +198,10 @@ void main() {
       expect(find.text('Your first week'), findsOneWidget);
       expect(_rowSubtitle('Your first week', '0 of 3'), findsOneWidget);
 
+      // Below her week's line and "Start day 1" now, so it may sit under the
+      // fold on a small phone: scrolled to, as she would.
+      await tester.ensureVisible(find.text('Your first week'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Your first week'));
       await tester.pumpAndSettle();
 

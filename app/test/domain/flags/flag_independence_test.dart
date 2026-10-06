@@ -41,6 +41,10 @@ const String _needle = 'FeatureFlags.' 'shipped';
 /// asserted below: an entry that is no longer needed is a failure rather than
 /// a harmless leftover.
 const Map<String, String> _mayReadTheDefaults = <String, String>{
+  'test/release/compliance_copy_test.dart':
+      'Its microphone group proves a privacy-policy claim about the build that '
+      'goes to the stores: voice logging is off in the shipped set, so E03 and '
+      'the microphone are unreachable. The shipped set is the thing under test.',
   'test/release_readiness_test.dart':
       'Its subject is the build that goes to the stores, so the shipped set is '
       'the thing under test: that the first release opens on Home, that the '

@@ -49,6 +49,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/rewards/stated_figure.dart';
 import '../../../domain/rewards/weekly_goal.dart';
 import '../../../domain/week/week_key.dart';
@@ -111,7 +112,7 @@ class _QuietWeekViewState extends State<QuietWeekView> {
     // mockup's date and the router passes no `date`, so T04 greeted every woman
     // with "Monday 14 September" for ever while Home, T02 and R10 beside it all
     // said the real day.
-    _date = widget.date ?? DateTime.now();
+    _date = widget.date ?? AppClock.now();
     // Shown once, never again that week.
     unawaited(_repo.markNoticeSeen(NoticeKind.quietWeek, WeekKey.of(_date)));
   }

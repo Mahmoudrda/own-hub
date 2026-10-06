@@ -260,7 +260,7 @@ class _SafetyCentreViewState extends State<SafetyCentreView> {
               color: AppColors.primaryDim,
             ),
             title: l10n.talkToAHuman,
-            subtitle: l10n.aWomanOnTheTeam9amTo,
+            subtitle: l10n.emailUsReadSundayToThursday9,
             trailing: const Icon(
               Icons.open_in_new,
               size: 20,

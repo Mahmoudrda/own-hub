@@ -45,31 +45,46 @@
 ///   * Where she was standing: the month Y08 was scrolled to, the post she had
 ///     open, the session she was midway through. Those are places, not records.
 ///   * Community and coaching. Both are off for the first release, and both
-///     are large nested graphs — see the note at the bottom of this file.
+///     are large nested graphs — see the note at the bottom of this file. The
+///     exceptions are small and hers: which side of the app she holds
+///     (`roles`), her own coach application (`coach`) and the code her coach
+///     sent her (`invite`), so a coach is still a coach after a relaunch.
 library;
 
 import 'dart:convert';
 
+import '../domain/clock/app_clock.dart';
+import '../domain/identity/user_roles.dart';
 import '../domain/rewards/personal_best_detector.dart';
 import '../domain/rewards/week_rollup.dart';
 import '../domain/rewards/weekly_goal.dart';
 import '../domain/training/prescribed_set.dart';
 import '../domain/week/week_key.dart';
 import '../features/account/domain/dietary_profile.dart';
+import '../features/coach/domain/coach_capacity.dart';
+import '../features/coach/domain/coach_credentials.dart';
+import '../features/coach/domain/coach_invite.dart' show normaliseInviteCode;
+import '../features/coach/domain/coach_profile.dart';
 import '../features/account/domain/privacy_settings.dart';
 import '../features/cycle/domain/cycle_document.dart';
 import '../features/cycle/domain/period_entry.dart';
 import '../features/cycle/domain/today_check_in.dart';
 import '../features/eat/domain/meal_repository.dart';
 import '../features/onboarding/domain/intake.dart';
+import 'pledge.dart';
+import 'onboarding_state.dart';
 import '../features/progress/domain/progress_repository.dart';
 import '../features/signup/domain/locale_preference.dart';
 import '../features/today/domain/today_day.dart';
 import '../features/today/domain/today_repository.dart';
 import '../features/train/domain/train_repository.dart';
+import '../features/train/domain/training_reminders.dart';
 import '../routing/app_router.dart';
+import 'coach_invite_state.dart';
+import 'coach_profile_state.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
+import 'role_state.dart';
 
 /// The shape this build writes.
 ///
@@ -111,6 +126,11 @@ abstract final class AppSnapshot {
     'dietary': _captureDietary(),
     'intake': _captureIntake(),
     'language': _captureLanguage(),
+    'pledge': _capturePledge(),
+    'reminders': _captureReminders(),
+    'roles': _captureRoles(),
+    'coach': _captureCoach(),
+    'invite': _captureInvite(),
   };
 
   /// Reads [raw] and puts it back into the stores.
@@ -173,6 +193,11 @@ abstract final class AppSnapshot {
     'dietary': _readDietary,
     'intake': _readIntake,
     'language': _readLanguage,
+    'pledge': _readPledge,
+    'reminders': _readReminders,
+    'roles': _readRoles,
+    'coach': _readCoach,
+    'invite': _readInvite,
   };
 }
 
@@ -593,7 +618,10 @@ Map<String, Map<String, PrescribedSet?>> _prescriptionIndex(
   for (final session in sessions) {
     final byKey = <String, PrescribedSet?>{};
     for (final set in session.sets) {
-      final key = _prescriptionKey(set.prescribed.exerciseId, set.prescribed.order);
+      final key = _prescriptionKey(
+        set.prescribed.exerciseId,
+        set.prescribed.order,
+      );
       byKey[key] = byKey.containsKey(key) ? null : set.prescribed;
     }
     index[session.id] = byKey;
@@ -617,7 +645,10 @@ bool _isSessionsOwn(
 ) {
   if (prescribed.exerciseId != flushExerciseId) return false;
   final candidate =
-      index[sessionId]?[_prescriptionKey(prescribed.exerciseId, prescribed.order)];
+      index[sessionId]?[_prescriptionKey(
+        prescribed.exerciseId,
+        prescribed.order,
+      )];
   return candidate != null &&
       candidate.weightKg == prescribed.weightKg &&
       candidate.reps == prescribed.reps &&
@@ -645,7 +676,8 @@ Map<String, Object?> _captureTrain() {
               ))
                 <String, Object?>{
                   'order': set.prescribed.order,
-                  if (set.outcome case final outcome?) 'outcome': _outcome(outcome),
+                  if (set.outcome case final outcome?)
+                    'outcome': _outcome(outcome),
                 }
               else
                 _loggedSet(set),
@@ -753,13 +785,14 @@ TrainSession? _readSession(Object? raw) {
   );
 }
 
-Map<String, Object?> _prescription(PrescribedSet prescribed) => <String, Object?>{
-  'exerciseId': prescribed.exerciseId,
-  'order': prescribed.order,
-  'weightKg': ?prescribed.weightKg,
-  'reps': ?prescribed.reps,
-  'holdSeconds': ?prescribed.holdSeconds,
-};
+Map<String, Object?> _prescription(PrescribedSet prescribed) =>
+    <String, Object?>{
+      'exerciseId': prescribed.exerciseId,
+      'order': prescribed.order,
+      'weightKg': ?prescribed.weightKg,
+      'reps': ?prescribed.reps,
+      'holdSeconds': ?prescribed.holdSeconds,
+    };
 
 Map<String, Object?> _outcome(SetOutcome outcome) => <String, Object?>{
   'weightKg': ?outcome.weightKg,
@@ -804,7 +837,10 @@ List<LoggedSet> _readLoggedSets(Object? raw) => <LoggedSet>[
   for (final entry in _list(raw) ?? const <Object?>[])
     if (_map(entry) case final row?)
       if (_readPrescription(row['prescribed']) case final prescribed?)
-        LoggedSet(prescribed: prescribed, outcome: _readOutcome(row['outcome'])),
+        LoggedSet(
+          prescribed: prescribed,
+          outcome: _readOutcome(row['outcome']),
+        ),
 ];
 
 /// The prescription one flush set is recorded against, in either of the two
@@ -856,7 +892,10 @@ List<LoggedSet> _readFlushSets(
             exerciseId: exerciseId,
           )
           case final prescribed?)
-        LoggedSet(prescribed: prescribed, outcome: _readOutcome(row['outcome'])),
+        LoggedSet(
+          prescribed: prescribed,
+          outcome: _readOutcome(row['outcome']),
+        ),
 ];
 
 // ------------------------------------------------------------------ meals ---
@@ -1205,7 +1244,7 @@ void Function()? _readCycle(Object? raw) {
   if (section == null) return null;
 
   final document = _readCycleDocument(section['document']);
-  final today = DateTime.now();
+  final today = AppClock.now();
   final periods = <String, PeriodEntry>{};
   for (final entry in _list(section['periods']) ?? const <Object?>[]) {
     final row = _map(entry);
@@ -1243,7 +1282,7 @@ void Function()? _readCycle(Object? raw) {
     // Today's check-in is a fact about today and nothing else. A check-in from
     // a previous day stays in the map for Y10's chart and is never carried
     // forward as though she had logged it again this morning (G9 §3.3).
-    final todayId = AppRouter.dayId(DateTime.now());
+    final todayId = AppRouter.dayId(AppClock.now());
     AppRouter.todayCheckIn = checkIns[todayId] ?? TodayCheckIn.absent;
   };
 }
@@ -1457,6 +1496,12 @@ Map<String, Object?> _captureIntake() {
     // the same four questions and because account deletion clears both through
     // the same `reset()`.
     'setupDone': AppRouter.intakeRepository.setupDone,
+    // Whether she was asked where she trains. The short "Your week" never
+    // asks, and her week must not be read back to her as "at home" then.
+    'placeAnswered': AppRouter.intakeRepository.placeAnswered,
+    // "Not now" on day-one Home's "Track my cycle". A Home preference, kept
+    // here because it is cleared by the same reset as the answers above.
+    'cycleRowDismissed': OnboardingState.instance.cycleRowDismissed,
   };
 }
 
@@ -1490,8 +1535,18 @@ void Function()? _readIntake(Object? raw) {
   // Absent means a document written before the walk existed, and the honest
   // reading of that is that she was never asked. She is asked once.
   final setupDone = _bool(section['setupDone']) ?? false;
+  // Absent reads as not asked: a place-less line is never untrue.
+  final placeAnswered = _bool(section['placeAnswered']) ?? false;
+  final cycleRowDismissed = _bool(section['cycleRowDismissed']) ?? false;
 
-  return () => AppRouter.intakeRepository.restore(intake, setupDone: setupDone);
+  return () {
+    AppRouter.intakeRepository.restore(
+      intake,
+      setupDone: setupDone,
+      placeAnswered: placeAnswered,
+    );
+    OnboardingState.instance.cycleRowDismissed = cycleRowDismissed;
+  };
 }
 
 Map<String, Object?> _captureLanguage() => <String, Object?>{
@@ -1507,6 +1562,182 @@ void Function()? _readLanguage(Object? raw) {
   if (code != 'ar' && code != 'en') return null;
   final language = AppLanguage.fromCode(code);
   return () => AppRouter.localePreference.write(language);
+}
+
+// Her agreement to the community's rules (C16): the version and when. The
+// server keeps its own record (record_pledge); this one is what lets the
+// community open without asking again on her next visit.
+Map<String, Object?> _capturePledge() => <String, Object?>{
+  'version': PledgeState.instance.agreedVersion,
+  'at': PledgeState.instance.agreedAt?.toUtc().toIso8601String(),
+};
+
+void Function()? _readPledge(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final version = _int(section['version']);
+  final at = DateTime.tryParse(_str(section['at']) ?? '');
+  return () {
+    PledgeState.instance
+      ..agreedVersion = version
+      ..agreedAt = at;
+  };
+}
+
+// Her training reminders: whether R10 has offered them, and the days and time
+// she chose. When to remind her, never a record of what she did.
+Map<String, Object?> _captureReminders() => <String, Object?>{
+  'offered': ReminderState.instance.offered,
+  'schedule': ReminderState.instance.schedule?.toJson(),
+};
+
+void Function()? _readReminders(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final offered = _bool(section['offered']) ?? false;
+  final schedule = TrainingReminders.fromJson(section['schedule']);
+  return () {
+    ReminderState.instance
+      ..offered = offered
+      ..schedule = schedule;
+  };
+}
+
+// Her roles (R1-P17): which apps she holds and which one she was looking at.
+// Null when this phone has none, and then the launch default stands.
+Map<String, Object?>? _captureRoles() {
+  final roles = RoleState.instance.roles;
+  if (roles == null) return null;
+  return <String, Object?>{
+    'held': [
+      for (final role in AppRole.values)
+        if (roles.held.contains(role)) role.name,
+    ],
+    'active': roles.active.name,
+  };
+}
+
+void Function()? _readRoles(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final held = rolesFromNames(section['held']);
+  if (held == null) return null;
+  final active = AppRole.values
+      .where((r) => r.name == _str(section['active']))
+      .firstOrNull;
+  final roles = UserRoles(held: held, active: active ?? held.first);
+  return () => RoleState.instance.roles = roles;
+}
+
+// Her coach application (R1-P17): what she answered on K01 to K05, her
+// certificates and whether it went in. Never a check result: "verified" is the
+// server's word (see `CoachProfileState.restore`). Written only once she has
+// started, so a trainee's snapshot carries nothing here.
+Map<String, Object?>? _captureCoach() {
+  final state = CoachProfileState.instance;
+  final setup = state.setup;
+  final started =
+      state.profile.displayName.isNotEmpty ||
+      state.profile.city.isNotEmpty ||
+      setup.certificates.isNotEmpty ||
+      state.isSetupComplete;
+  if (!started) return null;
+  final profile = state.profile;
+  return <String, Object?>{
+    'displayName': profile.displayName,
+    'city': profile.city,
+    'tagline': profile.tagline,
+    'photoBlurred': profile.photoBlurred,
+    'specialties': [for (final s in profile.specialties) s.name],
+    'languages': [for (final l in profile.languages) l.name],
+    'places': [for (final p in profile.clientPlaces) p.name],
+    if (profile.capacity.isSet) 'capacityMax': profile.capacity.max,
+    'certificates': [
+      for (final c in setup.certificates)
+        <String, Object?>{
+          'credentialId': c.credentialId,
+          'mediaRef': c.mediaRef,
+          'issuedAt': c.issuedAt.toIso8601String(),
+          if (c.expiresAt case final ends?) 'expiresAt': ends.toIso8601String(),
+          'sent': c.state.hasLeftTheDevice,
+        },
+    ],
+    'payoutLater': setup.payoutLater,
+    'submitted': state.isSetupComplete,
+    'testCoach': state.isTestCoach,
+  };
+}
+
+Set<T> _named<T extends Enum>(Object? raw, List<T> values) => {
+  for (final name in _list(raw) ?? const <Object?>[])
+    ...values.where((v) => v.name == name),
+};
+
+void Function()? _readCoach(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final max = _int(section['capacityMax']);
+  CoachCapacity capacity = CoachCapacity.unset;
+  if (max != null) {
+    try {
+      capacity = CoachCapacity(max: max, taken: 0);
+    } on ArgumentError {
+      capacity = CoachCapacity.unset;
+    }
+  }
+  final profile = CoachProfile(
+    displayName: _str(section['displayName']) ?? '',
+    city: _str(section['city']) ?? '',
+    tagline: _str(section['tagline']) ?? '',
+    photoBlurred: _bool(section['photoBlurred']) ?? true,
+    specialties: _named(section['specialties'], Specialty.values),
+    languages: _named(section['languages'], CoachLanguage.values),
+    clientPlaces: _named(section['places'], ClientPlace.values),
+    capacity: capacity,
+  );
+  final certificates = <Certificate>[];
+  for (final item in _list(section['certificates']) ?? const <Object?>[]) {
+    final c = _map(item);
+    final credentialId = _str(c?['credentialId']);
+    final mediaRef = _str(c?['mediaRef']);
+    final issuedAt = DateTime.tryParse(_str(c?['issuedAt']) ?? '');
+    if (credentialId == null || mediaRef == null || issuedAt == null) continue;
+    final sent = _bool(c?['sent']) ?? false;
+    certificates.add(
+      Certificate(
+        id: '${credentialId}_${issuedAt.toIso8601String()}',
+        credentialId: credentialId,
+        mediaRef: mediaRef,
+        issuedAt: issuedAt,
+        expiresAt: DateTime.tryParse(_str(c?['expiresAt']) ?? ''),
+        // Where it got to on this phone, never further: only a reviewer
+        // moves a certificate past "uploaded".
+        state: sent ? CertificateState.uploaded : CertificateState.localPending,
+      ),
+    );
+  }
+  final payoutLater = _bool(section['payoutLater']) ?? false;
+  final submitted = _bool(section['submitted']) ?? false;
+  final testCoach = _bool(section['testCoach']) ?? false;
+  return () => CoachProfileState.instance.restore(
+    profile: profile,
+    certificates: certificates,
+    payoutLater: payoutLater,
+    submitted: submitted,
+    testCoach: testCoach,
+  );
+}
+
+// The code her coach sent (R1-P18), waiting for her check to finish.
+Map<String, Object?>? _captureInvite() {
+  final code = CoachInviteState.instance.pendingCode;
+  return code == null ? null : <String, Object?>{'code': code};
+}
+
+void Function()? _readInvite(Object? raw) {
+  final code = normaliseInviteCode(_str(_map(raw)?['code']) ?? '');
+  if (code == null) return null;
+  return () => CoachInviteState.instance.pendingCode = code;
 }
 
 // ---------------------------------------------------------------- readers ---

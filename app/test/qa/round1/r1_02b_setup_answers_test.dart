@@ -45,10 +45,12 @@ void main() {
     });
   }
 
-  testWidgets('O05 three exits', (t) async {
+  // Two exits while the catalogue holds one programme: "Pick a different
+  // program" is drawn only when there is a different one to pick.
+  testWidgets('O05 exits', (t) async {
     phone(t);
     final s = t.ensureSemantics();
-    for (final exit in ['Start day 1 now', 'I will start tomorrow', 'Pick a different program']) {
+    for (final exit in ['Start day 1 now', 'I will start tomorrow']) {
       wipe();
       await boot(t, locale: const Locale('en'));
       await tapLabel(t, 'Continue');

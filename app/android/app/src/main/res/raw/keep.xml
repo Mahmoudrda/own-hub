@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Release builds shrink resources, and the notification icon is named only
+     from Dart ("ic_stat_ownhub") and from the manifest, so it is kept here
+     explicitly. Without it reminders could fail to show at all. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_ownhub" />

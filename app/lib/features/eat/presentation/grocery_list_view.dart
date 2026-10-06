@@ -21,6 +21,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/week/week_key.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
@@ -64,7 +65,7 @@ class _GroceryListViewState extends State<GroceryListView> {
 
   WeekPlanView? _view;
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
   String get _weekId => WeekKey.of(_now).id;
 
   @override

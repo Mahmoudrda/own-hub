@@ -28,6 +28,7 @@ import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_scaffold.dart';
 import '../domain/cycle_document.dart';
 import '../domain/cycle_repository.dart';
+import '../../../ui/medical_disclaimer.dart';
 
 class CycleSetupView extends StatefulWidget {
   const CycleSetupView({
@@ -172,6 +173,8 @@ class _CycleSetupViewState extends State<CycleSetupView> {
           },
           onTap: (i) => _toggleFlag(_chipOrder[i]),
         ),
+        // What the app is not, before she starts tracking (APL-12).
+        const MedicalDisclaimer(),
       ],
     );
   }

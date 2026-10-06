@@ -54,6 +54,25 @@ void main() {
     expect(find.text('Coaches who get it'), findsOneWidget);
   });
 
+  // R1-P12: the cycle, which she installs the app for, is promised up front,
+  // and so is where its data stays.
+  testWidgets('promises cycle tracking, kept on this phone', (tester) async {
+    await tester.pumpWidget(_host(const WhatsInsideView()));
+    await tester.pumpAndSettle();
+    expect(find.text('Your cycle, on this phone'), findsOneWidget);
+    expect(
+      find.textContaining('Cycle data stays on your phone'),
+      findsOneWidget,
+    );
+
+    AppRouter.featureFlags = FeatureFlags.everything.with_(<Feature, bool>{
+      Feature.cycle: false,
+    });
+    await tester.pumpWidget(_host(const WhatsInsideView(key: ValueKey(2))));
+    await tester.pumpAndSettle();
+    expect(find.text('Your cycle, on this phone'), findsNothing);
+  });
+
   testWidgets('each promise carries its explanation, not just a headline', (
     tester,
   ) async {

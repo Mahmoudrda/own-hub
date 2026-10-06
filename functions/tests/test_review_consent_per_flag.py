@@ -19,7 +19,7 @@ from identity import config, decisions, reasons, review, store
 from tests import fake_firestore
 from tests.fake_review_store import FakeReviewStore
 
-CONSENT = f"{config.COL_USERS}/her/{config.COL_CONSENTS}/review-v1"
+CONSENT = f"{config.COL_USERS}/her/{config.COL_CONSENTS}/review-v2"
 
 
 def _machine_flag(fake, uid="her"):

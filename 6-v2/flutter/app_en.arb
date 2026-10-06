@@ -3174,5 +3174,289 @@
   "workoutsRecipesAndYourProgressFree": "Workouts, recipes and your progress. Free.",
   "thisIsWhatKeepsOwnHubWomen": "This is what keeps Own Hub women only: every woman is verified before she gets in.",
   "yourNumberYourIdAndYourLogs_10nei": "Your number, your ID and your logs stay private.",
-  "ownHubIsForTrainingNotFor": "Own Hub is for training, not for selling."
+  "ownHubIsForTrainingNotFor": "Own Hub is for training, not for selling.",
+  "yourTrainingYourFoodYourCycleWomen": "Your training, your food, your cycle. Women only.",
+  "setUpMyWeek": "Set up my week",
+  "n1Of3YourWeek": "1 of 3 · Your week",
+  "n2Of3YourNumber": "2 of 3 · Your number",
+  "n3Of3QuickCheck": "3 of 3 · Quick check",
+  "onlyYouSeeThisItStaysOn": "Only you see this. It stays on this phone.",
+  "seeMyWeek": "See my week",
+  "builtFromYourAnswers": "Built from your answers",
+  "oneQuickCheckKeepsOwnHubWomen": "One quick check keeps Own Hub women only. Then day 1 is yours.",
+  "saveMyWeekAndJoin": "Save my week and join",
+  "thatNumberDoesNotLookRightCheck": "That number does not look right. Check it and try again.",
+  "noConnectionYourNumberIsStillHere": "No connection. Your number is still here, try again when you are back online.",
+  "weCouldNotSendTheCodeTry": "We could not send the code. Try again in a moment.",
+  "thatCodeDidNotMatchCheckThe": "That code did not match. Check the message and type it again.",
+  "thatCodeHasExpiredAskForA_1vzf3": "That code has expired. Ask for a new one below.",
+  "noConnectionTryAgainWhenYouAre": "No connection. Try again when you are back online.",
+  "weCouldNotCheckTheCodeTry": "We could not check the code. Try again in a moment.",
+  "checkingYourCode": "Checking your code",
+  "editNumber": "Edit number",
+  "cameraAccessIsOff": "Camera access is off",
+  "ownHubNeedsTheCameraToRead": "Own Hub needs the camera to read your card. You can turn it on in Settings, or a woman from Own Hub can check you another way.",
+  "ownHubNeedsTheCameraForA": "Own Hub needs the camera for a short selfie. You can turn it on in Settings, or a woman from Own Hub can check you another way.",
+  "theCameraCouldNotStartThisIs": "The camera could not start. This is not about you. Try again, or a woman from Own Hub can check you another way.",
+  "checkMeAnotherWay": "Check me another way",
+  "noConnectionYourPhotosAreStillHere": "No connection. Your photos are still here, try again.",
+  "bothSidesOfYourCardTaken": "Both sides of your card taken",
+  "selfieTaken": "Selfie taken",
+  "matchingYourSelfieToYourCard": "Matching your selfie to your card",
+  "takingLongerThanUsualYourConnectionMay": "Taking longer than usual. Your connection may be slow. You can keep waiting here.",
+  "goToHome": "Go to Home",
+  "planThisWeeksDinners": "Plan this week's dinners",
+  "fiveEgyptianDinnersAndOneShoppingList": "Five Egyptian dinners and one shopping list",
+  "trackMyCycle": "Track my cycle",
+  "optionalAndItStaysOnThisPhone": "Optional, and it stays on this phone",
+  "nextSessionNumberOnAnyDayThis": "Next: session {number}, on any day this week",
+  "@nextSessionNumberOnAnyDayThis": {
+    "description": "R10's next step after a finished session. The number is the next session of her week, in Western digits.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "day1WasNotWrittenForPregnancy": "Day 1 was not written for pregnancy. Please ask your doctor before you start, and skip any move that does not feel right.",
+  "day1WasNotWrittenForThe": "Day 1 was not written for the weeks after a birth. Please wait for your doctor's OK, and skip any move that does not feel right.",
+  "iHaveMyDoctorsOkStart": "I have my doctor's OK, start",
+  "notToday": "Not today",
+  "yourWeekIsSaved": "Your week is saved",
+  "homeYourDayAtAGlance": "Home, your day at a glance",
+  "ownHubIsAFitnessAppFor": "Own Hub is a fitness app for women only. Home shows today's workout, what you have eaten and how your week is going. This week is a sample, so tap anything.",
+  "quietSessionsYouCanDoAtHome": "Quiet sessions you can do at home. Each move shows its sets and what to aim for. Trained without your phone? You can log it afterwards.",
+  "duringAWorkout": "During a workout",
+  "oneMoveAtATimeTapWhen": "One move at a time. Tap when a set is done, and Own Hub keeps count and times your rest.",
+  "homeCookingYouAlreadyKnowWrittenBy": "Home cooking you already know, written by coach Rahma Mohsen. Open the first recipe to see one in full.",
+  "yourWeekOfDinners": "Your week of dinners",
+  "aWeekOfDinnersPlannedForYou": "A week of dinners planned for you, with one shopping list that covers them all.",
+  "yourCycleIfYouWantIt": "Your cycle, if you want it",
+  "logYourPeriodAndHowYouFeel": "Log your period and how you feel. On harder days Own Hub can suggest a gentler session. Cycle data stays on your phone unless you choose to back it up.",
+  "yourWeeksYourPersonalBestsAndYour": "Your weeks, your personal bests and your milestones, counted only from what you log.",
+  "thatIsOwnHub": "That is Own Hub",
+  "toMakeItYoursJoinWithYour": "To make it yours, join with your phone number.",
+  "ownHubIsForWomenOnlySo": "Own Hub is for women only, so we check your ID once, with a quick selfie. The photos are deleted after the check.",
+  "firstOneScreenToBuildYourWeek": "First, one screen to build your week. Own Hub opens for you once the check is done.",
+  "makeItMine": "Make it mine",
+  "seeTheTourAgain": "See the tour again",
+  "sampleNothingIsSaved": "Sample · nothing is saved",
+  "joinOwnHub": "Join Own Hub",
+  "leaveTheTour": "Leave the tour",
+  "backToMyCheck": "Back to my check",
+  "joinToMakeThisYours": "Join to make this yours",
+  "keepLooking": "Keep looking",
+  "showMeAround": "Show me around",
+  "skipTheTourAndJoin": "Skip the tour and join",
+  "theTourUsesASampleWeekNo": "The tour uses a sample week. No account, and nothing is saved.",
+  "firstYourWeekThenYourNumberAnd": "First your week, then your number and a quick check that you are a woman. About two minutes, once.",
+  "homeCookingYouAlreadyKnowWrittenBy_7q8w1": "Home cooking you already know, written by coach Rahma Mohsen. The recipes open with your account.",
+  "toSendYourCodeYourNumberGoes": "To send your code, your number goes to Google Firebase in the United States. Your account and training are kept by Google Cloud in Frankfurt, Germany.",
+  "sendCrashReports": "Send crash reports",
+  "optionalHelpsUsFixTheAppNo": "Optional. Helps us fix the app. No name, number or account is attached. You can change this in Privacy.",
+  "agreeAndSendMeACode": "Agree and send me a code",
+  "byTappingAgreeAndSendMeA": "By tapping Agree and send me a code, you accept the Terms of Use and the Privacy Policy.",
+  "weHaveUpdatedOurTermsAndPrivacy": "We have updated our Terms and Privacy Policy",
+  "pleaseReadWhatChangedToKeepUsing": "Please read what changed. To keep using Own Hub, agree to the new versions.",
+  "yourAgreementIsNowRecordedWhenYou": "Your agreement is now recorded when you sign up, with the language and the app version.",
+  "crashReportsAreSentOnlyIfYou": "Crash reports are sent only if you allow them. They are off until you do.",
+  "youCanAskForACopyOf": "You can ask for a copy of your data, and the policy says how long each kind is kept.",
+  "agreeAndContinue": "Agree and continue",
+  "deleteMyAccountInstead": "Delete my account instead",
+  "weCouldNotSaveYourAgreementCheck": "We could not save your agreement. Check your connection and try again.",
+  "crashReports": "Crash reports",
+  "onIfTheAppCrashesTheError": "On. If the app crashes, the error and your phone model are sent to Firebase. Nothing about you is attached.",
+  "offNothingIsSentWhenTheApp": "Off. Nothing is sent when the app crashes.",
+  "yourPhotosGoToOurServerIn": "Your photos go to our server in Frankfurt, Germany. Google Cloud Vision reads the text on the card in the European Union.",
+  "yourFaceIsMatchedOnOurOwn": "Your face is matched on our own server. No outside face service sees it.",
+  "noPhotoIsEverStoredBothSides": "No photo is ever stored. Both sides of the card and the selfie are deleted from memory when the check ends, whatever the result.",
+  "weKeepTheResultAndItsReasons": "We keep the result and its reasons for 180 days, and a keyed code of your ID number so one card opens one account. The code cannot be turned back into your number.",
+  "ifTheCheckCannotDecideYouCan": "If the check cannot decide, you can ask a woman from Own Hub to check you instead.",
+  "readThePrivacyPolicy": "Read the Privacy Policy",
+  "ownHubIsAFitnessAndWellbeing": "Own Hub is a fitness and wellbeing app. It is not a medical device and does not diagnose, treat, cure or prevent any condition. Check with your doctor before you start, especially if you are pregnant or have recently given birth.",
+  "usuallyACoupleOfMinutesIfA": "Usually a couple of minutes. If a woman needs to check, up to 3 days.",
+  "bothImagesAreDeletedAfterTheCheck_8iuyd": "Both images are deleted after the check. We keep the result and a keyed code of your ID number.",
+  "yourIdAndSelfieWereDeletedAfter_nl9hl": "Your ID and selfie were deleted after the check. We keep the result and a keyed code of your ID number.",
+  "aWomanReviewerChecksYourCardWith": "A woman reviewer checks your card with you. Nothing is recorded. She keeps only her decision and the date.",
+  "askAWomanToCheckMe": "Ask a woman to check me",
+  "aCheckWithAWoman": "A check with a woman",
+  "emailUsReadSundayToThursday9": "Email us. Read Sunday to Thursday, 9:00 to 17:00 Cairo time.",
+  "wantACopyOfYourDataAsk": "Want a copy of your data? Ask us and we will send it to you.",
+  "askForACopy": "Ask for a copy",
+  "copyOfMyOwnHubData": "Copy of my Own Hub data",
+  "thePhoneNumberOnMyAccount": "The phone number on my account:",
+  "deletingTakesAwayEverythingYouHavePut_7ytu4": "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers.",
+  "deletingTakesAwayEverythingYouHavePut_1uwbl": "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers.",
+  "deletingUsuallyTakesUnderAMinuteIf": "Deleting usually takes under a minute. If it is interrupted, it finishes on its own within the hour, and none of it can be brought back.",
+  "deletingYourAccountThisUsuallyTakesUnder": "Deleting your account. This usually takes under a minute.",
+  "deletingYourAccountRemovesItFromOur_1xldi": "Deleting your account removes it from our servers and clears this phone. Some things are kept on purpose: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, and a record that the deletion happened. Failed check attempts and a scrambled code for this installation, linked to no account, are deleted 180 days after the last attempt, and the log of which reviewer opened your case after one year.",
+  "weTextYouASixDigitCode_18wn2": "We text you a six-digit code. No other member ever sees your number.",
+  "yourPhoneNumberIsUsedOnlyTo_thda4": "Your phone number is used only to arrange your check.",
+  "aWomanFromOwnHubWillReview": "A woman from Own Hub will review your check",
+  "aWomanFromOwnHubReviewsYour": "A woman from Own Hub reviews your case and contacts you by phone within 72 hours. We do not send text messages about this.",
+  "aWomanFromOwnHubWillContact": "A woman from Own Hub will contact you on {time}.",
+  "@aWomanFromOwnHubWillContact": {
+    "description": "C14 once a woman reviewer has booked a time to contact her. time is the booked date and time, already formatted for her locale.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "Mon, 5 Oct, 10:00"
+      }
+    }
+  },
+  "aWomanFromOwnHubCanContact": "A woman from Own Hub can contact you only after you ask her to. If you ask, she reviews your case and contacts you by phone within 72 hours to finish your check.",
+  "askAWomanToContactMe": "Ask a woman to contact me",
+  "ifYouDoNotShowYourFace_1pr0p": "If you do not show your face to a camera, nothing here asks you to. A woman from Own Hub reviews your case and contacts you by phone within 72 hours to check your ID card with you.",
+  "thisAccountHasUsedEveryAutomaticCheck_rc3un": "This account has used every automatic check it can. Nothing you photographed was kept. A woman from Own Hub can review your case instead and contact you within 72 hours.",
+  "yourAutomaticCheckIsStillRunningSo": "Your automatic check is still running, so nothing was sent. You will be moved on when it finishes. If nothing happens, ask again in a minute.",
+  "theMatchUsuallyTakesUnderAMinute": "The match usually takes under a minute. If it needs a person, a woman reviewer takes it from here.",
+  "buildYourWeekWhileWeCheck": "Build your week while we check",
+  "saveMyWeek": "Save my week",
+  "breakingThemCanCloseYourAccountYou": "Breaking them can close your account. You can read them again any time.",
+  "firstYourWeekThenYourNumberAnd_flrzo": "First your week, then your number and a quick check that you are a woman.",
+  "weJustNeedYourNumberAndA_1jn4g": "We just need your number and a quick check that you are a woman.",
+  "daysAWeekDaysMinutesASession_1a2wl": "Days a week: {days} · Minutes a session: {minutes}",
+  "@daysAWeekDaysMinutesASession_1a2wl": {
+    "description": "Her setup answers read back when she was never asked where she trains (the one-screen 'Your week'), so no place is claimed.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "n8WeeksForBeginners": "8 weeks · for beginners",
+  "pickADinnerForDay": "Pick a dinner for {day}",
+  "@pickADinnerForDay": {
+    "description": "E05 opened from a day on E07: tapping a recipe puts it on that day. day is the weekday name from the dictionary.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "Monday"
+      }
+    }
+  },
+  "changeThisDinner": "Change this dinner",
+  "fillMyWeekFromRahmasRecipes": "Fill my week from Rahma's recipes",
+  "yourCycleOnThisPhone": "Your cycle, on this phone",
+  "yourIdPhotoAndSelfieHaveBeen_1qfoh": "Your ID photo and selfie have been deleted. We keep the result, its reasons and a keyed code of your ID number.",
+  "verifiedInSecondsSecondsYourIdPhoto_mbpt8": "Verified in {seconds} seconds. Your ID photo and selfie have been deleted. We keep the result, its reasons and a keyed code of your ID number.",
+  "@verifiedInSecondsSecondsYourIdPhoto_mbpt8": {
+    "description": "C13. Her actual verification time, and what the server really keeps: the result, its reasons for 180 days and the keyed code of her ID number.",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "74"
+      }
+    }
+  },
+  "tellMeWhenImIn": "Tell me when I'm in",
+  "weWillTellYouOnThisPhone": "We will tell you on this phone when your check is done.",
+  "notificationsAreOffForOwnHubOn": "Notifications are off for Own Hub on this phone. You can turn them on in Settings.",
+  "notificationsCannotReachThisPhoneOpenOwn": "Notifications cannot reach this phone. Open Own Hub to see when your check is done.",
+  "aReminderOnYourTrainingDays": "A reminder on your training days?",
+  "oneQuietNoteOnTheDaysYou": "One quiet note on the days you pick, at the time you pick. You can change it or turn it off in Notifications.",
+  "chooseMyDays": "Choose my days",
+  "trainingReminders": "Training reminders",
+  "sessionsInYourWeekCountPickThe": "Sessions in your week: {count}. Pick the days that suit you.",
+  "@sessionsInYourWeekCountPickThe": {
+    "description": "Training reminders sheet. count is her sessions a week (2 to 4), Western digits.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "time": "Time",
+  "changeTime": "Change time",
+  "remindMe": "Remind me",
+  "turnRemindersOff": "Turn reminders off",
+  "pickAtLeastOneDay": "Pick at least one day.",
+  "remindersAreOn": "Reminders are on.",
+  "remindersAreOff": "Reminders are off.",
+  "remindersCannotBeSetOnThisPhone": "Reminders cannot be set on this phone.",
+  "yourSessionIsReadyWhenYouAre": "Your session is ready when you are.",
+  "aNoteOnTheDaysYouChose": "A note on the days you chose to train.",
+  "aSampleWeekOfFiveDinnersJoin": "A sample week of five dinners. Join to plan your own.",
+  "deleteWhatISavedOnThisPhone": "Delete what I saved on this phone",
+  "deleteWhatYouSavedOnThisPhone": "Delete what you saved on this phone?",
+  "yourWeekYourLifeStageAndAnything": "Your week, your life stage and anything else you saved here are deleted from this phone. You can build your week again at any time.",
+  "keepIt": "Keep it",
+  "deleteIt": "Delete it",
+  "deletedFromThisPhone": "Deleted from this phone.",
+  "setUpMyCoachProfile": "Set up my coach profile",
+  "addPayoutLater": "Add payout later",
+  "buildYourFirstPlan": "Build your first plan",
+  "readyForYourFirstClientWhileWe": "Ready for your first client while we check your certificates.",
+  "inviteAClient": "Invite a client",
+  "alreadyCoachingSomeoneSendHerYourCode": "Already coaching someone? Send her your code on WhatsApp.",
+  "joinMeOnOwnHubTheTraining": "Join me on Own Hub, the training app for women only. When you sign up, tap I have a code from my coach and enter {code}.",
+  "@joinMeOnOwnHubTheTraining": {
+    "description": "The WhatsApp message a coach sends to invite a client. {code} is her eight-character invite code.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "ABCD2345"
+      }
+    }
+  },
+  "iHaveACodeFromMyCoach": "I have a code from my coach",
+  "yourCoachsCode": "Your coach's code",
+  "saveTheCode": "Save the code",
+  "savedOnceYouAreInWeWill": "Saved. Once you are in, we will connect you with your coach.",
+  "thatCodeDoesNotLookRightCheck": "That code does not look right. Check it and try again.",
+  "yourCoachHasYourRequest": "Your coach has your request.",
+  "yourCoachsCodeDidNotWorkAsk": "Your coach's code did not work. Ask her for a new one.",
+  "weCouldNotMakeYourCodeTry": "We could not make your code. Try again in a moment.",
+  "weCouldNotOpenWhatsappYourCode": "We could not open WhatsApp. Your code is {code}.",
+  "@weCouldNotOpenWhatsappYourCode": {
+    "description": "Shown when WhatsApp could not open, so the coach can share her code another way.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "ABCD2345"
+      }
+    }
+  },
+  "weOpenCoachingSoon": "We open coaching soon",
+  "tellUsAboutYouAndWeWill": "Tell us about you and we will call you.",
+  "whatYouCoach": "What you coach",
+  "sendOnWhatsapp": "Send on WhatsApp",
+  "sendByEmail": "Send by email",
+  "thisOpensAMessageToOurTeam": "This opens a message to our team. Nothing is sent until you send it yourself.",
+  "iCoachWomenAndWouldLikeTo": "I coach women and would like to coach on Own Hub. Name: {name}. City: {city}. I coach: {specialty}.",
+  "@iCoachWomenAndWouldLikeTo": {
+    "description": "The message a coach sends to the team from the interest form while coaching is closed.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Salma"
+      },
+      "city": {
+        "type": "String",
+        "example": "Cairo"
+      },
+      "specialty": {
+        "type": "String",
+        "example": "postpartum strength"
+      }
+    }
+  },
+  "coachingOnOwnHub": "Coaching on Own Hub",
+  "weCouldNotOpenAMessageOn": "We could not open a message on this phone.",
+  "iAgreeToTheseThreeRules": "I agree to these three rules",
+  "asACoachYouAgreeToThe": "As a coach you agree to the same three rules as every woman here.",
+  "photographYourCertificate": "Photograph your certificate",
+  "takeThePhoto": "Take the photo",
+  "layItFlatInGoodLightWith": "Lay it flat in good light, with every word readable.",
+  "theCameraCouldNotStartCloseThis": "The camera could not start. Close this and try again.",
+  "weCouldNotSendYourCertificateCheck": "We could not send your certificate. Check your connection and try again.",
+  "coachingIsNotOpenYetSoYour": "Coaching is not open yet, so your certificate was not sent.",
+  "typeWhatYouAte": "Type what you ate"
 }

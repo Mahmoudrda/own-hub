@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/app_state/community_state.dart';
+import 'package:own_hub/app_state/pledge.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/account/domain/safety.dart';
 import 'package:own_hub/features/community/domain/community_models.dart';
@@ -130,10 +131,14 @@ void main() {
       for (final f in Feature.values) f: f != Feature.accountRequired,
     });
     CommunityState.instance.reset();
+    // She agreed to the rules (C16) before the feed; the gate itself is
+    // proved in pledge_gate_test.dart.
+    PledgeState.instance.agree();
   });
 
   tearDown(() {
     CommunityState.instance.reset();
+    PledgeState.instance.reset();
     // Built from allOff, never from the shipped defaults: this case needs
     // every feature on and no account required, and says so.
     AppRouter.featureFlags = FeatureFlags.allOff.with_({

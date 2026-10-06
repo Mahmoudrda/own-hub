@@ -41,10 +41,20 @@ class IntakeStepScaffold extends StatelessWidget {
     this.onSkip,
     this.onBack,
     this.onClose,
+    this.titleOverride,
+    this.continueLabel,
   });
 
   /// Which of the four questions this is.
   final int step;
+
+  /// The bar title instead of "Step n of 4", when the screen is not one of
+  /// the four: the short "Your week" before sign-up says "1 of 3 · Your week".
+  /// An empty string shows no count at all.
+  final String? titleOverride;
+
+  /// The primary button's words, when "Continue" undersells what it does.
+  final String? continueLabel;
 
   final String title;
   final String subtitle;
@@ -65,12 +75,14 @@ class IntakeStepScaffold extends StatelessWidget {
   final VoidCallback? onContinue;
 
   /// Leaves the question unanswered and moves on. The preselected default
-  /// stands, and nothing is written.
+  /// stands, and nothing is written. Null draws no Skip: on a screen where
+  /// every answer is already chosen, Skip and Continue are the same button.
   final VoidCallback? onSkip;
 
   final VoidCallback? onBack;
 
-  /// Leaves setup entirely — `X` in the design, which goes to Home.
+  /// Leaves setup entirely — `X` in the design, which goes to Home. Null draws
+  /// no `X`: before she has an account there is no Home to leave to.
   final VoidCallback? onClose;
 
   static const int totalSteps = 4;
@@ -81,27 +93,30 @@ class IntakeStepScaffold extends StatelessWidget {
 
     return AppScaffold(
       appBar: AppTopBar(
-        title: stepOfLabel(l10n, step: step, total: totalSteps),
+        title:
+            titleOverride ?? stepOfLabel(l10n, step: step, total: totalSteps),
         onBack: onBack,
         actions: [
-          IconButton(
-            onPressed: onClose,
-            iconSize: 24,
-            color: AppColors.onSurface,
-            icon: const Icon(Icons.close),
-            tooltip: l10n.skipSetup,
-          ),
+          if (onClose != null)
+            IconButton(
+              onPressed: onClose,
+              iconSize: 24,
+              color: AppColors.onSurface,
+              icon: const Icon(Icons.close),
+              tooltip: l10n.skipSetup,
+            ),
         ],
       ),
       footer: [
-        AppButton(l10n.continueLabel, onPressed: onContinue),
-        AppButton(
-          l10n.skip,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: onSkip,
-        ),
+        AppButton(continueLabel ?? l10n.continueLabel, onPressed: onContinue),
+        if (onSkip != null)
+          AppButton(
+            l10n.skip,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onSkip,
+          ),
       ],
       children: [
         if (lead != null)

@@ -122,7 +122,7 @@
   "coachSaraHany": "المدرِّبة سارة هاني",
   "coaches": "المدرِّبات",
   "day9": "اليوم 9",
-  "deadBug": "تمرين الحشرة الميتة",
+  "deadBug": "رفع الذراع والساق المتقابلتين على الظهر",
   "draft": "مسودة",
   "dumbbells": "دمبل",
   "easy": "سهلة",
@@ -658,7 +658,7 @@
   "howMuchTimeDoYouReallyHave": "كم من الوقت لديك فعلًا؟",
   "howWeTreatEachOther": "كيف نعامل بعضنا",
   "howWouldYouLikeToPay": "كيف تفضّلين الدفع؟",
-  "iAgreeLetMeIn": "أوافق، أدخليني",
+  "iAgreeLetMeIn": "أوافق، لنبدأ",
   "iAlreadyHaveAnAccount": "لديّ حساب بالفعل",
   "iCoachWomen": "أنا أدرّب النساء",
   "iCouldNotTrainThisWeekWork": "لم أستطع التدرّب هذا الأسبوع، كان العمل مستحيلًا.",
@@ -667,7 +667,7 @@
   "iTakeWomenBackToLiftingAfter": "أعيد النساء إلى رفع الأثقال بعد الولادة.",
   "iTakeWomenFromSixWeeksAfter": "أعيد النساء إلى رفع الأثقال بدءًا من الأسبوع السادس بعد الولادة، على مهل. ومعظم متدرِّباتي يتدرّبن في المنزل بدمبلين وعشرين دقيقة.",
   "iWearNiqabCheckMeAnotherWay": "أرتدي النقاب، تحقّقوا مني بطريقة أخرى",
-  "imACoachSetUpMyProfile": "أنا مدرِّبة، أنشئي ملفي",
+  "imACoachSetUpMyProfile": "أنا مدرِّبة، أريد إعداد ملفي",
   "imHereToTrain": "أنا هنا لأتدرّب",
   "idCheckedWomenOnlyReviewedByWomen": "بطاقة مُتحقَّق منها، نساء فقط، ومراجَعة من نساء",
   "ifYouAreInDangerRightNow": "إن كنتِ في خطر الآن، اتصلي بالرقم 122. لا يستطيع هذا التطبيق الاتصال بالشرطة نيابة عنك.",
@@ -976,8 +976,8 @@
   "selectAppMeal": "اختاري وجبة من التطبيق",
   "selfieMatchedToTheCard": "طوبقت الصورة الذاتية مع البطاقة",
   "send": "أرسلي",
-  "sendItAgain": "أرسليه مرة أخرى",
-  "sendMeACode": "أرسلي إليّ رمزًا",
+  "sendItAgain": "إعادة إرسال الرمز",
+  "sendMeACode": "إرسال الرمز",
   "sendReplyAndPlanChange": "أرسلي الردّ وتعديل الخطة",
   "sendThisWeekToMai": "أرسلي هذا الأسبوع إلى مي",
   "sendToMai": "أرسلي إلى مي",
@@ -1308,7 +1308,7 @@
   "yourPlate600Kcal": "طبقك · 600 سعرة",
   "yourPortion": "حصتك",
   "yourProgramContinuesTomorrow": "يستأنف برنامجك غدًا",
-  "yourProgress": "تقدّمك",
+  "yourProgress": "تقدّمكِ",
   "yourPublicProfile": "ملفك العام",
   "yourReviews": "مراجعاتك",
   "yourSessionsCountHereAsYouSave": "تُحتسب تمارينك هنا فور حفظها، ولا شيء إضافي لتسجيله. ولا يرى أحد أوزانك، بل يرى فقط أن تمرينًا قد وقع.",
@@ -3174,5 +3174,289 @@
   "workoutsRecipesAndYourProgressFree": "تمارين ووصفات وتقدّمك. مجانًا.",
   "thisIsWhatKeepsOwnHubWomen": "هذا ما يُبقي Own Hub للنساء فقط: تُوثَّق كل امرأة قبل أن تدخل.",
   "yourNumberYourIdAndYourLogs_10nei": "يبقى رقمك وبطاقتك وتسجيلاتك خاصة بكِ.",
-  "ownHubIsForTrainingNotFor": "Own Hub للتدريب، لا للبيع."
+  "ownHubIsForTrainingNotFor": "Own Hub للتدريب، لا للبيع.",
+  "yourTrainingYourFoodYourCycleWomen": "تدريبكِ، وطعامكِ، ودورتكِ. للنساء فقط.",
+  "setUpMyWeek": "جهّزي أسبوعي",
+  "n1Of3YourWeek": "1 من 3 · أسبوعكِ",
+  "n2Of3YourNumber": "2 من 3 · رقمكِ",
+  "n3Of3QuickCheck": "3 من 3 · تحقّق سريع",
+  "onlyYouSeeThisItStaysOn": "لا يرى هذا أحد سواكِ، ويبقى على هذا الهاتف.",
+  "seeMyWeek": "اعرضي أسبوعي",
+  "builtFromYourAnswers": "مبنيّ على إجاباتكِ",
+  "oneQuickCheckKeepsOwnHubWomen": "تحقّق سريع واحد يُبقي Own Hub للنساء فقط، ثم يصبح يومكِ الأول جاهزًا.",
+  "saveMyWeekAndJoin": "احفظي أسبوعي وانضمّي",
+  "thatNumberDoesNotLookRightCheck": "يبدو أن هذا الرقم غير صحيح. راجعيه ثم حاولي مرة أخرى.",
+  "noConnectionYourNumberIsStillHere": "لا يوجد اتصال. رقمكِ ما زال هنا، حاولي مرة أخرى عند عودة الاتصال.",
+  "weCouldNotSendTheCodeTry": "تعذّر إرسال الرمز. حاولي مرة أخرى بعد قليل.",
+  "thatCodeDidNotMatchCheckThe": "الرمز غير مطابق. راجعي الرسالة واكتبيه مرة أخرى.",
+  "thatCodeHasExpiredAskForA_1vzf3": "انتهت صلاحية هذا الرمز. اطلبي رمزًا جديدًا من الأسفل.",
+  "noConnectionTryAgainWhenYouAre": "لا يوجد اتصال. حاولي مرة أخرى عند عودة الاتصال.",
+  "weCouldNotCheckTheCodeTry": "تعذّر التحقّق من الرمز. حاولي مرة أخرى بعد قليل.",
+  "checkingYourCode": "جارٍ التحقّق من الرمز",
+  "editNumber": "تعديل الرقم",
+  "cameraAccessIsOff": "الوصول إلى الكاميرا مغلق",
+  "ownHubNeedsTheCameraToRead": "يحتاج Own Hub إلى الكاميرا لقراءة بطاقتكِ. يمكنكِ تشغيلها من الإعدادات، أو تتحقّق منكِ امرأة من Own Hub بطريقة أخرى.",
+  "ownHubNeedsTheCameraForA": "يحتاج Own Hub إلى الكاميرا لصورة ذاتية قصيرة. يمكنكِ تشغيلها من الإعدادات، أو تتحقّق منكِ امرأة من Own Hub بطريقة أخرى.",
+  "theCameraCouldNotStartThisIs": "تعذّر تشغيل الكاميرا، والأمر لا يتعلّق بكِ. حاولي مرة أخرى، أو تتحقّق منكِ امرأة من Own Hub بطريقة أخرى.",
+  "checkMeAnotherWay": "التحقّق بطريقة أخرى",
+  "noConnectionYourPhotosAreStillHere": "لا يوجد اتصال. صوركِ ما زالت هنا، حاولي مرة أخرى.",
+  "bothSidesOfYourCardTaken": "تم تصوير وجهَي بطاقتكِ",
+  "selfieTaken": "تم التقاط صورتكِ الذاتية",
+  "matchingYourSelfieToYourCard": "نطابق صورتكِ الذاتية مع بطاقتكِ",
+  "takingLongerThanUsualYourConnectionMay": "يستغرق الأمر وقتًا أطول من المعتاد. قد يكون اتصالكِ بطيئًا، ويمكنكِ الانتظار هنا.",
+  "goToHome": "الانتقال إلى الرئيسية",
+  "planThisWeeksDinners": "خطّطي لعشاء هذا الأسبوع",
+  "fiveEgyptianDinnersAndOneShoppingList": "خمس وجبات عشاء مصرية وقائمة تسوّق واحدة",
+  "trackMyCycle": "تابعي دورتكِ",
+  "optionalAndItStaysOnThisPhone": "اختياري، ويبقى على هذا الهاتف",
+  "nextSessionNumberOnAnyDayThis": "التالي: الجلسة {number}، في أي يوم من هذا الأسبوع",
+  "@nextSessionNumberOnAnyDayThis": {
+    "description": "R10's next step after a finished session. The number is the next session of her week, in Western digits.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "day1WasNotWrittenForPregnancy": "لم يُكتب اليوم الأول للحمل. يُرجى استشارة الطبيب قبل أن تبدئي، وتخطّي أي حركة لا تشعرين بالراحة معها.",
+  "day1WasNotWrittenForThe": "لم يُكتب اليوم الأول لفترة ما بعد الولادة. يُرجى انتظار موافقة الطبيب، وتخطّي أي حركة لا تشعرين بالراحة معها.",
+  "iHaveMyDoctorsOkStart": "لديّ موافقة الطبيب، لنبدأ",
+  "notToday": "ليس اليوم",
+  "yourWeekIsSaved": "أسبوعكِ محفوظ",
+  "homeYourDayAtAGlance": "الرئيسية، يومكِ في لمحة",
+  "ownHubIsAFitnessAppFor": "Own Hub تطبيق لياقة للنساء فقط. تعرض الرئيسية تمرين اليوم، وما تناولتِه، وسير أسبوعكِ. هذا الأسبوع عيّنة، فاضغطي على ما تشائين.",
+  "quietSessionsYouCanDoAtHome": "جلسات هادئة تؤدّينها في البيت. تُظهر كل حركة مجموعاتها وما تستهدفينه فيها. تدرّبتِ دون هاتفكِ؟ يمكنكِ تسجيل ذلك بعدها.",
+  "duringAWorkout": "أثناء التمرين",
+  "oneMoveAtATimeTapWhen": "حركة واحدة في كل مرة. اضغطي عند إنهاء كل مجموعة، ويتولّى Own Hub العدّ وتوقيت راحتكِ.",
+  "homeCookingYouAlreadyKnowWrittenBy": "طبخ البيت الذي تعرفينه، كتبته المدرّبة رحمة محسن. افتحي الوصفة الأولى لتريها كاملة.",
+  "yourWeekOfDinners": "عشاء أسبوعكِ",
+  "aWeekOfDinnersPlannedForYou": "عشاء أسبوع كامل مخطَّط لكِ، مع قائمة تسوّق واحدة تكفيه كله.",
+  "yourCycleIfYouWantIt": "دورتكِ، إن أردتِ",
+  "logYourPeriodAndHowYouFeel": "سجّلي دورتكِ وكيف تشعرين. وفي الأيام الأصعب يمكن أن يقترح Own Hub جلسة ألطف. تبقى بيانات الدورة على هاتفكِ ما لم تختاري نسخها احتياطيًّا.",
+  "yourWeeksYourPersonalBestsAndYour": "أسابيعكِ وأفضل أرقامكِ الشخصية وإنجازاتكِ، محسوبة فقط مما تسجّلينه.",
+  "thatIsOwnHub": "هذا هو Own Hub",
+  "toMakeItYoursJoinWithYour": "لتجعليه لكِ، انضمّي برقم هاتفكِ.",
+  "ownHubIsForWomenOnlySo": "Own Hub للنساء فقط، لذا نتحقّق من هويتكِ مرة واحدة مع صورة ذاتية سريعة. تُحذف الصور بعد التحقّق.",
+  "firstOneScreenToBuildYourWeek": "أولًا، شاشة واحدة لنبني أسبوعكِ. ويُفتح لكِ Own Hub بعد اكتمال التحقّق.",
+  "makeItMine": "اجعليه لي",
+  "seeTheTourAgain": "أعيدي الجولة",
+  "sampleNothingIsSaved": "عيّنة · لا يُحفظ شيء",
+  "joinOwnHub": "انضمّي إلى Own Hub",
+  "leaveTheTour": "إنهاء الجولة",
+  "backToMyCheck": "العودة إلى تحقّقي",
+  "joinToMakeThisYours": "انضمّي ليصبح هذا لكِ",
+  "keepLooking": "تابعي التصفّح",
+  "showMeAround": "خذيني في جولة",
+  "skipTheTourAndJoin": "تخطّي الجولة وانضمّي",
+  "theTourUsesASampleWeekNo": "تستخدم الجولة أسبوعًا تجريبيًّا. دون حساب، ولا يُحفظ شيء.",
+  "firstYourWeekThenYourNumberAnd": "أولًا أسبوعكِ، ثم رقمكِ وتحقّق سريع من أنكِ امرأة. نحو دقيقتين، مرة واحدة.",
+  "homeCookingYouAlreadyKnowWrittenBy_7q8w1": "طبخ البيت الذي تعرفينه، كتبته المدرّبة رحمة محسن. تُفتح الوصفات مع حسابكِ.",
+  "toSendYourCodeYourNumberGoes": "لإرسال الرمز يُنقل رقمكِ إلى Google Firebase في الولايات المتحدة، ويُحفظ حسابكِ وتدريبكِ لدى Google Cloud في فرانكفورت بألمانيا.",
+  "sendCrashReports": "إرسال تقارير الأعطال",
+  "optionalHelpsUsFixTheAppNo": "اختياري. يساعدنا في إصلاح التطبيق، ولا يُرفق به اسم ولا رقم ولا حساب. يمكنكِ تغييره من الخصوصية.",
+  "agreeAndSendMeACode": "الموافقة وإرسال الرمز",
+  "byTappingAgreeAndSendMeA": "بالضغط على «الموافقة وإرسال الرمز» تقبلين شروط الاستخدام وسياسة الخصوصية.",
+  "weHaveUpdatedOurTermsAndPrivacy": "حدّثنا شروط الاستخدام وسياسة الخصوصية",
+  "pleaseReadWhatChangedToKeepUsing": "يُرجى قراءة ما تغيّر. ولمواصلة استخدام Own Hub، وافقي على الإصدارين الجديدين.",
+  "yourAgreementIsNowRecordedWhenYou": "يُسجَّل قبولكِ الآن عند التسجيل، مع اللغة وإصدار التطبيق.",
+  "crashReportsAreSentOnlyIfYou": "لا تُرسل تقارير الأعطال إلا إذا سمحتِ بها، وتبقى متوقفة حتى تفعلي.",
+  "youCanAskForACopyOf": "يمكنكِ طلب نسخة من بياناتكِ، وتبيّن السياسة مدة الاحتفاظ بكل نوع منها.",
+  "agreeAndContinue": "أوافق وأتابع",
+  "deleteMyAccountInstead": "أفضّل حذف حسابي",
+  "weCouldNotSaveYourAgreementCheck": "تعذّر حفظ موافقتكِ. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
+  "crashReports": "تقارير الأعطال",
+  "onIfTheAppCrashesTheError": "مفعّلة. إذا تعطّل التطبيق يُرسل الخطأ وطراز هاتفكِ إلى Firebase، دون أي شيء عنكِ.",
+  "offNothingIsSentWhenTheApp": "متوقفة. لا يُرسل شيء إذا تعطّل التطبيق.",
+  "yourPhotosGoToOurServerIn": "تُرسل صوركِ إلى خادمنا في فرانكفورت بألمانيا، ويقرأ Google Cloud Vision نص البطاقة داخل الاتحاد الأوروبي.",
+  "yourFaceIsMatchedOnOurOwn": "تجري مطابقة وجهكِ على خادمنا نفسه، ولا تطّلع عليه أي خدمة خارجية للتعرّف على الوجوه.",
+  "noPhotoIsEverStoredBothSides": "لا تُخزَّن أي صورة أبدًا. يُحذف وجها البطاقة والصورة الذاتية من الذاكرة فور انتهاء التحقق، أيًا كانت النتيجة.",
+  "weKeepTheResultAndItsReasons": "نحتفظ بالنتيجة وأسبابها 180 يومًا، وبرمز مشفّر من رقمكِ القومي حتى لا تفتح البطاقة الواحدة أكثر من حساب. ولا يمكن تحويل الرمز إلى رقمكِ.",
+  "ifTheCheckCannotDecideYouCan": "إذا تعذّر حسم التحقق، يمكنكِ أن تطلبي أن تتحقق منكِ امرأة من Own Hub.",
+  "readThePrivacyPolicy": "اقرئي سياسة الخصوصية",
+  "ownHubIsAFitnessAndWellbeing": "Own Hub تطبيق للياقة والعافية، وليس جهازًا طبيًا، ولا يشخّص أي حالة ولا يعالجها ولا يشفيها ولا يقي منها. استشيري طبيبكِ قبل البدء، خاصةً إذا كنتِ حاملًا أو وضعتِ حديثًا.",
+  "usuallyACoupleOfMinutesIfA": "عادةً دقيقتان تقريبًا، وإذا احتاجت امرأة إلى التحقق فقد يستغرق ذلك حتى 3 أيام.",
+  "bothImagesAreDeletedAfterTheCheck_8iuyd": "تُحذف الصورتان بعد التحقق، ونحتفظ بالنتيجة وبرمز مشفّر من رقمكِ القومي.",
+  "yourIdAndSelfieWereDeletedAfter_nl9hl": "حُذفت بطاقتكِ وصورتكِ الذاتية بعد التحقق، ونحتفظ بالنتيجة وبرمز مشفّر من رقمكِ القومي.",
+  "aWomanReviewerChecksYourCardWith": "تتحقق مراجِعة من بطاقتكِ معكِ. لا يُسجَّل شيء، ولا تحتفظ إلا بقرارها وتاريخه.",
+  "askAWomanToCheckMe": "اطلبي أن تتحقق منكِ امرأة",
+  "aCheckWithAWoman": "تحقق مع امرأة",
+  "emailUsReadSundayToThursday9": "راسلينا. نقرأ الرسائل من الأحد إلى الخميس، من 9:00 إلى 17:00 بتوقيت القاهرة.",
+  "wantACopyOfYourDataAsk": "تريدين نسخة من بياناتكِ؟ اطلبيها وسنرسلها إليكِ.",
+  "askForACopy": "اطلبي نسخة",
+  "copyOfMyOwnHubData": "نسخة من بياناتي في Own Hub",
+  "thePhoneNumberOnMyAccount": "رقم الهاتف المسجّل على حسابي:",
+  "deletingTakesAwayEverythingYouHavePut_7ytu4": "الحذف يزيل كل ما وضعتِه في التطبيق: وجباتكِ وتمارينكِ وقياساتكِ ودورتكِ وإجاباتكِ.",
+  "deletingTakesAwayEverythingYouHavePut_1uwbl": "الحذف يزيل كل ما وضعتِه في التطبيق: وجباتكِ وتمارينكِ وقياساتكِ ودورتكِ ومنشوراتكِ وإجاباتكِ.",
+  "deletingUsuallyTakesUnderAMinuteIf": "يستغرق الحذف عادة أقل من دقيقة، وإذا انقطع يكتمل تلقائيًا خلال ساعة، ولا يمكن استعادة شيء منه.",
+  "deletingYourAccountThisUsuallyTakesUnder": "جارٍ حذف حسابكِ. يستغرق ذلك عادة أقل من دقيقة.",
+  "deletingYourAccountRemovesItFromOur_1xldi": "يؤدي حذف حسابكِ إلى إزالته من خوادمنا ومسح هذا الهاتف. ونحتفظ عن قصد ببعض الأشياء: سجلٌّ مغلق بأن بطاقتكِ الشخصية قد استُخدمت، فلا يمكن فتح حساب آخر بها، والبلاغات بعد حذف اسمكِ منها، وسجلٌّ بأن الحذف قد تمّ. أما المحاولات الفاشلة للتحقق ورمز مُموَّه لهذا التثبيت، غير المرتبطين بأي حساب، فيُحذفان بعد 180 يومًا من آخر محاولة، ويُحذف سجل المراجِعات اللواتي فتحن حالتكِ بعد سنة.",
+  "weTextYouASixDigitCode_18wn2": "نرسل إليكِ رمزًا من ستة أرقام، ولا ترى أي عضوة أخرى رقمكِ أبدًا.",
+  "yourPhoneNumberIsUsedOnlyTo_thda4": "يُستخدم رقم هاتفكِ فقط لترتيب التحقق.",
+  "aWomanFromOwnHubWillReview": "ستراجع امرأة من Own Hub تحققكِ",
+  "aWomanFromOwnHubReviewsYour": "تراجع امرأة من Own Hub حالتكِ وتتواصل معكِ هاتفيًا خلال 72 ساعة. لا نرسل رسائل نصية بشأن ذلك.",
+  "aWomanFromOwnHubWillContact": "ستتواصل معكِ امرأة من Own Hub في {time}.",
+  "@aWomanFromOwnHubWillContact": {
+    "description": "C14 once a woman reviewer has booked a time to contact her. time is the booked date and time, already formatted for her locale.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "Mon, 5 Oct, 10:00"
+      }
+    }
+  },
+  "aWomanFromOwnHubCanContact": "لا يمكن لامرأة من Own Hub أن تتواصل معكِ إلا بعد أن تطلبي ذلك. إن طلبتِ، تراجع حالتكِ وتتواصل معكِ هاتفيًا خلال 72 ساعة لإكمال تحققكِ.",
+  "askAWomanToContactMe": "اطلبي أن تتواصل معكِ امرأة",
+  "ifYouDoNotShowYourFace_1pr0p": "إن كنتِ لا تكشفين وجهكِ أمام الكاميرا، فلا شيء هنا يطلب منكِ ذلك. تراجع امرأة من Own Hub حالتكِ وتتواصل معكِ هاتفيًا خلال 72 ساعة لتتحقق معكِ من بطاقتكِ الشخصية.",
+  "thisAccountHasUsedEveryAutomaticCheck_rc3un": "استخدم هذا الحساب كل عمليات التحقق التلقائية المتاحة له. لم يُحفظ شيء مما صوّرتِه. ويمكن لامرأة من Own Hub أن تراجع حالتكِ بدلًا من ذلك وتتواصل معكِ خلال 72 ساعة.",
+  "yourAutomaticCheckIsStillRunningSo": "ما زال فحصكِ التلقائي جاريًا، لذا لم يُرسَل شيء. ستنتقلين إلى الخطوة التالية عند انتهائه. وإن لم يحدث شيء، فاطلبي مرة أخرى بعد دقيقة.",
+  "theMatchUsuallyTakesUnderAMinute": "تستغرق المطابقة عادةً أقل من دقيقة. وإن احتاج الأمر إلى شخص، تتولّاه مراجِعة من هنا.",
+  "buildYourWeekWhileWeCheck": "جهّزي أسبوعكِ ريثما نتحقّق",
+  "saveMyWeek": "حفظ أسبوعي",
+  "breakingThemCanCloseYourAccountYou": "مخالفتها قد تؤدّي إلى إغلاق حسابكِ. ويمكنكِ قراءتها مرة أخرى في أي وقت.",
+  "firstYourWeekThenYourNumberAnd_flrzo": "أولًا أسبوعكِ، ثم رقمكِ وتحقّق سريع من أنكِ امرأة.",
+  "weJustNeedYourNumberAndA_1jn4g": "نحتاج فقط إلى رقمكِ وتحقّق سريع من أنكِ امرأة.",
+  "daysAWeekDaysMinutesASession_1a2wl": "أيام التمرين في الأسبوع: {days} · مدة الحصة بالدقائق: {minutes}",
+  "@daysAWeekDaysMinutesASession_1a2wl": {
+    "description": "Her setup answers read back when she was never asked where she trains (the one-screen 'Your week'), so no place is claimed.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "n8WeeksForBeginners": "8 أسابيع · للمبتدئات",
+  "pickADinnerForDay": "اختاري عشاءً ليوم {day}",
+  "@pickADinnerForDay": {
+    "description": "E05 opened from a day on E07: tapping a recipe puts it on that day. day is the weekday name from the dictionary.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "Monday"
+      }
+    }
+  },
+  "changeThisDinner": "تغيير هذا العشاء",
+  "fillMyWeekFromRahmasRecipes": "املئي أسبوعكِ من وصفات رحمة",
+  "yourCycleOnThisPhone": "دورتكِ، على هذا الهاتف",
+  "yourIdPhotoAndSelfieHaveBeen_1qfoh": "حُذفت صورة بطاقتكِ وصورتكِ الذاتية، ونحتفظ بالنتيجة وأسبابها وبرمز مشفّر من رقمكِ القومي.",
+  "verifiedInSecondsSecondsYourIdPhoto_mbpt8": "تمّ التوثيق في {seconds} ثانية. وحُذفت صورة بطاقتكِ وصورتكِ الذاتية، ونحتفظ بالنتيجة وأسبابها وبرمز مشفّر من رقمكِ القومي.",
+  "@verifiedInSecondsSecondsYourIdPhoto_mbpt8": {
+    "description": "C13. Her actual verification time, and what the server really keeps: the result, its reasons for 180 days and the keyed code of her ID number.",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "74"
+      }
+    }
+  },
+  "tellMeWhenImIn": "أريد إشعارًا عند فتح حسابي",
+  "weWillTellYouOnThisPhone": "سنخبركِ على هذا الهاتف عند انتهاء التحقق.",
+  "notificationsAreOffForOwnHubOn": "الإشعارات متوقفة لتطبيق Own Hub على هذا الهاتف. يمكنكِ تشغيلها من الإعدادات.",
+  "notificationsCannotReachThisPhoneOpenOwn": "لا يمكن أن تصل الإشعارات إلى هذا الهاتف. افتحي Own Hub لتعرفي متى ينتهي التحقق.",
+  "aReminderOnYourTrainingDays": "هل تريدين تذكيرًا في أيام تمرينكِ؟",
+  "oneQuietNoteOnTheDaysYou": "رسالة هادئة واحدة في الأيام التي تختارينها، وفي الوقت الذي تختارينه. ويمكنكِ تغييرها أو إيقافها من الإشعارات.",
+  "chooseMyDays": "اختيار أيامي",
+  "trainingReminders": "تذكيرات التمرين",
+  "sessionsInYourWeekCountPickThe": "عدد الجلسات في أسبوعكِ: {count}. اختاري الأيام التي تناسبكِ.",
+  "@sessionsInYourWeekCountPickThe": {
+    "description": "Training reminders sheet. count is her sessions a week (2 to 4), Western digits.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "time": "الوقت",
+  "changeTime": "تغيير الوقت",
+  "remindMe": "تفعيل التذكير",
+  "turnRemindersOff": "إيقاف التذكيرات",
+  "pickAtLeastOneDay": "اختاري يومًا واحدًا على الأقل.",
+  "remindersAreOn": "التذكيرات مفعّلة.",
+  "remindersAreOff": "التذكيرات متوقفة.",
+  "remindersCannotBeSetOnThisPhone": "لا يمكن ضبط التذكيرات على هذا الهاتف.",
+  "yourSessionIsReadyWhenYouAre": "جلستكِ جاهزة متى شئتِ.",
+  "aNoteOnTheDaysYouChose": "رسالة في الأيام التي اخترتِ التمرين فيها.",
+  "aSampleWeekOfFiveDinnersJoin": "أسبوع تجريبي من خمس وجبات عشاء. انضمّي لتخطّطي أسبوعكِ.",
+  "deleteWhatISavedOnThisPhone": "حذف ما حفظتُه على هذا الهاتف",
+  "deleteWhatYouSavedOnThisPhone": "هل تحذفين ما حفظتِه على هذا الهاتف؟",
+  "yourWeekYourLifeStageAndAnything": "يُحذف من هذا الهاتف أسبوعكِ ومرحلتكِ الحياتية وكل ما حفظتِه هنا. يمكنكِ بناء أسبوعكِ من جديد في أي وقت.",
+  "keepIt": "احتفظي به",
+  "deleteIt": "احذفيه",
+  "deletedFromThisPhone": "حُذف من هذا الهاتف.",
+  "setUpMyCoachProfile": "جهّزي ملفكِ كمدرِّبة",
+  "addPayoutLater": "إضافة بيانات الدفع لاحقًا",
+  "buildYourFirstPlan": "ابني خطتكِ الأولى",
+  "readyForYourFirstClientWhileWe": "جاهزة لعميلتكِ الأولى بينما نراجع شهاداتكِ.",
+  "inviteAClient": "ادعي عميلة",
+  "alreadyCoachingSomeoneSendHerYourCode": "تدرّبين إحداهن بالفعل؟ أرسلي إليها رمزكِ عبر واتساب.",
+  "joinMeOnOwnHubTheTraining": "انضمّي إليّ في Own Hub، تطبيق التدريب المخصّص للنساء فقط. عند التسجيل اضغطي لديّ رمز من مدرّبتي وأدخلي {code}.",
+  "@joinMeOnOwnHubTheTraining": {
+    "description": "The WhatsApp message a coach sends to invite a client. {code} is her eight-character invite code.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "ABCD2345"
+      }
+    }
+  },
+  "iHaveACodeFromMyCoach": "لديّ رمز من مدرّبتي",
+  "yourCoachsCode": "رمز مدرّبتكِ",
+  "saveTheCode": "احفظي الرمز",
+  "savedOnceYouAreInWeWill": "حُفظ الرمز. بعد قبولكِ سنربطكِ بمدرّبتكِ.",
+  "thatCodeDoesNotLookRightCheck": "يبدو هذا الرمز غير صحيح. راجعيه وحاولي مرة أخرى.",
+  "yourCoachHasYourRequest": "وصل طلبكِ إلى مدرّبتكِ.",
+  "yourCoachsCodeDidNotWorkAsk": "لم يعمل رمز مدرّبتكِ. اطلبي منها رمزًا جديدًا.",
+  "weCouldNotMakeYourCodeTry": "تعذّر إنشاء رمزكِ. حاولي بعد قليل.",
+  "weCouldNotOpenWhatsappYourCode": "تعذّر فتح واتساب. رمزكِ هو {code}.",
+  "@weCouldNotOpenWhatsappYourCode": {
+    "description": "Shown when WhatsApp could not open, so the coach can share her code another way.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "ABCD2345"
+      }
+    }
+  },
+  "weOpenCoachingSoon": "نفتح التدريب الشخصي قريبًا",
+  "tellUsAboutYouAndWeWill": "أخبرينا عنكِ وسنتصل بكِ.",
+  "whatYouCoach": "ما الذي تدرّبين عليه",
+  "sendOnWhatsapp": "أرسلي عبر واتساب",
+  "sendByEmail": "أرسلي بالبريد الإلكتروني",
+  "thisOpensAMessageToOurTeam": "يفتح هذا رسالة إلى فريقنا، ولا يُرسَل شيء حتى ترسليها بنفسكِ.",
+  "iCoachWomenAndWouldLikeTo": "أدرّب النساء وأودّ أن أدرّب في Own Hub. الاسم: {name}. المدينة: {city}. أدرّب على: {specialty}.",
+  "@iCoachWomenAndWouldLikeTo": {
+    "description": "The message a coach sends to the team from the interest form while coaching is closed.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Salma"
+      },
+      "city": {
+        "type": "String",
+        "example": "Cairo"
+      },
+      "specialty": {
+        "type": "String",
+        "example": "postpartum strength"
+      }
+    }
+  },
+  "coachingOnOwnHub": "التدريب في Own Hub",
+  "weCouldNotOpenAMessageOn": "تعذّر فتح رسالة على هذا الهاتف.",
+  "iAgreeToTheseThreeRules": "أوافق على هذه القواعد الثلاث",
+  "asACoachYouAgreeToThe": "بصفتكِ مدرّبة، توافقين على القواعد الثلاث نفسها التي توافق عليها كل امرأة هنا.",
+  "photographYourCertificate": "صوّري شهادتكِ",
+  "takeThePhoto": "التقطي الصورة",
+  "layItFlatInGoodLightWith": "ضعيها مسطّحة في ضوء جيد، بحيث تُقرأ كل كلمة فيها.",
+  "theCameraCouldNotStartCloseThis": "تعذّر تشغيل الكاميرا. أغلقي هذه الشاشة وحاولي مرة أخرى.",
+  "weCouldNotSendYourCertificateCheck": "تعذّر إرسال شهادتكِ. تحقّقي من اتصالكِ وحاولي مرة أخرى.",
+  "coachingIsNotOpenYetSoYour": "التدريب الشخصي غير متاح بعد، لذلك لم تُرسَل شهادتكِ.",
+  "typeWhatYouAte": "اكتبي ما تناولتِه"
 }

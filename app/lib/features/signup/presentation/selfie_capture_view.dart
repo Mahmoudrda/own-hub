@@ -49,7 +49,17 @@ class SelfieCaptureView extends StatefulWidget {
     required this.captureService,
     this.onCaptured,
     this.onClose,
+    this.onOpenSettings,
+    this.onAskReviewer,
   });
+
+  /// Opens this app's page in the phone's settings, when she turned the
+  /// camera off. The camera is tried again when she comes back.
+  final VoidCallback? onOpenSettings;
+
+  /// A woman reviewer instead of a camera that cannot run, with the reason,
+  /// so the reviewer path can tell a refusal from a failure.
+  final ValueChanged<CaptureUnavailableReason>? onAskReviewer;
 
   final CaptureService captureService;
 
@@ -62,23 +72,57 @@ class SelfieCaptureView extends StatefulWidget {
   State<SelfieCaptureView> createState() => _SelfieCaptureViewState();
 }
 
-class _SelfieCaptureViewState extends State<SelfieCaptureView> {
+class _SelfieCaptureViewState extends State<SelfieCaptureView>
+    with WidgetsBindingObserver {
   CaptureSession? _session;
   StreamSubscription<CaptureState>? _subscription;
   CaptureState _state = const CaptureState.preparing();
   bool _reported = false;
 
+  /// True between "Open settings" and her return to the app.
+  bool _awaitingSettings = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _open();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _subscription?.cancel();
     _session?.close();
     super.dispose();
+  }
+
+  /// Back from the settings page: the camera is asked for again, so a woman
+  /// who turned access on finds it working rather than still refused.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _awaitingSettings) {
+      _awaitingSettings = false;
+      unawaited(_reopen());
+    }
+  }
+
+  /// Closes whatever session is open and opens a fresh one.
+  Future<void> _reopen() async {
+    // The old subscription is dropped, not awaited: its state no longer
+    // matters, and the camera itself is released below before a new one opens.
+    unawaited(_subscription?.cancel());
+    _subscription = null;
+    final old = _session;
+    _session = null;
+    if (mounted) setState(() => _state = const CaptureState.preparing());
+    await old?.close();
+    if (mounted) await _open();
+  }
+
+  void _openSettings() {
+    _awaitingSettings = true;
+    widget.onOpenSettings?.call();
   }
 
   Future<void> _open() async {
@@ -123,6 +167,8 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView> {
     final lens = _state.isLive && session is Viewfinder
         ? session as Viewfinder
         : null;
+    final current = _state;
+    final unavailable = current is CaptureUnavailable ? current.reason : null;
 
     // The shutter waits for the framing to be good, unlike the card, where she
     // may always override because she can see the card and we can only see a
@@ -168,6 +214,13 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView> {
           : null,
       actionLabel: l10n.done_54ca1,
       onAction: ready ? _capture : null,
+      unavailable: unavailable,
+      isSelfie: true,
+      onOpenSettings: _openSettings,
+      onRetry: () => unawaited(_reopen()),
+      onAskReviewer: unavailable == null || widget.onAskReviewer == null
+          ? null
+          : () => widget.onAskReviewer!(unavailable),
     );
   }
 }

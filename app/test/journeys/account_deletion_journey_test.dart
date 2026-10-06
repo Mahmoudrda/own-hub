@@ -215,18 +215,19 @@ void main() {
       expect(find.textContaining('There is no server yet'), findsNothing);
     });
 
-    testWidgets('and names the download as missing instead of offering it', (
+    testWidgets('and offers a copy by request, never a download that is not there', (
       tester,
     ) async {
       await _open(tester, 'A02');
       await _tap(tester, find.text('Your data'));
 
-      expect(
-        find.textContaining('Downloading a copy of your data is not built yet'),
-        findsOneWidget,
-      );
-      // The dead control this whole item is about. There is no export in this
-      // build, so there is no button pretending there is.
+      // M8: a copy is asked for by email, to the privacy mailbox, until the
+      // in-app download exists.
+      expect(find.textContaining('Want a copy of your data?'), findsOneWidget);
+      expect(find.widgetWithText(AppButton, 'Ask for a copy'), findsOneWidget);
+      expect(find.textContaining('not built yet'), findsNothing);
+      // The dead control this whole item is about. There is no download in
+      // this build, so there is no button pretending there is.
       expect(find.widgetWithText(AppButton, 'Download'), findsNothing);
       expect(find.widgetWithText(AppButton, 'Export'), findsNothing);
     });

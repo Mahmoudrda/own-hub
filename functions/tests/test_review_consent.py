@@ -1,5 +1,5 @@
 """N7: asking for a woman reviewer records a server-side review-route consent,
-users/{uid}/consents/review-v1 = {version, at, path, flagId}. N3: it names the
+users/{uid}/consents/review-v2 = {version, at, path, flagId}. N3: it names the
 flag it was given for, so it is written once that flag's id exists."""
 
 from __future__ import annotations
@@ -49,14 +49,14 @@ def test_the_firestore_store_writes_exactly_version_at_path(monkeypatch):
     db = fake_firestore.FakeFirestore()
     monkeypatch.setattr(store, "db", lambda: db)
     store.write_review_consent("her", "declined", "f1")
-    doc = db.docs[f"{config.COL_USERS}/her/{config.COL_CONSENTS}/review-v1"]
+    doc = db.docs[f"{config.COL_USERS}/her/{config.COL_CONSENTS}/review-v2"]
     assert doc == {
         "version": config.REVIEW_CONSENT_VERSION,
         "at": db.now,
         "path": "declined",
         "flagId": "f1",
     }
-    assert config.REVIEW_CONSENT_VERSION == 1
+    assert config.REVIEW_CONSENT_VERSION == 2
 
 
 def test_the_consent_lives_under_users_so_account_deletion_takes_it(monkeypatch):

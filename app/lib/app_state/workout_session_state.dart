@@ -15,6 +15,7 @@
 /// everywhere.
 library;
 
+import '../domain/clock/app_clock.dart';
 import '../domain/rewards/award_ledger.dart';
 import '../domain/rewards/award_table.dart';
 // The award table speaks the training domain's SessionSource; the train
@@ -124,7 +125,7 @@ class WorkoutSessionState {
     _moveIndex = 0;
     _setIndex = 0;
     _loggedSets = 0;
-    _startedAt = DateTime.now();
+    _startedAt = AppClock.now();
     _swaps.clear();
     repository.startSession(day).then((session) {
       _session = session;
@@ -209,7 +210,7 @@ class WorkoutSessionState {
     _lastFinished = session;
     final seconds = _startedAt == null
         ? 0
-        : DateTime.now().difference(_startedAt!).inSeconds;
+        : AppClock.now().difference(_startedAt!).inSeconds;
     await repository.finishSession(
       sessionId: session.id,
       durationSec: seconds,
@@ -240,7 +241,7 @@ class WorkoutSessionState {
     DateTime? now,
     bool creditToday = true,
   }) {
-    final on = now ?? DateTime.now();
+    final on = now ?? AppClock.now();
     final key = WeekKey.of(on);
     final week =
         progress.weeks[key.id] ??

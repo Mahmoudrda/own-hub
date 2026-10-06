@@ -60,6 +60,14 @@
 ///     [ProviderTruncated]**, rather than as an exception or an empty answer.
 ///  6. **It throws [AssistantProviderUnavailable] for everything else**, so the
 ///     caller fails closed rather than rendering a partial answer.
+///  7. **It refuses without her assistant consent, checked on the server.**
+///     The function reads a recorded `assistant` consent (its own version,
+///     separate from the capture and health consents) before any byte reaches
+///     the model, the way `verify_identity` reads the capture consent. The
+///     privacy policy (§3.8) promises that agreement, naming the provider.
+///  8. **The provider is pinned in the function's config**: Vertex AI in
+///     europe-west3, with zero data retention and no training on prompts, so
+///     a request cannot drift to another region or vendor by default.
 ///
 /// Nothing above mentions Claude or Gemini by name in code, and that is the
 /// point of the seam: the vendor is a detail of one class in `data/`.

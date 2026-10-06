@@ -74,6 +74,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
@@ -240,7 +241,7 @@ class _BodyPrivatelyViewState extends State<BodyPrivatelyView> {
     super.dispose();
   }
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
 
   /// `yyyy-MM-dd` in her timezone — the document id (spine C1).
   String get _dayId {

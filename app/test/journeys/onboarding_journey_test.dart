@@ -213,14 +213,16 @@ void main() {
   });
 
   group('skipping', () {
-    testWidgets('she can skip every question and land on an honest Home', (
-      tester,
-    ) async {
+    // R1-P10: Skip is gone. Every answer is preselected, so Skip did what
+    // Continue does; going through on the defaults is the same walk.
+    testWidgets('she can go through every question on its defaults and land '
+        'on an honest Home', (tester) async {
       await _launch(tester);
 
       for (var step = 1; step <= 4; step++) {
         expect(find.text('Step $step of 4'), findsOneWidget);
-        await _tap(tester, find.widgetWithText(AppButton, 'Skip'));
+        expect(find.widgetWithText(AppButton, 'Skip'), findsNothing);
+        await _tap(tester, find.widgetWithText(AppButton, 'Continue'));
       }
       await _tap(
         tester,
@@ -229,9 +231,8 @@ void main() {
 
       expect(find.byType(TodayView), findsOneWidget);
 
-      // A skipped question writes nothing. What she gets is the default the
-      // design preselects, which is a real answer rather than an empty one.
-      expect(AppRouter.intakeRepository.writes, isEmpty);
+      // What she gets is the default the design preselects, which is a real
+      // answer rather than an empty one.
       expect(AppRouter.intakeRepository.read(), Intake.defaults);
       expect(_progressTarget, Intake.defaults.days);
       expect(_homeTarget, Intake.defaults.days);

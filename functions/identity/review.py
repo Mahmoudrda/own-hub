@@ -97,6 +97,10 @@ class ReviewStore(Protocol):
         reset_booking: bool = False,
     ) -> None: ...
 
+    def verify_in_flight(self, uid: str) -> bool:
+        """True while a verify_identity call for her may still be running."""
+        ...
+
     def uid_daily_count_and_increment(self, uid: str, field: str) -> int: ...
 
     def write_review_consent(self, uid: str, path: str, flag_id: str) -> None: ...
@@ -187,11 +191,15 @@ class ReviewStore(Protocol):
 
     def notify(self, flag_id: str, codes) -> None: ...
 
+    def notify_approved(self, uid: str) -> None:
+        """A push to the phones she registered on C14 (identity/push.py)."""
+        ...
+
     def new_job_payload(self, uid: str, decision: decisions.Decision, attempt: int) -> dict: ...
 
 
 def sla_deadline(now: Optional[dt.datetime] = None) -> dt.datetime:
-    now = now or dt.datetime.now(dt.timezone.utc)
+    now = now or _now()
     return now + dt.timedelta(hours=config.REVIEW_SLA_HOURS)
 
 
@@ -252,13 +260,14 @@ class RequestResult:
 def request(store: ReviewStore, uid: str, path: Any) -> RequestResult:
     """She asks for a woman reviewer: niqab, declined camera, or after an error.
 
-    Records users/{uid}/consents/review-v1 = {version, at, path, flagId}
+    Records users/{uid}/consents/review-v2 = {version, at, path, flagId}
     (N7): the request is the consent to be looked up and called. Wording
     PENDING COUNSEL. N3: the consent names the flag it was given for, the
     open one or the one opened here, and covers that flag only.
 
     Takes no images and no frames, so there is nothing here to store or leak.
     At most one open flag per account: a second request returns the open one.
+    Refused with VERIFICATION_IN_PROGRESS while her verify_identity runs.
     """
     if not isinstance(path, str) or path not in config.REVIEW_REQUEST_PATHS:
         raise ReviewError(INVALID, reasons.INTERNAL_ERROR)
@@ -268,6 +277,11 @@ def request(store: ReviewStore, uid: str, path: Any) -> RequestResult:
         return RequestResult(STATE_APPROVED)
     if state == STATE_REJECTED:
         raise ReviewError(PRECONDITION, reasons.VERIFICATION_CLOSED)
+    # Her automatic check is still running: it decides first. Opening a flag
+    # now could leave a review waiting beside an approval that lands a moment
+    # later. Refused before the daily counter, so asking costs her nothing.
+    if store.verify_in_flight(uid):
+        raise ReviewError(PRECONDITION, reasons.VERIFICATION_IN_PROGRESS)
 
     if store.uid_daily_count_and_increment(uid, "reviews") > config.PER_UID_DAILY_REVIEW_LIMIT:
         raise ReviewError(EXHAUSTED, reasons.PER_UID_DAILY_LIMIT)
@@ -493,11 +507,18 @@ def _mint_and_approve(store: ReviewStore, uid: str, attempts: Optional[int] = No
         try:
             store.mint_verified(uid)
             store.set_verification_state(uid, STATE_APPROVED, decided=True)
-            return True
         except Exception:
             if attempt + 1 < attempts:
                 backoff = config.MINT_RETRY_BACKOFF_SEC
                 _sleep(backoff[min(attempt, len(backoff) - 1)])
+            continue
+        # She may have closed the app hours ago. A push that fails changes
+        # nothing: the approval is committed and C14 shows it on next open.
+        try:
+            store.notify_approved(uid)
+        except Exception:
+            pass
+        return True
     return False
 
 

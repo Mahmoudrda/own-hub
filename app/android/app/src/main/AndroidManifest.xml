@@ -22,13 +22,24 @@
          can also bring READ_EXTERNAL_STORAGE. Neither may reach a store build:
          each is a Data safety declaration for a capability we do not use.
          WRITE_EXTERNAL_STORAGE goes too: camerax writes only to the app's
-         cache. So does the c2dm RECEIVE permission Firebase libraries bring:
-         there is no push, and phone auth, App Check and Crashlytics do not
-         use it. -->
+         cache. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" tools:node="remove" />
+
+    <!-- One push: "your check is done", when a woman reviewer approves her.
+         Firebase Cloud Messaging brings the c2dm RECEIVE permission it needs
+         to deliver it, so that one is no longer stripped. Android 13 and
+         later ask her for POST_NOTIFICATIONS, and only when she taps "Tell me
+         when I'm in" on C14, never at launch. Declared as a device ID (the
+         push token) in android/play-data-safety.txt. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Training reminders: on the days she chose on R10 or in Notifications,
+         scheduled on the phone (flutter_local_notifications). The phone
+         forgets scheduled alarms when it restarts; this lets the app set them
+         again. Inexact on purpose: no exact-alarm permission is requested. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Not required, so the app still installs on a handset with no camera or
          no autofocus. Google Play filters installs on any hardware feature a
@@ -84,6 +95,26 @@
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"
             android:value="false" />
+        <!-- The status-bar icon for "your check is done" and for her training
+             reminders: a white silhouette, as Android requires. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_ownhub" />
+        <!-- Training reminders, scheduled on the phone, and set again after
+             a restart or an update. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
@@ -99,6 +130,12 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- "Ask for a copy" in Your data opens an email to the privacy
+             mailbox. Declared so a mail app is visible on Android 11 and up. -->
+        <intent>
+            <action android:name="android.intent.action.SENDTO"/>
+            <data android:scheme="mailto"/>
         </intent>
     </queries>
 </manifest>

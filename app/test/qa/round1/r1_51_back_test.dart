@@ -51,7 +51,7 @@ void main() {
     phone(t);
     final s = t.ensureSemantics();
     await boot(t, locale: const Locale('en'));
-    for (var i = 0; i < 5; i++) { await tapLabel(t, 'Skip'); if (topScreen(t) == 'O05') break; }
+    for (var i = 0; i < 5; i++) { await tapLabel(t, 'Continue'); if (topScreen(t) == 'O05') break; }
     await tapLabel(t, 'I will start tomorrow');
     print('0 taps: on ${topScreen(t)}  tappable=${tappables(t).map((e)=>e.label).join(" | ")}');
     s.dispose();

@@ -105,8 +105,7 @@ void main() {
             'sessions changes from it yet.',
           ),
           findsOneWidget,
-          reason:
-              'and the screen still has to answer the question it asked',
+          reason: 'and the screen still has to answer the question it asked',
         );
       }
     });
@@ -242,12 +241,17 @@ void main() {
       tester,
     ) async {
       final repository = InMemoryIntakeRepository();
-      await tester.pumpWidget(_host(LifeStageView(repository: repository)));
+      // Skip is drawn only where it leads somewhere.
+      var skipped = 0;
+      await tester.pumpWidget(
+        _host(LifeStageView(repository: repository, onSkip: () => skipped++)),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Skip'));
       await tester.pumpAndSettle();
 
+      expect(skipped, 1);
       expect(repository.writes, isEmpty);
       expect(repository.read().lifeStage, LifeStage.none);
     });

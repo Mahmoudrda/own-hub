@@ -71,10 +71,35 @@ class _LiveCaptureService implements CaptureService {
   }
 }
 
+/// A camera that is still opening: never live, never refused. The screen as
+/// designed, with the shutter waiting. (A camera that cannot run at all draws
+/// a different screen; see capture_views_test.dart.)
+class _OpeningSession implements CaptureSession {
+  @override
+  CaptureState get current => const CaptureState.preparing();
+
+  @override
+  Stream<CaptureState> watch() => Stream<CaptureState>.value(current);
+
+  @override
+  Future<void> capture() async =>
+      throw StateError('nothing to capture while the camera opens');
+
+  @override
+  Future<void> close() async {}
+}
+
+class _OpeningService implements CaptureService {
+  const _OpeningService();
+
+  @override
+  Future<CaptureSession> open(CaptureTarget target) async => _OpeningSession();
+}
+
 void main() {
   testWidgets('frames the card and says what happens to it', (tester) async {
     await tester.pumpWidget(
-      _host(const IdCaptureView(captureService: UnavailableCaptureService())),
+      _host(const IdCaptureView(captureService: _OpeningService())),
     );
     await tester.pumpAndSettle();
 
@@ -88,7 +113,7 @@ void main() {
     expect(find.text('Take it myself'), findsOneWidget);
   });
 
-  testWidgets('with no camera behind it, the shutter is disabled', (
+  testWidgets('until the camera is live, the shutter is disabled', (
     tester,
   ) async {
     // The honest state of the product today. If this test ever starts failing
@@ -98,7 +123,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         IdCaptureView(
-          captureService: const UnavailableCaptureService(),
+          captureService: const _OpeningService(),
           onCaptured: () => captured++,
         ),
       ),
@@ -158,7 +183,7 @@ void main() {
   testWidgets('reads in Arabic, from the dictionary', (tester) async {
     await tester.pumpWidget(
       _host(
-        const IdCaptureView(captureService: UnavailableCaptureService()),
+        const IdCaptureView(captureService: _OpeningService()),
         locale: const Locale('ar'),
       ),
     );
@@ -174,7 +199,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _host(
-        const IdCaptureView(captureService: UnavailableCaptureService()),
+        const IdCaptureView(captureService: _OpeningService()),
         locale: const Locale('ar'),
         textScale: 1.6,
       ),

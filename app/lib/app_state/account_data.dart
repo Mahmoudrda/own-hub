@@ -41,6 +41,8 @@ import '../features/account/domain/dietary_profile.dart';
 import '../features/account/domain/health_backup.dart';
 import '../features/cycle/domain/today_check_in.dart';
 import '../features/eat/data/recipe_sync.dart';
+import '../features/train/domain/training_reminders.dart';
+import '../features/signup/domain/legal_acceptance.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
 import 'cloud_store.dart';
@@ -50,11 +52,16 @@ import 'coached_life_state.dart';
 import 'coaching_desk_state.dart';
 import 'coaching_link_state.dart';
 import 'community_state.dart';
+import 'crash_consent.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
 import 'firebase_boot.dart';
 import 'install_id.dart';
+import 'pledge.dart';
+import 'coach_invite_state.dart';
+import 'role_state.dart';
 import 'local_persistence.dart';
+import 'onboarding_state.dart';
 import 'workout_session_state.dart';
 
 /// The five handset steps, done against the stores this build actually has.
@@ -83,6 +90,7 @@ class ThisPhoneWipe implements LocalWipe {
   Future<void> signOut() async {
     unawaited(AppRouter.forgetVerification());
     AppRouter.lastSignupRole = null;
+    RoleState.instance.reset();
     AppRouter.lastReviewerPath = null;
     await AppRouter.authRepository.signOut();
   }
@@ -145,6 +153,14 @@ class ThisPhoneWipe implements LocalWipe {
     // the default, which is off: her health data stays on the phone.
     unawaited(HealthBackupPreference.instance.erase());
 
+    // Her crash-report choice, back to off, and any report still waiting on
+    // this phone deleted. A new account on this handset is asked again.
+    unawaited(CrashConsent.instance.erase().catchError((Object _) {}));
+
+    // The legal acceptance waiting to reach the server, if any. It belongs to
+    // the account being deleted.
+    unawaited(PendingLegalAcceptance.erase().catchError((Object _) {}));
+
     // This installation's random id. A new account on this handset gets a
     // new one, so nothing links the two.
     unawaited(InstallId.erase().catchError((Object _) {}));
@@ -193,6 +209,14 @@ class ThisPhoneWipe implements LocalWipe {
     // Row 1 — the maps on `users/{uid}`: her setup answers, her allergies, her
     // privacy and notification switches.
     AppRouter.intakeRepository.reset();
+    OnboardingState.instance.cycleRowDismissed = false;
+    // Her agreement to the community's rules. The server's copy goes with
+    // users/{uid}/consents.
+    PledgeState.instance.reset();
+    // Her training reminders: the days she chose, and the ones the phone
+    // has scheduled.
+    ReminderState.instance.reset();
+    unawaited(AppRouter.reminderScheduler.cancel().catchError((Object _) {}));
     AppRouter.dietaryRepository.reset();
     AppRouter.privacyRepository.reset();
 
@@ -205,6 +229,9 @@ class ThisPhoneWipe implements LocalWipe {
     // The coach side. She holds both roles in this build, so her portfolio, her
     // clients, her enquiries and her coached life are hers too.
     CoachProfileState.instance.reset();
+    // Her roles and the code her coach sent: both kept on this phone.
+    RoleState.instance.reset();
+    CoachInviteState.instance.reset();
     CoachPortfolioState.instance.reset();
     CoachingLinkState.instance.reset();
     CoachingDeskState.instance.reset();

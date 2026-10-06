@@ -37,6 +37,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
@@ -111,7 +112,7 @@ class _SayItViewState extends State<SayItView> {
 
   SayItState? _state;
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
 
   @override
   void initState() {

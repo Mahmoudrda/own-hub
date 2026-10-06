@@ -274,7 +274,7 @@ void main() {
 
       expect(find.text(l10n.yourCheckIsDone), findsOneWidget);
       expect(find.text(l10n.theAppOpensAsSoonAsYour), findsNothing);
-      expect(find.text(l10n.aWomanReviewerFromOwnHubWill), findsNothing);
+      expect(find.text(l10n.aWomanFromOwnHubReviewsYour), findsNothing);
       expect(find.text(l10n.lookAroundWhileYouWait), findsNothing);
       expect(opened, 1, reason: 'the approval moves her on by itself');
 

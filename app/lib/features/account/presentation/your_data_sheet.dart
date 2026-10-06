@@ -22,10 +22,15 @@
 /// # It says what deleting does, and what it did
 ///
 /// With an account, deleting removes it from the server and clears this
-/// phone, and the sheet names the three things kept on purpose. With no
-/// account, this phone is the whole of it. The download is still said rather
-/// than offered: there is no export yet, and a button that produced nothing
-/// is the failure mode 2.1 is about.
+/// phone, and the sheet names what is kept on purpose: the closed ID record,
+/// the pseudonymised reports and the record of the deletion, plus the fraud
+/// signals and the reviewer access log, which expire on their own (manifest
+/// rows 42 to 44, privacy policy v3 section 7). With no account, this phone
+/// is the whole of it.
+///
+/// A copy of her data is asked for by email for now (M8): "Ask for a copy"
+/// opens a message to the privacy mailbox, and the team sends the copy as
+/// the privacy policy describes. The in-app download comes later.
 ///
 /// While the server works she is told so. If there is no connection she is
 /// told nothing was deleted and the sheet stays open; the router tells her
@@ -57,10 +62,19 @@ Future<AccountDeletionResult?> showYourDataSheet(
   BuildContext context, {
   required Future<AccountDeletionResult> Function() onDelete,
   bool hasAccount = false,
+  VoidCallback? onOpenPrivacy,
+  VoidCallback? onAskForCopy,
 }) {
   return showAppSheet<AccountDeletionResult>(
     context: context,
-    children: [YourDataSheet(onDelete: onDelete, hasAccount: hasAccount)],
+    children: [
+      YourDataSheet(
+        onDelete: onDelete,
+        hasAccount: hasAccount,
+        onOpenPrivacy: onOpenPrivacy,
+        onAskForCopy: onAskForCopy,
+      ),
+    ],
   );
 }
 
@@ -70,7 +84,16 @@ class YourDataSheet extends StatefulWidget {
     required this.onDelete,
     this.hasAccount = false,
     this.webDeletionUrl = LegalLinks.deleteAccount,
+    this.onOpenPrivacy,
+    this.onAskForCopy,
   });
+
+  /// Opens the privacy policy. Null while it has no address.
+  final VoidCallback? onOpenPrivacy;
+
+  /// Opens an email to the privacy mailbox asking for a copy of her data.
+  /// Null when there is no mailbox, and then no button is drawn.
+  final VoidCallback? onAskForCopy;
 
   /// The public delete-account page. Named when this copy of the app is
   /// refused (R3), so she still has a way to delete that needs no update.
@@ -134,28 +157,53 @@ class _YourDataSheetState extends State<YourDataSheet> {
         // control that leads nowhere. Same sentence, only what exists.
         Text(
           AppRouter.featureFlags.isOn(Feature.community)
-              ? l10n.deletingTakesAwayEverythingYouHavePut
-              : l10n.deletingTakesAwayEverythingYouHavePut_g3hy0,
+              ? l10n.deletingTakesAwayEverythingYouHavePut_1uwbl
+              : l10n.deletingTakesAwayEverythingYouHavePut_7ytu4,
           style: AppText.bodyM,
         ),
+        const SizedBox(height: 6),
+        // One timing, said the same way here, while it runs and if it is
+        // interrupted (privacy policy v3 section 7).
+        Text(l10n.deletingUsuallyTakesUnderAMinuteIf, style: AppText.bodyM),
         const SizedBox(height: 10),
         Text(
           widget.hasAccount
-              ? l10n.deletingYourAccountRemovesItFromOur
+              ? l10n.deletingYourAccountRemovesItFromOur_1xldi
               : l10n.youHaveNoAccountOnThisPhone,
           style: quiet,
         ),
         const SizedBox(height: 10),
 
-        // The download. Said, not offered: a button here would be the dead
-        // control this sheet exists to remove.
-        Text(l10n.downloadingACopyOfYourDataIs, style: quiet),
+        // A copy of her data, asked for by email until the in-app download
+        // exists (M8). The button opens a message; nothing is sent until she
+        // sends it.
+        if (widget.onAskForCopy != null) ...[
+          Text(l10n.wantACopyOfYourDataAsk, style: quiet),
+          const SizedBox(height: 6),
+          AppButton(
+            l10n.askForACopy,
+            key: const ValueKey('your-data-ask-copy'),
+            variant: AppButtonVariant.outlined,
+            onPressed: _deleting ? null : widget.onAskForCopy,
+          ),
+        ],
+        if (widget.onOpenPrivacy != null)
+          AppButton(
+            l10n.readThePrivacyPolicy,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: widget.onOpenPrivacy,
+          ),
 
         if (_deleting && widget.hasAccount) ...[
           const SizedBox(height: 10),
           Semantics(
             liveRegion: true,
-            child: Text(l10n.deletingYourAccountThisCanTakeA, style: quiet),
+            child: Text(
+              l10n.deletingYourAccountThisUsuallyTakesUnder,
+              style: quiet,
+            ),
           ),
         ],
         if (_refused != null) ...[

@@ -48,6 +48,7 @@ top of this and someone will eventually want to:
 
 Callables, in the order a woman meets them:
 
+    record_legal_acceptance   free    Terms and Privacy accepted at C06
     record_consent            free    spec §2 step 1, before any camera
     start_verification        free    mints the single-use liveness session
     verify_identity           paid    the whole pipeline, one round trip
@@ -157,6 +158,20 @@ def _require_auth(
             https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.PHONE_SIGN_IN_REQUIRED
         )
     return request.auth.uid
+
+
+def _is_store_reviewer(request: https_fn.CallableRequest, uid: str) -> bool:
+    """M13: a store review account, by uid or by the phone number in her
+    verified ID token. The number matters because a reviewer who deletes her
+    account and signs in again with the same test number gets a new uid. Both
+    lists live in Secret Manager and are empty (nobody) on any failure."""
+    if uid in store.store_reviewer_uids():
+        return True
+    token = request.auth.token if request.auth is not None else None
+    phone = token.get("phone_number") if isinstance(token, dict) else None
+    if not isinstance(phone, str) or not phone:
+        return False
+    return phone in store.store_reviewer_phones()
 
 
 def _decode_image(value: Any, budget_left: dict) -> bytes:
@@ -303,13 +318,15 @@ def _deps() -> pipeline.Deps:
 def record_consent(request: https_fn.CallableRequest) -> dict:
     """Spec §2 step 1: persisted before any camera access.
 
-    Three fields, per spec §4 row 3: uid, consent version, timestamp. Not the
-    text, not her IP, not her device. The version is the only thing tying the
-    record to what she was actually shown, which is why config.CONSENT_VERSION
-    must be bumped whenever that text changes.
+    The consent version and a timestamp, plus (version 2) the language the
+    wording was shown in and the app version, when the client sends them in
+    an allowed shape. Not the text, not her IP, not her device. The version
+    is what ties the record to what she was actually shown, which is why
+    config.CONSENT_VERSION must be bumped whenever that text changes.
     """
     uid = _require_auth(request)
-    version = (request.data or {}).get("consentVersion")
+    data = request.data if isinstance(request.data, dict) else {}
+    version = data.get("consentVersion")
     if version != config.CONSENT_VERSION:
         # A client agreeing to a version we do not recognise has been shown
         # something we cannot account for. Refusing is the honest answer.
@@ -320,8 +337,78 @@ def record_consent(request: https_fn.CallableRequest) -> dict:
     # was shown and when; a second write would only move the timestamp and
     # let a tight loop turn this callable into a free Firestore write pump.
     if not store.has_consent(uid):
-        store.write_consent(uid)
+        store.write_consent(uid, data.get("locale"), data.get("appVersion"))
     return {"ok": True, "consentVersion": config.CONSENT_VERSION}
+
+
+@https_fn.on_call()
+def record_pledge(request: https_fn.CallableRequest) -> dict:
+    """C16: she agreed to the community's three rules.
+
+    Request {version, locale, appVersion}. The version must be the server's
+    current one (config.PLEDGE_VERSION); any other is agreement to rules we
+    cannot account for and is refused with consent_missing. Recorded once at
+    users/{uid}/consents/pledge-v{N}; agreeing again changes nothing. A locale
+    or app version of the wrong shape is left out rather than stored.
+    """
+    uid = _require_auth(request)
+    data = _body(request)
+    version = data.get("version")
+    if isinstance(version, bool) or version != config.PLEDGE_VERSION:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
+        )
+    store.write_pledge(uid, data.get("locale"), data.get("appVersion"))
+    return {"ok": True, "version": config.PLEDGE_VERSION}
+
+
+@https_fn.on_call()
+def record_legal_acceptance(request: https_fn.CallableRequest) -> dict:
+    """M1: she accepted the Terms of Use and the Privacy Policy at C06.
+
+    Request {termsVersion, privacyVersion, locale, appVersion, platform,
+    acceptedAtMs}. The versions must be the server's current ones; anything
+    else is acceptance of words we cannot account for and is refused with
+    consent_missing, which tells the app to show the update sheet. Recorded
+    once at users/{uid}/consents/legal-t{T}-p{P}: accepting the same versions
+    again changes nothing. Not gated on verification, because she accepts
+    before the check.
+    """
+    uid = _require_auth(request)
+    data = request.data
+    if not isinstance(data, dict):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    if (
+        data.get("termsVersion") != config.TERMS_VERSION
+        or data.get("privacyVersion") != config.PRIVACY_VERSION
+    ):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
+        )
+    locale = data.get("locale")
+    app_version = data.get("appVersion")
+    platform = data.get("platform")
+    accepted_at = data.get("acceptedAtMs")
+    if (
+        not store.valid_locale(locale)
+        or not store.valid_app_version(app_version)
+        or platform not in config.LEGAL_PLATFORMS
+        or isinstance(accepted_at, bool)
+        or not isinstance(accepted_at, int)
+        or accepted_at <= 0
+    ):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    if not store.has_legal_acceptance(uid):
+        store.write_legal_acceptance(uid, locale, app_version, platform, accepted_at)
+    return {
+        "ok": True,
+        "termsVersion": config.TERMS_VERSION,
+        "privacyVersion": config.PRIVACY_VERSION,
+    }
 
 
 @https_fn.on_call()
@@ -380,28 +467,33 @@ def start_verification(request: https_fn.CallableRequest) -> dict:
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.REVIEW_ALREADY_OPEN
         )
 
-    # S6: her own daily allowance first, so one account can never run the
-    # global counter up for everyone else.
-    if (
-        store.uid_daily_count_and_increment(uid, "starts")
-        > config.PER_UID_DAILY_START_LIMIT
-    ):
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.PER_UID_DAILY_LIMIT
-        )
+    # M13: a store review account still gets a real session, so the app's
+    # camera screens run as they do for everyone, but it is not counted
+    # against the daily limits or the cost ledger. verify_identity approves
+    # it without reading a frame.
+    if not _is_store_reviewer(request, uid):
+        # S6: her own daily allowance first, so one account can never run the
+        # global counter up for everyone else.
+        if (
+            store.uid_daily_count_and_increment(uid, "starts")
+            > config.PER_UID_DAILY_START_LIMIT
+        ):
+            raise https_fn.HttpsError(
+                https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.PER_UID_DAILY_LIMIT
+            )
 
-    # Spec §6's global kill switch, checked before anything is minted.
-    if store.daily_count_and_increment() > config.DAILY_VERIFICATION_LIMIT:
-        logs.warn("daily_limit_reached", field="sessions")
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.DAILY_LIMIT_REACHED
-        )
+        # Spec §6's global kill switch, checked before anything is minted.
+        if store.daily_count_and_increment() > config.DAILY_VERIFICATION_LIMIT:
+            logs.warn("daily_limit_reached", field="sessions")
+            raise https_fn.HttpsError(
+                https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.DAILY_LIMIT_REACHED
+            )
 
-    budget = store.FirestoreLedger().read(uid)
-    if budget.remaining <= 0:
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.COST_CAP_REACHED
-        )
+        budget = store.FirestoreLedger().read(uid)
+        if budget.remaining <= 0:
+            raise https_fn.HttpsError(
+                https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.COST_CAP_REACHED
+            )
 
     deps = _deps()
     session_id = deps.liveness.create_session(uid)
@@ -456,6 +548,17 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
         )
+
+    # M13: a store review account on the owner's allow-list (Secret Manager,
+    # empty by default) is approved without the pipeline. No image is read,
+    # nothing is billed, and every use is logged and recorded. Nobody else
+    # can reach this branch: the lists are server-side and fail closed.
+    if _is_store_reviewer(request, uid):
+        store.mint_claims(uid, True)
+        store.write_user_verification(uid)
+        store.FirestoreReviewStore().log_access(uid, "store-review", "reviewerBypass")
+        logs.warn("reviewer_bypass")
+        return {"outcome": decisions.APPROVED, "reasons": [], "refreshToken": True}
 
     # Closed or already waiting, decided before any counter moves or any byte
     # is decoded. S7: one open flag per uid, and a rejected account is final.
@@ -567,6 +670,50 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
         operation_id=_operation_id(data.get("operationId")),
     )
 
+    # While this call runs, request_review refuses (VERIFICATION_IN_PROGRESS):
+    # the automatic check decides first, so a reviewer request cannot open a
+    # flag beside an approval that lands a moment later.
+    _mark_verifying(uid)
+    try:
+        decision, job_id = _decide_and_commit(uid, inputs, gate)
+    finally:
+        _clear_verifying(uid)
+
+    # The images go out of scope here and are collected. Nothing above wrote
+    # them anywhere; this is belt and braces on an already-empty promise.
+    del card_front, card_back, frames, inputs
+    logs.decision(
+        "verify_identity",
+        outcome=decision.outcome,
+        reasons=list(decision.reasons),
+        latencyMs=_ms(started),
+        jobId=job_id,
+    )
+    return _response(decision)
+
+
+def _mark_verifying(uid: str) -> None:
+    """Best effort: a marker that cannot be written must not stop her check."""
+    try:
+        store.mark_verify_in_flight(uid)
+    except Exception:
+        logs.warn("verify_marker_failed", step="mark")
+
+
+def _clear_verifying(uid: str) -> None:
+    """Best effort: the marker expires by itself (config.VERIFY_IN_FLIGHT_SEC)."""
+    try:
+        store.clear_verify_in_flight(uid)
+    except Exception:
+        logs.warn("verify_marker_failed", step="clear")
+
+
+def _decide_and_commit(uid: str, inputs, gate):
+    """The pipeline, the registry claim, and every write of its outcome.
+
+    No write here may turn an `approved` state back: the review flag's
+    `pending` and a final `rejected` are both written with keep_approved.
+    """
     deps = _deps()
     outcome = pipeline.run(inputs, deps)
     decision = outcome.decision
@@ -635,24 +782,16 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
     ):
         # S8: final, and she is told so. No reason code reaches this map.
         # REJECTED_FAILED never reaches here: it became a review above (N3).
-        store.set_verification_state(uid, review.STATE_REJECTED, decided=True)
+        # keep_approved: an approval that landed while this call ran stands.
+        store.set_verification_state(
+            uid, review.STATE_REJECTED, decided=True, keep_approved=True
+        )
     if failed_check and outcome.id_hmac:
         # Spec §3's cross-account signal: count failures against the CARD, not
         # the account, so a series of fresh sign-ups on one stolen card is
         # visible.
         store.FirestoreBehaviour().record_failure(outcome.id_hmac)
-
-    # The images go out of scope here and are collected. Nothing above wrote
-    # them anywhere; this is belt and braces on an already-empty promise.
-    del card_front, card_back, frames, inputs, outcome
-    logs.decision(
-        "verify_identity",
-        outcome=decision.outcome,
-        reasons=list(decision.reasons),
-        latencyMs=_ms(started),
-        jobId=job_id,
-    )
-    return _response(decision)
+    return decision, job_id
 
 
 def _raise_flag(uid: str, decision, outcome, attempt: int, *, mark_duplicate=False):
@@ -679,7 +818,9 @@ def _raise_flag(uid: str, decision, outcome, attempt: int, *, mark_duplicate=Fal
     )
     flag_id, created = store.open_flag(uid, job, flag, mark_duplicate=mark_duplicate)
     if created:
-        store.set_verification_state(uid, review.STATE_PENDING, reset_booking=True)
+        store.set_verification_state(
+            uid, review.STATE_PENDING, reset_booking=True, keep_approved=True
+        )
         _post_flag_webhook(flag_id, decision.flags)
     return flag_id
 
@@ -791,7 +932,7 @@ def request_review(request: https_fn.CallableRequest) -> dict:
     S3. Takes no images, no frames and no phone number. Writes a flag with
     the path's reason code, at most one open flag per account, and sets her
     verification state to `pending`. N7: then records
-    users/{uid}/consents/review-v1 = {version, at, path, flagId}; asking for
+    users/{uid}/consents/review-v2 = {version, at, path, flagId}; asking for
     the call is the consent to be looked up and called (the app shows the
     wording before calling; wording PENDING COUNSEL). N3: the consent names
     that flag and covers it only. Returns {state: "pending"}, or
@@ -1062,3 +1203,142 @@ def join_waitlist(request: https_fn.Request) -> https_fn.Response:
         dt.datetime.now(dt.timezone.utc),
     )
     return https_fn.Response(result.body, status=result.status, headers=result.headers)
+
+
+# ------------------------------------------------------------- coaching
+#
+# Dormant while the coach app is off: coaching.COACH_APP_LIVE moves with the
+# app's Feature.coachApp and with coachLive() in both rules files. Each refusal
+# is a code from coaching/errors.py and nothing else.
+
+_COACHING_ERROR_CODES = {
+    "failed_precondition": https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+    "permission_denied": https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+    "invalid_argument": https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+    "not_found": https_fn.FunctionsErrorCode.NOT_FOUND,
+    "resource_exhausted": https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+}
+
+
+def _coaching_call(fn, *args, **kwargs):
+    from coaching import errors as coaching_errors
+
+    try:
+        return fn(*args, **kwargs)
+    except coaching_errors.CoachingError as error:
+        raise https_fn.HttpsError(_COACHING_ERROR_CODES[error.code], error.reason)
+
+
+def _claim(request: https_fn.CallableRequest, name: str):
+    token = request.auth.token if request.auth is not None else None
+    return (token or {}).get(name) if isinstance(token, dict) else None
+
+
+def _coach_object_exists(media_ref: str) -> bool:
+    """Whether her certificate photo is in the personal bucket."""
+    from firebase_admin import storage
+
+    from account import deletion
+
+    try:
+        return storage.bucket(deletion.PERSONAL_BUCKET).blob(media_ref).exists()
+    except Exception:
+        return False
+
+
+@https_fn.on_call()
+def record_signup_role(request: https_fn.CallableRequest) -> dict:
+    """C08: `{role: trainee|coach|both}` to users/{uid}.roles (D11).
+
+    Server-written because the rules keep `roles` out of the client's
+    whitelist. Not gated on verification: she chooses before the check. A
+    coach role is refused while the coach app is closed.
+    """
+    uid = _require_auth(request)
+    data = _body(request)
+    from google.cloud import firestore
+
+    import coaching
+    from coaching import roles
+
+    return _coaching_call(
+        roles.record,
+        store.db(),
+        uid,
+        data,
+        live=coaching.COACH_APP_LIVE,
+        timestamp=firestore.SERVER_TIMESTAMP,
+    )
+
+
+@https_fn.on_call()
+def submit_coach_certificate(request: https_fn.CallableRequest) -> dict:
+    """K02: `{credentialId, mediaRef}` once the photo is in the bucket.
+
+    Records coaches/{uid}/certificates/{id} as `uploaded` for a woman
+    reviewer. Verified women only, and only while the coach app is live.
+    """
+    uid = _require_auth(request)
+    data = _body(request)
+    from google.cloud import firestore
+
+    import coaching
+    from coaching import certificates
+
+    return _coaching_call(
+        certificates.submit,
+        store.db(),
+        uid,
+        data,
+        verified=_claim(request, "verified") is True,
+        live=coaching.COACH_APP_LIVE,
+        object_exists=_coach_object_exists,
+        timestamp=firestore.SERVER_TIMESTAMP,
+    )
+
+
+@https_fn.on_call()
+def create_coach_invite(request: https_fn.CallableRequest) -> dict:
+    """K07: her invite code for a woman she already coaches. `{}` in,
+    `{code, expiresAtMs}` out. Needs the coach claim."""
+    uid = _require_auth(request)
+    _body(request)
+    import datetime as dt
+
+    import coaching
+    from coaching import invites
+
+    return _coaching_call(
+        invites.create,
+        store.db(),
+        uid,
+        is_coach=_claim(request, "coachV") == "active",
+        verified=_claim(request, "verified") is True,
+        live=coaching.COACH_APP_LIVE,
+        now=dt.datetime.now(dt.timezone.utc),
+    )
+
+
+@https_fn.on_call()
+def accept_coach_invite(request: https_fn.CallableRequest) -> dict:
+    """After her check: `{code}` opens an enquiry with the coach who sent it.
+    `{relId, coachUid}` out."""
+    uid = _require_auth(request)
+    data = _body(request)
+    import datetime as dt
+
+    from google.cloud import firestore
+
+    import coaching
+    from coaching import invites
+
+    return _coaching_call(
+        invites.accept,
+        store.db(),
+        uid,
+        data,
+        verified=_claim(request, "verified") is True,
+        live=coaching.COACH_APP_LIVE,
+        now=dt.datetime.now(dt.timezone.utc),
+        timestamp=firestore.SERVER_TIMESTAMP,
+    )

@@ -71,13 +71,21 @@ enum DeletionMethod {
   pseudonymised,
 
   /// **Not deleted — retained** as the proof that the erasure happened.
-  retained;
+  retained,
 
-  /// False for the three rows that survive on purpose.
+  /// **Not deleted by the deletion, expires on its own clock.** Records keyed
+  /// on a hash and never linked to her account, so deletion cannot find
+  /// them. Every write stamps `expireAt` and the Firestore TTL policy removes
+  /// them: 180 days after the last fraud signal, one year after a reviewer's
+  /// access.
+  ttl;
+
+  /// False for the rows that survive on purpose.
   bool get removesData =>
       this != DeletionMethod.closed &&
       this != DeletionMethod.pseudonymised &&
-      this != DeletionMethod.retained;
+      this != DeletionMethod.retained &&
+      this != DeletionMethod.ttl;
 }
 
 /// One row of §7.3.
@@ -116,7 +124,7 @@ class DeletionRow {
   String toString() => '$number. $path (${method.name})';
 }
 
-/// All 41 rows: G7 §7.3, plus rows 38-41 added since.
+/// All 44 rows: G7 §7.3, plus rows 38-44 added since.
 ///
 /// Rows 10–14 and 23 were added after reading the G1, G3 and G5 plans, and rows
 /// 32–34 after G4 and G6 landed. §7.3 is blunt about what that means: "a human
@@ -448,6 +456,78 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     owner: 'G1',
     method: DeletionMethod.groupHook,
     note: 'single-use liveness challenges minted for her',
+  ),
+  // Rows 42-44: kept after deletion on purpose, never linked to her account,
+  // and swept by the TTL policy on `expireAt` (functions/identity/config.py
+  // SIGNAL_RETENTION_DAYS and ACCESS_LOG_RETENTION_DAYS). Privacy policy v3
+  // sections 6 and 7 name them, and so does the deletion sheet.
+  DeletionRow(
+    number: 42,
+    path: 'verificationBehaviour/{idHmac}',
+    owner: 'G1',
+    method: DeletionMethod.ttl,
+    note:
+        'failed attempts per keyed ID code, linked to no account, deleted '
+        '180 days after the last attempt',
+  ),
+  DeletionRow(
+    number: 43,
+    path: 'verificationInstalls/{installHash}',
+    owner: 'G1',
+    method: DeletionMethod.ttl,
+    note:
+        'the last ID codes tried from one hashed installation, linked to no '
+        'account, deleted 180 days after the last attempt',
+  ),
+  DeletionRow(
+    number: 44,
+    path: 'verificationReviewAccess where flagId in her flags',
+    owner: 'G1',
+    method: DeletionMethod.ttl,
+    note:
+        'which reviewer opened her case and when: no photograph, phone '
+        'number or ID number, deleted after one year',
+  ),
+  // Rows 45 to 49 name, one by one, what row 26's purge already removes:
+  // the community and coach data that is dormant at launch (the rules refuse
+  // every write to it while both are off) and must be erasable before either
+  // is switched on.
+  DeletionRow(
+    number: 45,
+    path: 'posts/{postId} where authorUid == uid, with comments and likes',
+    owner: 'G1, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'her posts and everything under them (purge_group_hook)',
+  ),
+  DeletionRow(
+    number: 46,
+    path: 'posts/*/comments where authorUid == uid',
+    owner: 'G1, called by G7',
+    method: DeletionMethod.groupHook,
+    note:
+        'her comments on other women\'s posts, replaced by an empty '
+        'placeholder with no words and no uid (purge_group_hook)',
+  ),
+  DeletionRow(
+    number: 47,
+    path: 'coaches/{uid}/** (profile, offers, portfolio, results, ads, splits, certificates)',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'her coach page and certificate records (purge_group_hook)',
+  ),
+  DeletionRow(
+    number: 48,
+    path: 'relationships where coachUid or clientUid == uid, with messages and reviews',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'every coaching she was part of, as client or coach',
+  ),
+  DeletionRow(
+    number: 49,
+    path: 'coachInvites where coachUid == uid',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'the invite codes she shared as a coach',
   ),
 ];
 

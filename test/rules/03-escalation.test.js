@@ -35,12 +35,16 @@
 import { test, before, after, describe } from 'node:test';
 import {
   getEnv, clearAll, seed, unverified, verified, verifiedCoach, uid,
-  assertSucceeds, assertFails, observe, assert,
+  assertSucceeds, assertFails, observe, assert, switchDormantFeaturesOn,
 } from './harness.js';
 import {
   doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs,
   serverTimestamp,
 } from 'firebase/firestore';
+
+// The rules behind the community and coach switches (APL-16), tested as they
+// will be when the features ship. 16-dormant-features covers the switches.
+switchDormantFeaturesOn();
 
 const ATTACKER = uid.attacker;
 const VICTIM = uid.victim;

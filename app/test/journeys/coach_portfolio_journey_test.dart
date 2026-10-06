@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/coach_portfolio_state.dart';
 import 'package:own_hub/app_state/coach_profile_state.dart';
 import 'package:own_hub/app_state/coaching_link_state.dart';
+import 'package:own_hub/app_state/pledge.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/coachbrand/domain/portfolio_block.dart';
 import 'package:own_hub/features/coachbrand/presentation/canvas_view.dart';
@@ -36,6 +37,7 @@ void main() {
     CoachProfileState.instance.reset();
     CoachPortfolioState.instance.reset();
     CoachingLinkState.instance.reset();
+    PledgeState.instance.reset();
     AppRouter.marketplaceOpenCoachUid = '';
     AppRouter.marketplaceSelectedOfferId = null;
   });
@@ -44,6 +46,7 @@ void main() {
     CoachProfileState.instance.reset();
     CoachPortfolioState.instance.reset();
     CoachingLinkState.instance.reset();
+    PledgeState.instance.reset();
     AppRouter.featureFlags = savedFlags;
   });
 
@@ -54,7 +57,14 @@ void main() {
 
     await _type(tester, 'Name', 'Hala Mansour');
     await _type(tester, 'City', 'Tanta');
+    // The community's three rules are agreed here, not on C16 (R1-P16).
+    await _tap(tester, 'I agree to these three rules');
     await _tap(tester, 'Continue');
+    expect(
+      PledgeState.instance.agreed,
+      isTrue,
+      reason: 'her agreement is recorded as C16 records it',
+    );
 
     // The save, and the whole point of the walk: the form is not the profile,
     // and before this the two never met.

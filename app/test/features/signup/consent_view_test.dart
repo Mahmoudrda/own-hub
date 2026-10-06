@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/features/signup/domain/capture_consent.dart';
 import 'package:own_hub/features/signup/presentation/consent_view.dart';
+import 'package:own_hub/features/signup/presentation/widgets/verification_bullet.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
@@ -50,26 +51,28 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _host(
-        ConsentView(uid: 'u1', store: InMemoryCaptureConsentStore()),
-      ),
+      _host(ConsentView(uid: 'u1', store: InMemoryCaptureConsentStore())),
     );
     await tester.pumpAndSettle();
 
     expect(find.text('Before the camera opens'), findsOneWidget);
     // Named, not implied. "Processed securely" is what a privacy page says when
     // it does not want to say Virginia.
-    expect(find.textContaining('Google Cloud'), findsOneWidget);
-    expect(find.textContaining('outside Egypt'), findsOneWidget);
-    expect(find.textContaining('one way keyed hash'), findsOneWidget);
-    // Nothing is kept, for any outcome, so review is a conversation rather
-    // than a queue of photographs. Both halves have to be on the screen: the
-    // deletion, and what happens instead.
-    expect(
-      find.textContaining('Nothing you photograph is kept'),
-      findsOneWidget,
-    );
-    expect(find.textContaining('short video call'), findsOneWidget);
+    // Version 2: where, by whom, what is kept and for how long.
+    expect(find.textContaining('Frankfurt, Germany'), findsOneWidget);
+    expect(find.textContaining('Google Cloud Vision'), findsOneWidget);
+    expect(find.textContaining('European Union'), findsOneWidget);
+    expect(find.textContaining('matched on our own server'), findsOneWidget);
+    expect(find.textContaining('No photo is ever stored'), findsOneWidget);
+    expect(find.textContaining('180 days'), findsOneWidget);
+    expect(find.textContaining('keyed code of your ID number'), findsOneWidget);
+    // When the check cannot decide, a woman checks instead. No promise of a
+    // video call before the route is decided.
+    expect(find.textContaining('a woman from Own Hub'), findsOneWidget);
+    expect(find.textContaining('short video call'), findsNothing);
+    // The superseded v1 lines.
+    expect(find.textContaining('outside Egypt'), findsNothing);
+    expect(find.textContaining('one way keyed hash'), findsNothing);
     // The superseded model, and the processor we no longer use. Consent to
     // something that is not happening is worse than no consent screen: it has
     // to be withdrawn and taken again.
@@ -113,6 +116,9 @@ void main() {
     // consented" is unanswerable a year later once the wording has changed.
     expect(recorded.version, kCaptureConsentVersion);
     expect(recorded.agreedAt, when);
+    // Version 2 also records the language she read it in, and the app version.
+    expect(recorded.locale, 'en');
+    expect(recorded.appVersion, isNotEmpty);
     expect(agreed, <String>['camera']);
   });
 
@@ -188,8 +194,10 @@ void main() {
     expect(find.text('أوافق وأبدأ التصوير'), findsOneWidget);
     expect(find.text('Before the camera opens'), findsNothing);
     // Right to left, so the disclosure is laid out the way she reads it.
-    expect(Directionality.of(tester.element(find.text('أوافق وأبدأ التصوير'))),
-        TextDirection.rtl);
+    expect(
+      Directionality.of(tester.element(find.text('أوافق وأبدأ التصوير'))),
+      TextDirection.rtl,
+    );
   });
 
   testWidgets('does not overflow at the largest system text size', (
@@ -231,12 +239,121 @@ void main() {
     // new terms, which is the failure that makes consent records worthless.
     final store = InMemoryCaptureConsentStore();
     await store.record(
-      CaptureConsent(
-        uid: 'u1',
-        version: 0,
-        agreedAt: DateTime.utc(2020),
-      ),
+      CaptureConsent(uid: 'u1', version: 0, agreedAt: DateTime.utc(2020)),
     );
     expect(await store.current('u1'), isNull);
+  });
+
+  // B6. On the first run C09's promise sits above the disclosure, so the
+  // check is explained and agreed to on one screen. The disclosure is the v1
+  // text, every bullet visible, and agreeing still writes the record first.
+  group('with the promise above it', () {
+    testWidgets('promise, all six disclosures, and three ways on', (
+      tester,
+    ) async {
+      var niqab = 0;
+      await tester.pumpWidget(
+        _host(
+          ConsentView(
+            uid: 'u1',
+            store: InMemoryCaptureConsentStore(),
+            showPromise: true,
+            title: '3 of 3 · Quick check',
+            onNiqabPath: () => niqab++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('3 of 3 · Quick check'), findsOneWidget);
+      expect(find.text('One check, then you are in'), findsOneWidget);
+      expect(find.textContaining('national ID card'), findsWidgets);
+      expect(find.textContaining('a couple of minutes'), findsOneWidget);
+      expect(find.text('Before the camera opens'), findsOneWidget);
+      expect(find.textContaining('Google Cloud'), findsOneWidget);
+      expect(find.byType(VerificationBullet), findsNWidgets(3 + 6));
+      expect(
+        kCaptureConsentVersion,
+        2,
+        reason: 'privacy policy v3 rewrote the disclosure',
+      );
+
+      final link = find.text('I wear niqab, check me another way');
+      await tester.ensureVisible(link);
+      await tester.tap(link);
+      await tester.pumpAndSettle();
+      expect(niqab, 1);
+    });
+
+    testWidgets('agreeing still writes the record before the camera', (tester) async {
+      final store = InMemoryCaptureConsentStore();
+      final order = <String>[];
+      await tester.pumpWidget(
+        _host(
+          ConsentView(
+            uid: 'u1',
+            store: store,
+            showPromise: true,
+            onAgreed: () async {
+              order.add(
+                (await store.current('u1'))?.version == kCaptureConsentVersion
+                    ? 'recorded'
+                    : 'missing',
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final agree = find.text('I agree, start the camera');
+      await tester.ensureVisible(agree);
+      await tester.tap(agree);
+      await tester.pumpAndSettle();
+      expect(order, ['recorded']);
+    });
+
+    testWidgets('fits in Arabic at the largest text size', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          ConsentView(
+            uid: 'u1',
+            store: InMemoryCaptureConsentStore(),
+            showPromise: true,
+            onNiqabPath: () {},
+          ),
+          locale: const Locale('ar'),
+          textScale: 1.6,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  testWidgets('the privacy policy is one tap away when it has an address', (
+    tester,
+  ) async {
+    var opened = 0;
+    await tester.pumpWidget(
+      _host(
+        ConsentView(
+          uid: 'u1',
+          store: InMemoryCaptureConsentStore(),
+          onOpenPrivacy: () => opened++,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final link = find.text('Read the Privacy Policy');
+    await tester.ensureVisible(link);
+    await tester.tap(link);
+    expect(opened, 1);
+
+    await tester.pumpWidget(
+      _host(ConsentView(uid: 'u1', store: InMemoryCaptureConsentStore())),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Read the Privacy Policy'), findsNothing);
   });
 }

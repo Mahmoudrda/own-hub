@@ -38,8 +38,12 @@ Idempotent: every step tolerates having already run, so a re-run after a
 failure finishes the job rather than failing on what is already gone.
 
 Not uid-keyed and therefore untouched: verificationReviewAccess (the review
-audit log), verificationBehaviour, verificationInstalls (hash-keyed signals)
-and verificationStats (counts with no uid).
+audit log, row 44), verificationBehaviour and verificationInstalls (hash-keyed
+fraud signals, rows 42 and 43) and verificationStats (counts with no uid).
+Rows 42 to 44 are method `ttl`: every write stamps `expireAt` and the
+Firestore TTL policy deletes them, 180 days after the last signal and one
+year after the access (config.SIGNAL_RETENTION_DAYS,
+ACCESS_LOG_RETENTION_DAYS). Privacy policy v3 sections 6 and 7 say so.
 """
 
 from __future__ import annotations
@@ -327,8 +331,9 @@ class FirebaseBackend:
         women's key sets), her posts with everything under them, her likes,
         her group memberships, every relationship she is a party to (as client
         or coach) with its messages and reviews, coaches/{uid} with everything
-        under it, results about her on other coaches' pages, and
-        assistantQuota/{uid}.
+        under it (certificates included), the invite codes she shared as a
+        coach, results about her on other coaches' pages, and
+        assistantQuota/{uid}. Rows 45 to 49 name these one by one.
 
         Her comments on ANOTHER woman's post are replaced, not removed, so that
         woman's thread does not silently lose a turn: the document is
@@ -379,6 +384,11 @@ class FirebaseBackend:
                 db.recursive_delete(snapshot.reference)
 
         db.recursive_delete(db.collection("coaches").document(uid))
+
+        # Row 49: the invite codes she shared as a coach. Nothing about the
+        # women she invited is on them.
+        for snapshot in db.collection("coachInvites").where("coachUid", "==", uid).stream():
+            snapshot.reference.delete()
 
         # What is left is on other women's posts, follow lists and coach
         # pages. The counter triggers (C1) take each post's counts down.

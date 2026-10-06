@@ -8,6 +8,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
 import '../firebase_options.dart';
+import 'crash_consent.dart';
 
 /// Whether the back end came up, and what to do when it did not.
 ///
@@ -97,13 +98,33 @@ abstract final class FirebaseBoot {
 
   static bool _crashReporting = false;
 
-  /// Whether crash reports are being collected: a release build whose
-  /// Firebase started. False in every debug run and every test.
+  /// Whether crash reporting is wired: a release build whose Firebase and
+  /// Crashlytics started. False in every debug run and every test. Whether a
+  /// report is actually sent is her choice on top of this ([CrashConsent]).
   static bool get crashReporting => _crashReporting;
 
-  /// Whether a build collects crash reports. Release only.
+  /// Whether a build collects crash reports: a release build, and only once
+  /// she has allowed it (privacy policy v3, 3.7). Off by default.
   @visibleForTesting
-  static bool crashCollectionFor({required bool release}) => release;
+  static bool crashCollectionFor({
+    required bool release,
+    required bool allowed,
+  }) => release && allowed;
+
+  /// Applies her crash-report choice now. Off also deletes any report still
+  /// waiting on the phone. Does nothing before Firebase is up, which is
+  /// already off at native start-up.
+  static Future<void> applyCrashConsent(bool allowed) async {
+    if (_status != BackendStatus.ready) return;
+    try {
+      await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+        crashCollectionFor(release: kReleaseMode, allowed: allowed),
+      );
+      if (!allowed) await FirebaseCrashlytics.instance.deleteUnsentReports();
+    } catch (error) {
+      if (kDebugMode) debugPrint('Crash reporting not configured: $error');
+    }
+  }
 
   static Future<void> start() async {
     if (_status != BackendStatus.notAttempted) return;
@@ -142,14 +163,18 @@ abstract final class FirebaseBoot {
       }
     }
 
-    // Crash reports, in a release build only. Collection is off in the native
-    // config (AndroidManifest meta-data, Info.plist) so nothing is sent before
-    // this line, and a debug or profile build never turns it on. Nothing
-    // about her is attached: no user identifier, no custom key, no log line.
+    // Crash reports, in a release build only, and only once she has allowed
+    // them. Collection is off in the native config (AndroidManifest
+    // meta-data, Info.plist) so nothing is sent before this line, and a debug
+    // or profile build never turns it on. Without her consent any report
+    // still waiting on the phone is deleted. Nothing about her is attached:
+    // no user identifier, no custom key, no log line.
     try {
+      final allowed = CrashConsent.instance.allowed;
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
-        crashCollectionFor(release: kReleaseMode),
+        crashCollectionFor(release: kReleaseMode, allowed: allowed),
       );
+      if (!allowed) await FirebaseCrashlytics.instance.deleteUnsentReports();
       _crashReporting = kReleaseMode;
     } catch (error) {
       if (kDebugMode) debugPrint('Crash reporting not configured: $error');

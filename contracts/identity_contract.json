@@ -9,10 +9,12 @@
     },
     "record_consent": {
       "request": {
-        "consentVersion": 1
+        "appVersion": "1.0.0+1",
+        "consentVersion": 2,
+        "locale": "en"
       },
       "response": {
-        "consentVersion": 1,
+        "consentVersion": 2,
         "ok": true
       }
     },
@@ -24,6 +26,32 @@
       "response": {
         "ok": true,
         "state": "granted"
+      }
+    },
+    "record_legal_acceptance": {
+      "request": {
+        "acceptedAtMs": 1791000000000,
+        "appVersion": "1.0.0+1",
+        "locale": "en",
+        "platform": "android",
+        "privacyVersion": 3,
+        "termsVersion": 3
+      },
+      "response": {
+        "ok": true,
+        "privacyVersion": 3,
+        "termsVersion": 3
+      }
+    },
+    "record_pledge": {
+      "request": {
+        "appVersion": "1.0.0+1",
+        "locale": "en",
+        "version": 1
+      },
+      "response": {
+        "ok": true,
+        "version": 1
       }
     },
     "request_review": {
@@ -88,6 +116,27 @@
         "withdrawn"
       ]
     },
+    "legalAcceptance": {
+      "fields": [
+        "appVersion",
+        "at",
+        "clientAcceptedAt",
+        "locale",
+        "platform",
+        "privacyVersion",
+        "termsVersion"
+      ],
+      "path": "users/{uid}/consents/legal-t3-p3"
+    },
+    "pledge": {
+      "fields": [
+        "appVersion",
+        "at",
+        "locale",
+        "version"
+      ],
+      "path": "users/{uid}/consents/pledge-v1"
+    },
     "reviewConsent": {
       "fields": [
         "at",
@@ -95,14 +144,16 @@
         "path",
         "version"
       ],
-      "path": "users/{uid}/consents/review-v1"
+      "path": "users/{uid}/consents/review-v2"
     },
     "verificationConsent": {
       "fields": [
+        "appVersion",
         "at",
+        "locale",
         "version"
       ],
-      "path": "users/{uid}/consents/verification-v1"
+      "path": "users/{uid}/consents/verification-v2"
     },
     "verificationState": {
       "fields": [
@@ -141,7 +192,8 @@
     "reviewerIsSubject": "reviewer_is_subject",
     "sessionMissing": "session_missing",
     "unauthenticated": "unauthenticated",
-    "verificationClosed": "verification_closed"
+    "verificationClosed": "verification_closed",
+    "verificationInProgress": "verification_in_progress"
   },
   "region": "europe-west3"
 }

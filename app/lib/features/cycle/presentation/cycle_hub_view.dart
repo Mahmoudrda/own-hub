@@ -22,6 +22,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
@@ -43,6 +44,7 @@ import '../domain/today_check_in.dart';
 import 'cycle_hub_view_model.dart';
 import 'cycle_widgets.dart';
 import 'symptom_labels.dart';
+import '../../../ui/medical_disclaimer.dart';
 
 class CycleHubView extends StatelessWidget {
   const CycleHubView({
@@ -112,7 +114,7 @@ class CycleHubView extends StatelessWidget {
       cycle: cycle,
       checkIn: checkIn,
       periods: periods,
-      today: now ?? DateTime.now(),
+      today: now ?? AppClock.now(),
     );
 
     return Scaffold(
@@ -146,12 +148,17 @@ class CycleHubView extends StatelessWidget {
                 ),
               ]
             : const [],
-        children: switch (snapshot.branch) {
-          HubBranch.notSetUp => _notSetUp(context, l10n),
-          HubBranch.severe => _severe(context, l10n, snapshot),
-          HubBranch.symptomsOnly => _symptomsOnly(context, l10n, snapshot),
-          HubBranch.today => _today(context, l10n, snapshot),
-        },
+        children: [
+          ...switch (snapshot.branch) {
+            HubBranch.notSetUp => _notSetUp(context, l10n),
+            HubBranch.severe => _severe(context, l10n, snapshot),
+            HubBranch.symptomsOnly => _symptomsOnly(context, l10n, snapshot),
+            HubBranch.today => _today(context, l10n, snapshot),
+          },
+          // What the app is not, under her cycle (APL-12). Not on the title
+          // page, which does not scroll; setup (Y01) says it there.
+          if (snapshot.branch != HubBranch.notSetUp) const MedicalDisclaimer(),
+        ],
       ),
     );
   }

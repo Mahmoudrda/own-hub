@@ -10,6 +10,8 @@
 // screen's stated metric, and it is false the moment a woman has to press
 // Continue after typing the last digit.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -38,12 +40,16 @@ Widget _host(
 
 void main() {
   testWidgets('shows the step, the promise and the resend', (tester) async {
+    final repository = FakeAuthRepository();
+    await repository.sendCode('+20 111 222 3333');
+    await tester.pumpWidget(_host(CodeView(repository: repository)));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('We sent six digits'), findsOneWidget);
     await tester.pumpWidget(_host(CodeView(repository: FakeAuthRepository())));
     await tester.pumpAndSettle();
 
-    expect(find.text('Step 2 of 2'), findsOneWidget);
+    expect(find.text('2 of 3 · Your number'), findsOneWidget);
     expect(find.text('Type the code'), findsOneWidget);
-    expect(find.textContaining('We sent six digits'), findsOneWidget);
     expect(find.textContaining('sixth digit lands'), findsOneWidget);
     expect(find.text('Send it again'), findsOneWidget);
   });
@@ -59,13 +65,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('+20 111 222 3333'), findsOneWidget);
-    expect(
-      find.textContaining('+20 100 555 0132'),
-      findsNothing,
-      reason:
-          'the placeholder is a fallback for an impossible state, '
-          'never what she is shown',
-    );
+    expect(find.textContaining('+20 100 555 0132'), findsNothing);
+  });
+
+  testWidgets('with no number in hand it names none, not a sample', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(CodeView(repository: FakeAuthRepository())));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('We sent six digits'), findsNothing);
+    expect(find.textContaining('+20 100 555 0132'), findsNothing);
   });
 
   testWidgets('and shows it in Arabic too', (tester) async {
@@ -114,7 +124,9 @@ void main() {
     final repository = FakeAuthRepository(codeToAccept: '417293');
     var confirmed = 0;
     await tester.pumpWidget(
-      _host(CodeView(repository: repository, onConfirmed: () => confirmed++)),
+      _host(
+        CodeView(repository: repository, onConfirmed: () async => confirmed++),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -125,13 +137,13 @@ void main() {
     expect(repository.current, isA<AuthSignedIn>());
   });
 
-  testWidgets('a wrong code clears the boxes for another try', (tester) async {
-    // There is no wrong-code copy in the dictionary yet, so the retry has to be
-    // obvious without words: the boxes empty and she types again.
+  testWidgets('a wrong code is said, and her digits stay', (tester) async {
     final repository = FakeAuthRepository(codeToAccept: '417293');
     var confirmed = 0;
     await tester.pumpWidget(
-      _host(CodeView(repository: repository, onConfirmed: () => confirmed++)),
+      _host(
+        CodeView(repository: repository, onConfirmed: () async => confirmed++),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -140,7 +152,97 @@ void main() {
 
     expect(confirmed, 0);
     expect(repository.current, isA<AuthSignedOut>());
-    expect(find.text('0'), findsNothing, reason: 'the boxes emptied');
+    expect(
+      find.text(
+        'That code did not match. Check the message and type it again.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('0'), findsNWidgets(6), reason: 'her digits stay');
+  });
+
+  group('every other failure is said too', () {
+    final cases = <AuthFailure, String>{
+      AuthFailure.codeExpired:
+          'That code has expired. Ask for a new one below.',
+      AuthFailure.network: 'No connection. Try again when you are back online.',
+      AuthFailure.tooManyAttempts:
+          'Too many tries. Wait a minute, then ask for a new code.',
+      AuthFailure.unknown:
+          'We could not check the code. Try again in a moment.',
+    };
+    for (final MapEntry(key: failure, value: line) in cases.entries) {
+      testWidgets(failure.name, (tester) async {
+        await tester.pumpWidget(
+          _host(CodeView(repository: _Refusing(failure))),
+        );
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), '417293');
+        await tester.pumpAndSettle();
+
+        expect(find.text(line), findsOneWidget);
+        final announced = tester.widget<Semantics>(
+          find
+              .ancestor(
+                of: find.byKey(const ValueKey('code-error')),
+                matching: find.byType(Semantics),
+              )
+              .first,
+        );
+        expect(announced.properties.liveRegion, isTrue);
+      });
+    }
+  });
+
+  // The provider has accepted the code, and the router is still reading her
+  // claim. That wait used to be silent with Continue live, and a second tap
+  // pushed the next screen twice.
+  testWidgets('it stays busy until the next screen is chosen', (tester) async {
+    final repository = FakeAuthRepository(codeToAccept: '417293');
+    final gate = Completer<void>();
+    var confirmed = 0;
+    await tester.pumpWidget(
+      _host(
+        CodeView(
+          repository: repository,
+          onConfirmed: () {
+            confirmed++;
+            return gate.future;
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '417293');
+    await tester.pump();
+    expect(find.text('Checking your code'), findsOneWidget);
+
+    await tester.tap(find.text('Continue'));
+    await tester.pump();
+    expect(confirmed, 1, reason: 'a second tap does nothing while checking');
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Checking your code'), findsNothing);
+    expect(confirmed, 1);
+  });
+
+  testWidgets('"Edit number" goes back to the number', (tester) async {
+    var edited = 0;
+    await tester.pumpWidget(
+      _host(
+        CodeView(
+          repository: FakeAuthRepository(),
+          onEditNumber: () => edited++,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Edit number'));
+    await tester.pumpAndSettle();
+    expect(edited, 1);
   });
 
   testWidgets('"Send it again" asks the provider, not the screen', (
@@ -157,11 +259,10 @@ void main() {
   });
 
   testWidgets('reads in Arabic, and still says six', (tester) async {
+    final repository = FakeAuthRepository();
+    await repository.sendCode('+20 111 222 3333');
     await tester.pumpWidget(
-      _host(
-        CodeView(repository: FakeAuthRepository()),
-        locale: const Locale('ar'),
-      ),
+      _host(CodeView(repository: repository), locale: const Locale('ar')),
     );
     await tester.pumpAndSettle();
 
@@ -190,4 +291,14 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+}
+
+/// A provider that refuses every code with [failure].
+class _Refusing extends FakeAuthRepository {
+  _Refusing(this.failure);
+
+  final AuthFailure failure;
+
+  @override
+  Future<void> confirmCode(String code) async => throw AuthException(failure);
 }

@@ -288,17 +288,18 @@ void main() {
       expect(find.text('Type the code'), findsOneWidget);
 
       // And the refusal is VISIBLE, which is what this file exists to catch.
-      // C07 carries no wrong-code copy yet, so the boxes emptying is the whole
-      // answer: six digits went in and were handed back. A screen that still
-      // showed them would be precisely the inert control this journey hunts.
-      for (final digit in ['4', '1', '7', '2', '9', '3']) {
-        expect(find.text(digit), findsNothing, reason: digit);
-      }
+      // No message was sent, so the repository answers "expired", and the
+      // screen says so under her digits and points at "Send it again". Her
+      // digits stay, and Continue stays live to try again, so nothing on the
+      // screen is inert.
       expect(
-        buttonNamed(tester, 'Continue').onPressed,
-        isNull,
-        reason: 'the gate holds: emptied boxes are not something to continue with',
+        find.text('That code has expired. Ask for a new one below.'),
+        findsOneWidget,
       );
+      for (final digit in ['4', '1', '7', '2', '9', '3']) {
+        expect(find.text(digit), findsOneWidget, reason: digit);
+      }
+      expect(buttonNamed(tester, 'Continue').onPressed, isNotNull);
     });
 
     testWidgets('"Send it again" answers, and names no code', (tester) async {

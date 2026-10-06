@@ -31,3 +31,13 @@ Future<void> openExternalLink(BuildContext context, String url) async {
     showHonestNotice(context, text);
   }
 }
+
+/// Opens [uri] in the app that handles it (WhatsApp, the mail app, the
+/// browser). True when something opened it. Never throws.
+Future<bool> openOutside(Uri uri) async {
+  try {
+    return await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (_) {
+    return false;
+  }
+}

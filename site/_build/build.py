@@ -31,6 +31,18 @@ sys.path.insert(0, HERE)
 
 PLACEHOLDER_HOST = "ownhub.example"
 
+# The only hosts a download button may point to.
+STORE_HOSTS = {"storeUrlIos": "apps.apple.com", "storeUrlAndroid": "play.google.com"}
+
+# Drafting notes for the owner or a lawyer are never published, not even as
+# an HTML comment in the page source.
+_DRAFTING_NOTE = re.compile(r"[ \t]*<!--\s*\[(?:LAWYER|OWNER)\b.*?-->[ \t]*\n?", re.S)
+
+
+def strip_drafting_notes(text: str) -> str:
+    """Remove every <!-- [LAWYER] ... --> and <!-- [OWNER] ... --> comment."""
+    return _DRAFTING_NOTE.sub("", text)
+
 # Page key -> (english path, arabic path)
 PATHS = {
     "index": ("/", "/ar/"),
@@ -150,6 +162,21 @@ class Config:
             return (raw.get(lang) or "").strip()
         return (raw or "").strip()
 
+    def store_url(self, key: str) -> str:
+        """An app store link, or '' when it is not set.
+
+        Only an https link to the store's own host is accepted: a typo here
+        would put a wrong download button on the home page, so it stops the
+        build instead."""
+        url = self.plain(key, "en")
+        if not url:
+            return ""
+        host = STORE_HOSTS[key]
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme != "https" or parsed.hostname != host:
+            raise SystemExit(f"config.json {key} must be an https://{host}/ link, not {url!r}")
+        return html.escape(url)
+
     def resolve(self, key: str, lang: str) -> str | None:
         """The HTML for a key: the value, a fallback, a marker, or None.
 
@@ -199,6 +226,15 @@ def render_tokens(text: str, cfg: Config, lang: str) -> str:
             out = cfg.resolve(key, lang)
             return "" if out is None else out
 
+        if kind == "cap":
+            # A value that opens a card title: "our website host" becomes
+            # "Our website host". A name ("Cloudflare Pages") or Arabic text
+            # is left as it is, and so is a [to be completed] marker.
+            out = cfg.resolve(key, lang)
+            if not out:
+                return ""
+            return out[0].upper() + out[1:] if out[0].islower() else out
+
         if kind == "mailto":
             addr = cfg.plain(key, lang)
             if not addr:
@@ -233,6 +269,61 @@ def mailto_link(cfg: Config, lang: str, key: str, subject: str, body: str,
     # percent-encoded "@" in the mailto path.
     href = "mailto:" + urllib.parse.quote(addr, safe="@.+-_") + "?" + query
     return f'<a class="{classes}" href="{html.escape(href)}">{label}</a>'
+
+
+# ---------------------------------------------------- Latin in Arabic -----
+
+# A run of Latin text inside an Arabic sentence ("Google Cloud Firestore",
+# "com.ownhub.app", an email address) is wrapped in <bdi> so the browser lays
+# it out as one left-to-right island instead of reordering its words and the
+# punctuation around it. Text nodes only: never inside a tag, an attribute,
+# a comment, or an element that is already isolated or is code.
+_LATIN_RUN = re.compile(
+    r"(?<![&#A-Za-z0-9_])"
+    r"[A-Za-z0-9][A-Za-z0-9.@_+\-/]*"
+    r"(?:\s+[A-Za-z0-9][A-Za-z0-9.@_+\-/]*)*"
+)
+_SKIP_ELEMENTS = {"code", "bdi", "script", "style", "title", "pre", "kbd"}
+_TAG = re.compile(r"(<!--.*?-->|<[^>]+>)", re.S)
+
+
+def _isolate_text(text: str) -> str:
+    def wrap(match: re.Match) -> str:
+        run = match.group(0)
+        if not re.search(r"[A-Za-z]", run):
+            return run  # digits alone read the same either way
+        trail = ""
+        while run and run[-1] in ".-/":
+            trail = run[-1] + trail
+            run = run[:-1]
+        return f"<bdi>{run}</bdi>{trail}" if run else match.group(0)
+
+    return _LATIN_RUN.sub(wrap, text)
+
+
+def isolate_latin(body: str) -> str:
+    """Wrap Latin runs in Arabic text nodes in <bdi>. Idempotent."""
+    out = []
+    skipping: list[str] = []
+    for part in _TAG.split(body):
+        if not part:
+            continue
+        if part.startswith("<"):
+            out.append(part)
+            if part.startswith("<!--"):
+                continue
+            m = re.match(r"<(/?)([a-zA-Z0-9]+)", part)
+            if m:
+                closing, name = m.group(1) == "/", m.group(2).lower()
+                if name in _SKIP_ELEMENTS:
+                    if closing:
+                        if skipping and skipping[-1] == name:
+                            skipping.pop()
+                    elif not part.endswith("/>"):
+                        skipping.append(name)
+            continue
+        out.append(part if skipping else _isolate_text(part))
+    return "".join(out)
 
 
 # ------------------------------------------------------------------ shell ---
@@ -436,7 +527,9 @@ def main() -> int:
     for lang, module in modules.items():
         pages = module.build(cfg, lang, mailto_link)
         for key, page in pages.items():
-            body = render_tokens(page["body"], cfg, lang)
+            body = strip_drafting_notes(render_tokens(page["body"], cfg, lang))
+            if lang == "ar":
+                body = isolate_latin(body)
             out = shell(
                 cfg,
                 page=key,

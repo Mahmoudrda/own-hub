@@ -65,9 +65,9 @@ class CoachCertificatesView extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onSaveAndClose;
 
-  /// Given the credential id she picked. Null leaves the row inert — there is
-  /// no file picker in this feature, and drawing one that did nothing would be
-  /// worse than drawing none.
+  /// Given the credential id she picked. The router opens the camera for a
+  /// photo of it and sends it for a woman reviewer (`addCertificatePhoto`).
+  /// Null leaves the row inert, which no shipped build does.
   final ValueChanged<String>? onAddCertificate;
 
   /// The credentials she has not already claimed, and whose name we can draw.

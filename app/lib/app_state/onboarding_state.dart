@@ -54,6 +54,7 @@ import '../features/today/domain/today_day.dart';
 import '../routing/app_router.dart';
 import '../routing/app_routes.dart';
 import 'app_changes.dart';
+import 'role_state.dart';
 
 /// The five setup screens, in the order she meets them.
 const List<String> kSetupScreenIds = ['O01', 'O02', 'O03', 'O04', 'O05'];
@@ -67,6 +68,38 @@ class OnboardingState {
   /// there before `O01` opens, and cleared when she leaves the walk.
   bool enteredFromSignup = false;
 
+  /// True while she is building her week before she has an account.
+  ///
+  /// Set by "Skip the tour and join" on `C01`, and by "Join Own Hub" and
+  /// "Make it mine" in the tour (`C04`), each of which opens the short setup
+  /// (`O03` with her life stage on it, then `O05`) ahead of the number and
+  /// the check. Never set by the tour itself: looking around starts nothing. `O05` then ends in "Save my week and join" rather than in a
+  /// workout the gate would refuse. Cleared once her code is accepted, and on
+  /// sign-out.
+  ///
+  /// [isDue] does not read it. Finishing that short setup marks it done, so
+  /// after verification the walk is not owed again.
+  bool beforeSignup = false;
+
+  /// True when `C13` sent a woman who had not built her week into the short
+  /// setup after her check. Same two screens as [beforeSignup], ending in
+  /// "Start day 1 now" over Home. Cleared whenever she leaves setup.
+  bool shortSetupAfterSignup = false;
+
+  /// True when she opened the short "Your week" from `C14` while a woman
+  /// reviewer has her check. `O05` then ends in "Save my week" and goes back
+  /// to `C14`: day one is behind the gate. Cleared whenever she leaves setup.
+  bool whileWaiting = false;
+
+  /// True once she said "Not now" to "Track my cycle" on day-one Home.
+  ///
+  /// Kept on the phone beside her setup answers (`app_snapshot.dart`) and
+  /// cleared with them when she deletes everything.
+  bool cycleRowDismissed = false;
+
+  /// Whether `O03` is the one-screen "Your week", life stage included.
+  bool get shortSetup => beforeSignup || shortSetupAfterSignup;
+
   /// Pure, and holds nothing: the goal it decides is assigned by [finish].
   static const WeeklyGoalService _goals = WeeklyGoalService();
 
@@ -78,8 +111,13 @@ class OnboardingState {
   /// done is one who came back on a new phone with the health backup off
   /// (N2): her life stage did not travel, so she is asked again at launch
   /// rather than given the standard programme.
+  ///
+  /// Never for a woman who only coaches (R1-P17): the four questions set up a
+  /// trainee's week, and she opens on her own side instead.
   bool get isDue =>
       !AppRouter.intakeRepository.setupDone &&
+      !(AppRouter.featureFlags.isOn(Feature.coachApp) &&
+          RoleState.instance.coachOnly) &&
       (!AppRouter.featureFlags.isOn(Feature.accountRequired) ||
           AppRouter.isVerified);
 
@@ -94,6 +132,8 @@ class OnboardingState {
   /// same walk a month later: it re-applies whatever is stored rather than
   /// doing anything a second time.
   void finish() {
+    shortSetupAfterSignup = false;
+    whileWaiting = false;
     AppRouter.intakeRepository.markSetupDone();
     _applyWeeklyTarget(AppRouter.intakeRepository.read().days);
     AppChanges.bump();

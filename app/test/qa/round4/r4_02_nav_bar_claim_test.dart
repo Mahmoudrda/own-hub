@@ -6,10 +6,12 @@
 // that tab as current and kills it in the same stroke, and the woman standing
 // on it has one fewer way out than the bar shows her.
 //
-// `look_around_view.dart:130` does exactly this — `AppNavBar(activeScreenId:
-// 'R01')` on C04 and C05, which are the "look around first" and "join to save
-// this" screens, not Train. Round three raised it; this case establishes the
-// blast radius, which is the thing that decides whether it blocks a launch.
+// `look_around_view.dart` used to do exactly this — `AppNavBar(activeScreenId:
+// 'R01')` on C04 and C05, which were the "look around first" and "join to
+// save this" screens, not Train. Round three raised it; this case establishes
+// the blast radius, which is the thing that decides whether it blocks a
+// launch. C04 is now the tour, and it draws each real screen with its own
+// bar, so the claim is true there.
 //
 // Two cases, on purpose:
 //   * at the SHIPPING flag set, which is the app a woman installs. Must be
@@ -94,7 +96,7 @@ void main() {
       AppRouter.featureFlags = saved;
     });
 
-    testWidgets('nineteen dark screens do it, and this is the whole list', (
+    testWidgets('seventeen dark screens do it, and this is the whole list', (
       t,
     ) async {
       phone(t);
@@ -107,12 +109,17 @@ void main() {
       }
       // Reported, not tolerated. Every one of these is behind a dark flag
       // today, so none of them can reach a woman in this release; the list is
-      // pinned so that a twentieth — or a shipping one — cannot arrive quietly.
-      // The shipping case above is the one that blocks.
+      // pinned so that an eighteenth — or a shipping one — cannot arrive
+      // quietly. The shipping case above is the one that blocks.
+      //
+      // C04 and C05 left the list when the look-around page became the tour.
+      // Each stop is the real screen inside its own `ScreenScope`, so the bar
+      // on the Home stop claims Home on a screen that is Home, and the tour
+      // maps its tabs to its own stops rather than to routes.
       expect(
         liars.map((l) => l.split(' ').first).toSet(),
         {
-          'C04', 'C05', 'C14',
+          'C14',
           'G03', 'G04', 'G05', 'G11', 'G16',
           'M03', 'M04', 'M05', 'M07', 'M09', 'M10', 'M12', 'M14', 'M15',
           'W02', 'K19',

@@ -64,9 +64,9 @@ Future<_Stack> _toSetupFromPledge(WidgetTester tester) async {
 
   await _tap(tester, 'I agree, let me in');
   expect(OnboardingState.instance.enteredFromSignup, isTrue);
-  // Skip through the four questions to O05.
+  // Through the four questions to O05, on their preselected answers.
   for (var i = 0; i < 4; i++) {
-    await _tap(tester, 'Skip');
+    await _tap(tester, 'Continue');
   }
   expect(stack.names.last, _name('O05'));
   return stack;
@@ -118,13 +118,13 @@ void main() {
     expect(AppRouter.intakeRepository.setupDone, isTrue);
   });
 
-  testWidgets('"Pick a different program" opens the library over Home', (
+  // One programme exists, so there is nothing to pick between and the button
+  // that offered a choice is not drawn.
+  testWidgets('"Pick a different program" is not offered with one programme', (
     tester,
   ) async {
-    final stack = await _toSetupFromPledge(tester);
-    await _tap(tester, 'Pick a different program');
-
-    expect(stack.names, <String>[_name('T01'), _name('R11')]);
+    await _toSetupFromPledge(tester);
+    expect(find.text('Pick a different program'), findsNothing);
   });
 
   // N15. Backing out of O01 with the system back gesture used to leave

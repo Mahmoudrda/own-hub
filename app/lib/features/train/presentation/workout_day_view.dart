@@ -12,12 +12,15 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../domain/format/day_key.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/training/prescribed_set.dart';
 import '../../../ui/app_button.dart';
+import '../../../ui/app_card.dart';
+import '../../onboarding/domain/intake.dart' show LifeStage;
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/train_repository.dart';
@@ -165,7 +168,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
   ];
 
   return WorkoutDay(
-    id: dayKey(now ?? DateTime.now()),
+    id: dayKey(now ?? AppClock.now()),
     title: l10n.legsAndGlutes,
     // Counted off the moves above rather than written under them. It read
     // "15 minutes, 5 moves" from the dictionary, so the line and the list it
@@ -229,9 +232,22 @@ class WorkoutDayView extends StatefulWidget {
     this.onMore,
     this.day,
     this.repository,
+    this.lifeStage,
+    this.onNotToday,
   });
 
   final VoidCallback? onBack;
+
+  /// What she said the programme has to train around (`O03`/`O04`).
+  ///
+  /// Pregnant or after a birth, the day is not written for her: nothing in
+  /// this build is clinically reviewed for either. So the screen says so in a
+  /// card above the moves, and Start becomes "I have my doctor's OK, start",
+  /// with "Not today" beside it. Every other answer changes nothing here.
+  final LifeStage? lifeStage;
+
+  /// "Not today", shown only with the card above. Falls back to [onBack].
+  final VoidCallback? onNotToday;
 
   /// Called once the session has been created.
   final VoidCallback? onStart;
@@ -268,28 +284,46 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final day = widget.day ?? sampleWorkoutDay(l10n);
+    final caution = switch (widget.lifeStage) {
+      LifeStage.pregnant => l10n.day1WasNotWrittenForPregnancy,
+      LifeStage.postpartum => l10n.day1WasNotWrittenForThe,
+      _ => null,
+    };
 
     return AppScaffold(
       appBar: AppTopBar(
         title: day.title,
         onBack: widget.onBack,
         actions: [
-          IconButton(
-            onPressed: widget.onMore,
-            iconSize: 24,
-            color: AppColors.onSurfaceVariant,
-            // An icon with no name is announced as "button" and nothing else.
-            tooltip: l10n.more,
-            icon: const Icon(Icons.more_vert),
-          ),
+          // Drawn only when it does something: a disabled "more" reads as a
+          // broken control.
+          if (widget.onMore != null)
+            IconButton(
+              onPressed: widget.onMore,
+              iconSize: 24,
+              color: AppColors.onSurfaceVariant,
+              // An icon with no name is announced as "button" and nothing else.
+              tooltip: l10n.more,
+              icon: const Icon(Icons.more_vert),
+            ),
         ],
       ),
       footer: [
         AppButton(
-          l10n.startEverythingsReady,
+          caution == null
+              ? l10n.startEverythingsReady
+              : l10n.iHaveMyDoctorsOkStart,
           icon: Icons.play_arrow,
           onPressed: () => _start(day),
         ),
+        if (caution != null)
+          AppButton(
+            l10n.notToday,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: widget.onNotToday ?? widget.onBack,
+          ),
         AppButton(
           l10n.iAlreadyDidIt,
           variant: AppButtonVariant.text,
@@ -299,6 +333,19 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
         ),
       ],
       children: [
+        if (caution != null)
+          AppCard(
+            key: const ValueKey('r03-doctor-first'),
+            variant: AppCardVariant.amber,
+            borderRadius: AppRadius.md,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            children: [
+              Text(
+                caution,
+                style: AppText.body.copyWith(color: AppColors.amber),
+              ),
+            ],
+          ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

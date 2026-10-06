@@ -17,6 +17,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 
 import '../../../data/pending_answers.dart';
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/week/week_key.dart';
 import 'today_day.dart';
 
@@ -145,7 +146,7 @@ class InMemoryTodayRepository implements TodayRepository {
   /// masthead names the day off this date, so a frozen one told a woman opening
   /// the app on a Thursday that it was Tuesday.
   static TodayDay dayOne({DateTime? date}) {
-    final on = date ?? DateTime.now();
+    final on = date ?? AppClock.now();
     return TodayDay(
       date: on,
       state: DayState.dayOne,

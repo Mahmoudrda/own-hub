@@ -8,7 +8,9 @@ import datetime as dt
 from identity import config, decisions, ledger, providers, reasons, review
 from tests.fake_review_store import FakeReviewStore
 
-LATER = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=config.REVIEW_SLA_HOURS + 1)
+# conftest pins review._now to 2026-10-02 12:00 UTC; the SLA is stamped from it.
+PINNED_NOW = dt.datetime(2026, 10, 2, 12, tzinfo=dt.timezone.utc)
+LATER = PINNED_NOW + dt.timedelta(hours=config.REVIEW_SLA_HOURS + 1)
 
 
 def _expired(fake, uid="her", spent=0):
@@ -76,4 +78,4 @@ def test_the_bonus_never_lifts_the_cost_cap():
 def test_a_pending_flag_inside_the_sla_is_left_alone():
     fake = FakeReviewStore()
     review.request(fake, "her", "niqab")
-    assert review.expire(fake, dt.datetime.now(dt.timezone.utc)) == 0
+    assert review.expire(fake, PINNED_NOW) == 0

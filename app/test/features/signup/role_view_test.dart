@@ -69,17 +69,14 @@ void main() {
     expect(find.textContaining('Switch between them'), findsOneWidget);
   });
 
-  testWidgets('the choice is no longer presented as permanent', (tester) async {
+  testWidgets('it promises no change her profile cannot make', (tester) async {
     await tester.pumpWidget(_host(const RoleView()));
     await tester.pumpAndSettle();
 
-    // D11: this is hers to change, so the copy must stop sending her to
-    // support for it. Asserted because it is the kind of sentence that
-    // survives a design change by nobody noticing it.
-    expect(
-      find.text('You can change this later in your profile.'),
-      findsOneWidget,
-    );
+    // Her profile has no role row, so "You can change this later in your
+    // profile" was a promise nothing kept. Neither that nor the older "by
+    // messaging us" may come back.
+    expect(find.textContaining('change this later'), findsNothing);
     expect(find.textContaining('messaging us'), findsNothing);
   });
 

@@ -34,6 +34,19 @@ import '../../../theme/app_tokens.dart';
 import '../domain/id_capture.dart';
 import 'widgets/capture_scaffold.dart';
 
+/// What happened when the captured card was handed on to the next step.
+enum CaptureHandOff {
+  /// The next screen has been opened.
+  moved,
+
+  /// Own Hub could not be reached. Her photographs are still held and she can
+  /// try again from here.
+  offline,
+
+  /// The same, after enough failed tries that a woman reviewer is offered too.
+  offlineOfferReviewer,
+}
+
 class IdCaptureView extends StatefulWidget {
   const IdCaptureView({
     super.key,
@@ -41,7 +54,24 @@ class IdCaptureView extends StatefulWidget {
     this.side = CaptureTarget.idFront,
     this.onCaptured,
     this.onClose,
+    this.onOpenSettings,
+    this.onAskReviewer,
+    this.onHandOff,
   });
+
+  /// Used instead of [onCaptured] when the step after this one can fail for
+  /// want of a network. `C10b` starts the liveness session here, and a dropped
+  /// connection keeps her on this screen with her photographs rather than
+  /// sending her to a reviewer queue.
+  final Future<CaptureHandOff> Function()? onHandOff;
+
+  /// Opens this app's page in the phone's settings, when she turned the
+  /// camera off. The camera is tried again when she comes back.
+  final VoidCallback? onOpenSettings;
+
+  /// A woman reviewer instead of a camera that cannot run, with the reason,
+  /// so the reviewer path can tell a refusal from a failure.
+  final ValueChanged<CaptureUnavailableReason>? onAskReviewer;
 
   final CaptureService captureService;
 
@@ -61,7 +91,8 @@ class IdCaptureView extends StatefulWidget {
   State<IdCaptureView> createState() => _IdCaptureViewState();
 }
 
-class _IdCaptureViewState extends State<IdCaptureView> {
+class _IdCaptureViewState extends State<IdCaptureView>
+    with WidgetsBindingObserver {
   CaptureSession? _session;
   StreamSubscription<CaptureState>? _subscription;
   CaptureState _state = const CaptureState.preparing();
@@ -70,17 +101,56 @@ class _IdCaptureViewState extends State<IdCaptureView> {
   /// a single capture could push the next route twice.
   bool _reported = false;
 
+  /// True between "Open settings" and her return to the app.
+  bool _awaitingSettings = false;
+
+  /// The last hand-off could not reach Own Hub.
+  CaptureHandOff? _handOffFailed;
+
+  /// A hand-off is in flight.
+  bool _handingOff = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _open();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _subscription?.cancel();
     _session?.close();
     super.dispose();
+  }
+
+  /// Back from the settings page: the camera is asked for again, so a woman
+  /// who turned access on finds it working rather than still refused.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _awaitingSettings) {
+      _awaitingSettings = false;
+      unawaited(_reopen());
+    }
+  }
+
+  /// Closes whatever session is open and opens a fresh one.
+  Future<void> _reopen() async {
+    // The old subscription is dropped, not awaited: its state no longer
+    // matters, and the camera itself is released below before a new one opens.
+    unawaited(_subscription?.cancel());
+    _subscription = null;
+    final old = _session;
+    _session = null;
+    if (mounted) setState(() => _state = const CaptureState.preparing());
+    await old?.close();
+    if (mounted) await _open();
+  }
+
+  void _openSettings() {
+    _awaitingSettings = true;
+    widget.onOpenSettings?.call();
   }
 
   Future<void> _open() async {
@@ -108,7 +178,26 @@ class _IdCaptureViewState extends State<IdCaptureView> {
   void _report() {
     if (_reported) return;
     _reported = true;
+    if (widget.onHandOff != null) {
+      unawaited(_handOff());
+      return;
+    }
     widget.onCaptured?.call();
+  }
+
+  Future<void> _handOff() async {
+    final handOff = widget.onHandOff;
+    if (handOff == null || _handingOff) return;
+    setState(() {
+      _handingOff = true;
+      _handOffFailed = null;
+    });
+    final result = await handOff();
+    if (!mounted) return;
+    setState(() {
+      _handingOff = false;
+      _handOffFailed = result == CaptureHandOff.moved ? null : result;
+    });
   }
 
   Future<void> _capture() async {
@@ -137,6 +226,15 @@ class _IdCaptureViewState extends State<IdCaptureView> {
     final lens = _state.isLive && session is Viewfinder
         ? session as Viewfinder
         : null;
+    final current = _state;
+    final failed = _handOffFailed;
+    final unavailable = failed != null
+        ? CaptureUnavailableReason.offline
+        : current is CaptureUnavailable
+        ? current.reason
+        : null;
+    final offerReviewer =
+        failed == null || failed == CaptureHandOff.offlineOfferReviewer;
 
     return CaptureScaffold(
       title: isBack ? l10n.theBackOfYourCard : l10n.yourIdCard,
@@ -172,6 +270,17 @@ class _IdCaptureViewState extends State<IdCaptureView> {
           : null,
       actionLabel: l10n.takeItMyself,
       onAction: _state.isLive ? _capture : null,
+      unavailable: unavailable,
+      onOpenSettings: _openSettings,
+      // After a failed hand-off the photographs are kept, so "Try again" asks
+      // again rather than opening the camera.
+      onRetry: failed != null
+          ? (_handingOff ? null : () => unawaited(_handOff()))
+          : () => unawaited(_reopen()),
+      onAskReviewer:
+          unavailable == null || widget.onAskReviewer == null || !offerReviewer
+          ? null
+          : () => widget.onAskReviewer!(unavailable),
     );
   }
 }

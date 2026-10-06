@@ -84,7 +84,16 @@ class NotificationsView extends StatelessWidget {
     this.onRequestPermission,
     this.onOpenOsSettings,
     this.onSelectTab,
+    this.remindersOn = false,
+    this.onOpenReminders,
   });
+
+  /// Whether her training reminders are set.
+  final bool remindersOn;
+
+  /// The training reminders sheet: her days, her time, or off. No row when
+  /// null.
+  final VoidCallback? onOpenReminders;
 
   /// Already paged and capped by the repository. A01 never asks for more than
   /// [kInboxPageSize].
@@ -140,6 +149,24 @@ class NotificationsView extends StatelessWidget {
       // the Home tab drawn and unresponsive. See `profile_view.dart`.
       footer: [AppNavBar(activeScreenId: 'A01', onSelect: onSelectTab)],
       children: [
+        // Where she changes or stops the reminders she chose on R10.
+        if (onOpenReminders != null)
+          AppListItem(
+            key: const ValueKey('a01-reminders'),
+            leading: const Icon(
+              Icons.alarm,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.trainingReminders,
+            subtitle: remindersOn ? l10n.remindersAreOn : l10n.remindersAreOff,
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.onSurfaceVariant,
+            ),
+            onTap: onOpenReminders,
+          ),
         if (view.showsPermissionPrompt)
           AppListItem(
             leading: const Icon(

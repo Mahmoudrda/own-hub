@@ -226,8 +226,27 @@ def test_every_manifest_row_maps_to_an_action_that_actually_runs():
         if action == manifest.HANDSET:
             assert row.method == "localOnly", row
             continue
+        if action == manifest.TTL:
+            # Not linked to her account, so deletion cannot find them. Their
+            # proof is the expireAt every write carries (test_ttl_fields).
+            assert row.method == "ttl", row
+            continue
         assert action in _PROOF, f"row {row.number} maps to {action!r}, which has no proof"
         proof = _PROOF[action]
         assert any(c[: len(proof)] == proof for c in fake.calls), (
             f"row {row.number} ({row.path}) maps to {action!r}, which run() never executed"
         )
+
+
+def test_her_coach_certificates_and_invite_codes_go_and_no_one_elses(fs):
+    # Rows 47 and 49: coaches/{uid}/certificates is under her coach page, and
+    # her invite codes are found by coachUid.
+    fs.docs[f"coaches/{HER}/certificates/nasm_cpt-1"] = {"state": "uploaded"}
+    fs.docs[f"coaches/{OTHER}/certificates/nasm_cpt-1"] = {"state": "uploaded"}
+    fs.docs["coachInvites/HERC2345"] = {"coachUid": HER}
+    fs.docs["coachInvites/OTHR2345"] = {"coachUid": OTHER}
+    docs = purge(fs)
+    assert f"coaches/{HER}/certificates/nasm_cpt-1" not in docs
+    assert "coachInvites/HERC2345" not in docs
+    assert docs[f"coaches/{OTHER}/certificates/nasm_cpt-1"] == {"state": "uploaded"}
+    assert docs["coachInvites/OTHR2345"] == {"coachUid": OTHER}

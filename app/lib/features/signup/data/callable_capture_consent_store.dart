@@ -9,9 +9,10 @@
 /// right of access to her own consent records.
 ///
 /// **The wire shape is the server's.** The callable is `record_consent`, it
-/// takes `{consentVersion: <int>}` and refuses anything else with
-/// `consent_missing`, and the record it writes is
-/// `users/{uid}/consents/verification-v<version>` = `{version, at}`. Those
+/// takes `{consentVersion: <int>, locale, appVersion}` and refuses any other
+/// version with `consent_missing`, and the record it writes is
+/// `users/{uid}/consents/verification-v<version>` = `{version, at, locale,
+/// appVersion}`. Those
 /// facts are pinned in `contracts/identity_contract.json`, which both this
 /// app's contract test and the functions' contract test read, so a drift on
 /// either side fails a build instead of stranding every woman at `C09b`.
@@ -39,10 +40,17 @@ class CallableCaptureConsentStore implements CaptureConsentStore {
   final FirebaseFunctions _functions;
 
   /// The body `record_consent` accepts: the version as an int, under
-  /// `consentVersion`, and nothing else.
+  /// `consentVersion`, plus the language the wording was shown in and the
+  /// app version (version 2). The server drops either if it is malformed.
   @visibleForTesting
-  static Map<String, Object?> payloadFor(int version) => <String, Object?>{
+  static Map<String, Object?> payloadFor(
+    int version, {
+    String? locale,
+    String? appVersion,
+  }) => <String, Object?>{
     'consentVersion': version,
+    'locale': ?locale,
+    'appVersion': ?appVersion,
   };
 
   /// The document id the server writes for a version.
@@ -87,12 +95,18 @@ class CallableCaptureConsentStore implements CaptureConsentStore {
 
   @override
   Future<void> record(CaptureConsent consent) async {
-    // Only the version travels. The uid comes from the auth token, which is the
-    // only copy of it worth anything, and the timestamp is the server's. A
-    // payload carrying all three would be three fields an attacker can choose.
+    // The version, the language and the app version travel. The uid comes
+    // from the auth token, which is the only copy of it worth anything, and
+    // the timestamp is the server's.
     final callable = _functions.httpsCallable(kRecordConsentCallable);
     try {
-      await callable.call<Object?>(payloadFor(consent.version));
+      await callable.call<Object?>(
+        payloadFor(
+          consent.version,
+          locale: consent.locale,
+          appVersion: consent.appVersion,
+        ),
+      );
     } on FirebaseFunctionsException catch (error) {
       throw callFailureFrom(error);
     }

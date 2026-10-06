@@ -52,52 +52,61 @@ Widget _host(
 }
 
 void main() {
-  testWidgets('offers the video check, and no partner gyms that do not exist', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _host(WomanReviewerView(requester: _Requester(<Object>[]))),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'offers a check with a woman, no video call, and no partner gyms that do not exist',
+    (tester) async {
+      await tester.pumpWidget(
+        _host(WomanReviewerView(requester: _Requester(<Object>[]))),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Checked by a woman, no photo kept'), findsOneWidget);
-    expect(find.text('A short video check'), findsOneWidget);
-    expect(find.text('In person at a ladies-only gym'), findsNothing);
-    expect(find.textContaining('partner gyms'), findsNothing);
-    expect(find.text('Ask for a video check'), findsOneWidget);
-  });
+      expect(find.text('Checked by a woman, no photo kept'), findsOneWidget);
+      expect(find.text('A check with a woman'), findsOneWidget);
+      expect(find.text('In person at a ladies-only gym'), findsNothing);
+      expect(find.textContaining('partner gyms'), findsNothing);
+      expect(find.text('Ask a woman to check me'), findsOneWidget);
+    },
+  );
 
-  testWidgets('says plainly that no camera is asked for, and who calls', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _host(WomanReviewerView(requester: _Requester(<Object>[]))),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'says plainly that no camera is asked for, and who contacts her',
+    (tester) async {
+      await tester.pumpWidget(
+        _host(WomanReviewerView(requester: _Requester(<Object>[]))),
+      );
+      await tester.pumpAndSettle();
 
-    expect(
-      find.textContaining(
-        'If you do not show your face to a camera, nothing here asks you to',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('A woman reviewer from Own Hub will phone you'),
-      findsOneWidget,
-    );
-    expect(find.textContaining('text you'), findsNothing);
-    // Before request_review records the review route, she is told what her
-    // number is for (pending counsel).
-    expect(
-      find.text('Your phone number is used only to arrange this call.'),
-      findsOneWidget,
-    );
-    expect(find.textContaining('Nothing is recorded or kept'), findsOneWidget);
-    expect(
-      find.textContaining('Only women review these checks'),
-      findsOneWidget,
-    );
-  });
+      expect(
+        find.textContaining(
+          'If you do not show your face to a camera, nothing here asks you to',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          'A woman from Own Hub reviews your case and contacts you by phone within 72 hours',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('text you'), findsNothing);
+      expect(find.textContaining('video'), findsNothing);
+      // Before request_review records the review route, she is told what her
+      // number is for (pending counsel).
+      expect(
+        find.text('Your phone number is used only to arrange your check.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Nothing is recorded.'), findsOneWidget);
+      expect(
+        find.textContaining('She keeps only her decision and the date'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Only women review these checks'),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('P0-VER-05: she is queued through request_review, no selfie', (
     tester,
@@ -109,7 +118,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Ask for a video check'));
+    await tester.tap(find.text('Ask a woman to check me'));
     await tester.pumpAndSettle();
 
     expect(requester.asked, [ReviewPath.niqab]);
@@ -129,7 +138,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Ask for a video check'));
+      await tester.tap(find.text('Ask a woman to check me'));
       await tester.pumpAndSettle();
       expect(requester.asked, [path]);
     }
@@ -148,14 +157,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Ask for a video check'));
+    await tester.tap(find.text('Ask a woman to check me'));
     await tester.pumpAndSettle();
 
     expect(booked, isEmpty, reason: 'she is not in the queue');
     expect(find.textContaining('you are not in the queue yet'), findsOneWidget);
 
     // The same button is the retry.
-    await tester.tap(find.text('Ask for a video check'));
+    await tester.tap(find.text('Ask a woman to check me'));
     await tester.pumpAndSettle();
     expect(requester.asked, hasLength(2));
     expect(booked, [ReviewerPath.video]);
@@ -175,7 +184,7 @@ void main() {
       _host(WomanReviewerView(requester: requester, onBooked: booked.add)),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ask for a video check'));
+    await tester.tap(find.text('Ask a woman to check me'));
     await tester.pumpAndSettle();
 
     expect(booked, isEmpty);
@@ -200,7 +209,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ask for a video check'));
+    await tester.tap(find.text('Ask a woman to check me'));
     await tester.pumpAndSettle();
     expect(booked, isEmpty);
     expect(
@@ -227,7 +236,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ask for a video check'));
+    await tester.tap(find.text('Ask a woman to check me'));
     await tester.pumpAndSettle();
     expect(rejected, 1);
   });
@@ -248,6 +257,51 @@ void main() {
     );
   });
 
+  // From a slow C12: the server refuses while her check is still running.
+  // That is not "could not reach Own Hub", and nothing claims a queue.
+  testWidgets('asked while the check still runs, she is told to wait', (
+    tester,
+  ) async {
+    var booked = 0;
+    final requester = _Requester(<Object>[
+      const VerificationCallFailure(
+        'failed-precondition',
+        ServerReason.verificationInProgress,
+      ),
+      ReviewRequestState.pending,
+    ]);
+    await tester.pumpWidget(
+      _host(
+        WomanReviewerView(
+          requester: requester,
+          path: ReviewPath.error,
+          checkStillRunning: true,
+          onBooked: (_) => booked++,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('could not start'),
+      findsNothing,
+      reason: 'the check started; it is slow',
+    );
+
+    await tester.tap(find.text('Ask a woman to check me'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('Your automatic check is still running'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('We could not reach Own Hub'), findsNothing);
+    expect(booked, 0);
+
+    await tester.tap(find.text('Ask a woman to check me'));
+    await tester.pumpAndSettle();
+    expect(booked, 1);
+    expect(requester.asked, [ReviewPath.error, ReviewPath.error]);
+  });
+
   testWidgets('reads in Arabic, from the dictionary', (tester) async {
     await tester.pumpWidget(
       _host(
@@ -258,7 +312,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('تراجعها امرأة، ولا تُحفظ أي صورة'), findsOneWidget);
-    expect(find.text('اطلبي تحقّقًا بالفيديو'), findsOneWidget);
+    expect(find.text('اطلبي أن تتحقق منكِ امرأة'), findsOneWidget);
     expect(find.text('Checked by a woman, no photo kept'), findsNothing);
   });
 

@@ -25,6 +25,12 @@ enum AnalyticsEvent {
   signUpStarted,
   verificationSubmitted,
   verificationDecided,
+
+  /// The start of the selfie challenge after the back of the card (`C10b`):
+  /// `started`, `offline`, `failed`, `limit` or `other` in
+  /// [AnalyticsProp.outcome]. Counts how often a dropped connection, rather
+  /// than her, stops the check. Never the verification result.
+  livenessStartOutcome,
   intakeCompleted,
   sessionStarted,
   sessionFinished,
@@ -37,6 +43,14 @@ enum AnalyticsEvent {
   postPublished,
   assistantAsked,
   assistantRefused,
+
+  /// The tour before sign-up (`C04`) reached a stop: [AnalyticsProp.tourStop]
+  /// is `1` to `7`, or `end` for the end card. Nothing about her.
+  tourStopViewed,
+
+  /// She tapped Join in the tour: [AnalyticsProp.source] is `bar`, `sheet` or
+  /// `end`, and [AnalyticsProp.tourStop] the stop she was on.
+  tourJoinTapped,
 }
 
 /// The only property keys that exist.
@@ -57,6 +71,9 @@ enum AnalyticsProp {
   durationBucket,
   countBucket,
   notifPermissionState,
+
+  /// Which stop of the tour: `1` to `7`, or `end`.
+  tourStop,
 }
 
 /// The only value shapes that exist: a flag, a bucketed number, or a value from a

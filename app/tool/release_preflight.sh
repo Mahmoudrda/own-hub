@@ -74,13 +74,18 @@ check "privacy manifest makes no zero-collection claim" \
       "! grep -qiE 'carries no Firebase|COLLECTS NOTHING' ios/Runner/PrivacyInfo.xcprivacy"
 check "privacy manifest declares PhoneNumber" "grep -q NSPrivacyCollectedDataTypePhoneNumber ios/Runner/PrivacyInfo.xcprivacy"
 check "privacy manifest declares UserID" "grep -q NSPrivacyCollectedDataTypeUserID ios/Runner/PrivacyInfo.xcprivacy"
-check "privacy manifest declares HealthFitness" "grep -q NSPrivacyCollectedDataTypeHealthFitness ios/Runner/PrivacyInfo.xcprivacy"
-check "privacy manifest declares OtherUserContent" "grep -q NSPrivacyCollectedDataTypeOtherUserContent ios/Runner/PrivacyInfo.xcprivacy"
+# Privacy policy v3: Fitness and Health are separate keys. HealthFitness is
+# not one of Apple's and must not appear.
+check "privacy manifest has no invalid HealthFitness key" "! grep -q NSPrivacyCollectedDataTypeHealthFitness ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares Fitness" "grep -q '<string>NSPrivacyCollectedDataTypeFitness</string>' ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares Health" "grep -q '<string>NSPrivacyCollectedDataTypeHealth</string>' ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares SensitiveInfo" "grep -q NSPrivacyCollectedDataTypeSensitiveInfo ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares PhotosorVideos" "grep -q NSPrivacyCollectedDataTypePhotosorVideos ios/Runner/PrivacyInfo.xcprivacy"
 check "privacy manifest declares OtherDataTypes" "grep -q NSPrivacyCollectedDataTypeOtherDataTypes ios/Runner/PrivacyInfo.xcprivacy"
 check "RECORD_AUDIO stripped from the merged manifest" "grep -q 'RECORD_AUDIO\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "READ_EXTERNAL_STORAGE stripped"     "grep -q 'READ_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "WRITE_EXTERNAL_STORAGE stripped"    "grep -q 'WRITE_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
-check "c2dm RECEIVE stripped"              "grep -q 'c2dm.permission.RECEIVE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
+check "push is declared where it is used"  "! grep -q '^  firebase_messaging:' pubspec.yaml || (grep -q POST_NOTIFICATIONS android/app/src/main/AndroidManifest.xml && grep -q aps-environment ios/Runner/Runner.entitlements && grep -q 'push token' android/play-data-safety.txt)"
 check "no false 'licensed provider' claim" "! grep -q 'licensed Egyptian provider' lib/l10n/app_en.arb"
 check "App Check is activated"             "grep -q FirebaseAppCheck lib/app_state/firebase_boot.dart"
 check "crash reporting is declared as CrashData" \
@@ -128,6 +133,29 @@ check "release builds go through tool/build_release.sh" \
 echo
 echo "-- the four public pages --"
 check "legal links filled in"              "! grep -qE \"static const String (privacyPolicy|terms|support|deleteAccount) = ''\" lib/config/legal_links.dart"
+# The public site carries no gap and no draft banner in a release: every
+# [to be completed] marker comes from an empty value in site/config.json.
+check "site has no [to be completed] marker" "! grep -rq 'class=\"todo\"' --include='*.html' ../site"
+check "site has no Arabic gap marker"      "! grep -rq 'بانتظار الاستكمال' --include='*.html' ../site"
+check "site has no draft banner"           "! grep -rqE 'Draft pending|مسودة بانتظار' --include='*.html' ../site"
+# Drafting notes for the owner or a lawyer are never published, not even as an
+# HTML comment in the page source.
+check "site carries no drafting note"      "! grep -rqE '\\[(LAWYER|OWNER)' --include='*.html' ../site"
+# The sitemap, robots.txt and canonical links carry baseUrl from config.json.
+check "site has a real domain"             "! grep -rq 'ownhub.example' --include='*.html' --include='*.xml' --include='*.txt' ../site"
+
+echo
+echo "-- versions the app and the server must agree on --"
+app_consent=$(grep -E '^const int kCaptureConsentVersion = [0-9]+;' lib/features/signup/domain/capture_consent.dart | grep -oE '[0-9]+')
+server_consent=$(grep -E '^CONSENT_VERSION = [0-9]+' ../functions/identity/config.py | grep -oE '[0-9]+')
+check "capture consent version matches the server ($app_consent)" "[ -n \"$app_consent\" ] && [ \"$app_consent\" = \"$server_consent\" ]"
+app_terms=$(grep -E '^const int kTermsVersion = [0-9]+;' lib/features/signup/domain/legal_acceptance.dart | grep -oE '[0-9]+')
+server_terms=$(grep -E '^TERMS_VERSION = [0-9]+' ../functions/identity/config.py | grep -oE '[0-9]+')
+check "terms version matches the server ($app_terms)" "[ -n \"$app_terms\" ] && [ \"$app_terms\" = \"$server_terms\" ]"
+app_privacy=$(grep -E '^const int kPrivacyVersion = [0-9]+;' lib/features/signup/domain/legal_acceptance.dart | grep -oE '[0-9]+')
+server_privacy=$(grep -E '^PRIVACY_VERSION = [0-9]+' ../functions/identity/config.py | grep -oE '[0-9]+')
+check "privacy version matches the server ($app_privacy)" "[ -n \"$app_privacy\" ] && [ \"$app_privacy\" = \"$server_privacy\" ]"
+check "release builds record the app version" "grep -q 'APP_VERSION=' tool/build_release.sh"
 
 echo
 echo "-- public URLs --"

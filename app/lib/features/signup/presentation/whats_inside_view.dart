@@ -70,8 +70,8 @@ class WhatsInsideView extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         // The prototype sets an 18px gap on this body rather than the default
-        // 10, because four stacked promises need air to read as four things.
-        // The pencil rules take that gap, so the four read as entries in a list.
+        // 10, because stacked promises need air to read as separate things.
+        // The pencil rules take that gap, so they read as entries in a list.
         _Promise(
           icon: Icons.volume_off,
           title: l10n.quietWorkoutsForHome,
@@ -83,6 +83,16 @@ class WhatsInsideView extends StatelessWidget {
           title: l10n.foodYouAlreadyCook,
           body: l10n.koshariFulAndMolokhiaInThePortions,
         ),
+        // Tracking her cycle is one of the reasons she installs the app, and
+        // the pitch never said so. Promised only with My cycle on.
+        if (AppRouter.featureFlags.isOn(Feature.cycle)) ...[
+          const HandRule(seed: 34, height: 8),
+          _Promise(
+            icon: Icons.water_drop_outlined,
+            title: l10n.yourCycleOnThisPhone,
+            body: l10n.logYourPeriodAndHowYouFeel,
+          ),
+        ],
         const HandRule(seed: 32, height: 8),
         _Promise(
           icon: Icons.verified_user,

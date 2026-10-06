@@ -20,6 +20,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
@@ -113,7 +114,7 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
     // Now, not the mockup's 15 September 2026 at 08:42. A lock screen that
     // states a date is stating the date it is being read on, or it is stating
     // nothing.
-    final at = widget.at ?? DateTime.now();
+    final at = widget.at ?? AppClock.now();
     final white = AppColors.onPrimary;
 
     return AppScaffold(

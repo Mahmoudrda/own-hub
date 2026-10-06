@@ -378,7 +378,7 @@ class AppL10nAr extends AppL10n {
   String get day9 => 'اليوم 9';
 
   @override
-  String get deadBug => 'تمرين الحشرة الميتة';
+  String get deadBug => 'رفع الذراع والساق المتقابلتين على الظهر';
 
   @override
   String get draft => 'مسودة';
@@ -2077,7 +2077,7 @@ class AppL10nAr extends AppL10n {
   String get howWouldYouLikeToPay => 'كيف تفضّلين الدفع؟';
 
   @override
-  String get iAgreeLetMeIn => 'أوافق، أدخليني';
+  String get iAgreeLetMeIn => 'أوافق، لنبدأ';
 
   @override
   String get iAlreadyHaveAnAccount => 'لديّ حساب بالفعل';
@@ -2108,7 +2108,7 @@ class AppL10nAr extends AppL10n {
       'أرتدي النقاب، تحقّقوا مني بطريقة أخرى';
 
   @override
-  String get imACoachSetUpMyProfile => 'أنا مدرِّبة، أنشئي ملفي';
+  String get imACoachSetUpMyProfile => 'أنا مدرِّبة، أريد إعداد ملفي';
 
   @override
   String get imHereToTrain => 'أنا هنا لأتدرّب';
@@ -3116,10 +3116,10 @@ class AppL10nAr extends AppL10n {
   String get send => 'أرسلي';
 
   @override
-  String get sendItAgain => 'أرسليه مرة أخرى';
+  String get sendItAgain => 'إعادة إرسال الرمز';
 
   @override
-  String get sendMeACode => 'أرسلي إليّ رمزًا';
+  String get sendMeACode => 'إرسال الرمز';
 
   @override
   String get sendReplyAndPlanChange => 'أرسلي الردّ وتعديل الخطة';
@@ -4053,7 +4053,7 @@ class AppL10nAr extends AppL10n {
   String get yourProgramContinuesTomorrow => 'يستأنف برنامجك غدًا';
 
   @override
-  String get yourProgress => 'تقدّمك';
+  String get yourProgress => 'تقدّمكِ';
 
   @override
   String get yourPublicProfile => 'ملفك العام';
@@ -7791,4 +7791,686 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get ownHubIsForTrainingNotFor => 'Own Hub للتدريب، لا للبيع.';
+
+  @override
+  String get yourTrainingYourFoodYourCycleWomen =>
+      'تدريبكِ، وطعامكِ، ودورتكِ. للنساء فقط.';
+
+  @override
+  String get setUpMyWeek => 'جهّزي أسبوعي';
+
+  @override
+  String get n1Of3YourWeek => '1 من 3 · أسبوعكِ';
+
+  @override
+  String get n2Of3YourNumber => '2 من 3 · رقمكِ';
+
+  @override
+  String get n3Of3QuickCheck => '3 من 3 · تحقّق سريع';
+
+  @override
+  String get onlyYouSeeThisItStaysOn =>
+      'لا يرى هذا أحد سواكِ، ويبقى على هذا الهاتف.';
+
+  @override
+  String get seeMyWeek => 'اعرضي أسبوعي';
+
+  @override
+  String get builtFromYourAnswers => 'مبنيّ على إجاباتكِ';
+
+  @override
+  String get oneQuickCheckKeepsOwnHubWomen =>
+      'تحقّق سريع واحد يُبقي Own Hub للنساء فقط، ثم يصبح يومكِ الأول جاهزًا.';
+
+  @override
+  String get saveMyWeekAndJoin => 'احفظي أسبوعي وانضمّي';
+
+  @override
+  String get thatNumberDoesNotLookRightCheck =>
+      'يبدو أن هذا الرقم غير صحيح. راجعيه ثم حاولي مرة أخرى.';
+
+  @override
+  String get noConnectionYourNumberIsStillHere =>
+      'لا يوجد اتصال. رقمكِ ما زال هنا، حاولي مرة أخرى عند عودة الاتصال.';
+
+  @override
+  String get weCouldNotSendTheCodeTry =>
+      'تعذّر إرسال الرمز. حاولي مرة أخرى بعد قليل.';
+
+  @override
+  String get thatCodeDidNotMatchCheckThe =>
+      'الرمز غير مطابق. راجعي الرسالة واكتبيه مرة أخرى.';
+
+  @override
+  String get thatCodeHasExpiredAskForA_1vzf3 =>
+      'انتهت صلاحية هذا الرمز. اطلبي رمزًا جديدًا من الأسفل.';
+
+  @override
+  String get noConnectionTryAgainWhenYouAre =>
+      'لا يوجد اتصال. حاولي مرة أخرى عند عودة الاتصال.';
+
+  @override
+  String get weCouldNotCheckTheCodeTry =>
+      'تعذّر التحقّق من الرمز. حاولي مرة أخرى بعد قليل.';
+
+  @override
+  String get checkingYourCode => 'جارٍ التحقّق من الرمز';
+
+  @override
+  String get editNumber => 'تعديل الرقم';
+
+  @override
+  String get cameraAccessIsOff => 'الوصول إلى الكاميرا مغلق';
+
+  @override
+  String get ownHubNeedsTheCameraToRead =>
+      'يحتاج Own Hub إلى الكاميرا لقراءة بطاقتكِ. يمكنكِ تشغيلها من الإعدادات، أو تتحقّق منكِ امرأة من Own Hub بطريقة أخرى.';
+
+  @override
+  String get ownHubNeedsTheCameraForA =>
+      'يحتاج Own Hub إلى الكاميرا لصورة ذاتية قصيرة. يمكنكِ تشغيلها من الإعدادات، أو تتحقّق منكِ امرأة من Own Hub بطريقة أخرى.';
+
+  @override
+  String get theCameraCouldNotStartThisIs =>
+      'تعذّر تشغيل الكاميرا، والأمر لا يتعلّق بكِ. حاولي مرة أخرى، أو تتحقّق منكِ امرأة من Own Hub بطريقة أخرى.';
+
+  @override
+  String get checkMeAnotherWay => 'التحقّق بطريقة أخرى';
+
+  @override
+  String get noConnectionYourPhotosAreStillHere =>
+      'لا يوجد اتصال. صوركِ ما زالت هنا، حاولي مرة أخرى.';
+
+  @override
+  String get bothSidesOfYourCardTaken => 'تم تصوير وجهَي بطاقتكِ';
+
+  @override
+  String get selfieTaken => 'تم التقاط صورتكِ الذاتية';
+
+  @override
+  String get matchingYourSelfieToYourCard => 'نطابق صورتكِ الذاتية مع بطاقتكِ';
+
+  @override
+  String get takingLongerThanUsualYourConnectionMay =>
+      'يستغرق الأمر وقتًا أطول من المعتاد. قد يكون اتصالكِ بطيئًا، ويمكنكِ الانتظار هنا.';
+
+  @override
+  String get goToHome => 'الانتقال إلى الرئيسية';
+
+  @override
+  String get planThisWeeksDinners => 'خطّطي لعشاء هذا الأسبوع';
+
+  @override
+  String get fiveEgyptianDinnersAndOneShoppingList =>
+      'خمس وجبات عشاء مصرية وقائمة تسوّق واحدة';
+
+  @override
+  String get trackMyCycle => 'تابعي دورتكِ';
+
+  @override
+  String get optionalAndItStaysOnThisPhone => 'اختياري، ويبقى على هذا الهاتف';
+
+  @override
+  String nextSessionNumberOnAnyDayThis(String number) {
+    return 'التالي: الجلسة $number، في أي يوم من هذا الأسبوع';
+  }
+
+  @override
+  String get day1WasNotWrittenForPregnancy =>
+      'لم يُكتب اليوم الأول للحمل. يُرجى استشارة الطبيب قبل أن تبدئي، وتخطّي أي حركة لا تشعرين بالراحة معها.';
+
+  @override
+  String get day1WasNotWrittenForThe =>
+      'لم يُكتب اليوم الأول لفترة ما بعد الولادة. يُرجى انتظار موافقة الطبيب، وتخطّي أي حركة لا تشعرين بالراحة معها.';
+
+  @override
+  String get iHaveMyDoctorsOkStart => 'لديّ موافقة الطبيب، لنبدأ';
+
+  @override
+  String get notToday => 'ليس اليوم';
+
+  @override
+  String get yourWeekIsSaved => 'أسبوعكِ محفوظ';
+
+  @override
+  String get homeYourDayAtAGlance => 'الرئيسية، يومكِ في لمحة';
+
+  @override
+  String get ownHubIsAFitnessAppFor =>
+      'Own Hub تطبيق لياقة للنساء فقط. تعرض الرئيسية تمرين اليوم، وما تناولتِه، وسير أسبوعكِ. هذا الأسبوع عيّنة، فاضغطي على ما تشائين.';
+
+  @override
+  String get quietSessionsYouCanDoAtHome =>
+      'جلسات هادئة تؤدّينها في البيت. تُظهر كل حركة مجموعاتها وما تستهدفينه فيها. تدرّبتِ دون هاتفكِ؟ يمكنكِ تسجيل ذلك بعدها.';
+
+  @override
+  String get duringAWorkout => 'أثناء التمرين';
+
+  @override
+  String get oneMoveAtATimeTapWhen =>
+      'حركة واحدة في كل مرة. اضغطي عند إنهاء كل مجموعة، ويتولّى Own Hub العدّ وتوقيت راحتكِ.';
+
+  @override
+  String get homeCookingYouAlreadyKnowWrittenBy =>
+      'طبخ البيت الذي تعرفينه، كتبته المدرّبة رحمة محسن. افتحي الوصفة الأولى لتريها كاملة.';
+
+  @override
+  String get yourWeekOfDinners => 'عشاء أسبوعكِ';
+
+  @override
+  String get aWeekOfDinnersPlannedForYou =>
+      'عشاء أسبوع كامل مخطَّط لكِ، مع قائمة تسوّق واحدة تكفيه كله.';
+
+  @override
+  String get yourCycleIfYouWantIt => 'دورتكِ، إن أردتِ';
+
+  @override
+  String get logYourPeriodAndHowYouFeel =>
+      'سجّلي دورتكِ وكيف تشعرين. وفي الأيام الأصعب يمكن أن يقترح Own Hub جلسة ألطف. تبقى بيانات الدورة على هاتفكِ ما لم تختاري نسخها احتياطيًّا.';
+
+  @override
+  String get yourWeeksYourPersonalBestsAndYour =>
+      'أسابيعكِ وأفضل أرقامكِ الشخصية وإنجازاتكِ، محسوبة فقط مما تسجّلينه.';
+
+  @override
+  String get thatIsOwnHub => 'هذا هو Own Hub';
+
+  @override
+  String get toMakeItYoursJoinWithYour => 'لتجعليه لكِ، انضمّي برقم هاتفكِ.';
+
+  @override
+  String get ownHubIsForWomenOnlySo =>
+      'Own Hub للنساء فقط، لذا نتحقّق من هويتكِ مرة واحدة مع صورة ذاتية سريعة. تُحذف الصور بعد التحقّق.';
+
+  @override
+  String get firstOneScreenToBuildYourWeek =>
+      'أولًا، شاشة واحدة لنبني أسبوعكِ. ويُفتح لكِ Own Hub بعد اكتمال التحقّق.';
+
+  @override
+  String get makeItMine => 'اجعليه لي';
+
+  @override
+  String get seeTheTourAgain => 'أعيدي الجولة';
+
+  @override
+  String get sampleNothingIsSaved => 'عيّنة · لا يُحفظ شيء';
+
+  @override
+  String get joinOwnHub => 'انضمّي إلى Own Hub';
+
+  @override
+  String get leaveTheTour => 'إنهاء الجولة';
+
+  @override
+  String get backToMyCheck => 'العودة إلى تحقّقي';
+
+  @override
+  String get joinToMakeThisYours => 'انضمّي ليصبح هذا لكِ';
+
+  @override
+  String get keepLooking => 'تابعي التصفّح';
+
+  @override
+  String get showMeAround => 'خذيني في جولة';
+
+  @override
+  String get skipTheTourAndJoin => 'تخطّي الجولة وانضمّي';
+
+  @override
+  String get theTourUsesASampleWeekNo =>
+      'تستخدم الجولة أسبوعًا تجريبيًّا. دون حساب، ولا يُحفظ شيء.';
+
+  @override
+  String get firstYourWeekThenYourNumberAnd =>
+      'أولًا أسبوعكِ، ثم رقمكِ وتحقّق سريع من أنكِ امرأة. نحو دقيقتين، مرة واحدة.';
+
+  @override
+  String get homeCookingYouAlreadyKnowWrittenBy_7q8w1 =>
+      'طبخ البيت الذي تعرفينه، كتبته المدرّبة رحمة محسن. تُفتح الوصفات مع حسابكِ.';
+
+  @override
+  String get toSendYourCodeYourNumberGoes =>
+      'لإرسال الرمز يُنقل رقمكِ إلى Google Firebase في الولايات المتحدة، ويُحفظ حسابكِ وتدريبكِ لدى Google Cloud في فرانكفورت بألمانيا.';
+
+  @override
+  String get sendCrashReports => 'إرسال تقارير الأعطال';
+
+  @override
+  String get optionalHelpsUsFixTheAppNo =>
+      'اختياري. يساعدنا في إصلاح التطبيق، ولا يُرفق به اسم ولا رقم ولا حساب. يمكنكِ تغييره من الخصوصية.';
+
+  @override
+  String get agreeAndSendMeACode => 'الموافقة وإرسال الرمز';
+
+  @override
+  String get byTappingAgreeAndSendMeA =>
+      'بالضغط على «الموافقة وإرسال الرمز» تقبلين شروط الاستخدام وسياسة الخصوصية.';
+
+  @override
+  String get weHaveUpdatedOurTermsAndPrivacy =>
+      'حدّثنا شروط الاستخدام وسياسة الخصوصية';
+
+  @override
+  String get pleaseReadWhatChangedToKeepUsing =>
+      'يُرجى قراءة ما تغيّر. ولمواصلة استخدام Own Hub، وافقي على الإصدارين الجديدين.';
+
+  @override
+  String get yourAgreementIsNowRecordedWhenYou =>
+      'يُسجَّل قبولكِ الآن عند التسجيل، مع اللغة وإصدار التطبيق.';
+
+  @override
+  String get crashReportsAreSentOnlyIfYou =>
+      'لا تُرسل تقارير الأعطال إلا إذا سمحتِ بها، وتبقى متوقفة حتى تفعلي.';
+
+  @override
+  String get youCanAskForACopyOf =>
+      'يمكنكِ طلب نسخة من بياناتكِ، وتبيّن السياسة مدة الاحتفاظ بكل نوع منها.';
+
+  @override
+  String get agreeAndContinue => 'أوافق وأتابع';
+
+  @override
+  String get deleteMyAccountInstead => 'أفضّل حذف حسابي';
+
+  @override
+  String get weCouldNotSaveYourAgreementCheck =>
+      'تعذّر حفظ موافقتكِ. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
+
+  @override
+  String get crashReports => 'تقارير الأعطال';
+
+  @override
+  String get onIfTheAppCrashesTheError =>
+      'مفعّلة. إذا تعطّل التطبيق يُرسل الخطأ وطراز هاتفكِ إلى Firebase، دون أي شيء عنكِ.';
+
+  @override
+  String get offNothingIsSentWhenTheApp =>
+      'متوقفة. لا يُرسل شيء إذا تعطّل التطبيق.';
+
+  @override
+  String get yourPhotosGoToOurServerIn =>
+      'تُرسل صوركِ إلى خادمنا في فرانكفورت بألمانيا، ويقرأ Google Cloud Vision نص البطاقة داخل الاتحاد الأوروبي.';
+
+  @override
+  String get yourFaceIsMatchedOnOurOwn =>
+      'تجري مطابقة وجهكِ على خادمنا نفسه، ولا تطّلع عليه أي خدمة خارجية للتعرّف على الوجوه.';
+
+  @override
+  String get noPhotoIsEverStoredBothSides =>
+      'لا تُخزَّن أي صورة أبدًا. يُحذف وجها البطاقة والصورة الذاتية من الذاكرة فور انتهاء التحقق، أيًا كانت النتيجة.';
+
+  @override
+  String get weKeepTheResultAndItsReasons =>
+      'نحتفظ بالنتيجة وأسبابها 180 يومًا، وبرمز مشفّر من رقمكِ القومي حتى لا تفتح البطاقة الواحدة أكثر من حساب. ولا يمكن تحويل الرمز إلى رقمكِ.';
+
+  @override
+  String get ifTheCheckCannotDecideYouCan =>
+      'إذا تعذّر حسم التحقق، يمكنكِ أن تطلبي أن تتحقق منكِ امرأة من Own Hub.';
+
+  @override
+  String get readThePrivacyPolicy => 'اقرئي سياسة الخصوصية';
+
+  @override
+  String get ownHubIsAFitnessAndWellbeing =>
+      'Own Hub تطبيق للياقة والعافية، وليس جهازًا طبيًا، ولا يشخّص أي حالة ولا يعالجها ولا يشفيها ولا يقي منها. استشيري طبيبكِ قبل البدء، خاصةً إذا كنتِ حاملًا أو وضعتِ حديثًا.';
+
+  @override
+  String get usuallyACoupleOfMinutesIfA =>
+      'عادةً دقيقتان تقريبًا، وإذا احتاجت امرأة إلى التحقق فقد يستغرق ذلك حتى 3 أيام.';
+
+  @override
+  String get bothImagesAreDeletedAfterTheCheck_8iuyd =>
+      'تُحذف الصورتان بعد التحقق، ونحتفظ بالنتيجة وبرمز مشفّر من رقمكِ القومي.';
+
+  @override
+  String get yourIdAndSelfieWereDeletedAfter_nl9hl =>
+      'حُذفت بطاقتكِ وصورتكِ الذاتية بعد التحقق، ونحتفظ بالنتيجة وبرمز مشفّر من رقمكِ القومي.';
+
+  @override
+  String get aWomanReviewerChecksYourCardWith =>
+      'تتحقق مراجِعة من بطاقتكِ معكِ. لا يُسجَّل شيء، ولا تحتفظ إلا بقرارها وتاريخه.';
+
+  @override
+  String get askAWomanToCheckMe => 'اطلبي أن تتحقق منكِ امرأة';
+
+  @override
+  String get aCheckWithAWoman => 'تحقق مع امرأة';
+
+  @override
+  String get emailUsReadSundayToThursday9 =>
+      'راسلينا. نقرأ الرسائل من الأحد إلى الخميس، من 9:00 إلى 17:00 بتوقيت القاهرة.';
+
+  @override
+  String get wantACopyOfYourDataAsk =>
+      'تريدين نسخة من بياناتكِ؟ اطلبيها وسنرسلها إليكِ.';
+
+  @override
+  String get askForACopy => 'اطلبي نسخة';
+
+  @override
+  String get copyOfMyOwnHubData => 'نسخة من بياناتي في Own Hub';
+
+  @override
+  String get thePhoneNumberOnMyAccount => 'رقم الهاتف المسجّل على حسابي:';
+
+  @override
+  String get deletingTakesAwayEverythingYouHavePut_7ytu4 =>
+      'الحذف يزيل كل ما وضعتِه في التطبيق: وجباتكِ وتمارينكِ وقياساتكِ ودورتكِ وإجاباتكِ.';
+
+  @override
+  String get deletingTakesAwayEverythingYouHavePut_1uwbl =>
+      'الحذف يزيل كل ما وضعتِه في التطبيق: وجباتكِ وتمارينكِ وقياساتكِ ودورتكِ ومنشوراتكِ وإجاباتكِ.';
+
+  @override
+  String get deletingUsuallyTakesUnderAMinuteIf =>
+      'يستغرق الحذف عادة أقل من دقيقة، وإذا انقطع يكتمل تلقائيًا خلال ساعة، ولا يمكن استعادة شيء منه.';
+
+  @override
+  String get deletingYourAccountThisUsuallyTakesUnder =>
+      'جارٍ حذف حسابكِ. يستغرق ذلك عادة أقل من دقيقة.';
+
+  @override
+  String get deletingYourAccountRemovesItFromOur_1xldi =>
+      'يؤدي حذف حسابكِ إلى إزالته من خوادمنا ومسح هذا الهاتف. ونحتفظ عن قصد ببعض الأشياء: سجلٌّ مغلق بأن بطاقتكِ الشخصية قد استُخدمت، فلا يمكن فتح حساب آخر بها، والبلاغات بعد حذف اسمكِ منها، وسجلٌّ بأن الحذف قد تمّ. أما المحاولات الفاشلة للتحقق ورمز مُموَّه لهذا التثبيت، غير المرتبطين بأي حساب، فيُحذفان بعد 180 يومًا من آخر محاولة، ويُحذف سجل المراجِعات اللواتي فتحن حالتكِ بعد سنة.';
+
+  @override
+  String get weTextYouASixDigitCode_18wn2 =>
+      'نرسل إليكِ رمزًا من ستة أرقام، ولا ترى أي عضوة أخرى رقمكِ أبدًا.';
+
+  @override
+  String get yourPhoneNumberIsUsedOnlyTo_thda4 =>
+      'يُستخدم رقم هاتفكِ فقط لترتيب التحقق.';
+
+  @override
+  String get aWomanFromOwnHubWillReview => 'ستراجع امرأة من Own Hub تحققكِ';
+
+  @override
+  String get aWomanFromOwnHubReviewsYour =>
+      'تراجع امرأة من Own Hub حالتكِ وتتواصل معكِ هاتفيًا خلال 72 ساعة. لا نرسل رسائل نصية بشأن ذلك.';
+
+  @override
+  String aWomanFromOwnHubWillContact(String time) {
+    return 'ستتواصل معكِ امرأة من Own Hub في $time.';
+  }
+
+  @override
+  String get aWomanFromOwnHubCanContact =>
+      'لا يمكن لامرأة من Own Hub أن تتواصل معكِ إلا بعد أن تطلبي ذلك. إن طلبتِ، تراجع حالتكِ وتتواصل معكِ هاتفيًا خلال 72 ساعة لإكمال تحققكِ.';
+
+  @override
+  String get askAWomanToContactMe => 'اطلبي أن تتواصل معكِ امرأة';
+
+  @override
+  String get ifYouDoNotShowYourFace_1pr0p =>
+      'إن كنتِ لا تكشفين وجهكِ أمام الكاميرا، فلا شيء هنا يطلب منكِ ذلك. تراجع امرأة من Own Hub حالتكِ وتتواصل معكِ هاتفيًا خلال 72 ساعة لتتحقق معكِ من بطاقتكِ الشخصية.';
+
+  @override
+  String get thisAccountHasUsedEveryAutomaticCheck_rc3un =>
+      'استخدم هذا الحساب كل عمليات التحقق التلقائية المتاحة له. لم يُحفظ شيء مما صوّرتِه. ويمكن لامرأة من Own Hub أن تراجع حالتكِ بدلًا من ذلك وتتواصل معكِ خلال 72 ساعة.';
+
+  @override
+  String get yourAutomaticCheckIsStillRunningSo =>
+      'ما زال فحصكِ التلقائي جاريًا، لذا لم يُرسَل شيء. ستنتقلين إلى الخطوة التالية عند انتهائه. وإن لم يحدث شيء، فاطلبي مرة أخرى بعد دقيقة.';
+
+  @override
+  String get theMatchUsuallyTakesUnderAMinute =>
+      'تستغرق المطابقة عادةً أقل من دقيقة. وإن احتاج الأمر إلى شخص، تتولّاه مراجِعة من هنا.';
+
+  @override
+  String get buildYourWeekWhileWeCheck => 'جهّزي أسبوعكِ ريثما نتحقّق';
+
+  @override
+  String get saveMyWeek => 'حفظ أسبوعي';
+
+  @override
+  String get breakingThemCanCloseYourAccountYou =>
+      'مخالفتها قد تؤدّي إلى إغلاق حسابكِ. ويمكنكِ قراءتها مرة أخرى في أي وقت.';
+
+  @override
+  String get firstYourWeekThenYourNumberAnd_flrzo =>
+      'أولًا أسبوعكِ، ثم رقمكِ وتحقّق سريع من أنكِ امرأة.';
+
+  @override
+  String get weJustNeedYourNumberAndA_1jn4g =>
+      'نحتاج فقط إلى رقمكِ وتحقّق سريع من أنكِ امرأة.';
+
+  @override
+  String daysAWeekDaysMinutesASession_1a2wl(String days, String minutes) {
+    return 'أيام التمرين في الأسبوع: $days · مدة الحصة بالدقائق: $minutes';
+  }
+
+  @override
+  String get n8WeeksForBeginners => '8 أسابيع · للمبتدئات';
+
+  @override
+  String pickADinnerForDay(String day) {
+    return 'اختاري عشاءً ليوم $day';
+  }
+
+  @override
+  String get changeThisDinner => 'تغيير هذا العشاء';
+
+  @override
+  String get fillMyWeekFromRahmasRecipes => 'املئي أسبوعكِ من وصفات رحمة';
+
+  @override
+  String get yourCycleOnThisPhone => 'دورتكِ، على هذا الهاتف';
+
+  @override
+  String get yourIdPhotoAndSelfieHaveBeen_1qfoh =>
+      'حُذفت صورة بطاقتكِ وصورتكِ الذاتية، ونحتفظ بالنتيجة وأسبابها وبرمز مشفّر من رقمكِ القومي.';
+
+  @override
+  String verifiedInSecondsSecondsYourIdPhoto_mbpt8(int seconds) {
+    return 'تمّ التوثيق في $seconds ثانية. وحُذفت صورة بطاقتكِ وصورتكِ الذاتية، ونحتفظ بالنتيجة وأسبابها وبرمز مشفّر من رقمكِ القومي.';
+  }
+
+  @override
+  String get tellMeWhenImIn => 'أريد إشعارًا عند فتح حسابي';
+
+  @override
+  String get weWillTellYouOnThisPhone =>
+      'سنخبركِ على هذا الهاتف عند انتهاء التحقق.';
+
+  @override
+  String get notificationsAreOffForOwnHubOn =>
+      'الإشعارات متوقفة لتطبيق Own Hub على هذا الهاتف. يمكنكِ تشغيلها من الإعدادات.';
+
+  @override
+  String get notificationsCannotReachThisPhoneOpenOwn =>
+      'لا يمكن أن تصل الإشعارات إلى هذا الهاتف. افتحي Own Hub لتعرفي متى ينتهي التحقق.';
+
+  @override
+  String get aReminderOnYourTrainingDays =>
+      'هل تريدين تذكيرًا في أيام تمرينكِ؟';
+
+  @override
+  String get oneQuietNoteOnTheDaysYou =>
+      'رسالة هادئة واحدة في الأيام التي تختارينها، وفي الوقت الذي تختارينه. ويمكنكِ تغييرها أو إيقافها من الإشعارات.';
+
+  @override
+  String get chooseMyDays => 'اختيار أيامي';
+
+  @override
+  String get trainingReminders => 'تذكيرات التمرين';
+
+  @override
+  String sessionsInYourWeekCountPickThe(String count) {
+    return 'عدد الجلسات في أسبوعكِ: $count. اختاري الأيام التي تناسبكِ.';
+  }
+
+  @override
+  String get time => 'الوقت';
+
+  @override
+  String get changeTime => 'تغيير الوقت';
+
+  @override
+  String get remindMe => 'تفعيل التذكير';
+
+  @override
+  String get turnRemindersOff => 'إيقاف التذكيرات';
+
+  @override
+  String get pickAtLeastOneDay => 'اختاري يومًا واحدًا على الأقل.';
+
+  @override
+  String get remindersAreOn => 'التذكيرات مفعّلة.';
+
+  @override
+  String get remindersAreOff => 'التذكيرات متوقفة.';
+
+  @override
+  String get remindersCannotBeSetOnThisPhone =>
+      'لا يمكن ضبط التذكيرات على هذا الهاتف.';
+
+  @override
+  String get yourSessionIsReadyWhenYouAre => 'جلستكِ جاهزة متى شئتِ.';
+
+  @override
+  String get aNoteOnTheDaysYouChose =>
+      'رسالة في الأيام التي اخترتِ التمرين فيها.';
+
+  @override
+  String get aSampleWeekOfFiveDinnersJoin =>
+      'أسبوع تجريبي من خمس وجبات عشاء. انضمّي لتخطّطي أسبوعكِ.';
+
+  @override
+  String get deleteWhatISavedOnThisPhone => 'حذف ما حفظتُه على هذا الهاتف';
+
+  @override
+  String get deleteWhatYouSavedOnThisPhone =>
+      'هل تحذفين ما حفظتِه على هذا الهاتف؟';
+
+  @override
+  String get yourWeekYourLifeStageAndAnything =>
+      'يُحذف من هذا الهاتف أسبوعكِ ومرحلتكِ الحياتية وكل ما حفظتِه هنا. يمكنكِ بناء أسبوعكِ من جديد في أي وقت.';
+
+  @override
+  String get keepIt => 'احتفظي به';
+
+  @override
+  String get deleteIt => 'احذفيه';
+
+  @override
+  String get deletedFromThisPhone => 'حُذف من هذا الهاتف.';
+
+  @override
+  String get setUpMyCoachProfile => 'جهّزي ملفكِ كمدرِّبة';
+
+  @override
+  String get addPayoutLater => 'إضافة بيانات الدفع لاحقًا';
+
+  @override
+  String get buildYourFirstPlan => 'ابني خطتكِ الأولى';
+
+  @override
+  String get readyForYourFirstClientWhileWe =>
+      'جاهزة لعميلتكِ الأولى بينما نراجع شهاداتكِ.';
+
+  @override
+  String get inviteAClient => 'ادعي عميلة';
+
+  @override
+  String get alreadyCoachingSomeoneSendHerYourCode =>
+      'تدرّبين إحداهن بالفعل؟ أرسلي إليها رمزكِ عبر واتساب.';
+
+  @override
+  String joinMeOnOwnHubTheTraining(String code) {
+    return 'انضمّي إليّ في Own Hub، تطبيق التدريب المخصّص للنساء فقط. عند التسجيل اضغطي لديّ رمز من مدرّبتي وأدخلي $code.';
+  }
+
+  @override
+  String get iHaveACodeFromMyCoach => 'لديّ رمز من مدرّبتي';
+
+  @override
+  String get yourCoachsCode => 'رمز مدرّبتكِ';
+
+  @override
+  String get saveTheCode => 'احفظي الرمز';
+
+  @override
+  String get savedOnceYouAreInWeWill =>
+      'حُفظ الرمز. بعد قبولكِ سنربطكِ بمدرّبتكِ.';
+
+  @override
+  String get thatCodeDoesNotLookRightCheck =>
+      'يبدو هذا الرمز غير صحيح. راجعيه وحاولي مرة أخرى.';
+
+  @override
+  String get yourCoachHasYourRequest => 'وصل طلبكِ إلى مدرّبتكِ.';
+
+  @override
+  String get yourCoachsCodeDidNotWorkAsk =>
+      'لم يعمل رمز مدرّبتكِ. اطلبي منها رمزًا جديدًا.';
+
+  @override
+  String get weCouldNotMakeYourCodeTry => 'تعذّر إنشاء رمزكِ. حاولي بعد قليل.';
+
+  @override
+  String weCouldNotOpenWhatsappYourCode(String code) {
+    return 'تعذّر فتح واتساب. رمزكِ هو $code.';
+  }
+
+  @override
+  String get weOpenCoachingSoon => 'نفتح التدريب الشخصي قريبًا';
+
+  @override
+  String get tellUsAboutYouAndWeWill => 'أخبرينا عنكِ وسنتصل بكِ.';
+
+  @override
+  String get whatYouCoach => 'ما الذي تدرّبين عليه';
+
+  @override
+  String get sendOnWhatsapp => 'أرسلي عبر واتساب';
+
+  @override
+  String get sendByEmail => 'أرسلي بالبريد الإلكتروني';
+
+  @override
+  String get thisOpensAMessageToOurTeam =>
+      'يفتح هذا رسالة إلى فريقنا، ولا يُرسَل شيء حتى ترسليها بنفسكِ.';
+
+  @override
+  String iCoachWomenAndWouldLikeTo(String name, String city, String specialty) {
+    return 'أدرّب النساء وأودّ أن أدرّب في Own Hub. الاسم: $name. المدينة: $city. أدرّب على: $specialty.';
+  }
+
+  @override
+  String get coachingOnOwnHub => 'التدريب في Own Hub';
+
+  @override
+  String get weCouldNotOpenAMessageOn => 'تعذّر فتح رسالة على هذا الهاتف.';
+
+  @override
+  String get iAgreeToTheseThreeRules => 'أوافق على هذه القواعد الثلاث';
+
+  @override
+  String get asACoachYouAgreeToThe =>
+      'بصفتكِ مدرّبة، توافقين على القواعد الثلاث نفسها التي توافق عليها كل امرأة هنا.';
+
+  @override
+  String get photographYourCertificate => 'صوّري شهادتكِ';
+
+  @override
+  String get takeThePhoto => 'التقطي الصورة';
+
+  @override
+  String get layItFlatInGoodLightWith =>
+      'ضعيها مسطّحة في ضوء جيد، بحيث تُقرأ كل كلمة فيها.';
+
+  @override
+  String get theCameraCouldNotStartCloseThis =>
+      'تعذّر تشغيل الكاميرا. أغلقي هذه الشاشة وحاولي مرة أخرى.';
+
+  @override
+  String get weCouldNotSendYourCertificateCheck =>
+      'تعذّر إرسال شهادتكِ. تحقّقي من اتصالكِ وحاولي مرة أخرى.';
+
+  @override
+  String get coachingIsNotOpenYetSoYour =>
+      'التدريب الشخصي غير متاح بعد، لذلك لم تُرسَل شهادتكِ.';
+
+  @override
+  String get typeWhatYouAte => 'اكتبي ما تناولتِه';
 }

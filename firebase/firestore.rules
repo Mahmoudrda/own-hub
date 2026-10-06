@@ -129,6 +129,29 @@ service cloud.firestore {
       return isSelf(uid) && isVerified();
     }
 
+    // THE TWO DORMANT FEATURES, SWITCHED OFF HERE TOO (APL-16).
+    //
+    // The community and the coach app ship off in the app (`Feature.community`,
+    // `Feature.coachApp`), and the privacy policy describes no feature that
+    // connects members. Off in the app was not off on the server: a verified
+    // account could write posts, comments, coach pages, relationships and
+    // messages straight to the API, unmoderated. Every create and update on
+    // those paths is AND-ed with one of these two, so the server refuses what
+    // the app does not offer. Deleting her own post or leaving stays open:
+    // taking something down never depends on a feature being live.
+    //
+    // Each moves with its app flag, with storage.rules' functions of the same
+    // name and, for the coach app, with functions/coaching COACH_APP_LIVE. All
+    // of them change in the same release, and deletion rows 45 to 49 already
+    // cover what they open.
+    function communityLive() {
+      return false;
+    }
+
+    function coachLive() {
+      return false;
+    }
+
     // DECISIONS.md D12. Staff, for the content console — a server-minted claim
     // exactly like `verified` and `coachV`, so a client cannot grant itself
     // admin any more than it can grant itself a verified badge. This gates
@@ -999,12 +1022,14 @@ service cloud.firestore {
       // `hasAny` on the new document's own keys rather than `touches()`,
       // because on a create the two are the same thing and this spelling says
       // plainly that the field may not exist, not merely that it may not change.
-      allow create: if isSelf(coachUid)
+      allow create: if coachLive()
+                    && isSelf(coachUid)
                     && isCoach()
                     && !request.resource.data.keys().hasAny([
                          'verifiedCerts', 'coachV', 'rating'
                        ]);
-      allow update: if isSelf(coachUid)
+      allow update: if coachLive()
+                    && isSelf(coachUid)
                     && isCoach()
                     && !touches(['verifiedCerts', 'coachV', 'rating']);
       allow delete: if false;
@@ -1014,12 +1039,14 @@ service cloud.firestore {
       match /portfolio/{version} {
         allow read: if signedIn() && resource.data.published == true
                     || isSelf(coachUid);
-        allow write: if isSelf(coachUid) && isCoach();
+        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
+        allow delete: if isSelf(coachUid) && isCoach();
       }
 
       match /offers/{offerId} {
         allow read: if signedIn();
-        allow write: if isSelf(coachUid) && isCoach();
+        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
+        allow delete: if isSelf(coachUid) && isCoach();
       }
 
       // G13 / spine C10: a client result is publishable only while consent is
@@ -1028,11 +1055,26 @@ service cloud.firestore {
       match /results/{resultId} {
         allow read: if isSelf(coachUid)
                     || (signedIn() && resource.data.consentState == 'granted');
-        allow write: if isSelf(coachUid) && isCoach();
+        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
+        allow delete: if isSelf(coachUid) && isCoach();
       }
 
-      match /ads/{adId}        { allow read, write: if isSelf(coachUid) && isCoach(); }
-      match /splits/{splitId}  { allow read, write: if isSelf(coachUid) && isCoach(); }
+      match /ads/{adId} {
+        allow read, delete: if isSelf(coachUid) && isCoach();
+        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
+      }
+      match /splits/{splitId} {
+        allow read, delete: if isSelf(coachUid) && isCoach();
+        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
+      }
+
+      // K02. Her certificate records, written only by submit_coach_certificate
+      // and moved on only by a woman reviewer through the Admin SDK, so a coach
+      // can never mark her own certificate checked. She reads her own.
+      match /certificates/{certificateId} {
+        allow read: if isSelf(coachUid);
+        allow write: if false;
+      }
     }
 
     // ------------------------------------------------------- relationships
@@ -1124,7 +1166,8 @@ service cloud.firestore {
       //
       // Two billed reads on create: the coach page, then the block check.
       // Relationships are opened once per coaching engagement.
-      allow create: if isSelfVerified(request.resource.data.clientUid)
+      allow create: if coachLive()
+                    && isSelfVerified(request.resource.data.clientUid)
                     && relId == request.resource.data.coachUid + '__'
                                 + request.resource.data.clientUid
                     && isRealCoach(request.resource.data.coachUid)
@@ -1139,7 +1182,8 @@ service cloud.firestore {
                        ]);
 
       // Money state and the sharing grant are server-written.
-      allow update: if isParty()
+      allow update: if coachLive()
+                    && isParty()
                     && !touches(['payment', 'status', 'grantedForRelId']);
       allow delete: if false;
 
@@ -1152,7 +1196,8 @@ service cloud.firestore {
         // read from the PARENT relationship — the same cached document
         // `isPartyOfParent()` already loaded. One further billed read for the
         // block check itself.
-        allow create: if isPartyOfParent()
+        allow create: if coachLive()
+                      && isPartyOfParent()
                       && request.resource.data.senderUid == request.auth.uid
                       && notBlockedBy(
                            request.auth.uid == parent().coachUid
@@ -1164,8 +1209,8 @@ service cloud.firestore {
       }
 
       match /reviews/{reviewId} {
-        allow read: if isPartyOfParent();
-        allow write: if isPartyOfParent();
+        allow read, delete: if isPartyOfParent();
+        allow create, update: if coachLive() && isPartyOfParent();
       }
     }
 
@@ -1231,13 +1276,15 @@ service cloud.firestore {
       // `allow update` refuses to let a client touch the server-maintained
       // tallies, and `allow create` let a post be born with
       // `counts.likes = 99999`. Both measured as ALLOWED.
-      allow create: if isVerified()
+      allow create: if communityLive()
+                    && isVerified()
                     && request.resource.data.authorUid == request.auth.uid
                     // Rule 6: blur defaults on, applied on-device before upload.
                     && request.resource.data.blurred is bool
                     && noRunCounter()
                     && !request.resource.data.keys().hasAny(['counts']);
-      allow update: if isVerified()
+      allow update: if communityLive()
+                    && isVerified()
                     && resource.data.authorUid == request.auth.uid
                     // Counts are server-maintained; a client cannot inflate them.
                     && !touches(['counts', 'authorUid', 'createdAt']);
@@ -1251,7 +1298,8 @@ service cloud.firestore {
         // post it is, one for the block check. Creates are rare beside reads,
         // and the alternative — a blocked man able to comment under her posts
         // because the only check lived in the app — is not a trade.
-        allow create: if isVerified()
+        allow create: if communityLive()
+                      && isVerified()
                       && request.resource.data.authorUid == request.auth.uid
                       && noRunCounter()
                       && !request.resource.data.keys().hasAny(['counts'])
@@ -1282,7 +1330,9 @@ service cloud.firestore {
       // stays `isSelf` — the argument that keeps it outside `notBlockedBy()`
       // keeps it outside the gate too, and an account with no claim has no
       // business being unable to undo an edge it can no longer create.
-      allow create, update: if isSelfVerified(ownerUid) && notBlockedBy(otherUid);
+      allow create, update: if communityLive()
+                            && isSelfVerified(ownerUid)
+                            && notBlockedBy(otherUid);
       allow delete: if isSelf(ownerUid);
     }
 
@@ -1307,7 +1357,8 @@ service cloud.firestore {
       match /members/{uid} {
         allow get:  if isVerified();
         allow list: if false;
-        allow create, update: if isSelfVerified(uid)
+        allow create, update: if communityLive()
+                              && isSelfVerified(uid)
                               && noRunCounter()
                               && stampedIfTouched()
                               && request.resource.data.keys().hasOnly([
@@ -1334,6 +1385,11 @@ service cloud.firestore {
       allow create: if signedIn()
                     && request.resource.data.reporterUid == request.auth.uid
                     && request.resource.data.subjectUid != request.auth.uid
+                    // A report about a person is always open. One about a post
+                    // or a comment is about the community, and waits for it.
+                    && (communityLive()
+                        || !(request.resource.data.get('subjectKind', '')
+                             in ['post', 'comment']))
                     && request.resource.data.state == 'submitted'
                     && serverStamped('createdAt')
                     && request.resource.data.get('note', '').size() <= 1000
@@ -1541,6 +1597,14 @@ service cloud.firestore {
     // likewise. No client, admin included, reads or writes either.
     match /waitlist/{entryId}       { allow read, write: if false; }
     match /waitlistRate/{key}       { allow read, write: if false; }
+    // M11. The proof she agreed to the waitlist wording: a keyed code of her
+    // contact, the wording version, the language and the date, for three
+    // years. Function-only, like the two above.
+    match /waitlistConsentProof/{key} { allow read, write: if false; }
+    // K07. A coach's invite codes: her uid and two dates, nothing about the
+    // women she invites. Written and read only by create_coach_invite and
+    // accept_coach_invite. Deletion row 49.
+    match /coachInvites/{code}      { allow read, write: if false; }
 
     // STILL MISSING, and deliberately not guessed at:
     //   planDrafts, media, enquiries, payments.
