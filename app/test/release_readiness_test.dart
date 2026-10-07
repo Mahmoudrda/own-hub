@@ -118,14 +118,44 @@ void main() {
         .where((e) => e.value.flow == 'admin')
         .toList();
 
-    test('a release build resolves none of Z01 to Z14', () {
-      expect(admin, hasLength(14), reason: 'the console is fourteen screens');
+    test('a release build resolves none of Z01 to Z18', () {
+      expect(admin, hasLength(18), reason: 'the console is eighteen screens');
       for (final entry in admin) {
         expect(
           AppRouter.resolvesInThisBuild(entry.key, release: true),
           isFalse,
           reason: '${entry.key} at ${entry.value.name} still resolves',
         );
+      }
+    });
+
+    test('not even when the build asks to be the admin build', () {
+      // `ADMIN_BUILD=true` passed to a release build by mistake must change
+      // nothing: release is checked first.
+      for (final entry in admin) {
+        expect(
+          AppRouter.resolvesInThisBuild(
+            entry.key,
+            release: true,
+            debug: false,
+            adminBuild: true,
+          ),
+          isFalse,
+          reason: '${entry.key} resolves in a release admin build',
+        );
+      }
+      expect(
+        AppRouter.startingFlags(
+          release: true,
+          adminBuild: true,
+        ).isOn(Feature.adminConsole),
+        isFalse,
+      );
+    });
+
+    test('the dashboard, the logs and the events console most of all', () {
+      for (final id in const ['Z15', 'Z16', 'Z17', 'Z18']) {
+        expect(AppRouter.resolvesInThisBuild(id, release: true), isFalse);
       }
     });
 
@@ -144,11 +174,62 @@ void main() {
       }
     });
 
-    test('debug and profile keep it, because the owner works in them', () {
-      for (final id in const ['Z01', 'Z08', 'Z14']) {
+    test('debug keeps it, and profile only as the owner\'s admin build', () {
+      for (final id in const ['Z01', 'Z08', 'Z14', 'Z15', 'Z18']) {
         expect(AppRouter.resolvesInThisBuild(id, release: false), isTrue);
+        // A profile build handed to anyone else carries no console.
+        expect(
+          AppRouter.resolvesInThisBuild(id, release: false, debug: false),
+          isFalse,
+        );
+        // The owner's admin build, from `tool/admin_access.sh build`.
+        expect(
+          AppRouter.resolvesInThisBuild(
+            id,
+            release: false,
+            debug: false,
+            adminBuild: true,
+          ),
+          isTrue,
+        );
       }
+      expect(
+        AppRouter.startingFlags(
+          release: false,
+          adminBuild: true,
+        ).isOn(Feature.adminConsole),
+        isTrue,
+      );
+      expect(
+        AppRouter.startingFlags(release: false, adminBuild: false),
+        same(FeatureFlags.shipped),
+      );
     });
+
+    test('the store build script never asks for the admin build', () {
+      final script = File('tool/build_release.sh').readAsStringSync();
+      expect(script, isNot(contains('ADMIN_BUILD')));
+      final admin = File('tool/admin_access.sh').readAsStringSync();
+      expect(admin, contains('--profile'));
+      expect(admin, contains('never a release build'));
+    });
+
+    test(
+      'the profile row into the console is offered only where it resolves',
+      () {
+        final source = File('lib/routing/app_router.dart').readAsStringSync();
+        expect(
+          source,
+          contains(
+            "onOpenAdmin: adminConsoleOffered ? () => goTo(context, 'Z01') : null",
+          ),
+        );
+        expect(
+          source,
+          contains("resolvesInThisBuild('Z01') && screenIsOn('Z01')"),
+        );
+      },
+    );
 
     test('an unknown route and a withheld one get the same answer: null', () {
       // A widget test cannot be compiled in release mode — `kReleaseMode` is a

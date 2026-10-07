@@ -190,6 +190,7 @@ abstract final class ScreenArt {
     // comment on `first_week_view.dart` is explicit that finishing the first
     // week is celebrated QUIETLY, because the confetti belongs to a workout.
     'T08': [AppArt.strongArms],
+    'T09': [AppArt.dance],
     'W01': [AppArt.running],
     'W02': [AppArt.lungeKneeling],
     'W03': [AppArt.spinBike, AppArt.yogaMat],
@@ -235,6 +236,10 @@ abstract final class ScreenArt {
     'Z12': [AppArt.buddhaBowl],
     'Z13': [AppArt.running],
     'Z14': [AppArt.dumbbells],
+    'Z15': [AppArt.running],
+    'Z16': [AppArt.yogaMat],
+    'Z17': [AppArt.dance],
+    'Z18': [AppArt.gymBag],
   };
 
   /// Screens that already draw a large centred illustration of their own. They

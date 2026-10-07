@@ -155,6 +155,20 @@ const Map<String, ({String file, String guard})> _sourceGuardedEdges = {
     file: 'lib/features/today/presentation/today_view.dart',
     guard: "if (AppRouter.screenIsOn('X01'))",
   ),
+  // The Upcoming card on Home is drawn only while T09, the owner's events
+  // (Feature.events), is on.
+  'T01->T09': (
+    file: 'lib/features/today/presentation/today_view.dart',
+    guard: "when AppRouter.screenIsOn('T09')",
+  ),
+  // ProfileView (A02) draws the admin console row only when `onOpenAdmin` is
+  // passed, and the router passes it only where the console resolves and is
+  // switched on: the owner's admin build, never a store build.
+  'A02->Z01': (
+    file: 'lib/routing/app_router.dart',
+    guard:
+        "onOpenAdmin: adminConsoleOffered ? () => goTo(context, 'Z01') : null",
+  ),
 };
 
 void main() {

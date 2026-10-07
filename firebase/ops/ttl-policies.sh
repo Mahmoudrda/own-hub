@@ -35,3 +35,5 @@ enable verificationReviewAccess expireAt   # M9, one year after the access
 enable waitlist                 expireAt
 enable waitlistRate             expireAt
 enable waitlistConsentProof     expireAt   # M11, three years after the last possible message
+enable adminAccessLog           expireAt   # console reads, one year after the read
+enable opsErrors                expireAt   # daily error-code counts, 90 days

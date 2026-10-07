@@ -166,12 +166,24 @@ class FakeFirestore:
 
 
 class CollectionRef:
-    def __init__(self, db, path, filters=(), order=None, limit_n=None, group=False, after=None):
+    def __init__(
+        self, db, path, filters=(), order=None, limit_n=None, group=False, after=None,
+        descending=False,
+    ):
         self.db, self.path = db, path
         self.id = path.rsplit("/", 1)[-1]
         self._filters, self._order, self._limit = list(filters), order, limit_n
         self._group = group
         self._after = after
+        self._descending = descending
+
+    def _copy(self, **changes):
+        state = {
+            "filters": self._filters, "order": self._order, "limit_n": self._limit,
+            "group": self._group, "after": self._after, "descending": self._descending,
+        }
+        state.update(changes)
+        return CollectionRef(self.db, self.path, **state)
 
     @property
     def parent(self):
@@ -193,28 +205,32 @@ class CollectionRef:
         return None, ref
 
     def where(self, field, op=None, value=None, *, filter=None):
-        return CollectionRef(
-            self.db, self.path, self._filters + [(field, op, value)], self._order,
-            self._limit, self._group, self._after,
-        )
+        return self._copy(filters=self._filters + [(field, op, value)])
 
-    def order_by(self, field, **_):
-        return CollectionRef(
-            self.db, self.path, self._filters, field, self._limit, self._group, self._after
-        )
+    def order_by(self, field, direction=None, **_):
+        return self._copy(order=field, descending=direction == "DESCENDING")
 
     def limit(self, n):
-        return CollectionRef(
-            self.db, self.path, self._filters, self._order, n, self._group, self._after
-        )
+        return self._copy(limit_n=n)
+
+    def count(self, alias=None):
+        """`query.count()`: the real shape, one partition of one result."""
+        query = self
+
+        class _Result:
+            def __init__(self, value):
+                self.alias, self.value = alias, value
+
+        class _Aggregation:
+            def get(self, transaction=None):
+                return [[_Result(len(list(query._copy(limit_n=None).stream())))]]
+
+        return _Aggregation()
 
     def start_after(self, fields):
         """Only the `__name__` cursor the deletion scan uses: a DocumentRef."""
         assert self._order == "__name__", "a cursor needs order_by('__name__')"
-        return CollectionRef(
-            self.db, self.path, self._filters, self._order, self._limit, self._group,
-            fields["__name__"].path,
-        )
+        return self._copy(after=fields["__name__"].path)
 
     def select(self, field_paths):
         # A projection changes what is returned, not which documents match.
@@ -230,6 +246,10 @@ class CollectionRef:
             if op == "<" and not (have is not None and have < value):
                 return False
             if op == "<=" and not (have is not None and have <= value):
+                return False
+            if op == ">" and not (have is not None and have > value):
+                return False
+            if op == ">=" and not (have is not None and have >= value):
                 return False
             if op == "in" and have not in value:
                 return False
@@ -255,7 +275,7 @@ class CollectionRef:
                 if self._matches(data):
                     rows.append(Snapshot(DocumentRef(self.db, path), data))
         if self._order and self._order != "__name__":
-            rows.sort(key=lambda s: str(s.get(self._order)))
+            rows.sort(key=lambda s: str(s.get(self._order)), reverse=self._descending)
         if self._limit is not None:
             rows = rows[: self._limit]
         return iter(rows)

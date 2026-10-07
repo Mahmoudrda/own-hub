@@ -39,6 +39,7 @@ class AppField extends StatefulWidget implements HandSeedName {
     this.onChanged,
     this.onSubmitted,
     this.trailing,
+    this.maxLines = 1,
   });
 
   final TextEditingController? controller;
@@ -70,6 +71,11 @@ class AppField extends StatefulWidget implements HandSeedName {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final Widget? trailing;
+
+  /// One line unless asked. More than one is for a paragraph a person writes,
+  /// such as an event's description or a recipe's method; null grows with
+  /// the text.
+  final int? maxLines;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -176,7 +182,12 @@ class _AppFieldState extends State<AppField> {
                                   controller: widget.controller,
                                   focusNode: _node,
                                   autofocus: widget.autofocus,
-                                  keyboardType: widget.keyboardType,
+                                  keyboardType:
+                                      widget.keyboardType ??
+                                      (widget.maxLines == 1
+                                          ? null
+                                          : TextInputType.multiline),
+                                  maxLines: widget.maxLines,
                                   // Declared since this widget was written and never
                                   // passed on, so it was inert for EVERY caller.
                                   //

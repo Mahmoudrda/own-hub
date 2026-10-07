@@ -80,6 +80,7 @@ class ProfileView extends StatefulWidget {
     this.onOpenSafetyCentre,
     this.onOpenYourData,
     this.onOpenAllScreens,
+    this.onOpenAdmin,
     this.onSelectTab,
   });
 
@@ -115,6 +116,11 @@ class ProfileView extends StatefulWidget {
   /// The testing index of every screen. Null — and the row absent — whenever
   /// an account is required.
   final VoidCallback? onOpenAllScreens;
+
+  /// The owner's admin console. Null, and the row absent, in every build but
+  /// the admin build (`tool/admin_access.sh build`); a store build cannot
+  /// resolve the console at all.
+  final VoidCallback? onOpenAdmin;
 
   /// Account deletion.
   ///
@@ -292,6 +298,13 @@ class _ProfileViewState extends State<ProfileView> {
           subtitle: l10n.deleteYourAccountAndEverythingInIt,
           onTap: widget.onOpenYourData,
         ),
+        if (widget.onOpenAdmin != null)
+          _row(
+            icon: Icons.admin_panel_settings_outlined,
+            title: l10n.adminConsole,
+            subtitle: l10n.contentEventsCountsAndLogs,
+            onTap: widget.onOpenAdmin,
+          ),
         if (widget.onOpenAllScreens != null)
           _row(
             icon: Icons.grid_view,

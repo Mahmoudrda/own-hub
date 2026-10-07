@@ -26,7 +26,11 @@ library;
 
 import '../../../ui/screen_art_strip.dart';
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import '../../../app_state/remote_features.dart';
 
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
@@ -82,12 +86,18 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
     // screen is a switch nobody running the product knows about.
     Feature.recipeTiering,
     Feature.assistant,
+    // The one switch members' apps also take from the server: flipping it
+    // here writes `meta/features` too (RemoteFeatures).
+    Feature.events,
   ];
 
   void _toggle(Feature f, bool on) {
     setState(() {
       AppRouter.featureFlags = AppRouter.featureFlags.with_({f: on});
     });
+    if (RemoteFeatures.isSwitchable(f)) {
+      unawaited(RemoteFeatures.publish(f, on));
+    }
   }
 
   @override
@@ -187,6 +197,13 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(f.name, style: AppText.bodyM),
+                if (RemoteFeatures.isSwitchable(f))
+                  Text(
+                    AppL10n.of(context).alsoSwitchesItForMembers,
+                    style: AppText.label.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
                 if (blockedByParent)
                   Text(
                     '${f.parent!.name} is off',

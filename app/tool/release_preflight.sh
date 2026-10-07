@@ -43,6 +43,8 @@ echo "-- this is a store build, not a testing build --"
 check "testing aids need a debug build"    "grep -q 'kDebugMode && !featureFlags.isOn(Feature.accountRequired)' lib/routing/app_router.dart"
 check "no aid keys off a flag alone"       "! grep -rn 'isTestMode' lib/app_state | grep -q 'accountRequired'"
 check "the console is compiled out"        "grep -q 'resolvesInThisBuild' lib/routing/app_router.dart"
+check "release refuses the console even in an admin build" "grep -q '(!release && (debug || adminBuild))' lib/routing/app_router.dart"
+check "the store build never asks for the admin build" "! grep -q 'ADMIN_BUILD' tool/build_release.sh"
 check "release guards pass"                "flutter test test/release_readiness_test.dart"
 
 echo
@@ -97,6 +99,9 @@ check "no false 'licensed provider' claim" "! grep -q 'licensed Egyptian provide
 check "analytics off until she allows it (Android)" "grep -A1 -q 'firebase_analytics_collection_enabled' android/app/src/main/AndroidManifest.xml && grep -A1 'firebase_analytics_collection_enabled' android/app/src/main/AndroidManifest.xml | grep -q 'android:value=\"false\"'"
 check "analytics off until she allows it (iOS)" "grep -A1 FIREBASE_ANALYTICS_COLLECTION_ENABLED ios/Runner/Info.plist | grep -q '<false/>'"
 check "no advertising ID on Android"       "grep -q 'AD_ID\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml && grep -A1 google_analytics_adid_collection_enabled android/app/src/main/AndroidManifest.xml | grep -q 'false'"
+check "no ad services: advertising ID"     "grep -q 'ACCESS_ADSERVICES_AD_ID\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
+check "no ad services: attribution"        "grep -q 'ACCESS_ADSERVICES_ATTRIBUTION\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
+check "no ad services: topics"             "grep -q 'ACCESS_ADSERVICES_TOPICS\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "no IDFA on iOS"                     "grep -q 'FirebaseAnalyticsWithoutAdIdSupport = true' ios/Podfile && grep -q 'FIREBASE_ANALYTICS_WITHOUT_ADID' tool/build_release.sh"
 check "analytics declared where it is used" "! grep -q '^  firebase_analytics:' pubspec.yaml || (grep -q NSPrivacyCollectedDataTypeProductInteraction ios/Runner/PrivacyInfo.xcprivacy && grep -q 'App interactions' android/play-data-safety.txt)"
 check "App Check is activated"             "grep -q FirebaseAppCheck lib/app_state/firebase_boot.dart"

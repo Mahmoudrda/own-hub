@@ -75,17 +75,31 @@
 /// collection's id column, which is the same id the importer writes through, so
 /// a row added here and a row imported from a file land on the same document
 /// rather than on two.
+///
+/// ## A recipe carries two things the CSV does not
+///
+/// Its place in her book and its method, one step a line. Both are drawn for
+/// recipes only and travel through [ContentFormView.onSaveRecipe], because the
+/// member app cannot show a recipe without its steps. So are the author and
+/// the second person who checked the allergens: `firestore.rules` refuses a
+/// recipe without both, or with the same name twice, so the form says so
+/// first. "Show this recipe to members" decides between `draft` and `review`.
 library;
 
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
+import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
+import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_field.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_toggle.dart';
+import '../../train/domain/workout_library.dart' show AuthoredSession;
 import '../domain/content_schema.dart';
+import 'admin_widgets.dart';
+import 'programme_sessions_editor.dart';
 
 /// Whole numbers, zero or more.
 ///
@@ -103,9 +117,40 @@ class ContentFormView extends StatefulWidget {
     this.values = const <String, String>{},
     this.onSave,
     this.onClose,
+    this.sections = const [],
+    this.exercises = const [],
+    this.sessions = const [],
+    this.published = false,
+    this.onSaveProgramme,
   });
 
   final ContentCollection collection;
+
+  /// Recipes only: the sections of her book a recipe can be placed in, as
+  /// `(sectionId, title)`. The titles are her own words and are shown as
+  /// written, in both languages.
+  final List<(String, String)> sections;
+
+  /// Programmes only: the exercise library a session is built from, as
+  /// `(exerciseId, name)`.
+  final List<(String, String)> exercises;
+
+  /// Programmes only: the sessions saved with this programme.
+  final List<AuthoredSession> sessions;
+
+  /// Programmes only: whether it is published to members now.
+  final bool published;
+
+  /// Programmes only. The row, its sessions and whether to publish, because
+  /// sessions are not a CSV column. When set, it is called instead of
+  /// [onSave].
+  final void Function(
+    Map<String, String> values,
+    List<AuthoredSession> sessions,
+    bool published,
+  )?
+  onSaveProgramme;
+
 
   /// The row being edited, keyed by CSV column. Empty means this is a new row,
   /// which is the case D12 actually asked for.
@@ -124,6 +169,24 @@ class ContentFormView extends StatefulWidget {
 class _ContentFormViewState extends State<ContentFormView> {
   final Map<String, TextEditingController> _text = {};
   final Map<String, bool> _flags = {};
+
+  /// Recipes: whether members may see it.
+  late bool _showToMembers =
+      _isRecipe &&
+      (widget.values['status'] ?? '') != '' &&
+      widget.values['status'] != 'draft';
+  late String _sectionId = widget.values['sectionId'] ?? '';
+
+  bool get _isRecipe => widget.collection == ContentCollection.recipes;
+
+  bool get _isProgramme => widget.collection == ContentCollection.programmes;
+
+  late final ProgrammeSessionsController _sessions =
+      ProgrammeSessionsController(widget.sessions);
+  late bool _publishProgramme = widget.published;
+
+  /// The key of the section chips in [_errors].
+  static const String _sectionKey = 'sectionId';
 
   /// Keyed by column. Empty until she has tried to save — a form that turns red
   /// before she has typed anything is a form that tells her she is wrong for
@@ -158,6 +221,7 @@ class _ContentFormViewState extends State<ContentFormView> {
     for (final controller in _text.values) {
       controller.dispose();
     }
+    _sessions.dispose();
     super.dispose();
   }
 
@@ -176,8 +240,56 @@ class _ContentFormViewState extends State<ContentFormView> {
       footer: [AppButton(l10n.save, onPressed: () => _save(l10n))],
       children: [
         for (final column in _schema.columns) ?_fieldFor(l10n, column),
+        if (_isRecipe) ..._recipeFields(l10n),
+        if (_isProgramme) ...[
+          ProgrammeSessionsEditor(
+            controller: _sessions,
+            exercises: widget.exercises,
+          ),
+          AppListItem(
+            title: l10n.showThisProgrammeToMembers,
+            subtitle: l10n.membersSeeEachSessionThatSuitsTheir,
+            variant: AppCardVariant.filled,
+            trailing: AppToggle(
+              value: _publishProgramme,
+              semanticLabel: l10n.showThisProgrammeToMembers,
+              onChanged: (next) => setState(() => _publishProgramme = next),
+            ),
+            onTap: () =>
+                setState(() => _publishProgramme = !_publishProgramme),
+          ),
+        ],
       ],
     );
+  }
+
+  /// What a recipe needs to reach a member and the CSV does not carry: where
+  /// it sits in her book, its method, and whether to show it.
+  List<Widget> _recipeFields(AppL10n l10n) {
+    final ids = [for (final s in widget.sections) s.$1];
+    return [
+      AdminSectionHead(l10n.sectionOfTheBook),
+      if (widget.sections.isNotEmpty)
+        AppChipRow(
+          grow: false,
+          items: [for (final s in widget.sections) s.$2],
+          selected: {if (ids.contains(_sectionId)) ids.indexOf(_sectionId)},
+          onTap: (i) => setState(() => _sectionId = ids[i]),
+        ),
+      if (_errors[_sectionKey] case final error?)
+        Text(error, style: AppText.bodyM.copyWith(color: AppColors.error)),
+      AppListItem(
+        title: l10n.showThisRecipeToMembers,
+        subtitle: l10n.membersSeeItWithinADay,
+        variant: AppCardVariant.filled,
+        trailing: AppToggle(
+          value: _showToMembers,
+          semanticLabel: l10n.showThisRecipeToMembers,
+          onChanged: (next) => setState(() => _showToMembers = next),
+        ),
+        onTap: () => setState(() => _showToMembers = !_showToMembers),
+      ),
+    ];
   }
 
   /// Null for a column this screen has no label for. See the file note.
@@ -205,9 +317,15 @@ class _ContentFormViewState extends State<ContentFormView> {
       label: label,
       // Said before the mistake as well as after it. §3.2 is not an error
       // message, it is the rule the column is under.
-      helper: column.safetyTag ? l10n.writeNoneWhenThereAreNoneBlank : '',
+      helper: column.safetyTag
+          ? l10n.writeNoneWhenThereAreNoneBlank
+          : column.name == 'allergenReviewedBy'
+          ? l10n.aSecondPersonChecksTheAllergensNever
+          : '',
       errorText: _errors[column.name] ?? '',
       keyboardType: column.numeric ? TextInputType.number : null,
+      // A method is a paragraph of steps, one a line.
+      maxLines: column.name.startsWith('method_') ? null : 1,
       textDirection: _directionFor(column),
     );
   }
@@ -253,6 +371,14 @@ class _ContentFormViewState extends State<ContentFormView> {
     'weeks' => l10n.weeks,
     'daysPerWeek' => l10n.daysAWeek,
     'sessionLength' => l10n.sessionLength,
+    // The two names the rules require before a recipe is written at all,
+    // and require to be two different people.
+    'authoredBy' => l10n.author,
+    // A console recipe's method, one step a line. Not her book's text, which
+    // is a sidecar; see `content_schema.dart`.
+    'method_ar' => l10n.methodOneStepALineInArabic,
+    'method_en' => l10n.methodOneStepALineInEnglish,
+    'allergenReviewedBy' => l10n.allergensCheckedBy,
     _ => null,
   };
 
@@ -263,7 +389,9 @@ class _ContentFormViewState extends State<ContentFormView> {
   /// Arabic, exactly as `AppField` documents for a phone field. A number is
   /// Western digits in both languages (`P0-A11Y-01`) and belongs with them.
   TextDirection? _directionFor(ContentColumn column) {
-    if (column.name == 'name_ar') return TextDirection.rtl;
+    if (column.name == 'name_ar' || column.name == 'method_ar') {
+      return TextDirection.rtl;
+    }
     if (column.name == 'name_en' ||
         column.name == _schema.idColumn ||
         column.numeric) {
@@ -333,10 +461,48 @@ class _ContentFormViewState extends State<ContentFormView> {
       }
     }
 
-    setState(() => _errors = errors);
-    if (errors.isNotEmpty) return;
+    if (_isRecipe) _checkRecipe(l10n, errors);
+    final sessionsOk = !_isProgramme || _sessions.validate(l10n);
 
+    setState(() => _errors = errors);
+    if (errors.isNotEmpty || !sessionsOk) return;
+
+    final onSaveProgramme = widget.onSaveProgramme;
+    if (_isProgramme && onSaveProgramme != null) {
+      onSaveProgramme(_collected(), _sessions.build(), _publishProgramme);
+      return;
+    }
     widget.onSave?.call(_collected());
+  }
+
+  /// What `firestore.rules` and the member app's recipe rules would refuse,
+  /// said beside the field rather than after a save that fails.
+  void _checkRecipe(AppL10n l10n, Map<String, String> errors) {
+    final author = _text['authoredBy']!.text.trim();
+    final reviewer = _text['allergenReviewedBy']!.text.trim();
+    if (author.isEmpty) errors['authoredBy'] = l10n.requiredLabel;
+    if (reviewer.isEmpty) {
+      errors['allergenReviewedBy'] = l10n.requiredLabel;
+    } else if (reviewer.toLowerCase() == author.toLowerCase()) {
+      errors['allergenReviewedBy'] = l10n.aSecondPersonChecksTheAllergensNever;
+    }
+    final macros = [
+      for (final c in const ['kcal', 'proteinG', 'carbsG', 'fatG'])
+        _text[c]!.text.trim().isNotEmpty,
+    ];
+    if (macros.contains(true) && macros.contains(false)) {
+      for (final c in const ['kcal', 'proteinG', 'carbsG', 'fatG']) {
+        if (_text[c]!.text.trim().isEmpty) {
+          errors[c] = l10n.fillInAllFourNumbersOrLeave;
+        }
+      }
+    }
+    if (_showToMembers) {
+      if (_sectionId.isEmpty) errors[_sectionKey] = l10n.requiredLabel;
+      if (_text['method_ar']!.text.trim().isEmpty) {
+        errors['method_ar'] = l10n.requiredLabel;
+      }
+    }
   }
 
   /// The whole row, every column of the contract, in the CSV's own vocabulary.
@@ -358,6 +524,21 @@ class _ContentFormViewState extends State<ContentFormView> {
     row.forEach((name, value) {
       if (value.isEmpty && _defaults[name] != null) row[name] = _defaults[name]!;
     });
+    if (_isRecipe) {
+      row['sectionId'] = _sectionId;
+      final kept = widget.values['status'];
+      row['status'] = !_showToMembers
+          ? 'draft'
+          : (kept == 'published' ? kept! : 'review');
+      // Four numbers summed, or none: the basis follows what was written.
+      final macros = [
+        for (final c in const ['kcal', 'proteinG', 'carbsG', 'fatG'])
+          row[c] ?? '',
+      ];
+      row['macroBasis'] = macros.every((m) => m.isNotEmpty)
+          ? 'computed'
+          : 'withheld';
+    }
     return row;
   }
 

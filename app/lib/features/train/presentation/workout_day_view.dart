@@ -233,6 +233,7 @@ class WorkoutDayView extends StatefulWidget {
     this.day,
     this.repository,
     this.lifeStage,
+    this.writtenForHerStage = false,
     this.onNotToday,
   });
 
@@ -245,6 +246,11 @@ class WorkoutDayView extends StatefulWidget {
   /// card above the moves, and Start becomes "I have my doctor's OK, start",
   /// with "Not today" beside it. Every other answer changes nothing here.
   final LifeStage? lifeStage;
+
+  /// The day is a library session the owner marked for her life stage. The
+  /// doctor card stays, saying what the session was written for rather than
+  /// that it was not.
+  final bool writtenForHerStage;
 
   /// "Not today", shown only with the card above. Falls back to [onBack].
   final VoidCallback? onNotToday;
@@ -284,9 +290,11 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final day = widget.day ?? sampleWorkoutDay(l10n);
-    final caution = switch (widget.lifeStage) {
-      LifeStage.pregnant => l10n.day1WasNotWrittenForPregnancy,
-      LifeStage.postpartum => l10n.day1WasNotWrittenForThe,
+    final caution = switch ((widget.lifeStage, widget.writtenForHerStage)) {
+      (LifeStage.pregnant, true) => l10n.writtenForPregnancyCheckWithYourDoctor,
+      (LifeStage.postpartum, true) => l10n.writtenForAfterABirthCheckWith,
+      (LifeStage.pregnant, false) => l10n.day1WasNotWrittenForPregnancy,
+      (LifeStage.postpartum, false) => l10n.day1WasNotWrittenForThe,
       _ => null,
     };
 

@@ -98,6 +98,10 @@ void main() {
         'doneness',
         'markKey',
         'tier',
+        // A console recipe's method, one step a line. Not her book's text,
+        // which stays a sidecar; both columns may be absent from a header.
+        'method_ar',
+        'method_en',
       ]);
     });
 

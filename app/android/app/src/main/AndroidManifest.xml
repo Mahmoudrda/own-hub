@@ -47,6 +47,12 @@
          stripped from the merged manifest and "Advertising ID" is not a
          Data safety answer. -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+    <!-- The same SDK also asks for Android's Privacy Sandbox ad services
+         (advertising ID, ad attribution, ad topics). None is used, so they
+         are stripped too. -->
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_TOPICS" tools:node="remove" />
 
     <!-- Not required, so the app still installs on a handset with no camera or
          no autofocus. Google Play filters installs on any hardware feature a

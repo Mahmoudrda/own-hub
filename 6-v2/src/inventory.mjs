@@ -69,6 +69,9 @@ export const screens = [
   { id: 'T06', flow: 'today', title: 'Day one' },
   { id: 'T07', flow: 'today', title: 'Your first week' },
   { id: 'T08', flow: 'today', title: 'First week done' },
+  // Feature.events. The owner's events, published from Z17/Z18; a card on
+  // Home leads here. Off until she switches it on. Designed in Flutter.
+  { id: 'T09', flow: 'today', title: 'Events', noMockup: true },
   // Train
   { id: 'R01', flow: 'train', title: 'Train' },
   { id: 'R02', flow: 'train', title: 'Program' },
@@ -248,4 +251,13 @@ export const screens = [
   // half-built flow can ship dark and be turned on when it is ready rather
   // than when the code happened to land.
   { id: 'Z14', flow: 'admin', title: 'Feature flags' },
+
+  // The owner's operations: counts with no member named in them, the
+  // operational logs in codes, and the events she runs. All four are served by
+  // admin-only callables or by rules that accept the admin claim only.
+  // Designed in Flutter, so no markup here by decision.
+  { id: 'Z15', flow: 'admin', title: 'Dashboard', noMockup: true },
+  { id: 'Z16', flow: 'admin', title: 'Logs', noMockup: true },
+  { id: 'Z17', flow: 'admin', title: 'Events', noMockup: true },
+  { id: 'Z18', flow: 'admin', title: 'Edit an event', noMockup: true },
 ];

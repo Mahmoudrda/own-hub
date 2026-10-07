@@ -33,7 +33,11 @@ void main() {
     // `allergy_interlock_test.dart` exists to stop. `E11` is her closing
     // letter, squeezed under a recipe on page 26 of the book. Neither is a
     // state of a neighbour, so neither is smuggled in as one.
-    expect(appRoutes.length, 179);
+    //
+    // 179 -> 184 with the owner's operations: `Z15` the dashboard, `Z16` the
+    // logs, `Z17` and `Z18` her events, and `T09`, the members' Events screen
+    // behind Feature.events. All five were designed in Flutter (`noMockup`).
+    expect(appRoutes.length, 184);
   });
 
   test('every screen is a destination except the eight first-run states', () {
@@ -47,7 +51,9 @@ void main() {
     // 169 -> 171: E10 and E11 are both destinations. E10 in particular must be
     // one — a question asked inside a sheet leaves no way back to it, and
     // `product_rules_test.dart` bans a dialog on these paths anyway.
-    expect(appDestinations.length, 171);
+    //
+    // 171 -> 176: Z15 to Z18 and T09 are all destinations.
+    expect(appDestinations.length, 176);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 

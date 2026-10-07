@@ -475,6 +475,21 @@ if (fs.existsSync(dictPath)) {
     "I coach women and would like to coach on Own Hub. Name: {name}. City: {city}. I coach: {specialty}.": {"description": "The message a coach sends to the team from the interest form while coaching is closed.", "placeholders": {"name": {"type": "String", "example": "Salma"}, "city": {"type": "String", "example": "Cairo"}, "specialty": {"type": "String", "example": "postpartum strength"}}},
     "{done} of {target} this week": {"description": "Lock Screen inline widget. Sessions this week against her weekly target. Never a daily count.", "placeholders": {"done": {"type": "int", "example": "1"}, "target": {"type": "int", "example": "3"}}},
     "Sessions this week: {done} of {target}": {"description": "VoiceOver label for the widget's week segments and gauge.", "placeholders": {"done": {"type": "int", "example": "1"}, "target": {"type": "int", "example": "3"}}},
+    "{count} past the {hours}-hour promise": {"description": "Z15, human reviews older than the review SLA. Both values are Western-digit labels.", "placeholders": {"count": {"type": "String", "example": "3"}, "hours": {"type": "String", "example": "72"}}},
+    "Oldest has waited {hours} hours": {"description": "Z15, the age of the oldest open human review in whole hours.", "placeholders": {"hours": {"type": "String", "example": "41"}}},
+    "Updated {time}": {"description": "Z15, when the counts were computed, Cairo time.", "placeholders": {"time": {"type": "String", "example": "2026-10-07 14:05"}}},
+    "Case {ref}": {"description": "Z16, a short reference standing for a verification case. Eight hex characters, never an id.", "placeholders": {"ref": {"type": "String", "example": "3fa91c0e"}}},
+    "Reviewer {ref}": {"description": "Z16, a short reference standing for a reviewer account.", "placeholders": {"ref": {"type": "String", "example": "9b2d41aa"}}},
+    "Admin {ref}": {"description": "Z16, a short reference standing for an admin account.", "placeholders": {"ref": {"type": "String", "example": "c01d2e3f"}}},
+    "{count} joined": {"description": "Z16, waitlist joins on one day. Counts only.", "placeholders": {"count": {"type": "String", "example": "12"}}},
+    "{start} to {end}": {"description": "An event's time span, both in Cairo time, Western digits.", "placeholders": {"start": {"type": "String", "example": "18:30"}, "end": {"type": "String", "example": "20:00"}}},
+    "Places: {count}": {"description": "An event's capacity, when the owner set one.", "placeholders": {"count": {"type": "String", "example": "20"}}},
+    "{sets} × {reps}": {"description": "A move's prescription: sets times reps, Western digits.", "placeholders": {"sets": {"type": "String", "example": "3"}, "reps": {"type": "String", "example": "12"}}},
+    "{sets} × {seconds} seconds": {"description": "A held move's prescription: sets times seconds.", "placeholders": {"sets": {"type": "String", "example": "3"}, "seconds": {"type": "String", "example": "30"}}},
+    "Rest {seconds} seconds": {"description": "Rest between sets, as the owner wrote it.", "placeholders": {"seconds": {"type": "String", "example": "60"}}},
+    "Upload its pictures under this id: {id}": {"description": "Z18, the event id the owner passes to tool/admin_access.sh upload-media for its cover.", "placeholders": {"id": {"type": "String", "example": "AbC123xyz"}}},
+    "{sets} × {reps}": {"description": "A move's prescription: sets times reps, Western digits.", "placeholders": {"sets": {"type": "String", "example": "3"}, "reps": {"type": "String", "example": "12"}}},
+    "{sets} × {seconds} seconds": {"description": "A held move's prescription: sets times seconds.", "placeholders": {"sets": {"type": "String", "example": "3"}, "seconds": {"type": "String", "example": "30"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

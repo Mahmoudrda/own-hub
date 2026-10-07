@@ -57,7 +57,18 @@ def test_ttl_policies_are_declared_for_the_expiring_collections():
         ("verificationReviewAccess", "expireAt"),
         # M11: the proof she agreed to the waitlist wording, three years.
         ("waitlistConsentProof", "expireAt"),
+        # The console: every read of it, a year; error counts, 90 days.
+        ("adminAccessLog", "expireAt"),
+        ("opsErrors", "expireAt"),
     }
+
+
+def test_the_console_and_events_have_their_composite_indexes():
+    # admin_dashboard counts outcomes by state over a decidedAt window, and
+    # admin_logs pages one outcome newest first; a member's events query is
+    # status == published over endsAt.
+    assert _composite("verificationJobs", ["state", "decidedAt"])
+    assert _composite("events", ["status", "endsAt"])
 
 
 def test_no_ttl_on_the_registry():

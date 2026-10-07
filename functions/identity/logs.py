@@ -89,3 +89,19 @@ def warn(event: str, **fields) -> None:
 
 def error(event: str, **fields) -> None:
     _emit("error", event, fields)
+    _count_error(event)
+
+
+def _count_error(event: str) -> None:
+    """One more under today's opsErrors/{day}, for the console's error log.
+
+    The event code only, never the fields. Best effort and silent, like the
+    log line itself: counting an error must never become a second error."""
+    try:
+        from console import oplog
+
+        from . import store
+
+        oplog.record_error(store.db(), event)
+    except Exception:
+        pass

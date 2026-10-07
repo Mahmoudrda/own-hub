@@ -12,6 +12,11 @@ import 'app_state/crash_consent.dart';
 import 'app_state/kitten_setting.dart';
 import 'app_state/crash_reports.dart';
 import 'app_state/eat_state.dart';
+import 'app_state/events_state.dart';
+import 'app_state/remote_features.dart';
+import 'app_state/workout_library_state.dart';
+import 'app_state/content_images.dart';
+import 'ui/content_image.dart';
 import 'app_state/firebase_boot.dart';
 import 'app_state/home_widget_sync.dart';
 import 'app_state/local_persistence.dart';
@@ -90,6 +95,8 @@ Future<void> main() async {
   // first frame is already drawn from her own data, so a dead network costs
   // her nothing she can see. See `lib/app_state/firebase_boot.dart`.
   await FirebaseBoot.start();
+  // Pictures from the content library, for a signed-in account only.
+  ContentImage.resolver = ContentImages.url;
 
   // Crashes, reported in a release build only, and only once she has allowed
   // it: the handlers are wired here and `CrashReports` returns at once
@@ -195,6 +202,21 @@ Future<void> main() async {
   // seed stays the library.
   WidgetsBinding.instance.addPostFrameCallback(
     (_) => unawaited(EatAppState.instance.refreshRecipes()),
+  );
+
+  // The switches members take from the server (only Feature.events), then
+  // the events themselves when it is on. After the first frame, and nothing
+  // is read for an account that is not verified.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(
+      RemoteFeatures.load().then((_) => EventsState.instance.refresh()),
+    ),
+  );
+
+  // The owner's workouts: the cache at once, the server at most once a day.
+  // The bundled session stays the answer for day one whatever this finds.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(WorkoutLibraryState.instance.refresh()),
   );
 }
 

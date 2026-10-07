@@ -53,6 +53,8 @@ CALLABLES = {
     "submit_coach_certificate",
     "create_coach_invite",
     "accept_coach_invite",
+    "admin_dashboard",
+    "admin_logs",
 }
 
 

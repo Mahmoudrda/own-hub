@@ -41,6 +41,10 @@ const String _needle = 'FeatureFlags.' 'shipped';
 /// asserted below: an entry that is no longer needed is a failure rather than
 /// a harmless leftover.
 const Map<String, String> _mayReadTheDefaults = <String, String>{
+  'test/features/events/events_member_test.dart':
+      '"ships off" records that Feature.events is off in the shipped set, '
+      'which is the owner\'s promise that nothing about events shows until '
+      'she switches it on. Every other case there sets its own flags.',
   'test/release/compliance_copy_test.dart':
       'Its microphone group proves a privacy-policy claim about the build that '
       'goes to the stores: voice logging is off in the shipped set, so E03 and '

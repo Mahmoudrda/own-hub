@@ -245,7 +245,9 @@ Map<String, String> _recipe({
   // are `source: book` and live in `assets/content/rahma_recipes.json`, because
   // a forty-line colloquial paragraph does not survive a CSV round trip.
   'source': 'authored',
-  'status': 'review',
+  // A draft: these sample rows have no method, and a recipe without one
+  // cannot reach a member. Written in Z12 with a method, it can be shown.
+  'status': 'draft',
   'sourcePage': '',
   'authoredBy': 'content_team',
   'allergenReviewedBy': '',
@@ -262,6 +264,8 @@ Map<String, String> _recipe({
   'doneness': doneness,
   'markKey': markKey,
   'tier': 'free',
+  'method_ar': '',
+  'method_en': '',
 };
 
 Map<String, String> _programme({

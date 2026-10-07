@@ -788,6 +788,9 @@ void main() {
       await _type(tester, 'Ingredients', 'pastry|milk|nuts');
       await _type(tester, 'Allergens', 'nuts|dairy');
       await _type(tester, 'Diet tags', 'vegetarian');
+      // Two different people, or the rules refuse the write.
+      await _type(tester, 'Author', 'content_team');
+      await _type(tester, 'Allergens checked by', 'qa_reviewer');
       await _save(tester);
 
       expect(

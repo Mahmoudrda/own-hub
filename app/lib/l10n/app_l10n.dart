@@ -15456,6 +15456,768 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Off. Nothing about how you use the app is sent. Turning it off also clears the statistics ID on this phone.'**
   String get offNothingAboutHowYouUseThe;
+
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get dashboard;
+
+  /// No description provided for @logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs'**
+  String get logs;
+
+  /// No description provided for @events.
+  ///
+  /// In en, this message translates to:
+  /// **'Events'**
+  String get events;
+
+  /// No description provided for @adminConsole.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin console'**
+  String get adminConsole;
+
+  /// No description provided for @contentEventsCountsAndLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Content, events, counts and logs'**
+  String get contentEventsCountsAndLogs;
+
+  /// No description provided for @countsOnlyNothingHereNamesAMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts only. Nothing here names a member.'**
+  String get countsOnlyNothingHereNamesAMember;
+
+  /// No description provided for @accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get accounts;
+
+  /// No description provided for @verifiedMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified members'**
+  String get verifiedMembers;
+
+  /// No description provided for @humanReviewsWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Human reviews waiting'**
+  String get humanReviewsWaiting;
+
+  /// Z15, human reviews older than the review SLA. Both values are Western-digit labels.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} past the {hours}-hour promise'**
+  String countPastTheHoursHourPromise(String count, String hours);
+
+  /// Z15, the age of the oldest open human review in whole hours.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest has waited {hours} hours'**
+  String oldestHasWaitedHoursHours(String hours);
+
+  /// No description provided for @checkOutcomesLast7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Check outcomes, last 7 days'**
+  String get checkOutcomesLast7Days;
+
+  /// No description provided for @checkOutcomesLast30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Check outcomes, last 30 days'**
+  String get checkOutcomesLast30Days;
+
+  /// No description provided for @waitlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Waitlist'**
+  String get waitlist;
+
+  /// No description provided for @deletionRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletion requests'**
+  String get deletionRequests;
+
+  /// No description provided for @stillRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Still running'**
+  String get stillRunning;
+
+  /// No description provided for @finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get finished;
+
+  /// No description provided for @upcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get upcoming;
+
+  /// No description provided for @drafts.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafts'**
+  String get drafts;
+
+  /// Z15, when the counts were computed, Cairo time.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {time}'**
+  String updatedTime(String time);
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// No description provided for @thisAccountDoesNotHaveAdminAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'This account does not have admin access.'**
+  String get thisAccountDoesNotHaveAdminAccess;
+
+  /// No description provided for @signInWithYourPhoneNumberTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with your phone number to open the console.'**
+  String get signInWithYourPhoneNumberTo;
+
+  /// No description provided for @theConsoleNeedsAConnectionTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'The console needs a connection. Try again in a moment.'**
+  String get theConsoleNeedsAConnectionTryAgain;
+
+  /// No description provided for @approved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get approved;
+
+  /// No description provided for @sentToAReviewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to a reviewer'**
+  String get sentToAReviewer;
+
+  /// No description provided for @notEligible.
+  ///
+  /// In en, this message translates to:
+  /// **'Not eligible'**
+  String get notEligible;
+
+  /// No description provided for @checkDidNotPass.
+  ///
+  /// In en, this message translates to:
+  /// **'Check did not pass'**
+  String get checkDidNotPass;
+
+  /// No description provided for @cardAlreadyInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Card already in use'**
+  String get cardAlreadyInUse;
+
+  /// No description provided for @askedToRetake.
+  ///
+  /// In en, this message translates to:
+  /// **'Asked to retake'**
+  String get askedToRetake;
+
+  /// No description provided for @askedToTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Asked to try again'**
+  String get askedToTryAgain;
+
+  /// No description provided for @decisions.
+  ///
+  /// In en, this message translates to:
+  /// **'Decisions'**
+  String get decisions;
+
+  /// No description provided for @deletions.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletions'**
+  String get deletions;
+
+  /// No description provided for @errors.
+  ///
+  /// In en, this message translates to:
+  /// **'Errors'**
+  String get errors;
+
+  /// No description provided for @consoleReads.
+  ///
+  /// In en, this message translates to:
+  /// **'Console reads'**
+  String get consoleReads;
+
+  /// No description provided for @allOutcomes.
+  ///
+  /// In en, this message translates to:
+  /// **'All outcomes'**
+  String get allOutcomes;
+
+  /// Z16, a short reference standing for a verification case. Eight hex characters, never an id.
+  ///
+  /// In en, this message translates to:
+  /// **'Case {ref}'**
+  String caseRef(String ref);
+
+  /// Z16, a short reference standing for a reviewer account.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewer {ref}'**
+  String reviewerRef(String ref);
+
+  /// Z16, a short reference standing for an admin account.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin {ref}'**
+  String adminRef(String ref);
+
+  /// Z16, waitlist joins on one day. Counts only.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} joined'**
+  String countJoined(String count);
+
+  /// No description provided for @loadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get loadMore;
+
+  /// No description provided for @openingALogIsRecordedToo.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening a log is recorded too.'**
+  String get openingALogIsRecordedToo;
+
+  /// No description provided for @lookedAtTheReviewQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Looked at the review queue'**
+  String get lookedAtTheReviewQueue;
+
+  /// No description provided for @lookedUpAContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Looked up a contact'**
+  String get lookedUpAContact;
+
+  /// No description provided for @bookedAReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Booked a review'**
+  String get bookedAReview;
+
+  /// No description provided for @recordedADecision.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded a decision'**
+  String get recordedADecision;
+
+  /// No description provided for @storeReviewAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Store review account'**
+  String get storeReviewAccount;
+
+  /// No description provided for @willRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Will retry'**
+  String get willRetry;
+
+  /// No description provided for @secondSweepDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Second sweep done'**
+  String get secondSweepDone;
+
+  /// No description provided for @openedTheDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened the dashboard'**
+  String get openedTheDashboard;
+
+  /// No description provided for @openedALog.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened a log'**
+  String get openedALog;
+
+  /// No description provided for @addAnEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an event'**
+  String get addAnEvent;
+
+  /// No description provided for @editAnEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit an event'**
+  String get editAnEvent;
+
+  /// No description provided for @titleEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Title (English)'**
+  String get titleEnglish;
+
+  /// No description provided for @titleArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Title (Arabic)'**
+  String get titleArabic;
+
+  /// No description provided for @descriptionEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (English)'**
+  String get descriptionEnglish;
+
+  /// No description provided for @descriptionArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (Arabic)'**
+  String get descriptionArabic;
+
+  /// No description provided for @startsCairoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts, Cairo time'**
+  String get startsCairoTime;
+
+  /// No description provided for @endsCairoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends, Cairo time'**
+  String get endsCairoTime;
+
+  /// No description provided for @dateAndTimeLike20261105.
+  ///
+  /// In en, this message translates to:
+  /// **'Date and time, like 2026-11-05 18:30'**
+  String get dateAndTimeLike20261105;
+
+  /// No description provided for @online.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get online;
+
+  /// No description provided for @inPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'In person'**
+  String get inPerson;
+
+  /// No description provided for @linkStartingWithHttps.
+  ///
+  /// In en, this message translates to:
+  /// **'Link, starting with https://'**
+  String get linkStartingWithHttps;
+
+  /// No description provided for @placeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Place name'**
+  String get placeName;
+
+  /// No description provided for @aNameIsEnoughNoStreetAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'A name is enough. No street address needed.'**
+  String get aNameIsEnoughNoStreetAddress;
+
+  /// No description provided for @capacityOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Capacity, optional'**
+  String get capacityOptional;
+
+  /// No description provided for @coverPicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover picture'**
+  String get coverPicture;
+
+  /// No description provided for @noPicturesInTheMediaLibraryYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No pictures in the media library yet.'**
+  String get noPicturesInTheMediaLibraryYet;
+
+  /// No description provided for @published.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get published;
+
+  /// No description provided for @cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get cancelled;
+
+  /// No description provided for @saveAsDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as draft'**
+  String get saveAsDraft;
+
+  /// No description provided for @moveBackToDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Move back to draft'**
+  String get moveBackToDraft;
+
+  /// No description provided for @cancelThisEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this event'**
+  String get cancelThisEvent;
+
+  /// No description provided for @membersWillNoLongerSeeIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Members will no longer see it.'**
+  String get membersWillNoLongerSeeIt;
+
+  /// No description provided for @yesCancelIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, cancel it'**
+  String get yesCancelIt;
+
+  /// No description provided for @useTheFormat2026110518.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the format 2026-11-05 18:30.'**
+  String get useTheFormat2026110518;
+
+  /// No description provided for @theEndMustComeAfterTheStart.
+  ///
+  /// In en, this message translates to:
+  /// **'The end must come after the start.'**
+  String get theEndMustComeAfterTheStart;
+
+  /// No description provided for @useALinkThatStartsWithHttps.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a link that starts with https://'**
+  String get useALinkThatStartsWithHttps;
+
+  /// No description provided for @aWholeNumberAboveZero.
+  ///
+  /// In en, this message translates to:
+  /// **'A whole number above zero.'**
+  String get aWholeNumberAboveZero;
+
+  /// No description provided for @noEventsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No events yet'**
+  String get noEventsYet;
+
+  /// No description provided for @addOneThenPublishItWhenIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Add one, then publish it when it is ready.'**
+  String get addOneThenPublishItWhenIt;
+
+  /// No description provided for @couldNotSaveCheckTheConnectionAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save. Check the connection and the admin access, then try again.'**
+  String get couldNotSaveCheckTheConnectionAnd;
+
+  /// No description provided for @upcomingEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming events'**
+  String get upcomingEvents;
+
+  /// No description provided for @noEventsComingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'No events coming up'**
+  String get noEventsComingUp;
+
+  /// No description provided for @whenOwnHubPlansOneYouWill.
+  ///
+  /// In en, this message translates to:
+  /// **'When Own Hub plans one, you will find it here.'**
+  String get whenOwnHubPlansOneYouWill;
+
+  /// No description provided for @cairoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairo time'**
+  String get cairoTime;
+
+  /// An event's time span, both in Cairo time, Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} to {end}'**
+  String startToEnd(String start, String end);
+
+  /// No description provided for @openTheLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the link'**
+  String get openTheLink;
+
+  /// An event's capacity, when the owner set one.
+  ///
+  /// In en, this message translates to:
+  /// **'Places: {count}'**
+  String placesCount(String count);
+
+  /// No description provided for @methodOneStepALineInArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Method, one step a line, in Arabic'**
+  String get methodOneStepALineInArabic;
+
+  /// No description provided for @sectionOfTheBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Section of the book'**
+  String get sectionOfTheBook;
+
+  /// No description provided for @author.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get author;
+
+  /// No description provided for @allergensCheckedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Allergens checked by'**
+  String get allergensCheckedBy;
+
+  /// No description provided for @aSecondPersonChecksTheAllergensNever.
+  ///
+  /// In en, this message translates to:
+  /// **'A second person checks the allergens, never the author.'**
+  String get aSecondPersonChecksTheAllergensNever;
+
+  /// No description provided for @showThisRecipeToMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this recipe to members'**
+  String get showThisRecipeToMembers;
+
+  /// No description provided for @membersSeeItWithinADay.
+  ///
+  /// In en, this message translates to:
+  /// **'Members see it within a day.'**
+  String get membersSeeItWithinADay;
+
+  /// No description provided for @fillInAllFourNumbersOrLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in all four numbers, or leave all four empty.'**
+  String get fillInAllFourNumbersOrLeave;
+
+  /// No description provided for @thisRecipeCannotGoToMembersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'This recipe cannot go to members yet. Check the steps, the section and both names.'**
+  String get thisRecipeCannotGoToMembersYet;
+
+  /// No description provided for @savedToTheLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to the library'**
+  String get savedToTheLibrary;
+
+  /// No description provided for @savedOnThisPhoneOnlySignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this phone only. Sign in with an admin account to save to the library.'**
+  String get savedOnThisPhoneOnlySignIn;
+
+  /// No description provided for @alsoSwitchesItForMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Also switches it for members'**
+  String get alsoSwitchesItForMembers;
+
+  /// No description provided for @thisIsLongerThanTheAppAllows.
+  ///
+  /// In en, this message translates to:
+  /// **'This is longer than the app allows.'**
+  String get thisIsLongerThanTheAppAllows;
+
+  /// No description provided for @methodOneStepALineInEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Method, one step a line, in English'**
+  String get methodOneStepALineInEnglish;
+
+  /// A move's prescription: sets times reps, Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'{sets} × {reps}'**
+  String setsReps(String sets, String reps);
+
+  /// A held move's prescription: sets times seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{sets} × {seconds} seconds'**
+  String setsSecondsSeconds(String sets, String seconds);
+
+  /// Rest between sets, as the owner wrote it.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest {seconds} seconds'**
+  String restSecondsSeconds(String seconds);
+
+  /// No description provided for @writtenForPregnancyCheckWithYourDoctor.
+  ///
+  /// In en, this message translates to:
+  /// **'Written for pregnancy. Check with your doctor before you start, and stop if anything feels wrong.'**
+  String get writtenForPregnancyCheckWithYourDoctor;
+
+  /// No description provided for @writtenForAfterABirthCheckWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Written for after a birth. Check with your doctor before you start, and stop if anything feels wrong.'**
+  String get writtenForAfterABirthCheckWith;
+
+  /// No description provided for @addASession.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a session'**
+  String get addASession;
+
+  /// No description provided for @sessionTitleEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Session title (English)'**
+  String get sessionTitleEnglish;
+
+  /// No description provided for @sessionTitleArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Session title (Arabic)'**
+  String get sessionTitleArabic;
+
+  /// No description provided for @whoItIsWrittenFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Who it is written for'**
+  String get whoItIsWrittenFor;
+
+  /// No description provided for @exercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get exercise;
+
+  /// No description provided for @sets.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets'**
+  String get sets;
+
+  /// No description provided for @holdSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold, seconds'**
+  String get holdSeconds;
+
+  /// No description provided for @restSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest, seconds'**
+  String get restSeconds;
+
+  /// No description provided for @notesEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (English)'**
+  String get notesEnglish;
+
+  /// No description provided for @notesArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (Arabic)'**
+  String get notesArabic;
+
+  /// No description provided for @safetyNoteEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety note (English)'**
+  String get safetyNoteEnglish;
+
+  /// No description provided for @safetyNoteArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety note (Arabic)'**
+  String get safetyNoteArabic;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @showThisProgrammeToMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this programme to members'**
+  String get showThisProgrammeToMembers;
+
+  /// No description provided for @membersSeeEachSessionThatSuitsTheir.
+  ///
+  /// In en, this message translates to:
+  /// **'Members see each session that suits their life stage, within a day.'**
+  String get membersSeeEachSessionThatSuitsTheir;
+
+  /// No description provided for @addExercisesToTheLibraryFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Add exercises to the library first.'**
+  String get addExercisesToTheLibraryFirst;
+
+  /// No description provided for @repsOrAHoldNotBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Reps or a hold, not both.'**
+  String get repsOrAHoldNotBoth;
+
+  /// No description provided for @thisProgrammeCannotGoToMembersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'This programme cannot go to members yet. Check that every session has moves, its numbers and who it is for, and that pregnancy and after-a-birth sessions hold no move tagged unsafe for them.'**
+  String get thisProgrammeCannotGoToMembersYet;
+
+  /// Z18, the event id the owner passes to tool/admin_access.sh upload-media for its cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload its pictures under this id: {id}'**
+  String uploadItsPicturesUnderThisIdId(String id);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -56,6 +56,8 @@ Callables, in the order a woman meets them:
     schedule_verification_review    woman reviewer books a call or a gym visit
     decide_verification_flag        records the outcome of that live review
     expire_stale_reviews      hourly  72-hour SLA -> RETRY_REQUIRED
+    admin_dashboard           admin   counts only, for the owner's console
+    admin_logs                admin   codes and times, a page at a time
 
 Wire contract, agreed with the Flutter worker:
     `verify_identity` takes {front, back, frames, liveness:{sessionId}} and
@@ -856,15 +858,21 @@ def _post_flag_webhook(flag_id: str, flags) -> None:
 # minutes each that is roughly 1,250 reviewer-hours. See RESIDUAL_RISKS.md.
 
 
-def _require_admin(request: https_fn.CallableRequest) -> str:
+def _require_admin(
+    request: https_fn.CallableRequest, providers: tuple = STAFF_PROVIDERS
+) -> str:
     """The `admin` claim, server-minted exactly like `verified`.
 
     `firebase/firestore.rules` already defines `isAdmin()` as
     `request.auth.token.admin == true`, so this matches what the rules enforce.
     A client cannot grant itself admin any more than it can grant itself a
-    verified badge.
+    verified badge. The claim is set out of band by tools/grant_admin.py.
+
+    The console callables pass USER_PROVIDERS: the console runs inside the
+    app, which signs in by phone only, so a password session holding the
+    claim has no business reading it.
     """
-    uid = _require_auth(request, STAFF_PROVIDERS)
+    uid = _require_auth(request, providers)
     if not (request.auth.token or {}).get("admin"):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.UNAUTHENTICATED
@@ -1067,6 +1075,73 @@ def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     minted = review.retry_pending_mints(review_store)
     if minted:
         logs.decision("expire_stale_reviews", outcome=decisions.APPROVED, count=minted)
+
+
+# ------------------------------------------------------------- the console
+#
+# The owner's dashboard and logs, read from the app's admin build. Admin claim
+# and a phone sign-in, App Check first like every other callable. Each read is
+# written to adminAccessLog BEFORE anything is returned: a read that cannot be
+# recorded does not happen. Nothing in either answer names a person; see
+# console/dashboard.py and console/oplog.py.
+
+
+def _record_console_read(uid: str, action: str) -> None:
+    from console import access
+
+    try:
+        access.record(store.db(), uid, action)
+    except Exception:
+        logs.error("console_access_unrecorded")
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.UNAVAILABLE, reasons.INTERNAL_ERROR
+        )
+
+
+@https_fn.on_call()
+def admin_dashboard(request: https_fn.CallableRequest) -> dict:
+    """Counts for the owner: `{refresh?: bool}` in, the dashboard out.
+
+    Aggregations only, cached in the instance for five minutes unless
+    `refresh` is true. See console/dashboard.py for every field."""
+    uid = _require_admin(request, USER_PROVIDERS)
+    data = _body(request)
+    import datetime as dt
+
+    from console import dashboard
+
+    _record_console_read(uid, "dashboard")
+    return dashboard.cached(
+        store.db(),
+        dt.datetime.now(dt.timezone.utc),
+        refresh=data.get("refresh") is True,
+    )
+
+
+@https_fn.on_call()
+def admin_logs(request: https_fn.CallableRequest) -> dict:
+    """One page of one operational log: `{kind, before?, limit?, outcome?}`.
+
+    `kind` is decisions, reviews, deletions, waitlist, errors or access.
+    Codes, times and short case references only. See console/oplog.py."""
+    uid = _require_admin(request, USER_PROVIDERS)
+    data = _body(request)
+    import datetime as dt
+
+    from console import oplog
+
+    kind = data.get("kind")
+    if kind not in oplog.KINDS:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    _record_console_read(uid, f"logs.{kind}")
+    try:
+        return oplog.page(store.db(), data, dt.datetime.now(dt.timezone.utc))
+    except oplog.LogRequestError:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
 
 
 # ------------------------------------------------------------- deletion
