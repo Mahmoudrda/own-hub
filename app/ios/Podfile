@@ -25,6 +25,15 @@
 # decision, not a build setting, so it is written here rather than taken.
 platform :ios, '15.5'
 
+# Google Analytics for Firebase without the advertising identifier: the
+# firebase_analytics podspec then depends on FirebaseAnalytics/Core, which
+# links no AdSupport, so there is no IDFA to read and no App Tracking
+# Transparency prompt to show. Firebase reaches this app through Swift Package
+# Manager today, where the same choice is the FIREBASE_ANALYTICS_WITHOUT_ADID
+# environment variable that tool/build_release.sh sets; this line keeps it
+# true if CocoaPods ever resolves the plugin instead.
+$FirebaseAnalyticsWithoutAdIdSupport = true
+
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 

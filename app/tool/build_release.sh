@@ -15,33 +15,55 @@
 #   1. flutter build appbundle  --release --obfuscate --split-debug-info=build/symbols/<version>
 #   2. flutter build apk        --release --split-per-abi --obfuscate
 #                               --split-debug-info=build/symbols/<version>/apk
-#      The APK build is a second compile. When its symbols match the bundle's
-#      they are dropped; when they do not, a second upload line is printed.
+#                               --dart-define=OWNHUB_CHANNEL=direct
+#      The APK build is a second compile, marked as the hand-out channel so
+#      its crash reports and usage statistics can be told from the Play
+#      build's. Its symbols therefore differ from the bundle's and are kept
+#      with a second upload line; were they ever identical they are dropped.
 #   3. Prints the upload for the Android Firebase app:
 #        firebase crashlytics:symbols:upload --app=<android app id> build/symbols/<version>
 #      Run it (owner or integrator, signed in with `firebase login`) after every
 #      release build that is uploaded to Play or handed out. Keep the symbols
 #      folder for as long as that build is installed anywhere: a build's
 #      symbols cannot be made again later.
+#   Java and Kotlin frames. R8 shrinks and renames the plugins' Android code
+#   in a release build, and without the Crashlytics Gradle plugin no R8
+#   mapping file reaches Crashlytics, so a crash inside a plugin's Android
+#   code shows renamed classes. The Dart stack, which is where this app's own
+#   code is, is readable from the symbols above. The mapping is kept at
+#   build/app/outputs/mapping/release/mapping.txt; keep it with the symbols.
 #
 # iOS, the equivalent (run on the Mac that archives; not automated here):
-#   1. Dart symbols:
+#   0. Google Analytics without the advertising identifier. Firebase reaches
+#      the iOS app through Swift Package Manager, and firebase_analytics then
+#      picks FirebaseAnalyticsCore (no AdSupport, no IDFA) only when this
+#      variable is set as the packages resolve. Set it in the shell that
+#      builds, and after changing it delete the resolved packages once
+#      (ios/Flutter/ephemeral/Packages and Xcode's DerivedData for Runner) so
+#      the choice is resolved again:
+#        export FIREBASE_ANALYTICS_WITHOUT_ADID=true
+#      Check the archive: this prints nothing when the IDFA is out.
+#        grep -rl ASIdentifierManager build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app
+#   1. Build with symbols kept:
 #        flutter build ipa --release --obfuscate \
 #          --split-debug-info=build/symbols/<version>-ios \
 #          --dart-define=APP_VERSION=<version> \
 #          --export-options-plist=ios/ExportOptions.plist
-#        firebase crashlytics:symbols:upload \
-#          --app=1:681714989950:ios:0e2cab381dd5cd91fbd12f build/symbols/<version>-ios
-#   2. Native symbols (dSYM). Release is already DEBUG_INFORMATION_FORMAT =
-#      dwarf-with-dsym, so the archive carries them in
-#      build/ios/archive/Runner.xcarchive/dSYMs. Upload them with the tool the
-#      FirebaseCrashlytics pod ships:
-#        ios/Pods/FirebaseCrashlytics/upload-symbols \
-#          -gsp ios/Runner/GoogleService-Info.plist -p ios \
+#   2. Upload every dSYM in the archive, App.framework.dSYM (the Dart code)
+#      included. Release is already DEBUG_INFORMATION_FORMAT = dwarf-with-dsym,
+#      so the archive carries them in build/ios/archive/Runner.xcarchive/dSYMs.
+#      With Swift Package Manager the upload tool sits in the package checkout,
+#      not in ios/Pods:
+#        UPLOAD="$(find ~/Library/Developer/Xcode/DerivedData -path \
+#          '*/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols' \
+#          | head -1)"
+#        "$UPLOAD" -gsp ios/Runner/GoogleService-Info.plist -p ios \
 #          build/ios/archive/Runner.xcarchive/dSYMs
-#      After App Store processing, download the dSYMs App Store Connect made
-#      for that build and upload them the same way if Crashlytics reports a
-#      missing dSYM.
+#      There is no "Crashlytics Upload Symbols" run script in the Runner
+#      target, so this step is the upload; it is not automatic. After App
+#      Store processing, download the dSYMs App Store Connect made for that
+#      build and upload them the same way if Crashlytics reports a missing
+#      dSYM.
 #
 # Nothing here reads or prints key.properties, a keystore or a Firebase config
 # file. Signing is android/app/build.gradle.kts's job, and it refuses to sign a
@@ -78,9 +100,12 @@ echo "== Own Hub release build $VERSION =="
 # (lib/features/signup/domain/legal_acceptance.dart, kAppVersion).
 DEFINES=(--dart-define=APP_VERSION="$VERSION")
 
+# No IDFA if this shell is ever used for an iOS build too (see the header).
+export FIREBASE_ANALYTICS_WITHOUT_ADID=true
+
 flutter build appbundle --release --obfuscate --split-debug-info="$SYMBOLS" "${DEFINES[@]}"
 
-flutter build apk --release --split-per-abi --obfuscate --split-debug-info="$SYMBOLS/apk" "${DEFINES[@]}"
+flutter build apk --release --split-per-abi --obfuscate --split-debug-info="$SYMBOLS/apk" "${DEFINES[@]}" --dart-define=OWNHUB_CHANNEL=direct
 
 same=1
 for f in "$SYMBOLS"/apk/*.symbols; do

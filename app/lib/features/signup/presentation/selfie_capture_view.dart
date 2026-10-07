@@ -52,7 +52,12 @@ class SelfieCaptureView extends StatefulWidget {
     this.onClose,
     this.onOpenSettings,
     this.onAskReviewer,
+    this.onUnavailable,
   });
+
+  /// Told once each time the camera turns out not to be able to run, with the
+  /// reason, so the router can count it. Nothing else about the session.
+  final ValueChanged<CaptureUnavailableReason>? onUnavailable;
 
   /// Opens this app's page in the phone's settings, when she turned the
   /// camera off. The camera is tried again when she comes back.
@@ -136,11 +141,19 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
       _session = session;
       _state = session.current;
     });
+    _noteUnavailable(session.current);
     _subscription = session.watch().listen((state) {
       if (!mounted) return;
+      final was = _state;
       setState(() => _state = state);
+      if (was is! CaptureUnavailable) _noteUnavailable(state);
       if (state is CaptureCaptured) _report();
     });
+  }
+
+  /// [SelfieCaptureView.onUnavailable], once per session that cannot run.
+  void _noteUnavailable(CaptureState state) {
+    if (state is CaptureUnavailable) widget.onUnavailable?.call(state.reason);
   }
 
   void _report() {

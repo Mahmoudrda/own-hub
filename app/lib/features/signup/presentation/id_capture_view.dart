@@ -57,7 +57,12 @@ class IdCaptureView extends StatefulWidget {
     this.onOpenSettings,
     this.onAskReviewer,
     this.onHandOff,
+    this.onUnavailable,
   });
+
+  /// Told once each time the camera turns out not to be able to run, with the
+  /// reason, so the router can count it. Nothing else about the session.
+  final ValueChanged<CaptureUnavailableReason>? onUnavailable;
 
   /// Used instead of [onCaptured] when the step after this one can fail for
   /// want of a network. `C10b` starts the liveness session here, and a dropped
@@ -163,11 +168,19 @@ class _IdCaptureViewState extends State<IdCaptureView>
       _session = session;
       _state = session.current;
     });
+    _noteUnavailable(session.current);
     _subscription = session.watch().listen((state) {
       if (!mounted) return;
+      final was = _state;
       setState(() => _state = state);
+      if (was is! CaptureUnavailable) _noteUnavailable(state);
       if (state is CaptureCaptured) _report();
     });
+  }
+
+  /// [IdCaptureView.onUnavailable], once per session that cannot run.
+  void _noteUnavailable(CaptureState state) {
+    if (state is CaptureUnavailable) widget.onUnavailable?.call(state.reason);
   }
 
   /// The single place the next screen is asked for.

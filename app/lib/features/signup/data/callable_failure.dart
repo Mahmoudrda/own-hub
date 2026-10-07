@@ -8,10 +8,20 @@
 /// See [classifyCallFailure].
 library;
 
+import 'dart:async';
+
 import 'package:cloud_functions/cloud_functions.dart';
 
+import '../../../app_state/crash_reports.dart';
 import '../domain/review_request.dart';
 
 /// [error] in the domain's words.
-VerificationCallFailure callFailureFrom(FirebaseFunctionsException error) =>
-    callFailureOf(error.code, error.message);
+///
+/// A status that means a bug on the server side (`internal`, `not-found` and
+/// the others in [CrashReports.serverCodesReported]) is also recorded as a
+/// non-fatal crash report, by its code alone and only with her consent to
+/// crash reports. The message is never sent.
+VerificationCallFailure callFailureFrom(FirebaseFunctionsException error) {
+  unawaited(CrashReports.serverError(error.code));
+  return callFailureOf(error.code, error.message);
+}

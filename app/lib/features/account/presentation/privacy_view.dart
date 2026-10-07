@@ -37,6 +37,13 @@
 /// when the router hands in [PrivacyView.onCrashReportsChanged]; turning it
 /// off also deletes any report still waiting on the phone.
 ///
+/// # Help improve Own Hub (usage statistics)
+///
+/// Its own switch, separate from crash reports: drawn when the router hands
+/// in [PrivacyView.onAnalyticsChanged], off until she turns it on. Turning it
+/// off stops collection at once and resets the statistics ID on this phone
+/// (`lib/app_state/analytics_consent.dart`).
+///
 /// # Offline
 ///
 /// A queued switch shows a quiet "Saved on your phone" chip and never a spinner
@@ -80,7 +87,15 @@ class PrivacyView extends StatefulWidget {
     this.onSignInAgain,
     this.crashReportsAllowed = false,
     this.onCrashReportsChanged,
+    this.analyticsAllowed = false,
+    this.onAnalyticsChanged,
   });
+
+  /// Whether she has allowed usage statistics.
+  final bool analyticsAllowed;
+
+  /// Records and applies her usage-statistics choice. Null hides the row.
+  final Future<void> Function(bool allowed)? onAnalyticsChanged;
 
   /// Whether she has allowed crash reports.
   final bool crashReportsAllowed;
@@ -124,6 +139,15 @@ class _PrivacyViewState extends State<PrivacyView> {
   late PrivacySettings _settings = widget.service.current;
 
   late bool _crashReports = widget.crashReportsAllowed;
+
+  late bool _analytics = widget.analyticsAllowed;
+
+  Future<void> _toggleAnalytics(bool value) async {
+    final change = widget.onAnalyticsChanged;
+    if (change == null) return;
+    setState(() => _analytics = value);
+    await change(value);
+  }
 
   Future<void> _toggleCrashReports(bool value) async {
     final change = widget.onCrashReportsChanged;
@@ -420,6 +444,28 @@ class _PrivacyViewState extends State<PrivacyView> {
               onChanged: (value) => _toggleCrashReports(value),
             ),
             onTap: () => _toggleCrashReports(!_crashReports),
+          ),
+
+        // Usage statistics, only with her consent. Off by default, and a
+        // separate choice from crash reports.
+        if (widget.onAnalyticsChanged != null)
+          AppListItem(
+            leading: const Icon(
+              Icons.insights_outlined,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.helpImproveOwnHub,
+            subtitle: _analytics
+                ? l10n.onGoogleAnalyticsReceivesWhichScreensAnd
+                : l10n.offNothingAboutHowYouUseThe,
+            trailing: AppToggle(
+              key: const ValueKey('analytics-toggle'),
+              value: _analytics,
+              semanticLabel: l10n.helpImproveOwnHub,
+              onChanged: (value) => _toggleAnalytics(value),
+            ),
+            onTap: () => _toggleAnalytics(!_analytics),
           ),
 
         // The two public pages the stores require to be reachable from inside

@@ -3501,5 +3501,9 @@
   "yourWeekShowsHere": "سيظهر أسبوعكِ هنا",
   "movingKitten": "قطة متحركة",
   "theKittenShowsYouAroundAndMoves": "ترشدكِ القطة وتتحرك مرة واحدة عند ظهورها.",
-  "theKittenStaysStill": "تبقى القطة ثابتة."
+  "theKittenStaysStill": "تبقى القطة ثابتة.",
+  "helpImproveOwnHub": "ساعدينا في تحسين Own Hub",
+  "optionalSharesWhichScreensAndStepsYou": "اختياري. يشارك مع Google Analytics الشاشات والخطوات التي تستخدمينها، وقد تعالجها Google خارج مصر. لا يشمل أبدًا صحتكِ أو جسمكِ أو اسمكِ أو رقمكِ. يمكنكِ تغييره من الخصوصية.",
+  "onGoogleAnalyticsReceivesWhichScreensAnd": "مفعّل. تتلقى Google Analytics الشاشات والخطوات التي تستخدمينها، دون صحتكِ أو جسمكِ أو اسمكِ أو رقمكِ أبدًا. وقد تعالجها Google خارج مصر.",
+  "offNothingAboutHowYouUseThe": "متوقف. لا يُرسل شيء عن طريقة استخدامكِ للتطبيق، وإيقافه يمسح أيضًا معرّف الإحصاءات على هذا الهاتف."
 }

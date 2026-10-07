@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,7 +9,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
 import '../firebase_options.dart';
+import 'analytics_consent.dart';
 import 'crash_consent.dart';
+import 'crash_reports.dart';
 
 /// Whether the back end came up, and what to do when it did not.
 ///
@@ -47,6 +50,25 @@ const String _kAppCheckDebugToken = String.fromEnvironment(
 /// an Android emulator. Honoured in debug builds only; a release build always
 /// talks to production.
 const String _kEmulatorHost = String.fromEnvironment('OWNHUB_EMULATOR_HOST');
+
+/// `--dart-define=OWNHUB_ANALYTICS_DEBUG=true` lets a debug or profile build
+/// send usage statistics, so the event set can be checked in DebugView. Her
+/// consent is still required. A release build ignores it: release always
+/// sends once she allows it, and never before.
+const bool _kAnalyticsDebugSend = bool.fromEnvironment(
+  'OWNHUB_ANALYTICS_DEBUG',
+);
+
+/// Which build this is: `store` for the Play and App Store builds, `direct`
+/// for the APK handed out by hand (`tool/build_release.sh` passes
+/// `--dart-define=OWNHUB_CHANNEL=direct` for it), `debug` for anything run
+/// from a development machine. Carried as a usage-statistics user property
+/// and a crash-report key, so a problem in one channel is not read as a
+/// problem in all of them.
+const String kBuildChannel = String.fromEnvironment(
+  'OWNHUB_CHANNEL',
+  defaultValue: kReleaseMode ? 'store' : 'debug',
+);
 
 /// Which App Check providers a build attests with.
 ///
@@ -124,6 +146,66 @@ abstract final class FirebaseBoot {
     } catch (error) {
       if (kDebugMode) debugPrint('Crash reporting not configured: $error');
     }
+    if (allowed) await CrashReports.describeBuild(channel: kBuildChannel);
+  }
+
+  /// Whether a build sends usage statistics: only once she has allowed them,
+  /// and only in a release build or a debug build started with
+  /// `OWNHUB_ANALYTICS_DEBUG` for DebugView. Off by default.
+  @visibleForTesting
+  static bool analyticsCollectionFor({
+    required bool release,
+    required bool allowed,
+    bool debugSend = _kAnalyticsDebugSend,
+  }) => allowed && (release || debugSend);
+
+  /// Whether the Firebase analytics sink may send at all in this build:
+  /// [analyticsCollectionFor] with her current choice.
+  static bool get analyticsSending =>
+      _status == BackendStatus.ready &&
+      analyticsCollectionFor(
+        release: kReleaseMode,
+        allowed: AnalyticsConsent.instance.allowed,
+      );
+
+  /// Applies her usage-statistics choice now (consent mode v2).
+  ///
+  /// The order follows Google's guidance: consent is set before collection is
+  /// turned on, and collection is turned off before the instance id is reset.
+  /// Advertising storage, ad user data and ad personalisation are denied in
+  /// every case, whatever she chooses here: Own Hub shows no advertising.
+  /// Turning it off also clears what the SDK holds on this phone and resets
+  /// the app instance id (`resetAnalyticsData`). Does nothing before Firebase
+  /// is up, which is already off at native start-up.
+  static Future<void> applyAnalyticsConsent(bool allowed) async {
+    if (_status != BackendStatus.ready) return;
+    final collect = analyticsCollectionFor(
+      release: kReleaseMode,
+      allowed: allowed,
+    );
+    try {
+      final analytics = FirebaseAnalytics.instance;
+      if (collect) {
+        await analytics.setConsent(
+          analyticsStorageConsentGranted: true,
+          adStorageConsentGranted: false,
+          adUserDataConsentGranted: false,
+          adPersonalizationSignalsConsentGranted: false,
+        );
+        await analytics.setAnalyticsCollectionEnabled(true);
+      } else {
+        await analytics.setAnalyticsCollectionEnabled(false);
+        await analytics.setConsent(
+          analyticsStorageConsentGranted: false,
+          adStorageConsentGranted: false,
+          adUserDataConsentGranted: false,
+          adPersonalizationSignalsConsentGranted: false,
+        );
+        if (!allowed) await analytics.resetAnalyticsData();
+      }
+    } catch (error) {
+      if (kDebugMode) debugPrint('Analytics not configured: $error');
+    }
   }
 
   static Future<void> start() async {
@@ -168,7 +250,8 @@ abstract final class FirebaseBoot {
     // meta-data, Info.plist) so nothing is sent before this line, and a debug
     // or profile build never turns it on. Without her consent any report
     // still waiting on the phone is deleted. Nothing about her is attached:
-    // no user identifier, no custom key, no log line.
+    // no user identifier, and only the closed keys and breadcrumb words of
+    // `crash_reports.dart`.
     try {
       final allowed = CrashConsent.instance.allowed;
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
@@ -176,8 +259,35 @@ abstract final class FirebaseBoot {
       );
       if (!allowed) await FirebaseCrashlytics.instance.deleteUnsentReports();
       _crashReporting = kReleaseMode;
+      await CrashReports.describeBuild(channel: kBuildChannel);
+      if (_appCheckFailure != null) {
+        await CrashReports.trail(CrashTrail.appCheckFailed);
+      }
     } catch (error) {
       if (kDebugMode) debugPrint('Crash reporting not configured: $error');
+    }
+
+    // Usage statistics, only once she has allowed them (consent mode v2).
+    // Collection is off in the native config, so nothing is sent before this
+    // line. Without her consent the instance id is not reset at every launch:
+    // there is nothing to reset when nothing was ever collected, and turning
+    // it off resets it once ([applyAnalyticsConsent]).
+    try {
+      final allowed = AnalyticsConsent.instance.allowed;
+      final collect = analyticsCollectionFor(
+        release: kReleaseMode,
+        allowed: allowed,
+      );
+      final analytics = FirebaseAnalytics.instance;
+      await analytics.setConsent(
+        analyticsStorageConsentGranted: collect,
+        adStorageConsentGranted: false,
+        adUserDataConsentGranted: false,
+        adPersonalizationSignalsConsentGranted: false,
+      );
+      await analytics.setAnalyticsCollectionEnabled(collect);
+    } catch (error) {
+      if (kDebugMode) debugPrint('Analytics not configured: $error');
     }
 
     if (kDebugMode && _kEmulatorHost.isNotEmpty) {

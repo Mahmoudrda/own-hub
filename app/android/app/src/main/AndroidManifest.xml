@@ -41,6 +41,13 @@
          again. Inexact on purpose: no exact-alarm permission is requested. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- No advertising ID. The analytics SDK's library manifest brings this
+         permission; Own Hub shows no advertising and never reads the ID
+         (google_analytics_adid_collection_enabled is false below), so it is
+         stripped from the merged manifest and "Advertising ID" is not a
+         Data safety answer. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+
     <!-- Not required, so the app still installs on a handset with no camera or
          no autofocus. Google Play filters installs on any hardware feature a
          manifest requests without saying otherwise, and a woman whose phone
@@ -94,6 +101,33 @@
              before Flutter starts. -->
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
+        <!-- Usage statistics ("Help improve Own Hub") are off until she turns
+             them on in C06 or Privacy (lib/app_state/firebase_boot.dart).
+             Consent mode v2 defaults: every storage denied; advertising
+             storage, ad user data and ad personalisation are never granted.
+             No advertising ID, and no automatic screen views: the router
+             logs screen ids itself. -->
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_analytics_storage"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_ad_storage"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_ad_user_data"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_ad_personalization_signals"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_adid_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_automatic_screen_reporting_enabled"
             android:value="false" />
         <!-- The status-bar icon for "your check is done" and for her training
              reminders: a white silhouette, as Android requires. -->

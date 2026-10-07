@@ -76,8 +76,9 @@ dependencies:
   google_mlkit_face_detection: ^0.15.1
   cloud_functions: ^6.5.0
   firebase_app_check: ^0.4.8
-  # Crash reports, release builds only. No user identifier, no custom keys,
-  # no breadcrumb logs (a source guard test enforces it). Collection is off at
+  # Crash reports, release builds only. No user identifier; custom keys and
+  # breadcrumb lines only from the closed lists in
+  # lib/app_state/crash_reports.dart (a source guard test enforces it). Collection is off at
   # native start-up and turned on from Dart only in release; see
   # lib/app_state/firebase_boot.dart. Declared as CrashData (not linked) in
   # ios/Runner/PrivacyInfo.xcprivacy and in android/play-data-safety.txt.
@@ -104,6 +105,15 @@ dependencies:
   # The package ships no privacy manifest, so ios/Runner/PrivacyInfo.xcprivacy
   # declares the UserDefaults reason 1C8F.1 for it.
   home_widget: ^0.10.0
+  # Usage statistics ("Help improve Own Hub"), only once she turns them on at
+  # C06 or in Privacy: collection is off natively, consent mode v2 denies
+  # every storage by default and advertising always, no user id is set, and
+  # no advertising ID or IDFA is collected (AndroidManifest.xml, Info.plist,
+  # ios/Podfile, tool/build_release.sh). Every event goes through
+  # lib/domain/analytics/analytics_gateway.dart. Declared as ProductInteraction
+  # and CoarseLocation (not linked) in ios/Runner/PrivacyInfo.xcprivacy and as
+  # App interactions in android/play-data-safety.txt.
+  firebase_analytics: ^12.6.0
 
 dev_dependencies:
   flutter_test:

@@ -26,6 +26,11 @@
 /// the server once her code is accepted. The line above the button says
 /// where her number and her account go. Crash reports are an optional
 /// switch here, off unless she turns it on, and apply at once.
+///
+/// "Help improve Own Hub" (usage statistics) is a second optional switch,
+/// separate from crash reports and from the acceptance: a different purpose
+/// and a different transfer, so a different choice. Off unless she turns it
+/// on, applied before the code is sent, and changeable later in Privacy.
 library;
 
 import 'package:flutter/gestures.dart';
@@ -59,6 +64,8 @@ class PhoneNumberView extends StatefulWidget {
     this.onOpenPrivacy,
     this.crashReportsInitially = false,
     this.onCrashReportsChosen,
+    this.analyticsInitially = false,
+    this.onAnalyticsChosen,
     this.now,
   });
 
@@ -74,6 +81,13 @@ class PhoneNumberView extends StatefulWidget {
 
   /// Her crash-report choice, applied before the code is sent.
   final Future<void> Function(bool allowed)? onCrashReportsChosen;
+
+  /// Where the usage-statistics switch starts. Off unless she allowed it.
+  final bool analyticsInitially;
+
+  /// Her usage-statistics choice, applied before the code is sent. Null
+  /// hides the switch.
+  final Future<void> Function(bool allowed)? onAnalyticsChosen;
 
   /// Injectable so a test can assert the recorded time.
   final DateTime Function()? now;
@@ -94,6 +108,9 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
 
   /// The optional crash-report switch. Off unless she turns it on.
   late bool _crashReports = widget.crashReportsInitially;
+
+  /// The optional usage-statistics switch. Off unless she turns it on.
+  late bool _analytics = widget.analyticsInitially;
 
   /// Why the last send failed, or null. Cleared as soon as she edits the
   /// number, because the sentence is about the number she sent.
@@ -150,6 +167,7 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
       LegalAcceptance.now(locale, clock: widget.now),
     );
     await widget.onCrashReportsChosen?.call(_crashReports);
+    await widget.onAnalyticsChosen?.call(_analytics);
     if (!mounted) return;
     try {
       await widget.repository.sendCode(_e164);
@@ -281,6 +299,19 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
           ),
           onTap: () => setState(() => _crashReports = !_crashReports),
         ),
+        // Its own choice, beside crash reports and never folded into them.
+        if (widget.onAnalyticsChosen != null)
+          AppListItem(
+            title: l10n.helpImproveOwnHub,
+            subtitle: l10n.optionalSharesWhichScreensAndStepsYou,
+            trailing: AppToggle(
+              key: const ValueKey('phone-analytics'),
+              value: _analytics,
+              semanticLabel: l10n.helpImproveOwnHub,
+              onChanged: (value) => setState(() => _analytics = value),
+            ),
+            onTap: () => setState(() => _analytics = !_analytics),
+          ),
       ],
     );
   }

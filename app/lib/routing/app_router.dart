@@ -16,7 +16,9 @@ import '../app_state/account_data.dart';
 import '../app_state/app_changes.dart';
 import '../app_state/blocking.dart';
 import '../app_state/cloud_store.dart';
+import '../app_state/analytics_consent.dart';
 import '../app_state/crash_consent.dart';
+import '../app_state/crash_reports.dart';
 // Read, never written: `FirebaseBoot.isReady` is what decides whether the
 // identity check can be built against real Cloud Functions or has to refuse
 // honestly. See `_newIdentityCheck`.
@@ -112,6 +114,7 @@ import '../features/signup/presentation/whats_inside_view.dart';
 import '../features/signup/presentation/why_we_check_view.dart';
 import '../features/signup/presentation/woman_reviewer_view.dart';
 import '../features/signup/presentation/youre_in_view.dart';
+import '../features/today/domain/today_day.dart' show WeekProgress;
 import '../features/today/domain/today_repository.dart';
 import '../features/today/presentation/already_did_it_view.dart';
 import '../features/today/presentation/first_week_view.dart';
@@ -359,25 +362,46 @@ String? screenIdForRoute(String routeName) {
 }
 
 class AppRouter {
-  /// Where the funnel events go: sign-up started, setup saved, check submitted
-  /// and decided, first session and first meal, the screens of sign-up,
-  /// setup and Today, and the tour's stops and joins. Nowhere until an analytics service is chosen; `main()`
-  /// prints them in a debug build, and a test swaps in a recording sink.
+  /// Where usage statistics go: the tour, each sign-up step reached and
+  /// completed, the ID check's steps, her first workout and meal, a weekly
+  /// target reached, the screens of the tabs she uses, and a few settings.
+  /// `main()` hands them to Firebase in a release build, which sends nothing
+  /// until she allows it ("Help improve Own Hub"), and to the console in a
+  /// debug one; a test swaps in a recording sink.
   ///
   /// Never called from the cycle flow, and no screen of it is reported:
   /// `cycle_no_analytics_call_sites_test` holds that for the feature itself
-  /// and [_reportsScreenViews] holds it here.
+  /// and [reportsScreenView] holds it here.
   static AnalyticsGateway analytics = const AnalyticsGateway(
     NullAnalyticsSink(),
   );
 
-  /// The flows whose screen views are reported. Sign-up, setup and Today:
-  /// enough to see where women stop between installing and day one.
+  /// The flows whose screen views are reported: sign-up and setup, to see
+  /// where women stop between installing and day one, and the four tabs and
+  /// her account screens, to see what she uses. Never the cycle flow.
   static const Set<String> _reportsScreenViews = {
     'signup',
     'onboarding',
     'today',
+    'train',
+    'eat',
+    'progress',
+    'account',
   };
+
+  /// Screens of a reported flow whose id alone would say something about
+  /// her body: her measurements (`P04`) and what she cannot eat (`E10`).
+  static const Set<String> _neverReported = {'P04', 'E10'};
+
+  /// Whether opening [id] is counted as a screen view, and named in a crash
+  /// report. Everything else is `private` there.
+  @visibleForTesting
+  static bool reportsScreenView(String id) {
+    final route = appDestinations[id];
+    return route != null &&
+        _reportsScreenViews.contains(route.flow) &&
+        !_neverReported.contains(id);
+  }
 
   /// Resolves a route name to a page. Returns null for anything that is not a
   /// destination, so a first-run state fails loudly at the navigator rather than
@@ -443,7 +467,8 @@ class AppRouter {
       );
     }
 
-    if (_reportsScreenViews.contains(route.flow)) {
+    final reported = reportsScreenView(id);
+    if (reported) {
       unawaited(
         analytics.track(AnalyticsEvent.screenViewed, {
           AnalyticsProp.screenId: AnalyticsValue.token(id),
@@ -451,6 +476,10 @@ class AppRouter {
         }),
       );
     }
+    // The screen a crash happened on, only with her consent to crash
+    // reports, and `private` for every screen not counted above.
+    unawaited(CrashReports.screen(reported ? id : 'private'));
+    _trackRouteOpened(id);
 
     final built = _built[id];
     return MaterialPageRoute<dynamic>(
@@ -997,7 +1026,11 @@ class AppRouter {
         OnboardingState.instance
           ..beforeSignup = true
           ..whileWaiting = false;
-        unawaited(analytics.track(AnalyticsEvent.signUpStarted));
+        unawaited(
+          analytics.track(AnalyticsEvent.signUpStarted, {
+            AnalyticsProp.source: const AnalyticsValue.token('welcome'),
+          }),
+        );
         if (intakeRepository.setupDone) {
           goTo(context, 'O05');
         } else {
@@ -1091,14 +1124,24 @@ class AppRouter {
     // Her tap here is the acceptance of the Terms and the Privacy Policy
     // (M1), written to this phone before the code is sent and to the server
     // once the code is accepted. The documents open in her language.
+    //
+    // Usage statistics ("Help improve Own Hub") are a second optional switch
+    // here, separate from crash reports and from the acceptance, off unless
+    // she turns it on. Applied before the code is sent, so her own sign-up
+    // is counted from the next step only if she said yes.
     'C06': (context) => PhoneNumberView(
       repository: authRepository,
-      onCodeSent: () => goTo(context, 'C07'),
+      onCodeSent: () {
+        unawaited(analytics.track(AnalyticsEvent.signUpCodeSent));
+        goTo(context, 'C07');
+      },
       onBack: () => Navigator.of(context).maybePop(),
       onOpenTerms: openTermsFor(context),
       onOpenPrivacy: openPrivacyFor(context),
       crashReportsInitially: CrashConsent.instance.allowed,
       onCrashReportsChosen: CrashConsent.instance.set,
+      analyticsInitially: AnalyticsConsent.instance.allowed,
+      onAnalyticsChosen: AnalyticsConsent.instance.set,
     ),
     'C07': (context) => CodeView(
       repository: authRepository,
@@ -1121,6 +1164,17 @@ class AppRouter {
         OnboardingState.instance.beforeSignup = false;
         await readVerificationClaim();
         await readVerificationStatus();
+        // Firebase's recommended `sign_up` for an account new to the check,
+        // `login` for a woman already verified. The method is the only
+        // parameter, and it is always the phone.
+        unawaited(
+          analytics.track(
+            isVerified
+                ? AnalyticsEvent.loggedIn
+                : AnalyticsEvent.signUpCompleted,
+            {AnalyticsProp.method: const AnalyticsValue.token('phone')},
+          ),
+        );
         // The acceptance she made at C06 goes to the server now that she has
         // an account. If it cannot be shown to cover the versions in force,
         // she answers the legal update sheet before anything else (M1).
@@ -1246,6 +1300,7 @@ class AppRouter {
       // straight to `/signup/c10` cannot skip the screen she just agreed on.
       onAgreed: () {
         consentRecorded = true;
+        unawaited(analytics.track(AnalyticsEvent.checkConsentGiven));
         goTo(context, 'C10');
       },
       // "I would rather not" is a real answer, and it leads somewhere: a woman
@@ -1269,6 +1324,7 @@ class AppRouter {
     // with no camera. Whatever was photographed so far is dropped first.
     'C10': (context) => IdCaptureView(
       captureService: identityCheck.capture,
+      onUnavailable: _trackCameraUnavailable,
       onCaptured: () => goTo(context, 'C10b'),
       onClose: () => Navigator.of(context).maybePop(),
       onOpenSettings: () => unawaited(openAppSettings()),
@@ -1294,6 +1350,7 @@ class AppRouter {
     'C10b': (context) => IdCaptureView(
       captureService: identityCheck.capture,
       side: CaptureTarget.idBack,
+      onUnavailable: _trackCameraUnavailable,
       // Written out here rather than in a helper, because the two destinations
       // have to be visible in this map: `nav_reachability_test` recovers the
       // navigation graph from the literal ids each builder mentions, and an
@@ -1374,6 +1431,7 @@ class AppRouter {
     ),
     'C11': (context) => SelfieCaptureView(
       captureService: identityCheck.capture,
+      onUnavailable: _trackCameraUnavailable,
       onCaptured: () => goTo(context, 'C12'),
       onClose: () => Navigator.of(context).maybePop(),
       onOpenSettings: () => unawaited(openAppSettings()),
@@ -1399,6 +1457,7 @@ class AppRouter {
       // a back gesture to find, the camera least of all.
       onVerified: (result) {
         _trackDecided('verified');
+        _trackYoureIn('automatic');
         // Kept so C13 can state a measured duration instead of inventing one.
         lastVerification = result;
         unawaited(redeemPendingInvite());
@@ -1524,6 +1583,7 @@ class AppRouter {
       // on a "waiting" screen.
       onApproved: () {
         markApprovedByServer();
+        _trackYoureIn('reviewer');
         unawaited(redeemPendingInvite());
         Navigator.of(context)
             .pushNamedAndRemoveUntil(appRoutes['C13']!.name, (_) => false);
@@ -1583,6 +1643,7 @@ class AppRouter {
       // (R1): a refresh that fails must not put her on C14 pending (R10).
       onAlreadyVerified: () {
         markApprovedByServer();
+        _trackYoureIn('reviewer');
         unawaited(redeemPendingInvite());
         Navigator.of(context)
             .pushNamedAndRemoveUntil(appRoutes['C13']!.name, (_) => false);
@@ -2467,6 +2528,8 @@ class AppRouter {
       // Crash reports by consent (M3), off unless she allowed them.
       crashReportsAllowed: CrashConsent.instance.allowed,
       onCrashReportsChanged: CrashConsent.instance.set,
+      analyticsAllowed: AnalyticsConsent.instance.allowed,
+      onAnalyticsChanged: AnalyticsConsent.instance.set,
     ),
     // Four of A04's five rows drew a chevron and had no callback at all, which
     // on the safety screen is the worst place in the product for a control
@@ -4990,11 +5053,70 @@ class AppRouter {
   };
 
   /// The check's outcome as a token: verified, reviewer, retake or rejected.
+  /// Never why: a refusal's reason is about her sex, her age or her card.
   static void _trackDecided(String outcome) => unawaited(
     analytics.track(AnalyticsEvent.verificationDecided, {
       AnalyticsProp.outcome: AnalyticsValue.token(outcome),
     }),
   );
+
+  /// "You're in": `automatic` after the check, `reviewer` after a woman
+  /// reviewer approved her.
+  static void _trackYoureIn(String method) => unawaited(
+    analytics.track(AnalyticsEvent.youreIn, {
+      AnalyticsProp.method: AnalyticsValue.token(method),
+    }),
+  );
+
+  /// The camera could not run, by its technical cause alone.
+  static void _trackCameraUnavailable(CaptureUnavailableReason reason) =>
+      unawaited(
+        analytics.track(AnalyticsEvent.cameraUnavailable, {
+          AnalyticsProp.reason: AnalyticsValue.token(cameraReasonToken(reason)),
+        }),
+      );
+
+  /// The word [_trackCameraUnavailable] sends for [reason].
+  @visibleForTesting
+  static String cameraReasonToken(CaptureUnavailableReason reason) =>
+      switch (reason) {
+        CaptureUnavailableReason.permissionDenied => 'permission_denied',
+        CaptureUnavailableReason.noCamera => 'no_camera',
+        CaptureUnavailableReason.notImplemented => 'not_implemented',
+        CaptureUnavailableReason.providerUnavailable => 'provider_unavailable',
+        CaptureUnavailableReason.offline => 'offline',
+      };
+
+  /// The word a reviewer path is counted as. The niqab path and "I would
+  /// rather not" are both `chosen`: which one she took is hers, and the
+  /// niqab is a religious practice. A check that could not run is
+  /// `unavailable`.
+  @visibleForTesting
+  static String reviewerPathToken(ReviewPath path) => switch (path) {
+    ReviewPath.niqab || ReviewPath.declined => 'chosen',
+    ReviewPath.error => 'unavailable',
+  };
+
+  /// The stop she was last on in the tour, so leaving it can say where.
+  static int _lastTourStop = 0;
+
+  /// Events that belong to a screen opening rather than to a tap: the tour
+  /// beginning (`C04`) and a reviewer path (`C15`).
+  static void _trackRouteOpened(String id) {
+    switch (id) {
+      case 'C04':
+        _lastTourStop = 0;
+        unawaited(analytics.track(AnalyticsEvent.tourStarted));
+      case 'C15':
+        unawaited(
+          analytics.track(AnalyticsEvent.reviewerPathChosen, {
+            AnalyticsProp.outcome: AnalyticsValue.token(
+              reviewerPathToken(pendingReviewPath),
+            ),
+          }),
+        );
+    }
+  }
 
   /// The handle for the route currently being built, if it was pushed with one.
   static LogHandle? handleFrom(BuildContext context) {
@@ -5010,14 +5132,40 @@ class AppRouter {
   /// the award ledger and in Today's copy — so finishing twice, or a tap that
   /// arrives late, counts once.
   static void _finishWorkout() {
+    // Read before the finish lands: whether this was her first session, and
+    // how far her week was from its target.
+    final firstEver = todayRepository.day.isDayOne;
+    final before = todayRepository.day.week;
     unawaited(
-      WorkoutSessionState.instance.finish(
-        repository: trainRepository,
-        today: todayRepository,
-        progress: progressStore,
-      ),
+      WorkoutSessionState.instance
+          .finish(
+            repository: trainRepository,
+            today: todayRepository,
+            progress: progressStore,
+          )
+          .then((_) => _trackWorkoutFinished(firstEver, before)),
     );
   }
+
+  /// A finished workout, and the week's target when this one reached it.
+  static void _trackWorkoutFinished(bool firstEver, WeekProgress before) {
+    unawaited(
+      analytics.track(AnalyticsEvent.sessionFinished, {
+        AnalyticsProp.isFirstTime: AnalyticsValue.flag(firstEver),
+      }),
+    );
+    if (weekTargetReached(before, todayRepository.day.week)) {
+      unawaited(analytics.track(AnalyticsEvent.weekCounted));
+    }
+  }
+
+  /// Whether the session that turned [before] into [after] is the one that
+  /// reached the week's target. Once a week, not on every session past it.
+  @visibleForTesting
+  static bool weekTargetReached(WeekProgress before, WeekProgress after) =>
+      after.sessionsTarget > 0 &&
+      before.sessionsLogged < before.sessionsTarget &&
+      after.sessionsLogged >= after.sessionsTarget;
 
   /// How far she is into her level, as a percentage of the points it takes.
   static double get _levelProgressPercent {
@@ -6196,19 +6344,37 @@ class AppRouter {
         OnboardingState.instance
           ..beforeSignup = true
           ..whileWaiting = false;
-        unawaited(analytics.track(AnalyticsEvent.signUpStarted));
+        unawaited(
+          analytics.track(AnalyticsEvent.signUpStarted, {
+            AnalyticsProp.source: const AnalyticsValue.token('tour'),
+          }),
+        );
         toSignUp();
       },
       onSignIn: toSignIn,
-      onLeave: leave,
+      onLeave: () {
+        unawaited(
+          analytics.track(AnalyticsEvent.tourLeft, {
+            AnalyticsProp.tourStop: _tourStopToken(_lastTourStop),
+          }),
+        );
+        leave();
+      },
       // The tour's funnel: which stops she reached and where she joined. Two
       // tokens each, nothing about her. A woman waiting on her check is not
-      // joining, so her "Back to my check" is not counted as a join.
-      onStopViewed: (stop) => unawaited(
-        analytics.track(AnalyticsEvent.tourStopViewed, {
-          AnalyticsProp.tourStop: _tourStopToken(stop),
-        }),
-      ),
+      // joining, so her "Back to my check" is not counted as a join. The end
+      // card is also Firebase's recommended `tutorial_complete`.
+      onStopViewed: (stop) {
+        _lastTourStop = stop;
+        unawaited(
+          analytics.track(AnalyticsEvent.tourStopViewed, {
+            AnalyticsProp.tourStop: _tourStopToken(stop),
+          }),
+        );
+        if (stop >= DemoStop.values.length) {
+          unawaited(analytics.track(AnalyticsEvent.tourCompleted));
+        }
+      },
       onJoinFrom: (source, stop) {
         if (waiting) return;
         unawaited(

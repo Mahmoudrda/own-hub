@@ -121,6 +121,64 @@ void main() {
     expect(sent, 1, reason: 'she only moves on once a code is actually sent');
   });
 
+  testWidgets(
+    'usage statistics: its own switch, off, applied before the send',
+    (tester) async {
+      final repository = FakeAuthRepository();
+      final order = <String>[];
+      await tester.pumpWidget(
+        _host(
+          PhoneNumberView(
+            repository: repository,
+            onCrashReportsChosen: (allowed) async =>
+                order.add('crash $allowed'),
+            onAnalyticsChosen: (allowed) async => order.add('stats $allowed'),
+            onCodeSent: () => order.add('sent'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final toggle = find.byKey(const ValueKey('phone-analytics'));
+      await tester.ensureVisible(toggle);
+      expect(find.text('Help improve Own Hub'), findsOneWidget);
+      expect(
+        find.textContaining(
+          'Never your health, your body, your name or your '
+          'number',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('outside Egypt'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), '1005550132');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Agree and send me a code'));
+      await tester.pumpAndSettle();
+      // Not turned on, so off; separate from the crash-report choice.
+      expect(order, ['crash false', 'stats false', 'sent']);
+
+      order.clear();
+      repository.sentTo.clear();
+      await tester.ensureVisible(toggle);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Agree and send me a code'));
+      await tester.pumpAndSettle();
+      expect(order, ['crash false', 'stats true', 'sent']);
+    },
+  );
+
+  testWidgets('with nowhere to record it, the switch is not drawn', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(PhoneNumberView(repository: FakeAuthRepository())),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('phone-analytics')), findsNothing);
+  });
+
   testWidgets('the local leading zero is dropped, not sent', (tester) async {
     // She types the number the way she says it out loud. "+200100…" is not a
     // number, and this is the most common way a phone field breaks in Egypt.

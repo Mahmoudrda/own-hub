@@ -1,14 +1,16 @@
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'app_state/analytics_consent.dart';
+import 'app_state/analytics_session.dart';
 import 'app_state/cloud_store.dart';
 import 'app_state/crash_consent.dart';
 import 'app_state/kitten_setting.dart';
 import 'app_state/crash_reports.dart';
-import 'app_state/debug_analytics_sink.dart';
 import 'app_state/eat_state.dart';
 import 'app_state/firebase_boot.dart';
 import 'app_state/home_widget_sync.dart';
@@ -53,11 +55,14 @@ Future<void> main() async {
     debugPrint('LegalLinks are empty: a release build will refuse to start.');
   }
 
-  // The funnel, on the debug console while testing. A release build sends it
-  // nowhere until an analytics service is chosen.
-  if (kDebugMode) {
-    AppRouter.analytics = const AnalyticsGateway(DebugPrintAnalyticsSink());
-  }
+  // Usage statistics. A release build hands every event to Firebase, which
+  // sends nothing until she allows it ("Help improve Own Hub", C06 or
+  // Privacy): collection is off natively and the sink checks her choice on
+  // every event. A debug build prints the funnel to the console instead. See
+  // `lib/app_state/analytics_session.dart`.
+  AppRouter.analytics = AnalyticsGateway(
+    analyticsSinkFor(release: kReleaseMode, debug: kDebugMode),
+  );
 
   // Her week, read off this phone BEFORE the first frame.
   //
@@ -75,6 +80,9 @@ Future<void> main() async {
   // Her crash-report choice, read before Firebase so collection is set from
   // it at once. Off unless she allowed it (privacy policy v3, 3.7).
   await CrashConsent.instance.load();
+  // Her usage-statistics choice, read before Firebase for the same reason.
+  // Off unless she allowed it, and a separate choice from crash reports.
+  await AnalyticsConsent.instance.load();
   await KittenSetting.instance.load();
 
   // The back end, brought up AFTER her local week and unable to fail the
@@ -97,6 +105,22 @@ Future<void> main() async {
       unawaited(CrashReports.uncaught(error, stack));
       return true;
     };
+    // Errors outside the Flutter context, on this isolate. The app spawns no
+    // isolate of its own; one that is added later reports through the same
+    // `CrashReports.uncaught`.
+    Isolate.current.addErrorListener(
+      RawReceivePort((Object? pair) {
+        if (pair is! List || pair.length != 2) return;
+        final stack = pair.last;
+        final Object error = (pair.first as Object?) ?? 'unknown';
+        unawaited(
+          CrashReports.uncaught(
+            error,
+            stack is String ? StackTrace.fromString(stack) : StackTrace.empty,
+          ),
+        );
+      }).sendPort,
+    );
   }
 
   // Has the server already let her in? Read here, because
@@ -239,6 +263,17 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // The widgets speak the language she chose here, not the phone's.
     _relabelWidgets();
     _locale.addListener(_relabelWidgets);
+    // A language she chooses is counted, as the code alone.
+    _locale.addListener(_reportLanguage);
+    // The facts every event carries (language, kitten, widget, channel), and
+    // a return after a quiet week, after the first frame and again whenever
+    // she allows statistics. Nothing leaves the phone unless she allowed it.
+    AnalyticsConsent.onGranted = _describeForStatistics;
+    KittenSetting.instance.addListener(_reportKitten);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _describeForStatistics();
+      unawaited(AnalyticsSession.noteOpened(DateTime.now()));
+    });
     // A tap on a widget opens its screen, once there is a navigator to push
     // it on. Nothing happens off iOS.
     WidgetsBinding.instance.addPostFrameCallback(
@@ -253,6 +288,16 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
 
   void _relabelWidgets() => HomeWidgetSync.instance.useLocale(_locale.value);
 
+  void _reportLanguage() =>
+      AnalyticsSession.languageChanged(_locale.value.languageCode);
+
+  void _reportKitten() =>
+      AnalyticsSession.kittenChanged(KittenSetting.instance.moves);
+
+  void _describeForStatistics() => unawaited(
+    AnalyticsSession.describe(languageCode: _locale.value.languageCode),
+  );
+
   void _reapplyReminders() => unawaited(
     AppRouter.reapplyTrainingReminders(lookupAppL10n(_locale.value)),
   );
@@ -263,6 +308,8 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       unawaited(AppRouter.refreshVerificationIfOwed());
+      unawaited(CrashReports.trail(CrashTrail.resumed));
+      unawaited(AnalyticsSession.noteOpened(DateTime.now()));
     }
   }
 
@@ -317,6 +364,11 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _locale.removeListener(_reapplyReminders);
     _locale.removeListener(_relabelWidgets);
+    _locale.removeListener(_reportLanguage);
+    KittenSetting.instance.removeListener(_reportKitten);
+    if (AnalyticsConsent.onGranted == _describeForStatistics) {
+      AnalyticsConsent.onGranted = null;
+    }
     _locale.dispose();
     _roles.removeListener(_keepRoles);
     _roles.dispose();

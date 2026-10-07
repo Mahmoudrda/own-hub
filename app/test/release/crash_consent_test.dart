@@ -81,14 +81,15 @@ void main() {
     expect(load, lessThan(start));
   });
 
-  test('a release build wires no analytics sink', () {
-    // The only sink is the debug console, and only under kDebugMode.
+  test('the analytics sink is chosen by build mode, in one place', () {
+    // Release: Firebase, which checks her usage-statistics consent on every
+    // event. Debug: the console. Profile: nothing. The consent itself is
+    // test/release/analytics_consent_test.dart.
     final main = File('lib/main.dart').readAsStringSync();
-    final at = main.indexOf('AppRouter.analytics =');
-    expect(at, greaterThan(-1));
-    final guard = main.lastIndexOf('if (kDebugMode)', at);
-    expect(guard, greaterThan(-1));
-    expect(at - guard, lessThan(120), reason: 'the sink sits inside the guard');
     expect('AppRouter.analytics ='.allMatches(main).length, 1);
+    expect(
+      main,
+      contains('analyticsSinkFor(release: kReleaseMode, debug: kDebugMode)'),
+    );
   });
 }
