@@ -2,6 +2,7 @@
   "_readme": [
     "Every fact on this website that only the owner can supply lives in this file.",
     "Fill a value in and run  python3 _build/build.py  from the site/ folder.",
+    "To publish for a domain: site/_build/deploy.sh https://your-domain (see the top of that file).",
     "Anything still empty is rendered on the page as a visible rose-outlined",
     "[to be completed: ...] marker, in both languages, so a gap is never mistaken",
     "for a fact. Do not invent a value here. A policy carrying a wrong email address",
@@ -328,7 +329,7 @@
         "ar": "رابط App Store"
       },
       "optional": true,
-      "note": "Optional. Empty means no download button is drawn on the home page, and no marker either. Fill it in once the listing is live."
+      "note": "Optional. Empty means the App Store badge is drawn, unchanged, as Coming soon and is not a link, and the waitlist form stays on the home page. Fill it in once the listing is live (https://apps.apple.com/...) and the badge becomes the link, on the home page and in every footer."
     },
     "storeUrlAndroid": {
       "value": "",
@@ -337,7 +338,7 @@
         "ar": "رابط Google Play"
       },
       "optional": true,
-      "note": "Optional. Empty means no download button is drawn on the home page, and no marker either."
+      "note": "Optional. Empty means the Google Play badge is drawn as Coming soon and is not a link. Fill it in once the listing is live (https://play.google.com/...). With both store links set, the waitlist form leaves the home page."
     },
     "policyEffectiveDate": {
       "value": {

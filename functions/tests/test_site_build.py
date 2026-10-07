@@ -65,8 +65,19 @@ def test_the_committed_site_is_what_the_generator_writes(built):
     assert stale == [], f"run python3 _build/build.py in site/: {stale}"
 
 
+def _page_path(root, *parts):
+    """The file Cloudflare Pages serves for /<parts>: a flat page (privacy.html
+    at /privacy) or a folder's index.html (the home pages, the waitlist
+    answers)."""
+    if parts:
+        flat = os.path.join(root, *parts[:-1], parts[-1] + ".html")
+        if os.path.isfile(flat):
+            return flat
+    return os.path.join(root, *parts, "index.html")
+
+
 def _page(*parts):
-    return open(os.path.join(_SITE, *parts, "index.html"), encoding="utf-8").read()
+    return open(_page_path(_SITE, *parts), encoding="utf-8").read()
 
 
 @pytest.mark.parametrize("prefix,lang", [((), "en"), (("ar",), "ar")])
@@ -159,9 +170,9 @@ def test_the_release_gate_refuses_every_marker(tmp_path, marker):
     # page must be refused, so a gap can never reach a release unnoticed.
     copy = tmp_path / "site"
     shutil.copytree(_SITE, copy)
-    page = copy / "privacy" / "index.html"
+    page = copy / "privacy.html"
     page.write_text(page.read_text(encoding="utf-8") + marker, encoding="utf-8")
-    assert ("privacy/index.html", marker) in [
+    assert ("privacy.html", marker) in [
         (rel.replace(os.sep, "/"), m) for rel, m in _release_problems(str(copy))
     ]
 
@@ -259,12 +270,38 @@ def _build_with(tmp_path, **values):
     )
 
 
-def test_no_download_button_while_the_store_links_are_empty():
+def _home(folder, lang):
+    path = os.path.join(str(folder), "index.html") if lang == "en" else os.path.join(str(folder), "ar", "index.html")
+    return open(path, encoding="utf-8").read()
+
+
+def test_the_badges_wait_calmly_while_the_store_links_are_empty():
     assert _config()["values"]["storeUrlIos"]["value"] == ""
-    for prefix in ((), ("ar",)):
-        html = open(os.path.join(_SITE, *prefix, "index.html"), encoding="utf-8").read()
-        assert "store-links" not in html
+    assert _config()["values"]["storeUrlAndroid"]["value"] == ""
+    for lang, soon in (("en", "Coming soon"), ("ar", "قريبًا")):
+        html = _home(_SITE, lang)
         assert "apps.apple.com" not in html and "play.google.com" not in html
+        # Drawn, but not a link: no href, and a screen reader is told why.
+        badges = re.findall(r'<a class="badge is-soon" role="link" aria-disabled="true">', html)
+        assert len(badges) == 2, lang
+        assert soon in html
+        assert re.search(r'<a class="badge[^"]*" href=', html) is None
+        # The waitlist stands in for them.
+        assert 'action="https://europe-west3-own-hub.cloudfunctions.net/join_waitlist"' in html
+
+
+@pytest.mark.parametrize("prefix", [(), ("ar",)])
+@pytest.mark.parametrize("page", ["privacy", "terms", "support", "delete-account", "waitlist"])
+def test_every_other_page_carries_the_badges_once_in_its_footer(prefix, page):
+    html = _page(*prefix, page)
+    assert html.count('src="/assets/badges/app-store-') == 1
+    assert html.count('src="/assets/badges/google-play-') == 1
+
+
+def test_the_home_page_carries_one_app_store_badge():
+    # Apple: "Use one App Store badge per layout".
+    for lang in ("en", "ar"):
+        assert _home(_SITE, lang).count('src="/assets/badges/app-store-') == 1
 
 
 def test_download_buttons_appear_once_the_store_links_are_set(tmp_path):
@@ -274,11 +311,17 @@ def test_download_buttons_appear_once_the_store_links_are_set(tmp_path):
     assert result.returncode == 0, result.stderr[-2000:]
     en = (folder / "index.html").read_text(encoding="utf-8")
     ar = (folder / "ar" / "index.html").read_text(encoding="utf-8")
-    assert f'href="{ios}"' in en and "Download on the App Store" in en
+    assert f'<a class="badge" href="{ios}" rel="noopener">' in en
+    assert 'alt="Download on the App Store"' in en
     assert 'href="https://play.google.com/store/apps/details?id=com.ownhub.app"' in en
-    assert "Get it on Google Play" in en
+    assert 'alt="Get it on Google Play"' in en
+    assert "aria-disabled" not in en and "Coming soon" not in en
     assert f'href="{ios}"' in ar and "حمّليه من" in ar
-    assert "play.google.com" in ar
+    assert "play.google.com" in ar and 'src="/assets/badges/google-play-ar.png"' in ar
+    # Once both stores are live the waitlist form leaves the home page.
+    assert "join_waitlist" not in en
+    privacy = (folder / "privacy.html").read_text(encoding="utf-8")
+    assert f'href="{ios}"' in privacy, "the footer badges follow the config too"
 
 
 def test_only_one_store_link_draws_only_its_button(tmp_path):
@@ -286,7 +329,9 @@ def test_only_one_store_link_draws_only_its_button(tmp_path):
     folder, result = _build_with(tmp_path, storeUrlAndroid=android)
     assert result.returncode == 0, result.stderr[-2000:]
     en = (folder / "index.html").read_text(encoding="utf-8")
-    assert "Get it on Google Play" in en and "App Store" not in en
+    assert f'<a class="badge" href="{android}"' in en
+    assert "apps.apple.com" not in en
+    assert 'alt="Download on the App Store, coming soon"' in en
 
 
 @pytest.mark.parametrize(
@@ -324,3 +369,205 @@ def test_the_deletion_page_uses_a_code_not_a_phone_call():
         html = _page(*prefix, "delete-account")
         assert "we will phone that number" not in html
         assert "نتصل بهذا الرقم" not in html
+
+
+# ------------------------------------------- the deployable site, any domain
+
+
+def _run_build(folder, *args, env=None):
+    return subprocess.run(
+        [sys.executable, os.path.join("_build", "build.py"), *args],
+        cwd=folder, capture_output=True, text=True, timeout=120,
+        env={**os.environ, **(env or {})},
+    )
+
+
+def _copy_site(tmp_path):
+    folder = tmp_path / "site"
+    shutil.copytree(_SITE, folder, ignore=shutil.ignore_patterns("__pycache__"))
+    return folder
+
+
+def test_every_internal_link_on_the_committed_site_resolves():
+    assert _build_module().check_links(_SITE) == []
+
+
+def test_the_link_check_catches_a_broken_link_and_a_missing_anchor(tmp_path):
+    folder = _copy_site(tmp_path)
+    page = folder / "support.html"
+    page.write_text(
+        page.read_text(encoding="utf-8").replace(
+            "</main>", '<a href="/no-such-page">x</a><a href="/privacy#no-such-part">y</a></main>'
+        ),
+        encoding="utf-8",
+    )
+    problems = _build_module().check_links(str(folder))
+    assert any("/no-such-page does not exist" in p for p in problems)
+    assert any("#no-such-part" in p for p in problems)
+
+
+def test_the_store_addresses_are_served_without_a_redirect():
+    # Cloudflare Pages serves privacy.html at /privacy. A privacy/index.html
+    # would make /privacy redirect to /privacy/, which _redirects sends back.
+    for prefix in ((), ("ar",)):
+        for page in ("privacy", "terms", "support", "delete-account"):
+            assert os.path.isfile(os.path.join(_SITE, *prefix, page + ".html"))
+            assert not os.path.exists(os.path.join(_SITE, *prefix, page, "index.html"))
+
+
+def test_no_redirect_points_at_an_address_that_redirects_again():
+    build = _build_module()
+    for line in open(os.path.join(_SITE, "_redirects"), encoding="utf-8"):
+        line = line.strip()
+        if not line or line.startswith("#") or ":splat" in line or "*" in line:
+            continue
+        source, target, _status = line.split()
+        if target.endswith(".html"):
+            assert os.path.isfile(os.path.join(_SITE, target.lstrip("/"))), line
+            continue
+        rel = target.lstrip("/")
+        served = rel + "index.html" if (not rel or rel.endswith("/")) else rel + ".html"
+        assert os.path.isfile(os.path.join(_SITE, served)), line
+        assert build.resolve_path(_SITE, target) is not None
+
+
+def test_a_real_domain_fills_every_absolute_address(tmp_path):
+    folder = _copy_site(tmp_path)
+    out = tmp_path / "out"
+    result = _run_build(folder, "--base-url", "https://ownhub.app/", "--out", str(out))
+    assert result.returncode == 0, result.stderr[-2000:]
+    en, ar = (out / "index.html").read_text(encoding="utf-8"), (out / "ar" / "privacy.html").read_text(encoding="utf-8")
+    assert '<link rel="canonical" href="https://ownhub.app/">' in en
+    assert '<link rel="alternate" hreflang="ar" href="https://ownhub.app/ar/">' in en
+    assert '<meta property="og:url" content="https://ownhub.app/">' in en
+    assert '<meta property="og:image" content="https://ownhub.app/assets/og/og-en.png">' in en
+    assert '<meta name="twitter:card" content="summary_large_image">' in en
+    assert '<link rel="canonical" href="https://ownhub.app/ar/privacy">' in ar
+    assert '<meta property="og:image" content="https://ownhub.app/assets/og/og-ar.png">' in ar
+    sitemap = (out / "sitemap.xml").read_text(encoding="utf-8")
+    assert "<loc>https://ownhub.app/privacy</loc>" in sitemap and "ownhub.example" not in sitemap
+    assert "Sitemap: https://ownhub.app/sitemap.xml" in (out / "robots.txt").read_text(encoding="utf-8")
+    # The contact addresses follow the domain, everywhere they appear.
+    privacy = (out / "privacy.html").read_text(encoding="utf-8")
+    support = (out / "support.html").read_text(encoding="utf-8")
+    assert 'href="mailto:privacy@ownhub.app"' in privacy
+    assert "support@ownhub.app" in support
+    for path in out.rglob("*.html"):
+        text = path.read_text(encoding="utf-8")
+        assert "gmail.com" not in text.replace("Google (Gmail)", ""), path
+        assert "ownhub.example" not in text, path
+
+
+def test_the_domain_can_come_from_the_environment(tmp_path):
+    folder = _copy_site(tmp_path)
+    out = tmp_path / "out"
+    result = _run_build(folder, "--out", str(out), env={"BASE_URL": "https://example.com"})
+    assert result.returncode == 0, result.stderr[-2000:]
+    assert '<link rel="canonical" href="https://example.com/privacy">' in (out / "privacy.html").read_text(encoding="utf-8")
+
+
+def test_keep_contact_emails_keeps_the_configured_mailbox(tmp_path):
+    folder = _copy_site(tmp_path)
+    out = tmp_path / "out"
+    result = _run_build(folder, "--base-url", "https://example.com", "--out", str(out), "--keep-contact-emails")
+    assert result.returncode == 0, result.stderr[-2000:]
+    configured = _config()["values"]["contactPrivacy"]["value"]
+    assert configured in (out / "privacy.html").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("url", ["http://example.com", "example.com", "https://example.com/site", "https://"])
+def test_a_wrong_base_url_stops_the_build(tmp_path, url):
+    folder = _copy_site(tmp_path)
+    result = _run_build(folder, "--base-url", url, "--out", str(tmp_path / "out"))
+    assert result.returncode != 0
+    assert "base URL" in result.stderr
+
+
+def test_the_output_folder_holds_only_publishable_files(tmp_path):
+    folder = _copy_site(tmp_path)
+    out = tmp_path / "out"
+    result = _run_build(folder, "--base-url", "https://example.com", "--out", str(out))
+    assert result.returncode == 0, result.stderr[-2000:]
+    files = {p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file()}
+    assert not any(f.startswith("_build/") for f in files)
+    assert "config.json" not in files
+    assert not [f for f in files if f.endswith((".py", ".md", ".sh", ".pyc"))]
+    for needed in ("index.html", "ar/index.html", "privacy.html", "ar/delete-account.html",
+                   "404.html", "ar/404.html", "_headers", "_redirects", "sitemap.xml",
+                   "robots.txt", "manifest.webmanifest", "favicon.ico",
+                   "assets/site.css", "assets/og/og-en.png", "assets/badges/app-store-ar.svg"):
+        assert needed in files, needed
+    assert _build_module().check_links(str(out)) == []
+
+
+def test_the_output_folder_must_be_outside_the_site(tmp_path):
+    folder = _copy_site(tmp_path)
+    result = _run_build(folder, "--out", str(folder / "dist"))
+    assert result.returncode != 0
+
+
+def test_the_headers_keep_the_site_locked_down():
+    headers = open(os.path.join(_SITE, "_headers"), encoding="utf-8").read()
+    (csp,) = re.findall(r"Content-Security-Policy: (.*)", headers)
+    for rule in ("default-src 'none'", "style-src 'self'", "font-src 'self'", "img-src 'self'",
+                 "manifest-src 'self'", "frame-ancestors 'none'", "object-src 'none'", "base-uri 'none'"):
+        assert rule in csp, rule
+    assert "script-src" not in csp and "unsafe-inline" not in csp and "data:" not in csp
+    for header in ("Strict-Transport-Security: max-age=", "Referrer-Policy: no-referrer",
+                   "Permissions-Policy: ", "X-Content-Type-Options: nosniff"):
+        assert header in headers, header
+    assert "/assets/fonts/*\n  Cache-Control: public, max-age=31536000, immutable" in headers
+
+
+def test_no_page_loads_anything_from_anyone_else():
+    for rel, path in _outputs(_SITE).items():
+        if not rel.endswith((".html", ".css", ".webmanifest")):
+            continue
+        text = open(path, encoding="utf-8").read()
+        assert "<script" not in text, rel
+        assert "fonts.googleapis" not in text and "fonts.gstatic" not in text, rel
+        assert 'style="' not in text, f"{rel}: an inline style would break the CSP"
+        for attr, url in re.findall(r'\s(src|srcset)="([^"]+)"', text):
+            assert url.startswith("/"), f"{rel}: {url}"
+        for url in re.findall(r'<link [^>]*href="([^"]+)"', text):
+            assert url.startswith("/") or "ownhub.example" in url, f"{rel}: {url}"
+
+
+@pytest.mark.parametrize("prefix", [(), ("ar",)])
+def test_every_page_has_share_tags_and_icons(prefix):
+    for page in ((), ("privacy",), ("support",), ("waitlist",)):
+        html = _page(*prefix, *page)
+        assert '<meta property="og:image" content="' in html
+        assert '<meta property="og:image:width" content="1200">' in html
+        assert '<meta name="twitter:card" content="summary_large_image">' in html
+        assert '<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">' in html
+        assert '<link rel="manifest" href="/manifest.webmanifest">' in html
+        assert 'rel="preload" href="/assets/fonts/rubik-' in html
+
+
+def test_every_image_has_its_size_and_an_alt():
+    for rel, path in _outputs(_SITE).items():
+        if not rel.endswith(".html"):
+            continue
+        for tag in re.findall(r"<img [^>]*>", open(path, encoding="utf-8").read()):
+            assert re.search(r'\swidth="\d+"', tag) and re.search(r'\sheight="\d+"', tag), (rel, tag)
+            assert ' alt="' in tag, (rel, tag)
+
+
+def test_the_kitten_is_decoration_only():
+    for lang in ("en", "ar"):
+        html = _home(_SITE, lang)
+        (svg,) = re.findall(r'<svg class="kitten"[^>]*>', html)
+        assert 'aria-hidden="true"' in svg and 'focusable="false"' in svg
+        assert "stroke=\"#241A1E\"" not in html, "flat colour, no dark outline"
+
+
+def test_the_home_pages_promise_only_what_this_version_does():
+    for lang in ("en", "ar"):
+        html = _home(_SITE, lang)
+        assert "—" not in html
+    en = _home(_SITE, "en").lower()
+    for claim in ("video call", "gym", "marketplace", "ai assistant", "artificial intelligence",
+                  "join the community", "book a coach", "chat with"):
+        assert claim not in en, claim
+    assert "there is no community and no\n            coaching" in en

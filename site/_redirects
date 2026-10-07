@@ -1,6 +1,10 @@
-# Own Hub — aliases.
-# Netlify and Cloudflare Pages read this file. The four addresses the stores
-# hold are /privacy, /terms, /support and /delete-account; everything below is
+# Own Hub: aliases.
+# Cloudflare Pages reads this file
+# (https://developers.cloudflare.com/pages/configuration/redirects/).
+# The pages are flat files (privacy.html is served at /privacy with a 200), so
+# the trailing-slash aliases below send /privacy/ to /privacy and never loop.
+# The four addresses the stores hold are /privacy, /terms, /support and
+# /delete-account; everything below is
 # a spelling somebody will try, or one that was written into a form before the
 # real address was settled. A store listing pointing at a 404 is a rejection,
 # so these cost nothing and remove a whole class of mistake.
