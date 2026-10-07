@@ -38,6 +38,8 @@
 /// rows carry no subtitle rather than a subtitle about somebody else.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../domain/flags/feature_flags.dart';
@@ -47,10 +49,12 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_avatar.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
+import '../../../app_state/kitten_setting.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
+import '../../../ui/app_toggle.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/dietary_profile.dart';
 import 'allergen_labels.dart';
@@ -243,6 +247,26 @@ class _ProfileViewState extends State<ProfileView> {
           subtitle: view.notifyIsDefault ? l10n.oneADayQuiet10pmTo8am : '',
           onTap: widget.onOpenNotifications,
         ),
+        // The kitten that guides her through onboarding. Off, it is still
+        // there but never moves.
+        AppListItem(
+          leading: const Icon(
+            Icons.pets_outlined,
+            size: 24,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.movingKitten,
+          subtitle: KittenSetting.instance.moves
+              ? l10n.theKittenShowsYouAroundAndMoves
+              : l10n.theKittenStaysStill,
+          trailing: AppToggle(
+            key: const ValueKey('kitten-moves-toggle'),
+            value: KittenSetting.instance.moves,
+            semanticLabel: l10n.movingKitten,
+            onChanged: _setKittenMoves,
+          ),
+          onTap: () => _setKittenMoves(!KittenSetting.instance.moves),
+        ),
         _row(
           icon: Icons.lock_outline,
           title: l10n.privacy,
@@ -318,6 +342,11 @@ class _ProfileViewState extends State<ProfileView> {
         ),
       ],
     );
+  }
+
+  void _setKittenMoves(bool moves) {
+    unawaited(KittenSetting.instance.set(moves));
+    setState(() {});
   }
 
   Widget _row({

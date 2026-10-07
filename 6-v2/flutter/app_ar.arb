@@ -3498,5 +3498,8 @@
   "logAMeal": "سجّلي وجبة",
   "openOwnHubForToday": "افتحي Own Hub ليومكِ",
   "openOwnHubToStart": "افتحي Own Hub للبدء",
-  "yourWeekShowsHere": "سيظهر أسبوعكِ هنا"
+  "yourWeekShowsHere": "سيظهر أسبوعكِ هنا",
+  "movingKitten": "قطة متحركة",
+  "theKittenShowsYouAroundAndMoves": "ترشدكِ القطة وتتحرك مرة واحدة عند ظهورها.",
+  "theKittenStaysStill": "تبقى القطة ثابتة."
 }

@@ -40,6 +40,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
+import '../../../ui/hand/mascot/kitten.dart';
 import '../domain/id_capture.dart';
 import 'widgets/capture_scaffold.dart';
 
@@ -212,6 +213,24 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
       guidance: live is CaptureFraming && live.guidance != null
           ? captureGuidanceText(l10n, live.guidance!, isSelfie: true)
           : null,
+      // The kitten shows the step with its own face. Only the challenge
+      // steps: a framing correction is hers to read, not to copy.
+      guide: switch (live is CaptureFraming ? live.guidance : null) {
+        CaptureGuidance.turnLeft => const Kitten(
+          pose: KittenPose.lookLeft,
+          size: 44,
+        ),
+        CaptureGuidance.turnRight => const Kitten(
+          pose: KittenPose.lookRight,
+          size: 44,
+        ),
+        CaptureGuidance.blink => const Kitten(pose: KittenPose.blink, size: 44),
+        CaptureGuidance.lookStraight => const Kitten(
+          pose: KittenPose.rest,
+          size: 44,
+        ),
+        _ => null,
+      },
       actionLabel: l10n.done_54ca1,
       onAction: ready ? _capture : null,
       unavailable: unavailable,

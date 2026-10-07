@@ -9,9 +9,17 @@ import 'package:flutter/material.dart';
 import '../../theme/hand_tokens.dart';
 
 /// Whether motion should be skipped. Reads the platform setting.
+///
+/// Android's "Remove animations" arrives as [MediaQueryData.disableAnimations];
+/// iOS Reduce Motion does not set that flag and has to be read from the view.
 bool handMotionOff(BuildContext context) {
   final mq = MediaQuery.maybeOf(context);
-  return mq == null || mq.disableAnimations || mq.accessibleNavigation;
+  if (mq == null || mq.disableAnimations || mq.accessibleNavigation) {
+    return true;
+  }
+  final view = View.maybeOf(context);
+  return view != null &&
+      view.platformDispatcher.accessibilityFeatures.reduceMotion;
 }
 
 /// Runs a 0→1 value once, when first shown, and hands it to [builder].

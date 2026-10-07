@@ -53,6 +53,7 @@ import 'coaching_desk_state.dart';
 import 'coaching_link_state.dart';
 import 'community_state.dart';
 import 'crash_consent.dart';
+import 'kitten_setting.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
 import 'firebase_boot.dart';
@@ -165,6 +166,9 @@ class ThisPhoneWipe implements LocalWipe {
     // Her crash-report choice, back to off, and any report still waiting on
     // this phone deleted. A new account on this handset is asked again.
     unawaited(CrashConsent.instance.erase().catchError((Object _) {}));
+
+    // Whether the kitten moves, back to the default.
+    unawaited(KittenSetting.instance.erase());
 
     // The legal acceptance waiting to reach the server, if any. It belongs to
     // the account being deleted.

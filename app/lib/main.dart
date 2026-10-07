@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'app_state/cloud_store.dart';
 import 'app_state/crash_consent.dart';
+import 'app_state/kitten_setting.dart';
 import 'app_state/crash_reports.dart';
 import 'app_state/debug_analytics_sink.dart';
 import 'app_state/eat_state.dart';
@@ -74,6 +75,7 @@ Future<void> main() async {
   // Her crash-report choice, read before Firebase so collection is set from
   // it at once. Off unless she allowed it (privacy policy v3, 3.7).
   await CrashConsent.instance.load();
+  await KittenSetting.instance.load();
 
   // The back end, brought up AFTER her local week and unable to fail the
   // launch. The order matters: whatever Firebase does or does not do, the

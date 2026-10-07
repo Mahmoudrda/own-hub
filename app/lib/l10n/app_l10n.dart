@@ -15414,6 +15414,24 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Your week shows here'**
   String get yourWeekShowsHere;
+
+  /// No description provided for @movingKitten.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving kitten'**
+  String get movingKitten;
+
+  /// No description provided for @theKittenShowsYouAroundAndMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'The kitten shows you around and moves once when it appears.'**
+  String get theKittenShowsYouAroundAndMoves;
+
+  /// No description provided for @theKittenStaysStill.
+  ///
+  /// In en, this message translates to:
+  /// **'The kitten stays still.'**
+  String get theKittenStaysStill;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

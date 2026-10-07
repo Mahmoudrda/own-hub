@@ -602,6 +602,12 @@ class _TodayViewState extends State<TodayView> {
           style: AppText.titleM.copyWith(color: AppColors.onPrimaryContainer),
         ),
       const SizedBox(height: 4),
+      // Day one only: the kitten shows where to start. It goes with the
+      // day-one state, the moment she logs anything.
+      const Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Kitten(pose: KittenPose.point, size: 48, moment: 'T06'),
+      ),
       AppButton(
         l10n.startDay1,
         height: 56,

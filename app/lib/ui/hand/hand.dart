@@ -23,3 +23,4 @@ export 'hand_painters.dart'
         TickPainter,
         UnderlinePainter;
 export 'hand_surface.dart';
+export 'mascot/kitten.dart';

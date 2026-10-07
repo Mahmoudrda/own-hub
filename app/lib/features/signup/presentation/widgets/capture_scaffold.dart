@@ -50,6 +50,7 @@ class CaptureScaffold extends StatelessWidget {
     required this.body,
     required this.actionLabel,
     this.guidance,
+    this.guide,
     this.onAction,
     this.onClose,
     this.unavailable,
@@ -92,6 +93,10 @@ class CaptureScaffold extends StatelessWidget {
   /// The live instruction, already translated, or null when there is nothing
   /// worth saying.
   final String? guidance;
+
+  /// Shown beside [guidance], outside the frame: the kitten acting out the
+  /// step. Never inside the viewfinder, which stays hers.
+  final Widget? guide;
 
   /// Null disables the shutter — which is the honest state whenever there is no
   /// camera behind it.
@@ -241,23 +246,36 @@ class CaptureScaffold extends StatelessWidget {
                       // from a viewfinder she cannot see unless the correction
                       // is spoken. `liveRegion` is what makes the screen reader
                       // read it again each time it changes.
-                      Semantics(
-                        liveRegion: true,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (guide case final guide?) ...[
+                            guide,
+                            const SizedBox(width: 10),
+                          ],
+                          Flexible(
+                            child: Semantics(
+                              liveRegion: true,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0x33FFFFFF),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.full,
+                                  ),
+                                ),
+                                child: Text(
+                                  guidance!,
+                                  textAlign: TextAlign.center,
+                                  style: AppText.bodyM.copyWith(color: _onDark),
+                                ),
+                              ),
+                            ),
                           ),
-                          decoration: BoxDecoration(
-                            color: const Color(0x33FFFFFF),
-                            borderRadius: BorderRadius.circular(AppRadius.full),
-                          ),
-                          child: Text(
-                            guidance!,
-                            textAlign: TextAlign.center,
-                            style: AppText.bodyM.copyWith(color: _onDark),
-                          ),
-                        ),
+                        ],
                       ),
                     ],
                   ],

@@ -3498,5 +3498,8 @@
   "logAMeal": "Log a meal",
   "openOwnHubForToday": "Open Own Hub for today",
   "openOwnHubToStart": "Open Own Hub to start",
-  "yourWeekShowsHere": "Your week shows here"
+  "yourWeekShowsHere": "Your week shows here",
+  "movingKitten": "Moving kitten",
+  "theKittenShowsYouAroundAndMoves": "The kitten shows you around and moves once when it appears.",
+  "theKittenStaysStill": "The kitten stays still."
 }
