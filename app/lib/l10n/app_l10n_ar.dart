@@ -8531,4 +8531,431 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get theKittenStaysStill => 'تبقى القطة ثابتة.';
+
+  @override
+  String get dashboard => 'لوحة المتابعة';
+
+  @override
+  String get logs => 'السجلات';
+
+  @override
+  String get events => 'الفعاليات';
+
+  @override
+  String get adminConsole => 'لوحة الإدارة';
+
+  @override
+  String get contentEventsCountsAndLogs =>
+      'المحتوى والفعاليات والأعداد والسجلات';
+
+  @override
+  String get countsOnlyNothingHereNamesAMember =>
+      'أعداد فقط. لا شيء هنا يذكر اسم أي عضوة.';
+
+  @override
+  String get accounts => 'الحسابات';
+
+  @override
+  String get verifiedMembers => 'العضوات الموثَّقات';
+
+  @override
+  String get humanReviewsWaiting => 'مراجعات بشرية في الانتظار';
+
+  @override
+  String countPastTheHoursHourPromise(String count, String hours) {
+    return '$count تجاوزت وعد $hours ساعة';
+  }
+
+  @override
+  String oldestHasWaitedHoursHours(String hours) {
+    return 'الأقدم تنتظر منذ $hours ساعة';
+  }
+
+  @override
+  String get checkOutcomesLast7Days => 'نتائج التحقق في آخر 7 أيام';
+
+  @override
+  String get checkOutcomesLast30Days => 'نتائج التحقق في آخر 30 يومًا';
+
+  @override
+  String get waitlist => 'قائمة الانتظار';
+
+  @override
+  String get deletionRequests => 'طلبات الحذف';
+
+  @override
+  String get stillRunning => 'قيد التنفيذ';
+
+  @override
+  String get finished => 'اكتملت';
+
+  @override
+  String get upcoming => 'القادمة';
+
+  @override
+  String get drafts => 'المسودات';
+
+  @override
+  String updatedTime(String time) {
+    return 'حُدِّث $time';
+  }
+
+  @override
+  String get refresh => 'تحديث';
+
+  @override
+  String get thisAccountDoesNotHaveAdminAccess =>
+      'هذا الحساب لا يملك صلاحية الإدارة.';
+
+  @override
+  String get signInWithYourPhoneNumberTo =>
+      'سجّلي الدخول برقم هاتفك لفتح لوحة الإدارة.';
+
+  @override
+  String get theConsoleNeedsAConnectionTryAgain =>
+      'تحتاج لوحة الإدارة إلى اتصال. حاولي مرة أخرى بعد قليل.';
+
+  @override
+  String get approved => 'مقبولة';
+
+  @override
+  String get sentToAReviewer => 'أُحيلت إلى مراجِعة';
+
+  @override
+  String get notEligible => 'غير مؤهلة';
+
+  @override
+  String get checkDidNotPass => 'لم يكتمل التحقق';
+
+  @override
+  String get cardAlreadyInUse => 'البطاقة مستخدمة من قبل';
+
+  @override
+  String get askedToRetake => 'طُلب إعادة التصوير';
+
+  @override
+  String get askedToTryAgain => 'طُلبت محاولة جديدة';
+
+  @override
+  String get decisions => 'القرارات';
+
+  @override
+  String get deletions => 'عمليات الحذف';
+
+  @override
+  String get errors => 'الأخطاء';
+
+  @override
+  String get consoleReads => 'قراءات اللوحة';
+
+  @override
+  String get allOutcomes => 'كل النتائج';
+
+  @override
+  String caseRef(String ref) {
+    return 'الحالة $ref';
+  }
+
+  @override
+  String reviewerRef(String ref) {
+    return 'المراجِعة $ref';
+  }
+
+  @override
+  String adminRef(String ref) {
+    return 'المشرفة $ref';
+  }
+
+  @override
+  String countJoined(String count) {
+    return 'عدد المنضمات: $count';
+  }
+
+  @override
+  String get loadMore => 'عرض المزيد';
+
+  @override
+  String get openingALogIsRecordedToo => 'فتح أي سجل يُسجَّل أيضًا.';
+
+  @override
+  String get lookedAtTheReviewQueue => 'اطّلعت على قائمة المراجعة';
+
+  @override
+  String get lookedUpAContact => 'اطّلعت على وسيلة تواصل';
+
+  @override
+  String get bookedAReview => 'حجزت مراجعة';
+
+  @override
+  String get recordedADecision => 'سجّلت قرارًا';
+
+  @override
+  String get storeReviewAccount => 'حساب مراجعة المتجر';
+
+  @override
+  String get willRetry => 'ستُعاد المحاولة';
+
+  @override
+  String get secondSweepDone => 'اكتمل المسح الثاني';
+
+  @override
+  String get openedTheDashboard => 'فتحت لوحة المتابعة';
+
+  @override
+  String get openedALog => 'فتحت سجلًا';
+
+  @override
+  String get addAnEvent => 'أضيفي فعالية';
+
+  @override
+  String get editAnEvent => 'تعديل فعالية';
+
+  @override
+  String get titleEnglish => 'العنوان (بالإنجليزية)';
+
+  @override
+  String get titleArabic => 'العنوان (بالعربية)';
+
+  @override
+  String get descriptionEnglish => 'الوصف (بالإنجليزية)';
+
+  @override
+  String get descriptionArabic => 'الوصف (بالعربية)';
+
+  @override
+  String get startsCairoTime => 'يبدأ، بتوقيت القاهرة';
+
+  @override
+  String get endsCairoTime => 'ينتهي، بتوقيت القاهرة';
+
+  @override
+  String get dateAndTimeLike20261105 => 'التاريخ والوقت، مثل 2026-11-05 18:30';
+
+  @override
+  String get online => 'عبر الإنترنت';
+
+  @override
+  String get inPerson => 'حضوريًا';
+
+  @override
+  String get linkStartingWithHttps => 'الرابط، يبدأ بـ https://';
+
+  @override
+  String get placeName => 'اسم المكان';
+
+  @override
+  String get aNameIsEnoughNoStreetAddress =>
+      'يكفي الاسم. لا حاجة إلى عنوان تفصيلي.';
+
+  @override
+  String get capacityOptional => 'العدد الأقصى، اختياري';
+
+  @override
+  String get coverPicture => 'صورة الغلاف';
+
+  @override
+  String get noPicturesInTheMediaLibraryYet =>
+      'لا توجد صور في مكتبة الوسائط بعد.';
+
+  @override
+  String get published => 'منشورة';
+
+  @override
+  String get cancelled => 'ملغاة';
+
+  @override
+  String get saveAsDraft => 'احفظيها كمسودة';
+
+  @override
+  String get moveBackToDraft => 'أعيديها إلى المسودات';
+
+  @override
+  String get cancelThisEvent => 'ألغي هذه الفعالية';
+
+  @override
+  String get membersWillNoLongerSeeIt => 'لن تراها العضوات بعد الآن.';
+
+  @override
+  String get yesCancelIt => 'نعم، ألغيها';
+
+  @override
+  String get useTheFormat2026110518 => 'استخدمي الصيغة 2026-11-05 18:30.';
+
+  @override
+  String get theEndMustComeAfterTheStart => 'يجب أن تأتي النهاية بعد البداية.';
+
+  @override
+  String get useALinkThatStartsWithHttps => 'استخدمي رابطًا يبدأ بـ https://';
+
+  @override
+  String get aWholeNumberAboveZero => 'عدد صحيح أكبر من صفر.';
+
+  @override
+  String get noEventsYet => 'لا فعاليات بعد';
+
+  @override
+  String get addOneThenPublishItWhenIt =>
+      'أضيفي واحدة، ثم انشريها حين تكون جاهزة.';
+
+  @override
+  String get couldNotSaveCheckTheConnectionAnd =>
+      'تعذّر الحفظ. تحققي من الاتصال ومن صلاحية الإدارة، ثم حاولي مرة أخرى.';
+
+  @override
+  String get upcomingEvents => 'الفعاليات القادمة';
+
+  @override
+  String get noEventsComingUp => 'لا فعاليات قادمة';
+
+  @override
+  String get whenOwnHubPlansOneYouWill =>
+      'حين تخطط Own Hub لفعالية ستجدينها هنا.';
+
+  @override
+  String get cairoTime => 'بتوقيت القاهرة';
+
+  @override
+  String startToEnd(String start, String end) {
+    return 'من $start إلى $end';
+  }
+
+  @override
+  String get openTheLink => 'افتحي الرابط';
+
+  @override
+  String placesCount(String count) {
+    return 'عدد المقاعد: $count';
+  }
+
+  @override
+  String get methodOneStepALineInArabic =>
+      'طريقة التحضير، خطوة في كل سطر، بالعربية';
+
+  @override
+  String get sectionOfTheBook => 'قسم الكتاب';
+
+  @override
+  String get author => 'المؤلفة';
+
+  @override
+  String get allergensCheckedBy => 'راجعت مسببات الحساسية';
+
+  @override
+  String get aSecondPersonChecksTheAllergensNever =>
+      'تراجع مسببات الحساسية شخصية ثانية، وليست المؤلفة أبدًا.';
+
+  @override
+  String get showThisRecipeToMembers => 'أظهري هذه الوصفة للعضوات';
+
+  @override
+  String get membersSeeItWithinADay => 'تراها العضوات خلال يوم.';
+
+  @override
+  String get fillInAllFourNumbersOrLeave =>
+      'املئي الأرقام الأربعة، أو اتركيها كلها فارغة.';
+
+  @override
+  String get thisRecipeCannotGoToMembersYet =>
+      'لا يمكن عرض هذه الوصفة للعضوات بعد. راجعي الخطوات والقسم والاسمين.';
+
+  @override
+  String get savedToTheLibrary => 'حُفظت في المكتبة';
+
+  @override
+  String get savedOnThisPhoneOnlySignIn =>
+      'حُفظت على هذا الهاتف فقط. سجّلي الدخول بحساب إدارة لحفظها في المكتبة.';
+
+  @override
+  String get alsoSwitchesItForMembers => 'يغيّرها للعضوات أيضًا';
+
+  @override
+  String get thisIsLongerThanTheAppAllows => 'هذا أطول مما يسمح به التطبيق.';
+
+  @override
+  String get methodOneStepALineInEnglish =>
+      'طريقة التحضير، خطوة في كل سطر، بالإنجليزية';
+
+  @override
+  String setsReps(String sets, String reps) {
+    return '$sets جولات × $reps عدّة';
+  }
+
+  @override
+  String setsSecondsSeconds(String sets, String seconds) {
+    return '$sets × $seconds ثانية';
+  }
+
+  @override
+  String restSecondsSeconds(String seconds) {
+    return 'راحة $seconds ثانية';
+  }
+
+  @override
+  String get writtenForPregnancyCheckWithYourDoctor =>
+      'كُتبت للحمل. استشيري طبيبتكِ قبل أن تبدئي، وتوقفي إن شعرتِ بأي شيء غير مريح.';
+
+  @override
+  String get writtenForAfterABirthCheckWith =>
+      'كُتبت لما بعد الولادة. استشيري طبيبتكِ قبل أن تبدئي، وتوقفي إن شعرتِ بأي شيء غير مريح.';
+
+  @override
+  String get addASession => 'أضيفي حصة';
+
+  @override
+  String get sessionTitleEnglish => 'عنوان الحصة (بالإنجليزية)';
+
+  @override
+  String get sessionTitleArabic => 'عنوان الحصة (بالعربية)';
+
+  @override
+  String get whoItIsWrittenFor => 'لمن كُتبت';
+
+  @override
+  String get exercise => 'التمرين';
+
+  @override
+  String get sets => 'الجولات';
+
+  @override
+  String get holdSeconds => 'الثبات، بالثواني';
+
+  @override
+  String get restSeconds => 'الراحة، بالثواني';
+
+  @override
+  String get notesEnglish => 'ملاحظات (بالإنجليزية)';
+
+  @override
+  String get notesArabic => 'ملاحظات (بالعربية)';
+
+  @override
+  String get safetyNoteEnglish => 'ملاحظة أمان (بالإنجليزية)';
+
+  @override
+  String get safetyNoteArabic => 'ملاحظة أمان (بالعربية)';
+
+  @override
+  String get remove => 'احذفي';
+
+  @override
+  String get showThisProgrammeToMembers => 'أظهري هذا البرنامج للعضوات';
+
+  @override
+  String get membersSeeEachSessionThatSuitsTheir =>
+      'ترى كل عضوة الحصص التي تناسب مرحلتها خلال يوم.';
+
+  @override
+  String get addExercisesToTheLibraryFirst => 'أضيفي تمارين إلى المكتبة أولًا.';
+
+  @override
+  String get repsOrAHoldNotBoth => 'عدّات أو ثبات، وليس الاثنين معًا.';
+
+  @override
+  String get thisProgrammeCannotGoToMembersYet =>
+      'لا يمكن عرض هذا البرنامج للعضوات بعد. تحققي من أن لكل حصة حركاتها وأرقامها ولمن كُتبت، وأن حصص الحمل وما بعد الولادة لا تضم حركة موسومة بأنها غير آمنة لهما.';
+
+  @override
+  String uploadItsPicturesUnderThisIdId(String id) {
+    return 'ارفعي صورها تحت هذا المعرّف: $id';
+  }
 }

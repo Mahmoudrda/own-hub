@@ -1535,6 +1535,74 @@ service cloud.firestore {
     match /recipeIndex/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
     match /meta/{docId}     { allow read: if isVerified(); allow write: if isAdmin(); }
 
+    // The owner's workouts, the same shape as the recipe library: `meta/workouts`
+    // holds the version (under the rule above) and `workoutLibrary/v{N}` holds
+    // every published programme in one document, so a member's phone reads one
+    // small document a day and the library only when it moved. Written by the
+    // console with the admin claim only.
+    match /workoutLibrary/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+
+    // The media library's register: one line per picture or clip uploaded by
+    // functions/tools/upload_media.py (owner credentials, the Admin SDK). The
+    // console reads it to offer a file; no client writes it, admin included,
+    // so the list cannot name a file that was never uploaded.
+    match /mediaLibrary/{id}   { allow read: if isAdmin(); allow write: if false; }
+
+    // `meta/features` lives under the rule above: the switches a member's app
+    // takes from the server (today only `events`). Verified women read it once
+    // a launch; only an admin flips it, from Z14.
+
+    // ---------------------------------------------------------------- events
+    //
+    // Feature.events. The owner creates, publishes and cancels an event from
+    // the console; a verified woman reads it once it is published, and never
+    // before. A draft is the owner's working copy and a cancelled event is
+    // simply gone from the member's list. Nothing here holds anything about a
+    // woman: there is no attendee list, no "interested" and no RSVP in v1, so
+    // the only writer is staff and the only data is the event itself.
+    //
+    // The member's query has to say `status == 'published'` or it is refused
+    // as a whole, which is what keeps a draft from ever reaching her phone.
+    match /events/{eventId} {
+      function optionalText(d, key, max) {
+        return !(key in d) || d[key] == null
+               || (d[key] is string && d[key].size() <= max);
+      }
+      function validEvent(d) {
+        return d.keys().hasOnly(['titleEn', 'titleAr', 'descriptionEn',
+                                 'descriptionAr', 'startsAt', 'endsAt',
+                                 'timeZone', 'mode', 'link', 'placeName',
+                                 'audience', 'capacity', 'coverFile',
+                                 'status', 'createdAt', 'updatedAt'])
+          && d.keys().hasAll(['titleEn', 'titleAr', 'startsAt', 'endsAt',
+                              'mode', 'audience', 'status'])
+          && d.titleEn is string && d.titleEn.size() > 0 && d.titleEn.size() <= 120
+          && d.titleAr is string && d.titleAr.size() > 0 && d.titleAr.size() <= 120
+          && optionalText(d, 'descriptionEn', 2000)
+          && optionalText(d, 'descriptionAr', 2000)
+          && d.startsAt is timestamp && d.endsAt is timestamp
+          && d.startsAt < d.endsAt
+          && (!('timeZone' in d) || d.timeZone == 'Africa/Cairo')
+          && d.status in ['draft', 'published', 'cancelled']
+          && d.audience == 'all'
+          && d.mode in ['online', 'place']
+          && (d.mode != 'online'
+              || (d.link is string && d.link.matches('^https://[^ ]{3,500}$')))
+          && (d.mode != 'place'
+              || (d.placeName is string && d.placeName.size() > 0
+                  && d.placeName.size() <= 120))
+          && optionalText(d, 'link', 510)
+          && optionalText(d, 'placeName', 120)
+          && (!('capacity' in d) || d.capacity == null
+              || (d.capacity is int && d.capacity > 0 && d.capacity <= 100000))
+          && optionalText(d, 'coverFile', 200);
+      }
+      allow read: if isAdmin()
+                  || (isVerified() && resource.data.status == 'published');
+      allow create, update: if isAdmin() && validEvent(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
     // --------------------------------------------------------- server only
     //
     // Everything identity verification touches. Spec §5: "deny all client
@@ -1605,6 +1673,12 @@ service cloud.firestore {
     // women she invites. Written and read only by create_coach_invite and
     // accept_coach_invite. Deletion row 49.
     match /coachInvites/{code}      { allow read, write: if false; }
+    // The console's own records. adminAccessLog is the line every dashboard
+    // and log read leaves (an audit trail nobody may edit, admin included);
+    // opsErrors is a daily count of function error codes. Both are written
+    // and read only by the admin_dashboard and admin_logs callables.
+    match /adminAccessLog/{entryId} { allow read, write: if false; }
+    match /opsErrors/{day}          { allow read, write: if false; }
 
     // STILL MISSING, and deliberately not guessed at:
     //   planDrafts, media, enquiries, payments.

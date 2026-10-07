@@ -62,6 +62,7 @@ class ContentColumn {
     this.safetyTag = false,
     this.media = false,
     this.video = false,
+    this.mayBeAbsent = false,
   });
 
   final String name;
@@ -100,6 +101,11 @@ class ContentColumn {
   /// beside the clip, and a collection whose only media were thumbnails would
   /// not be exporting videos.
   final bool video;
+
+  /// The header may leave this column out altogether, so a file written
+  /// before the column existed still imports. Every column without it must be
+  /// in the header.
+  final bool mayBeAbsent;
 }
 
 /// The contract for one collection.
@@ -230,17 +236,24 @@ class ContentSchema {
     ],
   );
 
-  /// Recipes. The **facts** sheet, and deliberately not the text.
+  /// Recipes: the facts, and a console recipe's method.
   ///
-  /// `bodyAr`, `steps[]`, `ingredients[]` and `components[]` are **not columns
-  /// here and must not be added.** A forty-line Egyptian colloquial paragraph
-  /// with her own line breaks does not survive a CSV round trip, and
-  /// `csv_parser.dart` was not built to try. Her text arrives as a JSON sidecar
-  /// keyed by `recipeId` — `assets/content/rahma_recipes.json` in the bundle,
-  /// `recipes/{id}` in Firestore — and this sheet carries the facts an importer,
-  /// a validator and an exporter can all agree on.
+  /// Her book is not in this sheet. `bodyAr`, `ingredients[]` and
+  /// `components[]` of the thirty-nine recipes from Rahma's book are a JSON
+  /// sidecar (`assets/content/rahma_recipes.json`, `recipes/{id}`), because a
+  /// forty-line Egyptian colloquial paragraph with her own line breaks is her
+  /// text and is not retyped into a spreadsheet.
   ///
-  /// Said here rather than in a plan, so the next reader does not "fix" it.
+  /// A recipe written for the library is different: it has a method, and a
+  /// recipe cannot reach a member without one. So `method_ar` and `method_en`
+  /// are columns. **One step per line**, inside one quoted cell (every
+  /// spreadsheet exports a line break inside a cell that way, and
+  /// `csv_parser.dart` reads it). Where an export flattens the cell to one
+  /// line, separate the steps with ` | ` instead. Neither column is required
+  /// in the header, so an older file still imports; a row that is to be shown
+  /// to members (`status` other than `draft`) needs `method_ar`, and the
+  /// member app's own recipe rules are run on every row before anything is
+  /// written (`remote_content_repository.dart`).
   static const ContentSchema _recipes = ContentSchema._(
     collection: ContentCollection.recipes,
     fileName: 'recipes.csv',
@@ -293,6 +306,10 @@ class ContentSchema {
       // A drawn food mark, not a photograph. See `food_marks.dart`.
       ContentColumn('markKey'),
       ContentColumn('tier', required: true),
+      // The method, one step per line (or ` | ` between steps). Arabic is
+      // what the member app shows; English is kept beside it.
+      ContentColumn('method_ar', mayBeAbsent: true),
+      ContentColumn('method_en', mayBeAbsent: true),
     ],
   );
 

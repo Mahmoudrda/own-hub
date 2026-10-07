@@ -115,6 +115,51 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "_why": "admin_dashboard: verification outcomes in the last 7 and 30 days, one count() per outcome code. Equality on state plus a range on decidedAt needs a composite.",
+      "collectionGroup": "verificationJobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "decidedAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "admin_logs, decisions filtered by one outcome, newest first and paged by decidedAt.",
+      "collectionGroup": "verificationJobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "decidedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "Feature.events. A member's list is published events not yet over, soonest first; the dashboard counts the same set. Equality on status plus a range on endsAt.",
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endsAt",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -369,6 +414,20 @@
     {
       "_why": "M11 TTL. The proof that she agreed to the waitlist wording (a keyed code of her contact, the wording version, the language and the date) is deleted three years after she joined (pending counsel). Never queried on.",
       "collectionGroup": "waitlistConsentProof",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "TTL. A console access line is deleted console/access.py RETENTION_DAYS (365, pending counsel) after the read. It holds a short reference, never a uid. Never queried on.",
+      "collectionGroup": "adminAccessLog",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "TTL. A day's count of function error codes is deleted console/oplog.py ERRORS_RETENTION_DAYS (90) after the day. Never queried on.",
+      "collectionGroup": "opsErrors",
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []

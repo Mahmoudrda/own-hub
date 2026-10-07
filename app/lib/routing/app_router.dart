@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert' show jsonDecode;
 
 // The ID token, and nothing else from this package. `verified` is a custom
 // claim the Cloud Function mints and the security rules read, so it is the one
@@ -10,9 +11,11 @@ import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
 // `Clipboard` — Z11 hands the export over on it, because nothing in this build
 // can write a file.
-import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'package:flutter/services.dart'
+    show Clipboard, ClipboardData, rootBundle;
 
 import '../app_state/account_data.dart';
+import '../app_state/admin_backends.dart';
 import '../app_state/app_changes.dart';
 import '../app_state/blocking.dart';
 import '../app_state/cloud_store.dart';
@@ -22,6 +25,7 @@ import '../app_state/crash_consent.dart';
 // honestly. See `_newIdentityCheck`.
 import '../app_state/firebase_boot.dart';
 import '../app_state/verification_memory.dart';
+import '../config/admin_build.dart';
 import '../config/care_links.dart';
 import '../config/legal_links.dart';
 import '../app_state/coach_invite_state.dart';
@@ -33,6 +37,8 @@ import '../app_state/coaching_link_state.dart';
 import '../app_state/community_state.dart';
 import '../app_state/cycle_state.dart';
 import '../app_state/eat_state.dart';
+import '../app_state/events_state.dart';
+import '../app_state/workout_library_state.dart';
 import '../app_state/demo_mode.dart';
 import '../app_state/honest_notice.dart';
 import '../app_state/onboarding_state.dart';
@@ -155,7 +161,9 @@ import '../features/admin/domain/csv_parser.dart';
 import '../features/admin/domain/content_schema.dart';
 import '../features/admin/domain/export_manifest.dart' show buildExportBundle;
 import '../features/admin/domain/import_validator.dart';
-import '../features/admin/domain/content_repository.dart';
+import '../features/admin/domain/console_source.dart';
+import '../features/admin/domain/content_documents.dart';
+import '../features/admin/domain/remote_content_repository.dart';
 import '../features/admin/domain/media_bundle.dart';
 import '../features/admin/domain/media_picker.dart';
 import '../features/admin/domain/seed_library.dart';
@@ -164,10 +172,21 @@ import '../features/admin/presentation/bulk_import_view.dart';
 import '../features/admin/presentation/collection_view.dart';
 import '../features/admin/presentation/content_form_view.dart';
 import '../features/admin/presentation/content_library_view.dart';
+import '../features/admin/presentation/dashboard_view.dart';
+import '../features/admin/presentation/event_form_view.dart';
+import '../features/admin/presentation/events_admin_view.dart';
+import '../features/admin/presentation/logs_view.dart';
 import '../features/admin/presentation/export_view.dart';
 import '../features/admin/presentation/import_check_view.dart';
 import '../features/admin/presentation/media_library_view.dart';
 import '../features/coach/domain/coach_desk.dart';
+import '../features/eat/data/seeded_recipe_library.dart'
+    show SeededRecipeLibrary, kRahmaRecipesAsset;
+import '../features/events/domain/event_repository.dart';
+import '../features/events/domain/hub_event.dart';
+import '../features/events/presentation/events_view.dart';
+import '../features/train/domain/workout_library.dart' show AuthoredSession;
+import '../features/train/presentation/authored_workout.dart';
 import '../features/coach/domain/coach_repository.dart';
 import '../features/coach/domain/enquiry.dart';
 import '../features/coach/presentation/coach_basics_view.dart';
@@ -493,16 +512,39 @@ class AppRouter {
   /// in release the admin arm below is the only answer the compiler keeps and
   /// the check costs nothing at run time.
   ///
-  /// Debug and profile builds keep the console: that is how the owner loads
-  /// content and walks the product.
+  /// A debug build keeps the console, for working on it. A profile build keeps
+  /// it only when it is the owner's admin build (`--dart-define=ADMIN_BUILD=
+  /// true`, made by `tool/admin_access.sh build`), which is how she runs the
+  /// console on her own phone. A release build never does, whatever was
+  /// defined: `release` is checked first, so `ADMIN_BUILD` cannot put the
+  /// console in a store binary. See `lib/config/admin_build.dart`.
   ///
-  /// [release] is a parameter because a widget test cannot be compiled in
-  /// release mode. It defaults to the real thing and is passed only by the test
-  /// that proves the refusal, in `test/release_readiness_test.dart`.
+  /// The three are parameters because a widget test cannot be compiled in
+  /// release or profile mode. They default to the real thing and are passed
+  /// only by the tests that prove the refusal, in
+  /// `test/release_readiness_test.dart`.
   static bool resolvesInThisBuild(
     String screenId, {
     bool release = kReleaseMode,
-  }) => !release || appRoutes[screenId]?.flow != 'admin';
+    bool debug = kDebugMode,
+    bool adminBuild = kAdminBuild,
+  }) =>
+      appRoutes[screenId]?.flow != 'admin' ||
+      (!release && (debug || adminBuild));
+
+  /// The flags a build starts with: what ships, with the console switched on
+  /// in the owner's admin build and nowhere else.
+  static FeatureFlags startingFlags({
+    bool release = kReleaseMode,
+    bool adminBuild = kAdminBuild,
+  }) => adminBuild && !release
+      ? FeatureFlags.shipped.with_({Feature.adminConsole: true})
+      : FeatureFlags.shipped;
+
+  /// Whether A02 offers the way into the console: in a build that resolves it
+  /// and with its switch on. False in every store build.
+  static bool get adminConsoleOffered =>
+      resolvesInThisBuild('Z01') && screenIsOn('Z01');
 
   /// The switch that governs a flow, or null when the flow is never gated.
   ///
@@ -563,6 +605,8 @@ class AppRouter {
   /// [Feature.eat]). Every microphone on Eat asks [screenIsOn] for `E03`.
   static const Map<String, Feature> screenFeatures = {
     'E03': Feature.voiceLogging,
+    // The owner's events. Off until she switches it on from Z14.
+    'T09': Feature.events,
   };
 
   /// Whether a control that leads to [screenId] may be drawn at all.
@@ -1804,6 +1848,9 @@ class AppRouter {
         OnboardingState.instance.cycleRowDismissed = true;
         AppChanges.bump();
       },
+      // The owner's next event, when Feature.events is on and one is planned.
+      nextEvent: EventsState.instance.upcoming.firstOrNull,
+      onOpenEvents: () => goTo(context, 'T09'),
       // The bottom bar on the app's landing tab. Without this, TodayView's
       // AppNavBar had nothing to call and tapping Train, Community or Eat from
       // Home did nothing at all — on the first screen she sees after sign-up.
@@ -1909,6 +1956,15 @@ class AppRouter {
       onBackToToday: () => goTo(context, 'T01'),
       onSeeProgress: () => goTo(context, 'P01'),
     ),
+    // Feature.events. Read again when she opens it, at most once an hour.
+    'T09': (context) {
+      unawaited(EventsState.instance.refresh());
+      return EventsView(
+        events: EventsState.instance.upcoming,
+        onBack: () => Navigator.of(context).maybePop(),
+        onOpenLink: (url) => openExternalLink(context, url),
+      );
+    },
 
     // Train.
     'R01': (context) => TrainView(
@@ -1936,6 +1992,11 @@ class AppRouter {
     ),
     'R03': (context) => WorkoutDayView(
       repository: trainRepository,
+      // The session she chose on R11, when it came from the owner's library
+      // and still suits her life stage. Null is the bundled session, which is
+      // what day one always is.
+      day: chosenWorkoutDay(context),
+      writtenForHerStage: chosenWorkoutDay(context) != null,
       // Pregnant or after a birth: day one was not written for her, and the
       // screen says so before she starts.
       lifeStage: intakeRepository.read().lifeStage,
@@ -1951,7 +2012,7 @@ class AppRouter {
           }),
         );
         WorkoutSessionState.instance.start(
-          sampleWorkoutDay(AppL10n.of(context)),
+          chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
           trainRepository,
         );
         goTo(context, 'R07');
@@ -2114,9 +2175,35 @@ class AppRouter {
     // starts taking an id, and `train_honesty_test.dart` fails until it does
     // rather than quietly opening the wrong session again.
     'R11': (context) => WorkoutLibraryView(
+      // The bundled session, then every library session that suits her life
+      // stage. Pregnant or after a birth she is offered only sessions the
+      // owner marked for that.
+      workouts: [
+        ...sampleWorkoutLibrary(AppL10n.of(context)),
+        for (final entry in WorkoutLibraryState.instance.sessionsFor(
+          intakeRepository.read().lifeStage,
+        ))
+          libraryRowFrom(
+            AppL10n.of(context),
+            Localizations.localeOf(context).languageCode,
+            entry.programme,
+            entry.session,
+          ),
+      ],
       onBack: () => Navigator.of(context).maybePop(),
       onOpenWorkout: (workout) {
+        final library = WorkoutLibraryState.instance;
+        if (workout.id.startsWith('library:')) {
+          library.chosenRowId = workout.id;
+          if (chosenWorkoutDay(context) == null) {
+            library.chosenRowId = null;
+            return;
+          }
+          goTo(context, 'R03');
+          return;
+        }
         if (workoutDayFor(AppL10n.of(context), workout.id) == null) return;
+        library.chosenRowId = null;
         goTo(context, 'R03');
       },
       onSelectTab: (screenId) => goTo(context, screenId),
@@ -2445,6 +2532,9 @@ class AppRouter {
       // forbids minting one for a state.
       onOpenYourData: () => openYourData(context),
       // Every screen, one tap away, in a build that is not going to a store.
+      // The owner's admin build only. A store build resolves no admin route,
+      // so the row is never drawn there.
+      onOpenAdmin: adminConsoleOffered ? () => goTo(context, 'Z01') : null,
       onOpenAllScreens: !testingAidsAllowed
           ? null
           : () => Navigator.of(context).push(
@@ -2512,18 +2602,17 @@ class AppRouter {
     // workouts from within the admin section" is served by adding one at a
     // time as well as in bulk.
     //
-    // `onSave` emits the finished row and **nothing writes it**. There is no
-    // persistence layer anywhere in this app yet — the import commit has the
-    // same gap — and putting the content library's only writer behind a screen
-    // would be inventing one in the worst possible place.
+    // Every save goes through `saveToLibrary`, which writes to Firestore
+    // (`RemoteContentRepository`) and closes the form only once the library
+    // holds the row. The rules accept those writes from the `admin` claim
+    // alone. A recipe is written with the index and version the member app
+    // reads, so it reaches members; see `remote_content_repository.dart`.
     //
-    // The callbacks with nothing behind them — choosing a file, uploading
-    // media, committing writes — are left unwired for the same reason. There
-    // is no file picker dependency and no persistence layer, so wiring them to
-    // something that looks like it works is the one outcome worse than a
-    // control that visibly does not.
+    // Choosing a file and uploading media are still unwired: there is no file
+    // picker dependency, and wiring them to something that looks like it
+    // works is the one outcome worse than a control that visibly does not.
     'Z01': (context) => ContentLibraryView(
-      status: adminLibraryStatus,
+      status: adminLibraryStatusLoading,
       onOpenCollection: (collection) {
         switch (collection) {
           case ContentCollection.exercises:
@@ -2541,11 +2630,14 @@ class AppRouter {
       // feature can be switched on or off — without a door here it would be
       // built, routable and reachable by nobody.
       onOpenFlags: () => goTo(context, 'Z14'),
+      onOpenDashboard: () => goTo(context, 'Z15'),
+      onOpenLogs: () => goTo(context, 'Z16'),
+      onOpenEvents: () => goTo(context, 'Z17'),
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
     'Z02': (context) => CollectionView(
       collection: ContentCollection.exercises,
-      rows: contentRepository.rowsNow(ContentCollection.exercises),
+      rows: adminRowsNow(ContentCollection.exercises),
       onBack: () => Navigator.of(context).maybePop(),
       onImport: () => goTo(context, 'Z08'),
       // Literal and inline, deliberately — a helper would hide this edge from
@@ -2566,16 +2658,12 @@ class AppRouter {
     'Z03': (context) => ContentFormView(
       collection: ContentCollection.exercises,
       values: adminEditingRow,
-      onSave: (row) {
-        unawaited(
-          contentRepository.saveValues(
-            collection: ContentCollection.exercises,
-            values: row,
-          ),
-        );
-        adminEditingRow = const <String, String>{};
-        Navigator.of(context).maybePop();
-      },
+      // Written to the library first, and closed only once it is there.
+      onSave: (row) => saveToLibrary(
+        context,
+        collection: ContentCollection.exercises,
+        values: row,
+      ),
       onClose: () {
         adminEditingRow = const <String, String>{};
         Navigator.of(context).maybePop();
@@ -2583,7 +2671,7 @@ class AppRouter {
     ),
     'Z04': (context) => CollectionView(
       collection: ContentCollection.foods,
-      rows: contentRepository.rowsNow(ContentCollection.foods),
+      rows: adminRowsNow(ContentCollection.foods),
       onBack: () => Navigator.of(context).maybePop(),
       onImport: () => goTo(context, 'Z08'),
       onAdd: () {
@@ -2601,16 +2689,12 @@ class AppRouter {
     'Z05': (context) => ContentFormView(
       collection: ContentCollection.foods,
       values: adminEditingRow,
-      onSave: (row) {
-        unawaited(
-          contentRepository.saveValues(
-            collection: ContentCollection.foods,
-            values: row,
-          ),
-        );
-        adminEditingRow = const <String, String>{};
-        Navigator.of(context).maybePop();
-      },
+      // Written to the library first, and closed only once it is there.
+      onSave: (row) => saveToLibrary(
+        context,
+        collection: ContentCollection.foods,
+        values: row,
+      ),
       onClose: () {
         adminEditingRow = const <String, String>{};
         Navigator.of(context).maybePop();
@@ -2618,7 +2702,7 @@ class AppRouter {
     ),
     'Z06': (context) => CollectionView(
       collection: ContentCollection.recipes,
-      rows: contentRepository.rowsNow(ContentCollection.recipes),
+      rows: adminRowsNow(ContentCollection.recipes),
       onBack: () => Navigator.of(context).maybePop(),
       onImport: () => goTo(context, 'Z08'),
       onAdd: () {
@@ -2635,7 +2719,7 @@ class AppRouter {
     ),
     'Z07': (context) => CollectionView(
       collection: ContentCollection.programmes,
-      rows: contentRepository.rowsNow(ContentCollection.programmes),
+      rows: adminRowsNow(ContentCollection.programmes),
       onBack: () => Navigator.of(context).maybePop(),
       onImport: () => goTo(context, 'Z08'),
       onAdd: () {
@@ -2689,7 +2773,9 @@ class AppRouter {
       return ImportCheckView(
         plan: plan,
         // `writes` is empty unless `canCommit`, so one bad row writes nothing.
-        onCommit: () => unawaited(contentRepository.saveAll(plan.writes)),
+        // Recipe rows are published exactly as Z12 publishes one, and a row
+        // the member app would refuse writes nothing; the notice says so.
+        onCommit: () => unawaited(commitImport(context, plan.writes)),
         onBack: () => Navigator.of(context).maybePop(),
       );
     },
@@ -2737,16 +2823,14 @@ class AppRouter {
     'Z12': (context) => ContentFormView(
       collection: ContentCollection.recipes,
       values: adminEditingRow,
-      onSave: (row) {
-        unawaited(
-          contentRepository.saveValues(
-            collection: ContentCollection.recipes,
-            values: row,
-          ),
-        );
-        adminEditingRow = const <String, String>{};
-        Navigator.of(context).maybePop();
-      },
+      sections: adminRecipeSectionsLoading,
+      // Written with its method (the `method_ar` column) and the member app's
+      // own recipe rules run before anything is sent.
+      onSave: (row) => saveToLibrary(
+        context,
+        collection: ContentCollection.recipes,
+        values: row,
+      ),
       onClose: () {
         adminEditingRow = const <String, String>{};
         Navigator.of(context).maybePop();
@@ -2755,16 +2839,25 @@ class AppRouter {
     'Z13': (context) => ContentFormView(
       collection: ContentCollection.programmes,
       values: adminEditingRow,
-      onSave: (row) {
-        unawaited(
-          contentRepository.saveValues(
-            collection: ContentCollection.programmes,
-            values: row,
-          ),
-        );
-        adminEditingRow = const <String, String>{};
-        Navigator.of(context).maybePop();
-      },
+      // Its sessions, built from the exercise library, and whether members
+      // see them. The member app's own workout rules run before it is sent.
+      exercises: [
+        for (final row in adminRowsNow(ContentCollection.exercises))
+          (row.id, row.value('name_en')),
+      ],
+      sessions: contentRepository.sessionsFor(
+        adminEditingRow['programId'] ?? '',
+      ),
+      published: contentRepository.isPublished(
+        adminEditingRow['programId'] ?? '',
+      ),
+      onSaveProgramme: (row, sessions, published) => saveToLibrary(
+        context,
+        collection: ContentCollection.programmes,
+        values: row,
+        sessions: sessions,
+        published: published,
+      ),
       onClose: () {
         adminEditingRow = const <String, String>{};
         Navigator.of(context).maybePop();
@@ -4934,6 +5027,53 @@ class AppRouter {
     // Until it existed, `featureFlags` could only be changed by editing this
     // file, so every Phase 3 flow shipped dark with no way to see one.
     'Z14': (context) => FeatureFlagsView(onBack: () => goTo(context, 'Z01')),
+
+    // The owner's operations. Each is served by an admin-only callable or by
+    // rules that accept the admin claim only, so a build that carries these
+    // screens still shows nothing to an account without it.
+    'Z15': (context) => DashboardView(
+      source: consoleSource,
+      onBack: () => Navigator.of(context).maybePop(),
+      onOpenLogs: () => goTo(context, 'Z16'),
+      onOpenEvents: () => goTo(context, 'Z17'),
+    ),
+    'Z16': (context) => LogsView(
+      source: consoleSource,
+      onBack: () => Navigator.of(context).maybePop(),
+    ),
+    'Z17': (context) => EventsAdminView(
+      store: eventAdminStore,
+      revision: adminEventsRevision,
+      onBack: () => Navigator.of(context).maybePop(),
+      onAdd: () {
+        adminEditingEvent = null;
+        goTo(context, 'Z18');
+      },
+      onOpen: (event) {
+        adminEditingEvent = event;
+        goTo(context, 'Z18');
+      },
+    ),
+    'Z18': (context) => EventFormView(
+      store: eventAdminStore,
+      event: adminEditingEvent,
+      mediaNames: [for (final f in adminMediaBundle.files) f.name],
+      onSaved: (event) {
+        adminEditingEvent = null;
+        adminEventsRevision++;
+        showHonestNotice(context, AppL10n.of(context).savedToTheLibrary);
+        Navigator.of(context).maybePop();
+        AppChanges.bump();
+      },
+      onFailed: () => showHonestNotice(
+        context,
+        AppL10n.of(context).couldNotSaveCheckTheConnectionAnd,
+      ),
+      onClose: () {
+        adminEditingEvent = null;
+        Navigator.of(context).maybePop();
+      },
+    ),
   };
 
   static MoveAlternative? lastSwappedFor;
@@ -5045,7 +5185,7 @@ class AppRouter {
   ///
   /// Compiled-in today. A remote config document later merges over these with
   /// [FeatureFlags.with_]; the specs already name the keys.
-  static FeatureFlags featureFlags = FeatureFlags.shipped;
+  static FeatureFlags featureFlags = startingFlags();
 
   static final LocalePreference localePreference = InMemoryLocalePreference();
 
@@ -6008,10 +6148,184 @@ class AppRouter {
   /// document id — which is the id column, never a minted one — so a food added
   /// by hand and the same food imported from a CSV are one document and not two.
   ///
-  /// In memory, so it does not survive a restart and reaches no other device. A
-  /// Firestore implementation goes behind the same interface.
-  static final InMemoryContentRepository contentRepository =
-      InMemoryContentRepository(rows: seedContentLibrary());
+  /// Cached here and kept in Firestore: a save is written to the server first
+  /// (`saveToLibrary`), and the cache is read from it once a run
+  /// (`ensureAdminLibraryLoaded`). With no server reachable, a save stays on
+  /// this phone and the console says so.
+  static final RemoteContentRepository contentRepository =
+      RemoteContentRepository(
+        rows: seedContentLibrary(),
+        documents: () =>
+            contentDocumentsOverride ?? AdminBackends.contentDocuments(),
+        seedRecipes: seedRecipesJson,
+      );
+
+  static Map<String, Object?>? _seedRecipesJson;
+
+  /// The bundled recipe seed as JSON, read and parsed once a run. A console
+  /// recipe save reads its version and sections from it.
+  static Future<Map<String, Object?>> seedRecipesJson() async =>
+      _seedRecipesJson ??=
+          (jsonDecode(await rootBundle.loadString(kRahmaRecipesAsset)) as Map)
+              .cast<String, Object?>();
+
+  /// Tests point the library at an in-memory server here.
+  static ContentDocuments? contentDocumentsOverride;
+
+  static Future<void>? _adminLibraryLoad;
+
+  /// The library as the server holds it, and the sections of her book, read
+  /// once a run, the first time a console screen draws them. Until they land
+  /// the screens show the cache. Callers in a build do not wait for it.
+  static Future<void> ensureAdminLibraryLoaded() =>
+      _adminLibraryLoad ??= _loadAdminLibrary();
+
+  static Future<void> _loadAdminLibrary() async {
+    try {
+      final book = await SeededRecipeLibrary().load();
+      adminRecipeSections = [
+        for (final s in book.sections) (s.sectionId, s.titleEn),
+      ];
+    } catch (_) {
+      // No sections means a recipe can be kept as a draft, not shown.
+    }
+    AppChanges.bump();
+    if (await contentRepository.loadFromServer()) AppChanges.bump();
+    await loadMediaRegister();
+  }
+
+  /// Z10's list: every file `tools/upload_media.py` put in the content
+  /// library, from its register. What Z12, Z18 and Z03 offer to choose.
+  static Future<void> loadMediaRegister() async {
+    final docs = contentDocumentsOverride ?? AdminBackends.contentDocuments();
+    if (docs == null) return;
+    try {
+      final register = await docs.readCollection('mediaLibrary');
+      adminMediaBundle = MediaBundle([
+        for (final entry in register.values)
+          if (entry['name'] case final String name)
+            MediaFile(
+              name: name,
+              bytes: (entry['bytes'] as num?)?.toInt() ?? 0,
+              kind: entry['kind'] == 'video'
+                  ? MediaKind.video
+                  : MediaKind.picture,
+            ),
+      ]);
+      AppChanges.bump();
+    } catch (_) {
+      // The list stays as it was; nothing is invented.
+    }
+  }
+
+  /// Rows of one collection, for Z02, Z04, Z06 and Z07.
+  static List<ImportRow> adminRowsNow(ContentCollection collection) {
+    unawaited(ensureAdminLibraryLoaded());
+    return contentRepository.rowsNow(collection);
+  }
+
+  /// Z01's counts, starting the server read on the first draw.
+  static Map<ContentCollection, CollectionStatus>
+  get adminLibraryStatusLoading {
+    unawaited(ensureAdminLibraryLoaded());
+    return adminLibraryStatus;
+  }
+
+  /// The sections of her book a console recipe can be placed in.
+  static List<(String, String)> adminRecipeSections = const [];
+
+  /// [adminRecipeSections], starting the read on the first draw of Z12.
+  static List<(String, String)> get adminRecipeSectionsLoading {
+    unawaited(ensureAdminLibraryLoaded());
+    return adminRecipeSections;
+  }
+
+  /// Z03, Z05, Z12 and Z13's one way to store a row: the server first, then
+  /// the cache, then close. A refusal keeps the form open and says why.
+  static Future<void> saveToLibrary(
+    BuildContext context, {
+    required ContentCollection collection,
+    required Map<String, String> values,
+    List<AuthoredSession>? sessions,
+    bool published = false,
+  }) async {
+    final l10n = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final navigator = Navigator.of(context);
+    try {
+      final outcome = await contentRepository.saveToLibrary(
+        collection: collection,
+        values: values,
+        sessions: sessions,
+        published: published,
+      );
+      adminEditingRow = const <String, String>{};
+      showHonestNoticeOn(
+        messenger,
+        outcome == ContentSaveOutcome.saved
+            ? l10n.savedToTheLibrary
+            : l10n.savedOnThisPhoneOnlySignIn,
+      );
+      unawaited(navigator.maybePop());
+      AppChanges.bump();
+    } on RecipeNotReady {
+      showHonestNoticeOn(messenger, l10n.thisRecipeCannotGoToMembersYet);
+    } on WorkoutNotReady {
+      showHonestNoticeOn(messenger, l10n.thisProgrammeCannotGoToMembersYet);
+    } catch (_) {
+      showHonestNoticeOn(messenger, l10n.couldNotSaveCheckTheConnectionAnd);
+    }
+  }
+
+  /// Z09's commit. One batch; a refusal leaves the library as it was and
+  /// says why.
+  static Future<void> commitImport(
+    BuildContext context,
+    List<ImportRow> rows,
+  ) async {
+    final l10n = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    try {
+      await contentRepository.saveAll(rows);
+      AppChanges.bump();
+    } on RecipeNotReady {
+      showHonestNoticeOn(messenger, l10n.thisRecipeCannotGoToMembersYet);
+    } catch (_) {
+      showHonestNoticeOn(messenger, l10n.couldNotSaveCheckTheConnectionAnd);
+    }
+  }
+
+  /// The library session she chose on R11, as today's [WorkoutDay], or null
+  /// for the bundled one. Null too when it no longer suits her life stage.
+  static WorkoutDay? chosenWorkoutDay(BuildContext context) {
+    final entry = WorkoutLibraryState.instance.chosenFor(
+      intakeRepository.read().lifeStage,
+    );
+    if (entry == null) return null;
+    return workoutDayFrom(
+      AppL10n.of(context),
+      Localizations.localeOf(context).languageCode,
+      entry.programme,
+      entry.session,
+      now: AppClock.now(),
+    );
+  }
+
+  /// Z15 and Z16's server. Tests set [consoleSourceOverride].
+  static ConsoleSource? consoleSourceOverride;
+  static ConsoleSource get consoleSource =>
+      consoleSourceOverride ?? AdminBackends.console();
+
+  /// Z17 and Z18's store. Tests set [eventAdminStoreOverride].
+  static EventAdminStore? eventAdminStoreOverride;
+  static EventAdminStore get eventAdminStore =>
+      eventAdminStoreOverride ?? AdminBackends.events();
+
+  /// The event Z18 opens on. Null adds a new one.
+  static HubEvent? adminEditingEvent;
+
+  /// Moves on every event saved, so Z17 reads its list again.
+  static int adminEventsRevision = 0;
 
   /// Choosing a file and uploading media are **honestly unavailable**.
   ///

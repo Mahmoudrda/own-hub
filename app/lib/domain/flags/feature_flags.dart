@@ -129,6 +129,13 @@ enum Feature {
   /// The assistant.
   assistant,
 
+  /// Events the owner runs: a class online, a meet-up at a ladies-only gym.
+  /// The Events screen (`T09`) and the Upcoming card on Home. **Off** until
+  /// the owner switches it on from Z14, which also writes `meta/features` so
+  /// members' apps take the same answer at their next launch. Nothing about
+  /// a woman is collected: there is no "interested" and no attendee list.
+  events,
+
   /// Whether a recipe's [RecipeTier] means anything.
   ///
   /// Its parent is [payments], deliberately: `isOn()` walks ancestors, so this
@@ -230,6 +237,9 @@ class FeatureFlags {
     Feature.marketplace: false,
     Feature.payments: false,
     Feature.assistant: false,
+
+    // Nothing shows until the owner turns it on, from Z14.
+    Feature.events: false,
 
     // Off, and its parent is `payments`, so this line is belt as well as
     // braces: `isOn()` would refuse it even set to true.

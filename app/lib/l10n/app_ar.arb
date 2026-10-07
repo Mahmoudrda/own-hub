@@ -3501,5 +3501,265 @@
   "yourWeekShowsHere": "سيظهر أسبوعكِ هنا",
   "movingKitten": "قطة متحركة",
   "theKittenShowsYouAroundAndMoves": "ترشدكِ القطة وتتحرك مرة واحدة عند ظهورها.",
-  "theKittenStaysStill": "تبقى القطة ثابتة."
+  "theKittenStaysStill": "تبقى القطة ثابتة.",
+  "dashboard": "لوحة المتابعة",
+  "logs": "السجلات",
+  "events": "الفعاليات",
+  "adminConsole": "لوحة الإدارة",
+  "contentEventsCountsAndLogs": "المحتوى والفعاليات والأعداد والسجلات",
+  "countsOnlyNothingHereNamesAMember": "أعداد فقط. لا شيء هنا يذكر اسم أي عضوة.",
+  "accounts": "الحسابات",
+  "verifiedMembers": "العضوات الموثَّقات",
+  "humanReviewsWaiting": "مراجعات بشرية في الانتظار",
+  "countPastTheHoursHourPromise": "{count} تجاوزت وعد {hours} ساعة",
+  "@countPastTheHoursHourPromise": {
+    "description": "Z15, human reviews older than the review SLA. Both values are Western-digit labels.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      },
+      "hours": {
+        "type": "String",
+        "example": "72"
+      }
+    }
+  },
+  "oldestHasWaitedHoursHours": "الأقدم تنتظر منذ {hours} ساعة",
+  "@oldestHasWaitedHoursHours": {
+    "description": "Z15, the age of the oldest open human review in whole hours.",
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "41"
+      }
+    }
+  },
+  "checkOutcomesLast7Days": "نتائج التحقق في آخر 7 أيام",
+  "checkOutcomesLast30Days": "نتائج التحقق في آخر 30 يومًا",
+  "waitlist": "قائمة الانتظار",
+  "deletionRequests": "طلبات الحذف",
+  "stillRunning": "قيد التنفيذ",
+  "finished": "اكتملت",
+  "upcoming": "القادمة",
+  "drafts": "المسودات",
+  "updatedTime": "حُدِّث {time}",
+  "@updatedTime": {
+    "description": "Z15, when the counts were computed, Cairo time.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "2026-10-07 14:05"
+      }
+    }
+  },
+  "refresh": "تحديث",
+  "thisAccountDoesNotHaveAdminAccess": "هذا الحساب لا يملك صلاحية الإدارة.",
+  "signInWithYourPhoneNumberTo": "سجّلي الدخول برقم هاتفك لفتح لوحة الإدارة.",
+  "theConsoleNeedsAConnectionTryAgain": "تحتاج لوحة الإدارة إلى اتصال. حاولي مرة أخرى بعد قليل.",
+  "approved": "مقبولة",
+  "sentToAReviewer": "أُحيلت إلى مراجِعة",
+  "notEligible": "غير مؤهلة",
+  "checkDidNotPass": "لم يكتمل التحقق",
+  "cardAlreadyInUse": "البطاقة مستخدمة من قبل",
+  "askedToRetake": "طُلب إعادة التصوير",
+  "askedToTryAgain": "طُلبت محاولة جديدة",
+  "decisions": "القرارات",
+  "deletions": "عمليات الحذف",
+  "errors": "الأخطاء",
+  "consoleReads": "قراءات اللوحة",
+  "allOutcomes": "كل النتائج",
+  "caseRef": "الحالة {ref}",
+  "@caseRef": {
+    "description": "Z16, a short reference standing for a verification case. Eight hex characters, never an id.",
+    "placeholders": {
+      "ref": {
+        "type": "String",
+        "example": "3fa91c0e"
+      }
+    }
+  },
+  "reviewerRef": "المراجِعة {ref}",
+  "@reviewerRef": {
+    "description": "Z16, a short reference standing for a reviewer account.",
+    "placeholders": {
+      "ref": {
+        "type": "String",
+        "example": "9b2d41aa"
+      }
+    }
+  },
+  "adminRef": "المشرفة {ref}",
+  "@adminRef": {
+    "description": "Z16, a short reference standing for an admin account.",
+    "placeholders": {
+      "ref": {
+        "type": "String",
+        "example": "c01d2e3f"
+      }
+    }
+  },
+  "countJoined": "عدد المنضمات: {count}",
+  "@countJoined": {
+    "description": "Z16, waitlist joins on one day. Counts only.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "loadMore": "عرض المزيد",
+  "openingALogIsRecordedToo": "فتح أي سجل يُسجَّل أيضًا.",
+  "lookedAtTheReviewQueue": "اطّلعت على قائمة المراجعة",
+  "lookedUpAContact": "اطّلعت على وسيلة تواصل",
+  "bookedAReview": "حجزت مراجعة",
+  "recordedADecision": "سجّلت قرارًا",
+  "storeReviewAccount": "حساب مراجعة المتجر",
+  "willRetry": "ستُعاد المحاولة",
+  "secondSweepDone": "اكتمل المسح الثاني",
+  "openedTheDashboard": "فتحت لوحة المتابعة",
+  "openedALog": "فتحت سجلًا",
+  "addAnEvent": "أضيفي فعالية",
+  "editAnEvent": "تعديل فعالية",
+  "titleEnglish": "العنوان (بالإنجليزية)",
+  "titleArabic": "العنوان (بالعربية)",
+  "descriptionEnglish": "الوصف (بالإنجليزية)",
+  "descriptionArabic": "الوصف (بالعربية)",
+  "startsCairoTime": "يبدأ، بتوقيت القاهرة",
+  "endsCairoTime": "ينتهي، بتوقيت القاهرة",
+  "dateAndTimeLike20261105": "التاريخ والوقت، مثل 2026-11-05 18:30",
+  "online": "عبر الإنترنت",
+  "inPerson": "حضوريًا",
+  "linkStartingWithHttps": "الرابط، يبدأ بـ https://",
+  "placeName": "اسم المكان",
+  "aNameIsEnoughNoStreetAddress": "يكفي الاسم. لا حاجة إلى عنوان تفصيلي.",
+  "capacityOptional": "العدد الأقصى، اختياري",
+  "coverPicture": "صورة الغلاف",
+  "noPicturesInTheMediaLibraryYet": "لا توجد صور في مكتبة الوسائط بعد.",
+  "published": "منشورة",
+  "cancelled": "ملغاة",
+  "saveAsDraft": "احفظيها كمسودة",
+  "moveBackToDraft": "أعيديها إلى المسودات",
+  "cancelThisEvent": "ألغي هذه الفعالية",
+  "membersWillNoLongerSeeIt": "لن تراها العضوات بعد الآن.",
+  "yesCancelIt": "نعم، ألغيها",
+  "useTheFormat2026110518": "استخدمي الصيغة 2026-11-05 18:30.",
+  "theEndMustComeAfterTheStart": "يجب أن تأتي النهاية بعد البداية.",
+  "useALinkThatStartsWithHttps": "استخدمي رابطًا يبدأ بـ https://",
+  "aWholeNumberAboveZero": "عدد صحيح أكبر من صفر.",
+  "noEventsYet": "لا فعاليات بعد",
+  "addOneThenPublishItWhenIt": "أضيفي واحدة، ثم انشريها حين تكون جاهزة.",
+  "couldNotSaveCheckTheConnectionAnd": "تعذّر الحفظ. تحققي من الاتصال ومن صلاحية الإدارة، ثم حاولي مرة أخرى.",
+  "upcomingEvents": "الفعاليات القادمة",
+  "noEventsComingUp": "لا فعاليات قادمة",
+  "whenOwnHubPlansOneYouWill": "حين تخطط Own Hub لفعالية ستجدينها هنا.",
+  "cairoTime": "بتوقيت القاهرة",
+  "startToEnd": "من {start} إلى {end}",
+  "@startToEnd": {
+    "description": "An event's time span, both in Cairo time, Western digits.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "18:30"
+      },
+      "end": {
+        "type": "String",
+        "example": "20:00"
+      }
+    }
+  },
+  "openTheLink": "افتحي الرابط",
+  "placesCount": "عدد المقاعد: {count}",
+  "@placesCount": {
+    "description": "An event's capacity, when the owner set one.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "methodOneStepALineInArabic": "طريقة التحضير، خطوة في كل سطر، بالعربية",
+  "sectionOfTheBook": "قسم الكتاب",
+  "author": "المؤلفة",
+  "allergensCheckedBy": "راجعت مسببات الحساسية",
+  "aSecondPersonChecksTheAllergensNever": "تراجع مسببات الحساسية شخصية ثانية، وليست المؤلفة أبدًا.",
+  "showThisRecipeToMembers": "أظهري هذه الوصفة للعضوات",
+  "membersSeeItWithinADay": "تراها العضوات خلال يوم.",
+  "fillInAllFourNumbersOrLeave": "املئي الأرقام الأربعة، أو اتركيها كلها فارغة.",
+  "thisRecipeCannotGoToMembersYet": "لا يمكن عرض هذه الوصفة للعضوات بعد. راجعي الخطوات والقسم والاسمين.",
+  "savedToTheLibrary": "حُفظت في المكتبة",
+  "savedOnThisPhoneOnlySignIn": "حُفظت على هذا الهاتف فقط. سجّلي الدخول بحساب إدارة لحفظها في المكتبة.",
+  "alsoSwitchesItForMembers": "يغيّرها للعضوات أيضًا",
+  "thisIsLongerThanTheAppAllows": "هذا أطول مما يسمح به التطبيق.",
+  "methodOneStepALineInEnglish": "طريقة التحضير، خطوة في كل سطر، بالإنجليزية",
+  "setsReps": "{sets} جولات × {reps} عدّة",
+  "@setsReps": {
+    "description": "A move's prescription: sets times reps, Western digits.",
+    "placeholders": {
+      "sets": {
+        "type": "String",
+        "example": "3"
+      },
+      "reps": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "setsSecondsSeconds": "{sets} × {seconds} ثانية",
+  "@setsSecondsSeconds": {
+    "description": "A held move's prescription: sets times seconds.",
+    "placeholders": {
+      "sets": {
+        "type": "String",
+        "example": "3"
+      },
+      "seconds": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "restSecondsSeconds": "راحة {seconds} ثانية",
+  "@restSecondsSeconds": {
+    "description": "Rest between sets, as the owner wrote it.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "60"
+      }
+    }
+  },
+  "writtenForPregnancyCheckWithYourDoctor": "كُتبت للحمل. استشيري طبيبتكِ قبل أن تبدئي، وتوقفي إن شعرتِ بأي شيء غير مريح.",
+  "writtenForAfterABirthCheckWith": "كُتبت لما بعد الولادة. استشيري طبيبتكِ قبل أن تبدئي، وتوقفي إن شعرتِ بأي شيء غير مريح.",
+  "addASession": "أضيفي حصة",
+  "sessionTitleEnglish": "عنوان الحصة (بالإنجليزية)",
+  "sessionTitleArabic": "عنوان الحصة (بالعربية)",
+  "whoItIsWrittenFor": "لمن كُتبت",
+  "exercise": "التمرين",
+  "sets": "الجولات",
+  "holdSeconds": "الثبات، بالثواني",
+  "restSeconds": "الراحة، بالثواني",
+  "notesEnglish": "ملاحظات (بالإنجليزية)",
+  "notesArabic": "ملاحظات (بالعربية)",
+  "safetyNoteEnglish": "ملاحظة أمان (بالإنجليزية)",
+  "safetyNoteArabic": "ملاحظة أمان (بالعربية)",
+  "remove": "احذفي",
+  "showThisProgrammeToMembers": "أظهري هذا البرنامج للعضوات",
+  "membersSeeEachSessionThatSuitsTheir": "ترى كل عضوة الحصص التي تناسب مرحلتها خلال يوم.",
+  "addExercisesToTheLibraryFirst": "أضيفي تمارين إلى المكتبة أولًا.",
+  "repsOrAHoldNotBoth": "عدّات أو ثبات، وليس الاثنين معًا.",
+  "thisProgrammeCannotGoToMembersYet": "لا يمكن عرض هذا البرنامج للعضوات بعد. تحققي من أن لكل حصة حركاتها وأرقامها ولمن كُتبت، وأن حصص الحمل وما بعد الولادة لا تضم حركة موسومة بأنها غير آمنة لهما.",
+  "uploadItsPicturesUnderThisIdId": "ارفعي صورها تحت هذا المعرّف: {id}",
+  "@uploadItsPicturesUnderThisIdId": {
+    "description": "Z18, the event id the owner passes to tool/admin_access.sh upload-media for its cover.",
+    "placeholders": {
+      "id": {
+        "type": "String",
+        "example": "AbC123xyz"
+      }
+    }
+  }
 }

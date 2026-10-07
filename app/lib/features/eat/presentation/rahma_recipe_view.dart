@@ -39,6 +39,8 @@ import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../theme/recipe_book_tokens.dart';
+import '../../../ui/app_media.dart';
+import '../../../ui/content_image.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_segmented.dart';
 import '../../../ui/hand/hand.dart';
@@ -122,6 +124,18 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
           ],
         ),
         children: [
+          // A console recipe's photo, when one was uploaded. Her book's
+          // recipes have none, and nothing is drawn for them.
+          if (recipe.photoPath case final photo?)
+            ContentImage(
+              path: photo,
+              height: 200,
+              placeholder: const AppMedia(
+                height: 200,
+                kind: AppMediaKind.photo,
+                showPlayButton: false,
+              ),
+            ),
           BookCard(
             cardId: recipe.recipeId,
             markKey: recipe.markKey,

@@ -439,7 +439,7 @@ void main() {
         // photo column, and the rest of the row is here only so the row is
         // complete enough to reach it.
         'recipeId,name_en,name_ar,minutes,ingredients,allergens,dietTags,photoFile,sectionId,source,status,sourcePage,authoredBy,allergenReviewedBy,serves,activeMinutes,kcal,proteinG,carbsG,fatG,macroBasis,egpPerServing,egpPricedAt,advisories,doneness,markKey,tier\n'
-        'soup,Soup,S,25,lentils,none,vegan,soup.jpg,,authored,review,,,,,,,,,,withheld,,,none,,pot,free\n',
+        'soup,Soup,S,25,lentils,none,vegan,soup.jpg,,authored,draft,,,,,,,,,,withheld,,,none,,pot,free\n',
         collection: ContentCollection.recipes,
       );
 

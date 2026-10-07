@@ -43,6 +43,8 @@ echo "-- this is a store build, not a testing build --"
 check "testing aids need a debug build"    "grep -q 'kDebugMode && !featureFlags.isOn(Feature.accountRequired)' lib/routing/app_router.dart"
 check "no aid keys off a flag alone"       "! grep -rn 'isTestMode' lib/app_state | grep -q 'accountRequired'"
 check "the console is compiled out"        "grep -q 'resolvesInThisBuild' lib/routing/app_router.dart"
+check "release refuses the console even in an admin build" "grep -q '(!release && (debug || adminBuild))' lib/routing/app_router.dart"
+check "the store build never asks for the admin build" "! grep -q 'ADMIN_BUILD' tool/build_release.sh"
 check "release guards pass"                "flutter test test/release_readiness_test.dart"
 
 echo

@@ -6,7 +6,7 @@ class AppRoute {
   const AppRoute({required this.name, required this.flow, required this.title});
 }
 
-/// 179 screens across 17 flows.
+/// 184 screens across 17 flows.
 const Map<String, AppRoute> appRoutes = {
   'C01': AppRoute(name: '/signup/c01', flow: 'signup', title: "Welcome"),
   'C02': AppRoute(name: '/signup/c02', flow: 'signup', title: "Language"),
@@ -39,6 +39,7 @@ const Map<String, AppRoute> appRoutes = {
   'T06': AppRoute(name: '/today/t06', flow: 'today', title: "Day one"),
   'T07': AppRoute(name: '/today/t07', flow: 'today', title: "Your first week"),
   'T08': AppRoute(name: '/today/t08', flow: 'today', title: "First week done"),
+  'T09': AppRoute(name: '/today/t09', flow: 'today', title: "Events"),
   'R01': AppRoute(name: '/train/r01', flow: 'train', title: "Train"),
   'R02': AppRoute(name: '/train/r02', flow: 'train', title: "Program"),
   'R03': AppRoute(name: '/train/r03', flow: 'train', title: "Workout day"),
@@ -187,4 +188,8 @@ const Map<String, AppRoute> appRoutes = {
   'Z12': AppRoute(name: '/admin/z12', flow: 'admin', title: "Edit a recipe"),
   'Z13': AppRoute(name: '/admin/z13', flow: 'admin', title: "Edit a programme"),
   'Z14': AppRoute(name: '/admin/z14', flow: 'admin', title: "Feature flags"),
+  'Z15': AppRoute(name: '/admin/z15', flow: 'admin', title: "Dashboard"),
+  'Z16': AppRoute(name: '/admin/z16', flow: 'admin', title: "Logs"),
+  'Z17': AppRoute(name: '/admin/z17', flow: 'admin', title: "Events"),
+  'Z18': AppRoute(name: '/admin/z18', flow: 'admin', title: "Edit an event"),
 };

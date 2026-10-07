@@ -40,11 +40,13 @@ import '../features/account/domain/deletion_manifest.dart';
 import '../features/account/domain/dietary_profile.dart';
 import '../features/account/domain/health_backup.dart';
 import '../features/cycle/domain/today_check_in.dart';
+import '../features/train/data/workout_sync.dart' show kWorkoutCacheKeys;
 import '../features/eat/data/recipe_sync.dart';
 import '../features/train/domain/training_reminders.dart';
 import '../features/signup/domain/legal_acceptance.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
+import 'workout_library_state.dart';
 import 'cloud_store.dart';
 import 'coach_portfolio_state.dart';
 import 'coach_profile_state.dart';
@@ -186,6 +188,13 @@ class ThisPhoneWipe implements LocalWipe {
         PreferencesSnapshotStorage(key: key).erase().catchError((Object _) {}),
       );
     }
+    // The workout library the same way, and the session she had chosen.
+    for (final key in kWorkoutCacheKeys) {
+      unawaited(
+        PreferencesSnapshotStorage(key: key).erase().catchError((Object _) {}),
+      );
+    }
+    WorkoutLibraryState.instance.chosenRowId = null;
 
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();

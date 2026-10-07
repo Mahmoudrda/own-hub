@@ -3501,5 +3501,265 @@
   "yourWeekShowsHere": "Your week shows here",
   "movingKitten": "Moving kitten",
   "theKittenShowsYouAroundAndMoves": "The kitten shows you around and moves once when it appears.",
-  "theKittenStaysStill": "The kitten stays still."
+  "theKittenStaysStill": "The kitten stays still.",
+  "dashboard": "Dashboard",
+  "logs": "Logs",
+  "events": "Events",
+  "adminConsole": "Admin console",
+  "contentEventsCountsAndLogs": "Content, events, counts and logs",
+  "countsOnlyNothingHereNamesAMember": "Counts only. Nothing here names a member.",
+  "accounts": "Accounts",
+  "verifiedMembers": "Verified members",
+  "humanReviewsWaiting": "Human reviews waiting",
+  "countPastTheHoursHourPromise": "{count} past the {hours}-hour promise",
+  "@countPastTheHoursHourPromise": {
+    "description": "Z15, human reviews older than the review SLA. Both values are Western-digit labels.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      },
+      "hours": {
+        "type": "String",
+        "example": "72"
+      }
+    }
+  },
+  "oldestHasWaitedHoursHours": "Oldest has waited {hours} hours",
+  "@oldestHasWaitedHoursHours": {
+    "description": "Z15, the age of the oldest open human review in whole hours.",
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "41"
+      }
+    }
+  },
+  "checkOutcomesLast7Days": "Check outcomes, last 7 days",
+  "checkOutcomesLast30Days": "Check outcomes, last 30 days",
+  "waitlist": "Waitlist",
+  "deletionRequests": "Deletion requests",
+  "stillRunning": "Still running",
+  "finished": "Finished",
+  "upcoming": "Upcoming",
+  "drafts": "Drafts",
+  "updatedTime": "Updated {time}",
+  "@updatedTime": {
+    "description": "Z15, when the counts were computed, Cairo time.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "2026-10-07 14:05"
+      }
+    }
+  },
+  "refresh": "Refresh",
+  "thisAccountDoesNotHaveAdminAccess": "This account does not have admin access.",
+  "signInWithYourPhoneNumberTo": "Sign in with your phone number to open the console.",
+  "theConsoleNeedsAConnectionTryAgain": "The console needs a connection. Try again in a moment.",
+  "approved": "Approved",
+  "sentToAReviewer": "Sent to a reviewer",
+  "notEligible": "Not eligible",
+  "checkDidNotPass": "Check did not pass",
+  "cardAlreadyInUse": "Card already in use",
+  "askedToRetake": "Asked to retake",
+  "askedToTryAgain": "Asked to try again",
+  "decisions": "Decisions",
+  "deletions": "Deletions",
+  "errors": "Errors",
+  "consoleReads": "Console reads",
+  "allOutcomes": "All outcomes",
+  "caseRef": "Case {ref}",
+  "@caseRef": {
+    "description": "Z16, a short reference standing for a verification case. Eight hex characters, never an id.",
+    "placeholders": {
+      "ref": {
+        "type": "String",
+        "example": "3fa91c0e"
+      }
+    }
+  },
+  "reviewerRef": "Reviewer {ref}",
+  "@reviewerRef": {
+    "description": "Z16, a short reference standing for a reviewer account.",
+    "placeholders": {
+      "ref": {
+        "type": "String",
+        "example": "9b2d41aa"
+      }
+    }
+  },
+  "adminRef": "Admin {ref}",
+  "@adminRef": {
+    "description": "Z16, a short reference standing for an admin account.",
+    "placeholders": {
+      "ref": {
+        "type": "String",
+        "example": "c01d2e3f"
+      }
+    }
+  },
+  "countJoined": "{count} joined",
+  "@countJoined": {
+    "description": "Z16, waitlist joins on one day. Counts only.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "loadMore": "Load more",
+  "openingALogIsRecordedToo": "Opening a log is recorded too.",
+  "lookedAtTheReviewQueue": "Looked at the review queue",
+  "lookedUpAContact": "Looked up a contact",
+  "bookedAReview": "Booked a review",
+  "recordedADecision": "Recorded a decision",
+  "storeReviewAccount": "Store review account",
+  "willRetry": "Will retry",
+  "secondSweepDone": "Second sweep done",
+  "openedTheDashboard": "Opened the dashboard",
+  "openedALog": "Opened a log",
+  "addAnEvent": "Add an event",
+  "editAnEvent": "Edit an event",
+  "titleEnglish": "Title (English)",
+  "titleArabic": "Title (Arabic)",
+  "descriptionEnglish": "Description (English)",
+  "descriptionArabic": "Description (Arabic)",
+  "startsCairoTime": "Starts, Cairo time",
+  "endsCairoTime": "Ends, Cairo time",
+  "dateAndTimeLike20261105": "Date and time, like 2026-11-05 18:30",
+  "online": "Online",
+  "inPerson": "In person",
+  "linkStartingWithHttps": "Link, starting with https://",
+  "placeName": "Place name",
+  "aNameIsEnoughNoStreetAddress": "A name is enough. No street address needed.",
+  "capacityOptional": "Capacity, optional",
+  "coverPicture": "Cover picture",
+  "noPicturesInTheMediaLibraryYet": "No pictures in the media library yet.",
+  "published": "Published",
+  "cancelled": "Cancelled",
+  "saveAsDraft": "Save as draft",
+  "moveBackToDraft": "Move back to draft",
+  "cancelThisEvent": "Cancel this event",
+  "membersWillNoLongerSeeIt": "Members will no longer see it.",
+  "yesCancelIt": "Yes, cancel it",
+  "useTheFormat2026110518": "Use the format 2026-11-05 18:30.",
+  "theEndMustComeAfterTheStart": "The end must come after the start.",
+  "useALinkThatStartsWithHttps": "Use a link that starts with https://",
+  "aWholeNumberAboveZero": "A whole number above zero.",
+  "noEventsYet": "No events yet",
+  "addOneThenPublishItWhenIt": "Add one, then publish it when it is ready.",
+  "couldNotSaveCheckTheConnectionAnd": "Could not save. Check the connection and the admin access, then try again.",
+  "upcomingEvents": "Upcoming events",
+  "noEventsComingUp": "No events coming up",
+  "whenOwnHubPlansOneYouWill": "When Own Hub plans one, you will find it here.",
+  "cairoTime": "Cairo time",
+  "startToEnd": "{start} to {end}",
+  "@startToEnd": {
+    "description": "An event's time span, both in Cairo time, Western digits.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "18:30"
+      },
+      "end": {
+        "type": "String",
+        "example": "20:00"
+      }
+    }
+  },
+  "openTheLink": "Open the link",
+  "placesCount": "Places: {count}",
+  "@placesCount": {
+    "description": "An event's capacity, when the owner set one.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "methodOneStepALineInArabic": "Method, one step a line, in Arabic",
+  "sectionOfTheBook": "Section of the book",
+  "author": "Author",
+  "allergensCheckedBy": "Allergens checked by",
+  "aSecondPersonChecksTheAllergensNever": "A second person checks the allergens, never the author.",
+  "showThisRecipeToMembers": "Show this recipe to members",
+  "membersSeeItWithinADay": "Members see it within a day.",
+  "fillInAllFourNumbersOrLeave": "Fill in all four numbers, or leave all four empty.",
+  "thisRecipeCannotGoToMembersYet": "This recipe cannot go to members yet. Check the steps, the section and both names.",
+  "savedToTheLibrary": "Saved to the library",
+  "savedOnThisPhoneOnlySignIn": "Saved on this phone only. Sign in with an admin account to save to the library.",
+  "alsoSwitchesItForMembers": "Also switches it for members",
+  "thisIsLongerThanTheAppAllows": "This is longer than the app allows.",
+  "methodOneStepALineInEnglish": "Method, one step a line, in English",
+  "setsReps": "{sets} × {reps}",
+  "@setsReps": {
+    "description": "A move's prescription: sets times reps, Western digits.",
+    "placeholders": {
+      "sets": {
+        "type": "String",
+        "example": "3"
+      },
+      "reps": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "setsSecondsSeconds": "{sets} × {seconds} seconds",
+  "@setsSecondsSeconds": {
+    "description": "A held move's prescription: sets times seconds.",
+    "placeholders": {
+      "sets": {
+        "type": "String",
+        "example": "3"
+      },
+      "seconds": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "restSecondsSeconds": "Rest {seconds} seconds",
+  "@restSecondsSeconds": {
+    "description": "Rest between sets, as the owner wrote it.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "60"
+      }
+    }
+  },
+  "writtenForPregnancyCheckWithYourDoctor": "Written for pregnancy. Check with your doctor before you start, and stop if anything feels wrong.",
+  "writtenForAfterABirthCheckWith": "Written for after a birth. Check with your doctor before you start, and stop if anything feels wrong.",
+  "addASession": "Add a session",
+  "sessionTitleEnglish": "Session title (English)",
+  "sessionTitleArabic": "Session title (Arabic)",
+  "whoItIsWrittenFor": "Who it is written for",
+  "exercise": "Exercise",
+  "sets": "Sets",
+  "holdSeconds": "Hold, seconds",
+  "restSeconds": "Rest, seconds",
+  "notesEnglish": "Notes (English)",
+  "notesArabic": "Notes (Arabic)",
+  "safetyNoteEnglish": "Safety note (English)",
+  "safetyNoteArabic": "Safety note (Arabic)",
+  "remove": "Remove",
+  "showThisProgrammeToMembers": "Show this programme to members",
+  "membersSeeEachSessionThatSuitsTheir": "Members see each session that suits their life stage, within a day.",
+  "addExercisesToTheLibraryFirst": "Add exercises to the library first.",
+  "repsOrAHoldNotBoth": "Reps or a hold, not both.",
+  "thisProgrammeCannotGoToMembersYet": "This programme cannot go to members yet. Check that every session has moves, its numbers and who it is for, and that pregnancy and after-a-birth sessions hold no move tagged unsafe for them.",
+  "uploadItsPicturesUnderThisIdId": "Upload its pictures under this id: {id}",
+  "@uploadItsPicturesUnderThisIdId": {
+    "description": "Z18, the event id the owner passes to tool/admin_access.sh upload-media for its cover.",
+    "placeholders": {
+      "id": {
+        "type": "String",
+        "example": "AbC123xyz"
+      }
+    }
+  }
 }

@@ -395,6 +395,7 @@ class Recipe {
     this.cookedBy,
     this.cookedAt,
     this.markKey,
+    this.photoPath,
   });
 
   factory Recipe.fromJson(Map<String, Object?> json) => Recipe(
@@ -451,6 +452,7 @@ class Recipe {
     cookedBy: json['cookedBy'] as String?,
     cookedAt: DateTime.tryParse(json['cookedAt'] as String? ?? ''),
     markKey: json['markKey'] as String?,
+    photoPath: _photoPath(json['photoPath']),
     tier: RecipeTier.fromWire(json['tier'] as String? ?? ''),
     brandHints:
         ((json['brandHints'] as Map?) ?? const {})
@@ -554,6 +556,10 @@ class Recipe {
   /// A drawn food mark, in the app's own hand. See `food_marks.dart`.
   final String? markKey;
 
+  /// Her photo in the content library (`content/recipes/{id}/{file}`), or
+  /// null. A drawn mark stands in wherever it cannot be loaded.
+  final String? photoPath;
+
   final RecipeTier tier;
 
   /// ingredientRef, or her quantity phrase, to the brand she names.
@@ -591,6 +597,15 @@ class Recipe {
     return titleSearch.any((t) => t.toLowerCase().contains(needle));
   }
 }
+
+/// A photo uploaded to the content library, or null. Only a path under
+/// `content/recipes/` is taken: anything else is not a place the app reads.
+String? _photoPath(Object? raw) =>
+    raw is String &&
+        raw.startsWith('content/recipes/') &&
+        !raw.contains('..')
+    ? raw
+    : null;
 
 List<RecipeIngredient> _ingredients(Object? raw) => [
   for (final i in (raw as List?) ?? const [])

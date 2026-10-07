@@ -28,6 +28,8 @@ import '../../../data/pending_answers.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../events/domain/hub_event.dart';
+import '../../events/presentation/upcoming_events_card.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -78,6 +80,8 @@ class TodayView extends StatefulWidget {
     this.onTrackCycle,
     this.onNotNowCycle,
     this.onCountWalk,
+    this.nextEvent,
+    this.onOpenEvents,
   });
 
   /// Her setup answers. On day one they are read back above "Start day 1",
@@ -104,6 +108,12 @@ class TodayView extends StatefulWidget {
   /// "Count it" on the walk row. Supplied, it replaces counting the walk:
   /// the row stays on screen and nothing is written.
   final VoidCallback? onCountWalk;
+
+  /// The soonest published event still to come, for the Upcoming card. The
+  /// card is drawn only while `T09` is switched on ([Feature.events]) and
+  /// there is one.
+  final HubEvent? nextEvent;
+  final VoidCallback? onOpenEvents;
 
   /// Injectable so a test — and later Firestore — can supply the day.
   final TodayRepository? repository;
@@ -436,6 +446,13 @@ class _TodayViewState extends State<TodayView> {
           title: l10n.myCycle,
           trailing: const AppChevron(),
           onTap: () => openScreen(context, 'Y03', widget.onOpenCycle),
+        ),
+      // The owner's next event. Off with Feature.events, and absent when
+      // nothing is planned: an empty card would promise events nobody made.
+      if (widget.nextEvent case final next? when AppRouter.screenIsOn('T09'))
+        UpcomingEventsCard(
+          next: next,
+          onOpen: () => openScreen(context, 'T09', widget.onOpenEvents),
         ),
     ];
   }

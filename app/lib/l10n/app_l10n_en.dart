@@ -8571,4 +8571,433 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get theKittenStaysStill => 'The kitten stays still.';
+
+  @override
+  String get dashboard => 'Dashboard';
+
+  @override
+  String get logs => 'Logs';
+
+  @override
+  String get events => 'Events';
+
+  @override
+  String get adminConsole => 'Admin console';
+
+  @override
+  String get contentEventsCountsAndLogs => 'Content, events, counts and logs';
+
+  @override
+  String get countsOnlyNothingHereNamesAMember =>
+      'Counts only. Nothing here names a member.';
+
+  @override
+  String get accounts => 'Accounts';
+
+  @override
+  String get verifiedMembers => 'Verified members';
+
+  @override
+  String get humanReviewsWaiting => 'Human reviews waiting';
+
+  @override
+  String countPastTheHoursHourPromise(String count, String hours) {
+    return '$count past the $hours-hour promise';
+  }
+
+  @override
+  String oldestHasWaitedHoursHours(String hours) {
+    return 'Oldest has waited $hours hours';
+  }
+
+  @override
+  String get checkOutcomesLast7Days => 'Check outcomes, last 7 days';
+
+  @override
+  String get checkOutcomesLast30Days => 'Check outcomes, last 30 days';
+
+  @override
+  String get waitlist => 'Waitlist';
+
+  @override
+  String get deletionRequests => 'Deletion requests';
+
+  @override
+  String get stillRunning => 'Still running';
+
+  @override
+  String get finished => 'Finished';
+
+  @override
+  String get upcoming => 'Upcoming';
+
+  @override
+  String get drafts => 'Drafts';
+
+  @override
+  String updatedTime(String time) {
+    return 'Updated $time';
+  }
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get thisAccountDoesNotHaveAdminAccess =>
+      'This account does not have admin access.';
+
+  @override
+  String get signInWithYourPhoneNumberTo =>
+      'Sign in with your phone number to open the console.';
+
+  @override
+  String get theConsoleNeedsAConnectionTryAgain =>
+      'The console needs a connection. Try again in a moment.';
+
+  @override
+  String get approved => 'Approved';
+
+  @override
+  String get sentToAReviewer => 'Sent to a reviewer';
+
+  @override
+  String get notEligible => 'Not eligible';
+
+  @override
+  String get checkDidNotPass => 'Check did not pass';
+
+  @override
+  String get cardAlreadyInUse => 'Card already in use';
+
+  @override
+  String get askedToRetake => 'Asked to retake';
+
+  @override
+  String get askedToTryAgain => 'Asked to try again';
+
+  @override
+  String get decisions => 'Decisions';
+
+  @override
+  String get deletions => 'Deletions';
+
+  @override
+  String get errors => 'Errors';
+
+  @override
+  String get consoleReads => 'Console reads';
+
+  @override
+  String get allOutcomes => 'All outcomes';
+
+  @override
+  String caseRef(String ref) {
+    return 'Case $ref';
+  }
+
+  @override
+  String reviewerRef(String ref) {
+    return 'Reviewer $ref';
+  }
+
+  @override
+  String adminRef(String ref) {
+    return 'Admin $ref';
+  }
+
+  @override
+  String countJoined(String count) {
+    return '$count joined';
+  }
+
+  @override
+  String get loadMore => 'Load more';
+
+  @override
+  String get openingALogIsRecordedToo => 'Opening a log is recorded too.';
+
+  @override
+  String get lookedAtTheReviewQueue => 'Looked at the review queue';
+
+  @override
+  String get lookedUpAContact => 'Looked up a contact';
+
+  @override
+  String get bookedAReview => 'Booked a review';
+
+  @override
+  String get recordedADecision => 'Recorded a decision';
+
+  @override
+  String get storeReviewAccount => 'Store review account';
+
+  @override
+  String get willRetry => 'Will retry';
+
+  @override
+  String get secondSweepDone => 'Second sweep done';
+
+  @override
+  String get openedTheDashboard => 'Opened the dashboard';
+
+  @override
+  String get openedALog => 'Opened a log';
+
+  @override
+  String get addAnEvent => 'Add an event';
+
+  @override
+  String get editAnEvent => 'Edit an event';
+
+  @override
+  String get titleEnglish => 'Title (English)';
+
+  @override
+  String get titleArabic => 'Title (Arabic)';
+
+  @override
+  String get descriptionEnglish => 'Description (English)';
+
+  @override
+  String get descriptionArabic => 'Description (Arabic)';
+
+  @override
+  String get startsCairoTime => 'Starts, Cairo time';
+
+  @override
+  String get endsCairoTime => 'Ends, Cairo time';
+
+  @override
+  String get dateAndTimeLike20261105 => 'Date and time, like 2026-11-05 18:30';
+
+  @override
+  String get online => 'Online';
+
+  @override
+  String get inPerson => 'In person';
+
+  @override
+  String get linkStartingWithHttps => 'Link, starting with https://';
+
+  @override
+  String get placeName => 'Place name';
+
+  @override
+  String get aNameIsEnoughNoStreetAddress =>
+      'A name is enough. No street address needed.';
+
+  @override
+  String get capacityOptional => 'Capacity, optional';
+
+  @override
+  String get coverPicture => 'Cover picture';
+
+  @override
+  String get noPicturesInTheMediaLibraryYet =>
+      'No pictures in the media library yet.';
+
+  @override
+  String get published => 'Published';
+
+  @override
+  String get cancelled => 'Cancelled';
+
+  @override
+  String get saveAsDraft => 'Save as draft';
+
+  @override
+  String get moveBackToDraft => 'Move back to draft';
+
+  @override
+  String get cancelThisEvent => 'Cancel this event';
+
+  @override
+  String get membersWillNoLongerSeeIt => 'Members will no longer see it.';
+
+  @override
+  String get yesCancelIt => 'Yes, cancel it';
+
+  @override
+  String get useTheFormat2026110518 => 'Use the format 2026-11-05 18:30.';
+
+  @override
+  String get theEndMustComeAfterTheStart =>
+      'The end must come after the start.';
+
+  @override
+  String get useALinkThatStartsWithHttps =>
+      'Use a link that starts with https://';
+
+  @override
+  String get aWholeNumberAboveZero => 'A whole number above zero.';
+
+  @override
+  String get noEventsYet => 'No events yet';
+
+  @override
+  String get addOneThenPublishItWhenIt =>
+      'Add one, then publish it when it is ready.';
+
+  @override
+  String get couldNotSaveCheckTheConnectionAnd =>
+      'Could not save. Check the connection and the admin access, then try again.';
+
+  @override
+  String get upcomingEvents => 'Upcoming events';
+
+  @override
+  String get noEventsComingUp => 'No events coming up';
+
+  @override
+  String get whenOwnHubPlansOneYouWill =>
+      'When Own Hub plans one, you will find it here.';
+
+  @override
+  String get cairoTime => 'Cairo time';
+
+  @override
+  String startToEnd(String start, String end) {
+    return '$start to $end';
+  }
+
+  @override
+  String get openTheLink => 'Open the link';
+
+  @override
+  String placesCount(String count) {
+    return 'Places: $count';
+  }
+
+  @override
+  String get methodOneStepALineInArabic => 'Method, one step a line, in Arabic';
+
+  @override
+  String get sectionOfTheBook => 'Section of the book';
+
+  @override
+  String get author => 'Author';
+
+  @override
+  String get allergensCheckedBy => 'Allergens checked by';
+
+  @override
+  String get aSecondPersonChecksTheAllergensNever =>
+      'A second person checks the allergens, never the author.';
+
+  @override
+  String get showThisRecipeToMembers => 'Show this recipe to members';
+
+  @override
+  String get membersSeeItWithinADay => 'Members see it within a day.';
+
+  @override
+  String get fillInAllFourNumbersOrLeave =>
+      'Fill in all four numbers, or leave all four empty.';
+
+  @override
+  String get thisRecipeCannotGoToMembersYet =>
+      'This recipe cannot go to members yet. Check the steps, the section and both names.';
+
+  @override
+  String get savedToTheLibrary => 'Saved to the library';
+
+  @override
+  String get savedOnThisPhoneOnlySignIn =>
+      'Saved on this phone only. Sign in with an admin account to save to the library.';
+
+  @override
+  String get alsoSwitchesItForMembers => 'Also switches it for members';
+
+  @override
+  String get thisIsLongerThanTheAppAllows =>
+      'This is longer than the app allows.';
+
+  @override
+  String get methodOneStepALineInEnglish =>
+      'Method, one step a line, in English';
+
+  @override
+  String setsReps(String sets, String reps) {
+    return '$sets × $reps';
+  }
+
+  @override
+  String setsSecondsSeconds(String sets, String seconds) {
+    return '$sets × $seconds seconds';
+  }
+
+  @override
+  String restSecondsSeconds(String seconds) {
+    return 'Rest $seconds seconds';
+  }
+
+  @override
+  String get writtenForPregnancyCheckWithYourDoctor =>
+      'Written for pregnancy. Check with your doctor before you start, and stop if anything feels wrong.';
+
+  @override
+  String get writtenForAfterABirthCheckWith =>
+      'Written for after a birth. Check with your doctor before you start, and stop if anything feels wrong.';
+
+  @override
+  String get addASession => 'Add a session';
+
+  @override
+  String get sessionTitleEnglish => 'Session title (English)';
+
+  @override
+  String get sessionTitleArabic => 'Session title (Arabic)';
+
+  @override
+  String get whoItIsWrittenFor => 'Who it is written for';
+
+  @override
+  String get exercise => 'Exercise';
+
+  @override
+  String get sets => 'Sets';
+
+  @override
+  String get holdSeconds => 'Hold, seconds';
+
+  @override
+  String get restSeconds => 'Rest, seconds';
+
+  @override
+  String get notesEnglish => 'Notes (English)';
+
+  @override
+  String get notesArabic => 'Notes (Arabic)';
+
+  @override
+  String get safetyNoteEnglish => 'Safety note (English)';
+
+  @override
+  String get safetyNoteArabic => 'Safety note (Arabic)';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get showThisProgrammeToMembers => 'Show this programme to members';
+
+  @override
+  String get membersSeeEachSessionThatSuitsTheir =>
+      'Members see each session that suits their life stage, within a day.';
+
+  @override
+  String get addExercisesToTheLibraryFirst =>
+      'Add exercises to the library first.';
+
+  @override
+  String get repsOrAHoldNotBoth => 'Reps or a hold, not both.';
+
+  @override
+  String get thisProgrammeCannotGoToMembersYet =>
+      'This programme cannot go to members yet. Check that every session has moves, its numbers and who it is for, and that pregnancy and after-a-birth sessions hold no move tagged unsafe for them.';
+
+  @override
+  String uploadItsPicturesUnderThisIdId(String id) {
+    return 'Upload its pictures under this id: $id';
+  }
 }

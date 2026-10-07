@@ -289,8 +289,9 @@ ImportPlan validateImport({
     }
   }
 
-  for (final name in schema.columnNames) {
-    if (!headers.contains(name)) {
+  for (final column in schema.columns) {
+    final name = column.name;
+    if (!headers.contains(name) && !column.mayBeAbsent) {
       problems.add(
         ImportProblem(
           row: 1,
@@ -418,6 +419,22 @@ ImportPlan validateImport({
           ),
         );
       }
+    }
+
+    // A recipe on its way to members needs its method: the member app cannot
+    // show a recipe with no steps, and refuses the whole library if one
+    // arrives that way. A draft may be imported without one.
+    if (collection == ContentCollection.recipes &&
+        (cells['status'] ?? '').isNotEmpty &&
+        cells['status'] != 'draft' &&
+        (cells['method_ar'] ?? '').isEmpty) {
+      problems.add(
+        ImportProblem(
+          row: row.line,
+          column: 'method_ar',
+          code: ImportProblemCode.blankRequired,
+        ),
+      );
     }
 
     final id = cells[schema.idColumn] ?? '';
