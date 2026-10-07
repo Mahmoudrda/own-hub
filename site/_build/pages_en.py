@@ -421,8 +421,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             again. No other member can see them.</li>
             <li>To send your sign-in code, your phone number goes to Google
             Firebase in the United States.</li>
-            <li>We do not sell your data. There are no adverts, no tracking and
-            no analytics. Crash reports are sent only if you allow them.</li>
+            <li>We do not sell your data. There are no adverts and no tracking.
+            Usage statistics and crash reports are each sent only if you allow
+            them, and never include your health information.</li>
             <li><b>We never use your data to train AI, ours or anyone&rsquo;s.</b></li>
             <li>You can delete your account in the app at any time, and ask us
             for a copy of your data.</li>
@@ -611,17 +612,43 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li><b>Crash reports, only if you allow them.</b> You can allow them
           on the sign-up screen, or later in Profile, then Privacy. They are off
           until you do. What Firebase Crashlytics receives when the app
-          crashes: the type of error and where in the code it happened, your
-          device model, operating system, app version, free memory and storage,
-          and an installation identifier. What is never attached: your account
-          identifier, your name or your phone number. If you turn them off,
-          reports waiting on your phone are deleted.</li>
+          crashes: the type of error and where in the code it happened, the
+          screen it happened on (shown as &ldquo;private&rdquo; for screens
+          about your body or your cycle), your device model, operating system,
+          app version, free memory and storage, and an installation
+          identifier. It also receives a report when one of our servers fails
+          in a way that is our fault, with only the error&rsquo;s status code.
+          If you have also turned on usage statistics, the last screens and
+          steps you used are shown with the report. What is never attached:
+          your account identifier, your name, your phone number, or the text of
+          any error. If you turn them off, reports waiting on your phone are
+          deleted.</li>
+          <li><b>Usage statistics (&ldquo;Help improve Own Hub&rdquo;), only if
+          you allow them.</b> A separate switch on the sign-up screen and in
+          Profile, then Privacy. Off until you turn it on. When it is on, Google
+          Analytics for Firebase receives which screens you open (by a short
+          screen code such as &ldquo;T01&rdquo;) and which steps you reach: the
+          tour, each sign-up step, whether the ID check started, went to a
+          reviewer, asked for new photos, let you in or was refused (one word,
+          never why), your first workout and meal, reaching your weekly target,
+          coming back after a week or more away, and your language and kitten
+          settings. Google adds a random app instance identifier, your device
+          model, operating system and app version, and an approximate location
+          it works out from your IP address. <b>It never receives your health
+          information, cycle, body measurements, weight, life stage, pregnancy,
+          allergies, name, phone number, ID number, anything you type, or the
+          names of recipes or programmes.</b> We do not give it your account
+          identifier and do not link what it receives to your account. We never
+          use it for advertising: there is no advertising identifier, and
+          advertising uses are switched off. If you turn it off, collection
+          stops at once and the identifier on your phone is reset, so what was
+          sent before cannot be joined to anything sent later.</li>
           <li><b>Our server logs.</b> These record outcomes and reason codes.
           They never record your phone number or your ID number, and they never
           place your account identifier beside an outcome.</li>
           <li><b>Basis:</b> keeping the service secure and working, which the
-          law allows (Law 151/2020, Article 6, point 4), except crash reports,
-          which need your consent. ML Kit runs only on the selfie screen, after
+          law allows (Law 151/2020, Article 6, point 4), except crash reports
+          and usage statistics, which each need your consent. ML Kit runs only on the selfie screen, after
           you have agreed to the check.</li>
         </ul>
 
@@ -675,7 +702,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         data brokers or marketing companies. The service providers below
         process data only on our instructions. Google processes data for us
         under the Google Cloud Data Processing Addendum and the Firebase Data
-        Processing and Security Terms.</p>
+        Processing and Security Terms. Google Analytics processes usage
+        statistics for us under the Google Ads Data Processing Terms, with data
+        sharing with Google, Google signals and advertising links all switched
+        off.</p>
 """ + cards([
             ("Google Firebase Authentication", [
                 ("Handles", "Your phone number, IP address and device details"),
@@ -710,6 +740,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
                 ("Where", "Google data centres worldwide, which include the "
                           "United States"),
             ]),
+            ("Google Analytics for Firebase, only if you allow it", [
+                ("Handles", "Usage statistics (section 3.7)"),
+                ("Where", "Google data centres worldwide, which include the "
+                          "United States"),
+            ]),
             ("{{cap:chatService}}", [
                 ("Handles", "A case number and reason codes only"),
                 ("Where", "{{chatServiceRegion}}"),
@@ -737,16 +772,19 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           and meals, any health backup, and your verification.</li>
           <li><b>The United States:</b> your phone number, for sign-in.</li>
           <li><b>Google data centres worldwide, which include the United
-          States:</b> the device checks, ML Kit performance data, and crash
-          reports if you allow them. Google does not let us choose one country
-          for these.</li>
+          States:</b> the device checks, ML Kit performance data, crash reports
+          if you allow them, and usage statistics if you allow them. Google
+          does not let us choose one country for these.</li>
         </ul>
         <p>Egypt&rsquo;s Personal Data Protection Law No. 151 of 2020 allows
         transfers abroad only under a permit from the Personal Data Protection
         Centre, and with your consent. We ask for that consent on
         the sign-up screen, naming these countries, before your phone number is
         sent. We ask again, separately, before any health information is backed
-        up.</p>
+        up. Usage statistics have their own consent, the &ldquo;Help improve
+        Own Hub&rdquo; switch, which names Google Analytics and says the data
+        may be processed outside Egypt. Nothing is sent before you turn it
+        on.</p>
         <p>Permit: {{pdpcPermit}}</p>
         <p>Safeguards: {{transferCountries}}</p>
 
@@ -774,6 +812,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             ("Daily totals of verifications, with no link to any person", "Kept"),
             ("Our server logs", "{{serverLogRetention}}"),
             ("Crash reports, if you allow them", "{{crashReportRetention}}"),
+            ("Usage statistics, if you allow them",
+             "2 months for anything tied to the app instance identifier, the "
+             "shortest Google Analytics allows, then deleted automatically. "
+             "Counts that are not linked to any person, such as how many people "
+             "finished the tour, are kept."),
             ("Messages you send us", "{{supportRetention}}"),
             ("Waitlist contact",
              "180 days at most. The proof that you agreed is kept for 3 years "
@@ -807,8 +850,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           ends;</li>
           <li>the record that the deletion was carried out.</li>
         </ul>
-        <p>Crash reports and ML Kit data are never linked to your account.
-        Google deletes them on its own schedule.</p>
+        <p>Crash reports, usage statistics and ML Kit data are never linked to
+        your account. Deleting everything also turns usage statistics off and
+        resets the identifier on your phone. Google deletes this data on the
+        schedule in section 6.</p>
         <p><b>Deleting only part of your data:</b></p>
         <ul>
           <li>turn off health backup (this deletes the cloud copy);</li>
@@ -826,8 +871,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>have it corrected or completed;</li>
           <li>have it erased;</li>
           <li>withdraw your consent at any time, without affecting processing
-          that took place before. You can turn off crash reports and health
-          backup yourself in Profile, then Privacy;</li>
+          that took place before. You can turn off crash reports, usage
+          statistics and health backup yourself in Profile, then Privacy;</li>
           <li>object to processing, or ask us to restrict it;</li>
           <li>be told of any breach of your personal data.</li>
         </ul>
@@ -875,7 +920,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <ul>
           <li>No adverts, no advertising identifiers, and no tracking across
           other apps or websites.</li>
-          <li>No analytics software.</li>
+          <li>No analytics unless you turn on usage statistics, and never of
+          your health information.</li>
           <li>No sale of your data.</li>
           <li>No training of AI on your data.</li>
           <li>No access to your contacts, location, photo library, microphone,
@@ -901,6 +947,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>3.0, update before release:</b> usage statistics with Google
+          Analytics for Firebase, only with your separate consent (&ldquo;Help
+          improve Own Hub&rdquo;), and more detail on what a crash report
+          carries.</li>
           <li><b>3.0, minor update:</b> section 3.5 now describes the Own Hub
           widgets. They collect nothing new, so you are not asked to accept
           again.</li>
@@ -1312,8 +1362,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           health backup yourself.</p>
           <p>If you allow crash reports, Firebase Crashlytics receives a report
           when the app crashes, with no account identifier, name or phone
-          number. They are off until you allow them. There is no
-          analytics and no advertising library in the app. The
+          number. They are off until you allow them. If you turn on
+          <b>Help improve Own Hub</b>, Google Analytics for Firebase receives
+          usage statistics, such as which screens you open, never your health
+          information and never linked to your account. That is off until you
+          turn it on. There is no advertising library in the app. The
           <a href="/privacy">Privacy Policy</a> sets out every item, who handles
           it and where.</p>
         </div>
