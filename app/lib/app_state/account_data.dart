@@ -52,6 +52,7 @@ import 'coached_life_state.dart';
 import 'coaching_desk_state.dart';
 import 'coaching_link_state.dart';
 import 'community_state.dart';
+import 'analytics_consent.dart';
 import 'crash_consent.dart';
 import 'kitten_setting.dart';
 import 'cycle_state.dart';
@@ -166,6 +167,11 @@ class ThisPhoneWipe implements LocalWipe {
     // Her crash-report choice, back to off, and any report still waiting on
     // this phone deleted. A new account on this handset is asked again.
     unawaited(CrashConsent.instance.erase().catchError((Object _) {}));
+
+    // Her usage-statistics choice, back to off, collection stopped and the
+    // analytics instance id on this phone reset. Before the kitten below, so
+    // putting the kitten back to its default is not itself counted.
+    unawaited(AnalyticsConsent.instance.erase().catchError((Object _) {}));
 
     // Whether the kitten moves, back to the default.
     unawaited(KittenSetting.instance.erase());

@@ -15432,6 +15432,30 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'The kitten stays still.'**
   String get theKittenStaysStill;
+
+  /// No description provided for @helpImproveOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Help improve Own Hub'**
+  String get helpImproveOwnHub;
+
+  /// No description provided for @optionalSharesWhichScreensAndStepsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. Shares which screens and steps you use with Google Analytics, which may process it outside Egypt. Never your health, your body, your name or your number. You can change this in Privacy.'**
+  String get optionalSharesWhichScreensAndStepsYou;
+
+  /// No description provided for @onGoogleAnalyticsReceivesWhichScreensAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'On. Google Analytics receives which screens and steps you use, never your health, your body, your name or your number. Google may process it outside Egypt.'**
+  String get onGoogleAnalyticsReceivesWhichScreensAnd;
+
+  /// No description provided for @offNothingAboutHowYouUseThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Off. Nothing about how you use the app is sent. Turning it off also clears the statistics ID on this phone.'**
+  String get offNothingAboutHowYouUseThe;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

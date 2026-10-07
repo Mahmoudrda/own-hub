@@ -73,6 +73,17 @@ void main() {
         'caption',
         'message',
         'body',
+        'pregnant',
+        'pregnancy',
+        'postpartum',
+        'stage',
+        'lifestage',
+        'allergy',
+        'allergies',
+        'niqab',
+        'national',
+        'title',
+        'uid',
       };
 
       // `notifPermissionState` -> [notif, permission, state]
@@ -110,6 +121,42 @@ void main() {
           isTrue,
           reason: '$bad must be caught by this guard',
         );
+      }
+    });
+
+    test('no event or user property name carries a banned word either', () {
+      const banned = {
+        'phone',
+        'name',
+        'weight',
+        'cycle',
+        'period',
+        'symptom',
+        'pregnan',
+        'postpartum',
+        'allerg',
+        'measure',
+        'selfie',
+        'national',
+        'niqab',
+        'face',
+        'body',
+        'mood',
+        'health',
+        'stage',
+        'uid',
+        'email',
+      };
+      final names = [
+        ...analyticsEventWireNames.values,
+        ...AnalyticsEvent.values.map((e) => e.name.toLowerCase()),
+        ...analyticsUserPropertyWireNames.values,
+        ...analyticsPropWireNames.values,
+      ];
+      for (final name in names) {
+        for (final word in banned) {
+          expect(name.contains(word), isFalse, reason: '$name has "$word"');
+        }
       }
     });
 
@@ -194,6 +241,183 @@ void main() {
           AnalyticsProp.flow: const AnalyticsValue.token('community'),
         }),
         returnsNormally,
+      );
+    });
+  });
+
+  group('Firebase names follow the documented rules', () {
+    // https://firebase.google.com/docs/reference/android/com/google/firebase/analytics/FirebaseAnalytics.Event
+    const reserved = {
+      'ad_activeview',
+      'ad_click',
+      'ad_exposure',
+      'ad_query',
+      'ad_reward',
+      'adunit_exposure',
+      'app_background',
+      'app_clear_data',
+      'app_exception',
+      'app_remove',
+      'app_store_refund',
+      'app_store_subscription_cancel',
+      'app_store_subscription_convert',
+      'app_store_subscription_renew',
+      'app_update',
+      'app_upgrade',
+      'dynamic_link_app_open',
+      'dynamic_link_app_update',
+      'dynamic_link_first_open',
+      'error',
+      'first_open',
+      'first_visit',
+      'notification_dismiss',
+      'notification_foreground',
+      'notification_open',
+      'notification_receive',
+      'os_update',
+      'session_start',
+      'session_start_with_rollout',
+      'user_engagement',
+    };
+    final shape = RegExp(r'^[a-z][a-z0-9_]*$');
+    bool reservedPrefix(String n) =>
+        n.startsWith('firebase_') ||
+        n.startsWith('google_') ||
+        n.startsWith('ga_');
+
+    test('every event has a name: snake_case, at most 40, not reserved', () {
+      expect(
+        analyticsEventWireNames.keys.toSet(),
+        AnalyticsEvent.values.toSet(),
+      );
+      final names = analyticsEventWireNames.values.toList();
+      expect(names.toSet(), hasLength(names.length), reason: 'no two share');
+      for (final name in names) {
+        expect(shape.hasMatch(name), isTrue, reason: name);
+        expect(name.length, lessThanOrEqualTo(40), reason: name);
+        expect(reserved.contains(name), isFalse, reason: name);
+        expect(reservedPrefix(name), isFalse, reason: name);
+      }
+    });
+
+    test('recommended names where they fit', () {
+      expect(
+        analyticsEventWireNames[AnalyticsEvent.screenViewed],
+        'screen_view',
+      );
+      expect(
+        analyticsEventWireNames[AnalyticsEvent.signUpCompleted],
+        'sign_up',
+      );
+      expect(analyticsEventWireNames[AnalyticsEvent.loggedIn], 'login');
+      expect(
+        analyticsEventWireNames[AnalyticsEvent.tourStarted],
+        'tutorial_begin',
+      );
+      expect(
+        analyticsEventWireNames[AnalyticsEvent.tourCompleted],
+        'tutorial_complete',
+      );
+    });
+
+    test(
+      'every parameter has a name: snake_case, at most 40, not reserved',
+      () {
+        expect(
+          analyticsPropWireNames.keys.toSet(),
+          AnalyticsProp.values.toSet(),
+        );
+        for (final name in analyticsPropWireNames.values) {
+          expect(shape.hasMatch(name), isTrue, reason: name);
+          expect(name.length, lessThanOrEqualTo(40), reason: name);
+          expect(reservedPrefix(name), isFalse, reason: name);
+        }
+        // Far under the 25 parameters an event may carry.
+        expect(AnalyticsProp.values.length, lessThan(25));
+      },
+    );
+
+    test(
+      'user properties: at most 25, names at most 24, values at most 36',
+      () {
+        expect(AnalyticsUserProperty.values.length, lessThanOrEqualTo(25));
+        expect(
+          analyticsUserPropertyWireNames.keys.toSet(),
+          AnalyticsUserProperty.values.toSet(),
+        );
+        for (final name in analyticsUserPropertyWireNames.values) {
+          expect(shape.hasMatch(name), isTrue, reason: name);
+          expect(name.length, lessThanOrEqualTo(24), reason: name);
+          expect(reservedPrefix(name), isFalse, reason: name);
+          // Google reserves these for its own demographics.
+          expect(['age', 'gender', 'interest'], isNot(contains(name)));
+        }
+        for (final values in analyticsUserPropertyValues.values) {
+          for (final v in values) {
+            expect(v.length, lessThanOrEqualTo(36));
+          }
+        }
+      },
+    );
+  });
+
+  group('a value outside its vocabulary does not leave the phone', () {
+    test('an unknown token fails the assert a test runs with', () {
+      final sink = _RecordingSink();
+      expect(
+        () => AnalyticsGateway(sink).track(AnalyticsEvent.signUpStarted, {
+          AnalyticsProp.source: const AnalyticsValue.token('+201001234567'),
+        }),
+        throwsA(isA<AssertionError>()),
+      );
+      expect(sink.sent, isEmpty);
+    });
+
+    test('a screen id must look like one, a stop like a stop', () {
+      expect(
+        AnalyticsVocabulary.allows(
+          AnalyticsProp.screenId,
+          const AnalyticsValue.token('C09b'),
+        ),
+        isTrue,
+      );
+      expect(
+        AnalyticsVocabulary.allows(
+          AnalyticsProp.screenId,
+          const AnalyticsValue.token('Mona'),
+        ),
+        isFalse,
+      );
+      expect(
+        AnalyticsVocabulary.allows(
+          AnalyticsProp.tourStop,
+          const AnalyticsValue.token('end'),
+        ),
+        isTrue,
+      );
+      expect(
+        AnalyticsVocabulary.allows(
+          AnalyticsProp.isFirstTime,
+          const AnalyticsValue.token('true'),
+        ),
+        isFalse,
+        reason: 'a flag is a flag',
+      );
+      expect(
+        AnalyticsVocabulary.allows(
+          AnalyticsProp.durationBucket,
+          AnalyticsValue.bucket(9, [7, 14, 30]),
+        ),
+        isTrue,
+      );
+    });
+
+    test('an unknown user property value fails the assert', () {
+      expect(
+        () =>
+            const AnalyticsGateway(NullAnalyticsSink())
+                .setUserProperty(AnalyticsUserProperty.appLanguage, 'fr'),
+        throwsA(isA<AssertionError>()),
       );
     });
   });

@@ -110,6 +110,54 @@ void main() {
     });
   });
 
+  group('usage statistics, only with her consent', () {
+    testWidgets('off by default, separate from crash reports, and says what '
+        'turning it off does', (tester) async {
+      _phone(tester);
+      final choices = <bool>[];
+      final crash = <bool>[];
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+            onCrashReportsChanged: (allowed) async => crash.add(allowed),
+            onAnalyticsChanged: (allowed) async => choices.add(allowed),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final toggle = find.byKey(const ValueKey('analytics-toggle'));
+      await tester.ensureVisible(toggle);
+      expect(tester.widget<AppToggle>(toggle).value, isFalse);
+      expect(find.textContaining('clears the statistics ID'), findsOneWidget);
+
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(choices, [true]);
+      expect(crash, isEmpty, reason: 'two choices, never one');
+      expect(find.textContaining('Google Analytics receives'), findsOneWidget);
+
+      await tester.ensureVisible(toggle);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(choices, [true, false]);
+    });
+
+    testWidgets('no row without a place to record the choice', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('analytics-toggle')), findsNothing);
+    });
+  });
+
   group('the switches', () {
     testWidgets('four switches, and only the blur starts on', (tester) async {
       _phone(tester);

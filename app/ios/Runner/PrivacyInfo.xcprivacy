@@ -8,11 +8,12 @@
 	  one of the most common rejections.
 
 	  WHAT THIS BINARY DOES TODAY. `Firebase.initializeApp` runs on every launch
-	  (`lib/app_state/firebase_boot.dart`), and pubspec carries eight Firebase
+	  (`lib/app_state/firebase_boot.dart`), and pubspec carries nine Firebase
 	  packages: firebase_core, firebase_auth, cloud_firestore, firebase_storage,
-	  cloud_functions, firebase_app_check, firebase_crashlytics and
+	  cloud_functions, firebase_app_check, firebase_crashlytics,
 	  firebase_messaging (the one push she can ask for on C14, "your check is
-	  done"), plus Google ML Kit face detection on the phone. Firebase mints an installation
+	  done") and firebase_analytics (usage statistics, only if she turns on
+	  "Help improve Own Hub"), plus Google ML Kit face detection on the phone. Firebase mints an installation
 	  identifier, App Check attests the device, and the women-only check keeps a
 	  hashed install id for fraud signals: DeviceID, linked.
 
@@ -21,7 +22,11 @@
 	    - UserID: the Firebase uid her account and documents are keyed by.
 	    - DeviceID: Firebase installation id, App Check, hashed install id,
 	      and the push token, only if she asks to be told when her check is
-	      done (optional, deleted with her account).
+	      done (optional, deleted with her account). Purpose also Analytics:
+	      the Google Analytics app instance id, only with her consent to
+	      usage statistics, reset when she withdraws it. No IDFA (the
+	      analytics SDK is FirebaseAnalytics/Core, without AdSupport) and no
+	      IDFV (GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED is false).
 	    - Fitness: workouts, meals, plans, synced once she is verified.
 	    - Health: cycle, check-ins, measurements, weight, allergies, only if
 	      she turns on "Back up my health data" (off by default, own consent).
@@ -33,9 +38,22 @@
 	      number, and her consent records.
 	  NOT LINKED, not tracking, purpose AppFunctionality:
 	    - CrashData: Firebase Crashlytics, release builds, and only once she
-	      has allowed crash reports. No user identifier, custom key or log line
-	      is ever set (a source guard test enforces that).
+	      has allowed crash reports: fatal crashes, and non-fatal reports of a
+	      server call that failed with a bug's status code. No user identifier
+	      is ever set; the only custom keys are the screen id, the app version
+	      and the build channel, and the only log lines are fixed words (a
+	      source guard test enforces all of it).
 	    - PerformanceData: ML Kit performance events.
+	  NOT LINKED, not tracking, purpose Analytics, only once she has turned on
+	  "Help improve Own Hub" (off by default, its own consent, separate from
+	  crash reports; collection is off natively until then):
+	    - ProductInteraction: which screens (by id) and steps she uses, from
+	      closed vocabularies. Never health, body, cycle, life stage, name,
+	      number, ID or anything she typed. No user id is set, so Google
+	      Analytics holds it against a random app instance id only.
+	    - CoarseLocation: Google Analytics derives an approximate location
+	      (country, and city unless granular location is off in the GA
+	      property) from the masked IP address. The app reads no location.
 	  Name is not declared: it is read from the card in memory and not kept.
 	  Training reminders (flutter_local_notifications) are scheduled on the
 	  phone and collect nothing: the days and time she picks stay in the
@@ -98,6 +116,7 @@
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
 			</array>
 		</dict>
 		<dict>
@@ -182,6 +201,30 @@
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeProductInteraction</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeCoarseLocation</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
 			</array>
 		</dict>
 	</array>

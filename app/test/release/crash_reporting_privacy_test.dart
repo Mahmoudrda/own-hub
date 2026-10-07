@@ -1,9 +1,10 @@
 // S14, client half: crash reporting that cannot carry anything about her.
 //
-// firebase_crashlytics ships only on these terms: no user identifier, no
-// custom key holding anything, no breadcrumb log lines, collection off in
-// debug and off at native start-up, and declared as CrashData (not linked)
-// in the iOS privacy manifest and in the Play Data safety notes.
+// firebase_crashlytics ships only on these terms: no user identifier, custom
+// keys and breadcrumb lines only from closed vocabularies and only inside
+// `crash_reports.dart`, collection off in debug and off at native start-up,
+// and declared as CrashData (not linked) in the iOS privacy manifest and in
+// the Play Data safety notes.
 
 import 'dart:io';
 
@@ -21,17 +22,97 @@ Iterable<File> _dartFiles(String dir) =>
         .where((f) => f.path.endsWith('.dart'));
 
 void main() {
-  test('nothing in the app attaches an identity, a key or a log line', () {
-    final banned = RegExp(r'\.(setUserIdentifier|setCustomKey|log)\s*\(');
+  test('nothing in the app attaches an identity to a crash report', () {
+    final banned = RegExp(r'\.setUserIdentifier\s*\(');
     final offenders = <String>[];
     for (final file in _dartFiles('lib')) {
-      final source = file.readAsStringSync();
-      if (!source.contains('Crashlytics')) continue;
-      for (final match in banned.allMatches(source)) {
+      for (final match in banned.allMatches(file.readAsStringSync())) {
         offenders.add('${file.path}: ${match.group(0)}');
       }
     }
     expect(offenders, isEmpty);
+  });
+
+  test(
+    'keys and log lines are set in the wrapper alone, from closed lists',
+    () {
+      // Anywhere else, a key or a log line could be handed a message, a name or
+      // a number. Inside the wrapper each has one call, fed by an enum.
+      final keyOrLog = RegExp(r'\.(setCustomKey|log)\s*\(');
+      final offenders = <String>[];
+      for (final file in _dartFiles('lib')) {
+        if (file.path.endsWith('crash_reports.dart')) continue;
+        final source = file.readAsStringSync();
+        if (!source.contains('Crashlytics')) continue;
+        for (final match in keyOrLog.allMatches(source)) {
+          offenders.add('${file.path}: ${match.group(0)}');
+        }
+      }
+      expect(offenders, isEmpty);
+
+      final wrapper = File('lib/app_state/crash_reports.dart')
+          .readAsStringSync();
+      expect(RegExp(r'\.setCustomKey\s*\(').allMatches(wrapper), hasLength(1));
+      expect(RegExp(r'\.log\s*\(').allMatches(wrapper), hasLength(1));
+      expect(wrapper, contains('setCustomKey(switch (key)'));
+      expect(wrapper, contains('.log(line)'));
+      expect(CrashKey.values.map((k) => k.name), [
+        'screenId',
+        'appVersion',
+        'buildChannel',
+      ]);
+      expect(CrashTrail.values.map((t) => t.name), [
+        'screen',
+        'resumed',
+        'appCheckFailed',
+      ]);
+    },
+  );
+
+  test(
+    'a non-fatal server failure carries its status code and nothing else',
+    () {
+      expect(
+        CrashReports.scrub(const ServerCallFailure('internal')).toString(),
+        'ServerCallFailure.internal',
+      );
+      // A code outside the list, which could be anything a server said, is
+      // reduced to the type alone.
+      expect(
+        CrashReports.scrub(const ServerCallFailure('+201001234567')).toString(),
+        'ServerCallFailure',
+      );
+      for (final expected in [
+        'unavailable',
+        'deadline-exceeded',
+        'unauthenticated',
+        'permission-denied',
+        'failed-precondition',
+        'resource-exhausted',
+      ]) {
+        expect(
+          CrashReports.serverCodesReported,
+          isNot(contains(expected)),
+          reason: '$expected is an expected answer, not a bug',
+        );
+      }
+      final adapter = File('lib/features/signup/data/callable_failure.dart')
+          .readAsStringSync();
+      expect(adapter, contains('CrashReports.serverError(error.code)'));
+      expect(adapter, isNot(contains('serverError(error.message')));
+    },
+  );
+
+  test('the screen key is a screen id or private, never a cycle screen', () {
+    final router = File('lib/routing/app_router.dart').readAsStringSync();
+    expect(router, contains("CrashReports.screen(reported ? id : 'private')"));
+  });
+
+  test('the root isolate reports through the same scrubbed path', () {
+    final main = File('lib/main.dart').readAsStringSync();
+    expect(main, contains('Isolate.current.addErrorListener'));
+    final at = main.indexOf('Isolate.current.addErrorListener');
+    expect(main.indexOf('CrashReports.uncaught', at), greaterThan(at));
   });
 
   group('R8: a report carries the type of the error and its stack only', () {

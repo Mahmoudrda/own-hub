@@ -8571,4 +8571,19 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get theKittenStaysStill => 'The kitten stays still.';
+
+  @override
+  String get helpImproveOwnHub => 'Help improve Own Hub';
+
+  @override
+  String get optionalSharesWhichScreensAndStepsYou =>
+      'Optional. Shares which screens and steps you use with Google Analytics, which may process it outside Egypt. Never your health, your body, your name or your number. You can change this in Privacy.';
+
+  @override
+  String get onGoogleAnalyticsReceivesWhichScreensAnd =>
+      'On. Google Analytics receives which screens and steps you use, never your health, your body, your name or your number. Google may process it outside Egypt.';
+
+  @override
+  String get offNothingAboutHowYouUseThe =>
+      'Off. Nothing about how you use the app is sent. Turning it off also clears the statistics ID on this phone.';
 }

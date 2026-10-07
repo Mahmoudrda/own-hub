@@ -3501,5 +3501,9 @@
   "yourWeekShowsHere": "Your week shows here",
   "movingKitten": "Moving kitten",
   "theKittenShowsYouAroundAndMoves": "The kitten shows you around and moves once when it appears.",
-  "theKittenStaysStill": "The kitten stays still."
+  "theKittenStaysStill": "The kitten stays still.",
+  "helpImproveOwnHub": "Help improve Own Hub",
+  "optionalSharesWhichScreensAndStepsYou": "Optional. Shares which screens and steps you use with Google Analytics, which may process it outside Egypt. Never your health, your body, your name or your number. You can change this in Privacy.",
+  "onGoogleAnalyticsReceivesWhichScreensAnd": "On. Google Analytics receives which screens and steps you use, never your health, your body, your name or your number. Google may process it outside Egypt.",
+  "offNothingAboutHowYouUseThe": "Off. Nothing about how you use the app is sent. Turning it off also clears the statistics ID on this phone."
 }

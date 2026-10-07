@@ -377,27 +377,34 @@ void main() {
       for (var i = 0; i < 7; i++) {
         await _tap(tester, 'Next');
       }
+      // The tour's own screen view, Firebase's tutorial_begin, each stop,
+      // and tutorial_complete on the end card.
       expect(recording.events, [
         'screenViewed',
         'screenViewed',
+        'tourStarted',
         for (var i = 0; i < 8; i++) 'tourStopViewed',
+        'tourCompleted',
       ]);
       expect(recording.properties[1]['screenId'], 'C04');
+      expect(recording.properties[2], isEmpty);
       expect(
-        [for (final p in recording.properties.sublist(2)) p['tourStop']],
+        [for (final p in recording.properties.sublist(3, 11)) p['tourStop']],
         ['1', '2', '3', '4', '5', '6', '7', 'end'],
       );
-      for (final p in recording.properties.sublist(2)) {
+      for (final p in recording.properties.sublist(3, 11)) {
         expect(p.keys, ['tourStop'], reason: 'a stop, and nothing about her');
       }
+      expect(recording.properties[11], isEmpty);
 
       await _tap(tester, 'Make it mine');
-      expect(recording.events.sublist(10, 13), [
+      expect(recording.events.sublist(12, 15), [
         'tourJoinTapped',
         'signUpStarted',
         'screenViewed',
       ]);
-      expect(recording.properties[10], {'source': 'end', 'tourStop': 'end'});
+      expect(recording.properties[12], {'source': 'end', 'tourStop': 'end'});
+      expect(recording.properties[13], {'source': 'tour'});
     });
   });
 

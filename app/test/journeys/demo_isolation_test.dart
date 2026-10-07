@@ -414,11 +414,14 @@ void main() {
       ('screenViewed', 'C01'),
       ('screenViewed', 'C04'),
     ]);
-    // And the funnel: every stop she walked through, then the end card.
+    // And the funnel: the tour begun, every stop she walked through, then
+    // the end card, which is also the tour completed.
     expect(analytics.tour, [
+      ('tourStarted', null, null),
       for (var i = 1; i <= DemoStop.values.length; i++)
         ('tourStopViewed', null, '$i'),
       ('tourStopViewed', null, 'end'),
+      ('tourCompleted', null, null),
     ]);
     for (final (_, props) in analytics.sent) {
       expect(

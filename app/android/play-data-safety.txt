@@ -17,7 +17,10 @@ Do you provide a way for users to request that their data is deleted?  Yes
 Is data shared with third parties?                                  No
   Google Cloud and Firebase, the SMS route and the chat service for review
   alerts act as service providers processing on our behalf, which Play does
-  not count as sharing. There is no video service: a woman from Own Hub
+  not count as sharing. Google Analytics for Firebase is a service provider
+  on the same terms only while its data-sharing settings stay off, Google
+  signals stay off and no Google Ads account is linked (owner action in the
+  Analytics property); if any of those is turned on, this answer changes. There is no video service: a woman from Own Hub
   reviews the case and contacts her by phone.
 Independent security review                                          No
 
@@ -62,11 +65,24 @@ Photos and videos
       Required, with a woman-reviewer alternative.
       Purpose: Fraud prevention, security and compliance; App functionality.
 
+App activity
+  - App interactions
+      Collected only with her consent to usage statistics ("Help improve
+      Own Hub": off by default, its own switch at sign-up and in Privacy,
+      separate from crash reports). Google Analytics for Firebase: which
+      screens (by id) and steps she uses, from closed lists. Never health,
+      body, cycle, life stage, name, number, ID or anything she typed. No
+      user ID is set; turning it off resets the analytics ID on the phone.
+      Optional. Purpose: Analytics.
+
 App info and performance
   - Crash logs
       Collected only with her consent (off by default; a switch at sign-up
-      and in Privacy). Firebase Crashlytics. Not linked to her account: no
-      user identifier, custom key or log line is ever set. Optional.
+      and in Privacy). Firebase Crashlytics: fatal crashes, and non-fatal
+      reports of a server call that failed with a bug's status code. Not
+      linked to her account: no user identifier is ever set; the only custom
+      keys are the screen id, app version and build channel, and the only log
+      lines are fixed words. Optional.
       Purpose: Analytics.
   - Diagnostics
       ML Kit performance events, and the device details sent with a crash
@@ -81,12 +97,25 @@ Device or other IDs
       me when I'm in" while a woman reviewer has her check and allows
       notifications. Optional. Purpose: App functionality. It is used for
       one notification, "your check is done", and deleted with her account.
+      Also the Google Analytics app instance ID, only with her consent to
+      usage statistics, reset when she withdraws it. Optional. Purpose:
+      Analytics. No Advertising ID: the AD_ID permission is removed from the
+      merged manifest and google_analytics_adid_collection_enabled is false.
+
+Location
+  - Approximate location
+      Only with her consent to usage statistics: Google Analytics derives an
+      approximate location (country, and city unless granular location is
+      turned off in the Analytics property) from the masked IP address. The
+      app asks for no location permission and reads no location.
+      Optional. Purpose: Analytics.
 
 Not collected
 -------------
-Location, contacts, messages (the SMS code is read by the SMS Retriever, not
-READ_SMS), audio, files and docs, calendar, web browsing, financial info, app
-activity, and photos from the gallery (the app cannot read the gallery).
+Precise location, contacts, messages (the SMS code is read by the SMS
+Retriever, not READ_SMS), audio, files and docs, calendar, web browsing,
+financial info, in-app search history, the Advertising ID, and photos from the
+gallery (the app cannot read the gallery).
 There is no video review. A woman from Own Hub who reviews a case contacts
 her by phone, outside the app; nothing from that contact is collected by the
 app.

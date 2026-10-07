@@ -8531,4 +8531,19 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get theKittenStaysStill => 'تبقى القطة ثابتة.';
+
+  @override
+  String get helpImproveOwnHub => 'ساعدينا في تحسين Own Hub';
+
+  @override
+  String get optionalSharesWhichScreensAndStepsYou =>
+      'اختياري. يشارك مع Google Analytics الشاشات والخطوات التي تستخدمينها، وقد تعالجها Google خارج مصر. لا يشمل أبدًا صحتكِ أو جسمكِ أو اسمكِ أو رقمكِ. يمكنكِ تغييره من الخصوصية.';
+
+  @override
+  String get onGoogleAnalyticsReceivesWhichScreensAnd =>
+      'مفعّل. تتلقى Google Analytics الشاشات والخطوات التي تستخدمينها، دون صحتكِ أو جسمكِ أو اسمكِ أو رقمكِ أبدًا. وقد تعالجها Google خارج مصر.';
+
+  @override
+  String get offNothingAboutHowYouUseThe =>
+      'متوقف. لا يُرسل شيء عن طريقة استخدامكِ للتطبيق، وإيقافه يمسح أيضًا معرّف الإحصاءات على هذا الهاتف.';
 }

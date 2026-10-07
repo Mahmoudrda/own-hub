@@ -101,6 +101,34 @@
 	<string>6.0</string>
 	<key>FirebaseCrashlyticsCollectionEnabled</key>
 	<false/>
+	<!-- Usage statistics ("Help improve Own Hub") are off until she turns
+	     them on in C06 or Privacy; lib/app_state/firebase_boot.dart then
+	     grants analytics storage and enables collection, and turning it off
+	     disables collection and resets the instance id. Consent mode v2
+	     defaults: every storage denied. Advertising storage, ad user data
+	     and ad personalisation are never granted: Own Hub shows no
+	     advertising. No IDFV, no advertising identifier (the analytics pod is
+	     FirebaseAnalytics/Core, without AdSupport: see ios/Podfile and
+	     tool/build_release.sh), no on-device conversion measurement, and no
+	     automatic screen views (the router logs screen ids itself). -->
+	<key>FIREBASE_ANALYTICS_COLLECTION_ENABLED</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_ANALYTICS_STORAGE</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_STORAGE</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_USER_DATA</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_PERSONALIZATION_SIGNALS</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_ADID_COLLECTION_ENABLED</key>
+	<false/>
+	<key>GOOGLE_ADS_ON_DEVICE_CONVERSION_EVENT_DATA_ENABLED</key>
+	<false/>
+	<key>FirebaseAutomaticScreenReportingEnabled</key>
+	<false/>
 	<key>CFBundleName</key>
 	<string>own_hub</string>
 	<key>CFBundlePackageType</key>
