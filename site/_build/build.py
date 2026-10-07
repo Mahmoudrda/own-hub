@@ -3,11 +3,26 @@
 
 Run from the site/ folder:
 
-    python3 _build/build.py
+    python3 _build/build.py                                 # in place
+    python3 _build/build.py --base-url https://example.com  # for a domain
+    python3 _build/build.py --base-url https://example.com --out /tmp/site
 
 It reads config.json, renders every page in English and Arabic, and writes
-sitemap.xml. Nothing here runs in a browser: the output is plain HTML and CSS
-with no script of any kind.
+sitemap.xml, robots.txt and the web manifest. Nothing here runs in a browser:
+the output is plain HTML and CSS with no script of any kind.
+
+The domain comes from --base-url, else the BASE_URL environment variable,
+else baseUrl in config.json. It fills the canonical and hreflang links, the
+sitemap, robots.txt, og:url and og:image. Once it is a real domain, the
+privacy and support addresses become privacy@ and support@ that domain,
+unless --keep-contact-emails is given.
+
+--out writes a clean, publishable copy of the site to that folder: the pages,
+the assets, _headers and _redirects, and nothing from _build or config.json.
+Without it the pages are written into site/ itself, as committed.
+
+Every internal link, image and #anchor is checked after the build. A broken
+one stops it.
 
 Every fact only the owner can supply lives in config.json. A value left empty
 is rendered as a visible rose-outlined "[to be completed: ...]" marker in both
@@ -17,17 +32,23 @@ carrying a wrong email address is worse than one that admits a gap.
 
 from __future__ import annotations
 
+import argparse
+import hashlib
 import html
 import json
 import os
 import re
+import shutil
 import sys
 import urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+OUT = ROOT  # where pages are written; main() moves it for --out
 
 sys.path.insert(0, HERE)
+
+import art  # noqa: E402
 
 PLACEHOLDER_HOST = "ownhub.example"
 
@@ -60,13 +81,19 @@ PATHS = {
 # so they are kept out of search results and out of the sitemap.
 NOINDEX = {"waitlist-joined", "waitlist-check", "waitlist-later"}
 
+# Cloudflare Pages serves privacy.html at /privacy, the address the stores
+# hold, with a 200. A privacy/index.html would be served at /privacy/ instead,
+# and /privacy would redirect to it: with the /privacy/ -> /privacy alias in
+# _redirects that is a loop, which is exactly what a store reviewer would hit.
+# The three waitlist answers stay folders because the function redirects to
+# them and other tests read them there; Pages adds the trailing slash.
 FILES = {
     "index": ("index.html", "ar/index.html"),
-    "privacy": ("privacy/index.html", "ar/privacy/index.html"),
-    "terms": ("terms/index.html", "ar/terms/index.html"),
-    "support": ("support/index.html", "ar/support/index.html"),
-    "delete-account": ("delete-account/index.html", "ar/delete-account/index.html"),
-    "waitlist": ("waitlist/index.html", "ar/waitlist/index.html"),
+    "privacy": ("privacy.html", "ar/privacy.html"),
+    "terms": ("terms.html", "ar/terms.html"),
+    "support": ("support.html", "ar/support.html"),
+    "delete-account": ("delete-account.html", "ar/delete-account.html"),
+    "waitlist": ("waitlist.html", "ar/waitlist.html"),
     "waitlist-joined": ("waitlist/joined/index.html", "ar/waitlist/joined/index.html"),
     "waitlist-check": ("waitlist/check/index.html", "ar/waitlist/check/index.html"),
     "waitlist-later": ("waitlist/later/index.html", "ar/waitlist/later/index.html"),
@@ -97,6 +124,20 @@ CHROME = {
         ),
         "footerPublisher": "Own Hub is published by {entity}, {address}.",
         "todo": "to be completed",
+        "getApp": "Get the app",
+        "download": "Download Own Hub",
+        "soon": "Coming soon",
+        "soonAlt": "{name}, coming soon",
+        "appStoreAlt": "Download on the App Store",
+        "playAlt": "Get it on Google Play",
+        "trademarks": (
+            "Apple and the Apple logo are trademarks of Apple Inc., registered "
+            "in the U.S. and other countries. App Store is a service mark of "
+            "Apple Inc. Google Play and the Google Play logo are trademarks of "
+            "Google LLC."
+        ),
+        "ogLocale": "en_EG",
+        "ogImageAlt": "Own Hub. Your training, your food, your cycle. Women only.",
     },
     "ar": {
         "dir": "rtl",
@@ -122,6 +163,19 @@ CHROME = {
         ),
         "footerPublisher": "ناشر Own Hub: {entity}، {address}.",
         "todo": "بانتظار الاستكمال",
+        "getApp": "حمّلي التطبيق",
+        "download": "تنزيل Own Hub",
+        "soon": "قريبًا",
+        "soonAlt": "{name}، قريبًا",
+        "appStoreAlt": "حمّليه من App Store",
+        "playAlt": "احصلي عليه من Google Play",
+        "trademarks": (
+            "Apple وشعار Apple علامتان تجاريتان لشركة Apple Inc.، مسجّلتان في "
+            "الولايات المتحدة وبلدان أخرى. وApp Store علامة خدمة لشركة Apple Inc. "
+            "وGoogle Play وشعار Google Play علامتان تجاريتان لشركة Google LLC."
+        ),
+        "ogLocale": "ar_EG",
+        "ogImageAlt": "Own Hub. تدريبكِ، وطعامكِ، ودورتكِ. للنساء فقط.",
     },
 }
 
@@ -129,17 +183,46 @@ CHROME = {
 # ---------------------------------------------------------------- config ----
 
 class Config:
-    def __init__(self, path: str):
+    def __init__(self, path: str, base_url: str | None = None):
         with open(path, encoding="utf-8") as fh:
             self.raw = json.load(fh)
         self.values = self.raw["values"]
-        self.base = (self.raw.get("baseUrl") or "").rstrip("/")
+        self.base = check_base_url(base_url or self.raw.get("baseUrl") or "")
         self.missing: list[tuple[str, str]] = []
         self.used_fallback: list[str] = []
+        self.email_changes: list[tuple[str, str]] = []
 
     @property
     def base_is_real(self) -> bool:
         return bool(self.base) and PLACEHOLDER_HOST not in self.base
+
+    @property
+    def host(self) -> str:
+        return urllib.parse.urlparse(self.base).hostname or PLACEHOLDER_HOST
+
+    def use_domain_emails(self) -> None:
+        """privacy@ and support@ the site's own domain, in every value.
+
+        The old address is replaced wherever it appears, so a value that
+        quotes it in a sentence (the data protection officer) follows."""
+        domain = self.host[4:] if self.host.startswith("www.") else self.host
+        for key, local in (("contactPrivacy", "privacy"), ("contactSupport", "support")):
+            old = self.plain(key, "en")
+            new = f"{local}@{domain}"
+            if old == new:
+                continue
+            self.email_changes.append((old, new))
+            self.values[key]["value"] = new
+            if not old:
+                continue
+            for name, entry in self.values.items():
+                if name in ("contactPrivacy", "contactSupport"):
+                    continue
+                value = entry.get("value")
+                if isinstance(value, dict):
+                    entry["value"] = {k: v.replace(old, new) for k, v in value.items()}
+                elif isinstance(value, str):
+                    entry["value"] = value.replace(old, new)
 
     def entry(self, key: str) -> dict:
         try:
@@ -326,9 +409,102 @@ def isolate_latin(body: str) -> str:
     return "".join(out)
 
 
+
+
+# ------------------------------------------------------------- base url ---
+
+def check_base_url(url: str) -> str:
+    """https://host with no path, or the build stops. '' is allowed."""
+    url = (url or "").strip().rstrip("/")
+    if not url:
+        return ""
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.path or parsed.query:
+        raise SystemExit(f"the base URL must look like https://example.com, not {url!r}")
+    return f"https://{parsed.netloc.lower()}"
+
+
+# ---------------------------------------------------------------- assets ---
+
+def asset_version(rel: str) -> str:
+    """A short content hash, so a changed file gets a new address."""
+    with open(os.path.join(ROOT, rel), "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()[:10]
+
+
+SHOT_WIDTHS = (320, 480, 640)
+SHOT_RATIO = 2868 / 1320  # the store screenshots, 6.9 inch iPhone
+
+
+def shot(lang: str, name: str, alt: str, *, sizes: str, eager: bool = False,
+         width: int = 320) -> str:
+    """One app screenshot as a responsive WebP <img>."""
+    base = f"/assets/shots/{lang}/{name}"
+    srcset = ", ".join(f"{base}-{w}.webp {w}w" for w in SHOT_WIDTHS)
+    loading = (
+        'fetchpriority="high" decoding="async"' if eager
+        else 'loading="lazy" decoding="async"'
+    )
+    return (
+        f'<img src="{base}-{width}.webp" srcset="{srcset}" sizes="{sizes}" '
+        f'width="{width}" height="{round(width * SHOT_RATIO)}" alt="{html.escape(alt)}" {loading}>'
+    )
+
+
+# Badge artwork, at the height it is drawn. Apple's is an SVG 119.66 x 40;
+# Google's PNG is 564 x 168 once its transparent padding is trimmed. Google
+# asks that its badge is never smaller than the App Store badge beside it,
+# so both are drawn at the same height.
+BADGE_H = 48
+BADGES = {
+    "storeUrlIos": ("app-store-{lang}.svg", round(BADGE_H * 119.66407 / 40), "appStoreAlt"),
+    "storeUrlAndroid": ("google-play-{lang}.png", round(BADGE_H * 564 / 168), "playAlt"),
+}
+
+
+def store_badges(cfg: "Config", lang: str, *, where: str) -> str:
+    """The App Store and Google Play badges, App Store first.
+
+    A badge with a link set in config.json is that link. Without one it is
+    drawn unchanged, as Apple and Google require, beside a 'Coming soon'
+    label, and it is not a link at all: role=link with aria-disabled and no
+    href, so nothing can follow it and a screen reader says why."""
+    c = CHROME[lang]
+    items = []
+    for key, (file, width, alt_key) in BADGES.items():
+        url = cfg.store_url(key)
+        src = "/assets/badges/" + file.format(lang=lang)
+        name = c[alt_key]
+        if url:
+            img = (f'<img src="{src}" width="{width}" height="{BADGE_H}" '
+                   f'alt="{html.escape(name)}" loading="lazy">')
+            items.append(f'<a class="badge" href="{url}" rel="noopener">{img}</a>')
+        else:
+            label = c["soonAlt"].format(name=name)
+            img = (f'<img src="{src}" width="{width}" height="{BADGE_H}" '
+                   f'alt="{html.escape(label)}" loading="lazy">')
+            items.append(
+                f'<a class="badge is-soon" role="link" aria-disabled="true">{img}'
+                f'<span class="soon" aria-hidden="true">{c["soon"]}</span></a>'
+            )
+    live = " store-links" if any(cfg.store_url(k) for k in BADGES) else ""
+    return (
+        f'<div class="badges badges-{where}{live}" role="group" '
+        f'aria-label="{html.escape(c["download"])}">' + "".join(items) + "</div>"
+    )
+
+
+def stores_live(cfg: "Config") -> bool:
+    return all(cfg.store_url(k) for k in BADGES)
+
+
 # ------------------------------------------------------------------ shell ---
 
-def head_links(cfg: Config, page: str, lang: str) -> str:
+def absolute(cfg: "Config", path: str) -> str:
+    return (cfg.base or f"https://{PLACEHOLDER_HOST}") + path
+
+
+def head_links(cfg: "Config", page: str, lang: str) -> str:
     """hreflang and canonical. Absolute once a real domain is configured."""
     if page == "404" or page in NOINDEX:
         return '  <meta name="robots" content="noindex, follow">\n'
@@ -347,7 +523,50 @@ def head_links(cfg: Config, page: str, lang: str) -> str:
     )
 
 
-def shell(cfg: Config, *, page: str, lang: str, title: str, description: str,
+def social_meta(cfg: "Config", page: str, lang: str, title: str, description: str) -> str:
+    c = CHROME[lang]
+    other = CHROME["ar" if lang == "en" else "en"]
+    image = absolute(cfg, f"/assets/og/og-{lang}.png")
+    rows = [
+        '<meta property="og:type" content="website">',
+        '<meta property="og:site_name" content="Own Hub">',
+        f'<meta property="og:title" content="{html.escape(title)}">',
+        f'<meta property="og:description" content="{html.escape(description)}">',
+        f'<meta property="og:locale" content="{c["ogLocale"]}">',
+        f'<meta property="og:locale:alternate" content="{other["ogLocale"]}">',
+    ]
+    if page != "404" and page not in NOINDEX:
+        path = PATHS[page][0 if lang == "en" else 1]
+        rows.append(f'<meta property="og:url" content="{html.escape(absolute(cfg, path))}">')
+    rows += [
+        f'<meta property="og:image" content="{image}">',
+        '<meta property="og:image:type" content="image/png">',
+        '<meta property="og:image:width" content="1200">',
+        '<meta property="og:image:height" content="630">',
+        f'<meta property="og:image:alt" content="{html.escape(c["ogImageAlt"])}">',
+        '<meta name="twitter:card" content="summary_large_image">',
+        f'<meta name="twitter:title" content="{html.escape(title)}">',
+        f'<meta name="twitter:description" content="{html.escape(description)}">',
+        f'<meta name="twitter:image" content="{image}">',
+        f'<meta name="twitter:image:alt" content="{html.escape(c["ogImageAlt"])}">',
+    ]
+    return "".join(f"  {r}\n" for r in rows)
+
+
+def font_preloads(lang: str) -> str:
+    """The files the first screen is set in, so text does not reflow when
+    they arrive: body and headings, and on an Arabic page the Latin bold of
+    the brand name in the header."""
+    files = [("latin", 400), ("latin", 600)] if lang == "en" else [
+        ("arabic", 400), ("arabic", 600), ("latin", 600)]
+    return "".join(
+        f'  <link rel="preload" href="/assets/fonts/rubik-{script}-{w}.woff2" '
+        'as="font" type="font/woff2" crossorigin>\n'
+        for script, w in files
+    )
+
+
+def shell(cfg: "Config", *, page: str, lang: str, title: str, description: str,
           body: str) -> str:
     c = CHROME[lang]
     other = "ar" if lang == "en" else "en"
@@ -355,15 +574,25 @@ def shell(cfg: Config, *, page: str, lang: str, title: str, description: str,
         other_href = "/ar/" if lang == "en" else "/"
     else:
         other_href = PATHS[page][1 if lang == "en" else 0]
+    home = c["nav"][0][0]
 
     nav_items = "\n".join(
-        f'        <li><a href="{href}">{label}</a></li>'
+        f'          <li><a href="{href}">{label}</a></li>'
         for href, label in c["nav"]
     )
 
     entity = cfg.resolve("legalEntity", lang) or ""
     address = cfg.resolve("legalAddress", lang) or ""
     publisher = c["footerPublisher"].format(entity=entity, address=address)
+    css = f"/assets/site.css?v={asset_version('assets/site.css')}"
+    trademarks = isolate_latin(c["trademarks"]) if lang == "ar" else c["trademarks"]
+    # Apple allows one App Store badge per layout. The home page carries it
+    # at the top, so its footer does not repeat it; every other page has it
+    # here, once.
+    foot_badges = "" if page == "index" else store_badges(cfg, lang, where="foot")
+    get_app = "" if page == "index" else (
+        f'\n      <a class="head-cta" href="{home}#download">{c["getApp"]}</a>'
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="{lang}" dir="{c['dir']}">
@@ -372,22 +601,23 @@ def shell(cfg: Config, *, page: str, lang: str, title: str, description: str,
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(title)}</title>
   <meta name="description" content="{html.escape(description)}">
-  <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#FFF8F9" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1A1316" media="(prefers-color-scheme: dark)">
-  <link rel="stylesheet" href="/assets/site.css">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#FFF8F9">
+{font_preloads(lang)}  <link rel="stylesheet" href="{css}">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/assets/favicon.svg">
-{head_links(cfg, page, lang)}</head>
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+{head_links(cfg, page, lang)}{social_meta(cfg, page, lang, title, description)}</head>
 <body>
   <a class="skip" href="#main">{c['skip']}</a>
 
   <header class="site-head">
     <div class="wrap">
-      <a class="brand" href="{c['nav'][0][0]}" aria-label="{c['brandHome']}">
-        <span class="mark" aria-hidden="true">OH</span>
+      <a class="brand" href="{home}" aria-label="{c['brandHome']}">
+        <img class="mark" src="/assets/favicon.svg" width="36" height="36" alt="">
         <span class="name">{c['brandName']}</span>
-      </a>
+      </a>{get_app}
       <a class="lang-switch" href="{other_href}" lang="{other}"
          hreflang="{other}" aria-label="{c['switchLabel']}">{c['switch']}</a>
     </div>
@@ -399,6 +629,13 @@ def shell(cfg: Config, *, page: str, lang: str, title: str, description: str,
 
   <footer class="site-foot">
     <div class="wrap">
+      <div class="foot-top">
+        <a class="brand" href="{home}" aria-label="{c['brandHome']}">
+          <img class="mark" src="/assets/favicon.svg" width="32" height="32" alt="">
+          <span class="name">{c['brandName']}</span>
+        </a>
+        {foot_badges}
+      </div>
       <nav aria-label="{c['footerNav']}">
         <ul>
 {nav_items}
@@ -407,6 +644,7 @@ def shell(cfg: Config, *, page: str, lang: str, title: str, description: str,
       </nav>
       <p>{publisher}</p>
       <p>{c['footerNote']}</p>
+      <p class="tm">{trademarks}</p>
     </div>
   </footer>
 </body>
@@ -417,7 +655,7 @@ def shell(cfg: Config, *, page: str, lang: str, title: str, description: str,
 # ------------------------------------------------------------------ write ---
 
 def write(path: str, text: str) -> None:
-    full = os.path.join(ROOT, path)
+    full = os.path.join(OUT, path)
     os.makedirs(os.path.dirname(full) or ".", exist_ok=True)
     with open(full, "w", encoding="utf-8") as fh:
         fh.write(text)
@@ -447,9 +685,9 @@ def build_sitemap(cfg: Config) -> None:
     note = ""
     if not cfg.base_is_real:
         note = (
-            "<!-- baseUrl in config.json is still the reserved placeholder host\n"
-            f"     {PLACEHOLDER_HOST}, which cannot resolve. Set the real domain and\n"
-            "     run  python3 _build/build.py  again before submitting this file. -->\n"
+            "<!-- The domain is still the reserved placeholder host\n"
+            f"     {PLACEHOLDER_HOST}, which cannot resolve. Build with\n"
+            "     --base-url https://your-domain before submitting this file. -->\n"
         )
     write(
         "sitemap.xml",
@@ -484,8 +722,8 @@ def build_robots(cfg: Config) -> None:
     note = ""
     if not cfg.base_is_real:
         note = (
-            f"# baseUrl in config.json is still the placeholder host {PLACEHOLDER_HOST}.\n"
-            "# Set the real domain and run  python3 _build/build.py  again.\n"
+            f"# The domain is still the placeholder host {PLACEHOLDER_HOST}.\n"
+            "# Build with --base-url https://your-domain before publishing.\n"
         )
     write(
         "robots.txt",
@@ -500,32 +738,190 @@ def build_robots(cfg: Config) -> None:
     )
 
 
-def build_favicon() -> None:
-    write(
-        "assets/favicon.svg",
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" '
-        'role="img" aria-label="Own Hub">\n'
-        '  <rect width="64" height="64" rx="16" fill="#A24661"/>\n'
-        '  <path d="M32 47.5c-.9 0-1.7-.3-2.4-.9C24.9 42.5 17 35.8 17 28.6'
-        'c0-4.8 3.6-8.6 8.2-8.6 2.7 0 5.2 1.3 6.8 3.4 1.6-2.1 4.1-3.4 6.8-3.4'
-        ' 4.6 0 8.2 3.8 8.2 8.6 0 7.2-7.9 13.9-12.6 18-.7.6-1.5.9-2.4.9z" '
-        'fill="#FFF8F9"/>\n'
-        "</svg>\n",
-    )
+def build_manifest() -> None:
+    manifest = {
+        "name": "Own Hub",
+        "short_name": "Own Hub",
+        "description": "A free fitness app for women in Egypt, and only for women.",
+        "lang": "en",
+        "dir": "auto",
+        "start_url": "/",
+        "scope": "/",
+        "display": "browser",
+        "background_color": "#FFF8F9",
+        "theme_color": "#FFF8F9",
+        "icons": [
+            {"src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+            {"src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+            {"src": "/assets/icons/icon-maskable-512.png", "sizes": "512x512",
+             "type": "image/png", "purpose": "maskable"},
+            {"src": "/assets/favicon.svg", "sizes": "any", "type": "image/svg+xml"},
+        ],
+    }
+    write("manifest.webmanifest", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+
+
+def build_art() -> None:
+    """The small SVG files: icon, mark, hand underline."""
+    write("assets/favicon.svg", art.icon_svg(size=64))
+    write("assets/brand/mark.svg", art.mark_svg())
+    write("assets/hand/underline.svg", art.underline_svg())
+
+
+# The files, besides the pages, that a host serves. Everything else in
+# site/ (the generator, config.json) stays out of a publishable copy.
+STATIC = ("assets", "_headers", "_redirects")
+
+
+def copy_static() -> None:
+    for name in STATIC:
+        src, dst = os.path.join(ROOT, name), os.path.join(OUT, name)
+        if os.path.isdir(src):
+            shutil.copytree(src, dst, dirs_exist_ok=True)
+        else:
+            shutil.copy2(src, dst)
+
+
+def copy_favicon() -> None:
+    shutil.copyfile(os.path.join(ROOT, "assets", "icons", "favicon.ico"),
+                    os.path.join(OUT, "favicon.ico"))
+
+
+def remove_stale_pages(written: set[str]) -> list[str]:
+    """Delete any page this build did not write (an old address)."""
+    removed = []
+    for base, dirs, files in os.walk(OUT):
+        rel_base = os.path.relpath(base, OUT)
+        dirs[:] = [d for d in dirs if not (rel_base == "." and d in ("_build", "assets"))]
+        for name in files:
+            rel = os.path.normpath(os.path.join(rel_base, name)).replace(os.sep, "/")
+            if name.endswith(".html") and rel not in written:
+                os.remove(os.path.join(base, name))
+                removed.append(rel)
+    for base, dirs, files in sorted(os.walk(OUT), key=lambda w: -len(w[0])):
+        if base != OUT and not os.listdir(base) and "_build" not in base:
+            os.rmdir(base)
+    return removed
+
+
+# ------------------------------------------------------------- link check ---
+
+_ATTR = re.compile(r'\s(href|src|srcset)="([^"]*)"')
+_ID = re.compile(r'\sid="([^"]+)"')
+
+
+def redirect_sources(root: str) -> set[str]:
+    path = os.path.join(root, "_redirects")
+    if not os.path.exists(path):
+        return set()
+    out = set()
+    for line in open(path, encoding="utf-8"):
+        line = line.strip()
+        if line and not line.startswith("#"):
+            out.add(line.split()[0])
+    return out
+
+
+def resolve_path(root: str, path: str) -> str | None:
+    """The file Cloudflare Pages would serve for a path, or None."""
+    rel = urllib.parse.unquote(path).lstrip("/")
+    candidates = []
+    if not rel or rel.endswith("/"):
+        candidates.append(rel + "index.html")
+    else:
+        candidates += [rel, rel + ".html", rel + "/index.html"]
+    for cand in candidates:
+        full = os.path.join(root, cand)
+        if os.path.isfile(full):
+            return full
+    return None
+
+
+def check_links(root: str) -> list[str]:
+    """Every internal href, src, srcset and #anchor in every page resolves."""
+    problems = []
+    aliases = redirect_sources(root)
+    ids_cache: dict[str, set[str]] = {}
+
+    def ids(full: str) -> set[str]:
+        if full not in ids_cache:
+            ids_cache[full] = set(_ID.findall(open(full, encoding="utf-8").read()))
+        return ids_cache[full]
+
+    for base, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in ("_build", "__pycache__")]
+        for name in files:
+            if not name.endswith(".html"):
+                continue
+            page = os.path.join(base, name)
+            rel_page = os.path.relpath(page, root)
+            text = open(page, encoding="utf-8").read()
+            for attr, value in _ATTR.findall(text):
+                urls = [v.strip().split(" ")[0] for v in value.split(",")] if attr == "srcset" else [value]
+                for url in urls:
+                    url = html.unescape(url)
+                    if not url or re.match(r"^[a-z][a-z0-9+.-]*:", url, re.I):
+                        continue  # mailto:, https:, tel:
+                    if url.startswith("//"):
+                        problems.append(f"{rel_page}: protocol-relative {url}")
+                        continue
+                    path, _, frag = url.partition("#")
+                    path = path.split("?")[0]
+                    if not path:
+                        target = page
+                    elif not path.startswith("/"):
+                        problems.append(f"{rel_page}: relative link {url}")
+                        continue
+                    else:
+                        target = resolve_path(root, path)
+                        if target is None:
+                            if path in aliases:
+                                continue
+                            problems.append(f"{rel_page}: {url} does not exist")
+                            continue
+                    if frag and target.endswith(".html") and frag not in ids(target):
+                        problems.append(f"{rel_page}: {url} has no #{frag}")
+    return problems
 
 
 # ------------------------------------------------------------------- main ---
 
-def main() -> int:
-    cfg = Config(os.path.join(ROOT, "config.json"))
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Build the Own Hub website.")
+    parser.add_argument("--base-url", default=os.environ.get("BASE_URL") or None,
+                        help="https://your-domain (default: $BASE_URL, then baseUrl in config.json)")
+    parser.add_argument("--out", default=None,
+                        help="write a clean publishable copy here instead of into site/")
+    parser.add_argument("--keep-contact-emails", action="store_true",
+                        help="keep the email addresses in config.json on a real domain")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    global OUT
+    args = parse_args(sys.argv[1:] if argv is None else argv)
+    cfg = Config(os.path.join(ROOT, "config.json"), args.base_url)
+
+    if args.out:
+        OUT = os.path.abspath(args.out)
+        if OUT == ROOT or OUT.startswith(ROOT + os.sep):
+            raise SystemExit("--out must be a folder outside site/")
+        if os.path.exists(OUT):
+            shutil.rmtree(OUT)
+        os.makedirs(OUT)
+
+    if cfg.base_is_real and not args.keep_contact_emails:
+        cfg.use_domain_emails()
 
     import pages_ar
     import pages_en
 
     modules = {"en": pages_en, "ar": pages_ar}
+    build_art()
+    written: set[str] = set()
 
     for lang, module in modules.items():
-        pages = module.build(cfg, lang, mailto_link)
+        pages = module.build(cfg, lang, mailto_link, store_badges, shot)
         for key, page in pages.items():
             body = strip_drafting_notes(render_tokens(page["body"], cfg, lang))
             if lang == "ar":
@@ -543,14 +939,25 @@ def main() -> int:
             else:
                 path = FILES[key][0 if lang == "en" else 1]
             write(path, out)
+            written.add(path)
             print("  wrote", path)
 
-    build_favicon()
     build_sitemap(cfg)
     build_robots(cfg)
-    print("  wrote assets/favicon.svg")
-    print("  wrote sitemap.xml")
-    print("  wrote robots.txt")
+    build_manifest()
+    if OUT != ROOT:
+        copy_static()
+    copy_favicon()
+    print("  wrote sitemap.xml, robots.txt, manifest.webmanifest, favicon.ico")
+    for rel in remove_stale_pages(written):
+        print("  removed old page", rel)
+
+    problems = check_links(OUT)
+    if problems:
+        for line in problems:
+            print("  BROKEN", line, file=sys.stderr)
+        raise SystemExit(f"{len(problems)} broken internal link(s)")
+    print("  link check: every internal link, image and anchor resolves")
 
     # ---- report ----
     print()
@@ -570,11 +977,21 @@ def main() -> int:
     else:
         print("Every config value is filled. No [to be completed] marker was drawn.")
 
-    if not cfg.base_is_real:
+    if cfg.email_changes:
         print()
-        print(f"baseUrl is still the placeholder host {PLACEHOLDER_HOST}.")
-        print("sitemap.xml carries it; canonical and hreflang stay relative")
-        print("until a real domain is set.")
+        print("Contact addresses now on the pages (they must reach a monitored inbox):")
+        for old, new in cfg.email_changes:
+            print(f"  - {new}" + (f"   (was {old})" if old else ""))
+
+    print()
+    if cfg.base_is_real:
+        print(f"Built for {cfg.base}.")
+    else:
+        print(f"The domain is still the placeholder host {PLACEHOLDER_HOST}.")
+        print("sitemap.xml and the share tags carry it; canonical and hreflang")
+        print("stay relative until a real domain is given with --base-url.")
+    if OUT != ROOT:
+        print(f"Publishable copy: {OUT}")
     return 0
 
 

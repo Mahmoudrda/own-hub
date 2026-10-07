@@ -9,6 +9,8 @@ and resolved from config.json at build time.
 
 from __future__ import annotations
 
+import art
+
 
 # ------------------------------------------------------------- helpers -----
 
@@ -27,7 +29,7 @@ def cards(items) -> str:
         )
         out.append(
             "        <li>\n"
-            f"          <h4>{title}</h4>\n"
+            f"          <h3>{title}</h3>\n"
             "          <dl>\n" + body + "\n          </dl>\n"
             "        </li>"
         )
@@ -109,7 +111,7 @@ FORM = '''
 
 # ---------------------------------------------------------------- build ----
 
-def build(cfg, lang, mailto_link):
+def build(cfg, lang, mailto_link, store_badges, shot):
     delete_button = mailto_link(
         cfg, lang, "contactPrivacy", DELETE_SUBJECT, DELETE_BODY,
         "btn", "Open a ready-made deletion email",
@@ -117,23 +119,35 @@ def build(cfg, lang, mailto_link):
 
     pages = {}
 
-    # Download buttons, drawn only once a store link is set in config.json.
-    store_links = []
-    if cfg.store_url("storeUrlIos"):
-        store_links.append(
-            f'<a class="btn ghost" href="{cfg.store_url("storeUrlIos")}" '
-            'rel="noopener">Download on the App Store</a>'
+    # The store badges. Until a store link is set in config.json each badge
+    # is drawn as "Coming soon" and is not a link; the waitlist stands in.
+    live = bool(cfg.store_url("storeUrlIos")) and bool(cfg.store_url("storeUrlAndroid"))
+    hero_badges = store_badges(cfg, lang, where="hero")
+    if live:
+        hero_note = ""
+        # Apple allows one App Store badge per layout: the hero carries it,
+        # so this section links in words.
+        download_body = ("""
+        <p>Free on iPhone and Android. Open it and tap
+        &ldquo;Show me around&rdquo; first, if you like.</p>
+        <p><a href=""" + '"' + cfg.store_url("storeUrlIos") + '" rel="noopener">Own Hub on the App Store</a>'
+        + ' &middot; <a href="' + cfg.store_url("storeUrlAndroid") + '" rel="noopener">Own Hub on Google Play</a></p>')
+    else:
+        hero_note = (
+            '\n        <p class="hero-note">Not in the stores yet. '
+            '<a href="#download">Join the waitlist</a> and we will message you '
+            "once, the day it opens.</p>"
         )
-    if cfg.store_url("storeUrlAndroid"):
-        store_links.append(
-            f'<a class="btn ghost" href="{cfg.store_url("storeUrlAndroid")}" '
-            'rel="noopener">Get it on Google Play</a>'
-        )
-    store_row = (
-        '\n        <div class="btn-row store-links" role="group" '
-        'aria-label="Download Own Hub">' + "".join(store_links) + "</div>"
-        if store_links else ""
-    )
+        download_body = """
+        <p>Own Hub is not in the App Store or on Google Play yet. Leave your
+        Egyptian mobile number or your email, and we will message you once,
+        the day it opens.</p>
+        """ + """
+          </div>
+          <div class="form-card">""" + FORM + """
+        <p class="small">That is all we ask for. The waitlist is not an
+        account, and what we keep, and for how long, is set out in the
+        <a href="/privacy#c-waitlist">privacy policy</a>.</p>"""
 
     # ------------------------------------------------------------ index ----
     pages["index"] = {
@@ -144,119 +158,185 @@ def build(cfg, lang, mailto_link):
             "are never stored."
         ),
         "body": """
-    <section class="wrap hero">
-      <div class="hero-grid">
-      <div class="prose">
-        <p class="eyebrow">Fitness for women, in Egypt</p>
-        <h1>Own Hub</h1>
-        <p class="lede">Own Hub is a fitness app built for women in Egypt, and
-        only for women. You join with your Egyptian mobile number and a code
-        sent by SMS, and you are checked once, with your national ID card and a
-        live selfie, so that every member is a woman. The check runs on our own
-        server in Frankfurt, Germany, and the photographs of your card and your
-        face are never stored. Your training and meals are kept with your
-        account, so a new phone does not mean starting again. Your cycle,
-        check-ins, measurements and weight stay on your phone unless you choose
-        to back them up. Own Hub is free, and there is nothing in it to
-        buy.</p>
-        <p>Own Hub was founded by {{brandFounder}}, a woman in Egypt building
-        for women in Egypt. There is no biography to read here and nothing to
-        take on trust: the pages below set out exactly what the app keeps, where
-        it keeps it, and for how long.</p>
-        <div class="btn-row"><a class="btn" href="/waitlist">Join the waitlist</a></div>""" + store_row + """
-      </div>
-      <ul class="facts" aria-label="Own Hub at a glance">
-        <li><b>Women only</b><span>Checked once with your national ID and a live selfie, or, if the check cannot decide, by a woman from Own Hub who contacts you to arrange it. The photos are never stored.</span></li>
-        <li><b>Your health stays with you</b><span>Cycle, check-ins, measurements and weight stay on your phone unless you turn on backup yourself.</span></li>
-        <li><b>One permission</b><span>The camera, for the women-only check. No photo library, no microphone, no location, no access to Apple Health or Health Connect.</span></li>
-        <li><b>Free</b><span>No adverts, no purchases, no subscriptions. Nothing in it is for sale.</span></li>
-        <li><b>Arabic and English</b><span>The whole app in both, right to left included.</span></li>
-      </ul>
-      </div>
-    </section>
-
-    <section class="wrap" aria-labelledby="inside">
-      <div class="prose">
-""" + h2("inside", "What is inside it") + """
-        <p>Before you join, tap &ldquo;Show me around&rdquo; in the app to see
-        it with a sample week. No account, and nothing is saved.</p>
-      </div>
-      <ul class="pillars">
-        <li>
-          <h3>Today</h3>
-          <p>Today&rsquo;s session is waiting when you open the app, with a walk
-          or a meal one tap away. What you log saves at once, and you have five
-          seconds to undo it. Nothing here stops you to ask whether you are
-          sure.</p>
-        </li>
-        <li>
-          <h3>Train</h3>
-          <p>A workout player that keeps your place: tap a set to log it, rest
-          timers that start themselves, a swap for any move that hurts or needs
-          equipment you do not own, and a way to log a whole session from memory
-          if you trained without your phone.</p>
-        </li>
-        <li>
-          <h3>Eat</h3>
-          <p>Log a meal by tapping one of your usual plates, or by typing a
-          sentence like &ldquo;ful and baladi bread&rdquo;. Egyptian food, under
-          the names you already use for it.</p>
-        </li>
-        <li>
-          <h3>My cycle</h3>
-          <p>Period and symptom tracking, private from the start. On a hard day
-          the app offers a gentler session instead of the one it planned. Your
-          cycle can be deleted on its own, without touching anything else.</p>
-        </li>
-        <li>
-          <h3>Progress</h3>
-          <p>Your week, your personal bests, the milestones you have passed, and
-          body measurements nobody else sees.</p>
-        </li>
-        <li>
-          <h3>Kept for you, and only you</h3>
-          <p>Once you are verified, your training and meals are kept with your
-          account in Frankfurt, and no other member can see them. Your cycle and
-          health information stays on your phone unless you back it up.
-          Profile, then <b>Your data</b>, deletes your account and everything in
-          it.</p>
-        </li>
-      </ul>
-    </section>
-
-    <section class="wrap" aria-labelledby="will-not">
-      <div class="prose">
-""" + h2("will-not", "What this app will not do") + """
-        <ul>
-          <li>No daily streaks. We count weeks, not days, because a real life is
-          not a straight line.</li>
-          <li>No calorie countdown following you around all day.</li>
-          <li>Nothing ranks women by body weight or by followers.</li>
-          <li>No adverts, no purchases, nothing sold.</li>
-        </ul>
-
-        <div class="callout quiet">
-          <p><b>What is not in this version.</b> There is no community and no
-          coaching: nothing in the app connects you to another member. There is
-          no assistant. To get a copy of your data, ask from Profile, then Your
-          data, and we send it to you.</p>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">A fitness app for women in Egypt</p>
+          <h1>Your training, your food, your cycle. <span class="hand">Women only.</span></h1>
+          <p class="lede">Quiet workouts for home, food you already cook, and a
+          space only verified women can enter. Free, in Arabic and English,
+          with nothing in it to buy.</p>
+          """ + hero_badges + hero_note + """
         </div>
-
-        <p>The app is in Arabic and English, right to left included. You can
-        change the language from Profile, then Language, at any time.</p>
+        <div class="hero-art">
+          <figure class="phone">""" + shot(lang, "02-home", "The Own Hub home screen: today's workout, this week's progress, and breakfast.", sizes="(min-width: 62rem) 300px, 240px", eager=True) + """</figure>
+          """ + art.kitten_svg() + """
+        </div>
       </div>
     </section>
 
-    <section class="wrap" aria-labelledby="doors">
-      <div class="prose">
-""" + h2("doors", "The rest of this site") + """
+    <section class="band" aria-labelledby="women-only">
+      <div class="wrap split even">
+        <div class="prose">
+""" + h2("women-only", "Women only, and why", "no-rule") + """
+          <p class="lede">Own Hub is a space made for women, and a promise like
+          that only means something if it is checked. So every member is checked
+          once, at the door, and then the check stays out of her way.</p>
+          <p>Own Hub was founded by {{brandFounder}}, a woman in Egypt building
+          for women in Egypt. There is no biography to read here and nothing to
+          take on trust: the pages below set out exactly what the app keeps,
+          where it keeps it, and for how long.</p>
+        </div>
+          <ol class="steps card">
+            <li>You join with your Egyptian mobile number and a code sent by SMS.</li>
+            <li>You show your national ID card and take a live selfie. If the
+            check cannot decide, a woman from Own Hub contacts you to arrange
+            it.</li>
+            <li>The check runs on our own server in Frankfurt, Germany. The
+            photographs of your card and your face are never stored.</li>
+          </ol>
       </div>
-      <ul class="doorways">
-        <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, where it is kept, and why your ID and selfie photos are never stored.</span></a></li>
-        <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, what it is not, and the medical warning worth reading even if you skip the rest.</span></a></li>
-        <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person, the hours messages are read, and answers to the things women write in about.</span></a></li>
-        <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to delete your account from inside the app, and how to ask without installing it.</span></a></li>
-      </ul>
+    </section>
+
+    <section aria-labelledby="tour">
+      <div class="wrap split">
+        <figure class="phone">""" + shot(lang, "07-tour-dinners", "The tour in the app: a sample week of dinners, marked Sample, nothing is saved.", sizes="(min-width: 62rem) 300px, 240px") + """</figure>
+        <div class="prose">
+""" + h2("tour", "Look around before you join", "no-rule") + """
+          <p class="lede">Before you join, tap &ldquo;Show me around&rdquo; in
+          the app to see it with a sample week: the workouts, a week of
+          dinners, your cycle. No account, and nothing is saved.</p>
+          <p>A small rose kitten points the way through the tour and your
+          first steps, then leaves you to it. Join only when you like what you
+          see.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" aria-labelledby="inside">
+      <div class="wrap">
+        <div class="prose">
+""" + h2("inside", "What is inside it", "no-rule") + """
+        </div>
+        <ul class="shots">
+          <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button to log the set you just did.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Tap a set to log it. The rest timer starts itself.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "06-progress", "The progress screen: counted weeks, milestones, bests and private body measurements.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> Weeks counted, not days.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "08-tour-cycle", "My cycle in the tour: how are you feeling, with today, calendar and patterns.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>My cycle.</b> Private from the start, gentler on harder days.</figcaption></figure></li>
+        </ul>
+        <ul class="pillars">
+          <li>
+            <h3>Today</h3>
+            <p>Today&rsquo;s session is waiting when you open the app, with a walk
+            or a meal one tap away. What you log saves at once, and you have five
+            seconds to undo it. Nothing here stops you to ask whether you are
+            sure.</p>
+          </li>
+          <li>
+            <h3>Train</h3>
+            <p>A workout player that keeps your place: tap a set to log it, rest
+            timers that start themselves, a swap for any move that hurts or needs
+            equipment you do not own, and a way to log a whole session from memory
+            if you trained without your phone.</p>
+          </li>
+          <li>
+            <h3>Eat</h3>
+            <p>Log a meal by tapping one of your usual plates, or by typing a
+            sentence like &ldquo;ful and baladi bread&rdquo;. Egyptian food, under
+            the names you already use for it.</p>
+          </li>
+          <li>
+            <h3>My cycle</h3>
+            <p>Period and symptom tracking, private from the start. On a hard day
+            the app offers a gentler session instead of the one it planned. Your
+            cycle can be deleted on its own, without touching anything else.</p>
+          </li>
+          <li>
+            <h3>Progress</h3>
+            <p>Your week, your personal bests, the milestones you have passed, and
+            body measurements nobody else sees.</p>
+          </li>
+          <li>
+            <h3>Kept for you, and only you</h3>
+            <p>Once you are verified, your training and meals are kept with your
+            account in Frankfurt, and no other member can see them. Your cycle and
+            health information stays on your phone unless you back it up.
+            Profile, then <b>Your data</b>, deletes your account and everything in
+            it.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section aria-labelledby="privacy-promise">
+      <div class="wrap split promise">
+        <div class="prose">
+""" + h2("privacy-promise", "Your health stays with you", "no-rule") + """
+          <p class="lede">Your training and meals are kept with your account, so
+          a new phone does not mean starting again. Your cycle, check-ins,
+          measurements and weight stay on your phone unless you choose to back
+          them up.</p>
+          <p><a href="/privacy">Read the privacy policy</a>, which says exactly
+          what the app keeps, where, and for how long.</p>
+        </div>
+        <ul class="facts" aria-label="Own Hub at a glance">
+          <li><b>Women only</b><span>Checked once with your national ID and a live selfie, or, if the check cannot decide, by a woman from Own Hub who contacts you to arrange it. The photos are never stored.</span></li>
+          <li><b>Your health stays with you</b><span>Cycle, check-ins, measurements and weight stay on your phone unless you turn on backup yourself.</span></li>
+          <li><b>One permission</b><span>The camera, for the women-only check. No photo library, no microphone, no location, no access to Apple Health or Health Connect.</span></li>
+          <li><b>Free</b><span>No adverts, no purchases, no subscriptions. Nothing in it is for sale.</span></li>
+          <li><b>Arabic and English</b><span>The whole app in both, right to left included.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="band" aria-labelledby="will-not">
+      <div class="wrap split even">
+        <div class="prose">
+""" + h2("will-not", "What this app will not do", "no-rule") + """
+          <ul>
+            <li>No daily streaks. We count weeks, not days, because a real life is
+            not a straight line.</li>
+            <li>No calorie countdown following you around all day.</li>
+            <li>Nothing ranks women by body weight or by followers.</li>
+            <li>No adverts, no purchases, nothing sold.</li>
+          </ul>
+
+        </div>
+        <div class="aside">
+          <div class="callout quiet">
+            <p><b>What is not in this version.</b> There is no community and no
+            coaching: nothing in the app connects you to another member. There is
+            no assistant. To get a copy of your data, ask from Profile, then Your
+            data, and we send it to you.</p>
+          </div>
+
+          <p>The app is in Arabic and English, right to left included. You can
+          change the language from Profile, then Language, at any time.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="download" aria-labelledby="download">
+      <div class="wrap">
+        <div class="panel">
+          <div class="prose">
+""" + h2("download", "Get Own Hub", "no-rule") + download_body + """
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="doors">
+      <div class="wrap">
+        <div class="prose">
+""" + h2("doors", "The rest of this site", "no-rule") + """
+        </div>
+        <ul class="doorways">
+          <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, where it is kept, and why your ID and selfie photos are never stored.</span></a></li>
+          <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, what it is not, and the medical warning worth reading even if you skip the rest.</span></a></li>
+          <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person, the hours messages are read, and answers to the things women write in about.</span></a></li>
+          <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to delete your account from inside the app, and how to ask without installing it.</span></a></li>
+        </ul>
+      </div>
     </section>
 """,
     }

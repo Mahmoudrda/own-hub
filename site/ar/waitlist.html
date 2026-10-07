@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>قائمة الانتظار · Own Hub</title>
+  <meta name="description" content="اتركي رقم هاتفك المحمول المصري أو بريدك الإلكتروني، وسنراسلك مرة واحدة عند افتتاح Own Hub.">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#FFF8F9">
+  <link rel="preload" href="/assets/fonts/rubik-arabic-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/rubik-arabic-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/rubik-latin-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/site.css?v=fb411f8e76">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="canonical" href="/ar/waitlist">
+  <link rel="alternate" hreflang="en" href="/waitlist">
+  <link rel="alternate" hreflang="ar" href="/ar/waitlist">
+  <link rel="alternate" hreflang="x-default" href="/waitlist">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Own Hub">
+  <meta property="og:title" content="قائمة الانتظار · Own Hub">
+  <meta property="og:description" content="اتركي رقم هاتفك المحمول المصري أو بريدك الإلكتروني، وسنراسلك مرة واحدة عند افتتاح Own Hub.">
+  <meta property="og:locale" content="ar_EG">
+  <meta property="og:locale:alternate" content="en_EG">
+  <meta property="og:url" content="https://ownhub.example/ar/waitlist">
+  <meta property="og:image" content="https://ownhub.example/assets/og/og-ar.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Own Hub. تدريبكِ، وطعامكِ، ودورتكِ. للنساء فقط.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="قائمة الانتظار · Own Hub">
+  <meta name="twitter:description" content="اتركي رقم هاتفك المحمول المصري أو بريدك الإلكتروني، وسنراسلك مرة واحدة عند افتتاح Own Hub.">
+  <meta name="twitter:image" content="https://ownhub.example/assets/og/og-ar.png">
+  <meta name="twitter:image:alt" content="Own Hub. تدريبكِ، وطعامكِ، ودورتكِ. للنساء فقط.">
+</head>
+<body>
+  <a class="skip" href="#main">انتقلي إلى المحتوى الأساسي</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <a class="brand" href="/ar/" aria-label="Own Hub، الصفحة الأولى">
+        <img class="mark" src="/assets/favicon.svg" width="36" height="36" alt="">
+        <span class="name">Own Hub</span>
+      </a>
+      <a class="head-cta" href="/ar/#download">حمّلي التطبيق</a>
+      <a class="lang-switch" href="/waitlist" lang="en"
+         hreflang="en" aria-label="التبديل إلى الإنجليزية">English</a>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+    <div class="wrap">
+      <div class="prose">
+        <h1>انضمّي إلى قائمة الانتظار</h1>
+        <p class="lede">لم يُفتح <bdi>Own Hub</bdi> بعد. اتركي رقم هاتفك المحمول المصري أو
+        بريدك الإلكتروني، وسنراسلك مرة واحدة عند افتتاحه.</p>
+
+        <form class="waitlist" action="https://europe-west3-own-hub.cloudfunctions.net/join_waitlist" method="post"
+              accept-charset="utf-8">
+          <input type="hidden" name="lang" value="ar">
+          <p class="field">
+            <label for="contact">رقم الهاتف المحمول أو البريد الإلكتروني</label>
+            <input id="contact" name="contact" type="text" dir="ltr" required
+                   maxlength="254" autocomplete="on" spellcheck="false"
+                   aria-describedby="contact-hint">
+            <span class="hint" id="contact-hint">رقم محمول مصري يبدأ بـ 010 أو 011 أو 012 أو 015، أو عنوان بريد إلكتروني.</span>
+          </p>
+          <p class="hp" aria-hidden="true">
+            <label for="website">اتركي هذا الحقل فارغًا</label>
+            <input id="website" name="website" type="text" tabindex="-1"
+                   autocomplete="off">
+          </p>
+          <p class="check">
+            <input id="consent" name="consent" type="checkbox" value="yes" required>
+            <label for="consent"><b>أوافق.</b> سنراسلك مرة واحدة عند افتتاح <bdi>Own Hub</bdi>، ثم نحذف بيانات التواصل الخاصة بك.</label>
+          </p>
+          <div class="btn-row"><button class="btn" type="submit">انضمّي إلى القائمة</button></div>
+        </form>
+
+        <p>هذا كل ما نطلبه. فقائمة الانتظار ليست حسابًا، وما نحتفظ به ومدة
+        الاحتفاظ به مبيَّنان في <a href="/ar/privacy#c-waitlist">سياسة
+        الخصوصية</a>.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <div class="foot-top">
+        <a class="brand" href="/ar/" aria-label="Own Hub، الصفحة الأولى">
+          <img class="mark" src="/assets/favicon.svg" width="32" height="32" alt="">
+          <span class="name">Own Hub</span>
+        </a>
+        <div class="badges badges-foot" role="group" aria-label="تنزيل Own Hub"><a class="badge is-soon" role="link" aria-disabled="true"><img src="/assets/badges/app-store-ar.svg" width="144" height="48" alt="حمّليه من App Store، قريبًا" loading="lazy"><span class="soon" aria-hidden="true">قريبًا</span></a><a class="badge is-soon" role="link" aria-disabled="true"><img src="/assets/badges/google-play-ar.png" width="161" height="48" alt="احصلي عليه من Google Play، قريبًا" loading="lazy"><span class="soon" aria-hidden="true">قريبًا</span></a></div>
+      </div>
+      <nav aria-label="صفحات هذا الموقع">
+        <ul>
+          <li><a href="/ar/">الصفحة الأولى</a></li>
+          <li><a href="/ar/waitlist">قائمة الانتظار</a></li>
+          <li><a href="/ar/privacy">الخصوصية</a></li>
+          <li><a href="/ar/terms">الشروط</a></li>
+          <li><a href="/ar/support">الدعم</a></li>
+          <li><a href="/ar/delete-account">حذف بياناتك</a></li>
+          <li><a href="/waitlist" lang="en" hreflang="en">English</a></li>
+        </ul>
+      </nav>
+      <p>ناشر Own Hub: محمود رضا، مصر.</p>
+      <p>هذا الموقع لا يضع أي ملفّ تعريف ارتباط، ولا يشغّل أي سكريبت، ولا يحمّل شيئًا من أي جهة أخرى، ولا يحصي زيارة. والخط يُقدَّم من هذا الموقع نفسه: <a href="/assets/fonts/OFL-Rubik.txt">Rubik، بموجب رخصة الخطوط المفتوحة SIL 1.1</a>.</p>
+      <p class="tm"><bdi>Apple</bdi> وشعار <bdi>Apple</bdi> علامتان تجاريتان لشركة <bdi>Apple Inc</bdi>.، مسجّلتان في الولايات المتحدة وبلدان أخرى. و<bdi>App Store</bdi> علامة خدمة لشركة <bdi>Apple Inc</bdi>. و<bdi>Google Play</bdi> وشعار <bdi>Google Play</bdi> علامتان تجاريتان لشركة <bdi>Google LLC</bdi>.</p>
+    </div>
+  </footer>
+</body>
+</html>
