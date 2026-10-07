@@ -1,13 +1,14 @@
 /// The kitten: the one character in the product, drawn in the rose tone.
 ///
-/// It is the owner's chosen design (A1): a rose kitten with two big soft ears,
-/// deep rose inner ears and eyes, and a small ":3" mouth. Here it is rebuilt
-/// from parts so it can move, and painted the way every other mark in the app
-/// is painted: a solid [ArtTones.rose] fill with its deeper line drawn round
-/// it, wobbling a little because a hand drew it.
+/// It is the owner's chosen design (A1): a round, soft rose kitten whose head
+/// is most of it, two big ears with blunt tips and deep rose insides, big
+/// wide-set deep rose eyes with one light catch each, and a small ":3" mouth.
+/// Flat colour, no outline: a paw in front of the body is told apart by a
+/// slightly deeper rose edge, nothing darker.
 ///
-/// Everything is laid out in a 1 x 1 box and scaled once, so the outlines are
-/// built a single time for the whole app and a frame only moves six parts.
+/// Everything is laid out in a 1 x 1 box and built once for the whole app;
+/// a frame only moves a few parts with the canvas and draws two short lines
+/// per arm, so per-frame work stays tiny.
 library;
 
 import 'dart:math' as math;
@@ -28,7 +29,7 @@ enum KittenPose {
   /// Already there. Breathes, blinks once, and stops.
   rest(0, physical: false),
 
-  /// Raises the leading paw and waves twice. For a first hello.
+  /// Raises the leading paw beside its face, waves twice, lowers it.
   wave(1100, physical: false),
 
   /// Reaches the leading paw toward what to do next, and looks at it.
@@ -76,6 +77,8 @@ class KittenFrame {
     this.headTilt = 0,
     this.lead = _armRest,
     this.trail = _armRest,
+    this.leadPaw = _pawRest,
+    this.trailPaw = _pawRest,
     this.look = Offset.zero,
     this.eyeOpen = 1,
     this.happy = 0,
@@ -93,10 +96,14 @@ class KittenFrame {
   /// Head rotation in radians, positive toward the leading side.
   final double headTilt;
 
-  /// Leading and trailing arm angles: 0 hangs straight down, pi/2 is out to
-  /// the side, pi is straight up.
+  /// Leading and trailing upper arm angles: 0 hangs straight down, pi/2 is
+  /// out to the side, pi is straight up.
   final double lead;
   final double trail;
+
+  /// Leading and trailing forearm angles, measured the same way as the arm.
+  final double leadPaw;
+  final double trailPaw;
 
   /// Where the face is turned, -1 to 1 on each axis.
   final Offset look;
@@ -104,7 +111,7 @@ class KittenFrame {
   /// 1 open, 0 shut.
   final double eyeOpen;
 
-  /// Above 0.5 the eyes are drawn as smiling arcs.
+  /// 0 round eyes, 1 smiling arcs; in between the round eyes squeeze shut.
   final double happy;
 
   /// Above 0.5 the ":3" becomes an open smile.
@@ -122,20 +129,24 @@ class KittenFrame {
     final k = (ms - pose.moveMs) / kittenBreathMs;
     if (k <= 0) return move;
     final end = math.min(k, kittenBreaths.toDouble());
-    // Whole breaths, so the last one lands exactly where it started.
-    final breath = math.sin(2 * math.pi * end);
+    // Whole breaths that start and end at rest, so nothing jumps where the
+    // move hands over and the last one lands exactly where it started.
+    final breath = (1 - math.cos(2 * math.pi * end)) / 2;
+    final sway = math.sin(math.pi * end / kittenBreaths);
     return KittenFrame(
       lift: move.lift,
       squash: move.squash * (1 + 0.02 * breath),
       headTilt: move.headTilt,
       lead: move.lead,
       trail: move.trail,
+      leadPaw: move.leadPaw,
+      trailPaw: move.trailPaw,
       look: move.look,
-      eyeOpen: move.eyeOpen * (1 - _bump(end, 0.55, 0.72)),
+      eyeOpen: move.eyeOpen * (1 - _hump(end, 0.5, 0.75)),
       happy: move.happy,
       smile: move.smile,
-      tail: 0.24 * math.sin(math.pi * end),
-      ear: 0.18 * _bump(end, 1.35, 1.55),
+      tail: 0.22 * sway * sway,
+      ear: 0.16 * _hump(end, 1.3, 1.6),
     );
   }
 
@@ -146,73 +157,101 @@ class KittenFrame {
   static KittenFrame _move(KittenPose pose, double ms) {
     final u = pose.moveMs == 0 ? 1.0 : ms / pose.moveMs;
     // Every move arrives the same way: up from a little low, a small give.
-    final arrive = pose.moveMs == 0 ? 0.0 : 0.05 * (1 - _ramp(u, 0, 0.3));
-    final give = 1 - 0.05 * _bump(u, 0.22, 0.42);
+    final arrive = pose.moveMs == 0 ? 0.0 : 0.06 * (1 - _ease(u, 0, 0.35));
+    final give = (1 - arrive) * (1 - 0.03 * _hump(u, 0.3, 0.6));
     switch (pose) {
       case KittenPose.rest:
         return const KittenFrame();
       case KittenPose.wave:
-        final up = _ramp(u, 0.1, 0.32);
-        final down = _ramp(u, 0.82, 1);
-        final shake = u > 0.32 && u < 0.82
-            ? 0.32 * math.sin(2 * math.pi * 2 * (u - 0.32) / 0.5)
-            : 0.0;
+        // Up beside the face with a little overshoot, two waves from the
+        // elbow that fade in and out, then down again.
+        final raise = _pop(u, 0.04, 0.3) * (1 - _ease(u, 0.8, 1));
+        final shake =
+            0.35 *
+            math.sin(2 * math.pi * 2 * (u - 0.31) / 0.5) *
+            _ease(u, 0.24, 0.4) *
+            (1 - _ease(u, 0.66, 0.82));
         return KittenFrame(
-          lift: -arrive,
           squash: give,
-          lead: _armRest + (2.5 - _armRest) * up - (2.5 - 0.95) * down + shake,
-          headTilt: 0.08 * _bump(u, 0.15, 0.95),
-          eyeOpen: 1 - _bump(u, 0.66, 0.76),
+          lead: _lerp(_armRest, 2.05, raise),
+          leadPaw: _lerp(_pawRest, 2.6, raise) + shake,
+          headTilt: 0.07 * _hump(u, 0.08, 0.95),
+          eyeOpen: 1 - _hump(u, 0.6, 0.72),
         );
       case KittenPose.point:
-        final reach = _ramp(u, 0.1, 0.45);
+        final reach = _pop(u, 0.08, 0.5);
+        final eyes = _ease(u, 0.04, 0.42);
         return KittenFrame(
-          lift: -arrive,
           squash: give,
-          lead: _armRest + (1.6 - _armRest) * reach - 0.14 * _bump(u, 0.5, 0.8),
-          look: Offset(reach, -0.2 * reach),
-          headTilt: 0.07 * reach,
+          lead: _lerp(_armRest, 1.05, reach) - 0.1 * _hump(u, 0.52, 0.82),
+          leadPaw: _lerp(_pawRest, 1.55, reach) - 0.08 * _hump(u, 0.52, 0.82),
+          look: Offset(eyes, -0.2 * eyes),
+          headTilt: 0.07 * eyes,
         );
       case KittenPose.cheer:
-        final up = _ramp(u, 0.12, 0.3);
-        final settle = _ramp(u, 0.7, 1);
-        final arms = _armRest + (2.05 - _armRest) * up - 0.3 * settle;
+        final up = _pop(u, 0.1, 0.34);
+        final settle = _ease(u, 0.62, 1);
+        final arm = _lerp(_armRest, 2.0, up) - 0.2 * settle;
+        final paw = _lerp(_pawRest, 2.6, up) - 0.15 * settle;
         return KittenFrame(
-          lift: -arrive + 0.07 * _bump(u, 0.18, 0.6),
+          lift: 0.05 * _hump(u, 0.14, 0.6),
           squash:
               give *
-              (1 - 0.07 * _bump(u, 0, 0.18) + 0.05 * _bump(u, 0.18, 0.45)) *
-              (1 - 0.06 * _bump(u, 0.58, 0.72)),
-          lead: arms,
-          trail: arms,
-          happy: _ramp(u, 0.15, 0.25),
-          smile: _ramp(u, 0.1, 0.3),
+              (1 - 0.07 * _hump(u, 0, 0.2) + 0.05 * _hump(u, 0.16, 0.44)) *
+              (1 - 0.06 * _hump(u, 0.54, 0.76)),
+          lead: arm,
+          trail: arm,
+          leadPaw: paw,
+          trailPaw: paw,
+          happy: _ease(u, 0.1, 0.3),
+          smile: _ease(u, 0.1, 0.3),
         );
       case KittenPose.lookLeft:
       case KittenPose.lookRight:
         final s = pose == KittenPose.lookLeft ? -1.0 : 1.0;
-        final turn = _ramp(u, 0.1, 0.6);
+        final turn = _pop(u, 0.08, 0.62);
         return KittenFrame(
-          lift: -arrive,
           look: Offset(s * turn, 0),
           headTilt: s * 0.06 * turn,
         );
       case KittenPose.blink:
         return KittenFrame(
-          lift: -arrive,
-          eyeOpen: 1 - _bump(u, 0.2, 0.38) - _bump(u, 0.55, 0.73),
+          eyeOpen: 1 - _hump(u, 0.14, 0.42) - _hump(u, 0.52, 0.8),
         );
     }
   }
 }
 
-const double _armRest = 0.18;
+/// The resting arm: hanging just off the body, the paw tucked in front.
+const double _armRest = -0.3;
+const double _pawRest = -0.1;
 
-double _ramp(double t, double a, double b) =>
-    HandMotion.pen.transform(((t - a) / (b - a)).clamp(0.0, 1.0));
+double _lerp(double a, double b, double t) => a + (b - a) * t;
 
-double _bump(double t, double a, double b) =>
-    t <= a || t >= b ? 0 : math.sin(math.pi * (t - a) / (b - a));
+double _unit(double t, double a, double b) =>
+    ((t - a) / (b - a)).clamp(0.0, 1.0);
+
+/// 0 to 1 starting and ending at rest (smootherstep): no jump in speed.
+double _ease(double t, double a, double b) {
+  final x = _unit(t, a, b);
+  return x * x * x * (x * (6 * x - 15) + 10);
+}
+
+/// 0 to 1 that runs a little past and settles back, starting and ending at
+/// rest: a back-out curve driven by a smooth clock.
+double _pop(double t, double a, double b) {
+  final x = _unit(t, a, b);
+  final s = x * x * (3 - 2 * x) - 1;
+  const c = 1.3;
+  return 1 + (c + 1) * s * s * s + c * s * s;
+}
+
+/// Up and back down again between [a] and [b], leaving and landing at rest.
+double _hump(double t, double a, double b) {
+  if (t <= a || t >= b) return 0;
+  final v = math.sin(math.pi * (t - a) / (b - a));
+  return v * v;
+}
 
 /// Paints the kitten at whatever [progress] says, 0 to 1 through its run.
 class KittenPainter extends CustomPainter {
@@ -225,19 +264,62 @@ class KittenPainter extends CustomPainter {
 
   static const ArtTone _tone = ArtTones.rose;
 
+  /// The deeper rose that tells a paw from the body behind it.
+  static const Color _edgeColour = Color(0xFFE99BB2);
+
   static Paint _stroke(Color c) => Paint()
     ..color = c
     ..style = PaintingStyle.stroke
     ..strokeCap = StrokeCap.round
     ..strokeJoin = StrokeJoin.round;
 
-  static final Paint _line = _stroke(_tone.line);
-  static final Paint _mark = _stroke(_tone.line);
-  static final Paint _tubeEdge = _stroke(_tone.line);
-  static final Paint _tubeFill = _stroke(_tone.fill);
   static final Paint _fill = Paint()..color = _tone.fill;
   static final Paint _ink = Paint()..color = _tone.line;
+  static final Paint _inkLine = _stroke(_tone.line);
   static final Paint _shine = Paint()..color = HandInk.page;
+  static final Paint _pawEdge = Paint()..color = _edgeColour;
+  static final Paint _armFill = _stroke(_tone.fill);
+  static final Paint _tailFill = _stroke(_tone.fill);
+
+  // Arm layout in the box, leading side to the right.
+  static const double _shoulderX = 0.14;
+  static const double _shoulderY = 0.66;
+  static const double _upperLen = 0.125;
+  static const double _foreLen = 0.145;
+  static const double _armWidth = 0.086;
+  static const double _pawR = 0.05;
+
+  /// Where a shoulder is, in the unmirrored box, for the leading or trailing
+  /// side, before the frame lifts or squashes it.
+  @visibleForTesting
+  static Offset shoulderOf({required bool lead}) =>
+      Offset(0.5 + (lead ? 1 : -1) * _shoulderX, _shoulderY);
+
+  /// Where the paw (the end of the arm) is for [f], in the same box.
+  @visibleForTesting
+  static Offset pawOf(KittenFrame f, {required bool lead}) {
+    final side = lead ? 1.0 : -1.0;
+    final s = shoulderOf(lead: lead);
+    final e = _elbow(s, side, lead ? f.lead : f.trail);
+    return _reach(e, side, lead ? f.leadPaw : f.trailPaw, _foreLen);
+  }
+
+  /// Where a point of the kitten at [p] (as [pawOf] gives it) lands in the
+  /// square it is painted into, 0 to 1, once [f] lifts and squashes it and
+  /// the margin is applied. Mirroring for Arabic flips x about 0.5.
+  @visibleForTesting
+  static Offset placed(KittenFrame f, Offset p) {
+    final y = p.dy - f.lift + 0.3 * (1 - f.squash);
+    return Offset(0.5 + (p.dx - 0.5) * _fit, 0.49 + (y - 0.5) * _fit);
+  }
+
+  /// The upper arm is hidden behind the head and body, so it may grow as
+  /// it rises: a raised paw then clears the cheek and reads as a paw up.
+  static Offset _elbow(Offset shoulder, double side, double angle) =>
+      _reach(shoulder, side, angle, _upperLen + 0.06 * _ease(angle, 1.2, 2.0));
+
+  static Offset _reach(Offset from, double side, double angle, double len) =>
+      from + Offset(side * math.sin(angle), math.cos(angle)) * len;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -252,137 +334,141 @@ class KittenPainter extends CustomPainter {
       canvas.scale(-1, 1);
     }
     canvas.scale(s);
-    _paintKitten(canvas, f, _nibFor(s));
+    // A little room all round, so a hop or a raised paw never leaves the box.
+    canvas.translate(0.5, 0.49);
+    canvas.scale(_fit);
+    canvas.translate(-0.5, -0.5);
+    _paintKitten(canvas, f, _edgeFor(s * _fit));
     canvas.restore();
   }
 
-  /// The line in box units: heavier than an object's, like the app's figures,
-  /// and never under 1.4 px however small the kitten is drawn.
-  static double _nibFor(double s) => math.max(1.4, s * 0.034) / s;
+  static const double _fit = 0.955;
 
-  static void _paintKitten(Canvas canvas, KittenFrame f, double nib) {
-    // Reused, never built per frame: only their widths change with size.
-    final line = _line..strokeWidth = nib;
+  /// The paw's soft edge in box units: thin, and never under 0.9 px.
+  static double _edgeFor(double s) => math.max(0.9, s * 0.008) / s;
+
+  static void _paintKitten(Canvas canvas, KittenFrame f, double edge) {
     final fill = _fill;
     final ink = _ink;
-    final mark = _mark;
 
-    void shape(Path p) {
-      canvas.drawPath(p, fill);
-      canvas.drawPath(p, line);
+    // An arm comes out from behind the body and head in their own colour,
+    // so only the part against the page shows. The paw at its end is drawn
+    // on top with a deeper rose edge, so it reads in front of the body.
+    final drop = 0.3 * (1 - f.squash);
+    void arm(double side, double upper, double fore) {
+      final s = Offset(0.5 + side * _shoulderX, _shoulderY + drop);
+      final e = _elbow(s, side, upper);
+      final p = _reach(e, side, fore, _foreLen);
+      final shaft = _armFill..strokeWidth = _armWidth;
+      canvas.drawLine(s, e, shaft);
+      canvas.drawLine(e, p, shaft);
     }
 
-    // A limb is a soft tube: the line colour drawn wide, the fill inside it.
-    void tube(Path p, double width) {
-      canvas.drawPath(p, _tubeEdge..strokeWidth = width + nib * 2);
-      canvas.drawPath(p, _tubeFill..strokeWidth = width);
-    }
-
-    void arm(double side, double angle) {
-      final shoulder = Offset(0.5 + side * 0.13, 0.82);
-      final end =
-          shoulder + Offset(side * math.sin(angle), math.cos(angle)) * 0.1;
-      tube(
-        Path()
-          ..moveTo(shoulder.dx, shoulder.dy)
-          ..lineTo(end.dx, end.dy),
-        0.115,
-      );
+    void paw(double side, double upper, double fore) {
+      final s = Offset(0.5 + side * _shoulderX, _shoulderY + drop);
+      final e = _elbow(s, side, upper);
+      final p = _reach(e, side, fore, _foreLen);
+      canvas.drawCircle(p, _pawR + edge, _pawEdge);
+      // The wrist runs over the edge, so the paw joins its arm.
+      final wrist = Offset.lerp(e, p, 0.45)!;
+      canvas.drawLine(wrist, p, _armFill..strokeWidth = _armWidth);
+      canvas.drawCircle(p, _pawR, fill);
     }
 
     canvas.save();
-    canvas.translate(0, f.lift);
+    canvas.translate(0, -f.lift);
 
     // Tail, behind everything, swinging from where it meets the body.
     canvas.save();
-    canvas.translate(0.29, 0.9);
-    canvas.rotate(-f.tail);
-    tube(_parts.tail, 0.075);
+    canvas.translate(0.36, 0.93);
+    canvas.rotate(f.tail);
+    canvas.drawPath(_parts.tail, _tailFill..strokeWidth = 0.062);
     canvas.restore();
+
+    arm(-1, f.trail, f.trailPaw);
+    arm(1, f.lead, f.leadPaw);
 
     // Body, squashing toward the floor it sits on.
     canvas.save();
-    canvas.translate(0.5, 0.97);
+    canvas.translate(0.5, 0.995);
     canvas.scale(1, f.squash);
-    canvas.translate(-0.5, -0.97);
-    shape(_parts.body);
+    canvas.translate(-0.5, -0.995);
+    canvas.drawPath(_parts.body, fill);
     canvas.restore();
 
-    // Head, ears and face ride on top of the body.
+    // Everything above the body rides down as it squashes.
     canvas.save();
-    canvas.translate(0, 0.38 * (1 - f.squash));
-    canvas.translate(0.5, 0.68);
-    canvas.rotate(f.headTilt);
-    canvas.translate(-0.5, -0.68);
+    canvas.translate(0, drop);
 
-    shape(_parts.earLead);
+    // Head, ears and face turn together about the neck.
+    canvas.save();
+    canvas.translate(0.5, 0.72);
+    canvas.rotate(f.headTilt);
+    canvas.translate(-0.5, -0.72);
+    canvas.drawPath(_parts.earLead, fill);
     canvas.drawPath(_parts.innerLead, ink);
     canvas.save();
-    canvas.translate(0.31, 0.235);
+    canvas.translate(0.33, 0.3);
     canvas.rotate(-f.ear);
-    canvas.translate(-0.31, -0.235);
-    shape(_parts.earTrail);
+    canvas.translate(-0.33, -0.3);
+    canvas.drawPath(_parts.earTrail, fill);
     canvas.drawPath(_parts.innerTrail, ink);
     canvas.restore();
-    shape(_parts.head);
+    // The head goes over the ears, so the deep rose insides end on its curve.
+    canvas.drawPath(_parts.head, fill);
 
-    final fx = 0.07 * f.look.dx;
-    final fy = 0.045 * f.look.dy;
+    final fx = 0.06 * f.look.dx;
+    final fy = 0.04 * f.look.dy;
+    final happy = f.happy.clamp(0.0, 1.0);
     for (final side in const [-1.0, 1.0]) {
-      final c = Offset(0.5 + side * 0.135 + fx, 0.505 + fy);
+      final c = Offset(0.5 + side * _eyeSpread + fx, _eyeY + fy);
       // The eye on the side she turns toward comes nearer, so a little bigger.
-      final r = 0.066 * (1 + 0.14 * side * f.look.dx);
-      if (f.happy > 0.5) {
-        canvas.drawPath(
-          Path()..addArc(
-            Rect.fromCircle(center: c.translate(0, r * 0.4), radius: r),
-            math.pi * 1.1,
-            math.pi * 0.8,
-          ),
-          mark..strokeWidth = nib * 1.5,
-        );
+      final r = _eyeR * (1 + 0.12 * side * f.look.dx);
+      if (happy >= 0.5) {
+        // Smiling arcs that take over from the squeezed eye.
+        canvas.save();
+        canvas.translate(c.dx, c.dy + r * 0.25);
+        canvas.scale(r);
+        canvas.drawPath(_parts.happyEye, _inkLine..strokeWidth = 0.32);
+        canvas.restore();
         continue;
       }
-      final open = f.eyeOpen.clamp(0.08, 1.0);
+      final open = (f.eyeOpen * (1 - 1.7 * happy)).clamp(0.1, 1.0);
       canvas.drawOval(
         Rect.fromCenter(center: c, width: r * 2, height: r * 2 * open),
         ink,
       );
-      if (open > 0.6) {
-        canvas.drawCircle(c.translate(-r * 0.3, -r * 0.35), r * 0.32, _shine);
+      if (open > 0.55) {
+        canvas.drawCircle(
+          c.translate(r * 0.24, -r * 0.34 * open),
+          r * 0.27,
+          _shine,
+        );
       }
     }
 
-    final m = Offset(0.5 + fx, 0.6 + fy);
+    canvas.save();
+    canvas.translate(0.5 + fx, _mouthY + fy);
     if (f.smile > 0.5) {
-      canvas.drawPath(
-        Path()
-          ..moveTo(m.dx - 0.045, m.dy - 0.008)
-          ..quadraticBezierTo(m.dx, m.dy + 0.07, m.dx + 0.045, m.dy - 0.008)
-          ..close(),
-        ink,
-      );
+      canvas.drawPath(_parts.smile, ink);
     } else {
-      canvas.drawPath(
-        Path()
-          ..moveTo(m.dx - 0.048, m.dy - 0.006)
-          ..quadraticBezierTo(m.dx - 0.024, m.dy + 0.03, m.dx, m.dy)
-          ..quadraticBezierTo(
-            m.dx + 0.024,
-            m.dy + 0.03,
-            m.dx + 0.048,
-            m.dy - 0.006,
-          ),
-        mark..strokeWidth = nib * 1.1,
-      );
+      canvas.drawPath(_parts.mouth, _inkLine..strokeWidth = 0.011);
     }
     canvas.restore();
+    canvas.restore();
 
-    // Paws last, so a raised paw is in front of the face, never behind it.
-    arm(-1, f.trail);
-    arm(1, f.lead);
+    canvas.restore();
+
+    // Paws last, so a raised paw is in front of the cheek.
+    paw(-1, f.trail, f.trailPaw);
+    paw(1, f.lead, f.leadPaw);
     canvas.restore();
   }
+
+  static const double _eyeSpread = 0.15;
+  static const double _eyeY = 0.54;
+  static const double _eyeR = 0.066;
+  static const double _mouthY = 0.578;
 
   @override
   bool shouldRepaint(KittenPainter old) =>
@@ -394,17 +480,55 @@ final _KittenParts _parts = _KittenParts();
 
 class _KittenParts {
   _KittenParts() {
-    final seed = handSeed(['mascot', 'kitten']);
-    head = _closed(_blob(const Offset(0.5, 0.48), 0.36, 0.27, 2.6), seed);
-    body = _closed(_blob(const Offset(0.5, 0.82), 0.25, 0.15, 2.2), seed + 1);
+    head = _loop((a) {
+      final ca = math.cos(a), sa = math.sin(a);
+      // A little fuller in the cheeks than on top, like A1.
+      final rx = 0.32 * (1 + 0.05 * sa);
+      return Offset(0.5 + rx * _soft(ca, 2.15), 0.5 + 0.24 * _soft(sa, 2.15));
+    });
+    body = _loop(
+      (a) => Offset(
+        0.5 + 0.225 * _soft(math.cos(a), 2.25),
+        0.83 + 0.165 * _soft(math.sin(a), 2.25),
+      ),
+    );
     // The leading ear sits on the right; the painter mirrors it for Arabic.
-    earLead = _closed(_ear(const Offset(0.69, 0.235), 1, 1), seed + 2);
-    innerLead = _closed(_ear(const Offset(0.69, 0.25), 1, 0.62), seed + 3);
-    earTrail = _closed(_ear(const Offset(0.31, 0.235), -1, 1), seed + 4);
-    innerTrail = _closed(_ear(const Offset(0.31, 0.25), -1, 0.62), seed + 5);
+    // Broad at the base, leaning out, a blunt round tip, the outer side
+    // running down into the cheek the way A1's does.
+    earLead = Path()
+      ..moveTo(0.53, 0.31)
+      ..cubicTo(0.62, 0.22, 0.7, 0.115, 0.775, 0.09)
+      ..cubicTo(0.83, 0.072, 0.862, 0.095, 0.865, 0.14)
+      ..cubicTo(0.88, 0.25, 0.878, 0.38, 0.83, 0.5)
+      ..lineTo(0.6, 0.5)
+      ..close();
+    innerLead = Path()
+      ..moveTo(0.575, 0.335)
+      ..cubicTo(0.64, 0.25, 0.71, 0.16, 0.775, 0.137)
+      ..cubicTo(0.81, 0.125, 0.83, 0.14, 0.835, 0.175)
+      ..cubicTo(0.848, 0.26, 0.846, 0.35, 0.815, 0.44)
+      ..lineTo(0.62, 0.45)
+      ..close();
+    earTrail = earLead.transform(_mirror);
+    innerTrail = innerLead.transform(_mirror);
     tail = Path()
       ..moveTo(0, 0)
-      ..cubicTo(-0.12, -0.02, -0.17, -0.12, -0.14, -0.24);
+      ..cubicTo(-0.14, 0.01, -0.22, -0.06, -0.2, -0.17)
+      ..cubicTo(-0.19, -0.22, -0.15, -0.24, -0.12, -0.22);
+    // ":3", the way A1 draws it: two small soft bumps.
+    mouth = Path()
+      ..moveTo(-0.034, -0.008)
+      ..cubicTo(-0.032, 0.014, -0.006, 0.016, 0, 0.0)
+      ..cubicTo(0.006, 0.016, 0.032, 0.014, 0.034, -0.008);
+    smile = Path()
+      ..moveTo(-0.036, -0.006)
+      ..cubicTo(-0.03, 0.05, 0.03, 0.05, 0.036, -0.006)
+      ..quadraticBezierTo(0, 0.004, -0.036, -0.006)
+      ..close();
+    // An upturned arc in a unit eye, scaled to the eye when drawn.
+    happyEye = Path()
+      ..moveTo(-0.85, 0.25)
+      ..quadraticBezierTo(0, -0.9, 0.85, 0.25);
   }
 
   late final Path head;
@@ -414,40 +538,23 @@ class _KittenParts {
   late final Path earTrail;
   late final Path innerTrail;
   late final Path tail;
+  late final Path mouth;
+  late final Path smile;
+  late final Path happyEye;
 
-  static Path _closed(List<Offset> pts, int seed) =>
-      smoothPath(perturbLoop(pts, seed: seed, wobble: 0.0035), close: true);
+  /// x to 1 - x: the other side of the box.
+  static final Float64List _mirror = Float64List.fromList(const [
+    -1, 0, 0, 0, //
+    0, 1, 0, 0, //
+    0, 0, 1, 0, //
+    1, 0, 0, 1, //
+  ]);
 
-  /// A rounded box-ish oval: wider in the cheeks than an ellipse.
-  static List<Offset> _blob(Offset c, double rx, double ry, double n) => [
-    for (var i = 0; i < 48; i++)
-      () {
-        final a = 2 * math.pi * i / 48;
-        final ca = math.cos(a), sa = math.sin(a);
-        return c +
-            Offset(
-              rx * ca.sign * math.pow(ca.abs(), 2 / n),
-              ry * sa.sign * math.pow(sa.abs(), 2 / n),
-            );
-      }(),
-  ];
+  /// A superellipse component: rounder than a box, fuller than an oval.
+  static double _soft(double v, double n) =>
+      v.sign * math.pow(v.abs(), 2 / n).toDouble();
 
-  /// A soft triangle with a blunt tip, leaning out to [side].
-  static List<Offset> _ear(Offset base, double side, double k) {
-    final tip = base + Offset(side * 0.07, -0.215) * k;
-    final inner = base + Offset(-side * 0.13, 0.03) * k;
-    final outer = base + Offset(side * 0.13, 0.11) * k;
-    final pts = <Offset>[];
-    // Corners pulled in, so the tip is round and nothing reads as sharp.
-    void corner(Offset from, Offset at, Offset to) {
-      pts.add(Offset.lerp(from, at, 0.62)!);
-      pts.add(Offset.lerp(at, Offset.lerp(from, to, 0.5)!, 0.18)!);
-      pts.add(Offset.lerp(to, at, 0.62)!);
-    }
-
-    corner(outer, inner, tip);
-    corner(inner, tip, outer);
-    corner(tip, outer, inner);
-    return pts;
-  }
+  static Path _loop(Offset Function(double a) at) => smoothPath([
+    for (var i = 0; i < 64; i++) at(2 * math.pi * i / 64),
+  ], close: true);
 }

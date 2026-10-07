@@ -61,6 +61,17 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
   bool _started = false;
 
   @override
+  void initState() {
+    super.initState();
+    KittenSetting.instance.addListener(_settingChanged);
+  }
+
+  /// Turned off in Profile while it is on screen: hold still at once.
+  void _settingChanged() {
+    if (!KittenSetting.instance.moves && _c.isAnimating) _c.value = 1;
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_started) {
@@ -94,6 +105,7 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
+    KittenSetting.instance.removeListener(_settingChanged);
     _c.dispose();
     super.dispose();
   }

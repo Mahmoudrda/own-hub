@@ -2,7 +2,8 @@
 ///
 /// On until she turns it off. Off, the kitten still shows her where to go but
 /// never moves. One SharedPreferences key on this phone; nothing about it
-/// goes to the server.
+/// goes to the server. A kitten on screen listens, so turning it off holds
+/// it still at once.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -12,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// on the phone when she deletes her data.
 const String kKittenMovesKey = 'own_hub.kitten_moves';
 
-class KittenSetting {
+class KittenSetting extends ChangeNotifier {
   KittenSetting._();
 
   static final KittenSetting instance = KittenSetting._();
@@ -32,7 +33,7 @@ class KittenSetting {
   }
 
   Future<void> set(bool moves) async {
-    _moves = moves;
+    _update(moves);
     try {
       await (await SharedPreferences.getInstance()).setBool(
         kKittenMovesKey,
@@ -45,7 +46,7 @@ class KittenSetting {
 
   /// Back to the default, and the key gone.
   Future<void> erase() async {
-    _moves = true;
+    _update(true);
     try {
       await (await SharedPreferences.getInstance()).remove(kKittenMovesKey);
     } catch (_) {}
@@ -54,5 +55,11 @@ class KittenSetting {
   @visibleForTesting
   void resetForTest({bool moves = true}) {
     _moves = moves;
+  }
+
+  void _update(bool moves) {
+    if (_moves == moves) return;
+    _moves = moves;
+    notifyListeners();
   }
 }

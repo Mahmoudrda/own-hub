@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +9,7 @@ import 'package:own_hub/features/signup/presentation/demo/demo_chrome.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/ui/hand/mascot/kitten.dart';
 import 'package:own_hub/ui/hand/mascot/kitten_painter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Widget _host(Widget child, {bool disableAnimations = false}) => MediaQuery(
   data: MediaQueryData(disableAnimations: disableAnimations),
@@ -16,15 +19,37 @@ Widget _host(Widget child, {bool disableAnimations = false}) => MediaQuery(
   ),
 );
 
+/// Every moving value of a frame, so motion can be checked as numbers.
+List<double> _values(KittenFrame f) => [
+  f.lift,
+  f.squash,
+  f.headTilt,
+  f.lead,
+  f.trail,
+  f.leadPaw,
+  f.trailPaw,
+  f.look.dx,
+  f.look.dy,
+  f.eyeOpen,
+  f.happy,
+  f.smile,
+  f.tail,
+  f.ear,
+];
+
 AnimationController _controllerOf(WidgetTester tester) {
   final paint = tester.widget<CustomPaint>(
-    find.descendant(of: find.byType(Kitten), matching: find.byType(CustomPaint)),
+    find.descendant(
+      of: find.byType(Kitten),
+      matching: find.byType(CustomPaint),
+    ),
   );
   return (paint.painter! as KittenPainter).progress as AnimationController;
 }
 
 void main() {
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     Kitten.resetPlayed();
     KittenSetting.instance.resetForTest();
   });
@@ -76,6 +101,120 @@ void main() {
     await tester.pumpWidget(_host(const Kitten(pose: KittenPose.wave)));
     expect(_controllerOf(tester).value, 1);
     expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('turning it off in Profile holds it still at once', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(const Kitten(pose: KittenPose.wave)));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(_controllerOf(tester).isAnimating, isTrue);
+    unawaited(KittenSetting.instance.set(false));
+    expect(_controllerOf(tester).isAnimating, isFalse);
+    expect(_controllerOf(tester).value, 1);
+    await tester.pump();
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  test('the wave raises the leading paw beside the face and lowers it', () {
+    final shoulder = KittenPainter.shoulderOf(lead: true);
+    const wave = KittenPose.wave;
+    // Through the whole wave, from just after the rise to just before the
+    // paw comes down, it is well above the shoulder at cheek or ear height,
+    // out at the side of the head rather than across the face.
+    for (var u = 0.32; u <= 0.78; u += 0.01) {
+      final f = KittenFrame.at(wave, u * wave.moveMs);
+      final paw = KittenPainter.pawOf(f, lead: true);
+      expect(paw.dy, lessThan(shoulder.dy - 0.15), reason: 'u=$u');
+      expect(paw.dy, lessThan(0.56), reason: 'u=$u');
+      expect(paw.dx, greaterThan(0.76), reason: 'u=$u');
+      final trail = KittenPainter.pawOf(f, lead: false);
+      expect(trail.dy, greaterThan(0.85), reason: 'u=$u');
+    }
+    // And it really goes side to side, not just up.
+    final xs = [
+      for (var u = 0.32; u <= 0.78; u += 0.01)
+        KittenPainter.pawOf(
+          KittenFrame.at(wave, u * wave.moveMs),
+          lead: true,
+        ).dx,
+    ];
+    expect(xs.reduce(math.max) - xs.reduce(math.min), greaterThan(0.06));
+    // Lowered again at the end.
+    final end = KittenPainter.pawOf(KittenFrame.end(wave), lead: true);
+    expect(end.dy, greaterThan(0.85));
+  });
+
+  test('the cheer puts both paws up above the shoulders, and keeps them', () {
+    const cheer = KittenPose.cheer;
+    for (var u = 0.3; u <= 1.0; u += 0.02) {
+      final f = KittenFrame.at(cheer, u * cheer.moveMs);
+      for (final lead in [true, false]) {
+        final paw = KittenPainter.pawOf(f, lead: lead);
+        final shoulder = KittenPainter.shoulderOf(lead: lead);
+        expect(paw.dy, lessThan(shoulder.dy - 0.1), reason: 'u=$u');
+        expect((paw.dx - 0.5).abs(), greaterThan(0.3), reason: 'u=$u');
+      }
+    }
+    final end = KittenFrame.end(cheer);
+    expect(end.happy, 1);
+    for (final lead in [true, false]) {
+      expect(
+        KittenPainter.pawOf(end, lead: lead).dy,
+        lessThan(KittenPainter.shoulderOf(lead: lead).dy - 0.1),
+      );
+    }
+  });
+
+  test('the point reaches forward at chest height, eyes following', () {
+    final f = KittenFrame.end(KittenPose.point);
+    final paw = KittenPainter.pawOf(f, lead: true);
+    expect(paw.dx, greaterThan(0.85));
+    expect(paw.dy, inInclusiveRange(0.62, 0.8));
+    expect(f.look.dx, greaterThan(0.9));
+  });
+
+  test('no part leaves the box at any instant', () {
+    for (final pose in KittenPose.values) {
+      final run = kittenRunFor(pose).inMilliseconds;
+      for (var ms = 0; ms <= run; ms += 5) {
+        final f = KittenFrame.at(pose, ms.toDouble());
+        for (final lead in [true, false]) {
+          final paw = KittenPainter.placed(
+            f,
+            KittenPainter.pawOf(f, lead: lead),
+          );
+          // The paw's radius and its soft edge.
+          const r = 0.056;
+          final why = '${pose.name} $ms';
+          expect(paw.dx - r, greaterThan(0), reason: why);
+          expect(paw.dx + r, lessThan(1), reason: why);
+          expect(paw.dy - r, greaterThan(0), reason: why);
+          expect(paw.dy + r, lessThan(1), reason: why);
+        }
+      }
+    }
+  });
+
+  test('motion is smooth: no jumps in place or in speed, 1 ms apart', () {
+    for (final pose in KittenPose.values) {
+      final run = kittenRunFor(pose).inMilliseconds;
+      var a = _values(KittenFrame.at(pose, 0));
+      var b = _values(KittenFrame.at(pose, 1));
+      for (var ms = 2; ms <= run + 2; ms++) {
+        final c = _values(KittenFrame.at(pose, ms.toDouble()));
+        for (var i = 0; i < c.length; i++) {
+          final why = '${pose.name} value $i at $ms ms';
+          // Where it is barely changes in a millisecond...
+          expect((c[i] - b[i]).abs(), lessThan(0.04), reason: why);
+          // ...and neither does how fast it moves: a move that starts or
+          // stops dead would show here as a sudden change in speed.
+          expect((c[i] - 2 * b[i] + a[i]).abs(), lessThan(1.5e-3), reason: why);
+        }
+        a = b;
+        b = c;
+      }
+    }
   });
 
   testWidgets('a named moment moves only the first time in a run', (
@@ -168,7 +307,9 @@ void main() {
 
   test('no loops and no timers in the kitten', () {
     final banned = RegExp(r'\.repeat\(|\bTimer\(|\bTimer\.periodic|\bTicker\(');
-    for (final f in Directory('lib/ui/hand/mascot').listSync().whereType<File>()) {
+    for (final f in Directory(
+      'lib/ui/hand/mascot',
+    ).listSync().whereType<File>()) {
       final lines = f.readAsLinesSync();
       for (var i = 0; i < lines.length; i++) {
         final line = lines[i].trimLeft();
