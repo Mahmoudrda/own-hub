@@ -167,30 +167,36 @@ class YoureInView extends StatelessWidget {
         const AppSpacer(),
         // The one mark on the payoff screen: the seal circled in sage as it
         // arrives. Sage because this is done, not won.
-        Center(
-          child: HandCircled(
-            seed: 13,
-            color: HandInk.done,
-            width: HandStroke.felt,
-            level: HandLevel.signature,
-            inflate: const EdgeInsets.all(7),
-            drawOn: true,
-            delay: const Duration(milliseconds: 200),
-            child: Container(
-              width: 96,
-              height: 96,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                color: AppColors.tertiaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.verified,
-                size: 52,
-                color: AppColors.tertiary,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            HandCircled(
+              seed: 13,
+              color: HandInk.done,
+              width: HandStroke.felt,
+              level: HandLevel.signature,
+              inflate: const EdgeInsets.all(7),
+              drawOn: true,
+              delay: const Duration(milliseconds: 200),
+              child: Container(
+                width: 96,
+                height: 96,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: AppColors.tertiaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.verified,
+                  size: 52,
+                  color: AppColors.tertiary,
+                ),
               ),
             ),
-          ),
+            const SizedBox(width: 20),
+            // The end of onboarding: the kitten's one cheer.
+            const Kitten(pose: KittenPose.cheer, size: 72, moment: 'C13'),
+          ],
         ),
         Text(
           // Her name when she has given one, and a complete sentence when she

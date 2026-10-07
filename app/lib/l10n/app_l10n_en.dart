@@ -8513,4 +8513,14 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get typeWhatYouAte => 'Type what you ate';
+
+  @override
+  String get movingKitten => 'Moving kitten';
+
+  @override
+  String get theKittenShowsYouAroundAndMoves =>
+      'The kitten shows you around and moves once when it appears.';
+
+  @override
+  String get theKittenStaysStill => 'The kitten stays still.';
 }

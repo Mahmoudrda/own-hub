@@ -290,6 +290,7 @@ class _LookAroundViewState extends State<LookAroundView> {
                               ? null
                               : () => _show(stop.index - 1),
                           onNext: () => _show(stop.index + 1),
+                          guide: stop != DemoStop.cycle,
                         ),
                       ),
                     ),

@@ -3458,5 +3458,8 @@
   "theCameraCouldNotStartCloseThis": "تعذّر تشغيل الكاميرا. أغلقي هذه الشاشة وحاولي مرة أخرى.",
   "weCouldNotSendYourCertificateCheck": "تعذّر إرسال شهادتكِ. تحقّقي من اتصالكِ وحاولي مرة أخرى.",
   "coachingIsNotOpenYetSoYour": "التدريب الشخصي غير متاح بعد، لذلك لم تُرسَل شهادتكِ.",
-  "typeWhatYouAte": "اكتبي ما تناولتِه"
+  "typeWhatYouAte": "اكتبي ما تناولتِه",
+  "movingKitten": "قطة متحركة",
+  "theKittenShowsYouAroundAndMoves": "ترشدكِ القطة وتتحرك مرة واحدة عند ظهورها.",
+  "theKittenStaysStill": "تبقى القطة ثابتة."
 }

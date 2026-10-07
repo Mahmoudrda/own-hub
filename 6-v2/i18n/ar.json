@@ -2537,5 +2537,8 @@
  "The camera could not start. Close this and try again.": "تعذّر تشغيل الكاميرا. أغلقي هذه الشاشة وحاولي مرة أخرى.",
  "We could not send your certificate. Check your connection and try again.": "تعذّر إرسال شهادتكِ. تحقّقي من اتصالكِ وحاولي مرة أخرى.",
  "Coaching is not open yet, so your certificate was not sent.": "التدريب الشخصي غير متاح بعد، لذلك لم تُرسَل شهادتكِ.",
- "Type what you ate": "اكتبي ما تناولتِه"
+ "Type what you ate": "اكتبي ما تناولتِه",
+ "Moving kitten": "قطة متحركة",
+ "The kitten shows you around and moves once when it appears.": "ترشدكِ القطة وتتحرك مرة واحدة عند ظهورها.",
+ "The kitten stays still.": "تبقى القطة ثابتة."
 }

@@ -113,6 +113,7 @@ class DemoCoachCard extends StatelessWidget {
     required this.line,
     this.onBack,
     this.onNext,
+    this.guide = true,
   });
 
   /// One-based.
@@ -125,14 +126,16 @@ class DemoCoachCard extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onNext;
 
+  /// Whether the kitten points at this stop. Off on the Cycle stop: nothing
+  /// reacts to her cycle.
+  final bool guide;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
-    return AppCard(
-      variant: AppCardVariant.tonal,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-      gap: 4,
+    final heading = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           l10n.countOfTotal(countLabel(number), countLabel(total)),
@@ -141,6 +144,7 @@ class DemoCoachCard extends StatelessWidget {
             color: AppColors.onSurfaceVariant,
           ),
         ),
+        const SizedBox(height: 4),
         // Read out when the stop changes, so a woman using a screen reader
         // hears where Next took her.
         Semantics(
@@ -148,6 +152,25 @@ class DemoCoachCard extends StatelessWidget {
           header: true,
           child: Text(title, style: AppText.titleM),
         ),
+      ],
+    );
+
+    return AppCard(
+      variant: AppCardVariant.tonal,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      gap: 4,
+      children: [
+        if (guide)
+          Row(
+            children: [
+              Expanded(child: heading),
+              const SizedBox(width: 8),
+              // Points into the screen below, once each time Next moves on.
+              Kitten(pose: KittenPose.point, size: 48, replayKey: number),
+            ],
+          )
+        else
+          heading,
         Text(line, style: AppText.bodyM.copyWith(color: AppColors.onSurface)),
         Row(
           mainAxisAlignment: onBack == null
@@ -247,14 +270,25 @@ class DemoEndCard extends StatelessWidget {
         Semantics(
           liveRegion: true,
           header: true,
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: HandUnderline(
-              level: HandLevel.signature,
-              width: HandStroke.felt,
-              gap: 6,
-              child: Text(l10n.thatIsOwnHub, style: EditorialType.section),
-            ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: HandUnderline(
+                    level: HandLevel.signature,
+                    width: HandStroke.felt,
+                    gap: 6,
+                    child: Text(
+                      l10n.thatIsOwnHub,
+                      style: EditorialType.section,
+                    ),
+                  ),
+                ),
+              ),
+              // The end of the tour: one small cheer.
+              const Kitten(pose: KittenPose.cheer, size: 56),
+            ],
           ),
         ),
         const SizedBox(height: 4),

@@ -8473,4 +8473,14 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get typeWhatYouAte => 'اكتبي ما تناولتِه';
+
+  @override
+  String get movingKitten => 'قطة متحركة';
+
+  @override
+  String get theKittenShowsYouAroundAndMoves =>
+      'ترشدكِ القطة وتتحرك مرة واحدة عند ظهورها.';
+
+  @override
+  String get theKittenStaysStill => 'تبقى القطة ثابتة.';
 }

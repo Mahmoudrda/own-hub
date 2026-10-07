@@ -3458,5 +3458,8 @@
   "theCameraCouldNotStartCloseThis": "The camera could not start. Close this and try again.",
   "weCouldNotSendYourCertificateCheck": "We could not send your certificate. Check your connection and try again.",
   "coachingIsNotOpenYetSoYour": "Coaching is not open yet, so your certificate was not sent.",
-  "typeWhatYouAte": "Type what you ate"
+  "typeWhatYouAte": "Type what you ate",
+  "movingKitten": "Moving kitten",
+  "theKittenShowsYouAroundAndMoves": "The kitten shows you around and moves once when it appears.",
+  "theKittenStaysStill": "The kitten stays still."
 }

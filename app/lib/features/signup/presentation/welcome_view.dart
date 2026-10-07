@@ -167,11 +167,19 @@ class WelcomeView extends StatelessWidget {
           ),
       ],
       children: [
-        if (preference case final preference?)
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: LanguageToggle(preference: preference),
-          ),
+        // The kitten waves hello from the top row, in space the screen was
+        // not using, so nothing below it moves. A wrap, so at the largest
+        // text sizes the language toggle takes a line of its own.
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          runSpacing: 8,
+          children: [
+            const Kitten(pose: KittenPose.wave, size: 52, moment: 'C01'),
+            if (preference case final preference?)
+              LanguageToggle(preference: preference),
+          ],
+        ),
         const AppSpacer(),
         // The brand mark, the Concept 02 monogram on the rose tile, as on the
         // home screen. Rendered from the vector at 1x, 2x and 3x, so it is
