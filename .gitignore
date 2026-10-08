@@ -56,3 +56,7 @@ womens-fitness-app.html
 # Screenshots and captures
 *.png.tmp
 captures/
+
+# AI review working files
+.ai-review/
+!.github/review-kit/**
