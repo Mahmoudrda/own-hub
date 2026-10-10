@@ -1468,10 +1468,13 @@ service cloud.firestore {
     // Reads were `signedIn()`. Under the whole-app gate they are `isVerified()`:
     // the library is what the product is made of, and an unverified account
     // browsing the full exercise and recipe catalogue is using the product.
-    // `isAdmin()` still writes, and an admin is verified staff.
-    match /exercises/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
-    match /foods/{id}     { allow read: if isVerified(); allow write: if isAdmin(); }
-    match /programs/{id}  { allow read: if isVerified(); allow write: if isAdmin(); }
+    // `isAdmin()` writes, and reads too: grant_admin.py sets the admin claim
+    // and never `verified` (the console is let past the women-only gate
+    // without an ID check), and the console reads every list before it writes.
+    // Admin opens the library only, never a woman's own documents.
+    match /exercises/{id} { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
+    match /foods/{id}     { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
+    match /programs/{id}  { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
 
     // Recipes carry two things the other three libraries do not: an allergen
     // set a woman's safety depends on, and a tier.
@@ -1502,11 +1505,13 @@ service cloud.firestore {
       // first: reading a recipe that does not exist is a normal miss, and
       // evaluating `resource.data.tier` on it throws rather than denying, which
       // turns every 404 into a rules error.
-      allow read: if isVerified()
-                  && (resource == null
-                      || !('tier' in resource.data)
-                      || resource.data.tier == 'free'
-                      || request.auth.token.tier == 'pro');
+      // The console reads every recipe, whatever its tier, to edit it.
+      allow read: if isAdmin()
+                  || (isVerified()
+                      && (resource == null
+                          || !('tier' in resource.data)
+                          || resource.data.tier == 'free'
+                          || request.auth.token.tier == 'pro'));
       //
       // `in` before `!=`: a document with no `allergenReviewedBy` key at all
       // throws on the comparison rather than failing it, and a rules error and
@@ -1532,15 +1537,15 @@ service cloud.firestore {
     // single document holding the list row for every recipe, about 250 bytes
     // each. Both are server-written: a client that could write the index could
     // change what every other woman is offered.
-    match /recipeIndex/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
-    match /meta/{docId}     { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /recipeIndex/{id} { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
+    match /meta/{docId}     { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
 
     // The owner's workouts, the same shape as the recipe library: `meta/workouts`
     // holds the version (under the rule above) and `workoutLibrary/v{N}` holds
     // every published programme in one document, so a member's phone reads one
     // small document a day and the library only when it moved. Written by the
     // console with the admin claim only.
-    match /workoutLibrary/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /workoutLibrary/{id} { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
 
     // The media library's register: one line per picture or clip uploaded by
     // functions/tools/upload_media.py (owner credentials, the Admin SDK). The
