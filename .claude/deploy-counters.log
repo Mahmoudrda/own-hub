@@ -1,0 +1,38 @@
+
+=== Deploying to 'own-hub'...
+
+i  deploying functions
+i  functions: preparing codebase identity for deployment
+i  functions: ensuring required API cloudfunctions.googleapis.com is enabled...
+i  functions: ensuring required API cloudbuild.googleapis.com is enabled...
+i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled...
+i  functions: Loading and analyzing source code for codebase identity to determine what to deploy
+(node:10550) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+    at normalizeSpawnArguments (node:child_process:644:15)
+    at Object.spawn (node:child_process:789:13)
+    at spawn (/opt/homebrew/lib/node_modules/firebase-tools/node_modules/cross-spawn/index.js:12:24)
+    at runWithVirtualEnv (/opt/homebrew/lib/node_modules/firebase-tools/lib/functions/python.js:29:36)
+    at Delegate.modulesDir (/opt/homebrew/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/python/index.js:75:58)
+    at Delegate.serveAdmin (/opt/homebrew/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/python/index.js:120:39)
+    at Delegate.discoverBuild (/opt/homebrew/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/python/index.js:186:44)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async loadCodebases (/opt/homebrew/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js:531:33)
+    at async prepare (/opt/homebrew/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js:180:24)
+ * Serving Flask app 'serving'
+ * Debug mode: off
+
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8082
+
+[33mPress CTRL+C to quit[0m
+
+127.0.0.1 - - [06/Oct/2026 23:24:45] "GET /__/functions.yaml HTTP/1.1" 200 -
+
+127.0.0.1 - - [06/Oct/2026 23:24:45] "GET /__/quitquitquit HTTP/1.1" 200 -
+
+/bin/sh: line 1: 10673 Terminated: 15          python3.12 "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/functions/.venv/lib/python3.12/site-packages/firebase_functions/private/serving.py"
+
+
+Error: Failed to list functions for own-hub

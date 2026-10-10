@@ -1,0 +1,2285 @@
+[
+ {
+  "auditor": "The Believer",
+  "persona": "The Believer",
+  "approach": "I read the current uncommitted worktree at /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding without changing anything. In the app I checked legal_links, firebase_boot, main.dart, feature_flags, consent_view, capture_consent, phone_number_view, your_data_sheet, the assistant wire, the analytics gateway and its G9 test, Info.plist, AndroidManifest and PrivacyInfo.xcprivacy. In the backend I checked identity/config, store, logs, review, main.py schedulers, the deletion manifest and firestore.rules. On the site I checked _headers, index, privacy EN, and placeholder counts for EN and AR. Below I set out the core value, the golden path, a Protected List, strengths, and the gaps where good practice is either missing or invisible to her and to reviewers.\n\nCORE VALUE: \"A fitness app where every member is a verified woman, my ID and selfie photos are never kept, and my cycle, weight and pregnancy stay on my phone unless I choose otherwise.\"\n\nGOLDEN PATH:\n- C01 Welcome, then O03 and O05 (value first; her week is held locally in LocalPersistence, main.dart:52-53).\n- C06 phone (phone_number_view.dart:153) and C07 code (firebase_auth_repository.dart).\n- C09b ConsentView, which records consent server-side before the camera opens (consent_view.dart:126, capture_consent.dart:47 kCaptureConsentVersion=1, matching functions/identity/config.py:634).\n- C10, C10b and C11 capture, then the server pipeline (functions/identity/pipeline.py, store.py, which writes no images, store.py:15 and :360).\n- C12 check, then C13 Start day 1.\n- Woman-reviewer fallback runs through review.py and main.py:852 schedule_verification_review, gated on the womanReviewer claim (main.py:876).\n\nPROTECTED LIST (no fix may break these):\n1. store.py writes no image, name, birth date or raw NID. `imagesDeletedAt` is true because nothing was ever written (store.py:15, 218, 360).\n2. NID kept only as a keyed HMAC with a peppered secret (store.py:48-52, dedupe.py). This is what makes one card, one account possible without keeping the number.\n3. Native Crashlytics default is off (Info.plist:72-73, AndroidManifest.xml:83-86). Any consent gate depends on this.\n4. Health stays on the device. firestore.rules:146-154 refuses lifeStage and allergies on the profile without consents/health-v1. HEALTH_CONSENT_VERSION is at config.py:639, and record_health_consent at main.py:328.\n5. The consents collection is client-readable but its write is false (firestore.rules:910-913). Records cannot be forged or edited.\n6. Deletion: deletion_manifest.json is the single source, enforced by deletion.py. resume_account_deletions runs every 15 minutes with a 65-minute late resweep (main.py:969-994, config.py:558). expire_stale_reviews runs hourly with 180-day decided-record retention (main.py:909, config.py:548). Unverified women can still delete (firestore.rules:88-90).\n7. The C09b-before-camera ordering, and the decline path.\n8. Feature flags: assistant, community, coachApp, payments and marketplace false; adminConsole false (feature_flags.dart:186-216).\n9. Permissions: CAMERA only. RECORD_AUDIO, storage and C2DM are removed (AndroidManifest.xml:9, 28-31).\n10. Site CSP default-src 'none', no scripts, no third-party requests (site/_headers:9).\n11. Assistant wire carries only her question and catalogue context, with no uid or health data (assistant_wire.dart:218-230). Transcripts are never stored.\n12. logs.py is an allowlist structured logger with reason codes only (logs.py:3-4, 68).\n13. App Check is enforced (config.py:74), and the region is europe-west3 (config.py:48).\n14. The G9 test, cycle_no_analytics_call_sites_test.dart, and the analytics gateway's exclusion of cycle and measurement data (analytics_gateway.dart:8). The analytics sink is debug only (main.dart:43-45).",
+  "checklist_status": [
+   {
+    "id": "OWN-01",
+    "status": "fail",
+    "evidence": "site/privacy/index.html has 7 'to be completed' hits. legal_links.dart:18 privacyPolicy=''. AR pages show 0 placeholder hits (site/ar/*/index.html), so the EN and AR versions currently differ, which needs checking. privacy:409 says 'No analytics software' and :410 says 'no microphone'. No AI section."
+   },
+   {
+    "id": "OWN-02",
+    "status": "partial",
+    "evidence": "site/terms and site/ar/terms exist. 2 placeholders in EN terms. legal_links.dart:21 terms=''."
+   },
+   {
+    "id": "OWN-03",
+    "status": "fail",
+    "evidence": "phone_number_view.dart:153 shows only byJoiningYouAgreeToTheOwn (app_en.arb:3173, app_ar.arb:3173), with no links and no record. A grep for termsVersion, privacyVersion or TERMS_VERSION in app/lib and functions finds nothing."
+   },
+   {
+    "id": "OWN-04",
+    "status": "partial",
+    "evidence": "Native defaults are off (Info.plist:72-73, AndroidManifest.xml:85-86). Release enables collection at boot anyway (firebase_boot.dart:150-152, crashCollectionFor(release: kReleaseMode)) before C06. privacy_view.dart has no crash toggle (grep for 'crash' finds nothing). Analytics is debug only (main.dart:43-45). The CSP is strict (site/_headers:9)."
+   },
+   {
+    "id": "OWN-05",
+    "status": "fail",
+    "evidence": "your_data_sheet.dart:26-27 says 'there is no export yet'. site/index.html:127 says the same."
+   },
+   {
+    "id": "OWN-06",
+    "status": "partial",
+    "evidence": "In-app deletion works through deletion.py and the manifest, with sweeps at main.py:969-994. LegalLinks.deleteAccount='' (legal_links.dart:27). site/delete-account has 2 placeholders. In-app copy gives the time only on failure ('within the hour', app_en.arb:3138)."
+   },
+   {
+    "id": "OWN-07",
+    "status": "partial",
+    "evidence": "True in code: no Gemini or Vertex call in functions (only a Vision dependency), and AssistantRequest has no uid (assistant_wire.dart:218-230). Assistant is off (feature_flags.dart). The privacy page has no statement."
+   },
+   {
+    "id": "OWN-08",
+    "status": "fail",
+    "evidence": "site/index.html:57 promises 'a woman reviewer on a short video call', but the vendor is not chosen and the C12 button was not built (implementation report). privacy:410 says no microphone, which conflicts with a video call. Info.plist:27 says photographs 'are deleted after the check', while the site says 'never stored'."
+   },
+   {
+    "id": "OWN-09",
+    "status": "owner-action",
+    "evidence": "No counsel memo in the repo."
+   },
+   {
+    "id": "OWN-10",
+    "status": "fail",
+    "evidence": "Depends on the open APL and GPL items."
+   },
+   {
+    "id": "OWN-11",
+    "status": "fail",
+    "evidence": "git status shows about 50 modified files, uncommitted. LegalLinks.allSet is false. Placeholders remain. One known failing test (implementation report)."
+   },
+   {
+    "id": "APL-01",
+    "status": "owner-action",
+    "evidence": "Console only."
+   },
+   {
+    "id": "APL-02",
+    "status": "fail",
+    "evidence": "legal_links.dart:24 support=''."
+   },
+   {
+    "id": "APL-03",
+    "status": "fail",
+    "evidence": "No reviewer or demo path in functions/identity was found."
+   },
+   {
+    "id": "APL-04",
+    "status": "partial",
+    "evidence": "PrivacyInfo.xcprivacy declares DeviceID, PhoneNumber, UserID, HealthFitness, OtherUserContent and OtherDataTypes. It lacks SensitiveInfo and PhotosorVideos. NSPrivacyTracking line 53."
+   },
+   {
+    "id": "APL-05",
+    "status": "unknown",
+    "evidence": "Needs an archive build."
+   },
+   {
+    "id": "APL-06",
+    "status": "pass",
+    "evidence": "consent_view.dart:126 records kCaptureConsentVersion=1 (capture_consent.dart:47), matching config.py:634. Rules make consents write:false (firestore.rules:910-913). NSCameraUsageDescription at Info.plist:26-27."
+   },
+   {
+    "id": "APL-07",
+    "status": "unknown",
+    "evidence": "Build machine."
+   },
+   {
+    "id": "APL-08",
+    "status": "owner-action",
+    "evidence": "MIN_AGE=18 at config.py:114. The rating is set in the console."
+   },
+   {
+    "id": "APL-09",
+    "status": "partial",
+    "evidence": "Privacy names Firebase US (privacy:257) and Frankfurt europe-west3 (privacy:271). The video vendor is not named."
+   },
+   {
+    "id": "APL-10",
+    "status": "pass",
+    "evidence": "Health backup goes to Firestore only with consent (firestore.rules:146-154). G9 test exists (test/features/cycle/cycle_no_analytics_call_sites_test.dart). Privacy says no health data for marketing or analytics (privacy:92, 215)."
+   },
+   {
+    "id": "APL-11",
+    "status": "owner-action",
+    "evidence": "Licence from Rahma not in repo."
+   },
+   {
+    "id": "APL-12",
+    "status": "partial",
+    "evidence": "Doctor strings exist (app_en.arb:1491, 1821, 2904). A grep for 'medical device' in app_en.arb finds nothing."
+   },
+   {
+    "id": "APL-13",
+    "status": "partial",
+    "evidence": "feature_flags.dart:186-216 has the dormant features off and adminConsole false. Review Notes have not been written."
+   },
+   {
+    "id": "APL-14",
+    "status": "owner-action",
+    "evidence": "Console."
+   },
+   {
+    "id": "APL-15",
+    "status": "unknown",
+    "evidence": "Not re-read in this pass."
+   },
+   {
+    "id": "GPL-03",
+    "status": "unknown",
+    "evidence": "16 KB not verified."
+   },
+   {
+    "id": "GPL-04",
+    "status": "partial",
+    "evidence": "play-data-safety.txt exists. The deletion URL is empty."
+   },
+   {
+    "id": "GPL-05",
+    "status": "pass",
+    "evidence": "AndroidManifest.xml:9 CAMERA only. Lines 28-31 remove RECORD_AUDIO, the storage permissions and C2DM."
+   },
+   {
+    "id": "LAW-01",
+    "status": "owner-action",
+    "evidence": "Permit placeholder still in the privacy page."
+   },
+   {
+    "id": "LAW-02",
+    "status": "partial",
+    "evidence": "Capture and health consent records exist (main.py:328, consent_view.dart:126). Licence not filed."
+   },
+   {
+    "id": "LAW-03",
+    "status": "fail",
+    "evidence": "The phone number reaches the US before any consent (C06 has no transfer line)."
+   },
+   {
+    "id": "LAW-04",
+    "status": "partial",
+    "evidence": "Rights listed (privacy:374). Reply window is a placeholder."
+   },
+   {
+    "id": "LAW-05",
+    "status": "fail",
+    "evidence": "No runbook found."
+   },
+   {
+    "id": "LAW-07",
+    "status": "partial",
+    "evidence": "DECIDED_RECORD_RETENTION_DAYS=180 (config.py:548), enforced by the hourly sweeper (main.py:909). Cloud Logging retention is not shown in the repo."
+   },
+   {
+    "id": "LAW-10",
+    "status": "pass",
+    "evidence": "MIN_AGE=18 at config.py:114."
+   },
+   {
+    "id": "LAW-13",
+    "status": "pass",
+    "evidence": "ENFORCE_APP_CHECK=True (config.py:74). HMAC pepper (store.py:48-52). Allowlist logs (logs.py:3-4). Identity collections denied to clients (firestore.rules:890, 898)."
+   },
+   {
+    "id": "LAW-14",
+    "status": "partial",
+    "evidence": "Info.plist:27 says 'so we can check that you are a woman'. Counsel has not approved the wording."
+   },
+   {
+    "id": "LAW-16",
+    "status": "pass",
+    "evidence": "dedupe.py exists. Tests were not run in this pass."
+   }
+  ],
+  "findings": [
+   {
+    "title": "Crashlytics turns on before any consent, with no off switch",
+    "checklist_ids": [
+     "OWN-04",
+     "LAW-17"
+    ],
+    "severity": "legal-liability",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/app_state/firebase_boot.dart:150-152; /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/features/account/presentation/privacy_view.dart",
+    "problem": "Collection is set to kReleaseMode at boot, before C06. The privacy centre has no toggle.",
+    "fix": "PROTECTS CORE: keep the native defaults off (Info.plist:72, AndroidManifest.xml:85) and keep the 'nothing about her attached' rule. Change only the argument: pass a stored consent flag that the C06 acceptance sets, and add a privacy-centre toggle that calls setCrashlyticsCollectionEnabled(false). Do not remove Crashlytics, because stable capture screens are part of the women-only promise.",
+    "owner_action": false,
+    "evidence": "firebase_boot.dart:146-152 comment: 'in a release build only'."
+   },
+   {
+    "title": "C06 agreement line has no links, no record and no US transfer notice",
+    "checklist_ids": [
+     "OWN-03",
+     "LAW-03",
+     "LAW-11"
+    ],
+    "severity": "legal-liability",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/features/signup/presentation/phone_number_view.dart:153; app_en.arb:3173",
+    "problem": "The line is browse-wrap, and the phone number goes to Firebase Auth in the US before she agrees to anything.",
+    "fix": "Reuse the C09b pattern: a server callable writes users/{uid}/consents/terms_v{n}, and the rules keep it write:false. Because the uid only exists after the SMS, store the acceptance locally first and send it right after sign-in. Keep this as one step, so the value-first tap count gains no extra screen.",
+    "owner_action": false,
+    "evidence": "A grep for termsVersion or privacyVersion in app/lib and functions finds nothing."
+   },
+   {
+    "title": "Public claims the build cannot back yet: video-call reviewer, no microphone, 'deleted' vs 'never stored'",
+    "checklist_ids": [
+     "OWN-08",
+     "OWN-01",
+     "APL-09"
+    ],
+    "severity": "store-rejection",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/site/index.html:57; site/privacy/index.html:409-410; app/ios/Runner/Info.plist:27",
+    "problem": "The video vendor is not chosen and the C12 reviewer button was not built, yet the site promises a video call. The microphone denial conflicts with a video call. The camera string says photos 'are deleted', which implies they were stored and undercuts the stronger true claim that they are never stored.",
+    "fix": "Say 'woman reviewer, by video or at a gym' only once a vendor exists; until then say 'a woman reviewer'. Change Info.plist:27 and its AR string to 'read in memory and never stored'. Make the microphone line conditional on the reviewer route.",
+    "owner_action": false,
+    "evidence": "The implementation report says the C12 'Check me another way' button was skipped."
+   },
+   {
+    "title": "Empty legal links hide all the trust rows",
+    "checklist_ids": [
+     "OWN-01",
+     "OWN-02",
+     "OWN-06",
+     "APL-02"
+    ],
+    "severity": "store-rejection",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/config/legal_links.dart:18-27",
+    "problem": "All four URLs are empty, so the privacy, terms, support and delete-on-web rows are not rendered. Good practice exists but she cannot see it.",
+    "fix": "Fill in the URLs once the domain exists. Keep the hide-when-empty behaviour and the preflight failure as they are.",
+    "owner_action": true,
+    "evidence": "legal_links.dart:18, 21, 24, 27."
+   },
+   {
+    "title": "No data export",
+    "checklist_ids": [
+     "OWN-05",
+     "LAW-04"
+    ],
+    "severity": "legal-liability",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/features/account/presentation/your_data_sheet.dart:26-27",
+    "problem": "Export is promised in Terms §6 but not built.",
+    "fix": "Build the export from deletion_manifest.json, the same source deletion uses, so the two can never drift apart. Add a test that every manifest row is exported.",
+    "owner_action": false,
+    "evidence": "site/index.html:127 says the same."
+   },
+   {
+    "title": "No-AI-training is true but never stated",
+    "checklist_ids": [
+     "OWN-07",
+     "APL-18"
+    ],
+    "severity": "medium",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/site/privacy/index.html and site/ar/privacy/index.html",
+    "problem": "No AI provider is called in functions, and the assistant wire carries no uid, but she cannot see either fact, so it earns no trust.",
+    "fix": "Add privacy §3.8 in EN and AR, keep assistant_wire.dart minimal, and keep Feature.assistant false until Vertex AI is set up with the training restriction and zero data retention (ZDR).",
+    "owner_action": false,
+    "evidence": "assistant_wire.dart:218-230 sends question plus subject only."
+   },
+   {
+    "title": "Privacy manifest misses Sensitive Info and Photos",
+    "checklist_ids": [
+     "APL-04",
+     "GPL-04"
+    ],
+    "severity": "store-rejection",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/ios/Runner/PrivacyInfo.xcprivacy:57-130",
+    "problem": "The biometric face match and the ID or selfie images are not declared.",
+    "fix": "Add SensitiveInfo and PhotosorVideos (purpose App Functionality, not linked to tracking), and match App Store Connect and Data safety to them.",
+    "owner_action": false,
+    "evidence": "The declared types are only DeviceID, PhoneNumber, UserID, HealthFitness, OtherUserContent and OtherDataTypes."
+   },
+   {
+    "title": "No reviewer path through the ID check",
+    "checklist_ids": [
+     "APL-03"
+    ],
+    "severity": "store-rejection",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/functions/identity",
+    "problem": "App reviewers cannot pass an Egyptian ID and selfie check.",
+    "fix": "PROTECTS CORE: never relax the gate for everyone. Pre-seed one uid server-side as verified for a Firebase test number only, write that to the audit log, and never compile a client-side bypass. testingAidsAllowed stays false while accountRequired is on.",
+    "owner_action": false,
+    "evidence": "No review or demo bypass found in functions/identity."
+   },
+   {
+    "title": "No in-app 'not a medical device' line",
+    "checklist_ids": [
+     "APL-12"
+    ],
+    "severity": "medium",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/l10n/app_en.arb",
+    "problem": "The doctor-clearance strings exist, but there is no general disclaimer.",
+    "fix": "Add one EN and AR string to About and to the cycle and life-stage screens, without adding a step to O03.",
+    "owner_action": false,
+    "evidence": "A grep for 'medical device' finds nothing."
+   },
+   {
+    "title": "Deletion time not stated up front",
+    "checklist_ids": [
+     "OWN-06"
+    ],
+    "severity": "low",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/features/account/presentation/your_data_sheet.dart",
+    "problem": "The only timing copy is the failure line, 'within the hour' (app_en.arb:3138). The sweeps are fast, but she cannot see that.",
+    "fix": "Show 'Deleted now, a final sweep runs within the hour' before she confirms. This is backed by DELETION_RESWEEP_MINUTES=65.",
+    "owner_action": false,
+    "evidence": "config.py:558; main.py:969."
+   },
+   {
+    "title": "AR site pages show 0 placeholders while EN has 11 across privacy, terms and delete-account",
+    "checklist_ids": [
+     "OWN-01",
+     "LAW-11"
+    ],
+    "severity": "medium",
+    "where": "/Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/site/ar/",
+    "problem": "The AR pages either use a different placeholder marker or diverge from EN. Arabic is meant to prevail.",
+    "fix": "Diff the AR pages against EN section by section, and use one shared placeholder token in _build/build.py.",
+    "owner_action": false,
+    "evidence": "grep -c gives 0 for every site/ar page."
+   }
+  ],
+  "keep": [
+   "Images are never written: functions/identity/store.py:15, 218, 360 (imagesDeletedAt is true because nothing was ever stored)",
+   "NID kept only as a keyed HMAC with a pepper: store.py:48-52, dedupe.py",
+   "Crashlytics native defaults off: app/ios/Runner/Info.plist:72-73, app/android/app/src/main/AndroidManifest.xml:85-86",
+   "Health is consent-gated in the rules: firebase/firestore.rules:146-154",
+   "Consent records are client-readable and immutable: firestore.rules:910-913",
+   "Unverified women can still delete; safety never depends on verification: firestore.rules:85-93",
+   "Deletion manifest plus sweeps: functions/account/deletion_manifest.json, main.py:969-994, config.py:558",
+   "180-day review retention sweeper: main.py:909, config.py:548",
+   "Woman reviewer gated by the womanReviewer claim, with an audit trail: main.py:709, 876, identity/review.py",
+   "Allowlist logs, reason codes only: functions/identity/logs.py:3-4",
+   "Camera-only permissions with explicit removals: AndroidManifest.xml:9, 28-31",
+   "Strict site CSP, no scripts: site/_headers:9",
+   "Analytics sink debug only, plus the G9 cycle-no-analytics test: main.dart:43-45, test/features/cycle/cycle_no_analytics_call_sites_test.dart",
+   "Assistant wire carries no personal identifiers or health data, and the assistant flag is off: assistant_wire.dart:218-230, feature_flags.dart",
+   "App Check enforced, europe-west3: config.py:48, 74",
+   "C09b consent recorded before the camera opens: consent_view.dart:126, capture_consent.dart:47",
+   "LegalLinks hide-when-empty plus preflight failure: legal_links.dart:1-35"
+  ],
+  "verdict": "The engineering behind Own Hub's privacy promise is real and unusually careful. Images are never written. The NID is kept only as a peppered HMAC. Health data needs consent and the rules enforce it. Consent records cannot be edited. Deletion has a manifest and resweeps, and the site has a strict CSP with no scripts. Fixes should build on these parts and leave them as they are. The gaps are mostly about trust she cannot see or record. The legal links are empty and the site has placeholders. The C06 agreement has no record and no US notice. Crashlytics turns on before consent and has no toggle. There is no export. The AI promise is true but never stated. And a few public claims (video-call reviewer, no microphone, 'deleted' vs 'never stored') run ahead of the build. Each gap can be closed without slowing the value-first flow, by reusing the C09b consent pattern and the deletion manifest."
+ },
+ {
+  "auditor": "The Skeptic",
+  "persona": "The Skeptic",
+  "approach": "Read-only audit of the uncommitted worktree /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding (branch onboarding/2026-10-06). Gate results first. `flutter analyze` reported no issues. `flutter test` passed all 4784 tests. The R1-12a Tuesday test now passes because the test was rewritten to compute the weekday, which is an explained fix. Functions `pytest` passed 893. `tool/release_preflight.sh` gave 46 PASS, 3 FAIL, 3 SKIP. The visible FAIL is \"legal links filled in\"; the other two FAIL lines were cut off by my tail, and the likely cause is the missing release keystore. I walked the new first-session path in app_router.dart: C01 > O03 > O05 > C06 phone > C07 code > C09b consent > capture > C12 > C13. I read the consent gate, firebase_boot.dart, main.dart, the native manifests, PrivacyInfo.xcprivacy and play-data-safety.txt. On the backend I read the deletion manifests, identity/store.py, logs.py, waitlist/join.py and firestore.rules. I also read the assistant provider. On the site I counted [to be completed] markers in EN and AR, and read privacy, terms, delete-account and home against the code. Every finding cites a file and line or a command result.",
+  "checklist_status": [
+   {
+    "id": "OWN-01",
+    "status": "fail",
+    "evidence": "site/privacy/index.html has 7 [to be completed] markers, and so does site/ar/privacy/index.html (the AR page uses the marker [بانتظار الاستكمال], lines 102, 163, 277, 280, 294, 350 and 354). config.json baseUrl is https://ownhub.example, which appears 49 times in sitemap.xml and 2 times in robots.txt. legal_links.dart:18 privacyPolicy=''. Privacy §5 (privacy:310-316) says consent naming the countries is asked 'before your data leaves your phone'. That is false for the phone number sent at C06. §10 says 'No analytics software' (409) and 'no microphone' (410), while §4 lists a video vendor that handles 'your image and voice' (privacy:296-298). There is no AI section."
+   },
+   {
+    "id": "OWN-02",
+    "status": "partial",
+    "evidence": "Terms exist in EN and AR, each with 2 markers (terms:243 liability cap, terms:257 court). §1 is browse-wrap (terms:81 'By downloading or using'). Neither language has an Arabic-prevails clause (grep finds none). The public terms page carries a 'Draft pending review' banner (terms:46) and internal drafting notes in §12 (terms:227-229: 'Reporting and blocking must both actually work before this clause is published', 'counsel must draft'). legal_links terms=''."
+   },
+   {
+    "id": "OWN-03",
+    "status": "fail",
+    "evidence": "`grep -rn termsVersion|privacyVersion|TERMS_VERSION|acceptTerms` over app/lib, functions and firebase returns nothing. The C06 footer is only the plain text l10n.byJoiningYouAgreeToTheOwn (phone_number_view.dart:149-154; app_en.arb:3173), with no link and no US line. `sendCode` runs at phone_number_view.dart:112, before any consent screen."
+   },
+   {
+    "id": "OWN-04",
+    "status": "partial",
+    "evidence": "Native defaults are off: AndroidManifest.xml:85-86 and Info.plist:72-73. But firebase_boot.dart:146-153 enables Crashlytics at every release launch, before C06, with no consent flag. main.dart:70-80 installs global error hooks. No crash toggle exists in lib/features/account (grep finds none). Analytics is NullAnalyticsSink in release and the debug sink applies only under kDebugMode (main.dart:43-45). That part is OK."
+   },
+   {
+    "id": "OWN-05",
+    "status": "fail",
+    "evidence": "your_data_sheet.dart:27 says 'there is no export yet'. site/index.html:127 and terms:171 say the same. privacy:378-380 promises a copy by email, but the reply window there is a placeholder."
+   },
+   {
+    "id": "OWN-06",
+    "status": "partial",
+    "evidence": "The in-app deletion exists and pytest test_account_deletion* passes. The web page is a mailto to a personal Gmail address (delete-account:92). It has 2 placeholders (94, 151). LegalLinks.deleteAccount=''. Consent records are deleted with the account (deletion_manifest.json row 10)."
+   },
+   {
+    "id": "OWN-07",
+    "status": "fail",
+    "evidence": "`grep -i 'artificial|machine|الذكاء'` over privacy and terms in EN and AR finds nothing. Assistant=false (feature_flags.dart). assistant_provider.dart ships only UnavailableAssistantProvider, and the file note says Gemini Flash has been chosen. AssistantRequest carries the free-text `question` (assistant_wire.dart:223), and that text can contain health information."
+   },
+   {
+    "id": "OWN-08",
+    "status": "fail",
+    "evidence": "site/index.html:57 claims 'or by a woman reviewer on a short video call', but no vendor exists (config.json videoCallService is empty, and no vendor is referenced in functions or app). 'It takes about 90 seconds' (app_en.arb:679) is not backed by any measurement. The consent screen says 'nothing is kept except a one way keyed hash' (app_en.arb:2830), which contradicts store.py:386-400 and privacy §6."
+   },
+   {
+    "id": "OWN-09",
+    "status": "owner-action",
+    "evidence": "No counsel memo, PDPC filing, entity, image-rights licence or breach runbook was found in the worktree."
+   },
+   {
+    "id": "OWN-10",
+    "status": "fail",
+    "evidence": "Blocked by APL-01, OWN-01/02/06, APL-03, APL-04, GPL-04 and APL-12. Details below."
+   },
+   {
+    "id": "OWN-11",
+    "status": "fail",
+    "evidence": "The worktree is uncommitted (git status shows ~80 modified files and 16 untracked). analyze is clean and 4784 tests pass. The preflight has 3 FAIL. The MainActivity.kt MethodChannel was never compiled (implementation report line 5). LegalLinks.allSet is false."
+   },
+   {
+    "id": "APL-01",
+    "status": "owner-action",
+    "evidence": "config.json legalEntity is the individual 'Mahmoud Reda' and the address is 'Egypt' only."
+   },
+   {
+    "id": "APL-02",
+    "status": "fail",
+    "evidence": "legal_links.dart support=''. The router hides 'talk to a human' (app_router.dart:2312). contactSupport is mahmoud.reda.acc@gmail.com."
+   },
+   {
+    "id": "APL-03",
+    "status": "fail",
+    "evidence": "`grep -i 'demo|review account|test_number'` over functions/identity/*.py finds no reviewer path."
+   },
+   {
+    "id": "APL-04",
+    "status": "fail",
+    "evidence": "PrivacyInfo.xcprivacy declares DeviceID, PhoneNumber, UserID, HealthFitness, OtherUserContent, OtherDataTypes and CrashData. It has no PhotosorVideos and no SensitiveInfo. It also uses 'NSPrivacyCollectedDataTypeHealthFitness'. Apple's list has separate Health and Fitness keys, so this one is probably not valid (ASSUMPTION: verify with the Xcode privacy report)."
+   },
+   {
+    "id": "APL-05",
+    "status": "unknown",
+    "evidence": "Needs an archive and TestFlight. The Runner manifest has no NSPrivacyAccessedAPITypes, so it relies on the pods' own manifests."
+   },
+   {
+    "id": "APL-06",
+    "status": "pass",
+    "evidence": "app_router.dart:419-424 makes C09b the only route into a lens, and only after consentRecorded, which is set after the server write. kCaptureConsentVersion matches CONSENT_VERSION=1 (config.py:634). Camera strings exist in EN and AR (ar.lproj/InfoPlist.strings). The consent wording itself is inaccurate (see the findings)."
+   },
+   {
+    "id": "APL-07",
+    "status": "unknown",
+    "evidence": "Not checked: it needs the build machine."
+   },
+   {
+    "id": "APL-08",
+    "status": "owner-action",
+    "evidence": "MIN_AGE=18 (config.py:114). The age rating is set in App Store Connect."
+   },
+   {
+    "id": "APL-09",
+    "status": "fail",
+    "evidence": "C09b says only 'Google Cloud, on servers outside Egypt' (app_en.arb:2854). It names no country, does not mention Firebase Auth in the US, and has no vendor. The privacy vendor entry is a placeholder (privacy:296-298)."
+   },
+   {
+    "id": "APL-10",
+    "status": "pass",
+    "evidence": "cloud_store.dart and account_data.dart have no lifeStage or pregnancy sync. Health backup is gated on consent health-v1 (firestore.rules:146-147). The test suite, including the cycle no-analytics test, passes."
+   },
+   {
+    "id": "APL-11",
+    "status": "owner-action",
+    "evidence": "Terms:76 and privacy:109 split founder and publisher correctly. A signed licence from Rahma is not on file."
+   },
+   {
+    "id": "APL-12",
+    "status": "fail",
+    "evidence": "`grep -i 'medical device'` over app_en.arb finds nothing. The doctor gates exist (workout_day_view.dart:287-314)."
+   },
+   {
+    "id": "APL-13",
+    "status": "pass",
+    "evidence": "feature_flags.dart shipped: accountRequired true; community, coachApp, assistant, payments, marketplace and adminConsole false."
+   },
+   {
+    "id": "APL-14",
+    "status": "owner-action",
+    "evidence": "Set in the App Store Connect console."
+   },
+   {
+    "id": "APL-15",
+    "status": "partial",
+    "evidence": "Info.plist:9-10 has ITSAppUsesNonExemptEncryption false. The other items are console settings."
+   },
+   {
+    "id": "APL-16",
+    "status": "not-applicable",
+    "evidence": "Community is off."
+   },
+   {
+    "id": "APL-17",
+    "status": "not-applicable",
+    "evidence": "Payments are off."
+   },
+   {
+    "id": "APL-18",
+    "status": "not-applicable",
+    "evidence": "The assistant is off, and the provider is a stub that refuses."
+   },
+   {
+    "id": "GPL-01",
+    "status": "owner-action",
+    "evidence": "Depends on the Play account type."
+   },
+   {
+    "id": "GPL-02",
+    "status": "unknown",
+    "evidence": "Needs Play Console access."
+   },
+   {
+    "id": "GPL-03",
+    "status": "unknown",
+    "evidence": "The preflight confirmed targetSdk 36. The 16 KB check was SKIPPED because no AAB has been built."
+   },
+   {
+    "id": "GPL-04",
+    "status": "fail",
+    "evidence": "play-data-safety.txt says 'Is data shared with third parties: No' and lists 'Not collected: … audio'. It does not list sex or age derived from the ID. That contradicts the video-call reviewer path (privacy:296-298, 'image and voice')."
+   },
+   {
+    "id": "GPL-05",
+    "status": "pass",
+    "evidence": "AndroidManifest.xml:9 declares CAMERA only. Lines 28-31 remove RECORD_AUDIO, storage and c2dm."
+   },
+   {
+    "id": "GPL-06",
+    "status": "owner-action",
+    "evidence": "Set in Play Console."
+   },
+   {
+    "id": "GPL-07",
+    "status": "owner-action",
+    "evidence": "No listing drafts were found in the worktree."
+   },
+   {
+    "id": "GPL-08",
+    "status": "owner-action",
+    "evidence": "Categories are drafted in play-data-safety.txt."
+   },
+   {
+    "id": "LAW-01",
+    "status": "fail",
+    "evidence": "privacy:107 and ar/privacy:102 hold the PDPC permit placeholder. The deadline is 31 Oct 2026."
+   },
+   {
+    "id": "LAW-02",
+    "status": "partial",
+    "evidence": "A capture consent record exists (callable_capture_consent_store.dart). Its wording is inaccurate and incomplete (see S5). The licence is not filed."
+   },
+   {
+    "id": "LAW-03",
+    "status": "fail",
+    "evidence": "The phone number goes to Firebase Auth (US) at phone_number_view.dart:112 with no transfer consent. privacy:316 transfer mechanism is a placeholder."
+   },
+   {
+    "id": "LAW-04",
+    "status": "fail",
+    "evidence": "Reply-window placeholders at privacy:378 and delete-account:94. There is no export."
+   },
+   {
+    "id": "LAW-05",
+    "status": "fail",
+    "evidence": "`ls firebase` shows no runbook. Only the privacy §9 statement exists."
+   },
+   {
+    "id": "LAW-06",
+    "status": "owner-action",
+    "evidence": "Individual publisher, and the DPO field is empty in config.json."
+   },
+   {
+    "id": "LAW-07",
+    "status": "partial",
+    "evidence": "There are TTL fields (expireAt in store.py:977 and waitlist/join.py:253), and the 180-day period is disclosed. The reviewer access log is 'kept as an audit trail' with no period stated (privacy:331-334)."
+   },
+   {
+    "id": "LAW-08",
+    "status": "owner-action",
+    "evidence": "No evidence of the DPA or vendor contracts."
+   },
+   {
+    "id": "LAW-09",
+    "status": "partial",
+    "evidence": "The waitlist checkbox is required (waitlist/index.html:58) and the server refuses requests without consent (join.py:235). It is auto-deleted at 180 days (join.py:76). That conflicts with keeping consent records for 3 years."
+   },
+   {
+    "id": "LAW-10",
+    "status": "pass",
+    "evidence": "MIN_AGE=18 (config.py:114). pytest passes 893 tests, including test_nid."
+   },
+   {
+    "id": "LAW-11",
+    "status": "partial",
+    "evidence": "EN and AR exist. There is no Arabic-prevails clause and no locale is stored with any acceptance."
+   },
+   {
+    "id": "LAW-12",
+    "status": "fail",
+    "evidence": "Same unbacked claims as OWN-08. Rahma's social posts were not checked."
+   },
+   {
+    "id": "LAW-13",
+    "status": "pass",
+    "evidence": "ENFORCE_APP_CHECK=True (config.py:74). logs.py:7 allow-list has no uid, phone, NID or image. verificationJobs deny-all (firestore.rules:1493). test_privacy_scan passes."
+   },
+   {
+    "id": "LAW-14",
+    "status": "partial",
+    "evidence": "Sex is read from the ID (app_en.arb:1195). The niqab route depends on a reviewer call with no vendor. Storefront settings are not verifiable from the code."
+   },
+   {
+    "id": "LAW-15",
+    "status": "partial",
+    "evidence": "Terms §4 and the doctor gate on R03 are kept. There is no coach agreement."
+   },
+   {
+    "id": "LAW-16",
+    "status": "pass",
+    "evidence": "test_ledger_and_dedupe passes."
+   },
+   {
+    "id": "LAW-17",
+    "status": "owner-action",
+    "evidence": "No counsel memo was found."
+   }
+  ],
+  "findings": [
+   {
+    "title": "S1. Her phone number goes to Firebase Auth in the US before any consent, and the privacy policy says the opposite",
+    "checklist_ids": [
+     "OWN-03",
+     "LAW-03",
+     "OWN-01"
+    ],
+    "severity": "legal-liability",
+    "where": "app/lib/features/signup/presentation/phone_number_view.dart:112,149-154; app/lib/l10n/app_en.arb:3173 and app_ar.arb:3173; site/privacy/index.html:308-316",
+    "problem": "Correctness and security layer. C06 calls sendCode(_e164) after a single 'Send me a code' tap. The only legal text is the plain line 'By joining you agree to the Own Hub rules.' It has no Terms link, no Privacy link, no US disclosure and no record. Privacy §5 states 'We ask for that consent, naming these countries, before your data leaves your phone', which the code contradicts. `grep termsVersion|privacyVersion|acceptTerms` over app/lib, functions and firebase finds nothing, so no Terms or Privacy acceptance is stored anywhere. For a women's safety app, the first item of personal data leaves Egypt without the consent the PDPL transfer rules require, and the published policy misstates that.",
+    "fix": "On C06, before sendCode: add links to Terms and Privacy, the line 'Your number is handled by Google Firebase in the United States', and an 'Agree and continue' button. Add an acceptTerms callable that writes users/{uid}/consents/terms_{v} with {termsVersion, privacyVersion, locale, appVersion, serverTimestamp}, keeping writes server-only as for the existing consents. Write it right after code verification and replay the C06 choice from memory. Re-prompt when either version goes up.",
+    "owner_action": false
+   },
+   {
+    "title": "S2. No privacy policy or terms reachable in the app; all four LegalLinks are empty and the preflight fails",
+    "checklist_ids": [
+     "OWN-01",
+     "OWN-02",
+     "APL-02",
+     "OWN-06",
+     "OWN-11"
+    ],
+    "severity": "store-rejection",
+    "where": "app/lib/config/legal_links.dart:18-28; app/lib/features/account/presentation/privacy_view.dart:375,391; app/lib/routing/app_router.dart:2288-2314; release_preflight.sh output 'FAIL legal links filled in'",
+    "problem": "privacyPolicy, terms, support and deleteAccount are all ''. The privacy centre hides the rows, 'talk to a human' disappears, and neither C06 nor C09b has any policy link (grep on consent_view.dart and phone_number_view.dart finds no LegalLinks or openExternal). Apple 5.1.1(i) and Google User Data both require the policy inside the app. The preflight reports 46 PASS, 3 FAIL.",
+    "fix": "Deploy the site to a real domain, fill in the four constants, add the privacy link on C06 and C09b, and add a release-mode assert(LegalLinks.allSet) at startup. Re-run the preflight with RELEASE_BASE_URL set.",
+    "owner_action": true
+   },
+   {
+    "title": "S3. Public legal pages are unfinished: 11 placeholders per language, draft banners, internal drafting notes and a placeholder domain",
+    "checklist_ids": [
+     "OWN-01",
+     "OWN-02",
+     "OWN-06",
+     "OWN-08",
+     "LAW-01",
+     "LAW-04"
+    ],
+    "severity": "store-rejection",
+    "where": "site/privacy/index.html:107,176,296,298,316,378,381 (and site/ar/privacy/index.html:102,163,277,280,294,350,354); site/terms/index.html:46,227-229,243,257; site/delete-account/index.html:41,94,151; site/config.json baseUrl; site/sitemap.xml (49 hits) and robots.txt (2 hits) of ownhub.example",
+    "problem": "Counting class=\"todo\" gives EN 7+2+2 and AR 7+2+2, so the AR pages carry the same gaps. The missing items are the PDPC permit, transfer countries and mechanism, video vendor and region, reply window, regulator contact, liability cap and court. Terms §12 publishes notes addressed to the owner ('Reporting and blocking must both actually work before this clause is published', 'separate documents counsel must draft'). Pages carry 'Draft pending review by a licensed Egyptian lawyer'. A reviewer who opens these sees placeholder content (Apple 2.1). The privacy policy cannot meet PDPL disclosure without the transfer and permit facts.",
+    "fix": "Fill the config.json values with counsel, rebuild with _build/build.py, move the §12 drafting notes into _draftingNotesNotPublished, remove the banners after sign-off, set baseUrl, and check that `grep -rn 'class=\"todo\"' site` is empty.",
+    "owner_action": true
+   },
+   {
+    "title": "S4. Crashlytics turns on at every release launch, before C06 and before any consent, with no off switch",
+    "checklist_ids": [
+     "OWN-04",
+     "LAW-17"
+    ],
+    "severity": "legal-liability",
+    "where": "app/lib/app_state/firebase_boot.dart:146-153 (setCrashlyticsCollectionEnabled(crashCollectionFor(release: kReleaseMode))); app/lib/main.dart:70-80; no crash toggle in lib/features/account (grep)",
+    "problem": "The native default is correctly off (AndroidManifest.xml:85-86, Info.plist:72-73), but Dart turns collection on unconditionally in release, before the Welcome screen. The demo tour (demo_mode.dart) admits that an uncaught error there 'is a crash report'. Reports carry the Firebase installation ID, device model and OS to Google. Privacy §3.6 (privacy:230-232) omits the installation ID. There is no consent and no off switch in the privacy centre (Apple 5.1.1(ii)), and counsel has not signed off a legitimate-interest basis.",
+    "fix": "Store a crashReportsAllowed flag, set it at the C06 acceptance step or through a privacy-centre toggle that defaults off until accepted. Call setCrashlyticsCollectionEnabled only when the flag is true, and add the toggle. Add 'installation identifier' to privacy §3.6.",
+    "owner_action": false
+   },
+   {
+    "title": "S5. The C09b biometric consent is inaccurate and incomplete, which makes the sensitive-data consent contestable",
+    "checklist_ids": [
+     "APL-06",
+     "APL-09",
+     "LAW-02",
+     "LAW-03",
+     "OWN-08"
+    ],
+    "severity": "legal-liability",
+    "where": "app/lib/l10n/app_en.arb:2830 ('nothing is kept except a one way keyed hash'), 2854 ('Google Cloud, on servers outside Egypt'), 453/1157/1878 ('We keep the result, nothing else'); functions/identity/store.py:386-400 (state, reasons, flags, decidedBy, attempt, timestamps); site/privacy/index.html:324-334",
+    "problem": "The consent she signs says that only the NID hash is kept. The backend keeps the verification record, reasons and flags for 180 days, plus a reviewer access log, as privacy §6 itself says. The consent names no country (Germany or EU, and the US for auth) and links to no policy. Under PDPL Art. 12, consent to processing that was described wrongly is weak written consent. Three different 'what we keep' statements also disagree across the app.",
+    "fix": "Rewrite the C09b bullets in EN and AR to match privacy §6: 'We keep the result and the reasons for 180 days, and a one-way code of your ID number.' Name Frankfurt, Germany and the US. Add the privacy link. Bump CONSENT_VERSION and kCaptureConsentVersion to 2 so existing users re-consent. Align strings 453, 1157 and 1878.",
+    "owner_action": false
+   },
+   {
+    "title": "S6. The woman-reviewer video call is promised publicly, but no vendor, channel or disclosure exists",
+    "checklist_ids": [
+     "OWN-08",
+     "APL-09",
+     "GPL-04",
+     "LAW-14",
+     "OWN-01"
+    ],
+    "severity": "store-rejection",
+    "where": "site/index.html:57; site/privacy/index.html:176,296-298 (vendor placeholders) vs 410 ('No access to … microphone'); site/config.json videoCallService empty; app_en.arb:2853; app/android/play-data-safety.txt ('Not collected: … audio', 'shared: No'); functions/identity/config.py:512 REVIEW_SLA_HOURS=72",
+    "problem": "The home page and C09b promise a video call with a woman reviewer. It is the only route for niqab-wearing women and the fallback after the third failed try. No vendor is referenced anywhere in functions or app (grep), so the call cannot be disclosed, contracted (no DPA) or placed in a region. Data safety says audio is not collected and nothing is shared, while privacy §4 says the vendor handles 'your image and voice'. A reviewer comparing the forms will see the contradiction, and a niqab user may be left with no working way in. That is a discrimination exposure for a women-only gate.",
+    "fix": "Choose the vendor and region, fill videoCallService and videoCallServiceRegion, and add a vendor DPA. Update Data safety (Audio, Photos/video, shared or processed by that vendor) and the Apple labels. Reword §10 to 'the app itself never uses your microphone; a review call does, through [vendor]'. Until then, remove the claim from site/index.html:57.",
+    "owner_action": true
+   },
+   {
+    "title": "S7. Data export is not built, and the reply window for emailed requests is blank",
+    "checklist_ids": [
+     "OWN-05",
+     "LAW-04"
+    ],
+    "severity": "legal-liability",
+    "where": "app/lib/features/account/presentation/your_data_sheet.dart:27; site/index.html:127; site/terms/index.html:171; site/privacy/index.html:378-380",
+    "problem": "PDPL Art. 2 gives her a right to a copy. The only route is an email to a personal Gmail address, with the reply window shown as [to be completed]. Nothing in functions builds the export.",
+    "fix": "Add an exportMyData callable driven by deletion_manifest.json that returns JSON plus an EN/AR summary, add local-store export on the device, and add a test that every manifest row appears in the export. Until it ships, fill rightsResponseWindow and run the email route from a monitored role mailbox.",
+    "owner_action": false
+   },
+   {
+    "title": "S8. The iOS privacy manifest misses photo and biometric data, and may use an invalid data-type key",
+    "checklist_ids": [
+     "APL-04"
+    ],
+    "severity": "store-rejection",
+    "where": "app/ios/Runner/PrivacyInfo.xcprivacy (collected types: DeviceID, PhoneNumber, UserID, HealthFitness, OtherUserContent, OtherDataTypes, CrashData)",
+    "problem": "The app sends ID-card photos and a selfie to the server (Photos or Videos) and does a face match. It also handles pregnancy status (Sensitive Info). Neither type is declared. 'NSPrivacyCollectedDataTypeHealthFitness' does not match Apple's separate Health and Fitness keys (ASSUMPTION, verify with Xcode > Generate Privacy Report). A mismatch between the manifest, the App Privacy answers and the policy is a 5.1.1 rejection.",
+    "fix": "Replace HealthFitness with the NSPrivacyCollectedDataTypeHealth and NSPrivacyCollectedDataTypeFitness entries. Add NSPrivacyCollectedDataTypePhotosorVideos and NSPrivacyCollectedDataTypeSensitiveInfo (Linked=true, Tracking=false, AppFunctionality). Regenerate the privacy report and match App Store Connect to it.",
+    "owner_action": false
+   },
+   {
+    "title": "S9. The Play Data safety draft under-declares",
+    "checklist_ids": [
+     "GPL-04"
+    ],
+    "severity": "store-rejection",
+    "where": "app/android/play-data-safety.txt (Overview 'shared: No'; 'Not collected: … audio'; no age or sex entry)",
+    "problem": "Sex and birth date read from the NID digits are not declared under Personal info. Audio and video from the review call are declared as not collected. If the call vendor is a third party, 'shared' is wrong.",
+    "fix": "Add Personal info > Other (sex and age derived from the ID, used for the women-only and 18+ gate). Add Audio and Photos/videos for the review call. Re-answer 'shared' once the vendor's role is known, and keep the file in step with S8.",
+    "owner_action": false
+   },
+   {
+    "title": "S10. No path for App Review: a reviewer cannot pass Egyptian phone OTP, a national ID and a selfie",
+    "checklist_ids": [
+     "APL-03"
+    ],
+    "severity": "store-rejection",
+    "where": "functions/identity/*.py (grep demo|review account|test number: no match); feature_flags.dart accountRequired: true",
+    "problem": "With accountRequired on, everything sits behind verification. Neither store can review the app, so the result is a 2.1 rejection or a Play 'App access' failure.",
+    "fix": "Add a Firebase Auth test number (+20) with a fixed code. Add an allow-listed reviewer uid, set in Secret Manager, for which beginIdentityCheck returns verified and writes an audit-log entry. Write the Review Notes and attach a screen recording.",
+    "owner_action": true
+   },
+   {
+    "title": "S11. No 'not a medical device' disclaimer anywhere in the app",
+    "checklist_ids": [
+     "APL-12"
+    ],
+    "severity": "store-rejection",
+    "where": "`grep -i 'medical device' app/lib/l10n/app_*.arb` returns nothing; the doctor gate exists only on R03 (workout_day_view.dart:287-314)",
+    "problem": "The app has cycle tracking, pregnancy and postpartum answers on O03 (now before sign-up), and weight. The disclaimer exists only in web Terms §4. Apple 1.4.1 and Google's health policy expect it in the app and the listing.",
+    "fix": "Add a string in EN and AR ('Own Hub is not a medical device and does not diagnose, treat, cure or prevent any condition. Check with your doctor.'). Show it in About, on the cycle and life-stage screens, and on O03 when pregnant or postpartum is chosen.",
+    "owner_action": false
+   },
+   {
+    "title": "S12. Privacy and Terms say nothing about AI or AI training, and the assistant groundwork already points at Gemini",
+    "checklist_ids": [
+     "OWN-07",
+     "APL-18"
+    ],
+    "severity": "medium",
+    "where": "site/privacy, site/terms and site/ar/* (grep for AI terms finds nothing); app/lib/features/assistant/domain/assistant_provider.dart:1-15; assistant_wire.dart:223 (free-text question)",
+    "problem": "Nothing is sent to an AI provider today, because the assistant is off and the provider is a stub. But the no-training promise is never stated. Cloud Vision is used on ID images and the policy does not say it is not used for training. The future request carries her free-text question, which can contain health information. On the free Gemini tier, prompts may be used and reviewed by humans.",
+    "fix": "Add privacy §3.8 in EN and AR ('We never use your data to train AI, ours or anyone's'), with the Cloud Vision clarification. Before switching the assistant on, use Vertex AI in europe-west3 on a paid account with zero data retention, add a separate opt-in naming Google, and strip or classify health content from the question.",
+    "owner_action": false
+   },
+   {
+    "title": "S13. Terms are browse-wrap, have no Arabic-prevails clause and lack Apple's required EULA terms",
+    "checklist_ids": [
+     "OWN-02",
+     "LAW-11",
+     "OWN-03"
+    ],
+    "severity": "legal-liability",
+    "where": "site/terms/index.html:81 ('By downloading or using Own Hub you accept these Terms'), :269; site/config.json _draftingNotesNotPublished.appleEulaClause ('THE TERMS ARE INCOMPLETE WITHOUT IT')",
+    "problem": "Browse-wrap is the weakest evidence of acceptance under Law 15/2004, and no acceptance is recorded (see S1). There is no clause saying the Arabic text prevails. The Apple third-party-beneficiary and minimum terms are missing, so custom terms would fail Apple's standard EULA requirements.",
+    "fix": "Switch to click-wrap (S1), add 'The Arabic text prevails' in both languages, and have counsel add Apple's required clause. Alternatively, rely on Apple's standard EULA and say so.",
+    "owner_action": true
+   },
+   {
+    "title": "S14. The web deletion route runs through a personal Gmail address and a phone call from the publisher, and proof of consent is lost on deletion",
+    "checklist_ids": [
+     "OWN-06",
+     "LAW-07",
+     "LAW-09"
+    ],
+    "severity": "medium",
+    "where": "site/delete-account/index.html:91-95 ('we will phone that number to confirm'); site/config.json contactPrivacy mahmoud.reda.acc@gmail.com; functions/account/deletion_manifest.json row 10 (users/{uid}/consents groupHook)",
+    "problem": "In a women-only safety product, the web deletion route has a man's personal mailbox and a phone call to her number from the publisher. That damages trust and the brand, and the identities are mixed in practice. Consent records are deleted with the account, which leaves no proof of lawful past processing if a complaint arrives.",
+    "fix": "Use a role mailbox (privacy@domain) and confirm by a one-time SMS code or reply email, not a call. Keep a pseudonymised consent ledger (version, timestamp, salted uid) for the period counsel sets, and disclose it in privacy §6.",
+    "owner_action": true
+   },
+   {
+    "title": "S15. App Check activates at launch and Firebase initialises before any consent screen",
+    "checklist_ids": [
+     "OWN-04",
+     "LAW-03"
+    ],
+    "severity": "medium",
+    "where": "app/lib/app_state/firebase_boot.dart:111 (initializeApp) and 132-137 (FirebaseAppCheck.activate) inside main.dart FirebaseBoot.start()",
+    "problem": "ASSUMPTION about network timing: activate() with default token auto-refresh fetches a Play Integrity or App Attest token, and initializeApp registers a Firebase installation, both before Welcome. That sends device identifiers to Google outside Egypt before any consent. The policy discloses App Check but not that it runs on first launch.",
+    "fix": "Defer FirebaseBoot.start() until C06 acceptance for a fresh install, so the demo tour runs local-only. Otherwise, document a counsel-approved security basis and state in privacy §3.6 that it runs from first launch.",
+    "owner_action": false
+   },
+   {
+    "title": "S16. Release readiness: the branch is uncommitted, the native code was never compiled and the preflight has 3 FAIL",
+    "checklist_ids": [
+     "OWN-11"
+    ],
+    "severity": "high",
+    "where": "git status (~80 modified and 16 untracked, including demo_mode.dart, signup/demo/, debug_analytics_sink.dart); app/android/.../MainActivity.kt diff (new MethodChannel); 4-implementation-report.md lines 3-5; preflight '46 passed, 3 failed'",
+    "problem": "Tests are green (4784 Flutter, 893 Python, analyze clean), but nothing has been built on a device. The Kotlin settings channel has never compiled, and an Android build failure would block the A5 'Open settings' recovery. The 16 KB and signing checks were skipped because there is no AAB.",
+    "fix": "Run tool/build_release.sh on both platforms and a device smoke test of C01 through C13 in EN and AR, then commit after owner review. Re-run the preflight with RELEASE_BASE_URL and an AAB present.",
+    "owner_action": false
+   },
+   {
+    "title": "S17. No PDPC permit or filing, an individual publisher and no counsel memo, with the grace period ending 31 Oct 2026",
+    "checklist_ids": [
+     "LAW-01",
+     "LAW-02",
+     "LAW-06",
+     "LAW-08",
+     "LAW-17",
+     "OWN-09",
+     "APL-01"
+    ],
+    "severity": "legal-liability",
+    "where": "site/privacy/index.html:107 (permit placeholder); site/config.json legalEntity 'Mahmoud Reda', legalAddress 'Egypt', dataProtectionOfficer empty",
+    "problem": "The app processes national ID numbers, biometric face matches and pregnancy data, and transfers data to the EU and the US. Without a licence, PDPL Art. 41 and 42 penalties (EGP 500k to 5M and/or prison) fall personally on the individual publisher. Apple 5.1.1(ix) expects an organisation for this kind of data.",
+    "fix": "Engage Egyptian counsel now. File with the PDPC before 31 Oct. Decide on forming a company and registering a DPO. Accept the Google Cloud DPA. Write the breach runbook.",
+    "owner_action": true
+   },
+   {
+    "title": "S18. Retention gaps: the reviewer access log has no period, and the waitlist deletes consent proof at 180 days",
+    "checklist_ids": [
+     "LAW-07",
+     "LAW-09"
+    ],
+    "severity": "medium",
+    "where": "site/privacy/index.html:331-334 ('kept as an audit trail', no period); functions/waitlist/join.py:76 RETENTION_DAYS=180",
+    "problem": "PDPL Art. 3 requires a defined retention period, and the access log has none. Waitlist records, including the consent proof, are deleted at 180 days, which conflicts with the rule to keep marketing-consent records for 3 years.",
+    "fix": "Set and enforce a TTL on the reviewer access log and disclose it. For the waitlist, keep a minimal consent record (hash of contact, timestamp, wording version) for 3 years and delete the contact itself at 180 days.",
+    "owner_action": true
+   },
+   {
+    "title": "S19. Unbacked '90 seconds' claim",
+    "checklist_ids": [
+     "OWN-08",
+     "LAW-12"
+    ],
+    "severity": "low",
+    "where": "app/lib/l10n/app_en.arb:679 'It takes about 90 seconds.' (shown on C09b, consent_view.dart:220); review SLA is 72h (config.py:512)",
+    "problem": "No measured timing backs the claim, and anyone routed to a reviewer waits up to 72 hours. Under CPL Art. 9 this is a misleading-claim risk. C13 already uses only the measured time.",
+    "fix": "Use 'usually a couple of minutes; if a woman needs to check, up to 3 days', or show the measured median once real data exists.",
+    "owner_action": false
+   }
+  ],
+  "keep": [
+   "The consent gate in app_router.dart:419-424: no lens opens without a server-recorded C09b consent, deep links included. The consent is version-matched to CONSENT_VERSION=1.",
+   "Analytics: NullAnalyticsSink in release, the debug sink only under kDebugMode (main.dart:43-45), and cycle screens send nothing. The 'No analytics software' claim is true today.",
+   "Health data stays on the phone. No lifeStage or pregnancy sync in cloud_store.dart or account_data.dart. Health backup is gated on health-v1 consent in firestore.rules:146-147.",
+   "Android permissions: CAMERA only, with RECORD_AUDIO, storage and c2dm removed (AndroidManifest.xml:9,28-31). Crashlytics is native-off in both platforms' native config.",
+   "Server logs follow an allow-list with no uid, phone, NID or image (functions/identity/logs.py:7). ENFORCE_APP_CHECK=True. verificationJobs are deny-all. Consent documents are server-write-only and readable by her.",
+   "The deletion manifest is shared by the app and the server and has passing tests (893 pytest). Auth deletion runs last.",
+   "The site CSP is default-src 'none' with no third-party scripts, so the site makes no outside calls by construction.",
+   "The pregnancy and postpartum doctor gate on R03 survives the new C13 'Start day 1' path (app_router.dart:1778-1782, workout_day_view.dart:287-314).",
+   "The assistant is a refusing stub with no uid in the request, and the flag is off.",
+   "The founder (Rahma) and publisher (Mahmoud) roles are kept apart in terms:76 and privacy:109."
+  ],
+  "verdict": "This cannot ship to either store as it stands, and it is legally exposed in Egypt. The engineering is strong. Tests are green, the camera-consent gate is solid, health data stays on the phone and the server logs are clean. What fails is consent and disclosure. Her phone number reaches the US before any consent while the policy claims the opposite, and no Terms or Privacy acceptance is recorded (S1). Crashlytics runs from first launch with no off switch (S4). The biometric consent text understates what is kept (S5). No policy link exists in the app (S2), and the public pages carry 11 placeholders per language plus drafting notes (S3). The reviewer video call is promised but has no vendor (S6). The privacy labels on both stores under-declare (S8, S9), there is no App Review path (S10), no in-app medical disclaimer (S11) and no export (S7). The code fixes (S1, S4, S5, S8, S9, S11, S15) are small and can be done this week. The real deadline is owner-side: the PDPC filing before 31 Oct, counsel sign-off, the video vendor, a real domain and a role mailbox (S2, S3, S6, S17). Assumptions the code makes about customers, which only real users can confirm: (1) she will hand her national ID and a live selfie to an app before seeing any value, now softened by the O03 and O05 value-first flow; (2) the check takes about 90 seconds; (3) a 72-hour reviewer SLA is acceptable for niqab-wearing women and those who fail three times; (4) she is 18 or over and holds an Egyptian NID, with no route for foreign residents; (5) she accepts that her number is handled in the US and her data in Frankfurt; (6) she will read MSA Arabic comfortably; (7) a free app with no export, community or coaching keeps her past day one; (8) she trusts a deletion process that ends in a phone call from the publisher; (9) she wants cycle and health data on the phone only, with backup off by default; (10) camera-only capture with no gallery upload works on the phones she owns."
+ },
+ {
+  "auditor": "The Investor",
+  "persona": "The Investor",
+  "approach": "I did not receive separate Skeptic findings, so I scored each open or partial checklist gap as a finding. Each has an impact score from 1 to 5 (risk of store rejection, a PDPL fine or prison, or a lawsuit, weighed against what it costs if it happens), an effort (S, M or L) and a confidence (Evidence or Assumption). I re-checked the most important facts in the uncommitted worktree. In legal_links.dart (lines 18-28) all four URLs are still empty. In firebase_boot.dart (lines 149-153) Crashlytics turns on in release at boot, and the native default is off (Info.plist lines 72-73). your_data_sheet.dart (lines 26-28) confirms there is no export. My search tool did not work in this environment (ripgrep missing), so placeholder counts, the missing acceptance record and the AR site parity come from the checklist's same-day re-check, not my own. I treated those as Evidence from the checklist, not from me. I have no Advocate PROTECTS CORE list. So I kept the core intact by default: the value-first order (O03 and O05 before the phone screen), C09b sensitive consent kept separate, health data on the phone only, and images never stored. No fix below touches any of these. I never estimate market or customer behaviour. Anything about users is marked as an assumption.\n\nSECTION 1. IF WE ONLY FIX THREE THINGS.\n(1) Hire an Egyptian lawyer now and file with the PDPC (LAW-01, LAW-17, APL-01, LAW-06). The grace period ends 31 Oct or 1 Nov, 25 days away, and Art. 41 and 42 penalties reach EGP 5M and/or prison for sensitive and cross-border data, which this app processes on day one. The same lawyer's answers fill every placeholder in privacy and terms and decide individual versus company. That decision gates the store accounts, so one engagement unblocks about 15 items.\n(2) Build \"Agree and continue\" on C06 with a server-side acceptance record, and gate Crashlytics on it (OWN-03, OWN-04, LAW-03). Today her phone number goes to Firebase Auth in the US and crash data leaves the phone before any consent, which breaks PDPL Art. 14-16 and contradicts the policy. One change of about a day closes three legal items and gives us click-wrap evidence for every later dispute.\n(3) Build a reviewer demo path: an Auth test number plus one pre-seeded verified uid (APL-03). No Apple or Google reviewer can pass Egyptian phone OTP plus a national ID plus a selfie, so without it rejection is certain on both stores, every time. It costs about half a day and removes the single most predictable rejection.\n\nSECTION 2. FIX PLAN: see findings F1 to F10, ordered by impact, then by lowest effort. Each one says how we will know it worked.\n\nSECTION 3. NOT WORTH FIXING NOW: see the keep list and the verdict.\n\nSECTION 4. OUT OF CODE: the owner_action findings, each with one cheap real-world test.",
+  "checklist_status": [
+   {
+    "id": "OWN-01",
+    "status": "fail",
+    "evidence": "Per the checklist's re-check: 7 placeholders in site/privacy, privacy:410 says no microphone while site/index.html:57 promises a video-call reviewer, privacy:409 says no analytics, and there is no AI section. legal_links.dart:18 privacyPolicy is ''."
+   },
+   {
+    "id": "OWN-02",
+    "status": "partial",
+    "evidence": "Terms v2.0 exists in EN and AR. §13 and §15 are placeholders, there is no Arabic-prevails clause, and legal_links.dart:21 terms is ''."
+   },
+   {
+    "id": "OWN-03",
+    "status": "fail",
+    "evidence": "No termsVersion or privacyVersion anywhere (checklist re-check). C06 shows only the unlinked line byJoiningYouAgreeToTheOwn (app_en.arb:3173). Terms §1 is browse-wrap."
+   },
+   {
+    "id": "OWN-04",
+    "status": "partial",
+    "evidence": "The native default is off (Info.plist:72-73 FirebaseCrashlyticsCollectionEnabled false), but firebase_boot.dart:149-153 turns it on in release at boot, before C06. There is no privacy-centre toggle. The analytics sink is debug-only (main.dart:43)."
+   },
+   {
+    "id": "OWN-05",
+    "status": "fail",
+    "evidence": "your_data_sheet.dart:26-28 says 'there is no export yet', and site/index.html:127 says the same, while Terms §6 promises a copy by email."
+   },
+   {
+    "id": "OWN-06",
+    "status": "partial",
+    "evidence": "The in-app deletion flow and the functions/account/deletion.py manifest exist. legal_links.dart:28 deleteAccount is ''. The delete page has 2 placeholders, including the reply window."
+   },
+   {
+    "id": "OWN-07",
+    "status": "fail",
+    "evidence": "Not training AI is true today (assistant flag off, no uid in AssistantRequest per the checklist), but no AI statement exists in privacy or terms, EN or AR."
+   },
+   {
+    "id": "OWN-08",
+    "status": "fail",
+    "evidence": "'Woman reviewer on a short video call' (site/index.html:57) has no vendor and no C12 button. 'No analytics software' and 'no microphone' need to be reconciled."
+   },
+   {
+    "id": "OWN-09",
+    "status": "owner-action",
+    "evidence": "There is no counsel memo. It depends on LAW-17."
+   },
+   {
+    "id": "OWN-10",
+    "status": "fail",
+    "evidence": "Umbrella item. APL-01, APL-03, APL-04, GPL-04 and the legal links are all open."
+   },
+   {
+    "id": "OWN-11",
+    "status": "fail",
+    "evidence": "Branch onboarding/2026-10-06 is uncommitted. The known R1-12a test fails. LegalLinks.allSet is false."
+   },
+   {
+    "id": "APL-01",
+    "status": "owner-action",
+    "evidence": "Account type not visible from code. An entity decision is needed."
+   },
+   {
+    "id": "APL-02",
+    "status": "fail",
+    "evidence": "legal_links.dart:24 support is '', so app_router.dart:2274 drops 'talk to a human'."
+   },
+   {
+    "id": "APL-03",
+    "status": "fail",
+    "evidence": "The checklist reports no reviewer path in functions/identity."
+   },
+   {
+    "id": "APL-04",
+    "status": "partial",
+    "evidence": "PrivacyInfo.xcprivacy lacks SensitiveInfo and PhotosorVideos (checklist)."
+   },
+   {
+    "id": "APL-05",
+    "status": "unknown",
+    "evidence": "Needs an archive build and a TestFlight upload."
+   },
+   {
+    "id": "APL-06",
+    "status": "pass",
+    "evidence": "Per the checklist, C09b records consent before the camera. Info.plist:26-27 has a clear camera string. Re-verify that the value-first flow cannot skip C09b."
+   },
+   {
+    "id": "APL-07",
+    "status": "unknown",
+    "evidence": "Needs the build machine."
+   },
+   {
+    "id": "APL-08",
+    "status": "owner-action",
+    "evidence": "App Store Connect questionnaire, 18+."
+   },
+   {
+    "id": "APL-09",
+    "status": "fail",
+    "evidence": "The US Auth transfer and the video vendor are not named (placeholders)."
+   },
+   {
+    "id": "APL-10",
+    "status": "partial",
+    "evidence": "The health backup is opt-in to Firestore. The G9 test exists per the checklist."
+   },
+   {
+    "id": "APL-11",
+    "status": "owner-action",
+    "evidence": "No signed licence from Rahma is on file."
+   },
+   {
+    "id": "APL-12",
+    "status": "partial",
+    "evidence": "The 'not a medical device' line is missing from app_en.arb and only appears in the Terms."
+   },
+   {
+    "id": "APL-13",
+    "status": "partial",
+    "evidence": "Flags are set correctly per the checklist. Review Notes are not written."
+   },
+   {
+    "id": "APL-14",
+    "status": "owner-action",
+    "evidence": "DSA declaration in App Store Connect."
+   },
+   {
+    "id": "APL-15",
+    "status": "pass",
+    "evidence": "Info.plist:9-10 ITSAppUsesNonExemptEncryption is false. Phone OTP only, so Sign in with Apple is not needed."
+   },
+   {
+    "id": "APL-16",
+    "status": "not-applicable",
+    "evidence": "LATER, community is off."
+   },
+   {
+    "id": "APL-17",
+    "status": "not-applicable",
+    "evidence": "LATER, payments are off."
+   },
+   {
+    "id": "APL-18",
+    "status": "not-applicable",
+    "evidence": "LATER, the assistant is off."
+   },
+   {
+    "id": "GPL-01",
+    "status": "owner-action",
+    "evidence": "Only applies if the Play account is personal."
+   },
+   {
+    "id": "GPL-02",
+    "status": "owner-action",
+    "evidence": "Console check. The deadline was 30 Sep 2026, so it may already be late."
+   },
+   {
+    "id": "GPL-03",
+    "status": "partial",
+    "evidence": "targetSdk 36 is met per the checklist. 16 KB alignment is unverified."
+   },
+   {
+    "id": "GPL-04",
+    "status": "partial",
+    "evidence": "play-data-safety.txt lacks age and sex derived from the ID."
+   },
+   {
+    "id": "GPL-05",
+    "status": "pass",
+    "evidence": "Camera only. The removed permissions are marked tools:node=remove (checklist)."
+   },
+   {
+    "id": "GPL-06",
+    "status": "owner-action",
+    "evidence": "Play Console IARC rating and 18+ target audience."
+   },
+   {
+    "id": "GPL-07",
+    "status": "owner-action",
+    "evidence": "No EN or AR listing is drafted."
+   },
+   {
+    "id": "GPL-08",
+    "status": "owner-action",
+    "evidence": "Health apps declaration."
+   },
+   {
+    "id": "LAW-01",
+    "status": "owner-action",
+    "evidence": "No PDPC filing. 25 days to the deadline."
+   },
+   {
+    "id": "LAW-02",
+    "status": "partial",
+    "evidence": "Consent records exist (C09b, record_health_consent). There is no licence."
+   },
+   {
+    "id": "LAW-03",
+    "status": "fail",
+    "evidence": "The US transfer happens before consent. No transfer impact assessment."
+   },
+   {
+    "id": "LAW-04",
+    "status": "partial",
+    "evidence": "The reply window is a placeholder. There is no export."
+   },
+   {
+    "id": "LAW-05",
+    "status": "fail",
+    "evidence": "No breach runbook was found in the checklist scan."
+   },
+   {
+    "id": "LAW-06",
+    "status": "owner-action",
+    "evidence": "Entity or DPO decision."
+   },
+   {
+    "id": "LAW-07",
+    "status": "partial",
+    "evidence": "180-day review retention is stated. The TTL and Cloud Logging retention are unverified."
+   },
+   {
+    "id": "LAW-08",
+    "status": "owner-action",
+    "evidence": "Google DPA acceptance evidence is not on file."
+   },
+   {
+    "id": "LAW-09",
+    "status": "fail",
+    "evidence": "Waitlist 180-day delete versus the 3-year consent record rule."
+   },
+   {
+    "id": "LAW-10",
+    "status": "pass",
+    "evidence": "MIN_AGE = 18 (config.py:114) per the checklist."
+   },
+   {
+    "id": "LAW-11",
+    "status": "partial",
+    "evidence": "EN and AR exist. No Arabic-prevails clause and no supplier identity."
+   },
+   {
+    "id": "LAW-12",
+    "status": "fail",
+    "evidence": "Depends on the OWN-08 claim audit."
+   },
+   {
+    "id": "LAW-13",
+    "status": "partial",
+    "evidence": "HMAC NID and App Check enforced per the checklist. Cloud Logging payloads are unverified."
+   },
+   {
+    "id": "LAW-14",
+    "status": "partial",
+    "evidence": "Sex is read from the ID digit. Counsel framing and the Egypt-only storefront are pending."
+   },
+   {
+    "id": "LAW-15",
+    "status": "partial",
+    "evidence": "Terms §4 and §12 exist. No coach agreement. At launch coachApp is off, so this is lower urgency."
+   },
+   {
+    "id": "LAW-16",
+    "status": "pass",
+    "evidence": "Dedupe is in place per the checklist."
+   },
+   {
+    "id": "LAW-17",
+    "status": "owner-action",
+    "evidence": "No counsel memo."
+   }
+  ],
+  "findings": [
+   {
+    "title": "F1 Fix plan #1: one-step Terms and Privacy acceptance on C06, recorded on the server, before the SMS",
+    "checklist_ids": [
+     "OWN-03",
+     "LAW-03",
+     "LAW-11"
+    ],
+    "severity": "legal-liability",
+    "where": "app/lib/features/signup (C06 phone screen), app_en.arb:3173, functions/identity (new callable), firebase/firestore.rules",
+    "problem": "Her phone number reaches Firebase Auth in the US before any consent, and nothing proves she ever accepted the Terms (browse-wrap only). Impact 5, effort M, confidence Evidence.",
+    "fix": "On C06, add links to the Terms and Privacy Policy, the line 'Your number is processed by Google Firebase in the US', and one 'Agree and continue' button that sends the code. A callable writes {uid, termsVersion, privacyVersion, locale, appVersion, timestamp}, and the rules make that document create-only. Ask again when either version goes up. Do not merge this with C09b or the health consent, and do not move it ahead of O03 or O05: the value-first order is core. Done when: on a device, no SMS is sent before the tap; the Firestore document exists with the right locale; a version-bump test asks her again.",
+    "owner_action": false
+   },
+   {
+    "title": "F2 Fix plan #2: reviewer demo path for Apple and Google",
+    "checklist_ids": [
+     "APL-03",
+     "APL-13"
+    ],
+    "severity": "store-rejection",
+    "where": "functions/identity (beginIdentityCheck), Firebase Auth test numbers, App Store Connect and Play App access",
+    "problem": "No reviewer can pass Egyptian OTP plus ID plus selfie, so rejection is certain on both stores. Impact 5, effort M, confidence Evidence.",
+    "fix": "Add a +20 Firebase test number with a fixed code. Pre-seed one uid as verified (woman, 18+). beginIdentityCheck returns the verified result for that uid only, and writes it to the audit log. Write Review Notes under 4000 bytes covering the flow and the dormant features, and attach a screen recording of a real check. Done when: a clean install with the test number reaches C13 on both platforms, and a different uid cannot use the bypass (unit test).",
+    "owner_action": false
+   },
+   {
+    "title": "F3 Fix plan #3: turn Crashlytics on only after acceptance, and add an off switch",
+    "checklist_ids": [
+     "OWN-04",
+     "APL-04"
+    ],
+    "severity": "legal-liability",
+    "where": "app/lib/app_state/firebase_boot.dart:149-153; privacy centre (privacy_view.dart)",
+    "problem": "setCrashlyticsCollectionEnabled(kReleaseMode) runs at boot, before consent, while the policy promises nothing leaves the phone without her say. Impact 4, effort S (after F1), confidence Evidence.",
+    "fix": "Enable collection only when a stored acceptance flag exists (from F1), and add a 'Send crash reports' toggle in the privacy centre. Keep the native default off (Info.plist:72-73 already off, and verify the Android manifest meta-data). Done when: a proxy on a fresh release install shows no crashlyticsreports traffic before C06, and the toggle stops it.",
+    "owner_action": false
+   },
+   {
+    "title": "F4 Fix plan #4: make the site tell the truth (claims, AI, analytics, video reviewer, Arabic prevails)",
+    "checklist_ids": [
+     "OWN-01",
+     "OWN-07",
+     "OWN-08",
+     "LAW-12",
+     "APL-09",
+     "OWN-02"
+    ],
+    "severity": "store-rejection",
+    "where": "site/index.html:57, site/privacy/index.html:409-410, site/ar/privacy, site/terms, site/ar/terms",
+    "problem": "The site promises a woman reviewer on video with no vendor and no C12 button, says 'no microphone' in a way that conflicts with that, says 'no analytics' while Crashlytics runs, and has no AI statement. These are Apple 2.3.1 and Google misrepresentation risks plus CPL Art. 9. Impact 5, effort S, confidence Evidence.",
+    "fix": "Until the vendor ships, change the reviewer line to what actually exists (the C10b fallback after the third failed try, a human woman reviewer, with timing stated). Rewrite §10 to name Crashlytics crash data, sent only after she agrees. Add §3.8 'We never use your data to train AI, ours or anyone's' in EN and AR. Name Firebase Auth (US) in §4 and §5. Add the Arabic-prevails clause. Leave the counsel-dependent placeholders for F11. Done when: every claim maps to a file:line (OWN-08 table), and the EN and AR diffs match section for section.",
+    "owner_action": false
+   },
+   {
+    "title": "F5 Fix plan #5: publish the site, fill the four legal links, and assert allSet in release",
+    "checklist_ids": [
+     "OWN-01",
+     "OWN-02",
+     "OWN-06",
+     "APL-02",
+     "OWN-11"
+    ],
+    "severity": "store-rejection",
+    "where": "app/lib/config/legal_links.dart:18-28, site/config.json baseUrl, app/tool/release_preflight.sh",
+    "problem": "All four URLs are empty, so the privacy, terms, support and delete rows are hidden in the app. An empty privacy URL is an automatic rejection. Impact 5, effort S once the domain exists, confidence Evidence.",
+    "fix": "Deploy the site on the real domain, set the four constants and baseUrl, and add an assert or startup check that LegalLinks.allSet is true in release. Done when: release_preflight.sh passes with RELEASE_BASE_URL set and no 'na' rows, and each link opens from C06, C09b, the privacy centre and Settings on a release build.",
+    "owner_action": false
+   },
+   {
+    "title": "F6 Fix plan #6: privacy manifest and Data safety brought in line with reality",
+    "checklist_ids": [
+     "APL-04",
+     "GPL-04",
+     "APL-10"
+    ],
+    "severity": "store-rejection",
+    "where": "app/ios/Runner/PrivacyInfo.xcprivacy, app/android/play-data-safety.txt",
+    "problem": "The manifest is missing SensitiveInfo (pregnancy, biometric match) and PhotosorVideos (ID and selfie). Data safety is missing age and sex derived from the ID. A label mismatch is a common rejection reason. Impact 4, effort S, confidence Evidence.",
+    "fix": "Add the two types, plus Crash Data linked to no identity. Add Personal info > Other (age and sex) to the Data safety draft. Done when: the Xcode archive privacy report, App Store Connect labels, the Data safety form and privacy §3 list the same types.",
+    "owner_action": false
+   },
+   {
+    "title": "F7 Fix plan #7: commit the onboarding branch and get tests green",
+    "checklist_ids": [
+     "OWN-11",
+     "APL-06"
+    ],
+    "severity": "high",
+    "where": "branch onboarding/2026-10-06 (uncommitted), test/qa/round1/r1_defects_test.dart R1-12a",
+    "problem": "The whole value-first flow sits only in an uncommitted worktree. One lost worktree means a day of rework, and no build can be submitted from it. Impact 4, effort S, confidence Evidence.",
+    "fix": "Fix or pin the Tuesday-date test. Add a test that C09b cannot be skipped in the new order and that Continue on O03 or O05 records nothing as consent. Commit after the owner approves (local first). Done when: flutter analyze is clean, flutter test is green, and the commit exists.",
+    "owner_action": false
+   },
+   {
+    "title": "F8 Fix plan #8: 'not a medical device' line inside the app, EN and AR",
+    "checklist_ids": [
+     "APL-12",
+     "LAW-15"
+    ],
+    "severity": "store-rejection",
+    "where": "app/lib/l10n/app_en.arb, app_ar.arb; About, the cycle and life-stage screens, O03 pregnancy/postpartum branch",
+    "problem": "Apple 1.4.1 and Google health policy expect an in-app disclaimer. It exists only in the Terms. Impact 3, effort S, confidence Evidence.",
+    "fix": "Add one string pair and show it in About, the cycle screen and when O03 pregnancy or postpartum is chosen. Done when: grep -i 'medical device' finds both ARB files, and it is visible on those screens.",
+    "owner_action": false
+   },
+   {
+    "title": "F9 Fix plan #9: interim data export by email request, with copy that matches",
+    "checklist_ids": [
+     "OWN-05",
+     "LAW-04"
+    ],
+    "severity": "legal-liability",
+    "where": "site/support, site/ar/support, your_data_sheet.dart:26-28, site/index.html:127, Terms §6",
+    "problem": "PDPL Art. 2 gives her the right to her data. Terms §6 promises a copy by email, but no route exists. Impact 3, effort S for the interim route, L for in-app export. Confidence Evidence on the gap, Assumption on how often it will be asked for.",
+    "fix": "Now: a 'Request a copy of my data' mailto on the support pages, with the reply window counsel confirms, plus a short internal script that dumps every deletion_manifest.json collection for a uid. Later: the in-app export. Done when: a test request for a seeded uid produces a JSON file covering every manifest entry inside the window.",
+    "owner_action": false
+   },
+   {
+    "title": "F10 Fix plan #10: enforce retention and check logs for image payloads",
+    "checklist_ids": [
+     "LAW-07",
+     "LAW-13",
+     "OWN-08"
+    ],
+    "severity": "medium",
+    "where": "Firestore TTL policy on review cases, functions/identity/logs.py, Cloud Logging retention",
+    "problem": "'Photos never stored' and '180 days' are claims, and nothing enforces them unless a TTL and the logging config exist. Impact 3, effort S, confidence Assumption (not verified in console).",
+    "fix": "Set a Firestore TTL on the review-case collection. Set an explicit Cloud Logging retention. Add a test that logs.py never logs request bodies. Done when: the TTL policy shows in the console and a log sample after a real check contains no base64 image.",
+    "owner_action": false
+   },
+   {
+    "title": "F11 Owner: Egyptian counsel engagement, PDPC filing, entity decision",
+    "checklist_ids": [
+     "LAW-01",
+     "LAW-02",
+     "LAW-03",
+     "LAW-06",
+     "LAW-17",
+     "OWN-09",
+     "APL-01",
+     "GPL-01",
+     "GPL-02"
+    ],
+    "severity": "legal-liability",
+    "where": "Outside the code. pdpc.gov.eg, Apple Developer membership, Play Console account",
+    "problem": "The PDPC grace period ends 31 Oct or 1 Nov 2026. Sensitive and cross-border processing without a licence risks EGP 500k to 5M and/or prison (Art. 41 and 42). Personal store accounts face Apple 5.1.1(ix) rejection, and a personal Play account needs a 14-day closed test. Impact 5, effort L, confidence Evidence on the law, Assumption on how strictly it is enforced.",
+    "fix": "This week, book one licensed Egyptian lawyer with the 13-question LAW-17 list. File with the PDPC before the deadline. Decide individual or company. If Play stays personal, start the 12-tester closed test now. Cheap test: send the LAW-17 list to 3 firms for fixed-fee quotes within 48 hours. If none can file before 31 Oct, launch slips and that becomes the plan's critical path.",
+    "owner_action": true
+   },
+   {
+    "title": "F12 Owner: Rahma image and content licence, Google DPA acceptance, store questionnaires",
+    "checklist_ids": [
+     "APL-11",
+     "LAW-08",
+     "APL-08",
+     "APL-14",
+     "GPL-06",
+     "GPL-08",
+     "LAW-14"
+    ],
+    "severity": "store-rejection",
+    "where": "Outside the code. A signed licence, Cloud console IAM > Settings, App Store Connect, Play Console App content",
+    "problem": "Without a licence from Rahma to the publisher, using her likeness is an impersonation and IP risk. Without DPA evidence, LAW-08 is open. Age rating, DSA, IARC, health declaration and Egypt-only storefront are all unanswered. Impact 4, effort S to M of owner time, confidence Evidence.",
+    "fix": "Sign a one-page licence (the lawyer drafts it alongside F11). Accept the Google Cloud DPA and screenshot it. Answer 18+, Medical/Wellness and Age Assurance, DSA not a trader, Restrict Minor Access, and Egypt-only availability. Done when: screenshots of each console section are filed with the counsel memo.",
+    "owner_action": true
+   },
+   {
+    "title": "F13 Owner: breach runbook",
+    "checklist_ids": [
+     "LAW-05"
+    ],
+    "severity": "legal-liability",
+    "where": "firebase/ops or a docs folder (not found)",
+    "problem": "PDPL Art. 7 requires notice within 72 hours. Impact 3, effort S, confidence Evidence on the gap.",
+    "fix": "Write a one-page runbook: owner, PDPC template, 72-hour clock, EN and AR user message, and a register. Keep it local, not deployed. Done when: a 30-minute tabletop exercise with a fake leak fills every field.",
+    "owner_action": true
+   }
+  ],
+  "keep": [
+   "Value-first order (Welcome, O03, O05, then phone): keep it. F1 adds acceptance at C06 and does not move the gate ahead of the demo.",
+   "C09b sensitive-data consent stays separate from Terms acceptance (PDPC guidance, APL-06 is MET).",
+   "Health data stays on the phone, and the backup is a separate opt-in (HEALTH_CONSENT_VERSION).",
+   "ID images are never stored. NID is stored only as an HMAC. Sex is read from the ID digit, never guessed from the face.",
+   "Native Crashlytics default off (Info.plist:72-73). Do not regress it.",
+   "Camera-only permissions, no photo library entitlement (Info.plist comment lines 20-25).",
+   "LegalLinks hides empty rows (legal_links.dart:8-11). Keep it, and add the release assert in F5.",
+   "Not worth fixing now: the full in-app export (L). The email route in F9 meets the obligation for less money; build the in-app export after launch.",
+   "Not worth fixing now: picking the video-call vendor and building C12. The C10b reviewer fallback exists. Remove the claim (F4) instead of buying the vendor before there is data on demand.",
+   "Not worth fixing now: LAW-09 waitlist 3-year conflict. Put it on the counsel list and decide with a one-line policy change, no code.",
+   "Not worth fixing now: GPL-07 AR store listing polish beyond the disclosure line, which is best practice, not a gate.",
+   "Not worth fixing now: every LATER item (APL-16, APL-17, APL-18, LAW-15 coach agreement). The features are off, and each costs more than the zero risk it protects today.",
+   "Not worth fixing now as engineering work: APL-05, APL-07 and GPL-03. Verify them during the first release build; fix only if the upload emails or the bundle explorer complain."
+  ],
+  "verdict": "The cheapest path to a safe launch is in two parallel tracks. Owner track (the critical path, it cannot slip): this week, engage an Egyptian lawyer with the LAW-17 list, file with the PDPC before 31 Oct or 1 Nov, decide individual or company (this sets the store account type and whether a Play closed test is needed), and sign Rahma's licence. Code track, about 3 to 4 days: F1 C06 click-wrap with a recorded acceptance, F2 reviewer path, F3 Crashlytics gated on consent, F4 truthful site claims plus the AI statement, F5 publish the site and fill the legal links, F6 labels, F7 commit and green tests, F8 in-app disclaimer, F9 export by email, F10 retention TTL. F1, F2, F4 and F5 are the store gates. F1, F3 and F11 carry the fine and prison exposure.\n\nOut of code, with cheap tests, all on unverified assumptions. (a) Whether the C06 US-processing line and the Agree button cost sign-ups is an assumption. Test: put a clickable C06 in front of 10 target women. If 3 or more hesitate or drop out at that line, rewrite the copy, but keep the consent. (b) Whether the woman-reviewer video call is needed at launch is an assumption. Test: run 15 women, including some who wear the niqab, through the real ID check on TestFlight. If more than 3 of 15 cannot finish without a human, the vendor and C12 become launch blockers and move into the fix plan. (c) The women-only framing (LAW-14): have 2 counsel-reviewed wordings read by 5 women and 2 reviewers-for-hire. If either wording reads as excluding men rather than protecting women, use the other. (d) The price of counsel and filing is unknown. Get 3 fixed-fee quotes within 48 hours, and if no firm can file before the deadline, move the launch date, not the scope.\n\nFiles: /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/config/legal_links.dart, /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/app_state/firebase_boot.dart, /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/ios/Runner/Info.plist, /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/features/account/presentation/your_data_sheet.dart, /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/site/privacy/index.html, /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/site/index.html."
+ },
+ {
+  "auditor": "The Usability Engineer",
+  "persona": "The Usability Engineer",
+  "approach": "I parsed the screen builders in app/lib/routing/app_router.dart (goTo / appRoutes edges, plus the trainee tab bar in ui/app_nav_bar.dart:56), ran a BFS from T01 (Home) and C01 (Welcome), and then counted taps on each consent and rights journey. Measured depths: T01→A02 Profile 1, T01→A03 Privacy 2, C01→C06 phone 1, C01→C09b 3, C01→C13 5. Next I read the screens where consent and rights happen: C06 phone_number_view.dart, C09b consent_view.dart, A02 profile_view.dart, A03 privacy_view.dart, the Your data sheet, and the health-backup sheet. I read their EN and AR strings from the ARB files. I then followed each control into the backend: functions/identity/store.py consent writes, config.py retention, account/deletion_manifest.json, firestore.rules consents, and firebase_boot.dart and main.dart for Crashlytics and analytics order. Last, I scripted a pass over every site page in both languages to count legal links, placeholders and RTL bidi handling. Measured journeys: Terms/Privacy acceptance takes 0 affirmative taps, shows 0 links and writes 0 records (target is 1 recorded step), so it FAILS. ID/biometric consent is 1 tap on C09b and is recorded, so it PASSES. Health backup is 3 taps from Profile, recorded and can be withdrawn, so it PASSES. Crash reports have no control at all and are on at boot, so it FAILS. Delete takes 2 taps from Profile (A02 → Your data → Delete everything; 3 from Home), so it PASSES. Export has no route in the app, so it FAILS. The privacy policy and terms would be 2 taps from Profile (A02 → A03 → row), but the rows are hidden while LegalLinks is empty, so today they are unreachable from every screen. I edited no files. The brief named a report path, but none was supplied and the harness forbids writing report files, so the full report is this output.",
+  "checklist_status": [
+   {
+    "id": "OWN-01",
+    "status": "fail",
+    "evidence": "Policy exists in EN and AR. It has 7 placeholders in EN (privacy/index.html:107,176,296,299,316,378,382) and the same 7 in AR (ar/privacy/index.html:102,163,277,280,294,350,354). config.json:12 baseUrl is https://ownhub.example. legal_links.dart privacyPolicy=''. §10 at privacy:409-410 claims 'No analytics software' and 'No microphone', but the reviewer path is a video call. There is no AI section."
+   },
+   {
+    "id": "OWN-02",
+    "status": "partial",
+    "evidence": "Terms EN and AR exist. Placeholders at terms/index.html:243,257 and ar/terms/index.html:222,234. No Arabic-prevails clause. Terms §1 is browse-wrap at terms:81. legal_links terms=''. No Terms link on C06."
+   },
+   {
+    "id": "OWN-03",
+    "status": "fail",
+    "evidence": "C06 phone_number_view.dart:150-155 shows a plain Text 'By joining you agree to the Own Hub rules.' (app_en.arb:3173). It has no link, no checkbox and no record, and _send() at :105-112 sends the number to Firebase Auth before any acceptance. grep termsVersion|privacyVersion|TERMS_VERSION over app/lib and functions returns 0."
+   },
+   {
+    "id": "OWN-04",
+    "status": "fail",
+    "evidence": "firebase_boot.dart:106 crashCollectionFor(release)=>release, and :150-151 enables Crashlytics at boot in release before C06. Native defaults are off (Info.plist:72-73, AndroidManifest.xml:85-86). The A03 privacy centre has no crash switch. Analytics uses NullAnalyticsSink in release and a debug sink only under kDebugMode (main.dart:43-44). CSP is default-src 'none' (site/_headers:10)."
+   },
+   {
+    "id": "OWN-05",
+    "status": "fail",
+    "evidence": "your_data_sheet.dart:150-152 and app_en.arb:2730 say 'not built yet, so there is no button for it here'. The sheet gives no route to the email request that privacy:378-380 promises. site/index.html:127 and terms:171 say no export exists."
+   },
+   {
+    "id": "OWN-06",
+    "status": "partial",
+    "evidence": "In-app delete is A02 'Your data' (profile_view.dart:265-268) → 'Delete everything' (your_data_sheet.dart:187): 2 taps from Profile, 3 from Home. The web page exists in EN and AR and is linked from all 20 site pages. Placeholders at delete-account:94,151 and ar/delete-account:89,140. LegalLinks.deleteAccount=''. The timing copy is inconsistent (arb:2747 vs 3135/3138)."
+   },
+   {
+    "id": "OWN-07",
+    "status": "fail",
+    "evidence": "There is no AI or training statement in site/privacy or terms, EN or AR. Feature.assistant is false (feature_flags.dart:216). No provider calls exist in app or functions."
+   },
+   {
+    "id": "OWN-08",
+    "status": "fail",
+    "evidence": "C09b promises a 'short video call' (arb:2853) with no vendor chosen (privacy:176). C09b says 'nothing is kept except a hash' (arb:2830), but verificationJobs are kept 180 days (store.py:386-400, config.py:548). Privacy §10 at privacy:409-410. 16 EN plus 11 AR placeholders."
+   },
+   {
+    "id": "OWN-09",
+    "status": "owner-action",
+    "evidence": "No counsel memo. 'PENDING COUNSEL' markers at config.py:553 and privacy_view.dart:146."
+   },
+   {
+    "id": "OWN-10",
+    "status": "owner-action",
+    "evidence": "Umbrella item, blocked by OWN-01, OWN-02, OWN-03 and OWN-06 and by the console items."
+   },
+   {
+    "id": "OWN-11",
+    "status": "fail",
+    "evidence": "The worktree is uncommitted. baseUrl is the example domain. LegalLinks.allSet is false. The implementation report records 1 failing test (R1-12a)."
+   },
+   {
+    "id": "APL-01",
+    "status": "owner-action",
+    "evidence": "privacy:104 names an individual controller."
+   },
+   {
+    "id": "APL-02",
+    "status": "fail",
+    "evidence": "LegalLinks.support='' so A04 'talk to a human' is dropped (app_router.dart:2312-2314). The contact is a personal gmail."
+   },
+   {
+    "id": "APL-03",
+    "status": "fail",
+    "evidence": "No reviewer or demo path in functions/identity."
+   },
+   {
+    "id": "APL-04",
+    "status": "partial",
+    "evidence": "PrivacyInfo.xcprivacy has no SensitiveInfo and no PhotosorVideos. Tracking is false."
+   },
+   {
+    "id": "APL-05",
+    "status": "unknown",
+    "evidence": "Needs a build machine."
+   },
+   {
+    "id": "APL-06",
+    "status": "pass",
+    "evidence": "C09b gate at app_router.dart:416-425, decline goes to C15 (:1153-1156), camera strings exist in EN and AR, CONSENT_VERSION=1 (config.py:634). The consent record lacks a locale (store.py:540-543)."
+   },
+   {
+    "id": "APL-07",
+    "status": "unknown",
+    "evidence": "Needs a build machine."
+   },
+   {
+    "id": "APL-08",
+    "status": "owner-action",
+    "evidence": "MIN_AGE=18 (config.py:114). The rating is set in the console."
+   },
+   {
+    "id": "APL-09",
+    "status": "partial",
+    "evidence": "C09b says only 'servers outside Egypt' (arb:2854). C06 says nothing about the US. The video vendor is a placeholder."
+   },
+   {
+    "id": "APL-10",
+    "status": "partial",
+    "evidence": "Health backup opt-in sheet (privacy_view.dart:145-170). firestore.rules:146-153 gate on health consent. Analytics has no health props."
+   },
+   {
+    "id": "APL-11",
+    "status": "partial",
+    "evidence": "Identities are separated in privacy:104,109 and ar/privacy:99,104. The licence is owner action."
+   },
+   {
+    "id": "APL-12",
+    "status": "partial",
+    "evidence": "No 'medical device' string in app_en.arb. Doctor strings exist (arb:912,1491,1821)."
+   },
+   {
+    "id": "APL-13",
+    "status": "partial",
+    "evidence": "feature_flags.dart:186-216 flags are correct. The All screens row is gated by testingAidsAllowed."
+   },
+   {
+    "id": "APL-14",
+    "status": "owner-action",
+    "evidence": "Console."
+   },
+   {
+    "id": "APL-15",
+    "status": "pass",
+    "evidence": "Info.plist:9-10 false, TARGETED_DEVICE_FAMILY=1, OTP only."
+   },
+   {
+    "id": "APL-16",
+    "status": "not-applicable",
+    "evidence": "Community is off."
+   },
+   {
+    "id": "APL-17",
+    "status": "not-applicable",
+    "evidence": "Payments are off."
+   },
+   {
+    "id": "APL-18",
+    "status": "not-applicable",
+    "evidence": "Assistant is off."
+   },
+   {
+    "id": "GPL-01",
+    "status": "owner-action",
+    "evidence": "Depends on the account type."
+   },
+   {
+    "id": "GPL-02",
+    "status": "owner-action",
+    "evidence": "Console. The developer name is in privacy:444 and ar/privacy:411."
+   },
+   {
+    "id": "GPL-03",
+    "status": "partial",
+    "evidence": "targetSdk = 36 (build.gradle.kts:64). 16 KB unverified."
+   },
+   {
+    "id": "GPL-04",
+    "status": "partial",
+    "evidence": "play-data-safety.txt:14 path 'Profile and settings > delete account' does not match the row label 'Your data'. Age and sex derived from the ID are not listed."
+   },
+   {
+    "id": "GPL-05",
+    "status": "pass",
+    "evidence": "AndroidManifest.xml:9 CAMERA only, :28-31 removals."
+   },
+   {
+    "id": "GPL-06",
+    "status": "owner-action",
+    "evidence": "Console."
+   },
+   {
+    "id": "GPL-07",
+    "status": "owner-action",
+    "evidence": "Listing text is not in the repo."
+   },
+   {
+    "id": "GPL-08",
+    "status": "owner-action",
+    "evidence": "Console (play-data-safety.txt:77)."
+   },
+   {
+    "id": "LAW-01",
+    "status": "owner-action",
+    "evidence": "privacy:107 and ar/privacy:102 placeholders."
+   },
+   {
+    "id": "LAW-02",
+    "status": "partial",
+    "evidence": "Separate verification, health and review consent records (store.py:537-544, 573-576, 620-635), with no locale. Health wording is pending counsel."
+   },
+   {
+    "id": "LAW-03",
+    "status": "fail",
+    "evidence": "No US notice before sendCode (phone_number_view.dart:105-112). privacy:316 placeholder."
+   },
+   {
+    "id": "LAW-04",
+    "status": "partial",
+    "evidence": "Rights are listed at privacy:368-376. Reply window is a placeholder. Crash collection cannot be withdrawn."
+   },
+   {
+    "id": "LAW-05",
+    "status": "fail",
+    "evidence": "firebase/ops has only two alert JSONs and no runbook."
+   },
+   {
+    "id": "LAW-06",
+    "status": "owner-action",
+    "evidence": "Individual controller."
+   },
+   {
+    "id": "LAW-07",
+    "status": "partial",
+    "evidence": "180-day TTL (config.py:548), contradicted by the C09b copy (arb:2830)."
+   },
+   {
+    "id": "LAW-08",
+    "status": "owner-action",
+    "evidence": "DPA not in the repo."
+   },
+   {
+    "id": "LAW-09",
+    "status": "partial",
+    "evidence": "waitlist/join.py:14,17,76: consent is required, with a 180-day TTL that conflicts with 3 years."
+   },
+   {
+    "id": "LAW-10",
+    "status": "pass",
+    "evidence": "MIN_AGE=18. test_nid.py exists."
+   },
+   {
+    "id": "LAW-11",
+    "status": "partial",
+    "evidence": "EN and AR exist with lang=ar dir=rtl. No Arabic-prevails clause. Consents have no locale."
+   },
+   {
+    "id": "LAW-12",
+    "status": "owner-action",
+    "evidence": "Store and social claims are outside the repo."
+   },
+   {
+    "id": "LAW-13",
+    "status": "partial",
+    "evidence": "firestore.rules:910-912 consents are read-only to self. App Check is on."
+   },
+   {
+    "id": "LAW-14",
+    "status": "partial",
+    "evidence": "C09b 'never guess from your face' (arb:1195). Counsel and storefront pending."
+   },
+   {
+    "id": "LAW-15",
+    "status": "partial",
+    "evidence": "Doctor-clearance strings exist. No coach agreement."
+   },
+   {
+    "id": "LAW-16",
+    "status": "pass",
+    "evidence": "test_ledger_and_dedupe.py exists (not run)."
+   },
+   {
+    "id": "LAW-17",
+    "status": "owner-action",
+    "evidence": "No counsel memo."
+   }
+  ],
+  "findings": [
+   {
+    "title": "Terms and Privacy are never accepted: 0 taps, 0 links, 0 records, and the phone number leaves for the US first",
+    "checklist_ids": [
+     "OWN-03",
+     "LAW-03",
+     "LAW-11",
+     "OWN-02"
+    ],
+    "severity": "legal-liability",
+    "where": "C06 · app/lib/features/signup/presentation/phone_number_view.dart:105-112 and :148-155; app_en.arb:3173 / app_ar.arb:3173; functions/identity/store.py:530-544",
+    "evidence": "The footer is a grey Text 'By joining you agree to the Own Hub rules.' / 'بانضمامك توافقين على قواعد Own Hub.' grep for termsVersion, privacyVersion and TERMS_VERSION returns 0. Terms §1 is browse-wrap (terms/index.html:81).",
+    "problem": "C01 → O03 → O05 → C06 'Send me a code' sends the number to Firebase Auth (US) at once. The only legal text has no link, says 'rules' instead of 'Terms of use' / 'شروط الاستخدام', does not mention the US, and nothing is recorded. The measured cost is 0 deliberate taps against a target of 1 recorded affirmative step.",
+    "fix": "On C06, replace the footer with (1) a RichText that has tappable 'Terms of use' and 'Privacy policy' spans calling openExternalLink(LegalLinks.terms / privacyPolicy), and (2) the line 'Your number is checked by Google Firebase in the United States.' Relabel the primary button 'Agree and send me a code' / 'أوافق وأرسلي الرمز', so agreeing and sending are one tap. Add kTermsVersion and kPrivacyVersion in legal_links.dart. After C07 succeeds, call a new recordTermsAcceptance callable that writes users/{uid}/consents/terms-v{N} = {termsVersion, privacyVersion, locale, appVersion, at}, with client writes still false in firestore.rules:910-912. On sign-in and on launch, compare the stored versions with the constants and show a one-button 'We updated our terms' sheet when either is older. Reword terms §1 to say she accepts by tapping Agree.",
+    "owner_action": false
+   },
+   {
+    "title": "The privacy policy and terms are unreachable from every screen in the current build",
+    "checklist_ids": [
+     "OWN-01",
+     "OWN-02",
+     "APL-02"
+    ],
+    "severity": "store-rejection",
+    "where": "legal_links.dart:17-27; A03 privacy_view.dart:375,391; C06 phone_number_view.dart; C09b consent_view.dart; health sheet privacy_view.dart:147-170; your_data_sheet.dart",
+    "evidence": "All four LegalLinks constants are ''. The A03 rows render only when the link is non-empty. No other screen references LegalLinks.privacyPolicy or terms.",
+    "problem": "The links exist only in A03 (T01 → A02 → A03 = 2 taps) and are hidden today, so the policy and terms are reachable from 0 screens. Even with URLs, they are missing from the four decision points: C06, C09b, the health-backup sheet and the delete sheet. A02 has no Legal or About row, and A04's support row is hidden as well (app_router.dart:2312).",
+    "fix": "Fill the four URLs, and make release_preflight plus a release-mode assert in main() fail when LegalLinks.allSet is false. Add a 'Privacy policy' link on C09b below the bullets, in the health-backup sheet below 'theCopyIsStoredOnGoogleCloud', and on the Your data sheet below the 'three things are kept' sentence (deep link to privacy §6). Open /ar/... when the locale is ar.",
+    "owner_action": true
+   },
+   {
+    "title": "Crash reporting turns on before any consent, and she has no switch to turn it off",
+    "checklist_ids": [
+     "OWN-04",
+     "APL-04",
+     "LAW-04"
+    ],
+    "severity": "legal-liability",
+    "where": "app/lib/app_state/firebase_boot.dart:106, 148-155; main.dart:64-76; A03 privacy_view.dart:261-321; site/privacy/index.html:230-232",
+    "evidence": "crashCollectionFor({required bool release}) => release; it is called in FirebaseBoot.start(), before runApp. A03 has no crash toggle. The policy does not mention the installation identifier or any off switch.",
+    "problem": "On a fresh release install, Crashlytics (installation ID, device data) is enabled before C01 renders. No control exists to withdraw it, so the measured tap count to opt out is impossible.",
+    "fix": "Make collection `release && CrashConsent.granted`, using a persisted bool that defaults to false. Set it from an explicit choice at C06 or C13, never pre-ticked. Add an A03 switch 'Send crash reports' / 'إرسال تقارير الأعطال' with the subtitle 'Device model, app version, an installation number. Never your name or number.' Turning it off calls setCrashlyticsCollectionEnabled(false) and deleteUnsentReports(). Update privacy §3.6 in EN and AR.",
+    "owner_action": false
+   },
+   {
+    "title": "Data export has no route in the app, and the sheet dead-ends instead of pointing to the email request",
+    "checklist_ids": [
+     "OWN-05",
+     "LAW-04"
+    ],
+    "severity": "legal-liability",
+    "where": "Your data sheet · your_data_sheet.dart:150-152; app_en.arb:2730 / app_ar.arb:2730; privacy/index.html:378-380; unused key app_en.arb:551",
+    "evidence": "'Downloading a copy of your data is not built yet, so there is no button for it here.' The policy promises a copy by email, but the app never mentions it. Unused key 'downloadEverythingOrDeleteYourAccount' promises a download.",
+    "problem": "Measured taps to export from Profile: no in-app route at all (target 3 or fewer). The sheet tells her the right exists, then gives her no way to use it.",
+    "fix": "Now: replace the line with 'Want a copy of your data? Email us and we will send it within N working days.' and add an outlined 'Ask for a copy' button. It opens a mailto with subject 'Own Hub: data copy request' / 'طلب نسخة من بياناتي' and the uid in the body, which makes export 2 taps from Profile. Then: a 'Download my data' button calling an exportAccount callable. It walks deletion_manifest.json rows 1-22 into user-exports/{uid}/, merges the local cycle, weight and life-stage stores, and opens the share sheet with JSON plus an EN/AR summary. Add a test that every manifest row is exported. Delete the unused key.",
+    "owner_action": false
+   },
+   {
+    "title": "C09b consent text is not fully accurate, so the consent is not fully informed",
+    "checklist_ids": [
+     "APL-06",
+     "APL-09",
+     "OWN-08",
+     "LAW-07",
+     "LAW-02"
+    ],
+    "severity": "legal-liability",
+    "where": "C09b · consent_view.dart:247-275; app_en.arb:2830, 2853, 2854 (AR same lines); functions/identity/store.py:386-400, 537-544; config.py:548",
+    "evidence": "'nothing is kept except a one way keyed hash' vs the job doc {state, reasons, flags, attempt} kept 180 days. 'servers outside Egypt' vs europe-west3. 'short video call' with the vendor still a placeholder. write_consent stores only {version, at}.",
+    "problem": "She agrees to three statements the system does not match, and the record cannot show which language she agreed in.",
+    "fix": "2830: 'After the check we keep the result (approved or not, and why) for 180 days, and a one way keyed code of your ID number so the card cannot open a second account. No photo is kept.' 2854: 'processed by Google Cloud in Frankfurt, Germany.' Write the AR equivalents. Do not show 2853 until a vendor exists; use 'a woman from Own Hub will contact you to check another way.' Bump CONSENT_VERSION and kCaptureConsentVersion to 2, and add locale and appVersion to write_consent.",
+    "owner_action": false
+   },
+   {
+    "title": "The delete sheet contradicts itself on timing, and its path does not match the Data safety instructions",
+    "checklist_ids": [
+     "OWN-06",
+     "GPL-04"
+    ],
+    "severity": "medium",
+    "where": "app_en.arb:2747 vs 3135 vs 3138; profile_view.dart:265-268; android/play-data-safety.txt:14",
+    "evidence": "'It happens at once', then 'This can take a minute', then 'It will finish automatically within the hour'. The Play text says 'Profile and settings > delete account', but the row title is 'Your data'.",
+    "problem": "The timing message is inconsistent, and a Play reviewer following the declared path will not find a row called 'delete account'.",
+    "fix": "Make 2747 end '… It starts at once and is usually finished within a minute; none of it can be brought back.' (AR to match). Rename the row 'Delete account or get your data' and update play-data-safety.txt:14 to match. Keep the one-step sheet; it is a documented decision.",
+    "owner_action": false
+   },
+   {
+    "title": "Arabic legal pages lack bidi isolation and the Arabic-prevails clause",
+    "checklist_ids": [
+     "LAW-11",
+     "OWN-01",
+     "OWN-02"
+    ],
+    "severity": "medium",
+    "where": "site/ar/privacy/index.html:101,227,349; site/ar/terms; site/ar/delete-account/index.html:87; site/assets/site.css:116-120",
+    "evidence": "0 dir=\"ltr\" or <bdi> in ar/privacy, ar/terms and ar/delete-account. No 'prevail' or 'النص العربي' clause in any legal page. The RTL base is good (dir=rtl, line-height 1.95).",
+    "problem": "Emails, 'Own Hub', 'Google Cloud' and region names inside RTL sentences can misplace the punctuation around them on narrow screens. Without the prevails clause, the EN and AR versions have equal standing.",
+    "fix": "In _build/build.py, wrap Latin runs in AR output with <bdi> (emails and URLs with dir=ltr), and add bdi{unicode-bidi:isolate} to site.css. Add to terms §17 and privacy §1, both languages: 'If the Arabic and English versions differ, the Arabic version applies.' / 'إذا اختلفت النسختان، يُعتدّ بالنسخة العربية.' Counsel to confirm.",
+    "owner_action": false
+   },
+   {
+    "title": "No AI statement on the privacy or terms pages",
+    "checklist_ids": [
+     "OWN-07"
+    ],
+    "severity": "low",
+    "where": "site/privacy/index.html §3 and §10; site/ar/privacy/index.html",
+    "evidence": "grep for train, AI and artificial finds no AI statement in EN or AR. The assistant is off (feature_flags.dart:216) and makes no provider calls.",
+    "problem": "The statement is true today but never made, and Cloud Vision reads the ID card.",
+    "fix": "Add privacy §3.8 in EN and AR: 'We never use your data to train AI, ours or anyone's. Google Cloud Vision only reads your ID card, under terms that forbid training on it.' Add a matching §10 bullet.",
+    "owner_action": false
+   },
+   {
+    "title": "C09b leads with a sign-up promise and pushes the consent heading down",
+    "checklist_ids": [
+     "APL-06"
+    ],
+    "severity": "low",
+    "where": "C09b · consent_view.dart:204-231; app_en.arb:826, 2827",
+    "evidence": "The display headline is 'One check, then you are in'. 'Before the camera opens' is a secondary heading. 'I would rather not' is the third control, a text button.",
+    "problem": "This is a NOTE on hierarchy, not a defect. The consent is still explicit, recorded and declinable, but the screen reads as a sign-up step before it reads as a consent.",
+    "fix": "Make 'Before the camera opens' the screen title, move 'One check, then you are in' into the lede, and place 'I would rather not' directly under the primary button.",
+    "owner_action": false
+   }
+  ],
+  "keep": [
+   "C09b is a real consent gate. app_router.dart:416-425 sends any deep link to C10, C10b or C11 back to C09b until the write returns. The record is versioned, and 'I would rather not' leads to a real alternative (C15).",
+   "Health backup is granular consent done right: off by default, its own sheet with 'Not now', a versioned record, enforced server-side (firestore.rules:146-153), and withdrawable in 3 taps from Profile, with an honest pending-withdrawal state.",
+   "Deletion takes 2 taps from Profile and 3 from Home. The copy names the three things kept, failure states keep the sheet open, and the web deletion page is linked from all 20 site pages in EN and AR.",
+   "The analytics design: NullAnalyticsSink in release, a closed property vocabulary with no health fields, and cycle screens excluded from screen-view events.",
+   "Android requests CAMERA only and explicitly removes RECORD_AUDIO, storage and c2dm. The iOS camera string is in EN and feminine MSA.",
+   "Publisher and brand identities are kept separate and consistent in EN and AR privacy and terms.",
+   "Rows for missing URLs are hidden rather than left dead, and the AR placeholders are marked visibly in step with EN (11 each)."
+  ],
+  "verdict": "The flow does not meet the consent and rights brief. Deletion passes: it is 2 taps from Profile and 3 from Home, with honest copy. The health-backup consent is granular, recorded and can be withdrawn. Terms and Privacy acceptance fails completely: it takes 0 taps, shows no links and writes no record, and C06 sends her number to Firebase in the US before she has agreed to anything. The policy and terms are reachable from no screen today, because the only rows (in A03) are hidden while LegalLinks is empty. Crash reporting is on at boot, before consent, with no off switch. Export has no route in the app, and the sheet does not point to the email request the policy promises. The single most important fix is to turn C06 into one 'Agree and send me a code' step. It should have Terms and Privacy links and a US-processing line, write a versioned, server-side acceptance record with her locale, and carry the crash-report choice. No report file was written: no path was supplied and the harness forbids report files."
+ },
+ {
+  "auditor": "App Reviewer and Plaintiff Lawyer",
+  "persona": "App Reviewer and Plaintiff Lawyer",
+  "approach": "I read the current uncommitted state of the worktree on branch onboarding/2026-10-06 (git status shows 77 modified files and 3 new ones: debug_analytics_sink.dart, demo_mode.dart, open_app_settings.dart). I did not edit anything and did not build or run the app. Files covered: legal_links.dart, main.dart, firebase_boot.dart, Info.plist, ar.lproj/InfoPlist.strings, PrivacyInfo.xcprivacy, AndroidManifest.xml, build.gradle.kts, pubspec.yaml, play-data-safety.txt, feature_flags.dart, phone_number_view.dart (C06), consent_view.dart (C09b, plus its diff), why_we_check_view, welcome_view, look_around_view and demo_mode (the tour), woman_reviewer_view and being_checked_view, your_data_sheet, privacy_view (health consent sheet), safety_centre_view, the assistant domain (provider and wire), the analytics gateway and its call sites in app_router, and every EN copy string those screens use. Backend: functions/main.py (every entry point, reviewer auth, flag webhook), identity/config.py, logs.py, webhook.py, store.py collections, decisions.py, account/deletion.py, deletion_manifest.json, waitlist/join.py and the test list. Rules: firestore.rules (user subcollections, consents, verification collections) and storage.rules. Site: EN privacy, terms, delete-account, support, home and waitlist read in full; the AR pages were grepped for placeholders and the AR privacy header was read. I wore two hats. As the reviewer I tried to get in as Apple or Google would. As the plaintiff's lawyer I checked every promise against the code. Items that need console, device or build-machine access are marked unknown or owner-action.",
+  "checklist_status": [
+   {
+    "id": "OWN-01",
+    "status": "fail",
+    "evidence": "Seven EN placeholders in site/privacy/index.html (PDPC permit at line 107, video vendor and its region, countries and mechanism, reply window, PDPC contact). The AR page has the same seven under a different marker, [بانتظار الاستكمال], at ar/privacy/index.html:102,163,277,280,294,350,354. That marker means the checklist's `grep \"to be completed\"` check can never catch AR. config.json:12 baseUrl is https://ownhub.example. legal_links.dart privacyPolicy is ''. Each page carries a 'Draft pending review by a licensed Egyptian lawyer' banner (privacy:46). No AI section. Line 410 says no microphone, while a video call is the reviewer route. Line 313 says 'We ask for that consent, naming these countries, before your data leaves your phone', which is false for the phone number (C06 only says 'Own Hub rules'). The flag webhook to a 'third-party chat service' (functions/identity/webhook.py:1-20) is not listed in §4."
+   },
+   {
+    "id": "OWN-02",
+    "status": "partial",
+    "evidence": "Terms v2.0 exists in EN and AR. Two placeholders remain in each: EN terms:~235 (cap) and the §15 court; AR ar/terms/index.html:222,234. There is no Arabic-prevails clause (grep for prevail or النص العربي returns nothing). No address or registration. §1 is browse-wrap ('By downloading or using…', terms:81). §14 deems acceptance by continued use (terms:252). §13 excludes injury liability (terms:235). legal_links terms is ''. Identity wording is correct: Rahma is founder, Mahmoud is publisher."
+   },
+   {
+    "id": "OWN-03",
+    "status": "fail",
+    "evidence": "phone_number_view.dart:150-154 shows only byJoiningYouAgreeToTheOwn ('By joining you agree to the Own Hub rules.', app_en.arb:3173), with no links and no US line. _send() at line 105 calls sendCode directly. grep for termsVersion, privacyVersion or TERMS_VERSION across app/lib and functions finds nothing. There is no acceptance callable among the main.py entry points."
+   },
+   {
+    "id": "OWN-04",
+    "status": "partial",
+    "evidence": "The native defaults are off: Info.plist:72-73 FirebaseCrashlyticsCollectionEnabled false, and AndroidManifest.xml:84-86 false. But firebase_boot.dart:150-152 enables collection in release at boot, from main.dart:62, before any screen. The privacy centre has no crash-report toggle (privacy_view.dart has health consent only). The analytics sink is debug-only (main.dart:43-45). Analytics call sites send no health properties (app_router.dart:430,4767). ML Kit telemetry is disclosed in privacy §3.6 but declared in neither the privacy manifest nor Data safety. Site CSP is strict (_headers)."
+   },
+   {
+    "id": "OWN-05",
+    "status": "fail",
+    "evidence": "app_en.arb:2730 'Downloading a copy of your data is not built yet'. The comment at your_data_sheet.dart:27 says the same. site/index.html:127. Privacy §8 offers a copy by email but the reply window is a placeholder."
+   },
+   {
+    "id": "OWN-06",
+    "status": "partial",
+    "evidence": "The in-app path exists: delete_account and resume_account_deletions are in main.py:935,970, and the deletion.py state machine covers the manifest rows. The web page is mailto only. Its reply window is a placeholder (delete-account EN line ~94, AR line 89). LegalLinks.deleteAccount is ''. Not deleted and not disclosed in privacy §6 retention: verificationBehaviour (failed-attempt counts per ID hash) and verificationInstalls (install hash), per deletion.py:40-42. The meals and eatPrefs rules have `allow delete: if false` (firestore.rules:626,642), so the delete page's 'You can delete individual logs, meals' only empties slots."
+   },
+   {
+    "id": "OWN-07",
+    "status": "fail",
+    "evidence": "Neither EN nor AR privacy has any AI or training statement. The assistant is off (feature_flags.dart Feature.assistant:false), with no live provider class (assistant_provider.dart:40 only mentions Gemini in a comment). assistant_wire.dart:122-194 AssistantSubject would send allergies and contraindication 'avoid' tags, which is health-adjacent data and contradicts 'question and catalogue only'."
+   },
+   {
+    "id": "OWN-08",
+    "status": "fail",
+    "evidence": "Claims that do not match code or operations: index.html:57 'or by a woman reviewer on a short video call' (no vendor; the C12 button was not built). privacy:410 'no microphone'. app_en.arb:453 'We keep the result, nothing else' and the C09b string ifYourCheckIsApprovedOrRefused (arb:2830, 'nothing is kept except a one way keyed hash'). In fact reason codes, score bands, attempt counts, the install hash and consent records are kept (privacy §3.2). arb:838 'No man ever sees your face, your card or your name' (admin claim can list flags, main.py:830). arb:1139 'Nothing is recorded or kept' versus privacy §3.3 'reviewer records her decision'. safety_centre_view.dart:263 'A woman on the team, 9am to 9pm' versus support:47-50 'Mahmoud Reda … reads this mailbox himself … Sunday to Thursday 9-17'. Draft banners and placeholders are live on public pages."
+   },
+   {
+    "id": "OWN-09",
+    "status": "owner-action",
+    "evidence": "No counsel memo in the repo. The checklist cites LAW-20, which does not exist (the list ends at LAW-17)."
+   },
+   {
+    "id": "OWN-10",
+    "status": "fail",
+    "evidence": "The R items APL-01/03/04/08, GPL-04/06/08 and OWN-01/06 are not met (see those rows)."
+   },
+   {
+    "id": "OWN-11",
+    "status": "fail",
+    "evidence": "Branch not committed. The 4-implementation-report says 1 failing test (R1-12a) and that no simulator or Android compile was done for the MainActivity.kt MethodChannel. LegalLinks.allSet is false. Placeholders exist in EN and AR."
+   },
+   {
+    "id": "APL-01",
+    "status": "owner-action",
+    "evidence": "privacy:104 'Mahmoud Reda, an individual publishing Own Hub in his own name'. The app processes NID, biometric and pregnancy data from an individual account, which is a 5.1.1(ix) and Play organisation-account risk."
+   },
+   {
+    "id": "APL-02",
+    "status": "fail",
+    "evidence": "LegalLinks.support is '', so app_router.dart:2312 hides 'talk to a human'. Contact is the personal Gmail mahmoud.reda.acc@gmail.com. No phone or address."
+   },
+   {
+    "id": "APL-03",
+    "status": "fail",
+    "evidence": "No reviewer or demo path in functions/identity: grep for demo or app review finds only comments. The C04 tour (demo_mode.dart) shows sample screens and refuses writes, but the real app stays behind OTP, an Egyptian NID and a selfie."
+   },
+   {
+    "id": "APL-04",
+    "status": "fail",
+    "evidence": "PrivacyInfo.xcprivacy declares DeviceID, PhoneNumber, UserID, HealthFitness, OtherUserContent, OtherDataTypes and CrashData. Missing: SensitiveInfo (biometric face match, pregnancy; its comment says 'only if counsel asks'), PhotosorVideos (OtherUserContent is used instead while Play declares Photos), PerformanceData (ML Kit). The comment says 'six Firebase packages' but lists seven."
+   },
+   {
+    "id": "APL-05",
+    "status": "unknown",
+    "evidence": "Needs an archive privacy report. NSPrivacyAccessedAPITypes is empty for the app target and relies on pod manifests."
+   },
+   {
+    "id": "APL-06",
+    "status": "partial",
+    "evidence": "The gate holds: app_router.dart:422-426 forces C09b before any lens route, and consent_view.dart:116-148 records before onAgreed. kCaptureConsentVersion=1 (capture_consent.dart:47) equals CONSENT_VERSION=1 (config.py:634). But the C09b wording changed in this diff (showPromise block, new niqab button) and the version stayed 1. C09b says only 'servers outside Egypt' (arb:2854) and names no country. The 'nothing is kept except hash' bullet is inaccurate."
+   },
+   {
+    "id": "APL-07",
+    "status": "unknown",
+    "evidence": "Build-machine check."
+   },
+   {
+    "id": "APL-08",
+    "status": "owner-action",
+    "evidence": "MIN_AGE=18 (config.py:114). The App Store Connect answers are not visible."
+   },
+   {
+    "id": "APL-09",
+    "status": "fail",
+    "evidence": "Video vendor is a placeholder (privacy §4). The flag webhook chat service is undisclosed. C09b names 'Google Cloud' but not Frankfurt or the US."
+   },
+   {
+    "id": "APL-10",
+    "status": "partial",
+    "evidence": "Health backup is opt-in with its own consent and names Frankfurt and the US (arb theCopyIsStoredOnGoogleCloud). No HealthKit. Analytics carry no health properties. The meal sync carries ramadanMode (firestore.rules:635-640), a religious-practice signal, with no sensitive-data consent."
+   },
+   {
+    "id": "APL-11",
+    "status": "owner-action",
+    "evidence": "Rahma is named in the app (look_around_view.dart:252, 'written by coach Rahma Mohsen') and on the site. No licence on file in the repo."
+   },
+   {
+    "id": "APL-12",
+    "status": "fail",
+    "evidence": "grep 'medical device' app_*.arb returns nothing. It exists only in terms §4 and play-data-safety.txt. arb:912 'Cleared for postpartum from week six' states a clearance norm."
+   },
+   {
+    "id": "APL-13",
+    "status": "partial",
+    "evidence": "feature_flags.dart:173-215 is correct (adminConsole false; community, coachApp, assistant, payments and marketplace false; testingAidsAllowed false with accountRequired, app_router.dart:941). The doc comment at :155-170 still says 'no server behind it' and is stale. Review Notes are not written."
+   },
+   {
+    "id": "APL-14",
+    "status": "owner-action",
+    "evidence": "Console."
+   },
+   {
+    "id": "APL-15",
+    "status": "pass",
+    "evidence": "Info.plist:9-10 ITSAppUsesNonExemptEncryption false. TARGETED_DEVICE_FAMILY=1 (project.pbxproj:518,649,703). Phone OTP only, so Sign in with Apple is not triggered."
+   },
+   {
+    "id": "APL-16",
+    "status": "not-applicable",
+    "evidence": "Community is off. But firestore.rules has live posts, groups and reports rules, and main.py:1018-1030 deploys post counters. Dormant backend surface."
+   },
+   {
+    "id": "APL-17",
+    "status": "not-applicable",
+    "evidence": "payments and marketplace are off."
+   },
+   {
+    "id": "APL-18",
+    "status": "not-applicable",
+    "evidence": "Assistant is off. Note that the wire sends allergies and avoid tags (OWN-07)."
+   },
+   {
+    "id": "GPL-01",
+    "status": "owner-action",
+    "evidence": "Account type unknown."
+   },
+   {
+    "id": "GPL-02",
+    "status": "unknown",
+    "evidence": "Console."
+   },
+   {
+    "id": "GPL-03",
+    "status": "partial",
+    "evidence": "targetSdk = 36 (build.gradle.kts:64). 16 KB is unverified."
+   },
+   {
+    "id": "GPL-04",
+    "status": "fail",
+    "evidence": "play-data-safety.txt omits Name (read by OCR, ephemeral; privacy §3.2), age and sex derived from the NID, App activity (ML Kit performance events), and the install-hash fraud signal. It says 'Do you provide a way … Yes … once it is published' while the URL is empty."
+   },
+   {
+    "id": "GPL-05",
+    "status": "pass",
+    "evidence": "AndroidManifest.xml:9 CAMERA only. RECORD_AUDIO, storage and c2dm are removed at :28-31. No SMS or call-log permissions."
+   },
+   {
+    "id": "GPL-06",
+    "status": "owner-action",
+    "evidence": "Console."
+   },
+   {
+    "id": "GPL-07",
+    "status": "owner-action",
+    "evidence": "No listing drafts in the repo."
+   },
+   {
+    "id": "GPL-08",
+    "status": "owner-action",
+    "evidence": "Categories drafted in play-data-safety.txt. The pregnancy and postpartum framing is still a risk."
+   },
+   {
+    "id": "LAW-01",
+    "status": "owner-action",
+    "evidence": "Permit placeholder at privacy:107 and ar/privacy:102. The deadline is 31 Oct / 1 Nov 2026."
+   },
+   {
+    "id": "LAW-02",
+    "status": "partial",
+    "evidence": "record_consent and record_health_consent exist (main.py:303,328). The C09b record is minted server-side. Consent wording is misleading (APL-06), which undermines its validity as 'explicit, informed'."
+   },
+   {
+    "id": "LAW-03",
+    "status": "fail",
+    "evidence": "The phone number goes to Firebase Auth (US) on the C06 tap, before any transfer consent. Workouts and meals sync to Frankfurt for every verified user, and no screen asks for that transfer (only the health backup does). The transfer placeholder is at privacy ~line 320. The chat-webhook country is undisclosed."
+   },
+   {
+    "id": "LAW-04",
+    "status": "partial",
+    "evidence": "Rights are listed in privacy §8. Reply window and PDPC contact are placeholders in EN and AR. Health consent can be withdrawn. No withdrawal path for the C09b capture consent or for Crashlytics."
+   },
+   {
+    "id": "LAW-05",
+    "status": "fail",
+    "evidence": "firebase/ops holds only kill-switch-alert-policy.json and webhook-missing-alert-policy.json. No breach runbook or register."
+   },
+   {
+    "id": "LAW-06",
+    "status": "owner-action",
+    "evidence": "Individual controller, no DPO."
+   },
+   {
+    "id": "LAW-07",
+    "status": "partial",
+    "evidence": "DECIDED_RECORD_RETENTION_DAYS=180 with TTL on expireAt (config.py:548). nidRegistry, the review access log, verificationBehaviour and verificationInstalls have no TTL, and the last two are absent from privacy §6. No ROPA in the repo. Cloud Logging retention is not configured in the repo."
+   },
+   {
+    "id": "LAW-08",
+    "status": "owner-action",
+    "evidence": "No DPA or vendor evidence."
+   },
+   {
+    "id": "LAW-09",
+    "status": "partial",
+    "evidence": "waitlist/join.py:14-17,76 stores consent:true with a 180-day TTL. The form has a consent checkbox ('I agree. We will message you once…'). No sender identity beyond the footer, and no transfer-abroad (Frankfurt) consent at the form. 180 days conflicts with the 3-year consent-record rule."
+   },
+   {
+    "id": "LAW-10",
+    "status": "pass",
+    "evidence": "MIN_AGE=18 (config.py:114). tests/test_decide_hardening.py:136 test_the_nid_path_refuses_male_underage_and_garbage and test_contract.py:283 test_underage_leaks_nothing. Privacy §2 and Terms §3 say 18+."
+   },
+   {
+    "id": "LAW-11",
+    "status": "partial",
+    "evidence": "EN and AR exist. No Arabic-prevails clause. No address or registration. The locale is not stored with any terms acceptance, because none exists."
+   },
+   {
+    "id": "LAW-12",
+    "status": "fail",
+    "evidence": "See the OWN-08 inaccuracies. Social posts were not checked."
+   },
+   {
+    "id": "LAW-13",
+    "status": "partial",
+    "evidence": "Verification collections are deny-all (firestore.rules:1493-1523). ENFORCE_APP_CHECK=True (config.py:74). logs.py allowlist forbids uid, phone, NID and image. storage.rules:120-126 lets any signed-in owner write user-media/{uid}, which is undisclosed upload capacity."
+   },
+   {
+    "id": "LAW-14",
+    "status": "partial",
+    "evidence": "Sex is taken from the NID digit (decisions.py:425, REJECTED_NOT_ELIGIBLE, SEX_DIGIT_MALE). The niqab route exists. But the launch build has no community and no coaching (terms §2), so the 'safety' rationale for excluding men from a solo workout and diet tool is weak. Counsel approval of the framing is not on file."
+   },
+   {
+    "id": "LAW-15",
+    "status": "partial",
+    "evidence": "Terms §4 is strong. The doctor gates exist (arb:3222-3224). No coach agreement. No reviewer agreement for the women reviewers who receive phone numbers via get_review_contact."
+   },
+   {
+    "id": "LAW-16",
+    "status": "pass",
+    "evidence": "tests/test_ledger_and_dedupe.py exists. Not run in this audit."
+   },
+   {
+    "id": "LAW-17",
+    "status": "owner-action",
+    "evidence": "No counsel memo."
+   }
+  ],
+  "findings": [
+   {
+    "title": "Privacy policy, terms, support and deletion links are unreachable in the app, and the public pages are drafts with placeholders",
+    "checklist_ids": [
+     "OWN-01",
+     "OWN-02",
+     "OWN-06",
+     "APL-02",
+     "OWN-11"
+    ],
+    "severity": "store-rejection",
+    "where": "app/lib/config/legal_links.dart (all 4 = ''); site/config.json:12; site/privacy/index.html:46,107; site/ar/privacy/index.html:102,163,277,280,294,350,354; site/ar/terms/index.html:222,234; site/ar/delete-account/index.html:89,140",
+    "problem": "Apple 5.1.1(i) and 2.1(a), and Google User Data: no privacy policy is reachable inside the app, and privacy_view.dart:375 hides the row. The live pages are labelled 'Draft pending review' and contain [to be completed] text. The AR pages use a different marker ([بانتظار الاستكمال]), so the checklist's grep cannot catch them. I would reject under 5.1.1(i) and 2.1, and Play would flag the Data safety deletion URL as missing.",
+    "fix": "Choose the domain, fill all 11 placeholders per language (EN 11, AR 11), remove the draft banners, set baseUrl and the four LegalLinks, and extend release_preflight.sh to grep for 'بانتظار الاستكمال' and 'Draft pending'.",
+    "owner_action": true,
+    "evidence": "grep counts: EN privacy 7, terms 2, delete 2. The AR counts are the same under the Arabic marker."
+   },
+   {
+    "title": "No reviewer access path: Apple and Google cannot get past phone OTP, the Egyptian NID and a selfie",
+    "checklist_ids": [
+     "APL-03"
+    ],
+    "severity": "store-rejection",
+    "where": "functions/main.py:358-419 (start_verification, verify_identity); functions/identity/* (no reviewer or demo branch)",
+    "problem": "Guideline 2.1 (Information Needed / App Completeness) and Play 'App access' would block review. The demo tour (demo_mode.dart) shows sample screens only, and every write and route opens the join sheet. A reviewer outside Egypt has no Egyptian SIM and no ID card.",
+    "fix": "Add a Firebase Auth test number with a fixed code, plus a server-side pre-verified reviewer uid gated by an allow-list and audit-logged. Make sure App Check passes on reviewer devices. Write Review Notes and attach a screen recording of a real verification.",
+    "owner_action": false,
+    "evidence": "grep -i 'demo|app review' in functions/identity finds only a comment at pipeline.py:111."
+   },
+   {
+    "title": "Terms and privacy are never accepted, and the phone number goes to Firebase in the US before any consent",
+    "checklist_ids": [
+     "OWN-03",
+     "LAW-03",
+     "LAW-11",
+     "LAW-17"
+    ],
+    "severity": "legal-liability",
+    "where": "app/lib/features/signup/presentation/phone_number_view.dart:105-113,150-154; app_en.arb:3173; site/terms/index.html:81,252; site/privacy/index.html:313",
+    "problem": "As plaintiff: there is no click-wrap and no record (Law 15/2004 evidence), so the terms, including §13's injury exclusion, are unenforceable against her. Personal data reaches the US on the 'Send me a code' tap. Privacy:313 promises 'We ask for that consent, naming these countries, before your data leaves your phone', which is a false statement and a PDPL Art. 14-16 transfer without consent. §14 deems acceptance of changes by continued use (an unfair term under CPL).",
+    "fix": "On C06, add Terms and Privacy links, a line that 'your number is processed by Google Firebase in the United States', and an 'Agree and continue' button before sendCode. Record {uid, termsVersion, privacyVersion, locale, appVersion, serverTimestamp} via a callable after sign-in, write-once in the rules. Ask again when a version goes up. Replace §1 and §14 browse-wrap with click-wrap, and add an Arabic-prevails clause.",
+    "owner_action": false,
+    "evidence": "grep termsVersion|privacyVersion|TERMS_VERSION across app/lib and functions returns 0 hits."
+   },
+   {
+    "title": "The consent screen misstates what is kept, and its wording changed while its version did not",
+    "checklist_ids": [
+     "APL-06",
+     "LAW-02",
+     "OWN-08"
+    ],
+    "severity": "legal-liability",
+    "where": "app_en.arb:2830 ifYourCheckIsApprovedOrRefused; arb:453 bothImagesAreDeletedAfterTheCheck; arb:2854; consent_view.dart (diff adds showPromise and niqab button); capture_consent.dart:47",
+    "problem": "C09b tells her 'nothing is kept except a one way keyed hash' and C09 says 'We keep the result, nothing else'. The server actually keeps reason codes, score bands, attempt numbers, a per-ID failed-attempt count (verificationBehaviour), an install hash (verificationInstalls), consent records and a review access log, as privacy §3.2 admits. Consent to biometric processing given on inaccurate information is not 'explicit and informed' (PDPL Art. 12; Art. 41 penalties). 'It cannot be turned back into the number' is also overstated: whoever holds the key can enumerate the structured 14-digit space. The screen text changed in this diff but kCaptureConsentVersion stayed 1, so a stored record no longer proves which wording she saw. 'Servers outside Egypt' names no country.",
+    "fix": "Rewrite the bullets to list exactly what is kept and for how long, and name Germany (EU) and the US. Bump CONSENT_VERSION and kCaptureConsentVersion to 2 and keep a hash of each version's text server-side. Describe the hash as pseudonymised personal data.",
+    "owner_action": false,
+    "evidence": "privacy §3.2 lists result, reason codes, score bands, fraud signals and consent. deletion.py:40-42 says verificationBehaviour and verificationInstalls are untouched by deletion."
+   },
+   {
+    "title": "Privacy manifest and Data safety form are incomplete and do not match each other",
+    "checklist_ids": [
+     "APL-04",
+     "GPL-04",
+     "OWN-01"
+    ],
+    "severity": "store-rejection",
+    "where": "app/ios/Runner/PrivacyInfo.xcprivacy; app/android/play-data-safety.txt",
+    "problem": "Apple counts biometric data and pregnancy as Sensitive Info. Neither is declared, and the file says 'SensitiveInfo only if counsel asks'. The ID and selfie photos are declared as OtherUserContent on iOS but as Photos on Play. ML Kit performance and usage events (privacy §3.6) are declared on neither (Apple PerformanceData; Play App activity or Diagnostics). Play omits Name (OCR-read, ephemeral) and the age and sex derived from the ID. A mismatch between labels and policy is a 5.1.1 / 5.1.2 and Play User Data violation.",
+    "fix": "Add NSPrivacyCollectedDataTypeSensitiveInfo, PhotosorVideos and PerformanceData. Add Name (ephemeral), Other personal info (age and sex) and App info and performance to Play. Then reconcile all three with privacy §3 and run the Xcode privacy report.",
+    "owner_action": false,
+    "evidence": "PrivacyInfo.xcprivacy NSPrivacyCollectedDataTypes lists 7 types, with no SensitiveInfo or PhotosorVideos."
+   },
+   {
+    "title": "Crashlytics turns on at first launch with no consent and no off switch",
+    "checklist_ids": [
+     "OWN-04",
+     "LAW-17"
+    ],
+    "severity": "legal-liability",
+    "where": "app/lib/app_state/firebase_boot.dart:146-153; app/lib/main.dart:62-75; app/lib/features/account/presentation/privacy_view.dart",
+    "problem": "The installation ID, device and crash data go to Google, outside Egypt, before C06 and before any notice. The demo tour (pre-account) is also covered. The privacy centre has no toggle (Apple 5.1.1(ii) expects users to be able to withdraw). The site says 'No analytics software', which is defensible for Crashlytics, but ML Kit telemetry is not.",
+    "fix": "Gate setCrashlyticsCollectionEnabled(true) on the stored C06 acceptance flag, and add a 'Send crash reports' switch to the privacy centre. Or get a written counsel opinion on legitimate interest.",
+    "owner_action": false
+   },
+   {
+    "title": "Women-only exclusion and ID plus biometric collection are disproportionate while the launch build has no other users",
+    "checklist_ids": [
+     "LAW-14",
+     "APL-06",
+     "LAW-07"
+    ],
+    "severity": "legal-liability",
+    "where": "feature_flags.dart:173-215 (community, coachApp off); site/terms/index.html §2 ('Nothing connects you to another person'); app_en.arb 'thisIsWhatKeepsOwnHubWomen'",
+    "problem": "As plaintiff for a refused man or a privacy complainant: the stated reason for national-ID and face-matching is a women-only safe space. But Terms §2 admits the launch app connects her to nobody, so there is no space to protect. That weakens both the CEDAW Art. 4 / Constitution Art. 11 positive-measure defence against an Art. 53 discrimination claim, and the PDPL Art. 3 necessity and proportionality basis for biometric processing. Apple reviewers may likewise question 5.1.1(i) and (v): requiring government ID to use offline workouts.",
+    "fix": "Have counsel approve the framing in writing. Either keep verification but justify it in the policy, the listing and Review Notes by the near-term community and coach launch, or defer the ID check until community or coachApp turns on and let a phone-only account use the solo features. Restrict availability to the Egypt storefront.",
+    "owner_action": true
+   },
+   {
+    "title": "Woman-reviewer route is promised but has no vendor, no button and no staffing, and there are contradictions about what a reviewer records",
+    "checklist_ids": [
+     "OWN-08",
+     "APL-09",
+     "LAW-12",
+     "LAW-03"
+    ],
+    "severity": "high",
+    "where": "site/index.html:57; site/terms/index.html:111; site/privacy/index.html:410 and §4 placeholder; app_en.arb:838,1139; functions/identity/webhook.py:1-20",
+    "problem": "The site, terms and app promise a woman video reviewer. The vendor is undecided and the C12 'check me another way' button was skipped. 'No access to … microphone' conflicts with a video call. 'Nothing is recorded or kept' (arb:1139) conflicts with privacy §3.3, under which the reviewer records her decision. 'No man ever sees your face, your card or your name' (arb:838) is an absolute warranty, yet admins (the male publisher) can list review flags (main.py:830). The flag webhook sends to an unnamed 'third-party chat service', which is undisclosed in §4 and §5. Under CPL Art. 9 these are misleading claims, and Apple 2.3.1 and Play Misrepresentation apply.",
+    "fix": "Choose and contract the vendor and its region, update §3.3, §4, §5 and §10 (microphone during the reviewer call only). Soften the absolute claims to what operations guarantee. Disclose the chat-webhook provider or drop it.",
+    "owner_action": true
+   },
+   {
+    "title": "Support copy promises a woman 9am to 9pm, while support is one man, Sunday to Thursday, 9 to 5",
+    "checklist_ids": [
+     "OWN-08",
+     "APL-02"
+    ],
+    "severity": "medium",
+    "where": "app/lib/features/account/presentation/safety_centre_view.dart:263 (arb:383 'A woman on the team, 9am to 9pm'); site/support/index.html:47-50",
+    "problem": "Once LegalLinks.support is set, the safety centre will tell women a woman answers until 9pm. The support page says Mahmoud reads the mailbox himself, Sunday to Thursday, 9:00 to 17:00. This is misleading on a safety screen of a women-only product, and it mixes the two identities.",
+    "fix": "Change the subtitle to match the support page, for example 'We answer by email, Sunday to Thursday', or staff it as described.",
+    "owner_action": false
+   },
+   {
+    "title": "No data export, and the PDPL response window is blank",
+    "checklist_ids": [
+     "OWN-05",
+     "LAW-04"
+    ],
+    "severity": "legal-liability",
+    "where": "app_en.arb:2730; site/privacy/index.html §8; site/delete-account/index.html ~94",
+    "problem": "The right of access and copy (PDPL Art. 2) is offered only by email, with no stated deadline, from a personal Gmail account. A complaint to the PDPC over a late reply would be easy to make.",
+    "fix": "Fill in the reply window after counsel confirms it. Build 'Download my data' from deletion_manifest plus the local stores, as JSON plus an EN and AR summary.",
+    "owner_action": false
+   },
+   {
+    "title": "No 'not a medical device' line in the app; postpartum clearance stated as a norm",
+    "checklist_ids": [
+     "APL-12",
+     "LAW-15"
+    ],
+    "severity": "store-rejection",
+    "where": "app/lib/l10n/app_en.arb (no 'medical device'); arb:912 rebuiltAroundThePelvicFloorFirstCleared",
+    "problem": "Apple 1.4.1 and Google Health apps policy: the cycle, pregnancy and postpartum features show no in-app medical disclaimer. 'Cleared for postpartum from week six' reads as medical guidance, and is an injury-liability hook for a plaintiff.",
+    "fix": "Add the disclaimer to About, the cycle screens, the life-stage screen and O03 for pregnant and postpartum answers, in EN and AR. Reword to 'only after your doctor clears you; often around six weeks, sometimes later'.",
+    "owner_action": false
+   },
+   {
+    "title": "Routine workout and meal sync to Frankfurt has no transfer consent and carries a religious signal",
+    "checklist_ids": [
+     "LAW-03",
+     "APL-10",
+     "LAW-02"
+    ],
+    "severity": "legal-liability",
+    "where": "firebase/firestore.rules:595-642 (meals, eatPrefs incl. ramadanMode); site/privacy/index.html §3.4",
+    "problem": "Every verified woman's sessions, meals and eatPrefs, including ramadanMode, an indicator of religious practice and sensitive under PDPL, go to Germany. No screen asks for that transfer; only the health backup does. Meals and eatPrefs cannot be deleted by her (allow delete: if false), despite 'You can delete individual … meals'.",
+    "fix": "Fold the sync transfer into the C06 consent and name Germany. Keep ramadanMode on the device or treat it as sensitive. Allow deletion of meal-day documents.",
+    "owner_action": false
+   },
+   {
+    "title": "Fraud-signal collections are kept forever and are not disclosed in retention",
+    "checklist_ids": [
+     "LAW-07",
+     "OWN-06"
+    ],
+    "severity": "medium",
+    "where": "functions/account/deletion.py:40-42; functions/identity/store.py:269-299; config.py:548-552",
+    "problem": "verificationBehaviour (keyed by ID hash) and verificationInstalls have no TTL and survive account deletion. Privacy §6 does not list them. The nidRegistry and review access log are also kept indefinitely. This breaches PDPL Art. 3 storage limitation.",
+    "fix": "Set TTLs and list each one in §6 and on the delete page, or delete them on account deletion.",
+    "owner_action": false
+   },
+   {
+    "title": "Assistant wire would send allergies and health-derived tags",
+    "checklist_ids": [
+     "OWN-07",
+     "APL-18"
+    ],
+    "severity": "low",
+    "where": "app/lib/features/assistant/domain/assistant_wire.dart:122-194",
+    "problem": "This is LATER, since the assistant is off. But AssistantSubject carries allergies and 'avoid' contraindication tags derived from injury and life stage. That contradicts the 'question and catalogue only' commitment and would need a sensitive-data consent and Vertex zero data retention.",
+    "fix": "Before turning the flag on, either strip these fields or add them to the AI opt-in. Add the 'never train AI' statement to privacy §3.8 now.",
+    "owner_action": false
+   },
+   {
+    "title": "Legal entity, PDPC permit, DPA and breach runbook are missing",
+    "checklist_ids": [
+     "APL-01",
+     "LAW-01",
+     "LAW-05",
+     "LAW-06",
+     "LAW-08",
+     "OWN-09"
+    ],
+    "severity": "legal-liability",
+    "where": "site/privacy/index.html:104,107; firebase/ops/",
+    "problem": "An individual controller processes NID hashes, biometrics and pregnancy data with no PDPC permit 25 days before the grace period ends, no DPA evidence and no breach register. Personal liability and Art. 41/42 penalties apply. Apple 5.1.1(ix) expects an organisation account for this data class.",
+    "fix": "Get the counsel memo, decide on an entity, file with the PDPC, accept the Google DPA, and add firebase/ops/breach-runbook with a 72-hour clock and EN and AR templates.",
+    "owner_action": true
+   }
+  ],
+  "keep": [
+   "C09b is a server-recorded gate: app_router.dart:422-426 routes every lens screen back to consent until the write returns, and a decline path to C15 exists.",
+   "Sex is read only from the NID digit, never from the face (decisions.py:425), and the refusal copy is neutral.",
+   "Images never touch Storage. identity/ is barred from it (tests/test_contract.py), and the logs.py allow-list forbids uid, phone, NID and images.",
+   "The health backup is off by default, has its own versioned consent that names Frankfurt and the US, and withdrawing it deletes the server copy.",
+   "Verification collections are deny-all in firestore.rules:1493-1523. ENFORCE_APP_CHECK=True. The NID is HMAC-only, with the key in Secret Manager.",
+   "Android asks only for CAMERA and explicitly removes RECORD_AUDIO, storage and c2dm. iOS has no photo-library key. The camera purpose strings exist in EN and MSA AR.",
+   "Native Crashlytics defaults are false, there is no user id or custom key, and the analytics sink is debug-only with an allow-list gateway.",
+   "Deletion is a journaled state machine with sweeper and resweep, covering all 41 manifest rows. The web deletion route works without the app.",
+   "Terms §4 has a strong medical warning, and the pregnancy and postpartum doctor gates exist (arb:3222-3224).",
+   "The demo tour refuses all writes and routes, so it cannot leak data or reach gated screens.",
+   "The site sends no cookies or scripts and has a strict CSP in _headers.",
+   "The publisher and founder identities are kept correct across terms §1, privacy §1, support and the footer.",
+   "FeatureFlags.shipped has community, coachApp, assistant, payments, marketplace and adminConsole off. testingAidsAllowed is false with accountRequired.",
+   "MIN_AGE=18 is enforced, with tests."
+  ],
+  "verdict": "This build should not be submitted, and it should not launch in Egypt yet. As the App Reviewer, I would reject it on both stores for four reasons. First, 2.1 and Play App access: there is no reviewer path past OTP, the Egyptian ID and a selfie. Second, 5.1.1(i): no privacy policy is reachable in the app, and all four LegalLinks are empty. Third, 5.1.1 and 5.1.2 and Play User Data: the privacy manifest leaves out SensitiveInfo, PhotosorVideos and ML Kit performance data, and Data safety leaves out Name and the age and sex taken from the ID. Fourth, 1.4.1 and Google Health: there is no 'not a medical device' line in the app. The public pages also still show draft banners and 22 placeholders, 11 in English and 11 in Arabic. The Arabic ones use a marker the checklist's grep does not catch. As the Plaintiff Lawyer, my strongest claims are: 1. The Terms and Privacy are never accepted or recorded, so the injury and liability limits fail. 2. The phone number goes to the US before any consent, while the privacy policy says consent comes first. 3. The C09b biometric consent says nothing is kept except the hash, which is false, and its wording changed without a version bump. 4. Crashlytics turns on at first launch with no consent and no off switch. 5. Workout and meal sync to Germany, including the Ramadan setting (a religious signal), has no transfer consent. 6. The woman-reviewer, 'no man ever sees' and support-hours claims do not match operations. 7. Fraud-signal records are kept forever and are not disclosed. 8. No PDPC permit, no legal entity and no breach runbook, 25 days before the deadline. 9. The women-only and ID requirement is hard to justify as proportionate while the launch build connects her to no one. The camera-consent gate, NID-only sex reading, image non-retention, health-backup consent, deletion engine and permissions are solid and should be kept. Priority order: C06 click-wrap and US disclosure with a recorded acceptance; corrected and version-bumped C09b text; consent-gated Crashlytics; complete the manifest and Data safety; fill and publish the legal pages with LegalLinks set; a reviewer test account; the in-app medical disclaimer; then the counsel memo, PDPC filing and entity decision."
+ }
+]

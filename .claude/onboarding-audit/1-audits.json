@@ -1,0 +1,811 @@
+[
+ {
+  "auditor": "The Believer",
+  "persona": "The Believer",
+  "approach": "I traced the shipped route order from main.dart (_firstRunStack, frontDoor) through every builder in lib/routing/app_router.dart (C01 to O05, then T01, R03, E01, K01 to K07), with the flags in lib/domain/flags/feature_flags.dart deciding which branches are live. I quoted the on-screen copy from lib/l10n/app_en.arb. I judged each screen by one question: does it sell \"a safe women-only room, and a week built for your body\"? Then I listed the parts that already sell it, so fixes keep them.",
+  "trainee_path": "Shipped flags: accountRequired=true (feature_flags.dart:188), coachApp=false (:210), community=false (:205). The whole product sits behind verification (app_router.dart:565 openBeforeVerification = signup, onboarding, account, admin). First launch opens on C01 because frontDoorFor returns C01 for a signed-out woman (app_router.dart:4658). The setup questions are NOT stacked at launch, because isDue needs isVerified when an account is required (onboarding_state.dart isDue; main.dart:339).\n1. C01 Welcome (app_router.dart:901). Headline \"A room full of women training like you\". Tap \"Get started\" [1].\n2. C02 Language (:910). The device language is preselected (language_view.dart:54). Tap \"Continue\" [2], or 3 taps if she switches language.\n3. C03 What's inside (:917). Four value cards: quiet home workouts, food you already cook, women only, coaches only with the flag. Tap \"Create my account\" [3]. Side branch: \"Look around first\" opens C04. It shows two placeholder workouts, and tapping one only raises \"Save this workout?\" (look_around_view.dart:84-109). The Recipes tab changes nothing.\n4. C06 Phone (:936). The title reads \"Step 1 of 2\". She types her number and taps \"Send me a code\" [4].\n5. C07 Code (:941). Titled \"Step 2 of 2\". The six digits check themselves with no tap. If she is already verified she goes to T01 or O01.\n6. C08 Role (:991). \"Which one are you?\" With the coach app off there is only one option, preselected. Tap \"Continue\" [5].\n7. C09 Why we check (:1012). \"One check, then you are in … It takes about 90 seconds.\" Tap \"Scan my ID\" [6]. Niqab branch: C15 woman reviewer.\n8. C09b Consent (:1031). Tap \"I agree, start the camera\" [7]. \"I would rather not\" goes to C15.\n9. C10 ID front (:1056). Auto-capture, with a fallback \"Take it myself\" (+1).\n10. C10b ID back (:1072). Auto-capture. Starting liveness can fail and branch to C15, C12 (limit or offline) or C14.\n11. C11 Selfie (:1132). Tap \"Done\" [8].\n12. C12 Checking (:1145). Waits \"Usually seconds\". When verified it moves on to C13 by itself. Retry goes to C10. A reviewer case goes to C14, the waiting room. A refusal goes to C14. Offline gives \"We could not reach Own Hub\" with Try again.\n13. C13 You're in (:1197). Primary button \"Read the three rules\" [9].\n14. C16 Pledge (:1269). Tap \"I agree, let me in\" [10].\n15. O01 Goal (:1296). \"Four short questions, then your week is ready.\" Continue [11].\n16. O02 Place (:1308). Continue [12].\n17. O03 Schedule (:1315). Continue [13].\n18. O04 Life stage (:1322). Continue [14].\n19. O05 Starting program (:1335). \"Built from your four answers\". Tap \"Start day 1 now\" [15], which lands on [T01, R03].\n20. R03 Workout day (:1545). Tap \"Start, everything's ready\" [16], which opens R07. The first workout has started.\nTotal: about 20 screens and 16 taps, plus 11 phone digits and 6 code digits, plus two camera captures and one server wait. Her first welcome after verifying is a rules page, and her first sight of \"her week\" is screen 19.\nMeal log path: on O05 tap \"I will start tomorrow\" (T01 day-one state). Tap \"Tell us one thing you eat\" (today_view.dart:607) to open E01 in its E09 day-one state, then tap \"Log\" on a starter (eat_view.dart:657-664). That is about 17 taps.\nDiet plan: T01, then the Eat tab, then Recipes (E05), then Week plan (E07, app_router.dart:1786). That is about 18 taps.\nCycle log: My cycle is not on the day-one Home. The row exists only on the regular Home (today_view.dart:395-404). So on day one: avatar, A02, My cycle, Y01 setup, Y03, Y04 check-in. That is 20 or more taps.",
+  "coach_path": "At launch: impossible. C08 hides the coach option when Feature.coachApp is off (app_router.dart:994), and C13 hides \"I'm a coach, set up my profile\" (youre_in_view.dart:107). As the code stands with the flag on: C01 Get started, C02 Continue, C03 Create my account, C06 phone, C07 code, C08 pick \"I coach women\" and Continue, then C09, C09b, C10, C10b, C11 and the C12 wait (the same check). At C13 the primary button is still \"Read the three rules\". The coach option is a secondary text button, \"I'm a coach, set up my profile\" (youre_in_view.dart:106-113), and it goes straight to K01, skipping the pledge (C16). Then K01 Basics, K02 Certificates, K03 Specialties, K04 Packages, K05 Payout (app_router.dart:2989-3069). In a production build (accountRequired on), onAddCertificate and onSetPayout are null (app_router.dart:3008, 3055), so a real coach cannot add a certificate or a payout method. K05 Continue submits her and opens K06 \"Being checked\" (:3070), which offers \"Build first plan\" (K20) or \"See today\" (K07). About 22 taps, roughly 18 screens. The one useful action at the end (build a split) waits behind certificate review that she cannot actually start. The invite-a-trainee and portfolio paths (W11, B14, B01) are reachable only from K07, after all of this.",
+  "taps_to_first_value": {
+   "workout": "About 16 taps across about 20 screens (C01 to R07), plus typing the phone number and code, two auto camera captures, one selfie and a server wait. The first 'this is yours' moment is O05 at about tap 15.",
+   "diet": "About 17 taps to log a first meal (O05 'I will start tomorrow', then Home 'Tell us one thing you eat', then E01 Log). About 18 taps to open a week meal plan (Home, Eat, Recipes, Week plan).",
+   "log": "About 17 taps for a first meal log, or 16 for a first logged set (R07). A first cycle log takes 20 or more taps, because My cycle is missing from the day-one Home and lives behind the avatar and A02.",
+   "coach": "Unreachable in the launch build (coachApp=false). With the flag on: about 22 taps to K06, ending in a submit-for-review. In production the certificate and payout rows are inert, so a real coach cannot finish setup in-app."
+  },
+  "findings": [
+   {
+    "title": "Her week is promised last, after the paperwork",
+    "who": "trainee",
+    "severity": "high",
+    "where": "Setup questions O01-O05, app_router.dart:1269-1373 and onboarding_state.dart isDue; gate at app_router.dart:565",
+    "problem": "The single most exciting thing the app can say, 'your week is ready, built from your four answers' (arb:465), comes at screen 19, after phone, code, role, ID, selfie, a wait, a success screen and a rules page. She meets the cost (ID, selfie, Google Cloud outside Egypt) before she has felt anything to protect. The setup flow is already ungated ('onboarding' is in openBeforeVerification, app_router.dart:565-570), so nothing in the women-only gate forces this order.",
+    "evidence": "Only C16 onAgree and C07 onConfirmed open O01 (app_router.dart:1271-1275, 980-983). isDue is false for any unverified woman when accountRequired is on.",
+    "fix": "Run O01-O05 right after C03 'Create my account', or straight from C01 'Get started'. End O05 with her personalised week card and one button, 'Save my week and join', which leads to C06. After C12/C13 she lands on the R03 she already chose. The answers already persist in IntakeRepository, and the verification gate and consent steps stay exactly as they are; only their position moves."
+   },
+   {
+    "title": "The success moment hands her a rules page, not her program",
+    "who": "trainee",
+    "severity": "high",
+    "where": "C13 You're in, youre_in_view.dart:104-114; C16 pledge_view.dart:40-70",
+    "problem": "The peak emotional screen ('You're in') sends her on with 'Read the three rules'. The rules are written for a community that is switched off at launch ('What is said here stays here', 'No comments on anyone else's body'). She reads three rules about a room she cannot enter yet, and the warning 'Break one and you lose your place'.",
+    "evidence": "arb keys readTheThreeRules, breakOneAndYouLoseYourPlace; community=false (feature_flags.dart:205).",
+    "fix": "Keep the pledge, because it protects the women-only promise. Make C13's primary button 'Start my week' and fold the pledge in as one compact agreement card on C13, or show it the first time she opens the community. If the setup questions have moved earlier, C13 should open R03 or her plan directly."
+   },
+   {
+    "title": "'Step 1 of 2' is a promise the flow breaks",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "C06 phone_number_view.dart:113, C07 code_view.dart:152",
+    "problem": "She is told sign-up has two steps. After step 2 come about 7 more screens (role, why we check, consent, ID front, ID back, selfie, checking, rules) and then 5 setup screens. Broken expectations are the main reason people quit verification flows.",
+    "evidence": "arb:1055 'Step 1 of 2'; C07 to C08 to C09 to C09b to C10 to C10b to C11 to C12 to C13 to C16.",
+    "fix": "Use one honest progress frame across the whole signup: 'Your number, then a 90-second check'. Or show three named stages (Number · Check · Your week) with the current one marked."
+   },
+   {
+    "title": "Role screen with one choice",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "C08 role_view.dart:96-141, app_router.dart:991-1010",
+    "problem": "With the coach app off, 'Which one are you?' offers only 'I'm here to train', already selected. It is a tap that asks nothing, sitting between the code and the ID check where momentum matters most.",
+    "evidence": "offerCoach: featureFlags.isOn(Feature.coachApp) (app_router.dart:994); coachApp=false.",
+    "fix": "When offerCoach is false, skip C08: set lastSignupRole = trainee, call beginIdentityCheck(), and go to C09 inside C07.onConfirmed. Keep C08 unchanged when the coach app is on."
+   },
+   {
+    "title": "Look around is a locked shop window",
+    "who": "trainee",
+    "severity": "high",
+    "where": "C04 look_around_view.dart:112-226; C14 'Look around while you wait' being_checked_view.dart:348",
+    "problem": "The one pre-account taste is two placeholder workouts. Tapping either immediately asks her to join. The Recipes tab switches the segment but still lists workouts. The bottom bar is drawn but has no onSelect. A woman waiting on a reviewer (C14) is sent here and finds nothing to do, during the hours when she is most likely to leave forever.",
+    "evidence": "onTap: () => _promptToJoin(context) (:178); the list renders `workouts` whatever _tab is; AppNavBar(activeScreenId: 'R01') with no onSelect (:135).",
+    "fix": "Let her play one real follow-along preview (an R04 move video) and open one real Rahma recipe read-only, before any join prompt. On C14, offer the ungated setup questions ('Build your week while we check') so the wait produces her plan. Content stays non-community, so the women-only gate is untouched."
+   },
+   {
+    "title": "Day-one Home forgets everything she just told us",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "T01 day-one state, today_view.dart:498-642",
+    "problem": "After four questions, Home reads 'Your training, week by week … This app counts weeks, not days'. It is generic, with no 'your 3 days · 20 minutes · at home', no program name and no echo of her goal. The aha from O05 evaporates one screen later.",
+    "evidence": "_dayOne draws yourTrainingWeekByWeek and thisAppCountsWeeksNotDaysAnd. The comment at :526-545 notes it is handed none of her intake.",
+    "fix": "Pass IntakeRepository.read() into TodayView. Day one then says 'Your week: {days} sessions, {minutes} min, {place}', the same line O05 shows (starting_program_view.dart:95-100), above 'Start day 1'."
+   },
+   {
+    "title": "Her cycle is hidden on day one",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "today_view.dart:395-404 (regular Home only) vs _dayOne :498-642; nav bar app_nav_bar.dart:58-76",
+    "problem": "Cycle tracking is one of the three promises (train, eat, track her cycle), and it is not a tab. On day one it is reachable only via avatar, A02 and the My cycle row. 'Log her data' for the cycle is the slowest of all first actions.",
+    "evidence": "The myCycle row is in the non-day-one branch only. The tabs are T01, R01, M01 (off) and E01.",
+    "fix": "Add one 'Set up My cycle' row to _dayOne beside 'Tell us one thing you eat'. It opens Y01, which already exists and writes nothing until she answers."
+   },
+   {
+    "title": "Life stage copy undersells the whole setup",
+    "who": "trainee",
+    "severity": "low",
+    "where": "O04 life_stage_view.dart:177; arb:3083",
+    "problem": "'Nothing in your sessions changes from it yet' tells a pregnant or postpartum woman that her answer does nothing. It is honest, but it deflates the 'built for your body' promise at the exact point where she is trusting it.",
+    "evidence": "weSaveYourAnswerWithTheRest.",
+    "fix": "Keep it honest and frame it warmly: 'Saved. Your coach and our programmes use this as soon as your plan is ready. Tell your doctor's advice first.' Only claim what is true."
+   },
+   {
+    "title": "Coach cannot finish setup in a real build",
+    "who": "coach",
+    "severity": "blocker",
+    "where": "K02 app_router.dart:3008-3011, K05 :3055-3057; coach_profile_state.dart:49",
+    "problem": "With accountRequired on, onAddCertificate and onSetPayout are null, so the rows are inert. A real coach is walked through five setup screens, two of which she cannot complete, and then K06 submits her for a review that has no certificate to review. Her first useful action (a plan, a portfolio, an invite) sits behind this.",
+    "evidence": "isTestMode => AppRouter.testingAidsAllowed, which is false whenever accountRequired is on.",
+    "fix": "Before turning coachApp on, wire a real certificate upload (Storage rules already exist per commit b6e26d8) and a payout capture. Reorder the coach path so K06 lands on 'Build your first plan' (K20) and 'Your portfolio' (B01) while the review runs, because building is not publishing."
+   },
+   {
+    "title": "Coach branch is a secondary text link on C13 and skips the pledge",
+    "who": "coach",
+    "severity": "medium",
+    "where": "youre_in_view.dart:104-114; app_router.dart:1197-1211",
+    "problem": "A woman who chose 'I coach women' at C08 still sees 'Read the three rules' as the main button, with her path as a small text link. If she follows the main button she gets the trainee intake (O01). If she follows the link she never sees the community pledge, even though coaches are the ones rule 3 (no selling) applies to most.",
+    "evidence": "YoureInView shows both buttons for any role; it never reads lastSignupRole.",
+    "fix": "Branch C13 on lastSignupRole. A coach gets primary 'Set up my coaching profile', which goes to a short pledge (or the same C16 with coach copy) and then K01. A trainee keeps her path. When the role is 'both', offer both."
+   },
+   {
+    "title": "Stale gate comment contradicts the shipped flag",
+    "who": "both",
+    "severity": "low",
+    "where": "app_router.dart:537-540 vs feature_flags.dart:188",
+    "problem": "The router says the whole-app gate is 'built and switched off', but accountRequired ships true. Anyone reordering onboarding may misread which screens a new woman can reach.",
+    "evidence": "'**This is built and switched off.**' vs Feature.accountRequired: true.",
+    "fix": "Update the comment to say the gate ships on (2026-10-02), as testingAidsAllowed's note already does at :885-895."
+   }
+  ],
+  "keep": [
+   "The women-only gate as a pure function: gateDestination/verificationGate (app_router.dart:805-858) and behindVerification with an unknown id treated as gated (:573-580). Every product route stays closed until the server says verified. It is the core promise.",
+   "openBeforeVerification = {signup, onboarding, account, admin} (app_router.dart:565). It is what lets setup move earlier, and it keeps PDPL deletion reachable for a refused woman.",
+   "C09b ConsentView as the only door to C10, with consentRecorded guarding deep links (app_router.dart:1031-1054). Consent is written before any lens opens, and 'I would rather not' leads to a woman reviewer.",
+   "The niqab path and the woman-reviewer fallback (C09 onNiqabPath leads to C15; C12 onAskForReviewer; C15 to C14). Nothing on these routes asks for a selfie, and no failure is a dead end.",
+   "C13 copy 'Your ID photo and selfie have been deleted. We kept the result and nothing else.' and the measured, never invented, duration (youre_in_view.dart:76-92, 160-171).",
+   "Welcome and What's inside copy, which already sells the promise: 'A room full of women training like you', 'No jumping, no equipment, ten minutes counts. Your neighbours will never know.', 'Koshari, ful and molokhia in the portions you actually serve. No grams, no calorie shaming.' (arb:375 and the C03 keys).",
+   "Setup design: every question preselects a valid answer, Skip on every step, and a working close X, and every exit calls OnboardingState.finish, which applies her days as her real weekly target (onboarding_state.dart finish/_applyWeeklyTarget). Her answer reaches the goal unclamped.",
+   "leaveSetupToHome clearing the signup stack so 'Start day 1 now' lands as [T01, R03] and back never returns to the pledge (onboarding_state.dart leaveSetupToHome).",
+   "C07 sends an already verified woman straight to Home or to setup, never through the ID check twice, after a bounded cloud pull (app_router.dart:956-985).",
+   "Empty states that act as onboarding: T06 'Start day 1' plus 'Tell us one thing you eat', and E09 one-tap starter plates (today_view.dart:498-642, eat_view.dart:635-671). No tours, no overlays.",
+   "The honesty rules: no invented program content (starting_program.dart header), no fake member counts, and no rows drawn for switched-off features (screenIsOn, app_router.dart:523-528). Fixes must not bring back claims the app cannot keep.",
+   "Language is selectable first and stays reachable from her profile (C02 in ungatedScreens, app_router.dart:505), with Arabic as MSA right to left."
+  ],
+  "verdict": "Own Hub already has the soul of a great onboarding. Its welcome copy is warm, specific and Egyptian ('Koshari, ful and molokhia…', 'Your neighbours will never know'). Its verification is careful and kind (consent before the camera, a niqab path, a woman reviewer, images deleted and the screen says so). Its setup questions are short, skippable, and actually change her weekly goal. The problem is the order, not the parts. Today she pays the full price first: phone, code, a one-option role screen, ID front and back, a selfie and a wait, inside a frame that told her 'Step 1 of 2'. Then she reads three community rules for a community that is switched off, and only at screen 19 hears 'your week is ready, built from your four answers'. Day-one Home then forgets those answers, and the cycle promise is hidden behind her avatar. The code already permits the fix: setup is ungated. Move O01-O05 to right after 'Get started', end with her personalised week and 'Save my week and join', keep every verification and consent step intact behind that, and land her straight on Start day 1 after 'You're in'. She would then reach the women-only check already invested in something that is hers, which is the strongest reason any woman has to finish it. The coach side is not ready to judge on speed, because in a real build a coach cannot attach a certificate or a payout. It needs those wired, and a role-aware C13, before the flag goes on."
+ },
+ {
+  "auditor": "The Skeptic",
+  "persona": "The Skeptic",
+  "approach": "I traced the real route graph in /Users/mahmoudreda/ownhub/.claude/worktrees/onboarding/app/lib/routing/app_router.dart, main.dart and onboarding_state.dart with the shipped flags (accountRequired, signUp and verification on; coachApp, community and marketplace off). I then read every signup, onboarding, Today and Eat view and the coach K01 to K06 wiring, and quoted the on-screen copy from lib/l10n/app_en.arb. I ran flutter analyze (no issues) and the signup, onboarding, journeys, routing and app_state suites (684 tests, all passed). Every point where a woman gives up is ranked by how many users it loses.",
+  "trainee_path": "Shipped build: accountRequired is on, so the front door is C01 and the setup questions are not due until she is verified (onboarding_state.dart:81-84).\n1. C01 Welcome. Tap \"Get started\" (tap 1). \"I already have an account\" goes to C06.\n2. C02 Language. Her phone language is preselected. Tap \"Continue\" (2).\n3. C03 What's inside. Four marketing rows. Tap \"Create my account\" (3). \"Look around first\" goes to C04, which has two hard-coded rows. Every tap there opens a \"Save this workout?\" join sheet, the tabs show the same list, and the nav bar does nothing.\n4. C06 \"What's your number\", titled \"Step 1 of 2\". She types her number (text field 1) and taps \"Send me a code\" (4). If sending fails, nothing happens on screen.\n5. Wait for the SMS. C07 \"Type the code\", \"Step 2 of 2\". She types 6 digits (text field 2), which auto-submit. A wrong code just clears the boxes. Then there is an unannounced wait of up to about 3s or more while the claim is read.\n6. C08 \"Which one are you?\" has a single option, \"I'm here to train\", because the coach app is off. Tap \"Continue\" (5).\n7. C09 \"One check, then you are in\". Tap \"Scan my ID\" (6). The niqab option goes to C15 (woman reviewer).\n8. C09b \"Before the camera opens\" (consent). Tap \"I agree, start the camera\" (7). \"I would rather not\" goes to C15.\n9. The OS camera permission prompt: Allow (8). If she denies it, C10 is a dead screen.\n10. C10 ID front. It auto-captures or she taps \"Take it myself\" (9).\n11. C10b ID back (10). Then a network call starts the liveness session, with no spinner. A network failure here sends her to C15, the human video-call queue.\n12. C11 selfie challenge steps, then \"Done\" (11).\n13. C12 \"Checking your card\": a static ring at 72% with two ticks already drawn. It waits for the server. Its \"Continue\" button jumps to \"You're in\" before any decision. Branches: C14 waiting for a reviewer (the whole app stays locked, with no SMS or push), C10 retake, C15 reviewer, and stop screens.\n14. C13 \"You're in\". Tap \"Read the three rules\" (12).\n15. C16 community pledge: \"Break one and you lose your place\". Tap \"I agree, let me in\" (13).\n16. O01 to O04 are labelled \"1 of 4\" to \"4 of 4\". Each has a preselected answer plus Continue, Skip (which does the same as Continue) and an X that skips all setup. That is 4 taps (14 to 17).\n17. O05 \"Your starting program\". It is always \"Beginner foundations · 8 weeks · quiet · no equipment\", whatever she answered. Tap \"Start day 1 now\" (18). The stack is cleared to [T01, R03].\n18. R03 Workout day. Tap Start (19). R07 means the workout has started.\nIn total: about 19 taps, 2 typed fields, 1 SMS wait, 1 OS permission, 1 server verification wait and 21 screens to the first set. The fastest legal path uses the X on O01: 14 taps to Home, then \"Start day 1\" and \"Start\", which is 16 taps.\nDiet: at O05 tap \"I will start tomorrow\" (18). Home day one shows \"Tell us one thing you eat\" (19). E01 day one, then \"Log\" on a starter plate (20).\nCycle log: Home, then avatar to A02 (19), \"My cycle\" to Y03 (20), \"Set up\" to Y01 (21), then the Y02 dates. That is about 23 to 24 taps. There is no cycle tab and nothing about the cycle on day-one Home.",
+  "coach_path": "This exists in code only. coachApp is off, so C08 never offers the coach role and C13 hides the coach link.\n1. C01 to C07 are the same as for a trainee: 4 taps, phone number and code.\n2. C08: pick \"I coach women\" and Continue (5 to 6).\n3. C09 to C12: the same ID and selfie check (7 to 12).\n4. C13 \"You're in\". The primary button is \"Read the three rules\", which takes a coach into the trainee pledge, the trainee goal questions and trainee Home. Coach setup is the secondary text button \"I'm a coach, set up my profile\" (13).\n5. K01 Your basics: 3 text fields (name, city, one line about you), then Continue (14).\n6. K02 Certificates. With accountRequired on, the add-certificate row does nothing because onAddCertificate is null outside test mode. Continue (15).\n7. K03 What you coach (16).\n8. K04 Your packages: up to 4 fields (17).\n9. K05 Getting paid. Payout is \"unavailable, not implemented\" in production. Continue (18).\n10. K06 Being checked. \"Build your first plan\" goes to K20 (19). \"See today\" goes to K07, the desk, where the portfolio entry B01 is.\nThat is about 19 taps and 7 or more text fields to the first plan. The profile, plans and portfolio are held in memory only and are lost when the app restarts. There is no way to invite a trainee: the marketplace is off and no invite flow exists.",
+  "taps_to_first_value": {
+   "workout": "About 19 taps, 2 typed fields, 1 SMS wait, 1 camera permission and 1 server verification wait, across 21 screens to the first set (C01>C02>C03>C06>C07>C08>C09>C09b>C10>C10b>C11>C12>C13>C16>O01..O05>R03>R07). The minimum is 16 using the X on O01. Nothing is playable before verification.",
+   "diet": "About 20 taps to the first meal logged (O05 'I will start tomorrow' > Home 'Tell us one thing you eat' > starter plate 'Log'). A week meal plan (E07) is further away still and is not offered on day one.",
+   "log": "Meal log: about 20 taps. Cycle log: about 23 to 24 taps, via avatar > Profile > My cycle > Set up > Y01 > Y02. No tab, Home card or setup question leads to it.",
+   "coach": "About 19 taps and 7 or more text fields to K20 'first plan' in code. In production it cannot be completed: certificates are inert, payout is not implemented and nothing is persisted. Unreachable at launch because the coachApp flag is off."
+  },
+  "findings": [
+   {
+    "title": "Nothing of value is reachable before a 13-tap ID and selfie gauntlet, and even the 4 setup questions wait for verification",
+    "who": "trainee",
+    "severity": "blocker",
+    "where": "lib/routing/app_router.dart:565-570 (openBeforeVerification), lib/app_state/onboarding_state.dart:81-84 (isDue requires isVerified), lib/features/signup/presentation/look_around_view.dart:122-133,163",
+    "problem": "A woman who does not yet know what the app does is asked for her phone number, her national ID front and back, and a live selfie before she sees one real workout, recipe or personal plan. The only preview, C04, is two hard-coded titles, and tapping either opens 'Save this workout?'. The O01 to O05 questions are ungated routes, yet isDue is false until verification, so even the 'your plan' payoff comes after the scariest ask. This is the single largest drop-off point in the product.",
+    "evidence": "onboarding_state.dart:81-84: `!setupDone && (!accountRequired || AppRouter.isVerified)`. main.dart _firstRunStack only stacks O01 when isDue. look_around_view.dart:122-133 hard-codes 'Quiet full body' and 'Floor legs, no jumping', and every onTap calls _promptToJoin.",
+    "fix": "Keep the gate but reorder. Change C03 'Create my account' so it goes to O01-O05 first (they are already in openBeforeVerification). Set isDue to `!setupDone` alone. End O05 with her plan and day-1 moves visible, then 'Save my plan and start' leads to C06 and onward to C09. Replace C04 with that same real day-1 preview. The owner should decide whether the local-only day-1 sample session can run before the check, which would be deferring the gate rather than deleting it."
+   },
+   {
+    "title": "The C12 'Continue' button announces 'You're in' before the check has decided, then bounces her back to the start of the check",
+    "who": "both",
+    "severity": "blocker",
+    "where": "lib/features/signup/presentation/checking_view.dart:241 and 39 and 274-279; lib/routing/app_router.dart:1167",
+    "problem": "While the server is still checking, a live Continue button pushes C13 'You're in'. She then agrees to the pledge and answers the setup questions. When she lands on Home, the gate (gateDestination) sends her to C09 'One check, then you are in'. She believes she is verified and is told to start again. The C12 listener is still mounted under the stack, so a real verdict arriving later pushes another C13 on top of whatever she is doing. The screen also draws 'Card read ✓' and 'Selfie matched ✓' and a 72% ring before anything is known.",
+    "evidence": "checking_view.dart:241 `footer: [AppButton(l10n.continueLabel, onPressed: widget.onContinue)]`. app_router.dart:1167 `onContinue: () => goTo(context, 'C13')`. checking_view.dart:39 `this.fraction = 0.72`. Lines 274 and 279 hard-code `done: true`.",
+    "fix": "Remove onContinue from C12. After 20 seconds with no verdict, show 'Taking longer than usual' with 'Ask a woman reviewer' and 'Try again'. Drive the ticks from the real state, or use an indeterminate spinner."
+   },
+   {
+    "title": "Phone and code errors are swallowed: offline, invalid number, rate limit and wrong or expired code all do nothing visible",
+    "who": "both",
+    "severity": "high",
+    "where": "lib/features/signup/presentation/phone_number_view.dart:100-102; lib/features/signup/presentation/code_view.dart:126-129",
+    "problem": "These are the first two input screens. On C06 any AuthException (network, invalidNumber, tooManyAttempts) leaves her on the same screen with the button re-enabled and no message. On C07 a wrong or expired code silently clears the six boxes. A woman on weak Egyptian mobile data taps 'Send me a code' three times, nothing happens, and she uninstalls.",
+    "evidence": "phone_number_view.dart:100 `} on AuthException { // No failure copy exists in the dictionary yet`. code_view.dart:126-129 `on AuthException { if (mounted) _controller.clear(); }`. AuthFailure has invalidNumber, invalidCode, codeExpired, tooManyAttempts and network (auth_repository.dart:55-62).",
+    "fix": "Map each AuthFailure to one inline line in both languages under the field, for example 'That code did not match. Try again or send a new one.' and 'No connection. Your number is kept, try again.' For codeExpired, focus the 'Send it again' button."
+   },
+   {
+    "title": "Arabic-keyboard digits keep 'Send me a code' disabled forever",
+    "who": "both",
+    "severity": "high",
+    "where": "lib/features/signup/presentation/phone_number_view.dart:79 and 88-91",
+    "problem": "Most users are on Arabic phones. C06 strips everything except ASCII 0-9 before deciding whether the button is live. So a number typed as ٠١٠١٢٣٤٥٦٧٨, from Samsung or Gboard Arabic numerals or pasted from Contacts, counts as 0 digits and the button never enables. No error is shown either. The repository already handles these digits, but the screen never gets that far.",
+    "evidence": "phone_number_view.dart:79 `_controller.text.replaceAll(RegExp(r'[^0-9]'), '')`. firebase_auth_repository.dart:80-83 says: 'The Arabic-Indic case cannot be produced by C06 today, because that screen filters the field to ASCII digits before it decides whether the button is live.'",
+    "fix": "Use `asciiDigits(_controller.text)` from firebase_auth_repository.dart:121 in `_digits`. Add a widget test that types Arabic-Indic digits."
+   },
+   {
+    "title": "A denied camera permission leaves a dead screen with no explanation and no way forward",
+    "who": "both",
+    "severity": "high",
+    "where": "lib/features/signup/presentation/id_capture_view.dart (build has no CaptureUnavailable branch); selfie_capture_view.dart:150-171; lib/features/signup/data/camera_capture_service.dart:221-224",
+    "problem": "The camera prompt arrives right after a consent screen about Google Cloud and servers outside Egypt, so many women will tap Don't allow. The service then emits CaptureUnavailable(permissionDenied), but neither capture screen renders it. She sees an empty frame labelled 'Front of the card' and a disabled 'Take it myself' button. There is no 'Open settings' and no route to the woman reviewer from here.",
+    "evidence": "grep finds no use of `CaptureUnavailable` or `permissionDenied` anywhere in lib/features/signup/presentation or lib/ui. id_capture_view sets `onAction: _state.isLive ? _capture : null`. camera_capture_service.dart:221-224 maps 'denied' to permissionDenied.",
+    "fix": "In CaptureScaffold, render CaptureUnavailable with one sentence, an 'Open settings' button (permission_handler openAppSettings) and 'Check me with a woman reviewer instead', which goes to C15 with ReviewPath.declined."
+   },
+   {
+    "title": "A network blip at the end of the ID scan sends her to the human video-call queue instead of a retry, and it is never logged",
+    "who": "both",
+    "severity": "high",
+    "where": "lib/routing/app_router.dart:1090-1095; lib/features/signup/data/identity_check.dart:131-143",
+    "problem": "When she finishes the back of her card, startLiveness calls the server. Any failure classified as `other`, which includes a dropped connection, becomes LivenessStart.failed and pushes her to C15, the reviewer booking. That path ends on C14 with the whole app locked until a person phones her. One flaky moment of 4G turns a 90-second check into days of waiting. Nobody can see how often this happens.",
+    "evidence": "identity_check.dart:142 `CallFailureKind.retake || CallFailureKind.other => LivenessStart.failed`. app_router.dart:1090-1095 `case LivenessStart.failed: pendingReviewPath = ReviewPath.error; goTo(context, 'C15');`. identity_check.dart:132 says 'Logged by nobody on purpose'.",
+    "fix": "Split network failures out of `other`. For those, stay on C10b with 'No connection, your photos are still here. Try again', and offer the reviewer only after 2 failed retries. Count each LivenessStart outcome as a non-identifying analytics event."
+   },
+   {
+    "title": "Progress labels lie: 'Step 1 of 2', 'Step 2 of 2', then 17 more screens; '90 seconds' and 'about two minutes'",
+    "who": "both",
+    "severity": "high",
+    "where": "lib/l10n/app_en.arb:1055 (step1Of2), 679-680; phone_number_view.dart:113; code_view.dart (step2Of2); lib/features/onboarding/presentation/intake_step_scaffold.dart:76",
+    "problem": "She is told sign-up is 2 steps. After step 2 come role, why we check, consent, ID front, ID back, selfie, checking, you're in, pledge, then '1 of 4' setup questions and a fifth screen. Each broken promise raises the urge to quit. 'Join · about two minutes' on C04 and 'It takes about 90 seconds' on C09 set the same false expectation.",
+    "evidence": "ARB 1055 \"step1Of2\": \"Step 1 of 2\". ARB 680 \"joinAboutTwoMinutes\". ARB 679 \"itTakesAbout90Seconds\". intake_step_scaffold.dart:76 `static const int totalSteps = 4;` while O05 is the fifth screen.",
+    "fix": "Use one persistent 3-stage indicator across the whole flow, for example 'Your plan · Your number · Your check', with the current stage filled. Drop per-screen step counts and say 'about 3 minutes' honestly."
+   },
+   {
+    "title": "During human review she is locked out of everything and is never told when she is approved",
+    "who": "trainee",
+    "severity": "high",
+    "where": "lib/features/signup/presentation/being_checked_view.dart:154-159 and 256; lib/routing/app_router.dart:1205-1240; ARB 3104",
+    "problem": "Niqab users, women who decline the camera and anyone the automatic check flags all land on C14. Nothing opens, not even the setup questions, because isDue requires verified. The copy says 'We do not send text messages about this', and there is no push notification. Her only action is 'Look around while you wait', which leads to the fake two-row C04. She has to remember to reopen the app.",
+    "evidence": "ARB 3104: 'A woman reviewer from Own Hub will phone you to arrange a short video call. We do not send text messages about this.' app_router.dart:1205-1211: 'Nothing is open to her while she waits'. onboarding_state.dart:81-84.",
+    "fix": "Let her finish O01-O05 and see her plan while she waits (setup is already ungated). Send a push notification on approval, give an expected wait such as 'usually within 24 hours', and show a 'what happens next' timeline."
+   },
+   {
+    "title": "At the scariest step, the privacy copy contradicts itself and offers a dead 'Tap to read'",
+    "who": "both",
+    "severity": "medium",
+    "where": "lib/features/signup/presentation/why_we_check_view.dart:100; lib/l10n/app_en.arb:3098 vs 2854",
+    "problem": "C09 says 'Checked by Own Hub's own system… Tap to read exactly what is kept.' The very next screen, C09b, says 'The photographs are processed by Google Cloud, on servers outside Egypt.' The 'tap to read' line is plain Text, not a link. A suspicious user reads this as a bait-and-switch right before handing over her national ID.",
+    "evidence": "why_we_check_view.dart:99-102 renders `Text(l10n.checkedByOwnHubsOwnSystemYour)` with no onTap. ARB 3098 vs ARB 2854.",
+    "fix": "Rewrite C09 to match C09b: 'Checked by Own Hub, using Google Cloud. Photos are deleted when the check ends.' Either remove 'Tap to read' or make it open a details sheet."
+   },
+   {
+    "title": "The role screen asks 'Which one are you?' with only one answer",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "lib/features/signup/presentation/role_view.dart:96-143; lib/routing/app_router.dart:991-995",
+    "problem": "With coachApp off, C08 shows a single preselected card, 'I'm here to train', and a Continue button. It is a wasted screen and tap, and it hints that she is missing something.",
+    "evidence": "app_router.dart:994 `offerCoach: featureFlags.isOn(Feature.coachApp)`. role_view.dart:129 `if (widget.offerCoach) ...[` hides the other two cards.",
+    "fix": "When offerCoach is false, skip C08. Set the trainee role in C07 onConfirmed and go straight on."
+   },
+   {
+    "title": "A community pledge with a threat blocks entry while the community is switched off",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "lib/features/signup/presentation/pledge_view.dart:19-46; lib/routing/app_router.dart:1202 and 1269-1277; ARB 227 and 456",
+    "problem": "Right after 'You're in', she must agree to 'What is said here stays here', 'No comments on anyone else's body' and 'Break one and you lose your place'. These rules cover a community that does not exist at launch. It is an extra screen with a punitive tone at the moment she should feel welcomed. Agreeing also records nothing (onAgree only sets a flag).",
+    "evidence": "ARB 456 \"breakOneAndYouLoseYourPlace\". feature_flags.dart: `Feature.community: false`. app_router.dart:1270-1274: onAgree only sets enteredFromSignup and opens O01.",
+    "fix": "When community is off, cut C16. Make C13's primary button 'Build my week', which goes to the setup questions or plan. Show the pledge, and record it, the first time she opens the community."
+   },
+   {
+    "title": "The setup promises a personalised plan, but every answer produces the same programme",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "lib/features/onboarding/domain/starting_program.dart:113; lib/features/onboarding/presentation/starting_program_view.dart:47-49 and 99; ARB 866 and 465",
+    "problem": "O01 says 'Pick one. It changes the program, not the app.' O05 says 'Built from your four answers'. The catalogue holds one entry, so a gym user with dumbbells who answered 'pregnant' gets 'Beginner foundations · 8 weeks · quiet · no equipment'. Only her days per week change anything. Users who notice stop trusting the app on day one.",
+    "evidence": "starting_program.dart:113 `const List<StartingProgram> kStartingProgramCatalogue = [beginnerFoundations];`. onboarding_state.dart's own doc: 'The other four answers are recorded and, today, consumed only by O05's own programme preview'.",
+    "fix": "Until there is content, ask only what changes something (days and minutes, plus a place question if kept) and make the copy honest, for example 'Your first program. We will tune it as you train.' That cuts the walk to 2 screens."
+   },
+   {
+    "title": "'Skip' and 'Continue' do the same thing on every setup question, while 'X' skips all of setup",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "lib/features/onboarding/presentation/intake_step_scaffold.dart:94-111; lib/routing/app_router.dart:1300-1330",
+    "problem": "Every question is preselected. Both onSkip and onContinue go to the next step, so two buttons mean the same thing and the X means something else. The lead line 'Skip any of them' adds to the confusion about what 'Skip' changes.",
+    "evidence": "app_router.dart:1300-1301 `onContinue: () => goTo(context, 'O02'), onSkip: () => goTo(context, 'O02')`, and the same pattern for O02 to O04.",
+    "fix": "Remove the per-question Skip, since a default is already picked. Keep one quiet 'Skip setup' link that leads to O05 with the defaults shown."
+   },
+   {
+    "title": "The 'Look around' preview has tabs that change nothing and a nav bar that does nothing",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "lib/features/signup/presentation/look_around_view.dart:140 and 158-176; lib/ui/app_nav_bar.dart:143-146",
+    "problem": "The 'Recipes' tab still lists the two workouts. The bottom nav (Home, Train, Eat) is drawn with no onSelect, so tapping it does nothing. Every item opens a join sheet. Curious users feel trapped.",
+    "evidence": "look_around_view.dart:163 `for (final workout in workouts)` ignores `_tab`. Line 140 has `const AppNavBar(activeScreenId: 'R01')` with no onSelect. app_nav_bar.dart:144-146 makes the tap null when onSelect is null.",
+    "fix": "Remove the nav bar from C04. Make each tab show its own content, with one real playable sample move and one real recipe from the bundled seed."
+   },
+   {
+    "title": "After the code is accepted there is a silent wait, the button comes back to life, and a double tap pushes the role screen twice",
+    "who": "both",
+    "severity": "medium",
+    "where": "lib/features/signup/presentation/code_view.dart:120-132 and 116; lib/routing/app_router.dart:948-969",
+    "problem": "onConfirmed is an async closure that is not awaited. `_checking` resets right away while the router waits up to 3s or more for the claim and status reads (and a cloud pull for returning users), with no spinner. A second tap calls confirmCode, which returns early because she is signed in, then onConfirmed again, which pushes C08 twice. If the auth state is not AuthAwaitingCode, the screen says the code went to a stranger's number, '+20 100 555 0132'.",
+    "evidence": "code_view.dart:125 `widget.onConfirmed?.call();` then `finally { _checking = false }`. code_view.dart:116 fallback `'+20 100 555 0132'`.",
+    "fix": "Change onConfirmed to a Future<void> Function(), await it inside the try, and keep `_checking` true with a spinner until it completes. Replace the hard-coded number with an empty string."
+   },
+   {
+    "title": "Cycle tracking, a core promise, is buried four taps deep behind the avatar",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "lib/ui/app_nav_bar.dart:46-70 (traineeTabs); lib/features/today/presentation/today_view.dart:394-404 and 498-620; lib/routing/app_router.dart:1955",
+    "problem": "There is no cycle tab and no setup question about it. Day-one Home shows no cycle entry because showCycleCard defaults to false. The only way in is avatar, then Profile, then 'My cycle', then 'Set up'. A user who installed for cycle tracking cannot find it.",
+    "evidence": "today_day.dart:157 `this.showCycleCard = false`. today_view.dart:394 `if (_day.showCycleCard)`. The only fresh-user route to Y03 is A02 onOpenCycle (app_router.dart:1955).",
+    "fix": "Add a 'Track your cycle (optional)' row to day-one Home that opens Y01, and optionally an O-step 'Do you want to track your cycle?' that leads into Y01 after setup."
+   },
+   {
+    "title": "Coach setup cannot be completed in the shipped configuration: certificates do nothing and payout is not implemented",
+    "who": "coach",
+    "severity": "high",
+    "where": "lib/routing/app_router.dart:3001-3010 and 3050-3058; lib/app_state/coach_profile_state.dart:49 and 77-81",
+    "problem": "With accountRequired on, testingAidsAllowed is false, so isTestMode is false. K02's add-certificate row is inert (onAddCertificate null) and K05 shows payout as unavailable. Turning the coachApp flag on would leave every real coach unable to finish K01 to K06 or be cleared.",
+    "evidence": "app_router.dart:3007-3010 `onAddCertificate: CoachProfileState.isTestMode ? ... : null`. coach_profile_state.dart:49 `static bool get isTestMode => AppRouter.testingAidsAllowed;` and lines 77-81 `PayoutMethodState.unavailable(PaymentUnavailableReason.notImplemented)`.",
+    "fix": "Before turning coachApp on, build certificate photo upload to Storage plus the review queue. Let her finish setup without a payout ('Add payout later') so she can reach her desk and her first plan."
+   },
+   {
+    "title": "The coach's profile, portfolio and plans live only in memory and vanish when the app restarts",
+    "who": "coach",
+    "severity": "high",
+    "where": "lib/routing/app_router.dart (InMemoryCoachRepository and coachRepository); lib/app_state/app_snapshot.dart:1576-1584; lib/app_state/cloud_store.dart (no coach references)",
+    "problem": "A coach types her name, city and bio, specialties and packages, and builds a plan. If she closes the app, all of it is gone. That is the fastest way to lose a coach permanently.",
+    "evidence": "app_snapshot.dart:1576 says 'Community and coaching are not in the snapshot'. `grep -c coach lib/app_state/cloud_store.dart` returns 0.",
+    "fix": "Make coach profile and setup persistence (local snapshot plus Firestore) a release prerequisite for coachApp, enforced in release_readiness_test."
+   },
+   {
+    "title": "After verification a coach is steered into the trainee pledge, the trainee goal questions and trainee Home",
+    "who": "coach",
+    "severity": "medium",
+    "where": "lib/features/signup/presentation/youre_in_view.dart:105-112; lib/routing/app_router.dart:1202-1203 and 1336-1343",
+    "problem": "On C13 the primary button for everyone is 'Read the three rules', which goes to C16, then O01 'What do you want most?', then T01. 'I'm a coach, set up my profile' is a small text button. A coach who follows the obvious button answers trainee questions and ends up on trainee Home.",
+    "evidence": "youre_in_view.dart:105 `AppButton(l10n.readTheThreeRules, onPressed: onReadTheRules)` and line 110, a text-variant button for imACoachSetUpMyProfile. leaveSetupToHome defaults to `home: 'T01'`.",
+    "fix": "Branch on lastSignupRole. For coach or both, C13's primary button is 'Set up my coach profile', which goes to K01, and the trainee setup is skipped."
+   },
+   {
+    "title": "Coach setup's Back buttons push new screens instead of going back, so the history keeps growing",
+    "who": "coach",
+    "severity": "low",
+    "where": "lib/routing/app_router.dart:3013, 3029, 3046 and 3065",
+    "problem": "On K02 to K05, Back calls goTo on the previous step, which pushes a new copy. A system back gesture then walks forward again, a classic back-button trap.",
+    "evidence": "app_router.dart:3013 `onBack: () => goTo(context, 'K01')`, and the same pattern for K03 to K05.",
+    "fix": "Use `Navigator.of(context).maybePop()` for onBack on K02 to K05, as K01 already does."
+   },
+   {
+    "title": "There is no funnel measurement, so drop-off at each step is invisible",
+    "who": "both",
+    "severity": "medium",
+    "where": "lib/domain/analytics/analytics_gateway.dart (signUpStarted, verificationSubmitted, intakeCompleted and more are defined); no call sites in lib",
+    "problem": "A privacy-safe analytics API with exactly the onboarding events exists, but nothing calls it. The team cannot know whether women quit at C06, C09b, the camera prompt or C14, or confirm that any fix worked.",
+    "evidence": "`grep -rn AnalyticsGateway lib` returns nothing outside lib/domain/analytics. identity_check.dart:132 says 'Logged by nobody on purpose'.",
+    "fix": "Wire screenViewed for C01 to O05, plus signUpStarted, verificationSubmitted, verificationDecided (outcome as an enum only), intakeCompleted and the first sessionStarted or mealLogged. All are enum props and contain no personal data."
+   },
+   {
+    "title": "The language screen is redundant and can show a different language from the one the app is using",
+    "who": "trainee",
+    "severity": "low",
+    "where": "lib/features/signup/presentation/language_view.dart (_effective, about lines 58-64); lib/main.dart _firstRunLocale",
+    "problem": "main.dart already opens in the phone's language. C02 is an extra screen before any value. For a phone set to a third language, the app runs in English while C02 ticks Arabic, and pressing Continue without tapping saves neither.",
+    "evidence": "language_view `_effective` falls back to 'ar' for any non-'en' locale. main.dart `_firstRunLocale` falls back to 'en'.",
+    "fix": "Drop C02 from the first-run path and put an 'English | العربية' toggle on C01. Keep C02 for Profile."
+   },
+   {
+    "title": "Health backup is off by default and never offered, so a new phone means lost history and setup again",
+    "who": "trainee",
+    "severity": "low",
+    "where": "lib/features/account/domain/health_backup.dart:73; lib/app_state/onboarding_state.dart:75-80",
+    "problem": "Her logs and setup stay only on the phone unless she finds the toggle in the privacy centre. A broken or replaced phone wipes everything, and the code itself notes she will be asked the setup questions again.",
+    "evidence": "health_backup.dart:73 `bool _enabled = false;`. onboarding_state.dart:78-80: 'a verified woman whose setup is not done is one who came back on a new phone with the health backup off'.",
+    "fix": "After her first logged session, show one optional card: 'Keep a backup so a new phone has your history', which leads to the existing health-consent flow. The legally required consent is kept, only placed at a moment when its value is clear."
+   }
+  ],
+  "keep": [
+   "Phone language detection at launch (main.dart _firstRunLocale): an Arabic phone opens in Arabic with no chooser needed.",
+   "The setup questions preselect valid answers and every way out (Continue, Skip, X, back) records setup as done. Nobody gets trapped in setup (onboarding_state.dart leaveSetup and finish).",
+   "Leaving setup after sign-up clears the whole sign-up stack, so back on Home cannot reach the pledge or the camera (leaveSetupToHome).",
+   "'Start day 1 now' on O05 lands as [T01, R03], one tap from a started workout. Day-one Home has a clear 'Start day 1' button and one-tap starter plates on Eat.",
+   "The consent screen (C09b) is the only route into the camera, the consent write must succeed first, and 'I would rather not' leads to a real alternative (the woman reviewer), as does the niqab path.",
+   "The code auto-submits on the sixth digit, the button is disabled until a full code is entered, and the screen shows her own number so typos are visible.",
+   "C12 and C14 have honest stop states with a clear action ('Try again', 'Ask for a woman reviewer', 'Sign in again', delete my data).",
+   "Home and Eat show 'Looking for what you have logged' for at most 5 seconds instead of falsely claiming she has no data (pending_answers.dart).",
+   "The route-level gate and the unknown-route fallback, which mean no blank white screen and no deep-link bypass.",
+   "684 passing tests and a clean analyzer. Keep the journeys and nav_reachability suites as the safety net for the reorder."
+  ],
+  "verdict": "The app after onboarding is good: day-one Home has a clear 'Start day 1', Eat logs a starter plate in one tap, and every setup exit is safe. The way in loses most women before they ever see it. A first-time user who does not know what Own Hub is gets 3 brochure screens, then phone and SMS, then a one-option role screen, then a national ID front and back and a selfie. Only after that does she get a community pledge for a community that is switched off, and only then does she get the four questions that would have told her what the app does for her. That is about 19 taps, 2 typed fields and 21 screens to the first set, under 'Step 1 of 2' and '90 seconds' labels that are false. The worst failures are silent: send-code and wrong-code errors show nothing, Arabic-keyboard digits keep the send button disabled, and a denied camera permission leaves a dead screen. A network blip sends her to a human video-call queue where the whole app, setup included, is locked and nothing tells her she was approved. A live 'Continue' on the checking screen tells her 'You're in' before any decision and then sends her back to the check. The coach path cannot be completed in the shipped configuration (inert certificates, no payout, memory-only data) and its main button leads coaches into trainee setup. None of this needs the verification gate removed. Move the setup questions and a real day-1 preview in front of the phone and ID steps (they are already ungated), surface every error, cut C02, C08 and C16 while their features are off, keep the setup open during review, and wire the analytics events that already exist so the funnel can be measured."
+ },
+ {
+  "auditor": "The Investor",
+  "persona": "The Investor",
+  "approach": "I treated install to first workout, meal or log as an activation funnel. I traced the real route order from main.dart, app_router.dart, onboarding_state.dart and feature_flags.dart, then counted screens, taps, inputs and waits, and scored each leak by Impact (1-5), Effort (S/M/L) and Confidence (Evidence/Assumption). Glob and Grep were unavailable (no rg on this machine), so I read files directly. COUNCIL_REPORT.md, DECISIONS_NEEDED.md and the other repo notes do not exist at the stated paths. I had no Advocate output, so I could not check PROTECTS CORE alternatives against it. Every drop-off figure below is an assumption, because the app has no analytics.",
+  "trainee_path": "Shipped flags: accountRequired, signUp and verification are on. Community, coach, marketplace and assistant are off (feature_flags.dart:188-216). On first launch the stack is just [C01], because OnboardingState.isDue stays false until she is verified (onboarding_state.dart:81-84, main.dart:339).\n\n1. C01 Welcome. Tap \"Get started\" (tap 1).\n2. C02 Language, already set from the phone's locale. Tap Continue (tap 2).\n3. C03 What's inside: 3 promises. Tap \"Create my account\" (tap 3). The other choice, \"Look around first\", goes to C04, which shows preview workouts that do not exist yet. Tapping one only raises a \"Join\" sheet (look_around_view.dart:12-15, 84-110). Nothing can be started.\n4. C06 Phone number: one text field. Tap send (tap 4). Then she waits for the SMS.\n5. C07 Code: 6 digits, auto-checked on the last digit. A wrong code just clears the boxes with no message (code_view.dart:126-130).\n6. C08 \"Which one are you?\" With the coach app off it shows exactly one card. Tap Continue (tap 5).\n7. C09 Why we check. Tap scan (tap 6). The niqab path goes to C15.\n8. C09b Before the camera opens. Tap \"I agree, start the camera\" (tap 7). \"I would rather not\" goes to C15.\n9. C10 ID front (tap 8). She needs the physical card with her.\n10. C10b ID back (tap 9). Then a server call to start liveness.\n11. C11 Selfie with a liveness challenge (tap 10).\n12. C12 Checking: server wait, no back button.\n13. Branches out of C12:\n   - Verified: C13 \"You're in\".\n   - Review: C14, where nothing is open until a woman reviewer approves (app_router.dart:1205-1236). Time to value becomes hours or days.\n   - Daily limit or no network: back to the front door, blocked.\n   - Retake: back to C10.\n14. C13. The primary button is \"Read the three rules\" (tap 11).\n15. C16 Community pledge, although the community is off at launch. Tap \"I agree, let me in\" (tap 12).\n16. O01 Goal (tap 13), O02 Place (tap 14), O03 Days and minutes (tap 15), O04 Life stage (tap 16). Every question has a preselected answer plus Skip.\n17. O05 Your starting programme. Tap \"Start day 1 now\" (tap 17). The stack becomes [T01, R03].\n18. R03 Workout day. Tap start (tap 18), then the first set.\n\nTotals on the automatic happy path:\n- First workout started: about 20 screens, 18-19 taps, 2 typed inputs (phone and OTP), 3 camera captures, 1 SMS wait, 2 server waits.\n- First meal planned: \"I'll start tomorrow\" on O05, then T01, Eat tab, week plan. About 20-21 taps.\n- First log saved: T01, then a Home plate tap, or \"Tell us what you eat\", then E02, type, save. About 19-21 taps.\n- Review path: no value at all until a human approves.",
+  "coach_path": "At launch: zero. Feature.coachApp, coachPlanning and coachPortfolio are all off (feature_flags.dart:210-213). C08 offers only the trainee card (app_router.dart:994), and C13 hides the coach button (youre_in_view.dart:108). No coach can be acquired.\n\nAs written in code with the flag on:\n1. C01, C02, C03, C06, C07: the same 4 taps, phone input and OTP as the trainee.\n2. C08: choose \"I coach women\" and tap Continue (2 taps).\n3. C09 to C12: the full women-only ID and selfie check (5 taps and waits).\n4. C13: tap \"I'm a coach, set up my profile\". This skips the pledge and setup.\n5. K01 Basics: name, city, tagline, blur toggle.\n6. K02 Certificates.\n7. K03 What you coach.\n8. K04 Packages.\n9. K05 Getting paid.\n10. K06 Being checked: certificate review. While she waits, K06 offers \"build your first plan\" templates. Publishing is blocked until approval.\n\nRoughly 19-20 taps, 6+ forms and 2 human or server reviews before a first useful coach action. Even then she cannot invite or reach a trainee, because the marketplace is off.",
+  "taps_to_first_value": {
+   "workout": "18-19 taps over about 20 screens on the automatic path, plus phone entry, OTP, 3 captures, an SMS wait and 2 server waits. The review path gets nothing until a human approves (indefinite). My estimate is 6-10 minutes at best; that is an assumption, nothing measures it.",
+   "diet": "About 20-21 taps: the full sign-up and check, then C13, C16, O01-O05 'I'll start tomorrow', T01, Eat, then Week plan. There is no diet entry inside onboarding itself.",
+   "log": "About 19-21 taps: the full sign-up and check, then setup, then a Home plate tap or 'Tell us what you eat' to E02 and save. Nothing can be logged before verification.",
+   "coach": "Not reachable at launch, because coachApp is off. With the flag on, about 19-20 taps, 6+ forms (K01-K05) and 2 reviews (ID check and certificates) before she can author a plan. She cannot invite a trainee, because the marketplace is off."
+  },
+  "findings": [
+   {
+    "title": "F1. The whole-app gate holds every local-only feature behind ID plus selfie plus server or human review. Impact 5, Effort M, Evidence",
+    "who": "trainee",
+    "severity": "blocker",
+    "where": "Gate: app_router.dart:565-570 (openBeforeVerification) and :801-848 (gateDestination). Flags: feature_flags.dart:157-160 and 188-190. C14: app_router.dart:1205-1213",
+    "problem": "Every launch feature (Today, Train, Eat, Cycle, Progress) runs entirely on her phone, with no network and no other women in it. The community is off. Even so, she cannot start one workout or log one meal until the server says verified. On the review path (C14) she gets nothing for hours or days, and the only thing open is C04, which shows previews of content that does not exist. This is where most of the funnel is lost: 100% of review-path users and everyone who stalls at the camera get zero value. The size of that loss is an assumption, since nothing is measured.",
+    "fix": "This is the highest-impact item, and it is a product decision the owner has to make. The hard constraint allows deferring verification until it is needed, so move the gate to the features that involve other people or server data: community, coaching, marketplace and cloud backup. Then let a phone-verified (OTP) woman use the local-only Train, Eat and Cycle while her ID check runs or waits for review. Change openBeforeVerification so it also covers the local-only flows, scoped to signedIn. Keep the server rules exactly as they are. Show a quiet 'Finish your check to keep your data backed up and join the women-only space' banner on Home. How we'll know: the share of installs that start a first workout within 24 hours, and C14 users who still log at least 1 session while they wait. Both need F4's counters."
+   },
+   {
+    "title": "F2. Setup questions O01-O05 come after the hardest step, so her own plan never pulls her through the check. Impact 4, Effort S-M, Evidence",
+    "who": "trainee",
+    "severity": "high",
+    "where": "onboarding_state.dart:81-84 (isDue needs isVerified). app_router.dart:1269-1277 (the only door is C16). starting_program_view.dart:132-160",
+    "problem": "The only screen that shows her 'Built from your four answers' and a named programme sits at step 17 of 20, after the ID card, the selfie and the pledge. She is asked for her national ID before the app has shown it understands her. Payoff comes after cost, the worst order for completion.",
+    "fix": "Run O01-O04 straight after C03, before C06. They write locally and are already ungated. Then show O05's programme card with the button 'Save my plan, takes 2 minutes', which leads into the phone and ID steps. After C13, jump straight to R03 or Home. How we'll know: the C06-to-C13 completion rate goes up compared with the current baseline."
+   },
+   {
+    "title": "F3. A mandatory community pledge for a community that is switched off, as C13's main button. Impact 3, Effort S, Evidence",
+    "who": "trainee",
+    "severity": "high",
+    "where": "youre_in_view.dart:105 (\"Read the three rules\" is the primary CTA). app_router.dart:1202 and 1269-1277. feature_flags.dart:205",
+    "problem": "Her payoff moment ends with homework: 'Read the three rules' and a pledge whose footer threatens 'Break one and you lose your place', all about a feature that does not exist at launch. That is an extra screen and a wrong first impression right before the first workout.",
+    "fix": "When Feature.community is off, change C13's CTA to 'Start my first workout', which goes to O05 or R03 (or to O01 if F2 is not done). Show C16 the first time she opens the community. The pledge is a house rule, not the legally required consent record, so deferring it until needed is allowed. How we'll know: C13 to first R03 start in the same session."
+   },
+   {
+    "title": "F4. There is no funnel instrumentation, so none of this can be measured. Impact 5 (risk), Effort M, Evidence",
+    "who": "both",
+    "severity": "high",
+    "where": "pubspec.yaml:30-84 (no analytics package). The cycle no-analytics guard is described at pubspec.yaml:99-105",
+    "problem": "No event shows where women drop between C01 and R03. Every drop-off estimate in this audit is an assumption. Without data the team cannot tell whether a fix worked, and cannot defend the verification cost to investors or the owner.",
+    "fix": "Add a privacy-safe step counter: one anonymous 'reached screen X' increment per onboarding screen (C01-C13, C14, O01-O05, R03 started, R10 finished, first E04). No uid, no health or cycle data, and keep the existing cycle guard. A Firestore aggregate document or Firebase Analytics with ad ID and personalisation disabled would both work. Declare it in the privacy manifest. How we'll know: a daily funnel chart exists and adds up from C01 to R03."
+   },
+   {
+    "title": "F5. Nothing brings her back on day 2 or day 7. Impact 4, Effort M, Evidence",
+    "who": "trainee",
+    "severity": "high",
+    "where": "pubspec.yaml (no notifications or messaging plugin). notifications.dart:44-47 (MVP notification set unresolved). notifications.dart:21-30 (daily counters forbidden by rule)",
+    "problem": "After the first session nothing triggers a return: no local reminder and no push. A01 is an inbox with no delivery behind it. The product rules forbid daily streaks, and that is right for this product, but nothing replaces them. The weekly 'counts when you finish your week' loop exists on screen and has no way to reach her phone.",
+    "fix": "Add local notifications only (no server needed). On O05, after 'Start day 1 now', ask once: 'Remind me on my training days?' Schedule from O03's days and minutes, plus one Sunday 'your week so far' note. Stay weekly, never use daily streak copy, and stop after 3 ignored reminders as A01 already promises. How we'll know: day-2 and day-7 return rate from F4, with and without reminder opt-in."
+   },
+   {
+    "title": "F6. A wrong OTP clears silently with no message. Impact 3, Effort S, Evidence",
+    "who": "both",
+    "severity": "medium",
+    "where": "code_view.dart:24-29 and 126-130",
+    "problem": "At step 5, a mistyped or expired code just empties the boxes. She cannot tell whether the app is broken, the code expired, or she is offline. A silent failure this early tends to make people quit (assumption, not measured).",
+    "fix": "Wire the strings that already exist ('That code is not right', 'That code has expired', the offline copy from i18n states) into the AuthException branch, with a resend link next to them. How we'll know: OTP-screen exits fall, and so do resend counts per success."
+   },
+   {
+    "title": "F7. The release order can lock out every woman. Impact 5 (risk), Effort S, Evidence",
+    "who": "both",
+    "severity": "high",
+    "where": "feature_flags.dart:180-188. app_router.dart:888-893",
+    "problem": "accountRequired ships on. If the functions are not deployed or reachable, start_verification and verify_identity fail and every woman waits on C14 for a call nothing books. That is a 100% activation loss and a wave of 1-star reviews on day one. Only a comment in the code guards against it.",
+    "fix": "Add a release-blocking smoke test that verifies one real account end to end on the closed track. Add a startup check that reaches the functions: if it fails, C14 says plainly that checks are paused and offers to notify her, instead of promising a reviewer. How we'll know: the release checklist has a recorded pass, and C14 entries with no booked review stay near zero."
+   },
+   {
+    "title": "F8. Screens that do nothing in this build: a role choice with one option, and a language screen that repeats the auto-detected language. Impact 2, Effort S, Evidence",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "role_view.dart:121-145 and app_router.dart:994 (one card). main.dart:194-210 (locale already detected). app_router.dart:910-921 (C02 then C03)",
+    "problem": "Two of the first six screens ask her nothing: C08 offers a single card, and C02 confirms a language the phone already supplied. Each extra tap before value is a place to quit, and C02 to C03 stretches the pitch over 3 screens.",
+    "fix": "Skip C08 when offerCoach is false. Call onContinue(trainee) directly; beginIdentityCheck still runs. Replace C02 on the first run with an EN/عربي toggle on C01, and keep C02 reachable from A02. This saves 2 taps and 2 screens. How we'll know: the C01-to-C06 rate."
+   },
+   {
+    "title": "F9. Setup asks 4 questions but only 'days' changes anything. Impact 2, Effort S, Evidence",
+    "who": "trainee",
+    "severity": "low",
+    "where": "onboarding_state.dart:41-46. life_stage_view.dart:20-26. starting_program_view.dart:8-24 and 109-121",
+    "problem": "The catalogue has one programme, so goal, place and life stage all lead to beginner_foundations. 'Pick a different program' lands on the workout library. That is 4 screens of effort for one variable. It is cheap once F2 moves them earlier, but each one still costs a tap.",
+    "fix": "Keep O03 (days and minutes) and O04 (life stage, safety-critical). Make O01 and O02 single-screen chips or defer them until a second programme exists. How we'll know: O01-to-O05 completion. Re-add the questions when the catalogue grows."
+   },
+   {
+    "title": "F10. The coach funnel is closed, and when it opens it is about 20 taps plus 2 reviews before she can reach a trainee. Impact 4 (coach acquisition, which drives trainee acquisition), Effort L, Evidence",
+    "who": "coach",
+    "severity": "high",
+    "where": "feature_flags.dart:210-213. app_router.dart:994. youre_in_view.dart:106-115. K01-K06 in app_routes.dart:131-136. coach_being_checked_view.dart:5-16",
+    "problem": "At launch there is no coach acquisition at all, so the channel where each coach brings her trainees is unused. In code, a coach does the full trainee ID check, then K01-K05 forms, then a certificate review. Even then the marketplace is off, so there is no way to invite a trainee. Also, when the flag is on, C13 shows 'I'm a coach' to every woman, whatever role she picked.",
+    "fix": "Not for this hour. When coaching ships: show the coach button on C13 only when lastSignupRole needs a coach application. Add an invite link or code a coach can share before the marketplace opens. Let K06 authoring start right after K01, and move K02-K05 to before publishing. How we'll know: coaches reaching a first published plan, and trainees joined per coach invite."
+   }
+  ],
+  "keep": [
+   "Locale auto-detected from the phone before the first frame (main.dart:194-210), so an Arabic handset opens in Arabic.",
+   "OTP auto-submits on the 6th digit, with the SMS Retriever API or the iOS code suggestion and no SMS permission (code_view.dart:10-15).",
+   "Consent recorded before any camera opens, and a real decline path to a woman reviewer with no camera (consent_view.dart:16-27, app_router.dart:1031-1049). This is the legal core; keep it, only reorder around it.",
+   "A niqab path that never asks for a selfie (app_router.dart:1018-1021).",
+   "Every setup question has a preselected answer plus Skip and Close, and leaving setup is always safe (goal_view.dart:12-13, onboarding_state.dart:86-100).",
+   "O05 reads her own answers back, and 'Start day 1 now' lands her in R03 with Home underneath (app_router.dart:1335-1348).",
+   "A returning verified woman skips the check and setup (app_router.dart:952-971).",
+   "One-tap plate logging from Home (app_router.dart:1395-1399).",
+   "K06 gives a waiting coach real work instead of a dead end (coach_being_checked_view.dart:5-16).",
+   "The weekly, no-daily-streak model: build reminders on it rather than replacing it.",
+   "The local-first architecture: it is what makes F1 (value before verification) technically cheap."
+  ],
+  "verdict": "The app is carefully built, but the funnel is upside down. She pays everything up front: phone, OTP, national ID front and back, a liveness selfie, a server wait and a community pledge. Only then, about 20 screens and 18-19 taps in, does she see one thing made for her. A woman sent to human review gets nothing at all until someone calls. At launch every feature behind that gate is local-only and the community is off, so the gate costs a lot of activation and protects nothing shared yet. The constraint allows deferring the check until it is needed, so this is a fixable ordering choice. Nothing can be measured today (no analytics) and nothing brings her back on day 2 (no reminders). Coach acquisition is zero at launch.\n\nIF WE ONLY FIX THREE THINGS:\n1. F1, value before the ID check. Let a phone-verified woman use local-only Train, Eat and Cycle while her check runs or waits for review, and keep the gate on everything shared. This removes the single largest leak, including the indefinite zero-value review wait. It needs the owner's sign-off because it reverses decision G1.\n2. F2 with F3, move her plan in front of the cost. Ask the setup questions before the phone number, so O05's 'Built from your four answers' is the reason to finish the check. Then replace the pledge for a switched-off community with 'Start my first workout' on C13. Both are mostly re-wiring of existing screens, so they are cheap.\n3. F4, instrument the funnel. Every number in this audit is a guess until a privacy-safe 'reached step X' counter exists. Without it, we cannot tell whether fixes 1 and 2 worked or defend the verification cost.\n\nFIX PLAN, ordered by impact then effort:\n1. F7 (risk 5, S). Release smoke test plus a startup check that the functions are reachable. Worked when: a recorded end-to-end pass, and no C14 waits without a booking.\n2. F4 (5, M). Anonymous step counters. Worked when: a daily C01-to-R03 funnel exists.\n3. F1 (5, M). Gate shared features only. Worked when: more installs start a first workout within 24 hours, and C14 users still log sessions.\n4. F2 (4, S-M). O01-O04 before C06. Worked when: the C06-to-C13 completion rate rises.\n5. F5 (4, M). Local weekly reminders opted into at O05. Worked when: day-2 and day-7 return rates rise.\n6. F3 (3, S). C13 CTA becomes 'Start my first workout', and the pledge waits for the community. Worked when: C13-to-R03 in the same session rises.\n7. F6 (3, S). Wrong or expired OTP messages. Worked when: OTP exits fall.\n8. F8 (2, S). Skip the one-card C08, and fold C02 into C01. Worked when: the C01-to-C06 rate rises.\n9. F9 (2, S). Trim the setup questions to the ones that change something. Worked when: O01-O05 completion rises.\n\nNOT WORTH FIXING NOW:\n- F10, the coach funnel (L effort). The coach app is off and needs a backend and payments first; revisit at release 2.\n- Merging C09 and C09b. The disclosure is legally load-bearing, so tighten the copy only.\n- Fake C04 previews. F1 makes Look Around unnecessary.\n- T08 and other route edge cases. No funnel impact.\n\nOUT OF CODE, each with a cheap test:\n(a) Will Egyptian women hand over a national ID to a new app before seeing any value? This is an assumption; nothing in the brief tells us. Test: show 20 target women a clickable prototype in each order (ID first versus value first), 10 per arm. If the ID-first arm completes about as well as the value-first arm, keep the current order and drop F1.\n(b) Is women-only verification the reason they would install, or a cost they tolerate? Also an assumption. Test: ask 15 women to rank 'verified women-only' against 'quiet home workouts' against 'Egyptian food'. If verification ranks first for most of them, lead C01 and C03 with it and make the check feel like the entry ticket.\n(c) Will coaches recruit through a portfolio, or do they need an invite link to clients they already have? Test: interview 5 Egyptian women coaches and ask them to send a fake invite link to 3 of their clients. If clients open the link, prioritise invite links over the marketplace.\n(d) Does a weekly reminder bring her back without breaking the no-streak promise? Test: a WhatsApp reminder pilot with 10 beta users, weekly versus none. If the reminded group does not return more, drop F5's priority.\n\nNote: the investor brief also asked for impact scores per Skeptic finding and respect for the Advocate's PROTECTS CORE alternatives, but neither was supplied. The IDs above are my own findings."
+ },
+ {
+  "auditor": "The Usability Engineer",
+  "persona": "The Usability Engineer",
+  "approach": "I traced the real launch stack (main.dart _firstRunStack / frontDoor), the whole-app verification gate and every C, O, T, R, E, Y and K builder in lib/routing/app_router.dart. I extracted the navigation graph from the goTo() edges with a script and ran a breadth-first search for tap depth, using the shipped feature flags (accountRequired on, coach, community and marketplace off). I then read each signup and setup view to count taps, text inputs, waits and decisions, and pulled the exact EN/AR copy from the ARB files. The repo notes (COUNCIL_REPORT.md, DECISIONS_NEEDED.md, VERIFICATION_SPEC.md, AUDIT.md) do not exist in this worktree, so I could not check findings against them.",
+  "trainee_path": "Shipped flags: accountRequired on, coachApp, community, marketplace and assistant off. Taps are given as [n], waits as (wait).\n\n1. C01 Welcome: \"Get started\" [1]. Headline: \"A room full of women training like you\".\n2. C02 Language: preselected from the phone's language, \"Continue\" [1].\n3. C03 What's inside: \"Create my account\" [1]. The alternative, \"Look around first\", opens C04, a static teaser.\n4. C06 Phone: top bar says \"Step 1 of 2\". She types a 10-digit number (text input 1), then \"Send me a code\" [1]. (wait: SMS)\n5. C07 Code: top bar says \"Step 2 of 2\". iOS autofill suggestion [1], or she types 6 digits (text input 2). It submits on the sixth digit. (wait: claim and status reads, up to 3 s each)\n6. C08 Role: only \"I'm here to train\" is shown, preselected, then \"Continue\" [1]. A decision with only one option.\n7. C09 \"One check, then you are in\": \"Scan my ID\" [1].\n8. C09b \"Before the camera opens\" (consent): \"I agree, start the camera\" [1], plus the OS camera permission dialog [1].\n9. C10 ID front: auto-capture [0], or \"Take it myself\" [1].\n10. C10b ID back: auto [0 or 1]. (wait: startLiveness)\n11. C11 Selfie: liveness challenge, then \"Done\" [1].\n12. C12 Checking: (wait, \"Usually seconds\"). It moves on by itself when verified.\n13. C13 \"You're in\": \"Read the three rules\" [1].\n14. C16 Pledge: \"I agree, let me in\" [1].\n15. O01 Goal, O02 Place and equipment, O03 Days and minutes, O04 Life stage: \"Continue\" ×4 [4], plus about 5 optional choice taps.\n16. O05 Starting program: \"Start day 1 now\" [1]. The stack is cleared to [T01, R03].\n17. R03 Workout day: \"Start\" [1], which opens R07, the first set. The workout has started.\n\nThat is 21 screens, 2 text inputs and about 10 decisions. Minimum is 18 taps, typical is about 25 with real setup answers and manual captures. The budget is 15, so it fails.\n\nThere is a hidden faster path: the X on O01 marks setup done with defaults, then T01 \"Start day 1\", then R03 Start = 15 taps. No user will find it.\n\nTime, my estimate (no timing data in code): about 3 min 10 s of reading and tapping, not counting the SMS and C12 waits. That is at or over the 3-minute budget.\n\nBranches:\n- Niqab, or \"I would rather not\" on C09b: C15 woman reviewer, then C14 waiting. Nothing in the app opens while she waits, except the C04 teaser.\n- Camera permission denied: C10 shows a disabled button and no explanation.\n- C06 offline or provider error: the button stops spinning and nothing is said.\n- Wrong OTP: the boxes clear silently.\n- Daily limit or app cannot reach Own Hub: C12 shows a stop screen with \"Close\", which returns to the front door.\n- Kill and relaunch: if signed in but not verified, the gate sends her to C09 or C14 (good). If killed between C13 and O04, she relaunches on [T01, O01], so the pledge is skipped and setup restarts at question 1 with her saved answers.\n\nAfter onboarding, the bottom nav has three tabs: Home, Train, Eat. Day-one Home offers one big \"Start day 1\", a \"Your first week\" row and \"Tell us one thing you eat\". It has no cycle entry and no progress entry.",
+  "coach_path": "At launch: no coach path. C08 shows only the trainee option (app_router.dart:994, offerCoach = coachApp flag), and the coach link on C13 is hidden (youre_in_view.dart:47).\n\nAs it exists in code with coachApp on:\n- C01 [1], C02 [1], C03 [1], C06 phone [1, plus text], C07 OTP [1].\n- C08: select \"I coach women\" [1], \"Continue\" [1].\n- C09 [1], C09b [1, plus OS permission 1], C10 and C10b auto, C11 [1], C12 wait.\n- C13: the primary button is still \"Read the three rules\". The coach must find the secondary text link \"I'm a coach, set up my profile\" [1]. She skips the pledge entirely.\n- K01 Your basics: photo, name, city, one line (3 text inputs), then \"Continue\" or \"Save and close\" [1].\n\nFirst useful coach action, a saved profile: about 13 taps plus 3 fields.\n\nTo create a first plan: K02 certificates, K03 specialties, K04 packages and K05 payout, \"Continue\" ×4 [4]. Then K06 \"Being checked\" and \"Build first plan\" [1] to reach K20, the split builder. That is about 18 taps plus fields and a certificate upload before the builder opens.\n\nInvite a trainee: no screen does this. There is no invite link, code or share sheet anywhere in coach, coachbrand or coachplan, and clients can only arrive through the marketplace (H01), which is off.\n\nKill and relaunch mid-setup: her role is lost, because RoleScope is only in memory. She opens on the trainee Home (T01) with trainee setup (O01) stacked on top, and K01 to K05 progress is not resumed.",
+  "taps_to_first_value": {
+   "workout": "FAIL. 18 taps minimum, about 25 typical, over 21 screens with 2 text inputs. Sequence: C01, C02, C03, C06, C07, C08, C09, C09b (+ OS permission), C10, C10b, C11, C12 (wait), C13, C16, O01 to O04, O05 'Start day 1 now', R03 'Start', R07. Budget is 15 taps and 3 minutes. Estimated about 3 min 10 s excluding the SMS and check waits. The only 15-tap route is the hidden X on O01 then T01 'Start day 1' then R03 Start.",
+   "diet": "ABSENT. Reaching the week plan takes 16 taps: 12 to C16, then X on O01, Eat tab, Recipes, 'This week's plan and list' to E07. E07 then says 'Nothing is planned for this week yet. Pick a dinner for any day below.' Tapping a day opens a recipe (E06) with no way to put it on that day, and nothing in the app writes a meal plan. 'Plan her diet' cannot be completed at any tap count.",
+   "log": "First meal logged: 15 taps minimum. 12 to C16, X on O01, T01 'Tell us one thing you eat', then 'Log' on a starter plate in E09. Through the full setup it is 19. Cycle: at least 19 taps plus date entry, through avatar, Profile, My cycle, Set up, Dates, Save, because day-one Home and the nav bar have no cycle entry. Body/weight (P04): 3 taps from day-one Home (T01, T07, P01, P04).",
+   "coach": "At launch: not possible, the coach role is not offered. With coachApp on: about 13 taps plus 3 text fields to a saved profile (K01), about 18 taps plus fields and a certificate upload to open the plan builder (K20). Invite a trainee: absent."
+  },
+  "findings": [
+   {
+    "title": "C12 'Checking' shows a live Continue that skips the check and says 'You're in'",
+    "who": "trainee",
+    "severity": "blocker",
+    "where": "C12: lib/features/signup/presentation/checking_view.dart:241 (footer Continue enabled), :39 (static fraction 0.72), :274/:279 (steps hard-coded done:true); routing: lib/routing/app_router.dart:1167 (onContinue goes to C13)",
+    "problem": "While the check is still running, C12 shows an enabled 'Continue' button under 'Checking your card', with 'Card read' and 'Selfie matched to the card' already ticked and the ring stuck at 72%. A woman who taps Continue (most will, it is the only button) lands on C13 'You're in', which says 'Your ID photo and selfie have been deleted. We kept the result and nothing else.' She then agrees to the rules on C16, answers 4 setup questions (the onboarding flow is open before verification) and taps 'Start day 1 now'. The gate then sends T01 to C09, 'One check, then you are in'. She has been told she is in, has done about 8 taps of setup, and is now back at the start of the check.",
+    "fix": "Remove the C12 footer entirely: AppScaffold(footer: const []) and delete onContinue from CheckingView and from the router at app_router.dart:1167. C12 should only ever leave through its _onState listener. Drive the step ticks from the VerificationState stream: add a progress stage to VerificationChecking (cardRead, selfieMatched, finalCheck), or tick nothing if the server sends no stages. Replace the static ring with an indeterminate CircularProgressIndicator. Add PopScope(canPop:false) so Android back cannot go to C11 either. Add a test: pump C12 with a repository stuck in VerificationChecking and assert no AppButton is present.",
+    "evidence": "checking_view.dart:241 `footer: [AppButton(l10n.continueLabel, onPressed: widget.onContinue)]`. app_router.dart:1167 `onContinue: () => goTo(context, 'C13')`. openBeforeVerification includes 'onboarding' (app_router.dart:565-570), so O01 to O05 open for an unverified woman."
+   },
+   {
+    "title": "'Plan her diet' cannot be done: the week plan can never be filled",
+    "who": "trainee",
+    "severity": "blocker",
+    "where": "E07: lib/features/eat/presentation/week_plan_view.dart:148 (empty copy), :172 (row opens E06 with no day attached), :84-99 (rearrange needs 2 or more existing dinners); lib/features/eat/domain/meal_repository.dart:674 (swapDinner, only caller week_plan_view.dart:95); E05 entry recipes_view.dart:444 ('5 dinners · one shop')",
+    "problem": "The session goal names 'plan her diet' as one of three first-value actions. The path is T01, Eat tab, Recipes, 'This week's plan and list' (5 dinners · one shop), E07. E07 says 'Nothing is planned for this week yet. Pick a dinner for any day below.' Tapping a day opens a recipe with no 'Add to Monday' action, and the rearrange button does nothing without an existing plan. No code path writes a dinner into a week plan. The promise is made twice (E05 row, E07 copy) and cannot be kept.",
+    "fix": "Make picking a dinner work: the E07 row tap should push E05 in pick mode with the PlanDay as a route argument. In pick mode each recipe row shows 'Add to {day}' and calls mealRepository.swapDinner(weekId, day, recipeId), which already upserts. Then pop back to E07, which reloads. Add a one-tap 'Fill my week' button to the empty state that puts the first five free recipes from the recipe book (Rahma's 39) on Sun to Thu. Then add a 'Plan this week's dinners' row to day-one Home under 'Tell us one thing you eat'. Diet planning becomes 2 taps from Home (row, then Fill my week). Until this exists, change recipes_view.dart:444 to drop '5 dinners' for a woman with no plan.",
+    "evidence": "grep finds no writer of MealPlan other than swapDinner inside _rearrange, which returns early when `plan == null || plan.dinners.length < 2` (week_plan_view.dart:85)."
+   },
+   {
+    "title": "Install to first workout is 18 to 25 taps over 21 screens against a 15-tap budget",
+    "who": "trainee",
+    "severity": "high",
+    "where": "C02 language_view.dart:84; C08 role_view.dart:121-145 with app_router.dart:994; C09 why_we_check_view.dart:54-104 and C09b consent_view.dart:135-226; C13 youre_in_view.dart:45 to C16 pledge_view.dart:40; O01 to O04 intake_step_scaffold.dart:76 (totalSteps 4)",
+    "problem": "Steps that add taps but deliver nothing: C02 is a separate screen even though main.dart already opens in the phone's language (1 tap). C08 asks her to choose between one option (1 tap). C09 and C09b are two explainer screens in a row before the camera, repeating the 'images deleted' point (1 tap). C13 to C16 is a pledge for a community that is switched off (2 taps). O01 to O04 are four screens where only O03 'days' changes anything (3 extra Continues, plus about 5 choice taps). That is 8 to 13 avoidable taps on a journey a new user does once and must finish.",
+    "fix": "Proposed sequence, 10 to 11 taps:\n(1) Merge C01 and C03 into one welcome showing the three promises, with an inline EN/العربية toggle in the top corner. Remove C02 from the linear flow; it stays reachable from A02. CTA 'Get started'.\n(2) Before C06, add ONE ungated setup screen 'Your week': days chips (2/3/4), minutes chips and a life-stage row, all preselected, CTA 'Save my week'. This builds investment before the ask, which the gate allows because 'onboarding' is in openBeforeVerification.\n(3) C06, then C07.\n(4) Skip C08 when !offerCoach: in the C07 onConfirmed handler, call the C08 onContinue logic with SignupRole.trainee directly.\n(5) Fold C09's four bullets and the niqab link into C09b. One screen titled 'One check, then you are in', with 'I agree, start the camera' and 'I would rather not' / niqab as secondary buttons. The consent record is unchanged.\n(6) C10, C10b, C11, C12 as now.\n(7) C13 primary 'Start day 1' goes straight to [T01, R03]. The pledge moves to the first community entry (see the pledge finding).\nResult: Get started, Save my week, Send code, OTP, Agree, permission, Done, Start day 1, Start = about 10 taps and 13 screens.",
+    "evidence": "Measured minimum: C01 1, C02 1, C03 1, C06 1, C07 1, C08 1, C09 1, C09b 2, C11 1, C13 1, C16 1, O01 to O04 4, O05 1, R03 1 = 18."
+   },
+   {
+    "title": "Progress labels lie: 'Step 2 of 2' with 14 screens still to go",
+    "who": "trainee",
+    "severity": "high",
+    "where": "C06 phone_number_view.dart:113 (step1Of2), C07 code_view.dart:152 (step2Of2), O01 to O04 intake_step_scaffold.dart:84 ('1 of 4' again)",
+    "problem": "She is told 'Step 2 of 2' on the code screen. Then come role, two explainers, three camera passes, a wait, a celebration, a pledge, a new 'Step 1 of 4' and a programme screen. A promise that ends and starts again is the classic reason people abandon onboarding: the end keeps moving away. C04's sheet also says the whole thing takes 'about two minutes, once'.",
+    "fix": "Replace the per-screen step labels with one phase indicator shared by every signup and setup screen. A 3-segment bar in AppTopBar: 'Your week · Your account · Quick check' (AR: 'أسبوعك · حسابك · تحقّق سريع'), with the current segment filled. Drive it from a phase enum on each route in app_routes.dart (signup C06/C07 = account, C09 to C12 = check, O = week). Delete the step1Of2/step2Of2 usage in these two views. Keep 'about two minutes' only if a measured median supports it, otherwise say 'a few minutes'.",
+    "evidence": "ARB: step1Of2 'Step 1 of 2', step2Of2 'Step 2 of 2', fourShortQuestionsThenYourWeekIs 'Four short questions, then your week is ready.'"
+   },
+   {
+    "title": "Silent failures on the first two input screens (offline, bad number, wrong code)",
+    "who": "both",
+    "severity": "high",
+    "where": "C06 phone_number_view.dart:100-102 (catch AuthException, no message; header :15-20 says no error copy exists); C07 code_view.dart:126-129 (wrong code clears the boxes silently)",
+    "problem": "On the first screen that asks her for something, any failure (no network, number rejected, provider down, quota) just stops the spinner. On C07 a wrong code empties the six boxes with no message. She cannot tell whether she typed wrong, the SMS is late or the app is broken. In both cases the likely result is that she leaves.",
+    "fix": "Add AuthFailure-specific copy to app_en.arb and app_ar.arb and show it in a liveRegion Text above the button, the same way ConsentView does at consent_view.dart:138-152. Draft copy:\n- invalidNumber: 'That number does not look right. Check it starts 010, 011, 012 or 015.' / 'يبدو أن الرقم غير صحيح. تأكدي أنه يبدأ بـ 010 أو 011 أو 012 أو 015.'\n- network: 'No connection. Your number is kept, try again when you are online.' / 'لا يوجد اتصال. رقمك محفوظ، حاولي مجددًا عند الاتصال.'\n- invalidCode: 'That code did not match. Check the message and try again.' / 'الرمز غير مطابق. راجعي الرسالة وحاولي مجددًا.'\n- codeExpired: 'That code has expired. Tap Send it again.' / 'انتهت صلاحية الرمز. اضغطي «أرسلي الرمز مجددًا».'\nKeep the number in the field. On C07, keep the wrong digits visible in an error state rather than clearing them.",
+    "evidence": "phone_number_view.dart:100 `on AuthException { // No failure copy exists in the dictionary yet`"
+   },
+   {
+    "title": "Camera permission denied or camera unavailable is a dead end with no words",
+    "who": "trainee",
+    "severity": "high",
+    "where": "C10/C10b id_capture_view.dart:160-174, C11 selfie_capture_view.dart:158-170; state defined in lib/features/signup/domain/id_capture.dart:144 (permissionDenied) and :198 (CaptureUnavailable)",
+    "problem": "If she taps 'Don't allow' on the OS camera dialog (common in Egypt among women wary of photographing their ID), the capture screen shows the frame placeholder 'Front of the card' and a disabled 'Take it myself'. No view in presentation/ handles CaptureUnavailable. She gets no explanation, no link to Settings and no offer of the woman reviewer, even though the domain comments call this state 'Recoverable: she can grant it.'",
+    "fix": "In CaptureScaffold, when _state is CaptureUnavailable, replace the frame with a message card. For permissionDenied: title 'The camera is off for Own Hub' / 'الكاميرا مغلقة لتطبيق Own Hub', body 'Turn it on in Settings to scan your card, or ask a woman reviewer instead.', primary button 'Open settings' (permission_handler openAppSettings, re-open the session on resume), secondary 'Ask a woman reviewer', which sets pendingReviewPath = ReviewPath.declined and goes to C15. For noCamera and providerUnavailable: only the reviewer button. Add a widget test per reason.",
+    "evidence": "grep finds 'CaptureUnavailable' only in domain/ and data/, never in presentation/."
+   },
+   {
+    "title": "Setup asks 4 questions and promises a tailored programme, but only 'days' changes anything",
+    "who": "trainee",
+    "severity": "high",
+    "where": "O01 goal_view.dart:90 ('It changes the program, not the app'); O04 life_stage_view.dart:170-183 ('Nothing in your sessions changes from it yet'); O05 starting_program_view.dart:168 ('Built from your four answers') and :117 ('8 weeks · quiet · no equipment'); lib/features/onboarding/domain/starting_program.dart:113 (catalogue has one entry)",
+    "problem": "There is one programme in the catalogue. Goal, place and equipment cannot change it, and O04 says so itself. O05 then says 'Built from your four answers' and shows '8 weeks · quiet · no equipment' to a woman who just picked 'A ladies-only gym' with dumbbells. These four screens cost 4 to 9 taps and break the trust of the 'tailored for you' moment that is supposed to hook her.",
+    "fix": "Until a second programme exists, collapse O01 to O04 into the single 'Your week' screen from the tap-count finding. Keep: days (the only answer used, onboarding_state.dart _applyWeeklyTarget), minutes and life stage (for safety and later use). Remove the goal and place screens from the walk, but keep the repository fields so A02 'Your training' can ask them later. Change O05 copy to say what is true: 'Your week: {days} days, {minutes} min. We start everyone on Beginner foundations: quiet, floor, no equipment.' Hide 'Pick a different program' while the catalogue length is 1 (it goes to R11, which holds the same one workout).",
+    "evidence": "onboarding_state.dart header: 'The other four answers are recorded and, today, consumed only by O05's own programme preview'."
+   },
+   {
+    "title": "Cycle tracking and body logging, both core promises, cannot be found from day one",
+    "who": "trainee",
+    "severity": "high",
+    "where": "Day-one Home lib/features/today/presentation/today_view.dart:498-643 (no cycle or progress row); cycle row only on regular Home :397 behind _day.showCycleCard; nav lib/ui/app_nav_bar.dart:56-81 (Home, Train, Community, Eat; Community hidden at launch); only door A02 profile_view.dart:205",
+    "problem": "The brief names cycle tracking and progress as reasons she installs. Neither appears on C01 or C03, in setup, on day-one Home or in the 3-tab bar. Cycle setup is avatar, Profile, My cycle, Set up, Continue with dates, enter dates, Save: 5 taps or more down a path nobody is shown. Body logging is T01, T07, P01, P04 (3 taps) on day one. A user who 'does not know what this app does' will never find out it tracks her cycle.",
+    "fix": "(a) Add a 'Track my cycle' row (AppListItem, icon Icons.water_drop_outlined, subtitle 'Optional. It stays on this phone.' / 'اختياري، ويبقى على هاتفك.') to _dayOne below 'Tell us one thing you eat', routed to Y01. Hide it once cycle setup is done or skipped (cycleRepository.current != null or a skipped flag). That makes it 1 tap to start.\n(b) Add a fourth promise to C03 or the merged welcome: 'Your cycle, privately'.\n(c) With Community dark, use the spare tab slot for 'Progress' (P01), which also gives P04 a 2-tap home. Nav becomes Home, Train, Eat, Progress.",
+    "evidence": "BFS from regular T01: Y03 at depth 1, P04 at depth 2. On the day-one branch neither is linked; the only cycle edge is A02 to Y03 (app_router.dart:1955)."
+   },
+   {
+    "title": "Coach: no way to invite a trainee, and the C13 handoff ignores the role she chose",
+    "who": "coach",
+    "severity": "high",
+    "where": "C13 youre_in_view.dart:45-56 (coach entry is a secondary text button under 'Read the three rules'); app_router.dart:1197-1203; no invite capability anywhere in lib/features/coach, coachbrand or coachplan",
+    "problem": "A coach who picked 'I coach women' on C08 is handed the trainee primary button on C13 and must spot a 44-pt text link. She also skips the pledge, so coaches are the one group who never agree to the rules. After setup her desk (K07) and clients (W01) can never fill, because there is no invite link, code or share, and the marketplace (H01) is off. The third coach first-value action, 'invite a trainee', does not exist.",
+    "fix": "(1) On C13, route by lastSignupRole: if needsCoachApplication, the primary button is 'Set up my coach profile' (goes to K01) and the pledge is shown first or folded into K01's footer as a checkbox. (2) Build a coach invite: on K07's day-one state (K24) and W11, add 'Invite a client' to the system share sheet with a dynamic link ownhub.app/c/{coachId}. On the trainee side the link deep-links to C01 with the coach attached and, after verification and setup, opens G01 for that coach. Store a pending coachId in local persistence so it survives the signup. (3) Let a coach save a draft plan template (K20) before having a client, and offer 'Build your first plan' as the K06 primary, which it already is (app_router.dart:3080).",
+    "evidence": "grep -i invite in coach features returns only unrelated comments; W01 empty state W11 is 'Clients, none yet' with no action into a client."
+   },
+   {
+    "title": "Coach role is not persisted, so a relaunch turns a coach into a trainee and shows her trainee setup",
+    "who": "coach",
+    "severity": "high",
+    "where": "lib/main.dart:220-225 (initial roles = trainee when accountRequired); app_router.dart:1002 (role written only to the in-memory RoleScope); onboarding_state.dart isDue (no role check); frontDoorFor app_router.dart:4654 (always T01)",
+    "problem": "If a coach kills the app anywhere after C08, for example halfway through K03, she relaunches on the trainee Home with O01 'What do you want most? Get stronger…' on top, and her K01 to K05 progress has no entry point. Resume-after-kill fails for the whole coach path.",
+    "fix": "Persist roles in local persistence when C08 is answered, and read them before the first frame in _OwnHubAppState, the same way the locale is read. Once the backend writes roles.held, prefer the server value. Make frontDoorFor role-aware: coach to K07, or to K01 if CoachProfileState setup is incomplete. Make OnboardingState.isDue return false when the active role is coach.",
+    "evidence": "main.dart:220 `AppRouter.featureFlags.isOn(Feature.accountRequired) || !…coachApp ? UserRoles.trainee : UserRoles.both`."
+   },
+   {
+    "title": "Screen copy promises things the screen does not do",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "C09 why_we_check_view.dart:99-102 ('Tap to read exactly what is kept', plain Text, no onTap); C10 copy itPhotographsItselfWhenItIsSharp ('Nothing is uploaded until you tap send', but no send button exists, C11 'Done' leads to C12, which submits); C07 code_view.dart:211-213 ('On Android we read the message for you', but C07 holds no auth subscription, firebase_auth_repository.dart:226-230)",
+    "problem": "Each of these lines tells her to expect something that never happens, at exactly the moments when trust matters most: her ID and her face. On Android, auto-retrieval signs her in, but C07 still waits for six digits she has been told she does not need to type.",
+    "fix": "C09: wrap the line in a TextButton that opens C09b's bullet card in a bottom sheet, or delete 'Tap to read…' once C09 and C09b are merged. C10: change the copy to 'It photographs itself when it is sharp. Nothing is sent until the selfie is done.' / 'تُلتقط الصورة تلقائيًا حين تصبح واضحة. ولا يُرسل شيء قبل انتهاء الصورة الذاتية.' C07: subscribe to authRepository state in initState and call onConfirmed when the state becomes AuthSignedIn. Until then, remove the Android sentence.",
+    "evidence": "ARB checkedByOwnHubsOwnSystemYour: '…Tap to read exactly what is kept.'"
+   },
+   {
+    "title": "The signup stack stays under 'You're in', so Android back walks into the camera and the checking screen",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "C13 reached by goTo (push) at app_router.dart:1171 and :1209; no PopScope in lib/features/signup (only O01 has one, app_router.dart:1296)",
+    "problem": "After verification, the history still holds C01 to C12. Android back from C13 returns to C12, which re-subscribes and can push C13 again. Back from there reaches C11 and reopens the selfie camera. Back behaviour after the most important moment in signup is a loop.",
+    "fix": "In the C12 onVerified and C14/C15 onApproved handlers, use Navigator.pushNamedAndRemoveUntil(C13, (_) => false), so C13 is the root and back exits the app. Give C12 PopScope(canPop:false). Give C10, C10b and C11 PopScope handlers that close the capture session before popping.",
+    "evidence": "checking_view.dart has no PopScope; its header says 'There is no back arrow', but the system back gesture is not blocked."
+   },
+   {
+    "title": "The pledge is for a community that is off, comes with a threat at the welcome moment, and is skipped on relaunch",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "C13 youre_in_view.dart:45 ('Read the three rules'); C16 pledge_view.dart:40-71 ('1 · What is said here stays here', 'Break one and you lose your place'); skipped on resume via main.dart _firstRunStack ([T01, O01]); never shown to coaches (C13 to K01)",
+    "problem": "At launch there is no community, no posts and no other members to screenshot, so the rules govern nothing she can do. The success screen's only action is to 'read rules', and the rules end with 'Break one and you lose your place.' The pledge is not a stored consent record (onAgree only navigates), and it is skipped whenever she relaunches after C13, so it is not working as a gate either.",
+    "fix": "Show C16 at the first entry to M01, behind Feature.community. Record the agreement there with a version, like CaptureConsent. At launch, C13's single primary button becomes 'Start day 1' / 'ابدئي اليوم 1'. Soften the footer to 'These keep this place safe. You can read them any time in Safety Centre.' This is a deferral, not a removal: the pledge still gates the only feature it is about.",
+    "evidence": "PledgeView onAgree in app_router.dart:1269-1275 sets enteredFromSignup and goes to O01; nothing is persisted."
+   },
+   {
+    "title": "The pre-account and waiting-room teaser is fake and partly broken",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "C04 look_around_view.dart:156-180 (list ignores _tab, so 'Recipes' shows the two workouts), :140 (AppNavBar with no onSelect, so its tabs are drawn but dead); C14 onLookAround app_router.dart:1224",
+    "problem": "C04 is the only screen open to a woman waiting on C14 for a reviewer, which can take hours. It shows two hard-coded workouts. The Recipes tab shows the same workouts, and a bottom bar is drawn that does nothing. The wait is where users drop off, and she is given nothing to do.",
+    "fix": "Render recipe previews (the first 3 free recipes from the recipe book: title, photo, minutes) when _tab == 1. Remove the bottom bar from C04 or give it a real onSelect that raises the join sheet. On C14, add 'Set up your week while you wait' (goes to the merged setup screen, already ungated) and 'Browse recipes', so the time spent waiting becomes investment.",
+    "evidence": "look_around_view.dart: `for (final workout in workouts)` is outside any `_tab` switch."
+   },
+   {
+    "title": "The first screen does not say what the app does, and the welcome headline promises a community that is off",
+    "who": "trainee",
+    "severity": "low",
+    "where": "C01 welcome_view.dart:66-74 (aRoomFullOfWomenTrainingLike, not flag-gated; only the subtitle is); C03 whats_inside_view.dart:75-95 (no cycle, no progress)",
+    "problem": "The brief says users do not know what the app does. C01 leads with 'A room full of women training like you' even though community is dark at launch. C03 lists three promises and leaves out cycle tracking and progress.",
+    "fix": "Flag-gate the headline. With community off, use 'Train at home, eat what you cook, track your cycle. Women only.' / 'تمرّني في البيت، وكُلي مما تطبخين، وتابعي دورتك. للنساء فقط.' Merge C03's promises into C01 (see the tap-count finding) and add 'Your cycle, privately' as a fourth.",
+    "evidence": "welcome_view.dart: the headline uses l10n.aRoomFullOfWomenTrainingLike unconditionally."
+   },
+   {
+    "title": "Arabic: phone row reads backwards, and two buttons speak to the app in the feminine imperative",
+    "who": "both",
+    "severity": "low",
+    "where": "C06 phone_number_view.dart:130-166 (Row with +20 box then field, mirrored in RTL, so the box sits on the right); ARB iAgreeLetMeIn 'أوافق، أدخليني', imACoachSetUpMyProfile 'أنا مدرِّبة، أنشئي ملفي'",
+    "problem": "In Arabic the +20 box renders to the right of her digits, so the number reads '0100… | +20'. Two buttons, which are her own voice, give the app a feminine command ('let me in, you woman'), which reads as wrong.",
+    "fix": "Wrap the C06 Row in Directionality(textDirection: TextDirection.ltr), keep the field's own text LTR, and leave the labels RTL. Change iAgreeLetMeIn to 'أوافق، لنبدأ' and imACoachSetUpMyProfile to 'أنا مدرِّبة، أريد إعداد ملفي'.",
+    "evidence": "AppField at phone_number_view.dart:157 passes no textDirection, so the row follows the ambient RTL."
+   }
+  ],
+  "keep": [
+   "The verification gate resumes properly. A signed-in but unverified woman who relaunches goes straight to C09, or to C14 if a reviewer is pending, never back to 'Get started' (app_router.dart gateDestination ~820-840, frontDoorFor :4654).",
+   "The app opens in the phone's language before the first frame (main.dart _firstRunLocale), so an Arabic phone never sees English first.",
+   "The OTP submits itself on the sixth digit, and iOS offers oneTimeCode autofill (code_view.dart:198, app_code_field.dart:134). The C07 step is 1 tap.",
+   "ID capture fires automatically when sharp, and 'Take it myself' is the fallback (id_capture_view.dart:96-99).",
+   "The niqab path and 'I would rather not' both lead to a woman reviewer. No failure state accuses her (C09 :58-64, C09b :166-172, C12 _onState).",
+   "Consent is written before any camera opens and is enforced at the route, not by hiding buttons (app_router.dart _opensALens guard ~385-390).",
+   "Every setup question is preselected and the X exits with a valid intake. 'Start day 1 now' clears the stack to [T01, R03] (onboarding_state.dart leaveSetupToHome).",
+   "Day-one Home has one dominant action ('Start day 1', 56 pt) and an honest empty state, and E09 lets her log a starter plate in one tap.",
+   "Dark features are never drawn as dead doors: the nav bar and Home rows check screenIsOn (app_nav_bar.dart:135, today_view.dart:620). Chevrons mirror correctly in RTL (app_chevron.dart). Tap targets have a 44 pt floor (app_chip_row.dart:70, avatar 44)."
+  ],
+  "verdict": "It does not meet the brief. The best route from install to first workout is 18 taps, about 25 in practice, over 21 screens and roughly 3 minutes. One promised first action, planning her diet, cannot be completed at all: no screen can put a dinner on a day. The most urgent defect is C12, which shows a working Continue button while the check is still running. A woman who taps it is told \"You're in\", answers the setup questions, and is then thrown back to \"One check, then you are in\". Remove that button and drive C12 only from the verification result. After that, about 8 to 13 taps can go without touching the women-only check: fold C02 into the welcome, skip the one-option role screen, merge C09 with the consent screen, move the pledge to the community, and reduce four setup questions to one 'Your week' screen asked before the ID step. That gets her to a running workout in about 10 taps. Missing capabilities to add next: a 1-tap way to plan the week's dinners and to start cycle tracking from day-one Home, and a coach invite link, without which a coach can never get a client."
+ },
+ {
+  "auditor": "Noura and Coach Dina, first-time users",
+  "persona": "Noura and Coach Dina, first-time users",
+  "approach": "I traced the shipped route graph from the code: main.dart first-run stack, FeatureFlags.shipped (accountRequired on, coachApp, community, payments and marketplace off), AppRouter._built and the verification gate. Then I walked each screen in Arabic using the app_ar.arb strings, extracted per view with a script that maps l10n keys to their EN and AR values. I role-played Noura (Arabic-first, low tech confidence, nervous about her ID) and Dina (a busy coach) screen by screen, counted taps, fields, waits and branches, and confirmed every quit moment against file:line. The repo notes named in the brief (COUNCIL_REPORT.md, DECISIONS_NEEDED.md, VERIFICATION_SPEC.md, AUDIT.md) are not in this worktree, so this audit rests on the code and the ARB files only.",
+  "trainee_path": "Shipped build, Arabic phone, happy path. Front door is C01 because accountRequired=true (feature_flags.dart:188, main.dart _frontDoor). Setup O01 is not stacked on a first launch because OnboardingState.isDue needs isVerified (onboarding_state.dart:79-82).\n1. C01 Welcome: \"غرفة مليئة بنساء يتدرّبن مثلك\" plus one subline. Tap \"لنبدأ\" (tap 1).\n2. C02 Language: picked from the phone. Tap \"متابعة\" (tap 2). This is a screen she did not need.\n3. C03 What's inside: three promises. Tap \"أنشئي حسابي\" (tap 3). The other choice, \"تصفّحي أولًا\", goes to C04: two placeholder workouts, every row opens the join sheet, and the bottom bar does nothing.\n4. C06 Phone: \"الخطوة 1 من 2\". Type the number (field 1). Tap \"أرسلي إليّ رمزًا\" (tap 4).\n5. C07 Code: \"الخطوة 2 من 2\". Type 6 digits (field 2). It checks itself, and Android reads the SMS.\n6. C08 Role: \"أيّهما أنتِ؟\" with only one card at launch. Tap \"متابعة\" (tap 5).\n7. C09 Why we check. Tap \"صوّري بطاقتي\" (tap 6).\n8. C09b Consent: five bullets that mention Google Cloud outside Egypt and a hash. Tap \"أوافق وأبدأ التصوير\" (tap 7), then the OS camera permission (tap 8).\n9. C10 ID front: auto-capture, or \"سألتقطها بنفسي\" (0-1 taps).\n10. C10b ID back: auto-capture (0-1).\n11. C11 Selfie: a liveness challenge (blink, turn), then \"تمّ\" (tap 9).\n12. C12 Checking: a wait of seconds.\n13. C13 \"أهلًا بك\". Tap \"اقرئي القواعد الثلاث\" (tap 10).\n14. C16 Pledge. Tap \"أوافق، أدخليني\" (tap 11).\n15. O01 to O04: four questions, each with a preselected answer. Tap \"متابعة\" four times (taps 12-15).\n16. O05 Starting program. Tap \"ابدئي اليوم 1 الآن\" (tap 16).\n17. R03 Workout day \"الساقان والأرداف\". Tap \"ابدئي، كل شيء جاهز\" (tap 17).\n18. R07 First set.\nTotal: about 21 screens, 17 taps, 2 text fields, 3 camera captures and 1 wait.\nBranches:\n- Niqab, decline or automatic failure: C15 \"اطلبي تحقّقًا بالفيديو\", then C14 \"قيد المراجعة\". The whole app stays locked, no wait time is given, and \"ألقي نظرة على التطبيق أثناء الانتظار\" leads to the placeholder C04.\n- Offline at C06 or C07: no message at all (silent).\n- Offline at C09b or C12: clear copy and a retry.\n- If she taps \"متابعة\" while C12 is still checking, she reaches \"أهلًا بك\" without being verified. After setup the gate sends her back to C09.\nAfter onboarding, Home (T06 day one) shows \"تدريبك، أسبوعًا بعد أسبوع\" and one big \"ابدئي اليوم 1\" button. Below it are \"أسبوعك الأول\" and \"أخبرينا بشيء واحد تتناولينه\". Noura knows to start a workout. She does not know where her cycle, progress or diet plan live: the bar has only Home, Train and Eat.",
+  "coach_path": "At launch: none. coachApp=false (feature_flags.dart:210), so C08 shows only \"أنا هنا لأتدرّب\" (app_router.dart:991-995, role_view.dart:120-145). Dina signs up and verifies as a trainee, then walks trainee setup. Nothing anywhere lets her become a coach. The C08 line \"يمكنك تغيير هذا لاحقًا من ملفك\" is false, because profile_view.dart has no role row.\nAs coded with the flag on:\n- C01 to C07 as for Noura (4 taps, 2 fields).\n- C08: tap \"أنا أدرّب النساء\", then \"متابعة\" (6).\n- C09 to C11 ID and selfie (about 9-10).\n- C12 wait.\n- C13: the primary button is \"اقرئي القواعد الثلاث\". The coach option is a secondary text link, \"أنا مدرِّبة، أنشئي ملفي\" (11). If she follows the primary button, she goes to the pledge, then the trainee goal questions, then trainee Home.\n- K01 \"عرّفي المتدرِّبات بنفسك\": photo, name, city, one line (4 fields), \"متابعة\" (12).\n- K02 Certificates: in production the add rows do nothing, because onAddCertificate is null when not in test mode (app_router.dart:3005-3009). \"متابعة\" (13).\n- K03: pick up to three specialties, then \"متابعة\" (about 15-16).\n- K04: capacity, then \"متابعة\" (about 18).\n- K05 \"أين نرسل أموالك؟\": Continue stays disabled while payments is off (coach_view_models.dart:150, coach_payout_view.dart:128). She has to take \"احفظي وأغلقي\" (about 19).\n- K07 desk: \"لا متدرِّبات بعد\". K06 (\"ابني أول خطة لي\") is reachable only through K05, and K05 cannot be finished.\n- There is no way to invite her own existing clients. She waits for marketplace enquiries, and marketplace is off.\nTotal to an empty desk: about 17 screens, about 19 taps, 6+ fields and the ID check. Her application is never submitted.",
+  "taps_to_first_value": {
+   "workout": "17 taps, 2 text fields, 3 camera captures, about 21 screens. Path: C01 > C02 > C03 > C06 > C07 > C08 > C09 > C09b > C10 > C10b > C11 > C12 > C13 > C16 > O01-O04 > O05 'ابدئي اليوم 1 الآن' > R03 'ابدئي، كل شيء جاهز' > R07. 11 of the screens come before she learns anything about her own training.",
+   "diet": "Logging one meal: 15 taps. Close setup with X on O01 (12), then 'أخبرينا بشيء واحد تتناولينه' on Home (13), then 'سجّلي' on a starter dish in Eat (14-15). Planning a diet (week plan E07): not reachable on day one, because the day-one Eat screen has no Recipes or week-plan row (eat_view.dart:635-670; the row exists only in the non-day-one branch at :557). After her first log it is Eat > Recipes > 'This week's plan' (3 more taps).",
+   "log": "Meal log: about 15 taps (see diet). Workout set log: about 18 (first set on R07). Cycle: not on Home and not in the bottom bar. Avatar > Profile > My cycle > Set up (Y01) > Y02, so about 16 taps plus a form after onboarding. Progress and body: Home week block > P01 > Body privately (P04), with nothing on screen saying that is where it lives.",
+   "coach": "At launch: impossible, because the coach role is not offered (feature_flags.dart:210, role_view.dart:136). As coded with the flag on: about 19 taps and 6+ fields to an empty K07 desk. The certificate upload (K02) and payout (K05) cannot be completed in production, so the application is never submitted and 'Build my first plan' (K06) is never reached. Inviting a trainee is not possible, because no invite feature exists."
+  },
+  "findings": [
+   {
+    "title": "Continue on the Checking screen lets her skip verification and see 'You're in'",
+    "who": "both",
+    "severity": "blocker",
+    "where": "C12 Checking, lib/features/signup/presentation/checking_view.dart:241 and lib/routing/app_router.dart:1167",
+    "problem": "While the check is running, the footer shows an enabled 'متابعة' wired to goTo(C13). Noura taps it out of habit, the way she taps through WhatsApp prompts. She sees 'أهلًا بك' and 'حُذفت صورة بطاقتك', reads the rules, answers four questions, and is then thrown back to C09 'تحقّق واحد، ثم تدخلين' by the gate. She will think the app is broken or that she failed. The two steps 'قُرئت البطاقة' and 'طوبقت الصورة الذاتية مع البطاقة' are also hard-coded as done (const _Step done:true, :262-275), and the ring is fixed at 0.72 (:39), so the screen claims progress that has not happened.",
+    "evidence": "footer: [AppButton(l10n.continueLabel, onPressed: widget.onContinue)]; router: onContinue: () => goTo(context, 'C13')",
+    "fix": "Remove the Continue button from the running state, or disable it until the repository reports a result. Let the listener move her on. Drive the step ticks from real state. If the check stalls, show 'still checking… ask a woman reviewer' after N seconds."
+   },
+   {
+    "title": "Coach cannot sign up at launch, and the coded coach setup cannot be finished in production",
+    "who": "coach",
+    "severity": "blocker",
+    "where": "C08 role_view.dart:136-145 with feature_flags.dart:210; K02 app_router.dart:3005-3009; K05 coach_view_models.dart:150 and coach_payout_view.dart:128",
+    "problem": "Dina sees only 'أنا هنا لأتدرّب' under 'أيّهما أنتِ؟'. Nothing anywhere says coaches are coming. With the flag on, her certificate rows are inert outside test mode (no file picker), and Continue on 'أين نرسل أموالك؟' stays disabled while payments is off. So her application never reaches K06 and is never submitted. A busy coach quits at K02 or K05.",
+    "fix": "At launch, add a 'أنا مدرِّبة' card that records interest (a waitlist with name, city and specialty) and promises a call, so coaches are captured rather than lost. Before turning coachApp on: ship a real certificate photo upload, and let K05 be skipped with 'add payout later' so the application can be submitted and K06 'ابني أول خطة لي' reached."
+   },
+   {
+    "title": "Phone and code screens fail silently",
+    "who": "both",
+    "severity": "high",
+    "where": "C06 phone_number_view.dart:100-103 (doc :15-20); C07 code_view.dart:126-129 (doc :24-29)",
+    "problem": "If the SMS provider fails, the network is down or the number is rejected, 'أرسلي إليّ رمزًا' stops spinning and nothing happens. On a wrong or expired code the boxes just clear. Low-confidence Noura cannot tell whether she typed it wrong, has no signal, or the app is broken. This is the first place she would close the app. The code comment says the translated strings already exist in i18n/msa/14-states.json but are not wired.",
+    "fix": "Wire the existing MSA strings ('الرمز غير صحيح', 'انتهت صلاحية الرمز', offline, invalid number) under the field, with a retry button. Show the number she typed with an 'تعديل الرقم' link on C07."
+   },
+   {
+    "title": "Day-one Eat has no way to plan a diet",
+    "who": "trainee",
+    "severity": "high",
+    "where": "E01 day one, lib/features/eat/presentation/eat_view.dart:635-670 (recipes row only in the non-day-one branch at :557-558)",
+    "problem": "Noura wants to 'plan what I cook this week'. On day one, Eat shows 'لا أطباق بعد', the say-or-type box and starter dishes to log. There is no Recipes row, no Rahma shelf and no 'This week's plan' link until she has logged a meal. One of the three goals of the session (plan her diet) is unreachable on day one.",
+    "fix": "Add the Recipes row and a 'خطة هذا الأسبوع' entry to the day-one Eat state, and offer 'Plan my week' as a third choice on O05 next to 'Start day 1 now'."
+   },
+   {
+    "title": "Waiting for a reviewer locks the whole app, with no time estimate",
+    "who": "both",
+    "severity": "high",
+    "where": "C14 being_checked_view.dart:244-245, 302, 348; C15 woman_reviewer_view.dart:135; gate app_router.dart:820-845",
+    "problem": "Women on the niqab path, women who decline the camera, and any failed automatic check are told 'ستتصل بكِ مراجِعة من Own Hub هاتفيًا' and 'يفتح التطبيق بمجرد انتهاء التحقق', but never when. 'ألقي نظرة على التطبيق أثناء الانتظار' leads to C04, which has two placeholder workouts, rows that all reopen the join sheet, and a bottom bar that does nothing (look_around_view.dart:139). Noura closes the app and forgets it. This is the biggest drop-off risk among women who cannot or will not use the camera.",
+    "fix": "Show an honest time window ('عادةً خلال 24 ساعة' with working hours). Use push and SMS opt-in for the call. While she waits, unlock the private, non-community parts that need no verification (workouts, meal logging, cycle on her own phone). Keep the gate on community and coaching. This is a reorder, not a removal: the women-only check still guards every shared space."
+   },
+   {
+    "title": "Setup promises personalisation it does not deliver, including for pregnancy",
+    "who": "trainee",
+    "severity": "high",
+    "where": "O04 life_stage_view.dart:177 and doc :21-26; O05 starting_program_view.dart:116-118, 168; R03 workout_day_view.dart:113-177",
+    "problem": "Noura answers four questions. O05 says 'مبنية على إجاباتك الأربع' but always shows 'أساسيات للمبتدئات · 8 أسابيع · هادئ · بدون أدوات', even when she picked 'صالة للنساء فقط' and dumbbells. If she ticks 'حامل', O04 says 'ولا يتغيّر شيء في تمارينكِ بسببها حتى الآن'. 'Start day 1 now' then opens 'الساقان والأرداف' with step-back lunges and 'تمرين الحشرة الميتة' (on the back). The name on O05 and the session on R03 also differ. This breaks trust at the exact moment she should get hooked, and it is a safety concern for pregnant users.",
+    "fix": "Until real programmes exist, ask only what changes something (days and minutes, which do set the weekly goal). Drop or defer the goal and place questions, or say plainly 'سنستخدم هذا قريبًا'. For pregnant and postpartum answers, route to a gentle, reviewed session or show a clear 'استشيري طبيبتك' gate before R03. Name the same programme on O05, Home and R03."
+   },
+   {
+    "title": "Progress counters lie: 'Step 1 of 2' is followed by about 14 more screens",
+    "who": "both",
+    "severity": "high",
+    "where": "C06 phone_number_view.dart:113 ('الخطوة 1 من 2'); C07 code_view.dart:152 ('الخطوة 2 من 2'); O01-O04 intake_step_scaffold.dart:76 ('of 4'); K-steps coach_setup_scaffold.dart:49",
+    "problem": "Noura finishes 'الخطوة 2 من 2' and believes she is done. Then come role, why we check, consent, two ID sides, a selfie, a wait, you're in, a pledge, and a new counter that restarts at '1 من 4'. Every restart feels like the app moving the goalposts, and that is where people give up.",
+    "fix": "Use one honest progress model for the whole path, for example three chapters ('رقمك · التحقق · خطتك') shown as a 3-dot header on every screen, with a time estimate ('نحو 3 دقائق') stated once on C03."
+   },
+   {
+    "title": "Consent screen is accurate but frightening for a low-tech user",
+    "who": "both",
+    "severity": "medium",
+    "where": "C09 why_we_check_view.dart:66-101; C09b consent_view.dart:175-221",
+    "problem": "Noura reads two screens that both explain the check. C09 promises 'لا تُحفظ صور بطاقتكِ ولا صورتكِ الذاتية أبدًا. اضغطي لتعرفي بدقة ما الذي يُحفظ', but that line is plain Text and cannot be tapped (:98-101). C09b then says 'تُعالَج الصور لدى Google Cloud على خوادم خارج مصر' and 'بصمة مشفّرة أحادية الاتجاه'. 'Outside Egypt' after 'never stored' reads as a contradiction, and she does not know what a hash is. This is her most likely quit point after C06. C09 also says 'نحو 90 ثانية' while C04 says 'نحو دقيقتين'.",
+    "fix": "Keep the legal content but layer it. C09b gets one plain headline ('صورك تُحذف فور انتهاء الفحص، ولا يراها أي رجل'), three short bullets, and a 'التفاصيل' expander holding the processor, location and hash text. Merge C09 into C09b so it is one screen. Make the 'what is kept' line a real link. Use one time estimate everywhere."
+   },
+   {
+    "title": "The pledge asks her to agree to community rules for a community that is switched off",
+    "who": "both",
+    "severity": "medium",
+    "where": "C16 pledge_view.dart:40-70; C13 youre_in_view.dart:105",
+    "problem": "Straight after 'أهلًا بك', Noura must agree to 'لا لقطات شاشة' and 'لا تعليق على جسد أي امرأة أخرى' under the threat 'من تخالف واحدة منها تفقد مكانها'. At launch there is no community to post in, so this is an extra screen with a punitive tone between her and her first workout.",
+    "fix": "Defer the pledge to the first time she opens Community (or behind the community flag), and keep the consent record written at that moment. At launch, go from C13 straight to O01 with a warm 'لنجهّز أسبوعكِ'."
+   },
+   {
+    "title": "'Look around first' is a dead end with a fake bottom bar and tabs that change nothing",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "C04 look_around_view.dart:139 (AppNavBar with no onSelect), :156-185 (list ignores _tab)",
+    "problem": "A curious Noura taps 'تصفّحي أولًا'. The 'وصفات' tab still shows the same two workouts. Every workout opens 'أتحفظين هذا التمرين؟'. The bottom bar is drawn but does nothing. She learns nothing about what the app does and feels tricked.",
+    "fix": "Show one real playable sample workout (a 2-minute preview video) and 3 real Rahma recipes in the Recipes tab. Hide the bottom bar for guests. Keep one 'انضمّي · نحو دقيقتين' button."
+   },
+   {
+    "title": "Cycle and progress are hidden; Home day one never mentions them",
+    "who": "trainee",
+    "severity": "medium",
+    "where": "Home today_view.dart:498-585 and :366-376 (cycle card only if showCycleCard); app_nav_bar.dart traineeTabs (Home, Train, Eat at launch); profile_view.dart:204",
+    "problem": "The app is pitched as train, eat, cycle and progress. After onboarding, Noura sees three tabs and no mention of her cycle. Cycle setup is avatar > Profile > My cycle > Set up. Progress is reached only by tapping the week block. She will not find either, and 'log her data' fails.",
+    "fix": "Add 'تتبّعي دورتكِ' as a day-one row on Home (one tap to Y01), next to the meal row. Optionally offer cycle as an optional O-step after life stage, with the health-data consent shown at that moment. Consider a Progress tab or a labelled 'تقدّمي' row."
+   },
+   {
+    "title": "For a coach, 'You're in' pushes the trainee path first",
+    "who": "coach",
+    "severity": "medium",
+    "where": "C13 youre_in_view.dart:105-112; app_router.dart:1197-1203 and 1269-1274",
+    "problem": "Dina chose 'أنا أدرّب النساء', but C13 ignores lastSignupRole. The primary button is 'اقرئي القواعد الثلاث', which leads to the trainee goal question 'ما الذي تريدينه أكثر؟'. Her own path is a small text link. If she takes it, she skips the pledge entirely, so the pledge consent record is never taken for coaches.",
+    "fix": "Branch C13 on role: coaches get a primary 'أنشئي ملفكِ المهني' leading to K01, with the pledge shown inside the coach setup before publishing. Trainees keep the current flow."
+   },
+   {
+    "title": "There is no way for a coach to invite her existing clients",
+    "who": "coach",
+    "severity": "medium",
+    "where": "lib/features/coach* (no invite flow); K07 coach_today_view.dart:375-376",
+    "problem": "Dina already has clients on WhatsApp. Her desk says 'لا متدرِّبات بعد · حين تطلب امرأة العمل معك تصل إلى هنا'. Her only source of trainees is the marketplace, which is off. Her first useful action, getting a trainee onto a plan, is impossible.",
+    "fix": "Add 'ادعي متدرِّبة' on K07: a share link or code, sent through WhatsApp, that walks the invitee through the same verification and links the two women. Also ship a 'Build my first plan' entry on K07 so it does not depend on K05."
+   },
+   {
+    "title": "The role screen asks 'Which one are you?' with one option, and says something untrue",
+    "who": "both",
+    "severity": "low",
+    "where": "C08 role_view.dart:113-117, :120-145; profile_view.dart (no role row)",
+    "problem": "Noura sees 'أيّهما أنتِ؟' and a single card. The question makes no sense, and it is a wasted tap. 'يمكنك تغيير هذا لاحقًا من ملفك' is false, because Profile has no role switch.",
+    "fix": "Skip C08 entirely while coachApp is off and set the trainee role silently. When it is on, make the copy match whatever role-change path actually exists."
+   },
+   {
+    "title": "Arabic button voice switches between 'I' and 'you'",
+    "who": "both",
+    "severity": "low",
+    "where": "phone_number_view.dart:115 'أرسلي إليّ رمزًا'; whats_inside_view.dart:42 'أنشئي حسابي'; pledge_view.dart:40 'أوافق، أدخليني'; youre_in_view.dart:110 'أنا مدرِّبة، أنشئي ملفي'; consent_view.dart:162 'أوافق وأبدأ التصوير'",
+    "problem": "Some buttons speak as her ('أوافق وأبدأ'). Others are feminine imperatives addressed to her but meaning the app's action ('أرسلي إليّ رمزًا' reads as 'you (f.) send me a code'). Noura has to work out who is doing what on the very screens where she is already nervous.",
+    "fix": "Pick one convention: the app speaks to her in feminine imperative for her actions ('أنشئي حسابكِ', 'أرسلي الرمز'), and first person only for consent ('أوافق'). Fix the four strings in app_ar.arb."
+   },
+   {
+    "title": "Exercise names and terms on the first workout are confusing in Arabic",
+    "who": "both",
+    "severity": "low",
+    "where": "R03 workout_day_view.dart:155 'تمرين الحشرة الميتة'; coach_today_view.dart:261 'العميلات' vs 'المتدرِّبات' everywhere else; K06 'وسنرسل إليك رسالة' vs C14 'لا نرسل رسائل نصية بشأن ذلك'",
+    "problem": "A literal 'dead insect exercise' on her first workout reads as a joke. The coach app calls clients by two different words. The coach screen promises an SMS while the trainee screen says no SMS is sent.",
+    "fix": "Use a plain descriptive name ('تمرين الظهر على الأرض مع مدّ الذراع والساق') with the English in small print. Use 'المتدرِّبات' consistently. Align the SMS promises."
+   },
+   {
+    "title": "The welcome screen does not say what the app does or how long joining takes",
+    "who": "both",
+    "severity": "low",
+    "where": "C01 welcome_view.dart:93, 108-110; C02 language_view.dart:82-99",
+    "problem": "'غرفة مليئة بنساء يتدرّبن مثلك' is a mood, not a promise. Noura does not know this is a workout, food and cycle app until C03, two taps in. C02 adds a tap even though the app already opened in her phone's language.",
+    "fix": "Lead with a concrete line ('تمارين منزلية هادئة، وأكل مصري، وتتبّع دورتكِ، للنساء فقط'). Add a small language toggle on C01 instead of a full C02 screen. Show '≈3 دقائق للانضمام' under 'لنبدأ'."
+   }
+  ],
+  "keep": [
+   "The first launch opens in the phone's language (main.dart _firstRunLocale), so Noura sees Arabic from the first frame.",
+   "C03 promises are concrete and Egyptian: 'كشري وفول وملوخية بالمقادير التي تقدّمينها فعلًا. بلا جرامات'.",
+   "Auto-capture of the ID ('تُلتقط الصورة تلقائيًا حين تصبح واضحة'), auto-checking OTP with Android SMS read, and the step counter shown during the liveness challenge.",
+   "Dignified alternatives: the niqab path 'أرتدي النقاب، تحقّقوا مني بطريقة أخرى' and 'أفضّل ألا أفعل', both leading to a woman reviewer with no camera.",
+   "C12, C09b and C14 failure copy is honest and calm ('لم يُتخذ أي قرار ولستِ في أي قائمة انتظار').",
+   "Every setup question is preselected and skippable, the X exits setup cleanly, and the days answer really sets the weekly goal (onboarding_state.dart _applyWeeklyTarget).",
+   "O05 'ابدئي اليوم 1 الآن' drops straight into a workout with the sign-up stack cleared, and Home day one has one big obvious button.",
+   "Home day one's empty state explains itself ('سيظهر هنا تمرين اليوم...') and 'أسبوعك الأول' is a gentle no-expiry checklist.",
+   "One-tap starter meals on Eat day one, which make a first log possible in two taps.",
+   "Dark features are hidden rather than shown as dead doors (Community rows, the assistant icon and the coach CTA all check screenIsOn)."
+  ],
+  "verdict": "Noura gets in only if she survives 11 screens of account and identity work before the app has shown her anything she can use. She would probably finish if every step works, because the copy is kind, the ID camera captures by itself, and Home day one has one obvious 'ابدئي اليوم 1' button. But the path has sharp edges right where she is most nervous. The phone and code screens fail with no message. Two 'Step x of 2' labels lie about how much is left. The consent screen talks about 'خوادم خارج مصر' and a hash right after promising nothing is stored. A live Continue button on the Checking screen can show her 'You're in' before she is verified, then throw her back to the check. Women on the niqab path or whose automatic check fails wait in a fully locked app with no time estimate. After onboarding, setup claims to be 'built from your answers' but gives every woman the same programme, even when she said she is pregnant or trains at a gym. Diet planning cannot be reached on day one, and cycle tracking is buried in Profile, so only one of the three goals (start a workout) is fast: about 17 taps. Coach Dina cannot sign up at all at launch. Even with the flag on, her certificate and payout steps cannot be completed in production, there is no way to invite her own clients, and C13 pushes her into the trainee pledge and trainee questions. Highest-leverage fixes:\n1. Kill the C12 Continue button.\n2. Wire the OTP error strings.\n3. Use one honest three-chapter progress bar.\n4. Layer the consent screen and merge C09 into C09b.\n5. Defer the pledge until Community exists.\n6. Unlock private features while a reviewer is pending.\n7. Add diet-plan and cycle entry points to day one.\n8. Make setup either truly personal or shorter.\n9. For coaches, capture a waitlist now, then fix K02 and K05 and add invites before the coach app turns on."
+ }
+]
