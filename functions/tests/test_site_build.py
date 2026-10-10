@@ -93,14 +93,16 @@ def test_the_waitlist_form_matches_the_function(prefix, lang):
 
 
 def test_the_consent_sentence_is_plain():
-    assert "We will message you once when Own Hub opens, then delete your contact." in _page(
-        "waitlist"
-    )
+    # Wording version 2 (functions/waitlist/join.py CONSENT_WORDING_VERSION).
+    assert (
+        "We will message you once: an early invite if you are among the first "
+        "100, or the day Own Hub opens. Then we delete your contact."
+    ) in _page("waitlist")
     # The brand name is isolated left to right inside the Arabic sentence.
     assert (
-        "سنراسلك مرة واحدة عند افتتاح <bdi>Own Hub</bdi>، ثم نحذف بيانات التواصل الخاصة بك."
-        in _page("ar", "waitlist")
-    )
+        "سنراسلك مرة واحدة: بدعوة مبكرة إن كنتِ من أول 100، أو يوم افتتاح "
+        "<bdi>Own Hub</bdi>. ثم نحذف بيانات التواصل الخاصة بك."
+    ) in _page("ar", "waitlist")
 
 
 @pytest.mark.parametrize("page", ["joined", "check", "later"])
@@ -594,4 +596,13 @@ def test_the_home_pages_promise_only_what_this_version_does():
     for claim in ("video call", "gym", "marketplace", "ai assistant", "artificial intelligence",
                   "join the community", "book a coach", "chat with"):
         assert claim not in en, claim
-    assert "there is no community and no\n            coaching" in en
+    assert "there is no community and no coaching" in " ".join(en.split())
+
+
+def test_before_launch_the_waitlist_is_the_first_thing_on_the_home_page():
+    for lang, offer in (("en", "The first 100 women on the list"), ("ar", "أول 100 امرأة في القائمة")):
+        html = _home(_SITE, lang)
+        form = html.index('class="waitlist"')
+        assert html.index('<h1>') < html.index(offer) < form < html.index('id="inside"')
+        # The offer promises Pro for later and nothing the app does not do.
+        assert html.count('class="waitlist"') == 1

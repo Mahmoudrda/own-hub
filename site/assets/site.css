@@ -658,6 +658,13 @@ html[lang="ar"] .cards dt {
   text-decoration: none;
   text-align: center;
   cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 160ms ease;
+}
+/* The press is felt: a button that does not move reads as not heard. */
+.btn:active {
+  transform: scale(0.97);
 }
 .btn::after {
   content: "";
@@ -671,8 +678,15 @@ html[lang="ar"] .cards dt {
 html[dir="rtl"] .btn::after {
   transform: translate(-3px, 4px) rotate(-0.4deg);
 }
-.btn:hover {
-  background: var(--rose-deep);
+/* Hover only where there is a real pointer; a tap must not leave a button
+   stuck in its hover colour. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--rose-deep);
+  }
+  .btn.ghost:hover {
+    background: var(--rose-container);
+  }
 }
 .btn.ghost {
   background: var(--paper-raised);
@@ -681,9 +695,6 @@ html[dir="rtl"] .btn::after {
 }
 .btn.ghost::after {
   border-color: var(--pencil);
-}
-.btn.ghost:hover {
-  background: var(--rose-container);
 }
 
 /* ---------- Store badges ----------
@@ -1066,6 +1077,33 @@ section.download .badges {
 }
 .form-card .waitlist {
   margin-block-start: 0;
+}
+
+/* ---------- The founding offer, at the top of the home page ----------
+   Before launch the page has one job, and this is it: the offer in one
+   sentence, then the form, on the app's own rose tint. */
+.offer {
+  display: grid;
+  gap: 1rem;
+  max-inline-size: 34rem;
+  margin-block: 1.5rem 1.25rem;
+  padding: 1.25rem 1rem 0.25rem;
+  border-radius: var(--r-xl);
+  background: var(--rose-soft);
+  border: 1px solid var(--rose-container);
+}
+.offer-t {
+  margin: 0;
+  padding-inline: 0.25rem;
+  font-size: 1.0625rem;
+  color: var(--ink);
+}
+.offer-t b {
+  color: var(--rose-deep);
+  font-weight: 600;
+}
+.offer .form-card {
+  padding: 1.25rem 1rem 0.25rem;
 }
 @media (min-width: 52rem) {
   main > section.download .panel {

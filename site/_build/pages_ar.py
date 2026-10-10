@@ -103,7 +103,7 @@ FORM = '''
           </p>
           <p class="check">
             <input id="consent" name="consent" type="checkbox" value="yes" required>
-            <label for="consent"><b>أوافق.</b> سنراسلك مرة واحدة عند افتتاح Own Hub، ثم نحذف بيانات التواصل الخاصة بك.</label>
+            <label for="consent"><b>أوافق.</b> سنراسلك مرة واحدة: بدعوة مبكرة إن كنتِ من أول 100، أو يوم افتتاح Own Hub. ثم نحذف بيانات التواصل الخاصة بك.</label>
           </p>
           <div class="btn-row"><button class="btn" type="submit">انضمّي إلى القائمة</button></div>
         </form>
@@ -125,30 +125,41 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     live = bool(cfg.store_url("storeUrlIos")) and bool(cfg.store_url("storeUrlAndroid"))
     hero_badges = store_badges(cfg, lang, where="hero")
     if live:
-        hero_note = ""
+        eyebrow = "تطبيق لياقة للنساء في مصر"
+        hero_cta = hero_badges
         # تسمح Apple بشارة App Store واحدة في الصفحة، وهي في أعلاها، لذلك
         # يربط هذا القسم بالكلمات.
-        download_body = ("""
+        download_section = """
+    <section class="download" aria-labelledby="download">
+      <div class="wrap">
+        <div class="panel">
+          <div class="prose">
+""" + h2("download", "احصلي على Own Hub", "no-rule") + """
         <p>مجاني على iPhone وAndroid. افتحيه واضغطي «خذيني في جولة» أولًا، إن
         شئتِ.</p>
-        <p><a href=""" + '"' + cfg.store_url("storeUrlIos") + '" rel="noopener">‏Own Hub على App Store</a>'
-        + ' &middot; <a href="' + cfg.store_url("storeUrlAndroid") + '" rel="noopener">‏Own Hub على Google Play</a></p>')
-    else:
-        hero_note = (
-            '\n        <p class="hero-note">ليس في المتاجر بعد. '
-            '<a href="#download">انضمّي إلى قائمة الانتظار</a> وسنراسلك مرة '
-            "واحدة، يوم افتتاحه.</p>"
-        )
-        download_body = """
-        <p>‏Own Hub ليس على App Store ولا على Google Play بعد. اتركي رقم هاتفك
-        المحمول المصري أو بريدك الإلكتروني، وسنراسلك مرة واحدة، يوم
-        افتتاحه.</p>
-        """ + """
+        <p><a href=""" + '"' + cfg.store_url("storeUrlIos") + '" rel="noopener">‏Own Hub على App Store</a>' + """ &middot; <a href=""" + '"' + cfg.store_url("storeUrlAndroid") + '" rel="noopener">‏Own Hub على Google Play</a></p>' + """
           </div>
-          <div class="form-card">""" + FORM + """
-        <p class="small">هذا كل ما نطلبه. قائمة الانتظار ليست حسابًا، وما
-        نحتفظ به ومدته مبيّنان في <a href="/ar/privacy#c-waitlist">سياسة
-        الخصوصية</a>.</p>"""
+        </div>
+      </div>
+    </section>
+"""
+    else:
+        # ليس في المتاجر بعد: للصفحة مهمة واحدة، قائمة الانتظار، وهي أول ما
+        # فيها. والشارتان تحتها تقولان «قريبًا».
+        eyebrow = "قريبًا، للنساء في مصر"
+        hero_cta = """
+          <div class="offer" id="download">
+            <p class="offer-t"><b>أول 100 امرأة في القائمة</b> يجرّبن Own Hub
+            قبل افتتاحه للجميع، ويحصلن على أول شهر من Pro مجانًا عند
+            إطلاقه.</p>
+            <div class="form-card">""" + FORM + """
+            <p class="small">هذا كل ما نطلبه. قائمة الانتظار ليست حسابًا، وما
+            نحتفظ به ومدته مبيّنان في <a href="/ar/privacy#c-waitlist">سياسة
+            الخصوصية</a>.</p>
+            </div>
+          </div>
+          """ + hero_badges
+        download_section = ""
 
     # ------------------------------------------------------------ index ----
     pages["index"] = {
@@ -161,12 +172,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <section class="hero">
       <div class="wrap hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow">تطبيق لياقة للنساء في مصر</p>
+          <p class="eyebrow">""" + eyebrow + """</p>
           <h1>تدريبكِ، وطعامكِ، ودورتكِ. <span class="hand">للنساء فقط.</span></h1>
-          <p class="lede">تمارين هادئة للمنزل، وطعام تطبخينه أصلًا، ومساحة لا
-          تدخلها إلا النساء الموثّقات. مجاني، بالعربية والإنجليزية، وليس فيه ما
-          يُشترى.</p>
-          """ + hero_badges + hero_note + """
+          <p class="lede">تمارين للمنزل، وطعام تطبخينه أصلًا، ودورتكِ، في تطبيق
+          واحد لا تدخله إلا النساء الموثّقات. بالعربية والإنجليزية.</p>
+          """ + hero_cta + """
         </div>
         <div class="hero-art">
           <figure class="phone">""" + shot(lang, "02-home", "الشاشة الأولى في Own Hub: تمرين اليوم، وتقدّم هذا الأسبوع، والفطور.", sizes="(min-width: 62rem) 300px, 240px", eager=True) + """</figure>
@@ -175,16 +185,34 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       </div>
     </section>
 
-    <section class="band" aria-labelledby="women-only">
+    <section class="band" aria-labelledby="inside">
+      <div class="wrap">
+        <div class="prose">
+""" + h2("inside", "ما في داخله", "no-rule") + """
+          <p class="lede">تمرّني، واطبخي، وتابعي دورتكِ، بخصوصية. وفي التطبيق،
+          يعرض «خذيني في جولة» كل شيء بأسبوع تجريبي قبل أن تنضمّي، ولا يُحفظ
+          شيء.</p>
+        </div>
+        <ul class="shots">
+          <li><figure>""" + shot(lang, "03-workout", "مشغّل التمارين: حركة واحدة، وثلاث مجموعات، وزر للمجموعة التي أنهيتِها للتو.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التمرين.</b> اضغطي على المجموعة حين تنهينها. ومؤقت الراحة يبدأ وحده.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "06-progress", "بطاقة تقدّمها: التمارين المُنجزة والوجبات المضافة وأفضل الأرقام، جاهزة للمشاركة. لا يظهر وزنها عليها إلا إذا أضافته.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التقدّم.</b> بطاقة واحدة بما أنجزتِه، لتشاركيها إن أردتِ.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "08-tour-cycle", "«دورتي» في الجولة: كيف تشعرين، مع اليوم والتقويم والأنماط.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>دورتي.</b> خاصة منذ البداية، وألطف في الأيام الأصعب.</figcaption></figure></li>
+        </ul>
+        <p class="small">ما ليس في هذا الإصدار: لا مجتمع ولا تدريب شخصي، فلا شيء
+        في التطبيق يصلكِ بعضوة أخرى، ولا مساعد.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="women-only">
       <div class="wrap split even">
         <div class="prose">
-""" + h2("women-only", "للنساء فقط، ولماذا", "no-rule") + """
-          <p class="lede">‏Own Hub مساحة صُنعت للنساء، ووعد كهذا لا معنى له ما
-          لم يُتحقَّق منه. لذلك يُتحقَّق من كل عضوة مرة واحدة عند الباب، ثم لا
-          يعود التحقق يعترض طريقها.</p>
-          <p>أسّست {{brandFounder}} تطبيق Own Hub، وهي امرأة في مصر تبني لنساء مصر. لا
-          سيرة ذاتية تقرئينها هنا ولا شيء تأخذينه على الثقة: الصفحات أدناه تشرح
-          بالضبط ما يحتفظ به التطبيق، وأين يحتفظ به، وإلى متى.</p>
+""" + h2("women-only", "للنساء فقط، بتحقق واحد", "no-rule") + """
+          <p class="lede">لا معنى لمساحة للنساء فقط ما لم يُتحقَّق منها. لذلك
+          يُتحقَّق من كل عضوة مرة واحدة عند الباب، ثم لا يعود التحقق يعترض
+          طريقها.</p>
+          <p>تبقى دورتكِ وقياساتكِ ووزنكِ على هاتفكِ ما لم تختاري نسخها
+          احتياطيًا. وتشرح <a href="/ar/privacy">سياسة الخصوصية</a> بالضبط ما
+          يحتفظ به التطبيق، وأين، وإلى متى.</p>
         </div>
           <ol class="steps card">
             <li>تنضمّين برقم هاتفك المحمول المصري ورمز يصلك برسالة نصية.</li>
@@ -195,127 +223,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           </ol>
       </div>
     </section>
-
-    <section aria-labelledby="tour">
-      <div class="wrap split">
-        <figure class="phone">""" + shot(lang, "07-tour-dinners", "الجولة في التطبيق: أسبوع تجريبي من وجبات العشاء، مع علامة «تجريبي، لا يُحفظ شيء».", sizes="(min-width: 62rem) 300px, 240px") + """</figure>
-        <div class="prose">
-""" + h2("tour", "تجوّلي فيه قبل أن تنضمّي", "no-rule") + """
-          <p class="lede">قبل أن تنضمّي، اضغطي «خذيني في جولة» في التطبيق
-          لتريه بأسبوع تجريبي: التمارين، وعشاء الأسبوع، ودورتك. دون حساب، ولا
-          يُحفظ شيء.</p>
-          <p>قطة صغيرة وردية ترشدك خلال الجولة وخطواتك الأولى، ثم تتركك
-          وشأنك. ولا تنضمّي إلا إذا أعجبكِ ما رأيتِ.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="band" aria-labelledby="inside">
-      <div class="wrap">
-        <div class="prose">
-""" + h2("inside", "ما بداخله", "no-rule") + """
-        </div>
-        <ul class="shots">
-          <li><figure>""" + shot(lang, "03-workout", "مشغّل التمارين: حركة واحدة، وثلاث مجموعات، وزر لتسجيل المجموعة التي أنهيتِها.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التمرين.</b> المسي المجموعة لتسجيلها، ومؤقّت الراحة يبدأ من تلقاء نفسه.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "06-progress", "بطاقة تقدّمها: التمارين المُنجزة والوجبات المضافة وأفضل الأرقام، جاهزة للمشاركة. لا يظهر وزنها عليها إلا إذا أضافته.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التقدّم.</b> بطاقة واحدة بما أنجزتِه، لتشاركيها إن أردتِ.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "08-tour-cycle", "«دورتي» في الجولة: كيف تشعرين، مع اليوم والتقويم والأنماط.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>دورتي.</b> خاصة من البداية، وأهدأ في الأيام الأصعب.</figcaption></figure></li>
-        </ul>
-        <ul class="pillars">
-          <li>
-            <h3>اليوم</h3>
-            <p>تجدين تمرين اليوم في انتظارك حين تفتحين التطبيق، ومشية أو وجبة على
-            بعد لمسة واحدة. وكل ما تسجّلينه يُحفَظ فورًا، ولكِ خمس ثوانٍ
-            للتراجع. ولا شيء هنا يوقفك ليسألك إن كنتِ متأكدة.</p>
-          </li>
-          <li>
-            <h3>التمرين</h3>
-            <p>مشغّل تمارين يحفظ موضعك: المسي المجموعة لتسجيلها، ومؤقّتات راحة
-            تبدأ من تلقاء نفسها، وبديل لأي حركة تؤلمك أو تحتاج إلى معدات لا
-            تملكينها، وطريقة لتسجيل تمرين كامل من الذاكرة إن تمرّنتِ من دون
-            هاتفك.</p>
-          </li>
-          <li>
-            <h3>الطعام</h3>
-            <p>سجّلي وجبتك بلمس واحدة من وجباتك المعتادة، أو بكتابة جملة مثل
-            «فول وخبز بلدي». طعام مصري بالأسماء التي تستعملينها له.</p>
-          </li>
-          <li>
-            <h3>دورتي</h3>
-            <p>تتبّع للدورة وللأعراض، خاص من البداية. وفي يوم صعب يعرض عليك
-            التطبيق جلسة أهدأ بدل التي خطّط لها. ويمكن حذف بيانات دورتك وحدها من
-            دون المساس بشيء آخر.</p>
-          </li>
-          <li>
-            <h3>التقدّم</h3>
-            <p>أسبوعك، وأفضل أرقامك، والإنجازات التي بلغتِها، وقياسات جسمك التي
-            لا يراها أحد سواك.</p>
-          </li>
-          <li>
-            <h3>محفوظ لكِ، ولكِ وحدك</h3>
-            <p>بعد التحقق منك، يُحفظ تدريبك ووجباتك مع حسابك في فرانكفورت، ولا
-            تستطيع أي عضوة أخرى رؤيتها. وتبقى معلومات دورتك وصحتك على هاتفك، إلا إذا نسختِها
-            احتياطيًا. و«ملفي» ثم <b>بياناتك</b> يحذف حسابك وكل ما فيه.</p>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <section aria-labelledby="privacy-promise">
-      <div class="wrap split promise">
-        <div class="prose">
-""" + h2("privacy-promise", "صحتك تبقى معك", "no-rule") + """
-          <p class="lede">يُحفظ تدريبك ووجباتك مع حسابك، فلا يعني الهاتف الجديد
-          أن تبدئي من الصفر. أمّا دورتك ومتابعاتك اليومية وقياساتك ووزنك فتبقى
-          على هاتفك، إلا إذا اخترتِ نسخها احتياطيًا.</p>
-          <p><a href="/ar/privacy">اقرئي سياسة الخصوصية</a>، فهي تقول بالضبط ما
-          يحتفظ به التطبيق، وأين، وإلى متى.</p>
-        </div>
-        <ul class="facts" aria-label="‏Own Hub في سطور">
-          <li><b>للنساء فقط</b><span>تحقُّق مرة واحدة برقمك القومي وصورة ذاتية حية، أو، إذا تعذّر حسم التحقق، عبر امرأة من Own Hub تتواصل معكِ لترتيبه. ولا تُخزَّن الصور أبدًا.</span></li>
-          <li><b>صحتك تبقى معك</b><span>الدورة والمتابعات اليومية والقياسات والوزن تبقى على هاتفك، إلا إذا فعّلتِ النسخ الاحتياطي بنفسك.</span></li>
-          <li><b>إذن واحد</b><span>الكاميرا، للتحقق من أن العضوية للنساء فقط. لا مكتبة صور، ولا ميكروفون، ولا موقع، ولا وصول إلى Apple Health أو Health Connect.</span></li>
-          <li><b>مجاني</b><span>لا إعلانات، ولا مشتريات، ولا اشتراكات. ولا شيء فيه معروض للبيع.</span></li>
-          <li><b>بالعربية والإنجليزية</b><span>التطبيق كامل باللغتين، ومن اليمين إلى اليسار كما ينبغي.</span></li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="band" aria-labelledby="will-not">
-      <div class="wrap split even">
-        <div class="prose">
-""" + h2("will-not", "ما لا يفعله هذا التطبيق", "no-rule") + """
-          <ul>
-            <li>لا سلاسل يومية. نحسب الأسابيع لا الأيام، لأن الحياة الحقيقية لا
-            تسير في خط مستقيم.</li>
-            <li>لا عدّاد سعرات يلاحقك طوال اليوم.</li>
-            <li>لا شيء هنا يرتّب النساء حسب وزن الجسم أو عدد المتابِعات.</li>
-            <li>لا إعلانات، ولا مشتريات، ولا شيء يُباع.</li>
-          </ul>
-
-        </div>
-        <div class="aside">
-          <div class="callout quiet">
-            <p><b>ما ليس في هذا الإصدار.</b> لا مجتمع ولا تدريب شخصي: لا شيء في
-            التطبيق يصلك بعضوة أخرى. ولا مساعد ذكي. وللحصول على نسخة من
-            بياناتك، اطلبيها من الملف الشخصي ثم بياناتك، فنرسلها إليك.</p>
-          </div>
-
-          <p>التطبيق بالعربية والإنجليزية، ومن اليمين إلى اليسار كما ينبغي.
-          ويمكنك تغيير اللغة من «ملفي» ثم «اللغة» في أي وقت.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="download" aria-labelledby="download">
-      <div class="wrap">
-        <div class="panel">
-          <div class="prose">
-""" + h2("download", "حمّلي Own Hub", "no-rule") + download_body + """
-          </div>
-        </div>
-      </div>
-    </section>
-
+""" + download_section + """
     <section aria-labelledby="doors">
       <div class="wrap">
         <div class="prose">
@@ -637,8 +545,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         الهاتف أو البريد الإلكتروني الذي قدّمتِه، واللغة التي اخترتِها،
         وموافقتك، وتاريخ انضمامك.</p>
         <ul>
-          <li>نستخدم ذلك لغرض واحد: أن نراسلك مرة واحدة عند افتتاح Own Hub، ثم
-          نحذفه.</li>
+          <li>نستخدم ذلك لغرض واحد: أن نراسلك مرة واحدة. فإن كنتِ من أول 100
+          ينضممن، تدعوكِ الرسالة إلى تجربة Own Hub قبل افتتاحه للجميع، وإلا
+          فتخبركِ بيوم افتتاحه. ثم نحذفه.</li>
           <li>وإن لم يحدث ذلك، يُحذف تلقائيًا بعد 180 يومًا من انضمامك.</li>
           <li>ولكي نثبت موافقتك، نحتفظ لمدة ثلاث سنوات من تاريخ آخر رسالة نرسلها
           إليك برمز مشتق بمفتاح سري من وسيلة التواصل، وبإصدار الصياغة التي
@@ -1418,15 +1327,17 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     pages["waitlist"] = {
         "title": "قائمة الانتظار · Own Hub",
         "description": (
-            "اتركي رقم هاتفك المحمول المصري أو بريدك الإلكتروني، وسنراسلك مرة "
-            "واحدة عند افتتاح Own Hub."
+            "اتركي رقم هاتفك المحمول المصري أو بريدك الإلكتروني. أول 100 امرأة "
+            "يجرّبن Own Hub قبل افتتاحه للجميع."
         ),
         "body": """
     <div class="wrap">
       <div class="prose">
         <h1>انضمّي إلى قائمة الانتظار</h1>
         <p class="lede">لم يُفتح Own Hub بعد. اتركي رقم هاتفك المحمول المصري أو
-        بريدك الإلكتروني، وسنراسلك مرة واحدة عند افتتاحه.</p>
+        بريدك الإلكتروني. أول 100 امرأة في القائمة يجرّبنه قبل افتتاحه للجميع،
+        ويحصلن على أول شهر من Pro مجانًا عند إطلاقه. والباقيات نراسلهن مرة
+        واحدة، يوم افتتاحه.</p>
 """ + FORM + """
         <p>هذا كل ما نطلبه. فقائمة الانتظار ليست حسابًا، وما نحتفظ به ومدة
         الاحتفاظ به مبيَّنان في <a href="/ar/privacy#c-waitlist">سياسة
@@ -1443,8 +1354,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <div class="wrap">
       <div class="prose">
         <h1>أنتِ على القائمة</h1>
-        <p class="lede">شكرًا لكِ. سنراسلك مرة واحدة عند افتتاح Own Hub، ثم
-        نحذف بيانات التواصل الخاصة بك.</p>
+        <p class="lede">شكرًا لكِ. سنراسلك مرة واحدة: بدعوة مبكرة إن كنتِ من
+        أول 100، أو يوم افتتاح Own Hub. ثم نحذف بيانات التواصل الخاصة بك.</p>
         <p>وإن كنتِ قد انضممتِ من قبل بالرقم أو البريد نفسه، فأنتِ على القائمة
         مرة واحدة فقط.</p>
         <div class="btn-row"><a class="btn ghost" href="/ar/">العودة إلى الصفحة الأولى</a></div>
@@ -1498,7 +1409,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       </div>
       <ul class="doorways">
         <li><a href="/ar/"><span class="t">الصفحة الأولى</span><span class="d">ما هو Own Hub.</span></a></li>
-        <li><a href="/ar/waitlist"><span class="t">قائمة الانتظار</span><span class="d">لتعرفي مرة واحدة حين يُفتح Own Hub.</span></a></li>
+        <li><a href="/ar/waitlist"><span class="t">قائمة الانتظار</span><span class="d">أول 100 امرأة يجرّبن Own Hub قبل افتتاحه.</span></a></li>
         <li><a href="/ar/privacy"><span class="t">سياسة الخصوصية</span><span class="d">ما يجمعه التطبيق، وأين يُحفظ.</span></a></li>
         <li><a href="/ar/terms"><span class="t">شروط الاستخدام</span><span class="d">ما هو Own Hub، وما ليس هو.</span></a></li>
         <li><a href="/ar/support"><span class="t">الدعم</span><span class="d">كيف تصلين إلى إنسان.</span></a></li>

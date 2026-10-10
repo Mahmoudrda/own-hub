@@ -102,7 +102,7 @@ FORM = '''
           </p>
           <p class="check">
             <input id="consent" name="consent" type="checkbox" value="yes" required>
-            <label for="consent"><b>I agree.</b> We will message you once when Own Hub opens, then delete your contact.</label>
+            <label for="consent"><b>I agree.</b> We will message you once: an early invite if you are among the first 100, or the day Own Hub opens. Then we delete your contact.</label>
           </p>
           <div class="btn-row"><button class="btn" type="submit">Join the waitlist</button></div>
         </form>
@@ -124,30 +124,41 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     live = bool(cfg.store_url("storeUrlIos")) and bool(cfg.store_url("storeUrlAndroid"))
     hero_badges = store_badges(cfg, lang, where="hero")
     if live:
-        hero_note = ""
+        eyebrow = "A fitness app for women in Egypt"
+        hero_cta = hero_badges
         # Apple allows one App Store badge per layout: the hero carries it,
         # so this section links in words.
-        download_body = ("""
+        download_section = """
+    <section class="download" aria-labelledby="download">
+      <div class="wrap">
+        <div class="panel">
+          <div class="prose">
+""" + h2("download", "Get Own Hub", "no-rule") + """
         <p>Free on iPhone and Android. Open it and tap
         &ldquo;Show me around&rdquo; first, if you like.</p>
-        <p><a href=""" + '"' + cfg.store_url("storeUrlIos") + '" rel="noopener">Own Hub on the App Store</a>'
-        + ' &middot; <a href="' + cfg.store_url("storeUrlAndroid") + '" rel="noopener">Own Hub on Google Play</a></p>')
-    else:
-        hero_note = (
-            '\n        <p class="hero-note">Not in the stores yet. '
-            '<a href="#download">Join the waitlist</a> and we will message you '
-            "once, the day it opens.</p>"
-        )
-        download_body = """
-        <p>Own Hub is not in the App Store or on Google Play yet. Leave your
-        Egyptian mobile number or your email, and we will message you once,
-        the day it opens.</p>
-        """ + """
+        <p><a href=""" + '"' + cfg.store_url("storeUrlIos") + '" rel="noopener">Own Hub on the App Store</a>' + """ &middot; <a href=""" + '"' + cfg.store_url("storeUrlAndroid") + '" rel="noopener">Own Hub on Google Play</a></p>' + """
           </div>
-          <div class="form-card">""" + FORM + """
-        <p class="small">That is all we ask for. The waitlist is not an
-        account, and what we keep, and for how long, is set out in the
-        <a href="/privacy#c-waitlist">privacy policy</a>.</p>"""
+        </div>
+      </div>
+    </section>
+"""
+    else:
+        # Not in the stores yet: the page has one job, the waitlist, and it
+        # is the first thing on it. The badges below it say "Coming soon".
+        eyebrow = "Opening soon, for women in Egypt"
+        hero_cta = """
+          <div class="offer" id="download">
+            <p class="offer-t"><b>The first 100 women on the list</b> try Own
+            Hub before it opens to everyone, and get their first month of Pro
+            free when Pro arrives.</p>
+            <div class="form-card">""" + FORM + """
+            <p class="small">That is all we ask for. The waitlist is not an
+            account. What we keep, and for how long, is in the
+            <a href="/privacy#c-waitlist">privacy policy</a>.</p>
+            </div>
+          </div>
+          """ + hero_badges
+        download_section = ""
 
     # ------------------------------------------------------------ index ----
     pages["index"] = {
@@ -161,12 +172,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <section class="hero">
       <div class="wrap hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow">A fitness app for women in Egypt</p>
+          <p class="eyebrow">""" + eyebrow + """</p>
           <h1>Your training, your food, your cycle. <span class="hand">Women only.</span></h1>
-          <p class="lede">Quiet workouts for home, food you already cook, and a
-          space only verified women can enter. Free, in Arabic and English,
-          with nothing in it to buy.</p>
-          """ + hero_badges + hero_note + """
+          <p class="lede">Home workouts, food you already cook, and your cycle,
+          in one app only verified women can enter. In Arabic and English.</p>
+          """ + hero_cta + """
         </div>
         <div class="hero-art">
           <figure class="phone">""" + shot(lang, "02-home", "The Own Hub home screen: today's workout, this week's progress, and breakfast.", sizes="(min-width: 62rem) 300px, 240px", eager=True) + """</figure>
@@ -175,17 +185,35 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       </div>
     </section>
 
-    <section class="band" aria-labelledby="women-only">
+    <section class="band" aria-labelledby="inside">
+      <div class="wrap">
+        <div class="prose">
+""" + h2("inside", "What is inside it", "no-rule") + """
+          <p class="lede">Train, cook and follow your cycle, privately. In the
+          app, &ldquo;Show me around&rdquo; shows it all on a sample week
+          before you join, and saves nothing.</p>
+        </div>
+        <ul class="shots">
+          <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button for the set you just finished.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Tap a set when you finish it. The rest timer starts itself.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card of what you have done, to share if you want.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "08-tour-cycle", "My cycle in the tour: how are you feeling, with today, calendar and patterns.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>My cycle.</b> Private from the start, gentler on harder days.</figcaption></figure></li>
+        </ul>
+        <p class="small">What is not in this version: there is no community and no
+        coaching, so nothing in the app connects you to another member, and
+        there is no assistant.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="women-only">
       <div class="wrap split even">
         <div class="prose">
-""" + h2("women-only", "Women only, and why", "no-rule") + """
-          <p class="lede">Own Hub is a space made for women, and a promise like
-          that only means something if it is checked. So every member is checked
-          once, at the door, and then the check stays out of her way.</p>
-          <p>Own Hub was founded by {{brandFounder}}, a woman in Egypt building
-          for women in Egypt. There is no biography to read here and nothing to
-          take on trust: the pages below set out exactly what the app keeps,
-          where it keeps it, and for how long.</p>
+""" + h2("women-only", "Women only, checked once", "no-rule") + """
+          <p class="lede">A space for women only means something only if it is
+          checked. So every member is checked once, at the door, and then the
+          check stays out of her way.</p>
+          <p>Your cycle, measurements and weight stay on your phone unless you
+          choose to back them up. The <a href="/privacy">privacy policy</a>
+          says exactly what the app keeps, where, and for how long.</p>
         </div>
           <ol class="steps card">
             <li>You join with your Egyptian mobile number and a code sent by SMS.</li>
@@ -197,134 +225,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           </ol>
       </div>
     </section>
-
-    <section aria-labelledby="tour">
-      <div class="wrap split">
-        <figure class="phone">""" + shot(lang, "07-tour-dinners", "The tour in the app: a sample week of dinners, marked Sample, nothing is saved.", sizes="(min-width: 62rem) 300px, 240px") + """</figure>
-        <div class="prose">
-""" + h2("tour", "Look around before you join", "no-rule") + """
-          <p class="lede">Before you join, tap &ldquo;Show me around&rdquo; in
-          the app to see it with a sample week: the workouts, a week of
-          dinners, your cycle. No account, and nothing is saved.</p>
-          <p>A small rose kitten points the way through the tour and your
-          first steps, then leaves you to it. Join only when you like what you
-          see.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="band" aria-labelledby="inside">
-      <div class="wrap">
-        <div class="prose">
-""" + h2("inside", "What is inside it", "no-rule") + """
-        </div>
-        <ul class="shots">
-          <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button to log the set you just did.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Tap a set to log it. The rest timer starts itself.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card of what you have done, to share if you want.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "08-tour-cycle", "My cycle in the tour: how are you feeling, with today, calendar and patterns.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>My cycle.</b> Private from the start, gentler on harder days.</figcaption></figure></li>
-        </ul>
-        <ul class="pillars">
-          <li>
-            <h3>Today</h3>
-            <p>Today&rsquo;s session is waiting when you open the app, with a walk
-            or a meal one tap away. What you log saves at once, and you have five
-            seconds to undo it. Nothing here stops you to ask whether you are
-            sure.</p>
-          </li>
-          <li>
-            <h3>Train</h3>
-            <p>A workout player that keeps your place: tap a set to log it, rest
-            timers that start themselves, a swap for any move that hurts or needs
-            equipment you do not own, and a way to log a whole session from memory
-            if you trained without your phone.</p>
-          </li>
-          <li>
-            <h3>Eat</h3>
-            <p>Log a meal by tapping one of your usual plates, or by typing a
-            sentence like &ldquo;ful and baladi bread&rdquo;. Egyptian food, under
-            the names you already use for it.</p>
-          </li>
-          <li>
-            <h3>My cycle</h3>
-            <p>Period and symptom tracking, private from the start. On a hard day
-            the app offers a gentler session instead of the one it planned. Your
-            cycle can be deleted on its own, without touching anything else.</p>
-          </li>
-          <li>
-            <h3>Progress</h3>
-            <p>Your week, your personal bests, the milestones you have passed, and
-            body measurements nobody else sees.</p>
-          </li>
-          <li>
-            <h3>Kept for you, and only you</h3>
-            <p>Once you are verified, your training and meals are kept with your
-            account in Frankfurt, and no other member can see them. Your cycle and
-            health information stays on your phone unless you back it up.
-            Profile, then <b>Your data</b>, deletes your account and everything in
-            it.</p>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <section aria-labelledby="privacy-promise">
-      <div class="wrap split promise">
-        <div class="prose">
-""" + h2("privacy-promise", "Your health stays with you", "no-rule") + """
-          <p class="lede">Your training and meals are kept with your account, so
-          a new phone does not mean starting again. Your cycle, check-ins,
-          measurements and weight stay on your phone unless you choose to back
-          them up.</p>
-          <p><a href="/privacy">Read the privacy policy</a>, which says exactly
-          what the app keeps, where, and for how long.</p>
-        </div>
-        <ul class="facts" aria-label="Own Hub at a glance">
-          <li><b>Women only</b><span>Checked once with your national ID and a live selfie, or, if the check cannot decide, by a woman from Own Hub who contacts you to arrange it. The photos are never stored.</span></li>
-          <li><b>Your health stays with you</b><span>Cycle, check-ins, measurements and weight stay on your phone unless you turn on backup yourself.</span></li>
-          <li><b>One permission</b><span>The camera, for the women-only check. No photo library, no microphone, no location, no access to Apple Health or Health Connect.</span></li>
-          <li><b>Free</b><span>No adverts, no purchases, no subscriptions. Nothing in it is for sale.</span></li>
-          <li><b>Arabic and English</b><span>The whole app in both, right to left included.</span></li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="band" aria-labelledby="will-not">
-      <div class="wrap split even">
-        <div class="prose">
-""" + h2("will-not", "What this app will not do", "no-rule") + """
-          <ul>
-            <li>No daily streaks. We count weeks, not days, because a real life is
-            not a straight line.</li>
-            <li>No calorie countdown following you around all day.</li>
-            <li>Nothing ranks women by body weight or by followers.</li>
-            <li>No adverts, no purchases, nothing sold.</li>
-          </ul>
-
-        </div>
-        <div class="aside">
-          <div class="callout quiet">
-            <p><b>What is not in this version.</b> There is no community and no
-            coaching: nothing in the app connects you to another member. There is
-            no assistant. To get a copy of your data, ask from Profile, then Your
-            data, and we send it to you.</p>
-          </div>
-
-          <p>The app is in Arabic and English, right to left included. You can
-          change the language from Profile, then Language, at any time.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="download" aria-labelledby="download">
-      <div class="wrap">
-        <div class="panel">
-          <div class="prose">
-""" + h2("download", "Get Own Hub", "no-rule") + download_body + """
-          </div>
-        </div>
-      </div>
-    </section>
-
+""" + download_section + """
     <section aria-labelledby="doors">
       <div class="wrap">
         <div class="prose">
@@ -678,8 +579,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         number or email address you gave, the language you chose, your
         agreement and the date you joined.</p>
         <ul>
-          <li>We use it for one thing: to message you once when Own Hub opens.
-          Then we delete it.</li>
+          <li>We use it for one thing: to message you once. If you are among
+          the first 100 to join, the message invites you to try Own Hub before
+          it opens to everyone; otherwise it tells you the day it opens. Then
+          we delete it.</li>
           <li>If that has not happened, it is deleted automatically 180 days
           after you joined.</li>
           <li>So that we can prove you agreed, we keep a keyed code made from
@@ -1525,15 +1428,17 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     pages["waitlist"] = {
         "title": "Join the waitlist · Own Hub",
         "description": (
-            "Leave your Egyptian mobile number or your email, and we will "
-            "message you once when Own Hub opens."
+            "Leave your Egyptian mobile number or your email. The first 100 "
+            "women try Own Hub before it opens to everyone."
         ),
         "body": """
     <div class="wrap">
       <div class="prose">
         <h1>Join the waitlist</h1>
         <p class="lede">Own Hub is not open yet. Leave your Egyptian mobile
-        number or your email address, and we will message you once when it
+        number or your email address. The first 100 women on the list try it
+        before it opens to everyone, and get their first month of Pro free
+        when Pro arrives. Everyone else hears from us once, the day it
         opens.</p>
 """ + FORM + """
         <p>That is all we ask for. The waitlist is not an account, and what we
@@ -1551,8 +1456,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <div class="wrap">
       <div class="prose">
         <h1>You are on the list</h1>
-        <p class="lede">Thank you. We will message you once, when Own Hub
-        opens, and then delete your contact.</p>
+        <p class="lede">Thank you. We will message you once: an early invite
+        if you are among the first 100, or the day Own Hub opens. Then we
+        delete your contact.</p>
         <p>If you had already joined with the same number or email, you are
         still on the list only once.</p>
         <div class="btn-row"><a class="btn ghost" href="/">Back to the home page</a></div>
@@ -1609,7 +1515,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       </div>
       <ul class="doorways">
         <li><a href="/"><span class="t">Home</span><span class="d">What Own Hub is.</span></a></li>
-        <li><a href="/waitlist"><span class="t">Join the waitlist</span><span class="d">Hear once when Own Hub opens.</span></a></li>
+        <li><a href="/waitlist"><span class="t">Join the waitlist</span><span class="d">The first 100 women try Own Hub before it opens.</span></a></li>
         <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, and where it is kept.</span></a></li>
         <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, and what it is not.</span></a></li>
         <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person.</span></a></li>

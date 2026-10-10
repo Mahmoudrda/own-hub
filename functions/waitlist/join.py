@@ -94,10 +94,14 @@ it to be kept 3 years from the last message sent. The one message goes out
 before her entry is deleted, so 180 days after she joined at the latest, and
 the proof is kept 3 years past that day. The privacy policy (section 3.10)
 says "3 years after the last message we send you"."""
-CONSENT_WORDING_VERSION = 1
-"""The waitlist consent sentence by number: "I agree. We will message you once
-when Own Hub opens, then delete your contact." Bump it whenever that sentence
-changes on either language's page."""
+CONSENT_WORDING_VERSION = 2
+"""The waitlist consent sentence by number. Bump it whenever that sentence
+changes on either language's page.
+
+  1  "I agree. We will message you once when Own Hub opens, then delete your
+     contact."
+  2  "I agree. We will message you once: an early invite if you are among the
+     first 100, or the day Own Hub opens. Then we delete your contact." """
 MAX_BODY_BYTES = 4096
 HONEYPOT_FIELD = "website"
 LANGS = ("en", "ar")
