@@ -87,7 +87,6 @@ from identity import (
     pipeline,
     providers,
     logs,
-    providers_selfhosted,
     reasons,
     review,
     store,
@@ -96,9 +95,13 @@ from identity import (
 
 firebase_admin.initialize_app()
 
+# 512 MiB for every function: they read and write Firestore and Auth, and the
+# waitlist already runs at 256. verify_identity alone asks for 1 GiB below,
+# for the face model. Memory is billed per second, so this halves the cost of
+# every other call.
 options.set_global_options(
     region=config.REGION,
-    memory=options.MemoryOption.GB_1,
+    memory=options.MemoryOption.MB_512,
     timeout_sec=config.TIMEOUT_SEC,
     max_instances=config.MAX_INSTANCES,
 )
@@ -289,6 +292,10 @@ def _response(decision: decisions.Decision) -> dict:
 
 def _deps() -> pipeline.Deps:
     """The live wiring. Self-hosted providers; the AWS slot is unfilled."""
+    # Imported here, not at the top: it loads OpenCV and numpy, which only the
+    # two verification calls use. Every other function starts without them.
+    from identity import providers_selfhosted
+
     # One FirestoreChallengeStore, not two. They are stateless and two instances
     # behave identically, but binding `put` and `take` off separate objects
     # reads as though the mint and the consume might touch different state,
@@ -509,7 +516,10 @@ def start_verification(request: https_fn.CallableRequest) -> dict:
     }
 
 
-@https_fn.on_call()
+@https_fn.on_call(
+    memory=options.MemoryOption.GB_1,
+    max_instances=config.VERIFY_MAX_INSTANCES,
+)
 def verify_identity(request: https_fn.CallableRequest) -> dict:
     """The whole of spec §2 steps 3 to 8, in one round trip.
 
@@ -1261,7 +1271,9 @@ def _waitlist_store():
 @https_fn.on_request(
     region=config.REGION,
     memory=options.MemoryOption.MB_256,
-    max_instances=3,
+    # One instance: an honest day is at most 5,000 joins (well under one a
+    # second), and a public endpoint's instance count is its flood ceiling.
+    max_instances=1,
 )
 def join_waitlist(request: https_fn.Request) -> https_fn.Response:
     """W1: the public site's waitlist form. No App Check, because it is the

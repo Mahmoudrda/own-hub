@@ -37,6 +37,11 @@ def _no_real_firestore(monkeypatch):
     monkeypatch.setattr(webhook, "_url_cache", None)
     monkeypatch.delenv("FLAG_WEBHOOK_URL", raising=False)
     monkeypatch.delenv("FUNCTIONS_EMULATOR", raising=False)
+    # The waitlist's in-memory list of addresses over their daily limit lives
+    # for the module's life; each test starts with it empty.
+    from waitlist import join
+
+    join.OVER_LIMIT.clear()
 
     # Bookings are refused in the past and beyond a 7-day horizon. Tests book
     # fixed dates (2026-10-05), so "now" for scheduling is pinned to the day

@@ -250,6 +250,44 @@ def test_another_ip_has_its_own_allowance():
     assert response.status == 200
 
 
+def test_past_the_cap_a_flood_from_one_ip_stops_reaching_firestore():
+    # Each counted attempt is a Firestore write and read. Once an address is
+    # over its allowance, this instance answers "later" without counting, so a
+    # flood stops costing anything while the answer stays exactly the same.
+    store = FakeStore()
+    for n in range(join.DAILY_LIMIT_PER_IP + 1):
+        handle(req({"contact": f"0101234567{n % 10}"}), store)
+    counted = sum(store.attempts.values())
+    for _ in range(500):
+        response, _ = handle(req({"contact": "01099999999"}), store)
+        assert response.status == 429 and body(response) == {"ok": False, "error": "later"}
+    assert sum(store.attempts.values()) == counted
+    # Another address still has its own allowance, and is counted.
+    response, _ = handle(req({"contact": "01199999999"}, ip="41.33.1.1"), store)
+    assert response.status == 200
+    assert sum(store.attempts.values()) == counted + 1
+
+
+def test_the_memory_of_an_ip_over_its_cap_ends_with_the_day():
+    store = FakeStore()
+    for n in range(join.DAILY_LIMIT_PER_IP + 1):
+        handle(req({"contact": f"0101234567{n % 10}"}), store)
+    tomorrow = NOW + dt.timedelta(days=1)
+    response = join.handle(
+        req({"contact": "01099999999"}), store, lambda: KEY, tomorrow
+    )
+    assert response.status == 200
+
+
+def test_the_memory_is_bounded():
+    memo = join.OverLimitIps()
+    for n in range(join.OverLimitIps.MAX_ENTRIES + 5):
+        memo.add(f"ip{n}", "2026-10-04")
+    assert len(memo._ips) <= join.OverLimitIps.MAX_ENTRIES
+    assert memo.has(f"ip{join.OverLimitIps.MAX_ENTRIES + 4}", "2026-10-04")
+    assert not memo.has(f"ip{join.OverLimitIps.MAX_ENTRIES + 4}", "2026-10-05")
+
+
 def test_the_cap_is_fifty_a_day():
     # C3: Egyptian mobile carriers put many women behind one public address.
     assert join.DAILY_LIMIT_PER_IP == 50
