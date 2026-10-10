@@ -13,7 +13,7 @@ Does the app collect or share any of the required user data types?  Yes
 Is all user data encrypted in transit?                              Yes
 Do you provide a way for users to request that their data is deleted?  Yes
   In the app: Profile > Your data > Delete everything.
-  On the web: {baseUrl}/delete-account/ (LegalLinks.deleteAccount).
+  On the web: https://own-hub.app/delete-account (LegalLinks.deleteAccount).
 Is data shared with third parties?                                  No
   Google Cloud and Firebase, the SMS route and the chat service for review
   alerts act as service providers processing on our behalf, which Play does
@@ -147,4 +147,4 @@ The +20 Firebase test number with its fixed code, and the reviewer allow-list
 
 Privacy policy URL
 ------------------
-{baseUrl}/privacy/
+https://own-hub.app/privacy
