@@ -217,7 +217,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </div>
         <ul class="shots">
           <li><figure>""" + shot(lang, "03-workout", "مشغّل التمارين: حركة واحدة، وثلاث مجموعات، وزر لتسجيل المجموعة التي أنهيتِها.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التمرين.</b> المسي المجموعة لتسجيلها، ومؤقّت الراحة يبدأ من تلقاء نفسه.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "06-progress", "شاشة التقدّم: الأسابيع المحسوبة، والإنجازات، وأفضل الأرقام، وقياسات الجسم الخاصة.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التقدّم.</b> نحسب الأسابيع، لا الأيام.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "06-progress", "بطاقة تقدّمها: التمارين المُنجزة والوجبات المضافة وأفضل الأرقام، جاهزة للمشاركة. لا يظهر وزنها عليها إلا إذا أضافته.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التقدّم.</b> بطاقة واحدة بما أنجزتِه، لتشاركيها إن أردتِ.</figcaption></figure></li>
           <li><figure>""" + shot(lang, "08-tour-cycle", "«دورتي» في الجولة: كيف تشعرين، مع اليوم والتقويم والأنماط.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>دورتي.</b> خاصة من البداية، وأهدأ في الأيام الأصعب.</figcaption></figure></li>
         </ul>
         <ul class="pillars">

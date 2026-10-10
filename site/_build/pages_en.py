@@ -220,7 +220,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </div>
         <ul class="shots">
           <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button to log the set you just did.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Tap a set to log it. The rest timer starts itself.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "06-progress", "The progress screen: counted weeks, milestones, bests and private body measurements.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> Weeks counted, not days.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card of what you have done, to share if you want.</figcaption></figure></li>
           <li><figure>""" + shot(lang, "08-tour-cycle", "My cycle in the tour: how are you feeling, with today, calendar and patterns.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>My cycle.</b> Private from the start, gentler on harder days.</figcaption></figure></li>
         </ul>
         <ul class="pillars">

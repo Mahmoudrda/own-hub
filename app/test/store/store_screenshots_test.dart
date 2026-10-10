@@ -7,7 +7,7 @@
 //   apple-6.9  1320x2868 (the 6.9" size)
 //
 // Welcome, Home with a week in progress, a workout mid-set, Eat, a recipe from
-// Rahma's book, progress, and two stops of the pre-signup tour (a week of
+// Rahma's book, her progress card, and two stops of the pre-signup tour (a week of
 // dinners, and My cycle). Every PNG is opaque RGB with no alpha channel, as
 // App Store Connect requires; the encoder is below, so no tool is needed.
 //
@@ -354,23 +354,27 @@ Future<void> _render(
       await _shootBoth(tester, set, '03-workout');
 
       // ...and finished, so the week has a session in it.
-      var guard = 0;
-      while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
-        final all = find.textContaining('I did').hitTestable();
-        if (all.evaluate().isEmpty) break;
-        await tester.tap(all.first);
-        await _settle(tester);
-        final next = find.textContaining('Next move').hitTestable();
-        if (next.evaluate().isEmpty) break;
-        await tester.tap(next.first);
-        await _settle(tester);
+      Future<void> finishTheWorkout() async {
+        var guard = 0;
+        while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
+          final all = find.textContaining('I did').hitTestable();
+          if (all.evaluate().isEmpty) break;
+          await tester.tap(all.first);
+          await _settle(tester);
+          final next = find.textContaining('Next move').hitTestable();
+          if (next.evaluate().isEmpty) break;
+          await tester.tap(next.first);
+          await _settle(tester);
+        }
+        final finish = find.text(l10n.finishHere).hitTestable();
+        if (finish.evaluate().isNotEmpty) {
+          await tester.tap(finish.first);
+          await _settle(tester);
+        }
+        await _home(tester);
       }
-      final finish = find.text(l10n.finishHere).hitTestable();
-      if (finish.evaluate().isNotEmpty) {
-        await tester.tap(finish.first);
-        await _settle(tester);
-      }
-      await _home(tester);
+
+      await finishTheWorkout();
 
       // Two breakfasts logged by typing them, as she would.
       for (final food in const ['ful', 'boiled eggs']) {
@@ -403,15 +407,29 @@ Future<void> _render(
       await _settle(tester);
       await _shootBoth(tester, set, '04-eat');
 
-      // 5. One of her recipes.
-      EatAppState.instance.openRecipeId =
-          EatAppState.instance.recipeBook.recipes.first.recipeId;
+      // 5. One of her recipes: a savoury one everyone knows, not the first
+      // page of her sweet section.
+      final recipes = EatAppState.instance.recipeBook.recipes;
+      EatAppState.instance.openRecipeId = recipes
+          .firstWhere(
+            (r) => r.recipeId == 'rahma_shakshoka',
+            orElse: () => recipes.first,
+          )
+          .recipeId;
       await _open(tester, 'E06');
       await _shootBoth(tester, set, '05-recipe');
       await _home(tester);
 
-      // 6. Progress, which is private to her phone.
-      await _open(tester, 'P01');
+      // 6. Her progress card, after the rest of her week's sessions, so it
+      // shows what she did rather than a page of zeros. Her weight is not on
+      // it: that is off until she turns it on.
+      for (var i = 0; i < 2; i++) {
+        await _open(tester, 'R03');
+        await _tapText(tester, l10n.startEverythingsReady);
+        await finishTheWorkout();
+      }
+      await _open(tester, 'P05');
+      expect(find.text(l10n.shareMyCard), findsOneWidget);
       await _shootBoth(tester, set, '06-progress');
       await _home(tester);
 
