@@ -858,6 +858,14 @@ class AppRouter {
     try {
       await () async {
         await readVerificationClaim();
+        // A token that carries the claim decides the gate on its own
+        // ([gateDestination] lets a verified woman through whatever the
+        // status says), so for her the status read waits for after the first
+        // frame: one round trip less on every launch of a verified member.
+        if (_verifiedClaim) {
+          unawaited(readVerificationStatus());
+          return;
+        }
         await readVerificationStatus();
       }().timeout(bound);
     } catch (_) {
@@ -1676,7 +1684,7 @@ class AppRouter {
         goTo(context, 'C09b');
       },
       onDeleteMyData: () => goTo(context, 'A02'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
       // R4: a flag the automatic check raised is not her asking for a call.
       reviewAsked: reviewAsked,
       requester: identityCheck.reviews,
@@ -1935,7 +1943,7 @@ class AppRouter {
       // Home did nothing at all — on the first screen she sees after sign-up.
       // app_nav_bar_test.dart could not catch it: it builds the bar directly
       // and supplies its own onSelect.
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'T02': (context) => AlreadyDidItView(
       repository: todayRepository,
@@ -1971,7 +1979,7 @@ class AppRouter {
       },
       onStartSession: () => goTo(context, 'R03'),
       onOpenMeal: () => goTo(context, 'E01'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'T03': (context) => LockScreenNudgeView(
       repository: todayRepository,
@@ -1988,14 +1996,14 @@ class AppRouter {
       onStartShortSession: () => goTo(context, 'R03'),
       onOpenMeal: () => goTo(context, 'E01'),
       onOpenWeek: () => goTo(context, 'P01'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'T05': (context) => TierSlipView(
       repository: todayRepository,
       onStartShortSession: () => goTo(context, 'R03'),
       onStartSession: () => goTo(context, 'R03'),
       onRecall: () => goTo(context, 'T02'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'T07': (context) => FirstWeekView(
       repository: todayRepository,
@@ -2061,7 +2069,7 @@ class AppRouter {
       // The first "Short ones that still count" tile, as the design has it.
       onFollowAlong: () => goTo(context, 'R06'),
       onShortSession: () => goTo(context, 'R03'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'R02': (context) => ProgramView(
       onBack: () => Navigator.of(context).maybePop(),
@@ -2121,7 +2129,7 @@ class AppRouter {
         WorkoutSessionState.instance.swapCurrent(alternative, trainRepository);
         goTo(context, 'R07');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'R06': (context) => FollowAlongView(
       onPause: () => Navigator.of(context).maybePop(),
@@ -2288,7 +2296,7 @@ class AppRouter {
         library.chosenRowId = null;
         goTo(context, 'R03');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // Eat. E09 is a BRANCH of E01, not a destination: `firstRunStates` keeps it
     // out of `appDestinations` and `routing_test.dart` pins that, so "Eat,
@@ -2315,7 +2323,7 @@ class AppRouter {
       onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
       onBlocked: (refused) =>
           EatAppState.instance.explainRefusal(context, refused),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'E02': (context) => TypeItView(
       constraints: eatConstraints,
@@ -2351,7 +2359,7 @@ class AppRouter {
       onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
       onBlocked: (refused) =>
           EatAppState.instance.explainRefusal(context, refused),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'E05': (context) => RecipesView(
       // Kicked off here rather than in `main()`: a build that never opens Eat
@@ -2371,7 +2379,7 @@ class AppRouter {
         goTo(context, 'E06');
       },
       onOpenWeekPlan: () => goTo(context, 'E07'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
       // Pick mode, opened from a day on E07: the recipe she taps goes on that
       // day, and she is back on the week.
       pickLabel: switch (_pickDayOf(context)) {
@@ -2471,7 +2479,7 @@ class AppRouter {
         context,
         AppL10n.of(context).sharingIsNotConnectedInThisBuild,
       ),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
 
     'R12': (context) => LoggedFromMemoryView(
@@ -2527,7 +2535,7 @@ class AppRouter {
       onOpenFirstWeek: () => goTo(context, 'T07'),
       onOpenRestWeek: () => goTo(context, 'T04'),
       onOpenTierSlip: () => goTo(context, 'T05'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // Her progress card: what she did, on one card she can share. Read from
     // her own stores on this phone; her weigh-ins only through
@@ -2550,7 +2558,7 @@ class AppRouter {
       onShare: shareProgressCard,
       onShared: () => unawaited(analytics.track(AnalyticsEvent.progressShared)),
       onBack: () => Navigator.of(context).maybePop(),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'P02': (context) => MilestonesView(
       summary: MilestonesSummary.from(
@@ -2569,17 +2577,17 @@ class AppRouter {
         counts: const MilestoneCounts(),
       ),
       onBack: () => Navigator.of(context).maybePop(),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'P03': (context) => PersonalBestsView(
       bests: progressStore.bests.values.toList(),
       onBack: () => Navigator.of(context).maybePop(),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'P04': (context) => BodyPrivatelyView(
       repository: measurementsRepository,
       onBack: () => Navigator.of(context).maybePop(),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
 
     // ----------------------------------------------------- Account (G7)
@@ -2591,7 +2599,7 @@ class AppRouter {
       // where the notification and privacy rows both live, so nothing becomes
       // less reachable: privacy is still two taps from Home.
       onOpenSettings: () => goTo(context, 'A02'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
       remindersOn: ReminderState.instance.schedule != null,
       onOpenReminders: featureFlags.isOn(Feature.train)
           ? () => unawaited(openTrainingReminders(context))
@@ -2651,7 +2659,7 @@ class AppRouter {
           : () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => const AllScreensView()),
             ),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'A03': (context) => PrivacyView(
       service: privacyService,
@@ -2662,7 +2670,7 @@ class AppRouter {
       // In her language: the Arabic pages live under /ar/.
       onOpenPrivacyPolicy: openPrivacyFor(context),
       onOpenTerms: openTermsFor(context),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
       healthBackup: healthBackupController(),
       onSignInAgain: () => unawaited(signInAgain(context)),
       // Crash reports by consent (M3), off unless she allowed them.
@@ -2702,7 +2710,7 @@ class AppRouter {
               .map((p) => p.authorCard.name)
               .firstOrNull ??
           '',
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
 
     // ------------------------------------------- Admin console (D12, G16)
@@ -2746,7 +2754,7 @@ class AppRouter {
       onOpenDashboard: () => goTo(context, 'Z15'),
       onOpenLogs: () => goTo(context, 'Z16'),
       onOpenEvents: () => goTo(context, 'Z17'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'Z02': (context) => CollectionView(
       collection: ContentCollection.exercises,
@@ -2766,7 +2774,7 @@ class AppRouter {
         adminEditingRow = adminRowValues(ContentCollection.exercises, id);
         goTo(context, 'Z03');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'Z03': (context) => ContentFormView(
       collection: ContentCollection.exercises,
@@ -2797,7 +2805,7 @@ class AppRouter {
         adminEditingRow = adminRowValues(ContentCollection.foods, id);
         goTo(context, 'Z05');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'Z05': (context) => ContentFormView(
       collection: ContentCollection.foods,
@@ -2828,7 +2836,7 @@ class AppRouter {
         adminEditingRow = adminRowValues(ContentCollection.recipes, id);
         goTo(context, 'Z12');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'Z07': (context) => CollectionView(
       collection: ContentCollection.programmes,
@@ -2845,7 +2853,7 @@ class AppRouter {
         adminEditingRow = adminRowValues(ContentCollection.programmes, id);
         goTo(context, 'Z13');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'Z08': (context) => BulkImportView(
       collection: adminImportCollection,
@@ -2900,7 +2908,7 @@ class AppRouter {
         if (result is MediaPicked) adminMediaBundle = result.bundle;
       },
       onBack: () => Navigator.of(context).maybePop(),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // Export, as far as this build goes. There is nothing in `pubspec.yaml`
     // that writes a file, so the bundle is handed over on the clipboard and
@@ -3077,7 +3085,7 @@ class AppRouter {
       // The hub renders nothing but an invitation until she has set up, so the
       // one action it offers has to go somewhere.
       onSetUp: () => goTo(context, 'Y01'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
       // One literal `goTo` per arm, deliberately.
       //
       // `nav_reachability_test` recovers the graph with a regex that expects
@@ -3148,7 +3156,7 @@ class AppRouter {
     ),
     'Y07': (context) => CycleMealsView(
       onBack: () => Navigator.of(context).maybePop(),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'Y08': (context) => CycleCalendarView(
       cycle: cycleRepository.current,
@@ -3164,7 +3172,7 @@ class AppRouter {
       onSettings: () => goTo(context, 'Y12'),
       onLogPeriod: () => goTo(context, 'Y09'),
       onAboutPhases: () => goTo(context, 'Y13'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
       // One literal `goTo` per arm, deliberately.
       //
       // `nav_reachability_test` recovers the graph with a regex that expects
@@ -3201,7 +3209,7 @@ class AppRouter {
           cycleRepository.current?.adaptation.easierWhenLowEnergy ?? false,
       onBack: () => Navigator.of(context).maybePop(),
       onSettings: () => goTo(context, 'Y12'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
       // One literal `goTo` per arm, deliberately.
       //
       // `nav_reachability_test` recovers the graph with a regex that expects
@@ -3229,7 +3237,7 @@ class AppRouter {
       onChangeMode: () => goTo(context, 'Y01'),
       // Deleting her cycle data returns her to Home, not to an empty hub.
       onDeleted: () => goTo(context, 'T01'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'Y13': (context) =>
         CyclePhasesView(onClose: () => Navigator.of(context).maybePop()),
@@ -3302,7 +3310,7 @@ class AppRouter {
         CommunityState.instance.safetyPostId = postId;
         goTo(context, 'M08');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'M02': (context) => PostView(
       model: communityPostModel,
@@ -3349,7 +3357,7 @@ class AppRouter {
       onOpenPersonalBest: () => goTo(context, 'M16'),
       onOpenVoiceNote: () => goTo(context, 'M16'),
       onOpenFollowUp: () => goTo(context, 'M11'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'M04': (context) => GroupsView(
       model: communityGroupsModel(AppL10n.of(context)),
@@ -3362,7 +3370,7 @@ class AppRouter {
         communityOpenGroupId = groupId;
         goTo(context, 'M05');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'M05': (context) => GroupView(
       model: communityGroupModel(AppL10n.of(context)),
@@ -3408,7 +3416,7 @@ class AppRouter {
         CommunityState.instance.safetyPostId = null;
         goTo(context, 'M08');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'M06': (context) => GroupGoalView(
       model: communityGoalModel,
@@ -3457,7 +3465,7 @@ class AppRouter {
         CommunityState.instance.safetyPostId = null;
         goTo(context, 'M08');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // Two taps to safety, from a post, a profile or a group.
     //
@@ -3524,7 +3532,7 @@ class AppRouter {
         communityOpenPostId = postId;
         goTo(context, 'M02');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'M11': (context) => FollowUpComposerView(
       model: communityFollowUpComposerModel,
@@ -3575,7 +3583,7 @@ class AppRouter {
         communitySafetyInGroup = false;
         goTo(context, 'M08');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'M14': (context) => ActivityView(
       model: communityActivityModel,
@@ -3591,7 +3599,7 @@ class AppRouter {
         CommunityState.instance.followUpCaption = '';
         goTo(context, 'M11');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'M15': (context) => SavedView(
       model: communitySavedModel,
@@ -3605,7 +3613,7 @@ class AppRouter {
         communityOpenPostId = postId;
         goTo(context, 'M02');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
 
     // ------------------------------------------ The coach's app (G12, K)
@@ -3779,7 +3787,7 @@ class AppRouter {
             goTo(context, 'W09');
         }
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // Her real enquiry, read back from the repository the marketplace mirrored
     // it onto — her words, her situation, her status. The fabricated empty one
@@ -3829,7 +3837,7 @@ class AppRouter {
         flags: featureFlags,
       ),
       onOpenPayoutMethod: () => goTo(context, 'K05'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'K25': (context) => CoachFirstWeekView(
       firstWeek: coachRepository.deskUnbilled.firstWeek,
@@ -3950,7 +3958,7 @@ class AppRouter {
       onTrainOnYourOwn: () => goTo(context, 'R01'),
       onMyCycle: () => goTo(context, 'Y03'),
       onExampleDay: () => goTo(context, 'G04'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // Her plan, in her coach's own words. Every string below is null until
     // something was published for her, and null renders nothing rather than
@@ -3986,7 +3994,7 @@ class AppRouter {
         onLogMeal: () => goTo(context, 'G10'),
         onOpenReview: () => goTo(context, 'G12'),
         onOpenPlanChange: () => goTo(context, 'G13'),
-        onSelectTab: (screenId) => goTo(context, screenId),
+        onSelectTab: (screenId) => goToTab(context, screenId),
       );
     },
     // The month, counted from the plan and ticked from her logs — never the
@@ -4011,7 +4019,7 @@ class AppRouter {
         }
         goTo(context, 'G16');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // The session her coach wrote. **No set lines**: a move must come from the
     // bundled exercise pack, there is no pack in this build, and the planner
@@ -4095,7 +4103,7 @@ class AppRouter {
               goTo(context, 'G04');
             },
       onEdit: () => goTo(context, 'G10'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // Her week, from her own logs, answered in her own words. What she sends
     // is what W09 shows her coach.
@@ -4182,7 +4190,7 @@ class AppRouter {
       // moves, on a renewal exactly as on a first hire. This pointed at H03,
       // which was the old "straight to packages" path.
       onWorkAgain: () => goTo(context, 'H04'),
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // -------------------------------------------- The marketplace (G11, H)
     //
@@ -4448,7 +4456,7 @@ class AppRouter {
         goTo(context, 'K21');
       },
       onOpenPortfolio: () => goTo(context, 'B01'),
-      onTab: (screenId) => goTo(context, screenId),
+      onTab: (screenId) => goToTab(context, screenId),
     ),
     'W02': (context) => ClientOverviewView(
       client: coachPlanClient,
@@ -4473,7 +4481,7 @@ class AppRouter {
       onOpenPlan: () => goTo(context, 'W03'),
       onOpenMeals: () => goTo(context, 'W06'),
       onOpenReview: () => goTo(context, 'W09'),
-      onTab: (screenId) => goTo(context, screenId),
+      onTab: (screenId) => goToTab(context, screenId),
     ),
     // Day one first: a month belongs to one woman, and a coach with nobody on
     // her roster has no month to write. The planner says so and points at
@@ -4694,7 +4702,7 @@ class AppRouter {
         coachPlanOpenClient = client;
         goTo(context, 'K16');
       },
-      onTab: (screenId) => goTo(context, screenId),
+      onTab: (screenId) => goToTab(context, screenId),
     ),
     'K19': (context) => SplitsView(
       splits: coachPlanSplits,
@@ -4707,7 +4715,7 @@ class AppRouter {
         goTo(context, 'K20');
       },
       onBack: () => goTo(context, 'W01'),
-      onTab: (screenId) => goTo(context, screenId),
+      onTab: (screenId) => goToTab(context, screenId),
     ),
     'K20': (context) => SplitBuilderView(
       split: coachPlanSplit,
@@ -5050,7 +5058,7 @@ class AppRouter {
         CommunityState.instance.safetyPostId = postId;
         goTo(context, 'M08');
       },
-      onSelectTab: (screenId) => goTo(context, screenId),
+      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'M13': (context) => StoryViewerView(
       model: communityStoryModel,
@@ -7436,6 +7444,28 @@ class AppRouter {
     final route = appDestinations[screenId];
     if (route == null) return;
     Navigator.of(context).pushNamed(route.name);
+  }
+
+  /// A tap on the bottom bar. A tab is a place, not a step: it opens on the
+  /// screen at the bottom of the stack (Home, once she is in), with whatever
+  /// was stacked between them closed. Pushed like [goTo], tabs piled up, so a
+  /// session of tab taps kept every screen she had passed alive, and the back
+  /// button walked her back through her own tab history. Tapping Home itself
+  /// opens a fresh Home alone.
+  ///
+  /// The bar never offers the tab she is on, and no screen of a workout in
+  /// progress has a bar, so nothing she is in the middle of is closed.
+  static void goToTab(BuildContext context, String screenId) {
+    if (DemoScope.maybeOf(context) case final demo?) {
+      demo.requestJoin(context);
+      return;
+    }
+    final route = appDestinations[screenId];
+    if (route == null) return;
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      route.name,
+      (below) => below.isFirst && below.settings.name != route.name,
+    );
   }
 
   // My cycle's three tabs are mapped INLINE at each call site above, not in a

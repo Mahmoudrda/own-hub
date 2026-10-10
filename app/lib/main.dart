@@ -279,8 +279,10 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // Her training reminders, set again in the language the app opens in and
     // again whenever she changes it, so a reminder never arrives in the
-    // language she left. Nothing happens when she has none.
-    _reapplyReminders();
+    // language she left. Nothing happens when she has none. After the first
+    // frame: setting them up first reads the whole time-zone database, which
+    // the first frame has no use for.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reapplyReminders());
     _locale.addListener(_reapplyReminders);
     // The widgets speak the language she chose here, not the phone's.
     _relabelWidgets();
