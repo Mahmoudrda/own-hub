@@ -13,6 +13,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/app_state/reminder_scheduler.dart';
 import 'package:own_hub/domain/analytics/analytics_gateway.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/signup/domain/id_capture.dart';
@@ -354,6 +355,142 @@ void main() {
       expect(finish, contains('.then((_) => _trackWorkoutFinished('));
       expect(finish, contains('AnalyticsEvent.sessionFinished'));
       expect(finish, contains('AnalyticsEvent.weekCounted'));
+    });
+  });
+
+  group('the five launch actions', () {
+    final en = lookupAppL10n(const Locale('en'));
+
+    testWidgets('a set logged on R07 is set_log from a single set', (
+      tester,
+    ) async {
+      await _open(tester, 'R07');
+      recording.sent.clear();
+      // The set's own button, found by the line under it: its label is the
+      // set's numbers, which change with the plan.
+      await tester.tap(find.text(en.restStartsItself));
+      await tester.pumpAndSettle();
+      expect(recording.names, contains('setLogged'));
+      expect(recording.last('setLogged'), {'source': 'set'});
+    });
+
+    test('a whole move, and a corrected set, are set_log too', () {
+      final r07 = _builderBlock('R07');
+      final move = r07.indexOf('onMoveLogged: (handle) {');
+      expect(move, greaterThan(-1));
+      expect(r07.indexOf("_trackSetLogged('move')"), greaterThan(move));
+      final set = r07.indexOf('onSetLogged: (handle) {');
+      expect(r07.indexOf("_trackSetLogged('set')"), greaterThan(set));
+      final r08 = _builderBlock('R08');
+      expect(r08, contains("_trackSetLogged('set')"));
+    });
+
+    test('finishing early is counted only with moves left, before the '
+        'finish', () {
+      final r13 = _builderBlock('R13');
+      final here = r13.indexOf('onFinishHere: () {');
+      final early = r13.indexOf('AnalyticsEvent.workoutEndedEarly');
+      final finish = r13.indexOf('_finishWorkout();', here);
+      expect(here, greaterThan(-1));
+      expect(early, greaterThan(here));
+      expect(finish, greaterThan(early));
+      expect(
+        r13.substring(here, early),
+        contains('if (!WorkoutSessionState.instance.isComplete)'),
+      );
+    });
+
+    test('C07 counts a code sent again, and a resend refused', () {
+      final block = _builderBlock('C07');
+      final resent = block.indexOf('onResent: () {');
+      final refused = block.indexOf('onResendRefused: () {');
+      expect(resent, greaterThan(-1));
+      expect(refused, greaterThan(resent));
+      final sentPart = block.substring(resent, refused);
+      expect(sentPart, contains('AnalyticsEvent.codeResent'));
+      expect(sentPart, contains("AnalyticsValue.token('sent')"));
+      expect(
+        block.substring(refused),
+        contains("AnalyticsValue.token('limit')"),
+      );
+    });
+
+    test('reminders say on, off, denied or unavailable, never when', () {
+      expect(AppRouter.remindersOutcomeToken(ReminderPermission.granted), 'on');
+      expect(
+        AppRouter.remindersOutcomeToken(ReminderPermission.denied),
+        'denied',
+      );
+      expect(
+        AppRouter.remindersOutcomeToken(ReminderPermission.unavailable),
+        'unavailable',
+      );
+      for (final word in ['on', 'off', 'denied', 'unavailable']) {
+        expect(
+          AnalyticsVocabulary.allows(
+            AnalyticsProp.outcome,
+            AnalyticsValue.token(word),
+          ),
+          isTrue,
+          reason: word,
+        );
+      }
+      final src = File('lib/routing/app_router.dart').readAsStringSync();
+      final sheet = src.substring(
+        src.indexOf('static Future<void> openTrainingReminders('),
+        src.indexOf('onTurnOff: () async {') + 200,
+      );
+      expect(sheet, contains('_trackReminders(remindersOutcomeToken('));
+      expect(sheet, contains("_trackReminders('unavailable')"));
+      // "On" only after the reminders were actually scheduled.
+      expect(
+        sheet.indexOf("_trackReminders('on')"),
+        greaterThan(sheet.indexOf('state.schedule = reminders;')),
+      );
+      expect(sheet, contains("_trackReminders('off')"));
+    });
+
+    test('asking for a copy of her data is counted at the tap', () {
+      final src = File('lib/routing/app_router.dart').readAsStringSync();
+      final copy = src.substring(
+        src.indexOf('static VoidCallback? askForACopyFor('),
+        src.indexOf('static String _mailQuery('),
+      );
+      final track = copy.indexOf('AnalyticsEvent.dataCopyRequested');
+      expect(track, greaterThan(-1));
+      expect(copy.indexOf('openExternalLink('), greaterThan(track));
+    });
+
+    test('thirty events fire for the launch, and each has a call site', () {
+      final src = [
+        for (final f in Directory('lib').listSync(recursive: true))
+          if (f is File &&
+              f.path.endsWith('.dart') &&
+              !f.path.endsWith('analytics_gateway.dart'))
+            f.readAsStringSync(),
+      ].join('\n');
+      // Shipped dark with their features: community, coaching, the
+      // assistant, tiers and rest weeks have no launch call site yet.
+      const dark = {
+        AnalyticsEvent.restWeekApplied,
+        AnalyticsEvent.tierChanged,
+        AnalyticsEvent.coachEnquirySent,
+        AnalyticsEvent.postPublished,
+        AnalyticsEvent.assistantAsked,
+        AnalyticsEvent.assistantRefused,
+      };
+      final live = [
+        for (final e in AnalyticsEvent.values)
+          if (!dark.contains(e)) e,
+      ];
+      expect(live, hasLength(30));
+      for (final e in live) {
+        expect(
+          src.contains('AnalyticsEvent.${e.name}'),
+          isTrue,
+          reason: '${e.name} has no call site',
+        );
+      }
     });
   });
 }

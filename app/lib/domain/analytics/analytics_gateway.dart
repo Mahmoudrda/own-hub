@@ -107,6 +107,24 @@ enum AnalyticsEvent {
   /// She opened the app after at least a week away.
   /// [AnalyticsProp.durationBucket] is the days away as a range.
   quietWeekReturn,
+
+  /// She tapped "Finish here" on `R13` with moves still left. Sent before
+  /// the `workout_complete` that every finished session sends, so the two
+  /// together say how many sessions ended early. Nothing about which moves.
+  workoutEndedEarly,
+
+  /// She saved her training reminders or turned them off.
+  /// [AnalyticsProp.outcome] is `on`, `off`, `denied` (the phone refused
+  /// notifications) or `unavailable` (scheduling failed). Never the times.
+  remindersChanged,
+
+  /// She asked `C07` to send the code again. [AnalyticsProp.outcome] is
+  /// `sent`, or `limit` when too many tries were refused. Never the number.
+  codeResent,
+
+  /// She asked for a copy of her data from the privacy centre. Counts the
+  /// tap that opens her mail app, never what she writes in it.
+  dataCopyRequested,
 }
 
 /// The name each event carries to Firebase.
@@ -148,6 +166,10 @@ const Map<AnalyticsEvent, String> analyticsEventWireNames = {
   AnalyticsEvent.languageChanged: 'language_change',
   AnalyticsEvent.kittenToggled: 'kitten_toggle',
   AnalyticsEvent.quietWeekReturn: 'quiet_week_return',
+  AnalyticsEvent.workoutEndedEarly: 'workout_end_early',
+  AnalyticsEvent.remindersChanged: 'reminders_set',
+  AnalyticsEvent.codeResent: 'sign_up_code_resend',
+  AnalyticsEvent.dataCopyRequested: 'data_copy_request',
 };
 
 /// The only property keys that exist.
@@ -224,9 +246,17 @@ abstract final class AnalyticsVocabulary {
       // a switch
       'on', 'off',
       'counted',
+      // reminders the phone would not allow
+      'denied',
+      // a code sent again
+      'sent',
     },
     AnalyticsProp.method: {'phone', 'automatic', 'reviewer'},
-    AnalyticsProp.source: {'bar', 'sheet', 'end', 'welcome', 'tour', 'live'},
+    AnalyticsProp.source: {
+      'bar', 'sheet', 'end', 'welcome', 'tour', 'live',
+      // a set logged on its own (`R07`, `R08`) or a whole move at once (`R13`)
+      'set', 'move',
+    },
     AnalyticsProp.locale: {'en', 'ar'},
     AnalyticsProp.platform: {'ios', 'android'},
     AnalyticsProp.notifPermissionState: {'granted', 'denied', 'undetermined'},

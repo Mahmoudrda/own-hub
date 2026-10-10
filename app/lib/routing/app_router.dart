@@ -1257,18 +1257,33 @@ class AppRouter {
       },
       // "Send it again" has to answer. In this build nothing is sent, so the
       // answer names the code instead of promising a message.
-      onResent: () => showHonestNotice(context, switch (featureFlags.isOn(
-            Feature.accountRequired,
-          )
-          ? null
-          : testCodeOf(authRepository)) {
-        final code? => AppL10n.of(context).testBuildNoTextMessageIsSent(code),
-        null => AppL10n.of(context).aNewCodeIsOnItsWay,
-      }),
-      onResendRefused: () => showHonestNotice(
-        context,
-        AppL10n.of(context).tooManyTriesWaitAMinuteThen,
-      ),
+      onResent: () {
+        unawaited(
+          analytics.track(AnalyticsEvent.codeResent, {
+            AnalyticsProp.outcome: const AnalyticsValue.token('sent'),
+          }),
+        );
+        showHonestNotice(context, switch (featureFlags.isOn(
+              Feature.accountRequired,
+            )
+            ? null
+            : testCodeOf(authRepository)) {
+          final code? =>
+            AppL10n.of(context).testBuildNoTextMessageIsSent(code),
+          null => AppL10n.of(context).aNewCodeIsOnItsWay,
+        });
+      },
+      onResendRefused: () {
+        unawaited(
+          analytics.track(AnalyticsEvent.codeResent, {
+            AnalyticsProp.outcome: const AnalyticsValue.token('limit'),
+          }),
+        );
+        showHonestNotice(
+          context,
+          AppL10n.of(context).tooManyTriesWaitAMinuteThen,
+        );
+      },
       onBack: () => Navigator.of(context).maybePop(),
       onEditNumber: () => Navigator.of(context).maybePop(),
     ),
@@ -2150,10 +2165,12 @@ class AppRouter {
       onChange: () => goTo(context, 'R08'),
       onSetLogged: (handle) {
         WorkoutSessionState.instance.setLogged();
+        _trackSetLogged('set');
         _goCarryingHandle(context, 'R09', handle);
       },
       onMoveLogged: (handle) {
         WorkoutSessionState.instance.moveLogged();
+        _trackSetLogged('move');
         _goCarryingHandle(context, 'R13', handle);
       },
     ),
@@ -2177,6 +2194,7 @@ class AppRouter {
       // override and left R09 announcing the numbers she had corrected.
       onSaved: (handle) {
         WorkoutSessionState.instance.setLogged();
+        _trackSetLogged('set');
         _goCarryingHandle(context, 'R09', handle);
       },
     ),
@@ -2478,6 +2496,11 @@ class AppRouter {
         }
       },
       onFinishHere: () {
+        // Read before the finish lands: with moves still left, this session
+        // ended early. Sent ahead of the `workout_complete` every finish sends.
+        if (!WorkoutSessionState.instance.isComplete) {
+          unawaited(analytics.track(AnalyticsEvent.workoutEndedEarly));
+        }
         _finishWorkout();
         goTo(context, 'R10');
       },
@@ -5237,6 +5260,31 @@ class AppRouter {
     ReviewPath.error => 'unavailable',
   };
 
+  /// A set logged in a workout: `set` for one (`R07`, `R08`), `move` for a
+  /// whole move at once (`R13`). Never the move, the load or the reps.
+  static void _trackSetLogged(String source) => unawaited(
+    analytics.track(AnalyticsEvent.setLogged, {
+      AnalyticsProp.source: AnalyticsValue.token(source),
+    }),
+  );
+
+  /// Her reminders, as one word: `on`, `off`, `denied` or `unavailable`.
+  /// Never the days or the times she chose.
+  static void _trackReminders(String outcome) => unawaited(
+    analytics.track(AnalyticsEvent.remindersChanged, {
+      AnalyticsProp.outcome: AnalyticsValue.token(outcome),
+    }),
+  );
+
+  /// The word [_trackReminders] sends when the phone did not allow them.
+  @visibleForTesting
+  static String remindersOutcomeToken(ReminderPermission permission) =>
+      switch (permission) {
+        ReminderPermission.granted => 'on',
+        ReminderPermission.denied => 'denied',
+        ReminderPermission.unavailable => 'unavailable',
+      };
+
   /// The stop she was last on in the tour, so leaving it can say where.
   static int _lastTourStop = 0;
 
@@ -5777,7 +5825,10 @@ class AppRouter {
         'body': '${l10n.thePhoneNumberOnMyAccount} ',
       }),
     );
-    return () => unawaited(openExternalLink(context, uri.toString()));
+    return () {
+      unawaited(analytics.track(AnalyticsEvent.dataCopyRequested));
+      unawaited(openExternalLink(context, uri.toString()));
+    };
   }
 
   /// A mailto query with spaces as %20, which every mail app reads (a `+`
@@ -5975,18 +6026,24 @@ class AppRouter {
       current: state.schedule,
       onSave: (reminders) async {
         final permission = await reminderScheduler.requestPermission();
-        if (permission != ReminderPermission.granted) return permission;
+        if (permission != ReminderPermission.granted) {
+          _trackReminders(remindersOutcomeToken(permission));
+          return permission;
+        }
         try {
           await reminderScheduler.schedule(reminders, reminderText(l10n));
         } catch (_) {
+          _trackReminders('unavailable');
           return ReminderPermission.unavailable;
         }
         state.schedule = reminders;
         AppChanges.bump();
+        _trackReminders('on');
         showHonestNoticeOn(messenger, l10n.remindersAreOn);
         return ReminderPermission.granted;
       },
       onTurnOff: () async {
+        _trackReminders('off');
         state.schedule = null;
         AppChanges.bump();
         try {
