@@ -10,6 +10,14 @@
 # Flutter, and the upload is one visible step.
 #
 #   bash tool/build_release.sh
+#   BUILD_NUMBER=412345 bash tool/build_release.sh    a build number of your own
+#
+# The build number. Play and App Store Connect refuse a build number they have
+# seen before, and a number typed by hand is the easiest thing to get wrong on
+# a first launch. So the version name comes from pubspec.yaml (1.0.0) and the
+# build number is the minutes since 1 January 2026 UTC: it only ever goes up,
+# it is the same scheme as tool/build_ios.sh, and it stays far below Play's
+# limit of 2,100,000,000. BUILD_NUMBER overrides it.
 #
 # Android, what this script does:
 #   1. flutter build appbundle  --release --obfuscate --split-debug-info=build/symbols/<version>
@@ -33,7 +41,8 @@
 #   code is, is readable from the symbols above. The mapping is kept at
 #   build/app/outputs/mapping/release/mapping.txt; keep it with the symbols.
 #
-# iOS, the equivalent (run on the Mac that archives; not automated here):
+# iOS: `bash tool/build_ios.sh` does all of the following on the Mac. What it
+# runs, for reference:
 #   0. Google Analytics without the advertising identifier. Firebase reaches
 #      the iOS app through Swift Package Manager, and firebase_analytics then
 #      picks FirebaseAnalyticsCore (no AdSupport, no IDFA) only when this
@@ -72,11 +81,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION="$(grep -E '^version: ' pubspec.yaml | head -1 | awk '{print $2}')"
-if [ -z "$VERSION" ]; then
+NAME="$(grep -E '^version: ' pubspec.yaml | head -1 | awk '{print $2}' | cut -d+ -f1)"
+if [ -z "$NAME" ]; then
   echo "No version line in pubspec.yaml." >&2
   exit 1
 fi
+BUILD="${BUILD_NUMBER:-$(( ($(date -u +%s) - 1767225600) / 60 ))}"
+VERSION="$NAME+$BUILD"
 SYMBOLS="build/symbols/$VERSION"
 
 # The app the upload is for. Checked against firebase_options.dart so a
@@ -103,9 +114,9 @@ DEFINES=(--dart-define=APP_VERSION="$VERSION")
 # No IDFA if this shell is ever used for an iOS build too (see the header).
 export FIREBASE_ANALYTICS_WITHOUT_ADID=true
 
-flutter build appbundle --release --obfuscate --split-debug-info="$SYMBOLS" "${DEFINES[@]}"
+flutter build appbundle --release --obfuscate --split-debug-info="$SYMBOLS" --build-name="$NAME" --build-number="$BUILD" "${DEFINES[@]}"
 
-flutter build apk --release --split-per-abi --obfuscate --split-debug-info="$SYMBOLS/apk" "${DEFINES[@]}" --dart-define=OWNHUB_CHANNEL=direct
+flutter build apk --release --split-per-abi --obfuscate --split-debug-info="$SYMBOLS/apk" --build-name="$NAME" --build-number="$BUILD" "${DEFINES[@]}" --dart-define=OWNHUB_CHANNEL=direct
 
 same=1
 for f in "$SYMBOLS"/apk/*.symbols; do
@@ -116,7 +127,7 @@ if [ "$same" -eq 1 ]; then
 fi
 
 echo
-echo "Built:"
+echo "Built version $NAME, build $BUILD:"
 echo "  build/app/outputs/bundle/release/app-release.aab"
 echo "  build/app/outputs/flutter-apk/app-arm64-v8a-release.apk (the one to hand out)"
 echo "Symbols: $SYMBOLS"

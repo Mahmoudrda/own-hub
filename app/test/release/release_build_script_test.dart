@@ -11,14 +11,21 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 final _script = File('tool/build_release.sh');
+final _ios = File('tool/build_ios.sh');
 
-String _androidAppId() {
+String _androidAppId() => _appId('android');
+
+String _appId(String platform) {
   final options = File('lib/firebase_options.dart').readAsStringSync();
-  final android = options.substring(
-    options.indexOf('static const FirebaseOptions android'),
+  final block = options.substring(
+    options.indexOf('static const FirebaseOptions $platform'),
   );
-  return RegExp(r"appId: '([^']+)'").firstMatch(android)!.group(1)!;
+  return RegExp(r"appId: '([^']+)'").firstMatch(block)!.group(1)!;
 }
+
+/// The build-number expression, the same in both scripts.
+const _buildNumber =
+    r'BUILD="${BUILD_NUMBER:-$(( ($(date -u +%s) - 1767225600) / 60 ))}"';
 
 void main() {
   test('the release build script exists and is a bash script', () {
@@ -97,5 +104,62 @@ void main() {
       File('tool/release_preflight.sh').readAsStringSync(),
       contains('tool/build_release.sh'),
     );
+  });
+
+  group('the iPhone build script', () {
+    test('exists, is bash and can be run', () {
+      expect(_ios.existsSync(), isTrue);
+      expect(_ios.readAsStringSync(), startsWith('#!/usr/bin/env bash'));
+      final mode = _ios.statSync().modeString();
+      expect(mode[2], 'x', reason: 'tool/build_ios.sh must be executable');
+    });
+
+    test('builds one obfuscated ipa with its symbols, version and team', () {
+      final source = _ios.readAsStringSync();
+      final builds = RegExp(
+        r'^flutter build ipa[^\n]*',
+        multiLine: true,
+      ).allMatches(source).map((m) => m.group(0)!).toList();
+      expect(builds, hasLength(1));
+      final build = builds.single;
+      for (final flag in [
+        '--release',
+        '--obfuscate',
+        r'--split-debug-info="$SYMBOLS"',
+        r'--build-number="$BUILD"',
+        r'--dart-define=APP_VERSION="$VERSION"',
+        '--export-options-plist=ios/ExportOptions.plist',
+      ]) {
+        expect(build, contains(flag), reason: flag);
+      }
+      expect(source, contains(r'SYMBOLS="build/symbols/$VERSION-ios"'));
+    });
+
+    test('never uses the advertising identifier, and checks the archive', () {
+      final source = _ios.readAsStringSync();
+      expect(source, contains('export FIREBASE_ANALYTICS_WITHOUT_ADID=true'));
+      expect(source, contains('ASIdentifierManager'));
+      expect(source, isNot(contains('ADMIN_BUILD')));
+    });
+
+    test('stops before building when a store build would be refused', () {
+      final source = _ios.readAsStringSync();
+      expect(source, contains('-ge 26'), reason: 'Xcode 26 or later');
+      expect(source, contains('GoogleService-Info.plist'));
+      expect(source, contains('YOUR_TEAM_ID'));
+      expect(source, contains('legal_links.dart'));
+    });
+
+    test('its symbols go to the iOS app this build talks to', () {
+      expect(
+        _ios.readAsStringSync(),
+        contains('IOS_APP_ID="${_appId('ios')}"'),
+      );
+    });
+
+    test('both scripts number builds the same way', () {
+      expect(_script.readAsStringSync(), contains(_buildNumber));
+      expect(_ios.readAsStringSync(), contains(_buildNumber));
+    });
   });
 }

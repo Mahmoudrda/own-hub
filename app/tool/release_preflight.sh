@@ -148,6 +148,8 @@ check "no bare print() in lib/"            "! grep -rn --include='*.dart' -E '^[
 # R11: an obfuscated build without its symbols gives unreadable crash reports.
 check "release builds go through tool/build_release.sh" \
       "[ -x tool/build_release.sh ] && grep -q -- '--obfuscate' tool/build_release.sh && grep -q -- '--split-debug-info' tool/build_release.sh"
+check "iPhone builds go through tool/build_ios.sh" \
+      "[ -x tool/build_ios.sh ] && grep -q -- '--obfuscate' tool/build_ios.sh && grep -q -- '--split-debug-info' tool/build_ios.sh"
 
 echo
 echo "-- the four public pages --"
