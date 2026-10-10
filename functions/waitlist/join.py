@@ -53,7 +53,7 @@ import threading
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-SITE_ORIGIN = "https://ownhub.example"
+SITE_ORIGIN = "https://own-hub.app"
 """Must equal baseUrl in site/config.json (a test holds them together). Update
 both when the real domain exists."""
 

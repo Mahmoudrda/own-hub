@@ -1,91 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- The domain is still the reserved placeholder host
-     ownhub.example, which cannot resolve. Build with
-     --base-url https://your-domain before submitting this file. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://ownhub.example/</loc>
+    <loc>https://own-hub.app/</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/"/>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/"/>
   </url>
   <url>
-    <loc>https://ownhub.example/ar/</loc>
+    <loc>https://own-hub.app/ar/</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/"/>
   </url>
   <url>
-    <loc>https://ownhub.example/privacy</loc>
+    <loc>https://own-hub.app/privacy</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/privacy"/>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/privacy"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/privacy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/privacy"/>
   </url>
   <url>
-    <loc>https://ownhub.example/ar/privacy</loc>
+    <loc>https://own-hub.app/ar/privacy</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/privacy"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/privacy"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/privacy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/privacy"/>
   </url>
   <url>
-    <loc>https://ownhub.example/terms</loc>
+    <loc>https://own-hub.app/terms</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/terms"/>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/terms"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/terms"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/terms"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/terms"/>
   </url>
   <url>
-    <loc>https://ownhub.example/ar/terms</loc>
+    <loc>https://own-hub.app/ar/terms</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/terms"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/terms"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/terms"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/terms"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/terms"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/terms"/>
   </url>
   <url>
-    <loc>https://ownhub.example/support</loc>
+    <loc>https://own-hub.app/support</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/support"/>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/support"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/support"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/support"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/support"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/support"/>
   </url>
   <url>
-    <loc>https://ownhub.example/ar/support</loc>
+    <loc>https://own-hub.app/ar/support</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/support"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/support"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/support"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/support"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/support"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/support"/>
   </url>
   <url>
-    <loc>https://ownhub.example/delete-account</loc>
+    <loc>https://own-hub.app/delete-account</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/delete-account"/>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/delete-account"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/delete-account"/>
   </url>
   <url>
-    <loc>https://ownhub.example/ar/delete-account</loc>
+    <loc>https://own-hub.app/ar/delete-account</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/delete-account"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/delete-account"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/delete-account"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/delete-account"/>
   </url>
   <url>
-    <loc>https://ownhub.example/waitlist</loc>
+    <loc>https://own-hub.app/waitlist</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/waitlist"/>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/waitlist"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/waitlist"/>
   </url>
   <url>
-    <loc>https://ownhub.example/ar/waitlist</loc>
+    <loc>https://own-hub.app/ar/waitlist</loc>
     <lastmod>2026-09-24</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://ownhub.example/ar/waitlist"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ownhub.example/waitlist"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ownhub.example/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/waitlist"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/waitlist"/>
   </url>
 </urlset>

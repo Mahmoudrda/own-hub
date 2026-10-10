@@ -2,13 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- teamID is not a secret; it is safe to commit. Replace YOUR_TEAM_ID with
-	     the Team ID from developer.apple.com > Membership. tool/release_preflight.sh
-	     fails while the placeholder is still here. -->
+	<!-- teamID is not a secret; it is safe to commit. It is the Team ID from
+	     developer.apple.com > Membership, and the same value as DEVELOPMENT_TEAM
+	     in Runner.xcodeproj. tool/release_preflight.sh fails on a placeholder. -->
 	<key>method</key>
 	<string>app-store-connect</string>
 	<key>teamID</key>
-	<string>YOUR_TEAM_ID</string>
+	<string>NC94DG55XR</string>
 	<key>signingStyle</key>
 	<string>automatic</string>
 	<key>uploadSymbols</key>

@@ -14,7 +14,7 @@
 #   3. The public URLs are also fetched when RELEASE_BASE_URL is set; without it
 #      those checks are reported as SKIP, never silently passed.
 #
-#   RELEASE_BASE_URL=https://ownhub.example bash tool/release_preflight.sh
+#   RELEASE_BASE_URL=https://own-hub.app bash tool/release_preflight.sh
 
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -109,7 +109,9 @@ check "crash reporting is declared as CrashData" \
       "! grep -q '^  firebase_crashlytics:' pubspec.yaml || grep -q NSPrivacyCollectedDataTypeCrashData ios/Runner/PrivacyInfo.xcprivacy"
 check "crash reporting is off in debug and at native start" \
       "! grep -q '^  firebase_crashlytics:' pubspec.yaml || (grep -q 'firebase_crashlytics_collection_enabled' android/app/src/main/AndroidManifest.xml && grep -q FirebaseCrashlyticsCollectionEnabled ios/Runner/Info.plist)"
-check "crash reports carry no identity"    "! grep -rqE '\.(setUserIdentifier|setCustomKey)\(' lib"
+# No user id ever; custom keys only from crash_reports.dart, whose CrashKey
+# enum is the closed list (screen id, app version, build channel).
+check "crash reports carry no identity"    "! grep -rqE '\.setUserIdentifier\(' lib && [ -z \"\$(grep -rlE '\.setCustomKey\(' lib | grep -v '^lib/app_state/crash_reports.dart\$' || true)\" ]"
 check "Play Data safety answers written"   "[ -f android/play-data-safety.txt ]"
 check "export compliance declared"         "grep -q ITSAppUsesNonExemptEncryption ios/Runner/Info.plist"
 check "ExportOptions.plist present"        "[ -f ios/ExportOptions.plist ]"

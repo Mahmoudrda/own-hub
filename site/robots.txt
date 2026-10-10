@@ -1,9 +1,7 @@
 # Own Hub. Everything here is meant to be read, by anyone, with no
 # login, no geo-block and no cookie wall.
-# The domain is still the placeholder host ownhub.example.
-# Build with --base-url https://your-domain before publishing.
 User-agent: *
 Allow: /
 Disallow: /_build/
 
-Sitemap: https://ownhub.example/sitemap.xml
+Sitemap: https://own-hub.app/sitemap.xml
