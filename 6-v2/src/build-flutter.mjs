@@ -159,6 +159,7 @@ if (fs.existsSync(dictPath)) {
   // dictionary is keyed by. The generated key is derived, so listing keys would
   // break the moment a slug changed.
   const PARAMETERISED = {
+    "{weight} kg": {"description": "A weight or a weight change on P05, e.g. −2.5 kg. weight is already signed and in Western digits.", "placeholders": {"weight": {"type": "String", "example": "−2.5"}}},
     "Send it again in {time}": {"description": "C07, while the resend waits after a code was sent. time is minutes:seconds in Western digits, e.g. 0:27.", "placeholders": {"time": {"type": "String", "example": "0:27"}}},
     '{amount} EGP': {
       description:

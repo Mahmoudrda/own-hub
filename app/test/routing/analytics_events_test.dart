@@ -461,7 +461,7 @@ void main() {
       expect(copy.indexOf('openExternalLink('), greaterThan(track));
     });
 
-    test('thirty events fire for the launch, and each has a call site', () {
+    test('thirty-one events fire for the launch, and each has a call site', () {
       final src = [
         for (final f in Directory('lib').listSync(recursive: true))
           if (f is File &&
@@ -483,7 +483,7 @@ void main() {
         for (final e in AnalyticsEvent.values)
           if (!dark.contains(e)) e,
       ];
-      expect(live, hasLength(30));
+      expect(live, hasLength(31));
       for (final e in live) {
         expect(
           src.contains('AnalyticsEvent.${e.name}'),

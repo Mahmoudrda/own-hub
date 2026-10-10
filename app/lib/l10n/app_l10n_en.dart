@@ -9027,4 +9027,58 @@ class AppL10nEn extends AppL10n {
   String sendItAgainInTime(String time) {
     return 'Send it again in $time';
   }
+
+  @override
+  String get yourProgressCard => 'Your progress card';
+
+  @override
+  String get everythingYouHaveDoneOnOneCard =>
+      'Everything you have done, on one card. Only what is here is shared.';
+
+  @override
+  String get showMyWeightChange => 'Show my weight change';
+
+  @override
+  String get offUnlessYouTurnItOnAnd =>
+      'Off unless you turn it on, and only on this card.';
+
+  @override
+  String get yourCardFillsInAfterYourFirst =>
+      'Your card fills in after your first workout.';
+
+  @override
+  String get shareMyCard => 'Share my card';
+
+  @override
+  String get weeksTrained => 'Weeks trained';
+
+  @override
+  String get bestRunInWeeks => 'Best run, in weeks';
+
+  @override
+  String get mealsAdded => 'Meals added';
+
+  @override
+  String get myProgressOnOwnHub => 'My progress on Own Hub';
+
+  @override
+  String get workoutsDone => 'Workouts done';
+
+  @override
+  String get weightSinceMyFirstWeighIn => 'Weight since my first weigh-in';
+
+  @override
+  String get ownHubAppWomenOnly => 'own-hub.app · Women only.';
+
+  @override
+  String get shareYourProgress => 'Share your progress';
+
+  @override
+  String get aCardOfWhatYouHaveDone =>
+      'A card of what you have done, ready to share';
+
+  @override
+  String weightKg(String weight) {
+    return '$weight kg';
+  }
 }

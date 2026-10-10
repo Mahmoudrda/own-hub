@@ -125,6 +125,10 @@ enum AnalyticsEvent {
   /// She asked for a copy of her data from the privacy centre. Counts the
   /// tap that opens her mail app, never what she writes in it.
   dataCopyRequested,
+
+  /// She opened the share sheet with her progress card (P05). Nothing about
+  /// what is on the card, whether her weight was on it, or where it went.
+  progressShared,
 }
 
 /// The name each event carries to Firebase.
@@ -170,6 +174,7 @@ const Map<AnalyticsEvent, String> analyticsEventWireNames = {
   AnalyticsEvent.remindersChanged: 'reminders_set',
   AnalyticsEvent.codeResent: 'sign_up_code_resend',
   AnalyticsEvent.dataCopyRequested: 'data_copy_request',
+  AnalyticsEvent.progressShared: 'progress_share',
 };
 
 /// The only property keys that exist.

@@ -37,7 +37,9 @@ void main() {
     // 179 -> 184 with the owner's operations: `Z15` the dashboard, `Z16` the
     // logs, `Z17` and `Z18` her events, and `T09`, the members' Events screen
     // behind Feature.events. All five were designed in Flutter (`noMockup`).
-    expect(appRoutes.length, 184);
+    //
+    // 184 -> 185 with `P05`, her progress card, opened from P01 to share.
+    expect(appRoutes.length, 185);
   });
 
   test('every screen is a destination except the eight first-run states', () {
@@ -53,7 +55,9 @@ void main() {
     // `product_rules_test.dart` bans a dialog on these paths anyway.
     //
     // 171 -> 176: Z15 to Z18 and T09 are all destinations.
-    expect(appDestinations.length, 176);
+    //
+    // 176 -> 177: P05 is a destination.
+    expect(appDestinations.length, 177);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 

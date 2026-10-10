@@ -164,6 +164,8 @@ abstract final class ScreenArt {
     'P02': [AppArt.strongArms],
     'P03': [AppArt.overheadRaise],
     'P04': [AppArt.meditation],
+    // Her card: what she did, to celebrate. The weight on it is hers to add.
+    'P05': [AppArt.dance],
     'R01': [AppArt.dumbbells, AppArt.running],
     'R02': [AppArt.lungeWarrior, AppArt.squatWeights],
     'R03': [AppArt.overheadRaise, AppArt.yogaMat],

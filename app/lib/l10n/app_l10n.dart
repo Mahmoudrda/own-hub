@@ -16236,6 +16236,102 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Send it again in {time}'**
   String sendItAgainInTime(String time);
+
+  /// No description provided for @yourProgressCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress card'**
+  String get yourProgressCard;
+
+  /// No description provided for @everythingYouHaveDoneOnOneCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you have done, on one card. Only what is here is shared.'**
+  String get everythingYouHaveDoneOnOneCard;
+
+  /// No description provided for @showMyWeightChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my weight change'**
+  String get showMyWeightChange;
+
+  /// No description provided for @offUnlessYouTurnItOnAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Off unless you turn it on, and only on this card.'**
+  String get offUnlessYouTurnItOnAnd;
+
+  /// No description provided for @yourCardFillsInAfterYourFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Your card fills in after your first workout.'**
+  String get yourCardFillsInAfterYourFirst;
+
+  /// No description provided for @shareMyCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Share my card'**
+  String get shareMyCard;
+
+  /// No description provided for @weeksTrained.
+  ///
+  /// In en, this message translates to:
+  /// **'Weeks trained'**
+  String get weeksTrained;
+
+  /// No description provided for @bestRunInWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Best run, in weeks'**
+  String get bestRunInWeeks;
+
+  /// No description provided for @mealsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals added'**
+  String get mealsAdded;
+
+  /// No description provided for @myProgressOnOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'My progress on Own Hub'**
+  String get myProgressOnOwnHub;
+
+  /// No description provided for @workoutsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts done'**
+  String get workoutsDone;
+
+  /// No description provided for @weightSinceMyFirstWeighIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight since my first weigh-in'**
+  String get weightSinceMyFirstWeighIn;
+
+  /// No description provided for @ownHubAppWomenOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'own-hub.app · Women only.'**
+  String get ownHubAppWomenOnly;
+
+  /// No description provided for @shareYourProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your progress'**
+  String get shareYourProgress;
+
+  /// No description provided for @aCardOfWhatYouHaveDone.
+  ///
+  /// In en, this message translates to:
+  /// **'A card of what you have done, ready to share'**
+  String get aCardOfWhatYouHaveDone;
+
+  /// A weight or a weight change on P05, e.g. −2.5 kg. weight is already signed and in Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} kg'**
+  String weightKg(String weight);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

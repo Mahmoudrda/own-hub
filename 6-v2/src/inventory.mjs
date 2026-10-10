@@ -112,6 +112,7 @@ export const screens = [
   { id: 'P02', flow: 'progress', title: 'Milestones' },
   { id: 'P03', flow: 'progress', title: 'Personal bests' },
   { id: 'P04', flow: 'progress', title: 'Body, privately' },
+  { id: 'P05', flow: 'progress', title: 'Your progress card', noMockup: true },
   // My cycle
   { id: 'Y01', flow: 'cycle', title: 'Set up My cycle' },
   { id: 'Y02', flow: 'cycle', title: 'Dates and preferences' },

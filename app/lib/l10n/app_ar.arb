@@ -3777,5 +3777,30 @@
         "example": "0:27"
       }
     }
+  },
+  "yourProgressCard": "بطاقة تقدّمك",
+  "everythingYouHaveDoneOnOneCard": "كل ما أنجزتِه في بطاقة واحدة. لا يُشارَك إلا ما يظهر هنا.",
+  "showMyWeightChange": "إظهار تغيّر وزني",
+  "offUnlessYouTurnItOnAnd": "مغلق ما لم تشغّليه، ولا يظهر إلا على هذه البطاقة.",
+  "yourCardFillsInAfterYourFirst": "تمتلئ بطاقتك بعد أول تمرين.",
+  "shareMyCard": "مشاركة بطاقتي",
+  "weeksTrained": "أسابيع التدريب",
+  "bestRunInWeeks": "أطول تتابع، بالأسابيع",
+  "mealsAdded": "وجبات مُضافة",
+  "myProgressOnOwnHub": "تقدّمي على Own Hub",
+  "workoutsDone": "تمارين مُنجزة",
+  "weightSinceMyFirstWeighIn": "الوزن منذ أول مرة سجّلتُه",
+  "ownHubAppWomenOnly": "own-hub.app · للنساء فقط.",
+  "shareYourProgress": "شاركي تقدّمك",
+  "aCardOfWhatYouHaveDone": "بطاقة بما أنجزتِه، جاهزة للمشاركة",
+  "weightKg": "{weight} كجم",
+  "@weightKg": {
+    "description": "A weight or a weight change on P05, e.g. −2.5 kg. weight is already signed and in Western digits.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "−2.5"
+      }
+    }
   }
 }

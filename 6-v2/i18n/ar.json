@@ -2688,5 +2688,21 @@
  "Upload its pictures under this id: {id}": "ارفعي صورها تحت هذا المعرّف: {id}",
  "I did them all": "أدّيتُها كلها",
  "Nothing in the log yet": "لا شيء في السجل بعد",
- "Send it again in {time}": "إعادة إرسال الرمز بعد {time}"
+ "Send it again in {time}": "إعادة إرسال الرمز بعد {time}",
+ "Your progress card": "بطاقة تقدّمك",
+ "Everything you have done, on one card. Only what is here is shared.": "كل ما أنجزتِه في بطاقة واحدة. لا يُشارَك إلا ما يظهر هنا.",
+ "Show my weight change": "إظهار تغيّر وزني",
+ "Off unless you turn it on, and only on this card.": "مغلق ما لم تشغّليه، ولا يظهر إلا على هذه البطاقة.",
+ "Your card fills in after your first workout.": "تمتلئ بطاقتك بعد أول تمرين.",
+ "Share my card": "مشاركة بطاقتي",
+ "Weeks trained": "أسابيع التدريب",
+ "Best run, in weeks": "أطول تتابع، بالأسابيع",
+ "Meals added": "وجبات مُضافة",
+ "My progress on Own Hub": "تقدّمي على Own Hub",
+ "Workouts done": "تمارين مُنجزة",
+ "Weight since my first weigh-in": "الوزن منذ أول مرة سجّلتُه",
+ "own-hub.app · Women only.": "own-hub.app · للنساء فقط.",
+ "Share your progress": "شاركي تقدّمك",
+ "A card of what you have done, ready to share": "بطاقة بما أنجزتِه، جاهزة للمشاركة",
+ "{weight} kg": "{weight} كجم"
 }

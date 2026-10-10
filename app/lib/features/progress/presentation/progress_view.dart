@@ -78,6 +78,7 @@ class ProgressView extends StatelessWidget {
     this.onOpenMilestones,
     this.onOpenBests,
     this.onOpenBody,
+    this.onOpenShare,
     this.onOpenFirstWeek,
     this.onOpenRestWeek,
     this.onOpenTierSlip,
@@ -108,6 +109,9 @@ class ProgressView extends StatelessWidget {
   final VoidCallback? onOpenMilestones;
   final VoidCallback? onOpenBests;
   final VoidCallback? onOpenBody;
+
+  /// P05, her progress card.
+  final VoidCallback? onOpenShare;
   final VoidCallback? onOpenFirstWeek;
 
   /// "What a rest week covers" → T04. This is T04's only inbound edge in the
@@ -142,6 +146,23 @@ class ProgressView extends StatelessWidget {
           ..._tierCard(l10n),
           ..._nextTierCard(l10n),
           _weekCard(l10n),
+          AppListItem(
+            leading: const Icon(
+              Icons.ios_share,
+              size: 22,
+              color: AppColors.primary,
+            ),
+            title: l10n.shareYourProgress,
+            subtitle: l10n.aCardOfWhatYouHaveDone,
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.onSurfaceVariant,
+            ),
+            variant: AppCardVariant.tonal,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            onTap: () => openScreen(context, 'P05', onOpenShare),
+          ),
           // Below her week, quieter: a rule, then the rest of the record.
           const HandRule(seed: 37, height: 18),
           _tiles(context, l10n),

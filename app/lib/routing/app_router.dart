@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert' show jsonDecode;
+import 'dart:typed_data' show Uint8List;
 
 // The ID token, and nothing else from this package. `verified` is a custom
 // claim the Cloud Function mints and the security rules read, so it is the one
@@ -9,6 +10,7 @@ import 'dart:convert' show jsonDecode;
 // binary. See `AppRouter.resolvesInThisBuild`.
 import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 // `Clipboard` — Z11 hands the export over on it, because nothing in this build
 // can write a file.
 import 'package:flutter/services.dart'
@@ -269,6 +271,7 @@ import '../features/progress/presentation/milestones_view.dart';
 import '../features/progress/presentation/personal_bests_view.dart';
 import '../features/progress/presentation/progress_view.dart';
 import '../features/progress/presentation/progress_view_model.dart';
+import '../features/progress/presentation/share_progress_view.dart';
 import '../features/admin/presentation/feature_flags_view.dart';
 import '../features/assistant/domain/assistant_provider.dart';
 import '../features/assistant/presentation/ask_view.dart';
@@ -2520,9 +2523,33 @@ class AppRouter {
       onOpenMilestones: () => goTo(context, 'P02'),
       onOpenBests: () => goTo(context, 'P03'),
       onOpenBody: () => goTo(context, 'P04'),
+      onOpenShare: () => goTo(context, 'P05'),
       onOpenFirstWeek: () => goTo(context, 'T07'),
       onOpenRestWeek: () => goTo(context, 'T04'),
       onOpenTierSlip: () => goTo(context, 'T05'),
+      onSelectTab: (screenId) => goTo(context, screenId),
+    ),
+    // Her progress card: what she did, on one card she can share. Read from
+    // her own stores on this phone; her weigh-ins only through
+    // historyForOwner, and the weight line only if she switches it on there.
+    'P05': (context) => ShareProgressView(
+      story: ProgressStory(
+        sessions: progressStore.rewards.sessionsLogged,
+        countedWeeks: progressStore.goal.countedWeeks,
+        bestRun: progressStore.goal.bestRun,
+        mealsAdded: mealRepository.mealsAdded,
+        bests: progressStore.rewards.bestsCount,
+        milestones: progressStore.rewards.milestones.length,
+      ),
+      loadWeighIns: () async => [
+        for (final m in await measurementsRepository.historyForOwner(
+          limit: 1000,
+        ))
+          if (m.weightKg case final kg?) (at: m.takenAt, kg: kg),
+      ],
+      onShare: shareProgressCard,
+      onShared: () => unawaited(analytics.track(AnalyticsEvent.progressShared)),
+      onBack: () => Navigator.of(context).maybePop(),
       onSelectTab: (screenId) => goTo(context, screenId),
     ),
     'P02': (context) => MilestonesView(
@@ -5284,6 +5311,21 @@ class AppRouter {
         ReminderPermission.denied => 'denied',
         ReminderPermission.unavailable => 'unavailable',
       };
+
+  /// Hands her progress card (P05) to the phone's share sheet, anchored at
+  /// the button for an iPad. The PNG goes from the screen to the app she
+  /// picks; nothing is uploaded anywhere.
+  static Future<void> shareProgressCard(Uint8List png, Rect origin) async {
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [
+          XFile.fromData(png, mimeType: 'image/png', name: 'own-hub.png'),
+        ],
+        fileNameOverrides: const ['own-hub.png'],
+        sharePositionOrigin: origin == Rect.zero ? null : origin,
+      ),
+    );
+  }
 
   /// The stop she was last on in the tour, so leaving it can say where.
   static int _lastTourStop = 0;

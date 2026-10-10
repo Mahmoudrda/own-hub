@@ -8984,4 +8984,56 @@ class AppL10nAr extends AppL10n {
   String sendItAgainInTime(String time) {
     return 'إعادة إرسال الرمز بعد $time';
   }
+
+  @override
+  String get yourProgressCard => 'بطاقة تقدّمك';
+
+  @override
+  String get everythingYouHaveDoneOnOneCard =>
+      'كل ما أنجزتِه في بطاقة واحدة. لا يُشارَك إلا ما يظهر هنا.';
+
+  @override
+  String get showMyWeightChange => 'إظهار تغيّر وزني';
+
+  @override
+  String get offUnlessYouTurnItOnAnd =>
+      'مغلق ما لم تشغّليه، ولا يظهر إلا على هذه البطاقة.';
+
+  @override
+  String get yourCardFillsInAfterYourFirst => 'تمتلئ بطاقتك بعد أول تمرين.';
+
+  @override
+  String get shareMyCard => 'مشاركة بطاقتي';
+
+  @override
+  String get weeksTrained => 'أسابيع التدريب';
+
+  @override
+  String get bestRunInWeeks => 'أطول تتابع، بالأسابيع';
+
+  @override
+  String get mealsAdded => 'وجبات مُضافة';
+
+  @override
+  String get myProgressOnOwnHub => 'تقدّمي على Own Hub';
+
+  @override
+  String get workoutsDone => 'تمارين مُنجزة';
+
+  @override
+  String get weightSinceMyFirstWeighIn => 'الوزن منذ أول مرة سجّلتُه';
+
+  @override
+  String get ownHubAppWomenOnly => 'own-hub.app · للنساء فقط.';
+
+  @override
+  String get shareYourProgress => 'شاركي تقدّمك';
+
+  @override
+  String get aCardOfWhatYouHaveDone => 'بطاقة بما أنجزتِه، جاهزة للمشاركة';
+
+  @override
+  String weightKg(String weight) {
+    return '$weight كجم';
+  }
 }
