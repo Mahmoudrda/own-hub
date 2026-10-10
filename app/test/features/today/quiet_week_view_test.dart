@@ -201,7 +201,7 @@ void main() {
       );
       expect(find.text('Start the 10 minutes'), findsOneWidget);
       // And an even smaller ask below it.
-      expect(find.text('Or just log breakfast'), findsOneWidget);
+      expect(find.text('Or just add breakfast'), findsOneWidget);
     });
   });
 

@@ -88,7 +88,7 @@ class AppL10nAr extends AppL10n {
   String get gluteBridge => 'جسر الأرداف';
 
   @override
-  String get log => 'سجّلي';
+  String get iAteThis => 'أكلتُ هذا';
 
   @override
   String get saraAdel => 'سارة عادل';
@@ -245,7 +245,7 @@ class AppL10nAr extends AppL10n {
   String get lentilSoupAndEggs => 'شوربة عدس وبيض';
 
   @override
-  String get loggedByYou => 'سجّلتِها بنفسك';
+  String get notedByYou => 'سجّلتِها بنفسك';
 
   @override
   String get molokhiaWithChicken => 'ملوخية بالدجاج';
@@ -293,7 +293,7 @@ class AppL10nAr extends AppL10n {
   String get youDid => 'ما أدّيتِه';
 
   @override
-  String get youLoggedLowEnergyAndMildCramps =>
+  String get youNotedLowEnergyAndMildCramps =>
       'سجّلتِ طاقة منخفضة وتقلّصات خفيفة.';
 
   @override
@@ -400,7 +400,7 @@ class AppL10nAr extends AppL10n {
   String get floorLegsNoJumping => 'تمارين ساقين أرضية، بدون قفز';
 
   @override
-  String get foodLogged => 'طعام مسجَّل';
+  String get mealAdded => 'أُضيفت الوجبة';
 
   @override
   String get foodPhoto => 'صورة طعام';
@@ -462,10 +462,10 @@ class AppL10nAr extends AppL10n {
   String get legsAndGlutes => 'الساقان والأرداف';
 
   @override
-  String get logAPeriod => 'سجّلي دورة';
+  String get noteAPeriod => 'سجّلي دورة';
 
   @override
-  String get logged => 'مسجَّل';
+  String get eaten => 'تناولتِها';
 
   @override
   String get logotype => 'الشعار';
@@ -1061,7 +1061,7 @@ class AppL10nAr extends AppL10n {
   String get n5Days => '5 أيام';
 
   @override
-  String get n5Days2DaysNotLogged => '5 أيام · يومان دون تسجيل';
+  String get n5Days2DaysNotNoted => '5 أيام · يومان دون تسجيل';
 
   @override
   String get n5DaysLeft => 'تبقّى 5 أيام';
@@ -1086,7 +1086,7 @@ class AppL10nAr extends AppL10n {
   String get n6EasierSessions => '6 تمارين أخفّ';
 
   @override
-  String get n6LoggedDays2Cycles => '6 أيام مسجَّلة · دورتان';
+  String get n6NotedDays2Cycles => '6 أيام مسجَّلة · دورتان';
 
   @override
   String get n60S => '60 ث';
@@ -1253,7 +1253,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get addingUpdatesYourPlanItDoesNot =>
-      'الإضافة تحدّث خطتك، ولا تسجّل الوجبة على أنك تناولتِها.';
+      'الإضافة تحدّث خطتك، ولا تعدّ الوجبة كأنك تناولتِها.';
 
   @override
   String get adds14GProteinFor12Egp => 'تضيف 14 جم بروتين مقابل 12 جنيهًا';
@@ -1434,8 +1434,8 @@ class AppL10nAr extends AppL10n {
   String get buildAPlan => 'ابني خطة';
 
   @override
-  String get buildFromWhatSheAlreadyLogsA =>
-      'ابني على ما تسجّله فعلًا. فخطة طعام لم تطبخها يومًا خطة لن تلتزم بها.';
+  String get buildFromWhatSheAlreadyEatsA =>
+      'ابني على ما تتناوله فعلًا. فخطة طعام لم تطبخها يومًا خطة لن تلتزم بها.';
 
   @override
   String get buildMyFirstPlan => 'ابني أول خطة لي';
@@ -1494,8 +1494,8 @@ class AppL10nAr extends AppL10n {
   String get changesWhatWeSuggestNeverYourPlan => 'يغيّر ما نقترحه، لا خطتك';
 
   @override
-  String get changingThePlanNeverChangesALog =>
-      'تغيير الخطة لا يغيّر تسجيلًا حفظتِه من قبل. والضغط مرتين لا ينشئ تسجيلًا ثانيًا.';
+  String get changingThePlanNeverChangesAMeal =>
+      'تغيير الخطة لا يغيّر وجبة أضفتِها من قبل. والضغط مرتين لا يضيفها مرتين.';
 
   @override
   String get chat => 'محادثة';
@@ -1579,7 +1579,7 @@ class AppL10nAr extends AppL10n {
   String get continueFromSara => 'متابعة · من سارة';
 
   @override
-  String get cookedItLogMyBowl => 'طبختُها، سجّلي طبقي';
+  String get iCookedItAndAteABowl => 'طبختُها وتناولتُ طبقي';
 
   @override
   String get copyAndReplaceThose2Days => 'انسخي واستبدلي هذين اليومين';
@@ -1687,7 +1687,7 @@ class AppL10nAr extends AppL10n {
   String get daysYouCanTrain => 'الأيام التي يمكنك التدرّب فيها';
 
   @override
-  String get daysYouLoggedFood => 'أيام سجّلتِ فيها طعامك';
+  String get daysYouAddedWhatYouAte => 'أيام أضفتِ فيها ما أكلتِه';
 
   @override
   String get deleteCycleData => 'احذفي بيانات الدورة';
@@ -1856,7 +1856,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get fiveDinnersBuiltFromRecipesYouHave =>
-      'خمس وجبات عشاء، مبنية على وصفات سجّلتِها من قبل. استبدلي أيًّا منها.';
+      'خمس وجبات عشاء، مبنية على وصفات تناولتِها من قبل. استبدلي أيًّا منها.';
 
   @override
   String get floorOnly => 'على الأرض فقط';
@@ -1868,7 +1868,7 @@ class AppL10nAr extends AppL10n {
   String get followAlongVideo => 'فيديو تتدرّبين معه';
 
   @override
-  String get foodLogged46DaysAWeek => 'طعام مسجَّل 4.6 يوم أسبوعيًا';
+  String get mealsAdded46DaysAWeek => 'وجبات مُضافة 4.6 يوم أسبوعيًا';
 
   @override
   String get foodYouAlreadyCook => 'طعام تطبخينه أصلًا';
@@ -2024,7 +2024,7 @@ class AppL10nAr extends AppL10n {
   String get herWeek => 'أسبوعها';
 
   @override
-  String get herWeekWrittenFromHerLogs => 'أسبوعها، مكتوب من تسجيلاتها';
+  String get herWeekFromWhatSheAdded => 'أسبوعها، مما أضافته';
 
   @override
   String get high => 'عالية';
@@ -2090,7 +2090,7 @@ class AppL10nAr extends AppL10n {
       'لم أستطع التدرّب هذا الأسبوع، كان العمل مستحيلًا.';
 
   @override
-  String get iDidAll3SetsLogThem => 'أدّيتُ المجموعات الثلاث، سجّليها';
+  String get iDidAll3Sets => 'أدّيتُ المجموعات الثلاث';
 
   @override
   String get iDontKnow => 'لا أعرف';
@@ -2126,7 +2126,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get irregularCyclesHormonalContraceptionAndPerimenop =>
-      'الدورات غير المنتظمة ووسائل منع الحمل الهرمونية وما قبل انقطاع الطمث، جميعها تستخدم هذا الوضع: تسجيلاتك، بلا تنبّؤ.';
+      'الدورات غير المنتظمة ووسائل منع الحمل الهرمونية وما قبل انقطاع الطمث، جميعها تستخدم هذا الوضع: ما سجّلتِه، بلا تنبّؤ.';
 
   @override
   String get irregularPeriods => 'دورات غير منتظمة';
@@ -2216,7 +2216,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get last7Days3Of3Workouts =>
-      'آخر 7 أيام: 3 من 3 تمارين، وتمرين أخفّ واحد اختارته. وسجّلت طعامها في 5 أيام.';
+      'آخر 7 أيام: 3 من 3 تمارين، وتمرين أخفّ واحد اختارته. وأضافت وجباتها في 5 أيام.';
 
   @override
   String get lastEightWeeksThePaleOneWas =>
@@ -2263,23 +2263,23 @@ class AppL10nAr extends AppL10n {
   String get levelUp => 'نسخة أصعب';
 
   @override
-  String get logBoth696Kcal => 'سجّلي كليهما · 696 سعرة';
+  String get iAteBoth696Kcal => 'تناولتُ الاثنين · 696 سعرة';
 
   @override
-  String get logIt => 'سجّليها';
+  String get addIt => 'أضيفيه';
 
   @override
-  String get logLunch => 'سجّلي الغداء';
+  String get iAteLunch => 'تناولتُ الغداء';
 
   @override
-  String get logged1131Serving => 'سُجّلت 1:13 · حصة واحدة';
+  String get added1131Serving => 'أُضيفت 1:13 · حصة واحدة';
 
   @override
-  String get logged15SeptEstimated12To14 =>
+  String get noted15SeptEstimated12To14 =>
       'مسجَّلة 15 سبتمبر · تقديريًا 12 إلى 14 أكتوبر';
 
   @override
-  String get logsItself => 'يسجّل نفسه';
+  String get countsItself => 'يُحتسب تلقائيًا';
 
   @override
   String get lookAroundFirst => 'تصفّحي أولًا';
@@ -2305,10 +2305,10 @@ class AppL10nAr extends AppL10n {
   String get lunchKoshariBowlMedium => 'الغداء · طبق كشري متوسط';
 
   @override
-  String get lunchLogged1Serving => 'سُجّل الغداء · حصة واحدة';
+  String get lunchAdded1Serving => 'أُضيف الغداء · حصة واحدة';
 
   @override
-  String get lunchLogged696Kcal => 'سُجّل الغداء · 696 سعرة';
+  String get lunchAdded696Kcal => 'أُضيف الغداء · 696 سعرة';
 
   @override
   String get lunchFromYourPlan => 'الغداء، من خطتك';
@@ -2399,7 +2399,7 @@ class AppL10nAr extends AppL10n {
   String get moreHungry => 'شهية أكبر';
 
   @override
-  String get moreToLogSleepBloatingBleeding =>
+  String get moreToNoteSleepBloatingBleeding =>
       'المزيد للتسجيل: النوم والانتفاخ ونزول الدم';
 
   @override
@@ -2420,7 +2420,7 @@ class AppL10nAr extends AppL10n {
   String get myCoach => 'مدرِّبتي';
 
   @override
-  String get myCoachCanSeeMyLogs => 'تستطيع مدرِّبتي رؤية تسجيلاتي';
+  String get myCoachCanSeeMyMealsAnd => 'تستطيع مدرِّبتي رؤية وجباتي وتماريني';
 
   @override
   String get myCyclePeriodDay2 => 'دورتي · اليوم الثاني';
@@ -2592,7 +2592,7 @@ class AppL10nAr extends AppL10n {
       'مغلقة ما لم تفعّليها. ولا يشترطها التدريب أبدًا.';
 
   @override
-  String get offerAnEasierWorkoutWhenILog =>
+  String get offerAnEasierWorkoutWhenINote =>
       'اقترحي تمرينًا أخفّ حين أسجّل طاقة منخفضة';
 
   @override
@@ -2631,7 +2631,7 @@ class AppL10nAr extends AppL10n {
   String get oneLineAboutYou => 'سطر واحد عنك';
 
   @override
-  String get oneMinuteItIsFilledInFrom => 'دقيقة واحدة · تُملأ من تسجيلاتك';
+  String get oneMinuteItIsFilledInFrom => 'دقيقة واحدة · تُملأ مما أضفتِه';
 
   @override
   String get oneMinuteMostlyFilledInAlready =>
@@ -2647,7 +2647,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get oneNudgeADayAtMostAt =>
-      'تنبيه واحد يوميًا على الأكثر، في الساعة التي تسجّلين فيها عادة. تجاهلي ثلاثة منها فتتوقّف من تلقاء نفسها.';
+      'تنبيه واحد يوميًا على الأكثر، في وقتك المعتاد. تجاهلي ثلاثة منها فتتوقّف من تلقاء نفسها.';
 
   @override
   String get oneShopCoversIt => 'تسوّق واحد يكفي';
@@ -2690,7 +2690,7 @@ class AppL10nAr extends AppL10n {
       'اختياري. ويمكنك استخدام التطبيق دائمًا بدونه.';
 
   @override
-  String get orJustLogBreakfast => 'أو سجّلي الفطور فقط';
+  String get orJustAddBreakfast => 'أو أضيفي الفطور فقط';
 
   @override
   String get orOneYouveHadBefore => 'أو واحدة تناولتِها من قبل';
@@ -2975,7 +2975,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get revisionsDefaultToFutureDatesASession =>
-      'تسري التعديلات على الأيام القادمة تلقائيًا. أما التمرين الذي بدأته، وكل ما سجّلته، فيبقى على النسخة التي استخدمتها.';
+      'تسري التعديلات على الأيام القادمة تلقائيًا. أما التمرين الذي بدأته، وكل ما أضافته، فيبقى على النسخة التي استخدمتها.';
 
   @override
   String get rice1Kg => 'أرز 1 كجم';
@@ -3152,8 +3152,8 @@ class AppL10nAr extends AppL10n {
   String get sessions => 'التمارين';
 
   @override
-  String get sessionsYouLoggedAsIAlreadyDid =>
-      'التمارين التي سجّلتِها بـ «أدّيته بالفعل» لا تحقّق رقمًا شخصيًا أبدًا، لأن الأرقام منسوخة.';
+  String get sessionsYouAddedWithIAlreadyDid =>
+      'التمارين التي أضفتِها بـ «أدّيته بالفعل» لا تحقّق رقمًا شخصيًا أبدًا، لأن الأرقام منسوخة.';
 
   @override
   String get sessionsFoodDaysAndBests => 'التمارين وأيام الطعام والأرقام';
@@ -3179,7 +3179,7 @@ class AppL10nAr extends AppL10n {
   String get severe => 'شديد';
 
   @override
-  String get severeCrampsLogged => 'سُجّلت تقلّصات شديدة';
+  String get severeCrampsNoted => 'سُجّلت تقلّصات شديدة';
 
   @override
   String get severeOrUnusualPainDeservesMedicalAdvice =>
@@ -3213,8 +3213,8 @@ class AppL10nAr extends AppL10n {
   String get sheAverages78G => 'متوسّطها 78 جم';
 
   @override
-  String get sheChoosesWhatShowsHereLogsWeight =>
-      'هي التي تحدّد ما يظهر هنا. ولا تظهر التسجيلات ولا الوزن ولا الصور في أي ملف أبدًا.';
+  String get sheChoosesWhatShowsHereMealsWorkouts =>
+      'هي التي تحدّد ما يظهر هنا. ولا تظهر الوجبات ولا التمارين ولا الوزن ولا الصور في أي ملف أبدًا.';
 
   @override
   String get sheDisappearsFromYourFeedAndCannot =>
@@ -3265,7 +3265,7 @@ class AppL10nAr extends AppL10n {
   String get snack => 'وجبة خفيفة';
 
   @override
-  String get soWereLogging => 'إذًا نسجّل';
+  String get soWereAdding => 'إذًا سنضيف';
 
   @override
   String get spots => 'الأماكن';
@@ -3427,7 +3427,7 @@ class AppL10nAr extends AppL10n {
       'هذا صحيح تمامًا. أبقي 12 كجم يوم الخميس ونزيد التكرارات، لا الوزن.';
 
   @override
-  String get thatsRightLog696Kcal => 'صحيح · سجّلي 696 سعرة';
+  String get thatsRightAdd696Kcal => 'صحيح · أضيفي 696 سعرة';
 
   @override
   String get thatsTuesdayDone => 'بهذا اكتمل الثلاثاء';
@@ -3454,8 +3454,8 @@ class AppL10nAr extends AppL10n {
       'إذًا هذا الأسبوع تمرينان، كل واحد عشر دقائق. وقد نقلتهما إلى الأحد والأربعاء.';
 
   @override
-  String get thisDescribesYourLogsItDoesNot =>
-      'هذا وصف لتسجيلاتك. وهو لا يفسّر السبب ولا يتنبّأ بكل دورة.';
+  String get thisDescribesWhatYouNotedItDoes =>
+      'هذا وصف لما سجّلتِه. وهو لا يفسّر السبب ولا يتنبّأ بكل دورة.';
 
   @override
   String get thisIsExactlyWhatAClientSees =>
@@ -3557,8 +3557,8 @@ class AppL10nAr extends AppL10n {
   String get tue16Session => 'الثلاثاء 16 · التمرين';
 
   @override
-  String get tuesday840LoggedFromTheLock =>
-      'الثلاثاء 8:40 · سُجّل من شاشة القفل';
+  String get tuesday840AddedFromTheLock =>
+      'الثلاثاء 8:40 · أُضيف من شاشة القفل';
 
   @override
   String get tuesdays => 'أيام الثلاثاء';
@@ -3571,8 +3571,8 @@ class AppL10nAr extends AppL10n {
   String get twoBoiledEggs => 'بيضتان مسلوقتان';
 
   @override
-  String get twoDaysWithoutAFoodLogAre =>
-      'يومان دون تسجيل طعام يظهران على أنهما «غير مسجَّلين»، لا على أنهما وجبات فائتة.';
+  String get twoDaysWithNoMealAddedAre =>
+      'يومان دون إضافة وجبة يظهران على أنهما «لم يُضَف شيء»، لا على أنهما وجبات فائتة.';
 
   @override
   String get twoMinutesWithAWomanReviewerNothing =>
@@ -3746,7 +3746,7 @@ class AppL10nAr extends AppL10n {
       'نرسل إليك رمزًا من ستة أرقام. ولا نعرض رقمك لأحد أبدًا.';
 
   @override
-  String get wellLog => 'سنسجّل';
+  String get wellAdd => 'سنضيف';
 
   @override
   String get wereCheckingYourCertificates => 'نراجع شهاداتك';
@@ -3827,7 +3827,7 @@ class AppL10nAr extends AppL10n {
   String get whatYouCharge => 'كم تتقاضين';
 
   @override
-  String get whatYouLogged => 'ما الذي سجّلتِه';
+  String get whatYouAdded => 'ما أضفتِه';
 
   @override
   String get whatsInside => 'ماذا يوجد بالداخل';
@@ -3904,8 +3904,8 @@ class AppL10nAr extends AppL10n {
   String get yesterday5DaysLeft => 'أمس · تبقّى 5 أيام';
 
   @override
-  String get yesterdaysLogsAndAnySessionYouAlready =>
-      'تسجيلات الأمس وأي تمرين بدأتِه تبقى كما هي.';
+  String get whatYouAddedYesterdayAndAnySession =>
+      'ما أضفتِه بالأمس وأي تمرين بدأتِه يبقيان كما هما.';
 
   @override
   String get yesterdaysLunchAgain => 'غداء الأمس مرة أخرى';
@@ -3941,8 +3941,8 @@ class AppL10nAr extends AppL10n {
   String get youCanStartNow => 'يمكنك البدء الآن';
 
   @override
-  String get youChooseWhatToLogYouCan =>
-      'أنتِ تختارين ما تسجّلينه. ويمكنك تغييره أو حذفه في أي وقت.';
+  String get youChooseWhatToAddYouCan =>
+      'أنتِ تختارين ما تضيفينه. ويمكنك تغييره أو حذفه في أي وقت.';
 
   @override
   String get youKeep => 'تحتفظين بـ';
@@ -3952,11 +3952,11 @@ class AppL10nAr extends AppL10n {
       'تحتفظين بـ 80% من كل ما تدفعه المتدرِّبة.';
 
   @override
-  String get youLoggedLowEnergyOn4Of =>
+  String get youNotedLowEnergyOn4Of =>
       'سجّلتِ طاقة منخفضة في 4 من 6 أيام مسجَّلة، خلال الأيام الثلاثة الأولى من آخر دورتين.';
 
   @override
-  String get youLoggedMoreHungerAddASnack =>
+  String get youNotedMoreHungerAddASnack =>
       'سجّلتِ شهية أكبر. أضيفي وجبة خفيفة إن أردتِ.';
 
   @override
@@ -4017,19 +4017,19 @@ class AppL10nAr extends AppL10n {
   String get yourIdCard => 'بطاقتك الشخصية';
 
   @override
-  String get yourLogsWeightPhotosAndPhoneNumber =>
-      'لا تظهر تسجيلاتك ولا وزنك ولا صورك ولا رقم هاتفك لأي عضوة أخرى أبدًا. وهذه الإعدادات تخصّ فقط ما تختارين عرضه.';
+  String get yourMealsWorkoutsWeightPhotosAndPhone =>
+      'لا تظهر وجباتك ولا تمارينك ولا وزنك ولا صورك ولا رقم هاتفك لأي عضوة أخرى أبدًا. وهذه الإعدادات تخصّ فقط ما تختارين عرضه.';
 
   @override
   String get yourMealsReviewedOnceAWeek => 'وجباتك تُراجَع مرة أسبوعيًا';
 
   @override
-  String get yourNumberYourIdAndYourLogs =>
-      'لا يُعرض رقمك ولا بطاقتك ولا تسجيلاتك للعضوات أبدًا.';
+  String get yourNumberYourIdYourMealsAnd =>
+      'لا يُعرض رقمك ولا بطاقتك ولا وجباتك ولا تمارينك للعضوات أبدًا.';
 
   @override
-  String get yourOwnWorkoutsRecipesLogsAndMy =>
-      'تمارينك ووصفاتك وتسجيلاتك و«دورتي» تستمرّ تمامًا كما كانت. وقد أُغلقت مشاركة الدورة تلقائيًا حين انتهى التدريب.';
+  String get yourOwnWorkoutsRecipesMealsAndMy =>
+      'تمارينك ووصفاتك ووجباتك و«دورتي» تستمرّ تمامًا كما كانت. وقد أُغلقت مشاركة الدورة تلقائيًا حين انتهى التدريب.';
 
   @override
   String get yourPart => 'نصيبك';
@@ -4063,7 +4063,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get yourSessionsCountHereAsYouSave =>
-      'تُحتسب تمارينك هنا فور حفظها، ولا شيء إضافي لتسجيله. ولا يرى أحد أوزانك، بل يرى فقط أن تمرينًا قد وقع.';
+      'تُحتسب تمارينك هنا فور حفظها، ولا شيء إضافي عليكِ فعله. ولا يرى أحد أوزانك، بل يرى فقط أن تمرينًا قد وقع.';
 
   @override
   String get yourSupport => 'الدعم الخاص بك';
@@ -4075,15 +4075,15 @@ class AppL10nAr extends AppL10n {
   String get yourTraining => 'تدريبك';
 
   @override
-  String get yourWeekFromYourLogs => 'أسبوعك، من تسجيلاتك';
+  String get yourWeekFromWhatYouAdded => 'أسبوعك، مما أضفتِه';
 
   @override
   String get yourWeekMondayTuesdayAndThursdayChange =>
       'أسبوعك: الاثنين والثلاثاء والخميس. غيّري أي يوم بالضغط عليه.';
 
   @override
-  String get yourWorkoutResultsAndFoodLogsAre =>
-      'نتائج تمارينك وتسجيلات طعامك جزء من التدريب. أما معلومات الدورة فمنفصلة، وهي ملكك.';
+  String get yourWorkoutResultsAndTheMealsYou =>
+      'نتائج تمارينك والوجبات التي تضيفينها جزء من التدريب. أما معلومات الدورة فمنفصلة، وهي ملكك.';
 
   @override
   String get yours => 'الخاصة بك';
@@ -4970,8 +4970,8 @@ class AppL10nAr extends AppL10n {
   String get loadedTwisting => 'الالتفاف بحمل';
 
   @override
-  String get loggedFromMemoryYourWeekCountsIt =>
-      'مسجَّل من الذاكرة. ويحتسبه أسبوعك كأي تمرين آخر.';
+  String get addedFromMemoryYourWeekCountsIt =>
+      'أُضيف من الذاكرة. ويحتسبه أسبوعك كأي تمرين آخر.';
 
   @override
   String get lowerBody20Min => 'الجزء السفلي · 20 دقيقة';
@@ -5224,8 +5224,8 @@ class AppL10nAr extends AppL10n {
   String get itWaitsInYourOwnCollection => 'تبقى في مجموعتك الخاصة';
 
   @override
-  String get logSomethingTwiceAndItBecomesA =>
-      'سجّلي شيئًا مرتين فيصبح طبقًا بضغطة واحدة هنا، بالحجم الذي تقدّمينه فعلًا، لا بالجرامات.';
+  String get addSomethingTwiceAndItBecomesA =>
+      'أضيفي شيئًا مرتين فيصبح طبقًا بضغطة واحدة هنا، بالحجم الذي تقدّمينه فعلًا، لا بالجرامات.';
 
   @override
   String get lunch540Kcal18GProtein => 'الغداء · 540 سعرة · 18 جم بروتين';
@@ -5264,7 +5264,7 @@ class AppL10nAr extends AppL10n {
       'لا شيء هنا مقرَّر نيابة عنك. ولا ينبغي أن تتشابه مدرِّبتان على هذه المنصّة.';
 
   @override
-  String get nothingLoggedYet => 'لا شيء مسجَّل بعد';
+  String get nothingAddedYet => 'لم تُضيفي شيئًا بعد';
 
   @override
   String get nothingSavedYet => 'لا شيء محفوظ بعد';
@@ -5306,7 +5306,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get todaysSessionAndTheMealYouUsually =>
-      'سيظهر هنا تمرين اليوم والوجبة التي تتناولينها عادةً في هذه الساعة. سجّلي شيئًا واحدًا فيبدأ بملء نفسه.';
+      'سيظهر هنا تمرين اليوم والوجبة التي تتناولينها عادةً في هذه الساعة. أضيفي شيئًا واحدًا فيبدأ بملء نفسه.';
 
   @override
   String get usuallyTheSameDayYouCanBuild =>
@@ -5567,10 +5567,10 @@ class AppL10nAr extends AppL10n {
   String get liveFor1204WomenAMonth => 'تراها 1,204 امرأة شهريًا';
 
   @override
-  String get logOneMeal => 'سجّلي وجبة واحدة';
+  String get addOneMealYouAte => 'أضيفي وجبة واحدة أكلتِها';
 
   @override
-  String get logOneSet => 'سجّلي مجموعة واحدة';
+  String get finishOneSet => 'أنهي مجموعة واحدة';
 
   @override
   String get lowerBodyBoxSquatNotGoblet =>
@@ -5606,8 +5606,8 @@ class AppL10nAr extends AppL10n {
       'لم يُحسب شيء. والطبق الذي لا قيم متحقّق منها له يُعرض بلا إجماليات، لا بإجماليات مُختلقة.';
 
   @override
-  String get nothingWasLoggedAndNothingWasShared =>
-      'لم يُسجَّل شيء ولم يُشارَك شيء. ومعلومات دورتك غير ظاهرة لي إلا إذا فعّلتِ ذلك.';
+  String get nothingWasSavedAndNothingWasShared =>
+      'لم يُحفظ شيء ولم يُشارَك شيء. ومعلومات دورتك غير ظاهرة لي إلا إذا فعّلتِ ذلك.';
 
   @override
   String get of4 => 'من 4';
@@ -5671,7 +5671,7 @@ class AppL10nAr extends AppL10n {
       'الاستبدال يغيّر اليوم فقط. وخطتك من سارة تبقى كما هي.';
 
   @override
-  String get tellYouThePortionOfADish => 'إخبارك بحصة طبق تسجّلينه بالفعل';
+  String get tellYouThePortionOfADish => 'إخبارك بحصة طبق تتناولينه بالفعل';
 
   @override
   String get theSamePointsTheRestOfThe =>
@@ -5742,8 +5742,8 @@ class AppL10nAr extends AppL10n {
       'تم الحفظ. ستتم المزامنة عند توفّر الإشارة.';
 
   @override
-  String get youAreOfflineEverythingYouLogIs =>
-      'أنتِ غير متّصلة بالإنترنت. كل ما تسجّلينه محفوظ هنا ويُرسل عند عودة الاتصال.';
+  String get youAreOfflineEverythingYouAddIs =>
+      'أنتِ غير متّصلة بالإنترنت. كل ما تضيفينه محفوظ هنا ويُرسل عند عودة الاتصال.';
 
   @override
   String get nothingWasLost => 'لم يُفقد شيء.';
@@ -5956,7 +5956,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get noMemberDataIsEverIncludedNo =>
-      'ولا تُدرج بيانات العضوات أبدًا: لا تسجيلات ولا صور ولا دورات.';
+      'ولا تُدرج بيانات العضوات أبدًا: لا وجبات ولا تمارين ولا صور ولا دورات.';
 
   @override
   String sofarOfTargetG(String soFar, String target) {
@@ -5979,8 +5979,8 @@ class AppL10nAr extends AppL10n {
   }
 
   @override
-  String mealLoggedKcalKcal(String meal, String kcal) {
-    return 'تم تسجيل $meal · $kcal سعرة';
+  String mealAddedKcalKcal(String meal, String kcal) {
+    return 'أُضيف $meal · $kcal سعرة';
   }
 
   @override
@@ -5992,7 +5992,7 @@ class AppL10nAr extends AppL10n {
   String get notThis => 'ليس هذا';
 
   @override
-  String get logItAnyway => 'سجّليه على أي حال';
+  String get addItAnyway => 'أضيفيه على أي حال';
 
   @override
   String thisWeekDoneOfTarget(int done, int target) {
@@ -6067,7 +6067,7 @@ class AppL10nAr extends AppL10n {
   }
 
   @override
-  String loggedOfTotalLoggedDays(String logged, String total) {
+  String loggedOfTotalNotedDays(String logged, String total) {
     return '$logged من $total يوم مسجّل';
   }
 
@@ -6823,14 +6823,14 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get weDoNotKnowWhatYouAvoid =>
-      'لا نعرف بعد ما تتجنّبينه، فلا يمكن تسجيل أي شيء.';
+      'لا نعرف بعد ما تتجنّبينه، فلا يمكن إضافة أي شيء.';
 
   @override
   String get endThisCoachingNowTest => 'أنهي هذا التدريب الآن (اختبار)';
 
   @override
   String get thisDishIsNotInTheFood =>
-      'هذا الطبق ليس في قائمة الأطعمة بعد، فلا يمكن تسجيله من هنا.';
+      'هذا الطبق ليس في قائمة الأطعمة بعد، فلا يمكن إضافته من هنا.';
 
   @override
   String get rose => 'وردي';
@@ -6922,7 +6922,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get thisAppCountsWeeksNotDaysAnd =>
-      'هذا التطبيق يحسب الأسابيع لا الأيام، ولا يحسب إلا ما تسجّلينه بنفسك.';
+      'هذا التطبيق يحسب الأسابيع لا الأيام، ولا يحسب إلا ما تضيفينه بنفسك.';
 
   @override
   String get fourShortQuestionsThenYourWeekIs =>
@@ -6953,11 +6953,11 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get turnNotificationsOnSoWeCanNudge =>
-      'شغّلي الإشعارات لنذكّرك في الوقت الذي تسجّلين فيه عادةً.';
+      'شغّلي الإشعارات لنذكّرك في وقتك المعتاد.';
 
   @override
   String get noHistoryForThisMoveYetWhat =>
-      'لا سجل لهذه الحركة بعد. ما تسجّلينه اليوم هو ما يُقاس عليه ما يليه.';
+      'لا سجل لهذه الحركة بعد. ما تؤدّينه اليوم هو ما يُقاس عليه ما يليه.';
 
   @override
   String get theLibraryIsStillBeingWrittenWhat =>
@@ -7516,7 +7516,7 @@ class AppL10nAr extends AppL10n {
       'لا شيء مخطَّط لهذا الأسبوع بعد. اختاري عشاءً لأي يوم في الأسفل.';
 
   @override
-  String get lookingForWhatYouHaveLogged => 'نبحث عمّا سجّلتِه.';
+  String get lookingForWhatYouHaveAdded => 'نبحث عمّا أضفتِه.';
 
   @override
   String get weCouldNotSaveYourAgreementSo =>
@@ -7786,8 +7786,8 @@ class AppL10nAr extends AppL10n {
       'هذا ما يُبقي Own Hub للنساء فقط: تُوثَّق كل امرأة قبل أن تدخل.';
 
   @override
-  String get yourNumberYourIdAndYourLogs_10nei =>
-      'يبقى رقمك وبطاقتك وتسجيلاتك خاصة بكِ.';
+  String get yourNumberYourIdYourMealsAnd_1ix08 =>
+      'يبقى رقمك وبطاقتك ووجباتك وتمارينك خاصة بكِ.';
 
   @override
   String get ownHubIsForTrainingNotFor => 'Own Hub للتدريب، لا للبيع.';
@@ -7941,7 +7941,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get quietSessionsYouCanDoAtHome =>
-      'جلسات هادئة تؤدّينها في البيت. تُظهر كل حركة مجموعاتها وما تستهدفينه فيها. تدرّبتِ دون هاتفكِ؟ يمكنكِ تسجيل ذلك بعدها.';
+      'جلسات هادئة تؤدّينها في البيت. تُظهر كل حركة مجموعاتها وما تستهدفينه فيها. تدرّبتِ دون هاتفكِ؟ يمكنكِ إضافة ذلك بعدها.';
 
   @override
   String get duringAWorkout => 'أثناء التمرين';
@@ -7965,12 +7965,12 @@ class AppL10nAr extends AppL10n {
   String get yourCycleIfYouWantIt => 'دورتكِ، إن أردتِ';
 
   @override
-  String get logYourPeriodAndHowYouFeel =>
+  String get noteYourPeriodAndHowYouFeel =>
       'سجّلي دورتكِ وكيف تشعرين. وفي الأيام الأصعب يمكن أن يقترح Own Hub جلسة ألطف. تبقى بيانات الدورة على هاتفكِ ما لم تختاري نسخها احتياطيًّا.';
 
   @override
   String get yourWeeksYourPersonalBestsAndYour =>
-      'أسابيعكِ وأفضل أرقامكِ الشخصية وإنجازاتكِ، محسوبة فقط مما تسجّلينه.';
+      'أسابيعكِ وأفضل أرقامكِ الشخصية وإنجازاتكِ، محسوبة فقط مما تضيفينه.';
 
   @override
   String get thatIsOwnHub => 'هذا هو Own Hub';
@@ -8505,13 +8505,13 @@ class AppL10nAr extends AppL10n {
   String get todayIsUnderWay => 'يومكِ بدأ';
 
   @override
-  String get sessionLogged => 'سُجِّل التمرين';
+  String get sessionSaved => 'حُفظ التمرين';
 
   @override
-  String get aMealIsLoggedToday => 'سجّلتِ وجبة اليوم';
+  String get youAddedAMealToday => 'أضفتِ وجبة اليوم';
 
   @override
-  String get logAMeal => 'سجّلي وجبة';
+  String get addWhatIAte => 'أضيفي ما أكلتِه';
 
   @override
   String get openOwnHubForToday => 'افتحي Own Hub ليومكِ';
@@ -8972,5 +8972,68 @@ class AppL10nAr extends AppL10n {
   @override
   String uploadItsPicturesUnderThisIdId(String id) {
     return 'ارفعي صورها تحت هذا المعرّف: $id';
+  }
+
+  @override
+  String get iDidThemAll => 'أدّيتُها كلها';
+
+  @override
+  String get nothingInTheLogYet => 'لا شيء في السجل بعد';
+
+  @override
+  String sendItAgainInTime(String time) {
+    return 'إعادة إرسال الرمز بعد $time';
+  }
+
+  @override
+  String get yourProgressCard => 'بطاقة تقدّمك';
+
+  @override
+  String get everythingYouHaveDoneOnOneCard =>
+      'كل ما أنجزتِه في بطاقة واحدة. لا يُشارَك إلا ما يظهر هنا.';
+
+  @override
+  String get showMyWeightChange => 'إظهار تغيّر وزني';
+
+  @override
+  String get offUnlessYouTurnItOnAnd =>
+      'مغلق ما لم تشغّليه، ولا يظهر إلا على هذه البطاقة.';
+
+  @override
+  String get yourCardFillsInAfterYourFirst => 'تمتلئ بطاقتك بعد أول تمرين.';
+
+  @override
+  String get shareMyCard => 'مشاركة بطاقتي';
+
+  @override
+  String get weeksTrained => 'أسابيع التدريب';
+
+  @override
+  String get bestRunInWeeks => 'أطول تتابع، بالأسابيع';
+
+  @override
+  String get mealsAdded => 'وجبات مُضافة';
+
+  @override
+  String get myProgressOnOwnHub => 'تقدّمي على Own Hub';
+
+  @override
+  String get workoutsDone => 'تمارين مُنجزة';
+
+  @override
+  String get weightSinceMyFirstWeighIn => 'الوزن منذ أول مرة سجّلتُه';
+
+  @override
+  String get ownHubAppWomenOnly => 'own-hub.app · للنساء فقط.';
+
+  @override
+  String get shareYourProgress => 'شاركي تقدّمك';
+
+  @override
+  String get aCardOfWhatYouHaveDone => 'بطاقة بما أنجزتِه، جاهزة للمشاركة';
+
+  @override
+  String weightKg(String weight) {
+    return '$weight كجم';
   }
 }

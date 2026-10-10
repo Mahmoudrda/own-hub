@@ -240,7 +240,7 @@ class CycleHubView extends StatelessWidget {
             ),
           ),
           AppPill(
-            l10n.loggedByYou,
+            l10n.notedByYou,
             background: AppColors.surfaceContainer,
             foreground: AppColors.onSurfaceVariant,
           ),
@@ -356,7 +356,7 @@ class CycleHubView extends StatelessWidget {
               Flexible(
                 child: AppPill(
                   suppressed.reason.contains(LoggedSymptom.severeCramps)
-                      ? l10n.severeCrampsLogged
+                      ? l10n.severeCrampsNoted
                       : loggedSymptomLabel(l10n, LoggedSymptom.heavyBleeding),
                   background: AppColors.errorContainer,
                   foreground: AppColors.error,
@@ -480,7 +480,7 @@ class CycleHubView extends StatelessWidget {
         ),
       ),
       Text(
-        l10n.youChooseWhatToLogYouCan,
+        l10n.youChooseWhatToAddYouCan,
         style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
       ),
       // Written in the margin, pointing back at the line above: what she

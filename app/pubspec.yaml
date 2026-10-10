@@ -114,6 +114,7 @@ dependencies:
   # and CoarseLocation (not linked) in ios/Runner/PrivacyInfo.xcprivacy and as
   # App interactions in android/play-data-safety.txt.
   firebase_analytics: ^12.6.0
+  share_plus: ^13.3.1
 
 dev_dependencies:
   flutter_test:

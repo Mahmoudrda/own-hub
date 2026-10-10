@@ -410,7 +410,7 @@ void main() {
       (1, 'a move', () => find.text('Glute bridge')),
       (1, 'more', () => _onStop(find.byTooltip('More'))),
       (2, 'log a set', () => find.text('Done · 12 reps')),
-      (2, 'log the move', () => find.text('I did all 3 sets, log them')),
+      (2, 'log the move', () => find.text('I did all 3 sets')),
       (2, 'pause', () => find.byTooltip('Pause')),
       (2, 'change the set', () => find.text('Change')),
       (3, 'another recipe', () => find.text('Koshari, portioned')),

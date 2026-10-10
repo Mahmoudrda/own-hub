@@ -53,7 +53,7 @@ import threading
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-SITE_ORIGIN = "https://ownhub.example"
+SITE_ORIGIN = "https://own-hub.app"
 """Must equal baseUrl in site/config.json (a test holds them together). Update
 both when the real domain exists."""
 
@@ -94,10 +94,14 @@ it to be kept 3 years from the last message sent. The one message goes out
 before her entry is deleted, so 180 days after she joined at the latest, and
 the proof is kept 3 years past that day. The privacy policy (section 3.10)
 says "3 years after the last message we send you"."""
-CONSENT_WORDING_VERSION = 1
-"""The waitlist consent sentence by number: "I agree. We will message you once
-when Own Hub opens, then delete your contact." Bump it whenever that sentence
-changes on either language's page."""
+CONSENT_WORDING_VERSION = 2
+"""The waitlist consent sentence by number. Bump it whenever that sentence
+changes on either language's page.
+
+  1  "I agree. We will message you once when Own Hub opens, then delete your
+     contact."
+  2  "I agree. We will message you once: an early invite if you are among the
+     first 100, or the day Own Hub opens. Then we delete your contact." """
 MAX_BODY_BYTES = 4096
 HONEYPOT_FIELD = "website"
 LANGS = ("en", "ar")
@@ -211,6 +215,38 @@ class Response:
     body: str = ""
 
 
+class OverLimitIps:
+    """Addresses already past DAILY_LIMIT_PER_IP today, held by this instance.
+
+    Every attempt is counted in Firestore (one write and one read) before the
+    limit is checked, so a flood from one address kept billing after it was
+    refused. Once an address is over, this instance answers "later" for it
+    without touching Firestore until the day changes. The answer is the same
+    one the counter gives, so nothing a visitor sees changes; only the bill
+    for a flood does. Bounded, and emptied when the day turns.
+    """
+
+    MAX_ENTRIES = 10_000
+
+    def __init__(self):
+        self._day = None
+        self._ips = set()
+
+    def has(self, ip_hash_: str, day: str) -> bool:
+        return self._day == day and ip_hash_ in self._ips
+
+    def add(self, ip_hash_: str, day: str) -> None:
+        if self._day != day or len(self._ips) >= self.MAX_ENTRIES:
+            self._day, self._ips = day, set()
+        self._ips.add(ip_hash_)
+
+    def clear(self) -> None:
+        self._day, self._ips = None, set()
+
+
+OVER_LIMIT = OverLimitIps()
+
+
 def handle(request: Request, store, key: Callable[[], bytes], now: dt.datetime) -> Response:
     origin = request.origin
     cors = {}
@@ -258,7 +294,11 @@ def handle(request: Request, store, key: Callable[[], bytes], now: dt.datetime) 
 
     try:
         hashed = ip_hash(key(), request.ip)
-        if store.count_attempt(hashed, now.date().isoformat(), now) > DAILY_LIMIT_PER_IP:
+        today = now.date().isoformat()
+        if OVER_LIMIT.has(hashed, today):
+            return answer("later")
+        if store.count_attempt(hashed, today, now) > DAILY_LIMIT_PER_IP:
+            OVER_LIMIT.add(hashed, today)
             return answer("later")
 
         parsed = normalise(fields.get("contact"))

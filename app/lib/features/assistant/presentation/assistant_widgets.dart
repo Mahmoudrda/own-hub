@@ -317,7 +317,7 @@ class AssistantRefusalBody extends StatelessWidget {
         children: [
           Text(l10n.whatIDidWithThatMessage, style: AppText.titleM),
           Text(
-            l10n.nothingWasLoggedAndNothingWasShared,
+            l10n.nothingWasSavedAndNothingWasShared,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
         ],

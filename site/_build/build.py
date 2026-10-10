@@ -211,6 +211,10 @@ class Config:
             new = f"{local}@{domain}"
             if old == new:
                 continue
+            # Already a mailbox on the site's own domain (info@, hello@):
+            # that is the owner's choice of name, not a stray personal address.
+            if old.lower().endswith(f"@{domain.lower()}"):
+                continue
             self.email_changes.append((old, new))
             self.values[key]["value"] = new
             if not old:

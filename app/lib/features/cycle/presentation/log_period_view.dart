@@ -174,7 +174,7 @@ class _LogPeriodViewState extends State<LogPeriodView> {
         ),
       ],
       children: [
-        Text(l10n.logAPeriod, style: AppText.titleL),
+        Text(l10n.noteAPeriod, style: AppText.titleL),
         AppField(
           label: l10n.startDate,
           hint: isoDay(_start),

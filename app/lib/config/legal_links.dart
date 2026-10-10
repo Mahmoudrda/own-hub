@@ -15,23 +15,23 @@ library;
 
 abstract final class LegalLinks {
   /// `https://…/privacy`
-  static const String privacyPolicy = '';
+  static const String privacyPolicy = 'https://own-hub.app/privacy';
 
   /// `https://…/terms`
-  static const String terms = '';
+  static const String terms = 'https://own-hub.app/terms';
 
   /// `https://…/support`
-  static const String support = '';
+  static const String support = 'https://own-hub.app/support';
 
   /// `https://…/delete-account`. This one also goes into Play Console under
   /// Data safety, Data deletion.
-  static const String deleteAccount = '';
+  static const String deleteAccount = 'https://own-hub.app/delete-account';
 
   /// The privacy mailbox: where "Ask for a copy" in Your data writes to.
   /// The same address as `contactPrivacy` in `site/config.json`, which the
-  /// privacy policy publishes; test/release/legal_links_test.dart holds the
-  /// two together.
-  static const String privacyEmail = 'mahmoud.reda.acc@gmail.com';
+  /// privacy policy publishes; test/release/compliance_copy_test.dart holds
+  /// the two together.
+  static const String privacyEmail = 'info@own-hub.app';
 
   /// True once every page has an address.
   static bool get allSet =>

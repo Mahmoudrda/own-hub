@@ -93,14 +93,16 @@ def test_the_waitlist_form_matches_the_function(prefix, lang):
 
 
 def test_the_consent_sentence_is_plain():
-    assert "We will message you once when Own Hub opens, then delete your contact." in _page(
-        "waitlist"
-    )
+    # Wording version 2 (functions/waitlist/join.py CONSENT_WORDING_VERSION).
+    assert (
+        "We will message you once: an early invite if you are among the first "
+        "100, or the day Own Hub opens. Then we delete your contact."
+    ) in _page("waitlist")
     # The brand name is isolated left to right inside the Arabic sentence.
     assert (
-        "سنراسلك مرة واحدة عند افتتاح <bdi>Own Hub</bdi>، ثم نحذف بيانات التواصل الخاصة بك."
-        in _page("ar", "waitlist")
-    )
+        "سنراسلك مرة واحدة: بدعوة مبكرة إن كنتِ من أول 100، أو يوم افتتاح "
+        "<bdi>Own Hub</bdi>. ثم نحذف بيانات التواصل الخاصة بك."
+    ) in _page("ar", "waitlist")
 
 
 @pytest.mark.parametrize("page", ["joined", "check", "later"])
@@ -458,6 +460,28 @@ def test_a_real_domain_fills_every_absolute_address(tmp_path):
         assert "ownhub.example" not in text, path
 
 
+def test_a_mailbox_already_on_the_domain_is_kept(tmp_path):
+    """info@ or hello@ on the site's own domain is the owner's choice of
+    mailbox, so it is published as is rather than renamed to privacy@."""
+    import json
+
+    folder = _copy_site(tmp_path)
+    path = folder / "config.json"
+    config = json.loads(path.read_text(encoding="utf-8"))
+    config["values"]["contactPrivacy"]["value"] = "hello@example.org"
+    config["values"]["contactSupport"]["value"] = "help@example.org"
+    path.write_text(json.dumps(config, ensure_ascii=False), encoding="utf-8")
+    out = tmp_path / "out"
+    result = _run_build(folder, "--base-url", "https://example.org/", "--out", str(out))
+    assert result.returncode == 0, result.stderr[-2000:]
+    privacy = (out / "privacy.html").read_text(encoding="utf-8")
+    support = (out / "support.html").read_text(encoding="utf-8")
+    assert 'href="mailto:hello@example.org"' in privacy
+    assert "help@example.org" in support
+    assert "privacy@example.org" not in privacy
+    assert "support@example.org" not in support
+
+
 def test_the_domain_can_come_from_the_environment(tmp_path):
     folder = _copy_site(tmp_path)
     out = tmp_path / "out"
@@ -529,8 +553,10 @@ def test_no_page_loads_anything_from_anyone_else():
         assert 'style="' not in text, f"{rel}: an inline style would break the CSP"
         for attr, url in re.findall(r'\s(src|srcset)="([^"]+)"', text):
             assert url.startswith("/"), f"{rel}: {url}"
+        own = _config()["baseUrl"].rstrip("/") + "/"
         for url in re.findall(r'<link [^>]*href="([^"]+)"', text):
-            assert url.startswith("/") or "ownhub.example" in url, f"{rel}: {url}"
+            # Relative, or this site's own address (canonical, hreflang).
+            assert url.startswith("/") or url.startswith(own), f"{rel}: {url}"
 
 
 @pytest.mark.parametrize("prefix", [(), ("ar",)])
@@ -570,4 +596,13 @@ def test_the_home_pages_promise_only_what_this_version_does():
     for claim in ("video call", "gym", "marketplace", "ai assistant", "artificial intelligence",
                   "join the community", "book a coach", "chat with"):
         assert claim not in en, claim
-    assert "there is no community and no\n            coaching" in en
+    assert "there is no community and no coaching" in " ".join(en.split())
+
+
+def test_before_launch_the_waitlist_is_the_first_thing_on_the_home_page():
+    for lang, offer in (("en", "The first 100 women on the list"), ("ar", "أول 100 امرأة في القائمة")):
+        html = _home(_SITE, lang)
+        form = html.index('class="waitlist"')
+        assert html.index('<h1>') < html.index(offer) < form < html.index('id="inside"')
+        # The offer promises Pro for later and nothing the app does not do.
+        assert html.count('class="waitlist"') == 1

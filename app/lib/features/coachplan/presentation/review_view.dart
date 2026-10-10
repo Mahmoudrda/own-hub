@@ -100,7 +100,7 @@ class ReviewView extends StatelessWidget {
     // nobody else — the codebase's own answer to a baked-in figure.
     final notLoggedLine = summary.rollupAvailable
         ? statedLine(
-            l10n.twoDaysWithoutAFoodLogAre,
+            l10n.twoDaysWithNoMealAddedAre,
             states: 2,
             hers: summary.daysNotLogged,
           )
@@ -134,8 +134,8 @@ class ReviewView extends StatelessWidget {
                   ),
                 ),
                 LabelledValue(
-                  label: l10n.foodLogged,
-                  value: l10n.loggedOfTotalLoggedDays(
+                  label: l10n.mealAdded,
+                  value: l10n.loggedOfTotalNotedDays(
                     '${summary.mealDaysLogged}',
                     '${summary.daysInWeek}',
                   ),

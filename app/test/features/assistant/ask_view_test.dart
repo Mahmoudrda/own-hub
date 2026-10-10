@@ -279,7 +279,7 @@ void main() {
       // Every nearby line promises that something was saved and will be sent,
       // and this feature queues nothing. None of them is used.
       for (final borrowed in [
-        l10n.youAreOfflineEverythingYouLogIs,
+        l10n.youAreOfflineEverythingYouAddIs,
         l10n.waitingForSignal,
         l10n.savedHereUntilYouHaveSignal,
         l10n.weCouldNotReachTheServerYour,

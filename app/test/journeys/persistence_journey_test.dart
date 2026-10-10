@@ -87,7 +87,7 @@ Future<void> _trainAndFinish(WidgetTester tester) async {
 
   var guard = 0;
   while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
-    final all = find.textContaining('log them');
+    final all = find.textContaining('I did');
     if (all.evaluate().isEmpty) break;
     await tester.tap(all.first);
     await tester.pumpAndSettle();
@@ -109,7 +109,7 @@ Future<void> _eatKoshari(WidgetTester tester) async {
   await _open(tester, 'E02');
   await tester.enterText(find.byType(TextField).first, 'koshari');
   await tester.pumpAndSettle();
-  await tester.tap(find.text('Log it'));
+  await tester.tap(find.text('Add it'));
   await tester.pumpAndSettle();
   await tester.pump(const Duration(seconds: 6));
   await tester.pumpAndSettle();

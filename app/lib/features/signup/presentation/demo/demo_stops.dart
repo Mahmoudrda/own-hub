@@ -65,7 +65,7 @@ enum DemoStop {
     DemoStop.player => l10n.oneMoveAtATimeTapWhen,
     DemoStop.recipes => l10n.homeCookingYouAlreadyKnowWrittenBy,
     DemoStop.weekPlan => l10n.aWeekOfDinnersPlannedForYou,
-    DemoStop.cycle => l10n.logYourPeriodAndHowYouFeel,
+    DemoStop.cycle => l10n.noteYourPeriodAndHowYouFeel,
     DemoStop.progress => l10n.yourWeeksYourPersonalBestsAndYour,
   };
 }

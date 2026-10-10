@@ -87,14 +87,14 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Log one set'), findsOneWidget);
+      expect(find.text('Finish one set'), findsOneWidget);
       expect(find.text('You know your way around'), findsNothing);
 
       // Complete arc: the summary. Same widget.
       await tester.pumpWidget(_host(_view()));
       await tester.pumpAndSettle();
       expect(find.text('You know your way around'), findsOneWidget);
-      expect(find.text('Log one set'), findsNothing);
+      expect(find.text('Finish one set'), findsNothing);
     });
 
     testWidgets('it names what carried forward', (tester) async {

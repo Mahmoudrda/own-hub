@@ -54,7 +54,7 @@ void main() {
       DayState.nothingDone: _en.todaysWorkoutIsReady,
       DayState.inProgress: _en.todayIsUnderWay,
       DayState.done: _en.sessionDone,
-      DayState.recalled: _en.sessionLogged,
+      DayState.recalled: _en.sessionSaved,
       DayState.restDay: _en.restDay,
     };
     expect(expected.keys.toSet(), DayState.values.toSet());

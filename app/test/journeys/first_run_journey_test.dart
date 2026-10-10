@@ -171,7 +171,7 @@ void main() {
       expect(find.text('Start day 1'), findsOneWidget);
 
       // Rule 17: the empty state says what will appear and why it is empty.
-      expect(find.text('Nothing logged yet'), findsOneWidget);
+      expect(find.text('Nothing added yet'), findsOneWidget);
       expect(find.textContaining('will sit here'), findsOneWidget);
 
       // The weekly rule, said once, before she can fail it, and stated
@@ -205,8 +205,8 @@ void main() {
       await tester.tap(find.text('Your first week'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Log one set'), findsOneWidget);
-      expect(find.text('Log one meal'), findsOneWidget);
+      expect(find.text('Finish one set'), findsOneWidget);
+      expect(find.text('Add one meal you ate'), findsOneWidget);
       expect(find.text('Finish one session'), findsOneWidget);
     });
   });
@@ -224,7 +224,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Nothing logged yet'),
+        find.text('Nothing added yet'),
         findsNothing,
         reason: 'one log leaves the day-one branch permanently',
       );
@@ -235,7 +235,7 @@ void main() {
 
       await tester.tap(find.text('Your first week'));
       await tester.pumpAndSettle();
-      expect(find.text('Log one set'), findsOneWidget);
+      expect(find.text('Finish one set'), findsOneWidget);
     });
 
     testWidgets('it goes of its own accord when the arc is finished', (

@@ -309,7 +309,7 @@ void main() {
       _phone(tester);
       await tester.pumpWidget(_host(LogsView(source: _FakeConsole())));
       await tester.pumpAndSettle();
-      expect(find.text('Nothing logged yet'), findsOneWidget);
+      expect(find.text('Nothing in the log yet'), findsOneWidget);
     });
 
     testWidgets('refused, it says why', (tester) async {

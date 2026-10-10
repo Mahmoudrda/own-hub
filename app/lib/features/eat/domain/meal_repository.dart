@@ -651,6 +651,11 @@ abstract class MealRepository {
   /// A live view of the same document, for the screen that is open.
   Stream<MealDay> watchDay(String dayId);
 
+  /// How many meals she has added, across every day this phone holds: a
+  /// meal slot of a day with anything in it is one meal. Counted on the
+  /// phone, for her progress card (P05). Never a query.
+  int get mealsAdded;
+
   /// The single write path for a meal log.
   ///
   /// Reachable only once a log's undo window has closed — the five seconds live
@@ -826,6 +831,12 @@ class InMemoryMealRepository implements MealRepository {
   /// The shared documents. Two repositories over one store are two devices.
   final MealStore store;
 
+
+  @override
+  int get mealsAdded => store.days.values.fold(
+    0,
+    (count, day) => count + day.slots.values.where((items) => items.isNotEmpty).length,
+  );
   @override
   DataState get dataState => dataStateOf(holdsNothing: store.days.isEmpty);
 

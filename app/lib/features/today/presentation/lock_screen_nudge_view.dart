@@ -97,7 +97,7 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
         // Names the meal when the caller has said what it is, and otherwise
         // says only that food was logged. It used to name the prototype's
         // breakfast and its macros whatever the nudge had actually offered.
-        describe: widget.mealLine ?? l10n.foodLogged,
+        describe: widget.mealLine ?? l10n.mealAdded,
         // The meal itself belongs to the Eat group; T03 owns the tap, not the
         // collection. Until that command exists this marks the arc step, which is
         // G3's own document.
@@ -228,7 +228,7 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
               children: [
                 Expanded(
                   child: AppButton(
-                    l10n.logIt,
+                    l10n.addIt,
                     height: 48,
                     fontSize: 15,
                     onPressed: _log,

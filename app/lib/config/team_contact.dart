@@ -11,7 +11,7 @@ abstract final class TeamContact {
   static const String coachWhatsApp = '';
 
   /// The monitored support mailbox: `contactSupport` in site/config.json.
-  static const String supportEmail = 'mahmoud.reda.acc@gmail.com';
+  static const String supportEmail = 'support@own-hub.app';
 
   static bool get hasWhatsApp => coachWhatsApp.trim().isNotEmpty;
 }

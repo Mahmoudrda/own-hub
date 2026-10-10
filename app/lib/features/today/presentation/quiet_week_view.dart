@@ -254,7 +254,7 @@ class _QuietWeekViewState extends State<QuietWeekView> {
           ),
           const HandRule(seed: 53, height: 18),
           MealCard(
-            title: l10n.orJustLogBreakfast,
+            title: l10n.orJustAddBreakfast,
             loggedAt: DateTime(_date.year, _date.month, _date.day, 8, 40),
             onTap: () => openScreen(context, 'E02', widget.onOpenMeal),
           ),

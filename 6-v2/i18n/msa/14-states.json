@@ -3,7 +3,7 @@
   "Waiting for signal": "في انتظار الإشارة",
   "Saved here until you have signal": "محفوظ هنا حتى تتوفّر الإشارة",
   "Saved. It will sync when you have signal.": "تم الحفظ. ستتم المزامنة عند توفّر الإشارة.",
-  "You are offline. Everything you log is saved here and sent when you reconnect.": "أنتِ غير متّصلة بالإنترنت. كل ما تسجّلينه محفوظ هنا ويُرسل عند عودة الاتصال.",
+  "You are offline. Everything you add is saved here and sent when you reconnect.": "أنتِ غير متّصلة بالإنترنت. كل ما تضيفينه محفوظ هنا ويُرسل عند عودة الاتصال.",
   "Nothing was lost.": "لم يُفقد شيء.",
   "Try again": "حاولي مرة أخرى",
   "That did not save. Tap to try again.": "لم يتم الحفظ. اضغطي للمحاولة مرة أخرى.",

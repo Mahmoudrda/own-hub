@@ -132,7 +132,7 @@ class CyclePatternsView extends StatelessWidget {
                 // from. `countLabel`, never `NumberFormat` — Western digits in
                 // both locales (`P0-A11Y-01`).
                 Text(
-                  l10n.loggedOfTotalLoggedDays(
+                  l10n.loggedOfTotalNotedDays(
                     countLabel(snapshot.lowEnergyDays),
                     countLabel(snapshot.counts.logged),
                   ),
@@ -141,7 +141,7 @@ class CyclePatternsView extends StatelessWidget {
                   ),
                 ),
               ],
-              Text(l10n.thisDescribesYourLogsItDoesNot, style: AppText.bodyM),
+              Text(l10n.thisDescribesWhatYouNotedItDoes, style: AppText.bodyM),
             ],
           ),
           // A setting, not a finding: a flat tint rather than a second sheet
@@ -151,11 +151,11 @@ class CyclePatternsView extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
             children: [
               CycleSwitchRow(
-                title: l10n.offerAnEasierWorkoutWhenILog,
+                title: l10n.offerAnEasierWorkoutWhenINote,
                 subtitle: l10n.changesWhatWeSuggestNeverYourPlan,
                 trailing: AppToggle(
                   value: snapshot.easierWhenLowEnergy,
-                  semanticLabel: l10n.offerAnEasierWorkoutWhenILog,
+                  semanticLabel: l10n.offerAnEasierWorkoutWhenINote,
                   onChanged: onToggleEasier,
                 ),
               ),

@@ -1,6 +1,6 @@
 // P03 — Personal bests.
 //
-// The screen's own note is the rule it must not break: "Sessions you logged as
+// The screen's own note is the rule it must not break: "Sessions you added with
 // 'I already did it' never set a best, because the numbers were copied." That
 // sentence has to be on the screen, and the detector behind it has to mean it —
 // which is tested in test/domain/rewards/personal_best_detector_test.dart.
@@ -115,7 +115,7 @@ void main() {
 
       expect(
         find.text(
-          'Sessions you logged as "I already did it" never set a best, because '
+          'Sessions you added with "I already did it" never set a best, because '
           'the numbers were copied.',
         ),
         findsOneWidget,

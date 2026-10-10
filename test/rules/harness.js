@@ -145,6 +145,17 @@ export async function admin(who) {
 }
 
 /**
+ * The owner as `functions/tools/grant_admin.py` makes them: the `admin` claim
+ * and nothing else. Never `verified`: the console is let past the women-only
+ * gate without an ID check (app_router.dart), so this is the account that
+ * actually runs the console.
+ */
+export async function consoleAdmin(who) {
+  const e = await getEnv();
+  return ctx(e, who, { admin: true });
+}
+
+/**
  * N1: the same claims, signed in with another provider ('password',
  * 'google.com', 'apple.com', ...). No SMS step stood behind this account.
  */

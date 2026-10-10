@@ -181,7 +181,7 @@ class _RecipeViewState extends State<RecipeView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
       );
       _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
@@ -190,7 +190,7 @@ class _RecipeViewState extends State<RecipeView> {
 
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => service.commit(prepared.write),
       ),
     );
@@ -235,7 +235,7 @@ class _RecipeViewState extends State<RecipeView> {
       ),
       footer: [
         AppButton(
-          l10n.cookedItLogMyBowl,
+          l10n.iCookedItAndAteABowl,
           icon: Icons.check,
           onPressed: food == null || sizes.isEmpty
               ? null

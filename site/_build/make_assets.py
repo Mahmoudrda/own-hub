@@ -88,7 +88,7 @@ def out(*parts: str) -> str:
 def fonts() -> None:
     from fontTools import subset
 
-    for weight in (400, 600):
+    for weight in (400, 500, 600):
         src = os.path.join(REPO, "app", "assets", "fonts", f"Rubik-{weight}.ttf")
         for name, ranges in (("latin", LATIN), ("arabic", ARABIC)):
             subset.main([

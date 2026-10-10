@@ -351,7 +351,7 @@ class _EatViewState extends State<EatView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
       );
       _offerUndo(
         handle,
@@ -378,7 +378,7 @@ class _EatViewState extends State<EatView> {
         // the exact defect PHASE1-FIXES §8 records on R07's button. Until a
         // parameterised key exists, the honest sentence is the one that states
         // less.
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => _service(l10n).commit(prepared.write),
       ),
     );
@@ -542,7 +542,7 @@ class _EatViewState extends State<EatView> {
         MealRow(
           title: _titleOf(suggestion),
           meta: _metaOf(l10n, suggestion),
-          logLabel: l10n.log,
+          logLabel: l10n.iAteThis,
           primary: suggestion.primary,
           onLog: () => _log(suggestion.entries, view.activeSlot),
         ),
@@ -555,7 +555,7 @@ class _EatViewState extends State<EatView> {
           // she had actually eaten yesterday, on the row whose whole promise is
           // that it repeats HER meal.
           meta: _metaOf(l10n, widget.yesterdaysLunch!),
-          logLabel: l10n.log,
+          logLabel: l10n.iAteThis,
           onLog: () => _log(widget.yesterdaysLunch!.entries, view.activeSlot),
         ),
       if (_screenedToNothing(view.suggestions)) _guardNote(l10n),
@@ -583,7 +583,7 @@ class _EatViewState extends State<EatView> {
       MealRow(
         title: planned.title,
         meta: planned.meta,
-        logLabel: l10n.log,
+        logLabel: l10n.iAteThis,
         primary: true,
         // A planned meal CORRECTS on a re-log — a different method entirely
         // from the free log above. HANDOFF rule 3.
@@ -609,7 +609,7 @@ class _EatViewState extends State<EatView> {
     final prepared = outcome as MealLogPrepared;
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => _service(l10n).commit(prepared.write),
       ),
     );
@@ -630,7 +630,7 @@ class _EatViewState extends State<EatView> {
   List<Widget> _stillLooking(AppL10n l10n) => [
     _masthead(l10n),
     Text(
-      l10n.lookingForWhatYouHaveLogged,
+      l10n.lookingForWhatYouHaveAdded,
       style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
     ),
   ];
@@ -653,7 +653,7 @@ class _EatViewState extends State<EatView> {
         icon: Icons.restaurant,
         art: AppArt.bowlSalad,
         title: l10n.noPlatesYet,
-        body: l10n.logSomethingTwiceAndItBecomesA,
+        body: l10n.addSomethingTwiceAndItBecomesA,
       ),
       _box(l10n),
       // Planning her food is a reason she installed the app. On day one the
@@ -685,7 +685,7 @@ class _EatViewState extends State<EatView> {
           MealRow(
             title: _titleOf(starter),
             meta: _starterMeta(l10n, view.activeSlot, starter),
-            logLabel: l10n.log,
+            logLabel: l10n.iAteThis,
             primary: starter.primary,
             onLog: () => _log(starter.entries, view.activeSlot),
           ),

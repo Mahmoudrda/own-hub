@@ -353,7 +353,7 @@ class EatAppState {
     final handle = session.submit(
       outcome as MealLogPrepared,
       slot: slot,
-      describe: l10n.foodLogged,
+      describe: l10n.mealAdded,
     );
     // **No snackbar here.** This used to raise one and then hand the handle
     // back, and its only caller — Home's plate — carries that handle straight

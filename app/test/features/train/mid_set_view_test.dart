@@ -93,7 +93,7 @@ void main() {
       expect(find.textContaining('Last time'), findsNothing);
       expect(
         find.text(
-          'No history for this move yet. What you log today is what the next '
+          'No history for this move yet. What you do today is what the next '
           'one is measured against.',
         ),
         findsOneWidget,
@@ -348,7 +348,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('I did all 3 sets, log them'));
+      await tester.tap(find.text('I did all 3 sets'));
       await tester.pump(const Duration(seconds: 6));
 
       expect(moveHandles, hasLength(1));
@@ -375,11 +375,11 @@ void main() {
     expect(find.text('تمّ · 12 كجم × 10'), findsOneWidget);
     expect(
       find.text(
-        'لا سجل لهذه الحركة بعد. ما تسجّلينه اليوم هو ما يُقاس عليه ما يليه.',
+        'لا سجل لهذه الحركة بعد. ما تؤدّينه اليوم هو ما يُقاس عليه ما يليه.',
       ),
       findsOneWidget,
     );
-    expect(find.text('أدّيتُ المجموعات الثلاث، سجّليها'), findsOneWidget);
+    expect(find.text('أدّيتُ المجموعات الثلاث'), findsOneWidget);
     expect(find.text('Done · 12 kg × 10'), findsNothing);
   });
 

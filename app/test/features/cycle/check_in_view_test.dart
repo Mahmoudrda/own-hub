@@ -161,7 +161,7 @@ void main() {
     // could trigger it. Every assertion below is about that path being real.
 
     Future<void> openMore(WidgetTester tester) async {
-      final more = find.text('More to log: sleep, bloating, bleeding');
+      final more = find.text('More to note: sleep, bloating, bleeding');
       await tester.ensureVisible(more);
       await tester.tap(more);
       await tester.pumpAndSettle();
@@ -185,7 +185,7 @@ void main() {
         expect(find.text(hidden), findsNothing);
       }
       expect(
-        find.text('More to log: sleep, bloating, bleeding'),
+        find.text('More to note: sleep, bloating, bleeding'),
         findsOneWidget,
       );
 

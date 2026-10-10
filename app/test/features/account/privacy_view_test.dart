@@ -317,7 +317,7 @@ void main() {
       // She revokes her coach's access with no signal. The row sits below the
       // fold on a 390x844 phone, so it has to be scrolled to — tapping an
       // off-screen row is how a widget test silently asserts nothing.
-      final row = find.text('My coach can see my logs');
+      final row = find.text('My coach can see my meals and workouts');
       await tester.ensureVisible(row);
       await tester.pumpAndSettle();
       await tester.tap(row);

@@ -157,12 +157,12 @@ class _FirstWeekViewState extends State<FirstWeekView> {
     // "Log one set", in the past tense, to a woman who has logged no set at all
     // and whose plan may hold no goblet squat. The step's own title is the
     // instruction; the prototype's lift is not an example worth inventing.
-    _Step(FirstWeekStep.logSet, l10n.logOneSet, ''),
+    _Step(FirstWeekStep.logSet, l10n.finishOneSet, ''),
     // No subtitle on this one either, and for the reason written three lines
     // above. `youDidFulAndBaladi` — "You did · ful and baladi" — is the past
     // tense about a meal she has not logged, and one of the two instances of
     // this defect was fixed in the same pass while this one was missed.
-    _Step(FirstWeekStep.logMeal, l10n.logOneMeal, ''),
+    _Step(FirstWeekStep.logMeal, l10n.addOneMealYouAte, ''),
     // `n15MinutesFiveMoves` — "15 minutes, five moves" — describes the
     // prototype's session, not today's, and this screen is handed no session.
     _Step(FirstWeekStep.finishSession, l10n.finishOneSession, ''),

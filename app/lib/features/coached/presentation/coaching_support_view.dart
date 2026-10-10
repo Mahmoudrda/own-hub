@@ -208,7 +208,7 @@ class CoachingSupportView extends StatelessWidget {
             ],
           ),
         Text(
-          l10n.yourWorkoutResultsAndFoodLogsAre,
+          l10n.yourWorkoutResultsAndTheMealsYou,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],

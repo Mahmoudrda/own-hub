@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import base64
 import os
+import re
 import struct
 import subprocess
 import sys
@@ -187,10 +188,15 @@ def test_verify_identity_refuses_a_bomb_before_the_pipeline(stubbed):  # noqa: F
 
 def test_opencv_carries_its_own_ceiling_once_faces_is_imported():
     # OpenCV reads these once, when the library loads, so faces.py has to set
-    # them before `import cv2`. Checked in a fresh interpreter, the way main.py
-    # loads it.
+    # them before `import cv2`. Checked in a fresh interpreter, the way the
+    # deployed code loads it: main.py no longer imports OpenCV at all (only the
+    # two verification calls need it, through _deps()), and the moment the
+    # verification wiring is imported the ceilings are already in place.
     script = (
-        "import os, main\n"
+        "import os, sys, main\n"
+        "assert 'cv2' not in sys.modules, 'main imported OpenCV at load'\n"
+        "from identity import providers_selfhosted\n"
+        "assert 'cv2' in sys.modules\n"
         "print(os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'], "
         "os.environ['OPENCV_IO_MAX_IMAGE_WIDTH'], "
         "os.environ['OPENCV_IO_MAX_IMAGE_HEIGHT'])\n"
@@ -208,3 +214,23 @@ def test_opencv_carries_its_own_ceiling_once_faces_is_imported():
     pixels, width, height = result.stdout.split()
     assert int(pixels) == config.MAX_PIXELS
     assert int(width) == int(height) == config.MAX_IMAGE_SIDE
+
+
+def test_only_faces_py_imports_opencv():
+    # The ceilings above are set in faces.py, on the line before `import cv2`.
+    # A second deployed module importing cv2 first would load it without them.
+    # tools/ is the owner's local admin tooling, never deployed (firebase.json
+    # ignores it) and never fed a member's upload.
+    importers = []
+    for root, _, files in os.walk(_FUNCTIONS):
+        if any(part in root for part in ("/.venv", "/venv", "/tests", "/tools", "__pycache__")):
+            continue
+        for name in files:
+            if not name.endswith(".py"):
+                continue
+            path = os.path.join(root, name)
+            with open(path, encoding="utf-8") as handle:
+                text = handle.read()
+            if re.search(r"^\s*(import cv2|from cv2 )", text, re.M):
+                importers.append(os.path.relpath(path, _FUNCTIONS))
+    assert importers == [os.path.join("identity", "faces.py")]

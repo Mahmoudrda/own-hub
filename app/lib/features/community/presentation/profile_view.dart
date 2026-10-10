@@ -186,7 +186,7 @@ class ProfileView extends StatelessWidget {
                   // "She chooses what shows here. Logs, weight and photos are
                   // never on a profile."
                   Text(
-                    l10n.sheChoosesWhatShowsHereLogsWeight,
+                    l10n.sheChoosesWhatShowsHereMealsWorkouts,
                     style: AppText.bodyM.copyWith(
                       color: AppColors.onSurfaceVariant,
                     ),

@@ -90,7 +90,7 @@ class WhatsInsideView extends StatelessWidget {
           _Promise(
             icon: Icons.water_drop_outlined,
             title: l10n.yourCycleOnThisPhone,
-            body: l10n.logYourPeriodAndHowYouFeel,
+            body: l10n.noteYourPeriodAndHowYouFeel,
           ),
         ],
         const HandRule(seed: 32, height: 8),

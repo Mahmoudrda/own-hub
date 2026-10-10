@@ -68,7 +68,7 @@
   "n": 10
  },
  {
-  "s": "Log",
+  "s": "I ate this",
   "n": 10
  },
  {
@@ -448,7 +448,7 @@
   "n": 3
  },
  {
-  "s": "Logged by you",
+  "s": "Noted by you",
   "n": 3
  },
  {
@@ -584,7 +584,7 @@
   "n": 3
  },
  {
-  "s": "You logged low energy and mild cramps.",
+  "s": "You noted low energy and mild cramps.",
   "n": 3
  },
  {
@@ -880,11 +880,11 @@
   "n": 2
  },
  {
-  "s": "Log a period",
+  "s": "Note a period",
   "n": 2
  },
  {
-  "s": "logged",
+  "s": "eaten",
   "n": 2
  },
  {
@@ -1836,7 +1836,7 @@
   "n": 1
  },
  {
-  "s": "5 days · 2 days not logged",
+  "s": "5 days · 2 days not noted",
   "n": 1
  },
  {
@@ -1880,7 +1880,7 @@
   "n": 1
  },
  {
-  "s": "6 logged days · 2 cycles",
+  "s": "6 noted days · 2 cycles",
   "n": 1
  },
  {
@@ -2208,7 +2208,7 @@
   "n": 1
  },
  {
-  "s": "Adding updates your plan. It does not log the meal as eaten.",
+  "s": "Adding updates your plan. It does not mark the meal as eaten.",
   "n": 1
  },
  {
@@ -2616,7 +2616,7 @@
   "n": 1
  },
  {
-  "s": "Changing the plan never changes a log you already saved. Tapping twice does not create a second log.",
+  "s": "Changing the plan never changes a meal you already added. Tapping twice does not add it twice.",
   "n": 1
  },
  {
@@ -2768,7 +2768,7 @@
   "n": 1
  },
  {
-  "s": "Cooked it, log my bowl",
+  "s": "I cooked it and ate a bowl",
   "n": 1
  },
  {
@@ -2948,7 +2948,7 @@
   "n": 1
  },
  {
-  "s": "Days you logged food",
+  "s": "Days you added what you ate",
   "n": 1
  },
  {
@@ -3316,7 +3316,7 @@
   "n": 1
  },
  {
-  "s": "Five dinners, built from recipes you have logged before. Swap any of them.",
+  "s": "Five dinners, built from recipes you have eaten before. Swap any of them.",
   "n": 1
  },
  {
@@ -3360,7 +3360,7 @@
   "n": 1
  },
  {
-  "s": "Food logged",
+  "s": "Meal added",
   "n": 1
  },
  {
@@ -3708,7 +3708,7 @@
   "n": 1
  },
  {
-  "s": "I did all 3 sets, log them",
+  "s": "I did all 3 sets",
   "n": 1
  },
  {
@@ -3816,7 +3816,7 @@
   "n": 1
  },
  {
-  "s": "Irregular cycles, hormonal contraception and perimenopause all use this mode: your logs, no forecast.",
+  "s": "Irregular cycles, hormonal contraception and perimenopause all use this mode: what you noted, no forecast.",
   "n": 1
  },
  {
@@ -4092,39 +4092,39 @@
   "n": 1
  },
  {
-  "s": "Log both · 696 kcal",
+  "s": "I ate both · 696 kcal",
   "n": 1
  },
  {
-  "s": "Log it",
+  "s": "Add it",
   "n": 1
  },
  {
-  "s": "Log lunch",
+  "s": "I ate lunch",
   "n": 1
  },
  {
-  "s": "Log one meal",
+  "s": "Add one meal you ate",
   "n": 1
  },
  {
-  "s": "Log one set",
+  "s": "Finish one set",
   "n": 1
  },
  {
-  "s": "Log something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.",
+  "s": "Add something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.",
   "n": 1
  },
  {
-  "s": "Logged 1:13 · 1 serving",
+  "s": "Added 1:13 · 1 serving",
   "n": 1
  },
  {
-  "s": "Logged from memory. Your week counts it like any other session.",
+  "s": "Added from memory. Your week counts it like any other session.",
   "n": 1
  },
  {
-  "s": "logs itself",
+  "s": "counts itself",
   "n": 1
  },
  {
@@ -4164,11 +4164,11 @@
   "n": 1
  },
  {
-  "s": "Lunch logged · 1 serving",
+  "s": "Lunch added · 1 serving",
   "n": 1
  },
  {
-  "s": "Lunch logged · 696 kcal",
+  "s": "Lunch added · 696 kcal",
   "n": 1
  },
  {
@@ -4308,7 +4308,7 @@
   "n": 1
  },
  {
-  "s": "More to log: sleep, bloating, bleeding",
+  "s": "More to note: sleep, bloating, bleeding",
   "n": 1
  },
  {
@@ -4348,7 +4348,7 @@
   "n": 1
  },
  {
-  "s": "My coach can see my logs",
+  "s": "My coach can see my meals and workouts",
   "n": 1
  },
  {
@@ -4484,7 +4484,7 @@
   "n": 1
  },
  {
-  "s": "No member data is ever included: no logs, no photos, no cycle.",
+  "s": "No member data is ever included: no meals or workouts, no photos, no cycle.",
   "n": 1
  },
  {
@@ -4652,7 +4652,7 @@
   "n": 1
  },
  {
-  "s": "Nothing logged yet",
+  "s": "Nothing added yet",
   "n": 1
  },
  {
@@ -4668,7 +4668,7 @@
   "n": 1
  },
  {
-  "s": "Nothing was logged and nothing was shared. Your cycle information is not visible to me unless you turn that on.",
+  "s": "Nothing was saved and nothing was shared. Your cycle information is not visible to me unless you turn that on.",
   "n": 1
  },
  {
@@ -4744,7 +4744,7 @@
   "n": 1
  },
  {
-  "s": "Offer an easier workout when I log low energy",
+  "s": "Offer an easier workout when I note low energy",
   "n": 1
  },
  {
@@ -4816,7 +4816,7 @@
   "n": 1
  },
  {
-  "s": "One minute · it is filled in from your logs",
+  "s": "One minute · it is filled in from what you added",
   "n": 1
  },
  {
@@ -4828,7 +4828,7 @@
   "n": 1
  },
  {
-  "s": "One nudge a day at most, at the hour you usually log. Ignore three and they stop by themselves.",
+  "s": "One nudge a day at most, at your usual time. Ignore three and they stop by themselves.",
   "n": 1
  },
  {
@@ -4904,7 +4904,7 @@
   "n": 1
  },
  {
-  "s": "Or just log breakfast",
+  "s": "Or just add breakfast",
   "n": 1
  },
  {
@@ -5364,7 +5364,7 @@
   "n": 1
  },
  {
-  "s": "Revisions default to future dates. A session she has already started, and anything she has already logged, stay on the version she used.",
+  "s": "Revisions default to future dates. A session she has already started, and anything she has already added, stay on the version she used.",
   "n": 1
  },
  {
@@ -5684,7 +5684,7 @@
   "n": 1
  },
  {
-  "s": "Sessions you logged as \"I already did it\" never set a best, because the numbers were copied.",
+  "s": "Sessions you added with \"I already did it\" never set a best, because the numbers were copied.",
   "n": 1
  },
  {
@@ -5728,7 +5728,7 @@
   "n": 1
  },
  {
-  "s": "Severe cramps logged",
+  "s": "Severe cramps noted",
   "n": 1
  },
  {
@@ -5780,7 +5780,7 @@
   "n": 1
  },
  {
-  "s": "She chooses what shows here. Logs, weight and photos are never on a profile.",
+  "s": "She chooses what shows here. Meals, workouts, weight and photos are never on a profile.",
   "n": 1
  },
  {
@@ -5880,7 +5880,7 @@
   "n": 1
  },
  {
-  "s": "So we're logging",
+  "s": "So we're adding",
   "n": 1
  },
  {
@@ -6120,7 +6120,7 @@
   "n": 1
  },
  {
-  "s": "Tell you the portion of a dish you already log",
+  "s": "Tell you the portion of a dish you already eat",
   "n": 1
  },
  {
@@ -6136,7 +6136,7 @@
   "n": 1
  },
  {
-  "s": "That's right · log 696 kcal",
+  "s": "That's right · add 696 kcal",
   "n": 1
  },
  {
@@ -6184,7 +6184,7 @@
   "n": 1
  },
  {
-  "s": "This describes your logs. It does not explain the cause or predict every cycle.",
+  "s": "This describes what you noted. It does not explain the cause or predict every cycle.",
   "n": 1
  },
  {
@@ -6300,7 +6300,7 @@
   "n": 1
  },
  {
-  "s": "Today's session and the meal you usually eat at this hour will sit here. Log one thing and it starts filling itself in.",
+  "s": "Today's session and the meal you usually eat at this hour will sit here. Add one thing and it starts filling itself in.",
   "n": 1
  },
  {
@@ -6348,7 +6348,7 @@
   "n": 1
  },
  {
-  "s": "Tuesday 8:40 · logged from the lock screen",
+  "s": "Tuesday 8:40 · added from the lock screen",
   "n": 1
  },
  {
@@ -6376,7 +6376,7 @@
   "n": 1
  },
  {
-  "s": "Two days without a food log are shown as not logged, not as meals skipped.",
+  "s": "Two days with no meal added are shown as nothing added, not as meals skipped.",
   "n": 1
  },
  {
@@ -6652,7 +6652,7 @@
   "n": 1
  },
  {
-  "s": "We'll log",
+  "s": "We'll add",
   "n": 1
  },
  {
@@ -6796,7 +6796,7 @@
   "n": 1
  },
  {
-  "s": "What you logged",
+  "s": "What you added",
   "n": 1
  },
  {
@@ -6936,7 +6936,7 @@
   "n": 1
  },
  {
-  "s": "Yesterday’s logs and any session you already started stay as they were.",
+  "s": "What you added yesterday and any session you already started stay as they were.",
   "n": 1
  },
  {
@@ -6984,7 +6984,7 @@
   "n": 1
  },
  {
-  "s": "You choose what to log. You can change or delete it any time.",
+  "s": "You choose what to add. You can change or delete it any time.",
   "n": 1
  },
  {
@@ -7016,11 +7016,11 @@
   "n": 1
  },
  {
-  "s": "You logged low energy on 4 of 6 logged days in the first 3 days of your last 2 periods.",
+  "s": "You noted low energy on 4 of 6 noted days in the first 3 days of your last 2 periods.",
   "n": 1
  },
  {
-  "s": "You logged more hunger. Add a snack if you want one.",
+  "s": "You noted more hunger. Add a snack if you want one.",
   "n": 1
  },
  {
@@ -7120,7 +7120,7 @@
   "n": 1
  },
  {
-  "s": "Your logs, weight, photos and phone number are never visible to another member. These settings are only about what you choose to show.",
+  "s": "Your meals, workouts, weight, photos and phone number are never visible to another member. These settings are only about what you choose to show.",
   "n": 1
  },
  {
@@ -7144,11 +7144,11 @@
   "n": 1
  },
  {
-  "s": "Your number, your ID and your logs are never shown to members.",
+  "s": "Your number, your ID, your meals and your workouts are never shown to members.",
   "n": 1
  },
  {
-  "s": "Your own workouts, recipes, logs and My cycle carry on exactly as before. Cycle sharing switched itself off when the coaching ended.",
+  "s": "Your own workouts, recipes, meals and My cycle carry on exactly as before. Cycle sharing switched itself off when the coaching ended.",
   "n": 1
  },
  {
@@ -7220,7 +7220,7 @@
   "n": 1
  },
  {
-  "s": "Your sessions count here as you save them. There is nothing extra to log. Nobody sees your weights, only that a session happened.",
+  "s": "Your sessions count here as you save them. There is nothing extra to do. Nobody sees your weights, only that a session happened.",
   "n": 1
  },
  {
@@ -7236,7 +7236,7 @@
   "n": 1
  },
  {
-  "s": "Your week, from your logs",
+  "s": "Your week, from what you added",
   "n": 1
  },
  {
@@ -7244,7 +7244,7 @@
   "n": 1
  },
  {
-  "s": "Your workout results and food logs are part of coaching. Cycle information is separate, and yours.",
+  "s": "Your workout results and the meals you add are part of coaching. Cycle information is separate, and yours.",
   "n": 1
  },
  {

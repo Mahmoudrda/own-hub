@@ -225,7 +225,7 @@ class CoachingPlanView extends StatelessWidget {
                 ),
                 // One tap, then five seconds to take it back. No confirmation.
                 trailing: AppLogButton(
-                  l10n.log,
+                  l10n.iAteThis,
                   primary: true,
                   onPressed: onLogMeal,
                 ),

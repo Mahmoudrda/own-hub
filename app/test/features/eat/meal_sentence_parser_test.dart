@@ -89,7 +89,7 @@ void main() {
     test('the totals are what the footer button names', () {
       final parse = _parser.parse('koshari and 2 eggs');
 
-      // E02's "Log both · 696 kcal".
+      // E02's "I ate both · 696 kcal".
       expect(parse.kcal, 696);
       expect(parse.proteinG, 31);
     });

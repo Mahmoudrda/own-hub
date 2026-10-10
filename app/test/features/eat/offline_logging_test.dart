@@ -241,7 +241,7 @@ void main() {
 
         final handle = bus.submit(
           UndoableLog(
-            describe: 'Food logged',
+            describe: 'Meal added',
             commit: () => service.commit(prepared.write),
           ),
         );
@@ -283,7 +283,7 @@ void main() {
 
         bus.submit(
           UndoableLog(
-            describe: 'Food logged',
+            describe: 'Meal added',
             commit: () => service.commit(prepared.write),
           ),
         );

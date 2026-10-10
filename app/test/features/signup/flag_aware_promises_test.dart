@@ -298,14 +298,14 @@ void main() {
     testWidgets('release flags: no coach set-up, no members', (tester) async {
       await _pump(tester, const YoureInView());
       expect(find.text(en.imACoachSetUpMyProfile), findsNothing);
-      expect(find.text(en.yourNumberYourIdAndYourLogs), findsNothing);
-      expect(find.text(en.yourNumberYourIdAndYourLogs_10nei), findsOneWidget);
+      expect(find.text(en.yourNumberYourIdYourMealsAnd), findsNothing);
+      expect(find.text(en.yourNumberYourIdYourMealsAnd_1ix08), findsOneWidget);
     });
 
     testWidgets('release flags, Arabic', (tester) async {
       await _pump(tester, const YoureInView(), locale: const Locale('ar'));
       expect(find.text(ar.setUpMyCoachProfile), findsNothing);
-      expect(find.text(ar.yourNumberYourIdAndYourLogs_10nei), findsOneWidget);
+      expect(find.text(ar.yourNumberYourIdYourMealsAnd_1ix08), findsOneWidget);
     });
 
     testWidgets('coach app on: the coach set-up returns', (tester) async {
@@ -315,7 +315,7 @@ void main() {
 
     testWidgets('community on: the members line returns', (tester) async {
       await _pump(tester, const YoureInView(), on: _community);
-      expect(find.text(en.yourNumberYourIdAndYourLogs), findsOneWidget);
+      expect(find.text(en.yourNumberYourIdYourMealsAnd), findsOneWidget);
     });
   });
 

@@ -5,13 +5,22 @@
    hand_tokens.dart and app/lib/ui/hand/art_palette.dart. */
 
 /* ---------- Rubik, self-hosted. Licence: /assets/fonts/OFL-Rubik.txt ----------
-   Two weights, 400 and 600, one Latin and one Arabic file each. unicode-range means an English
+   Three weights, as in the app: 400 for reading, 500 for labels and
+   navigation, 600 for headings and buttons. One Latin and one Arabic file each. unicode-range means an English
    page never downloads the Arabic glyphs, and the other way round only the
    Latin it needs (digits, the brand name). */
 @font-face {
   font-family: "Rubik";
   src: url("/assets/fonts/rubik-latin-400.woff2") format("woff2");
   font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Rubik";
+  src: url("/assets/fonts/rubik-latin-500.woff2") format("woff2");
+  font-weight: 500;
   font-display: swap;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -28,6 +37,14 @@
   font-family: "Rubik";
   src: url("/assets/fonts/rubik-arabic-400.woff2") format("woff2");
   font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+200C-200F, U+2010-2011, U+204F,
+    U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: "Rubik";
+  src: url("/assets/fonts/rubik-arabic-500.woff2") format("woff2");
+  font-weight: 500;
   font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+200C-200F, U+2010-2011, U+204F,
     U+FB50-FDFF, U+FE70-FEFF;
@@ -66,14 +83,28 @@
   --measure: 38rem;
   --wide: 72rem;
   --gutter: 1.25rem;
-  --r-sm: 12px;
-  --r-md: 16px;
-  --r-lg: 20px;
-  --r-xl: 28px;
+  /* Corners as the app cuts them (app/lib/ui/app_card.dart): three tight
+     corners (radius x 0.35, 3 to 8px) and one loose one (radius x 0.9, 10 to
+     22px), so a card reads as cut paper, not a moulded toolkit shape. The
+     loose corner is bottom-right in English and bottom-left in Arabic. */
+  --r-sm: 4px 4px 11px 4px;
+  --r-md: 6px 6px 14px 6px;
+  --r-lg: 7px 7px 18px 7px;
+  --r-xl: 8px 8px 22px 8px;
+  --r-btn: 7px 7px 15px 7px;
+  --r-btn-trace: 8px 7px 16px 6px;
 
   --sans: "Rubik", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --arabic: "Rubik", "Geeza Pro", "Segoe UI", "Noto Sans Arabic", Tahoma, sans-serif;
+}
+html[dir="rtl"] {
+  --r-sm: 4px 4px 4px 11px;
+  --r-md: 6px 6px 6px 14px;
+  --r-lg: 7px 7px 7px 18px;
+  --r-xl: 8px 8px 8px 22px;
+  --r-btn: 7px 7px 7px 15px;
+  --r-btn-trace: 7px 8px 6px 16px;
 }
 
 *,
@@ -260,7 +291,7 @@ main > section.band {
   border-radius: var(--r-sm);
   color: var(--ink);
   background: var(--paper-raised);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9375rem;
   text-decoration: none;
 }
@@ -396,7 +427,7 @@ html[lang="ar"] .lede {
   margin: 0 0 0.9rem;
   color: var(--rose-deep);
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* A word marked by the reader's pen: the app's two-pass underline. */
@@ -469,7 +500,7 @@ dl.kv > div:first-child {
   border-block-start: 0;
 }
 dl.kv dt {
-  font-weight: 600;
+  font-weight: 500;
 }
 dl.kv dd {
   margin: 0;
@@ -518,7 +549,7 @@ dl.kv dd > :last-child {
 }
 .cards dt {
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-soft);
@@ -577,7 +608,7 @@ html[lang="ar"] .cards dt {
 .toc .part {
   margin-block: 0.9rem 0.35rem;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--rose-deep);
 }
 @media (min-width: 46rem) {
@@ -615,32 +646,47 @@ html[lang="ar"] .cards dt {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-block-size: 52px;
+  min-block-size: 56px;
   padding: 0.65rem 1.5rem;
   border: 0;
-  border-radius: var(--r-md);
+  border-radius: var(--r-btn);
   background: var(--rose);
   color: #FFFFFF;
   font: inherit;
+  font-size: 1.0625rem;
   font-weight: 600;
   text-decoration: none;
   text-align: center;
   cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 160ms ease;
+}
+/* The press is felt: a button that does not move reads as not heard. */
+.btn:active {
+  transform: scale(0.97);
 }
 .btn::after {
   content: "";
   position: absolute;
   inset: 0;
-  border: 1.5px solid var(--rose);
-  border-radius: 18px 14px 19px 15px;
+  border: 1.2px solid var(--rose);
+  border-radius: var(--r-btn-trace);
   transform: translate(3px, 4px) rotate(0.4deg);
   pointer-events: none;
 }
 html[dir="rtl"] .btn::after {
   transform: translate(-3px, 4px) rotate(-0.4deg);
 }
-.btn:hover {
-  background: var(--rose-deep);
+/* Hover only where there is a real pointer; a tap must not leave a button
+   stuck in its hover colour. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--rose-deep);
+  }
+  .btn.ghost:hover {
+    background: var(--rose-container);
+  }
 }
 .btn.ghost {
   background: var(--paper-raised);
@@ -649,9 +695,6 @@ html[dir="rtl"] .btn::after {
 }
 .btn.ghost::after {
   border-color: var(--pencil);
-}
-.btn.ghost:hover {
-  background: var(--rose-container);
 }
 
 /* ---------- Store badges ----------
@@ -1035,6 +1078,33 @@ section.download .badges {
 .form-card .waitlist {
   margin-block-start: 0;
 }
+
+/* ---------- The founding offer, at the top of the home page ----------
+   Before launch the page has one job, and this is it: the offer in one
+   sentence, then the form, on the app's own rose tint. */
+.offer {
+  display: grid;
+  gap: 1rem;
+  max-inline-size: 34rem;
+  margin-block: 1.5rem 1.25rem;
+  padding: 1.25rem 1rem 0.25rem;
+  border-radius: var(--r-xl);
+  background: var(--rose-soft);
+  border: 1px solid var(--rose-container);
+}
+.offer-t {
+  margin: 0;
+  padding-inline: 0.25rem;
+  font-size: 1.0625rem;
+  color: var(--ink);
+}
+.offer-t b {
+  color: var(--rose-deep);
+  font-weight: 600;
+}
+.offer .form-card {
+  padding: 1.25rem 1rem 0.25rem;
+}
 @media (min-width: 52rem) {
   main > section.download .panel {
     padding: 3rem 3.25rem;
@@ -1055,7 +1125,7 @@ section.download .badges {
   gap: 0.4rem;
 }
 .waitlist label {
-  font-weight: 600;
+  font-weight: 500;
 }
 .waitlist input[type="text"] {
   font: inherit;
@@ -1191,7 +1261,7 @@ main > section:last-child {
   line-height: 44px;
   color: var(--ink);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
 }
 .site-foot nav a:hover {
   color: var(--rose-deep);

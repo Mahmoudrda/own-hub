@@ -95,7 +95,7 @@ void main() {
       // The button used to say "Complete set 2" from the dictionary even when
       // the screen had been given no sets at all. With no session there is no
       // set two, so it names the action instead.
-      await tester.tap(find.text('Log one set'));
+      await tester.tap(find.text('Finish one set'));
       await tester.pumpAndSettle();
 
       expect(completed, 1);

@@ -38,15 +38,14 @@
 #      site/config.json to the same value (a test holds the two together), and
 #      redeploy the join_waitlist function. Until then the form would send a
 #      visitor back to the placeholder address after she joins.
-#   d. Make privacy@ and support@ the domain reach the monitored mailbox
-#      (skip with --keep-contact-emails). With the domain on Cloudflare:
-#      dashboard > the domain > Email > Email Routing > Get started, add the
-#      Gmail address as a destination and confirm it from the email Cloudflare
-#      sends, then add two custom addresses, privacy and support, each set to
-#      "Send to an email" > that Gmail address. Cloudflare adds the MX and TXT
-#      records itself. https://developers.cloudflare.com/email-routing/get-started/
-#      Then tell counsel: the mail passes through Cloudflare before Gmail, which
-#      the privacy policy's list of processors should say.
+#   d. Mail. The site publishes the two mailboxes in site/config.json
+#      (contactPrivacy, contactSupport). When they are already on the domain
+#      (info@, support@) they are kept as they are; only a personal address
+#      elsewhere is replaced by privacy@ and support@ the domain.
+#      Own Hub's mailboxes are on Zoho Mail. Zoho's MX, SPF and DKIM records
+#      go into Cloudflare DNS (Zoho admin console > Domains > Email
+#      configuration lists them). Do NOT turn on Cloudflare Email Routing: it
+#      replaces the MX records and would take the mail away from Zoho.
 #
 # ATTACHING THE DOMAIN, in the Cloudflare dashboard, after the first deploy
 #   (https://developers.cloudflare.com/pages/configuration/custom-domains/)
@@ -147,10 +146,10 @@ if [ "$KEEP" = 0 ] && [ "$SKIP_MAIL" = 0 ]; then
   if command -v dig >/dev/null 2>&1; then
     if [ -z "$(dig +short MX "$MAILDOMAIN")" ]; then
       echo >&2
-      echo "Stop: $MAILDOMAIN has no MX record yet, so privacy@$MAILDOMAIN and" >&2
-      echo "support@$MAILDOMAIN (now printed on the policy and support pages) bounce." >&2
-      echo "Set up Email Routing (see the top of this script), or run again with" >&2
-      echo "--keep-contact-emails to publish the mailbox from config.json instead." >&2
+      echo "Stop: $MAILDOMAIN has no MX record yet, so the mailboxes printed on the" >&2
+      echo "policy and support pages would bounce." >&2
+      echo "Add the mail provider's MX records in Cloudflare DNS (see the top of" >&2
+      echo "this script), or run again with --skip-mail-check if you are sure." >&2
       exit 1
     fi
   else

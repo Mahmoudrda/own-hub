@@ -145,7 +145,7 @@ class _CycleSetupViewState extends State<CycleSetupView> {
       children: [
         Text(l10n.makeItWorkForYou, style: AppText.display),
         Text(
-          l10n.youChooseWhatToLogYouCan,
+          l10n.youChooseWhatToAddYouCan,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         _ModeCard(

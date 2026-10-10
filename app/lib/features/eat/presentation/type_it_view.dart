@@ -210,7 +210,7 @@ class _TypeItViewState extends State<TypeItView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
       );
       _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
@@ -224,7 +224,7 @@ class _TypeItViewState extends State<TypeItView> {
         // the defect PHASE1-FIXES §8 records on R07's button. Until a
         // parameterised key exists, the sentence that says less is the honest
         // one.
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => service.commit(prepared.write),
       ),
     );
@@ -255,7 +255,7 @@ class _TypeItViewState extends State<TypeItView> {
           // that total to a woman logging one apple, and it said "both" when
           // there was one row or five. The rows above state the numbers, each
           // from its own selected size.
-          l10n.logIt,
+          l10n.addIt,
           onPressed: state.canLog ? () => _log(state.items) : null,
         ),
       ],
@@ -278,7 +278,7 @@ class _TypeItViewState extends State<TypeItView> {
         ),
         if (state.items.isNotEmpty)
           Text(
-            l10n.wellLog,
+            l10n.wellAdd,
             style: AppText.titleS.copyWith(color: AppColors.tertiary),
           ),
         for (var i = 0; i < state.items.length; i++)
@@ -333,7 +333,7 @@ class _TypeItViewState extends State<TypeItView> {
               // 600 kcal" — read 600 for every row in the list, whatever she
               // had eaten before.
               meta: l10n.kcalKcal(countLabel(entry.kcal)),
-              logLabel: l10n.log,
+              logLabel: l10n.iAteThis,
               onLog: () => _log([entry]),
             ),
         ],

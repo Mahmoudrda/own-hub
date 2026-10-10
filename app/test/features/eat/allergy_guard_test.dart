@@ -253,7 +253,7 @@ void main() {
       expect(
         guard.assess(dish, acknowledged: {'sesame'}).isBlocked,
         isFalse,
-        reason: '"Log it anyway" is an explicit tap, and it is hers to make',
+        reason: '"Add it anyway" is an explicit tap, and it is hers to make',
       );
     });
 

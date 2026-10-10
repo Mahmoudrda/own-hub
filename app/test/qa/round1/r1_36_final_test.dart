@@ -56,7 +56,7 @@ void main() {
     // now find the way to Y09
     await tapLabel(t, RegExp('Calendar')); taps++;
     print('tap $taps -> ${topScreen(t)}  ${tappables(t).map((e)=>e.label).join(" | ")}');
-    await tapLabel(t, RegExp('Log a period')); taps++;
+    await tapLabel(t, RegExp('Note a period')); taps++;
     print('tap $taps -> ${topScreen(t)}  TOTAL TAPS FROM HOME = $taps');
     s.dispose();
   });

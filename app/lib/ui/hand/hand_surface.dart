@@ -77,27 +77,33 @@ class HandSurface extends StatelessWidget {
       // is pushed into the page rather than merely shrinking.
       final shift = offsetOutline == null ? Offset.zero : offset * pressed;
       final dirSign = dir == TextDirection.rtl ? -1.0 : 1.0;
-      return CustomPaint(
-        painter: SurfacePainter(
-          seed: seed,
-          fill: fill,
-          frame: frame,
-          frameWidth: frameWidth,
-          level: level,
-          radius: radius,
-          looseCorner: looseCorner,
-          offsetOutline: offsetOutline,
-          offset: offset,
-          bodyShift: shift,
-          dashed: dashed,
-          hatch: hatch,
-          looseAt: looseAt,
-          hatchOpacity: hatchOpacity,
-          textDirection: dir,
-        ),
-        child: Transform.translate(
-          offset: Offset(shift.dx * dirSign, shift.dy),
-          child: Padding(padding: padding, child: child),
+      // Its own layer: AppScaffold scrolls a plain Column, so without this
+      // every hand-drawn surface on the page re-inked its outline on every
+      // scroll frame and every frame of a press. With it a scroll moves the
+      // drawing it already has.
+      return RepaintBoundary(
+        child: CustomPaint(
+          painter: SurfacePainter(
+            seed: seed,
+            fill: fill,
+            frame: frame,
+            frameWidth: frameWidth,
+            level: level,
+            radius: radius,
+            looseCorner: looseCorner,
+            offsetOutline: offsetOutline,
+            offset: offset,
+            bodyShift: shift,
+            dashed: dashed,
+            hatch: hatch,
+            looseAt: looseAt,
+            hatchOpacity: hatchOpacity,
+            textDirection: dir,
+          ),
+          child: Transform.translate(
+            offset: Offset(shift.dx * dirSign, shift.dy),
+            child: Padding(padding: padding, child: child),
+          ),
         ),
       );
     }

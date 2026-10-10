@@ -1,10 +1,10 @@
-// Y10's caption — "{logged} of {total} logged days", computed from her logs.
+// Y10's caption — "{logged} of {total} noted days", computed from her logs.
 //
 // The fixed string this replaces named the mockup's "4 of 6", which is why the
 // caption was withheld entirely and the chart drew with no sentence beside it.
 // So the fixture here is built so that **4 and 6 cannot appear**: one period
 // start, three days in the window, two of them logged, one of those low. If a
-// constant ever comes back, "1 of 2 logged days" is not a sentence it can
+// constant ever comes back, "1 of 2 noted days" is not a sentence it can
 // produce.
 //
 // The second assertion is the one that keeps the caption honest: the total is
@@ -90,11 +90,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('1 of 2 logged days'), findsOneWidget);
+      expect(find.text('1 of 2 noted days'), findsOneWidget);
 
       // The mockup's sentence, in any of the shapes it could come back in.
       expect(find.textContaining('4 of 6'), findsNothing);
-      expect(find.textContaining('of 3 logged days'), findsNothing);
+      expect(find.textContaining('of 3 noted days'), findsNothing);
     });
 
     testWidgets('a second woman gets her own numbers', (tester) async {
@@ -116,18 +116,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('3 of 4 logged days'), findsOneWidget);
-      expect(find.text('1 of 2 logged days'), findsNothing);
+      expect(find.text('3 of 4 noted days'), findsOneWidget);
+      expect(find.text('1 of 2 noted days'), findsNothing);
     });
 
     testWidgets('nothing logged means no caption at all', (tester) async {
-      // An empty chart with "0 of 0 logged days" under it reads as a result.
+      // An empty chart with "0 of 0 noted days" under it reads as a result.
       // Y10 says it has nothing to describe instead.
       _phone(tester);
       await tester.pumpWidget(_host(const CyclePatternsView()));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('logged days'), findsNothing);
+      expect(find.textContaining('noted days'), findsNothing);
       expect(find.text('No dates, no estimates'), findsOneWidget);
     });
 

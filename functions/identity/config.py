@@ -63,7 +63,9 @@ the EU" and one that has to say "processed in the United States" to Egyptian
 women who were promised otherwise. Spec §11 requires the processing regions to
 be documented; this is the Vision half of that."""
 
-MEMORY_MIB = 1024
+MEMORY_MIB = 512
+"""Every function's memory (main.py set_global_options), except
+verify_identity's 1 GiB for the face model."""
 TIMEOUT_SEC = 120
 VERIFY_IN_FLIGHT_SEC = TIMEOUT_SEC + 30
 """How long a running verify_identity holds her account against
@@ -71,11 +73,17 @@ request_review. The marker is cleared when the call ends; this bound is for a
 call that never reached its own clean-up (an instance killed at the timeout),
 so a crashed check cannot keep her from a reviewer for longer than one call
 could have run."""
-MAX_INSTANCES = 20
-"""A cost ceiling, not a capacity plan. 50,000 verifications over six months is
-about 12 an hour. Twenty concurrent instances is far above any honest peak and
-exists so a runaway loop cannot turn an unbounded bill into the story of the
-quarter."""
+MAX_INSTANCES = 5
+"""A cost ceiling, not a capacity plan. Each instance serves many calls at once
+(80 by default on 2nd gen), so five is far above an honest peak at launch for
+calls that read and write a few documents, and it caps what a flood of any one
+function can bill."""
+VERIFY_MAX_INSTANCES = 20
+"""verify_identity's own ceiling. 50,000 verifications over six months is about
+12 an hour; twenty instances is far above any honest peak and exists so a
+runaway loop cannot turn an unbounded bill into the story of the quarter. It
+stays higher than the rest because each check holds an instance for seconds of
+image work."""
 
 ENFORCE_APP_CHECK = True
 """Spec §5: App Check enforced on every callable in the flow.

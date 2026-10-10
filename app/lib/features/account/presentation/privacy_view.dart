@@ -305,7 +305,7 @@ class _PrivacyViewState extends State<PrivacyView> {
         // her ID card and selfie are never stored.
         AppSageNote(
           _community
-              ? l10n.yourLogsWeightPhotosAndPhoneNumber
+              ? l10n.yourMealsWorkoutsWeightPhotosAndPhone
               : l10n.yourWorkoutsMealsAndSetupAnswersAre,
         ),
 
@@ -346,7 +346,7 @@ class _PrivacyViewState extends State<PrivacyView> {
             view: view,
             key: PrivacyKey.shareLogsWithCoach,
             icon: Icons.sports_outlined,
-            title: l10n.myCoachCanSeeMyLogs,
+            title: l10n.myCoachCanSeeMyMealsAnd,
             subtitle: l10n.sessionsFoodDaysAndBests,
           ),
 

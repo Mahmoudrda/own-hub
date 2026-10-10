@@ -94,14 +94,14 @@ class WeeklyReviewView extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.yourWeekFromYourLogs, style: AppText.titleM),
+                Text(l10n.yourWeekFromWhatYouAdded, style: AppText.titleM),
                 // "3 of 3" is the prototype's perfect week, told to a woman
                 // who may have done one. The card is headed "your week, from
                 // your logs" — so with no logs handed in, it says nothing.
                 if (workoutsCompleted case final done?)
                   CoachedKeyValue(label: l10n.workoutsCompleted, value: done),
                 CoachedKeyValue(
-                  label: l10n.daysYouLoggedFood,
+                  label: l10n.daysYouAddedWhatYouAte,
                   value: foodDaysLogged ?? '5',
                 ),
                 CoachedKeyValue(

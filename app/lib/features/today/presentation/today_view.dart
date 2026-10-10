@@ -540,7 +540,7 @@ class _TodayViewState extends State<TodayView> {
       ],
     ),
     Text(
-      l10n.lookingForWhatYouHaveLogged,
+      l10n.lookingForWhatYouHaveAdded,
       style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
     ),
   ];
@@ -639,7 +639,7 @@ class _TodayViewState extends State<TodayView> {
       AppEmptyState(
         icon: Icons.history,
         art: AppArt.trainers,
-        title: l10n.nothingLoggedYet,
+        title: l10n.nothingAddedYet,
         body: l10n.todaysSessionAndTheMealYouUsually,
       ),
       AppListItem(

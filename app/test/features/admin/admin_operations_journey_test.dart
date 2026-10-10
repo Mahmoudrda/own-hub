@@ -137,7 +137,7 @@ void main() {
 
     await _tap(tester, find.text('Logs'));
     expect(console.logKinds, [ConsoleLogKind.decisions]);
-    expect(find.text('Nothing logged yet'), findsOneWidget);
+    expect(find.text('Nothing in the log yet'), findsOneWidget);
   });
 
   testWidgets('Z01 -> Z17 -> Z18: a new event is stored and listed', (

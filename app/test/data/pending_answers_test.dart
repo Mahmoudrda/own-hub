@@ -190,7 +190,7 @@ void main() {
 
       expect(find.text('Day 1'), findsOneWidget);
       expect(find.text('Start day 1'), findsOneWidget);
-      expect(find.text('Looking for what you have logged.'), findsNothing);
+      expect(find.text('Looking for what you have added.'), findsNothing);
     });
 
     testWidgets('it says nothing of the kind while a read is in flight', (
@@ -207,8 +207,8 @@ void main() {
         reason: 'she may be two months in and nothing has looked',
       );
       expect(find.text('Start day 1'), findsNothing);
-      expect(find.text('Nothing logged yet'), findsNothing);
-      expect(find.text('Looking for what you have logged.'), findsOneWidget);
+      expect(find.text('Nothing added yet'), findsNothing);
+      expect(find.text('Looking for what you have added.'), findsOneWidget);
       expect(
         find.byType(CircularProgressIndicator),
         findsNothing,
@@ -235,7 +235,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('نبحث عمّا سجّلتِه.'), findsOneWidget);
+      expect(find.text('نبحث عمّا أضفتِه.'), findsOneWidget);
       expect(tester.takeException(), isNull);
       PendingAnswers.reset();
     });
@@ -253,7 +253,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Day 1'), findsOneWidget);
-      expect(find.text('Looking for what you have logged.'), findsNothing);
+      expect(find.text('Looking for what you have added.'), findsNothing);
     });
   });
 
@@ -274,7 +274,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('No plates yet'), findsOneWidget);
-      expect(find.text('Looking for what you have logged.'), findsNothing);
+      expect(find.text('Looking for what you have added.'), findsNothing);
     });
 
     testWidgets('it says nothing of the kind while a read is in flight', (
@@ -287,7 +287,7 @@ void main() {
 
       expect(find.text('No plates yet'), findsNothing);
       expect(find.text('Day 1'), findsNothing);
-      expect(find.text('Looking for what you have logged.'), findsOneWidget);
+      expect(find.text('Looking for what you have added.'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
       PendingAnswers.reset();
     });
@@ -305,7 +305,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Looking for what you have logged.'),
+        find.text('Looking for what you have added.'),
         findsNothing,
         reason: 'a pull can only add to what she already has',
       );

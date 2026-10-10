@@ -247,8 +247,8 @@ class YoureInView extends StatelessWidget {
               // "Members" are the community's; with it off there is nobody
               // to be shown to, so the line says what is true.
               text: AppRouter.featureFlags.isOn(Feature.community)
-                  ? l10n.yourNumberYourIdAndYourLogs
-                  : l10n.yourNumberYourIdAndYourLogs_10nei,
+                  ? l10n.yourNumberYourIdYourMealsAnd
+                  : l10n.yourNumberYourIdYourMealsAnd_1ix08,
             ),
           ],
         ),
