@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Own Hub — Feature Tour</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/audio/bed-reactive.js"></script>
+    <style>
+      /* ---- Rubik: the app's own shipped typeface (Latin + Arabic) ---- */
+      @font-face { font-family: "Rubik"; src: url("assets/fonts/Rubik-400.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: block; }
+      @font-face { font-family: "Rubik"; src: url("assets/fonts/Rubik-500.ttf") format("truetype"); font-weight: 500; font-style: normal; font-display: block; }
+      @font-face { font-family: "Rubik"; src: url("assets/fonts/Rubik-600.ttf") format("truetype"); font-weight: 600; font-style: normal; font-display: block; }
+      @font-face { font-family: "Rubik"; src: url("assets/fonts/Rubik-700.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: block; }
+
+      /* ---- Own Hub tokens, verbatim from app/lib/theme/app_tokens.dart ---- */
+      :root {
+        --primary: #b4526e;
+        --primary-dim: #a8455f;
+        --primary-container: #ffd9e3;
+        --primary-soft: #f8e1e7;
+        --on-primary-container: #4a1c2e;
+        --tertiary: #4f7359;
+        --tertiary-container: #ddede1;
+        --amber: #8a5a17;
+        --amber-container: #fbebd6;
+        --surface: #fff8f9;
+        --surface-lowest: #ffffff;
+        --surface-high: #f6e3e9;
+        --on-surface: #241a1e;
+        --on-surface-variant: #6b5c61;
+        --outline-variant: #ebdcdf;
+        --energy: 0.3;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--surface); font-family: "Rubik", sans-serif; }
+
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--surface); }
+
+      .clip { position: absolute; inset: 0; }
+
+      /* ---- persistent background ---- */
+      #wash {
+        position: absolute; left: 900px; top: 30px; width: 1020px; height: 1020px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, var(--primary-soft) 0%, rgba(248, 225, 231, 0) 70%);
+        opacity: calc(0.30 + var(--energy) * 0.38);
+      }
+      #rail { position: absolute; left: 0; bottom: 0; width: 1920px; height: 3px; background: var(--surface-high); }
+      #rail-fill { display: block; width: 100%; height: 100%; background: var(--primary); transform-origin: left center; }
+
+      /* ---- left-hand copy column ---- */
+      .col {
+        position: absolute; left: 120px; top: 0; width: 1040px; height: 1080px;
+        display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+      }
+      .eyebrow {
+        font-size: 24px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+        color: var(--primary-dim); margin: 0 0 14px;
+      }
+      .head {
+        font-size: 68px; font-weight: 700; line-height: 1.12; color: var(--on-surface);
+        margin: 0; max-width: 980px; letter-spacing: -0.015em;
+      }
+      .body {
+        font-size: 32px; font-weight: 400; line-height: 1.45; color: var(--on-surface-variant);
+        margin: 20px 0 0; max-width: 900px;
+      }
+
+      /* ---- single illustration plate ---- */
+      .plate {
+        width: 150px; height: 150px; border-radius: 34px; background: var(--primary-soft);
+        display: flex; align-items: center; justify-content: center; margin-bottom: 26px; padding: 18px;
+      }
+      .plate img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+      /* ---- three-up tile row (Train) ---- */
+      .tiles { display: flex; gap: 22px; margin-top: 26px; }
+      .tile {
+        width: 212px; border-radius: 22px; background: var(--surface-lowest);
+        border: 1px solid var(--outline-variant); padding: 16px 16px 18px;
+        display: flex; flex-direction: column; align-items: center;
+      }
+      .tile img { width: 62px; height: 62px; object-fit: contain; display: block; }
+      .tile .t-main { font-size: 27px; font-weight: 600; color: var(--on-surface); margin-top: 10px; }
+      .tile .t-sub { font-size: 21px; font-weight: 400; color: var(--on-surface-variant); margin-top: 2px; }
+
+      /* ---- food portion row (Eat) ---- */
+      .portions { display: flex; gap: 26px; margin-top: 28px; }
+      .portion {
+        width: 128px; height: 128px; border-radius: 50%; background: var(--primary-soft);
+        display: flex; align-items: center; justify-content: center; padding: 16px;
+      }
+      .portion img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+      /* ---- protein bar (Eat) — a bar that fills, carrying no figure ---- */
+      .bar-block { margin-top: 30px; }
+      .bar-label { font-size: 26px; font-weight: 600; color: var(--on-surface); margin-bottom: 12px; }
+      .bar-track { width: 560px; height: 20px; border-radius: 999px; background: var(--surface-high); overflow: hidden; }
+      .bar-fill { display: block; width: 100%; height: 100%; border-radius: 999px; background: var(--tertiary); transform-origin: left center; }
+
+      /* ---- label rows (Progress, Privacy) ---- */
+      .rows { display: flex; flex-direction: column; gap: 14px; margin-top: 26px; }
+      .row {
+        width: 640px; height: 64px; border-radius: 20px; background: var(--surface-lowest);
+        border: 1px solid var(--outline-variant); padding: 0 24px; display: flex; align-items: center; gap: 16px;
+      }
+      .row .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); flex: none; }
+      .row .r-main { font-size: 26px; font-weight: 600; color: var(--on-surface); }
+
+      /* ---- attention pill (My cycle) — amber, never alarm ---- */
+      .pill {
+        margin-top: 26px; display: inline-flex; align-items: center; gap: 12px;
+        background: var(--amber-container); border-radius: 999px; padding: 14px 26px;
+      }
+      .pill .p-text { font-size: 26px; font-weight: 600; color: var(--amber); }
+
+      /* ---- the phone, present from 3.27s to the outro ---- */
+      #device {
+        position: absolute; left: 1250px; top: 88px; width: 430px; height: 904px;
+        border-radius: 56px; background: #241a1e; padding: 13px;
+        box-shadow: 0 30px 70px rgba(74, 28, 46, 0.16), 0 4px 14px rgba(74, 28, 46, 0.1);
+      }
+      #screen { position: relative; width: 404px; height: 878px; border-radius: 44px; overflow: hidden; background: var(--surface); }
+      .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; opacity: 0; }
+      #halo {
+        position: absolute; left: 290px; top: 128px; width: 93px; height: 93px;
+        border-radius: 50%; border: 3px solid var(--primary); background: rgba(180, 82, 110, 0.1); opacity: 0;
+      }
+
+      /* ---- small corner lockup ---- */
+      .lockup-sm { position: absolute; left: 120px; top: 84px; display: flex; align-items: center; gap: 16px; }
+      .lockup-sm img { width: 54px; height: 54px; border-radius: 14px; display: block; }
+      .lockup-sm span { font-size: 28px; font-weight: 600; color: var(--on-surface-variant); }
+
+      /* ---- centred title / outro ---- */
+      .centre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      .mark-lg { width: 132px; height: 132px; border-radius: 34px; display: block; }
+      .wm-lg { font-size: 40px; font-weight: 500; color: var(--on-surface-variant); margin-top: 18px; letter-spacing: 0.01em; }
+      .wm-xl { font-size: 76px; font-weight: 700; color: var(--on-surface); margin-top: 16px; letter-spacing: -0.015em; }
+      .title-lg {
+        font-size: 82px; font-weight: 700; line-height: 1.14; color: var(--on-surface);
+        margin: 34px 0 0; max-width: 1280px; text-align: center; letter-spacing: -0.02em;
+      }
+      .outro-line { font-size: 34px; font-weight: 400; color: var(--on-surface-variant); margin-top: 22px; text-align: center; max-width: 1100px; }
+
+      /* ---- outro illustration arc ---- */
+      .arc-item {
+        position: absolute; width: 140px; height: 140px; border-radius: 34px; background: var(--primary-soft);
+        display: flex; align-items: center; justify-content: center; padding: 18px; opacity: 0;
+      }
+      .arc-item img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    </style>
+  </head>
+
+  <body>
+    <div
+      id="root"
+      data-composition-id="ownhub"
+      data-start="0"
+      data-width="1920"
+      data-height="1080"
+      data-duration="39.28"
+      data-fps="30"
+    >
+      <!-- persistent decorative layers (untimed) -->
+      <div id="wash" data-layout-ignore></div>
+
+      <!-- ============ the phone: arrives at 3.27s, leaves in the outro ============ -->
+      <div id="phone" class="clip" data-start="3.27" data-duration="33.68" data-track-index="2">
+        <div id="device">
+          <div id="screen">
+            <img class="shot" id="sh-welcome"   src="assets/shots/welcome.png"   alt="Own Hub welcome screen" />
+            <img class="shot" id="sh-today"     src="assets/shots/today.png"     alt="Today screen" />
+            <img class="shot" id="sh-train"     src="assets/shots/train.png"     alt="Train screen" />
+            <img class="shot" id="sh-eat"       src="assets/shots/eat.png"       alt="Eat screen" />
+            <img class="shot" id="sh-cycle"     src="assets/shots/cycle.png"     alt="My cycle screen" />
+            <img class="shot" id="sh-progress"  src="assets/shots/progress.png"  alt="Progress screen" />
+            <img class="shot" id="sh-community" src="assets/shots/community.png" alt="Community screen" />
+            <img class="shot" id="sh-coaching"  src="assets/shots/coaching.png"  alt="Coaching screen" />
+            <img class="shot" id="sh-coach"     src="assets/shots/coach.png"     alt="Coach desk screen" />
+            <img class="shot" id="sh-profile"   src="assets/shots/profile.png"   alt="Profile screen" />
+            <img class="shot" id="sh-finished"  src="assets/shots/finished.png"  alt="Session finished screen" />
+            <div id="halo" data-layout-ignore></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ scene 1 — Own Hub (0.00 – 3.27) ============ -->
+      <section id="s1" class="clip" data-start="0" data-duration="3.27" data-track-index="1">
+        <div class="centre">
+          <img id="s1-mark" class="mark-lg" src="assets/art/appicon.png" alt="Own Hub app icon" />
+          <div id="s1-wm" class="wm-lg">Own Hub</div>
+          <h1 id="s1-title" class="title-lg">A room full of women training like you</h1>
+        </div>
+      </section>
+
+      <!-- ============ scene 2 — Women only, and checked (3.27 – 7.09) ============ -->
+      <section id="s2" class="clip" data-start="3.27" data-duration="3.82" data-track-index="1">
+        <div class="col">
+          <div class="plate s2-a"><img src="assets/art/trainers.webp" alt="" /></div>
+          <p class="eyebrow s2-a">Women only</p>
+          <h2 class="head s2-b">Every member checked</h2>
+          <p class="body s2-c">Both images are deleted after the check.</p>
+        </div>
+      </section>
+
+      <!-- ============ scene 3 — Today (7.09 – 9.83) ============ -->
+      <section id="s3" class="clip" data-start="7.09" data-duration="2.74" data-track-index="1">
+        <div class="col">
+          <div class="plate s3-a"><img src="assets/art/water_bottle.webp" alt="" /></div>
+          <p class="eyebrow s3-a">Today</p>
+          <h2 class="head s3-b">What to do today</h2>
+          <p class="body s3-c">Nothing shouting.</p>
+        </div>
+      </section>
+
+      <!-- ============ scene 4 — Train (9.83 – 13.64) ============ -->
+      <section id="s4" class="clip" data-start="9.83" data-duration="3.81" data-track-index="1">
+        <div class="col">
+          <p class="eyebrow s4-a">Train</p>
+          <h2 class="head s4-b">Quiet workouts you can do at home</h2>
+          <p class="body s4-c">Sessions counted, not days.</p>
+          <div class="tiles">
+            <div class="tile s4-t1">
+              <img src="assets/art/plank.webp" alt="" />
+              <span class="t-main">10 min</span><span class="t-sub">Floor only</span>
+            </div>
+            <div class="tile s4-t2">
+              <img src="assets/art/yoga_mat.webp" alt="" />
+              <span class="t-main">15 min</span><span class="t-sub">Quiet</span>
+            </div>
+            <div class="tile s4-t3">
+              <img src="assets/art/dumbbells.webp" alt="" />
+              <span class="t-main">20 min</span><span class="t-sub">Dumbbells</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ scene 5 — Eat (13.64 – 17.47) ============ -->
+      <section id="s5" class="clip" data-start="13.64" data-duration="3.83" data-track-index="1">
+        <div class="col">
+          <p class="eyebrow s5-a">Eat</p>
+          <h2 class="head s5-b">Say or type what you ate</h2>
+          <p class="body s5-c">In the size you serve.</p>
+          <div class="portions">
+            <div class="portion s5-p1"><img src="assets/art/bowl_salad.webp" alt="" /></div>
+            <div class="portion s5-p2"><img src="assets/art/toast_egg.webp" alt="" /></div>
+            <div class="portion s5-p3"><img src="assets/art/platter_grill.webp" alt="" /></div>
+          </div>
+          <div class="bar-block s5-bar">
+            <div class="bar-label">Protein</div>
+            <div class="bar-track"><span id="s5-fill" class="bar-fill"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ scene 6 — My cycle (17.47 – 21.28) ============ -->
+      <section id="s6" class="clip" data-start="17.47" data-duration="3.81" data-track-index="1">
+        <div class="col">
+          <div class="plate s6-a"><img src="assets/art/rest_floor.webp" alt="" /></div>
+          <p class="eyebrow s6-a">My cycle</p>
+          <h2 class="head s6-b">Private by default</h2>
+          <p class="body s6-c">Off by default. Coaching never requires it.</p>
+          <div class="pill s6-d"><span class="p-text">A gentler option today</span></div>
+        </div>
+      </section>
+
+      <!-- ============ scene 7 — Progress (21.28 – 24.56) ============ -->
+      <section id="s7" class="clip" data-start="21.28" data-duration="3.28" data-track-index="1">
+        <div class="col">
+          <div class="plate s7-a"><img src="assets/art/strong_arms.webp" alt="" /></div>
+          <p class="eyebrow s7-a">Progress</p>
+          <h2 class="head s7-b">Measured against your own history</h2>
+          <div class="rows">
+            <div class="row s7-r1"><span class="dot"></span><span class="r-main">Counted weeks</span></div>
+            <div class="row s7-r2"><span class="dot"></span><span class="r-main">Personal bests</span></div>
+          </div>
+          <p class="body s7-c">Nobody sees this.</p>
+        </div>
+      </section>
+
+      <!-- ============ scene 8 — Community (24.56 – 27.83) ============ -->
+      <section id="s8" class="clip" data-start="24.56" data-duration="3.27" data-track-index="1">
+        <div class="col">
+          <div class="plate s8-a"><img src="assets/art/dance.webp" alt="" /></div>
+          <p class="eyebrow s8-a">Community</p>
+          <h2 class="head s8-b">Only verified women get in</h2>
+          <p class="body s8-c">Faces arrive blurred.</p>
+        </div>
+      </section>
+
+      <!-- ============ scene 9 — Coaching (27.83 – 31.10) ============ -->
+      <section id="s9" class="clip" data-start="27.83" data-duration="3.27" data-track-index="1">
+        <div class="col">
+          <div class="plate s9-a"><img src="assets/art/lunge_warrior.webp" alt="" /></div>
+          <p class="eyebrow s9-a">Coaching</p>
+          <h2 class="head s9-b">Real women, checked certificates</h2>
+          <p class="body s9-c">Every coach is verified.</p>
+        </div>
+      </section>
+
+      <!-- ============ scene 10 — Privacy (31.10 – 34.92) ============ -->
+      <section id="s10" class="clip" data-start="31.10" data-duration="3.82" data-track-index="1">
+        <div class="col">
+          <div class="plate s10-a"><img src="assets/art/stretch_seated.webp" alt="" /></div>
+          <p class="eyebrow s10-a">Privacy</p>
+          <h2 class="head s10-b">What you show is yours</h2>
+          <div class="rows">
+            <div class="row s10-r1"><span class="dot"></span><span class="r-main">Privacy</span></div>
+            <div class="row s10-r2"><span class="dot"></span><span class="r-main">Safety Centre</span></div>
+          </div>
+          <p class="body s10-c">Your ID and selfie were deleted.</p>
+        </div>
+      </section>
+
+      <!-- ============ corner lockup (3.27 – 34.92) ============ -->
+      <div id="chrome" class="clip" data-start="3.27" data-duration="31.65" data-track-index="3">
+        <div class="lockup-sm">
+          <img src="assets/art/appicon-chrome.png" alt="Own Hub app icon" />
+          <span>Own Hub</span>
+        </div>
+      </div>
+
+      <!-- ============ scene 11 — outro (34.92 – 39.28) ============ -->
+      <section id="s11" class="clip" data-start="34.92" data-duration="4.36" data-track-index="1">
+        <div id="arc">
+          <div class="arc-item" style="left: 195px; top: 236px"><img src="assets/art/running.webp" alt="" /></div>
+          <div class="arc-item" style="left: 427px; top: 204px"><img src="assets/art/bowl_green.webp" alt="" /></div>
+          <div class="arc-item" style="left: 659px; top: 186px"><img src="assets/art/squat_weights.webp" alt="" /></div>
+          <div class="arc-item" style="left: 891px; top: 180px"><img src="assets/art/fruit_basket.webp" alt="" /></div>
+          <div class="arc-item" style="left: 1123px; top: 186px"><img src="assets/art/spin_bike.webp" alt="" /></div>
+          <div class="arc-item" style="left: 1355px; top: 204px"><img src="assets/art/pancakes.webp" alt="" /></div>
+          <div class="arc-item" style="left: 1587px; top: 236px"><img src="assets/art/boxing_gloves.webp" alt="" /></div>
+        </div>
+        <div class="centre">
+          <img id="s11-mark" class="mark-lg" src="assets/art/appicon-outro.png" alt="Own Hub app icon" />
+          <div id="s11-wm" class="wm-xl">Own Hub</div>
+          <p id="s11-line" class="outro-line">A community only women can enter.</p>
+        </div>
+      </section>
+
+      <!-- ============ tour progress rail (untimed) ============ -->
+      <div id="rail" data-layout-ignore><span id="rail-fill"></span></div>
+
+      <!-- ============ audio ============ -->
+      <audio
+        id="bed"
+        src="assets/music/bed.mp3"
+        data-start="0"
+        data-duration="39.28"
+        data-track-index="10"
+        data-volume="1"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0},{"t":1.2,"v":0.42},{"t":36.0,"v":0.42},{"t":39.28,"v":0}]}]}'
+      ></audio>
+
+      <audio id="sfx01" src="assets/sfx/interface/drop_002.ogg"            data-start="3.27"  data-duration="0.19" data-track-index="11" data-volume="0.58"></audio>
+      <audio id="sfx02" src="assets/sfx/interface/drop_001.ogg"            data-start="7.09"  data-duration="0.11" data-track-index="12" data-volume="0.46"></audio>
+      <audio id="sfx03" src="assets/sfx/impact/impactGlass_light_001.ogg"  data-start="10.93" data-duration="0.21" data-track-index="13" data-volume="0.49"></audio>
+      <audio id="sfx04" src="assets/sfx/interface/drop_003.ogg"            data-start="11.46" data-duration="0.20" data-track-index="14" data-volume="0.41"></audio>
+      <audio id="sfx05" src="assets/sfx/interface/drop_003.ogg"            data-start="12.02" data-duration="0.20" data-track-index="15" data-volume="0.41"></audio>
+      <audio id="sfx06" src="assets/sfx/interface/drop_003.ogg"            data-start="12.55" data-duration="0.20" data-track-index="16" data-volume="0.41"></audio>
+      <audio id="sfx07" src="assets/sfx/interface/drop_003.ogg"            data-start="14.73" data-duration="0.20" data-track-index="17" data-volume="0.38"></audio>
+      <audio id="sfx08" src="assets/sfx/interface/drop_003.ogg"            data-start="15.29" data-duration="0.20" data-track-index="18" data-volume="0.38"></audio>
+      <audio id="sfx09" src="assets/sfx/interface/drop_003.ogg"            data-start="15.84" data-duration="0.20" data-track-index="19" data-volume="0.38"></audio>
+      <audio id="sfx10" src="assets/sfx/ui/click1.ogg"                     data-start="17.47" data-duration="0.10" data-track-index="20" data-volume="0.38"></audio>
+      <audio id="sfx11" src="assets/sfx/interface/drop_001.ogg"            data-start="19.66" data-duration="0.11" data-track-index="21" data-volume="0.38"></audio>
+      <audio id="sfx12" src="assets/sfx/interface/drop_003.ogg"            data-start="22.37" data-duration="0.20" data-track-index="22" data-volume="0.41"></audio>
+      <audio id="sfx13" src="assets/sfx/impact/impactGlass_light_002.ogg"  data-start="22.93" data-duration="0.21" data-track-index="23" data-volume="0.49"></audio>
+      <audio id="sfx14" src="assets/sfx/interface/drop_002.ogg"            data-start="24.56" data-duration="0.20" data-track-index="24" data-volume="0.43"></audio>
+      <audio id="sfx15" src="assets/sfx/interface/drop_001.ogg"            data-start="27.83" data-duration="0.11" data-track-index="25" data-volume="0.43"></audio>
+      <audio id="sfx16" src="assets/sfx/interface/drop_003.ogg"            data-start="29.90" data-duration="0.20" data-track-index="26" data-volume="0.38"></audio>
+      <audio id="sfx17" src="assets/sfx/interface/drop_003.ogg"            data-start="32.19" data-duration="0.20" data-track-index="27" data-volume="0.41"></audio>
+      <audio id="sfx18" src="assets/sfx/interface/drop_003.ogg"            data-start="32.74" data-duration="0.20" data-track-index="28" data-volume="0.41"></audio>
+      <audio id="sfx19" src="assets/sfx/impact/impactSoft_medium_001.ogg"  data-start="34.92" data-duration="0.19" data-track-index="29" data-volume="0.38"></audio>
+      <audio id="sfx20" src="assets/sfx/interface/bong_001.ogg"            data-start="36.55" data-duration="0.13" data-track-index="30" data-volume="0.55"></audio>
+    </div>
+
+    <script>
+      document.fonts.ready.then(function () {
+        var tl = gsap.timeline({ paused: true });
+        var EASE = "power3.out";
+
+        /* ---------- tour progress rail ---------- */
+        tl.fromTo("#rail-fill", { scaleX: 0 }, { scaleX: 1, duration: 39.28, ease: "none" }, 0);
+
+        /* ---------- scene 1 — Own Hub ---------- */
+        tl.fromTo("#s1-mark",  { opacity: 0, y: 26, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: EASE }, 0.12)
+          .fromTo("#s1-wm",    { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.36)
+          .fromTo("#s1-title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: EASE }, 0.54)
+          .to("#s1-mark, #s1-wm, #s1-title", { opacity: 0, y: -18, duration: 0.3, ease: "power2.in" }, 2.99);
+
+        /* ---------- the phone ---------- */
+        tl.fromTo("#device", { opacity: 0, x: 90 }, { opacity: 1, x: 0, duration: 0.72, ease: EASE }, 3.27)
+          // outro: the phone walks to centre frame for the finished screen
+          .to("#device", { x: -505, duration: 0.85, ease: "power2.inOut" }, 34.92)
+          .to("#device", { opacity: 0, duration: 0.5, ease: "power2.in" }, 36.4);
+
+        /* screen swaps — each screenshot sits above the previous, so a fade-in is the crossfade */
+        var shots = [
+          ["#sh-welcome",   3.27],
+          ["#sh-today",     7.09],
+          ["#sh-train",     9.83],
+          ["#sh-eat",      13.64],
+          ["#sh-cycle",    17.47],
+          ["#sh-progress", 21.28],
+          ["#sh-community",24.56],
+          ["#sh-coaching", 27.83],
+          ["#sh-coach",    29.90],
+          ["#sh-profile",  31.10],
+          ["#sh-finished", 34.92],
+        ];
+        for (var i = 0; i < shots.length; i++) {
+          tl.to(shots[i][0], { opacity: 1, duration: 0.5, ease: "power2.inOut" }, shots[i][1]);
+        }
+
+        /* ---------- corner lockup ---------- */
+        tl.fromTo(".lockup-sm", { opacity: 0, y: -14 }, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 3.55)
+          .to(".lockup-sm", { opacity: 0, duration: 0.35, ease: "power2.in" }, 34.57);
+
+        /* ---------- shared scene helpers ---------- */
+        function entrance(sel, at, stagger) {
+          tl.fromTo(sel, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.55, ease: EASE, stagger: stagger || 0 }, at);
+        }
+        function exit(sel, at) {
+          tl.to(sel, { opacity: 0, y: -16, duration: 0.28, ease: "power2.in" }, at);
+        }
+
+        /* ---------- scene 2 — Women only, and checked ---------- */
+        entrance(".s2-a", 3.45, 0.08);
+        entrance(".s2-b", 3.62);
+        entrance(".s2-c", 3.86);
+        exit(".s2-a, .s2-b, .s2-c", 6.81);
+
+        /* ---------- scene 3 — Today ---------- */
+        entrance(".s3-a", 7.20, 0.08);
+        entrance(".s3-b", 7.36);
+        entrance(".s3-c", 7.58);
+        exit(".s3-a, .s3-b, .s3-c", 9.55);
+
+        /* ---------- scene 4 — Train ---------- */
+        entrance(".s4-a", 9.94);
+        entrance(".s4-b", 10.10);
+        entrance(".s4-c", 10.34);
+        // beat-grid: tile 1 at 11.46s, tile 2 at 12.02s, tile 3 at 12.55s
+        tl.fromTo(".s4-t1", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: EASE }, 11.46)
+          .fromTo(".s4-t2", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: EASE }, 12.02)
+          .fromTo(".s4-t3", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: EASE }, 12.55);
+        // beat-locked: 10.93s — the halo lands on the real "2/3 week" ring inside the screenshot
+        tl.fromTo("#halo", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.55, ease: EASE }, 10.93)
+          .to("#halo", { opacity: 0, duration: 0.3, ease: "power2.in" }, 13.3);
+        exit(".s4-a, .s4-b, .s4-c, .s4-t1, .s4-t2, .s4-t3", 13.36);
+
+        /* ---------- scene 5 — Eat ---------- */
+        entrance(".s5-a", 13.75);
+        entrance(".s5-b", 13.91);
+        entrance(".s5-c", 14.15);
+        // beat-grid: portions at 14.73s, 15.29s, 15.84s
+        tl.fromTo(".s5-p1", { opacity: 0, scale: 0.86 }, { opacity: 1, scale: 1, duration: 0.45, ease: EASE }, 14.73)
+          .fromTo(".s5-p2", { opacity: 0, scale: 0.86 }, { opacity: 1, scale: 1, duration: 0.45, ease: EASE }, 15.29)
+          .fromTo(".s5-p3", { opacity: 0, scale: 0.86 }, { opacity: 1, scale: 1, duration: 0.45, ease: EASE }, 15.84);
+        tl.fromTo(".s5-bar", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: EASE }, 16.1);
+        // beat-locked: 17.47s — the protein bar reaches full on the strong cue, then the scene simply moves on
+        tl.fromTo("#s5-fill", { scaleX: 0 }, { scaleX: 0.66, duration: 1.09, ease: "power2.out" }, 16.38);
+        exit(".s5-a, .s5-b, .s5-c, .s5-p1, .s5-p2, .s5-p3, .s5-bar", 17.22);
+
+        /* ---------- scene 6 — My cycle ---------- */
+        entrance(".s6-a", 17.58, 0.08);
+        entrance(".s6-b", 17.75);
+        entrance(".s6-c", 17.99);
+        tl.fromTo(".s6-d", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 19.66);
+        exit(".s6-a, .s6-b, .s6-c, .s6-d", 21.0);
+
+        /* ---------- scene 7 — Progress ---------- */
+        entrance(".s7-a", 21.39, 0.08);
+        entrance(".s7-b", 21.56);
+        // beat-grid: 22.37s, then beat-locked 22.93s (the track's strongest cue) for "Personal bests"
+        tl.fromTo(".s7-r1", { opacity: 0, x: -22 }, { opacity: 1, x: 0, duration: 0.45, ease: EASE }, 22.37)
+          .fromTo(".s7-r2", { opacity: 0, x: -22 }, { opacity: 1, x: 0, duration: 0.45, ease: EASE }, 22.93);
+        entrance(".s7-c", 23.46);
+        exit(".s7-a, .s7-b, .s7-c, .s7-r1, .s7-r2", 24.28);
+
+        /* ---------- scene 8 — Community ---------- */
+        entrance(".s8-a", 24.67, 0.08);
+        entrance(".s8-b", 24.84);
+        entrance(".s8-c", 25.08);
+        exit(".s8-a, .s8-b, .s8-c", 27.55);
+
+        /* ---------- scene 9 — Coaching ---------- */
+        entrance(".s9-a", 27.94, 0.08);
+        entrance(".s9-b", 28.11);
+        entrance(".s9-c", 28.35);
+        exit(".s9-a, .s9-b, .s9-c", 30.82);
+
+        /* ---------- scene 10 — Privacy ---------- */
+        entrance(".s10-a", 31.21, 0.08);
+        entrance(".s10-b", 31.38);
+        // beat-grid: 32.19s, 32.74s
+        tl.fromTo(".s10-r1", { opacity: 0, x: -22 }, { opacity: 1, x: 0, duration: 0.45, ease: EASE }, 32.19)
+          .fromTo(".s10-r2", { opacity: 0, x: -22 }, { opacity: 1, x: 0, duration: 0.45, ease: EASE }, 32.74);
+        entrance(".s10-c", 33.29);
+        exit(".s10-a, .s10-b, .s10-c, .s10-r1, .s10-r2", 34.64);
+
+        /* ---------- scene 11 — outro ---------- */
+        tl.set("#s11-mark, #s11-wm, #s11-line", { opacity: 0 }, 34.92)
+          .fromTo(".arc-item", { opacity: 0, y: 26, scale: 0.9 },
+                  { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: EASE, stagger: 0.07 }, 36.55)
+          .fromTo("#s11-mark", { opacity: 0, y: 22, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: EASE }, 36.62)
+          .fromTo("#s11-wm",   { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.55, ease: EASE }, 36.8)
+          .fromTo("#s11-line", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55, ease: EASE }, 36.98);
+
+        /* ---------- subtle audio-reactive warmth ----------
+           Pre-extracted per-frame energy (RMS + low bands) from assets/music/bed.mp3.
+           Driven with zero-duration sets so every frame is reproducible from its time alone —
+           it only breathes the background wash, never the type. */
+        if (window.OH_ENERGY && window.OH_ENERGY.v) {
+          var E = window.OH_ENERGY;
+          var rootEl = document.getElementById("root");
+          for (var f = 0; f < E.n; f += 2) {
+            tl.set(rootEl, { "--energy": E.v[f] }, f / E.fps);
+          }
+        }
+
+        window.__timelines["ownhub"] = tl;
+        if (window.__hfForceTimelineRebind) window.__hfForceTimelineRebind();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Own Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      @font-face { font-family: "Rubik"; src: url("assets/fonts/Rubik-400.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: block; }
+      @font-face { font-family: "Rubik"; src: url("assets/fonts/Rubik-500.ttf") format("truetype"); font-weight: 500; font-style: normal; font-display: block; }
+      @font-face { font-family: "Rubik"; src: url("assets/fonts/Rubik-600.ttf") format("truetype"); font-weight: 600; font-style: normal; font-display: block; }
+      @font-face { font-family: "LaBelleAurore"; src: url("assets/fonts/LaBelleAurore-400.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: block; }
+
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #fff8f9; }
+
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #fff8f9;
+        font-family: "Rubik", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .paper { position: absolute; inset: 0; background: #fff8f9; }
+      .hatch {
+        position: absolute; left: 0; top: 0; width: 1080px; height: 88px;
+        background-image: repeating-linear-gradient(135deg, rgba(36,28,31,0.06) 0px, rgba(36,28,31,0.06) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 14px);
+      }
+      .rule { position: absolute; left: 84px; top: 442px; width: 912px; height: 1px; background: rgba(36,28,31,0.17); }
+
+      /* The device is drawn, not photographed. It is deliberately untimed: a
+         <video data-start> may not sit inside a plain timed ancestor. */
+      #device {
+        position: absolute; left: 214px; top: 466px; width: 652px; height: 1385px;
+        border-radius: 74px; background: #241c1f;
+        box-shadow: 0 7px 18px -9px rgba(36, 28, 31, 0.34);
+        opacity: 0;
+      }
+      .deviceRim {
+        position: absolute; left: 3px; top: 3px; width: 646px; height: 1379px;
+        border-radius: 71px; border: 1.5px solid rgba(255, 248, 249, 0.15);
+      }
+      .screen {
+        position: absolute; left: 14px; top: 14px; width: 624px; height: 1357px;
+        border-radius: 60px; overflow: hidden; background: #fff8f9;
+      }
+      .shot {
+        position: absolute; left: 0; top: 0; width: 624px; height: 1357px;
+        display: block; object-fit: fill;
+      }
+      .btn { position: absolute; width: 5px; background: #241c1f; }
+      .btn-vu { left: -5px; top: 314px; height: 76px; border-radius: 3px 0 0 3px; }
+      .btn-vd { left: -5px; top: 404px; height: 76px; border-radius: 3px 0 0 3px; }
+      .btn-pw { right: -5px; top: 388px; height: 124px; border-radius: 0 3px 3px 0; }
+
+      /* Tap indicator: a soft rose ring landing where she actually pressed. */
+      .tap {
+        position: absolute; width: 78px; height: 78px; margin-left: -39px; margin-top: -39px;
+        border-radius: 50%; border: 3px solid #b4526e; background: rgba(180, 82, 110, 0.10);
+        /* Hard paper outlines, zero blur: the ring has to read on paper AND on a
+           rose primary button, which is the same colour as the ring itself. */
+        box-shadow: 0 0 0 2px rgba(255, 248, 249, 0.92), inset 0 0 0 2px rgba(255, 248, 249, 0.92);
+        opacity: 0;
+      }
+
+      .scene { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .band { position: absolute; left: 84px; top: 150px; width: 912px; }
+
+      .t1 { font-weight: 600; font-size: 98px; line-height: 1.06; letter-spacing: -0.028em; color: #241c1f; }
+      .t2 { font-weight: 600; font-size: 70px; line-height: 1.12; letter-spacing: -0.022em; color: #b4526e; }
+      .h1 { font-weight: 600; font-size: 64px; line-height: 1.14; letter-spacing: -0.022em; color: #241c1f; }
+      .h1s { font-weight: 600; font-size: 64px; line-height: 1.14; letter-spacing: -0.022em; color: #4e6a5a; }
+      .h2 { font-weight: 600; font-size: 54px; line-height: 1.18; letter-spacing: -0.016em; color: #241c1f; }
+      .h2r { font-weight: 600; font-size: 54px; line-height: 1.18; letter-spacing: -0.016em; color: #b4526e; }
+      .h3 { font-weight: 600; font-size: 50px; line-height: 1.20; letter-spacing: -0.014em; color: #b4526e; }
+      .b1 { font-weight: 400; font-size: 46px; line-height: 1.32; color: #241c1f; }
+      .b2 { font-weight: 400; font-size: 44px; line-height: 1.32; color: #241c1f; }
+      .wm { font-weight: 600; font-size: 104px; line-height: 1.10; letter-spacing: -0.032em; color: #241c1f; }
+      .sub { font-weight: 400; font-size: 44px; line-height: 1.24; color: #b4526e; }
+      .annot { font-family: "LaBelleAurore", "Rubik", cursive; font-size: 64px; line-height: 1.1; color: #b4526e; }
+
+      .line { opacity: 0; }
+
+      .mark { position: relative; display: inline-block; }
+      .mark > svg { position: absolute; left: -1.5%; bottom: -0.24em; width: 103%; height: 0.30em; overflow: visible; }
+      .ring { position: relative; display: inline-block; margin-right: 0.24em; }
+      .ring > svg { position: absolute; left: -6%; top: -26%; width: 112%; height: 152%; overflow: visible; }
+      .scribble path { fill: none; stroke: #b4526e; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="45"
+      data-width="1080"
+      data-height="1920"
+      data-fps="30"
+    >
+      <div class="paper" data-layout-ignore>
+        <div class="hatch" data-layout-ignore></div>
+        <div class="rule" data-layout-ignore></div>
+      </div>
+
+      <div id="device" data-layout-ignore>
+        <div class="deviceRim" data-layout-ignore></div>
+        <div class="screen" data-layout-ignore>
+          <img class="shot clip" id="sh1" src="assets/screens/20-why-we-check.png" alt="Own Hub verification screen" data-start="0" data-duration="7.5" data-track-index="0" data-layout-ignore />
+          <img class="shot clip" id="sh2" src="assets/screens/21-community.png" alt="Own Hub community screen" data-start="7.5" data-duration="1.9" data-track-index="0" data-layout-ignore />
+          <video class="shot" muted id="sh3" src="assets/footage/08-privacy.mp4" data-start="9.4" data-duration="3.4" data-media-start="0.2" data-track-index="0" data-layout-ignore></video>
+          <video class="shot" muted id="sh4" src="assets/footage/00-setup.mp4" data-start="12.8" data-duration="2.8" data-media-start="0" data-track-index="0" data-layout-ignore></video>
+          <video class="shot" muted id="sh5" src="assets/footage/00-setup.mp4" data-start="15.6" data-duration="1.6" data-media-start="7" data-track-index="0" data-layout-ignore></video>
+          <img class="shot clip" id="sh6" src="assets/screens/30-about-phases.png" alt="Own Hub about cycle phases" data-start="17.2" data-duration="4.1" data-track-index="0" data-layout-ignore />
+          <video class="shot" muted id="sh7" src="assets/footage/07-cycle.mp4" data-start="21.3" data-duration="3.4" data-media-start="1.45" data-track-index="0" data-layout-ignore></video>
+          <video class="shot" muted id="sh8" src="assets/footage/07-cycle.mp4" data-start="24.7" data-duration="3.4" data-media-start="8.6" data-track-index="0" data-layout-ignore></video>
+          <video class="shot" muted id="sh9" src="assets/footage/02-session.mp4" data-start="28.1" data-duration="1.8" data-media-start="1.6" data-track-index="0" data-layout-ignore></video>
+          <video class="shot" muted id="sh10" src="assets/footage/03-mid-set.mp4" data-start="29.9" data-duration="2.4" data-media-start="1.9" data-track-index="0" data-layout-ignore></video>
+          <video class="shot" muted id="sh11" src="assets/footage/04-finish.mp4" data-start="32.3" data-duration="2.5" data-media-start="7.5" data-track-index="0" data-layout-ignore></video>
+          <video class="shot" muted id="sh12" src="assets/footage/05-tabs.mp4" data-start="34.8" data-duration="1.5" data-media-start="1.5" data-track-index="0" data-layout-ignore></video>
+          <video class="shot" muted id="sh13" src="assets/footage/06-eat.mp4" data-start="36.3" data-duration="2.2" data-media-start="1.7" data-track-index="0" data-layout-ignore></video>
+          <img class="shot clip" id="sh14" src="assets/screens/24-her-plan.png" alt="Own Hub coaching plan" data-start="38.5" data-duration="4.05" data-track-index="0" data-layout-ignore />
+          <video class="shot" muted id="sh15" src="assets/footage/09-home-again.mp4" data-start="42.55" data-duration="2.45" data-media-start="2.1" data-track-index="0" data-layout-ignore></video>
+
+          <div class="tap" id="tp1" style="left: 561.6px; top: 675.6px" data-layout-ignore></div>
+          <div class="tap" id="tp2" style="left: 385.7px; top: 601.8px" data-layout-ignore></div>
+          <div class="tap" id="tp3" style="left: 533.2px; top: 721.0px" data-layout-ignore></div>
+          <div class="tap" id="tp4" style="left: 114.9px; top: 508.2px" data-layout-ignore></div>
+          <div class="tap" id="tp5" style="left: 385.7px; top: 633.1px" data-layout-ignore></div>
+          <div class="tap" id="tp6" style="left: 312.0px; top: 1172.5px" data-layout-ignore></div>
+          <div class="tap" id="tp7" style="left: 331.8px; top: 1172.5px" data-layout-ignore></div>
+          <div class="tap" id="tp8" style="left: 312.0px; top: 1137.0px" data-layout-ignore></div>
+          <div class="tap" id="tp9" style="left: 312.0px; top: 1256.2px" data-layout-ignore></div>
+          <div class="tap" id="tp10" style="left: 541.7px; top: 1291.7px" data-layout-ignore></div>
+          <div class="tap" id="tp11" style="left: 462.3px; top: 589.0px" data-layout-ignore></div>
+          <div class="tap" id="tp12" style="left: 99.3px; top: 1271.8px" data-layout-ignore></div>
+        </div>
+        <div class="btn btn-vu" data-layout-ignore></div>
+        <div class="btn btn-vd" data-layout-ignore></div>
+        <div class="btn btn-pw" data-layout-ignore></div>
+      </div>
+
+      <div class="clip scene" id="s1" data-start="0" data-duration="2.7" data-track-index="1">
+        <div class="band" id="s1band">
+          <div class="line t1" id="s1a">Women only.</div>
+          <div class="line t2" id="s1b" style="margin-top: 24px">
+            <span class="mark">Checked,<svg class="scribble" id="m1" viewBox="0 0 200 14" preserveAspectRatio="none" data-layout-ignore><path d="M3 9 C 38 3.5 68 12 102 6.5 S 166 4 197 8.5" vector-effect="non-scaling-stroke" /></svg></span>
+            not guessed.
+          </div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s2" data-start="2.7" data-duration="4.8" data-track-index="1">
+        <div class="band" id="s2band">
+          <div class="line h2" id="s2a">We read your national ID card.</div>
+          <div class="line b1" id="s2b" style="margin-top: 22px">The card itself says you are a woman.</div>
+          <div class="line h2r" id="s2c" style="margin-top: 22px">
+            We <span class="mark">never guess<svg class="scribble" id="m2" viewBox="0 0 200 14" preserveAspectRatio="none" data-layout-ignore><path d="M4 8 C 36 13 70 3 104 8.5 S 164 12 196 6" vector-effect="non-scaling-stroke" /></svg></span> from your face.
+          </div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s3" data-start="7.5" data-duration="1.9" data-track-index="1">
+        <div class="band" id="s3band">
+          <div class="line h1s" id="s3a">Faces arrive blurred.</div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s4" data-start="9.4" data-duration="3.4" data-track-index="1">
+        <div class="band" id="s4band">
+          <div class="line b1" id="s4a">Your logs, your weight, your photos.</div>
+          <div class="line h2" id="s4b" style="margin-top: 20px">They <span class="h2r" style="font-size: inherit">never</span> leave your phone.</div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s5" data-start="12.8" data-duration="4.4" data-track-index="1">
+        <div class="band" id="s5band">
+          <div class="line h1" id="s5a">Four questions. Then the week is yours.</div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s6" data-start="17.2" data-duration="4.1" data-track-index="1">
+        <div class="band" id="s6band">
+          <div class="line b2" id="s6a">Training by cycle phase is not supported by the evidence.</div>
+          <div class="line h3" id="s6b" style="margin-top: 40px">
+            <span class="ring">Symptoms<svg class="scribble" id="m3" viewBox="0 0 200 60" preserveAspectRatio="none" data-layout-ignore><path d="M14 31 C 14 13 58 5 104 5 C 158 5 193 13 193 29 C 193 46 149 56 99 56 C 45 56 11 49 11 31 C 11 20 29 12 47 9" vector-effect="non-scaling-stroke" /></svg></span>
+            are.
+          </div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s7" data-start="21.3" data-duration="3.4" data-track-index="1">
+        <div class="band" id="s7band">
+          <div class="line h1" id="s7a">So it asks how you feel.</div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s8" data-start="24.7" data-duration="3.4" data-track-index="1">
+        <div class="band" id="s8band">
+          <div class="line t2" id="s8a">Then you choose.</div>
+          <div class="line annot" id="s8b" style="margin-top: 18px">her call</div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s9" data-start="28.1" data-duration="4.2" data-track-index="1">
+        <div class="band" id="s9band">
+          <div class="line h1" id="s9a">One tap logs the set.</div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s11" data-start="34.8" data-duration="3.7" data-track-index="1">
+        <div class="band" id="s11band">
+          <div class="line h2" id="s11a">Meals in the size you actually serve.</div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s12" data-start="38.5" data-duration="4.05" data-track-index="1">
+        <div class="band" id="s12band">
+          <div class="line h1" id="s12a">Real coaches. Real plans.</div>
+          <div class="line b2" id="s12b" style="margin-top: 22px">You are paying a person, not a subscription.</div>
+          <div class="line h3" id="s12c" style="margin-top: 20px">She keeps 80%.</div>
+        </div>
+      </div>
+
+      <div class="clip scene" id="s13" data-start="42.55" data-duration="2.45" data-track-index="1">
+        <div class="band" id="s13band">
+          <div class="line wm" id="s13a">
+            <span class="mark">Own Hub<svg class="scribble" id="m4" viewBox="0 0 200 14" preserveAspectRatio="none" data-layout-ignore><path d="M3 8.5 C 40 3 72 12.5 106 6.5 S 168 4.5 197 9" vector-effect="non-scaling-stroke" /></svg></span>
+          </div>
+          <div class="line sub" id="s13b" style="margin-top: 30px">Arabic and English.</div>
+        </div>
+      </div>
+
+      <audio id="bgm" src="assets/music/bed.mp3" data-start="0" data-duration="45" data-volume="1" data-track-index="8"></audio>
+      <audio id="sfxA" src="assets/sfx/drop_002.ogg" data-start="0.1" data-volume="0.3" data-track-index="9"></audio>
+      <audio id="sfxB" src="assets/sfx/switch2.ogg" data-start="30.56" data-volume="0.34" data-track-index="10"></audio>
+      <audio id="sfxC" src="assets/sfx/bong_001.ogg" data-start="33.25" data-volume="0.26" data-track-index="11"></audio>
+      <audio id="sfxD" src="assets/sfx/drop_001.ogg" data-start="42.56" data-volume="0.3" data-track-index="12"></audio>
+    </div>
+
+    <script>
+      (function () {
+        // selector, in-time, in-duration
+        var LINES = [
+          ["#s1a", 0.1, 0.5],
+          ["#s1b", 1.05, 0.45],
+          ["#s2a", 3.0, 0.55],
+          ["#s2b", 3.9, 0.5],
+          ["#s2c", 4.91, 0.45],
+          ["#s3a", 7.8, 0.4],
+          ["#s4a", 9.7, 0.5],
+          ["#s4b", 10.55, 0.45],
+          ["#s5a", 12.95, 0.5],
+          ["#s6a", 17.44, 0.55],
+          ["#s6b", 19.64, 0.45],
+          ["#s7a", 21.45, 0.45],
+          ["#s8a", 25.0, 0.45],
+          ["#s8b", 26.1, 0.4],
+          ["#s9a", 28.4, 0.5],
+          ["#s11a", 35.1, 0.55],
+          ["#s12a", 38.73, 0.5],
+          ["#s12b", 39.29, 0.35],
+          ["#s12c", 40.38, 0.45],
+          ["#s13a", 42.56, 0.6],
+          ["#s13b", 43.65, 0.45]
+        ];
+
+        // band selector, scene end (the band fades over the last 0.30s of its scene)
+        var BANDS = [
+          ["#s1band", 2.7],
+          ["#s2band", 7.5],
+          ["#s3band", 9.4],
+          ["#s4band", 12.8],
+          ["#s5band", 17.2],
+          ["#s6band", 21.3],
+          ["#s7band", 24.7],
+          ["#s8band", 28.1],
+          ["#s9band", 32.3],
+          ["#s11band", 38.5],
+          ["#s12band", 42.55]
+        ];
+
+        // hand-drawn mark, start, duration
+        var MARKS = [
+          ["#m1", 1.5, 0.55],
+          ["#m2", 5.41, 0.55],
+          ["#m3", 20.1, 0.6],
+          ["#m4", 43.26, 0.7]
+        ];
+
+        // tap ring, at the frame the pressed control moves (footage/timings.md)
+        var TAPS = [
+          ["#tp1", 11.56],
+          ["#tp2", 13.59],
+          ["#tp3", 14.76],
+          ["#tp4", 21.91],
+          ["#tp5", 24.31],
+          ["#tp6", 25.54],
+          ["#tp7", 29.01],
+          ["#tp8", 30.56],
+          ["#tp9", 32.92],
+          ["#tp10", 35.62],
+          ["#tp11", 36.88],
+          ["#tp12", 42.8]
+        ];
+
+        function build() {
+          var tl = gsap.timeline({ paused: true });
+          var j;
+
+          tl.fromTo("#device", { y: 190, opacity: 0 }, { y: 0, opacity: 1, duration: 0.95, ease: "power3.out" }, 1.05);
+
+          for (j = 0; j < LINES.length; j++) {
+            tl.fromTo(LINES[j][0], { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: LINES[j][2], ease: "power3.out" }, LINES[j][1]);
+          }
+
+          for (j = 0; j < BANDS.length; j++) {
+            tl.fromTo(BANDS[j][0], { opacity: 1 }, { opacity: 0, duration: 0.25, ease: "power1.in" }, BANDS[j][1] - 0.3);
+          }
+
+          for (j = 0; j < MARKS.length; j++) {
+            var path = document.querySelector(MARKS[j][0] + " path");
+            var len = path.getTotalLength();
+            gsap.set(path, { strokeDasharray: 2 * len + " " + 3 * len });
+            tl.fromTo(path, { strokeDashoffset: 2 * len }, { strokeDashoffset: 0, duration: MARKS[j][2], ease: "power2.out" }, MARKS[j][1]);
+          }
+
+          for (j = 0; j < TAPS.length; j++) {
+            var t = TAPS[j][1];
+            tl.fromTo(TAPS[j][0], { scale: 0.45, opacity: 0 }, { scale: 1, opacity: 0.95, duration: 0.14, ease: "power2.out" }, t - 0.06);
+            tl.to(TAPS[j][0], { scale: 1.3, opacity: 0, duration: 0.34, ease: "power2.out" }, t + 0.08);
+          }
+
+          window.__timelines["main"] = tl;
+          if (window.__hfForceTimelineRebind) window.__hfForceTimelineRebind();
+          tl.seek(0);
+        }
+
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(build);
+        } else {
+          build();
+        }
+      })();
+    </script>
+  </body>
+</html>
