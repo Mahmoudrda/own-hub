@@ -247,7 +247,7 @@ class PersonalBestsView extends StatelessWidget {
                 // The rule that keeps a best meaningful, said on the screen
                 // where she would otherwise wonder why a session is missing.
                 Text(
-                  l10n.sessionsYouLoggedAsIAlreadyDid,
+                  l10n.sessionsYouAddedWithIAlreadyDid,
                   style: AppText.bodyM.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),

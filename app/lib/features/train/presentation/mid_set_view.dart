@@ -350,8 +350,8 @@ class _MidSetViewState extends State<MidSetView> {
         // does either way. The dictionary gap is a `{sets}` form of this label.
         AppButton(
           statesHerFigure(states: 3, hers: move.sets.length)
-              ? l10n.iDidAll3SetsLogThem
-              : l10n.logIt,
+              ? l10n.iDidAll3Sets
+              : l10n.iDidThemAll,
           variant: AppButtonVariant.text,
           height: 44,
           fontSize: 15,

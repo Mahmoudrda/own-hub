@@ -356,7 +356,7 @@ Future<void> _render(
       // ...and finished, so the week has a session in it.
       var guard = 0;
       while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
-        final all = find.textContaining('log them').hitTestable();
+        final all = find.textContaining('I did').hitTestable();
         if (all.evaluate().isEmpty) break;
         await tester.tap(all.first);
         await _settle(tester);
@@ -377,7 +377,7 @@ Future<void> _render(
         await _open(tester, 'E02');
         await tester.enterText(find.byType(TextField).first, food);
         await _settle(tester);
-        await _tapText(tester, l10n.logIt);
+        await _tapText(tester, l10n.addIt);
         await tester.pump(const Duration(seconds: 6));
         await _settle(tester);
         await _home(tester);

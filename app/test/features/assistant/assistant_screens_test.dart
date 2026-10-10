@@ -255,7 +255,7 @@ void main() {
 
     test('neither line is one of the four that promise a queue', () {
       final promised = <String>{
-        _l10n.youAreOfflineEverythingYouLogIs,
+        _l10n.youAreOfflineEverythingYouAddIs,
         _l10n.waitingForSignal,
         _l10n.savedHereUntilYouHaveSignal,
         _l10n.weCouldNotReachTheServerYour,

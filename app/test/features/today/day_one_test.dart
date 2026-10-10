@@ -107,13 +107,13 @@ void main() {
       _phone(tester);
       await tester.pumpWidget(_host(_dayOne()));
       await tester.pumpAndSettle();
-      expect(find.text('Nothing logged yet'), findsOneWidget);
+      expect(find.text('Nothing added yet'), findsOneWidget);
       expect(find.text('Walk this morning · 32 min'), findsNothing);
 
       // Same TodayView, one log later.
       await tester.pumpWidget(_host(_populated()));
       await tester.pumpAndSettle();
-      expect(find.text('Nothing logged yet'), findsNothing);
+      expect(find.text('Nothing added yet'), findsNothing);
       expect(find.text('Walk this morning · 32 min'), findsOneWidget);
     });
   });
@@ -136,7 +136,7 @@ void main() {
       expect(find.text('Your training, week by week'), findsOneWidget);
       expect(
         find.text(
-          'This app counts weeks, not days, and only what you log yourself.',
+          'This app counts weeks, not days, and only what you add yourself.',
         ),
         findsOneWidget,
       );
@@ -154,7 +154,7 @@ void main() {
       expect(find.text('Start day 1'), findsOneWidget);
 
       // What will appear here, and why it is empty.
-      expect(find.text('Nothing logged yet'), findsOneWidget);
+      expect(find.text('Nothing added yet'), findsOneWidget);
       expect(find.textContaining('will sit here'), findsOneWidget);
 
       // The single smallest action that starts each empty surface.
@@ -211,9 +211,9 @@ void main() {
 
     expect(find.text('اليوم 1'), findsOneWidget);
     expect(find.text('تدريبك، أسبوعًا بعد أسبوع'), findsOneWidget);
-    expect(find.text('لا شيء مسجَّل بعد'), findsOneWidget);
+    expect(find.text('لم تُضيفي شيئًا بعد'), findsOneWidget);
     expect(find.text('Your training, week by week'), findsNothing);
-    expect(find.text('Nothing logged yet'), findsNothing);
+    expect(find.text('Nothing added yet'), findsNothing);
   });
 
   testWidgets('does not overflow at the largest system text size in Arabic', (

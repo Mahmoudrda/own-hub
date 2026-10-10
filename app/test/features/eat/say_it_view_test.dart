@@ -79,7 +79,7 @@ void main() {
 
       expect(find.text('سمعنا هذا'), findsOneWidget);
       expect(find.text(_dialect), findsOneWidget);
-      expect(find.text('إذًا نسجّل'), findsOneWidget);
+      expect(find.text('إذًا سنضيف'), findsOneWidget);
     });
 
     testWidgets('the dialect resolves into two editable rows', (tester) async {
@@ -111,7 +111,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('سجّليها'));
+      await tester.tap(find.text('أضيفيه'));
       await tester.pump();
 
       expect(handles, hasLength(1));
@@ -139,10 +139,10 @@ void main() {
 
       // No transcript card at all — the screen does not invent one.
       expect(find.text(_dialect), findsNothing);
-      expect(find.text('إذًا نسجّل'), findsNothing);
+      expect(find.text('إذًا سنضيف'), findsNothing);
 
       // And the confirm button does nothing, so she cannot save unheard words.
-      await tester.tap(find.text('سجّليها'));
+      await tester.tap(find.text('أضيفيه'));
       await tester.pump(const Duration(seconds: 6));
       expect(repository.writes, isEmpty);
     });
@@ -162,7 +162,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.remove).last);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('سجّليها'));
+      await tester.tap(find.text('أضيفيه'));
       await tester.pump(const Duration(seconds: 6));
 
       expect(repository.writes.single.added, hasLength(1));
@@ -184,7 +184,7 @@ void main() {
         expect(find.text(_dialect), findsOneWidget);
         // The chrome, in Modern Standard Arabic from the ARB.
         expect(find.text('سمعنا هذا'), findsOneWidget);
-        expect(find.text('إذًا نسجّل'), findsOneWidget);
+        expect(find.text('إذًا سنضيف'), findsOneWidget);
         expect(find.text('We heard this'), findsNothing);
       },
     );
@@ -264,7 +264,7 @@ void main() {
       await tester.pumpWidget(_host(_sayIt(transcript: _dialect, bus: bus)));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('سجّليها'));
+      await tester.tap(find.text('أضيفيه'));
       await tester.pump();
 
       expect(find.byType(AlertDialog), findsNothing);

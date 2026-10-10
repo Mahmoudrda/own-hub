@@ -90,7 +90,7 @@ void main() {
           'DietaryConstraints.unknown also clears this, because the guard '
           'then fails closed — at the cost of the acknowledgement sheet, '
           'whose copy now exists (l10n.thisDishHasAllergenYouToldUs, '
-          'l10n.notThis, l10n.logItAnyway).',
+          'l10n.notThis, l10n.addItAnyway).',
     );
   });
 

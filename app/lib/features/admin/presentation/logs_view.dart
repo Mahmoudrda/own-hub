@@ -154,7 +154,7 @@ class _LogsViewState extends State<LogsView> {
         else if (_rows.isEmpty)
           AppEmptyState(
             icon: Icons.receipt_long,
-            title: l10n.nothingLoggedYet,
+            title: l10n.nothingInTheLogYet,
             body: '',
           )
         else ...[

@@ -122,8 +122,8 @@ class WidgetProjection {
         'status': current
             ? statusFor(day.state, l10n)
             : l10n.openOwnHubForToday,
-        'meal': l10n.aMealIsLoggedToday,
-        'mealNone': l10n.logAMeal,
+        'meal': l10n.youAddedAMealToday,
+        'mealNone': l10n.addWhatIAte,
         'stale': l10n.openOwnHubForToday,
         'closed': l10n.openOwnHubToStart,
       },
@@ -148,7 +148,7 @@ class WidgetProjection {
     DayState.nothingDone => l10n.todaysWorkoutIsReady,
     DayState.inProgress => l10n.todayIsUnderWay,
     DayState.done => l10n.sessionDone,
-    DayState.recalled => l10n.sessionLogged,
+    DayState.recalled => l10n.sessionSaved,
     DayState.restDay => l10n.restDay,
   };
 }

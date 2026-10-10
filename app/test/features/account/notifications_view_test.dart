@@ -62,7 +62,7 @@ void main() {
       expect(find.byType(AppEmptyState), findsOneWidget);
       expect(
         find.text(
-          'One nudge a day at most, at the hour you usually log. Ignore three '
+          'One nudge a day at most, at your usual time. Ignore three '
           'and they stop by themselves.',
         ),
         findsOneWidget,
@@ -160,7 +160,7 @@ void main() {
       );
       expect(
         find.text(
-          'Turn notifications on, so we can nudge you at the hour you usually log.',
+          'Turn notifications on, so we can nudge you at your usual time.',
         ),
         findsOneWidget,
       );
@@ -186,7 +186,7 @@ void main() {
       expect(find.text('Open settings'), findsOneWidget);
       expect(
         find.text(
-          'Turn notifications on, so we can nudge you at the hour you usually log.',
+          'Turn notifications on, so we can nudge you at your usual time.',
         ),
         findsNothing,
         reason: 'G7 §3.1: denied forever means never prompting again',
@@ -208,7 +208,7 @@ void main() {
       expect(find.text('Open settings'), findsNothing);
       expect(
         find.text(
-          'Turn notifications on, so we can nudge you at the hour you usually log.',
+          'Turn notifications on, so we can nudge you at your usual time.',
         ),
         findsNothing,
       );

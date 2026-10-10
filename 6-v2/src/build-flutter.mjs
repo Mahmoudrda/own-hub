@@ -159,6 +159,7 @@ if (fs.existsSync(dictPath)) {
   // dictionary is keyed by. The generated key is derived, so listing keys would
   // break the moment a slug changed.
   const PARAMETERISED = {
+    "Send it again in {time}": {"description": "C07, while the resend waits after a code was sent. time is minutes:seconds in Western digits, e.g. 0:27.", "placeholders": {"time": {"type": "String", "example": "0:27"}}},
     '{amount} EGP': {
       description:
         'A price. Every other EGP string in the dictionary bakes a sample ' +
@@ -241,7 +242,7 @@ if (fs.existsSync(dictPath)) {
         + 'This is the form that lets the sentence be true on any day.',
       placeholders: { day: { type: 'String', example: '2' } },
     },
-    '{logged} of {total} logged days': {
+    '{logged} of {total} noted days': {
       description:
         "Y10's chart caption. The fixed string named the mockup's 4 of 6, so the "
         + 'caption was withheld and the chart drew with no sentence beside it.',
@@ -402,7 +403,7 @@ if (fs.existsSync(dictPath)) {
         egp: { type: 'String', example: '640' },
       },
     },
-    '{meal} logged · {kcal} kcal': {
+    '{meal} added · {kcal} kcal': {
       description:
         'E04 undo bar. Names what SHE logged. The fixed "Lunch logged — 696 '
         + 'kcal" would announce 696 whatever she ate, which is the defect '

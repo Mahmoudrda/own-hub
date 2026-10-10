@@ -108,7 +108,7 @@ void main() {
 
     expect(
       find.text(
-        'No member data is ever included: no logs, no photos, no cycle.',
+        'No member data is ever included: no meals or workouts, no photos, no cycle.',
       ),
       findsOneWidget,
     );

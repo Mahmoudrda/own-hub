@@ -99,8 +99,8 @@ void main() {
 
       expect(find.text('Your first week'), findsOneWidget);
       for (final step in [
-        'Log one set',
-        'Log one meal',
+        'Finish one set',
+        'Add one meal you ate',
         'Finish one session',
         'Join one group',
         'Add a follow-up picture',
@@ -269,9 +269,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('أسبوعك الأول'), findsOneWidget);
-    expect(find.text('سجّلي مجموعة واحدة'), findsOneWidget);
+    expect(find.text('أنهي مجموعة واحدة'), findsOneWidget);
     expect(find.text('انضمّي إلى مجموعة واحدة'), findsOneWidget);
-    expect(find.text('Log one set'), findsNothing);
+    expect(find.text('Finish one set'), findsNothing);
   });
 
   testWidgets('does not overflow at the largest system text size in Arabic', (

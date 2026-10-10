@@ -198,7 +198,7 @@ class _SayItViewState extends State<SayItView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
       );
       _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
@@ -207,7 +207,7 @@ class _SayItViewState extends State<SayItView> {
 
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => service.commit(prepared.write),
       ),
     );
@@ -234,7 +234,7 @@ class _SayItViewState extends State<SayItView> {
           // total of the prototype's sample sentence, so it named 696 whatever
           // the recogniser had actually heard. The rows above state the
           // numbers; this states the action.
-          l10n.logIt,
+          l10n.addIt,
           onPressed: state.canLog ? () => _log(state.parse.items) : null,
         ),
         AppButton(
@@ -263,7 +263,7 @@ class _SayItViewState extends State<SayItView> {
           ),
         if (state.parse.items.isNotEmpty)
           Text(
-            l10n.soWereLogging,
+            l10n.soWereAdding,
             style: AppText.titleS.copyWith(color: AppColors.tertiary),
           ),
         for (var i = 0; i < state.parse.items.length; i++)

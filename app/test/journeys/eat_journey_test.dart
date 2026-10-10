@@ -69,7 +69,7 @@ Future<void> _typeAndLog(WidgetTester tester, String sentence) async {
   await _open(tester, 'E02');
   await tester.enterText(find.byType(TextField).first, sentence);
   await tester.pumpAndSettle();
-  await tester.tap(find.text('Log it'));
+  await tester.tap(find.text('Add it'));
   await tester.pumpAndSettle();
 }
 
@@ -166,7 +166,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(AppUndoBar),
-          matching: find.text('Food logged'),
+          matching: find.text('Meal added'),
         ),
         findsOneWidget,
         reason: 'E04 offers the undo the moment it opens, not five seconds in',
@@ -235,7 +235,7 @@ void main() {
       expect(
         find.byType(AppUndoBar),
         findsNothing,
-        reason: 'the bar read "Food logged" over a day that no longer held it',
+        reason: 'the bar read "Meal added" over a day that no longer held it',
       );
       await _windowCloses(tester);
       expect(_written, isEmpty, reason: 'an undone meal is never written');
@@ -268,7 +268,7 @@ void main() {
       );
       expect(find.text('540 kcal · 18 g protein'), findsOneWidget);
 
-      await tester.tap(find.text('Log'));
+      await tester.tap(find.text('I ate this'));
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
       expect(find.text('About 1,620 kcal so far today'), findsOneWidget);
@@ -370,7 +370,7 @@ void main() {
 
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Cooked it, log my bowl'));
+      await tester.tap(find.text('I cooked it and ate a bowl'));
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
       await _windowCloses(tester);

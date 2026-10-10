@@ -88,7 +88,7 @@ void main() {
         find.text('Ful and baladi · 410 kcal · 22 g protein'),
         findsNothing,
       );
-      expect(find.text('Log it'), findsOneWidget);
+      expect(find.text('Add it'), findsOneWidget);
       expect(find.text('Something else'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -112,9 +112,9 @@ void main() {
       await tester.pumpWidget(_host(_view()));
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.text('Log it'));
+      await tester.ensureVisible(find.text('Add it'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Log it'));
+      await tester.tap(find.text('Add it'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 800));
 
@@ -159,9 +159,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('الفطور المعتاد؟'), findsOneWidget);
-    expect(find.text('سجّليها'), findsOneWidget);
+    expect(find.text('أضيفيه'), findsOneWidget);
     expect(find.text('شيء آخر'), findsOneWidget);
-    expect(find.text('Log it'), findsNothing);
+    expect(find.text('Add it'), findsNothing);
     expect(find.text('Something else'), findsNothing);
   });
 

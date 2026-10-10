@@ -102,7 +102,7 @@ void main() {
     // Log every move at once, which is the "I did all of it" path.
     var guard = 0;
     while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
-      final all = find.textContaining('log them');
+      final all = find.textContaining('I did');
       if (all.evaluate().isEmpty) break;
       await tester.tap(all.first);
       await tester.pumpAndSettle();

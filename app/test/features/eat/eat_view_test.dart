@@ -128,7 +128,7 @@ void main() {
 
       expect(find.text('Molokhia with chicken'), findsOneWidget);
       expect(find.text('460 kcal · 34 g protein'), findsOneWidget);
-      expect(find.text('Log'), findsOneWidget);
+      expect(find.text('I ate this'), findsOneWidget);
     });
 
     testWidgets('one tap logs it, and the write waits five seconds', (
@@ -145,7 +145,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Exactly one tap.
-      await tester.tap(find.text('Log'));
+      await tester.tap(find.text('I ate this'));
       await tester.pump();
 
       expect(handles, hasLength(1));
@@ -180,7 +180,7 @@ void main() {
       // Lunch is empty and reads "Now".
       expect(find.text('Now'), findsOneWidget);
 
-      await tester.tap(find.text('Log'));
+      await tester.tap(find.text('I ate this'));
       await tester.pump();
 
       // §4.3: the logged row appears with its real numbers straight away, even
@@ -208,7 +208,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Log'));
+      await tester.tap(find.text('I ate this'));
       await tester.pump(const Duration(seconds: 2));
 
       expect(handles.single.undo(), isTrue);
@@ -306,7 +306,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Log'));
+      await tester.tap(find.text('I ate this'));
       await tester.pump();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -332,7 +332,7 @@ void main() {
       // What will appear here, and why it is empty.
       expect(find.text('No plates yet'), findsOneWidget);
       expect(
-        find.textContaining('Log something twice and it becomes a one-tap'),
+        find.textContaining('Add something twice and it becomes a one-tap'),
         findsOneWidget,
       );
       expect(find.text('Day 1'), findsOneWidget);
@@ -349,7 +349,7 @@ void main() {
 
       expect(find.text('Or start from one of these'), findsOneWidget);
       expect(
-        find.text('Log'),
+        find.text('I ate this'),
         findsNWidgets(3),
         reason:
             'three real Egyptian starters — an empty box would ask her to '
@@ -393,7 +393,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('No plates yet'), findsOneWidget);
 
-      await tester.tap(find.text('Log').first);
+      await tester.tap(find.text('I ate this').first);
       await tester.pump();
 
       expect(
@@ -411,7 +411,7 @@ void main() {
       _phone(tester);
       final bus = LogCommandBus();
       final handle = bus.submit(
-        UndoableLog(describe: 'Food logged', commit: () async {}),
+        UndoableLog(describe: 'Meal added', commit: () async {}),
       );
 
       await tester.pumpWidget(
@@ -419,7 +419,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Food logged'), findsOneWidget);
+      expect(find.text('Meal added'), findsOneWidget);
       expect(find.text('Undo'), findsOneWidget);
 
       bus.dispose();
@@ -431,7 +431,7 @@ void main() {
       _phone(tester);
       final bus = LogCommandBus();
       final handle = bus.submit(
-        UndoableLog(describe: 'Food logged', commit: () async {}),
+        UndoableLog(describe: 'Meal added', commit: () async {}),
       );
 
       await tester.pumpWidget(
@@ -506,7 +506,7 @@ void main() {
       // the same word. Asserting one would be asserting a bug.
       expect(find.text('الطعام'), findsWidgets);
       expect(find.text('بروتين'), findsOneWidget);
-      expect(find.text('سجّلي'), findsOneWidget);
+      expect(find.text('أكلتُ هذا'), findsOneWidget);
       expect(find.text('Eat'), findsNothing);
     });
 

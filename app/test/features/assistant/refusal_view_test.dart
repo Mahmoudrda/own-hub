@@ -88,7 +88,7 @@ void main() {
         await _pump(tester, category);
         expect(find.text(l10n.whatIDidWithThatMessage), findsOneWidget);
         expect(
-          find.text(l10n.nothingWasLoggedAndNothingWasShared),
+          find.text(l10n.nothingWasSavedAndNothingWasShared),
           findsOneWidget,
         );
         expect(find.text(l10n.messageSara), findsOneWidget);

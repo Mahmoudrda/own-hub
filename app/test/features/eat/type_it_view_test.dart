@@ -20,7 +20,7 @@
 // still a four-case switch on `foodId` whose default arm was
 // `n540Kcal18GProtein`, so two boiled eggs were reported as koshari's 540 and
 // 18, tapping "Large" left the line saying Medium's figures, and the footer
-// button read "Log both · 696 kcal" — the total of the prototype's sentence —
+// button read "I ate both · 696 kcal" — the total of the prototype's sentence —
 // whatever she had typed and however many rows there were.
 
 import 'package:flutter/material.dart';
@@ -87,7 +87,7 @@ void main() {
       await tester.pumpWidget(_host(_typeIt(text: 'koshari and 2 eggs')));
       await tester.pumpAndSettle();
 
-      expect(find.text("We'll log"), findsOneWidget);
+      expect(find.text("We'll add"), findsOneWidget);
       expect(find.text('Koshari bowl'), findsOneWidget);
       expect(find.text('Boiled eggs'), findsOneWidget);
     });
@@ -124,7 +124,7 @@ void main() {
       await tester.tap(find.text('Large'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Log it'));
+      await tester.tap(find.text('Add it'));
       await tester.pump(const Duration(seconds: 6));
 
       final added = repository.writes.single.added;
@@ -159,7 +159,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Log it'));
+      await tester.tap(find.text('Add it'));
       await tester.pump();
 
       expect(handles, hasLength(1));
@@ -181,8 +181,8 @@ void main() {
       await tester.pumpWidget(_host(_typeIt(repository: repository)));
       await tester.pumpAndSettle();
 
-      expect(find.text("We'll log"), findsNothing);
-      await tester.tap(find.text('Log it'));
+      expect(find.text("We'll add"), findsNothing);
+      await tester.tap(find.text('Add it'));
       await tester.pump(const Duration(seconds: 6));
 
       expect(repository.writes, isEmpty);
@@ -218,7 +218,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Log it'));
+      await tester.tap(find.text('Add it'));
       await tester.pump(const Duration(seconds: 6));
 
       expect(repository.writes.single.added, hasLength(1));
@@ -238,7 +238,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Log it'));
+      await tester.tap(find.text('Add it'));
       await tester.pump();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -257,7 +257,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('سنسجّل'), findsOneWidget);
+      expect(find.text('سنضيف'), findsOneWidget);
       expect(find.text('طبق كشري'), findsOneWidget);
     });
 

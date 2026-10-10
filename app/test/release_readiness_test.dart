@@ -672,8 +672,8 @@ void _shippingFlagsTests() {
       await _open(tester, 'T07');
       final l10n = await AppL10n.delegate.load(const Locale('en'));
 
-      expect(find.text(l10n.logOneSet), findsOneWidget);
-      expect(find.text(l10n.logOneMeal), findsOneWidget);
+      expect(find.text(l10n.finishOneSet), findsOneWidget);
+      expect(find.text(l10n.addOneMealYouAte), findsOneWidget);
       expect(find.text(l10n.finishOneSession), findsOneWidget);
       expect(find.text(l10n.joinOneGroup), findsNothing);
       expect(find.text(l10n.addAFollowUpPicture), findsNothing);
@@ -720,7 +720,7 @@ void _shippingFlagsTests() {
       await _open(tester, 'A03');
       final l10n = await AppL10n.delegate.load(const Locale('en'));
       expect(find.text(l10n.profileVisibleToMembers), findsNothing);
-      expect(find.text(l10n.myCoachCanSeeMyLogs), findsNothing);
+      expect(find.text(l10n.myCoachCanSeeMyMealsAnd), findsNothing);
       // What is left is true, and the door into cycle sharing stays.
       expect(find.text(l10n.cycleInformation), findsOneWidget);
     });

@@ -14,6 +14,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/ui/app_button.dart';
 
 import 'package:own_hub/features/signup/domain/auth_repository.dart';
 import 'package:own_hub/features/signup/presentation/code_view.dart';
@@ -51,6 +52,10 @@ void main() {
     expect(find.text('2 of 3 · Your number'), findsOneWidget);
     expect(find.text('Type the code'), findsOneWidget);
     expect(find.textContaining('sixth digit lands'), findsOneWidget);
+    // A code was just sent, so the resend waits first, then is offered.
+    expect(find.text('Send it again in 0:30'), findsOneWidget);
+    await tester.pump(CodeView.resendWait);
+    await tester.pump();
     expect(find.text('Send it again'), findsOneWidget);
   });
 
@@ -251,11 +256,69 @@ void main() {
     final repository = FakeAuthRepository();
     await tester.pumpWidget(_host(CodeView(repository: repository)));
     await tester.pumpAndSettle();
+    await tester.pump(CodeView.resendWait);
+    await tester.pump();
 
     await tester.tap(find.text('Send it again'));
     await tester.pumpAndSettle();
 
     expect(repository.resendCount, 1);
+    await tester.pump(CodeView.resendWait);
+  });
+
+  group('"Send it again" waits after a code was sent', () {
+    AppButton resendButton(WidgetTester tester, String label) =>
+        tester.widget<AppButton>(
+          find.ancestor(of: find.text(label), matching: find.byType(AppButton)),
+        );
+
+    testWidgets('the screen opens on a countdown, and a tap sends nothing', (
+      tester,
+    ) async {
+      final repository = FakeAuthRepository();
+      await tester.pumpWidget(_host(CodeView(repository: repository)));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Send it again in 0:30'), findsOneWidget);
+      expect(resendButton(tester, 'Send it again in 0:30').onPressed, isNull);
+      await tester.tap(find.text('Send it again in 0:30'));
+      await tester.pump(const Duration(seconds: 5));
+      expect(repository.resendCount, 0);
+      expect(find.text('Send it again in 0:25'), findsOneWidget);
+    });
+
+    testWidgets('after thirty seconds it sends, once, and waits again', (
+      tester,
+    ) async {
+      final repository = FakeAuthRepository();
+      await tester.pumpWidget(_host(CodeView(repository: repository)));
+      await tester.pump();
+      await tester.pump(CodeView.resendWait);
+      await tester.pump();
+
+      expect(resendButton(tester, 'Send it again').onPressed, isNotNull);
+      await tester.tap(find.text('Send it again'));
+      await tester.pump();
+      expect(repository.resendCount, 1);
+      expect(find.text('Send it again in 0:30'), findsOneWidget);
+      await tester.pump(CodeView.resendWait);
+      await tester.pump();
+      expect(find.text('Send it again'), findsOneWidget);
+    });
+
+    testWidgets('the countdown reads in Arabic', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          CodeView(repository: FakeAuthRepository()),
+          locale: const Locale('ar'),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('إعادة إرسال الرمز بعد 0:30'), findsOneWidget);
+      await tester.pump(CodeView.resendWait);
+    });
   });
 
   testWidgets('reads in Arabic, and still says six', (tester) async {

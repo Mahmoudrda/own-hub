@@ -79,7 +79,7 @@ class LogPlannedMealView extends StatelessWidget {
 
     return AppScaffold(
       appBar: AppTopBar(
-        title: title ?? l10n.logLunch,
+        title: title ?? l10n.iAteLunch,
         onBack: onClose,
         leadingIcon: Icons.close,
       ),

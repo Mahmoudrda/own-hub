@@ -253,11 +253,11 @@ abstract class AppL10n {
   /// **'Glute bridge'**
   String get gluteBridge;
 
-  /// No description provided for @log.
+  /// No description provided for @iAteThis.
   ///
   /// In en, this message translates to:
-  /// **'Log'**
-  String get log;
+  /// **'I ate this'**
+  String get iAteThis;
 
   /// No description provided for @saraAdel.
   ///
@@ -565,11 +565,11 @@ abstract class AppL10n {
   /// **'Lentil soup and eggs'**
   String get lentilSoupAndEggs;
 
-  /// No description provided for @loggedByYou.
+  /// No description provided for @notedByYou.
   ///
   /// In en, this message translates to:
-  /// **'Logged by you'**
-  String get loggedByYou;
+  /// **'Noted by you'**
+  String get notedByYou;
 
   /// No description provided for @molokhiaWithChicken.
   ///
@@ -661,11 +661,11 @@ abstract class AppL10n {
   /// **'you did'**
   String get youDid;
 
-  /// No description provided for @youLoggedLowEnergyAndMildCramps.
+  /// No description provided for @youNotedLowEnergyAndMildCramps.
   ///
   /// In en, this message translates to:
-  /// **'You logged low energy and mild cramps.'**
-  String get youLoggedLowEnergyAndMildCramps;
+  /// **'You noted low energy and mild cramps.'**
+  String get youNotedLowEnergyAndMildCramps;
 
   /// No description provided for @n14Of20.
   ///
@@ -871,11 +871,11 @@ abstract class AppL10n {
   /// **'Floor legs, no jumping'**
   String get floorLegsNoJumping;
 
-  /// No description provided for @foodLogged.
+  /// No description provided for @mealAdded.
   ///
   /// In en, this message translates to:
-  /// **'Food logged'**
-  String get foodLogged;
+  /// **'Meal added'**
+  String get mealAdded;
 
   /// No description provided for @foodPhoto.
   ///
@@ -991,17 +991,17 @@ abstract class AppL10n {
   /// **'Legs and glutes'**
   String get legsAndGlutes;
 
-  /// No description provided for @logAPeriod.
+  /// No description provided for @noteAPeriod.
   ///
   /// In en, this message translates to:
-  /// **'Log a period'**
-  String get logAPeriod;
+  /// **'Note a period'**
+  String get noteAPeriod;
 
-  /// No description provided for @logged.
+  /// No description provided for @eaten.
   ///
   /// In en, this message translates to:
-  /// **'logged'**
-  String get logged;
+  /// **'eaten'**
+  String get eaten;
 
   /// No description provided for @logotype.
   ///
@@ -2137,11 +2137,11 @@ abstract class AppL10n {
   /// **'5 days'**
   String get n5Days;
 
-  /// No description provided for @n5Days2DaysNotLogged.
+  /// No description provided for @n5Days2DaysNotNoted.
   ///
   /// In en, this message translates to:
-  /// **'5 days · 2 days not logged'**
-  String get n5Days2DaysNotLogged;
+  /// **'5 days · 2 days not noted'**
+  String get n5Days2DaysNotNoted;
 
   /// No description provided for @n5DaysLeft.
   ///
@@ -2185,11 +2185,11 @@ abstract class AppL10n {
   /// **'6 easier sessions'**
   String get n6EasierSessions;
 
-  /// No description provided for @n6LoggedDays2Cycles.
+  /// No description provided for @n6NotedDays2Cycles.
   ///
   /// In en, this message translates to:
-  /// **'6 logged days · 2 cycles'**
-  String get n6LoggedDays2Cycles;
+  /// **'6 noted days · 2 cycles'**
+  String get n6NotedDays2Cycles;
 
   /// No description provided for @n60S.
   ///
@@ -2506,7 +2506,7 @@ abstract class AppL10n {
   /// No description provided for @addingUpdatesYourPlanItDoesNot.
   ///
   /// In en, this message translates to:
-  /// **'Adding updates your plan. It does not log the meal as eaten.'**
+  /// **'Adding updates your plan. It does not mark the meal as eaten.'**
   String get addingUpdatesYourPlanItDoesNot;
 
   /// No description provided for @adds14GProteinFor12Egp.
@@ -2839,11 +2839,11 @@ abstract class AppL10n {
   /// **'Build a plan'**
   String get buildAPlan;
 
-  /// No description provided for @buildFromWhatSheAlreadyLogsA.
+  /// No description provided for @buildFromWhatSheAlreadyEatsA.
   ///
   /// In en, this message translates to:
-  /// **'Build from what she already logs. A meal plan she has never cooked is a meal plan she will not follow.'**
-  String get buildFromWhatSheAlreadyLogsA;
+  /// **'Build from what she already eats. A meal plan she has never cooked is a meal plan she will not follow.'**
+  String get buildFromWhatSheAlreadyEatsA;
 
   /// No description provided for @buildMyFirstPlan.
   ///
@@ -2947,11 +2947,11 @@ abstract class AppL10n {
   /// **'Changes what we suggest, never your plan'**
   String get changesWhatWeSuggestNeverYourPlan;
 
-  /// No description provided for @changingThePlanNeverChangesALog.
+  /// No description provided for @changingThePlanNeverChangesAMeal.
   ///
   /// In en, this message translates to:
-  /// **'Changing the plan never changes a log you already saved. Tapping twice does not create a second log.'**
-  String get changingThePlanNeverChangesALog;
+  /// **'Changing the plan never changes a meal you already added. Tapping twice does not add it twice.'**
+  String get changingThePlanNeverChangesAMeal;
 
   /// No description provided for @chat.
   ///
@@ -3109,11 +3109,11 @@ abstract class AppL10n {
   /// **'Continue · from Sara'**
   String get continueFromSara;
 
-  /// No description provided for @cookedItLogMyBowl.
+  /// No description provided for @iCookedItAndAteABowl.
   ///
   /// In en, this message translates to:
-  /// **'Cooked it, log my bowl'**
-  String get cookedItLogMyBowl;
+  /// **'I cooked it and ate a bowl'**
+  String get iCookedItAndAteABowl;
 
   /// No description provided for @copyAndReplaceThose2Days.
   ///
@@ -3319,11 +3319,11 @@ abstract class AppL10n {
   /// **'Days you can train'**
   String get daysYouCanTrain;
 
-  /// No description provided for @daysYouLoggedFood.
+  /// No description provided for @daysYouAddedWhatYouAte.
   ///
   /// In en, this message translates to:
-  /// **'Days you logged food'**
-  String get daysYouLoggedFood;
+  /// **'Days you added what you ate'**
+  String get daysYouAddedWhatYouAte;
 
   /// No description provided for @deleteCycleData.
   ///
@@ -3640,7 +3640,7 @@ abstract class AppL10n {
   /// No description provided for @fiveDinnersBuiltFromRecipesYouHave.
   ///
   /// In en, this message translates to:
-  /// **'Five dinners, built from recipes you have logged before. Swap any of them.'**
+  /// **'Five dinners, built from recipes you have eaten before. Swap any of them.'**
   String get fiveDinnersBuiltFromRecipesYouHave;
 
   /// No description provided for @floorOnly.
@@ -3661,11 +3661,11 @@ abstract class AppL10n {
   /// **'follow-along video'**
   String get followAlongVideo;
 
-  /// No description provided for @foodLogged46DaysAWeek.
+  /// No description provided for @mealsAdded46DaysAWeek.
   ///
   /// In en, this message translates to:
-  /// **'Food logged 4.6 days a week'**
-  String get foodLogged46DaysAWeek;
+  /// **'Meals added 4.6 days a week'**
+  String get mealsAdded46DaysAWeek;
 
   /// No description provided for @foodYouAlreadyCook.
   ///
@@ -3943,11 +3943,11 @@ abstract class AppL10n {
   /// **'Her week'**
   String get herWeek;
 
-  /// No description provided for @herWeekWrittenFromHerLogs.
+  /// No description provided for @herWeekFromWhatSheAdded.
   ///
   /// In en, this message translates to:
-  /// **'Her week, written from her logs'**
-  String get herWeekWrittenFromHerLogs;
+  /// **'Her week, from what she added'**
+  String get herWeekFromWhatSheAdded;
 
   /// No description provided for @high.
   ///
@@ -4069,11 +4069,11 @@ abstract class AppL10n {
   /// **'I could not train this week, work was impossible.'**
   String get iCouldNotTrainThisWeekWork;
 
-  /// No description provided for @iDidAll3SetsLogThem.
+  /// No description provided for @iDidAll3Sets.
   ///
   /// In en, this message translates to:
-  /// **'I did all 3 sets, log them'**
-  String get iDidAll3SetsLogThem;
+  /// **'I did all 3 sets'**
+  String get iDidAll3Sets;
 
   /// No description provided for @iDontKnow.
   ///
@@ -4132,7 +4132,7 @@ abstract class AppL10n {
   /// No description provided for @irregularCyclesHormonalContraceptionAndPerimenop.
   ///
   /// In en, this message translates to:
-  /// **'Irregular cycles, hormonal contraception and perimenopause all use this mode: your logs, no forecast.'**
+  /// **'Irregular cycles, hormonal contraception and perimenopause all use this mode: what you noted, no forecast.'**
   String get irregularCyclesHormonalContraceptionAndPerimenop;
 
   /// No description provided for @irregularPeriods.
@@ -4300,7 +4300,7 @@ abstract class AppL10n {
   /// No description provided for @last7Days3Of3Workouts.
   ///
   /// In en, this message translates to:
-  /// **'Last 7 days: 3 of 3 workouts, one lighter session she chose. Food logged on 5 days.'**
+  /// **'Last 7 days: 3 of 3 workouts, one lighter session she chose. Meals added on 5 days.'**
   String get last7Days3Of3Workouts;
 
   /// No description provided for @lastEightWeeksThePaleOneWas.
@@ -4387,41 +4387,41 @@ abstract class AppL10n {
   /// **'level up'**
   String get levelUp;
 
-  /// No description provided for @logBoth696Kcal.
+  /// No description provided for @iAteBoth696Kcal.
   ///
   /// In en, this message translates to:
-  /// **'Log both · 696 kcal'**
-  String get logBoth696Kcal;
+  /// **'I ate both · 696 kcal'**
+  String get iAteBoth696Kcal;
 
-  /// No description provided for @logIt.
+  /// No description provided for @addIt.
   ///
   /// In en, this message translates to:
-  /// **'Log it'**
-  String get logIt;
+  /// **'Add it'**
+  String get addIt;
 
-  /// No description provided for @logLunch.
+  /// No description provided for @iAteLunch.
   ///
   /// In en, this message translates to:
-  /// **'Log lunch'**
-  String get logLunch;
+  /// **'I ate lunch'**
+  String get iAteLunch;
 
-  /// No description provided for @logged1131Serving.
+  /// No description provided for @added1131Serving.
   ///
   /// In en, this message translates to:
-  /// **'Logged 1:13 · 1 serving'**
-  String get logged1131Serving;
+  /// **'Added 1:13 · 1 serving'**
+  String get added1131Serving;
 
-  /// No description provided for @logged15SeptEstimated12To14.
+  /// No description provided for @noted15SeptEstimated12To14.
   ///
   /// In en, this message translates to:
-  /// **'Logged 15 Sept · estimated 12 to 14 Oct'**
-  String get logged15SeptEstimated12To14;
+  /// **'Noted 15 Sept · estimated 12 to 14 Oct'**
+  String get noted15SeptEstimated12To14;
 
-  /// No description provided for @logsItself.
+  /// No description provided for @countsItself.
   ///
   /// In en, this message translates to:
-  /// **'logs itself'**
-  String get logsItself;
+  /// **'counts itself'**
+  String get countsItself;
 
   /// No description provided for @lookAroundFirst.
   ///
@@ -4465,17 +4465,17 @@ abstract class AppL10n {
   /// **'Lunch · koshari bowl, medium'**
   String get lunchKoshariBowlMedium;
 
-  /// No description provided for @lunchLogged1Serving.
+  /// No description provided for @lunchAdded1Serving.
   ///
   /// In en, this message translates to:
-  /// **'Lunch logged · 1 serving'**
-  String get lunchLogged1Serving;
+  /// **'Lunch added · 1 serving'**
+  String get lunchAdded1Serving;
 
-  /// No description provided for @lunchLogged696Kcal.
+  /// No description provided for @lunchAdded696Kcal.
   ///
   /// In en, this message translates to:
-  /// **'Lunch logged · 696 kcal'**
-  String get lunchLogged696Kcal;
+  /// **'Lunch added · 696 kcal'**
+  String get lunchAdded696Kcal;
 
   /// No description provided for @lunchFromYourPlan.
   ///
@@ -4645,11 +4645,11 @@ abstract class AppL10n {
   /// **'More hungry'**
   String get moreHungry;
 
-  /// No description provided for @moreToLogSleepBloatingBleeding.
+  /// No description provided for @moreToNoteSleepBloatingBleeding.
   ///
   /// In en, this message translates to:
-  /// **'More to log: sleep, bloating, bleeding'**
-  String get moreToLogSleepBloatingBleeding;
+  /// **'More to note: sleep, bloating, bleeding'**
+  String get moreToNoteSleepBloatingBleeding;
 
   /// No description provided for @morningSessionsBeforeTheKidsWakeUp_1m46g.
   ///
@@ -4681,11 +4681,11 @@ abstract class AppL10n {
   /// **'My coach'**
   String get myCoach;
 
-  /// No description provided for @myCoachCanSeeMyLogs.
+  /// No description provided for @myCoachCanSeeMyMealsAnd.
   ///
   /// In en, this message translates to:
-  /// **'My coach can see my logs'**
-  String get myCoachCanSeeMyLogs;
+  /// **'My coach can see my meals and workouts'**
+  String get myCoachCanSeeMyMealsAnd;
 
   /// No description provided for @myCyclePeriodDay2.
   ///
@@ -4981,11 +4981,11 @@ abstract class AppL10n {
   /// **'Off unless you turn it on. Coaching never requires it.'**
   String get offUnlessYouTurnItOnCoaching;
 
-  /// No description provided for @offerAnEasierWorkoutWhenILog.
+  /// No description provided for @offerAnEasierWorkoutWhenINote.
   ///
   /// In en, this message translates to:
-  /// **'Offer an easier workout when I log low energy'**
-  String get offerAnEasierWorkoutWhenILog;
+  /// **'Offer an easier workout when I note low energy'**
+  String get offerAnEasierWorkoutWhenINote;
 
   /// No description provided for @oldest19HoursYouPromiseOneWorking.
   ///
@@ -5056,7 +5056,7 @@ abstract class AppL10n {
   /// No description provided for @oneMinuteItIsFilledInFrom.
   ///
   /// In en, this message translates to:
-  /// **'One minute · it is filled in from your logs'**
+  /// **'One minute · it is filled in from what you added'**
   String get oneMinuteItIsFilledInFrom;
 
   /// No description provided for @oneMinuteMostlyFilledInAlready.
@@ -5080,7 +5080,7 @@ abstract class AppL10n {
   /// No description provided for @oneNudgeADayAtMostAt.
   ///
   /// In en, this message translates to:
-  /// **'One nudge a day at most, at the hour you usually log. Ignore three and they stop by themselves.'**
+  /// **'One nudge a day at most, at your usual time. Ignore three and they stop by themselves.'**
   String get oneNudgeADayAtMostAt;
 
   /// No description provided for @oneShopCoversIt.
@@ -5155,11 +5155,11 @@ abstract class AppL10n {
   /// **'Optional. You can use the app forever without it.'**
   String get optionalYouCanUseTheAppForever;
 
-  /// No description provided for @orJustLogBreakfast.
+  /// No description provided for @orJustAddBreakfast.
   ///
   /// In en, this message translates to:
-  /// **'Or just log breakfast'**
-  String get orJustLogBreakfast;
+  /// **'Or just add breakfast'**
+  String get orJustAddBreakfast;
 
   /// No description provided for @orOneYouveHadBefore.
   ///
@@ -5692,7 +5692,7 @@ abstract class AppL10n {
   /// No description provided for @revisionsDefaultToFutureDatesASession.
   ///
   /// In en, this message translates to:
-  /// **'Revisions default to future dates. A session she has already started, and anything she has already logged, stay on the version she used.'**
+  /// **'Revisions default to future dates. A session she has already started, and anything she has already added, stay on the version she used.'**
   String get revisionsDefaultToFutureDatesASession;
 
   /// No description provided for @rice1Kg.
@@ -6025,11 +6025,11 @@ abstract class AppL10n {
   /// **'Sessions'**
   String get sessions;
 
-  /// No description provided for @sessionsYouLoggedAsIAlreadyDid.
+  /// No description provided for @sessionsYouAddedWithIAlreadyDid.
   ///
   /// In en, this message translates to:
-  /// **'Sessions you logged as \"I already did it\" never set a best, because the numbers were copied.'**
-  String get sessionsYouLoggedAsIAlreadyDid;
+  /// **'Sessions you added with \"I already did it\" never set a best, because the numbers were copied.'**
+  String get sessionsYouAddedWithIAlreadyDid;
 
   /// No description provided for @sessionsFoodDaysAndBests.
   ///
@@ -6073,11 +6073,11 @@ abstract class AppL10n {
   /// **'Severe'**
   String get severe;
 
-  /// No description provided for @severeCrampsLogged.
+  /// No description provided for @severeCrampsNoted.
   ///
   /// In en, this message translates to:
-  /// **'Severe cramps logged'**
-  String get severeCrampsLogged;
+  /// **'Severe cramps noted'**
+  String get severeCrampsNoted;
 
   /// No description provided for @severeOrUnusualPainDeservesMedicalAdvice.
   ///
@@ -6139,11 +6139,11 @@ abstract class AppL10n {
   /// **'She averages 78 g'**
   String get sheAverages78G;
 
-  /// No description provided for @sheChoosesWhatShowsHereLogsWeight.
+  /// No description provided for @sheChoosesWhatShowsHereMealsWorkouts.
   ///
   /// In en, this message translates to:
-  /// **'She chooses what shows here. Logs, weight and photos are never on a profile.'**
-  String get sheChoosesWhatShowsHereLogsWeight;
+  /// **'She chooses what shows here. Meals, workouts, weight and photos are never on a profile.'**
+  String get sheChoosesWhatShowsHereMealsWorkouts;
 
   /// No description provided for @sheDisappearsFromYourFeedAndCannot.
   ///
@@ -6235,11 +6235,11 @@ abstract class AppL10n {
   /// **'Snack'**
   String get snack;
 
-  /// No description provided for @soWereLogging.
+  /// No description provided for @soWereAdding.
   ///
   /// In en, this message translates to:
-  /// **'So we\'re logging'**
-  String get soWereLogging;
+  /// **'So we\'re adding'**
+  String get soWereAdding;
 
   /// No description provided for @spots.
   ///
@@ -6541,11 +6541,11 @@ abstract class AppL10n {
   /// **'That is exactly right. Keep 12 kg on Thursday and we add reps, not weight.'**
   String get thatIsExactlyRightKeep12Kg;
 
-  /// No description provided for @thatsRightLog696Kcal.
+  /// No description provided for @thatsRightAdd696Kcal.
   ///
   /// In en, this message translates to:
-  /// **'That\'s right · log 696 kcal'**
-  String get thatsRightLog696Kcal;
+  /// **'That\'s right · add 696 kcal'**
+  String get thatsRightAdd696Kcal;
 
   /// No description provided for @thatsTuesdayDone.
   ///
@@ -6589,11 +6589,11 @@ abstract class AppL10n {
   /// **'Then this week is two sessions, ten minutes each. I moved them to Sunday and Wednesday.'**
   String get thenThisWeekIsTwoSessionsTen;
 
-  /// No description provided for @thisDescribesYourLogsItDoesNot.
+  /// No description provided for @thisDescribesWhatYouNotedItDoes.
   ///
   /// In en, this message translates to:
-  /// **'This describes your logs. It does not explain the cause or predict every cycle.'**
-  String get thisDescribesYourLogsItDoesNot;
+  /// **'This describes what you noted. It does not explain the cause or predict every cycle.'**
+  String get thisDescribesWhatYouNotedItDoes;
 
   /// No description provided for @thisIsExactlyWhatAClientSees.
   ///
@@ -6781,11 +6781,11 @@ abstract class AppL10n {
   /// **'Tue 16 · session'**
   String get tue16Session;
 
-  /// No description provided for @tuesday840LoggedFromTheLock.
+  /// No description provided for @tuesday840AddedFromTheLock.
   ///
   /// In en, this message translates to:
-  /// **'Tuesday 8:40 · logged from the lock screen'**
-  String get tuesday840LoggedFromTheLock;
+  /// **'Tuesday 8:40 · added from the lock screen'**
+  String get tuesday840AddedFromTheLock;
 
   /// No description provided for @tuesdays.
   ///
@@ -6805,11 +6805,11 @@ abstract class AppL10n {
   /// **'Two boiled eggs'**
   String get twoBoiledEggs;
 
-  /// No description provided for @twoDaysWithoutAFoodLogAre.
+  /// No description provided for @twoDaysWithNoMealAddedAre.
   ///
   /// In en, this message translates to:
-  /// **'Two days without a food log are shown as not logged, not as meals skipped.'**
-  String get twoDaysWithoutAFoodLogAre;
+  /// **'Two days with no meal added are shown as nothing added, not as meals skipped.'**
+  String get twoDaysWithNoMealAddedAre;
 
   /// No description provided for @twoMinutesWithAWomanReviewerNothing.
   ///
@@ -7111,11 +7111,11 @@ abstract class AppL10n {
   /// **'We text you a six-digit code. We never show your number to anyone.'**
   String get weTextYouASixDigitCode;
 
-  /// No description provided for @wellLog.
+  /// No description provided for @wellAdd.
   ///
   /// In en, this message translates to:
-  /// **'We\'ll log'**
-  String get wellLog;
+  /// **'We\'ll add'**
+  String get wellAdd;
 
   /// No description provided for @wereCheckingYourCertificates.
   ///
@@ -7267,11 +7267,11 @@ abstract class AppL10n {
   /// **'What you charge'**
   String get whatYouCharge;
 
-  /// No description provided for @whatYouLogged.
+  /// No description provided for @whatYouAdded.
   ///
   /// In en, this message translates to:
-  /// **'What you logged'**
-  String get whatYouLogged;
+  /// **'What you added'**
+  String get whatYouAdded;
 
   /// No description provided for @whatsInside.
   ///
@@ -7417,11 +7417,11 @@ abstract class AppL10n {
   /// **'Yesterday · 5 days left'**
   String get yesterday5DaysLeft;
 
-  /// No description provided for @yesterdaysLogsAndAnySessionYouAlready.
+  /// No description provided for @whatYouAddedYesterdayAndAnySession.
   ///
   /// In en, this message translates to:
-  /// **'Yesterday’s logs and any session you already started stay as they were.'**
-  String get yesterdaysLogsAndAnySessionYouAlready;
+  /// **'What you added yesterday and any session you already started stay as they were.'**
+  String get whatYouAddedYesterdayAndAnySession;
 
   /// No description provided for @yesterdaysLunchAgain.
   ///
@@ -7483,11 +7483,11 @@ abstract class AppL10n {
   /// **'You can start now'**
   String get youCanStartNow;
 
-  /// No description provided for @youChooseWhatToLogYouCan.
+  /// No description provided for @youChooseWhatToAddYouCan.
   ///
   /// In en, this message translates to:
-  /// **'You choose what to log. You can change or delete it any time.'**
-  String get youChooseWhatToLogYouCan;
+  /// **'You choose what to add. You can change or delete it any time.'**
+  String get youChooseWhatToAddYouCan;
 
   /// No description provided for @youKeep.
   ///
@@ -7501,17 +7501,17 @@ abstract class AppL10n {
   /// **'You keep 80% of everything a client pays.'**
   String get youKeep80OfEverythingAClient;
 
-  /// No description provided for @youLoggedLowEnergyOn4Of.
+  /// No description provided for @youNotedLowEnergyOn4Of.
   ///
   /// In en, this message translates to:
-  /// **'You logged low energy on 4 of 6 logged days in the first 3 days of your last 2 periods.'**
-  String get youLoggedLowEnergyOn4Of;
+  /// **'You noted low energy on 4 of 6 noted days in the first 3 days of your last 2 periods.'**
+  String get youNotedLowEnergyOn4Of;
 
-  /// No description provided for @youLoggedMoreHungerAddASnack.
+  /// No description provided for @youNotedMoreHungerAddASnack.
   ///
   /// In en, this message translates to:
-  /// **'You logged more hunger. Add a snack if you want one.'**
-  String get youLoggedMoreHungerAddASnack;
+  /// **'You noted more hunger. Add a snack if you want one.'**
+  String get youNotedMoreHungerAddASnack;
 
   /// No description provided for @youSentWeek4.
   ///
@@ -7615,11 +7615,11 @@ abstract class AppL10n {
   /// **'Your ID card'**
   String get yourIdCard;
 
-  /// No description provided for @yourLogsWeightPhotosAndPhoneNumber.
+  /// No description provided for @yourMealsWorkoutsWeightPhotosAndPhone.
   ///
   /// In en, this message translates to:
-  /// **'Your logs, weight, photos and phone number are never visible to another member. These settings are only about what you choose to show.'**
-  String get yourLogsWeightPhotosAndPhoneNumber;
+  /// **'Your meals, workouts, weight, photos and phone number are never visible to another member. These settings are only about what you choose to show.'**
+  String get yourMealsWorkoutsWeightPhotosAndPhone;
 
   /// No description provided for @yourMealsReviewedOnceAWeek.
   ///
@@ -7627,17 +7627,17 @@ abstract class AppL10n {
   /// **'Your meals reviewed once a week'**
   String get yourMealsReviewedOnceAWeek;
 
-  /// No description provided for @yourNumberYourIdAndYourLogs.
+  /// No description provided for @yourNumberYourIdYourMealsAnd.
   ///
   /// In en, this message translates to:
-  /// **'Your number, your ID and your logs are never shown to members.'**
-  String get yourNumberYourIdAndYourLogs;
+  /// **'Your number, your ID, your meals and your workouts are never shown to members.'**
+  String get yourNumberYourIdYourMealsAnd;
 
-  /// No description provided for @yourOwnWorkoutsRecipesLogsAndMy.
+  /// No description provided for @yourOwnWorkoutsRecipesMealsAndMy.
   ///
   /// In en, this message translates to:
-  /// **'Your own workouts, recipes, logs and My cycle carry on exactly as before. Cycle sharing switched itself off when the coaching ended.'**
-  String get yourOwnWorkoutsRecipesLogsAndMy;
+  /// **'Your own workouts, recipes, meals and My cycle carry on exactly as before. Cycle sharing switched itself off when the coaching ended.'**
+  String get yourOwnWorkoutsRecipesMealsAndMy;
 
   /// No description provided for @yourPart.
   ///
@@ -7702,7 +7702,7 @@ abstract class AppL10n {
   /// No description provided for @yourSessionsCountHereAsYouSave.
   ///
   /// In en, this message translates to:
-  /// **'Your sessions count here as you save them. There is nothing extra to log. Nobody sees your weights, only that a session happened.'**
+  /// **'Your sessions count here as you save them. There is nothing extra to do. Nobody sees your weights, only that a session happened.'**
   String get yourSessionsCountHereAsYouSave;
 
   /// No description provided for @yourSupport.
@@ -7723,11 +7723,11 @@ abstract class AppL10n {
   /// **'Your training'**
   String get yourTraining;
 
-  /// No description provided for @yourWeekFromYourLogs.
+  /// No description provided for @yourWeekFromWhatYouAdded.
   ///
   /// In en, this message translates to:
-  /// **'Your week, from your logs'**
-  String get yourWeekFromYourLogs;
+  /// **'Your week, from what you added'**
+  String get yourWeekFromWhatYouAdded;
 
   /// No description provided for @yourWeekMondayTuesdayAndThursdayChange.
   ///
@@ -7735,11 +7735,11 @@ abstract class AppL10n {
   /// **'Your week: Monday, Tuesday and Thursday. Change any day by tapping it.'**
   String get yourWeekMondayTuesdayAndThursdayChange;
 
-  /// No description provided for @yourWorkoutResultsAndFoodLogsAre.
+  /// No description provided for @yourWorkoutResultsAndTheMealsYou.
   ///
   /// In en, this message translates to:
-  /// **'Your workout results and food logs are part of coaching. Cycle information is separate, and yours.'**
-  String get yourWorkoutResultsAndFoodLogsAre;
+  /// **'Your workout results and the meals you add are part of coaching. Cycle information is separate, and yours.'**
+  String get yourWorkoutResultsAndTheMealsYou;
 
   /// No description provided for @yours.
   ///
@@ -9391,11 +9391,11 @@ abstract class AppL10n {
   /// **'Loaded twisting'**
   String get loadedTwisting;
 
-  /// No description provided for @loggedFromMemoryYourWeekCountsIt.
+  /// No description provided for @addedFromMemoryYourWeekCountsIt.
   ///
   /// In en, this message translates to:
-  /// **'Logged from memory. Your week counts it like any other session.'**
-  String get loggedFromMemoryYourWeekCountsIt;
+  /// **'Added from memory. Your week counts it like any other session.'**
+  String get addedFromMemoryYourWeekCountsIt;
 
   /// No description provided for @lowerBody20Min.
   ///
@@ -9859,11 +9859,11 @@ abstract class AppL10n {
   /// **'It waits in your own collection'**
   String get itWaitsInYourOwnCollection;
 
-  /// No description provided for @logSomethingTwiceAndItBecomesA.
+  /// No description provided for @addSomethingTwiceAndItBecomesA.
   ///
   /// In en, this message translates to:
-  /// **'Log something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.'**
-  String get logSomethingTwiceAndItBecomesA;
+  /// **'Add something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.'**
+  String get addSomethingTwiceAndItBecomesA;
 
   /// No description provided for @lunch540Kcal18GProtein.
   ///
@@ -9925,11 +9925,11 @@ abstract class AppL10n {
   /// **'Nothing here is decided for you. Two coaches on this platform should not look alike.'**
   String get nothingHereIsDecidedForYouTwo;
 
-  /// No description provided for @nothingLoggedYet.
+  /// No description provided for @nothingAddedYet.
   ///
   /// In en, this message translates to:
-  /// **'Nothing logged yet'**
-  String get nothingLoggedYet;
+  /// **'Nothing added yet'**
+  String get nothingAddedYet;
 
   /// No description provided for @nothingSavedYet.
   ///
@@ -10006,7 +10006,7 @@ abstract class AppL10n {
   /// No description provided for @todaysSessionAndTheMealYouUsually.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s session and the meal you usually eat at this hour will sit here. Log one thing and it starts filling itself in.'**
+  /// **'Today\'s session and the meal you usually eat at this hour will sit here. Add one thing and it starts filling itself in.'**
   String get todaysSessionAndTheMealYouUsually;
 
   /// No description provided for @usuallyTheSameDayYouCanBuild.
@@ -10465,17 +10465,17 @@ abstract class AppL10n {
   /// **'Live for 1,204 women a month'**
   String get liveFor1204WomenAMonth;
 
-  /// No description provided for @logOneMeal.
+  /// No description provided for @addOneMealYouAte.
   ///
   /// In en, this message translates to:
-  /// **'Log one meal'**
-  String get logOneMeal;
+  /// **'Add one meal you ate'**
+  String get addOneMealYouAte;
 
-  /// No description provided for @logOneSet.
+  /// No description provided for @finishOneSet.
   ///
   /// In en, this message translates to:
-  /// **'Log one set'**
-  String get logOneSet;
+  /// **'Finish one set'**
+  String get finishOneSet;
 
   /// No description provided for @lowerBodyBoxSquatNotGoblet.
   ///
@@ -10531,11 +10531,11 @@ abstract class AppL10n {
   /// **'Nothing was calculated. A dish without verified values is offered without totals, never with invented ones.'**
   String get nothingWasCalculatedADishWithoutVerified;
 
-  /// No description provided for @nothingWasLoggedAndNothingWasShared.
+  /// No description provided for @nothingWasSavedAndNothingWasShared.
   ///
   /// In en, this message translates to:
-  /// **'Nothing was logged and nothing was shared. Your cycle information is not visible to me unless you turn that on.'**
-  String get nothingWasLoggedAndNothingWasShared;
+  /// **'Nothing was saved and nothing was shared. Your cycle information is not visible to me unless you turn that on.'**
+  String get nothingWasSavedAndNothingWasShared;
 
   /// No description provided for @of4.
   ///
@@ -10654,7 +10654,7 @@ abstract class AppL10n {
   /// No description provided for @tellYouThePortionOfADish.
   ///
   /// In en, this message translates to:
-  /// **'Tell you the portion of a dish you already log'**
+  /// **'Tell you the portion of a dish you already eat'**
   String get tellYouThePortionOfADish;
 
   /// No description provided for @theSamePointsTheRestOfThe.
@@ -10783,11 +10783,11 @@ abstract class AppL10n {
   /// **'Saved. It will sync when you have signal.'**
   String get savedItWillSyncWhenYouHave;
 
-  /// No description provided for @youAreOfflineEverythingYouLogIs.
+  /// No description provided for @youAreOfflineEverythingYouAddIs.
   ///
   /// In en, this message translates to:
-  /// **'You are offline. Everything you log is saved here and sent when you reconnect.'**
-  String get youAreOfflineEverythingYouLogIs;
+  /// **'You are offline. Everything you add is saved here and sent when you reconnect.'**
+  String get youAreOfflineEverythingYouAddIs;
 
   /// No description provided for @nothingWasLost.
   ///
@@ -11164,7 +11164,7 @@ abstract class AppL10n {
   /// No description provided for @noMemberDataIsEverIncludedNo.
   ///
   /// In en, this message translates to:
-  /// **'No member data is ever included: no logs, no photos, no cycle.'**
+  /// **'No member data is ever included: no meals or workouts, no photos, no cycle.'**
   String get noMemberDataIsEverIncludedNo;
 
   /// E01/E04 protein bar. Her real intake, never the mockup 53.
@@ -11194,8 +11194,8 @@ abstract class AppL10n {
   /// E04 undo bar. Names what SHE logged. The fixed "Lunch logged — 696 kcal" would announce 696 whatever she ate, which is the defect PHASE1-FIXES.md 8 removed from R07.
   ///
   /// In en, this message translates to:
-  /// **'{meal} logged · {kcal} kcal'**
-  String mealLoggedKcalKcal(String meal, String kcal);
+  /// **'{meal} added · {kcal} kcal'**
+  String mealAddedKcalKcal(String meal, String kcal);
 
   /// E02/E04 allergen sheet (G5 5.1). Names the allergen SHE told us about, so the sheet is about her and not a generic warning.
   ///
@@ -11209,11 +11209,11 @@ abstract class AppL10n {
   /// **'Not this'**
   String get notThis;
 
-  /// No description provided for @logItAnyway.
+  /// No description provided for @addItAnyway.
   ///
   /// In en, this message translates to:
-  /// **'Log it anyway'**
-  String get logItAnyway;
+  /// **'Add it anyway'**
+  String get addItAnyway;
 
   /// T01 week card. Her real target, not the prototype 3 — a woman whose goal is 4 sessions read "This week, 0 of 3". The card already had the numbers; only the sentence was fixed.
   ///
@@ -11338,8 +11338,8 @@ abstract class AppL10n {
   /// Y10's chart caption. The fixed string named the mockup's 4 of 6, so the caption was withheld and the chart drew with no sentence beside it.
   ///
   /// In en, this message translates to:
-  /// **'{logged} of {total} logged days'**
-  String loggedOfTotalLoggedDays(String logged, String total);
+  /// **'{logged} of {total} noted days'**
+  String loggedOfTotalNotedDays(String logged, String total);
 
   /// No description provided for @cameBack.
   ///
@@ -12616,7 +12616,7 @@ abstract class AppL10n {
   /// No description provided for @weDoNotKnowWhatYouAvoid.
   ///
   /// In en, this message translates to:
-  /// **'We do not know what you avoid yet, so nothing can be logged.'**
+  /// **'We do not know what you avoid yet, so nothing can be added.'**
   String get weDoNotKnowWhatYouAvoid;
 
   /// No description provided for @endThisCoachingNowTest.
@@ -12628,7 +12628,7 @@ abstract class AppL10n {
   /// No description provided for @thisDishIsNotInTheFood.
   ///
   /// In en, this message translates to:
-  /// **'This dish is not in the food list yet, so it cannot be logged from here.'**
+  /// **'This dish is not in the food list yet, so it cannot be added from here.'**
   String get thisDishIsNotInTheFood;
 
   /// No description provided for @rose.
@@ -12790,7 +12790,7 @@ abstract class AppL10n {
   /// No description provided for @thisAppCountsWeeksNotDaysAnd.
   ///
   /// In en, this message translates to:
-  /// **'This app counts weeks, not days, and only what you log yourself.'**
+  /// **'This app counts weeks, not days, and only what you add yourself.'**
   String get thisAppCountsWeeksNotDaysAnd;
 
   /// No description provided for @fourShortQuestionsThenYourWeekIs.
@@ -12844,13 +12844,13 @@ abstract class AppL10n {
   /// No description provided for @turnNotificationsOnSoWeCanNudge.
   ///
   /// In en, this message translates to:
-  /// **'Turn notifications on, so we can nudge you at the hour you usually log.'**
+  /// **'Turn notifications on, so we can nudge you at your usual time.'**
   String get turnNotificationsOnSoWeCanNudge;
 
   /// No description provided for @noHistoryForThisMoveYetWhat.
   ///
   /// In en, this message translates to:
-  /// **'No history for this move yet. What you log today is what the next one is measured against.'**
+  /// **'No history for this move yet. What you do today is what the next one is measured against.'**
   String get noHistoryForThisMoveYetWhat;
 
   /// No description provided for @theLibraryIsStillBeingWrittenWhat.
@@ -13741,11 +13741,11 @@ abstract class AppL10n {
   /// **'Nothing is planned for this week yet. Pick a dinner for any day below.'**
   String get nothingIsPlannedForThisWeekYet;
 
-  /// No description provided for @lookingForWhatYouHaveLogged.
+  /// No description provided for @lookingForWhatYouHaveAdded.
   ///
   /// In en, this message translates to:
-  /// **'Looking for what you have logged.'**
-  String get lookingForWhatYouHaveLogged;
+  /// **'Looking for what you have added.'**
+  String get lookingForWhatYouHaveAdded;
 
   /// No description provided for @weCouldNotSaveYourAgreementSo.
   ///
@@ -14173,11 +14173,11 @@ abstract class AppL10n {
   /// **'This is what keeps Own Hub women only: every woman is verified before she gets in.'**
   String get thisIsWhatKeepsOwnHubWomen;
 
-  /// No description provided for @yourNumberYourIdAndYourLogs_10nei.
+  /// No description provided for @yourNumberYourIdYourMealsAnd_1ix08.
   ///
   /// In en, this message translates to:
-  /// **'Your number, your ID and your logs stay private.'**
-  String get yourNumberYourIdAndYourLogs_10nei;
+  /// **'Your number, your ID, your meals and your workouts stay private.'**
+  String get yourNumberYourIdYourMealsAnd_1ix08;
 
   /// No description provided for @ownHubIsForTrainingNotFor.
   ///
@@ -14440,7 +14440,7 @@ abstract class AppL10n {
   /// No description provided for @quietSessionsYouCanDoAtHome.
   ///
   /// In en, this message translates to:
-  /// **'Quiet sessions you can do at home. Each move shows its sets and what to aim for. Trained without your phone? You can log it afterwards.'**
+  /// **'Quiet sessions you can do at home. Each move shows its sets and what to aim for. Trained without your phone? You can add it afterwards.'**
   String get quietSessionsYouCanDoAtHome;
 
   /// No description provided for @duringAWorkout.
@@ -14479,16 +14479,16 @@ abstract class AppL10n {
   /// **'Your cycle, if you want it'**
   String get yourCycleIfYouWantIt;
 
-  /// No description provided for @logYourPeriodAndHowYouFeel.
+  /// No description provided for @noteYourPeriodAndHowYouFeel.
   ///
   /// In en, this message translates to:
-  /// **'Log your period and how you feel. On harder days Own Hub can suggest a gentler session. Cycle data stays on your phone unless you choose to back it up.'**
-  String get logYourPeriodAndHowYouFeel;
+  /// **'Note your period and how you feel. On harder days Own Hub can suggest a gentler session. Cycle data stays on your phone unless you choose to back it up.'**
+  String get noteYourPeriodAndHowYouFeel;
 
   /// No description provided for @yourWeeksYourPersonalBestsAndYour.
   ///
   /// In en, this message translates to:
-  /// **'Your weeks, your personal bests and your milestones, counted only from what you log.'**
+  /// **'Your weeks, your personal bests and your milestones, counted only from what you add.'**
   String get yourWeeksYourPersonalBestsAndYour;
 
   /// No description provided for @thatIsOwnHub.
@@ -15379,23 +15379,23 @@ abstract class AppL10n {
   /// **'Today is under way'**
   String get todayIsUnderWay;
 
-  /// No description provided for @sessionLogged.
+  /// No description provided for @sessionSaved.
   ///
   /// In en, this message translates to:
-  /// **'Session logged'**
-  String get sessionLogged;
+  /// **'Session saved'**
+  String get sessionSaved;
 
-  /// No description provided for @aMealIsLoggedToday.
+  /// No description provided for @youAddedAMealToday.
   ///
   /// In en, this message translates to:
-  /// **'A meal is logged today'**
-  String get aMealIsLoggedToday;
+  /// **'You added a meal today'**
+  String get youAddedAMealToday;
 
-  /// No description provided for @logAMeal.
+  /// No description provided for @addWhatIAte.
   ///
   /// In en, this message translates to:
-  /// **'Log a meal'**
-  String get logAMeal;
+  /// **'Add what I ate'**
+  String get addWhatIAte;
 
   /// No description provided for @openOwnHubForToday.
   ///
@@ -16218,6 +16218,24 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Upload its pictures under this id: {id}'**
   String uploadItsPicturesUnderThisIdId(String id);
+
+  /// No description provided for @iDidThemAll.
+  ///
+  /// In en, this message translates to:
+  /// **'I did them all'**
+  String get iDidThemAll;
+
+  /// No description provided for @nothingInTheLogYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in the log yet'**
+  String get nothingInTheLogYet;
+
+  /// C07, while the resend waits after a code was sent. time is minutes:seconds in Western digits, e.g. 0:27.
+  ///
+  /// In en, this message translates to:
+  /// **'Send it again in {time}'**
+  String sendItAgainInTime(String time);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

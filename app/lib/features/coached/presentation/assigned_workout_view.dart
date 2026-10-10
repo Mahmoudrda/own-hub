@@ -129,7 +129,7 @@ class AssignedWorkoutView extends StatelessWidget {
         AppBigButton(
           // "Complete set 2" names a set only the mockup has. Without a set
           // list there is no set two, so the button names the action.
-          completeLabel ?? l10n.logOneSet,
+          completeLabel ?? l10n.finishOneSet,
           subtitle: l10n.restTimerStartsItself,
           onPressed: onCompleteSet,
         ),

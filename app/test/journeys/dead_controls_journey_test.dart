@@ -17,6 +17,7 @@ import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/features/signup/presentation/code_view.dart';
 import 'package:own_hub/app_state/coach_portfolio_state.dart';
 import 'package:own_hub/app_state/coaching_desk_state.dart';
 import 'package:own_hub/app_state/coaching_link_state.dart';
@@ -321,6 +322,9 @@ void main() {
       expect(find.textContaining('Test build'), findsNothing);
       expect(find.textContaining('417293'), findsNothing);
 
+      // The resend waits after the code that was just sent, then answers.
+      await tester.pump(CodeView.resendWait);
+      await tester.pump();
       await tester.tap(find.text('Send it again'));
       await tester.pumpAndSettle();
 

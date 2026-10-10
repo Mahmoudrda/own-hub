@@ -126,7 +126,7 @@ class LoggedFromMemoryView extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              l10n.loggedFromMemoryYourWeekCountsIt,
+              l10n.addedFromMemoryYourWeekCountsIt,
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
           ],

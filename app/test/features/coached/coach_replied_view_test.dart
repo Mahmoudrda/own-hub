@@ -94,7 +94,7 @@ void main() {
 
       expect(
         find.text(
-          'Yesterday’s logs and any session you already started stay as they were.',
+          'What you added yesterday and any session you already started stay as they were.',
         ),
         findsOneWidget,
       );

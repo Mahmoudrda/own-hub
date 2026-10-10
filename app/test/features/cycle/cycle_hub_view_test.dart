@@ -261,7 +261,7 @@ void main() {
 
       expect(find.text('Bleeding: Heavy'), findsOneWidget);
       expect(
-        find.text('Severe cramps logged'),
+        find.text('Severe cramps noted'),
         findsNothing,
         reason:
             'she logged no cramps — stating the mockup\'s reason as hers is '
@@ -282,7 +282,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Severe cramps logged'), findsOneWidget);
+      expect(find.text('Severe cramps noted'), findsOneWidget);
       expect(find.text('Bleeding: Heavy'), findsNothing);
     });
 

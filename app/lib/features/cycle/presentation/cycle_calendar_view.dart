@@ -106,7 +106,7 @@ class CycleCalendarView extends StatelessWidget {
         estimated: l10n.estimated,
         estimatedShort: l10n.est,
         today: l10n.today_554hp,
-        logged: l10n.loggedByYou,
+        logged: l10n.notedByYou,
       ),
     );
 
@@ -193,7 +193,7 @@ class CycleCalendarView extends StatelessWidget {
             children: [
               Expanded(
                 child: AppButton(
-                  l10n.logAPeriod,
+                  l10n.noteAPeriod,
                   height: 48,
                   fontSize: 15,
                   onPressed: onLogPeriod,
@@ -396,7 +396,7 @@ class _Legend extends StatelessWidget {
       spacing: 12,
       runSpacing: 6,
       children: [
-        _LegendItem(filled: true, label: l10n.loggedByYou),
+        _LegendItem(filled: true, label: l10n.notedByYou),
         _LegendItem(filled: false, label: l10n.estimated),
       ],
     );

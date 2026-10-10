@@ -100,6 +100,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Work with Sara again'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Work with Sara again'));
       await tester.pumpAndSettle();
 

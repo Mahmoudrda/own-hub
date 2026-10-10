@@ -25,6 +25,8 @@
 /// second tap in that window used to push the next screen twice.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
@@ -37,6 +39,9 @@ import '../../../ui/app_step_progress.dart';
 import '../domain/auth_repository.dart';
 
 class CodeView extends StatefulWidget {
+  /// How long "Send it again" waits after a code was sent.
+  static const Duration resendWait = Duration(seconds: 30);
+
   const CodeView({
     super.key,
     required this.repository,
@@ -88,6 +93,26 @@ class _CodeViewState extends State<CodeView> {
   AuthFailure? _failure;
   String _failedCode = '';
 
+  /// Seconds before "Send it again" is live. A code was sent the moment this
+  /// screen opened, and every resend is a paid SMS: a tap that cannot get a
+  /// new code yet is money spent and a second message she has to tell apart
+  /// from the first. The provider's own limit still stands behind this one.
+  int _resendIn = 0;
+  Timer? _resendTimer;
+
+  void _startResendWait() {
+    _resendTimer?.cancel();
+    setState(() => _resendIn = CodeView.resendWait.inSeconds);
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return timer.cancel();
+      setState(() => _resendIn--);
+      if (_resendIn <= 0) {
+        timer.cancel();
+        _resendTimer = null;
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -96,6 +121,9 @@ class _CodeViewState extends State<CodeView> {
     // nothing when tapped, which reads as a broken button rather than as a
     // code that is not finished.
     _controller.addListener(_onTyped);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _startResendWait();
+    });
   }
 
   void _onTyped() {
@@ -111,6 +139,7 @@ class _CodeViewState extends State<CodeView> {
       ..removeListener(_onTyped)
       ..dispose();
     _resendFocus.dispose();
+    _resendTimer?.cancel();
     super.dispose();
   }
 
@@ -164,6 +193,8 @@ class _CodeViewState extends State<CodeView> {
   };
 
   Future<void> _resend() async {
+    if (_resendIn > 0) return;
+    _startResendWait();
     try {
       await widget.repository.resendCode();
       if (mounted) widget.onResent?.call();
@@ -205,11 +236,13 @@ class _CodeViewState extends State<CodeView> {
         Focus(
           focusNode: _resendFocus,
           child: AppButton(
-            l10n.sendItAgain,
+            _resendIn > 0
+                ? l10n.sendItAgainInTime('0:${_resendIn.toString().padLeft(2, '0')}')
+                : l10n.sendItAgain,
             variant: AppButtonVariant.text,
             height: 44,
             fontSize: 15,
-            onPressed: _checking ? null : _resend,
+            onPressed: _checking || _resendIn > 0 ? null : _resend,
           ),
         ),
       ],

@@ -127,7 +127,7 @@ void main() {
 
       expect(
         find.text(
-          'Changing the plan never changes a log you already saved. Tapping twice does not create a second log.',
+          'Changing the plan never changes a meal you already added. Tapping twice does not add it twice.',
         ),
         findsOneWidget,
       );
@@ -165,10 +165,10 @@ void main() {
       await tester.pumpWidget(_host(MealLoggedView(onUndo: () {})));
       await tester.pumpAndSettle();
 
-      // The bar used to read "Lunch logged · 1 serving" from the dictionary
+      // The bar used to read "Lunch added · 1 serving" from the dictionary
       // even when the screen had been told nothing about the meal. Given
       // nothing, it names no meal and no portion…
-      expect(find.text('Food logged'), findsOneWidget);
+      expect(find.text('Meal added'), findsOneWidget);
       expect(find.text('Undo'), findsOneWidget);
 
       // …and given hers, it names hers.

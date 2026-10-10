@@ -83,7 +83,7 @@ void main() {
     expect(find.text("That's Tuesday done"), findsOneWidget);
     expect(
       find.text(
-        'Logged from memory. Your week counts it like any other session.',
+        'Added from memory. Your week counts it like any other session.',
       ),
       findsOneWidget,
     );
@@ -207,7 +207,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('مسجَّل من الذاكرة. ويحتسبه أسبوعك كأي تمرين آخر.'),
+      find.text('أُضيف من الذاكرة. ويحتسبه أسبوعك كأي تمرين آخر.'),
       findsOneWidget,
     );
     expect(find.text('+15 نقطة'), findsOneWidget);

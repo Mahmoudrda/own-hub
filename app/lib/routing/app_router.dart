@@ -4049,7 +4049,7 @@ class AppRouter {
           SlotChip(
             name: mealSlotLabel(AppL10n.of(context), slot),
             state: coachedLife.isLogged(coachedLife.day, slot)
-                ? AppL10n.of(context).logged
+                ? AppL10n.of(context).eaten
                 : AppL10n.of(context).planned,
             logged: coachedLife.isLogged(coachedLife.day, slot),
           ),
