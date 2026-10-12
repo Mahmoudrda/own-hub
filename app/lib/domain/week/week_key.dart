@@ -14,6 +14,8 @@ library;
 
 import 'package:meta/meta.dart';
 
+import '../clock/app_clock.dart';
+
 /// An ISO-8601 week, as `yyyy-Www` — the document id used by `users/{uid}/weeks`.
 ///
 /// Deterministic by construction (spine C1): the same week always produces the
@@ -56,7 +58,7 @@ class WeekKey implements Comparable<WeekKey> {
   ///
   /// It deliberately does **not** consult a stored zone. See
   /// [fallbackTimezone] for the half of §3.1 that pulls the other way.
-  factory WeekKey.current([DateTime? now]) => WeekKey.of(now ?? DateTime.now());
+  factory WeekKey.current([DateTime? now]) => WeekKey.of(now ?? AppClock.now());
 
   /// The zone to assume when hers has never been recorded.
   ///

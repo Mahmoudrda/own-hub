@@ -205,6 +205,20 @@ Map<String, String> _exercise({
   'thumbFile': '',
 };
 
+/// One seeded recipe row.
+///
+/// The columns below the first eight arrived with Rahma's recipe book, and the
+/// values they get here are the honest ones rather than the convenient ones:
+///
+///  * `status: review` and `allergenReviewedBy: ''` on every row, because no
+///    second person has signed any of these allergen sets. The Firestore rule
+///    refuses a write without a reviewer who is not the author, so these rows
+///    are exactly as far as a seed can take them.
+///  * `macroBasis: withheld` and four empty macro fields. Summing them needs a
+///    `foods` row with verified per-100 g values and a gram figure per
+///    ingredient, and neither exists. A computed-looking number over an
+///    uncomputed base is a fabricated figure driving a woman's eating.
+///  * `tier: free`, because nothing is sold.
 Map<String, String> _recipe({
   required String id,
   required String nameEn,
@@ -213,6 +227,10 @@ Map<String, String> _recipe({
   required String ingredients,
   required String allergens,
   required String dietTags,
+  String advisories = 'none',
+  String doneness = '',
+  String markKey = 'pot',
+  String sectionId = 'lunchy_junky_yum',
 }) => {
   'recipeId': id,
   'name_en': nameEn,
@@ -222,6 +240,32 @@ Map<String, String> _recipe({
   'allergens': allergens,
   'dietTags': dietTags,
   'photoFile': '',
+  'sectionId': sectionId,
+  // Written for the library rather than taken from her book. Her thirty-nine
+  // are `source: book` and live in `assets/content/rahma_recipes.json`, because
+  // a forty-line colloquial paragraph does not survive a CSV round trip.
+  'source': 'authored',
+  // A draft: these sample rows have no method, and a recipe without one
+  // cannot reach a member. Written in Z12 with a method, it can be shown.
+  'status': 'draft',
+  'sourcePage': '',
+  'authoredBy': 'content_team',
+  'allergenReviewedBy': '',
+  'serves': '',
+  'activeMinutes': '$minutes',
+  'kcal': '',
+  'proteinG': '',
+  'carbsG': '',
+  'fatG': '',
+  'macroBasis': 'withheld',
+  'egpPerServing': '',
+  'egpPricedAt': '',
+  'advisories': advisories,
+  'doneness': doneness,
+  'markKey': markKey,
+  'tier': 'free',
+  'method_ar': '',
+  'method_en': '',
 };
 
 Map<String, String> _programme({

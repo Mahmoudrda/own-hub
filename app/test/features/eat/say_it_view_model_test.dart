@@ -1,7 +1,7 @@
 // P0-LOG-08 — "Log a meal by voice in Egyptian Arabic."
 //
 // From TEST-CASES.csv: "Transcript shown before saving so a misheard word is
-// visible. Interface stays MSA; speech input accepts dialect."
+// visible. Interface stays in the app's voice; speech input accepts dialect."
 //
 // The half this file owns is "shown before saving", and it is tested as an
 // impossibility rather than as a sequence: `canLog` is false in every state

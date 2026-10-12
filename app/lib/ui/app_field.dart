@@ -19,7 +19,10 @@ import 'hand/hand.dart';
 import 'hand/hand_geometry.dart' show wobblyLine;
 import 'hand/hand_painters.dart' show paintInk, paintPencil, strokePrefix;
 
-class AppField extends StatefulWidget {
+class AppField extends StatefulWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppField';
+
   const AppField({
     super.key,
     this.controller,
@@ -36,6 +39,7 @@ class AppField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.trailing,
+    this.maxLines = 1,
   });
 
   final TextEditingController? controller;
@@ -67,6 +71,11 @@ class AppField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final Widget? trailing;
+
+  /// One line unless asked. More than one is for a paragraph a person writes,
+  /// such as an event's description or a recipe's method; null grows with
+  /// the text.
+  final int? maxLines;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -147,34 +156,63 @@ class _AppFieldState extends State<AppField> {
                                   color: labelColour,
                                 ),
                               ),
-                            TextField(
-                              controller: widget.controller,
-                              focusNode: _node,
-                              autofocus: widget.autofocus,
-                              keyboardType: widget.keyboardType,
-                              // Declared since this widget was written and never
-                              // passed on, so it was inert for EVERY caller.
-                              //
-                              // Its own doc comment names the case it was failing:
-                              // "a phone number stays left-to-right in Arabic".
-                              // C06 asks for exactly that and did not get it, and
-                              // Z05 needs the same for an English name beside an
-                              // Arabic one.
-                              textDirection: widget.textDirection,
-                              textInputAction: widget.textInputAction,
-                              autofillHints: widget.autofillHints,
-                              onChanged: widget.onChanged,
-                              onSubmitted: widget.onSubmitted,
-                              style: AppText.body.copyWith(
-                                fontSize: 17,
-                                color: AppColors.onSurface,
-                              ),
-                              cursorColor: AppColors.primary,
-                              decoration: InputDecoration.collapsed(
-                                hintText: widget.hint,
-                                hintStyle: AppText.body.copyWith(
-                                  fontSize: 17,
-                                  color: AppColors.onSurfaceVariant,
+                            // NAMED EVEN AFTER SHE HAS TYPED IN IT.
+                            //
+                            // `InputDecoration.collapsed` gives the field its
+                            // hint and nothing else, and Flutter drops the
+                            // hint's semantics the moment there is a value. So
+                            // every field in this app announced itself as an
+                            // empty tappable as soon as a woman used it: R3-02
+                            // caught it on E02, where the sweep types before it
+                            // sweeps, and the same thing was true of the phone
+                            // number, the code, the search and the note.
+                            //
+                            // `MergeSemantics` folds the annotation into the
+                            // field's own node, so it keeps its value, its
+                            // actions and its text-field flag and gains a name.
+                            // `trailing` is a sibling of this Column, not a
+                            // child, so the mic and the clear button keep their
+                            // own nodes.
+                            MergeSemantics(
+                              child: Semantics(
+                                label: widget.label.isNotEmpty
+                                    ? widget.label
+                                    : widget.hint,
+                                child: TextField(
+                                  controller: widget.controller,
+                                  focusNode: _node,
+                                  autofocus: widget.autofocus,
+                                  keyboardType:
+                                      widget.keyboardType ??
+                                      (widget.maxLines == 1
+                                          ? null
+                                          : TextInputType.multiline),
+                                  maxLines: widget.maxLines,
+                                  // Declared since this widget was written and never
+                                  // passed on, so it was inert for EVERY caller.
+                                  //
+                                  // Its own doc comment names the case it was failing:
+                                  // "a phone number stays left-to-right in Arabic".
+                                  // C06 asks for exactly that and did not get it, and
+                                  // Z05 needs the same for an English name beside an
+                                  // Arabic one.
+                                  textDirection: widget.textDirection,
+                                  textInputAction: widget.textInputAction,
+                                  autofillHints: widget.autofillHints,
+                                  onChanged: widget.onChanged,
+                                  onSubmitted: widget.onSubmitted,
+                                  style: AppText.body.copyWith(
+                                    fontSize: 17,
+                                    color: AppColors.onSurface,
+                                  ),
+                                  cursorColor: AppColors.primary,
+                                  decoration: InputDecoration.collapsed(
+                                    hintText: widget.hint,
+                                    hintStyle: AppText.body.copyWith(
+                                      fontSize: 17,
+                                      color: AppColors.onSurfaceVariant,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),

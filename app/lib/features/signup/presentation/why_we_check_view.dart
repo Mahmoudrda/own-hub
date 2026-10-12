@@ -22,7 +22,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -64,7 +66,9 @@ class WhyWeCheckView extends StatelessWidget {
       children: [
         Text(l10n.oneCheckThenYouAreIn, style: AppText.display),
         Text(
-          l10n.thisIsTheWholeReasonTheCommunity,
+          AppRouter.featureFlags.isOn(Feature.community)
+              ? l10n.thisIsTheWholeReasonTheCommunity
+              : l10n.thisIsWhatKeepsOwnHubWomen,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         AppCard(
@@ -84,18 +88,18 @@ class WhyWeCheckView extends StatelessWidget {
             // most likely to believe it.
             VerificationBullet(
               icon: Icons.delete_outline,
-              text: l10n.bothImagesAreDeletedAfterTheCheck,
+              text: l10n.bothImagesAreDeletedAfterTheCheck_8iuyd,
             ),
             VerificationBullet(
               icon: Icons.schedule,
-              text: l10n.itTakesAbout90Seconds,
+              text: l10n.usuallyACoupleOfMinutesIfA,
             ),
           ],
         ),
-        Text(
-          l10n.checkedByALicensedEgyptianProviderTap,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
+        // The "Checked by Own Hub's own system ... Tap to read" line went: it
+        // could not be tapped, and the next screen names Google Cloud as the
+        // processor, so it read as a contradiction at the step where trust
+        // matters most. The disclosure on C09b is the one account of it.
       ],
     );
   }

@@ -6,7 +6,7 @@ class AppRoute {
   const AppRoute({required this.name, required this.flow, required this.title});
 }
 
-/// 175 screens across 17 flows.
+/// 192 screens across 17 flows.
 const Map<String, AppRoute> appRoutes = {
   'C01': AppRoute(name: '/signup/c01', flow: 'signup', title: "Welcome"),
   'C02': AppRoute(name: '/signup/c02', flow: 'signup', title: "Language"),
@@ -17,7 +17,9 @@ const Map<String, AppRoute> appRoutes = {
   'C07': AppRoute(name: '/signup/c07', flow: 'signup', title: "The code"),
   'C08': AppRoute(name: '/signup/c08', flow: 'signup', title: "Client or coach"),
   'C09': AppRoute(name: '/signup/c09', flow: 'signup', title: "Why we check"),
+  'C09b': AppRoute(name: '/signup/c09b', flow: 'signup', title: "Before the camera opens"),
   'C10': AppRoute(name: '/signup/c10', flow: 'signup', title: "Scan your ID"),
+  'C10b': AppRoute(name: '/signup/c10b', flow: 'signup', title: "The back of your card"),
   'C11': AppRoute(name: '/signup/c11', flow: 'signup', title: "Quick selfie"),
   'C12': AppRoute(name: '/signup/c12', flow: 'signup', title: "Checking"),
   'C13': AppRoute(name: '/signup/c13', flow: 'signup', title: "You're in"),
@@ -29,6 +31,8 @@ const Map<String, AppRoute> appRoutes = {
   'O03': AppRoute(name: '/onboarding/o03', flow: 'onboarding', title: "Days and minutes"),
   'O04': AppRoute(name: '/onboarding/o04', flow: 'onboarding', title: "Life stage"),
   'O05': AppRoute(name: '/onboarding/o05', flow: 'onboarding', title: "Your starting program"),
+  'O06': AppRoute(name: '/onboarding/o06', flow: 'onboarding', title: "What you have at home"),
+  'O07': AppRoute(name: '/onboarding/o07', flow: 'onboarding', title: "Minutes a session"),
   'T01': AppRoute(name: '/today/t01', flow: 'today', title: "Today"),
   'T02': AppRoute(name: '/today/t02', flow: 'today', title: "I already did it"),
   'T03': AppRoute(name: '/today/t03', flow: 'today', title: "From the lock screen"),
@@ -37,6 +41,7 @@ const Map<String, AppRoute> appRoutes = {
   'T06': AppRoute(name: '/today/t06', flow: 'today', title: "Day one"),
   'T07': AppRoute(name: '/today/t07', flow: 'today', title: "Your first week"),
   'T08': AppRoute(name: '/today/t08', flow: 'today', title: "First week done"),
+  'T09': AppRoute(name: '/today/t09', flow: 'today', title: "Events"),
   'R01': AppRoute(name: '/train/r01', flow: 'train', title: "Train"),
   'R02': AppRoute(name: '/train/r02', flow: 'train', title: "Program"),
   'R03': AppRoute(name: '/train/r03', flow: 'train', title: "Workout day"),
@@ -59,10 +64,13 @@ const Map<String, AppRoute> appRoutes = {
   'E07': AppRoute(name: '/eat/e07', flow: 'eat', title: "Week plan"),
   'E08': AppRoute(name: '/eat/e08', flow: 'eat', title: "Grocery list"),
   'E09': AppRoute(name: '/eat/e09', flow: 'eat', title: "Eat, day one"),
+  'E10': AppRoute(name: '/eat/e10', flow: 'eat', title: "What you cannot eat"),
+  'E11': AppRoute(name: '/eat/e11', flow: 'eat', title: "A message from Rahma"),
   'P01': AppRoute(name: '/progress/p01', flow: 'progress', title: "Your progress"),
   'P02': AppRoute(name: '/progress/p02', flow: 'progress', title: "Milestones"),
   'P03': AppRoute(name: '/progress/p03', flow: 'progress', title: "Personal bests"),
   'P04': AppRoute(name: '/progress/p04', flow: 'progress', title: "Body, privately"),
+  'P05': AppRoute(name: '/progress/p05', flow: 'progress', title: "Your progress card"),
   'Y01': AppRoute(name: '/cycle/y01', flow: 'cycle', title: "Set up My cycle"),
   'Y02': AppRoute(name: '/cycle/y02', flow: 'cycle', title: "Dates and preferences"),
   'Y03': AppRoute(name: '/cycle/y03', flow: 'cycle', title: "My cycle today"),
@@ -130,6 +138,11 @@ const Map<String, AppRoute> appRoutes = {
   'K04': AppRoute(name: '/coach-setup/k04', flow: 'coach-setup', title: "Your packages"),
   'K05': AppRoute(name: '/coach-setup/k05', flow: 'coach-setup', title: "Getting paid"),
   'K06': AppRoute(name: '/coach-setup/k06', flow: 'coach-setup', title: "Being checked"),
+  'K08': AppRoute(name: '/coach-setup/k08', flow: 'coach-setup', title: "About you"),
+  'K10': AppRoute(name: '/coach-setup/k10', flow: 'coach-setup', title: "How you coach"),
+  'K11': AppRoute(name: '/coach-setup/k11', flow: 'coach-setup', title: "Client results"),
+  'K12': AppRoute(name: '/coach-setup/k12', flow: 'coach-setup', title: "What clients say"),
+  'K13': AppRoute(name: '/coach-setup/k13', flow: 'coach-setup', title: "The three rules"),
   'K07': AppRoute(name: '/coach/k07', flow: 'coach', title: "Today"),
   'K09': AppRoute(name: '/coach/k09', flow: 'coach', title: "New enquiry"),
   'K16': AppRoute(name: '/coach/k16', flow: 'coach', title: "Conversation"),
@@ -183,4 +196,8 @@ const Map<String, AppRoute> appRoutes = {
   'Z12': AppRoute(name: '/admin/z12', flow: 'admin', title: "Edit a recipe"),
   'Z13': AppRoute(name: '/admin/z13', flow: 'admin', title: "Edit a programme"),
   'Z14': AppRoute(name: '/admin/z14', flow: 'admin', title: "Feature flags"),
+  'Z15': AppRoute(name: '/admin/z15', flow: 'admin', title: "Dashboard"),
+  'Z16': AppRoute(name: '/admin/z16', flow: 'admin', title: "Logs"),
+  'Z17': AppRoute(name: '/admin/z17', flow: 'admin', title: "Events"),
+  'Z18': AppRoute(name: '/admin/z18', flow: 'admin', title: "Edit an event"),
 };

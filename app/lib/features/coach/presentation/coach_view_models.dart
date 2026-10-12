@@ -24,9 +24,12 @@
 /// ships off.
 library;
 
+import 'dart:typed_data';
+
 import 'package:meta/meta.dart';
 
 import '../../../domain/flags/feature_flags.dart';
+import '../../../routing/app_router.dart';
 import '../domain/coach_capacity.dart';
 import '../domain/coach_credentials.dart';
 import '../domain/coach_desk.dart';
@@ -35,19 +38,58 @@ import '../domain/coach_verification.dart';
 import '../domain/offer.dart';
 import '../domain/payments.dart';
 
-/// The six steps of `K01`–`K06`.
+/// Her setup, one thing a screen, in the order she meets it.
+///
+/// Her photo, her name and city, what she coaches, how she coaches, her
+/// prices and plans, her clients' results, what her clients say, her
+/// certificates, the three rules, how she is paid, and the check. A step whose
+/// screen is switched off is skipped and not counted ([coachSetupWalk]), so
+/// the bar never promises a step she will not meet.
 enum CoachSetupStep {
-  basics,
-  certificates,
-  specialties,
-  packages,
-  payout,
-  beingChecked;
+  photo('K01'),
+  about('K08'),
+  specialties('K03'),
+  howYouCoach('K10'),
+  packages('K04'),
+  results('K11'),
+  reviews('K12'),
+  certificates('K02'),
+  rules('K13'),
+  payout('K05'),
+  beingChecked('K06');
 
-  /// 1-based, for "Step 3 of 6".
-  int get number => index + 1;
+  const CoachSetupStep(this.screenId);
 
-  static const int total = 6;
+  /// The screen this step is.
+  final String screenId;
+
+  /// 1-based place in the walk she is on, for "3 of 11" and the bar.
+  int get number => coachSetupWalk().indexOf(this) + 1;
+
+  /// How many steps the walk she is on has.
+  static int get total => coachSetupWalk().length;
+
+  /// The step after this one in the walk, or null at the end.
+  CoachSetupStep? get next {
+    final walk = coachSetupWalk();
+    final at = walk.indexOf(this);
+    return at < 0 || at + 1 >= walk.length ? null : walk[at + 1];
+  }
+}
+
+/// The steps she will meet, in order: every step of her setup, less any
+/// whose own part is switched off. Results and reviews live on her page, so
+/// they are skipped while the portfolio is.
+List<CoachSetupStep> coachSetupWalk() => [
+  for (final step in CoachSetupStep.values)
+    if (_ownPartIsOn(step)) step,
+];
+
+bool _ownPartIsOn(CoachSetupStep step) {
+  final own = AppRouter.screenFeatures[step.screenId];
+  return own == null ||
+      own == Feature.coachApp ||
+      AppRouter.featureFlags.isOn(own);
 }
 
 /// The draft `K01`–`K05` accumulate, and whether each step may move on.
@@ -86,6 +128,11 @@ class CoachSetupViewModel {
   /// §2 rule 6. Born true, and only an explicit named action moves it.
   bool photoBlurred;
 
+  /// The photo she took on `K01`, held by the flow. Nothing uploads it yet:
+  /// the media pipeline that blurs and stores coach photos is not built, so
+  /// it lives on this phone until it is.
+  Uint8List? photo;
+
   final Set<Specialty> specialties;
   final Set<CoachLanguage> languages;
   final Set<ClientPlace> clientPlaces;
@@ -102,6 +149,12 @@ class CoachSetupViewModel {
   /// [PayoutMethodState.unavailable] by default, because today the rail does
   /// not answer at all.
   PayoutMethodState payout;
+
+  /// She chose "Add payout later" on `K05` rather than a method.
+  bool payoutLater = false;
+
+  /// She has agreed to the three rules on `K13`, or had already.
+  bool rulesAgreed = false;
 
   List<Certificate> get certificates => List.unmodifiable(_certificates);
 
@@ -138,14 +191,21 @@ class CoachSetupViewModel {
 
   /// Whether the primary button on [step] may be tapped.
   bool canAdvanceFrom(CoachSetupStep step) => switch (step) {
-    CoachSetupStep.basics =>
+    // A photo is asked for, not demanded: a coach can add it from her page.
+    CoachSetupStep.photo => true,
+    CoachSetupStep.about =>
       displayName.trim().isNotEmpty && city.trim().isNotEmpty,
+    CoachSetupStep.specialties => specialties.isNotEmpty,
+    CoachSetupStep.howYouCoach => true,
+    CoachSetupStep.packages => capacityMax != null,
+    // Results and reviews come from her clients once she has them.
+    CoachSetupStep.results => true,
+    CoachSetupStep.reviews => true,
     // She may move on without one — `K02` is where she adds them and the
     // check cannot start until she does, but trapping her on the screen
     // teaches her nothing. `SetupCompleted` is what actually requires one.
     CoachSetupStep.certificates => true,
-    CoachSetupStep.specialties => specialties.isNotEmpty,
-    CoachSetupStep.packages => capacityMax != null,
+    CoachSetupStep.rules => rulesAgreed,
     // `K05` cannot be completed at all until a payment rail exists.
     CoachSetupStep.payout => payout.isUsable,
     CoachSetupStep.beingChecked => true,
@@ -172,6 +232,7 @@ class CoachSetupViewModel {
     ).hasSubmittedAny,
     hasPayoutMethod: payout.isUsable,
     hasCapacity: capacityMax != null,
+    payoutDeferred: payoutLater,
   );
 }
 

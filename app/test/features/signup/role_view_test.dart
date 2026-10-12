@@ -7,12 +7,16 @@
 // different products, and that the screen no longer tells her the decision is
 // permanent.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/identity/user_roles.dart';
 import 'package:own_hub/features/signup/presentation/role_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_card.dart';
 
@@ -39,6 +43,16 @@ AppCard _cardBehind(WidgetTester tester, String label) =>
     );
 
 void main() {
+  // These cases describe the screen with every feature it can mention switched
+  // on. The release shape, where copy about dark features is replaced or
+  // hidden, is proved in flag_aware_promises_test.dart.
+  late FeatureFlags saved;
+  setUp(() {
+    saved = AppRouter.featureFlags;
+    AppRouter.featureFlags = FeatureFlags.everything;
+  });
+  tearDown(() => AppRouter.featureFlags = saved);
+
   testWidgets('offers all three, and says what each one is', (tester) async {
     await tester.pumpWidget(_host(const RoleView()));
     await tester.pumpAndSettle();
@@ -55,17 +69,14 @@ void main() {
     expect(find.textContaining('Switch between them'), findsOneWidget);
   });
 
-  testWidgets('the choice is no longer presented as permanent', (tester) async {
+  testWidgets('it promises no change her profile cannot make', (tester) async {
     await tester.pumpWidget(_host(const RoleView()));
     await tester.pumpAndSettle();
 
-    // D11: this is hers to change, so the copy must stop sending her to
-    // support for it. Asserted because it is the kind of sentence that
-    // survives a design change by nobody noticing it.
-    expect(
-      find.text('You can change this later in your profile.'),
-      findsOneWidget,
-    );
+    // Her profile has no role row, so "You can change this later in your
+    // profile" was a promise nothing kept. Neither that nor the older "by
+    // messaging us" may come back.
+    expect(find.textContaining('change this later'), findsNothing);
     expect(find.textContaining('messaging us'), findsNothing);
   });
 
@@ -163,10 +174,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('أيّهما أنتِ؟'), findsOneWidget);
-    expect(find.text('أنا هنا لأتدرّب'), findsOneWidget);
-    expect(find.text('أنا أدرّب النساء'), findsOneWidget);
-    expect(find.text('أتدرّب وأدرّب'), findsOneWidget);
+    expect(find.text('إنتِ مين فيهم؟'), findsOneWidget);
+    expect(find.text('أنا هنا عشان أتمرّن'), findsOneWidget);
+    expect(find.text('أنا بدرّب ستات'), findsOneWidget);
+    expect(find.text('بتمرّن وبدرّب'), findsOneWidget);
     expect(find.text('Which one are you?'), findsNothing);
   });
 
@@ -180,5 +191,46 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('while the coach app is off', () {
+    testWidgets('only the trainee answer is offered', (tester) async {
+      await tester.pumpWidget(_host(const RoleView(offerCoach: false)));
+      await tester.pumpAndSettle();
+
+      expect(find.text("I'm here to train"), findsOneWidget);
+      expect(find.text('I coach women'), findsNothing);
+      expect(find.text('I train and I coach'), findsNothing);
+    });
+
+    testWidgets('Continue sends trainee, whatever was preselected', (
+      tester,
+    ) async {
+      final chosen = <SignupRole>[];
+      await tester.pumpWidget(
+        _host(
+          RoleView(
+            offerCoach: false,
+            initialRole: SignupRole.both,
+            onContinue: chosen.add,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(chosen, <SignupRole>[SignupRole.trainee]);
+    });
+  });
+
+  test('the router offers the coach answers only when the coach app is on', () {
+    final router = File('lib/routing/app_router.dart').readAsStringSync();
+    final c08 = router.substring(
+      router.indexOf("'C08': (context) => RoleView("),
+    );
+    expect(
+      c08.substring(0, c08.indexOf('onContinue')),
+      contains('offerCoach: featureFlags.isOn(Feature.coachApp)'),
+    );
   });
 }

@@ -14,6 +14,7 @@ import '../../theme/hand_tokens.dart';
 import 'draw_on.dart';
 import 'hand_geometry.dart';
 import 'hand_painters.dart';
+import 'hand_seed_name.dart';
 
 /// A stable seed from whatever identifies a mark — usually its text.
 int seedFor(Object? a, [Object? b, Object? c]) => handSeed([a, b, c]);
@@ -293,7 +294,10 @@ class MarkerHighlight extends StatelessWidget {
 
 /// A drawn rule across the column: pencil by default, ink when it must hold
 /// a section apart.
-class HandRule extends StatelessWidget {
+class HandRule extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'HandRule';
+
   const HandRule({
     super.key,
     this.seed = 1,

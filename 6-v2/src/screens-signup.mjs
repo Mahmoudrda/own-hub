@@ -110,7 +110,7 @@ const C09 = phone(
       + bullet('face', 'A selfie is matched to the photo on the card, only to prove the card is yours.')
       + bullet('delete', 'Both images are deleted after the check. We keep the result, nothing else.')
       + bullet('schedule', 'It takes about 90 seconds.'), { v: 'sage', gap: 12 })
-    + m('Checked by a licensed Egyptian provider. Tap to read exactly what is stored.')
+    + m("Checked by Own Hub's own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.")
   , { pad: '0 16px 0', gap: 12 })
   + footer(btn('Scan my ID', { h: 56, ic: 'id_card', go: 'C10' }) + btn('I wear niqab, check me another way', { v: 'text', h: 48, size: 15, go: 'C15' })));
 
@@ -167,7 +167,7 @@ const C14 = phone(
   statusBar()
   + appBar({ title: 'Being checked', lead: '' })
   + body(
-    card(row(`${icon('hourglass_top', { size: 26, color: C.amber })}${col(`${strong('A woman reviewer is looking', 'titleM')}${m('Usually under two hours. We will text you.')}`, { gap: 3, grow: true })}`, { gap: 12, justify: 'flex-start' }), { v: 'amber' })
+    card(row(`${icon('hourglass_top', { size: 26, color: C.amber })}${col(`${strong('A woman reviewer is looking', 'titleM')}${m('A woman reviewer from Own Hub will phone you to arrange a short video call. We do not send text messages about this.')}`, { gap: 3, grow: true })}`, { gap: 12, justify: 'flex-start' }), { v: 'amber' })
     + strong('While you wait, everything here is open', 'titleM')
     + listItem({ lead: icon('fitness_center', { size: 24, color: C.primaryDim }), title: 'Workouts and videos', sub: 'All 124, including the quiet ones', trail: icon('chevron_right', { size: 22, color: C.onSurfaceVariant }), go: 'R01' })
     + listItem({ lead: icon('restaurant', { size: 24, color: C.primaryDim }), title: 'Recipes', sub: 'With portions and cost per serving', trail: icon('chevron_right', { size: 22, color: C.onSurfaceVariant }), go: 'E05' })
@@ -181,12 +181,12 @@ const C15 = phone(
   + appBar({ leadGo: 'C09' })
   + body(
     h('Checked by a woman, no photo kept', 'headline')
-    + t('If you do not show your face to a camera, nothing here asks you to. Choose either one. Your ID card is still read the same way.', { k: 'bodyM', color: C.onSurfaceVariant })
+    + t('If you do not show your face to a camera, nothing here asks you to. A woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.', { k: 'bodyM', color: C.onSurfaceVariant })
+    + t('Your phone number is used only to arrange this call.', { k: 'bodyM', color: C.onSurfaceVariant })
     + card(row(`${icon('videocam', { size: 26, color: C.primaryDim })}${col(`${strong('A short video check', 'titleM')}${m('Two minutes with a woman reviewer. Nothing is recorded or kept.')}`, { gap: 3, grow: true })}${icon('check_circle', { size: 24, color: C.primary, fill: true })}`, { gap: 12, justify: 'flex-start', align: 'flex-start' }), { v: 'selected', go: 'C14' })
-    + card(row(`${icon('fitness_center', { size: 26, color: C.primaryDim })}${col(`${strong('In person at a ladies-only gym', 'titleM')}${m('12 partner gyms in Cairo, Giza and Alexandria.')}`, { gap: 3, grow: true })}`, { gap: 12, justify: 'flex-start', align: 'flex-start' }), { go: 'C14' })
     + sageNote('Only women review these checks. No man ever sees your face, your card or your name.')
   , { pad: '0 16px 0', gap: 12 })
-  + footer(btn('Book the video check', { h: 56, go: 'C14' })));
+  + footer(btn('Ask for a video check', { h: 56, go: 'C14' })));
 
 const C16 = phone(
   statusBar()

@@ -1,7 +1,7 @@
 /// O01 — What do you want most?
 ///
-/// Matches `6-v2/src/screens-onboarding.mjs` → `O01`, the first of four setup
-/// questions.
+/// Matches `6-v2/src/screens-onboarding.mjs` → `O01`, the first setup
+/// question.
 ///
 /// The subtitle is the promise the whole flow rests on: *"Pick one. It changes
 /// the program, not the app."* Her goal must never rearrange the interface —
@@ -20,6 +20,7 @@ import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
 import 'intake_option.dart';
 import 'intake_step_scaffold.dart';
+import '../../../app_state/onboarding_state.dart' show setupProgress;
 
 class GoalView extends StatefulWidget {
   const GoalView({
@@ -78,8 +79,16 @@ class _GoalViewState extends State<GoalView> {
       (TrainingGoal.backIntoIt, l10n.getBackIntoIt, l10n.afterABreakABirthOrAn),
     ];
 
+    final at = setupProgress('O01', widget.repository.read());
     return IntakeStepScaffold(
-      step: 1,
+      step: at.step,
+      total: at.total,
+      // The first screen of the app on a fresh install, and until it opened
+      // there it never had to introduce itself. A woman who has just installed
+      // a fitness app and is asked "What do you want most?" with no preamble
+      // does not know how many more questions there are or that she may refuse
+      // them; this says both before the first one.
+      lead: l10n.aFewShortQuestionsOneAtA,
       title: l10n.whatDoYouWantMost,
       subtitle: l10n.pickOneItChangesTheProgramNot,
       onContinue: _continue,

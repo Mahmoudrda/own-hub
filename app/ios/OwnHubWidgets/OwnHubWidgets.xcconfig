@@ -1,0 +1,6 @@
+// The widget extension's base configuration, for Debug, Release and Profile.
+//
+// Generated.xcconfig carries FLUTTER_BUILD_NAME and FLUTTER_BUILD_NUMBER, so
+// the extension's version always matches Runner's. The Pods xcconfig is not
+// included: the extension links no pod and no Flutter code.
+#include "../Flutter/Generated.xcconfig"

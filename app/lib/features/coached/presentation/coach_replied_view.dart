@@ -185,7 +185,7 @@ class CoachRepliedView extends StatelessWidget {
           ),
         Text(
           // What a revision does not touch.
-          l10n.yesterdaysLogsAndAnySessionYouAlready,
+          l10n.whatYouAddedYesterdayAndAnySession,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],

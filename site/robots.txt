@@ -1,0 +1,7 @@
+# Own Hub. Everything here is meant to be read, by anyone, with no
+# login, no geo-block and no cookie wall.
+User-agent: *
+Allow: /
+Disallow: /_build/
+
+Sitemap: https://own-hub.app/sitemap.xml

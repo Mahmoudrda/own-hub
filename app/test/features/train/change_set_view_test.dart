@@ -141,7 +141,7 @@ void main() {
 
     await tester.tap(find.text('14 kg'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Done · 14 kg × 8'));
+    await tester.tap(find.text('Done · 14 kg × 10'));
     await tester.pumpAndSettle();
 
     expect(handle!.undo(), isTrue);
@@ -173,12 +173,15 @@ void main() {
     expect(stored.prescribed.reps, 10);
   });
 
-  testWidgets('the planned weight starts selected', (tester) async {
+  testWidgets('the planned weight and the planned reps start selected', (
+    tester,
+  ) async {
     final repository = InMemoryTrainRepository();
     await tester.pumpWidget(_host(ChangeSetView(repository: repository)));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Done · 12 kg × 8'));
+    // A set done as asked is one tap. The reps used to open on a fixed 8.
+    await tester.tap(find.text('Done · 12 kg × 10'));
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 6));
 
@@ -187,6 +190,35 @@ void main() {
       12,
       reason: 'the chip she is likeliest to mean is the one that was planned',
     );
+    expect(repository.flushes.single.sets.single.outcome!.reps, 10);
+  });
+
+  testWidgets('the reps on offer sit around what she was asked for', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(const ChangeSetView()));
+    await tester.pumpAndSettle();
+    // Asked for 10: mostly fewer, one step more.
+    for (final reps in ['6', '8', '9', '10', '12']) {
+      expect(find.text(reps), findsOneWidget, reason: reps);
+    }
+  });
+
+  testWidgets('"Type a different number" opens a number pad in the sheet', (
+    tester,
+  ) async {
+    final repository = InMemoryTrainRepository();
+    await tester.pumpWidget(_host(ChangeSetView(repository: repository)));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Type a different number'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '15');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Done · 12 kg × 15'));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 6));
+    expect(repository.flushes.single.sets.single.outcome!.reps, 15);
   });
 
   testWidgets('changing a value never raises a dialog', (tester) async {
@@ -206,10 +238,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('ماذا أدّيتِ؟'), findsOneWidget);
+    expect(find.text('عملتي إيه؟'), findsOneWidget);
     expect(find.text('الوزن'), findsOneWidget);
-    expect(find.text('التكرارات'), findsOneWidget);
-    expect(find.text('اكتبي رقمًا آخر'), findsOneWidget);
+    expect(find.text('العدّات'), findsOneWidget);
+    expect(find.text('اكتبي رقم تاني'), findsOneWidget);
     expect(find.text('Weight'), findsNothing);
   });
 

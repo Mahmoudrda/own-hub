@@ -109,6 +109,37 @@ void main() {
       );
     });
 
+    // R1-P9: on a phone set to a third language the app opens in English,
+    // so with no choice made the tick is on English, not on Arabic.
+    testWidgets('with no choice, the tick is on the language on screen', (
+      tester,
+    ) async {
+      tester.platformDispatcher.localeTestValue = const Locale('fr');
+      tester.platformDispatcher.localesTestValue = const [Locale('fr')];
+      addTearDown(tester.platformDispatcher.clearLocaleTestValue);
+      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+      for (final (locale, ticked, plain) in [
+        (const Locale('en'), 'English', 'العربية'),
+        (const Locale('ar'), 'العربية', 'English'),
+      ]) {
+        await tester.pumpWidget(
+          _host(
+            LanguageView(
+              key: ValueKey(locale),
+              preference: InMemoryLocalePreference(),
+            ),
+            locale: locale,
+          ),
+        );
+        await tester.pumpAndSettle();
+        AppListItem row(String label) => tester.widget<AppListItem>(
+          find.ancestor(of: find.text(label), matching: find.byType(AppListItem)),
+        );
+        expect(row(ticked).variant, AppCardVariant.selected, reason: '$locale');
+        expect(row(plain).variant, AppCardVariant.outlined, reason: '$locale');
+      }
+    });
+
     testWidgets('tapping English selects it and moves the tick', (
       tester,
     ) async {

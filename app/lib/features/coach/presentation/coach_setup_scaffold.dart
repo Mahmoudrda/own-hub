@@ -1,8 +1,11 @@
-/// The chrome `K01`–`K06` share, and the one place this feature navigates from.
+/// The chrome every coach setup step shares, and the one place this feature
+/// navigates from.
 ///
-/// Matches `step()` in `6-v2/src/screens-coach.mjs`: an "N of 6" bar with a
-/// close action, a headline and a muted line, and a footer carrying the primary
-/// action over a quiet "Save and close" that returns her to Today.
+/// Matches `step()` in `6-v2/src/screens-coach.mjs`: an "N of 11" title with a
+/// close action, a step bar under it that fills as she goes, a headline and a
+/// muted line, and a footer carrying the primary action over a quiet "Save and
+/// close" that returns her to Today. One thing a screen: the count and the bar
+/// are what make eleven short steps feel shorter than one long form.
 ///
 /// Six screens drawing their own bar is six chances for one of them to say
 /// "Step 4 of 5", and a coach counting steps that do not add up stops trusting
@@ -16,6 +19,7 @@ import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_step_bar.dart';
 import '../../../ui/hand/hand.dart';
 import 'coach_view_models.dart';
 
@@ -47,7 +51,7 @@ void goToScreen(
 /// translates, so both numbers are derived: add a seventh step and the bar
 /// counts to seven by itself.
 String stepTitle(AppL10n l10n, CoachSetupStep step) =>
-    l10n.countOfTotal('${step.number}', '${CoachSetupStep.values.length}');
+    l10n.countOfTotal('${step.number}', '${CoachSetupStep.total}');
 
 /// One step of the coach application.
 class CoachSetupScaffold extends StatelessWidget {
@@ -62,6 +66,8 @@ class CoachSetupScaffold extends StatelessWidget {
     this.onBack,
     this.onSaveAndClose,
     this.showSaveAndClose = true,
+    this.secondaryLabel,
+    this.onSecondary,
   });
 
   final CoachSetupStep step;
@@ -86,6 +92,11 @@ class CoachSetupScaffold extends StatelessWidget {
 
   /// `K06` has nothing to save and nothing to close.
   final bool showSaveAndClose;
+
+  /// A second way on, under the primary: `K05`'s "Add payout later". Drawn
+  /// only when both are given.
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +125,14 @@ class CoachSetupScaffold extends StatelessWidget {
           height: 56,
           onPressed: onPrimary,
         ),
+        if (secondaryLabel != null && onSecondary != null)
+          AppButton(
+            secondaryLabel!,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: onSecondary,
+          ),
         if (showSaveAndClose)
           AppButton(
             l10n.saveAndClose,
@@ -124,6 +143,7 @@ class CoachSetupScaffold extends StatelessWidget {
           ),
       ],
       children: [
+        AppStepBar(step: step.number, total: CoachSetupStep.total),
         // The step's number, set by hand beside the question — the bar above
         // already prints the count, so this is only the diary numbering its
         // pages. The payout step goes without: a page about her money stays

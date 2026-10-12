@@ -14,12 +14,15 @@
 ///    so the card stops asking once she has answered.
 ///  * **The month Y08 shows.**
 ///
-/// In memory, like every other store in this build: it does not survive a
-/// restart. Call [changed] after any write so open screens redraw.
+/// In memory while the app is running, and written to the phone with
+/// everything else — see `local_persistence.dart`. Call [changed] after any
+/// write so open screens redraw; that is also the signal the snapshot is
+/// saved on.
 library;
 
 import 'dart:async';
 
+import '../domain/clock/app_clock.dart';
 import '../features/cycle/domain/cycle_document.dart';
 import '../features/cycle/domain/day_suggestion.dart';
 import '../features/cycle/domain/symptom_context.dart';
@@ -46,7 +49,7 @@ class CycleAppState {
   /// Months back (negative) or forward from the current one, for Y08.
   int _monthOffset = 0;
 
-  static String _today() => AppRouter.dayId(DateTime.now());
+  static String _today() => AppRouter.dayId(AppClock.now());
 
   /// Every check-in she has saved, today's included.
   Map<String, TodayCheckIn> get checkIns => <String, TodayCheckIn>{
@@ -73,7 +76,7 @@ class CycleAppState {
 
   /// The month Y08 is showing.
   ({int year, int month}) shownMonth([DateTime? now]) {
-    final at = now ?? DateTime.now();
+    final at = now ?? AppClock.now();
     final shown = DateTime(at.year, at.month + _monthOffset);
     return (year: shown.year, month: shown.month);
   }
@@ -98,9 +101,7 @@ class CycleAppState {
     final repository = AppRouter.cycleRepository;
     final cycle = repository.current;
     if (cycle != null && !_homeCardChosen && !cycle.adaptation.homeCard) {
-      await repository.setAdaptation(
-        cycle.adaptation.copyWith(homeCard: true),
-      );
+      await repository.setAdaptation(cycle.adaptation.copyWith(homeCard: true));
     }
     changed();
   }
@@ -114,6 +115,22 @@ class CycleAppState {
   /// A Y12 switch changed.
   void adaptationChanged() {
     _homeCardChosen = true;
+    changed();
+  }
+
+  /// Y14's "Show workout suggestions" — the same field Y02 and Y12 write.
+  ///
+  /// The symptom-only path never passes Y02, so this is the only place a woman
+  /// who tracks symptoms alone can say the app may offer her a gentler
+  /// session. Without it the gentler option was gated on a consent she had no
+  /// way of giving. The row that asks disappears once the switch is on.
+  Future<void> setWorkoutSuggestions(bool on) async {
+    final repository = AppRouter.cycleRepository;
+    final cycle = repository.current;
+    if (cycle == null) return;
+    await repository.setAdaptation(
+      cycle.adaptation.copyWith(workoutSuggestions: on),
+    );
     changed();
   }
 
@@ -170,6 +187,39 @@ class CycleAppState {
   void nextMonth() {
     _monthOffset++;
     AppChanges.bump();
+  }
+
+  /// The check-ins she has saved, without today's — the map as it is stored.
+  ///
+  /// [checkIns] folds in `AppRouter.todayCheckIn` for the screens; this is the
+  /// raw map the storage layer writes. See
+  /// `lib/app_state/local_persistence.dart`.
+  Map<String, TodayCheckIn> get savedCheckIns =>
+      Map<String, TodayCheckIn>.unmodifiable(_checkIns);
+
+  /// The day she answered today's gentler option, or null.
+  String? get decidedOn => _decidedOn;
+
+  /// Whether she has set the Home switch herself.
+  bool get homeCardChosen => _homeCardChosen;
+
+  /// Puts back what this state held when the app was last closed.
+  ///
+  /// The month offset is not restored: it is where Y08 was scrolled to, not
+  /// something she recorded, and opening on this month is the right place to
+  /// start. The mirror of [reset], except that this one writes nothing to the
+  /// cycle repository — the storage layer restores that document itself.
+  void restore({
+    Map<String, TodayCheckIn> checkIns = const <String, TodayCheckIn>{},
+    String? decidedOn,
+    bool homeCardChosen = false,
+  }) {
+    _checkIns
+      ..clear()
+      ..addAll(checkIns);
+    _decidedOn = decidedOn;
+    _homeCardChosen = homeCardChosen;
+    _monthOffset = 0;
   }
 
   /// For tests: a woman who has never opened My cycle.

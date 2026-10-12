@@ -45,6 +45,15 @@ Widget _host(
   );
 }
 
+/// The three rows this screen draws **when a caller gives it a history**.
+///
+/// `lastOtherTitle` is supplied here because the screen no longer invents one.
+/// "Upper body, like last Thursday" was a fixed string offered to every woman
+/// on a fresh install, and tapping Save wrote that sentence into her log as the
+/// session's title. Nothing in the shipping build can name her last other
+/// session, so the router passes nothing and the row is not drawn there; these
+/// cases are about the row when the data exists, and `_viewWithNoHistory` below
+/// is about the case when it does not.
 AlreadyDidItView _view({TodayRepository? repository}) {
   return AlreadyDidItView(
     repository:
@@ -52,12 +61,24 @@ AlreadyDidItView _view({TodayRepository? repository}) {
         InMemoryTodayRepository(
           day: InMemoryTodayRepository.defaultDay(date: _tuesday),
         ),
-    onLogged: () {},
+    lastOtherTitle: 'Upper body, like last Thursday',
+    onLogged: (_) {},
     onStartSession: () {},
     onOpenMeal: () {},
     onSelectTab: (_) {},
   );
 }
+
+/// The same screen on a fresh install: no plan detail, no history.
+AlreadyDidItView _viewWithNoHistory() => AlreadyDidItView(
+  repository: InMemoryTodayRepository(
+    day: InMemoryTodayRepository.defaultDay(date: _tuesday),
+  ),
+  onLogged: (_) {},
+  onStartSession: () {},
+  onOpenMeal: () {},
+  onSelectTab: (_) {},
+);
 
 /// The sheet is taller than a phone, so anything below the fold is scrolled to
 /// before it is tapped — the same thing a woman's thumb does.
@@ -106,8 +127,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Tuesday'), findsOneWidget);
-        expect(find.text('Legs and glutes'), findsOneWidget);
-        expect(find.text('Breakfast, your usual'), findsOneWidget);
+        expect(find.text("Today's workout"), findsOneWidget);
+        expect(find.text('Breakfast'), findsOneWidget);
       },
     );
   });
@@ -207,12 +228,18 @@ void main() {
     tester,
   ) async {
     _phone(tester);
-    await tester.pumpWidget(_host(_view(), locale: const Locale('ar')));
+    await tester.pumpWidget(
+      _host(_viewWithNoHistory(), locale: const Locale('ar')),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('ماذا أدّيتِ؟'), findsOneWidget);
-    expect(find.text('الساقان والأرداف، خطة اليوم'), findsOneWidget);
-    expect(find.text('احفظي'), findsNWidgets(2));
+    expect(find.text('عملتي إيه؟'), findsOneWidget);
+    expect(find.text('الرجلين والأرداف، خطة النهارده'), findsOneWidget);
+    // `_viewWithNoHistory`, so the only strings on the screen are the screen's
+    // own. The last-other row's title comes from its caller now, and a caller
+    // passing an English one would be measuring the fixture rather than the
+    // dictionary.
+    expect(find.text('احفظي'), findsOneWidget);
     expect(find.text('What did you do?'), findsNothing);
     expect(find.text('Save'), findsNothing);
   });

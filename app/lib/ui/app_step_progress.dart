@@ -43,3 +43,27 @@ String stepOfLabel(AppL10n l10n, {required int step, required int total}) {
     'files and extend stepOfLabel; never build the counter from parts.',
   );
 }
+
+/// The three parts of joining, in the order she meets them.
+///
+/// One count for the whole of sign-up, replacing "Step 1 of 2" on the number
+/// and "Step 2 of 2" on the code, which promised the end two screens before a
+/// role, a consent, three camera passes and a wait.
+enum SignupPhase {
+  /// Her week: the setup screens before she has an account.
+  week,
+
+  /// Her number and the code sent to it.
+  number,
+
+  /// The one identity check.
+  check,
+}
+
+/// The bar title for [phase]. Whole dictionary strings, Western digits in both
+/// languages, for the same reason [stepOfLabel] never builds a counter.
+String signupPhaseLabel(AppL10n l10n, SignupPhase phase) => switch (phase) {
+  SignupPhase.week => l10n.n1Of3YourWeek,
+  SignupPhase.number => l10n.n2Of3YourNumber,
+  SignupPhase.check => l10n.n3Of3QuickCheck,
+};

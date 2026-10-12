@@ -101,6 +101,8 @@ class CoachTodayView extends StatelessWidget {
     this.onOpenFirstWeek,
     this.onOpenClients,
     this.onOpenPublicProfile,
+    this.onBuildFirstPlan,
+    this.onInviteClient,
   });
 
   final CoachTodayViewModel model;
@@ -127,6 +129,15 @@ class CoachTodayView extends StatelessWidget {
   /// on both of its branches.
   final VoidCallback? onOpenPublicProfile;
 
+  /// `K20`, the plan builder, while her application is being checked: `K06`
+  /// promises she can build while she waits, and this keeps that door on the
+  /// screen she comes back to.
+  final VoidCallback? onBuildFirstPlan;
+
+  /// "Invite a client": her code, shared on WhatsApp with a woman she already
+  /// coaches. Null draws no row.
+  final VoidCallback? onInviteClient;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -151,6 +162,8 @@ class CoachTodayView extends StatelessWidget {
       ),
     );
   }
+
+  Widget _inviteRow(AppL10n l10n) => _inviteRowFor(l10n, onInviteClient!);
 
   // ---------------------------------------------------------------- head ----
 
@@ -276,6 +289,7 @@ class CoachTodayView extends StatelessWidget {
         ),
         onTap: () => goToScreen(context, 'B01', onOpenPortfolio),
       ),
+      if (onInviteClient != null) _inviteRow(l10n),
       // Money, only when a provider actually supplied a figure.
       if (model.canShowMoney)
         Text(l10n.earningsThisMonth, style: AppText.titleM),
@@ -367,6 +381,15 @@ class CoachTodayView extends StatelessWidget {
             ),
           ],
         ),
+      // Building while she waits is K06's promise. The row says what it opens.
+      if (model.showsVerificationCard)
+        _TodoRow(
+          icon: Icons.edit_note,
+          title: l10n.buildYourFirstPlan,
+          subtitle: l10n.readyForYourFirstClientWhileWe,
+          screenId: 'K20',
+          onTap: onBuildFirstPlan,
+        ),
       ..._queue(context, l10n),
       // Rule 17: what will appear here, why it is empty, one way in.
       AppEmptyState(
@@ -419,6 +442,7 @@ class CoachTodayView extends StatelessWidget {
         subtitle: l10n.itWaitsInYourOwnCollection,
         screenId: 'W07',
       ),
+      if (onInviteClient != null) _inviteRow(l10n),
       // What she keeps, with no invented figure beside it.
       Text(
         l10n.youKeep80OfWhatShePays,
@@ -427,6 +451,24 @@ class CoachTodayView extends StatelessWidget {
     ];
   }
 }
+
+/// "Invite a client". Not a navigation: it opens WhatsApp with her code.
+Widget _inviteRowFor(AppL10n l10n, VoidCallback onTap) => AppListItem(
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+  leading: const Icon(
+    Icons.person_add_alt,
+    size: 20,
+    color: AppColors.primaryDim,
+  ),
+  title: l10n.inviteAClient,
+  subtitle: l10n.alreadyCoachingSomeoneSendHerYourCode,
+  trailing: const Icon(
+    Icons.share,
+    size: 20,
+    color: AppColors.onSurfaceVariant,
+  ),
+  onTap: onTap,
+);
 
 /// A queue row's avatar. Her initial, because there is no photo pipeline.
 class _InitialCircle extends StatelessWidget {

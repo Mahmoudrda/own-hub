@@ -90,7 +90,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('لا شيء هنا من بيانات العضوات. هذه اللوحة تدير المكتبة فقط.'),
+      find.text('مفيش هنا أي بيانات لعضوة. اللوحة دي بتدير المكتبة بس.'),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
@@ -186,7 +186,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('4,100 صفًا'), findsOneWidget);
+    expect(find.text('4,100 صف'), findsOneWidget);
   });
 
   testWidgets('each collection opens its own list', (tester) async {
@@ -259,7 +259,7 @@ void main() {
 
     expect(find.text('مكتبة المحتوى'), findsWidgets);
     expect(
-      Directionality.of(tester.element(find.text('التمارين'))),
+      Directionality.of(tester.element(find.text('الحركات'))),
       TextDirection.rtl,
     );
     expect(tester.takeException(), isNull);

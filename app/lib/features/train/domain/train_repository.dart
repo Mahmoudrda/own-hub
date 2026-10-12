@@ -511,6 +511,58 @@ class InMemoryTrainRepository implements TrainRepository {
     _sessions[id] = session;
     return session;
   }
+
+  /// Every session she has, as the snapshot keeps them.
+  ///
+  /// Unmodifiable: a window for the code that writes her training to the phone,
+  /// not a second way to add a session. See
+  /// `lib/app_state/local_persistence.dart`.
+  List<TrainSession> get sessions =>
+      List<TrainSession>.unmodifiable(_sessions.values);
+
+  /// The counter behind `live-1`, `live-2`, so a session started after a
+  /// restart does not reuse an id an earlier one already holds.
+  int get sessionCounter => _counter;
+
+  /// Puts back the sessions and the flushes the app was holding when it closed.
+  ///
+  /// The mirror of [reset]. `workouts` and `alternatives` are content that
+  /// shipped with the app and are not restored, for the same reason they are
+  /// not deleted: they were never hers.
+  void restore({
+    Iterable<TrainSession> sessions = const <TrainSession>[],
+    Iterable<({String sessionId, String exerciseId, List<LoggedSet> sets})>
+        flushes =
+        const [],
+    Iterable<({String from, String to})> swaps = const [],
+    String? liveSessionId,
+    int sessionCounter = 0,
+  }) {
+    _sessions
+      ..clear()
+      ..addEntries(sessions.map((s) => MapEntry(s.id, s)));
+    this.flushes
+      ..clear()
+      ..addAll(flushes);
+    this.swaps
+      ..clear()
+      ..addAll(swaps);
+    _liveSessionId = liveSessionId;
+    _counter = sessionCounter;
+  }
+
+  /// Drops every session and every flush, keeping the bundled library.
+  ///
+  /// Account deletion calls it: `_sessions` and `flushes` are her workouts,
+  /// while `workouts` and `alternatives` are content that shipped with the app
+  /// and are not hers to delete.
+  void reset() {
+    _sessions.clear();
+    flushes.clear();
+    swaps.clear();
+    _liveSessionId = null;
+    _counter = 0;
+  }
 }
 
 /// The video library before any of it has been produced.

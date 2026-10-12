@@ -6,7 +6,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/features/account/domain/health_backup.dart';
 import 'package:own_hub/features/account/domain/privacy_settings.dart';
 import 'package:own_hub/features/account/domain/verification_claim.dart';
 import 'package:own_hub/features/account/presentation/privacy_view.dart';
@@ -17,7 +21,8 @@ import 'package:own_hub/ui/app_toggle.dart';
 /// The shipped English sentence for rule 7, written out so the test fails if
 /// the dictionary entry is ever repointed at different words.
 const _rule7 =
-    'Your ID and selfie were deleted after the check. Only the result is kept.';
+    'Your ID and selfie were deleted after the check. We keep the result and '
+    'a keyed code of your ID number.';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -49,6 +54,110 @@ List<AppToggle> _toggles(WidgetTester tester) =>
     tester.widgetList<AppToggle>(find.byType(AppToggle)).toList();
 
 void main() {
+  // Three of the four switches decide what the community sees and the fourth
+  // what a coach sees, so both have to be on for four switches to exist.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.community: true,
+      Feature.coachedLife: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
+  group('M3: crash reports, only with her consent', () {
+    testWidgets('off by default, and the switch says what it means', (
+      tester,
+    ) async {
+      _phone(tester);
+      final choices = <bool>[];
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+            onCrashReportsChanged: (allowed) async => choices.add(allowed),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final toggle = find.byKey(const ValueKey('crash-reports-toggle'));
+      await tester.ensureVisible(toggle);
+      expect(tester.widget<AppToggle>(toggle).value, isFalse);
+      expect(
+        find.text('Off. Nothing is sent when the app crashes.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(choices, [true]);
+      expect(find.textContaining('Nothing about you is attached'), findsOneWidget);
+
+      await tester.ensureVisible(toggle);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(choices, [true, false]);
+    });
+
+    testWidgets('no row without a place to record the choice', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(PrivacyView(service: PrivacySettingsService(InMemoryPrivacyRepository()))),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('crash-reports-toggle')), findsNothing);
+    });
+  });
+
+  group('usage statistics, only with her consent', () {
+    testWidgets('off by default, separate from crash reports, and says what '
+        'turning it off does', (tester) async {
+      _phone(tester);
+      final choices = <bool>[];
+      final crash = <bool>[];
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+            onCrashReportsChanged: (allowed) async => crash.add(allowed),
+            onAnalyticsChanged: (allowed) async => choices.add(allowed),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final toggle = find.byKey(const ValueKey('analytics-toggle'));
+      await tester.ensureVisible(toggle);
+      expect(tester.widget<AppToggle>(toggle).value, isFalse);
+      expect(find.textContaining('clears the statistics ID'), findsOneWidget);
+
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(choices, [true]);
+      expect(crash, isEmpty, reason: 'two choices, never one');
+      expect(find.textContaining('Google Analytics receives'), findsOneWidget);
+
+      await tester.ensureVisible(toggle);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(choices, [true, false]);
+    });
+
+    testWidgets('no row without a place to record the choice', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('analytics-toggle')), findsNothing);
+    });
+  });
+
   group('the switches', () {
     testWidgets('four switches, and only the blur starts on', (tester) async {
       _phone(tester);
@@ -208,7 +317,7 @@ void main() {
       // She revokes her coach's access with no signal. The row sits below the
       // fold on a 390x844 phone, so it has to be scrolled to — tapping an
       // off-screen row is how a widget test silently asserts nothing.
-      final row = find.text('My coach can see my logs');
+      final row = find.text('My coach can see my meals and workouts');
       await tester.ensureVisible(row);
       await tester.pumpAndSettle();
       await tester.tap(row);
@@ -295,4 +404,76 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  group('health backup off, offline (C4)', () {
+    testWidgets('it is off here at once, and she is told the cloud copy '
+        'goes when she is back online', (tester) async {
+      _phone(tester);
+      SharedPreferences.setMockInitialValues(const <String, Object>{});
+      final pref = HealthBackupPreference.instance..resetForTest();
+      await pref.set(true);
+      addTearDown(pref.resetForTest);
+      final controller = HealthBackupController(store: _OfflineHealthStore());
+
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+            healthBackup: controller,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('health-backup-toggle')),
+      );
+      await tester.tap(find.byKey(const ValueKey('health-backup-toggle')));
+      await tester.pumpAndSettle();
+
+      expect(pref.enabled, isFalse);
+      expect(
+        find.byKey(const ValueKey('health-backup-withdraw-pending')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('health-backup-error')), findsNothing);
+    });
+
+    testWidgets('the note says what syncs, what stays, and what is never '
+        'stored', (tester) async {
+      _phone(tester);
+      AppRouter.featureFlags = FeatureFlags.allOff;
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          'saved to your Own Hub account once you are '
+          'verified',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          'Photos of your ID card and your selfie are never '
+          'stored',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('stay on this phone.'), findsNothing);
+    });
+  });
+}
+
+class _OfflineHealthStore implements HealthConsentStore {
+  @override
+  Future<void> record({required bool granted}) async =>
+      throw StateError('unavailable');
+
+  @override
+  Future<HealthConsentState?> current(String uid) async => null;
 }

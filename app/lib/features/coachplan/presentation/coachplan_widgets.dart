@@ -78,7 +78,10 @@ class CoachPlanNavBar extends StatelessWidget {
 }
 
 /// A section heading.
-class SectionHead extends StatelessWidget {
+class SectionHead extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'SectionHead';
+
   const SectionHead(this.title, {super.key});
 
   final String title;
@@ -88,7 +91,10 @@ class SectionHead extends StatelessWidget {
 }
 
 /// A label and its value on one line — the prototype's `kv()`.
-class LabelledValue extends StatelessWidget {
+class LabelledValue extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'LabelledValue';
+
   const LabelledValue({super.key, required this.label, required this.value});
 
   final String label;

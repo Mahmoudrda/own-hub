@@ -25,11 +25,13 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
+import '../../../ui/app_field.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
 import '../domain/train_repository.dart';
 import '../domain/weight_label.dart';
+import 'set_labels.dart';
 import 'train_widgets.dart';
 
 /// What she chose, handed back to the caller.
@@ -56,8 +58,10 @@ class ChangeSetView extends StatefulWidget {
       reps: 10,
     ),
     this.moveName,
+    this.moveNumber,
+    this.moveCount,
     this.weightOptionsKg = const [10, 12, 14],
-    this.repOptions = const [8, 9, 10, 12],
+    this.repOptions,
     this.openSheet = true,
     this.sessionId = 'session',
     this.repository,
@@ -70,6 +74,13 @@ class ChangeSetView extends StatefulWidget {
   /// bar there names *her* numbers and Undo reaches this very write.
   final ValueChanged<LogHandle>? onSaved;
 
+  /// Which move of how many, for the bar at the top.
+  ///
+  /// Both null renders no count rather than a fixed one. The bar carried
+  /// `move2Of5` — "Move 2 of 5" — over the first move of a four-move session.
+  final int? moveNumber;
+  final int? moveCount;
+
   /// The only route to a keyboard on this screen.
   final VoidCallback? onTypeANumber;
 
@@ -80,7 +91,8 @@ class ChangeSetView extends StatefulWidget {
   final List<double> weightOptionsKg;
 
   /// Reps she is likeliest to mean. Bare numerals: see the note in build().
-  final List<int> repOptions;
+  /// Null builds them around the set she was asked for ([repOptionsAround]).
+  final List<int>? repOptions;
 
   /// R08 *is* the sheet raised over the set, so it opens by default.
   final bool openSheet;
@@ -129,7 +141,7 @@ class _ChangeSetViewState extends State<ChangeSetView> {
           prescribed: widget.prescribed,
           moveName: widget.moveName,
           weightOptionsKg: widget.weightOptionsKg,
-          repOptions: widget.repOptions,
+          repOptions: widget.repOptions ?? repOptionsAround(widget.prescribed),
           onTypeANumber: widget.onTypeANumber,
           onSave: (changed) {
             Navigator.of(context).pop();
@@ -153,21 +165,22 @@ class _ChangeSetViewState extends State<ChangeSetView> {
   void _log(ChangedSet changed) {
     final l10n = AppL10n.of(context);
 
-    // Both are non-null by construction — the chips are built from
-    // weightOptionsKg and repOptions, which are non-nullable lists. The
-    // fallbacks exist only because SetOutcome also models bodyweight and timed
-    // sets, which R08's chips cannot express yet.
-    final weightKg =
-        changed.outcome.weightKg ?? changed.prescribed.weightKg ?? 0;
-    final reps = changed.outcome.reps ?? changed.prescribed.reps ?? 0;
+    // Null weight means bodyweight, and it is carried through as null rather
+    // than defaulted to zero. The sheet no longer offers a weight for a set the
+    // plan gave none, so "0 kg x 12" is a sentence about a weight she never
+    // lifted — `setSavedLabel` says "12 reps" instead.
+    final weightKg = changed.outcome.weightKg ?? changed.prescribed.weightKg;
+    final reps = changed.outcome.reps ?? changed.prescribed.reps;
 
     final handle = _bus.submit(
       UndoableLog(
         // Her numbers, not the plan's. That is the entire point of this screen.
-        describe: l10n.setSetnumberSavedWeightKgReps(
-          changed.prescribed.order,
-          weightLabel(weightKg),
-          reps,
+        describe: setSavedLabel(
+          l10n,
+          setNumber: changed.prescribed.order,
+          weightKg: weightKg,
+          reps: reps,
+          holdSeconds: changed.prescribed.holdSeconds,
         ),
         commit: () => _repository.flushMove(
           sessionId: widget.sessionId,
@@ -187,7 +200,10 @@ class _ChangeSetViewState extends State<ChangeSetView> {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
-      appBar: TrainTopBar(title: l10n.move2Of5, onClose: widget.onClose),
+      appBar: TrainTopBar(
+        title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
+        onClose: widget.onClose,
+      ),
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,6 +223,22 @@ class _ChangeSetViewState extends State<ChangeSetView> {
       ],
     );
   }
+}
+
+/// The reps she most likely did, around what she was asked for.
+///
+/// Mostly fewer, because the usual reason to change a set is not finishing
+/// it, and one step more for the day it went well. The asked-for number is
+/// always among them and is what the sheet opens on, so a set she did as
+/// asked is one tap. It used to be a fixed 8, 9, 10, 12 with 8 chosen, so a
+/// woman asked for 15 had to find a keyboard to say 14.
+List<int> repOptionsAround(PrescribedSet set) {
+  final asked = set.reps;
+  if (asked == null) return const [8, 9, 10, 12];
+  return {
+    for (final r in [asked - 4, asked - 2, asked - 1, asked, asked + 2])
+      if (r > 0) r,
+  }.toList()..sort();
 }
 
 class _ChangeSetSheet extends StatefulWidget {
@@ -232,7 +264,31 @@ class _ChangeSetSheet extends StatefulWidget {
 
 class _ChangeSetSheetState extends State<_ChangeSetSheet> {
   late int _weightIndex = _indexOfPlannedWeight();
-  int _repIndex = 0;
+  late int _repIndex = _indexOfAskedReps();
+
+  /// "Type a different number": a number pad in the sheet itself, for the
+  /// set the chips do not cover. Null until she asks for it.
+  TextEditingController? _typed;
+
+  int _indexOfAskedReps() {
+    final asked = widget.prescribed.reps;
+    final found = asked == null ? -1 : widget.repOptions.indexOf(asked);
+    return found < 0 ? 0 : found;
+  }
+
+  /// What she typed, when it is a number of reps anyone could do in a set.
+  int? get _typedReps {
+    final n = int.tryParse(_typed?.text.trim() ?? '');
+    return n != null && n > 0 && n <= 200 ? n : null;
+  }
+
+  int get _reps => _typedReps ?? widget.repOptions[_repIndex];
+
+  @override
+  void dispose() {
+    _typed?.dispose();
+    super.dispose();
+  }
 
   int _indexOfPlannedWeight() {
     final planned = widget.prescribed.weightKg;
@@ -263,6 +319,13 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
     ];
     final repLabels = [for (final reps in widget.repOptions) '$reps'];
 
+    // A bodyweight set has no weight to change, and offering one is the app
+    // inventing equipment. The session this build ships is "Quiet · no
+    // equipment · floor" and every move in it is bodyweight, so this sheet used
+    // to offer 10/12/14 kg over a glute bridge and then write whichever she
+    // tapped into her log as a weight she had lifted.
+    final loaded = widget.prescribed.weightKg != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -278,17 +341,19 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
           widget.moveName ?? l10n.gobletSquat,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
-        const SizedBox(height: 14),
-        Text(
-          l10n.weight,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
-        const SizedBox(height: 8),
-        AppChipRow(
-          items: weightLabels,
-          selected: {_weightIndex},
-          onTap: (i) => setState(() => _weightIndex = i),
-        ),
+        if (loaded) ...[
+          const SizedBox(height: 14),
+          Text(
+            l10n.weight,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          const SizedBox(height: 8),
+          AppChipRow(
+            items: weightLabels,
+            selected: {_weightIndex},
+            onTap: (i) => setState(() => _weightIndex = i),
+          ),
+        ],
         const SizedBox(height: 14),
         Text(
           l10n.reps,
@@ -297,9 +362,22 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
         const SizedBox(height: 8),
         AppChipRow(
           items: repLabels,
-          selected: {_repIndex},
-          onTap: (i) => setState(() => _repIndex = i),
+          selected: {if (_typedReps == null) _repIndex},
+          onTap: (i) => setState(() {
+            _repIndex = i;
+            _typed?.clear();
+          }),
         ),
+        if (_typed != null) ...[
+          const SizedBox(height: 10),
+          AppField(
+            controller: _typed,
+            label: l10n.reps,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            onChanged: (_) => setState(() {}),
+          ),
+        ],
         const SizedBox(height: 14),
         // 'Next time we keep 12 kg and aim for 10 again.' — names the weight
         // and the rep target it is about, so it is shown only to the woman
@@ -321,28 +399,40 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
           // "Save · 12 kg × 8", and asserted 14 × 9 was written: the defect was
           // pinned by a passing test. Same string R07 uses, so the two screens
           // cannot disagree about what a saved set is called.
-          l10n.doneWeightKgReps(
-            weightLabel(widget.weightOptionsKg[_weightIndex]),
-            widget.repOptions[_repIndex],
+          setDoneLabel(
+            l10n,
+            weightKg: loaded ? widget.weightOptionsKg[_weightIndex] : null,
+            reps: _reps,
           ),
           onPressed: () => widget.onSave(
             ChangedSet(
               prescribed: widget.prescribed,
               outcome: SetOutcome(
-                weightKg: widget.weightOptionsKg[_weightIndex],
-                reps: widget.repOptions[_repIndex],
+                weightKg: loaded
+                    ? widget.weightOptionsKg[_weightIndex]
+                    : null,
+                reps: _reps,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        AppButton(
-          l10n.typeADifferentNumber,
-          variant: AppButtonVariant.text,
-          height: 40,
-          fontSize: 15,
-          onPressed: widget.onTypeANumber,
-        ),
+        if (_typed == null) ...[
+          const SizedBox(height: 10),
+          AppButton(
+            l10n.typeADifferentNumber,
+            variant: AppButtonVariant.text,
+            // 44, not 40: the iOS minimum, and this sheet is used mid-set with
+            // one hand. AppButton already floors the *tap target* at 44 — the
+            // block she can see is now the block she can hit.
+            height: 44,
+            fontSize: 15,
+            // A caller's own route to a keyboard wins; otherwise the number
+            // pad opens here. It used to be a button that did nothing.
+            onPressed:
+                widget.onTypeANumber ??
+                () => setState(() => _typed = TextEditingController()),
+          ),
+        ],
       ],
     );
   }

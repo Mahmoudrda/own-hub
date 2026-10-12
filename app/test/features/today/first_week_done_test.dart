@@ -57,6 +57,11 @@ TodayDay _completed() => TodayDay(
 FirstWeekView _view({TodayRepository? repository}) => FirstWeekView(
   key: const ValueKey('arc-complete'),
   repository: repository ?? InMemoryTodayRepository(day: _completed()),
+  // Stated here, because the widget's own defaults are now a new woman's 0 and
+  // 1 rather than the mockup's 90 and 2 — T07 and T08 were built by the router
+  // with neither passed, so both told every woman she had 90 points.
+  points: 90,
+  level: 2,
   onBackToToday: () {},
   onSeeProgress: () {},
   onClose: () {},
@@ -82,14 +87,14 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Log one set'), findsOneWidget);
+      expect(find.text('Finish one set'), findsOneWidget);
       expect(find.text('You know your way around'), findsNothing);
 
       // Complete arc: the summary. Same widget.
       await tester.pumpWidget(_host(_view()));
       await tester.pumpAndSettle();
       expect(find.text('You know your way around'), findsOneWidget);
-      expect(find.text('Log one set'), findsNothing);
+      expect(find.text('Finish one set'), findsNothing);
     });
 
     testWidgets('it names what carried forward', (tester) async {
@@ -97,7 +102,11 @@ void main() {
       await tester.pumpWidget(_host(_view()));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('All five done.'), findsOneWidget);
+      // "All five done." named a number this build cannot reach: Community is
+      // dark, so `offeredFirstWeekSteps` returns three and every other figure
+      // on the screen says three. The sentence states no number now.
+      expect(find.textContaining('All done.'), findsOneWidget);
+      expect(find.textContaining('All five done.'), findsNothing);
       expect(find.text('What it added up to'), findsOneWidget);
       expect(find.text('Points'), findsOneWidget);
       expect(find.text('90'), findsOneWidget);
@@ -141,9 +150,9 @@ void main() {
     await tester.pumpWidget(_host(_view(), locale: const Locale('ar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('أنتِ تعرفين طريقك الآن'), findsOneWidget);
-    expect(find.text('ما بلغه المجموع'), findsOneWidget);
-    expect(find.text('العودة إلى اليوم'), findsOneWidget);
+    expect(find.text('بقيتي عارفة طريقك هنا'), findsOneWidget);
+    expect(find.text('ده اللي جمّعتيه'), findsOneWidget);
+    expect(find.text('ارجعي لصفحة اليوم'), findsOneWidget);
     expect(find.text('You know your way around'), findsNothing);
   });
 

@@ -25,7 +25,10 @@ import 'hand/hand.dart';
 
 export 'app_card.dart' show AppCardVariant;
 
-class AppListItem extends StatelessWidget {
+class AppListItem extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppListItem';
+
   const AppListItem({
     super.key,
     this.title = '',

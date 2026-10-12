@@ -31,6 +31,19 @@
 /// pumping until it times out. The layout tests set it false and assert the
 /// static frame; the countdown tests leave it true and drive the clock with
 /// explicit `pump(duration)` calls.
+///
+/// # And then it followed her out of the screen
+///
+/// R09 is *pushed under* R07 rather than replaced by it, so tapping "I'm ready"
+/// leaves this screen mounted with its clock still running. Up to thirty-eight
+/// seconds later the clock reached zero and called [onReady] anyway — which
+/// pushes the workout player **over whatever she is doing now**. It was caught
+/// landing on the cycle check-in and in the middle of `Y02`, which a woman who
+/// has never used a fitness app reads as the app breaking.
+///
+/// So the clock ends itself, but it only ever navigates *from the top*: a tick
+/// that reaches zero behind another screen stops and says nothing. The tap path
+/// is untouched, because a tap can only come from the screen she is looking at.
 library;
 
 import 'dart:async';
@@ -48,6 +61,7 @@ import '../../../ui/app_undo_bar.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/clock_label.dart';
 import '../domain/weight_label.dart';
+import 'set_labels.dart';
 import 'train_widgets.dart';
 
 class RestingView extends StatefulWidget {
@@ -64,7 +78,16 @@ class RestingView extends StatefulWidget {
     this.autoStart = true,
     this.upNext,
     this.upNextPrescription,
+    this.moveNumber,
+    this.moveCount,
   });
+
+  /// Which move of how many, for the bar at the top.
+  ///
+  /// Both null renders no count rather than a fixed one. The bar carried
+  /// `move2Of5` — "Move 2 of 5" — over the first move of a four-move session.
+  final int? moveNumber;
+  final int? moveCount;
 
   final VoidCallback? onClose;
   final VoidCallback? onPause;
@@ -135,6 +158,15 @@ class _RestingViewState extends State<RestingView> {
     super.dispose();
   }
 
+  /// True while this screen is the one she is actually looking at.
+  ///
+  /// `mounted` is not enough: a route pushed over this one leaves it mounted,
+  /// so the clock kept running underneath and then navigated on top of
+  /// whatever had replaced it. `isCurrent` is false for exactly that case.
+  /// Defaults to true when there is no route at all, which is how the widget
+  /// tests host it.
+  bool get _isOnTop => ModalRoute.of(context)?.isCurrent ?? true;
+
   void _start() {
     _stop();
     if (_remaining <= Duration.zero) return;
@@ -145,7 +177,9 @@ class _RestingViewState extends State<RestingView> {
         setState(() => _remaining = Duration.zero);
         _stop();
         // Rest is over and she was not asked to say so. This is the whole
-        // promise of the screen.
+        // promise of the screen — but only when this screen is still the one
+        // in front of her. Behind another route, the rest simply ends.
+        if (!_isOnTop) return;
         widget.onReady?.call();
         return;
       }
@@ -189,13 +223,14 @@ class _RestingViewState extends State<RestingView> {
       // 210px ring plus the up-next card plus the footer on a short viewport —
       // it overflows, and an overflow here hides the rest timer she is watching.
       appBar: TrainTopBar(
-        title: l10n.move2Of5,
+        title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
         onClose: widget.onClose,
         actions: [
           IconButton(
             onPressed: widget.onPause,
             iconSize: 24,
             color: AppColors.onSurfaceVariant,
+            tooltip: l10n.pause,
             icon: const Icon(Icons.pause),
           ),
         ],

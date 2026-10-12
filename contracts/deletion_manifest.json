@@ -1,0 +1,249 @@
+{
+  "rows": [
+    {
+      "number": 1,
+      "path": "users/{uid}",
+      "method": "recursive"
+    },
+    {
+      "number": 2,
+      "path": "users/{uid}/weeks/**",
+      "method": "recursive"
+    },
+    {
+      "number": 3,
+      "path": "users/{uid}/checkins/**",
+      "method": "recursive"
+    },
+    {
+      "number": 4,
+      "path": "users/{uid}/sessions/**",
+      "method": "recursive"
+    },
+    {
+      "number": 5,
+      "path": "users/{uid}/meals/**",
+      "method": "recursive"
+    },
+    {
+      "number": 6,
+      "path": "users/{uid}/bests/**",
+      "method": "recursive"
+    },
+    {
+      "number": 7,
+      "path": "users/{uid}/measurements/**",
+      "method": "recursive"
+    },
+    {
+      "number": 8,
+      "path": "users/{uid}/devices/**",
+      "method": "recursive"
+    },
+    {
+      "number": 9,
+      "path": "users/{uid}/syncQueue/**",
+      "method": "localOnly"
+    },
+    {
+      "number": 10,
+      "path": "users/{uid}/consents/{purpose}_{version}",
+      "method": "groupHook"
+    },
+    {
+      "number": 11,
+      "path": "users/{uid}/notices/{kind}-{yyyy-Www}",
+      "method": "recursive"
+    },
+    {
+      "number": 12,
+      "path": "users/{uid}/firstWeek/arc",
+      "method": "recursive"
+    },
+    {
+      "number": 13,
+      "path": "users/{uid}/eatPrefs/current",
+      "method": "recursive"
+    },
+    {
+      "number": 14,
+      "path": "users/{uid}/mealPlans/{week}",
+      "method": "recursive"
+    },
+    {
+      "number": 15,
+      "path": "users/{uid}/notifications/**",
+      "method": "recursive"
+    },
+    {
+      "number": 16,
+      "path": "users/{uid}/blocks/**",
+      "method": "recursive"
+    },
+    {
+      "number": 17,
+      "path": "users/{other}/blockedBy/{uid}",
+      "method": "reverseCleanup"
+    },
+    {
+      "number": 18,
+      "path": "users/{uid}/blockedBy/**",
+      "method": "recursive"
+    },
+    {
+      "number": 19,
+      "path": "users/{uid}/myReports/**",
+      "method": "recursive"
+    },
+    {
+      "number": 20,
+      "path": "plans/{uid}/versions/**",
+      "method": "recursive"
+    },
+    {
+      "number": 21,
+      "path": "plans/{uid}/assignments/**",
+      "method": "recursive"
+    },
+    {
+      "number": 22,
+      "path": "verificationJobs where uid == {uid}",
+      "method": "groupHook"
+    },
+    {
+      "number": 23,
+      "path": "nidRegistry/{nidHash}",
+      "method": "closed"
+    },
+    {
+      "number": 24,
+      "path": "Storage user-media/{uid}/** and coach-docs/{uid}/**",
+      "method": "prefixDelete"
+    },
+    {
+      "number": 25,
+      "path": "Storage user-exports/{uid}/**",
+      "method": "prefixDelete"
+    },
+    {
+      "number": 26,
+      "path": "G1 onAccountDelete(uid)",
+      "method": "groupHook"
+    },
+    {
+      "number": 27,
+      "path": "Amplitude",
+      "method": "thirdParty"
+    },
+    {
+      "number": 28,
+      "path": "Crashlytics",
+      "method": "thirdParty"
+    },
+    {
+      "number": 29,
+      "path": "Firebase Auth",
+      "method": "authRecord"
+    },
+    {
+      "number": 30,
+      "path": "reports/** where reporterUid == uid or subjectUid == uid",
+      "method": "pseudonymised"
+    },
+    {
+      "number": 31,
+      "path": "deletionRequests/{uid}",
+      "method": "retained"
+    },
+    {
+      "number": 32,
+      "path": "users/{uid}/awards/{awardId}",
+      "method": "recursive"
+    },
+    {
+      "number": 33,
+      "path": "progress photos on the phone (no store in this release)",
+      "method": "localOnly"
+    },
+    {
+      "number": 34,
+      "path": "photo store key in Keychain / Android Keystore",
+      "method": "localOnly"
+    },
+    {
+      "number": 35,
+      "path": "users/{uid}/cycle/**",
+      "method": "recursive"
+    },
+    {
+      "number": 36,
+      "path": "users/{uid}/periods/**",
+      "method": "recursive"
+    },
+    {
+      "number": 37,
+      "path": "users/{uid}/splits/**",
+      "method": "recursive"
+    },
+    {
+      "number": 38,
+      "path": "users/{uid}/private/**",
+      "method": "recursive"
+    },
+    {
+      "number": 39,
+      "path": "verification_flags where uid == {uid}",
+      "method": "groupHook"
+    },
+    {
+      "number": 40,
+      "path": "verificationLedger/{uid}",
+      "method": "groupHook"
+    },
+    {
+      "number": 41,
+      "path": "verificationSessions where uid == {uid}",
+      "method": "groupHook"
+    },
+    {
+      "number": 42,
+      "path": "verificationBehaviour/{idHmac}",
+      "method": "ttl"
+    },
+    {
+      "number": 43,
+      "path": "verificationInstalls/{installHash}",
+      "method": "ttl"
+    },
+    {
+      "number": 44,
+      "path": "verificationReviewAccess where flagId in her flags",
+      "method": "ttl"
+    },
+    {
+      "number": 45,
+      "path": "posts/{postId} where authorUid == uid, with comments and likes",
+      "method": "groupHook"
+    },
+    {
+      "number": 46,
+      "path": "posts/*/comments where authorUid == uid",
+      "method": "groupHook"
+    },
+    {
+      "number": 47,
+      "path": "coaches/{uid}/** (profile, offers, portfolio, results, ads, splits, certificates)",
+      "method": "groupHook"
+    },
+    {
+      "number": 48,
+      "path": "relationships where coachUid or clientUid == uid, with messages and reviews",
+      "method": "groupHook"
+    },
+    {
+      "number": 49,
+      "path": "coachInvites where coachUid == uid",
+      "method": "groupHook"
+    }
+  ]
+}

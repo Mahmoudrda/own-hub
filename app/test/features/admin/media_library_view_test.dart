@@ -357,7 +357,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('ارفعي مقاطع وصورًا'), findsOneWidget);
+    expect(find.text('ارفعي فيديوهات وصور'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -169,8 +169,15 @@ class PortfolioTheme {
 
   /// The starter theme, from the product's own primary.
   ///
-  /// `#B4526E` is `AppColors.primary` and the first curated swatch, so a coach
-  /// who never opens B05 still has a validated theme.
+  /// `#B4526E` is the first curated swatch, so a coach who never opens B05
+  /// still has a validated theme.
+  ///
+  /// It was `AppColors.primary` exactly until QA round two darkened the app's
+  /// rose to `#A24661` for WCAG. The swatch deliberately did **not** follow:
+  /// `kCuratedSeeds` is a coach's brand palette, validated by its own golden
+  /// test at every contrast level, and moving a seed changes the colour of
+  /// pages coaches have already published. The two roses are close cousins now
+  /// rather than the same value.
   static PortfolioTheme starter({DateTime? now}) {
     final choice = validated(
       seed: kCuratedSeeds.first,

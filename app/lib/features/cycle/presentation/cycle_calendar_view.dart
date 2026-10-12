@@ -34,6 +34,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -96,7 +97,7 @@ class CycleCalendarView extends StatelessWidget {
       cycle: cycle,
       periods: periods,
       checkInDays: checkInDays,
-      today: now ?? DateTime.now(),
+      today: now ?? AppClock.now(),
       labels: CalendarLabels(
         // "day 1" exists as a fixed string only; any other day renders its
         // number rather than a sentence naming the wrong one.
@@ -105,13 +106,16 @@ class CycleCalendarView extends StatelessWidget {
         estimated: l10n.estimated,
         estimatedShort: l10n.est,
         today: l10n.today_554hp,
-        logged: l10n.loggedByYou,
+        logged: l10n.notedByYou,
       ),
     );
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: CycleNavBar(onSelectTab: onSelectTab),
+      bottomNavigationBar: CycleNavBar(
+        screenId: 'Y08',
+        onSelectTab: onSelectTab,
+      ),
       appBar: AppTopBar(
         title: l10n.myCycle,
         onBack: onBack,
@@ -139,9 +143,8 @@ class CycleCalendarView extends StatelessWidget {
                 // Material's own tooltips: localised in both languages, and
                 // no new dictionary strings for two arrows.
                 IconButton(
-                  tooltip: MaterialLocalizations.of(
-                    context,
-                  ).previousMonthTooltip,
+                  tooltip: MaterialLocalizations.of(context)
+                      .previousMonthTooltip,
                   color: AppColors.onSurfaceVariant,
                   icon: const Icon(Icons.chevron_left),
                   onPressed: onPreviousMonth,
@@ -190,7 +193,7 @@ class CycleCalendarView extends StatelessWidget {
             children: [
               Expanded(
                 child: AppButton(
-                  l10n.logAPeriod,
+                  l10n.noteAPeriod,
                   height: 48,
                   fontSize: 15,
                   onPressed: onLogPeriod,
@@ -393,7 +396,7 @@ class _Legend extends StatelessWidget {
       spacing: 12,
       runSpacing: 6,
       children: [
-        _LegendItem(filled: true, label: l10n.loggedByYou),
+        _LegendItem(filled: true, label: l10n.notedByYou),
         _LegendItem(filled: false, label: l10n.estimated),
       ],
     );

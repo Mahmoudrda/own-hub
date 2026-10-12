@@ -1,0 +1,76 @@
+# The real floor of this build, and `IPHONEOS_DEPLOYMENT_TARGET` in
+# `Runner.xcodeproj/project.pbxproj` is kept equal to it.
+#
+# It used to disagree: the app target said 15.0 while this said 15.5, and the
+# disagreement was not cosmetic. CocoaPods applies the number below to every
+# pod it builds — 33 framework targets at last count, GoogleUtilities, nanopb,
+# FBLPromises and GoogleDataTransport among them, all of which Firebase pulls
+# in and all of which are embedded in the shipped .app. The App Store, however,
+# reads `MinimumOSVersion` off the APP target. So a build that said 15.0 was
+# offered to every iPhone on 15.0 through 15.4, where dyld then refuses to load
+# frameworks built against 15.5: a crash on launch, on a device Apple told her
+# the app supported.
+#
+# Where 15.5 comes from is worth knowing, because it is not Flutter and it is
+# not Firebase. `Flutter.podspec` declares 15.0. The only two podspecs in the
+# whole graph that declare 15.5 are `google_mlkit_face_detection` and
+# `google_mlkit_commons` — the face detector behind identity verification,
+# which `FeatureFlags.shipped` has switched OFF. A feature nobody can reach is
+# setting the oldest iPhone the product runs on.
+#
+# This matters for the stated range. An iPhone 7 tops out at iOS 15.8, so it
+# clears 15.5 — but only once she has updated. Dropping the two ML Kit plugins
+# while verification is dark would put the floor back to 15.0 and hand back
+# roughly 12 MB of an arm64 install (see the APK breakdown). That is a product
+# decision, not a build setting, so it is written here rather than taken.
+platform :ios, '15.5'
+
+# Google Analytics for Firebase without the advertising identifier: the
+# firebase_analytics podspec then depends on FirebaseAnalytics/Core, which
+# links no AdSupport, so there is no IDFA to read and no App Tracking
+# Transparency prompt to show. Firebase reaches this app through Swift Package
+# Manager today, where the same choice is the FIREBASE_ANALYTICS_WITHOUT_ADID
+# environment variable that tool/build_release.sh sets; this line keeps it
+# true if CocoaPods ever resolves the plugin instead.
+$FirebaseAnalyticsWithoutAdIdSupport = true
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+target 'Runner' do
+  use_frameworks!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+end

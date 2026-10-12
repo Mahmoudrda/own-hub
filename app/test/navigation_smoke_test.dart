@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/identity/user_roles.dart';
+import 'package:own_hub/features/onboarding/presentation/goal_view.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -35,6 +36,11 @@ void main() {
     AppRouter.featureFlags = FeatureFlags.allOff.with_({
       for (final f in Feature.values) f: f != Feature.accountRequired,
     });
+    // Setup already behind her. A woman who has never been asked the four
+    // questions opens on them instead, which is the case the onboarding
+    // journey covers; this one is about the front door underneath.
+    AppRouter.intakeRepository.markSetupDone();
+    addTearDown(AppRouter.intakeRepository.reset);
     await tester.pumpWidget(const OwnHubApp());
     await tester.pumpAndSettle();
     expect(find.byType(TodayView), findsOneWidget);
@@ -42,6 +48,22 @@ void main() {
     // half of the app is out of reach without an account.
     final roles = RoleScope.rolesOf(tester.element(find.byType(TodayView)));
     expect(roles.canSwitch, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('on a first launch the setup questions open on top of Home', (
+    tester,
+  ) async {
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      for (final f in Feature.values) f: f != Feature.accountRequired,
+    });
+    AppRouter.intakeRepository.reset();
+    addTearDown(AppRouter.intakeRepository.reset);
+    await tester.pumpWidget(const OwnHubApp());
+    await tester.pumpAndSettle();
+    expect(find.byType(GoalView), findsOneWidget);
+    // Home is underneath rather than replaced, so leaving setup is a pop.
+    expect(find.byType(TodayView, skipOffstage: false), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

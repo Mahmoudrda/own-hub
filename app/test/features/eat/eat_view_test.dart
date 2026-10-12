@@ -128,7 +128,7 @@ void main() {
 
       expect(find.text('Molokhia with chicken'), findsOneWidget);
       expect(find.text('460 kcal · 34 g protein'), findsOneWidget);
-      expect(find.text('Log'), findsOneWidget);
+      expect(find.text('I ate this'), findsOneWidget);
     });
 
     testWidgets('one tap logs it, and the write waits five seconds', (
@@ -145,7 +145,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Exactly one tap.
-      await tester.tap(find.text('Log'));
+      await tester.tap(find.text('I ate this'));
       await tester.pump();
 
       expect(handles, hasLength(1));
@@ -180,7 +180,7 @@ void main() {
       // Lunch is empty and reads "Now".
       expect(find.text('Now'), findsOneWidget);
 
-      await tester.tap(find.text('Log'));
+      await tester.tap(find.text('I ate this'));
       await tester.pump();
 
       // §4.3: the logged row appears with its real numbers straight away, even
@@ -208,7 +208,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Log'));
+      await tester.tap(find.text('I ate this'));
       await tester.pump(const Duration(seconds: 2));
 
       expect(handles.single.undo(), isTrue);
@@ -306,7 +306,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Log'));
+      await tester.tap(find.text('I ate this'));
       await tester.pump();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -332,7 +332,7 @@ void main() {
       // What will appear here, and why it is empty.
       expect(find.text('No plates yet'), findsOneWidget);
       expect(
-        find.textContaining('Log something twice and it becomes a one-tap'),
+        find.textContaining('Add something twice and it becomes a one-tap'),
         findsOneWidget,
       );
       expect(find.text('Day 1'), findsOneWidget);
@@ -349,7 +349,7 @@ void main() {
 
       expect(find.text('Or start from one of these'), findsOneWidget);
       expect(
-        find.text('Log'),
+        find.text('I ate this'),
         findsNWidgets(3),
         reason:
             'three real Egyptian starters — an empty box would ask her to '
@@ -393,7 +393,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('No plates yet'), findsOneWidget);
 
-      await tester.tap(find.text('Log').first);
+      await tester.tap(find.text('I ate this').first);
       await tester.pump();
 
       expect(
@@ -411,7 +411,7 @@ void main() {
       _phone(tester);
       final bus = LogCommandBus();
       final handle = bus.submit(
-        UndoableLog(describe: 'Food logged', commit: () async {}),
+        UndoableLog(describe: 'Meal added', commit: () async {}),
       );
 
       await tester.pumpWidget(
@@ -419,7 +419,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Food logged'), findsOneWidget);
+      expect(find.text('Meal added'), findsOneWidget);
       expect(find.text('Undo'), findsOneWidget);
 
       bus.dispose();
@@ -431,7 +431,7 @@ void main() {
       _phone(tester);
       final bus = LogCommandBus();
       final handle = bus.submit(
-        UndoableLog(describe: 'Food logged', commit: () async {}),
+        UndoableLog(describe: 'Meal added', commit: () async {}),
       );
 
       await tester.pumpWidget(
@@ -446,8 +446,32 @@ void main() {
       // exposes current totals with no before/after pair. The number was a
       // dictionary constant, so this test was pinning an invented figure in
       // place. The screen now renders no delta at all until a real one exists.
-      expect(find.text('Dinner, your usual'), findsOneWidget);
-      expect(find.text('Tuesdays'), findsOneWidget);
+      // The header names the slot the hour is actually in, so it cannot be
+      // pinned to one word here. What it must never do again is claim a
+      // pattern: "Tuesdays" sat beside it, asserting a weekly habit to a woman
+      // who had logged one meal in her life — and ", your usual" was asserting
+      // the same habit in four fewer words, on the screen she reaches the
+      // instant she logs her first meal ever. One meal is not a usual.
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Text &&
+              const [
+                'Breakfast',
+                'Lunch',
+                'Dinner',
+                'Snack',
+              ].contains(w.data),
+        ),
+        findsWidgets,
+      );
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is Text && (w.data ?? '').endsWith(', your usual'),
+        ),
+        findsNothing,
+      );
+      expect(find.text('Tuesdays'), findsNothing);
 
       bus.dispose();
     });
@@ -480,9 +504,9 @@ void main() {
 
       // Twice on purpose: the heading and the Eat tab in the bottom bar are
       // the same word. Asserting one would be asserting a bug.
-      expect(find.text('الطعام'), findsWidgets);
+      expect(find.text('الأكل'), findsWidgets);
       expect(find.text('بروتين'), findsOneWidget);
-      expect(find.text('سجّلي'), findsOneWidget);
+      expect(find.text('أكلت ده'), findsOneWidget);
       expect(find.text('Eat'), findsNothing);
     });
 
@@ -497,7 +521,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        Directionality.of(tester.element(find.text('الطعام').first)),
+        Directionality.of(tester.element(find.text('الأكل').first)),
         TextDirection.rtl,
       );
     });

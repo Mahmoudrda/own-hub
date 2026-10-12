@@ -35,6 +35,13 @@ abstract class IntakeRepository {
   /// complete, valid intake, which is what lets day one show a real programme.
   Intake read();
 
+  /// Whether she has answered where she trains (`O02`).
+  ///
+  /// The one-screen "Your week" never asks it, so her place stays the
+  /// default, home. Nothing may read that default back to her as her answer:
+  /// `herAnswersLine` drops the place when this is false.
+  bool get placeAnswered;
+
   /// Writes **only** the fields named, and returns the merged result.
   ///
   /// An omitted argument is not "set this to null" — it is "do not touch this".
@@ -57,13 +64,41 @@ abstract class IntakeRepository {
 /// and nothing else" is the assertion that proves the per-step merge is real
 /// rather than a whole-object save wearing a merge's name.
 class InMemoryIntakeRepository implements IntakeRepository {
-  InMemoryIntakeRepository([Intake? initial])
-    : _intake = initial ?? Intake.defaults;
+  /// An [initial] intake counts as answered unless [placeAnswered] says
+  /// otherwise; with none she has answered nothing.
+  InMemoryIntakeRepository([Intake? initial, bool? placeAnswered])
+    : _intake = initial ?? Intake.defaults,
+      _placeAnswered = placeAnswered ?? initial != null;
 
   Intake _intake;
 
+  bool _placeAnswered;
+
+  @override
+  bool get placeAnswered => _placeAnswered;
+
   /// The field names touched by each [merge], oldest first.
   final List<Set<String>> writes = [];
+
+  bool _setupDone = false;
+
+  /// Whether she has already been through the setup walk, finished **or**
+  /// skipped.
+  ///
+  /// This is what stops `O01` opening on top of Home a second time, so it is
+  /// deliberately a fact about the *walk* and not about her answers. Read that
+  /// distinction carefully, because the class comment on [Intake] forbids the
+  /// other one: nothing here makes an answer permanent, nothing is locked, and
+  /// `A02`'s "Your training" row runs the identical four questions whenever she
+  /// wants. A woman who skipped every step is done with setup and still has
+  /// every answer open to her.
+  ///
+  /// False until [markSetupDone], and false again after [reset] — deleting
+  /// everything is a fresh start, and a fresh start includes being asked.
+  bool get setupDone => _setupDone;
+
+  /// Records that the walk is over. Idempotent.
+  void markSetupDone() => _setupDone = true;
 
   @override
   Intake read() => _intake;
@@ -86,6 +121,7 @@ class InMemoryIntakeRepository implements IntakeRepository {
       if (lifeStage != null) 'lifeStage',
     });
 
+    if (place != null) _placeAnswered = true;
     _intake = _intake.copyWith(
       goal: goal,
       place: place,
@@ -95,5 +131,41 @@ class InMemoryIntakeRepository implements IntakeRepository {
       lifeStage: lifeStage,
     );
     return _intake;
+  }
+
+  /// Puts back the answers she had already given when the app closed.
+  ///
+  /// The storage layer calls it at launch, before any screen exists, and
+  /// [writes] stays empty because nothing was merged — see
+  /// `lib/app_state/local_persistence.dart`.
+  ///
+  /// [setupDone] defaults to false so that a document written by a build from
+  /// before the walk existed asks her the four questions once. It is an
+  /// argument rather than a separate call because restoring her answers and
+  /// forgetting that she had answered them is not a state this app should be
+  /// able to reach.
+  ///
+  /// [placeAnswered] defaults to false for the same reason: a document that
+  /// does not say she was asked where she trains is read as not asked.
+  void restore(
+    Intake intake, {
+    bool setupDone = false,
+    bool placeAnswered = false,
+  }) {
+    _intake = intake;
+    _setupDone = setupDone;
+    _placeAnswered = placeAnswered;
+  }
+
+  /// Back to a woman who has answered nothing.
+  ///
+  /// Account deletion calls it: the intake IS her setup answers, and leaving
+  /// them behind would hand a deleted account's goal and equipment to whoever
+  /// opened the app next.
+  void reset() {
+    _intake = Intake.defaults;
+    _setupDone = false;
+    _placeAnswered = false;
+    writes.clear();
   }
 }

@@ -14,18 +14,25 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
+import 'hand/hand_seed_name.dart';
 import 'hand/hand_geometry.dart' show wobblyLine;
 import 'hand/hand_painters.dart' show paintInk, paintPencil;
 
 /// A pencil line the full width, and over it a nib stroke that ends **exactly**
 /// at the value. The hand shows in the stroke's weight and drift across it,
 /// never in how far it reaches.
-class AppProgressBar extends StatelessWidget {
+class AppProgressBar extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppProgressBar';
+
   const AppProgressBar({
     super.key,
     required this.percent,
     this.height = 8,
     this.colour = AppColors.tertiarySoft,
+    // A SENTINEL, not a paint colour: `build` reads it back and swaps in
+    // `AppColors.outline`, the pencil tone, so the track a woman sees is the
+    // boundary role. A caller's own colour is kept as given.
     this.trackColour = AppColors.outlineVariant,
   });
 

@@ -116,7 +116,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('وصفات'), findsOneWidget);
+    expect(find.text('الوصفات'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

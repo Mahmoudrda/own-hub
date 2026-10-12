@@ -28,8 +28,10 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/identity/user_roles.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -69,9 +71,16 @@ class RoleView extends StatefulWidget {
     this.initialRole = SignupRole.trainee,
     this.onContinue,
     this.onBack,
+    this.offerCoach = true,
   });
 
   final SignupRole initialRole;
+
+  /// Whether the coach and "both" answers are offered at all. False while the
+  /// coach app is switched off (`Feature.coachApp`): offering a path that
+  /// leads to a screen saying the feature is off is a promise the build cannot
+  /// keep. Then only the trainee card is drawn and Continue sends trainee.
+  final bool offerCoach;
 
   /// Carries the chosen role, because the destinations differ: anything that
   /// includes coaching leads to certificate checks a trainee never sees.
@@ -84,7 +93,9 @@ class RoleView extends StatefulWidget {
 }
 
 class _RoleViewState extends State<RoleView> {
-  late SignupRole _role = widget.initialRole;
+  late SignupRole _role = widget.offerCoach
+      ? widget.initialRole
+      : SignupRole.trainee;
 
   @override
   Widget build(BuildContext context) {
@@ -100,34 +111,34 @@ class _RoleViewState extends State<RoleView> {
       ],
       children: [
         Text(l10n.whichOneAreYou, style: AppText.display),
-        Text(
-          // Was "by messaging us". D11 makes this hers to change, so the copy
-          // stops sending her to support for it.
-          l10n.youCanChangeThisLaterInYour,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
+        // "You can change this later in your profile" went: her profile has
+        // no role to change, so it was a promise nothing kept.
         const SizedBox(height: 4),
         _RoleCard(
           icon: Icons.self_improvement,
           title: l10n.imHereToTrain,
-          body: l10n.workoutsRecipesAndTheCommunityFree,
+          body: AppRouter.featureFlags.isOn(Feature.community)
+              ? l10n.workoutsRecipesAndTheCommunityFree
+              : l10n.workoutsRecipesAndYourProgressFree,
           selected: _role == SignupRole.trainee,
           onTap: () => setState(() => _role = SignupRole.trainee),
         ),
-        _RoleCard(
-          icon: Icons.sports_gymnastics,
-          title: l10n.iCoachWomen,
-          body: l10n.takeClientsSetYourPackagesKeep80,
-          selected: _role == SignupRole.coach,
-          onTap: () => setState(() => _role = SignupRole.coach),
-        ),
-        _RoleCard(
-          icon: Icons.swap_horiz,
-          title: l10n.iTrainAndICoach,
-          body: l10n.twoAppsInOneSwitchBetweenThem,
-          selected: _role == SignupRole.both,
-          onTap: () => setState(() => _role = SignupRole.both),
-        ),
+        if (widget.offerCoach) ...[
+          _RoleCard(
+            icon: Icons.sports_gymnastics,
+            title: l10n.iCoachWomen,
+            body: l10n.takeClientsSetYourPackagesKeep80,
+            selected: _role == SignupRole.coach,
+            onTap: () => setState(() => _role = SignupRole.coach),
+          ),
+          _RoleCard(
+            icon: Icons.swap_horiz,
+            title: l10n.iTrainAndICoach,
+            body: l10n.twoAppsInOneSwitchBetweenThem,
+            selected: _role == SignupRole.both,
+            onTap: () => setState(() => _role = SignupRole.both),
+          ),
+        ],
       ],
     );
   }

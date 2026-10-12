@@ -26,7 +26,7 @@
   "beginnersGroup": "Beginners group",
   "done": "done",
   "gluteBridge": "Glute bridge",
-  "log": "Log",
+  "iAteThis": "I ate this",
   "saraAdel": "Sara Adel",
   "add": "Add",
   "fulAndBaladi": "Ful and baladi",
@@ -78,7 +78,7 @@
   "howAreYouFeeling": "How are you feeling?",
   "koshariPortioned": "Koshari, portioned",
   "lentilSoupAndEggs": "Lentil soup and eggs",
-  "loggedByYou": "Logged by you",
+  "notedByYou": "Noted by you",
   "molokhiaWithChicken": "Molokhia with chicken",
   "monday": "Monday",
   "monthlyCoaching": "Monthly coaching",
@@ -94,7 +94,7 @@
   "vegetarian": "Vegetarian",
   "week3": "Week 3",
   "youDid": "you did",
-  "youLoggedLowEnergyAndMildCramps": "You logged low energy and mild cramps.",
+  "youNotedLowEnergyAndMildCramps": "You noted low energy and mild cramps.",
   "n14Of20": "14 of 20",
   "n15Min": "15 min",
   "n15September2026": "15 September 2026",
@@ -129,7 +129,7 @@
   "english": "English",
   "firstWeekDoneMyKneesDidNot": "First week done. My knees did not hurt once.",
   "floorLegsNoJumping": "Floor legs, no jumping",
-  "foodLogged": "Food logged",
+  "mealAdded": "Meal added",
   "foodPhoto": "food photo",
   "fourWeeksInAndICarriedBoth": "Four weeks in and I carried both kids up the stairs.",
   "fromCoachSara": "From Coach Sara",
@@ -149,8 +149,8 @@
   "later": "Later",
   "legs": "Legs",
   "legsAndGlutes": "Legs and glutes",
-  "logAPeriod": "Log a period",
-  "logged": "logged",
+  "noteAPeriod": "Note a period",
+  "eaten": "eaten",
   "logotype": "logotype",
   "lookAround": "Look around",
   "meals": "Meals",
@@ -254,7 +254,6 @@
   "n12Of20": "12 of 20",
   "n12Of20Spots": "12 of 20 spots",
   "n12Of20Taken": "12 of 20 taken",
-  "n12PartnerGymsInCairoGizaAnd": "12 partner gyms in Cairo, Giza and Alexandria.",
   "n12SepTo11Oct1Session": "12 Sep to 11 Oct · 1 session in 2 weeks",
   "n12SpotsLeft": "12 spots left",
   "n124Videos": "124 videos",
@@ -341,7 +340,7 @@
   "n460Kcal34GProtein": "460 kcal · 34 g protein",
   "n490Total": "490 total",
   "n5Days": "5 days",
-  "n5Days2DaysNotLogged": "5 days · 2 days not logged",
+  "n5Days2DaysNotNoted": "5 days · 2 days not noted",
   "n5DaysLeft": "5 days left",
   "n5DinnersOneShop": "5 dinners · one shop",
   "n5MinDairyFreeSwapAvailable": "5 min · dairy-free swap available",
@@ -349,7 +348,7 @@
   "n520Kcal38GProtein": "520 kcal · 38 g protein",
   "n540Kcal": "540 kcal",
   "n6EasierSessions": "6 easier sessions",
-  "n6LoggedDays2Cycles": "6 logged days · 2 cycles",
+  "n6NotedDays2Cycles": "6 noted days · 2 cycles",
   "n60S": "60 s",
   "n7200EgpYourShare5760": "7,200 EGP · your share 5,760",
   "n730InTheMorning": "7:30 in the morning",
@@ -402,7 +401,7 @@
   "addWorkout": "Add workout",
   "addYourPersonalBest": "Add your personal best",
   "addYoghurtDatesAndNuts": "Add: yoghurt, dates and nuts",
-  "addingUpdatesYourPlanItDoesNot": "Adding updates your plan. It does not log the meal as eaten.",
+  "addingUpdatesYourPlanItDoesNot": "Adding updates your plan. It does not mark the meal as eaten.",
   "adds14GProteinFor12Egp": "Adds 14 g protein for 12 EGP",
   "adjustHerPlan": "Adjust her plan",
   "adjustMeals": "Adjust meals",
@@ -450,7 +449,6 @@
   "body": "Body",
   "bodyPrivately": "Body, privately",
   "boiledEggs": "Boiled eggs",
-  "bookTheVideoCheck": "Book the video check",
   "both": "Both",
   "bothImagesAreDeletedAfterTheCheck": "Both images are deleted after the check. We keep the result, nothing else.",
   "boxSquatToAChair": "Box squat to a chair",
@@ -459,7 +457,7 @@
   "breakfast22GProtein4AWeek": "Breakfast · 22 g protein · 4× a week",
   "browseMessageWhenYouAreVerified": "Browse, message when you are verified",
   "buildAPlan": "Build a plan",
-  "buildFromWhatSheAlreadyLogsA": "Build from what she already logs. A meal plan she has never cooked is a meal plan she will not follow.",
+  "buildFromWhatSheAlreadyEatsA": "Build from what she already eats. A meal plan she has never cooked is a meal plan she will not follow.",
   "buildMyFirstPlan": "Build my first plan",
   "buildPlan": "Build plan",
   "buildUpLiftABitMoreEach": "Build up, lift a bit more each week",
@@ -477,13 +475,12 @@
   "changeHowYouUseMyCycle": "Change how you use My cycle",
   "changeProgram": "Change program",
   "changesWhatWeSuggestNeverYourPlan": "Changes what we suggest, never your plan",
-  "changingThePlanNeverChangesALog": "Changing the plan never changes a log you already saved. Tapping twice does not create a second log.",
+  "changingThePlanNeverChangesAMeal": "Changing the plan never changes a meal you already added. Tapping twice does not add it twice.",
   "chat": "Chat",
   "chatRepliesInAbout2Hours": "Chat, replies in about 2 hours",
   "cheap": "Cheap",
   "checkIn1Of3SessionsSecond": "Check-in · 1 of 3 sessions · second quiet week",
   "checkIns": "Check-ins",
-  "checkedByALicensedEgyptianProviderTap": "Checked by a licensed Egyptian provider. Tap to read exactly what is stored.",
   "checkedByAWomanNoPhotoKept": "Checked by a woman, no photo kept",
   "checking": "Checking",
   "checkingYourCard": "Checking your card",
@@ -505,7 +502,7 @@
   "completed": "Completed",
   "continue1800Egp": "Continue · 1,800 EGP",
   "continueFromSara": "Continue · from Sara",
-  "cookedItLogMyBowl": "Cooked it, log my bowl",
+  "iCookedItAndAteABowl": "I cooked it and ate a bowl",
   "copyAndReplaceThose2Days": "Copy and replace those 2 days",
   "copyThisWeek": "Copy this week",
   "copyWeek2": "Copy week 2",
@@ -540,7 +537,7 @@
   "daysAWeek": "Days a week",
   "daysWritten": "Days written",
   "daysYouCanTrain": "Days you can train",
-  "daysYouLoggedFood": "Days you logged food",
+  "daysYouAddedWhatYouAte": "Days you added what you ate",
   "deleteCycleData": "Delete cycle data",
   "deleteThisPeriod": "Delete this period",
   "delivered": "Delivered",
@@ -593,11 +590,11 @@
   "firstSession": "First session",
   "firstWeekCheck": "First week check",
   "firstWeekDoneAndNoKneePain": "First week done, and no knee pain.",
-  "fiveDinnersBuiltFromRecipesYouHave": "Five dinners, built from recipes you have logged before. Swap any of them.",
+  "fiveDinnersBuiltFromRecipesYouHave": "Five dinners, built from recipes you have eaten before. Swap any of them.",
   "floorOnly": "Floor only",
   "follicularPhase": "Follicular phase",
   "followAlongVideo": "follow-along video",
-  "foodLogged46DaysAWeek": "Food logged 4.6 days a week",
+  "mealsAdded46DaysAWeek": "Meals added 4.6 days a week",
   "foodYouAlreadyCook": "Food you already cook",
   "foodNoNutsVegetarianOnWeekdaysCooks": "Food: no nuts · vegetarian on weekdays · cooks in 20 minutes",
   "formClip": "Form clip",
@@ -644,7 +641,7 @@
   "herNote": "Her note",
   "herTierWeeksCountedNotWeightLifted": "Her tier. Weeks counted, not weight lifted.",
   "herWeek": "Her week",
-  "herWeekWrittenFromHerLogs": "Her week, written from her logs",
+  "herWeekFromWhatSheAdded": "Her week, from what she added",
   "high": "High",
   "highImpactDeepKneeBends": "High impact, deep knee bends",
   "hips96Cm": "Hips 96 cm",
@@ -665,7 +662,7 @@
   "iAlreadyHaveAnAccount": "I already have an account",
   "iCoachWomen": "I coach women",
   "iCouldNotTrainThisWeekWork": "I could not train this week, work was impossible.",
-  "iDidAll3SetsLogThem": "I did all 3 sets, log them",
+  "iDidAll3Sets": "I did all 3 sets",
   "iDontKnow": "I don't know",
   "iTakeWomenBackToLiftingAfter": "I take women back to lifting after birth.",
   "iTakeWomenFromSixWeeksAfter": "I take women from six weeks after birth back to lifting, slowly. Most of my clients train at home with two dumbbells and 20 minutes.",
@@ -674,10 +671,8 @@
   "imHereToTrain": "I'm here to train",
   "idCheckedWomenOnlyReviewedByWomen": "ID checked, women only, reviewed by women",
   "ifYouAreInDangerRightNow": "If you are in danger right now, call 122. This app cannot reach the police for you.",
-  "ifYouDoNotShowYourFace": "If you do not show your face to a camera, nothing here asks you to. Choose either one. Your ID card is still read the same way.",
-  "inPersonAtALadiesOnlyGym": "In person at a ladies-only gym",
   "ingredientsAndAmounts": "Ingredients and amounts",
-  "irregularCyclesHormonalContraceptionAndPerimenop": "Irregular cycles, hormonal contraception and perimenopause all use this mode: your logs, no forecast.",
+  "irregularCyclesHormonalContraceptionAndPerimenop": "Irregular cycles, hormonal contraception and perimenopause all use this mode: what you noted, no forecast.",
   "irregularPeriods": "Irregular periods",
   "itChecksItselfTheMomentTheSixth": "It checks itself the moment the sixth digit lands. On Android we read the message for you.",
   "itPhotographsItselfWhenItIsSharp": "It photographs itself when it is sharp. Nothing is uploaded until you tap send.",
@@ -705,7 +700,7 @@
   "language": "Language",
   "languages": "Languages",
   "last2Days": "Last 2 days",
-  "last7Days3Of3Workouts": "Last 7 days: 3 of 3 workouts, one lighter session she chose. Food logged on 5 days.",
+  "last7Days3Of3Workouts": "Last 7 days: 3 of 3 workouts, one lighter session she chose. Meals added on 5 days.",
   "lastEightWeeksThePaleOneWas": "Last eight weeks · the pale one was a rest week",
   "lastPeriodStart": "Last period start",
   "lastReview": "Last review",
@@ -720,12 +715,12 @@
   "level7": "Level 7",
   "level7AndEveryPoint": "Level 7 and every point",
   "levelUp": "level up",
-  "logBoth696Kcal": "Log both · 696 kcal",
-  "logIt": "Log it",
-  "logLunch": "Log lunch",
-  "logged1131Serving": "Logged 1:13 · 1 serving",
-  "logged15SeptEstimated12To14": "Logged 15 Sept · estimated 12 to 14 Oct",
-  "logsItself": "logs itself",
+  "iAteBoth696Kcal": "I ate both · 696 kcal",
+  "addIt": "Add it",
+  "iAteLunch": "I ate lunch",
+  "added1131Serving": "Added 1:13 · 1 serving",
+  "noted15SeptEstimated12To14": "Noted 15 Sept · estimated 12 to 14 Oct",
+  "countsItself": "counts itself",
   "lookAroundFirst": "Look around first",
   "lookStraightAheadNoSmileNeeded": "Look straight ahead. No smile needed.",
   "loseWeight": "Lose weight",
@@ -733,8 +728,8 @@
   "lowEnergyMildCrampsTodayOnly": "Low energy, mild cramps. Today only.",
   "lunch18GProtein2AWeek": "Lunch · 18 g protein · 2× a week",
   "lunchKoshariBowlMedium": "Lunch · koshari bowl, medium",
-  "lunchLogged1Serving": "Lunch logged · 1 serving",
-  "lunchLogged696Kcal": "Lunch logged · 696 kcal",
+  "lunchAdded1Serving": "Lunch added · 1 serving",
+  "lunchAdded696Kcal": "Lunch added · 696 kcal",
   "lunchFromYourPlan": "Lunch, from your plan",
   "lutealPhase": "Luteal phase",
   "machinesAndFreeWeights": "Machines and free weights",
@@ -763,13 +758,13 @@
   "mon14": "Mon 14",
   "monthlyCoachingWithNourhan": "Monthly coaching with Nourhan",
   "moreHungry": "More hungry",
-  "moreToLogSleepBloatingBleeding": "More to log: sleep, bloating, bleeding",
+  "moreToNoteSleepBloatingBleeding": "More to note: sleep, bloating, bleeding",
   "morningSessionsBeforeTheKidsWakeUp_1m46g": "Morning sessions before the kids wake up.",
   "move3Of5": "Move 3 of 5",
   "movedToTheHarderVersion26August": "moved to the harder version · 26 August",
   "muteThisGroupForAWeek": "Mute this group for a week",
   "myCoach": "My coach",
-  "myCoachCanSeeMyLogs": "My coach can see my logs",
+  "myCoachCanSeeMyMealsAnd": "My coach can see my meals and workouts",
   "myCyclePeriodDay2": "My cycle · period day 2",
   "nameTierAndGroups": "Name, tier and groups",
   "nasmCpt": "NASM CPT",
@@ -819,7 +814,7 @@
   "nutritionDetailsUnavailableThisMealUsesIngredien": "Nutrition details unavailable. This meal uses ingredients without verified values, so no totals are shown.",
   "offByDefaultCoachingNeverRequiresIt": "Off by default. Coaching never requires it.",
   "offUnlessYouTurnItOnCoaching": "Off unless you turn it on. Coaching never requires it.",
-  "offerAnEasierWorkoutWhenILog": "Offer an easier workout when I log low energy",
+  "offerAnEasierWorkoutWhenINote": "Offer an easier workout when I note low energy",
   "oldest19HoursYouPromiseOneWorking": "Oldest 19 hours · you promise one working day",
   "oldest19HoursYouPromise24": "Oldest: 19 hours · you promise 24",
   "onByDefaultForEveryPost": "On by default for every post",
@@ -831,11 +826,11 @@
   "oneCheckThenYouAreIn": "One check, then you are in",
   "oneLegAtATimeHoldsThe": "One leg at a time, holds the weight",
   "oneLineAboutYou": "One line about you",
-  "oneMinuteItIsFilledInFrom": "One minute · it is filled in from your logs",
+  "oneMinuteItIsFilledInFrom": "One minute · it is filled in from what you added",
   "oneMinuteMostlyFilledInAlready": "One minute · mostly filled in already",
   "oneMoreAndYouHaveFinishedWhatever": "One more and you have finished, whatever anyone else does.",
   "oneMoreSessionAndThisWeekCounts": "One more session and this week counts.",
-  "oneNudgeADayAtMostAt": "One nudge a day at most, at the hour you usually log. Ignore three and they stop by themselves.",
+  "oneNudgeADayAtMostAt": "One nudge a day at most, at your usual time. Ignore three and they stop by themselves.",
   "oneShopCoversIt": "One shop covers it",
   "oneShortSheetItDoesNotMean": "One short sheet. It does not mean a daily reply.",
   "onions1Kg": "Onions 1 kg",
@@ -848,7 +843,7 @@
   "optionGentleMobility": "Option: gentle mobility",
   "optionalNeverRequired": "Optional. Never required.",
   "optionalYouCanUseTheAppForever": "Optional. You can use the app forever without it.",
-  "orJustLogBreakfast": "Or just log breakfast",
+  "orJustAddBreakfast": "Or just add breakfast",
   "orOneYouveHadBefore": "Or one you've had before",
   "orSayItZumba40Minutes": "Or say it: \"Zumba, 40 minutes\"",
   "ovulation": "Ovulation",
@@ -862,12 +857,10 @@
   "payWithACodeAtAnyFawry": "Pay with a code at any Fawry point",
   "payoutMethod": "Payout method",
   "payoutOn1OctoberToVodafoneCash": "Payout on 1 October to Vodafone Cash · 010 xxx xx32",
-  "pelvicFloorFirstClearedFromWeekSix": "Pelvic floor first, cleared from week six",
   "perimenopause": "Perimenopause",
   "periodDay2SymptomTracking": "Period day 2 · symptom tracking",
   "personalBest": "Personal best",
   "photo": "Photo",
-  "photoCompareStoredOnYourPhoneAnd": "Photo compare, stored on your phone and encrypted in the app.",
   "photosOfTheCertificateAreEnoughWe": "Photos of the certificate are enough. We check the issuing body ourselves, and unverified coaches cannot take clients.",
   "pickADifferentProgram": "Pick a different program",
   "pickOneItChangesTheProgramNot": "Pick one. It changes the program, not the app.",
@@ -939,11 +932,10 @@
   "reviewDueDay9Of30Waiting": "Review due · day 9 of 30 · waiting 19 hours",
   "reviews": "Reviews",
   "reviewsDue": "Reviews due",
-  "revisionsDefaultToFutureDatesASession": "Revisions default to future dates. A session she has already started, and anything she has already logged, stay on the version she used.",
+  "revisionsDefaultToFutureDatesASession": "Revisions default to future dates. A session she has already started, and anything she has already added, stay on the version she used.",
   "rice1Kg": "Rice 1 kg",
   "riceLentilsAndPastaCookedTogetherWith": "Rice, lentils and pasta cooked together, with the fried onions on top and the sauce on the side so you decide how much goes on.",
   "riceLentilsPasta": "Rice, lentils, pasta",
-  "safeMovementsNothingOnTheBelly": "Safe movements, nothing on the belly",
   "sameMusclesQuieterOnTheFloor": "Same muscles, quieter on the floor.",
   "saraApprovedTheseInAdvanceSoYou": "Sara approved these in advance, so you do not have to wait for a reply.",
   "saraHanyDay9Of30": "Sara Hany · day 9 of 30",
@@ -996,7 +988,7 @@
   "sessionDone": "Session done",
   "sessionName": "Session name",
   "sessions": "Sessions",
-  "sessionsYouLoggedAsIAlreadyDid": "Sessions you logged as \"I already did it\" never set a best, because the numbers were copied.",
+  "sessionsYouAddedWithIAlreadyDid": "Sessions you added with \"I already did it\" never set a best, because the numbers were copied.",
   "sessionsFoodDaysAndBests": "Sessions, food days and bests",
   "set2GobletSquat": "Set 2 · Goblet squat",
   "setSetnumberSavedWeightKgReps": "Set {setNumber} saved · {weight} kg × {reps}",
@@ -1021,7 +1013,7 @@
   "set312Kg12": "Set 3 · 12 kg × 12",
   "setsCompleted": "Sets completed",
   "severe": "Severe",
-  "severeCrampsLogged": "Severe cramps logged",
+  "severeCrampsNoted": "Severe cramps noted",
   "severeOrUnusualPainDeservesMedicalAdvice": "Severe or unusual pain deserves medical advice. If the pain is worse than usual and pain relief has not helped, seek urgent care.",
   "shareCycleInformationWithSara": "Share cycle information with Sara",
   "shareFormVideo": "Share form video",
@@ -1032,7 +1024,7 @@
   "sharedWellbeing": "Shared wellbeing",
   "sharedWithSara": "Shared with Sara",
   "sheAverages78G": "She averages 78 g",
-  "sheChoosesWhatShowsHereLogsWeight": "She chooses what shows here. Logs, weight and photos are never on a profile.",
+  "sheChoosesWhatShowsHereMealsWorkouts": "She chooses what shows here. Meals, workouts, weight and photos are never on a profile.",
   "sheDisappearsFromYourFeedAndCannot": "She disappears from your feed and cannot message you",
   "sheHasYourIntakeMostPlansArrive": "She has your intake. Most plans arrive within a working day.",
   "shortOnesThatStillCount": "Short ones that still count",
@@ -1048,7 +1040,7 @@
   "skipped": "Skipped",
   "slowlyWithoutCuttingFoodYouLove": "Slowly, without cutting food you love",
   "snack": "Snack",
-  "soWereLogging": "So we're logging",
+  "soWereAdding": "So we're adding",
   "spots": "Spots",
   "standUpStrongSqueezeAtTheTop": "Stand up strong, squeeze at the top",
   "start10Minutes": "Start 10 minutes",
@@ -1099,7 +1091,7 @@
   "tapOneAndItIsSavedUndo": "Tap one and it is saved. Undo for five seconds.",
   "tellClientsWhoYouAre": "Tell clients who you are",
   "thatIsExactlyRightKeep12Kg": "That is exactly right. Keep 12 kg on Thursday and we add reps, not weight.",
-  "thatsRightLog696Kcal": "That's right · log 696 kcal",
+  "thatsRightAdd696Kcal": "That's right · add 696 kcal",
   "thatsTuesdayDone": "That's Tuesday done",
   "theCommunityStaysClosedUntilTheCheck": "The community stays closed until the check is done. That is the point of it.",
   "theLibraryIsOpenAsUsual": "The library is open as usual",
@@ -1107,7 +1099,7 @@
   "theSquatFeltHeavyAt12Kg_wg4mi": "The squat felt heavy at 12 kg but I finished all three sets.",
   "theThreeStepsPlainly": "The three steps, plainly",
   "thenThisWeekIsTwoSessionsTen": "Then this week is two sessions, ten minutes each. I moved them to Sunday and Wednesday.",
-  "thisDescribesYourLogsItDoesNot": "This describes your logs. It does not explain the cause or predict every cycle.",
+  "thisDescribesWhatYouNotedItDoes": "This describes what you noted. It does not explain the cause or predict every cycle.",
   "thisIsExactlyWhatAClientSees": "This is exactly what a client sees. Tap the eye to open it as she would.",
   "thisIsTheExactThingINeeded": "This is the exact thing I needed to read today.",
   "thisIsTheTopOfYourPublic": "This is the top of your public profile.",
@@ -1139,11 +1131,11 @@
   "trains": "Trains",
   "tue16": "Tue 16",
   "tue16Session": "Tue 16 · session",
-  "tuesday840LoggedFromTheLock": "Tuesday 8:40 · logged from the lock screen",
+  "tuesday840AddedFromTheLock": "Tuesday 8:40 · added from the lock screen",
   "tuesdays": "Tuesdays",
   "twelveInAllNoneAreSecretAnd": "Twelve in all. None are secret, and none are for filling in a profile.",
   "twoBoiledEggs": "Two boiled eggs",
-  "twoDaysWithoutAFoodLogAre": "Two days without a food log are shown as not logged, not as meals skipped.",
+  "twoDaysWithNoMealAddedAre": "Two days with no meal added are shown as nothing added, not as meals skipped.",
   "twoMinutesWithAWomanReviewerNothing": "Two minutes with a woman reviewer. Nothing is recorded or kept.",
   "twoMoreAndTheWeekCounts": "Two more and the week counts.",
   "typeADifferentNumber": "Type a different number",
@@ -1212,7 +1204,7 @@
     }
   },
   "weTextYouASixDigitCode": "We text you a six-digit code. We never show your number to anyone.",
-  "wellLog": "We'll log",
+  "wellAdd": "We'll add",
   "wereCheckingYourCertificates": "We're checking your certificates",
   "wed": "Wed",
   "wed17": "Wed 17",
@@ -1238,7 +1230,7 @@
   "whatWouldYouLikeToChange": "What would you like to change?",
   "whatWouldYouLikeToDo": "What would you like to do?",
   "whatYouCharge": "What you charge",
-  "whatYouLogged": "What you logged",
+  "whatYouAdded": "What you added",
   "whatsInside": "What's inside",
   "whatsYourNumber": "What's your number?",
   "where": "Where",
@@ -1263,7 +1255,7 @@
   "yasminAdel": "Yasmin Adel",
   "yesterday": "Yesterday",
   "yesterday5DaysLeft": "Yesterday · 5 days left",
-  "yesterdaysLogsAndAnySessionYouAlready": "Yesterday’s logs and any session you already started stay as they were.",
+  "whatYouAddedYesterdayAndAnySession": "What you added yesterday and any session you already started stay as they were.",
   "yesterdaysLunchAgain": "Yesterday's lunch again",
   "yoghurtDatesAndNuts": "Yoghurt, dates and nuts",
   "yogurtDatesAndCinnamon": "Yogurt, dates and cinnamon",
@@ -1274,11 +1266,11 @@
   "youCanChangeThisAnyTimeIn": "You can change this any time in settings.",
   "youCanChangeThisLaterByMessaging": "You can change this later by messaging us.",
   "youCanStartNow": "You can start now",
-  "youChooseWhatToLogYouCan": "You choose what to log. You can change or delete it any time.",
+  "youChooseWhatToAddYouCan": "You choose what to add. You can change or delete it any time.",
   "youKeep": "You keep",
   "youKeep80OfEverythingAClient": "You keep 80% of everything a client pays.",
-  "youLoggedLowEnergyOn4Of": "You logged low energy on 4 of 6 logged days in the first 3 days of your last 2 periods.",
-  "youLoggedMoreHungerAddASnack": "You logged more hunger. Add a snack if you want one.",
+  "youNotedLowEnergyOn4Of": "You noted low energy on 4 of 6 noted days in the first 3 days of your last 2 periods.",
+  "youNotedMoreHungerAddASnack": "You noted more hunger. Add a snack if you want one.",
   "youSentWeek4": "You: sent week 4",
   "youreInName": "You're in, {name}",
   "@youreInName": {
@@ -1305,10 +1297,10 @@
   "yourDatesIfYouHaveThem": "Your dates, if you have them",
   "yourIdAndSelfieWereDeletedAfter": "Your ID and selfie were deleted after the check. Only the result is kept.",
   "yourIdCard": "Your ID card",
-  "yourLogsWeightPhotosAndPhoneNumber": "Your logs, weight, photos and phone number are never visible to another member. These settings are only about what you choose to show.",
+  "yourMealsWorkoutsWeightPhotosAndPhone": "Your meals, workouts, weight, photos and phone number are never visible to another member. These settings are only about what you choose to show.",
   "yourMealsReviewedOnceAWeek": "Your meals reviewed once a week",
-  "yourNumberYourIdAndYourLogs": "Your number, your ID and your logs are never shown to members.",
-  "yourOwnWorkoutsRecipesLogsAndMy": "Your own workouts, recipes, logs and My cycle carry on exactly as before. Cycle sharing switched itself off when the coaching ended.",
+  "yourNumberYourIdYourMealsAnd": "Your number, your ID, your meals and your workouts are never shown to members.",
+  "yourOwnWorkoutsRecipesMealsAndMy": "Your own workouts, recipes, meals and My cycle carry on exactly as before. Cycle sharing switched itself off when the coaching ended.",
   "yourPart": "Your part",
   "yourPatterns": "Your patterns",
   "yourPhoto": "Your photo",
@@ -1319,13 +1311,13 @@
   "yourProgress": "Your progress",
   "yourPublicProfile": "Your public profile",
   "yourReviews": "Your reviews",
-  "yourSessionsCountHereAsYouSave": "Your sessions count here as you save them. There is nothing extra to log. Nobody sees your weights, only that a session happened.",
+  "yourSessionsCountHereAsYouSave": "Your sessions count here as you save them. There is nothing extra to do. Nobody sees your weights, only that a session happened.",
   "yourSupport": "Your support",
   "yourThursdayWorkoutWasUpdated": "Your Thursday workout was updated",
   "yourTraining": "Your training",
-  "yourWeekFromYourLogs": "Your week, from your logs",
+  "yourWeekFromWhatYouAdded": "Your week, from what you added",
   "yourWeekMondayTuesdayAndThursdayChange": "Your week: Monday, Tuesday and Thursday. Change any day by tapping it.",
-  "yourWorkoutResultsAndFoodLogsAre": "Your workout results and food logs are part of coaching. Cycle information is separate, and yours.",
+  "yourWorkoutResultsAndTheMealsYou": "Your workout results and the meals you add are part of coaching. Cycle information is separate, and yours.",
   "yours": "Yours",
   "youreIn": "You're in",
   "clientResults": "Client results",
@@ -1614,7 +1606,7 @@
   "keepHerEasierOptions": "Keep her easier options",
   "kneePainOnStairs": "Knee pain on stairs",
   "loadedTwisting": "Loaded twisting",
-  "loggedFromMemoryYourWeekCountsIt": "Logged from memory. Your week counts it like any other session.",
+  "addedFromMemoryYourWeekCountsIt": "Added from memory. Your week counts it like any other session.",
   "lowerBody20Min": "Lower body · 20 min",
   "mostDays": "Most days",
   "movementScreening": "Movement screening",
@@ -1673,7 +1665,6 @@
   "oneCountedWeekBringsItBack": "One counted week brings it back",
   "n0Egp": "0 EGP",
   "n0Of20": "0 of 20",
-  "n1860WomenClearedFromWeekSix": "1,860 women · cleared from week six",
   "n4210WomenNobodyOverAYear": "4,210 women · nobody over a year in",
   "n4210WomenInTheBeginnersGroup": "4,210 women in the beginners group",
   "aCover": "A cover",
@@ -1693,7 +1684,7 @@
   "itFillsWithTheGroupsYouJoin": "It fills with the groups you join, never a public timeline. Join one and its posts appear here.",
   "itIsLiveFor1204Women": "It is live for 1,204 women a month once published.",
   "itWaitsInYourOwnCollection": "It waits in your own collection",
-  "logSomethingTwiceAndItBecomesA": "Log something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.",
+  "addSomethingTwiceAndItBecomesA": "Add something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.",
   "lunch540Kcal18GProtein": "Lunch · 540 kcal · 18 g protein",
   "mondayTuesdayThursday15Min": "Monday, Tuesday, Thursday · 15 min",
   "mostCoachesStartWithTheseThree": "Most coaches start with these three",
@@ -1704,7 +1695,7 @@
   "nobodyYet": "Nobody yet",
   "notATemplateWithYourNameDropped": "Not a template with your name dropped in. A stack of sections you choose and order yourself.",
   "nothingHereIsDecidedForYouTwo": "Nothing here is decided for you. Two coaches on this platform should not look alike.",
-  "nothingLoggedYet": "Nothing logged yet",
+  "nothingAddedYet": "Nothing added yet",
   "nothingSavedYet": "Nothing saved yet",
   "oneMealIsEnoughToStartThe": "One meal is enough to start the guessing",
   "oneOffer": "One offer",
@@ -1717,7 +1708,7 @@
   "startWithACover": "Start with a cover",
   "tellUsOneThingYouEat": "Tell us one thing you eat",
   "threeSessionsMakesTheWeekCountMiss": "Three sessions makes the week count. Miss one and a rest week covers it, once you have earned one.",
-  "todaysSessionAndTheMealYouUsually": "Today's session and the meal you usually eat at this hour will sit here. Log one thing and it starts filling itself in.",
+  "todaysSessionAndTheMealYouUsually": "Today's session and the meal you usually eat at this hour will sit here. Add one thing and it starts filling itself in.",
   "usuallyTheSameDayYouCanBuild": "Usually the same day. You can build everything else now.",
   "weAreCheckingYourCertificates": "We are checking your certificates",
   "whatItIsCalledWhatIsIn": "What it is called, what is in it, what it costs",
@@ -1794,8 +1785,8 @@
   "lentilSoupAndEggs380Kcal": "Lentil soup and eggs · 380 kcal",
   "level": "Level",
   "liveFor1204WomenAMonth": "Live for 1,204 women a month",
-  "logOneMeal": "Log one meal",
-  "logOneSet": "Log one set",
+  "addOneMealYouAte": "Add one meal you ate",
+  "finishOneSet": "Finish one set",
   "lowerBodyBoxSquatNotGoblet": "Lower body · box squat, not goblet",
   "mealDraftNour": "Meal draft · Nour",
   "moves": "Moves",
@@ -1805,7 +1796,7 @@
   "nothingHereExpiresAndNoClientSees": "Nothing here expires, and no client sees your progress through it.",
   "nothingIsPublishedThisOpensAsA": "Nothing is published. This opens as a draft in your planner, and you decide what she sees.",
   "nothingWasCalculatedADishWithoutVerified": "Nothing was calculated. A dish without verified values is offered without totals, never with invented ones.",
-  "nothingWasLoggedAndNothingWasShared": "Nothing was logged and nothing was shared. Your cycle information is not visible to me unless you turn that on.",
+  "nothingWasSavedAndNothingWasShared": "Nothing was saved and nothing was shared. Your cycle information is not visible to me unless you turn that on.",
   "of4": "of 4",
   "of5": "of 5",
   "onceYouHaveAPostToFollow": "Once you have a post to follow up on",
@@ -1825,7 +1816,7 @@
   "split": "Split",
   "swapTodaysExerciseForAnApprovedAlternative": "Swap today’s exercise for an approved alternative",
   "swappingChangesTodayOnlyYourPlanFrom": "Swapping changes today only. Your plan from Sara is untouched.",
-  "tellYouThePortionOfADish": "Tell you the portion of a dish you already log",
+  "tellYouThePortionOfADish": "Tell you the portion of a dish you already eat",
   "theSamePointsTheRestOfThe": "The same points the rest of the app gives. Nothing extra for opening it.",
   "thisNeedsADoctorNotAnApp": "This needs a doctor, not an app",
   "twoDone": "Two done",
@@ -1847,7 +1838,7 @@
   "waitingForSignal": "Waiting for signal",
   "savedHereUntilYouHaveSignal": "Saved here until you have signal",
   "savedItWillSyncWhenYouHave": "Saved. It will sync when you have signal.",
-  "youAreOfflineEverythingYouLogIs": "You are offline. Everything you log is saved here and sent when you reconnect.",
+  "youAreOfflineEverythingYouAddIs": "You are offline. Everything you add is saved here and sent when you reconnect.",
   "nothingWasLost": "Nothing was lost.",
   "tryAgain": "Try again",
   "thatDidNotSaveTapToTry": "That did not save. Tap to try again.",
@@ -1874,7 +1865,6 @@
   "youCanKeepGoingItSendsItself": "You can keep going. It sends itself later.",
   "walkThisMorning32Min": "Walk this morning · 32 min",
   "n20MinVegetarian": "20 min · vegetarian",
-  "threeSessionsAWeekIsYourGoal": "Three sessions a week is your goal. Hit it and the week counts, and a week you miss is covered by a rest week once you have earned one.",
   "arabicText_vqu26": "الفصحى · كل شيء في التطبيق",
   "iTrainAndICoach": "I train and I coach",
   "twoAppsInOneSwitchBetweenThem": "Two apps in one. Switch between them whenever you like.",
@@ -1924,7 +1914,7 @@
   "notLinkedToAnythingYet": "Not linked to anything yet",
   "exportTheContentLibrary": "Export the content library",
   "csvsAndMediaInTheSameShape": "CSVs and media, in the same shape you import them.",
-  "noMemberDataIsEverIncludedNo": "No member data is ever included: no logs, no photos, no cycle.",
+  "noMemberDataIsEverIncludedNo": "No member data is ever included: no meals or workouts, no photos, no cycle.",
   "sofarOfTargetG": "{soFar} of {target} g",
   "@sofarOfTargetG": {
     "description": "E01/E04 protein bar. Her real intake, never the mockup 53.",
@@ -1973,8 +1963,8 @@
       }
     }
   },
-  "mealLoggedKcalKcal": "{meal} logged · {kcal} kcal",
-  "@mealLoggedKcalKcal": {
+  "mealAddedKcalKcal": "{meal} added · {kcal} kcal",
+  "@mealAddedKcalKcal": {
     "description": "E04 undo bar. Names what SHE logged. The fixed \"Lunch logged — 696 kcal\" would announce 696 whatever she ate, which is the defect PHASE1-FIXES.md 8 removed from R07.",
     "placeholders": {
       "meal": {
@@ -1998,7 +1988,7 @@
     }
   },
   "notThis": "Not this",
-  "logItAnyway": "Log it anyway",
+  "addItAnyway": "Add it anyway",
   "thisWeekDoneOfTarget": "This week, {done} of {target}",
   "@thisWeekDoneOfTarget": {
     "description": "T01 week card. Her real target, not the prototype 3 — a woman whose goal is 4 sessions read \"This week, 0 of 3\". The card already had the numbers; only the sentence was fixed.",
@@ -2093,8 +2083,8 @@
       }
     }
   },
-  "loggedOfTotalLoggedDays": "{logged} of {total} logged days",
-  "@loggedOfTotalLoggedDays": {
+  "loggedOfTotalNotedDays": "{logged} of {total} noted days",
+  "@loggedOfTotalNotedDays": {
     "description": "Y10's chart caption. The fixed string named the mockup's 4 of 6, so the caption was withheld and the chart drew with no sentence beside it.",
     "placeholders": {
       "logged": {
@@ -2705,9 +2695,9 @@
   "sharingIsNotConnectedInThisBuild": "Sharing is not connected in this build yet, so nothing leaves this phone.",
   "noRecipeCarriesARamadanTagYet": "No recipe carries a Ramadan tag yet.",
   "removedFromSaved": "Removed from saved",
-  "weDoNotKnowWhatYouAvoid": "We do not know what you avoid yet, so nothing can be logged.",
+  "weDoNotKnowWhatYouAvoid": "We do not know what you avoid yet, so nothing can be added.",
   "endThisCoachingNowTest": "End this coaching now (test)",
-  "thisDishIsNotInTheFood": "This dish is not in the food list yet, so it cannot be logged from here.",
+  "thisDishIsNotInTheFood": "This dish is not in the food list yet, so it cannot be added from here.",
   "rose": "Rose",
   "sage": "Sage",
   "amber": "Amber",
@@ -2729,5 +2719,1132 @@
       }
     }
   },
-  "notYet": "Not yet"
+  "notYet": "Not yet",
+  "itChecksItselfTheMomentTheSixth_1pr5i": "It checks itself the moment the sixth digit lands.",
+  "privacyPolicy": "Privacy policy",
+  "termsOfUse": "Terms of use",
+  "opensInYourBrowser": "Opens in your browser",
+  "thatPageCouldNotBeOpenedTry": "That page could not be opened. Try again later.",
+  "deleteYourAccountAndEverythingInIt": "Delete your account and everything in it",
+  "deletingTakesAwayEverythingYouHavePut": "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers. It happens at once, and none of it can be brought back.",
+  "downloadingACopyOfYourDataIs": "Downloading a copy of your data is not built yet, so there is no button for it here.",
+  "deleteEverything": "Delete everything",
+  "yourDataIsGoneTheAppIs": "Your data is gone. The app is back to its first day.",
+  "reportHerFromHerPostOrHer": "Report her from her post or her page.",
+  "youPickAReasonAndSendIt": "You pick a reason and send it.",
+  "aWomanOnTheTeamReadsIt": "A woman on the team reads it.",
+  "sheTellsYouWhatSheDidAbout": "She tells you what she did about it.",
+  "ofTotal": "of {total}",
+  "@ofTotal": {
+    "description": "The small half of the ring on her first week: how many steps the arc has. The number is a value, and the arc is shorter when a step belongs to a feature this build has switched off, so it cannot be frozen into the sentence.",
+    "placeholders": {
+      "total": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "deletingTakesAwayEverythingYouHavePut_g3hy0": "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers. It happens at once, and none of it can be brought back.",
+  "yourTrainingWeekByWeek": "Your training, week by week",
+  "thisAppCountsWeeksNotDaysAnd": "This app counts weeks, not days, and only what you add yourself.",
+  "fourShortQuestionsThenYourWeekIs": "Four short questions, then your week is ready. Skip any of them.",
+  "yourGoalYourDaysAndWhatYou": "Your goal, your days and what you train with",
+  "reachYourGoalAndTheWeekCounts": "Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.",
+  "yourWeekCountsWhenYouFinishYour": "Your week counts when you finish your sessions. No single day is the one you must train on.",
+  "onlyYouEverSeeThis": "Only you ever see this.",
+  "settings": "Settings",
+  "more": "More",
+  "downloadThisWeek": "Download this week",
+  "turnNotificationsOnSoWeCanNudge": "Turn notifications on, so we can nudge you at your usual time.",
+  "noHistoryForThisMoveYetWhat": "No history for this move yet. What you do today is what the next one is measured against.",
+  "theLibraryIsStillBeingWrittenWhat": "The library is still being written. What is here is what the app ships with today.",
+  "nothingMatchesThoseFilters": "Nothing matches those filters.",
+  "minutesMinutesMovesMoves": "{minutes} minutes, {moves} moves",
+  "@minutesMinutesMovesMoves": {
+    "description": "R03's summary of today's session. Counted off the day's own moves, never a fixed '5 moves'.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      },
+      "moves": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "lastTimeLastSoWeAddedAdded": "Last time: {last}. So we added {added} kg.",
+  "@lastTimeLastSoWeAddedAdded": {
+    "description": "R07's progression note, drawn only when she has a logged set for this move and today's prescription is heavier.",
+    "placeholders": {
+      "last": {
+        "type": "String",
+        "example": "10 kg × 10"
+      },
+      "added": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "lastTimeLast": "Last time: {last}.",
+  "@lastTimeLast": {
+    "description": "R07's progression note when she has a logged set for this move and nothing was added.",
+    "placeholders": {
+      "last": {
+        "type": "String",
+        "example": "10 kg × 10"
+      }
+    }
+  },
+  "lunchYourUsual": "Lunch, your usual",
+  "snackYourUsual": "Snack, your usual",
+  "saturday": "Saturday",
+  "sunday": "Sunday",
+  "noProgramYet": "No program yet",
+  "aProgramSetsOutYourWeeksAnd": "A program sets out your weeks and the days in them. Nothing is written for you yet. One session is ready now, and Start today's session opens it.",
+  "holdTheCardStill": "Hold the card still",
+  "moveALittleCloser": "Move a little closer",
+  "moveBackALittle": "Move back a little",
+  "thereIsNotEnoughLight": "There is not enough light",
+  "bringYourFaceIntoTheCircle": "Bring your face into the circle",
+  "lookStraightAhead": "Look straight ahead",
+  "blinkSlowly": "Blink slowly",
+  "turnYourHeadSlightlyToTheRight": "Turn your head slightly to the right",
+  "turnYourHeadSlightlyToTheLeft": "Turn your head slightly to the left",
+  "holdStill": "Hold still",
+  "tiltTheCardToCutTheGlare": "Tilt the card to cut the glare",
+  "onlyOneFaceInTheFrame": "Only one face in the frame",
+  "showTheFrontOfTheCard": "Show the front of the card",
+  "theBackOfYourCard": "The back of your card",
+  "backOfTheCard": "back of the card",
+  "turnTheCardOver": "Turn the card over",
+  "weReadBothSidesNothingIsUploaded": "We read both sides. Nothing is uploaded until you tap send.",
+  "verified": "Verified",
+  "underReview": "Under review",
+  "verificationUnsuccessful": "Verification unsuccessful",
+  "pleaseRetakeThePhoto": "Please retake the photo",
+  "beforeTheCameraOpens": "Before the camera opens",
+  "youWillPhotographTheFrontAndBack": "You will photograph the front and back of your national ID card, then take a short selfie.",
+  "thePhotographsAreProcessedByGoogleCloud": "The photographs are processed by Google Cloud and Amazon Web Services, on servers outside Egypt.",
+  "ifYourCheckIsApprovedOrRefused": "If your check is approved or refused, nothing is kept except a one way keyed hash of your ID number. It cannot be turned back into the number.",
+  "theCameraIsTheOnlyWayIn": "The camera is the only way in. You cannot choose a picture you already have.",
+  "iAgreeStartTheCamera": "I agree, start the camera",
+  "iWouldRatherNot": "I would rather not",
+  "weCannotRunThisStepOnYour": "We cannot run this step on your phone right now. A woman can check your card instead.",
+  "stepStepOfTotal": "Step {step} of {total}",
+  "@stepStepOfTotal": {
+    "description": "Progress through the server-chosen liveness challenge on C11. The number of steps is decided by the server per session, so it cannot be baked into the sentence the way the other Step strings in this dictionary are.",
+    "placeholders": {
+      "step": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "aShortVideoCallWithAWoman": "A short video call with a woman",
+  "nothingYouPhotographedIsStoredItWas": "Nothing you photographed is stored. It was deleted the moment the check finished.",
+  "theAppOpensAsSoonAsYour": "The app opens as soon as your check is done.",
+  "nothingYouPhotographIsKeptBothSides": "Nothing you photograph is kept. Both sides of the card and the selfie are deleted as soon as the check finishes, whatever the result.",
+  "ifAWomanNeedsToCheckIt": "If a woman needs to check, it is a short video call with you. Your photographs are never sent to anyone.",
+  "thePhotographsAreProcessedByGoogleCloud_tqchn": "The photographs are processed by Google Cloud, on servers outside Egypt.",
+  "gluten_1v1e1": "Gluten",
+  "crustaceans": "Crustaceans",
+  "eggs": "Eggs",
+  "fish": "Fish",
+  "peanuts": "Peanuts",
+  "soy": "Soy",
+  "milkAndDairy": "Milk and dairy",
+  "treeNuts": "Tree nuts",
+  "celery": "Celery",
+  "mustard": "Mustard",
+  "sesame": "Sesame",
+  "sulphites": "Sulphites",
+  "lupin": "Lupin",
+  "molluscs": "Molluscs",
+  "favaBeans": "Fava beans",
+  "coconut": "Coconut",
+  "isThereAnythingYouCannotEat": "Is there anything you cannot eat?",
+  "tickAnythingYouAvoidDishesThatContain": "Tick anything you avoid. Dishes that contain it are hidden from your recipes.",
+  "noNothing": "No, nothing",
+  "saveWhatIAvoid": "Save what I avoid",
+  "youCanChangeThisAnyTimeFrom": "You can change this any time from your account.",
+  "favaBeansAreListedBecauseOfFavism": "Fava beans are listed because of favism, not because they are an allergen.",
+  "rahmasRecipes": "Rahma's recipes",
+  "searchRecipes": "Search recipes",
+  "noOven": "No oven",
+  "readyInTheFridge": "Ready in the fridge",
+  "quickCombinations": "Quick combinations",
+  "aMessageFromRahma": "A message from Rahma",
+  "nothingMatchesThat": "Nothing matches that.",
+  "noCombinationsAreBuiltYetEachOne": "No combinations are built yet. Each one needs foods whose values have been verified.",
+  "ingredientsAndSteps": "Ingredients and steps",
+  "asItIsInTheBook": "As it is in the book",
+  "steps": "Steps",
+  "optional": "Optional",
+  "servedWith": "Served with",
+  "cookMode": "Cook mode",
+  "nextStep": "Next step",
+  "previousStep": "Previous step",
+  "contains": "Contains",
+  "containsNoneOfTheSixteenWeCheck": "Contains none of the sixteen we check for.",
+  "nobodyHasSignedOffWhatIsIn": "Nobody has signed off what is in this dish. Read the label on each product yourself.",
+  "theWeightsAreEstimatesExceptWhereThe": "The weights are estimates except where the book states them.",
+  "theIngredientsAreRahmasReadTheLabel": "The ingredients are Rahma's. Read the label on each product yourself before use.",
+  "howToTellItIsDone": "How to tell it is done",
+  "chickenIsDoneWhenNoPinkIs": "Chicken is done when no pink is left and the juices run clear.",
+  "mincedMeatIsDoneWhenNoPink": "Minced meat is done when no pink is left anywhere in it.",
+  "liverIsDoneWhenItIsFirm": "Liver is done when it is firm and does not bleed when cut.",
+  "shrimpIsDoneWhenItTurnsOpaque": "Shrimp is done when it turns opaque all through and curls.",
+  "eggIsDoneWhenTheWhiteIs": "Egg is done when the white is set right through.",
+  "liverIsVeryHighInVitaminA": "Liver is very high in vitamin A. If you are pregnant, ask your doctor before eating it.",
+  "thisDishContainsFavaBeansIfYou": "This dish contains fava beans. If you have favism, an inherited enzyme condition, avoid it.",
+  "thisRecipeIsFromRahmasBook": "This recipe is from Rahma's book.",
+  "aCombinationNotARecipeNothingIs": "A combination, not a recipe. Nothing is cooked.",
+  "theBookDoesNotSay": "The book does not say.",
+  "changeWhatYouAvoid": "Change what you avoid",
+  "whatYouAvoid": "What you avoid",
+  "showTheBookPage": "Show the book page",
+  "nMin": "{n} min",
+  "@nMin": {
+    "description": "A cooking time on a recipe card. The figure comes from the recipe, never from the dictionary.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "nGProtein": "{n} g protein",
+  "@nGProtein": {
+    "description": "Protein per serving on a recipe card, only when the recipe states it.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "24"
+      }
+    }
+  },
+  "nEgpAServing": "{n} EGP a serving",
+  "@nEgpAServing": {
+    "description": "Cost per serving, shown beside the month it was priced in.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "14"
+      }
+    }
+  },
+  "nKcalAServing": "{n} kcal a serving",
+  "@nKcalAServing": {
+    "description": "Energy per serving, only when it was summed from verified foods.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "410"
+      }
+    }
+  },
+  "pricedMonth": "Priced {month}",
+  "@pricedMonth": {
+    "description": "The month an EGP figure was priced in. An undated price in Egypt is wrong within a quarter.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "October 2026"
+      }
+    }
+  },
+  "nG": "{n} g",
+  "@nG": {
+    "description": "A gram figure beside an ingredient, in her own words' shadow.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "40"
+      }
+    }
+  },
+  "stepNOfTotal": "Step {n} of {total}",
+  "@stepNOfTotal": {
+    "description": "Cook mode's position line.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "tempDegrees": "{temp} degrees",
+  "@tempDegrees": {
+    "description": "An oven temperature chip on a step.",
+    "placeholders": {
+      "temp": {
+        "type": "String",
+        "example": "200"
+      }
+    }
+  },
+  "servesN": "Serves {n}",
+  "@servesN": {
+    "description": "How many the recipe feeds, only when the book says.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "countPluralOne1DishIsHidden": "{count, plural, one{1 dish is hidden because nobody has checked what is in it yet.} other{{count} dishes are hidden because nobody has checked what is in them yet.}}",
+  "@countPluralOne1DishIsHidden": {
+    "description": "E05, at the foot of Rahma's book. The reason the app is holding dishes back is that nobody has signed the allergen check, NOT anything she named. Arabic counts do not agree the way English ones do, so this is a plural message rather than one sentence with a number dropped into it: 39 takes the singular accusative.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "39"
+      }
+    }
+  },
+  "countPluralOne1DishIsHidden_1hlr5": "{count, plural, one{1 dish is hidden because it contains something you avoid.} other{{count} dishes are hidden because they contain something you avoid.}}",
+  "@countPluralOne1DishIsHidden_1hlr5": {
+    "description": "E05, at the foot of Rahma's book. The other reason a dish is held back, and it must read differently from the unchecked one: this one IS about her body.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "noDishHereHasBeenCheckedYet": "No dish here has been checked yet. This is not about what you avoid: nobody has signed off what is in these dishes, so the book waits.",
+  "everythingHereContainsSomethingYouToldUs": "Everything here contains something you told us you avoid.",
+  "nothingInTheBookHasBeenChecked": "Nothing in the book has been checked yet. Tell us about an allergy and the book waits until somebody has.",
+  "notCheckedYet": "Not checked yet",
+  "discardWhatYouTicked": "Discard what you ticked?",
+  "youTickedSomethingYouAvoidTheOther": "You ticked something you avoid. The other answer saves an empty list instead.",
+  "keepWhatITicked": "Keep what I ticked",
+  "yesSaveNothing": "Yes, save nothing",
+  "theBookNamesWhatGoesInAnd": "The book names what goes in, and mostly not how much.",
+  "theBookWritesThisOneAsA": "The book writes this one as a method, with no ingredient list. What goes in is named in the steps.",
+  "nMinHandsOn": "{n} min hands on",
+  "@nMinHandsOn": {
+    "description": "A recipe's active time. Overnight oats is five minutes of work and a day in the fridge, and the card stated 1,445.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "nMinInAll": "{n} min in all",
+  "@nMinInAll": {
+    "description": "A recipe's total time, beside the hands-on figure, for a dish under two hours.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "50"
+      }
+    }
+  },
+  "countPluralOneAbout1HourIn": "{count, plural, one{About 1 hour in all} other{About {count} hours in all}}",
+  "@countPluralOneAbout1HourIn": {
+    "description": "A recipe's total time once it passes two hours. Rounded to the hour and said to be rounded, because 1,445 minutes is true and unreadable.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "24"
+      }
+    }
+  },
+  "noRecipeHasBeenPricedYet": "No recipe has been priced yet.",
+  "noRecipeCanBeCalledNutFree": "No recipe can be called nut free yet, because nobody has signed off what is in them.",
+  "noneOfTheseDishesHasBeenChecked": "None of these dishes has been checked for what you avoid, so none of them is shown.",
+  "pelvicFloorFirstOnceYourDoctorSays": "Pelvic floor first, once your doctor says you are ready",
+  "gentlerMovementsNothingOnTheBelly": "Gentler movements, nothing on the belly",
+  "weDoNotHaveACareDirectory": "We do not have a care directory for your city yet.",
+  "weDoNotHaveAGuidancePage": "We do not have a guidance page to open yet.",
+  "finishingThemAllIsNotADeadline": "Finishing them all is not a deadline. It is the shortest path to knowing where everything is.",
+  "allDoneNothingAboutTheAppChanges": "All done. Nothing about the app changes from here. You have just already used every part of it once.",
+  "notBuiltYetThisPartOfThe": "Not built yet. This part of the app is not in this release.",
+  "weCannotFindThatPage": "We cannot find that page.",
+  "weCouldNotReadTheFrontOf": "We could not read the front of your card. Hold it flat and try again.",
+  "weCouldNotReadTheBackOf": "We could not read the back of your card. Hold it flat and try again.",
+  "noneOfTheseDishesHasBeenChecked_9ic16": "None of these dishes has been checked for nuts.",
+  "lunchYourUsual_1wxfd": "Lunch, your usual?",
+  "dinnerYourUsual_1rqgs": "Dinner, your usual?",
+  "snackYourUsual_nkmpd": "Snack, your usual?",
+  "weSaveYourAnswerWithTheRest": "We save your answer with the rest of your setup. Nothing in your sessions changes from it yet.",
+  "nobodyHasSignedOffWhatIsIn_127cj": "Nobody has signed off what is in these dishes yet, so none is shown. That is our check, not your list.",
+  "nothingIsPlannedForThisWeekYet": "Nothing is planned for this week yet. Pick a dinner for any day below.",
+  "lookingForWhatYouHaveAdded": "Looking for what you have added.",
+  "weCouldNotSaveYourAgreementSo": "We could not save your agreement, so the camera has not opened. Check your connection and try again.",
+  "backUpMyHealthData": "Back up my health data",
+  "offYourCycleCheckInsMeasurementsLife": "Off. Your cycle, check-ins, measurements, life stage and allergies stay on this phone only.",
+  "onACopyIsKeptInYour": "On. A copy is kept in your Own Hub account, stored in Germany.",
+  "backUpYourHealthData": "Back up your health data?",
+  "ifYouTurnThisOnACopy": "If you turn this on, a copy of your cycle and period dates, daily check-ins, body measurements including weight, your pregnancy, postpartum or injury stage, and your allergies is kept in your Own Hub account, so it comes back if you change phones.",
+  "theCopyIsStoredOnGoogleCloud": "The copy is stored on Google Cloud in Frankfurt, Germany, which is outside Egypt. The phone number you sign in with is held by Firebase Authentication, which may store it in the United States.",
+  "thisIsHealthDataSoWeOnly": "This is health data, so we only back it up with your clear agreement. You can turn it off at any time, and turning it off deletes the copy from your account.",
+  "ifYouDoNotTurnItOn": "If you do not turn it on, nothing else changes. Your health data simply stays on this phone only.",
+  "iAgreeBackUpMyHealthData": "I agree, back up my health data",
+  "weCouldNotReachOwnHubSo": "We could not reach Own Hub, so your health backup was not changed. Check your connection and try again.",
+  "checkedByOwnHubsOwnSystemYour": "Checked by Own Hub's own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.",
+  "ifYouDoNotShowYourFace": "If you do not show your face to a camera, nothing here asks you to. A woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.",
+  "askForAVideoCheck": "Ask for a video check",
+  "theAutomaticCheckCouldNotStartJust": "The automatic check could not start just now. You can ask a woman reviewer instead, or go back and try again.",
+  "weCouldNotReachOwnHubSo_3usbb": "We could not reach Own Hub, so you are not in the queue yet. Check your connection and try again.",
+  "youHaveAskedForAReviewerToo": "You have asked for a reviewer too many times today. Please try again tomorrow.",
+  "aWomanReviewerFromOwnHubWill": "A woman reviewer from Own Hub will phone you to arrange a short video call. We do not send text messages about this.",
+  "yourVideoCallIsBookedForTime": "Your video call is booked for {time}.",
+  "@yourVideoCallIsBookedForTime": {
+    "description": "C14 once a woman reviewer has booked the live video check. time is the booked date and time, already formatted for her locale.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "Mon, 5 Oct, 10:00"
+      }
+    }
+  },
+  "yourReviewTimeRanOut": "Your review time ran out",
+  "weDidNotReachYourReviewIn": "We did not reach your review in time. You can take the check again.",
+  "takeTheCheckAgain": "Take the check again",
+  "weCouldNotVerifyYourAccount": "We could not verify your account",
+  "youCanDeleteYourAccountAndEverything": "You can delete your account and everything we hold about you from Profile and settings, under Your data.",
+  "openProfileAndSettings": "Open Profile and settings",
+  "lookAroundWhileYouWait": "Look around while you wait",
+  "tryAgainTomorrow": "Try again tomorrow",
+  "todaysLimitForIdentityChecksHasBeen": "Today's limit for identity checks has been reached. Nothing was decided, and nothing you photographed was kept. Please try again tomorrow.",
+  "noAutomaticChecksLeft": "No automatic checks left",
+  "thisAccountHasUsedEveryAutomaticCheck": "This account has used every automatic check it can. Nothing you photographed was kept. A woman reviewer can check you on a short video call instead.",
+  "askForAWomanReviewer": "Ask for a woman reviewer",
+  "weCouldNotReachOwnHub": "We could not reach Own Hub",
+  "nothingWasDecidedAndYouAreNot": "Nothing was decided and you are not in a queue. Check your connection and try again.",
+  "yourPhoneNumberIsUsedOnlyTo": "Your phone number is used only to arrange this call.",
+  "thisCopyOfTheAppCannotReach": "This copy of the app cannot reach Own Hub",
+  "pleaseInstallTheLatestVersionFromThe": "Please install the latest version from the App Store or Google Play, then try again. Nothing was decided.",
+  "thisCopyOfTheAppCannotReach_agbhf": "This copy of the app cannot reach Own Hub, so you are not in the queue. Please install the latest version from the App Store or Google Play.",
+  "deletingYourAccountRemovesItFromOur": "Deleting your account removes it from our servers and clears this phone. Three things are kept: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, and a record that the deletion happened.",
+  "youHaveNoAccountOnThisPhone": "You have no account on this phone, so everything is stored here, and deleting clears it.",
+  "deletingYourAccountThisCanTakeA": "Deleting your account. This can take a minute.",
+  "weCouldNotReachOwnHubSo_yfi5n": "We could not reach Own Hub, so nothing was deleted. Check your connection and try again.",
+  "thisCopyOfTheAppCannotReach_qzcpf": "This copy of the app cannot reach Own Hub, so nothing was deleted. Please install the latest version from the App Store or Google Play.",
+  "yourDeletionDidNotFinishOnOur": "Your deletion did not finish on our side. It will finish automatically within the hour. This phone has been cleared.",
+  "yourWorkoutsMealsAndSetupAnswersAre": "Your workouts, meals and setup answers are saved to your Own Hub account once you are verified. Your cycle, check-ins, weight and other health details stay on this phone unless you turn on the health backup. Photos of your ID card and your selfie are never stored.",
+  "healthBackupIsOffOnThisPhone": "Health backup is off on this phone, so nothing more is uploaded. We could not reach Own Hub, so the copy in your account will be removed when you are back online.",
+  "yourCheckIsDone": "Your check is done",
+  "youAreVerifiedOpenOwnHubTo": "You are verified. Open Own Hub to carry on.",
+  "openOwnHub": "Open Own Hub",
+  "thisCopyOfTheAppCannotReach_1dlg6": "This copy of the app cannot reach Own Hub, so your agreement was not saved and the camera has not opened. Please install the latest version from the App Store or Google Play.",
+  "thisCopyOfTheAppCannotReach_mr83s": "This copy of the app cannot reach Own Hub, so your health backup was not changed. Please install the latest version from the App Store or Google Play.",
+  "youCanAlsoDeleteYourAccountOn": "You can also delete your account on our website: {url}",
+  "@youCanAlsoDeleteYourAccountOn": {
+    "description": "Shown when this copy of the app cannot reach Own Hub to delete her account. The address of the public delete-account page.",
+    "placeholders": {
+      "url": {
+        "type": "String",
+        "example": "https://ownhub.app/delete-account"
+      }
+    }
+  },
+  "aReviewerCanOnlyCallYouAfter": "A reviewer can only call you after you ask for the call. If you ask, a woman reviewer from Own Hub will phone you to arrange a short video call, and she will check your ID card with you on that call.",
+  "askForTheCall": "Ask for the call",
+  "theCheckDidNotFinish": "The check did not finish",
+  "pleaseSignInAgain": "Please sign in again",
+  "signInAgain": "Sign in again",
+  "yourSignInIsNoLongerValid": "Your sign-in is no longer valid, so nothing was decided. Sign in again with your phone number, then carry on with your check.",
+  "yourSignInIsNoLongerValid_1cfl5": "Your sign-in is no longer valid, so your agreement was not saved and the camera has not opened. Please sign in again with your phone number.",
+  "yourSignInIsNoLongerValid_1y16r": "Your sign-in is no longer valid, so you are not in the queue. Please sign in again with your phone number.",
+  "yourSignInIsNoLongerValid_1ccq0": "Your sign-in is no longer valid, so your health backup was not changed. Please sign in again with your phone number.",
+  "yourSignInIsNoLongerValid_1g4zq": "Your sign-in is no longer valid, so nothing was deleted. Please sign in again with your phone number and try again.",
+  "healthBackupIsOffOnThisPhone_1x622": "Health backup is off on this phone, so nothing more is uploaded. This copy of the app cannot reach Own Hub, so the copy in your account has not been removed yet. Please install the latest version from the App Store or Google Play.",
+  "healthBackupIsOffOnThisPhone_1x3p3": "Health backup is off on this phone, so nothing more is uploaded. Your sign-in is no longer valid, so the copy in your account has not been removed yet. Please sign in again with your phone number.",
+  "theAutomaticCheckCouldNotStartJust_1od6p": "The automatic check could not start just now. You can ask a woman reviewer instead, or try again.",
+  "quietWorkoutsForHomeFoodYouAlready_u7fo9": "Quiet workouts for home, food you already cook, and a space only verified women can enter.",
+  "everyAccountIsVerifiedWithIdBefore_p7ucu": "Every account is verified with ID before she gets in.",
+  "yourFullProgramOpensAfterTheCheck": "Your full program opens after the check",
+  "joinAndPassTheCheckOnceThen": "Join and pass the check once. Then your plan, every workout and every recipe are yours.",
+  "byJoiningYouAgreeToTheOwn": "By joining you agree to the Own Hub rules.",
+  "workoutsRecipesAndYourProgressFree": "Workouts, recipes and your progress. Free.",
+  "thisIsWhatKeepsOwnHubWomen": "This is what keeps Own Hub women only: every woman is verified before she gets in.",
+  "yourNumberYourIdYourMealsAnd_1ix08": "Your number, your ID, your meals and your workouts stay private.",
+  "ownHubIsForTrainingNotFor": "Own Hub is for training, not for selling.",
+  "yourTrainingYourFoodYourCycleWomen": "Your training, your food, your cycle. Women only.",
+  "setUpMyWeek": "Set up my week",
+  "n1Of3YourWeek": "1 of 3 · Your week",
+  "n2Of3YourNumber": "2 of 3 · Your number",
+  "n3Of3QuickCheck": "3 of 3 · Quick check",
+  "onlyYouSeeThisItStaysOn": "Only you see this. It stays on this phone.",
+  "seeMyWeek": "See my week",
+  "builtFromYourAnswers": "Built from your answers",
+  "oneQuickCheckKeepsOwnHubWomen": "One quick check keeps Own Hub women only. Then day 1 is yours.",
+  "saveMyWeekAndJoin": "Save my week and join",
+  "thatNumberDoesNotLookRightCheck": "That number does not look right. Check it and try again.",
+  "noConnectionYourNumberIsStillHere": "No connection. Your number is still here, try again when you are back online.",
+  "weCouldNotSendTheCodeTry": "We could not send the code. Try again in a moment.",
+  "thatCodeDidNotMatchCheckThe": "That code did not match. Check the message and type it again.",
+  "thatCodeHasExpiredAskForA_1vzf3": "That code has expired. Ask for a new one below.",
+  "noConnectionTryAgainWhenYouAre": "No connection. Try again when you are back online.",
+  "weCouldNotCheckTheCodeTry": "We could not check the code. Try again in a moment.",
+  "checkingYourCode": "Checking your code",
+  "editNumber": "Edit number",
+  "cameraAccessIsOff": "Camera access is off",
+  "ownHubNeedsTheCameraToRead": "Own Hub needs the camera to read your card. You can turn it on in Settings, or a woman from Own Hub can check you another way.",
+  "ownHubNeedsTheCameraForA": "Own Hub needs the camera for a short selfie. You can turn it on in Settings, or a woman from Own Hub can check you another way.",
+  "theCameraCouldNotStartThisIs": "The camera could not start. This is not about you. Try again, or a woman from Own Hub can check you another way.",
+  "checkMeAnotherWay": "Check me another way",
+  "noConnectionYourPhotosAreStillHere": "No connection. Your photos are still here, try again.",
+  "bothSidesOfYourCardTaken": "Both sides of your card taken",
+  "selfieTaken": "Selfie taken",
+  "matchingYourSelfieToYourCard": "Matching your selfie to your card",
+  "takingLongerThanUsualYourConnectionMay": "Taking longer than usual. Your connection may be slow. You can keep waiting here.",
+  "goToHome": "Go to Home",
+  "planThisWeeksDinners": "Plan this week's dinners",
+  "fiveEgyptianDinnersAndOneShoppingList": "Five Egyptian dinners and one shopping list",
+  "trackMyCycle": "Track my cycle",
+  "optionalAndItStaysOnThisPhone": "Optional, and it stays on this phone",
+  "nextSessionNumberOnAnyDayThis": "Next: session {number}, on any day this week",
+  "@nextSessionNumberOnAnyDayThis": {
+    "description": "R10's next step after a finished session. The number is the next session of her week, in Western digits.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "day1WasNotWrittenForPregnancy": "Day 1 was not written for pregnancy. Please ask your doctor before you start, and skip any move that does not feel right.",
+  "day1WasNotWrittenForThe": "Day 1 was not written for the weeks after a birth. Please wait for your doctor's OK, and skip any move that does not feel right.",
+  "iHaveMyDoctorsOkStart": "I have my doctor's OK, start",
+  "notToday": "Not today",
+  "yourWeekIsSaved": "Your week is saved",
+  "homeYourDayAtAGlance": "Home, your day at a glance",
+  "ownHubIsAFitnessAppFor": "Own Hub is a fitness app for women only. Home shows today's workout, what you have eaten and how your week is going. This week is a sample, so tap anything.",
+  "quietSessionsYouCanDoAtHome": "Quiet sessions you can do at home. Each move shows its sets and what to aim for. Trained without your phone? You can add it afterwards.",
+  "duringAWorkout": "During a workout",
+  "oneMoveAtATimeTapWhen": "One move at a time. Tap when a set is done, and Own Hub keeps count and times your rest.",
+  "homeCookingYouAlreadyKnowWrittenBy": "Home cooking you already know, written by coach Rahma Mohsen. Open the first recipe to see one in full.",
+  "yourWeekOfDinners": "Your week of dinners",
+  "aWeekOfDinnersPlannedForYou": "A week of dinners planned for you, with one shopping list that covers them all.",
+  "yourCycleIfYouWantIt": "Your cycle, if you want it",
+  "noteYourPeriodAndHowYouFeel": "Note your period and how you feel. On harder days Own Hub can suggest a gentler session. Cycle data stays on your phone unless you choose to back it up.",
+  "yourWeeksYourPersonalBestsAndYour": "Your weeks, your personal bests and your milestones, counted only from what you add.",
+  "thatIsOwnHub": "That is Own Hub",
+  "toMakeItYoursJoinWithYour": "To make it yours, join with your phone number.",
+  "ownHubIsForWomenOnlySo": "Own Hub is for women only, so we check your ID once, with a quick selfie. The photos are deleted after the check.",
+  "firstOneScreenToBuildYourWeek": "First, one screen to build your week. Own Hub opens for you once the check is done.",
+  "makeItMine": "Make it mine",
+  "seeTheTourAgain": "See the tour again",
+  "sampleNothingIsSaved": "Sample · nothing is saved",
+  "joinOwnHub": "Join Own Hub",
+  "leaveTheTour": "Leave the tour",
+  "backToMyCheck": "Back to my check",
+  "joinToMakeThisYours": "Join to make this yours",
+  "keepLooking": "Keep looking",
+  "showMeAround": "Show me around",
+  "skipTheTourAndJoin": "Skip the tour and join",
+  "theTourUsesASampleWeekNo": "The tour uses a sample week. No account, and nothing is saved.",
+  "firstYourWeekThenYourNumberAnd": "First your week, then your number and a quick check that you are a woman. About two minutes, once.",
+  "homeCookingYouAlreadyKnowWrittenBy_7q8w1": "Home cooking you already know, written by coach Rahma Mohsen. The recipes open with your account.",
+  "toSendYourCodeYourNumberGoes": "To send your code, your number goes to Google Firebase in the United States. Your account and training are kept by Google Cloud in Frankfurt, Germany.",
+  "sendCrashReports": "Send crash reports",
+  "optionalHelpsUsFixTheAppNo": "Optional. Helps us fix the app. No name, number or account is attached. You can change this in Privacy.",
+  "agreeAndSendMeACode": "Agree and send me a code",
+  "byTappingAgreeAndSendMeA": "By tapping Agree and send me a code, you accept the Terms of Use and the Privacy Policy.",
+  "weHaveUpdatedOurTermsAndPrivacy": "We have updated our Terms and Privacy Policy",
+  "pleaseReadWhatChangedToKeepUsing": "Please read what changed. To keep using Own Hub, agree to the new versions.",
+  "yourAgreementIsNowRecordedWhenYou": "Your agreement is now recorded when you sign up, with the language and the app version.",
+  "crashReportsAreSentOnlyIfYou": "Crash reports are sent only if you allow them. They are off until you do.",
+  "youCanAskForACopyOf": "You can ask for a copy of your data, and the policy says how long each kind is kept.",
+  "agreeAndContinue": "Agree and continue",
+  "deleteMyAccountInstead": "Delete my account instead",
+  "weCouldNotSaveYourAgreementCheck": "We could not save your agreement. Check your connection and try again.",
+  "crashReports": "Crash reports",
+  "onIfTheAppCrashesTheError": "On. If the app crashes, the error and your phone model are sent to Firebase. Nothing about you is attached.",
+  "offNothingIsSentWhenTheApp": "Off. Nothing is sent when the app crashes.",
+  "yourPhotosGoToOurServerIn": "Your photos go to our server in Frankfurt, Germany. Google Cloud Vision reads the text on the card in the European Union.",
+  "yourFaceIsMatchedOnOurOwn": "Your face is matched on our own server. No outside face service sees it.",
+  "noPhotoIsEverStoredBothSides": "No photo is ever stored. Both sides of the card and the selfie are deleted from memory when the check ends, whatever the result.",
+  "weKeepTheResultAndItsReasons": "We keep the result and its reasons for 180 days, and a keyed code of your ID number so one card opens one account. The code cannot be turned back into your number.",
+  "ifTheCheckCannotDecideYouCan": "If the check cannot decide, you can ask a woman from Own Hub to check you instead.",
+  "readThePrivacyPolicy": "Read the Privacy Policy",
+  "ownHubIsAFitnessAndWellbeing": "Own Hub is a fitness and wellbeing app. It is not a medical device and does not diagnose, treat, cure or prevent any condition. Check with your doctor before you start, especially if you are pregnant or have recently given birth.",
+  "usuallyACoupleOfMinutesIfA": "Usually a couple of minutes. If a woman needs to check, up to 3 days.",
+  "bothImagesAreDeletedAfterTheCheck_8iuyd": "Both images are deleted after the check. We keep the result and a keyed code of your ID number.",
+  "yourIdAndSelfieWereDeletedAfter_nl9hl": "Your ID and selfie were deleted after the check. We keep the result and a keyed code of your ID number.",
+  "aWomanReviewerChecksYourCardWith": "A woman reviewer checks your card with you. Nothing is recorded. She keeps only her decision and the date.",
+  "askAWomanToCheckMe": "Ask a woman to check me",
+  "aCheckWithAWoman": "A check with a woman",
+  "emailUsReadSundayToThursday9": "Email us. Read Sunday to Thursday, 9:00 to 17:00 Cairo time.",
+  "wantACopyOfYourDataAsk": "Want a copy of your data? Ask us and we will send it to you.",
+  "askForACopy": "Ask for a copy",
+  "copyOfMyOwnHubData": "Copy of my Own Hub data",
+  "thePhoneNumberOnMyAccount": "The phone number on my account:",
+  "deletingTakesAwayEverythingYouHavePut_7ytu4": "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle and your answers.",
+  "deletingTakesAwayEverythingYouHavePut_1uwbl": "Deleting takes away everything you have put into the app: your meals, your workouts, your measurements, your cycle, your posts and your answers.",
+  "deletingUsuallyTakesUnderAMinuteIf": "Deleting usually takes under a minute. If it is interrupted, it finishes on its own within the hour, and none of it can be brought back.",
+  "deletingYourAccountThisUsuallyTakesUnder": "Deleting your account. This usually takes under a minute.",
+  "deletingYourAccountRemovesItFromOur_1xldi": "Deleting your account removes it from our servers and clears this phone. Some things are kept on purpose: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, and a record that the deletion happened. Failed check attempts and a scrambled code for this installation, linked to no account, are deleted 180 days after the last attempt, and the log of which reviewer opened your case after one year.",
+  "weTextYouASixDigitCode_18wn2": "We text you a six-digit code. No other member ever sees your number.",
+  "yourPhoneNumberIsUsedOnlyTo_thda4": "Your phone number is used only to arrange your check.",
+  "aWomanFromOwnHubWillReview": "A woman from Own Hub will review your check",
+  "aWomanFromOwnHubReviewsYour": "A woman from Own Hub reviews your case and contacts you by phone within 72 hours. We do not send text messages about this.",
+  "aWomanFromOwnHubWillContact": "A woman from Own Hub will contact you on {time}.",
+  "@aWomanFromOwnHubWillContact": {
+    "description": "C14 once a woman reviewer has booked a time to contact her. time is the booked date and time, already formatted for her locale.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "Mon, 5 Oct, 10:00"
+      }
+    }
+  },
+  "aWomanFromOwnHubCanContact": "A woman from Own Hub can contact you only after you ask her to. If you ask, she reviews your case and contacts you by phone within 72 hours to finish your check.",
+  "askAWomanToContactMe": "Ask a woman to contact me",
+  "ifYouDoNotShowYourFace_1pr0p": "If you do not show your face to a camera, nothing here asks you to. A woman from Own Hub reviews your case and contacts you by phone within 72 hours to check your ID card with you.",
+  "thisAccountHasUsedEveryAutomaticCheck_rc3un": "This account has used every automatic check it can. Nothing you photographed was kept. A woman from Own Hub can review your case instead and contact you within 72 hours.",
+  "yourAutomaticCheckIsStillRunningSo": "Your automatic check is still running, so nothing was sent. You will be moved on when it finishes. If nothing happens, ask again in a minute.",
+  "theMatchUsuallyTakesUnderAMinute": "The match usually takes under a minute. If it needs a person, a woman reviewer takes it from here.",
+  "buildYourWeekWhileWeCheck": "Build your week while we check",
+  "saveMyWeek": "Save my week",
+  "breakingThemCanCloseYourAccountYou": "Breaking them can close your account. You can read them again any time.",
+  "firstYourWeekThenYourNumberAnd_flrzo": "First your week, then your number and a quick check that you are a woman.",
+  "weJustNeedYourNumberAndA_1jn4g": "We just need your number and a quick check that you are a woman.",
+  "daysAWeekDaysMinutesASession_1a2wl": "Days a week: {days} · Minutes a session: {minutes}",
+  "@daysAWeekDaysMinutesASession_1a2wl": {
+    "description": "Her setup answers read back when she was never asked where she trains (the one-screen 'Your week'), so no place is claimed.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "n8WeeksForBeginners": "8 weeks · for beginners",
+  "pickADinnerForDay": "Pick a dinner for {day}",
+  "@pickADinnerForDay": {
+    "description": "E05 opened from a day on E07: tapping a recipe puts it on that day. day is the weekday name from the dictionary.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "Monday"
+      }
+    }
+  },
+  "changeThisDinner": "Change this dinner",
+  "fillMyWeekFromRahmasRecipes": "Fill my week from Rahma's recipes",
+  "yourCycleOnThisPhone": "Your cycle, on this phone",
+  "yourIdPhotoAndSelfieHaveBeen_1qfoh": "Your ID photo and selfie have been deleted. We keep the result, its reasons and a keyed code of your ID number.",
+  "verifiedInSecondsSecondsYourIdPhoto_mbpt8": "Verified in {seconds} seconds. Your ID photo and selfie have been deleted. We keep the result, its reasons and a keyed code of your ID number.",
+  "@verifiedInSecondsSecondsYourIdPhoto_mbpt8": {
+    "description": "C13. Her actual verification time, and what the server really keeps: the result, its reasons for 180 days and the keyed code of her ID number.",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "74"
+      }
+    }
+  },
+  "tellMeWhenImIn": "Tell me when I'm in",
+  "weWillTellYouOnThisPhone": "We will tell you on this phone when your check is done.",
+  "notificationsAreOffForOwnHubOn": "Notifications are off for Own Hub on this phone. You can turn them on in Settings.",
+  "notificationsCannotReachThisPhoneOpenOwn": "Notifications cannot reach this phone. Open Own Hub to see when your check is done.",
+  "aReminderOnYourTrainingDays": "A reminder on your training days?",
+  "oneQuietNoteOnTheDaysYou": "One quiet note on the days you pick, at the time you pick. You can change it or turn it off in Notifications.",
+  "chooseMyDays": "Choose my days",
+  "trainingReminders": "Training reminders",
+  "sessionsInYourWeekCountPickThe": "Sessions in your week: {count}. Pick the days that suit you.",
+  "@sessionsInYourWeekCountPickThe": {
+    "description": "Training reminders sheet. count is her sessions a week (2 to 4), Western digits.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "time": "Time",
+  "changeTime": "Change time",
+  "remindMe": "Remind me",
+  "turnRemindersOff": "Turn reminders off",
+  "pickAtLeastOneDay": "Pick at least one day.",
+  "remindersAreOn": "Reminders are on.",
+  "remindersAreOff": "Reminders are off.",
+  "remindersCannotBeSetOnThisPhone": "Reminders cannot be set on this phone.",
+  "yourSessionIsReadyWhenYouAre": "Your session is ready when you are.",
+  "aNoteOnTheDaysYouChose": "A note on the days you chose to train.",
+  "aSampleWeekOfFiveDinnersJoin": "A sample week of five dinners. Join to plan your own.",
+  "deleteWhatISavedOnThisPhone": "Delete what I saved on this phone",
+  "deleteWhatYouSavedOnThisPhone": "Delete what you saved on this phone?",
+  "yourWeekYourLifeStageAndAnything": "Your week, your life stage and anything else you saved here are deleted from this phone. You can build your week again at any time.",
+  "keepIt": "Keep it",
+  "deleteIt": "Delete it",
+  "deletedFromThisPhone": "Deleted from this phone.",
+  "setUpMyCoachProfile": "Set up my coach profile",
+  "addPayoutLater": "Add payout later",
+  "buildYourFirstPlan": "Build your first plan",
+  "readyForYourFirstClientWhileWe": "Ready for your first client while we check your certificates.",
+  "inviteAClient": "Invite a client",
+  "alreadyCoachingSomeoneSendHerYourCode": "Already coaching someone? Send her your code on WhatsApp.",
+  "joinMeOnOwnHubTheTraining": "Join me on Own Hub, the training app for women only. When you sign up, tap I have a code from my coach and enter {code}.",
+  "@joinMeOnOwnHubTheTraining": {
+    "description": "The WhatsApp message a coach sends to invite a client. {code} is her eight-character invite code.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "ABCD2345"
+      }
+    }
+  },
+  "iHaveACodeFromMyCoach": "I have a code from my coach",
+  "yourCoachsCode": "Your coach's code",
+  "saveTheCode": "Save the code",
+  "savedOnceYouAreInWeWill": "Saved. Once you are in, we will connect you with your coach.",
+  "thatCodeDoesNotLookRightCheck": "That code does not look right. Check it and try again.",
+  "yourCoachHasYourRequest": "Your coach has your request.",
+  "yourCoachsCodeDidNotWorkAsk": "Your coach's code did not work. Ask her for a new one.",
+  "weCouldNotMakeYourCodeTry": "We could not make your code. Try again in a moment.",
+  "weCouldNotOpenWhatsappYourCode": "We could not open WhatsApp. Your code is {code}.",
+  "@weCouldNotOpenWhatsappYourCode": {
+    "description": "Shown when WhatsApp could not open, so the coach can share her code another way.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "ABCD2345"
+      }
+    }
+  },
+  "weOpenCoachingSoon": "We open coaching soon",
+  "tellUsAboutYouAndWeWill": "Tell us about you and we will call you.",
+  "whatYouCoach": "What you coach",
+  "sendOnWhatsapp": "Send on WhatsApp",
+  "sendByEmail": "Send by email",
+  "thisOpensAMessageToOurTeam": "This opens a message to our team. Nothing is sent until you send it yourself.",
+  "iCoachWomenAndWouldLikeTo": "I coach women and would like to coach on Own Hub. Name: {name}. City: {city}. I coach: {specialty}.",
+  "@iCoachWomenAndWouldLikeTo": {
+    "description": "The message a coach sends to the team from the interest form while coaching is closed.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Salma"
+      },
+      "city": {
+        "type": "String",
+        "example": "Cairo"
+      },
+      "specialty": {
+        "type": "String",
+        "example": "postpartum strength"
+      }
+    }
+  },
+  "coachingOnOwnHub": "Coaching on Own Hub",
+  "weCouldNotOpenAMessageOn": "We could not open a message on this phone.",
+  "iAgreeToTheseThreeRules": "I agree to these three rules",
+  "asACoachYouAgreeToThe": "As a coach you agree to the same three rules as every woman here.",
+  "photographYourCertificate": "Photograph your certificate",
+  "takeThePhoto": "Take the photo",
+  "layItFlatInGoodLightWith": "Lay it flat in good light, with every word readable.",
+  "theCameraCouldNotStartCloseThis": "The camera could not start. Close this and try again.",
+  "weCouldNotSendYourCertificateCheck": "We could not send your certificate. Check your connection and try again.",
+  "coachingIsNotOpenYetSoYour": "Coaching is not open yet, so your certificate was not sent.",
+  "typeWhatYouAte": "Type what you ate",
+  "yourWeek": "Your week",
+  "sessionsThisWeekAtAGlanceNothing": "Sessions this week, at a glance. Nothing about your cycle or body.",
+  "todaysWorkoutAndMealOneTapAway": "Today's workout and meal, one tap away.",
+  "doneOfTargetThisWeek": "{done} of {target} this week",
+  "@doneOfTargetThisWeek": {
+    "description": "Lock Screen inline widget. Sessions this week against her weekly target. Never a daily count.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "example": "1"
+      },
+      "target": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "sessionsThisWeekDoneOfTarget": "Sessions this week: {done} of {target}",
+  "@sessionsThisWeekDoneOfTarget": {
+    "description": "VoiceOver label for the widget's week segments and gauge.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "example": "1"
+      },
+      "target": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "yourFirstSessionIsReady": "Your first session is ready",
+  "todaysWorkoutIsReady": "Today's workout is ready",
+  "todayIsUnderWay": "Today is under way",
+  "sessionSaved": "Session saved",
+  "youAddedAMealToday": "You added a meal today",
+  "addWhatIAte": "Add what I ate",
+  "openOwnHubForToday": "Open Own Hub for today",
+  "openOwnHubToStart": "Open Own Hub to start",
+  "yourWeekShowsHere": "Your week shows here",
+  "movingKitten": "Moving kitten",
+  "theKittenShowsYouAroundAndMoves": "The kitten shows you around and moves once when it appears.",
+  "theKittenStaysStill": "The kitten stays still.",
+  "helpImproveOwnHub": "Help improve Own Hub",
+  "optionalSharesWhichScreensAndStepsYou": "Optional. Shares which screens and steps you use with Google Analytics, which may process it outside Egypt. Never your health, your body, your name or your number. You can change this in Privacy.",
+  "onGoogleAnalyticsReceivesWhichScreensAnd": "On. Google Analytics receives which screens and steps you use, never your health, your body, your name or your number. Google may process it outside Egypt.",
+  "offNothingAboutHowYouUseThe": "Off. Nothing about how you use the app is sent. Turning it off also clears the statistics ID on this phone.",
+  "dashboard": "Dashboard",
+  "logs": "Logs",
+  "events": "Events",
+  "adminConsole": "Admin console",
+  "contentEventsCountsAndLogs": "Content, events, counts and logs",
+  "countsOnlyNothingHereNamesAMember": "Counts only. Nothing here names a member.",
+  "accounts": "Accounts",
+  "verifiedMembers": "Verified members",
+  "humanReviewsWaiting": "Human reviews waiting",
+  "countPastTheHoursHourPromise": "{count} past the {hours}-hour promise",
+  "@countPastTheHoursHourPromise": {
+    "description": "Z15, human reviews older than the review SLA. Both values are Western-digit labels.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      },
+      "hours": {
+        "type": "String",
+        "example": "72"
+      }
+    }
+  },
+  "oldestHasWaitedHoursHours": "Oldest has waited {hours} hours",
+  "@oldestHasWaitedHoursHours": {
+    "description": "Z15, the age of the oldest open human review in whole hours.",
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "41"
+      }
+    }
+  },
+  "checkOutcomesLast7Days": "Check outcomes, last 7 days",
+  "checkOutcomesLast30Days": "Check outcomes, last 30 days",
+  "waitlist": "Waitlist",
+  "deletionRequests": "Deletion requests",
+  "stillRunning": "Still running",
+  "finished": "Finished",
+  "upcoming": "Upcoming",
+  "drafts": "Drafts",
+  "updatedTime": "Updated {time}",
+  "@updatedTime": {
+    "description": "Z15, when the counts were computed, Cairo time.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "2026-10-07 14:05"
+      }
+    }
+  },
+  "refresh": "Refresh",
+  "thisAccountDoesNotHaveAdminAccess": "This account does not have admin access.",
+  "signInWithYourPhoneNumberTo": "Sign in with your phone number to open the console.",
+  "theConsoleNeedsAConnectionTryAgain": "The console needs a connection. Try again in a moment.",
+  "approved": "Approved",
+  "sentToAReviewer": "Sent to a reviewer",
+  "notEligible": "Not eligible",
+  "checkDidNotPass": "Check did not pass",
+  "cardAlreadyInUse": "Card already in use",
+  "askedToRetake": "Asked to retake",
+  "askedToTryAgain": "Asked to try again",
+  "decisions": "Decisions",
+  "deletions": "Deletions",
+  "errors": "Errors",
+  "consoleReads": "Console reads",
+  "allOutcomes": "All outcomes",
+  "caseRef": "Case {ref}",
+  "@caseRef": {
+    "description": "Z16, a short reference standing for a verification case. Eight hex characters, never an id.",
+    "placeholders": {
+      "ref": {
+        "type": "String",
+        "example": "3fa91c0e"
+      }
+    }
+  },
+  "reviewerRef": "Reviewer {ref}",
+  "@reviewerRef": {
+    "description": "Z16, a short reference standing for a reviewer account.",
+    "placeholders": {
+      "ref": {
+        "type": "String",
+        "example": "9b2d41aa"
+      }
+    }
+  },
+  "adminRef": "Admin {ref}",
+  "@adminRef": {
+    "description": "Z16, a short reference standing for an admin account.",
+    "placeholders": {
+      "ref": {
+        "type": "String",
+        "example": "c01d2e3f"
+      }
+    }
+  },
+  "countJoined": "{count} joined",
+  "@countJoined": {
+    "description": "Z16, waitlist joins on one day. Counts only.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "loadMore": "Load more",
+  "openingALogIsRecordedToo": "Opening a log is recorded too.",
+  "lookedAtTheReviewQueue": "Looked at the review queue",
+  "lookedUpAContact": "Looked up a contact",
+  "bookedAReview": "Booked a review",
+  "recordedADecision": "Recorded a decision",
+  "storeReviewAccount": "Store review account",
+  "willRetry": "Will retry",
+  "secondSweepDone": "Second sweep done",
+  "openedTheDashboard": "Opened the dashboard",
+  "openedALog": "Opened a log",
+  "addAnEvent": "Add an event",
+  "editAnEvent": "Edit an event",
+  "titleEnglish": "Title (English)",
+  "titleArabic": "Title (Arabic)",
+  "descriptionEnglish": "Description (English)",
+  "descriptionArabic": "Description (Arabic)",
+  "startsCairoTime": "Starts, Cairo time",
+  "endsCairoTime": "Ends, Cairo time",
+  "dateAndTimeLike20261105": "Date and time, like 2026-11-05 18:30",
+  "online": "Online",
+  "inPerson": "In person",
+  "linkStartingWithHttps": "Link, starting with https://",
+  "placeName": "Place name",
+  "aNameIsEnoughNoStreetAddress": "A name is enough. No street address needed.",
+  "capacityOptional": "Capacity, optional",
+  "coverPicture": "Cover picture",
+  "noPicturesInTheMediaLibraryYet": "No pictures in the media library yet.",
+  "published": "Published",
+  "cancelled": "Cancelled",
+  "saveAsDraft": "Save as draft",
+  "moveBackToDraft": "Move back to draft",
+  "cancelThisEvent": "Cancel this event",
+  "membersWillNoLongerSeeIt": "Members will no longer see it.",
+  "yesCancelIt": "Yes, cancel it",
+  "useTheFormat2026110518": "Use the format 2026-11-05 18:30.",
+  "theEndMustComeAfterTheStart": "The end must come after the start.",
+  "useALinkThatStartsWithHttps": "Use a link that starts with https://",
+  "aWholeNumberAboveZero": "A whole number above zero.",
+  "noEventsYet": "No events yet",
+  "addOneThenPublishItWhenIt": "Add one, then publish it when it is ready.",
+  "couldNotSaveCheckTheConnectionAnd": "Could not save. Check the connection and the admin access, then try again.",
+  "upcomingEvents": "Upcoming events",
+  "noEventsComingUp": "No events coming up",
+  "whenOwnHubPlansOneYouWill": "When Own Hub plans one, you will find it here.",
+  "cairoTime": "Cairo time",
+  "startToEnd": "{start} to {end}",
+  "@startToEnd": {
+    "description": "An event's time span, both in Cairo time, Western digits.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "18:30"
+      },
+      "end": {
+        "type": "String",
+        "example": "20:00"
+      }
+    }
+  },
+  "openTheLink": "Open the link",
+  "placesCount": "Places: {count}",
+  "@placesCount": {
+    "description": "An event's capacity, when the owner set one.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "methodOneStepALineInArabic": "Method, one step a line, in Arabic",
+  "sectionOfTheBook": "Section of the book",
+  "author": "Author",
+  "allergensCheckedBy": "Allergens checked by",
+  "aSecondPersonChecksTheAllergensNever": "A second person checks the allergens, never the author.",
+  "showThisRecipeToMembers": "Show this recipe to members",
+  "membersSeeItWithinADay": "Members see it within a day.",
+  "fillInAllFourNumbersOrLeave": "Fill in all four numbers, or leave all four empty.",
+  "thisRecipeCannotGoToMembersYet": "This recipe cannot go to members yet. Check the steps, the section and both names.",
+  "savedToTheLibrary": "Saved to the library",
+  "savedOnThisPhoneOnlySignIn": "Saved on this phone only. Sign in with an admin account to save to the library.",
+  "alsoSwitchesItForMembers": "Also switches it for members",
+  "thisIsLongerThanTheAppAllows": "This is longer than the app allows.",
+  "methodOneStepALineInEnglish": "Method, one step a line, in English",
+  "setsReps": "{sets} × {reps}",
+  "@setsReps": {
+    "description": "A move's prescription: sets times reps, Western digits.",
+    "placeholders": {
+      "sets": {
+        "type": "String",
+        "example": "3"
+      },
+      "reps": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "setsSecondsSeconds": "{sets} × {seconds} seconds",
+  "@setsSecondsSeconds": {
+    "description": "A held move's prescription: sets times seconds.",
+    "placeholders": {
+      "sets": {
+        "type": "String",
+        "example": "3"
+      },
+      "seconds": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "restSecondsSeconds": "Rest {seconds} seconds",
+  "@restSecondsSeconds": {
+    "description": "Rest between sets, as the owner wrote it.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "60"
+      }
+    }
+  },
+  "writtenForPregnancyCheckWithYourDoctor": "Written for pregnancy. Check with your doctor before you start, and stop if anything feels wrong.",
+  "writtenForAfterABirthCheckWith": "Written for after a birth. Check with your doctor before you start, and stop if anything feels wrong.",
+  "addASession": "Add a session",
+  "sessionTitleEnglish": "Session title (English)",
+  "sessionTitleArabic": "Session title (Arabic)",
+  "whoItIsWrittenFor": "Who it is written for",
+  "exercise": "Exercise",
+  "sets": "Sets",
+  "holdSeconds": "Hold, seconds",
+  "restSeconds": "Rest, seconds",
+  "notesEnglish": "Notes (English)",
+  "notesArabic": "Notes (Arabic)",
+  "safetyNoteEnglish": "Safety note (English)",
+  "safetyNoteArabic": "Safety note (Arabic)",
+  "remove": "Remove",
+  "showThisProgrammeToMembers": "Show this programme to members",
+  "membersSeeEachSessionThatSuitsTheir": "Members see each session that suits their life stage, within a day.",
+  "addExercisesToTheLibraryFirst": "Add exercises to the library first.",
+  "repsOrAHoldNotBoth": "Reps or a hold, not both.",
+  "thisProgrammeCannotGoToMembersYet": "This programme cannot go to members yet. Check that every session has moves, its numbers and who it is for, and that pregnancy and after-a-birth sessions hold no move tagged unsafe for them.",
+  "uploadItsPicturesUnderThisIdId": "Upload its pictures under this id: {id}",
+  "@uploadItsPicturesUnderThisIdId": {
+    "description": "Z18, the event id the owner passes to tool/admin_access.sh upload-media for its cover.",
+    "placeholders": {
+      "id": {
+        "type": "String",
+        "example": "AbC123xyz"
+      }
+    }
+  },
+  "iDidThemAll": "I did them all",
+  "nothingInTheLogYet": "Nothing in the log yet",
+  "sendItAgainInTime": "Send it again in {time}",
+  "@sendItAgainInTime": {
+    "description": "C07, while the resend waits after a code was sent. time is minutes:seconds in Western digits, e.g. 0:27.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "0:27"
+      }
+    }
+  },
+  "yourProgressCard": "Your progress card",
+  "everythingYouHaveDoneOnOneCard": "Everything you have done, on one card. Only what is here is shared.",
+  "showMyWeightChange": "Show my weight change",
+  "offUnlessYouTurnItOnAnd": "Off unless you turn it on, and only on this card.",
+  "yourCardFillsInAfterYourFirst": "Your card fills in after your first workout.",
+  "shareMyCard": "Share my card",
+  "weeksTrained": "Weeks trained",
+  "bestRunInWeeks": "Best run, in weeks",
+  "mealsAdded": "Meals added",
+  "myProgressOnOwnHub": "My progress on Own Hub",
+  "workoutsDone": "Workouts done",
+  "weightSinceMyFirstWeighIn": "Weight since my first weigh-in",
+  "ownHubAppWomenOnly": "own-hub.app · Women only.",
+  "shareYourProgress": "Share your progress",
+  "aCardOfWhatYouHaveDone": "A card of what you have done, ready to share",
+  "weightKg": "{weight} kg",
+  "@weightKg": {
+    "description": "A weight or a weight change on P05, e.g. −2.5 kg. weight is already signed and in Western digits.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "−2.5"
+      }
+    }
+  },
+  "forEveryMember": "For every member",
+  "switchingOneOffHereStopsItIn": "Switching one off here stops it in every member's app at her next launch. It cannot switch on anything this build does not ship.",
+  "thatDidNotReachTheServer": "That did not reach the server",
+  "notOpenRightNow": "Not open right now",
+  "thisPartOfOwnHubIsNot": "This part of Own Hub is not open right now. Everything else works as usual.",
+  "mostWomenStartWithNothingThatIs": "Most women start with nothing. That is plenty.",
+  "howManyDaysAWeek": "How many days a week?",
+  "howLongCanASessionBe": "How long can a session be?",
+  "shortIsFineFifteenMinutesDoneBeats": "Short is fine. Fifteen minutes done beats an hour planned.",
+  "aFewShortQuestionsOneAtA": "A few short questions, one at a time. Your week is ready at the end.",
+  "addAPhotoOfYou": "Add a photo of you",
+  "womenChooseAPersonTheyCanSee": "Women choose a person they can see. Take it now, or add it later from your page.",
+  "takeAPhoto": "Take a photo",
+  "takeItAgain": "Take it again",
+  "takeYourPhoto": "Take your photo",
+  "faceTheLightWithAPlainWall": "Face the light, with a plain wall behind you.",
+  "howYouCoach": "How you coach",
+  "clientsLookForACoachByLanguage": "Clients look for a coach by language and by where they train.",
+  "yourClientsResults": "Your clients' results",
+  "eachResultIsABeforeAndAn": "Each result is a before and an after, laid out the same way on every coach's page. Your client adds her own photos and agrees in her own app, so it is always hers to share.",
+  "before": "Before",
+  "after": "After",
+  "howItWillLook": "How it will look",
+  "facesStayHiddenUnlessSheChoosesTo": "Faces stay hidden unless she chooses to show hers.",
+  "whenYourCheckIsDoneAskAny": "When your check is done, ask any client from her page on your desk.",
+  "whatYourClientsSay": "What your clients say",
+  "onlyWomenYouCoachHereCanWrite": "Only women you coach here can write one, so every word is real.",
+  "coachedHere": "Coached here",
+  "herWordsShowWithHerFirstName": "Her words show with her first name only, and she can take them back.",
+  "betweenMinAndMaxDaysOrLeave": "Between {min} and {max} days, or leave it empty",
+  "@betweenMinAndMaxDaysOrLeave": {
+    "description": "Y02, under the usual cycle length when what she typed is not a cycle length.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "15"
+      },
+      "max": {
+        "type": "String",
+        "example": "60"
+      }
+    }
+  },
+  "theseSwitchesChangeOnlyThisPhoneSo": "These switches change only this phone, so you can look at a part before it ships. To stop a part for every member, use the list at the end."
 }

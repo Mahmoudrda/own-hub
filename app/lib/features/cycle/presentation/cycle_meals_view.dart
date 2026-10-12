@@ -91,7 +91,10 @@ class CycleMealsView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: CycleNavBar(onSelectTab: onSelectTab),
+      bottomNavigationBar: CycleNavBar(
+        screenId: 'Y07',
+        onSelectTab: onSelectTab,
+      ),
       appBar: AppTopBar(title: l10n.mealsForToday, onBack: onBack),
       body: AppScaffold(
         children: [

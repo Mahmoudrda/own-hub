@@ -15,6 +15,7 @@
 /// everywhere.
 library;
 
+import '../domain/clock/app_clock.dart';
 import '../domain/rewards/award_ledger.dart';
 import '../domain/rewards/award_table.dart';
 // The award table speaks the training domain's SessionSource; the train
@@ -64,6 +65,26 @@ class WorkoutSessionState {
   /// Zero-based, within [currentMove].
   int get setIndex => _setIndex;
 
+  /// How many moves are behind her: zero-based, and also the count of moves
+  /// struck off.
+  ///
+  /// R13 was handed [loggedSetCount] for this — a count of *sets* rendered as
+  /// moves — so two moves of three sets each read "6 of 5".
+  int get moveIndex => _moveIndex;
+
+  /// How many moves today's session holds, her swaps included.
+  int get moveCount => moves.length;
+
+  /// The move she tapped on R03 to watch it.
+  ///
+  /// R03's `onOpenMove` threw its argument away and R04 was built with no move
+  /// at all, so tapping "Dead bug" opened a demo of a goblet squat — a move
+  /// that is not in the session. This carries the one she asked for.
+  PlannedMove? get openedMove => _openedMove;
+  PlannedMove? _openedMove;
+
+  void openMove(PlannedMove move) => _openedMove = move;
+
   /// The set she is being asked for, or null when there is no live session.
   PrescribedSet? get currentSet {
     final move = currentMove;
@@ -84,6 +105,18 @@ class WorkoutSessionState {
 
   TrainSession? get session => _session;
 
+  TrainSession? _lastFinished;
+
+  /// The session [finish] last put away, still readable after it has cleared
+  /// the live one.
+  ///
+  /// R10 reports on a session it must be *told* about: it decides whether a
+  /// personal best is even possible from `session.source`, and with nothing
+  /// passed it used to treat the absence as permission and draw the trophy for
+  /// everybody. `finish` nulls [session] before the route builds, so the router
+  /// reads this instead.
+  TrainSession? get lastFinished => _lastFinished;
+
   /// Starts [day] if nothing is live. Safe to call from a tap on R01, R03 or
   /// Today: a session already under way is left alone.
   void start(WorkoutDay day, TrainRepository repository) {
@@ -92,7 +125,7 @@ class WorkoutSessionState {
     _moveIndex = 0;
     _setIndex = 0;
     _loggedSets = 0;
-    _startedAt = DateTime.now();
+    _startedAt = AppClock.now();
     _swaps.clear();
     repository.startSession(day).then((session) {
       _session = session;
@@ -172,9 +205,12 @@ class WorkoutSessionState {
   }) async {
     final session = _session;
     if (session == null) return;
+    // Synchronously, before the first await: the caller does not await this and
+    // pushes R10 in the next statement.
+    _lastFinished = session;
     final seconds = _startedAt == null
         ? 0
-        : DateTime.now().difference(_startedAt!).inSeconds;
+        : AppClock.now().difference(_startedAt!).inSeconds;
     await repository.finishSession(
       sessionId: session.id,
       durationSec: seconds,
@@ -205,7 +241,7 @@ class WorkoutSessionState {
     DateTime? now,
     bool creditToday = true,
   }) {
-    final on = now ?? DateTime.now();
+    final on = now ?? AppClock.now();
     final key = WeekKey.of(on);
     final week =
         progress.weeks[key.id] ??
@@ -254,10 +290,12 @@ class WorkoutSessionState {
   void reset() {
     _day = null;
     _session = null;
+    _lastFinished = null;
     _moveIndex = 0;
     _setIndex = 0;
     _loggedSets = 0;
     _startedAt = null;
+    _openedMove = null;
     _swaps.clear();
   }
 }

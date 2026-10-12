@@ -26,7 +26,11 @@ library;
 
 import '../../../ui/screen_art_strip.dart';
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import '../../../app_state/remote_features.dart';
 
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
@@ -44,43 +48,63 @@ class FeatureFlagsView extends StatefulWidget {
 }
 
 class _FeatureFlagsViewState extends State<FeatureFlagsView> {
-  /// The order features are listed in. Grouping is by what each switch is
-  /// actually set to, not by phase -- a heading that reads "not switched on
-  /// yet" above a switch that IS on is a screen telling its operator something
-  /// untrue, which is the one thing this screen cannot afford to do.
-  static const List<Feature> _order = [
-    Feature.accountRequired,
-    Feature.signUp,
-    Feature.verification,
-    Feature.today,
-    Feature.train,
-    Feature.eat,
-    Feature.progress,
-    Feature.cycle,
-    Feature.privacyCentre,
-    Feature.adminConsole,
-  ];
+  /// The order features are listed in: the enum's own. A hand-kept list here
+  /// was a second place a new feature had to be added, and a switch that is
+  /// missing from this screen is a switch nobody running the product knows
+  /// about. Grouping is by what each switch is actually set to, not by phase:
+  /// a heading that reads "not switched on yet" above a switch that IS on is
+  /// a screen telling its operator something untrue.
+  static const List<Feature> _all = Feature.values;
 
-  /// Listed after the above, newer and less proven, but grouped at render
-  /// time by state like everything else.
-  static const List<Feature> _later = [
-    Feature.community,
-    Feature.communityPosts,
-    Feature.communityVideo,
-    Feature.communityVoiceNotes,
-    Feature.communityFollowerCounts,
-    Feature.coachApp,
-    Feature.coachPlanning,
-    Feature.coachPortfolio,
-    Feature.coachedLife,
-    Feature.marketplace,
-    Feature.payments,
-    Feature.assistant,
-  ];
+  /// What `meta/features` says for every member, read when the screen opens.
+  Map<Feature, bool> _forMembers = RemoteFeatures.lastRead;
+  final Set<Feature> _failed = {};
 
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_readForMembers());
+  }
+
+  Future<void> _readForMembers() async {
+    final source = RemoteFeatures.store();
+    if (source == null) return;
+    try {
+      final data = await source.read() ?? const <String, Object?>{};
+      if (!mounted) return;
+      setState(() {
+        _forMembers = {
+          for (final f in Feature.values)
+            if (data[f.name] case final bool on) f: on,
+        };
+      });
+    } catch (_) {
+      // Offline: the rows show what this phone last knew.
+    }
+  }
+
+  /// This phone only, except a switch the server may turn on, which members'
+  /// apps also take (`events`).
   void _toggle(Feature f, bool on) {
     setState(() {
       AppRouter.featureFlags = AppRouter.featureFlags.with_({f: on});
+    });
+    if (f.serverMayTurnOn) {
+      unawaited(RemoteFeatures.publish(f, on));
+    }
+  }
+
+  /// Every member: stops a feature, or lifts the stop, at her next launch.
+  Future<void> _setForMembers(Feature f, bool running) async {
+    setState(() {
+      _forMembers = {..._forMembers, f: running};
+      _failed.remove(f);
+    });
+    final landed = await RemoteFeatures.publish(f, running);
+    if (!mounted || landed) return;
+    setState(() {
+      _forMembers = {..._forMembers, f: !running};
+      _failed.add(f);
     });
   }
 
@@ -88,14 +112,22 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final flags = AppRouter.featureFlags;
-    const all = [..._order, ..._later];
     final on = [
-      for (final f in all)
+      for (final f in _all)
         if (flags.isSetOn(f)) f,
     ];
     final off = [
-      for (final f in all)
+      for (final f in _all)
         if (!flags.isSetOn(f)) f,
+    ];
+    // Stops for every member: what ships here, which the server may switch
+    // off. Events are switched above, for members too.
+    final stoppable = [
+      for (final f in _all)
+        if (f.serverMayTurnOff &&
+            !f.serverMayTurnOn &&
+            FeatureFlags.shipped.isSetOn(f))
+          f,
     ];
 
     return Scaffold(
@@ -129,7 +161,7 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    l10n.turningAFeatureOffHidesItEverywhere,
+                    l10n.theseSwitchesChangeOnlyThisPhoneSo,
                     style: AppText.bodyM,
                   ),
                 ),
@@ -151,6 +183,15 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
             const SizedBox(height: 6),
             for (final f in off) _row(f, flags),
           ],
+          const SizedBox(height: 18),
+          Text(l10n.forEveryMember, style: AppText.titleM),
+          const SizedBox(height: 6),
+          Text(
+            l10n.switchingOneOffHereStopsItIn,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          const SizedBox(height: 6),
+          for (final f in stoppable) _memberRow(f),
         ],
       ),
     );
@@ -181,6 +222,13 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(f.name, style: AppText.bodyM),
+                if (f.serverMayTurnOn)
+                  Text(
+                    AppL10n.of(context).alsoSwitchesItForMembers,
+                    style: AppText.label.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
                 if (blockedByParent)
                   Text(
                     '${f.parent!.name} is off',
@@ -191,7 +239,41 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
               ],
             ),
           ),
-          Switch(value: set, onChanged: (v) => _toggle(f, v)),
+          Switch(
+            key: ValueKey('phone-${f.name}'),
+            value: set,
+            onChanged: (v) => _toggle(f, v),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _memberRow(Feature f) {
+    final l10n = AppL10n.of(context);
+    final running = _forMembers[f] ?? true;
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(top: 2, bottom: 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(f.name, style: AppText.bodyM),
+                if (_failed.contains(f))
+                  Text(
+                    l10n.thatDidNotReachTheServer,
+                    style: AppText.label.copyWith(color: AppColors.error),
+                  ),
+              ],
+            ),
+          ),
+          Switch(
+            key: ValueKey('members-${f.name}'),
+            value: running,
+            onChanged: (v) => _setForMembers(f, v),
+          ),
         ],
       ),
     );

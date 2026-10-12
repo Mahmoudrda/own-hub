@@ -204,7 +204,7 @@ class PersonalBestsView extends StatelessWidget {
       backgroundColor: AppColors.surface,
       appBar: AppTopBar(title: l10n.personalBests, onBack: onBack),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'T01',
+        activeScreenId: 'P03',
         onSelect: (id) {
           final onTab = onSelectTab;
           if (onTab != null) {
@@ -247,7 +247,7 @@ class PersonalBestsView extends StatelessWidget {
                 // The rule that keeps a best meaningful, said on the screen
                 // where she would otherwise wonder why a session is missing.
                 Text(
-                  l10n.sessionsYouLoggedAsIAlreadyDid,
+                  l10n.sessionsYouAddedWithIAlreadyDid,
                   style: AppText.bodyM.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),

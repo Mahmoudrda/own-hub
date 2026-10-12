@@ -38,22 +38,30 @@
 /// rows carry no subtitle rather than a subtitle about somebody else.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_avatar.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
+import '../../../app_state/kitten_setting.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
+import '../../../ui/app_toggle.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/dietary_profile.dart';
+import 'allergen_labels.dart';
 import '../domain/privacy_settings.dart';
 import '../domain/verification_claim.dart';
 import 'account_view_models.dart';
+import '../../../ui/medical_disclaimer.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({
@@ -65,12 +73,14 @@ class ProfileView extends StatefulWidget {
     this.onBack,
     this.onOpenCycle,
     this.onOpenCoach,
+    this.onOpenTraining,
     this.onOpenLanguage,
     this.onOpenNotifications,
     this.onOpenPrivacy,
     this.onOpenSafetyCentre,
     this.onOpenYourData,
     this.onOpenAllScreens,
+    this.onOpenAdmin,
     this.onSelectTab,
   });
 
@@ -87,6 +97,17 @@ class ProfileView extends StatefulWidget {
   final VoidCallback? onBack;
   final VoidCallback? onOpenCycle;
   final VoidCallback? onOpenCoach;
+
+  /// The four setup questions, reopened — `O01` to `O05`.
+  ///
+  /// D3's "editable forever" had no door here at all. Her goal, her days a
+  /// week, her session length, her equipment and what the programme has to
+  /// train around were collected once, in a flow that only sign-up could reach,
+  /// and after that there was no screen in the product that could change any of
+  /// them. Null leaves the row off, the way every other optional row here
+  /// behaves.
+  final VoidCallback? onOpenTraining;
+
   final VoidCallback? onOpenLanguage;
   final VoidCallback? onOpenNotifications;
   final VoidCallback? onOpenPrivacy;
@@ -96,15 +117,23 @@ class ProfileView extends StatefulWidget {
   /// an account is required.
   final VoidCallback? onOpenAllScreens;
 
-  /// Export and account deletion.
+  /// The owner's admin console. Null, and the row absent, in every build but
+  /// the admin build (`tool/admin_access.sh build`); a store build cannot
+  /// resolve the console at all.
+  final VoidCallback? onOpenAdmin;
+
+  /// Account deletion.
   ///
-  /// **Deliberately a callback with no screen behind it yet.** The deletion
-  /// machine is built and tested (`AccountDeletionService`), but every sentence
-  /// its UI needs — "Deleting your account", "Your account is gone.", "Still
-  /// finishing", "You need a connection to delete your account" — is absent
-  /// from the dictionary. Drawing that flow would mean hardcoding English into
-  /// a widget, which §7 forbids and which an Arabic reader would meet as
-  /// untranslated text on the most consequential screen in the product.
+  /// This was a callback with nothing behind it and a row that rendered anyway,
+  /// so the tap did nothing: Apple 2.1 for the dead control, and 5.1.1(v) for
+  /// an account that can be made in the app and not removed in it. The router
+  /// now opens `your_data_sheet.dart`, which explains what deleting takes away
+  /// and then takes it away.
+  ///
+  /// The sentences that were missing are minted. The row says **delete**
+  /// rather than "download everything, or delete": there is no server in this
+  /// build and no export to hand her, and the sheet says so in plain words
+  /// rather than showing a download button that would produce nothing.
   final VoidCallback? onOpenYourData;
 
   final ValueChanged<String>? onSelectTab;
@@ -138,6 +167,10 @@ class _ProfileViewState extends State<ProfileView> {
     setState(() => _dietary = merged);
   }
 
+  /// Whether this build has a community at all. Several rows here describe
+  /// one, and a subtitle about members is a claim as much as a button is.
+  bool get _community => AppRouter.featureFlags.isOn(Feature.community);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -149,21 +182,48 @@ class _ProfileViewState extends State<ProfileView> {
     );
 
     return AppScaffold(
-      appBar: AppTopBar(onBack: widget.onBack),
-      footer: [AppNavBar(activeScreenId: 'T01', onSelect: widget.onSelectTab)],
+      // This page carried no title at all: a back arrow, an illustration, her
+      // picture and a list of rows, on the screen half the product hangs off.
+      // The route table has always called it "Profile and settings"; the
+      // dictionary's own name for it is the one the avatar announces, so the
+      // page and the control that opens it now say the same words.
+      appBar: AppTopBar(title: l10n.yourProfile, onBack: widget.onBack),
+      // Its own id, which is what the bar's `activeScreenId` has always asked
+      // for: "the screen currently shown". This passed `'T01'`, and the bar has
+      // a deliberate rule that the active tab is not a link to itself — so the
+      // Home tab was drawn as the current page, given no `onTap`, and did
+      // nothing, on a settings screen where Home is the one place she is most
+      // likely to be heading. A02 is not a tab, so naming itself leaves all
+      // three tabs live and none of them marked.
+      footer: [AppNavBar(activeScreenId: 'A02', onSelect: widget.onSelectTab)],
       children: [
         _header(l10n, view),
+
+        // First, because it is the only row that changes what the app gives
+        // her: her goal, her days a week, her minutes a session, her equipment
+        // and what the programme has to train around.
+        if (widget.onOpenTraining != null)
+          _row(
+            icon: Icons.fitness_center_outlined,
+            title: l10n.yourTraining,
+            subtitle: l10n.yourGoalYourDaysAndWhatYou,
+            onTap: widget.onOpenTraining,
+          ),
 
         _row(
           icon: Icons.self_improvement,
           title: l10n.myCycle,
           onTap: widget.onOpenCycle,
         ),
-        _row(
-          icon: Icons.sports_outlined,
-          title: l10n.myCoach,
-          onTap: widget.onOpenCoach,
-        ),
+        // Hiring a coach is the marketplace, and the marketplace waits on a
+        // payment rail. D11 moved this row here from the deleted fifth tab;
+        // it comes back the day that flag does.
+        if (AppRouter.screenIsOn('H01'))
+          _row(
+            icon: Icons.sports_outlined,
+            title: l10n.myCoach,
+            onTap: widget.onOpenCoach,
+          ),
 
         // D3's row. The one the Eat safety guard has been waiting for.
         _row(
@@ -173,6 +233,11 @@ class _ProfileViewState extends State<ProfileView> {
           onTap: _editDietary,
         ),
 
+        // The language chooser lives in the sign-up flow and is a setting all
+        // the same, which is why `AppRouter.ungatedScreens` keeps it
+        // reachable with sign-up dark. Without that this row was the one
+        // control in the product that could strand a woman in a language she
+        // does not read.
         _row(
           icon: Icons.language,
           title: l10n.language,
@@ -188,24 +253,58 @@ class _ProfileViewState extends State<ProfileView> {
           subtitle: view.notifyIsDefault ? l10n.oneADayQuiet10pmTo8am : '',
           onTap: widget.onOpenNotifications,
         ),
+        // The kitten that guides her through onboarding. Off, it is still
+        // there but never moves.
+        AppListItem(
+          leading: const Icon(
+            Icons.pets_outlined,
+            size: 24,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.movingKitten,
+          subtitle: KittenSetting.instance.moves
+              ? l10n.theKittenShowsYouAroundAndMoves
+              : l10n.theKittenStaysStill,
+          trailing: AppToggle(
+            key: const ValueKey('kitten-moves-toggle'),
+            value: KittenSetting.instance.moves,
+            semanticLabel: l10n.movingKitten,
+            onChanged: _setKittenMoves,
+          ),
+          onTap: () => _setKittenMoves(!KittenSetting.instance.moves),
+        ),
         _row(
           icon: Icons.lock_outline,
           title: l10n.privacy,
-          subtitle: l10n.whoSeesYourProfileAndWins,
+          // "Who sees your profile and wins" describes a profile other women
+          // read. With the community dark nobody sees either, so the row
+          // carries no subtitle rather than a promise about a room that is
+          // not open.
+          subtitle: _community ? l10n.whoSeesYourProfileAndWins : '',
           onTap: widget.onOpenPrivacy,
         ),
         _row(
           icon: Icons.shield_outlined,
           title: l10n.safetyCentre,
-          subtitle: l10n.reportsBlockedMembersHelp,
+          // Same rule: reports and blocked members are about members. What is
+          // left on A04 with the community off is the help route and the
+          // emergency line, which are worth keeping and are not a list.
+          subtitle: _community ? l10n.reportsBlockedMembersHelp : '',
           onTap: widget.onOpenSafetyCentre,
         ),
         _row(
-          icon: Icons.download_outlined,
+          icon: Icons.delete_outline,
           title: l10n.yourData,
-          subtitle: l10n.downloadEverythingOrDeleteYourAccount,
+          subtitle: l10n.deleteYourAccountAndEverythingInIt,
           onTap: widget.onOpenYourData,
         ),
+        if (widget.onOpenAdmin != null)
+          _row(
+            icon: Icons.admin_panel_settings_outlined,
+            title: l10n.adminConsole,
+            subtitle: l10n.contentEventsCountsAndLogs,
+            onTap: widget.onOpenAdmin,
+          ),
         if (widget.onOpenAllScreens != null)
           _row(
             icon: Icons.grid_view,
@@ -213,6 +312,8 @@ class _ProfileViewState extends State<ProfileView> {
             subtitle: l10n.openAnyScreenForTesting,
             onTap: widget.onOpenAllScreens,
           ),
+        // About Own Hub, at the foot of the page: what the app is not.
+        const MedicalDisclaimer(),
       ],
     );
   }
@@ -256,6 +357,11 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
+  void _setKittenMoves(bool moves) {
+    unawaited(KittenSetting.instance.set(moves));
+    setState(() {});
+  }
+
   Widget _row({
     required IconData icon,
     required String title,
@@ -278,12 +384,13 @@ class _ProfileViewState extends State<ProfileView> {
 
 /// The allergy and dietary editor — a **branch of A02**, never a route.
 ///
-/// The vocabulary is exactly what the prototype authors on `G17`, whose own
-/// design note calls it "the only place in the product where a client states her
-/// allergies". Every label is already in the dictionary in both languages, and
-/// nothing here adds an allergen content has not written: a plausible-looking
-/// allergen list is the fabricated safety guarantee this whole feature exists to
-/// avoid.
+/// The vocabulary is [AllergenTag]'s sixteen, drawn from one shared label table
+/// so this screen and `G17` and `E10` cannot disagree about what she declared.
+/// It grew from four when Rahma's book was authored and dishes started carrying
+/// real allergen data; `dietary_profile.dart` records where each of the sixteen
+/// comes from. Every label is in the dictionary in both languages, and nothing
+/// here invents a category content has not written: a plausible-looking allergen
+/// list is the fabricated safety guarantee this whole feature exists to avoid.
 class _DietaryEditor extends StatefulWidget {
   const _DietaryEditor({required this.initial, required this.onSave});
 
@@ -301,13 +408,6 @@ class _DietaryEditorState extends State<_DietaryEditor> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-
-    final allergenLabels = <AllergenTag, String>{
-      AllergenTag.nuts: l10n.noNuts,
-      AllergenTag.dairy: l10n.noDairy,
-      AllergenTag.gluten: l10n.noGluten,
-      AllergenTag.shellfish: l10n.noShellfish,
-    };
 
     final dietaryLabels = <DietaryTag, String>{
       DietaryTag.everything: l10n.everything,
@@ -331,7 +431,7 @@ class _DietaryEditorState extends State<_DietaryEditor> {
           children: [
             for (final tag in AllergenTag.values)
               AppChip(
-                allergenLabels[tag]!,
+                allergenLabel(l10n, tag),
                 selected: _allergies.contains(tag),
                 onTap: () => setState(() {
                   if (!_allergies.remove(tag)) _allergies.add(tag);

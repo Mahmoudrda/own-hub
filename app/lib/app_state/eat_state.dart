@@ -23,14 +23,26 @@
 ///   * **Home's meal card.** `recordMeal` is called when a meal is *written*,
 ///     never when it is merely pending — Home is not on screen during the undo
 ///     window, so a log she takes back never reaches it.
-///   * **Recipes she saved.** In memory, like everything else in this build.
+///   * **Recipes she saved.**
+///
+/// Her plates and her bookmarks are written to the phone with everything else
+/// (`local_persistence.dart`); the log bus is not, because a meal still inside
+/// its five seconds was never written.
 ///
 /// Nothing here is seeded. A woman who has logged nothing has no plates, and
 /// Home keeps whatever it opened with.
 library;
 
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseFirestore;
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/widgets.dart';
 
+import '../domain/clock/app_clock.dart';
+import '../features/eat/data/firestore_recipe_source.dart';
+import '../features/eat/data/recipe_sync.dart';
+import '../features/eat/data/seeded_recipe_library.dart';
 import '../features/eat/domain/allergy_guard.dart';
 import '../features/eat/domain/item_id.dart';
 import '../features/eat/domain/meal_log_service.dart';
@@ -46,6 +58,7 @@ import '../l10n/app_l10n.dart';
 import '../routing/app_router.dart';
 import '../ui/app_undo_snackbar.dart';
 import 'app_changes.dart';
+import 'firebase_boot.dart';
 import 'honest_notice.dart';
 
 /// A plate she has actually eaten, with the figure her own log carried.
@@ -106,6 +119,92 @@ class EatAppState {
   /// pressed, over a Log button that wrote koshari.
   String? openRecipeId;
 
+  // ------------------------------------------------------- Rahma's book ----
+
+  /// Her thirty-nine cards, once the seed asset has been read.
+  ///
+  /// [RecipeBook.empty] until then, and every screen that draws it treats empty
+  /// as "there is no book" rather than as "the book is missing" — E05 falls back
+  /// to the four prototype rows, E06 to the food-backed page, and neither shows
+  /// a spinner. A spinner on a library that is already on the handset would be
+  /// a lie about where the data lives.
+  RecipeBook recipeBook = RecipeBook.empty;
+
+  Future<void>? _bookLoad;
+
+  /// Starts the one read of the seed, and tells the open screens when it lands.
+  ///
+  /// Called from the Eat screens rather than from `main()` so that a build which
+  /// never opens Eat never pays for it, and idempotent because three screens
+  /// call it. The failure path is deliberately silent: a bundle read that fails
+  /// leaves [recipeBook] empty, which every caller already handles, and there is
+  /// nothing a woman could do about it.
+  ///
+  /// With no [library] given it reads [recipeSync]: the seed, or the last
+  /// complete remote set cached on the phone, and then asks
+  /// [refreshRecipes] whether the server has a newer one. That check is
+  /// rate-limited inside [RecipeSync], so calling this from a build costs
+  /// nothing after the first time.
+  void ensureRecipeBook({RecipeLibrary? library}) {
+    _bookLoad ??= (library ?? recipeSync).load().then(
+      _adopt,
+      onError: (_) {},
+    );
+    if (library == null) unawaited(refreshRecipes());
+  }
+
+  /// The bundled seed with the Firestore library laid over it.
+  RecipeSync get recipeSync => _recipeSync ??= RecipeSync(
+    seed: SeededRecipeLibrary(),
+    source: _liveRecipeSource,
+  );
+  RecipeSync? _recipeSync;
+
+  /// Swaps a newer library in for the open screens. Never throws.
+  ///
+  /// Called at start-up and on Eat open. When Eat has not been opened yet the
+  /// new set is only cached, and the first open reads it from there.
+  Future<void> refreshRecipes() async {
+    try {
+      final book = (await recipeSync.refresh()).book;
+      if (book != null && _bookLoad != null) _adopt(book);
+    } catch (_) {
+      // The seed is already the answer.
+    }
+  }
+
+  /// One reference swap of a finished book, so no screen can see half of one.
+  /// An older book never replaces a newer one, whichever read lands last.
+  void _adopt(RecipeBook book) {
+    if (recipeBook.recipes.isNotEmpty &&
+        book.contentVersion < recipeBook.contentVersion) {
+      return;
+    }
+    recipeBook = book;
+    AppChanges.bump();
+  }
+
+  /// Firestore, only when a read could succeed: Firebase is up and a verified
+  /// account is signed in (the rules read `isVerified()`). Otherwise null, and
+  /// nothing is read or billed.
+  static RecipeRemoteSource? _liveRecipeSource() {
+    try {
+      if (!FirebaseBoot.isReady) return null;
+      if (FirebaseAuth.instance.currentUser == null) return null;
+      if (!AppRouter.isVerified) return null;
+      return FirestoreRecipeSource(FirebaseFirestore.instance);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Puts a book in place without touching the bundle. Tests only.
+  @visibleForTesting
+  void seedRecipeBook(RecipeBook book) {
+    recipeBook = book;
+    _bookLoad = Future<void>.value();
+  }
+
   /// Her plates, most-eaten first and most-recent as the tie-break.
   ///
   /// Deliberately not [PlateRollup.rank]: that answers "what should E01 offer",
@@ -148,7 +247,17 @@ class EatAppState {
 
   /// What E06 should open on: the dish behind the row she tapped, or the one
   /// the screen defaults to when it is opened cold (the All-screens index).
-  String get openFoodId => foodForRecipe(openRecipeId) ?? 'koshari_bowl';
+  ///
+  /// The koshari fallback applies **only** to a cold open. It used to apply to
+  /// every row [foodForRecipe] could not resolve, which is how tapping
+  /// "Yoghurt, dates and nuts" produced a page headed "Koshari bowl" over a Log
+  /// button that would have written koshari: `RecipeView` reads the food's own
+  /// name first and only falls through to `title` when the id resolves to
+  /// nothing. Handing back the recipe id instead resolves to nothing in the
+  /// food pack, which is the truth, and the page then heads itself with the row
+  /// she actually pressed and says the dish cannot be logged from here.
+  String get openFoodId =>
+      foodForRecipe(openRecipeId) ?? openRecipeId ?? 'koshari_bowl';
 
   /// The title E06 carries when the pack cannot name the dish for it.
   String? recipeTitle(AppL10n l10n) {
@@ -219,7 +328,7 @@ class EatAppState {
   }) {
     if (entries.isEmpty) return null;
     final l10n = AppL10n.of(context);
-    final now = at ?? DateTime.now();
+    final now = at ?? AppClock.now();
     final slot = EatDayViewModel.slotAt(now);
 
     final outcome =
@@ -244,14 +353,21 @@ class EatAppState {
     final handle = session.submit(
       outcome as MealLogPrepared,
       slot: slot,
-      describe: l10n.foodLogged,
+      describe: l10n.mealAdded,
     );
-    showUndo(context, handle);
+    // **No snackbar here.** This used to raise one and then hand the handle
+    // back, and its only caller — Home's plate — carries that handle straight
+    // to E04, which draws the in-page undo bar for it. Two offers for one meal
+    // were on screen at once, reading the same sentence and closing half a
+    // second apart, and the one she reached second reported false and changed
+    // nothing. One log, one undo: carry the handle to the screen that draws the
+    // bar, or call [showUndo] if you are staying put.
     return handle;
   }
 
-  /// The five-second offer, wired so every screen showing the meal drops it the
-  /// moment she takes it back.
+  /// The five-second offer for a caller that does not carry the handle onward,
+  /// wired so every screen showing the meal drops it the moment she takes it
+  /// back. A caller that navigates to E04 must not also call this.
   void showUndo(BuildContext context, LogHandle handle) {
     showUndoSnackBar(
       context,
@@ -318,6 +434,33 @@ class EatAppState {
       '${at.year.toString().padLeft(4, '0')}-'
       '${at.month.toString().padLeft(2, '0')}-'
       '${at.day.toString().padLeft(2, '0')}';
+
+  /// Her plates, keyed the way they are stored, as the snapshot keeps them.
+  ///
+  /// [usualPlates] is the ordered view a screen wants; this is the map the
+  /// storage layer writes. See `lib/app_state/local_persistence.dart`.
+  Map<String, UsualPlate> get platesByIdentity =>
+      Map<String, UsualPlate>.unmodifiable(_plates);
+
+  /// The recipes she bookmarked.
+  Set<String> get savedRecipes => Set<String>.unmodifiable(_saved);
+
+  /// Puts back her plates and her bookmarks. The mirror of [reset].
+  ///
+  /// The log bus is deliberately not restored: a meal still inside its five
+  /// seconds when the app closed was never written, and resurrecting it would
+  /// be logging a meal she can no longer take back.
+  void restore({
+    Map<String, UsualPlate> plates = const <String, UsualPlate>{},
+    Iterable<String> savedRecipes = const <String>[],
+  }) {
+    _plates
+      ..clear()
+      ..addAll(plates);
+    _saved
+      ..clear()
+      ..addAll(savedRecipes);
+  }
 
   /// Drops everything without writing it. For tests and sign-out.
   void reset() {

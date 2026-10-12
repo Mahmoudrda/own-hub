@@ -4,9 +4,11 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_nav_bar.dart';
+import '../../../ui/hand/hand_seed_name.dart';
 import '../../today/presentation/today_cards.dart' show openScreen;
 
 /// The hub's three tabs. **Calendar is absent in symptom-only mode** — Y14 has
@@ -28,11 +30,13 @@ class CycleTabs extends StatelessWidget {
 
   final ValueChanged<CycleTab>? onSelect;
 
-  /// The tabs actually shown, in order.
+  /// The tabs actually shown, in order. A tab whose screen is switched off
+  /// is not drawn, so the server can stop the calendar or the patterns
+  /// without leaving a tab that opens nothing.
   List<CycleTab> get tabs => [
     CycleTab.today,
-    if (showCalendar) CycleTab.calendar,
-    CycleTab.patterns,
+    if (showCalendar && AppRouter.screenIsOn('Y08')) CycleTab.calendar,
+    if (AppRouter.screenIsOn('Y10')) CycleTab.patterns,
   ];
 
   @override
@@ -56,17 +60,28 @@ class CycleTabs extends StatelessWidget {
 
 /// The bottom bar every hub screen carries.
 ///
-/// Home stays the active tab: My cycle is reached *from* Home and is not a tab
-/// of its own, which is what the prototype's `navBar('Home')` says.
+/// **My cycle is not a tab**, so no tab owns these screens and none of them is
+/// marked active. This said `'T01'`, which marked Home as the page she was on —
+/// and `AppNavBar` gives the active tab no `onTap`, because a tab is not a link
+/// to itself. The result was Home rendered as current and dead on all five My
+/// cycle screens, which is the one tab a woman reading her cycle is most likely
+/// to reach for.
+///
+/// So each screen passes [screenId] — its own id, the thing
+/// `AppNavBar.activeScreenId` has always documented — and every tab stays live.
 class CycleNavBar extends StatelessWidget {
-  const CycleNavBar({super.key, this.onSelectTab});
+  const CycleNavBar({super.key, this.screenId = '', this.onSelectTab});
+
+  /// The My cycle screen being drawn (Y03, Y07, Y08, Y10, Y12). No tab owns
+  /// any of them, which is the point: the default marks none of them active.
+  final String screenId;
 
   final ValueChanged<String>? onSelectTab;
 
   @override
   Widget build(BuildContext context) {
     return AppNavBar(
-      activeScreenId: 'T01',
+      activeScreenId: screenId,
       onSelect: (id) {
         final onTab = onSelectTab;
         if (onTab != null) {
@@ -84,7 +99,10 @@ class CycleNavBar extends StatelessWidget {
 /// `AppListItem` already provides the row; this is the layout Y02, Y10 and Y12
 /// use for a switch, kept here so four screens cannot end up with four
 /// spacings.
-class CycleSwitchRow extends StatelessWidget {
+class CycleSwitchRow extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'CycleSwitchRow';
+
   const CycleSwitchRow({
     super.key,
     required this.title,

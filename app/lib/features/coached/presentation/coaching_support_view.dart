@@ -36,6 +36,7 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_segmented.dart';
 import '../../../ui/app_toggle.dart';
 import '../domain/sharing.dart';
+import '../../../ui/hand/hand_seed_name.dart';
 
 class CoachingSupportView extends StatelessWidget {
   const CoachingSupportView({
@@ -207,7 +208,7 @@ class CoachingSupportView extends StatelessWidget {
             ],
           ),
         Text(
-          l10n.yourWorkoutResultsAndFoodLogsAre,
+          l10n.yourWorkoutResultsAndTheMealsYou,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],
@@ -217,7 +218,10 @@ class CoachingSupportView extends StatelessWidget {
 
 /// One sharing row: a label and its own switch, and nothing that reaches
 /// another row.
-class _SwitchRow extends StatelessWidget {
+class _SwitchRow extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => '_SwitchRow';
+
   const _SwitchRow({required this.label, required this.value, this.onChanged});
 
   final String label;

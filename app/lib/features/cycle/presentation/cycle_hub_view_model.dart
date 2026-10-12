@@ -62,6 +62,7 @@ class CycleHubSnapshot {
     required this.showCalendarTab,
     required this.showEstimates,
     required this.periodDay,
+    this.workoutSuggestionsOn = false,
   });
 
   final HubBranch branch;
@@ -78,6 +79,15 @@ class CycleHubSnapshot {
   /// False when `adaptation.workoutSuggestions` is off — and false on a severe
   /// day too, because there is no gentler option on a severe day at all.
   final bool showGentlerCard;
+
+  /// Her answer to "Show workout suggestions" — the consent the card above is
+  /// gated on.
+  ///
+  /// Carried separately because a screen has to be able to tell the two apart:
+  /// "there is nothing to suggest today" is not the same state as "there is,
+  /// and she has never been asked whether she wants it". Y14 asks; see
+  /// `cycle_hub_view.dart`.
+  final bool workoutSuggestionsOn;
 
   /// Whether the meal row may be drawn. Off on a severe day: Y11's note is
   /// "never a meal-based answer".
@@ -160,6 +170,7 @@ class CycleHubViewModel {
       // severe day produces `Suppressed` and not `GentlerOption`.
       showGentlerCard:
           suggestion is GentlerOption && cycle.adaptation.workoutSuggestions,
+      workoutSuggestionsOn: cycle.adaptation.workoutSuggestions,
       showMealSuggestions: !isSevere && cycle.adaptation.mealSuggestions,
       showCalendarTab: datesMode,
       showEstimates: ForecastPolicy.isEnabled(cycle),

@@ -70,6 +70,18 @@ TodayRepository _repoWith({required int logged, required int target}) {
   );
 }
 
+/// A goal whose last week really was covered by a rest week.
+///
+/// The only state in which T04's card is true, and round three found the card
+/// was drawn without it: P01 links to T04, so a phone switched on that morning
+/// was two taps from "A rest week covered last week" at `restWeeksBanked = 0,
+/// countedWeeks = 0`. [WeeklyGoal.lastRepairedWeek] is the field G6 publishes
+/// for this screen, and the card now reads it.
+WeeklyGoal _repaired({int countedWeeks = 0}) => WeeklyGoal(
+  countedWeeks: countedWeeks,
+  lastRepairedWeek: WeekKey.of(_monday.subtract(const Duration(days: 7))),
+);
+
 QuietWeekView _view({
   TodayRepository? repository,
   WeeklyGoal? goal,
@@ -87,9 +99,11 @@ QuietWeekView _view({
 
 void main() {
   group('what was protected is said before anything else', () {
-    testWidgets('the rest week explains itself to every woman', (tester) async {
+    testWidgets('the rest week explains itself to the woman it covered', (
+      tester,
+    ) async {
       _phone(tester);
-      await tester.pumpWidget(_host(_view()));
+      await tester.pumpWidget(_host(_view(goal: _repaired())));
       await tester.pumpAndSettle();
 
       expect(find.text('Monday'), findsOneWidget);
@@ -103,12 +117,38 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('and says nothing of the kind to a woman it did not', (
+      tester,
+    ) async {
+      // A phone switched on this morning. P01 draws a row to T04, so this is
+      // two taps from Progress on day one, and the sentence was unconditional:
+      // she was told a rest week had covered a week she was not here for.
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(_view(goal: const WeeklyGoal(countedWeeks: 0))),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Monday'), findsOneWidget);
+      expect(
+        find.textContaining('A rest week covered last week'),
+        findsNothing,
+        reason:
+            'restWeeksBanked = 0 and countedWeeks = 0: there is no repair to '
+            'report',
+      );
+      // The rest of the screen is unchanged — the ask is still there, because
+      // a Monday after a quiet week is still a Monday.
+      expect(find.text('The shortest one we have'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('her counted-week total is stated only when it is hers', (
       tester,
     ) async {
       _phone(tester);
       await tester.pumpWidget(
-        _host(_view(goal: const WeeklyGoal(countedWeeks: 9))),
+        _host(_view(goal: _repaired(countedWeeks: 9))),
       );
       await tester.pumpAndSettle();
 
@@ -129,7 +169,7 @@ void main() {
     testWidgets('and IS stated to the woman it describes', (tester) async {
       _phone(tester);
       await tester.pumpWidget(
-        _host(_view(goal: const WeeklyGoal(countedWeeks: 14))),
+        _host(_view(goal: _repaired(countedWeeks: 14))),
       );
       await tester.pumpAndSettle();
 
@@ -161,7 +201,7 @@ void main() {
       );
       expect(find.text('Start the 10 minutes'), findsOneWidget);
       // And an even smaller ask below it.
-      expect(find.text('Or just log breakfast'), findsOneWidget);
+      expect(find.text('Or just add breakfast'), findsOneWidget);
     });
   });
 
@@ -245,15 +285,15 @@ void main() {
     _phone(tester);
     await tester.pumpWidget(
       _host(
-        _view(goal: const WeeklyGoal(countedWeeks: 14)),
+        _view(goal: _repaired(countedWeeks: 14)),
         locale: const Locale('ar'),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.text('الاثنين'), findsOneWidget);
-    expect(find.text('أسابيعك الأربعة عشر في أمان'), findsOneWidget);
-    expect(find.text('ابدئي الدقائق العشر'), findsOneWidget);
+    expect(find.text('أسابيعك الـ 14 في أمان'), findsOneWidget);
+    expect(find.text('ابدئي الـ 10 دقايق'), findsOneWidget);
     expect(find.text('Your 14 weeks are safe'), findsNothing);
 
     // P0-A11Y-01: Western numerals, in Arabic too.
@@ -272,7 +312,7 @@ void main() {
     _phone(tester);
     await tester.pumpWidget(
       _host(
-        _view(goal: const WeeklyGoal(countedWeeks: 14)),
+        _view(goal: _repaired(countedWeeks: 14)),
         locale: const Locale('ar'),
         textScale: 1.6,
       ),

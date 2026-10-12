@@ -21,9 +21,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_field.dart';
@@ -107,7 +109,10 @@ class _TypeItViewState extends State<TypeItView> {
   /// straight back.
   TypeItState? _state;
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
+
+  /// Whether saying a meal is on in this build (`E03`).
+  bool get _voice => widget.onSpeak != null && AppRouter.screenIsOn('E03');
 
   @override
   void initState() {
@@ -157,6 +162,23 @@ class _TypeItViewState extends State<TypeItView> {
     setState(() => _state = _model(l10n).remove(_current(l10n), index));
   }
 
+  /// The **one** undo offer for one log (§2 rule 9).
+  ///
+  /// When [TypeItView.onLogged] is wired the handle travels on to E04, which
+  /// draws the in-page `AppUndoBar` for it. Raising a floating snackbar here as
+  /// well put two offers for the same meal on screen, and the one she reached
+  /// second had already expired. Without that handler nothing downstream would
+  /// offer the five seconds, so the snackbar stands in.
+  void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    if (widget.onLogged != null) return;
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: AppL10n.of(context).undo,
+      onUndo: onUndo,
+    );
+  }
+
   void _log(List<ParsedItem> entries) {
     final l10n = AppL10n.of(context);
     final service = MealLogService(
@@ -188,14 +210,9 @@ class _TypeItViewState extends State<TypeItView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
       );
-      showUndoSnackBar(
-        context,
-        handle: handle,
-        undoLabel: l10n.undo,
-        onUndo: session.settle,
-      );
+      _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
       return;
     }
@@ -207,11 +224,11 @@ class _TypeItViewState extends State<TypeItView> {
         // the defect PHASE1-FIXES §8 records on R07's button. Until a
         // parameterised key exists, the sentence that says less is the honest
         // one.
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => service.commit(prepared.write),
       ),
     );
-    showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
+    _offerUndo(handle);
     widget.onLogged?.call(handle);
   }
 
@@ -238,7 +255,7 @@ class _TypeItViewState extends State<TypeItView> {
           // that total to a woman logging one apple, and it said "both" when
           // there was one row or five. The rows above state the numbers, each
           // from its own selected size.
-          l10n.logIt,
+          l10n.addIt,
           onPressed: state.canLog ? () => _log(state.items) : null,
         ),
       ],
@@ -246,18 +263,22 @@ class _TypeItViewState extends State<TypeItView> {
         AppField(
           controller: _controller,
           onChanged: _onChanged,
-          hint: l10n.sayOrTypeWhatYouAte,
-          trailing: IconButton(
-            onPressed: widget.onSpeak,
-            tooltip: l10n.weNeedTheMicrophoneToHearWhat,
-            iconSize: 22,
-            color: AppColors.primaryDim,
-            icon: const Icon(Icons.mic),
-          ),
+          // No microphone while saying a meal is off in this build
+          // (`Feature.voiceLogging`): there is nothing to hear her with.
+          hint: _voice ? l10n.sayOrTypeWhatYouAte : l10n.typeWhatYouAte,
+          trailing: _voice
+              ? IconButton(
+                  onPressed: widget.onSpeak,
+                  tooltip: l10n.weNeedTheMicrophoneToHearWhat,
+                  iconSize: 22,
+                  color: AppColors.primaryDim,
+                  icon: const Icon(Icons.mic),
+                )
+              : null,
         ),
         if (state.items.isNotEmpty)
           Text(
-            l10n.wellLog,
+            l10n.wellAdd,
             style: AppText.titleS.copyWith(color: AppColors.tertiary),
           ),
         for (var i = 0; i < state.items.length; i++)
@@ -312,7 +333,7 @@ class _TypeItViewState extends State<TypeItView> {
               // 600 kcal" — read 600 for every row in the list, whatever she
               // had eaten before.
               meta: l10n.kcalKcal(countLabel(entry.kcal)),
-              logLabel: l10n.log,
+              logLabel: l10n.iAteThis,
               onLog: () => _log([entry]),
             ),
         ],

@@ -31,7 +31,10 @@ enum WeekStyle {
   marks,
 }
 
-class AppWeekSegments extends StatelessWidget {
+class AppWeekSegments extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppWeekSegments';
+
   const AppWeekSegments({
     super.key,
     required this.total,

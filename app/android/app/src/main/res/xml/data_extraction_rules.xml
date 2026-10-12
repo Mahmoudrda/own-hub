@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 and later. Nothing this app keeps on the phone goes into a
+     Google cloud backup or a device-to-device transfer: her cycle and health
+     data stay on this handset unless she turns on the Own Hub backup, and
+     the memory that this phone proved her verified must never be restored
+     onto another phone. allowBackup="false" in the manifest covers older
+     Android versions. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+    </device-transfer>
+</data-extraction-rules>

@@ -42,7 +42,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -152,7 +154,10 @@ class _CycleSettingsViewState extends State<CycleSettingsView> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: CycleNavBar(onSelectTab: widget.onSelectTab),
+      bottomNavigationBar: CycleNavBar(
+        screenId: 'Y12',
+        onSelectTab: widget.onSelectTab,
+      ),
       appBar: AppTopBar(title: l10n.cycleSettings, onBack: widget.onBack),
       body: AppScaffold(
         children: [
@@ -189,40 +194,46 @@ class _CycleSettingsViewState extends State<CycleSettingsView> {
               ),
             ],
           ),
-          AppCard(
-            variant: AppCardVariant.sage,
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-            children: [
-              Text(l10n.shareWithMyCoach, style: AppText.titleM),
-              Text(
-                l10n.offByDefaultCoachingNeverRequiresIt,
-                style: AppText.bodyM.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-              for (final category in CycleCategory.values)
-                CycleSwitchRow(
-                  title: _categoryLabel(l10n, category),
-                  trailing: AppToggle(
-                    value: _isOn(category),
-                    semanticLabel: _categoryLabel(l10n, category),
-                    // Null with no relationship: the switch still renders its
-                    // state, because one she is not allowed to change is
-                    // different from one that is off.
-                    onChanged: widget.relId == null
-                        ? null
-                        : (v) => _setSharing(category, v),
+          // Cycle sharing is a grant to a coach. The first release has no
+          // coaching, so this card offered five switches that could reach
+          // nobody, under a heading naming a person she cannot have. It is
+          // her most sensitive data and the switches are already off by
+          // default; the honest rendering is not to draw them.
+          if (AppRouter.featureFlags.isOn(Feature.coachedLife))
+            AppCard(
+              variant: AppCardVariant.sage,
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              children: [
+                Text(l10n.shareWithMyCoach, style: AppText.titleM),
+                Text(
+                  l10n.offByDefaultCoachingNeverRequiresIt,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
                   ),
                 ),
-              // The preview, derived from what is actually on. See the note.
-              Text(
-                on.isEmpty ? l10n.notShared : on.join(' · '),
-                style: AppText.bodyM.copyWith(
-                  color: AppColors.onSurfaceVariant,
+                for (final category in CycleCategory.values)
+                  CycleSwitchRow(
+                    title: _categoryLabel(l10n, category),
+                    trailing: AppToggle(
+                      value: _isOn(category),
+                      semanticLabel: _categoryLabel(l10n, category),
+                      // Null with no relationship: the switch still renders its
+                      // state, because one she is not allowed to change is
+                      // different from one that is off.
+                      onChanged: widget.relId == null
+                          ? null
+                          : (v) => _setSharing(category, v),
+                    ),
+                  ),
+                // The preview, derived from what is actually on. See the note.
+                Text(
+                  on.isEmpty ? l10n.notShared : on.join(' · '),
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           AppListItem(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             leading: const Icon(

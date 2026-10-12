@@ -85,6 +85,81 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "_why": "S13. expire_stale_reviews: verification_flags where state == PENDING_REVIEW and slaExpiresAt < now. Equality plus a range on a second field needs a composite; without it the hourly SLA job fails on every run and no stale review ever becomes RETRY_REQUIRED.",
+      "collectionGroup": "verification_flags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "slaExpiresAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The reviewer queue (list_verification_flags and tools/review_queue.py): open flags, oldest first, so the woman who has waited longest is called first.",
+      "collectionGroup": "verification_flags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "admin_dashboard: verification outcomes in the last 7 and 30 days, one count() per outcome code. Equality on state plus a range on decidedAt needs a composite.",
+      "collectionGroup": "verificationJobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "decidedAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "admin_logs, decisions filtered by one outcome, newest first and paged by decidedAt.",
+      "collectionGroup": "verificationJobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "decidedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "Feature.events. A member's list is published events not yet over, soonest first; the dashboard counts the same set. Equality on status plus a range on endsAt.",
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endsAt",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -242,6 +317,119 @@
       "_why": "PDPL. stillBleeding is a boolean that is true for exactly the women currently on their period. Of every field in this file, this is the one an index most directly weaponises.",
       "collectionGroup": "periods",
       "fieldPath": "stillBleeding",
+      "indexes": []
+    },
+    {
+      "_why": "COST. The recipe list screen is answered by ONE document, `recipeIndex/{locale}_v{N}`, not by a query across `recipes`. A query returning N recipes on every Eat open is N reads per open: at 200 recipes, 10,000 women and three opens a day that is about $360 a day. Exempting the fields the index document already answers makes the expensive shape unexecutable rather than merely discouraged, which is the same posture the RULE 11 exemptions above take.",
+      "collectionGroup": "recipes",
+      "fieldPath": "proteinG",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "egpPerServing",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "totalMinutes",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "allergensFinal",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "dietTags",
+      "indexes": []
+    },
+    {
+      "_why": "COST, same reasoning: `recipeIndex` already answers it in one read.",
+      "collectionGroup": "recipes",
+      "fieldPath": "tier",
+      "indexes": []
+    },
+    {
+      "_why": "S16 TTL. A liveness session is single use and dead after CHALLENGE_TTL_SEC; Firestore TTL deletes it from expiresAt. Never queried on, so automatic indexing is off as well.",
+      "collectionGroup": "verificationSessions",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "S16 TTL. A verification job gets expireAt only once it is decided (config.DECIDED_RECORD_RETENTION_DAYS, pending counsel). A job still waiting on a review has none and is never swept. Never queried on.",
+      "collectionGroup": "verificationJobs",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "S16 TTL. A review flag gets expireAt only when it leaves PENDING_REVIEW (decided or expired). nidRegistry deliberately has no TTL. Never queried on.",
+      "collectionGroup": "verification_flags",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "W1 TTL. A waitlist entry is deleted 180 days after she joined (pending counsel); it exists only to send one message when Own Hub opens. Never queried on.",
+      "collectionGroup": "waitlist",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "W1 TTL. The per-IP daily counter for the waitlist is deleted after two days. Never queried on.",
+      "collectionGroup": "waitlistRate",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "M9 TTL. The failure count per keyed ID code expires config.SIGNAL_RETENTION_DAYS (180, pending counsel) after its last write; every write moves expireAt. Not linked to an account (deletion manifest row 42). Never queried on.",
+      "collectionGroup": "verificationBehaviour",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "M9 TTL. The hashed installation record expires config.SIGNAL_RETENTION_DAYS (180, pending counsel) after its last write. Not linked to an account (deletion manifest row 43). Never queried on.",
+      "collectionGroup": "verificationInstalls",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "M9 TTL. A reviewer access log entry is deleted config.ACCESS_LOG_RETENTION_DAYS (365, pending counsel) after it was written (deletion manifest row 44). Never queried on.",
+      "collectionGroup": "verificationReviewAccess",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "M11 TTL. The proof that she agreed to the waitlist wording (a keyed code of her contact, the wording version, the language and the date) is deleted three years after she joined (pending counsel). Never queried on.",
+      "collectionGroup": "waitlistConsentProof",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "TTL. A console access line is deleted console/access.py RETENTION_DAYS (365, pending counsel) after the read. It holds a short reference, never a uid. Never queried on.",
+      "collectionGroup": "adminAccessLog",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "_why": "TTL. A day's count of function error codes is deleted console/oplog.py ERRORS_RETENTION_DAYS (90) after the day. Never queried on.",
+      "collectionGroup": "opsErrors",
+      "fieldPath": "expireAt",
+      "ttl": true,
       "indexes": []
     }
   ]

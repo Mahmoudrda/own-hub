@@ -53,7 +53,10 @@ const T03 = phone(
     + `<div style="text-align:center;font-size:82px;line-height:92px;font-weight:600;color:#FFFFFF;letter-spacing:-.02em">8:42</div>`
     + `<div style="flex:1"></div>`
     + card(
-      row(`${avatar(28, { ic: 'restaurant', bg: C.primary, color: '#FFFFFF' })}<div style="flex:1;font-size:14px;font-weight:600;color:${C.onSurfaceVariant}">logotype</div>${m('now', 'nav')}`, { gap: 8 })
+      // Where a notification draws the app's icon. The app shows the brand
+      // tile here (assets/brand/logo/ownhub-tile.png, 28 px, 9 px corners);
+      // this generator draws no images, so a neutral tile stands in for it.
+      row(`<div role="img" aria-label="Own Hub brand mark" style="width:28px;height:28px;flex:none;border-radius:9px;background:${C.surfaceContainer};border:1px solid ${C.outlineVariant}"></div><div style="flex:1;font-size:14px;font-weight:600;color:${C.onSurfaceVariant}">Own Hub</div>${m('now', 'nav')}`, { gap: 8 })
       + strong('Breakfast, your usual?', 'titleM')
       + m('Ful and baladi · 410 kcal · 22 g protein')
       + `<div style="display:flex;gap:8px">${btn('Log it', { h: 48, size: 15, go: 'T01' })}${btn('Something else', { v: 'outlined', h: 48, size: 15, go: 'E02' })}</div>`,

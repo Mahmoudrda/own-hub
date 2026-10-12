@@ -59,6 +59,9 @@ class ContentLibraryView extends StatelessWidget {
     this.onOpenCollection,
     this.onImport,
     this.onOpenFlags,
+    this.onOpenDashboard,
+    this.onOpenLogs,
+    this.onOpenEvents,
     this.onSelectTab,
   });
 
@@ -73,6 +76,13 @@ class ContentLibraryView extends StatelessWidget {
   /// feature is turned on or off, and the console is where staff are — without
   /// this the screen was built, routable and opened by nobody.
   final VoidCallback? onOpenFlags;
+
+  /// Z15, Z16 and Z17: the counts, the logs and the owner's events. Rows
+  /// above the library, because they are about running the product rather
+  /// than about its content.
+  final VoidCallback? onOpenDashboard;
+  final VoidCallback? onOpenLogs;
+  final VoidCallback? onOpenEvents;
 
   final ValueChanged<String>? onSelectTab;
 
@@ -109,6 +119,22 @@ class ContentLibraryView extends StatelessWidget {
           // it, because Z01 is where a console like this one would start
           // growing a "look up a member" box.
           AppSageNote(l10n.nothingHereIsAMembersDataThis),
+
+          for (final (icon, title, onTap) in [
+            (Icons.insights_outlined, l10n.dashboard, onOpenDashboard),
+            (Icons.receipt_long, l10n.logs, onOpenLogs),
+            (Icons.event_outlined, l10n.events, onOpenEvents),
+          ])
+            AppListItem(
+              leading: Icon(icon, size: 24, color: AppColors.primaryDim),
+              title: title,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: onTap,
+            ),
 
           for (final collection in ContentCollection.values)
             _CollectionRow(

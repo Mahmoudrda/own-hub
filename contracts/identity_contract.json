@@ -1,0 +1,199 @@
+{
+  "callables": {
+    "delete_account": {
+      "requestKeys": [],
+      "responseKeys": [
+        "journal",
+        "state"
+      ]
+    },
+    "record_consent": {
+      "request": {
+        "appVersion": "1.0.0+1",
+        "consentVersion": 2,
+        "locale": "en"
+      },
+      "response": {
+        "consentVersion": 2,
+        "ok": true
+      }
+    },
+    "record_health_consent": {
+      "request": {
+        "consentVersion": 1,
+        "granted": true
+      },
+      "response": {
+        "ok": true,
+        "state": "granted"
+      }
+    },
+    "record_legal_acceptance": {
+      "request": {
+        "acceptedAtMs": 1791000000000,
+        "appVersion": "1.0.0+1",
+        "locale": "en",
+        "platform": "android",
+        "privacyVersion": 3,
+        "termsVersion": 3
+      },
+      "response": {
+        "ok": true,
+        "privacyVersion": 3,
+        "termsVersion": 3
+      }
+    },
+    "record_pledge": {
+      "request": {
+        "appVersion": "1.0.0+1",
+        "locale": "en",
+        "version": 1
+      },
+      "response": {
+        "ok": true,
+        "version": 1
+      }
+    },
+    "request_review": {
+      "paths": [
+        "declined",
+        "error",
+        "niqab"
+      ],
+      "request": {
+        "path": "niqab"
+      },
+      "responseKeys": [
+        "state"
+      ]
+    },
+    "start_verification": {
+      "requestKeys": [],
+      "responseKeys": [
+        "expiresInSec",
+        "sessionId",
+        "steps"
+      ]
+    },
+    "verify_identity": {
+      "requestKeys": [
+        "back",
+        "frames",
+        "front",
+        "installId",
+        "liveness",
+        "operationId"
+      ],
+      "responseKeys": [
+        "outcome",
+        "reasons",
+        "refreshToken"
+      ]
+    }
+  },
+  "contractVersion": 1,
+  "deletionJournal": [
+    "requested",
+    "authLocked",
+    "purgingFirestore",
+    "purgingStorage",
+    "purgingGroupHooks",
+    "purgingThirdParty",
+    "authDeleted",
+    "done"
+  ],
+  "documents": {
+    "healthConsent": {
+      "fields": [
+        "at",
+        "state",
+        "version",
+        "withdrawnAt"
+      ],
+      "path": "users/{uid}/consents/health-v1",
+      "states": [
+        "granted",
+        "withdrawn"
+      ]
+    },
+    "legalAcceptance": {
+      "fields": [
+        "appVersion",
+        "at",
+        "clientAcceptedAt",
+        "locale",
+        "platform",
+        "privacyVersion",
+        "termsVersion"
+      ],
+      "path": "users/{uid}/consents/legal-t3-p3"
+    },
+    "pledge": {
+      "fields": [
+        "appVersion",
+        "at",
+        "locale",
+        "version"
+      ],
+      "path": "users/{uid}/consents/pledge-v1"
+    },
+    "reviewConsent": {
+      "fields": [
+        "at",
+        "flagId",
+        "path",
+        "version"
+      ],
+      "path": "users/{uid}/consents/review-v2"
+    },
+    "verificationConsent": {
+      "fields": [
+        "appVersion",
+        "at",
+        "locale",
+        "version"
+      ],
+      "path": "users/{uid}/consents/verification-v2"
+    },
+    "verificationState": {
+      "fields": [
+        "decidedAt",
+        "imagesDeletedAt",
+        "reviewRoute",
+        "reviewScheduledFor",
+        "state",
+        "updatedAt"
+      ],
+      "map": "verification",
+      "path": "users/{uid}",
+      "states": [
+        "approved",
+        "pending",
+        "rejected",
+        "retry"
+      ]
+    }
+  },
+  "errorReasons": {
+    "appCheckMissing": "app_check_missing",
+    "consentMissing": "consent_missing",
+    "costCapReached": "cost_cap_reached",
+    "dailyLimitReached": "daily_limit_reached",
+    "imageTooLarge": "image_too_large",
+    "imageUndecodable": "image_undecodable",
+    "internalError": "internal_error",
+    "livenessFailed": "liveness_failed",
+    "perUidDailyLimit": "per_uid_daily_limit",
+    "phoneSignInRequired": "phone_sign_in_required",
+    "reviewAlreadyOpen": "review_already_open",
+    "reviewConsentMissing": "review_consent_missing",
+    "reviewNotPending": "review_not_pending",
+    "reviewTimeOutOfRange": "review_time_out_of_range",
+    "reviewerIsSubject": "reviewer_is_subject",
+    "sessionMissing": "session_missing",
+    "unauthenticated": "unauthenticated",
+    "verificationClosed": "verification_closed",
+    "verificationInProgress": "verification_in_progress"
+  },
+  "region": "europe-west3"
+}

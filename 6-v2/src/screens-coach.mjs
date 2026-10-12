@@ -1,43 +1,69 @@
 import * as K from './kit.mjs';
 const { C, R, F, phone, statusBar, body, footer, card, row, col, grid, h, t, m, strong, pill, btn, iconBtn, icon, chip, chipRow, segs, linear, ringStat, navBar, sheet, snackbar, sageNote, listItem, appBar, media, avatar, spacer, field, toggle, kv } = K;
 
+// One thing a screen. The count is in the title and a line under it fills as
+// she goes: eleven short steps read shorter than one long form.
+const STEPS = 11;
 const step = (n, title, sub, inner, next, back, primary = 'Continue') => phone(
   statusBar()
-  + appBar({ leadGo: back, title: `Step ${n} of 6`, actions: [{ icon: 'close' }] })
-  + body(h(title, 'headline') + (sub ? m(sub) : '') + `<div style="height:2px"></div>` + inner, { pad: '0 16px 0', gap: 12 })
+  + appBar({ leadGo: back, title: `${n} of ${STEPS}`, actions: [{ icon: 'close' }] })
+  + body(linear(Math.round((n / STEPS) * 100), { h: 6, c: C.primary }) + h(title, 'headline') + (sub ? m(sub) : '') + `<div style="height:2px"></div>` + inner, { pad: '0 16px 0', gap: 12 })
   + footer(btn(primary, { h: 56, go: next }) + btn('Save and close', { v: 'text', h: 44, size: 15, go: 'K07' })));
 
-const K01 = step(1, 'Tell clients who you are', 'This is the top of your public profile.',
-  row(`${avatar(72, { ic: 'photo_camera' })}${col(`${strong('Your photo', 'titleM')}${m('Face visible. Clients pick a person, not a logo.')}`, { gap: 3, grow: true })}`, { gap: 14, justify: 'flex-start' })
-  + field({ label: 'Name', value: 'Nourhan El-Sayed' })
-  + field({ label: 'City', value: 'Giza' })
-  + field({ label: 'One line about you', value: 'I take women back to lifting after birth.' }), 'K02', 'C13');
+const K01 = step(1, 'Add a photo of you', 'Women choose a person they can see. Take it now, or add it later from your page.',
+  `<div style="align-self:center">${avatar(120, { ic: 'photo_camera' })}</div>`
+  + btn('Take a photo', { v: 'tonal', h: 48, size: 15, ic: 'photo_camera' })
+  + row(`${strong('Blur faces in my photos', 'titleS')}${pill('On')}`)
+  + m('Faces blurred before it uploads.'), 'K08', 'C13');
 
-const K02 = step(2, 'Show us your certificates', 'A woman on our team checks them, usually the same day.',
-  card(row(`${icon('id_card', { size: 24, color: C.tertiary })}${col(`${strong('NASM CPT', 'titleM')}${m('Uploaded · checking')}`, { gap: 2, grow: true })}${pill('Checking', { bg: C.amberContainer, color: C.amber })}`, { gap: 12 }), { v: 'sage' })
-  + card(row(`${icon('add', { size: 24, color: C.primaryDim })}<div style="flex:1;font-size:16px;font-weight:600;color:${C.primaryDim}">Add another certificate</div>`, { gap: 12, justify: 'flex-start' }), { v: 'filled' })
-  + sageNote('Photos of the certificate are enough. We check the issuing body ourselves, and unverified coaches cannot take clients.'), 'K03', 'K01');
+const K08 = step(2, 'Tell clients who you are', 'This is the top of your public profile.',
+  field({ label: 'Name', value: '' })
+  + field({ label: 'City', value: '' })
+  + field({ label: 'One line about you', value: '' }), 'K03', 'K01');
 
 const K03 = step(3, 'What do you coach?', 'Pick up to three. Clients filter by these.',
   chipRow([{ label: 'Postpartum', sel: true }, { label: 'Beginners', sel: true }], -1, { grow: false })
-  + chipRow([{ label: 'Strength', sel: true }, { label: 'Weight loss' }, { label: 'Pregnancy' }], -1, { grow: false })
-  + col(`${m('Languages')}${chipRow([{ label: 'العربية', sel: true }, { label: 'English', sel: true }], -1, { grow: false })}`, { gap: 8 })
-  + col(`${m('Where your clients train')}${chipRow([{ label: 'At home', sel: true }, { label: 'Ladies-only gym', sel: true }], -1, { grow: false })}`, { gap: 8 }), 'K04', 'K02');
+  + chipRow([{ label: 'Strength', sel: true }, { label: 'Weight loss' }, { label: 'Pregnancy' }], -1, { grow: false }), 'K10', 'K08');
 
-const K04 = step(4, 'How many clients can you take?', 'Your prices live on your page, where you write them in your own words.',
-  field({ label: 'Clients at once', value: '20' })
-  + card(row(`${icon('payments', { size: 22, color: C.primaryDim })}${col(`${strong('You keep 80%', 'titleM')}${m('Of every price you set on your page.')}`, { gap: 2, grow: true })}`, { gap: 10, justify: 'flex-start' }), { v: 'sage', pad: '11px 13px' })
-  + sageNote('You will write your offers when you design your page: what each one is called, what is in it and what it costs.'), 'K05', 'K03');
+const K10 = step(4, 'How you coach', 'Clients look for a coach by language and by where they train.',
+  col(`${m('Languages')}${chipRow([{ label: 'العربية', sel: true }, { label: 'English' }], -1, { grow: false })}`, { gap: 8 })
+  + col(`${m('Where your clients train')}${chipRow([{ label: 'At home', sel: true }, { label: 'Ladies-only gym' }], -1, { grow: false })}`, { gap: 8 }), 'K04', 'K03');
 
-const K05 = step(5, 'Where should we send your money?', 'Paid out on the 1st of each month.',
-  listItem({ lead: icon('account_balance_wallet', { size: 24, color: C.primaryDim }), title: 'Mobile wallet', sub: 'Vodafone Cash · 010 xxx xx32', trail: icon('check_circle', { size: 24, color: C.primary, fill: true }), v: 'selected' })
+const K04 = step(5, 'How many clients can you take?', 'Your prices live on your page, where you write them in your own words.',
+  field({ label: 'Clients at once', value: '' })
+  + card(row(`${icon('payments', { size: 22, color: C.primaryDim })}${col(`${strong('You keep 80%', 'titleM')}${m('Of every price you set on your page.')}`, { gap: 2, grow: true })}`, { gap: 10, justify: 'flex-start' }), { v: 'tonal' })
+  + sageNote('You will write your offers when you design your page: what each one is called, what is in it and what it costs.'), 'K11', 'K10');
+
+// The card is drawn by the app, the same for every coach. The client adds her
+// own photos and agrees in her own app; nothing here is an example result.
+const K11 = step(6, "Your clients' results", "Each result is a before and an after, laid out the same way on every coach's page. Your client adds her own photos and agrees in her own app, so it is always hers to share.",
+  card(row(`${col(`${m('Before')}${media({ label: '', h: 150, v: 'photo', ic: '' })}`, { gap: 6, grow: true })}${col(`${m('After')}${media({ label: '', h: 150, v: 'photo', ic: '' })}`, { gap: 6, grow: true })}`, { gap: 10 }), { v: 'outlined' })
+  + m('Faces stay hidden unless she chooses to show hers.')
+  + sageNote('When your check is done, ask any client from her page on your desk.'), 'K12', 'K04');
+
+const K12 = step(7, 'What your clients say', 'Only women you coach here can write one, so every word is real.',
+  card(col(`${pill('Coached here')}<div style="height:10px;border-radius:6px;background:${C.outlineVariant}"></div><div style="height:10px;width:70%;border-radius:6px;background:${C.outlineVariant}"></div>`, { gap: 8 }), { v: 'outlined' })
+  + m('Her words show with her first name only, and she can take them back.')
+  + sageNote('When your check is done, ask any client from her page on your desk.'), 'K02', 'K11');
+
+const K02 = step(8, 'Show us your certificates', 'A woman on our team checks them, usually the same day.',
+  card(row(`${icon('add', { size: 24, color: C.primaryDim })}<div style="flex:1;font-size:16px;font-weight:600;color:${C.primaryDim}">Add a certificate</div>`, { gap: 12, justify: 'flex-start' }), { v: 'filled' })
+  + sageNote('Photos of the certificate are enough. We check the issuing body ourselves, and unverified coaches cannot take clients.'), 'K13', 'K12');
+
+const K13 = step(9, 'How we treat each other', 'As a coach you agree to the same three rules as every woman here.',
+  col(`${strong('1 · What is said here stays here', 'titleS')}${m('No screenshots, no sharing anyone else outside.')}`, { gap: 2 })
+  + col(`${strong("2 · No comments on anyone else's body", 'titleS')}${m('Not even a compliment. Talk about the work instead.')}`, { gap: 2 })
+  + col(`${strong('3 · No selling, no recruiting', 'titleS')}${m('Coaches have profiles for that.')}`, { gap: 2 })
+  + row(`${icon('check_box', { size: 24, color: C.primary })}<div style="flex:1">I agree to these three rules</div>`, { gap: 10, justify: 'flex-start' }), 'K05', 'K02');
+
+const K05 = step(10, 'Where should we send your money?', 'Paid out on the 1st of each month.',
+  listItem({ lead: icon('account_balance_wallet', { size: 24, color: C.primaryDim }), title: 'Mobile wallet', sub: 'Vodafone Cash' })
   + listItem({ lead: icon('payments', { size: 24, color: C.primaryDim }), title: 'Bank account', sub: 'Any Egyptian bank' })
-  + field({ label: 'Full name as on the account', value: 'Nourhan El-Sayed' })
-  + sageNote('We never show your wallet number or your address to clients.'), 'K06', 'K04');
+  + sageNote('We never show your wallet number or your address to clients.'), 'K06', 'K13');
 
 const K06 = phone(
   statusBar()
-  + appBar({ title: 'Step 6 of 6', lead: '' })
+  + appBar({ title: '11 of 11', lead: '' })
   + body(
     spacer()
     + `<div style="align-self:center;width:88px;height:88px;border-radius:999px;background:${C.amberContainer};display:flex;align-items:center;justify-content:center">${icon('hourglass_top', { size: 46, color: C.amber })}</div>`
@@ -114,6 +140,11 @@ const K18 = phone(
 
 export const screens = [
   { id: 'K01', html: K01, metric: 'a person, not a logo', note: 'The coach side is denser than the client side on purpose: she is at a desk with time, not standing on a microbus. Her photo is asked for first because clients choose a face.' },
+  { id: 'K08', html: K08, metric: 'name and city', note: 'Her name, her city and one line, on a screen of their own. Her photo was the step before.' },
+  { id: 'K10', html: K10, metric: 'two small choices', note: 'Languages and where her clients train, apart from what she coaches, so no screen asks three things at once.' },
+  { id: 'K11', html: K11, metric: 'drawn by the app', note: 'A result is a before and an after, laid out by the app the same way on every page, so no coach designs one. The client adds her own photos and agrees in her own app; the coach can only ask.' },
+  { id: 'K12', html: K12, metric: 'real words only', note: 'Only women she coaches here can write about her, so a review cannot be invented. First name only, and the client can take it back.' },
+  { id: 'K13', html: K13, metric: 'the same three rules', note: 'The community rules on their own screen, agreed with one tick, the same words and version as the pledge every member agrees to.' },
   { id: 'K02', html: K02, metric: 'checked, same day', note: 'Certificates are photographed, not typed, and the platform does the verifying. Saying plainly that unverified coaches cannot take clients is what makes the badge worth something to the woman paying.' },
   { id: 'K03', html: K03, metric: '3 specialties, no more', note: 'Capping specialties at three keeps the client-side filters meaningful; a coach who claims everything ranks for nothing.' },
   { id: 'K04', html: K04, metric: 'her price, her maths', note: 'The 80% share is shown as a number in EGP next to her price, so the deal is concrete. Capacity is asked here so "12 spots left" on her profile is true rather than marketing.' },

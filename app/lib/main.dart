@@ -1,7 +1,31 @@
+import 'dart:async';
+import 'dart:isolate';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'app_state/analytics_consent.dart';
+import 'app_state/analytics_session.dart';
+import 'app_state/cloud_store.dart';
+import 'app_state/crash_consent.dart';
+import 'app_state/kitten_setting.dart';
+import 'app_state/crash_reports.dart';
+import 'app_state/eat_state.dart';
+import 'app_state/events_state.dart';
+import 'app_state/remote_features.dart';
+import 'app_state/workout_library_state.dart';
+import 'app_state/content_images.dart';
+import 'ui/content_image.dart';
+import 'app_state/firebase_boot.dart';
+import 'app_state/home_widget_sync.dart';
+import 'app_state/local_persistence.dart';
+import 'app_state/onboarding_state.dart';
+import 'app_state/role_state.dart';
+import 'app_state/widget_links.dart';
+import 'config/legal_links.dart';
+import 'features/account/domain/health_backup.dart';
+import 'domain/analytics/analytics_gateway.dart';
 import 'domain/flags/feature_flags.dart';
 import 'domain/identity/user_roles.dart';
 import 'l10n/app_l10n.dart';
@@ -10,7 +34,7 @@ import 'routing/app_routes.dart';
 import 'theme/app_tokens.dart';
 import 'theme/hand_theme.dart';
 
-void main() {
+Future<void> main() async {
   // Dark status-bar content, before anything is drawn.
   //
   // The theme sets this too, but `AppBarTheme.systemOverlayStyle` only reaches
@@ -26,15 +50,190 @@ void main() {
     ),
   );
   LicenseRegistry.addLicense(_handFontLicences);
+
+  // The four public pages must have addresses before a store build runs at
+  // all (M2): a release build with an empty privacy URL stops here, as the
+  // preflight would have. A debug build only says so, so development is not
+  // blocked on a domain.
+  LegalLinks.requireForRelease(release: kReleaseMode);
+  if (kDebugMode && !LegalLinks.allSet) {
+    debugPrint('LegalLinks are empty: a release build will refuse to start.');
+  }
+
+  // Usage statistics. A release build hands every event to Firebase, which
+  // sends nothing until she allows it ("Help improve Own Hub", C06 or
+  // Privacy): collection is off natively and the sink checks her choice on
+  // every event. A debug build prints the funnel to the console instead. See
+  // `lib/app_state/analytics_session.dart`.
+  AppRouter.analytics = AnalyticsGateway(
+    analyticsSinkFor(release: kReleaseMode, debug: kDebugMode),
+  );
+
+  // Her week, read off this phone BEFORE the first frame.
+  //
+  // Awaited here rather than loaded from a screen so that the first thing she
+  // sees is already hers: Home drawn once, from her own session count and her
+  // own meal, instead of the app's defaults replaced a frame later. One read,
+  // one decode — see `lib/app_state/local_persistence.dart`.
+  //
+  // It cannot fail the launch. A missing, empty, truncated, corrupt or older
+  // snapshot restores nothing and the app opens exactly as it did before any
+  // of this existed.
+  await LocalPersistence.instance.load();
+  LocalPersistence.instance.start();
+
+  // Her crash-report choice, read before Firebase so collection is set from
+  // it at once. Off unless she allowed it (privacy policy v3, 3.7).
+  await CrashConsent.instance.load();
+  // Her usage-statistics choice, read before Firebase for the same reason.
+  // Off unless she allowed it, and a separate choice from crash reports.
+  await AnalyticsConsent.instance.load();
+  await KittenSetting.instance.load();
+
+  // The back end, brought up AFTER her local week and unable to fail the
+  // launch. The order matters: whatever Firebase does or does not do, the
+  // first frame is already drawn from her own data, so a dead network costs
+  // her nothing she can see. See `lib/app_state/firebase_boot.dart`.
+  await FirebaseBoot.start();
+  // Pictures from the content library, for a signed-in account only.
+  ContentImage.resolver = ContentImages.url;
+
+  // Crashes, reported in a release build only, and only once she has allowed
+  // it: the handlers are wired here and `CrashReports` returns at once
+  // without her consent (see FirebaseBoot and CrashConsent). The reports carry the error's type and its stack, never its message and
+  // never anything about her: no user identifier, no custom key, no log line
+  // is ever set (R8, see `lib/app_state/crash_reports.dart`).
+  if (FirebaseBoot.crashReporting) {
+    FlutterError.onError = (details) {
+      FlutterError.presentError(details);
+      unawaited(CrashReports.flutterError(details));
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      unawaited(CrashReports.uncaught(error, stack));
+      return true;
+    };
+    // Errors outside the Flutter context, on this isolate. The app spawns no
+    // isolate of its own; one that is added later reports through the same
+    // `CrashReports.uncaught`.
+    Isolate.current.addErrorListener(
+      RawReceivePort((Object? pair) {
+        if (pair is! List || pair.length != 2) return;
+        final stack = pair.last;
+        final Object error = (pair.first as Object?) ?? 'unknown';
+        unawaited(
+          CrashReports.uncaught(
+            error,
+            stack is String ? StackTrace.fromString(stack) : StackTrace.empty,
+          ),
+        );
+      }).sendPort,
+    );
+  }
+
+  // Has the server already let her in? Read here, because
+  // `AppRouter.onGenerateRoute` is synchronous and the whole-app gate has to
+  // answer before the first route is built rather than a frame later. Then
+  // what the server last said about her check (S8): waiting for a reviewer,
+  // booked, refused, or approved while the app was closed.
+  //
+  // Bounded as a whole at five seconds and unable to fail the launch. A
+  // verified woman with no network is not locked out: the token read falls
+  // back to what this phone proved before (R1). No evidence still means the
+  // check rather than the app. See `AppRouter.readVerificationAtLaunch`.
+  await AppRouter.readVerificationAtLaunch();
+  AppRouter.watchVerificationToken();
+
+  // The Home Screen and Lock Screen widgets, iOS only. They read this week's
+  // count and today's state from the same repository Home draws, and only
+  // while she is signed in and verified; otherwise they say "Open Own Hub to
+  // start". Started after the verification read above, so the first payload
+  // it writes already knows whether she is let in. See
+  // `lib/app_state/home_widget_sync.dart`.
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+    HomeWidgetSync.instance.start(
+      readDay: () => AppRouter.todayRepository.day,
+      isOpen: () => AppRouter.isVerified && AppRouter.signedInUid != null,
+      locale: AppRouter.localePreference.read()?.locale,
+    );
+    WidgetLinks.enabled = true;
+  }
+
+  // A code her coach sent, kept through a check that finished while the app
+  // was closed. Nothing happens without one. Not awaited.
+  unawaited(AppRouter.redeemPendingInvite());
+
+  // Her acceptance of the Terms and Privacy Policy (M1): a pending one from
+  // C06 is sent, and if the versions in force are not accepted the legal
+  // update sheet opens over the first screen. Not awaited: the first frame
+  // never waits on the network.
+  unawaited(AppRouter.checkLegalAtLaunch());
+
+  // The cloud copy of her week, started but deliberately NOT awaited.
+  //
+  // `start()` only attaches listeners and reads one preferences key; it does
+  // no network work of its own, so awaiting it would be harmless today. That
+  // is precisely why it is not awaited: the promise this boot makes is that
+  // nothing before the first frame touches the network, and a promise kept by
+  // accident is one a later edit breaks quietly. `unawaited` makes it
+  // structural rather than incidental.
+  //
+  // With no account, no Firebase, or no verified claim it does nothing at all,
+  // and the app is exactly what it was before any of this existed. See
+  // `lib/app_state/cloud_store.dart`.
+  //
+  // Her health backup choice is read first (a local key, no network). If it
+  // is on, the server's consent record is checked before the sync starts, so
+  // a phone that thinks it may back up her health data cannot push it after
+  // the server withdrew the consent. Off, the check returns at once.
+  await HealthBackupPreference.instance.load();
+  unawaited(() async {
+    try {
+      await AppRouter.reconcileHealthBackup();
+    } catch (_) {
+      // The rules refuse health writes without the consent anyway.
+    }
+    await CloudStore.instance.start();
+  }());
+
   runApp(const OwnHubApp());
+
+  // The once-a-day recipe library check, after the first frame so it can
+  // never delay it. Offline or signed out it reads nothing and the bundled
+  // seed stays the library.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(EatAppState.instance.refreshRecipes()),
+  );
+
+  // The switches members take from the server (only Feature.events), then
+  // the events themselves when it is on. After the first frame, and nothing
+  // is read for an account that is not verified.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(
+      RemoteFeatures.load().then((_) => EventsState.instance.refresh()),
+    ),
+  );
+
+  // The owner's workouts: the cache at once, the server at most once a day.
+  // The bundled session stays the answer for day one whatever this finds.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(WorkoutLibraryState.instance.refresh()),
+  );
 }
 
-/// The two OFL handwriting faces in `assets/fonts/`. The OFL asks that its
-/// text travel with the font, and the licences page is where it travels to.
+/// Every OFL face bundled in `assets/fonts/`. The licence asks that its text
+/// travel with the font, and the licences page is where it travels to.
+///
+/// Rubik was missing here for a long time while the two handwriting faces were
+/// registered, which is an easy omission to make and a hard one to notice:
+/// Rubik is the body face of the entire product, so it is the one a reader is
+/// most likely to ask about and the one whose absence says least. The use was
+/// always permitted, OFL 1.1 like the others. What was missing was the notice,
+/// and a notice nobody can reach is the same as no notice at all.
 Stream<LicenseEntry> _handFontLicences() async* {
   for (final (family, asset) in [
     ('La Belle Aurore', 'assets/fonts/OFL-LaBelleAurore.txt'),
     ('Aref Ruqaa', 'assets/fonts/OFL-ArefRuqaa.txt'),
+    ('Rubik', 'assets/fonts/OFL-Rubik.txt'),
   ]) {
     yield LicenseEntryWithLineBreaks([
       family,
@@ -54,6 +253,11 @@ class LocaleScope extends InheritedNotifier<ValueNotifier<Locale>> {
 
   static ValueNotifier<Locale> of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<LocaleScope>()!.notifier!;
+
+  /// The same, or null where the app's scope is not above [context], which is
+  /// a screen built on its own in a test.
+  static ValueNotifier<Locale>? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<LocaleScope>()?.notifier;
 }
 
 class OwnHubApp extends StatefulWidget {
@@ -63,34 +267,134 @@ class OwnHubApp extends StatefulWidget {
   State<OwnHubApp> createState() => _OwnHubAppState();
 }
 
-class _OwnHubAppState extends State<OwnHubApp> {
-  /// Arabic by default, because this ships in Egypt. `C02` is the second screen
-  /// she sees and lets her change it; until then the device locale would be a
-  /// worse guess than the product's own audience.
-  ///
-  /// `--dart-define=OWNHUB_LOCALE=ar` opens the build in Arabic, so any
-  /// screen can be captured in either language — the store listing needs
-  /// both, and right-to-left layout is only ever checked by looking at it.
-  final ValueNotifier<Locale> _locale = ValueNotifier(
-    const Locale(String.fromEnvironment('OWNHUB_LOCALE', defaultValue: 'en')),
+class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
+  /// This app's navigator, lent to the router for the launch-time legal
+  /// update sheet. Owned here so every app gets its own.
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    AppRouter.navigatorKey = _navigatorKey;
+    WidgetsBinding.instance.addObserver(this);
+    // Her training reminders, set again in the language the app opens in and
+    // again whenever she changes it, so a reminder never arrives in the
+    // language she left. Nothing happens when she has none. After the first
+    // frame: setting them up first reads the whole time-zone database, which
+    // the first frame has no use for.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reapplyReminders());
+    _locale.addListener(_reapplyReminders);
+    // The widgets speak the language she chose here, not the phone's.
+    _relabelWidgets();
+    _locale.addListener(_relabelWidgets);
+    // A language she chooses is counted, as the code alone.
+    _locale.addListener(_reportLanguage);
+    // The facts every event carries (language, kitten, widget, channel), and
+    // a return after a quiet week, after the first frame and again whenever
+    // she allows statistics. Nothing leaves the phone unless she allowed it.
+    AnalyticsConsent.onGranted = _describeForStatistics;
+    KittenSetting.instance.addListener(_reportKitten);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _describeForStatistics();
+      unawaited(AnalyticsSession.noteOpened(DateTime.now()));
+    });
+    // A tap on a widget opens its screen, once there is a navigator to push
+    // it on. Nothing happens off iOS.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(WidgetLinks.start(_navigatorKey)),
+    );
+    // Every change of side, chosen at C08 or switched from her picture, is
+    // kept for the next launch (R1-P17).
+    _roles.addListener(_keepRoles);
+  }
+
+  void _keepRoles() => RoleState.instance.keep(_roles.value);
+
+  void _relabelWidgets() => HomeWidgetSync.instance.useLocale(_locale.value);
+
+  void _reportLanguage() =>
+      AnalyticsSession.languageChanged(_locale.value.languageCode);
+
+  void _reportKitten() =>
+      AnalyticsSession.kittenChanged(KittenSetting.instance.moves);
+
+  void _describeForStatistics() => unawaited(
+    AnalyticsSession.describe(languageCode: _locale.value.languageCode),
   );
+
+  void _reapplyReminders() => unawaited(
+    AppRouter.reapplyTrainingReminders(lookupAppL10n(_locale.value)),
+  );
+
+  /// Back in the foreground: a refresh the network refused at launch is
+  /// tried again (R1). Does nothing when nothing is owed.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(AppRouter.refreshVerificationIfOwed());
+      unawaited(CrashReports.trail(CrashTrail.resumed));
+      unawaited(AnalyticsSession.noteOpened(DateTime.now()));
+    }
+  }
+
+  /// The language she has already chosen, else the one her phone is set to,
+  /// else English.
+  ///
+  /// The phone is the better guess and it used to be ignored: this shipped in
+  /// Egypt opening in English on a handset set to Arabic, with the chooser one
+  /// screen deep. The whole Arabic product was in the binary and she had to go
+  /// looking for it.
+  ///
+  /// `--dart-define=OWNHUB_LOCALE=ar` still forces a language, because a
+  /// screenshot of the Arabic build has to be repeatable and right-to-left
+  /// layout is only ever checked by looking at it. A choice she has made wins
+  /// over everything, and it is read before the first frame so the app opens in
+  /// her language rather than switching once she notices.
+  final ValueNotifier<Locale> _locale = ValueNotifier(
+    AppRouter.localePreference.read()?.locale ?? _firstRunLocale(),
+  );
+
+  /// What to open in before she has said. `const String.fromEnvironment`
+  /// defaults to empty rather than to a language, so an unforced build falls
+  /// through to the phone.
+  static Locale _firstRunLocale() {
+    const forced = String.fromEnvironment('OWNHUB_LOCALE');
+    if (forced.isNotEmpty) return Locale(forced);
+    for (final locale in WidgetsBinding.instance.platformDispatcher.locales) {
+      for (final supported in AppL10n.supportedLocales) {
+        if (supported.languageCode == locale.languageCode) return supported;
+      }
+    }
+    return const Locale('en');
+  }
 
   /// Her roles, and which app she is in (D11). Trainee until C08 says
   /// otherwise: it is the common case, and it is the safe one — the trainee
   /// side grants nothing a coach account would.
   ///
   /// With [Feature.accountRequired] off there is no sign-up to choose a role
-  /// in, so she is a guest holding BOTH roles: the trainee app opens, and her
-  /// picture switches to the coach side, so neither half is out of reach.
+  /// in, so she is a guest. She holds both roles only where there is a coach
+  /// side to hold: the first release ships without one, and a picture that
+  /// switches to an app that is switched off is a door into nothing.
+  ///
+  /// What she chose before is restored first (R1-P17): it used to start as a
+  /// trainee on every launch, so a coach came back to the trainee side.
   final ValueNotifier<UserRoles> _roles = ValueNotifier(
-    AppRouter.featureFlags.isOn(Feature.accountRequired)
-        ? UserRoles.trainee
-        : UserRoles.both,
+    launchRoles(AppRouter.featureFlags),
   );
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _locale.removeListener(_reapplyReminders);
+    _locale.removeListener(_relabelWidgets);
+    _locale.removeListener(_reportLanguage);
+    KittenSetting.instance.removeListener(_reportKitten);
+    if (AnalyticsConsent.onGranted == _describeForStatistics) {
+      AnalyticsConsent.onGranted = null;
+    }
     _locale.dispose();
+    _roles.removeListener(_keepRoles);
     _roles.dispose();
     super.dispose();
   }
@@ -105,13 +409,107 @@ class _OwnHubAppState extends State<OwnHubApp> {
   /// With no route supplied, the front door depends on
   /// [Feature.accountRequired]: sign-up (C01) when an account is required,
   /// Home (T01) when it is not.
-  String _initialRoute() {
-    final supplied =
-        WidgetsBinding.instance.platformDispatcher.defaultRouteName;
-    if (screenIdForRoute(supplied) != null) return supplied;
-    return AppRouter.featureFlags.isOn(Feature.accountRequired)
-        ? appRoutes['C01']!.name
-        : appRoutes['T01']!.name;
+  ///
+  /// The setup questions are not chosen here, and the reason is worth stating
+  /// where somebody will look for them. They are not an alternative front door;
+  /// they open **on top of** the front door, as the second entry of
+  /// [_firstRunStack], so that finishing, skipping or closing is a pop back to
+  /// the screen underneath rather than a push to a new one. See
+  /// `lib/app_state/onboarding_state.dart`.
+  String _initialRoute() =>
+      _openable(WidgetsBinding.instance.platformDispatcher.defaultRouteName);
+
+  /// [name] if the app is willing to OPEN on it, else the front door.
+  ///
+  /// Two rules, and both are about the first thing a woman ever sees rather
+  /// than about reachability, which `onGenerateRoute` already decides.
+  ///
+  ///   * **A route this build does not resolve.** The admin console in a
+  ///     release binary. It is already unreachable; without this she would
+  ///     launch into the "no screen serves this" page instead of the app.
+  ///   * **A route whose feature is switched off.** `onGenerateRoute` answers
+  ///     one with `FeatureOff` — an app bar carrying the raw screen id and a
+  ///     sentence about a feature flag, in English, with no way back because
+  ///     there is nothing underneath it. Pushed onto a running app that is a
+  ///     dead end she can leave. As the opening screen it is the entire
+  ///     product. `community`, `coaching`, `marketplace` and `assistant` are
+  ///     all off in the first release, so every link anyone shares about them
+  ///     before the second release arrives exactly here. `resolvesInThisBuild`
+  ///     does not cover it: those screens are built, tested and resolvable,
+  ///     they are merely switched off.
+  ///
+  /// It is a separate method because it has to be applied in TWO places, and
+  /// the reason is a trap worth naming. `WidgetsApp` does not simply use the
+  /// `initialRoute` it is handed: when the platform supplied a route of its
+  /// own it prefers that one and ignores `initialRoute` entirely. So the
+  /// filtering this app did in `_initialRoute` alone never ran in the one case
+  /// it was written for — a deep link — and the admin-console guard above has
+  /// been quietly ineffective for as long as it has existed. [_firstRunStack]
+  /// is where the name actually arrives, so that is where it must also hold.
+  static String _openable(String name) {
+    final id = screenIdForRoute(name);
+    if (id != null &&
+        AppRouter.resolvesInThisBuild(id) &&
+        AppRouter.screenIsOn(id)) {
+      return name;
+    }
+    return _frontDoor;
+  }
+
+  /// The app's own first screen, with nothing supplied from outside.
+  ///
+  /// With an account required, the welcome screen is for a woman who has no
+  /// account on this phone yet. A verified woman opens on Home, and a signed
+  /// in one who is not verified yet also asks for Home, where the gate sends
+  /// her to the check (C09) or to the screen that says a reviewer will call
+  /// (C14). Sending everyone to C01 put a verified woman on "Get started"
+  /// every time she opened the app.
+  static String get _frontDoor => AppRouter.frontDoor;
+
+  /// The routes the app opens holding, newest last.
+  ///
+  /// Generated here as ONE route each, rather than letting Flutter split them.
+  ///
+  /// Flutter's default splits "/signup/c01" into "/", "/signup" and
+  /// "/signup/c01" and asks onGenerateRoute for each ancestor. Neither "/" nor
+  /// "/signup" is a screen, so both return null, the initial route fails, and
+  /// the app renders a blank white page — running, responsive, and completely
+  /// empty.
+  ///
+  /// This shipped once. Every test passed and the app launched fine; only a
+  /// screenshot caught it, because pumpWidget does not exercise the
+  /// ancestor-splitting path that breaks it.
+  ///
+  /// On a first launch the stack is two deep: the front door, and the setup
+  /// questions open on top of it. Both are built before the first frame and
+  /// neither is animated in, so she sees `O01` and not a flash of a Home she
+  /// has not filled in yet. The questions are stacked only over the app's own
+  /// front door — a build launched straight onto a named screen for a
+  /// screenshot, or a notification landing on `T03`, is left exactly where it
+  /// was sent.
+  List<Route<dynamic>> _firstRunStack(String supplied) {
+    // Filtered HERE, not only in `_initialRoute`. `WidgetsApp` prefers the
+    // platform's own route over the `initialRoute` it was given, so on the one
+    // path that matters — a deep link — this is the only place the decision
+    // can be made. See [_openable].
+    final initial = _openable(supplied);
+
+    Route<dynamic> routeFor(String name) =>
+        AppRouter.onGenerateRoute(RouteSettings(name: name)) ??
+        AppRouter.onUnknownRoute(RouteSettings(name: name));
+
+    final front = routeFor(initial);
+    // Compared against the front door itself rather than against
+    // `_initialRoute()`, which answers with whatever the platform supplied. A
+    // build launched straight onto `/onboarding/o02` for a screenshot would
+    // otherwise have question one stacked on top of question two.
+    if (!OnboardingState.instance.isDue || initial != _frontDoor) {
+      return [front];
+    }
+    final setup = AppRouter.onGenerateRoute(
+      RouteSettings(name: appRoutes['O01']!.name),
+    );
+    return setup == null ? [front] : [front, setup];
   }
 
   @override
@@ -126,6 +524,7 @@ class _OwnHubAppState extends State<OwnHubApp> {
         child: ValueListenableBuilder<Locale>(
           valueListenable: _locale,
           builder: (context, locale, _) => MaterialApp(
+            navigatorKey: _navigatorKey,
             onGenerateTitle: (context) => 'Own Hub',
             debugShowCheckedModeBanner: false,
             locale: locale,
@@ -147,25 +546,9 @@ class _OwnHubAppState extends State<OwnHubApp> {
             // were caught by a screenshot and by nothing else, so being able to
             // take one of an arbitrary screen is worth this much.
             initialRoute: _initialRoute(),
-            // Generate the initial route ourselves, as ONE route.
-            //
-            // Flutter's default splits "/signup/c01" into "/", "/signup" and
-            // "/signup/c01" and asks onGenerateRoute for each ancestor. Neither
-            // "/" nor "/signup" is a screen, so both return null, the initial
-            // route fails, and the app renders a blank white page — running,
-            // responsive, and completely empty.
-            //
-            // This shipped once. Every test passed and the app launched fine; only
-            // a screenshot caught it, because pumpWidget does not exercise the
-            // ancestor-splitting path that breaks it.
-            onGenerateInitialRoutes: (initial) {
-              final route = AppRouter.onGenerateRoute(
-                RouteSettings(name: initial),
-              );
-              return [
-                route ?? AppRouter.onUnknownRoute(RouteSettings(name: initial)),
-              ];
-            },
+            // Generated ourselves, one route per entry, and two of them on a
+            // first launch. See `_firstRunStack`.
+            onGenerateInitialRoutes: _firstRunStack,
             onGenerateRoute: AppRouter.onGenerateRoute,
             onUnknownRoute: AppRouter.onUnknownRoute,
           ),

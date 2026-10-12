@@ -4,10 +4,10 @@
 /// fluent gestures, and this screen exists to make a misheard word obvious
 /// before anything is saved.
 ///
-/// ## The interface is MSA; the speech is Egyptian
+/// ## The interface is the app's voice; the speech is hers
 ///
 /// The two halves live in different places and this screen is where they meet.
-/// Every string comes from `AppL10n`, which is Modern Standard Arabic. The
+/// Every string comes from `AppL10n`, the app's own Arabic. The
 /// recogniser's locale is `ar-EG`, because dictation grammar is not how she
 /// actually talks. Nothing on this screen renders a literal, so one cannot leak
 /// into the other.
@@ -37,6 +37,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
@@ -111,7 +112,7 @@ class _SayItViewState extends State<SayItView> {
 
   SayItState? _state;
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
 
   @override
   void initState() {
@@ -149,6 +150,23 @@ class _SayItViewState extends State<SayItView> {
     setState(() => _state = _model(l10n).refuse());
   }
 
+  /// The **one** undo offer for one log (§2 rule 9).
+  ///
+  /// When [SayItView.onLogged] is wired the handle travels on to E04, which
+  /// draws the in-page `AppUndoBar` for it. Raising a floating snackbar here as
+  /// well put two offers for the same meal on screen, and the one she reached
+  /// second had already expired. Without that handler nothing downstream would
+  /// offer the five seconds, so the snackbar stands in.
+  void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    if (widget.onLogged != null) return;
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: AppL10n.of(context).undo,
+      onUndo: onUndo,
+    );
+  }
+
   void _log(List<ParsedItem> entries) {
     final l10n = AppL10n.of(context);
     final service = MealLogService(
@@ -180,25 +198,20 @@ class _SayItViewState extends State<SayItView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
       );
-      showUndoSnackBar(
-        context,
-        handle: handle,
-        undoLabel: l10n.undo,
-        onUndo: session.settle,
-      );
+      _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
       return;
     }
 
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => service.commit(prepared.write),
       ),
     );
-    showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
+    _offerUndo(handle);
     widget.onLogged?.call(handle);
   }
 
@@ -221,7 +234,7 @@ class _SayItViewState extends State<SayItView> {
           // total of the prototype's sample sentence, so it named 696 whatever
           // the recogniser had actually heard. The rows above state the
           // numbers; this states the action.
-          l10n.logIt,
+          l10n.addIt,
           onPressed: state.canLog ? () => _log(state.parse.items) : null,
         ),
         AppButton(
@@ -250,7 +263,7 @@ class _SayItViewState extends State<SayItView> {
           ),
         if (state.parse.items.isNotEmpty)
           Text(
-            l10n.soWereLogging,
+            l10n.soWereAdding,
             style: AppText.titleS.copyWith(color: AppColors.tertiary),
           ),
         for (var i = 0; i < state.parse.items.length; i++)
@@ -315,9 +328,11 @@ class _Waveform extends StatelessWidget {
               child: Container(
                 height: _heights[i],
                 decoration: BoxDecoration(
+                  // The quiet bars are the other half of a state, so they
+                  // take `outline` rather than the hairline role.
                   color: active && i < 7
                       ? AppColors.primary
-                      : AppColors.outlineVariant,
+                      : AppColors.outline,
                   // Squared off like a marker stroke, not a pill.
                   borderRadius: BorderRadius.circular(2),
                 ),

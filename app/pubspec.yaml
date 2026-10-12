@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Localisation. Arabic is Modern Standard Arabic; the ARB files in lib/l10n are
+  # Localisation. Arabic is polished Egyptian; the ARB files in lib/l10n are
   # generated from the mockup's translation dictionary and must not be hand-edited.
   flutter_localizations:
     sdk: flutter
@@ -48,12 +48,81 @@ dependencies:
   # so it cannot be used for anything that has to agree across devices.
   crypto: any
 
+  # The one place anything she does is written to the phone.
+  #
+  # Chosen over `path_provider` plus a file, and the deciding argument is the
+  # store rather than the API. Apple's required-reason rules cover the
+  # file-timestamp APIs a plugin needs to read and write a document in the
+  # application support directory, so a file-based store means authoring and
+  # maintaining `PrivacyInfo.xcprivacy` by hand; get it wrong and the upload is
+  # refused at submission. `shared_preferences` ships its own privacy manifest
+  # declaring the NSUserDefaults reason it uses, so the manifest travels with
+  # the package and stays right when the package updates.
+  #
+  # It costs nothing in shape: the snapshot is still ONE JSON document under
+  # one key, so a launch is one read and one decode — see
+  # `lib/app_state/local_persistence.dart`. Nothing leaves the phone.
+  shared_preferences: ^2.3.0
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  url_launcher: ^6.3.2
+  firebase_core: ^4.15.0
+  firebase_auth: ^6.7.0
+  cloud_firestore: ^6.10.0
+  firebase_storage: ^13.6.0
+  camera: ^0.12.1
+  google_mlkit_face_detection: ^0.15.1
+  cloud_functions: ^6.5.0
+  firebase_app_check: ^0.4.8
+  # Crash reports, release builds only. No user identifier; custom keys and
+  # breadcrumb lines only from the closed lists in
+  # lib/app_state/crash_reports.dart (a source guard test enforces it). Collection is off at
+  # native start-up and turned on from Dart only in release; see
+  # lib/app_state/firebase_boot.dart. Declared as CrashData (not linked) in
+  # ios/Runner/PrivacyInfo.xcprivacy and in android/play-data-safety.txt.
+  firebase_crashlytics: ^5.4.0
+  # One push: "your check is done", sent by functions/identity/push.py when a
+  # woman reviewer approves her. Asked for on C14 only when she taps "Tell me
+  # when I'm in", never at launch. The token is written to
+  # users/{uid}/devices/{hash of the token} (rules: key whitelist) and deleted
+  # with her account. Declared as DeviceID in ios/Runner/PrivacyInfo.xcprivacy
+  # and in android/play-data-safety.txt.
+  firebase_messaging: ^16.7.0
+  # Training reminders on the days she chose, offered once on R10 after her
+  # first finished session and changed in A01. Scheduled on the phone, so
+  # nothing about them leaves it (lib/app_state/reminder_scheduler.dart).
+  # timezone and flutter_timezone place them at her local time.
+  flutter_local_notifications: ^22.3.1
+  timezone: ^0.11.1
+  flutter_timezone: ^5.1.1
+  # The Home Screen and Lock Screen widgets (ios/OwnHubWidgets). Writes one
+  # JSON string to the App Group group.com.ownhub.app: this week's session
+  # count against her target, today's state and whether a meal is logged,
+  # never her cycle, life stage, body or programme
+  # (lib/features/today/domain/widget_projection.dart). It stays on the phone.
+  # The package ships no privacy manifest, so ios/Runner/PrivacyInfo.xcprivacy
+  # declares the UserDefaults reason 1C8F.1 for it.
+  home_widget: ^0.10.0
+  # Usage statistics ("Help improve Own Hub"), only once she turns them on at
+  # C06 or in Privacy: collection is off natively, consent mode v2 denies
+  # every storage by default and advertising always, no user id is set, and
+  # no advertising ID or IDFA is collected (AndroidManifest.xml, Info.plist,
+  # ios/Podfile, tool/build_release.sh). Every event goes through
+  # lib/domain/analytics/analytics_gateway.dart. Declared as ProductInteraction
+  # and CoarseLocation (not linked) in ios/Runner/PrivacyInfo.xcprivacy and as
+  # App interactions in android/play-data-safety.txt.
+  firebase_analytics: ^12.6.0
+  share_plus: ^13.3.1
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+
+  # Test-only: drives the real app on a simulator for the launch-video capture
+  # (integration_test/demo_drive_test.dart). Ships in no binary.
+  integration_test:
     sdk: flutter
 
   # Controls time in tests, so the five-second undo window is
@@ -75,6 +144,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -123,21 +193,29 @@ flutter:
 
   # Rubik carries both scripts. Regenerate with python3 6-v2/scripts/build_fonts.py
   assets:
-    # Illustrations extracted from the owner's Icons.pdf at 600px on the longest
-    # side, shipped as WebP at three densities. Flutter picks 2.0x/3.0x by
-    # screen, so a 200pt illustration draws from a 600px source and cannot
-    # pixelate. WebP rather than PNG: same alpha, 2.6 MB instead of 9.3.
-    #
-    # These are ILLUSTRATIONS, not UI icons. They are used for empty states and
-    # section art. They are deliberately NOT attached to individual food or
-    # exercise rows: a picture of a taco on a row that is not a taco is the same
-    # defect as a mockup's number shown as hers.
+    # The owner's illustrations, from Icons.pdf and More icons.pdf: 32 WebP
+    # files at 1x, 2x and 3x, named in lib/theme/app_art.dart. Their licence
+    # record is assets/art/LICENCE.md, which is deliberately not bundled.
     - assets/art/
     - assets/art/2.0x/
     - assets/art/3.0x/
+    # The logo on C01: the app tile, rendered from assets/brand/ownhub-mark.svg
+    # at 88 px and its 2x and 3x by `tool/render_brand_icons.py --logo`.
+    - assets/brand/logo/ownhub-tile.png
     # Licence texts for the two OFL hand faces, shown on the licences page.
     - assets/fonts/OFL-LaBelleAurore.txt
     - assets/fonts/OFL-ArefRuqaa.txt
+    - assets/fonts/OFL-Rubik.txt
+    # Rahma's recipe book, about 210 KB of Egyptian colloquial Arabic, generated
+    # by tool/extract_rahma_book.py and tool/build_rahma_recipes.py.
+    #
+    # In the binary rather than behind a network call, because the Eat tab has
+    # to work with one bar on a metro platform at 7am. It is also why her text
+    # is a JSON asset and not the ARB: `i18n_guard_test.dart` forbids Arabic
+    # literals under lib/, which is exactly right — her colloquial is content,
+    # the interface is the app's own voice, and they reach the screen through
+    # different pipes so they cannot be smeared into each other.
+    - assets/content/rahma_recipes.json
 
   fonts:
     - family: Rubik
@@ -166,25 +244,30 @@ flutter:
 
 # ---------------------------------------------------------------- app icon
 #
-# Configuration is here and ready; the PACKAGE is deliberately NOT added as a
-# dependency yet, because the 1024x1024 master does not exist and adding a dep
-# that cannot run only risks breaking `pub get` for everyone.
+# The icon is the Own Hub mark, and the mark is geometry: the master is
+# assets/brand/ownhub-mark.svg and both PNGs below are rendered from it, at
+# their final size, by tool/render_brand_icons.py. Nothing is cropped or
+# upscaled out of a bitmap, which is why the diagonal is still a clean edge at
+# 20 px. After any change to the master:
 #
-# When the owner supplies assets/icon/icon-1024.png (PNG, no alpha, no
-# transparency, no rounded corners -- the OS masks it, and Apple rejects an
-# icon with an alpha channel), do exactly this:
-#
-#   1. add to dev_dependencies:   flutter_launcher_icons: ^0.14.0
-#   2. flutter pub get
-#   3. dart run flutter_launcher_icons
+#   1. python3 tool/render_brand_icons.py
+#   2. dart run flutter_launcher_icons
 #
 # Then verify: ios/Runner/Assets.xcassets/AppIcon.appiconset/ has a 1024 entry,
 # and android/app/src/main/res/mipmap-*/ic_launcher.png exist.
+#
+# icon-1024.png carries no alpha and no rounded corners. The OS applies the
+# mask, and Apple rejects an icon with an alpha channel.
+#
+# adaptive_icon_background was #FFFFFF while icon-foreground.png was a mark in
+# near-white paper, which on Android is a white mark on a white tile: an icon
+# nobody can see. The background is now the rose the iOS tile has always used,
+# so both platforms show the same thing.
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/icon-1024.png"
   remove_alpha_ios: true
-  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_background: "#A24661"
   adaptive_icon_foreground: "assets/icon/icon-foreground.png"
   min_sdk_android: 24

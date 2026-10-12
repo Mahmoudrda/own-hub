@@ -16,17 +16,53 @@ void main() {
     // collections can be authored one row at a time and not only by CSV.
     // D25 added Z14, the switchboard — the only place in the product where a
     // feature is turned on or off.
-    expect(appRoutes.length, 175);
+    //
+    // 175 → 177 when the verification flow was wired: `C09b`, the consent step
+    // that has to be agreed to before any camera opens, and `C10b`, the second
+    // pass that photographs the back of the card. Both are real screens a woman
+    // walks through, so both are in the inventory rather than smuggled in as
+    // states of their neighbours. Their ids carry a letter rather than taking
+    // the next number because C10 to C16 are referenced by id throughout the
+    // specs, the plans and the prototype, and renumbering would repoint every
+    // one of those references at the wrong screen.
+    //
+    // 177 -> 179 with Rahma's recipe book. `E10` asks the one question the
+    // library cannot be opened without: `DietaryConstraints.none` is a claim
+    // that she was asked and named nothing, and shipping allergen-tagged
+    // recipes against a claim nobody made is exactly what
+    // `allergy_interlock_test.dart` exists to stop. `E11` is her closing
+    // letter, squeezed under a recipe on page 26 of the book. Neither is a
+    // state of a neighbour, so neither is smuggled in as one.
+    //
+    // 179 -> 184 with the owner's operations: `Z15` the dashboard, `Z16` the
+    // logs, `Z17` and `Z18` her events, and `T09`, the members' Events screen
+    // behind Feature.events. All five were designed in Flutter (`noMockup`).
+    //
+    // 184 -> 185 with `P05`, her progress card, opened from P01 to share.
+    // 185 -> 187 when setup asked one thing a screen: `O06`, what she has at
+    // home, and `O07`, minutes a session. 187 -> 192 when the coach's setup
+    // did the same: `K08` her name and city, `K10` how she coaches, `K11` her
+    // clients' results, `K12` what clients say, `K13` the three rules.
+    expect(appRoutes.length, 192);
   });
 
   test('every screen is a destination except the eight first-run states', () {
-    // D1 withdrew the MVP cut: both roles, every flow. 175 - 8 = 167.
+    // D1 withdrew the MVP cut: both roles, every flow. 179 - 8 = 171.
     //
     // Six first-run states until the Cycle flow was built. Y11 and Y14 joined
     // them: both are branches of Y03 rendered by the same widget, exactly as
     // T06 is a branch of T01, so routing to them would mean rendering "severe
     // symptoms" over a hub that has none.
-    expect(appDestinations.length, 167);
+    //
+    // 169 -> 171: E10 and E11 are both destinations. E10 in particular must be
+    // one — a question asked inside a sheet leaves no way back to it, and
+    // `product_rules_test.dart` bans a dialog on these paths anyway.
+    //
+    // 171 -> 176: Z15 to Z18 and T09 are all destinations.
+    //
+    // 176 -> 177: P05 is a destination. 177 -> 184: O06, O07, K08, K10,
+    // K11, K12 and K13 are all destinations.
+    expect(appDestinations.length, 184);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 
@@ -147,9 +183,14 @@ void main() {
     // resolves to no screen says so, rather than rendering something that
     // looks finished.
     final saved = AppRouter.featureFlags;
-    AppRouter.featureFlags = FeatureFlags.allOff.with_({
-      for (final f in Feature.values) f: true,
-    });
+    // `everything` rather than literally every flag, and the difference is
+    // `Feature.accountRequired`. That flag is now the whole-app gate: with it
+    // on, `AppRouter.verificationGate` answers every product route with the
+    // sign-up chain, so this test would open `C01` and report that the
+    // placeholder is missing — measuring the gate instead of the placeholder.
+    // `FeatureFlags.everything` is documented as the shape the product is
+    // explored in, and it is the shape this test has always meant.
+    AppRouter.featureFlags = FeatureFlags.everything;
     addTearDown(() => AppRouter.featureFlags = saved);
 
     final unbuilt = appDestinations.keys.where((id) => !AppRouter.isBuilt(id));

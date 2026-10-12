@@ -59,7 +59,7 @@ void main() {
     await tester.pumpWidget(_host(const FollowAlongView()));
     await tester.pumpAndSettle();
 
-    expect(find.text('logs itself'), findsOneWidget);
+    expect(find.text('counts itself'), findsOneWidget);
   });
 
   testWidgets('offers nothing to tap in order to log', (tester) async {
@@ -111,9 +111,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('يسجّل نفسه'), findsOneWidget);
+    expect(find.text('بيتحسب لوحده'), findsOneWidget);
     expect(find.text('إيقاف مؤقت'), findsOneWidget);
-    expect(find.text('تخطّي هذا التمرين'), findsOneWidget);
+    expect(find.text('تخطّي الحركة دي'), findsOneWidget);
     expect(find.text('Pause'), findsNothing);
   });
 

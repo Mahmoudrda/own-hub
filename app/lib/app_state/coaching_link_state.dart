@@ -38,7 +38,6 @@
 /// that it is a test. See `coaching_test_payments.dart`.
 library;
 
-import '../domain/flags/feature_flags.dart';
 import '../features/coach/domain/coach_capacity.dart';
 import '../features/coach/domain/coach_desk.dart';
 import '../features/coach/domain/coach_profile.dart';
@@ -73,9 +72,9 @@ class CoachingLinkState implements CoachingRepository {
 
   static final CoachingLinkState instance = CoachingLinkState._();
 
-  /// True while no account is required — the only time a test rail may exist.
-  static bool get isTestMode =>
-      !AppRouter.featureFlags.isOn(Feature.accountRequired);
+  /// True only in a build that is not going to a store: the only time a
+  /// test rail may exist. See `AppRouter.testingAidsAllowed`.
+  static bool get isTestMode => AppRouter.testingAidsAllowed;
 
   /// The woman using the app. The same uid the router calls `_selfUid`; the
   /// relationship id is derived from it and from the coach, so the two halves

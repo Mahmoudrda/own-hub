@@ -120,9 +120,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('استبدلي هذا التمرين'), findsOneWidget);
-    expect(find.text('العضلات نفسها، وأهدأ على الأرض.'), findsOneWidget);
-    expect(find.text('استبدليه'), findsOneWidget);
+    expect(find.text('غيّري الحركة دي'), findsOneWidget);
+    expect(find.text('نفس العضلات، وأهدى على الأرض.'), findsOneWidget);
+    expect(find.text('غيّريها'), findsOneWidget);
     expect(find.text('Swap it'), findsNothing);
   });
 

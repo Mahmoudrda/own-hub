@@ -71,13 +71,21 @@ enum DeletionMethod {
   pseudonymised,
 
   /// **Not deleted — retained** as the proof that the erasure happened.
-  retained;
+  retained,
 
-  /// False for the three rows that survive on purpose.
+  /// **Not deleted by the deletion, expires on its own clock.** Records keyed
+  /// on a hash and never linked to her account, so deletion cannot find
+  /// them. Every write stamps `expireAt` and the Firestore TTL policy removes
+  /// them: 180 days after the last fraud signal, one year after a reviewer's
+  /// access.
+  ttl;
+
+  /// False for the rows that survive on purpose.
   bool get removesData =>
       this != DeletionMethod.closed &&
       this != DeletionMethod.pseudonymised &&
-      this != DeletionMethod.retained;
+      this != DeletionMethod.retained &&
+      this != DeletionMethod.ttl;
 }
 
 /// One row of §7.3.
@@ -116,7 +124,7 @@ class DeletionRow {
   String toString() => '$number. $path (${method.name})';
 }
 
-/// All 37 rows, verbatim from G7 §7.3.
+/// All 44 rows: G7 §7.3, plus rows 38-44 added since.
 ///
 /// Rows 10–14 and 23 were added after reading the G1, G3 and G5 plans, and rows
 /// 32–34 after G4 and G6 landed. §7.3 is blunt about what that means: "a human
@@ -283,9 +291,10 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
   ),
   DeletionRow(
     number: 24,
-    path: 'Storage user-media/{uid}/**',
+    path: 'Storage user-media/{uid}/** and coach-docs/{uid}/**',
     owner: 'media groups',
     method: DeletionMethod.prefixDelete,
+    note: 'her media, and a coach\'s certificate scans; exports are row 25',
   ),
   DeletionRow(
     number: 25,
@@ -298,7 +307,9 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     path: 'G1 onAccountDelete(uid)',
     owner: 'G1, called by G7',
     method: DeletionMethod.groupHook,
-    note: 'covers rows 10, 22 and 23',
+    note:
+        'runs the community, coach and assistant purge on the server '
+        '(purge_group_hook)',
   ),
   DeletionRow(
     number: 27,
@@ -344,20 +355,29 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
   ),
   DeletionRow(
     number: 33,
-    path: 'on-device encrypted progress-photo store',
+    // Named for what this release has, which is nowhere: there is no capture
+    // path, no store and no key. It read "on-device encrypted progress-photo
+    // store", which describes a thing the product does not have and reads, in a
+    // column of real Firestore paths, as one more real place. The note below
+    // said "NOT BUILT" and the path above it said the opposite.
+    path: 'progress photos on the phone (no store in this release)',
     owner: 'G6, wiped by G7',
     method: DeletionMethod.localOnly,
     note:
         'MeasurementsRepository.purgeLocal(). The photos have no Storage '
         'object and no Firestore reference, so NO server-side delete can reach '
-        'them',
+        'them. NOT BUILT: this release has no capture path and no photo store, '
+        'so the step runs and finds nothing. The row stands because the day a '
+        'camera lands it must already be enumerated',
   ),
   DeletionRow(
     number: 34,
     path: 'photo store key in Keychain / Android Keystore',
     owner: 'G6, destroyed by G7',
     method: DeletionMethod.localOnly,
-    note: 'wiping ciphertext while leaving the key is not deletion',
+    note:
+        'wiping ciphertext while leaving the key is not deletion. NOT BUILT: '
+        'no key is ever minted in this release, so there is none to destroy',
   ),
 
   // Rows 35-37 — added after check (e) went executable and immediately caught
@@ -395,6 +415,119 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
         'the splits she authored herself (DECISIONS D7, ownerKind self). A '
         "coach's own splits live under coaches/{coachUid}/splits and are not "
         'hers to delete',
+  ),
+  DeletionRow(
+    number: 38,
+    path: 'users/{uid}/private/**',
+    owner: 'G7',
+    method: DeletionMethod.recursive,
+    note:
+        'server-minted facts about her that are not hers to write: today that '
+        'is the recipe entitlement, {tier, source, expiresAt}. Nothing reads '
+        'it yet, and it is enumerated anyway — Firestore does not '
+        'cascade-delete a subcollection, so a collection added ahead of its '
+        'feature is exactly the kind that gets left behind on the server while '
+        'A02 tells her nothing survived',
+  ),
+
+  // Rows 39-41: the server's own records of her identity check, added with
+  // the real `delete_account` callable. Each is found by her uid and removed
+  // by the deletion Function (contracts/deletion_manifest.json). The NID
+  // registry is NOT here: that is row 23, closed rather than deleted.
+  DeletionRow(
+    number: 39,
+    path: 'verification_flags where uid == {uid}',
+    owner: 'G1',
+    method: DeletionMethod.groupHook,
+    note:
+        'any review flag for her: reason codes and scores only, never an '
+        'image or a phone number',
+  ),
+  DeletionRow(
+    number: 40,
+    path: 'verificationLedger/{uid}',
+    owner: 'G1',
+    method: DeletionMethod.groupHook,
+    note: 'her check budget, attempt counts and daily counters',
+  ),
+  DeletionRow(
+    number: 41,
+    path: 'verificationSessions where uid == {uid}',
+    owner: 'G1',
+    method: DeletionMethod.groupHook,
+    note: 'single-use liveness challenges minted for her',
+  ),
+  // Rows 42-44: kept after deletion on purpose, never linked to her account,
+  // and swept by the TTL policy on `expireAt` (functions/identity/config.py
+  // SIGNAL_RETENTION_DAYS and ACCESS_LOG_RETENTION_DAYS). Privacy policy v3
+  // sections 6 and 7 name them, and so does the deletion sheet.
+  DeletionRow(
+    number: 42,
+    path: 'verificationBehaviour/{idHmac}',
+    owner: 'G1',
+    method: DeletionMethod.ttl,
+    note:
+        'failed attempts per keyed ID code, linked to no account, deleted '
+        '180 days after the last attempt',
+  ),
+  DeletionRow(
+    number: 43,
+    path: 'verificationInstalls/{installHash}',
+    owner: 'G1',
+    method: DeletionMethod.ttl,
+    note:
+        'the last ID codes tried from one hashed installation, linked to no '
+        'account, deleted 180 days after the last attempt',
+  ),
+  DeletionRow(
+    number: 44,
+    path: 'verificationReviewAccess where flagId in her flags',
+    owner: 'G1',
+    method: DeletionMethod.ttl,
+    note:
+        'which reviewer opened her case and when: no photograph, phone '
+        'number or ID number, deleted after one year',
+  ),
+  // Rows 45 to 49 name, one by one, what row 26's purge already removes:
+  // the community and coach data that is dormant at launch (the rules refuse
+  // every write to it while both are off) and must be erasable before either
+  // is switched on.
+  DeletionRow(
+    number: 45,
+    path: 'posts/{postId} where authorUid == uid, with comments and likes',
+    owner: 'G1, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'her posts and everything under them (purge_group_hook)',
+  ),
+  DeletionRow(
+    number: 46,
+    path: 'posts/*/comments where authorUid == uid',
+    owner: 'G1, called by G7',
+    method: DeletionMethod.groupHook,
+    note:
+        'her comments on other women\'s posts, replaced by an empty '
+        'placeholder with no words and no uid (purge_group_hook)',
+  ),
+  DeletionRow(
+    number: 47,
+    path: 'coaches/{uid}/** (profile, offers, portfolio, results, ads, splits, certificates)',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'her coach page and certificate records (purge_group_hook)',
+  ),
+  DeletionRow(
+    number: 48,
+    path: 'relationships where coachUid or clientUid == uid, with messages and reviews',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'every coaching she was part of, as client or coach',
+  ),
+  DeletionRow(
+    number: 49,
+    path: 'coachInvites where coachUid == uid',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'the invite codes she shared as a coach',
   ),
 ];
 

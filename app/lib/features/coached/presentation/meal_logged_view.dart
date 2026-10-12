@@ -96,8 +96,8 @@ class MealLoggedView extends StatelessWidget {
     final strip =
         slots ??
         [
-          SlotChip(name: l10n.breakfast, state: l10n.logged, logged: true),
-          SlotChip(name: l10n.lunch, state: l10n.logged, logged: true),
+          SlotChip(name: l10n.breakfast, state: l10n.eaten, logged: true),
+          SlotChip(name: l10n.lunch, state: l10n.eaten, logged: true),
           SlotChip(name: l10n.dinner, state: l10n.planned),
         ];
 
@@ -234,14 +234,14 @@ class MealLoggedView extends StatelessWidget {
             ],
           ),
           Text(
-            l10n.changingThePlanNeverChangesALog,
+            l10n.changingThePlanNeverChangesAMeal,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
           AppUndoBar(
             // "Lunch logged · 1 serving" names a meal and a portion the
             // screen was not told about. The bar still offers the undo; it
             // just does not invent what it is undoing.
-            message: undoMessage ?? l10n.foodLogged,
+            message: undoMessage ?? l10n.mealAdded,
             undoLabel: l10n.undo,
             onUndo: onUndo,
           ),

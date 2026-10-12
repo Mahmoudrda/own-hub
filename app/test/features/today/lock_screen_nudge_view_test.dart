@@ -5,9 +5,12 @@
 // is that the tap is a log and not a prompt — a confirmation here would defeat
 // the entire point of the surface.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/features/signup/presentation/welcome_view.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/lock_screen_nudge_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -44,10 +47,17 @@ Widget _host(
   );
 }
 
-LockScreenNudgeView _view({TodayRepository? repository}) {
+/// The nudge as it fires in the product: for a meal she has had three times or
+/// more, which is what [mealLine] naming one means.
+LockScreenNudgeView _view({
+  TodayRepository? repository,
+  DateTime? at,
+  String? mealLine = 'Ful and baladi',
+}) {
   return LockScreenNudgeView(
     repository: repository ?? InMemoryTodayRepository(),
-    at: _at,
+    at: at ?? _at,
+    mealLine: mealLine,
     onLogged: () {},
     onSomethingElse: () {},
   );
@@ -65,6 +75,11 @@ void main() {
       // while the time beside it moved.
       expect(find.text('Tuesday'), findsOneWidget);
       expect(find.text('Tuesday 16 September'), findsNothing);
+      // 08:42 is breakfast, and the heading is read from the clock rather than
+      // fixed. It WAS fixed: `breakfastYourUsual_1lb0u` for every nudge at
+      // every hour, so a woman whose usual log is at seven in the evening was
+      // asked "Breakfast, your usual?" over her dinner. T01, T02 and E04 were
+      // fixed for this and T03 was missed.
       expect(find.text('Breakfast, your usual?'), findsOneWidget);
       // The nudge fires only "for a meal she has had three times or more", and
       // the one line that had to be hers was the prototype's breakfast and its
@@ -73,7 +88,7 @@ void main() {
         find.text('Ful and baladi · 410 kcal · 22 g protein'),
         findsNothing,
       );
-      expect(find.text('Log it'), findsOneWidget);
+      expect(find.text('Add it'), findsOneWidget);
       expect(find.text('Something else'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -97,9 +112,9 @@ void main() {
       await tester.pumpWidget(_host(_view()));
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.text('Log it'));
+      await tester.ensureVisible(find.text('Add it'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Log it'));
+      await tester.tap(find.text('Add it'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 800));
 
@@ -108,6 +123,31 @@ void main() {
       expect(find.text('Undo'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 6));
+    });
+
+    testWidgets('the heading is the hour she is actually in', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(_view(at: DateTime(2026, 9, 15, 19, 10))),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Dinner, your usual?'), findsOneWidget);
+      expect(find.text('Breakfast, your usual?'), findsNothing);
+    });
+
+    testWidgets('and "your usual" is a habit, so it has to be named', (
+      tester,
+    ) async {
+      // No meal supplied means nobody has told this screen which habit it is
+      // about, and "your usual" is a claim about one. Same rule Home's meal
+      // card follows.
+      _phone(tester);
+      await tester.pumpWidget(_host(_view(mealLine: null)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Breakfast'), findsOneWidget);
+      expect(find.text('Breakfast, your usual?'), findsNothing);
     });
   });
 
@@ -118,10 +158,10 @@ void main() {
     await tester.pumpWidget(_host(_view(), locale: const Locale('ar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('الفطور المعتاد؟'), findsOneWidget);
-    expect(find.text('سجّليها'), findsOneWidget);
-    expect(find.text('شيء آخر'), findsOneWidget);
-    expect(find.text('Log it'), findsNothing);
+    expect(find.text('الفطار المعتاد؟'), findsOneWidget);
+    expect(find.text('ضيفيه'), findsOneWidget);
+    expect(find.text('حاجة تانية'), findsOneWidget);
+    expect(find.text('Add it'), findsNothing);
     expect(find.text('Something else'), findsNothing);
   });
 
@@ -136,5 +176,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the app icon is the Own Hub tile, not a stock glyph', (
+    tester,
+  ) async {
+    _phone(tester);
+    await tester.pumpWidget(_host(_view()));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.restaurant), findsNothing);
+    expect(LockScreenNudgeView.appIconAsset, WelcomeView.logoAsset);
+    final icon = find.byWidgetPredicate(
+      (w) =>
+          w is Image &&
+          w.image is AssetImage &&
+          (w.image as AssetImage).assetName == LockScreenNudgeView.appIconAsset,
+    );
+    expect(icon, findsOneWidget);
+    final image = tester.widget<Image>(icon);
+    expect(image.width, 28);
+    expect(image.height, 28);
+    expect(
+      image.excludeFromSemantics,
+      isTrue,
+      reason: 'decorative: the app name is written beside it',
+    );
+    final clip = tester.widget<ClipRRect>(
+      find.ancestor(of: icon, matching: find.byType(ClipRRect)).first,
+    );
+    expect(clip.borderRadius, BorderRadius.circular(9));
+    expect(find.text('Own Hub'), findsOneWidget);
+  });
+
+  test('the placeholder note is gone', () {
+    final source = File(
+      'lib/features/today/presentation/lock_screen_nudge_view.dart',
+    ).readAsStringSync();
+    expect(source, isNot(contains('TODO')));
+    expect(source, isNot(contains('Icons.restaurant')));
   });
 }

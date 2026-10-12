@@ -1,0 +1,525 @@
+{
+  "_readme": [
+    "Every fact on this website that only the owner can supply lives in this file.",
+    "Fill a value in and run  python3 _build/build.py  from the site/ folder.",
+    "To publish for a domain: site/_build/deploy.sh https://your-domain (see the top of that file).",
+    "Anything still empty is rendered on the page as a visible rose-outlined",
+    "[to be completed: ...] marker, in both languages, so a gap is never mistaken",
+    "for a fact. Do not invent a value here. A policy carrying a wrong email address",
+    "is worse than one that admits a gap.",
+    "Values written as {\"en\": \"\", \"ar\": \"\"} are prose and need both languages.",
+    "Values written as a bare string are language-neutral (dates, emails, URLs, numbers)."
+  ],
+  "baseUrl": "https://own-hub.app",
+  "release": false,
+  "values": {
+    "effectiveDate": {
+      "value": "24 September 2026",
+      "label": {
+        "en": "effective date",
+        "ar": "تاريخ السريان"
+      },
+      "note": "The date these pages go live. It must not be earlier than the day the app is first downloadable. Used as the effective date on the policy and the terms, as the last-updated line on every page, and as the date in both changelogs. Write it the same way in both languages, in Western digits, e.g. 1 October 2026 / 1 أكتوبر 2026 — see effectiveDateAr if the Arabic month name differs."
+    },
+    "effectiveDateAr": {
+      "value": "24 سبتمبر 2026",
+      "label": {
+        "en": "effective date",
+        "ar": "تاريخ السريان"
+      },
+      "note": "Optional. The same date written in Arabic, e.g. 1 أكتوبر 2026. If left empty the Arabic pages show the value of effectiveDate."
+    },
+    "lastUpdated": {
+      "value": "",
+      "label": {
+        "en": "last updated",
+        "ar": "آخر تحديث"
+      },
+      "note": "Optional. Only set this once a page has been revised after publication. Empty means the pages show effectiveDate."
+    },
+    "lastUpdatedAr": {
+      "value": "",
+      "label": {
+        "en": "last updated",
+        "ar": "آخر تحديث"
+      },
+      "note": "Optional Arabic spelling of lastUpdated."
+    },
+    "brandFounder": {
+      "value": {
+        "en": "Rahma Mohsen",
+        "ar": "رحمة محسن"
+      },
+      "label": {
+        "en": "founder",
+        "ar": "المؤسِّسة"
+      },
+      "note": "The founder of Own Hub, and the name the product speaks in. She is named on the home page and in the policy's 'who we are'. She is not the store account holder, so she is not the legal publisher: see legalEntity."
+    },
+    "legalEntity": {
+      "value": {
+        "en": "Mahmoud Reda",
+        "ar": "محمود رضا"
+      },
+      "label": {
+        "en": "publisher",
+        "ar": "الناشر"
+      },
+      "note": "The individual who holds the two store accounts, passes their identity verification, publishes and develops the app, and is the controller for PDPL purposes. Google publicly shows the account holder's legal name, country and email, and the policy must name the same person, so this value must match the store account exactly. If a company is registered later, replace this with the name exactly as it appears on the commercial register, and replace legalAddress with its registered address in the same edit."
+    },
+    "legalAddress": {
+      "value": {
+        "en": "Egypt",
+        "ar": "مصر"
+      },
+      "label": {
+        "en": "address",
+        "ar": "العنوان"
+      },
+      "note": "Country only, and deliberately so: an individual publisher of a women's safety product should not carry a home address on a public page. A country plus a monitored email is the normal and sufficient form for a solo publisher. A registered company's address replaces this."
+    },
+    "contactPrivacy": {
+      "value": "info@own-hub.app",
+      "label": {
+        "en": "privacy contact email",
+        "ar": "بريد التواصل بشأن الخصوصية"
+      },
+      "note": "A monitored mailbox, not a procedure. It appears on the privacy policy and on the deletion page, and the deletion page builds a pre-filled message to it."
+    },
+    "contactSupport": {
+      "value": "support@own-hub.app",
+      "label": {
+        "en": "support contact email",
+        "ar": "بريد الدعم"
+      },
+      "note": "A monitored mailbox. It appears on the support page and in the terms. It may be the same address as contactPrivacy."
+    },
+    "commercialRegistration": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "commercial registration and tax card numbers",
+        "ar": "رقما السجل التجاري والبطاقة الضريبية"
+      },
+      "optional": true,
+      "note": "Optional: counsel decides whether these belong on the page. Empty means the row is not drawn at all, with no marker."
+    },
+    "dataProtectionOfficer": {
+      "value": {
+        "en": "Mahmoud Reda acts as data protection officer himself, as the law requires of an individual who holds a permit. Contact: info@own-hub.app",
+        "ar": "يتولى محمود رضا بنفسه مهام مسؤول حماية البيانات، كما يقتضي القانون من الشخص الطبيعي الحاصل على تصريح. للتواصل: info@own-hub.app"
+      },
+      "label": {
+        "en": "data protection officer",
+        "ar": "مسؤول حماية البيانات"
+      },
+      "optional": true,
+      "note": "Executive Regulations Art. 38 and PDPL Art. 8: a permit holder acts as his own data protection officer. Change the address together with contactPrivacy."
+    },
+    "pdpcContact": {
+      "value": {
+        "en": "Website portal.pdpc.gov.eg · email info@pdpc.gov.eg · hotline 17372.",
+        "ar": "الموقع portal.pdpc.gov.eg · البريد الإلكتروني info@pdpc.gov.eg · الخط الساخن 17372."
+      },
+      "label": {
+        "en": "contact details for Egypt's Personal Data Protection Centre",
+        "ar": "بيانات التواصل مع المركز المصري لحماية البيانات الشخصية"
+      },
+      "note": "From the Centre's own portal (Contact Us / Make a complaint). The Centre publishes no postal address."
+    },
+    "pdpcPermit": {
+      "value": {
+        "en": "Not yet issued. We will publish the permit number and its expiry date here as soon as the Personal Data Protection Centre issues it.",
+        "ar": "لم يصدر بعد. سننشر رقم التصريح وتاريخ انتهائه هنا فور إصداره من مركز حماية البيانات الشخصية."
+      },
+      "label": {
+        "en": "Personal Data Protection Centre permit number and expiry",
+        "ar": "رقم تصريح مركز حماية البيانات الشخصية وتاريخ انتهائه"
+      },
+      "note": "OWNER. An individual can hold a permit, never a licence (PDPL Art. 1). Once issued, replace with: Permit no. [number], valid until [date] / تصريح رقم [الرقم]، ساري حتى [التاريخ]."
+    },
+    "courtVenue": {
+      "value": {
+        "en": "the competent courts in Cairo, including the Cairo Economic Court for the matters the law assigns to it. This does not take away your right to bring a claim before any other Egyptian court the law allows you to use",
+        "ar": "المحاكم المختصة في القاهرة، ومنها المحكمة الاقتصادية بالقاهرة في المسائل التي يُسندها إليها القانون. ولا يمس ذلك حقك في رفع دعواك أمام أي محكمة مصرية أخرى يتيحها لك القانون"
+      },
+      "label": {
+        "en": "the governorate or court that hears disputes",
+        "ar": "المحافظة أو المحكمة المختصة بنظر النزاعات"
+      },
+      "note": "Procedure Code art. 62; Economic Courts Law 120/2008 art. 6."
+    },
+    "liabilityCap": {
+      "value": {
+        "en": "the amount of damage Egyptian law obliges us to make good. Because Own Hub is free, we set no other cap",
+        "ar": "مقدار الضرر الذي يُلزمنا القانون المصري بجبره. ولأن Own Hub مجاني، فلا نضع أي حد آخر"
+      },
+      "label": {
+        "en": "the cap on liability",
+        "ar": "الحد الأقصى للمسؤولية"
+      },
+      "note": "Not used by terms v3: the cap bullet was removed (Civil Code art. 217, Consumer Protection Law Art. 28). Kept filled in case a template uses it again."
+    },
+    "minimumAge": {
+      "value": "18",
+      "label": {
+        "en": "minimum age",
+        "ar": "الحد الأدنى للسن"
+      },
+      "note": "Constitution art. 80; Executive Regulations Art. 15; MIN_AGE in functions/identity/config.py."
+    },
+    "rightsResponseWindow": {
+      "value": {
+        "en": "6 working days",
+        "ar": "ستة أيام عمل"
+      },
+      "label": {
+        "en": "the response window for a data request",
+        "ar": "المدة التي نردّ خلالها على طلبك"
+      },
+      "note": "PDPL Art. 32."
+    },
+    "transferCountries": {
+      "value": {
+        "en": "Germany and the European Union: Google Cloud in Frankfurt (europe-west3) and the Cloud Vision EU endpoint, where Google stores and processes data only in the EU. The United States: Firebase Authentication, which Google runs only from US data centres. Google data centres worldwide, which include the United States: Firebase App Check, Google ML Kit performance data, Firebase Crashlytics if you allow it, and Google Analytics for Firebase if you allow it. Google does not let us choose one country for these. Also outside Egypt: Zoho Mail keeps the emails you send to info@own-hub.app or support@own-hub.app in Zoho data centres, and Cloudflare serves this website from its global network, which includes the United States. Each transfer needs your consent, which we ask for before it happens, and our transfer permit from the Personal Data Protection Centre. Google acts only on our instructions under its data processing terms, encrypts the data in transit and at rest, and may not use it to train AI models. The Centre has not yet published a list of countries it considers adequate.",
+        "ar": "ألمانيا والاتحاد الأوروبي: خدمات Google Cloud في فرانكفورت (europe-west3)، ونقطة الاتصال الأوروبية لخدمة Cloud Vision، حيث تخزّن Google البيانات وتعالجها داخل الاتحاد الأوروبي فقط. الولايات المتحدة: خدمة Firebase Authentication، التي تشغّلها Google من مراكز بيانات أمريكية فقط. مراكز بيانات Google حول العالم، ومنها الولايات المتحدة: Firebase App Check، وبيانات الأداء الخاصة بـ Google ML Kit، وFirebase Crashlytics إن سمحتِ بها، وGoogle Analytics for Firebase إن سمحتِ بها، ولا تتيح Google اختيار دولة واحدة لهذه الخدمات. وخارج مصر أيضًا: يحفظ Zoho Mail الرسائل التي ترسلينها إلى info@own-hub.app أو support@own-hub.app في مراكز بيانات Zoho، وتقدّم Cloudflare هذا الموقع من شبكتها العالمية، ومنها الولايات المتحدة. لا يتم أي نقل إلا بموافقتك التي نطلبها قبل حدوثه، وبموجب تصريح النقل الصادر لنا من مركز حماية البيانات الشخصية. وتعالج Google البيانات وفق تعليماتنا فقط بموجب شروط معالجة البيانات لديها، وتشفّرها أثناء النقل والتخزين، ولا يجوز لها استخدامها لتدريب نماذج الذكاء الاصطناعي. ولم يصدر المركز بعد قائمة بالدول التي يعدّها توفر مستوى حماية كافيًا."
+      },
+      "label": {
+        "en": "the countries data would reach, and the transfer mechanism",
+        "ar": "الدول التي قد تصل إليها البيانات، وأساس النقل"
+      },
+      "note": "PDPL Art. 14 and 15; Executive Regulations Art. 16; firebase.google.com/support/privacy."
+    },
+    "providerAuth": {
+      "value": {
+        "en": "Google Firebase Authentication",
+        "ar": "Google Firebase Authentication"
+      },
+      "label": {
+        "en": "the authentication provider",
+        "ar": "مزوّد خدمة تسجيل الدخول"
+      },
+      "note": "Part B only. Not connected today."
+    },
+    "providerAuthRegion": {
+      "value": {
+        "en": "United States",
+        "ar": "الولايات المتحدة"
+      },
+      "label": {
+        "en": "the region it processes in",
+        "ar": "المنطقة التي يعالج فيها البيانات"
+      },
+      "note": "Part B only."
+    },
+    "providerDatabase": {
+      "value": {
+        "en": "Google Cloud Firestore and Cloud Storage",
+        "ar": "Google Cloud Firestore وCloud Storage"
+      },
+      "label": {
+        "en": "the database and storage provider",
+        "ar": "مزوّد قاعدة البيانات والتخزين"
+      },
+      "note": "Part B only. Not connected today."
+    },
+    "providerDatabaseRegion": {
+      "value": {
+        "en": "Frankfurt, Germany (europe-west3)",
+        "ar": "فرانكفورت، ألمانيا (europe-west3)"
+      },
+      "label": {
+        "en": "the region it stores in",
+        "ar": "المنطقة التي تُخزَّن فيها البيانات"
+      },
+      "note": "Part B only. That choice is permanent, and it decides whether data leaves Egypt."
+    },
+    "providerIdentity": {
+      "value": {
+        "en": "Our own server on Google Cloud Functions, with Google Cloud Vision for reading the card",
+        "ar": "خادمنا الخاص على Google Cloud Functions، مع Google Cloud Vision لقراءة البطاقة"
+      },
+      "label": {
+        "en": "the identity verification provider",
+        "ar": "مزوّد خدمة التحقق من الهوية"
+      },
+      "note": "Part B only. Not connected today."
+    },
+    "providerIdentityRegion": {
+      "value": {
+        "en": "Germany and the EU. Images are never stored, and are not processed in Egypt.",
+        "ar": "ألمانيا والاتحاد الأوروبي. لا تُخزَّن الصور، ولا تُعالَج داخل مصر."
+      },
+      "label": {
+        "en": "where it processes, and whether images stay in Egypt",
+        "ar": "مكان المعالجة، وهل تبقى الصور في مصر"
+      },
+      "note": "Part B only. That is a contract term, not a setting."
+    },
+    "providerPayment": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "the payment provider",
+        "ar": "مزوّد خدمة الدفع"
+      },
+      "note": "Part B only, and only if coaching ships."
+    },
+    "retentionCoachMessages": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "how long messages with a coach are kept",
+        "ar": "مدة الاحتفاظ بالرسائل مع المدرّبة"
+      },
+      "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker. No page uses this token at present.",
+      "fallback": {
+        "en": "Nothing is kept, because there is no coaching and no messaging in this version. A period will be set and published before coaching exists.",
+        "ar": "لا يُحتفظ بشيء، إذ لا يوجد تدريب شخصي ولا مراسلة في هذا الإصدار. وستُحدَّد المدة وتُنشر قبل إطلاق التدريب الشخصي."
+      }
+    },
+    "retentionSafetyReports": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "how long safety reports are kept",
+        "ar": "مدة الاحتفاظ ببلاغات السلامة"
+      },
+      "note": "Part B only. Retention period, with counsel. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker. No page uses this token at present.",
+      "fallback": {
+        "en": "There are no safety reports in this version, because there is no community. A period will be set and published before the community opens.",
+        "ar": "لا توجد بلاغات سلامة في هذا الإصدار، إذ لا يوجد مجتمع. وستُحدَّد المدة وتُنشر قبل افتتاح المجتمع."
+      }
+    },
+    "retentionPaymentRecords": {
+      "value": {
+        "en": "",
+        "ar": ""
+      },
+      "label": {
+        "en": "how long payment and invoice records are kept",
+        "ar": "مدة الاحتفاظ بسجلات الدفع والفواتير"
+      },
+      "note": "Part B only. The period Egyptian tax law requires. This is an exception to deletion and the policy says so plainly. Empty is answerable today: the page prints the fallback instead of a to-be-completed marker. No page uses this token at present.",
+      "fallback": {
+        "en": "Nothing is kept, because there is nothing to buy and no payment of any kind in this version. When payments exist, Egyptian invoicing and tax rules set the period, and it is an exception to deletion.",
+        "ar": "لا يُحتفظ بشيء، إذ لا شيء يُشترى ولا توجد أي مدفوعات في هذا الإصدار. وحين توجد المدفوعات، تُحدِّد قواعد الفوترة والضرائب المصرية المدة، وهي استثناء من الحذف."
+      }
+    },
+    "waitlistEndpoint": {
+      "value": "https://europe-west3-own-hub.cloudfunctions.net/join_waitlist",
+      "label": {
+        "en": "waitlist address",
+        "ar": "عنوان قائمة الانتظار"
+      },
+      "note": "Where the waitlist form posts: the join_waitlist Cloud Function. It changes only if the function is renamed or moved. _headers allows forms to post to this origin and nowhere else."
+    },
+    "storeUrlIos": {
+      "value": "",
+      "label": {
+        "en": "App Store link",
+        "ar": "رابط App Store"
+      },
+      "optional": true,
+      "note": "Optional. Empty means the App Store badge is drawn, unchanged, as Coming soon and is not a link, and the waitlist form stays on the home page. Fill it in once the listing is live (https://apps.apple.com/...) and the badge becomes the link, on the home page and in every footer."
+    },
+    "storeUrlAndroid": {
+      "value": "",
+      "label": {
+        "en": "Google Play link",
+        "ar": "رابط Google Play"
+      },
+      "optional": true,
+      "note": "Optional. Empty means the Google Play badge is drawn as Coming soon and is not a link. Fill it in once the listing is live (https://play.google.com/...). With both store links set, the waitlist form leaves the home page."
+    },
+    "policyEffectiveDate": {
+      "value": {
+        "en": "the day this version of the app is released",
+        "ar": "يوم إصدار هذا الإصدار من التطبيق"
+      },
+      "label": {
+        "en": "the date version 3.0 takes effect",
+        "ar": "تاريخ سريان الإصدار 3.0"
+      },
+      "note": "OWNER. Replace with the real date once the PDPC permit is issued and the v3 build is live; it must not be earlier than either."
+    },
+    "hostingProvider": {
+      "value": {
+        "en": "Cloudflare Pages (Cloudflare, Inc.)",
+        "ar": "Cloudflare Pages (شركة Cloudflare)"
+      },
+      "label": {
+        "en": "the website host",
+        "ar": "مزوّد استضافة الموقع"
+      },
+      "note": "The website is published on Cloudflare Pages. It serves the pages and sees a visitor's IP address; the site sets no cookies and loads nothing from third parties."
+    },
+    "hostingProviderRegion": {
+      "value": {
+        "en": "Cloudflare's global network of data centres, which includes the United States",
+        "ar": "شبكة مراكز بيانات Cloudflare حول العالم، ومنها الولايات المتحدة"
+      },
+      "label": {
+        "en": "where the host processes requests",
+        "ar": "مكان معالجة المزوّد للطلبات"
+      },
+      "note": "OWNER. Where the website host processes requests."
+    },
+    "chatService": {
+      "value": {
+        "en": "a team chat service",
+        "ar": "خدمة محادثة للفريق"
+      },
+      "label": {
+        "en": "the chat service for review alerts",
+        "ar": "خدمة المحادثة لتنبيهات المراجعة"
+      },
+      "note": "OWNER. Neutral wording until the service is named. Replace with its name, or remove the alert sentence in privacy 3.4 and the card in section 4 if the review alert is switched off."
+    },
+    "chatServiceRegion": {
+      "value": {
+        "en": "the chat service's servers, which may be outside Egypt",
+        "ar": "خوادم خدمة المحادثة، وقد تكون خارج مصر"
+      },
+      "label": {
+        "en": "where the chat service processes",
+        "ar": "مكان معالجة خدمة المحادثة"
+      },
+      "note": "OWNER. Where the chat service processes the alert."
+    },
+    "emailProvider": {
+      "value": {
+        "en": "Zoho Mail (Zoho Corporation)",
+        "ar": "Zoho Mail (شركة Zoho)"
+      },
+      "label": {
+        "en": "the email provider",
+        "ar": "مزوّد البريد الإلكتروني"
+      },
+      "note": "The info@ and support@ mailboxes on own-hub.app are hosted by Zoho Mail. Accept Zoho's data processing addendum in the Zoho admin console and keep a copy."
+    },
+    "emailProviderRegion": {
+      "value": {
+        "en": "Zoho data centres, which are outside Egypt",
+        "ar": "مراكز بيانات Zoho، وهي خارج مصر"
+      },
+      "label": {
+        "en": "where the email provider stores mail",
+        "ar": "مكان تخزين البريد لدى المزوّد"
+      },
+      "note": "OWNER. Where the email provider stores messages."
+    },
+    "deletionVerifyMethod": {
+      "value": {
+        "en": "a one-time code we send by SMS to that number, which you send back to us",
+        "ar": "رمز يُستخدم مرة واحدة نرسله برسالة نصية إلى ذلك الرقم، وتعيدينه إلينا"
+      },
+      "label": {
+        "en": "how we confirm a deletion or copy request is hers",
+        "ar": "طريقة التأكد من أن طلب الحذف أو النسخة صادر عن صاحبة الحساب"
+      },
+      "note": "OWNER and LAWYER. For example: a one-time code sent by SMS to the number on the account. Used on the privacy and deletion pages."
+    },
+    "deletionWindow": {
+      "value": {
+        "en": "6 working days of your request",
+        "ar": "ستة أيام عمل من تاريخ طلبك"
+      },
+      "label": {
+        "en": "how long we take to delete after a request by email",
+        "ar": "المدة التي نحذف خلالها بعد طلب بالبريد"
+      },
+      "note": "PDPL Art. 32."
+    },
+    "supportRetention": {
+      "value": {
+        "en": "1 year",
+        "ar": "سنة واحدة"
+      },
+      "label": {
+        "en": "how long messages you send us are kept",
+        "ar": "مدة الاحتفاظ بالرسائل التي ترسلينها إلينا"
+      },
+      "note": "LAWYER. For example 2 years after the conversation ends."
+    },
+    "deletionRecordRetention": {
+      "value": {
+        "en": "3 years",
+        "ar": "ثلاث سنوات"
+      },
+      "label": {
+        "en": "how long the record of a deletion is kept",
+        "ar": "مدة الاحتفاظ بسجل تنفيذ الحذف"
+      },
+      "note": "Civil Code art. 172; Executive Regulations Art. 3 and 14."
+    },
+    "serverLogRetention": {
+      "value": {
+        "en": "30 days",
+        "ar": "30 يومًا"
+      },
+      "label": {
+        "en": "how long server logs are kept",
+        "ar": "مدة الاحتفاظ بسجلات الخادم"
+      },
+      "note": "The live _Default log bucket setting."
+    },
+    "crashReportRetention": {
+      "value": {
+        "en": "90 days, after which Google starts removing them from its live and backup systems",
+        "ar": "90 يومًا، تبدأ Google بعدها حذفها من أنظمتها الحية والاحتياطية"
+      },
+      "label": {
+        "en": "how long crash reports are kept",
+        "ar": "مدة الاحتفاظ بتقارير الأعطال"
+      },
+      "note": "firebase.google.com/support/privacy."
+    },
+    "exportDelivery": {
+      "value": {
+        "en": "by email to the address you wrote from, as a password-protected file. We send the password separately, by SMS to the number on the account",
+        "ar": "بالبريد الإلكتروني إلى العنوان الذي راسلتِنا منه، في ملف محمي بكلمة مرور، ونرسل كلمة المرور منفصلة برسالة نصية إلى الرقم المسجّل في الحساب"
+      },
+      "label": {
+        "en": "how a copy of your data is delivered",
+        "ar": "طريقة تسليم نسخة بياناتك"
+      },
+      "note": "LAWYER. For example: a password-protected file by email, with the password sent by SMS."
+    }
+  },
+  "_draftingNotesNotPublished": {
+    "_readme": [
+      "These markers in the source documents are instructions to the owner about how",
+      "to finish the drafting. They are not facts a reader needs, and several of them",
+      "would be actively harmful on a public page, so the website does not carry them.",
+      "They are recorded here so that nothing written in the source documents is lost.",
+      "Every one of them is still outstanding."
+    ],
+    "legalReviewBanner": "Superseded on 2 October 2026 by the owner-approved fix plan: the privacy, terms and delete-account pages carry a visible 'Draft pending review by a licensed Egyptian lawyer' banner in both languages. REMOVE THE BANNER ONLY AFTER COUNSEL APPROVES THE TEXT. Set release to true only then: tests/test_site_build.py and the app's release preflight refuse a release with any marker or banner left.",
+    "storeFormsMustAgree": "privacy-policy.md A7: the day a server is connected, both store forms, the iOS privacy manifest and Part B of this policy must go live in the same release. A store form that disagrees with this page is a rejection.",
+    "analyticsLawfulBasis": "privacy-policy.md B3: usage statistics (Google Analytics for Firebase) and crash reports are now in the app, each on consent with its own opt-in switch, off by default ('Help improve Own Hub' and the crash-report switch). Counsel should confirm consent is the right basis for both.",
+    "erasureVsSafetyRecords": "privacy-policy.md B6: does the PDPL right to erasure permit keeping a pseudonymous safety record and a re-registration block? One question for counsel, not two. The engineering can go either way.",
+    "membershipPolicy": "terms.md section 3: the written membership policy, who qualifies as a woman for this product, how the document gate is applied, and what happens in a contested case, must be settled with counsel before accounts ship.",
+    "severeSymptomSource": "terms.md section 4: the severe-symptom screen in the app cites British NHS guidance to Egyptian women, and its 'find care near you' control is not connected. Both are in this release, because My cycle is. Replace the citation with an Egyptian clinical source, or sign it off explicitly, before release. THIS IS A RELEASE BLOCKER, NOT A WEBSITE ITEM.",
+    "allergenData": "terms.md section 5: the allergen data behind the food library is not authored, so today the allergy guard cannot clear any dish for a woman who names an allergy: her suggestions empty and her logging is refused. Either author the allergen tags before release, or take the allergy question out of the profile for this release. THIS IS A RELEASE BLOCKER, NOT A WEBSITE ITEM.",
+    "libraryAccuracy": "terms.md section 11: the exercise and food libraries must be reviewed for accuracy before release.",
+    "egyptOnlyDistribution": "terms.md section 15: confirm whether the store listings are restricted to Egypt. If the app is downloadable elsewhere, counsel should say what that means for the Terms.",
+    "appleEulaClause": "terms.md section 16: Apple's Licensed Application End User Licence Agreement requires specific wording about Apple's role, including that Apple is a third party beneficiary of the Terms. Counsel should add the clause Apple requires. THE TERMS ARE INCOMPLETE WITHOUT IT.",
+    "fontLicencesInApp": "terms.md section 16: the SIL OFL licence texts for Rubik, La Belle Aurore and Aref Ruqaa must be reachable from inside the app. Two of the three are bundled and registered today, and no screen displays them. The website carries Rubik's copy at /assets/fonts/OFL-Rubik.txt, which does not discharge the in-app requirement.",
+    "monitoredMailbox": "delete-account.md: the deletion address needs a monitored mailbox, not a procedure.",
+    "exportWhenBuilt": "delete-account.md: when an export is built, add it to this page and to the sheet in the app in the same release. A page that offers an export that does not exist is worse than a page that does not offer one.",
+    "publishingChecklist": "delete-account.md carries a publishing checklist addressed to the owner. It is not published. It is reproduced in the handover notes instead.",
+    "termsV2Section12": "terms v2 section 12 ('What changes when the rest of the product arrives') carried owner drafting notes about community, coaching and payments rules. Replaced in v3 by 'Later features', which promises separate rules and acceptance per feature. The notes are recorded here, not published.",
+    "lawyerMarkers": "Privacy and terms v3.0 carry no [LAWYER] or [OWNER] note, visible or as an HTML comment: the values from the 6 October 2026 legal research were applied, and build.py strips any such comment that slips into a page. The citations behind each value are in the owner's local legal-values file, not in this repository.",
+    "ownerChecks": "Owner facts the pages state that only the owner can confirm: Rahma Mohsen has no access to account data (privacy 1); every woman reviewer has signed a written confidentiality agreement (privacy 1); the review routes in privacy 3.4 and terms 3 all run at launch; the website host and the team chat service are named in place of the neutral wording above; a postal correspondence address replaces 'Egypt' (Consumer Protection Law Art. 5, Apple minimum term 8).",
+    "closedIdCode": "Privacy 6 and the delete page say the closed ID code is kept with no end date and the same card cannot join again, which is what the code does (DELETED_ACCOUNT_MAY_REJOIN = False). The legal research recommends closing it for 3 years and letting a woman who deleted her own account rejoin; that needs a code change before the wording can change."
+  }
+}

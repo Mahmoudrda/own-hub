@@ -369,13 +369,77 @@ int currentStreak = 0;
   test('no Claude or third-party API key is present in the app source', () {
     // §7: the key never ships in the app. The assistant calls Claude from a Cloud
     // Function. A key in the bundle is extractable by anyone who downloads it.
+    //
+    // `lib/firebase_options.dart` is exempt, and nothing else is. The reason is
+    // a real distinction, not a convenience: a Firebase apiKey is not a secret.
+    // It is a public project identifier that ships inside every Android and iOS
+    // binary by design, it authorises nothing on its own, and what actually
+    // protects the data is `firebase/firestore.rules`. Google documents it as
+    // safe to expose. Treating it as a secret would mean deleting the generated
+    // file the app cannot compile without.
+    //
+    // The `AIza` half of the pattern still matters everywhere else, and that is
+    // the whole reason this exemption is one path and not a relaxed regex: a
+    // Gemini key is also `AIza...` and is indistinguishable by shape from the
+    // Firebase one. A key that bills us, in a file anyone can unzip, would look
+    // exactly like the line being allowed here. The pairing test below is what
+    // stops that.
     final banned = RegExp(
       r'(sk-ant-|ANTHROPIC_API_KEY\s*=\s*.|AIza[0-9A-Za-z_\-]{30,})',
     );
+    final offenders = _hits(
+      banned,
+    ).where((hit) => !hit.contains('lib/firebase_options.dart')).toList();
     expect(
-      _hits(banned),
+      offenders,
       isEmpty,
       reason: 'No API key may be committed to the app source.',
+    );
+  });
+
+  test('the firebase_options exemption cannot hide a real key', () {
+    // Without this, the exemption above is a hole exactly the size of a Gemini
+    // key: paste one into the generated file and no guard looks at it again.
+    // Same shape as the deny-list pairing for rule 3.
+    final file = File('lib/firebase_options.dart');
+    expect(
+      file.existsSync(),
+      isTrue,
+      reason: 'The exempted file must exist, or the exemption is stale and '
+          'should be deleted rather than left pointing at nothing.',
+    );
+    final source = file.readAsStringSync();
+
+    expect(
+      source.contains('DefaultFirebaseOptions'),
+      isTrue,
+      reason: 'The exempted path must be the FlutterFire generated file. If it '
+          'is something else, the exemption is being reused for a file it was '
+          'never reasoned about.',
+    );
+    expect(
+      RegExp(r'sk-ant-|ANTHROPIC_API_KEY').hasMatch(source),
+      isFalse,
+      reason: 'An Anthropic key is a secret wherever it is written, and the '
+          'generated file has no reason to contain one.',
+    );
+
+    // Every Google-shaped key in the file must sit on an `apiKey:` line. A
+    // Gemini key would arrive on some other field, or in a bare constant, and
+    // that is the case this catches.
+    final lines = source.split('\n');
+    final misplaced = <String>[];
+    for (var i = 0; i < lines.length; i++) {
+      if (!RegExp(r'AIza[0-9A-Za-z_\-]{30,}').hasMatch(lines[i])) continue;
+      if (_isComment(lines[i])) continue;
+      if (RegExp(r'\bapiKey\s*:').hasMatch(lines[i])) continue;
+      misplaced.add('lib/firebase_options.dart:${i + 1}  ${lines[i].trim()}');
+    }
+    expect(
+      misplaced,
+      isEmpty,
+      reason: 'A Google API key in the generated file that is not the Firebase '
+          'apiKey field is not covered by the reasoning for this exemption.',
     );
   });
 }

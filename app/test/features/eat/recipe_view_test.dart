@@ -115,7 +115,7 @@ void main() {
     await tester.pumpWidget(_host(_recipe(repository: repository, bus: bus)));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Cooked it, log my bowl'));
+    await tester.tap(find.text('I cooked it and ate a bowl'));
     await tester.pump();
 
     expect(repository.writes, isEmpty, reason: 'inside the undo window');
@@ -141,7 +141,7 @@ void main() {
     await tester.tap(find.text('L'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Cooked it, log my bowl'));
+    await tester.tap(find.text('I cooked it and ate a bowl'));
     await tester.pump(const Duration(seconds: 6));
 
     final item = repository.writes.single.added.single;
@@ -164,7 +164,7 @@ void main() {
     await tester.pumpWidget(_host(_recipe(bus: bus)));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Cooked it, log my bowl'));
+    await tester.tap(find.text('I cooked it and ate a bowl'));
     await tester.pump();
 
     expect(find.byType(AlertDialog), findsNothing);

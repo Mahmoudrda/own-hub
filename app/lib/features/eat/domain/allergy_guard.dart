@@ -48,6 +48,7 @@ library;
 import 'package:meta/meta.dart';
 
 import 'food_library.dart';
+import 'recipe.dart';
 
 /// What she cannot eat, and what she prefers not to.
 ///
@@ -155,16 +156,10 @@ class AllergyGuard {
   /// 3 is explicit that the list is not emptied. [assess] is what holds the line
   /// in that case, at the moment of the log.
   List<Food> screen(Iterable<Food> candidates) {
-    final allergies = constraints.allergies;
     final dietary = constraints.dietary;
 
     return candidates.where((food) {
-      if (allergies != null && allergies.isNotEmpty) {
-        final tags = food.allergens;
-        // Unknown is unsafe — never "safe by default".
-        if (tags == null) return false;
-        if (tags.any(_matches(allergies))) return false;
-      }
+      if (!allowsAllergens(food.allergens)) return false;
 
       if (dietary != null && dietary.isNotEmpty) {
         final tags = food.dietTags;
@@ -177,6 +172,25 @@ class AllergyGuard {
 
       return true;
     }).toList();
+  }
+
+  /// Whether a row carrying [allergens] may be put in front of her at all.
+  ///
+  /// The allergy half of [screen], lifted out so that anything drawing a list
+  /// of dishes reads the same rule from the same place. It was inlined in
+  /// [screen] only, so `RecipesView`'s four prototype rows — which are not
+  /// `Food`s and never went through [screen] — sat above E10's promise that
+  /// "dishes that contain it are hidden from your recipes" with a nut dish
+  /// among them.
+  ///
+  /// Null [allergens] is **unknown, therefore unsafe**, exactly as
+  /// `Food.allergens` documents. Unknown constraints do not empty a list: G5
+  /// §5.1 item 3, and [assess] holds that line at the moment of the write.
+  bool allowsAllergens(Set<String>? allergens) {
+    final declared = constraints.allergies;
+    if (declared == null || declared.isEmpty) return true;
+    if (allergens == null) return false;
+    return !allergens.any(_matches(declared));
   }
 
   /// The verdict for a log that is about to be written.
@@ -232,6 +246,109 @@ class AllergyGuard {
   /// True when logging [food] needs no acknowledgement at all.
   bool isClear(Food food) => !assess(food).isBlocked;
 
+  /// Removes the recipes she must not be offered, **before** anything ranks or
+  /// sorts them. The recipe half of [screen], and it fails closed twice over.
+  ///
+  /// Two removals, and the second is the one this method exists for:
+  ///
+  ///  * **A named allergen.** `allergensFinal` intersects what she declared.
+  ///    Same rule as a food, same case-insensitive comparison.
+  ///  * **An unsigned recipe.** `allergenReviewedBy` is null, which means
+  ///    nobody has put their name to what is in this dish. That is not the same
+  ///    fact as an empty allergen set, and collapsing the two is how a library
+  ///    that nobody has checked comes to look checked. Extended from the
+  ///    existing `allergens == null` rule for foods, for the same reason:
+  ///    unknown is unsafe, never safe by default.
+  ///
+  /// As with foods, an unsigned recipe is removed **only for a woman who has
+  /// declared an allergy**. For everyone else it stays in the list and the
+  /// screen says out loud that it has not been checked, because hiding the
+  /// whole library from everybody would not make anyone safer and would make
+  /// the tab look broken.
+  ///
+  /// [Recipe.advisories] are deliberately not consulted. A pregnancy note or a
+  /// favism note is not something she ticked, so filtering on it would be the
+  /// app deciding something about her body that she did not tell it.
+  List<Recipe> screenRecipes(Iterable<Recipe> candidates) {
+    final allergies = constraints.allergies;
+    final dietary = constraints.dietary;
+    final declared = allergies != null && allergies.isNotEmpty;
+
+    return candidates.where((recipe) {
+      if (declared) {
+        if (!recipe.allergensReviewed) return false;
+        if (recipe.allergensFinal.any(_matches(allergies))) return false;
+      }
+      if (dietary != null && dietary.isNotEmpty) {
+        // A preference is not a safety constraint, so a recipe with no diet
+        // tags at all is not treated as a conflict. Doing so would empty the
+        // book for every woman with a preference, on content that mostly does
+        // not carry tags yet, and teach her the filter is broken.
+        if (recipe.dietTags.isNotEmpty &&
+            !_satisfies(recipe.dietTags, dietary)) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
+  }
+
+  /// How many of [candidates] [screenRecipes] would take away.
+  ///
+  /// The list screen states this figure at its foot. Hiding dishes silently is
+  /// worse than hiding them visibly: a woman who declared a nut allergy and
+  /// then found six recipes missing has no way to tell a filter from a fault.
+  int hiddenCount(Iterable<Recipe> candidates) {
+    final hidden = hiddenByReason(candidates);
+    return hidden.unsigned + hidden.namedAllergen + hidden.dietary;
+  }
+
+  /// The same removals, **counted by reason**.
+  ///
+  /// This exists because the two reasons are not the same fact and a screen
+  /// that adds them together tells a woman something false about her own body.
+  ///
+  /// Today every one of the thirty-nine recipes is unsigned, so declaring an
+  /// allergy that appears in none of them — molluscs, say — hid the entire book
+  /// and the foot of the list said "39 dishes are hidden because of what you
+  /// avoid." Nothing she avoids is in any of them. The app had taken its own
+  /// caution and attributed it to her body, which on a women's health product
+  /// is the worst version of this failure available.
+  ///
+  /// So the counts come back separately and the screen says which is which.
+  HiddenRecipes hiddenByReason(Iterable<Recipe> candidates) {
+    final allergies = constraints.allergies;
+    final dietary = constraints.dietary;
+    final declared = allergies != null && allergies.isNotEmpty;
+
+    var unsigned = 0;
+    var named = 0;
+    var byDiet = 0;
+    for (final recipe in candidates) {
+      // Ordered as `screenRecipes` orders its tests, so a recipe is counted
+      // under the first reason that removed it and never under two.
+      if (declared && !recipe.allergensReviewed) {
+        unsigned++;
+        continue;
+      }
+      if (declared && recipe.allergensFinal.any(_matches(allergies))) {
+        named++;
+        continue;
+      }
+      if (dietary != null &&
+          dietary.isNotEmpty &&
+          recipe.dietTags.isNotEmpty &&
+          !_satisfies(recipe.dietTags, dietary)) {
+        byDiet++;
+      }
+    }
+    return HiddenRecipes(
+      unsigned: unsigned,
+      namedAllergen: named,
+      dietary: byDiet,
+    );
+  }
+
   bool Function(String) _matches(Set<String> against) =>
       (String tag) => against.any((a) => _same(a, tag));
 
@@ -246,4 +363,57 @@ class AllergyGuard {
   /// allergen; a guard that missed on capitalisation would fail open.
   static bool _same(String a, String b) =>
       a.trim().toLowerCase() == b.trim().toLowerCase();
+}
+
+/// How many recipes were taken away, and **why**, one count per reason.
+///
+/// Three fields rather than one total, because the three are different things
+/// to say to her:
+///
+///  * [unsigned] — nobody has checked these. It is a fact about the library,
+///    not about her, and saying it any other way is a lie about her body.
+///  * [namedAllergen] — these contain something she named. This one *is* about
+///    her, and it is the only one of the three that is.
+///  * [dietary] — these do not match a preference she stated.
+@immutable
+class HiddenRecipes {
+  const HiddenRecipes({
+    required this.unsigned,
+    required this.namedAllergen,
+    required this.dietary,
+  });
+
+  static const HiddenRecipes none = HiddenRecipes(
+    unsigned: 0,
+    namedAllergen: 0,
+    dietary: 0,
+  );
+
+  final int unsigned;
+  final int namedAllergen;
+  final int dietary;
+
+  int get total => unsigned + namedAllergen + dietary;
+  bool get any => total > 0;
+
+  HiddenRecipes plus(HiddenRecipes other) => HiddenRecipes(
+    unsigned: unsigned + other.unsigned,
+    namedAllergen: namedAllergen + other.namedAllergen,
+    dietary: dietary + other.dietary,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is HiddenRecipes &&
+      other.unsigned == unsigned &&
+      other.namedAllergen == namedAllergen &&
+      other.dietary == dietary;
+
+  @override
+  int get hashCode => Object.hash(unsigned, namedAllergen, dietary);
+
+  @override
+  String toString() =>
+      'HiddenRecipes(unsigned: $unsigned, namedAllergen: $namedAllergen, '
+      'dietary: $dietary)';
 }

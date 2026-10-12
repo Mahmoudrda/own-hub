@@ -526,9 +526,15 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('What a rest week covers'));
-      await tester.tap(find.text('If a tier slips'));
-      await tester.tap(find.text('Your first week'));
+      for (final row in [
+        'What a rest week covers',
+        'If a tier slips',
+        'Your first week',
+      ]) {
+        await tester.ensureVisible(find.text(row));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(row));
+      }
       await tester.pump();
 
       expect(restWeek, 1, reason: "T04's only inbound edge in the design");

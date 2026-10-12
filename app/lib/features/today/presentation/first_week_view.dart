@@ -3,9 +3,9 @@
 /// Matches `6-v2/src/screens-firstweek.mjs` → `T07` and `T08`.
 ///
 /// **T08 is the completed rendering of the same arc, not somewhere you go.** It
-/// is this widget's other branch, taken when all five steps are done, so the
-/// screen cannot claim completion while the arc disagrees — there is one source
-/// for both and it is [FirstWeekArc.isComplete].
+/// is this widget's other branch, taken when every step the arc offers is done,
+/// so the screen cannot claim completion while the arc disagrees — there is one
+/// source for both and it is [firstWeekIsComplete].
 ///
 /// **The arc has no timer, no expiry and no failure state** (HANDOFF rule 17).
 /// [ArcStepState] has three values — done, now, waiting — and none of them means
@@ -13,11 +13,16 @@
 /// unused. The copy says so out loud: nothing expires, and missing a day changes
 /// nothing on this screen.
 ///
-/// **All five steps ship.** `DECISIONS.md` D1 withdrew the MVP cut, so "join one
-/// group" and "add a follow-up picture" are real steps pointing at real screens.
-/// Community is not built yet, so those two land on the router's "not built yet"
-/// page — visible and honest. Dropping them to three would make T08 unreachable
-/// while looking finished, which is the one outcome D1 rules out.
+/// **All five steps ship, in a build that has all five.** `DECISIONS.md` D1
+/// withdrew the MVP cut, so "join one group" and "add a follow-up picture" are
+/// real steps pointing at real screens, and they are still here. What they are
+/// not is *unconditional*: the first release ships with Community dark, and a
+/// first week containing a step she cannot complete is a week she cannot
+/// finish. So the arc is drawn from [offeredFirstWeekSteps] — the steps this
+/// build can actually offer — and the ring, the "done / waiting" line and the
+/// completed branch all count the same list. D1's worry was an arc that
+/// quietly became three while T08 still demanded five; that cannot happen
+/// here, because there is one list and everything reads it.
 ///
 /// Completion is deliberately quiet. The single confetti moment in this product
 /// belongs to finishing a workout; spending it here would cheapen that.
@@ -32,6 +37,7 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
+import '../../../ui/app_chevron.dart';
 import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
@@ -43,12 +49,16 @@ import 'today_cards.dart';
 
 /// One step of the arc, with the screen it leads to.
 class _Step {
-  const _Step(this.step, this.title, this.subtitle, this.screenId);
+  const _Step(this.step, this.title, this.subtitle);
 
   final FirstWeekStep step;
   final String title;
   final String subtitle;
-  final String screenId;
+
+  /// Read from the arc's own edge list rather than repeated here, so this
+  /// screen and Home's count of it cannot come to disagree about which five
+  /// steps there are.
+  String get screenId => firstWeekStepScreens[step]!;
 }
 
 class FirstWeekView extends StatefulWidget {
@@ -60,8 +70,8 @@ class FirstWeekView extends StatefulWidget {
     this.onOpenStep,
     this.onBackToToday,
     this.onSeeProgress,
-    this.points = 90,
-    this.level = 2,
+    this.points = 0,
+    this.level = 1,
   });
 
   final TodayRepository? repository;
@@ -76,6 +86,15 @@ class FirstWeekView extends StatefulWidget {
 
   /// What the arc added up to. The same points the rest of the app gives —
   /// there is no parallel currency here.
+  ///
+  /// **The defaults are a brand-new woman's figures, not the mockup's.** They
+  /// were 90 and 2 — the prototype's — and the router built T07 and T08 and
+  /// passed neither, so every woman who opened her first week was told she had
+  /// 90 points and was level 2 before she had logged anything. The fixed
+  /// *label* three lines above `widget.points` (`n35PointsSoFar`) was replaced
+  /// for this exact reason in an earlier pass and the number was left. A
+  /// default that states a figure has to be the figure a woman who has done
+  /// nothing actually has, because that is who gets it when a caller forgets.
   final int points;
   final int level;
 
@@ -107,35 +126,57 @@ class _FirstWeekViewState extends State<FirstWeekView> {
     super.dispose();
   }
 
-  List<_Step> _steps(AppL10n l10n) => [
+  /// The rows this build draws, in arc order.
+  List<_Step> _steps(AppL10n l10n) {
+    final offered = offeredFirstWeekSteps().toSet();
+    return [
+      for (final step in _allSteps(l10n))
+        if (offered.contains(step.step)) step,
+    ];
+  }
+
+  /// The state of [step], measured against the steps she is actually offered.
+  ///
+  /// Not `arc.stateOf`: that walks all five, so with the last two dark the
+  /// "now" marker could land on a row this screen does not draw and every
+  /// visible row would read as waiting.
+  ArcStepState _stateOf(FirstWeekArc arc, FirstWeekStep step) {
+    if (arc.completed.contains(step)) return ArcStepState.done;
+    final offered = offeredFirstWeekSteps();
+    final next = offered.firstWhere(
+      (s) => !arc.completed.contains(s),
+      orElse: () => step,
+    );
+    return step == next ? ArcStepState.now : ArcStepState.waiting;
+  }
+
+  List<_Step> _allSteps(AppL10n l10n) => [
     // No subtitle on this one.
     //
     // It read `youDidGobletSquat12Kg` — "You did · goblet squat, 12 kg" — under
     // "Log one set", in the past tense, to a woman who has logged no set at all
     // and whose plan may hold no goblet squat. The step's own title is the
     // instruction; the prototype's lift is not an example worth inventing.
-    _Step(FirstWeekStep.logSet, l10n.logOneSet, '', 'R07'),
-    _Step(
-      FirstWeekStep.logMeal,
-      l10n.logOneMeal,
-      l10n.youDidFulAndBaladi,
-      'E02',
-    ),
+    _Step(FirstWeekStep.logSet, l10n.finishOneSet, ''),
+    // No subtitle on this one either, and for the reason written three lines
+    // above. `youDidFulAndBaladi` — "You did · ful and baladi" — is the past
+    // tense about a meal she has not logged, and one of the two instances of
+    // this defect was fixed in the same pass while this one was missed.
+    _Step(FirstWeekStep.logMeal, l10n.addOneMealYouAte, ''),
     // `n15MinutesFiveMoves` — "15 minutes, five moves" — describes the
     // prototype's session, not today's, and this screen is handed no session.
-    _Step(FirstWeekStep.finishSession, l10n.finishOneSession, '', 'R03'),
-    // Community. Not built yet — routes onward and says so.
+    _Step(FirstWeekStep.finishSession, l10n.finishOneSession, ''),
+    // Community's two. Drawn only where Community is on — see the library
+    // note and `offeredFirstWeekSteps`.
     _Step(
       FirstWeekStep.joinGroup,
       l10n.joinOneGroup,
       l10n.beginnersPostpartumOrYourCity,
-      'M04',
     ),
     _Step(
       FirstWeekStep.followUp,
       l10n.addAFollowUpPicture,
       l10n.onceYouHaveAPostToFollow,
-      'M11',
     ),
   ];
 
@@ -151,13 +192,19 @@ class _FirstWeekViewState extends State<FirstWeekView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    return _day.arc.isComplete ? _done(context, l10n) : _arc(context, l10n);
+    // Finished is measured against the steps this build offers, not against
+    // all five — see `firstWeekIsComplete`.
+    return firstWeekIsComplete(_day.arc)
+        ? _done(context, l10n)
+        : _arc(context, l10n);
   }
 
   // ---------------------------------------------------------------- T07 ----
 
   Widget _arc(BuildContext context, AppL10n l10n) {
     final arc = _day.arc;
+    final steps = _steps(l10n);
+    final done = firstWeekDone(arc);
 
     return AppScaffold(
       appBar: AppTopBar(
@@ -184,9 +231,12 @@ class _FirstWeekViewState extends State<FirstWeekView> {
         Row(
           children: [
             AppRingStat(
-              fraction: arc.doneCount / arc.stepCount,
-              big: '${arc.doneCount}',
-              small: l10n.of5,
+              // Her arc, over the arc she was given. `arc.stepCount` is
+              // always five; `steps.length` is however many of them this
+              // build can offer, which is what she is looking at.
+              fraction: steps.isEmpty ? 0 : done / steps.length,
+              big: countLabel(done),
+              small: l10n.ofTotal(countLabel(steps.length)),
               size: 78,
               thickness: 10,
             ),
@@ -195,7 +245,17 @@ class _FirstWeekViewState extends State<FirstWeekView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.twoDoneThreeWaiting, style: AppText.titleM),
+                  // `twoDoneThreeWaiting` — "Two done, three waiting" — was
+                  // fixed copy above two live numbers, so it said two and
+                  // three to a woman who had done none of three. Counted from
+                  // the same list the ring counts.
+                  Text(
+                    l10n.doneDoneWaitingWaiting(
+                      countLabel(done),
+                      countLabel(steps.length - done),
+                    ),
+                    style: AppText.titleM,
+                  ),
                   const SizedBox(height: 3),
                   // No timer on any of them. Said plainly, because the absence
                   // of a deadline is the feature.
@@ -213,12 +273,12 @@ class _FirstWeekViewState extends State<FirstWeekView> {
         // Numbered by position in ONE list. This was `_steps(l10n).indexOf`,
         // which searched a second, freshly built list for a step it could
         // never contain, so every waiting step was numbered 0.
-        for (final (i, step) in _steps(l10n).indexed) ...[
+        for (final (i, step) in steps.indexed) ...[
           _ArcStepRow(
             number: i + 1,
             title: step.title,
             subtitle: step.subtitle,
-            state: arc.stateOf(step.step),
+            state: _stateOf(arc, step.step),
             onTap: () => _openStep(step.screenId),
           ),
           const SizedBox(height: 0),
@@ -270,7 +330,10 @@ class _FirstWeekViewState extends State<FirstWeekView> {
             ),
           ],
         ),
-        AppSageNote(l10n.finishingAllFiveIsNotADeadline),
+        // No number. `offeredFirstWeekSteps` returns three in this build, and
+        // "Finishing all five is not a deadline" sat under a ring, a heading
+        // and three rows that all said three.
+        AppSageNote(l10n.finishingThemAllIsNotADeadline),
       ],
     );
   }
@@ -354,7 +417,9 @@ class _FirstWeekViewState extends State<FirstWeekView> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(
-            l10n.allFiveDoneNothingAboutTheApp,
+            // No number, for the same reason the line on T07 has none: this
+            // build offers three of the five steps.
+            l10n.allDoneNothingAboutTheAppChanges,
             textAlign: TextAlign.center,
             style: AppText.bodyM.copyWith(
               height: 23 / 15,
@@ -521,7 +586,7 @@ class _ArcStepRow extends StatelessWidget {
           ),
         ] else if (now) ...[
           const SizedBox(width: 8),
-          const Icon(Icons.chevron_right, size: 21, color: AppColors.primary),
+          const AppChevron(size: 21, color: AppColors.primary),
         ],
       ],
     );

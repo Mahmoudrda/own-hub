@@ -67,7 +67,12 @@ void main() {
 
     // The primary action continues the session. Ending it is a separate,
     // quieter choice she has to make deliberately.
-    await tester.tap(find.text('Next move · step-back lunge'));
+    //
+    // The label names the move that is actually next, read off the same list
+    // the rows are drawn from. It was the fixed `nextMoveStepBackLunge`, which
+    // said "step-back lunge" with a goblet squat coming up and said it again
+    // on the last move, when nothing was next at all.
+    await tester.tap(find.text('Next move · Step-back lunge'));
     await tester.pumpAndSettle();
 
     expect(next, 1);
@@ -88,6 +93,16 @@ void main() {
     await tester.tap(find.text('Finish here'));
     await tester.pumpAndSettle();
     expect(finished, 1);
+  });
+
+  testWidgets('on the last move the button stops naming a next one', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(const MoveLoggedView(loggedCount: 5)));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Next move'), findsNothing);
+    expect(find.text('Finish workout'), findsOneWidget);
   });
 
   testWidgets('the undo offer is identical to the one after a single set', (
@@ -172,9 +187,9 @@ void main() {
     // move name, and varies across all 124 of them. No single conjugation is
     // correct for every move, so the sentence is restructured to one that needs
     // no agreement at all.
-    expect(find.text('تم حفظ القرفصاء بالدمبل · 3 مجموعات'), findsOneWidget);
+    expect(find.text('حفظنا القرفصاء بالدمبل · 3 مجموعات'), findsOneWidget);
     expect(find.text('2 من 5'), findsOneWidget);
-    expect(find.text('التمرين التالي · الطعن للخلف'), findsOneWidget);
+    expect(find.text('الحركة الجاية · لانج للخلف'), findsOneWidget);
     expect(find.text('Finish here'), findsNothing);
   });
 

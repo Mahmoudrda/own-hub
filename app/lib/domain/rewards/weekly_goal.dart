@@ -47,7 +47,8 @@ class WeeklyGoal {
     this.tz = kDefaultTimezone,
   });
 
-  /// 2–4. **Hers**, and the only counter on this object she may write.
+  /// 2 to 4, the range O03 offers. **Hers**, and the only counter on this
+  /// object she may write.
   final int sessionsTarget;
 
   /// Cumulative and monotonic. A repaired week increments this exactly as an

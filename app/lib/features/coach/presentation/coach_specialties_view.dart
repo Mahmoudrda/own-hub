@@ -2,6 +2,9 @@
 ///
 /// Matches `6-v2/src/screens-coach.mjs` → `K03`.
 ///
+/// One question: what she coaches. Languages and where her clients train are
+/// the next screen (`K10`), so no step asks three things at once.
+///
 /// Three specialties, no more. The cap is [CoachProfile.maxSpecialties] and it
 /// is enforced in [CoachSetupViewModel.toggleSpecialty] rather than here — a
 /// widget that counted chips would be a second copy of the rule, and the
@@ -70,10 +73,10 @@ class _CoachSpecialtiesViewState extends State<CoachSpecialtiesView> {
       step: CoachSetupStep.specialties,
       title: l10n.whatDoYouCoach,
       subtitle: l10n.pickUpToThreeClientsFilterBy,
-      onBack: () => goToScreen(context, 'K02', widget.onBack),
+      onBack: () => goToScreen(context, 'K08', widget.onBack),
       onSaveAndClose: widget.onSaveAndClose,
       onPrimary: model.canAdvanceFrom(CoachSetupStep.specialties)
-          ? () => goToScreen(context, 'K04', widget.onContinue)
+          ? () => goToScreen(context, 'K10', widget.onContinue)
           : null,
       children: [
         // Wrapped rather than scrolled: an option she coaches must never sit
@@ -87,32 +90,6 @@ class _CoachSpecialtiesViewState extends State<CoachSpecialtiesView> {
                 specialtyLabel(l10n, specialty),
                 selected: model.specialties.contains(specialty),
                 onTap: () => setState(() => model.toggleSpecialty(specialty)),
-              ),
-          ],
-        ),
-        CoachFieldLabel(l10n.languages),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final language in CoachLanguage.values)
-              AppChip(
-                languageLabel(l10n, language),
-                selected: model.languages.contains(language),
-                onTap: () => setState(() => model.toggleLanguage(language)),
-              ),
-          ],
-        ),
-        CoachFieldLabel(l10n.whereYourClientsTrain),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final place in ClientPlace.values)
-              AppChip(
-                placeLabel(l10n, place),
-                selected: model.clientPlaces.contains(place),
-                onTap: () => setState(() => model.togglePlace(place)),
               ),
           ],
         ),

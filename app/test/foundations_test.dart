@@ -44,7 +44,7 @@ void main() {
         find.text('A room full of women training like you'),
         findsOneWidget,
       );
-      expect(find.text('Get started'), findsOneWidget);
+      expect(find.text('Show me around'), findsOneWidget);
       expect(find.text('Foundations'), findsNothing);
       expect(tester.takeException(), isNull);
     });
@@ -82,7 +82,7 @@ void main() {
       // A blank screen has no text at all; this is the assertion that would have
       // caught it.
       expect(find.byType(Scaffold), findsWidgets);
-      expect(find.text('Get started'), findsOneWidget);
+      expect(find.text('Show me around'), findsOneWidget);
     });
   });
 
@@ -100,7 +100,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('غرفة مليئة بنساء يتدرّبن مثلك'), findsOneWidget);
+      expect(find.text('أوضة مليانة ستات بيتمرّنوا زيّك'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -115,7 +115,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        Directionality.of(tester.element(find.text('لنبدأ'))),
+        Directionality.of(tester.element(find.text('خديني في جولة'))),
         TextDirection.rtl,
       );
     });

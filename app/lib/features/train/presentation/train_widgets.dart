@@ -16,6 +16,7 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_card.dart'
     show handCardLook, handLooseRadius, handTightRadius;
 // AppCardVariant comes through app_list_item.dart, which re-exports it.
+import '../../../ui/app_chevron.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/hand/hand.dart';
 
@@ -62,13 +63,10 @@ class MoveRow extends StatelessWidget {
                 ),
               ),
             ),
-      // chevron_right carries matchTextDirection, so it points the other way in
-      // Arabic without a second icon.
-      trailing: const Icon(
-        Icons.chevron_right,
-        size: 22,
-        color: AppColors.onSurfaceVariant,
-      ),
+      // Forward, which is leftward in Arabic. [AppChevron] resolves that from
+      // the ambient Directionality rather than leaving it to a flag on a
+      // Material constant that no test here asserts.
+      trailing: const AppChevron(),
     );
   }
 }
@@ -213,6 +211,13 @@ class TrainTopBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: onClose,
               iconSize: 24,
               color: AppColors.onSurface,
+              // Named for a screen reader, in her language, by the platform's
+              // own words for it — the same treatment `AppTopBar` gives its
+              // back arrow. This one announced nothing at all, and on R07 it
+              // is the only way out of a live session.
+              tooltip: closeIcon == Icons.close
+                  ? MaterialLocalizations.of(context).closeButtonTooltip
+                  : MaterialLocalizations.of(context).backButtonTooltip,
               icon: Icon(closeIcon),
             ),
       title: title.isEmpty

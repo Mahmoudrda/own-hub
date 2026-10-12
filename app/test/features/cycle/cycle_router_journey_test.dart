@@ -33,6 +33,7 @@ import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/routing/app_routes.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/features/signup/domain/verification.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -58,9 +59,24 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
   await tester.pumpAndSettle();
 }
 
+
+/// The shipped build closes the whole app until she is verified. This file is
+/// about the product behind the gate, so she is walked as a verified woman,
+/// through the same seam C12 sets when the server approves her. The flags
+/// stay exactly as shipped.
+void _asVerifiedWoman() {
+  AppRouter.lastVerification = VerificationResult(
+    method: VerificationMethod.automatic,
+    decidedAt: DateTime(2026, 10, 2),
+    imagesDeletedAt: DateTime(2026, 10, 2),
+  );
+  addTearDown(() => AppRouter.lastVerification = null);
+}
+
 void main() {
   setUp(() {
     AppRouter.todayCheckIn = TodayCheckIn.absent;
+    _asVerifiedWoman();
   });
 
   tearDown(() async {
@@ -78,7 +94,7 @@ void main() {
     await tester.pumpWidget(_app('Y04'));
     await tester.pumpAndSettle();
 
-    await _tap(tester, find.text('More to log: sleep, bloating, bleeding'));
+    await _tap(tester, find.text('More to note: sleep, bloating, bleeding'));
     await _tap(tester, find.text('Heavy'));
     await _tap(tester, find.text('Save check-in'));
 

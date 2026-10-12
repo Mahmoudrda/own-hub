@@ -59,9 +59,16 @@ enum AppCardVariant {
   AppCardVariant variant,
 ) {
   return switch (variant) {
+    // `outline`, not `outlineVariant`. The border of a card is a boundary
+    // that carries meaning — it is what makes an outlined card one object
+    // rather than text on the page — so WCAG 1.4.11 applies to it and the role
+    // that clears 3:1 is the one to ask for. `outlineVariant` is M3's
+    // decorative hairline and `contrast.dart` says so at length; recolouring it
+    // to 3:1 to serve this call site is what turned thirteen cards across
+    // twelve screens rose.
     AppCardVariant.outlined => (
       background: AppColors.surfaceLowest,
-      border: AppColors.outlineVariant,
+      border: AppColors.outline,
       borderWidth: 1,
     ),
     AppCardVariant.filled => (
@@ -187,6 +194,9 @@ double handLooseRadius(double r) => (r * 0.9).clamp(10.0, 22.0);
 
 /// A seed from what a card holds, so the same card is drawn the same way on
 /// every visit and its neighbours are drawn differently.
+///
+/// Each child is named with [handSeedNameOf], never its `runtimeType`, which
+/// an obfuscated release build renames.
 int handSeedForChildren(
   BuildContext context,
   List<Widget> children,
@@ -194,7 +204,7 @@ int handSeedForChildren(
 ) {
   final parts = <Object?>[ScreenScope.of(context), salt, children.length];
   for (final c in children.take(3)) {
-    parts.add(c.runtimeType.toString());
+    parts.add(handSeedNameOf(c));
     if (c is Text) parts.add(c.data);
   }
   return handSeed(parts);
@@ -202,7 +212,7 @@ int handSeedForChildren(
 
 /// A block of related content. `card()` in the prototype: 16px padding, 12px
 /// between children, and the large radius rather than the medium one.
-class AppCard extends StatelessWidget {
+class AppCard extends StatelessWidget implements HandSeedName {
   const AppCard({
     super.key,
     required this.children,
@@ -223,6 +233,9 @@ class AppCard extends StatelessWidget {
 
   /// Which hand draws it. Usually left to the card's own contents.
   final int? seed;
+
+  @override
+  String get handSeedName => 'AppCard';
 
   @override
   Widget build(BuildContext context) {

@@ -19,6 +19,7 @@ import 'package:own_hub/features/onboarding/presentation/goal_view.dart';
 import 'package:own_hub/features/onboarding/presentation/intake_option.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_step_bar.dart';
 
 Widget _host(
   Widget child, {
@@ -83,13 +84,36 @@ void main() {
       );
     });
 
-    testWidgets('shows which of the four steps this is', (tester) async {
+    testWidgets('shows which question of the walk this is', (tester) async {
       await tester.pumpWidget(
         _host(GoalView(repository: InMemoryIntakeRepository())),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Step 1 of 4'), findsOneWidget);
+      // Six at home, which is where a fresh install starts: goal, place, what
+      // she has at home, days, minutes and what to train around.
+      expect(find.text('1 of 6'), findsOneWidget);
+      final bar = tester.widget<AppStepBar>(find.byType(AppStepBar));
+      expect((bar.step, bar.total), (1, 6));
+    });
+
+    testWidgets('says what is about to happen, and promises no Skip', (
+      tester,
+    ) async {
+      // The old line said "Skip any of them" over a screen with no Skip on it.
+      await tester.pumpWidget(
+        _host(GoalView(repository: InMemoryIntakeRepository())),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'A few short questions, one at a time. Your week is ready at the '
+          'end.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Skip any'), findsNothing);
     });
   });
 
@@ -131,6 +155,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // Scrolled to first. O01 opens the app on a fresh install now, so it
+      // carries a line saying what is about to happen, and the step bar sits
+      // over it — more than the 800x600 test window has room for under the
+      // fourth answer. Every phone this ships on is far taller; the screen is
+      // a `SingleChildScrollView` either way.
+      await tester.ensureVisible(find.text('Get back into it'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Get back into it'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Continue'));
@@ -215,8 +246,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('ما الذي تريدينه أكثر؟'), findsOneWidget);
-      expect(find.text('أن أصبح أقوى'), findsOneWidget);
+      expect(find.text('عايزة إيه أكتر حاجة؟'), findsOneWidget);
+      expect(find.text('أبقى أقوى'), findsOneWidget);
       expect(
         find.text('What do you want most?'),
         findsNothing,
@@ -241,9 +272,10 @@ void main() {
     });
 
     testWidgets('the step counter keeps Western numerals', (tester) async {
-      // P0-A11Y-01. The counter is a translated string, so this is really a
-      // check on the dictionary — and it is worth having, because "الخطوة ١ من ٤"
-      // would read correctly and still be wrong for this product.
+      // P0-A11Y-01. The counter is the dictionary's "{count} من {total}" with
+      // the numbers passed in, so this is a check on both halves — and it is
+      // worth having, because "١ من ٦" would read correctly and still be wrong
+      // for this product.
       await tester.pumpWidget(
         _host(
           GoalView(repository: InMemoryIntakeRepository()),
@@ -252,7 +284,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('الخطوة 1 من 4'), findsOneWidget);
+      expect(find.text('1 من 6'), findsOneWidget);
+      expect(find.text('١ من ٦'), findsNothing);
     });
   });
 

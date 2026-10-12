@@ -159,6 +159,8 @@ if (fs.existsSync(dictPath)) {
   // dictionary is keyed by. The generated key is derived, so listing keys would
   // break the moment a slug changed.
   const PARAMETERISED = {
+    "{weight} kg": {"description": "A weight or a weight change on P05, e.g. −2.5 kg. weight is already signed and in Western digits.", "placeholders": {"weight": {"type": "String", "example": "−2.5"}}},
+    "Send it again in {time}": {"description": "C07, while the resend waits after a code was sent. time is minutes:seconds in Western digits, e.g. 0:27.", "placeholders": {"time": {"type": "String", "example": "0:27"}}},
     '{amount} EGP': {
       description:
         'A price. Every other EGP string in the dictionary bakes a sample ' +
@@ -241,7 +243,7 @@ if (fs.existsSync(dictPath)) {
         + 'This is the form that lets the sentence be true on any day.',
       placeholders: { day: { type: 'String', example: '2' } },
     },
-    '{logged} of {total} logged days': {
+    '{logged} of {total} noted days': {
       description:
         "Y10's chart caption. The fixed string named the mockup's 4 of 6, so the "
         + 'caption was withheld and the chart drew with no sentence beside it.',
@@ -402,7 +404,7 @@ if (fs.existsSync(dictPath)) {
         egp: { type: 'String', example: '640' },
       },
     },
-    '{meal} logged · {kcal} kcal': {
+    '{meal} added · {kcal} kcal': {
       description:
         'E04 undo bar. Names what SHE logged. The fixed "Lunch logged — 696 '
         + 'kcal" would announce 696 whatever she ate, which is the defect '
@@ -443,6 +445,54 @@ if (fs.existsSync(dictPath)) {
     "{done} done, {waiting} waiting": {"description": "T07: the first-week arc counted from the arc, replacing the fixed 'Two done, three waiting'.", "placeholders": {"done": {"type": "String", "example": "2"}, "waiting": {"type": "String", "example": "3"}}},
     "{count} so far": {"description": "P01 bests tile: her lifetime personal bests, replacing the fixed '8 so far'.", "placeholders": {"count": {"type": "String", "example": "8"}}},
     "{from} to {to}": {"description": "A range of two values the screen already knows: opening hours on a coach's page, or the number of clients she may take. Written out in each language rather than joined with a dash in code, which would read as English punctuation inside an Arabic line.", "placeholders": {"from": {"type": "String", "example": "9:00"}, "to": {"type": "String", "example": "17:00"}}},
+    "of {total}": {"description": "The small half of the ring on her first week: how many steps the arc has. The number is a value, and the arc is shorter when a step belongs to a feature this build has switched off, so it cannot be frozen into the sentence.", "placeholders": {"total": {"type": "String", "example": "3"}}},
+    "{minutes} minutes, {moves} moves": {"description": "R03's summary of today's session. Counted off the day's own moves, never a fixed '5 moves'.", "placeholders": {"minutes": {"type": "String", "example": "15"}, "moves": {"type": "String", "example": "4"}}},
+    "Last time: {last}. So we added {added} kg.": {"description": "R07's progression note, drawn only when she has a logged set for this move and today's prescription is heavier.", "placeholders": {"last": {"type": "String", "example": "10 kg × 10"}, "added": {"type": "String", "example": "2"}}},
+    "Last time: {last}.": {"description": "R07's progression note when she has a logged set for this move and nothing was added.", "placeholders": {"last": {"type": "String", "example": "10 kg × 10"}}},
+    "Step {step} of {total}": {"description": "Progress through the server-chosen liveness challenge on C11. The number of steps is decided by the server per session, so it cannot be baked into the sentence the way the other Step strings in this dictionary are.", "placeholders": {"step": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "4"}}},
+    "{n} min": {"description": "A cooking time on a recipe card. The figure comes from the recipe, never from the dictionary.", "placeholders": {"n": {"type": "String", "example": "20"}}},
+    "{n} g protein": {"description": "Protein per serving on a recipe card, only when the recipe states it.", "placeholders": {"n": {"type": "String", "example": "24"}}},
+    "{n} EGP a serving": {"description": "Cost per serving, shown beside the month it was priced in.", "placeholders": {"n": {"type": "String", "example": "14"}}},
+    "{n} kcal a serving": {"description": "Energy per serving, only when it was summed from verified foods.", "placeholders": {"n": {"type": "String", "example": "410"}}},
+    "Priced {month}": {"description": "The month an EGP figure was priced in. An undated price in Egypt is wrong within a quarter.", "placeholders": {"month": {"type": "String", "example": "October 2026"}}},
+    "{n} g": {"description": "A gram figure beside an ingredient, in her own words' shadow.", "placeholders": {"n": {"type": "String", "example": "40"}}},
+    "Step {n} of {total}": {"description": "Cook mode's position line.", "placeholders": {"n": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "6"}}},
+    "{temp} degrees": {"description": "An oven temperature chip on a step.", "placeholders": {"temp": {"type": "String", "example": "200"}}},
+    "Serves {n}": {"description": "How many the recipe feeds, only when the book says.", "placeholders": {"n": {"type": "String", "example": "2"}}},
+    "{count, plural, one{1 dish is hidden because nobody has checked what is in it yet.} other{{count} dishes are hidden because nobody has checked what is in them yet.}}": {"description": "E05, at the foot of Rahma's book. The reason the app is holding dishes back is that nobody has signed the allergen check, NOT anything she named. Arabic counts do not agree the way English ones do, so this is a plural message rather than one sentence with a number dropped into it: 39 takes the singular accusative.", "placeholders": {"count": {"type": "int", "example": "39"}}},
+    "{count, plural, one{1 dish is hidden because it contains something you avoid.} other{{count} dishes are hidden because they contain something you avoid.}}": {"description": "E05, at the foot of Rahma's book. The other reason a dish is held back, and it must read differently from the unchecked one: this one IS about her body.", "placeholders": {"count": {"type": "int", "example": "3"}}},
+    "{n} min hands on": {"description": "A recipe's active time. Overnight oats is five minutes of work and a day in the fridge, and the card stated 1,445.", "placeholders": {"n": {"type": "String", "example": "5"}}},
+    "{n} min in all": {"description": "A recipe's total time, beside the hands-on figure, for a dish under two hours.", "placeholders": {"n": {"type": "String", "example": "50"}}},
+    "{count, plural, one{About 1 hour in all} other{About {count} hours in all}}": {"description": "A recipe's total time once it passes two hours. Rounded to the hour and said to be rounded, because 1,445 minutes is true and unreadable.", "placeholders": {"count": {"type": "int", "example": "24"}}},
+    "Your video call is booked for {time}.": {"description": "C14 once a woman reviewer has booked the live video check. time is the booked date and time, already formatted for her locale.", "placeholders": {"time": {"type": "String", "example": "Mon, 5 Oct, 10:00"}}},
+    "You can also delete your account on our website: {url}": {"description": "Shown when this copy of the app cannot reach Own Hub to delete her account. The address of the public delete-account page.", "placeholders": {"url": {"type": "String", "example": "https://ownhub.app/delete-account"}}},
+    "Next: session {number}, on any day this week": {"description": "R10's next step after a finished session. The number is the next session of her week, in Western digits.", "placeholders": {"number": {"type": "String", "example": "2"}}},
+    "A woman from Own Hub will contact you on {time}.": {"description": "C14 once a woman reviewer has booked a time to contact her. time is the booked date and time, already formatted for her locale.", "placeholders": {"time": {"type": "String", "example": "Mon, 5 Oct, 10:00"}}},
+    "Days a week: {days} · Minutes a session: {minutes}": {"description": "Her setup answers read back when she was never asked where she trains (the one-screen 'Your week'), so no place is claimed.", "placeholders": {"days": {"type": "String", "example": "3"}, "minutes": {"type": "String", "example": "15"}}},
+    "Pick a dinner for {day}": {"description": "E05 opened from a day on E07: tapping a recipe puts it on that day. day is the weekday name from the dictionary.", "placeholders": {"day": {"type": "String", "example": "Monday"}}},
+    "Verified in {seconds} seconds. Your ID photo and selfie have been deleted. We keep the result, its reasons and a keyed code of your ID number.": {"description": "C13. Her actual verification time, and what the server really keeps: the result, its reasons for 180 days and the keyed code of her ID number.", "placeholders": {"seconds": {"type": "int", "example": "74"}}},
+    "Sessions in your week: {count}. Pick the days that suit you.": {"description": "Training reminders sheet. count is her sessions a week (2 to 4), Western digits.", "placeholders": {"count": {"type": "String", "example": "3"}}},
+    "Join me on Own Hub, the training app for women only. When you sign up, tap I have a code from my coach and enter {code}.": {"description": "The WhatsApp message a coach sends to invite a client. {code} is her eight-character invite code.", "placeholders": {"code": {"type": "String", "example": "ABCD2345"}}},
+    "We could not open WhatsApp. Your code is {code}.": {"description": "Shown when WhatsApp could not open, so the coach can share her code another way.", "placeholders": {"code": {"type": "String", "example": "ABCD2345"}}},
+    "I coach women and would like to coach on Own Hub. Name: {name}. City: {city}. I coach: {specialty}.": {"description": "The message a coach sends to the team from the interest form while coaching is closed.", "placeholders": {"name": {"type": "String", "example": "Salma"}, "city": {"type": "String", "example": "Cairo"}, "specialty": {"type": "String", "example": "postpartum strength"}}},
+    "{done} of {target} this week": {"description": "Lock Screen inline widget. Sessions this week against her weekly target. Never a daily count.", "placeholders": {"done": {"type": "int", "example": "1"}, "target": {"type": "int", "example": "3"}}},
+    "Sessions this week: {done} of {target}": {"description": "VoiceOver label for the widget's week segments and gauge.", "placeholders": {"done": {"type": "int", "example": "1"}, "target": {"type": "int", "example": "3"}}},
+    "{count} past the {hours}-hour promise": {"description": "Z15, human reviews older than the review SLA. Both values are Western-digit labels.", "placeholders": {"count": {"type": "String", "example": "3"}, "hours": {"type": "String", "example": "72"}}},
+    "Oldest has waited {hours} hours": {"description": "Z15, the age of the oldest open human review in whole hours.", "placeholders": {"hours": {"type": "String", "example": "41"}}},
+    "Updated {time}": {"description": "Z15, when the counts were computed, Cairo time.", "placeholders": {"time": {"type": "String", "example": "2026-10-07 14:05"}}},
+    "Case {ref}": {"description": "Z16, a short reference standing for a verification case. Eight hex characters, never an id.", "placeholders": {"ref": {"type": "String", "example": "3fa91c0e"}}},
+    "Reviewer {ref}": {"description": "Z16, a short reference standing for a reviewer account.", "placeholders": {"ref": {"type": "String", "example": "9b2d41aa"}}},
+    "Admin {ref}": {"description": "Z16, a short reference standing for an admin account.", "placeholders": {"ref": {"type": "String", "example": "c01d2e3f"}}},
+    "{count} joined": {"description": "Z16, waitlist joins on one day. Counts only.", "placeholders": {"count": {"type": "String", "example": "12"}}},
+    "{start} to {end}": {"description": "An event's time span, both in Cairo time, Western digits.", "placeholders": {"start": {"type": "String", "example": "18:30"}, "end": {"type": "String", "example": "20:00"}}},
+    "Places: {count}": {"description": "An event's capacity, when the owner set one.", "placeholders": {"count": {"type": "String", "example": "20"}}},
+    "{sets} × {reps}": {"description": "A move's prescription: sets times reps, Western digits.", "placeholders": {"sets": {"type": "String", "example": "3"}, "reps": {"type": "String", "example": "12"}}},
+    "{sets} × {seconds} seconds": {"description": "A held move's prescription: sets times seconds.", "placeholders": {"sets": {"type": "String", "example": "3"}, "seconds": {"type": "String", "example": "30"}}},
+    "Rest {seconds} seconds": {"description": "Rest between sets, as the owner wrote it.", "placeholders": {"seconds": {"type": "String", "example": "60"}}},
+    "Upload its pictures under this id: {id}": {"description": "Z18, the event id the owner passes to tool/admin_access.sh upload-media for its cover.", "placeholders": {"id": {"type": "String", "example": "AbC123xyz"}}},
+    "{sets} × {reps}": {"description": "A move's prescription: sets times reps, Western digits.", "placeholders": {"sets": {"type": "String", "example": "3"}, "reps": {"type": "String", "example": "12"}}},
+    "{sets} × {seconds} seconds": {"description": "A held move's prescription: sets times seconds.", "placeholders": {"sets": {"type": "String", "example": "3"}, "seconds": {"type": "String", "example": "30"}}},
+    "Between {min} and {max} days, or leave it empty": {"description": "Y02, under the usual cycle length when what she typed is not a cycle length.", "placeholders": {"min": {"type": "String", "example": "15"}, "max": {"type": "String", "example": "60"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

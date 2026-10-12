@@ -54,6 +54,7 @@ import '../../../domain/format/number_label.dart';
 import '../../../domain/rewards/stated_figure.dart';
 import '../../../domain/rewards/tier_policy.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_list_item.dart';
@@ -63,7 +64,9 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
-import '../../today/presentation/today_cards.dart' show openScreen;
+import '../../today/domain/today_day.dart' show FirstWeekArc;
+import '../../today/presentation/today_cards.dart'
+    show firstWeekDone, offeredFirstWeekSteps, openScreen;
 import 'progress_view_model.dart';
 import 'progress_widgets.dart';
 
@@ -71,10 +74,12 @@ class ProgressView extends StatelessWidget {
   const ProgressView({
     super.key,
     required this.summary,
+    this.firstWeek = const FirstWeekArc(),
     this.onBack,
     this.onOpenMilestones,
     this.onOpenBests,
     this.onOpenBody,
+    this.onOpenShare,
     this.onOpenFirstWeek,
     this.onOpenRestWeek,
     this.onOpenTierSlip,
@@ -84,10 +89,30 @@ class ProgressView extends StatelessWidget {
   /// Her progress, already computed. The screen does no arithmetic.
   final ProgressSummary summary;
 
+  /// Her first week, for the counted subtitle on the row that opens T07.
+  ///
+  /// That subtitle was the fixed `l10n.allFiveDone` — "All five done" — with
+  /// no data behind it at all, in the middle of a screen that is otherwise
+  /// scrupulously honest ("Counted weeks 0 of 4", "Milestones 0 of 8",
+  /// "Nothing saved yet"). It told a woman who had done nothing that she had
+  /// finished, and it sat on what used to be the only route to T07, so it
+  /// actively discouraged the one tap that would have taught her the app.
+  ///
+  /// It says five because the arc has five steps; this build offers three,
+  /// because two of them belong to Community. So the count is taken over
+  /// [offeredFirstWeekSteps], exactly as Home and T07 take it.
+  ///
+  /// An empty arc by default: a `ProgressView` built without one describes a
+  /// woman who has logged nothing, which is true of the default it replaces.
+  final FirstWeekArc firstWeek;
+
   final VoidCallback? onBack;
   final VoidCallback? onOpenMilestones;
   final VoidCallback? onOpenBests;
   final VoidCallback? onOpenBody;
+
+  /// P05, her progress card.
+  final VoidCallback? onOpenShare;
   final VoidCallback? onOpenFirstWeek;
 
   /// "What a rest week covers" → T04. This is T04's only inbound edge in the
@@ -107,7 +132,7 @@ class ProgressView extends StatelessWidget {
       backgroundColor: AppColors.surface,
       appBar: AppTopBar(title: l10n.yourProgress, onBack: onBack),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'T01',
+        activeScreenId: 'P01',
         onSelect: (id) {
           final onTab = onSelectTab;
           if (onTab != null) {
@@ -122,53 +147,81 @@ class ProgressView extends StatelessWidget {
           ..._tierCard(l10n),
           ..._nextTierCard(l10n),
           _weekCard(l10n),
+          if (AppRouter.screenIsOn('P05'))
+            AppListItem(
+              leading: const Icon(
+                Icons.ios_share,
+                size: 22,
+                color: AppColors.primary,
+              ),
+              title: l10n.shareYourProgress,
+              subtitle: l10n.aCardOfWhatYouHaveDone,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              variant: AppCardVariant.tonal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              onTap: () => openScreen(context, 'P05', onOpenShare),
+            ),
           // Below her week, quieter: a rule, then the rest of the record.
           const HandRule(seed: 37, height: 18),
           _tiles(context, l10n),
-          AppListItem(
-            leading: const Icon(
-              Icons.checklist,
-              size: 22,
-              color: AppColors.primaryDim,
+          if (AppRouter.screenIsOn('T07'))
+            AppListItem(
+              leading: const Icon(
+                Icons.checklist,
+                size: 22,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.yourFirstWeek,
+              subtitle: l10n.countOfTotal(
+                countLabel(firstWeekDone(firstWeek)),
+                countLabel(offeredFirstWeekSteps().length),
+              ),
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              onTap: () => openScreen(context, 'T07', onOpenFirstWeek),
             ),
-            title: l10n.yourFirstWeek,
-            subtitle: l10n.allFiveDone,
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
+          if (AppRouter.screenIsOn('T04'))
+            AppListItem(
+              leading: const Icon(
+                Icons.spa,
+                size: 22,
+                color: AppColors.tertiary,
+              ),
+              title: l10n.whatARestWeekCovers,
+              subtitle: l10n.aMissedWeekRepairedWithoutAsking,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              onTap: () => openScreen(context, 'T04', onOpenRestWeek),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            onTap: () => openScreen(context, 'T07', onOpenFirstWeek),
-          ),
-          AppListItem(
-            leading: const Icon(Icons.spa, size: 22, color: AppColors.tertiary),
-            title: l10n.whatARestWeekCovers,
-            subtitle: l10n.aMissedWeekRepairedWithoutAsking,
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
+          if (AppRouter.screenIsOn('T05'))
+            AppListItem(
+              leading: const Icon(
+                Icons.info_outline,
+                size: 22,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.ifATierSlips,
+              subtitle: l10n.oneCountedWeekBringsItBack,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              onTap: () => openScreen(context, 'T05', onOpenTierSlip),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            onTap: () => openScreen(context, 'T04', onOpenRestWeek),
-          ),
-          AppListItem(
-            leading: const Icon(
-              Icons.info_outline,
-              size: 22,
-              color: AppColors.primaryDim,
-            ),
-            title: l10n.ifATierSlips,
-            subtitle: l10n.oneCountedWeekBringsItBack,
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            onTap: () => openScreen(context, 'T05', onOpenTierSlip),
-          ),
         ],
       ),
     );
@@ -375,42 +428,47 @@ class ProgressView extends StatelessWidget {
     // The section's contents, set as one ruled line of three entries with
     // pencil strokes between them — the way a magazine lists what is inside —
     // rather than three matching cards. At a large text size they stack.
+    // Each entry is drawn only while its part is on, so a part switched off
+    // from the server leaves no door behind it.
     final entries = [
-      _IndexEntry(
-        icon: Icons.military_tech,
-        label: l10n.milestones,
-        // Her earned count against the catalogue size, from the
-        // parameterised form rather than the mockup's '4 of 12'.
-        //
-        // Withheld when the catalogue is empty: "2 of 0" is not a fact
-        // about anybody. That is the state P01 is wired in today — see the
-        // build report on `app_router.dart`.
-        meta: summary.milestoneCount <= 0
-            ? null
-            : l10n.countOfTotal(
-                countLabel(summary.milestonesEarned),
-                countLabel(summary.milestoneCount),
-              ),
-        onTap: () => openScreen(context, 'P02', onOpenMilestones),
-      ),
-      _IndexEntry(
-        icon: Icons.emoji_events,
-        label: l10n.bests,
-        // '8 so far'.
-        meta: statedLine<int>(
-          l10n.n8SoFar,
-          states: 8,
-          hers: summary.bestsCount,
+      if (AppRouter.screenIsOn('P02'))
+        _IndexEntry(
+          icon: Icons.military_tech,
+          label: l10n.milestones,
+          // Her earned count against the catalogue size, from the
+          // parameterised form rather than the mockup's '4 of 12'.
+          //
+          // Withheld when the catalogue is empty: "2 of 0" is not a fact
+          // about anybody. That is the state P01 is wired in today — see the
+          // build report on `app_router.dart`.
+          meta: summary.milestoneCount <= 0
+              ? null
+              : l10n.countOfTotal(
+                  countLabel(summary.milestonesEarned),
+                  countLabel(summary.milestoneCount),
+                ),
+          onTap: () => openScreen(context, 'P02', onOpenMilestones),
         ),
-        onTap: () => openScreen(context, 'P03', onOpenBests),
-      ),
-      _IndexEntry(
-        icon: Icons.monitor_weight,
-        label: l10n.body,
-        // True for every woman: nobody else can read it.
-        meta: l10n.private,
-        onTap: () => openScreen(context, 'P04', onOpenBody),
-      ),
+      if (AppRouter.screenIsOn('P03'))
+        _IndexEntry(
+          icon: Icons.emoji_events,
+          label: l10n.bests,
+          // '8 so far'.
+          meta: statedLine<int>(
+            l10n.n8SoFar,
+            states: 8,
+            hers: summary.bestsCount,
+          ),
+          onTap: () => openScreen(context, 'P03', onOpenBests),
+        ),
+      if (AppRouter.screenIsOn('P04'))
+        _IndexEntry(
+          icon: Icons.monitor_weight,
+          label: l10n.body,
+          // True for every woman: nobody else can read it.
+          meta: l10n.private,
+          onTap: () => openScreen(context, 'P04', onOpenBody),
+        ),
     ];
     final stacked = MediaQuery.textScalerOf(context).scale(1) > 1.3;
 

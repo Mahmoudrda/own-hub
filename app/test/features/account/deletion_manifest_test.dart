@@ -49,13 +49,30 @@ Set<String> _subcollectionsInRules() {
 
 void main() {
   group('the manifest is intact', () {
-    test('37 rows, numbered 1 to 37 with no gaps and no duplicates', () {
+    test('49 rows, numbered 1 to 49 with no gaps and no duplicates', () {
       // 34 until check (e) below ran for the first time and found three
       // collections nobody had enumerated in three passes by eye.
-      expect(kDeletionManifest, hasLength(37));
+      //
+      // 38 with `users/{uid}/private/**`, which arrived with the recipe
+      // entitlement. Check (e) found that one too, on the same day the rule was
+      // written, which is the guard doing exactly its job: a subcollection
+      // added ahead of the feature that reads it is the kind most likely to be
+      // left on the server after she deletes her account.
+      //
+      // 41 with the server's verification records for her (flags, ledger,
+      // sessions), added with the real `delete_account` callable and held to
+      // contracts/deletion_manifest.json by the parity test.
+      //
+      // 44 with the hash-keyed fraud signals and the reviewer access log,
+      // which deletion cannot find and a TTL policy sweeps instead.
+      //
+      // 49 with the community and coach data named row by row (posts, her
+      // comments, coach pages, relationships, invite codes), all run by row
+      // 26's server purge.
+      expect(kDeletionManifest, hasLength(49));
 
       final numbers = kDeletionManifest.map((r) => r.number).toList()..sort();
-      expect(numbers, [for (var i = 1; i <= 37; i++) i]);
+      expect(numbers, [for (var i = 1; i <= 49; i++) i]);
     });
 
     test('every row names a path and an owner', () {
@@ -70,13 +87,41 @@ void main() {
     });
   });
 
-  group('three rows survive on purpose, and A02 must say so', () {
-    test('exactly three rows do not remove data', () {
+  test('the community and coach data is named row by row', () {
+    // Dormant at launch, and erasable before it is switched on (APL-16).
+    for (final number in [45, 46, 47, 48, 49]) {
+      final row = kDeletionManifest.firstWhere((r) => r.number == number);
+      expect(row.method, DeletionMethod.groupHook);
+      expect(row.method.removesData, isTrue);
+    }
+    expect(
+      kDeletionManifest.map((r) => r.path),
+      containsAll(<String>[
+        'coachInvites where coachUid == uid',
+        'posts/*/comments where authorUid == uid',
+      ]),
+    );
+  });
+
+  group('six rows survive on purpose, and A02 must say so', () {
+    test('exactly six rows do not remove data', () {
       expect(kRowsThatSurvive.map((r) => r.number).toList()..sort(), [
         23,
         30,
         31,
+        42,
+        43,
+        44,
       ]);
+    });
+
+    test('the fraud signals and the access log expire on their own', () {
+      for (final number in [42, 43, 44]) {
+        final row = kDeletionManifest.firstWhere((r) => r.number == number);
+        expect(row.method, DeletionMethod.ttl);
+        expect(row.method.removesData, isFalse);
+        expect(row.note, contains('deleted'));
+      }
     });
 
     test('nidRegistry is closed, not deleted', () {

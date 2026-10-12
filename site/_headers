@@ -1,0 +1,78 @@
+# Own Hub: response headers for a static site with no scripts.
+# Cloudflare Pages reads this file (https://developers.cloudflare.com/pages/configuration/headers/):
+# at most 100 rules, 2,000 characters a line, and a request matching several
+# rules gets all their headers, so no two rules below set the same header on
+# the same path.
+#
+# form-action: the waitlist form posts to the join_waitlist Cloud Function,
+# which answers with a redirect back to this site ('self'). Nowhere else.
+# The Content-Security-Policy is the one that matters: it is what makes "this
+# page phones nobody" a rule the browser enforces rather than a claim on the
+# page. There is no script-src, so no script of any kind can run.
+# connect-src 'self' lets a browser tool (Lighthouse, for one) read this
+# site's own robots.txt; with no script on any page nothing else uses it.
+
+/*
+  Content-Security-Policy: default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; manifest-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self' https://europe-west3-own-hub.cloudfunctions.net; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), browsing-topics=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), xr-spatial-tracking=()
+
+# The project's own *.pages.dev addresses (production and every preview) are
+# copies of the real site. Keep them out of search results.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+# Fonts never change under these names: a changed subset gets a new name.
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The stylesheet is linked as /assets/site.css?v=<content hash>, so a change
+# is a new address and the old one may be kept for a year.
+/assets/site.css
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images keep their names when they are redrawn, so a week, then revalidate.
+/assets/shots/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/badges/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# The share image is fetched by other sites' link previews, so it alone may
+# be loaded cross-origin.
+/assets/og/*
+  ! Cross-Origin-Resource-Policy
+  Cross-Origin-Resource-Policy: cross-origin
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/icons/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/brand/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/hand/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/assets/favicon.svg
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/favicon.ico
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json; charset=utf-8
+
+# The generator and its templates are never uploaded (deploy.sh publishes a
+# clean copy without them), and _redirects turns the path into a 404. This
+# stays as a last guard for a host that serves the folder as it is.
+/_build/*
+  X-Robots-Tag: noindex, nofollow

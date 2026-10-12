@@ -49,8 +49,17 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('deleted after the check'), findsOneWidget);
-    expect(find.textContaining('about 90 seconds'), findsOneWidget);
-    expect(find.textContaining('licensed Egyptian provider'), findsOneWidget);
+    // Honest about time: minutes, or up to 3 days if a woman checks.
+    expect(find.textContaining('a couple of minutes'), findsOneWidget);
+    expect(find.textContaining('about 90 seconds'), findsNothing);
+    // And about what is kept: the result and the keyed code, not "nothing".
+    expect(find.textContaining('keyed code of your ID number'), findsOneWidget);
+    // Who processes the photographs is said once, on C09b, where she agrees
+    // to it. The "Own Hub's own system ... Tap to read" line here could not be
+    // tapped and read as a contradiction of that disclosure, so it is gone.
+    expect(find.textContaining("Own Hub's own system"), findsNothing);
+    expect(find.textContaining('Tap to read'), findsNothing);
+    expect(find.textContaining('licensed Egyptian provider'), findsNothing);
   });
 
   testWidgets('RULE 8 — it says out loud that her face is never judged', (
@@ -75,7 +84,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.textContaining('We keep the result, nothing else'),
+        find.textContaining('Both images are deleted after the check'),
         findsOneWidget,
       );
     },
@@ -126,7 +135,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('تحقّق واحد، ثم تدخلين'), findsOneWidget);
-    expect(find.text('صوّري بطاقتي'), findsOneWidget);
+    expect(find.text('صوّري بطاقتك'), findsOneWidget);
     expect(
       find.textContaining('ولا نخمّن من وجهك أبدًا'),
       findsOneWidget,

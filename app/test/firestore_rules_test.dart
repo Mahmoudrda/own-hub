@@ -159,8 +159,22 @@ void main() {
 
     test('plans are never client-written', () {
       expect(rules, contains('match /plans/{uid}/{document=**}'));
-      final plansBlock = rules.substring(rules.indexOf('match /plans/'));
-      expect(plansBlock.substring(0, 400), contains('allow write: if false;'));
+      // Brace balanced rather than the first 400 characters.
+      //
+      // The character count was a silent trip-wire on the length of a comment.
+      // It broke the day the `plans` read rule was rewritten to close a
+      // privilege escalation: the fix carries a long explanation and two
+      // helper functions above `allow write`, which pushed the line this test
+      // looks for past character 400. The rule was correct the whole time and
+      // the guard reported it as broken, which is the worst failure a guard
+      // has, because the obvious way to "fix" it is to raise the number until
+      // it passes and never look again.
+      expect(
+        _matchBlock(rules, 'match /plans/'),
+        contains('allow write: if false;'),
+        reason: 'a client that can write a plan can prescribe training to '
+            'another woman, which is the one thing a coach is verified for',
+      );
     });
   });
 
@@ -240,4 +254,33 @@ void main() {
       );
     });
   });
+}
+
+/// The whole `match` block beginning at [needle], brace balanced.
+///
+/// Comment lines are dropped before counting, because the rules file explains
+/// itself at length and a `{` inside prose would close the block early. Nested
+/// blocks are kept: a `match` may now declare helper functions of its own, and
+/// the rule this file is checking usually sits after them.
+String _matchBlock(String rules, String needle) {
+  final start = rules.indexOf(needle);
+  if (start < 0) return '';
+  final lines = rules.substring(start).split('\n');
+  final out = StringBuffer();
+  var depth = 0;
+  var opened = false;
+  for (final line in lines) {
+    final code = line.trimLeft().startsWith('//') ? '' : line;
+    out.writeln(line);
+    for (final rune in code.runes) {
+      if (rune == 0x7B) {
+        depth++;
+        opened = true;
+      } else if (rune == 0x7D) {
+        depth--;
+      }
+    }
+    if (opened && depth <= 0) break;
+  }
+  return out.toString();
 }

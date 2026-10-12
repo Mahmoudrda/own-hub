@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/presentation/finished_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -45,10 +47,23 @@ const _recalled = TrainSession(
 );
 
 void main() {
+  // The share link posts to a group, so R10 is tested with Community on.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.community: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   testWidgets('names what she earned, in the order she cares about', (
     tester,
   ) async {
-    await tester.pumpWidget(_host(const FinishedView()));
+    // A Tuesday, so the heading is checkable. It used to say Tuesday to
+    // everyone on every day, which is what this now guards against.
+    await tester.pumpWidget(
+      _host(FinishedView(finishedOn: DateTime(2026, 9, 15))),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text("That's Tuesday done"), findsOneWidget);
@@ -130,13 +145,16 @@ void main() {
 
   testWidgets('reads in Arabic, from the dictionary', (tester) async {
     await tester.pumpWidget(
-      _host(const FinishedView(session: _live), locale: const Locale('ar')),
+      _host(
+        FinishedView(session: _live, finishedOn: DateTime(2026, 9, 15)),
+        locale: const Locale('ar'),
+      ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('بهذا اكتمل الثلاثاء'), findsOneWidget);
+    expect(find.text('كده خلّصتي الثلاثاء'), findsOneWidget);
     expect(find.text('رقم شخصي جديد'), findsOneWidget);
-    expect(find.text('العودة إلى اليوم'), findsOneWidget);
+    expect(find.text('ارجعي لصفحة اليوم'), findsOneWidget);
     expect(find.text('Back to today'), findsNothing);
   });
 

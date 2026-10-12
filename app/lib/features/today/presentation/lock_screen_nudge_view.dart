@@ -20,6 +20,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
@@ -41,6 +42,9 @@ class LockScreenNudgeView extends StatefulWidget {
     this.onLogged,
     this.onSomethingElse,
   });
+
+  /// The brand tile C01 shows, bundled at 1x, 2x and 3x.
+  static const String appIconAsset = 'assets/brand/logo/ownhub-tile.png';
 
   final TodayRepository? repository;
   final LogCommandBus? bus;
@@ -93,7 +97,7 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
         // Names the meal when the caller has said what it is, and otherwise
         // says only that food was logged. It used to name the prototype's
         // breakfast and its macros whatever the nudge had actually offered.
-        describe: widget.mealLine ?? l10n.foodLogged,
+        describe: widget.mealLine ?? l10n.mealAdded,
         // The meal itself belongs to the Eat group; T03 owns the tap, not the
         // collection. Until that command exists this marks the arc step, which is
         // G3's own document.
@@ -107,7 +111,10 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final at = widget.at ?? DateTime(2026, 9, 15, 8, 42);
+    // Now, not the mockup's 15 September 2026 at 08:42. A lock screen that
+    // states a date is stating the date it is being read on, or it is stating
+    // nothing.
+    final at = widget.at ?? AppClock.now();
     final white = AppColors.onPrimary;
 
     return AppScaffold(
@@ -148,20 +155,22 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
           children: [
             Row(
               children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
+                // Where a notification draws the app's icon: the same brand
+                // tile C01 shows, at 28 px with the tile's own corner ratio
+                // (28 on 88). Decorative, because the name is beside it.
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(9),
+                  child: Image.asset(
+                    LockScreenNudgeView.appIconAsset,
+                    width: 28,
+                    height: 28,
+                    filterQuality: FilterQuality.medium,
+                    excludeFromSemantics: true,
                   ),
-                  child: Icon(Icons.restaurant, size: 15, color: white),
                 ),
                 const SizedBox(width: 8),
-                // TODO(owner): replace with the Own Hub wordmark asset when it
-                // exists. A notification shows the application's name, which is
-                // a proper noun and is not translated — same treatment as C01.
+                // The application's name, a proper noun and not translated,
+                // as on C01.
                 Expanded(
                   child: Text(
                     'Own Hub',
@@ -180,7 +189,27 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
                 ),
               ],
             ),
-            Text(l10n.breakfastYourUsual_1lb0u, style: AppText.titleM),
+            // The meal the hour actually is, not a fixed breakfast.
+            //
+            // This was `breakfastYourUsual_1lb0u` for every nudge at every
+            // hour, so a woman whose usual log is at seven in the evening was
+            // asked "Breakfast, your usual?" over her dinner. Same defect as
+            // Home's meal card, fixed on T01, T02 and E04 and missed here.
+            // The hour goes through `EatDayViewModel.slotAt` like everywhere
+            // else, so this screen and Eat can never disagree about which meal
+            // five in the afternoon is.
+            //
+            // "Your usual" is earned, not assumed: it is a claim about a habit,
+            // and `mealLine` is the caller saying which habit. Null means
+            // nobody named one, and then the heading names the meal and stops.
+            Text(
+              mealNudgeHeading(
+                l10n,
+                now: at,
+                hasUsual: widget.mealLine != null,
+              ),
+              style: AppText.titleM,
+            ),
             // The meal's own figures, when a caller supplies them.
             //
             // This was `fulAndBaladi410Kcal22G` — "Ful and baladi · 410 kcal ·
@@ -199,7 +228,7 @@ class _LockScreenNudgeViewState extends State<LockScreenNudgeView> {
               children: [
                 Expanded(
                   child: AppButton(
-                    l10n.logIt,
+                    l10n.addIt,
                     height: 48,
                     fontSize: 15,
                     onPressed: _log,

@@ -196,7 +196,7 @@ class _CheckInViewState extends State<CheckInView> {
         // design draws it: three taps are the sheet, and the rest is there for
         // the day she wants it.
         AppButton(
-          l10n.moreToLogSleepBloatingBleeding,
+          l10n.moreToNoteSleepBloatingBleeding,
           variant: AppButtonVariant.text,
           height: 44,
           fontSize: 15,

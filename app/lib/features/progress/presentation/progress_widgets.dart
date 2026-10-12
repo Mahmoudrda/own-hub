@@ -75,10 +75,17 @@ class WeekBarsChart extends StatelessWidget {
     WeekBarKind.missed => 16,
   };
 
+  // The doc above calls the missed bar "a low neutral one", and `outline` is
+  // the neutral. It was `outlineVariant`, which round two moved to a mid rose,
+  // so a week that did not count became the brightest and most saturated bar on
+  // the chart — the only saturated thing on a page of sage. All three clear 3:1
+  // against the page, and the three kinds are told apart by height (34 / 28 /
+  // 16) and, on the repaired one, by the hatch drawn over it, so none of this
+  // rests on colour alone.
   static Color _colour(WeekBarKind kind) => switch (kind) {
     WeekBarKind.counted => AppColors.tertiary,
     WeekBarKind.repaired => AppColors.tertiarySoft,
-    WeekBarKind.missed => AppColors.outlineVariant,
+    WeekBarKind.missed => AppColors.outline,
   };
 }
 
@@ -89,7 +96,10 @@ class WeekBarsChart extends StatelessWidget {
 /// That is the case where the dictionary holds only a fixed string ("14 of 20")
 /// and the woman's own number is different: the bar still shows her real
 /// progress, and no sentence states a number that is not hers.
-class MiniStat extends StatelessWidget {
+class MiniStat extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'MiniStat';
+
   const MiniStat({
     super.key,
     required this.label,

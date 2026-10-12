@@ -35,7 +35,19 @@ export const screens = [
   { id: 'C07', flow: 'signup', title: 'The code' },
   { id: 'C08', flow: 'signup', title: 'Client or coach' },
   { id: 'C09', flow: 'signup', title: 'Why we check' },
+  // Two screens whose ids carry a letter suffix, because they were inserted
+  // into a numbered flow that is referenced by id in the specs, the plans and
+  // the prototype. Renumbering C10 to C16 to make room would silently
+  // repoint every one of those references at the wrong screen.
+  //
+  // C09b is the consent step. Nothing may open a camera before she has agreed
+  // to where her face and her national ID go, and that agreement is written
+  // down before C10 becomes reachable.
+  { id: 'C09b', flow: 'signup', title: 'Before the camera opens', noMockup: true },
   { id: 'C10', flow: 'signup', title: 'Scan your ID' },
+  // C10b is the second pass of the card: the back prints her sex as a word,
+  // which is the independent reading the 13th digit is cross-checked against.
+  { id: 'C10b', flow: 'signup', title: 'The back of your card', noMockup: true },
   { id: 'C11', flow: 'signup', title: 'Quick selfie' },
   { id: 'C12', flow: 'signup', title: 'Checking' },
   { id: 'C13', flow: 'signup', title: "You're in" },
@@ -48,6 +60,8 @@ export const screens = [
   { id: 'O03', flow: 'onboarding', title: 'Days and minutes' },
   { id: 'O04', flow: 'onboarding', title: 'Life stage' },
   { id: 'O05', flow: 'onboarding', title: 'Your starting program' },
+  { id: 'O06', flow: 'onboarding', title: 'What you have at home' },
+  { id: 'O07', flow: 'onboarding', title: 'Minutes a session' },
   // Today and logging
   { id: 'T01', flow: 'today', title: 'Today' },
   { id: 'T02', flow: 'today', title: 'I already did it' },
@@ -57,6 +71,9 @@ export const screens = [
   { id: 'T06', flow: 'today', title: 'Day one' },
   { id: 'T07', flow: 'today', title: 'Your first week' },
   { id: 'T08', flow: 'today', title: 'First week done' },
+  // Feature.events. The owner's events, published from Z17/Z18; a card on
+  // Home leads here. Off until she switches it on. Designed in Flutter.
+  { id: 'T09', flow: 'today', title: 'Events', noMockup: true },
   // Train
   { id: 'R01', flow: 'train', title: 'Train' },
   { id: 'R02', flow: 'train', title: 'Program' },
@@ -81,11 +98,23 @@ export const screens = [
   { id: 'E07', flow: 'eat', title: 'Week plan' },
   { id: 'E08', flow: 'eat', title: 'Grocery list' },
   { id: 'E09', flow: 'eat', title: 'Eat, day one' },
+  // The one question the recipe library cannot be opened without.
+  //
+  // `DietaryConstraints.none` is a CLAIM: asked, and named nothing. It was true
+  // of nobody, because nothing asked. The moment a dish carries an allergen that
+  // claim makes the guard clear a sesame dish for a woman allergic to sesame,
+  // silently, while looking live. E10 is what turns the claim into an answer, and
+  // it stands in front of E05 rather than beside it.
+  { id: 'E10', flow: 'eat', title: 'What you cannot eat', noMockup: true },
+  // Rahma's closing letter, page 26 of her book. Her words, her sign-off, and
+  // nothing else on the screen.
+  { id: 'E11', flow: 'eat', title: 'A message from Rahma', noMockup: true },
   // Progress
   { id: 'P01', flow: 'progress', title: 'Your progress' },
   { id: 'P02', flow: 'progress', title: 'Milestones' },
   { id: 'P03', flow: 'progress', title: 'Personal bests' },
   { id: 'P04', flow: 'progress', title: 'Body, privately' },
+  { id: 'P05', flow: 'progress', title: 'Your progress card', noMockup: true },
   // My cycle
   { id: 'Y01', flow: 'cycle', title: 'Set up My cycle' },
   { id: 'Y02', flow: 'cycle', title: 'Dates and preferences' },
@@ -159,6 +188,11 @@ export const screens = [
   { id: 'K04', flow: 'coach-setup', title: 'Your packages' },
   { id: 'K05', flow: 'coach-setup', title: 'Getting paid' },
   { id: 'K06', flow: 'coach-setup', title: 'Being checked' },
+  { id: 'K08', flow: 'coach-setup', title: 'About you' },
+  { id: 'K10', flow: 'coach-setup', title: 'How you coach' },
+  { id: 'K11', flow: 'coach-setup', title: 'Client results' },
+  { id: 'K12', flow: 'coach-setup', title: 'What clients say' },
+  { id: 'K13', flow: 'coach-setup', title: 'The three rules' },
   // Coach app
   { id: 'K07', flow: 'coach', title: 'Today' },
   { id: 'K09', flow: 'coach', title: 'New enquiry' },
@@ -225,4 +259,13 @@ export const screens = [
   // half-built flow can ship dark and be turned on when it is ready rather
   // than when the code happened to land.
   { id: 'Z14', flow: 'admin', title: 'Feature flags' },
+
+  // The owner's operations: counts with no member named in them, the
+  // operational logs in codes, and the events she runs. All four are served by
+  // admin-only callables or by rules that accept the admin claim only.
+  // Designed in Flutter, so no markup here by decision.
+  { id: 'Z15', flow: 'admin', title: 'Dashboard', noMockup: true },
+  { id: 'Z16', flow: 'admin', title: 'Logs', noMockup: true },
+  { id: 'Z17', flow: 'admin', title: 'Events', noMockup: true },
+  { id: 'Z18', flow: 'admin', title: 'Edit an event', noMockup: true },
 ];

@@ -13,30 +13,42 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 
 void main() {
-  group('the shipped defaults match what is actually built', () {
-    test('Phase 1 and Phase 2 are on', () {
+  group('the shipped defaults are the first release, not a wish', () {
+    test('what she gets on day one is on', () {
+      // Everything in this list works with no server behind it, which is why
+      // it can ship first.
       for (final f in [
-        Feature.signUp,
-        Feature.verification,
         Feature.today,
         Feature.train,
         Feature.eat,
         Feature.progress,
         Feature.cycle,
         Feature.privacyCentre,
-        Feature.adminConsole,
       ]) {
         expect(
           FeatureFlags.shipped.isOn(f),
           isTrue,
-          reason: '${f.name} is built and tested; it should not be dark',
+          reason: '${f.name} is built, tested, and needs nothing but a phone',
         );
       }
     });
 
-    test("every Phase 3 feature is on, at the owner's instruction", () {
+    test('everything that needs a back end is off', () {
+      // Not taste, and not sequencing for its own sake: each of these makes a
+      // promise the build cannot keep on its own. An account needs somewhere
+      // to live, verification needs a provider, the community needs a
+      // moderator and a queue, coaching needs two real accounts and money,
+      // the assistant needs a model behind a Function.
+      //
+      // accountRequired, signUp and verification left this list on
+      // 2026-10-02: their back end (functions/) exists and the owner ships
+      // them at launch. The test above asserts they are on.
       for (final f in [
         Feature.community,
+        Feature.communityPosts,
+        Feature.communityVideo,
+        Feature.communityVoiceNotes,
+        Feature.communityFollowerCounts,
         Feature.coachApp,
         Feature.coachPlanning,
         Feature.coachPortfolio,
@@ -47,36 +59,42 @@ void main() {
       ]) {
         expect(
           FeatureFlags.shipped.isOn(f),
-          isTrue,
+          isFalse,
           reason:
-              '${f.name} was switched on deliberately. This still guards '
-              'against drift: a feature that goes dark by accident, rather '
-              'than by decision, fails here.',
+              '${f.name} would ship a promise this build cannot keep. '
+              'Turning it on is a decision about the second release, and it '
+              'is a visible change to this file.',
         );
       }
     });
 
-    test("no account is required, at the owner's instruction, for testing", () {
-      // Recorded so the position is a decision, not an accident — and so
-      // switching it back on before a public release is a visible change to
-      // this file. With it off, anyone who installs the app is inside.
-      expect(FeatureFlags.shipped.isOn(Feature.accountRequired), isFalse);
+    test('the console is not part of the product', () {
+      // It is for the people who run Own Hub. It is also compiled out of a
+      // release build entirely, which `release_readiness_test.dart` holds.
+      expect(FeatureFlags.shipped.isOn(Feature.adminConsole), isFalse);
     });
 
-    test('the community scope is recorded, not decided later', () {
-      // The owner has switched all four on. Recorded here so the position is
-      // a decision rather than an accident -- and so that turning any of them
-      // back off is a visible change to this file.
-      //
-      // TWO OF THESE HAVE NOTHING BEHIND THEM. `communityVideo` and
-      // `communityVoiceNotes` render their controls, and the feature has no
-      // capture, no blur export and no transcode. See the library doc on
-      // `Feature` in `lib/domain/flags/feature_flags.dart`.
-      const f = FeatureFlags.shipped;
-      expect(f.isSetOn(Feature.communityPosts), isTrue);
-      expect(f.isSetOn(Feature.communityVideo), isTrue);
-      expect(f.isSetOn(Feature.communityVoiceNotes), isTrue);
-      expect(f.isSetOn(Feature.communityFollowerCounts), isTrue);
+    test('an account is required, with sign-up and verification, at launch',
+        () {
+      // Recorded so the position is a decision rather than an accident. The
+      // owner decided (2026-10-02) that sign-up and verification are live at
+      // launch, so the whole-app gate is closed in the shipped build. It
+      // used to read "no account is required, because there are no accounts
+      // yet"; the back end now exists (functions/, deployed before release).
+      expect(FeatureFlags.shipped.isOn(Feature.accountRequired), isTrue);
+      expect(FeatureFlags.shipped.isOn(Feature.signUp), isTrue);
+      expect(FeatureFlags.shipped.isOn(Feature.verification), isTrue);
+    });
+
+    test('the exploring shape still turns everything on', () {
+      // The crawler, the journeys and the sweep use this, so a screen that is
+      // dark in the first release is still opened and still proved.
+      final all = FeatureFlags.everything;
+      for (final f in Feature.values) {
+        if (f == Feature.accountRequired) continue;
+        expect(all.isOn(f), isTrue, reason: '${f.name} must still be walkable');
+      }
+      expect(all.isOn(Feature.accountRequired), isFalse);
     });
   });
 

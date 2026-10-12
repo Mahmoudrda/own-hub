@@ -143,6 +143,116 @@ void main() {
       expect(find.text('0:00'), findsOneWidget);
     });
 
+    group('the clock does not follow her out of the screen', () {
+      // R09 is pushed UNDER R07 rather than replaced by it, so tapping "I'm
+      // ready" left this screen mounted with its clock still running. Up to
+      // thirty-eight seconds later the clock reached zero and called `onReady`
+      // anyway — which pushes the workout player over whatever she is doing
+      // now. It was caught landing on the cycle check-in and in the middle of
+      // `Y02`. `mounted` is true for a route that is merely buried, so the
+      // guard is `ModalRoute.isCurrent`.
+
+      Widget hostWithNavigator(Widget child, GlobalKey<NavigatorState> key) {
+        return MaterialApp(
+          navigatorKey: key,
+          localizationsDelegates: AppL10n.localizationsDelegates,
+          supportedLocales: AppL10n.supportedLocales,
+          theme: buildTheme(const Locale('en')),
+          home: child,
+        );
+      }
+
+      testWidgets('a rest that ends behind another screen navigates nowhere', (
+        tester,
+      ) async {
+        var ready = 0;
+        final navigator = GlobalKey<NavigatorState>();
+
+        await tester.pumpWidget(
+          hostWithNavigator(
+            RestingView(
+              remaining: const Duration(seconds: 3),
+              total: const Duration(seconds: 60),
+              onReady: () => ready++,
+            ),
+            navigator,
+          ),
+        );
+        await tester.pump();
+
+        // She moves on, and this screen is buried rather than disposed.
+        navigator.currentState!.push(
+          MaterialPageRoute<void>(
+            builder: (_) => const Scaffold(body: Text('Somewhere else')),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(find.text('Somewhere else'), findsOneWidget);
+
+        // The rest runs out underneath her.
+        for (var i = 0; i < 5; i++) {
+          await tester.pump(const Duration(seconds: 1));
+        }
+
+        expect(
+          ready,
+          0,
+          reason:
+              'rest ending behind her must never push a workout screen over '
+              'what she is doing',
+        );
+        expect(find.text('Somewhere else'), findsOneWidget);
+      });
+
+      testWidgets('but it still ends itself while she is looking at it', (
+        tester,
+      ) async {
+        var ready = 0;
+        final navigator = GlobalKey<NavigatorState>();
+
+        await tester.pumpWidget(
+          hostWithNavigator(
+            RestingView(
+              remaining: const Duration(seconds: 1),
+              total: const Duration(seconds: 60),
+              onReady: () => ready++,
+            ),
+            navigator,
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(ready, 1, reason: 'zero taps to log is the point of R09');
+      });
+
+      testWidgets('and the clock is cancelled when the screen is disposed', (
+        tester,
+      ) async {
+        var ready = 0;
+        await tester.pumpWidget(
+          _host(
+            RestingView(
+              remaining: const Duration(seconds: 2),
+              total: const Duration(seconds: 60),
+              onReady: () => ready++,
+            ),
+          ),
+        );
+        await tester.pump();
+
+        await tester.pumpWidget(_host(const SizedBox.shrink()));
+        for (var i = 0; i < 5; i++) {
+          await tester.pump(const Duration(seconds: 1));
+        }
+
+        expect(ready, 0);
+        // A live timer left behind fails the test binding at teardown, so
+        // there is nothing further to assert here.
+      });
+    });
+
     testWidgets('a static preview does not tick', (tester) async {
       await tester.pumpWidget(
         _host(
@@ -283,9 +393,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('حُفظت المجموعة 2 · 12 كجم × 10'), findsOneWidget);
-    expect(find.text('جاهزة، المجموعة التالية'), findsOneWidget);
-    expect(find.text('أضيفي 30 ثانية'), findsOneWidget);
+    expect(find.text('اتحفظت المجموعة 2 · 12 كجم × 10'), findsOneWidget);
+    expect(find.text('جاهزة، المجموعة اللي بعدها'), findsOneWidget);
+    expect(find.text('ضيفي 30 ثانية'), findsOneWidget);
     expect(find.text("I'm ready, next set"), findsNothing);
   });
 

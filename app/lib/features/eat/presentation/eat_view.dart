@@ -45,21 +45,28 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
+import '../../../domain/flags/feature_flags.dart';
+import '../../../data/pending_answers.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../app_state/eat_state.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
+import '../../../theme/recipe_book_tokens.dart';
 import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/screen_scope.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_undo_bar.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_art_strip.dart';
-import '../../today/presentation/today_cards.dart' show openScreen;
+import '../../today/presentation/today_cards.dart' show mealSlotName, openScreen;
 import '../domain/allergy_guard.dart';
 import '../domain/day_totals.dart';
 import '../domain/food_library.dart';
@@ -109,6 +116,7 @@ class EatView extends StatefulWidget {
     this.plannedMeal,
     this.yesterdaysLunch,
     this.onOpenRecipes,
+    this.onOpenWeekPlan,
     this.onType,
     this.onSpeak,
     this.onLogged,
@@ -166,6 +174,9 @@ class EatView extends StatefulWidget {
   final SuggestionView? yesterdaysLunch;
 
   final VoidCallback? onOpenRecipes;
+
+  /// `E07`, this week's dinners and the shopping list.
+  final VoidCallback? onOpenWeekPlan;
   final VoidCallback? onType;
   final VoidCallback? onSpeak;
 
@@ -199,7 +210,7 @@ class _EatViewState extends State<EatView> {
   /// day total moves." Undo removes them again, because nothing was written.
   final List<MealItem> _pending = <MealItem>[];
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
   String get _dayId => _dayIdOf(_now);
 
   static String _dayIdOf(DateTime at) =>
@@ -287,6 +298,29 @@ class _EatViewState extends State<EatView> {
     guard: AllergyGuard(widget.constraints),
   );
 
+  /// The **one** undo offer for one log (§2 rule 9).
+  ///
+  /// When [EatView.onLogged] is wired the handle travels on to E04, which draws
+  /// the in-page [AppUndoBar] for it. Raising a floating snackbar here as well
+  /// put two offers for the same meal on screen at once, reading the same
+  /// sentence and closing half a second apart — and a woman who reached the one
+  /// that had already expired got nothing at all. The in-page bar is the one
+  /// that stays: it sits where the prototype draws it, it does not cover the
+  /// slot card it is announcing, and it degrades honestly, dropping its button
+  /// the moment the five seconds close instead of leaving one that lies.
+  ///
+  /// With no handler to carry the handle onward nothing else would offer the
+  /// window, so the snackbar stands in.
+  void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    if (widget.onLogged != null) return;
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: AppL10n.of(context).undo,
+      onUndo: onUndo,
+    );
+  }
+
   /// One tap. Saves immediately, offers five seconds, asks nothing.
   void _log(
     List<ParsedItem> entries,
@@ -317,12 +351,10 @@ class _EatViewState extends State<EatView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
       );
-      showUndoSnackBar(
-        context,
-        handle: handle,
-        undoLabel: l10n.undo,
+      _offerUndo(
+        handle,
         onUndo: () {
           session.settle();
           if (mounted) setState(() {});
@@ -346,15 +378,13 @@ class _EatViewState extends State<EatView> {
         // the exact defect PHASE1-FIXES §8 records on R07's button. Until a
         // parameterised key exists, the honest sentence is the one that states
         // less.
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => _service(l10n).commit(prepared.write),
       ),
     );
 
-    showUndoSnackBar(
-      context,
-      handle: handle,
-      undoLabel: l10n.undo,
+    _offerUndo(
+      handle,
       onUndo: () {
         if (!mounted) return;
         setState(() {
@@ -382,7 +412,13 @@ class _EatViewState extends State<EatView> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'E01',
+        // This one widget is both E01 and E04, so it cannot name its own id the
+        // way every other screen does. Hardcoding 'E01' marked the Eat tab
+        // active while she was standing on E04, and `AppNavBar` gives the active
+        // tab no `onTap` — so on E04 the Eat tab was drawn as the current page
+        // and did nothing at all when she pressed it. Outside the router there
+        // is no scope, and E01 is the right answer there.
+        activeScreenId: ScreenScope.of(context) ?? 'E01',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {
@@ -393,9 +429,15 @@ class _EatViewState extends State<EatView> {
         },
       ),
       body: AppScaffold(
-        children: view.isDayOne
-            ? _dayOne(context, l10n, view)
-            : _today(context, l10n, view),
+        // Three branches where there were two. `_dayOne` is a confident
+        // sentence about a woman who has never logged a meal, and it is a lie
+        // to one whose meals are still being pulled down. See
+        // `lib/data/pending_answers.dart`.
+        children: switch ((view.isDayOne, _repo.dataState)) {
+          (true, DataState.unknown) => _stillLooking(l10n),
+          (true, _) => _dayOne(context, l10n, view),
+          (false, _) => _today(context, l10n, view),
+        },
       ),
     );
   }
@@ -417,13 +459,25 @@ class _EatViewState extends State<EatView> {
     return !session.issued(handle) || session.isOpen(handle);
   }
 
+  /// Whether the log E04 was opened for was taken back.
+  ///
+  /// The bar used to stay after she undid it, still reading "Food logged" over
+  /// a day that no longer holds the meal, with the five points beside it.
+  bool get _wasUndone {
+    final handle = widget.justLogged;
+    final session = widget.session;
+    if (handle == null || session == null) return false;
+    return session.wasUndone(handle);
+  }
+
   List<Widget> _today(BuildContext context, AppL10n l10n, EatDayView view) {
-    final justLogged = widget.justLogged;
+    final justLogged = _wasUndone ? null : widget.justLogged;
 
     return [
-      // E04's undo bar. Drawn **in the page** rather than raised as a floating
-      // snackbar, exactly as R13 does — a floating bar would sit over the slot
-      // card it is announcing.
+      // E04's undo bar, and the ONLY undo this screen shows. Drawn **in the
+      // page** rather than raised as a floating snackbar, exactly as R13 does —
+      // a floating bar would sit over the slot card it is announcing, and two
+      // bars for one meal is what `_offerUndo` exists to prevent.
       if (justLogged != null)
         AppUndoBar(
           message: justLogged.describe,
@@ -467,19 +521,28 @@ class _EatViewState extends State<EatView> {
       // Rendered only for a woman who actually has a coach — null for everyone
       // in the MVP.
       if (widget.plannedMeal != null) ..._plannedBlock(l10n),
+      // The slot she is actually in, and no claim about a pattern.
+      //
+      // This was "Dinner, your usual" beside "Tuesdays": the slot fixed
+      // whatever the hour, and a weekly habit asserted to a woman who had
+      // logged one meal in her life. `slotAt` is the same hour-to-slot rule
+      // Home heads its meal row with, so the two screens agree. "Your usual"
+      // is the guess form and stays, because that is what this row is: the
+      // thing she tends to eat at this hour.
       if (justLogged != null)
-        AppSplitRow(
-          start: Text(l10n.dinnerYourUsual, style: AppText.titleM),
-          end: Text(
-            l10n.tuesdays,
-            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-          ),
+        // The meal, named plainly. It read "Lunch, your usual" the moment after
+        // she logged her first meal ever, which is one meal and not a usual.
+        // Home takes the same line once something is logged, for the same
+        // reason: the time is already printed beside it.
+        Text(
+          mealSlotName(l10n, EatDayViewModel.slotAt(AppClock.now())),
+          style: AppText.titleM,
         ),
       for (final suggestion in view.suggestions)
         MealRow(
           title: _titleOf(suggestion),
           meta: _metaOf(l10n, suggestion),
-          logLabel: l10n.log,
+          logLabel: l10n.iAteThis,
           primary: suggestion.primary,
           onLog: () => _log(suggestion.entries, view.activeSlot),
         ),
@@ -492,26 +555,37 @@ class _EatViewState extends State<EatView> {
           // she had actually eaten yesterday, on the row whose whole promise is
           // that it repeats HER meal.
           meta: _metaOf(l10n, widget.yesterdaysLunch!),
-          logLabel: l10n.log,
+          logLabel: l10n.iAteThis,
           onLog: () => _log(widget.yesterdaysLunch!.entries, view.activeSlot),
         ),
       if (_screenedToNothing(view.suggestions)) _guardNote(l10n),
-      _recipesRow(l10n),
+      if (AppRouter.screenIsOn('E05')) ...[
+        _recipesRow(l10n),
+        _rahmaShelf(l10n),
+      ],
       _box(l10n),
     ];
   }
 
   List<Widget> _plannedBlock(AppL10n l10n) {
     final planned = widget.plannedMeal!;
+    // The pill credits whoever wrote the plan. `fromSara` is the prototype's
+    // coach, and in a build with no coaching nobody wrote it, so the row names
+    // the plan and credits nobody rather than naming a woman who is not there.
+    final credit =
+        planned.coachName ??
+        (AppRouter.featureFlags.isOn(Feature.coachedLife) ? l10n.fromSara : '');
     return [
       AppSplitRow(
         start: Text(l10n.lunchFromYourPlan, style: AppText.titleM),
-        end: AppPill(planned.coachName ?? l10n.fromSara, icon: Icons.sports),
+        end: credit.isEmpty
+            ? const SizedBox.shrink()
+            : AppPill(credit, icon: Icons.sports),
       ),
       MealRow(
         title: planned.title,
         meta: planned.meta,
-        logLabel: l10n.log,
+        logLabel: l10n.iAteThis,
         primary: true,
         // A planned meal CORRECTS on a re-log — a different method entirely
         // from the free log above. HANDOFF rule 3.
@@ -537,13 +611,31 @@ class _EatViewState extends State<EatView> {
     final prepared = outcome as MealLogPrepared;
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => _service(l10n).commit(prepared.write),
       ),
     );
-    showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
+    _offerUndo(handle);
     widget.onLogged?.call(handle);
   }
+
+  // ------------------------------------------------------- E09, unanswered ----
+
+  /// Eat while nothing has yet said whether she has eaten here before.
+  ///
+  /// The masthead stays, because the name of the section is true whatever a
+  /// pull says. The "Day 1" pill, the empty state and the starters go, because
+  /// each of them states that she is beginning.
+  ///
+  /// No spinner: this screen never had one, and a sentence is the honest way to
+  /// say "we do not know yet" without implying she should sit and wait.
+  List<Widget> _stillLooking(AppL10n l10n) => [
+    _masthead(l10n),
+    Text(
+      l10n.lookingForWhatYouHaveAdded,
+      style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+    ),
+  ];
 
   // ---------------------------------------------------------------- E09 ----
 
@@ -563,9 +655,30 @@ class _EatViewState extends State<EatView> {
         icon: Icons.restaurant,
         art: AppArt.bowlSalad,
         title: l10n.noPlatesYet,
-        body: l10n.logSomethingTwiceAndItBecomesA,
+        body: l10n.addSomethingTwiceAndItBecomesA,
       ),
       _box(l10n),
+      // Planning her food is a reason she installed the app. On day one the
+      // tab offered starter plates and nothing else: no week plan and no
+      // recipes, so both were three screens away.
+      if (AppRouter.screenIsOn('E07'))
+        AppListItem(
+          key: const ValueKey('eat-day-one-week-plan'),
+          leading: const Icon(
+            Icons.calendar_view_week,
+            size: 23,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.planThisWeeksDinners,
+          subtitle: l10n.fiveEgyptianDinnersAndOneShoppingList,
+          trailing: const Icon(
+            Icons.chevron_right,
+            size: 22,
+            color: AppColors.onSurfaceVariant,
+          ),
+          onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
+        ),
+      if (AppRouter.screenIsOn('E05')) _rahmaShelf(l10n),
       if (_screenedToNothing(view.starters))
         _guardNote(l10n)
       else ...[
@@ -574,7 +687,7 @@ class _EatViewState extends State<EatView> {
           MealRow(
             title: _titleOf(starter),
             meta: _starterMeta(l10n, view.activeSlot, starter),
-            logLabel: l10n.log,
+            logLabel: l10n.iAteThis,
             primary: starter.primary,
             onLog: () => _log(starter.entries, view.activeSlot),
           ),
@@ -714,10 +827,81 @@ class _EatViewState extends State<EatView> {
     onTap: () => openScreen(context, 'E05', widget.onOpenRecipes),
   );
 
-  Widget _box(AppL10n l10n) => SayOrTypeBox(
-    label: l10n.sayOrTypeWhatYouAte,
-    micTooltip: l10n.weNeedTheMicrophoneToHearWhat,
-    onType: () => openScreen(context, 'E02', widget.onType),
-    onSpeak: () => openScreen(context, 'E03', widget.onSpeak),
-  );
+  /// A shelf of her four sections, one small card each.
+  ///
+  /// **The rest of E01 is not restyled.** This is the logging screen: the day
+  /// totals, the suggestions, the say-or-type box and the guard note all stay
+  /// exactly as they are. Turning the whole tab pink would mean turning the day
+  /// totals pink, and the day totals are not a recipe book.
+  ///
+  /// Empty until the seed has been read, and empty is drawn as nothing at all
+  /// rather than as four grey placeholders: a shelf of loading cards on a screen
+  /// whose main job is logging a meal is noise.
+  Widget _rahmaShelf(AppL10n l10n) {
+    final book = (EatAppState.instance..ensureRecipeBook()).recipeBook;
+    if (book.sections.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.rahmasRecipes, style: AppText.titleM),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 108,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.zero,
+            itemCount: book.sections.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final section = book.sections[index];
+              return SizedBox(
+                width: 168,
+                child: HandSurface(
+                  seed: handSeed(['eat-shelf', section.sectionId]),
+                  fill: BookInk.paper,
+                  level: HandLevel.crafted,
+                  radius: 8,
+                  looseCorner: 16,
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                  onTap: () => openScreen(context, 'E05', widget.onOpenRecipes),
+                  semanticsButton: true,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: BookTitle(
+                          titleEn: section.titleEn,
+                          style: AppText.titleS.copyWith(color: BookInk.ink),
+                        ),
+                      ),
+                      FoodMark(
+                        markKey: section.markKey,
+                        size: 30,
+                        ink: BookInk.ink,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // The microphone is drawn only when saying a meal is on in this build. With
+  // `Feature.voiceLogging` off there is no recogniser and no microphone
+  // permission, so the box offers typing and says only that.
+  Widget _box(AppL10n l10n) => AppRouter.screenIsOn('E03')
+      ? SayOrTypeBox(
+          label: l10n.sayOrTypeWhatYouAte,
+          micTooltip: l10n.weNeedTheMicrophoneToHearWhat,
+          onType: () => openScreen(context, 'E02', widget.onType),
+          onSpeak: () => openScreen(context, 'E03', widget.onSpeak),
+        )
+      : SayOrTypeBox(
+          label: l10n.typeWhatYouAte,
+          onType: () => openScreen(context, 'E02', widget.onType),
+        );
 }

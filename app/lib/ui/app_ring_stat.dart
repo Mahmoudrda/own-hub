@@ -27,6 +27,8 @@ class AppRingStat extends StatelessWidget {
     this.color = AppColors.tertiarySoft,
     this.bigColor = AppColors.onSurface,
     this.smallColor = AppColors.onSurfaceVariant,
+    // A sentinel, like `AppProgressBar.trackColour`: swapped for
+    // `AppColors.outline` in `build`, never painted as itself.
     this.trackColor = AppColors.outlineVariant,
   });
 
@@ -54,7 +56,10 @@ class AppRingStat extends StatelessWidget {
       height: size,
       child: CustomPaint(
         painter: RingPainter(
-          seed: handSeed(['ring', big, small, size]),
+          // Not from [big]: on the rest timer that is the clock, and a seed
+          // that changes every second redrew the ring by a different hand
+          // every second.
+          seed: handSeed(['ring', small, size]),
           fraction: fraction.clamp(0.0, 1.0),
           thickness: thickness * 0.85,
           color: color,

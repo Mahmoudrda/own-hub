@@ -53,7 +53,7 @@ const M17 = phone(
     + nothingYet('groups', 'Your feed is empty on purpose', 'It fills with the groups you join, never a public timeline. Join one and its posts appear here.')
     + sectionHead('Groups for someone starting out', 'See all', { go: 'M04' })
     + listItem({ lead: avatar(42, { ic: 'self_improvement' }), title: 'Beginners group', sub: '4,210 women · nobody over a year in', trail: btn('Join', { v: 'tonal', h: 38, size: 14, go: 'M04' }), pad: '10px 12px' })
-    + listItem({ lead: avatar(42, { ic: 'child_care' }), title: 'Postpartum rebuild', sub: '1,860 women · cleared from week six', trail: btn('Join', { v: 'tonal', h: 38, size: 14, go: 'M04' }), pad: '10px 12px' })
+    + listItem({ lead: avatar(42, { ic: 'child_care' }), title: 'Postpartum rebuild', sub: '1,860 women · 12 posts today', trail: btn('Join', { v: 'tonal', h: 38, size: 14, go: 'M04' }), pad: '10px 12px' })
     + listItem({ lead: avatar(42, { ic: 'groups' }), title: 'Cairo, west side', sub: 'Ladies-only gyms and walking groups', trail: btn('Join', { v: 'tonal', h: 38, size: 14, go: 'M04' }), pad: '10px 12px' })
     + sageNote('Faces arrive blurred, and nothing here leaves the room.')
   , { pad: '4px 16px 0', gap: 10 })

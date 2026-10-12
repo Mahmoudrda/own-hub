@@ -86,10 +86,17 @@ ThemeData handTheme(ThemeData base) {
     sliderTheme: const SliderThemeData(
       trackHeight: 3,
       activeTrackColor: AppColors.primary,
-      inactiveTrackColor: AppColors.outlineVariant,
+      // The unfilled half of a control she drags. `outline`, like every
+      // other boundary that means something; `outlineVariant` below is the
+      // divider, which means nothing and is meant not to.
+      inactiveTrackColor: AppColors.outline,
       thumbColor: AppColors.primary,
       overlayColor: Colors.transparent,
     ),
+    // The one role `outlineVariant` is for: the line between two rows, which
+    // conveys nothing a reader would lose. WCAG 1.4.11 is about boundaries that
+    // carry meaning, and this is the counter-example. Every boundary in this
+    // product that DOES mean something asks for `outline`.
     dividerTheme: const DividerThemeData(color: AppColors.outlineVariant),
     datePickerTheme: const DatePickerThemeData(
       backgroundColor: AppColors.surfaceLowest,

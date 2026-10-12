@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Own Hub widgets privacy manifest.
+
+	  The extension reads one string from the App Group group.com.ownhub.app,
+	  written by the app (lib/app_state/home_widget_sync.dart): this week's
+	  session count, today's state and whether a meal is logged. It makes no
+	  network call, collects nothing and tracks nothing.
+
+	  UserDefaults reason 1C8F.1: data shared between the app and its own
+	  extension through an App Group. CA92.1 does not cover data accessible to
+	  another bundle, so it is not the reason here.
+	-->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>1C8F.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

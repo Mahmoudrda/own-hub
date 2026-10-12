@@ -366,7 +366,10 @@ class PostActionBar extends StatelessWidget {
   }
 }
 
-class _Count extends StatelessWidget {
+class _Count extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => '_Count';
+
   const _Count({
     required this.icon,
     required this.colour,
@@ -656,7 +659,7 @@ class StoryRing extends StatelessWidget {
                   // Seen and expiring-soon both dim the ring. Shape and colour
                   // together, never colour alone.
                   color: ring.seen || ring.expiringSoon
-                      ? AppColors.outlineVariant
+                      ? AppColors.outline
                       : AppColors.primary,
                   width: ring.seen ? 1.5 : 2.5,
                 ),

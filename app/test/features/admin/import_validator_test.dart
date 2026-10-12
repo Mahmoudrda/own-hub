@@ -434,8 +434,12 @@ void main() {
 
     test('a recipe photo is checked the same way', () {
       final plan = _check(
-        'recipeId,name_en,name_ar,minutes,ingredients,allergens,dietTags,photoFile\n'
-        'soup,Soup,S,25,lentils,none,vegan,soup.jpg\n',
+        // The recipe contract grew with Rahma's book: nineteen more facts a
+        // recipe carries and a CSV can hold. The subject of this test is the
+        // photo column, and the rest of the row is here only so the row is
+        // complete enough to reach it.
+        'recipeId,name_en,name_ar,minutes,ingredients,allergens,dietTags,photoFile,sectionId,source,status,sourcePage,authoredBy,allergenReviewedBy,serves,activeMinutes,kcal,proteinG,carbsG,fatG,macroBasis,egpPerServing,egpPricedAt,advisories,doneness,markKey,tier\n'
+        'soup,Soup,S,25,lentils,none,vegan,soup.jpg,,authored,draft,,,,,,,,,,withheld,,,none,,pot,free\n',
         collection: ContentCollection.recipes,
       );
 

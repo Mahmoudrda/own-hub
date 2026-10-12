@@ -62,6 +62,7 @@ class ContentColumn {
     this.safetyTag = false,
     this.media = false,
     this.video = false,
+    this.mayBeAbsent = false,
   });
 
   final String name;
@@ -100,6 +101,11 @@ class ContentColumn {
   /// beside the clip, and a collection whose only media were thumbnails would
   /// not be exporting videos.
   final bool video;
+
+  /// The header may leave this column out altogether, so a file written
+  /// before the column existed still imports. Every column without it must be
+  /// in the header.
+  final bool mayBeAbsent;
 }
 
 /// The contract for one collection.
@@ -230,6 +236,24 @@ class ContentSchema {
     ],
   );
 
+  /// Recipes: the facts, and a console recipe's method.
+  ///
+  /// Her book is not in this sheet. `bodyAr`, `ingredients[]` and
+  /// `components[]` of the thirty-nine recipes from Rahma's book are a JSON
+  /// sidecar (`assets/content/rahma_recipes.json`, `recipes/{id}`), because a
+  /// forty-line Egyptian colloquial paragraph with her own line breaks is her
+  /// text and is not retyped into a spreadsheet.
+  ///
+  /// A recipe written for the library is different: it has a method, and a
+  /// recipe cannot reach a member without one. So `method_ar` and `method_en`
+  /// are columns. **One step per line**, inside one quoted cell (every
+  /// spreadsheet exports a line break inside a cell that way, and
+  /// `csv_parser.dart` reads it). Where an export flattens the cell to one
+  /// line, separate the steps with ` | ` instead. Neither column is required
+  /// in the header, so an older file still imports; a row that is to be shown
+  /// to members (`status` other than `draft`) needs `method_ar`, and the
+  /// member app's own recipe rules are run on every row before anything is
+  /// written (`remote_content_repository.dart`).
   static const ContentSchema _recipes = ContentSchema._(
     collection: ContentCollection.recipes,
     fileName: 'recipes.csv',
@@ -243,6 +267,49 @@ class ContentSchema {
       ContentColumn('allergens', required: true, list: true, safetyTag: true),
       ContentColumn('dietTags', required: true, list: true),
       ContentColumn('photoFile', media: true),
+      // Where it sits in her book, and who wrote it.
+      // Not required: a recipe written here may not have been placed in a
+      // section of the book yet, and refusing the row for that would make the
+      // console unusable for drafting. What may not publish without a signature
+      // is enforced in `firestore.rules`, where a Dart bug cannot reach it.
+      ContentColumn('sectionId'),
+      ContentColumn('source', required: true),
+      ContentColumn('status', required: true),
+      ContentColumn('sourcePage', numeric: true),
+      // Not required, for the same reason, and with the same gate behind it.
+      ContentColumn('authoredBy'),
+      // The signature that lets a recipe publish. Optional as a column because
+      // a draft row legitimately has none; the *publication* gate is in
+      // `firestore.rules`, where a Dart bug cannot reach it.
+      ContentColumn('allergenReviewedBy'),
+      // Facts a screen renders only when they are present.
+      ContentColumn('serves', numeric: true),
+      ContentColumn('activeMinutes', numeric: true),
+      ContentColumn('kcal', numeric: true),
+      ContentColumn('proteinG', numeric: true),
+      ContentColumn('carbsG', numeric: true),
+      ContentColumn('fatG', numeric: true),
+      // `computed` or `withheld`. Required, because "we did not compute this"
+      // has to be a value somebody wrote rather than the absence of one.
+      ContentColumn('macroBasis', required: true),
+      // An undated EGP figure in Egypt is wrong within a quarter, so the price
+      // and the month it was priced in travel together.
+      ContentColumn('egpPerServing', numeric: true),
+      ContentColumn('egpPricedAt'),
+      // Not allergens and not filtered on: `pregnancy_liver`, `g6pd_fava`.
+      // A safety tag all the same, so the validator holds it to the same
+      // vocabulary discipline.
+      ContentColumn('advisories', required: true, list: true, safetyTag: true),
+      // A token from a fixed set, never a sentence. The copy in the app's voice
+      // for each one is in the dictionary.
+      ContentColumn('doneness'),
+      // A drawn food mark, not a photograph. See `food_marks.dart`.
+      ContentColumn('markKey'),
+      ContentColumn('tier', required: true),
+      // The method, one step per line (or ` | ` between steps). Arabic is
+      // what the member app shows; English is kept beside it.
+      ContentColumn('method_ar', mayBeAbsent: true),
+      ContentColumn('method_en', mayBeAbsent: true),
     ],
   );
 

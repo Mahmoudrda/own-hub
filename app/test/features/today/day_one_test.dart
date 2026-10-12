@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -79,6 +80,34 @@ TodayView _populated() => TodayView(
 );
 
 void main() {
+  // Day one offers the beginners group and counts the whole five-step arc.
+  // Community owns two of those steps and Train and Eat own three, and a
+  // step this build cannot offer is not counted. Stated, not inherited.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.today: true,
+      Feature.firstWeek: true,
+      Feature.quietWeek: true,
+      Feature.tiers: true,
+      Feature.lockScreenNudge: true,
+      Feature.train: true,
+      Feature.recordFromMemory: true,
+      Feature.exerciseVideo: true,
+      Feature.exerciseSwap: true,
+      Feature.followAlong: true,
+      Feature.workoutLibrary: true,
+      Feature.trainingReminders: true,
+      Feature.eat: true,
+      Feature.recipes: true,
+      Feature.weekPlan: true,
+      Feature.groceryList: true,
+      Feature.community: true,
+      Feature.communityGroups: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('rule 16 — a state, not a route', () {
     test('day one is not a destination anything can navigate to', () {
       expect(firstRunStates, contains('T06'));
@@ -92,13 +121,13 @@ void main() {
       _phone(tester);
       await tester.pumpWidget(_host(_dayOne()));
       await tester.pumpAndSettle();
-      expect(find.text('Nothing logged yet'), findsOneWidget);
+      expect(find.text('Nothing added yet'), findsOneWidget);
       expect(find.text('Walk this morning · 32 min'), findsNothing);
 
       // Same TodayView, one log later.
       await tester.pumpWidget(_host(_populated()));
       await tester.pumpAndSettle();
-      expect(find.text('Nothing logged yet'), findsNothing);
+      expect(find.text('Nothing added yet'), findsNothing);
       expect(find.text('Walk this morning · 32 min'), findsOneWidget);
     });
   });
@@ -112,15 +141,34 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Day 1'), findsOneWidget);
-      expect(find.text('Beginner foundations'), findsOneWidget);
+
+      // The cover says what the app is for. It used to name a programme —
+      // "Beginner foundations" — and promise what was in today's session —
+      // "Four moves on the floor. Nothing jumps." Both were fixed strings on
+      // the one screen that renders before she has answered a single question
+      // or been given a plan.
+      expect(find.text('Your training, week by week'), findsOneWidget);
+      expect(
+        find.text(
+          'This app counts weeks, not days, and only what you add yourself.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Beginner foundations'), findsNothing);
+      expect(
+        find.textContaining('Four moves on the floor'),
+        findsNothing,
+        reason: 'T06 is handed no plan, so it cannot say what is in one',
+      );
       // Her three days are chosen in O04 and never reach this screen, so the
       // fixed "Monday, Tuesday, Thursday · 15 min" read the prototype's
       // schedule back to a woman who had just picked Saturday and Sunday.
       expect(find.text('Monday, Tuesday, Thursday · 15 min'), findsNothing);
+      // One obvious thing to do.
       expect(find.text('Start day 1'), findsOneWidget);
 
       // What will appear here, and why it is empty.
-      expect(find.text('Nothing logged yet'), findsOneWidget);
+      expect(find.text('Nothing added yet'), findsOneWidget);
       expect(find.textContaining('will sit here'), findsOneWidget);
 
       // The single smallest action that starts each empty surface.
@@ -140,12 +188,15 @@ void main() {
       await tester.pumpWidget(_host(_dayOne()));
       await tester.pumpAndSettle();
 
+      // The rule, and never the number: she sets her own target in setup, and
+      // this used to sit beside it saying three.
       expect(
         find.text(
-          'Three sessions makes the week count, and a rest week covers one you miss.',
+          'Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.',
         ),
         findsOneWidget,
       );
+      expect(find.textContaining('Three sessions'), findsNothing);
     });
 
     testWidgets('the first-week arc is offered, and nothing expires', (
@@ -172,11 +223,11 @@ void main() {
     await tester.pumpWidget(_host(_dayOne(), locale: const Locale('ar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('اليوم 1'), findsOneWidget);
-    expect(find.text('أساسيات للمبتدئات'), findsOneWidget);
-    expect(find.text('لا شيء مسجَّل بعد'), findsOneWidget);
-    expect(find.text('Beginner foundations'), findsNothing);
-    expect(find.text('Nothing logged yet'), findsNothing);
+    expect(find.text('يوم 1'), findsOneWidget);
+    expect(find.text('تمرينك، أسبوع بأسبوع'), findsOneWidget);
+    expect(find.text('لسه ماضفتيش حاجة'), findsOneWidget);
+    expect(find.text('Your training, week by week'), findsNothing);
+    expect(find.text('Nothing added yet'), findsNothing);
   });
 
   testWidgets('does not overflow at the largest system text size in Arabic', (

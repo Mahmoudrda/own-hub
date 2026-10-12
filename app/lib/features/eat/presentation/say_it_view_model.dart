@@ -12,7 +12,7 @@
 /// being false in every other state — there is no transition from `recording` or
 /// `transcribing` to a log, so a screen cannot save something she has not seen.
 ///
-/// ## Interface MSA, speech Egyptian
+/// ## Interface from the dictionary, speech in her own words
 ///
 /// The whole point of the screen, and the two halves live in different places.
 /// The interface language is `AppL10n`; the dialect is the recogniser's locale.

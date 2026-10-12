@@ -63,7 +63,6 @@ AssistantRequest _request({
         ContraindicationTag.deepKneeFlexion,
         ContraindicationTag.highImpact,
       },
-      allergies: {'sesame', 'nuts'},
       dietary: {'vegetarian'},
     ),
     sessionMinutes: '20',
@@ -305,7 +304,7 @@ void main() {
       expect(a.toString(), b.toString());
       expect(a['equipment'], <String>['band', 'dumbbells', 'mat']);
       expect(a['avoid'], <String>['deep_knee_flexion', 'high_impact']);
-      expect(a['allergies'], <String>['nuts', 'sesame']);
+      expect(a.containsKey('allergies'), isFalse);
     });
   });
 

@@ -1,10 +1,10 @@
 // E03 — Say it. Implements P0-LOG-08.
 //
 // From TEST-CASES.csv: "Transcript shown before saving so a misheard word is
-// visible. Interface stays MSA; speech input accepts dialect."
+// visible. Interface stays in the app's voice; speech input accepts dialect."
 //
 // **This file runs in Arabic by default**, because that is the configuration
-// the case is about: a woman reading Modern Standard Arabic chrome and speaking
+// the case is about: a woman reading the app's own chrome and speaking
 // Egyptian dialect into it. Running it in English would test a pairing the case
 // does not describe, and would need the food pack to carry cross-locale aliases
 // it does not have yet (see `eat_sample_library.dart`).
@@ -77,9 +77,9 @@ void main() {
       await tester.pumpWidget(_host(_sayIt(transcript: _dialect)));
       await tester.pumpAndSettle();
 
-      expect(find.text('سمعنا هذا'), findsOneWidget);
+      expect(find.text('سمعنا ده'), findsOneWidget);
       expect(find.text(_dialect), findsOneWidget);
-      expect(find.text('إذًا نسجّل'), findsOneWidget);
+      expect(find.text('يبقى هنضيف'), findsOneWidget);
     });
 
     testWidgets('the dialect resolves into two editable rows', (tester) async {
@@ -90,7 +90,7 @@ void main() {
       expect(find.text('طبق كشري'), findsOneWidget);
       expect(find.text('بيض مسلوق'), findsOneWidget);
       // Sizes are adjustable here exactly as on E02.
-      expect(find.text('متوسط'), findsOneWidget);
+      expect(find.text('وسط'), findsOneWidget);
     });
 
     testWidgets('confirming writes it, after the undo window', (tester) async {
@@ -111,7 +111,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('سجّليها'));
+      await tester.tap(find.text('ضيفيه'));
       await tester.pump();
 
       expect(handles, hasLength(1));
@@ -139,10 +139,10 @@ void main() {
 
       // No transcript card at all — the screen does not invent one.
       expect(find.text(_dialect), findsNothing);
-      expect(find.text('إذًا نسجّل'), findsNothing);
+      expect(find.text('يبقى هنضيف'), findsNothing);
 
       // And the confirm button does nothing, so she cannot save unheard words.
-      await tester.tap(find.text('سجّليها'));
+      await tester.tap(find.text('ضيفيه'));
       await tester.pump(const Duration(seconds: 6));
       expect(repository.writes, isEmpty);
     });
@@ -162,7 +162,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.remove).last);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('سجّليها'));
+      await tester.tap(find.text('ضيفيه'));
       await tester.pump(const Duration(seconds: 6));
 
       expect(repository.writes.single.added, hasLength(1));
@@ -172,7 +172,7 @@ void main() {
     });
   });
 
-  group('the interface stays MSA while the speech is dialect', () {
+  group('the interface stays in the app\'s voice while the speech is dialect', () {
     testWidgets(
       'her words are hers; everything around them is the dictionary',
       (tester) async {
@@ -182,9 +182,9 @@ void main() {
 
         // Her words, as spoken.
         expect(find.text(_dialect), findsOneWidget);
-        // The chrome, in Modern Standard Arabic from the ARB.
-        expect(find.text('سمعنا هذا'), findsOneWidget);
-        expect(find.text('إذًا نسجّل'), findsOneWidget);
+        // The chrome, from the ARB.
+        expect(find.text('سمعنا ده'), findsOneWidget);
+        expect(find.text('يبقى هنضيف'), findsOneWidget);
         expect(find.text('We heard this'), findsNothing);
       },
     );
@@ -195,7 +195,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        Directionality.of(tester.element(find.text('سمعنا هذا'))),
+        Directionality.of(tester.element(find.text('سمعنا ده'))),
         TextDirection.rtl,
       );
     });
@@ -241,17 +241,17 @@ void main() {
       await tester.pumpWidget(_host(_sayIt()));
       await tester.pumpAndSettle();
 
-      expect(find.text('قوليها مرة أخرى'), findsOneWidget);
+      expect(find.text('قوليها تاني'), findsOneWidget);
 
-      await tester.tap(find.text('قوليها مرة أخرى'));
+      await tester.tap(find.text('قوليها تاني'));
       await tester.pumpAndSettle();
 
       // No spinner. A reason, and the keyboard.
       expect(
-        find.text('نحتاج إلى الميكروفون لسماع ما تناولتِه.'),
+        find.text('محتاجين الميكروفون عشان نسمع أكلتي إيه.'),
         findsOneWidget,
       );
-      expect(find.text('قولي أو اكتبي ما تناولتِه'), findsOneWidget);
+      expect(find.text('قولي أو اكتبي أكلتي إيه'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
@@ -264,7 +264,7 @@ void main() {
       await tester.pumpWidget(_host(_sayIt(transcript: _dialect, bus: bus)));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('سجّليها'));
+      await tester.tap(find.text('ضيفيه'));
       await tester.pump();
 
       expect(find.byType(AlertDialog), findsNothing);

@@ -62,19 +62,69 @@ const _live = TrainSession(
 
 void main() {
   testWidgets('the week still counts it, and says so', (tester) async {
-    await tester.pumpWidget(_host(const LoggedFromMemoryView()));
+    // Re-pointed, twice over, because both sentences this case pinned were
+    // fixed strings that lied to most women.
+    //
+    //   * The heading was `thatsTuesdayDone` — the literal word "Tuesday" — on
+    //     every day of the week. It is built from the day she logged now
+    //     (`thatsDayDone(weekdayLabel(...))`), so the case supplies that day
+    //     instead of pinning one word. 15 September 2026 is a Tuesday, which
+    //     keeps the expected string identical and makes it true.
+    //   * "One more session and this week counts" states the figure one, and
+    //     it was drawn beside her real count whatever that count was. It is a
+    //     `statedLine` now: rendered to the woman it is true of and to nobody
+    //     else. So it is asserted where it holds (2 of 3) and its absence is
+    //     asserted where it does not (1 of 4), which the old case could not do.
+    await tester.pumpWidget(
+      _host(LoggedFromMemoryView(loggedOn: DateTime(2026, 9, 15))),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text("That's Tuesday done"), findsOneWidget);
     expect(
       find.text(
-        'Logged from memory. Your week counts it like any other session.',
+        'Added from memory. Your week counts it like any other session.',
       ),
       findsOneWidget,
     );
     expect(find.text('This week'), findsOneWidget);
     expect(find.text('One more session and this week counts.'), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    // Thursday, and three sessions short of her target: neither sentence may
+    // be the one above.
+    await tester.pumpWidget(
+      _host(
+        LoggedFromMemoryView(
+          loggedOn: DateTime(2026, 9, 17),
+          sessionsThisWeek: 1,
+          sessionsPrescribed: 4,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text("That's Thursday done"), findsOneWidget);
+    expect(find.text("That's Tuesday done"), findsNothing);
+    expect(
+      find.text('One more session and this week counts.'),
+      findsNothing,
+      reason: 'she is three away, so the promise is not hers to read',
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the day it names is the day the session is dated', (
+    tester,
+  ) async {
+    // The heading was parameterised and then handed `DateTime.now()`, so a
+    // screen whose whole job is to report ONE session could name a different
+    // day than the session it was given. `_walk` is dated 2026-09-15, which is
+    // a Tuesday; nothing about when this runs may change that.
+    await tester.pumpWidget(_host(const LoggedFromMemoryView(session: _walk)));
+    await tester.pumpAndSettle();
+
+    expect(find.text("That's Tuesday done"), findsOneWidget);
   });
 
   testWidgets('it awards fewer points than a live session', (tester) async {
@@ -157,7 +207,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('مسجَّل من الذاكرة. ويحتسبه أسبوعك كأي تمرين آخر.'),
+      find.text('ضفتيه من الذاكرة. أسبوعك بيحسبه زي أي تمرين تاني.'),
       findsOneWidget,
     );
     expect(find.text('+15 نقطة'), findsOneWidget);

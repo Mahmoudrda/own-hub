@@ -45,8 +45,14 @@ enum VerificationMethod {
 sealed class VerificationState {
   const VerificationState();
 
-  /// She has not started. Training, recipes and coach profiles are already open
-  /// to her; only the community waits.
+  /// She has not started.
+  ///
+  /// **The gate is the whole app now, not only the community.** An earlier
+  /// version of this comment said training, recipes and coach profiles were
+  /// already open to her while she waited. The owner has since decided
+  /// otherwise: nothing opens until the check completes. Every screen that
+  /// promised otherwise has to say the new thing, and `C14` is the one that
+  /// said it loudest.
   const factory VerificationState.notStarted() = VerificationNotStarted;
 
   /// Submitted, waiting on the automatic check.
@@ -72,10 +78,60 @@ sealed class VerificationState {
   const factory VerificationState.needsAnotherLook() =
       VerificationNeedsAnotherLook;
 
+  /// The photographs need taking again.
+  ///
+  /// A separate state from [needsAnotherLook] because it is a separate thing to
+  /// do. "A woman will call you" and "take the photograph again" are different
+  /// instructions with different costs, and collapsing them would spend a human
+  /// video call on a glare patch she could have fixed in ten seconds.
+  ///
+  /// Also reached when the liveness session expired before she finished. That
+  /// is nobody's fault and must not read as one.
+  const factory VerificationState.retakeNeeded() = VerificationRetakeNeeded;
+
+  /// A daily limit was reached, hers or the service's. She is told to try
+  /// again tomorrow. Never a review: a limit is not a reason to spend a
+  /// woman reviewer's call.
+  const factory VerificationState.tryTomorrow() = VerificationTryTomorrow;
+
+  /// Every automatic check this account may use has been used. She is told
+  /// so, and may ask for a woman reviewer herself; she is not queued for one.
+  const factory VerificationState.checksUsedUp() = VerificationChecksUsedUp;
+
+  /// The server has no record of her agreement: back to the consent screen.
+  const factory VerificationState.consentNeeded() = VerificationConsentNeeded;
+
+  /// The server refused her account for good. She is told plainly, with how
+  /// to delete her data. The same sentence for every reason (no oracle).
+  const factory VerificationState.rejected() = VerificationRejected;
+
+  /// The call failed and asking for a reviewer failed too. Nothing was
+  /// decided and she is not in any queue; she can try again.
+  const factory VerificationState.unreachable() = VerificationUnreachable;
+
+  /// The call failed for a reason nobody classified (no network, a timeout,
+  /// a server error). Nothing was decided and she is in no queue. She is
+  /// offered a woman reviewer on C15, where she reads what the review means
+  /// and asks for it herself (R4). Never queued for her automatically.
+  const factory VerificationState.reviewOffered() = VerificationReviewOffered;
+
+  /// App Check refused this copy of the app: it cannot reach Own Hub at all.
+  /// She is told to install the latest version. Never a review, because the
+  /// review call would be refused the same way.
+  const factory VerificationState.appCannotReach() = VerificationAppCannotReach;
+
+  /// The server did not accept her sign-in (N4). Nothing was decided; she
+  /// signs in again with her phone number. Never a review.
+  const factory VerificationState.signInAgain() = VerificationSignInAgain;
+
   /// Whether the community is open to her.
   bool get isVerified => this is VerificationVerified;
 
   /// Whether she is waiting on someone. Drives the "we are reviewing" copy.
+  ///
+  /// [VerificationRetakeNeeded] is deliberately not pending: she is not waiting
+  /// on anybody, the next move is hers, and copy that told her to sit tight
+  /// would leave her sitting tight forever.
   bool get isPending =>
       this is VerificationChecking ||
       this is VerificationAwaitingReviewer ||
@@ -107,6 +163,42 @@ class VerificationVerified extends VerificationState {
 
 class VerificationNeedsAnotherLook extends VerificationState {
   const VerificationNeedsAnotherLook();
+}
+
+class VerificationRetakeNeeded extends VerificationState {
+  const VerificationRetakeNeeded();
+}
+
+class VerificationTryTomorrow extends VerificationState {
+  const VerificationTryTomorrow();
+}
+
+class VerificationChecksUsedUp extends VerificationState {
+  const VerificationChecksUsedUp();
+}
+
+class VerificationConsentNeeded extends VerificationState {
+  const VerificationConsentNeeded();
+}
+
+class VerificationRejected extends VerificationState {
+  const VerificationRejected();
+}
+
+class VerificationUnreachable extends VerificationState {
+  const VerificationUnreachable();
+}
+
+class VerificationReviewOffered extends VerificationState {
+  const VerificationReviewOffered();
+}
+
+class VerificationAppCannotReach extends VerificationState {
+  const VerificationAppCannotReach();
+}
+
+class VerificationSignInAgain extends VerificationState {
+  const VerificationSignInAgain();
 }
 
 /// What is kept after a successful check.
@@ -141,11 +233,17 @@ class VerificationResult {
     return began == null ? null : decidedAt.difference(began);
   }
 
-  /// When the provider confirmed the images were destroyed.
+  /// When the images were destroyed.
   ///
   /// Nullable on purpose: null means "not yet confirmed", which is a state the
   /// reconciler must page on rather than a state to render as fine. A boolean
   /// would have made "we never checked" indistinguishable from "it is done".
+  ///
+  /// Under the current model the function deletes the bundle outright for every
+  /// outcome, approved or refused, so there is no retention window and nothing
+  /// is ever put in front of a human reviewer. Review is a video call. Null
+  /// therefore now means the check never returned at all, which is still a
+  /// thing to page on.
   final DateTime? imagesDeletedAt;
 
   bool get imagesConfirmedDeleted => imagesDeletedAt != null;

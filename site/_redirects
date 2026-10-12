@@ -1,0 +1,63 @@
+# Own Hub: aliases.
+# Cloudflare Pages reads this file
+# (https://developers.cloudflare.com/pages/configuration/redirects/).
+# The pages are flat files (privacy.html is served at /privacy with a 200), so
+# the trailing-slash aliases below send /privacy/ to /privacy and never loop.
+# The four addresses the stores hold are /privacy, /terms, /support and
+# /delete-account; everything below is
+# a spelling somebody will try, or one that was written into a form before the
+# real address was settled. A store listing pointing at a 404 is a rejection,
+# so these cost nothing and remove a whole class of mistake.
+
+# --- Privacy ---------------------------------------------------------------
+/privacy-policy        /privacy            301
+/privacypolicy         /privacy            301
+/privacy.html          /privacy            301
+/policy                /privacy            301
+/privacy/              /privacy            301
+
+# --- Terms -----------------------------------------------------------------
+/tos                   /terms              301
+/terms-of-use          /terms              301
+/terms-of-service      /terms              301
+/terms-and-conditions  /terms              301
+/terms.html            /terms              301
+/eula                  /terms              301
+/legal                 /terms              301
+
+# --- Support ---------------------------------------------------------------
+/help                  /support            301
+/contact               /support            301
+/contact-us            /support            301
+/support.html          /support            301
+/faq                   /support            301
+
+# --- Deletion --------------------------------------------------------------
+/delete                /delete-account     301
+/delete-data           /delete-account     301
+/delete-my-data        /delete-account     301
+/data-deletion         /delete-account     301
+/account-deletion      /delete-account     301
+/deleteaccount         /delete-account     301
+/delete-account.html   /delete-account     301
+
+# --- Arabic ----------------------------------------------------------------
+/ar/privacy-policy     /ar/privacy         301
+/ar/policy             /ar/privacy         301
+/ar/tos                /ar/terms           301
+/ar/terms-of-use       /ar/terms           301
+/ar/legal              /ar/terms           301
+/ar/help               /ar/support         301
+/ar/contact            /ar/support         301
+/ar/faq                /ar/support         301
+/ar/delete             /ar/delete-account  301
+/ar/delete-data        /ar/delete-account  301
+/ar/data-deletion      /ar/delete-account  301
+/ar/account-deletion   /ar/delete-account  301
+
+# Some hosts and some people write the language code the other way round.
+/en/*                  /:splat             301
+/ar-eg/*               /ar/:splat          301
+
+# --- The generator is not part of the website ------------------------------
+/_build/*              /404.html           404

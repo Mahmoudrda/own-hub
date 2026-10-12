@@ -163,7 +163,7 @@ void main() {
       await tester.tap(find.byType(AppAvatar));
       await tester.pumpAndSettle();
 
-      expect(find.text('تبديل التطبيق'), findsOneWidget);
+      expect(find.text('بدّلي التطبيق'), findsOneWidget);
       expect(find.text('التدريب'), findsOneWidget);
       expect(find.text('التدريب الشخصي'), findsOneWidget);
       expect(find.text('Switch app'), findsNothing);

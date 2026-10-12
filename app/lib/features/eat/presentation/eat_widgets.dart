@@ -363,13 +363,15 @@ class SayOrTypeBox extends StatelessWidget {
   const SayOrTypeBox({
     super.key,
     required this.label,
-    required this.micTooltip,
+    this.micTooltip,
     this.onType,
     this.onSpeak,
   });
 
   final String label;
-  final String micTooltip;
+
+  /// The microphone's tooltip. With no [onSpeak] there is no microphone.
+  final String? micTooltip;
   final VoidCallback? onType;
   final VoidCallback? onSpeak;
 
@@ -393,14 +395,16 @@ class SayOrTypeBox extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           children: [
-            IconButton(
-              onPressed: onSpeak,
-              tooltip: micTooltip,
-              iconSize: 22,
-              color: AppColors.primaryDim,
-              icon: const Icon(Icons.mic),
-            ),
-            const SizedBox(width: 10),
+            if (onSpeak != null) ...[
+              IconButton(
+                onPressed: onSpeak,
+                tooltip: micTooltip,
+                iconSize: 22,
+                color: AppColors.primaryDim,
+                icon: const Icon(Icons.mic),
+              ),
+              const SizedBox(width: 10),
+            ],
             Expanded(
               child: Text(
                 label,

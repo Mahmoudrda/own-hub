@@ -1,0 +1,42 @@
+// Cloud Storage rules for the default bucket (own-hub.firebasestorage.app).
+//
+// That bucket is in US-EAST1 and holds only the admin content library. Her own
+// media, coach certificates and exports live in own-hub-personal (Frankfurt),
+// which gets firebase/storage.rules. No personal path exists here, so nothing
+// about her can land in the United States even when community or coaching is
+// switched on later.
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isVideo() {
+      return request.resource.contentType.matches('video/.*');
+    }
+
+    match /content/{collection}/{docId}/{file} {
+      allow read: if signedIn();
+      allow write: if isAdmin()
+                   && (isImage() || isVideo())
+                   && request.resource.size < 200 * 1024 * 1024;
+      allow delete: if isAdmin();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

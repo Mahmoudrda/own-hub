@@ -62,7 +62,7 @@ void main() {
       expect(find.byType(AppEmptyState), findsOneWidget);
       expect(
         find.text(
-          'One nudge a day at most, at the hour you usually log. Ignore three '
+          'One nudge a day at most, at your usual time. Ignore three '
           'and they stop by themselves.',
         ),
         findsOneWidget,
@@ -143,14 +143,24 @@ void main() {
     testWidgets('offers the nudge when it may still be asked for', (
       tester,
     ) async {
+      // It read "Turn on notifications so we can tell you when your check is
+      // done" — ID-verification copy, on the bell that is the second most
+      // prominent control on the app's first screen, for a check this build
+      // does not run and a sign-up flow that is switched off. What it asks for
+      // now is the nudge the screen has always promised below it.
       _phone(tester);
 
       await tester.pumpWidget(_host(const NotificationsView()));
       await tester.pumpAndSettle();
 
       expect(
+        find.textContaining('your check is done'),
+        findsNothing,
+        reason: 'there is no check in this release',
+      );
+      expect(
         find.text(
-          'Turn on notifications so we can tell you when your check is done.',
+          'Turn notifications on, so we can nudge you at your usual time.',
         ),
         findsOneWidget,
       );
@@ -176,7 +186,7 @@ void main() {
       expect(find.text('Open settings'), findsOneWidget);
       expect(
         find.text(
-          'Turn on notifications so we can tell you when your check is done.',
+          'Turn notifications on, so we can nudge you at your usual time.',
         ),
         findsNothing,
         reason: 'G7 §3.1: denied forever means never prompting again',
@@ -198,7 +208,7 @@ void main() {
       expect(find.text('Open settings'), findsNothing);
       expect(
         find.text(
-          'Turn on notifications so we can tell you when your check is done.',
+          'Turn notifications on, so we can nudge you at your usual time.',
         ),
         findsNothing,
       );

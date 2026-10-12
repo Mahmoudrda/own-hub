@@ -164,3 +164,37 @@ StartingProgram? selectStartingProgram(
   }
   return best;
 }
+
+/// Whether her life stage actually changes the training she is handed.
+///
+/// **Measured, not declared.** It runs [selectStartingProgram] once per
+/// [LifeStage] over the same answers and reports whether any of them lands
+/// somewhere different. So it is false today for the two reasons the top of
+/// this file gives — nothing here reads `intake.lifeStage`, and the catalogue
+/// holds one programme — and it turns true by itself on the day either of those
+/// stops being so. Nobody has to remember to flip it.
+///
+/// O04 is its one caller, and this is why it exists. That screen offered
+/// *"Pelvic floor first, once your doctor says you are ready"* and *"Gentler
+/// movements, nothing on the belly"* to every woman who ticked those rows, and
+/// then handed all four life stages `beginner_foundations`. An earlier pass
+/// removed two false clinical claims from those rows and replaced them with
+/// false claims about us, on the only screen in the product that asks about a
+/// pregnancy. The promises are kept in the dictionary and shown only when this
+/// is true — the arrangement `care_links.dart` uses for Y11's button, which
+/// appears only when there is a page behind it.
+bool lifeStageShapesTraining({
+  List<StartingProgram> catalogue = kStartingProgramCatalogue,
+}) {
+  const answers = Intake(place: TrainingPlace.home, days: 3, minutes: 15);
+  final baseline = selectStartingProgram(answers, catalogue: catalogue);
+  for (final stage in LifeStage.values) {
+    if (stage == LifeStage.none) continue;
+    final chosen = selectStartingProgram(
+      answers.copyWith(lifeStage: stage),
+      catalogue: catalogue,
+    );
+    if (chosen?.programId != baseline?.programId) return true;
+  }
+  return false;
+}

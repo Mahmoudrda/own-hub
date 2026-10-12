@@ -3,33 +3,241 @@
 <plist version="1.0">
 <dict>
 	<!--
-	  Own Hub privacy manifest.
+	  Own Hub privacy manifest. Matches privacy policy v3 sections 3 and 4 and
+	  the App Store Connect App Privacy answers. A mismatch between the three is
+	  one of the most common rejections.
 
-	  ACCURATE FOR v1.0, WHICH COLLECTS NOTHING. The app has no backend wired:
-	  pubspec carries no Firebase, no analytics, no ads and no HTTP client, and
-	  every repository is in memory. So NSPrivacyCollectedDataTypes is empty and
-	  that is the honest answer, not a stub.
+	  WHAT THIS BINARY DOES TODAY. `Firebase.initializeApp` runs on every launch
+	  (`lib/app_state/firebase_boot.dart`), and pubspec carries nine Firebase
+	  packages: firebase_core, firebase_auth, cloud_firestore, firebase_storage,
+	  cloud_functions, firebase_app_check, firebase_crashlytics,
+	  firebase_messaging (the one push she can ask for on C14, "your check is
+	  done") and firebase_analytics (usage statistics, only if she turns on
+	  "Help improve Own Hub"), plus Google ML Kit face detection on the phone. Firebase mints an installation
+	  identifier, App Check attests the device, and the women-only check keeps a
+	  hashed install id for fraud signals: DeviceID, linked.
 
-	  It must stay identical to the App Privacy answers in App Store Connect and
-	  to docs/release/privacy-policy.md. A mismatch between the three is one of
-	  the most common rejections.
+	  LINKED to her account, none tracking, purpose AppFunctionality:
+	    - PhoneNumber: sign-in by SMS code, and contact by a woman from Own Hub when she asks for a review.
+	    - UserID: the Firebase uid her account and documents are keyed by.
+	    - DeviceID: Firebase installation id, App Check, hashed install id,
+	      and the push token, only if she asks to be told when her check is
+	      done (optional, deleted with her account). Purpose also Analytics:
+	      the Google Analytics app instance id, only with her consent to
+	      usage statistics, reset when she withdraws it. No IDFA (the
+	      analytics SDK is FirebaseAnalytics/Core, without AdSupport) and no
+	      IDFV (GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED is false).
+	    - Fitness: workouts, meals, plans, synced once she is verified.
+	    - Health: cycle, check-ins, measurements, weight, allergies, only if
+	      she turns on "Back up my health data" (off by default, own consent).
+	    - SensitiveInfo: pregnancy or postpartum stage (with backup on), and
+	      the biometric face match during the check.
+	    - PhotosorVideos: both sides of her national ID card and the selfie
+	      frames, processed in memory and never stored. Declared anyway.
+	    - OtherDataTypes: the verification result, the keyed code of her ID
+	      number, and her consent records.
+	  NOT LINKED, not tracking, purpose AppFunctionality:
+	    - CrashData: Firebase Crashlytics, release builds, and only once she
+	      has allowed crash reports: fatal crashes, and non-fatal reports of a
+	      server call that failed with a bug's status code. No user identifier
+	      is ever set; the only custom keys are the screen id, the app version
+	      and the build channel, and the only log lines are fixed words (a
+	      source guard test enforces all of it).
+	    - PerformanceData: ML Kit performance events.
+	  NOT LINKED, not tracking, purpose Analytics, only once she has turned on
+	  "Help improve Own Hub" (off by default, its own consent, separate from
+	  crash reports; collection is off natively until then):
+	    - ProductInteraction: which screens (by id) and steps she uses, from
+	      closed vocabularies. Never health, body, cycle, life stage, name,
+	      number, ID or anything she typed. No user id is set, so Google
+	      Analytics holds it against a random app instance id only.
+	    - CoarseLocation: Google Analytics derives an approximate location
+	      (country, and city unless granular location is off in the GA
+	      property) from the masked IP address. The app reads no location.
+	  Name is not declared: it is read from the card in memory and not kept.
+	  Training reminders (flutter_local_notifications) are scheduled on the
+	  phone and collect nothing: the days and time she picks stay in the
+	  app's local snapshot, and no token or schedule leaves the device.
+	  There is no combined "health and fitness" key in Apple's list; Fitness
+	  and Health are declared separately.
 
-	  WHEN THE BACKEND IS WIRED, this file must gain, at minimum:
-	    - NSPrivacyCollectedDataTypePhoneNumber  (sign-in, linked, not tracking)
-	    - NSPrivacyCollectedDataTypeHealthFitness (workouts/meals/cycle, linked)
-	    - NSPrivacyCollectedDataTypeUserID
-	    - NSPrivacyCollectedDataTypeCrashData    (only if Crashlytics ships)
-	  and NSPrivacyAccessedAPITypes for whatever the new plugins touch
-	  (UserDefaults CA92.1 is the usual first one, via shared_preferences).
-	  Verify with Xcode: Product > Archive > Organizer > Generate Privacy Report.
+	  NSPrivacyAccessedAPITypes for the APP TARGET holds one entry: UserDefaults
+	  1C8F.1, for the App Group group.com.ownhub.app that home_widget writes the
+	  widget payload to (lib/app_state/home_widget_sync.dart). home_widget
+	  0.10.0 ships no privacy manifest of its own, so the reason is declared
+	  here. The widget extension declares the same reason in its own manifest.
+	  Every other required-reason API this product touches is touched by a
+	  package that ships its own manifest, which Xcode merges into the privacy
+	  report at build time: shared_preferences declares NSUserDefaults 1C8F.1,
+	  and the Google and MLKit pods declare disk space, file timestamp, boot
+	  time and user defaults. If the app target ever reads one of those APIs
+	  directly, it belongs here.
+
+	  Verify with Xcode: Product > Archive > Organizer > Generate Privacy
+	  Report, and compare it line by line with the store answers.
 	-->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 	<key>NSPrivacyCollectedDataTypes</key>
-	<array/>
+	<array>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePhoneNumber</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeUserID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeDeviceID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeFitness</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeHealth</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeSensitiveInfo</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePhotosorVideos</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherDataTypes</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeCrashData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePerformanceData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeProductInteraction</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeCoarseLocation</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSPrivacyAccessedAPITypes</key>
-	<array/>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>1C8F.1</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

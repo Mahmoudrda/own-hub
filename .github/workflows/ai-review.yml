@@ -1,0 +1,107 @@
+# Automatic security, UX, UI and scalability review of every pull request and
+# every push to the default branch. Managed by review-kit; edit the master copy
+# and re-run install.sh rather than editing this file per repository.
+#
+# Requires one repository (or organisation) secret: CLAUDE_CODE_OAUTH_TOKEN,
+# created with `claude setup-token`. No API key is used.
+name: AI Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Commit or ref to compare against (default: the previous commit)"
+        required: false
+
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: Security, UX, UI and scalability
+    # Pull requests from forks and from Dependabot cannot read secrets, and
+    # drafts are reviewed once they are marked ready.
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name != 'pull_request' ||
+       (github.event.pull_request.head.repo.full_name == github.repository &&
+        github.event.pull_request.draft == false))
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    env:
+      REVIEW_EVENT: ${{ github.event_name == 'pull_request' && 'pull_request' || 'push' }}
+      REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.before || inputs.base }}
+      REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      # Optional repository variables: Settings > Secrets and variables > Actions > Variables
+      REVIEW_MODEL: ${{ vars.REVIEW_MODEL }}             # e.g. opus or sonnet; empty = your plan's default
+      REVIEW_EFFORT: ${{ vars.REVIEW_EFFORT }}           # low | medium | high (default) | xhigh | max
+      REVIEW_FAIL_ON: ${{ vars.REVIEW_FAIL_ON }}         # none (default) | critical | high
+      REVIEW_PUSH_REPORT: ${{ vars.REVIEW_PUSH_REPORT }} # issue (default) | summary
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.REVIEW_HEAD }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Work out what changed
+        id: ctx
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node .github/review-kit/context.mjs
+
+      # Leads for the security reviewer. Never fails the review.
+      - name: Static analysis hints
+        if: steps.ctx.outputs.skip != 'true'
+        continue-on-error: true
+        timeout-minutes: 6
+        run: |
+          pipx install semgrep >/dev/null 2>&1
+          xargs -a .ai-review/files.txt -d '\n' semgrep scan \
+            --config p/default --config p/secrets --metrics=off \
+            --quiet --json --timeout 20 -o .ai-review/semgrep.json
+
+      - name: Install Claude Code
+        if: steps.ctx.outputs.skip != 'true'
+        run: npm install -g @anthropic-ai/claude-code
+
+      # The only step that can reach Claude. It has no GitHub token, and the
+      # review sessions it starts are read-only (no shell, no network tools).
+      - name: Review
+        if: steps.ctx.outputs.skip != 'true'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: node .github/review-kit/run.mjs
+
+      # The only step that can write to GitHub. It runs no AI.
+      - name: Publish the review
+        if: steps.ctx.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node .github/review-kit/post.mjs
+
+      - name: Keep the raw report
+        if: always() && steps.ctx.outputs.skip != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-review-report
+          path: |
+            .ai-review/report.json
+            .ai-review/report.md
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14

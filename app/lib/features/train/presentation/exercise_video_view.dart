@@ -17,6 +17,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
@@ -57,6 +58,13 @@ class ExerciseVideoView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
+    // The move she tapped, or the one move in the dictionary with authored
+    // cues when this screen is opened on its own.
+    //
+    // The fallback used to be what every woman saw: `R03` discarded the move
+    // she tapped (`onOpenMove: (_) => goTo(context, 'R04')`), so tapping "Dead
+    // bug" opened a goblet squat. The router now carries the move, and this
+    // stays what it says it is — a preview.
     final shown =
         move ??
         PlannedMove(
@@ -80,13 +88,14 @@ class ExerciseVideoView extends StatelessWidget {
       appBar: TrainTopBar(onClose: onClose),
       footer: [
         AppButton(l10n.backToTheWorkout, onPressed: onBackToWorkout),
-        AppButton(
-          l10n.swapThisMove,
-          variant: AppButtonVariant.outlined,
-          height: 48,
-          fontSize: 15,
-          onPressed: onSwap,
-        ),
+        if (AppRouter.screenIsOn('R05'))
+          AppButton(
+            l10n.swapThisMove,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: onSwap,
+          ),
       ],
       children: [
         // `source` is null until the library is produced, so the placeholder is

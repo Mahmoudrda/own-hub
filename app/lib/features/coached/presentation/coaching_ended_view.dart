@@ -184,7 +184,7 @@ class CoachingEndedView extends StatelessWidget {
             ),
           ),
           // The line that describes what the Function already did.
-          AppSageNote(l10n.yourOwnWorkoutsRecipesLogsAndMy),
+          AppSageNote(l10n.yourOwnWorkoutsRecipesMealsAndMy),
           AppButton(
             l10n.workWithSaraAgain,
             height: 52,

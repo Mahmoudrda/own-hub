@@ -99,7 +99,7 @@ class Intake {
     this.days = 3,
     this.minutes = 15,
     this.lifeStage = LifeStage.none,
-  }) : assert(days >= 2 && days <= 5, 'days a week runs 2–5'),
+  }) : assert(days >= 2 && days <= 4, 'days a week runs 2 to 4'),
        assert(
          minutes == 10 || minutes == 15 || minutes == 20 || minutes == 30,
          'a session is 10, 15, 20 or 30 minutes',
@@ -137,7 +137,21 @@ class Intake {
   final LifeStage lifeStage;
 
   /// The days a week she may choose. Order is the design's.
-  static const List<int> allowedDays = [2, 3, 4, 5];
+  ///
+  /// **Three chips, and five is deliberately not one of them.** This list and
+  /// `kMaxSessionsTarget` (lib/domain/rewards/weekly_goal_service.dart) are one
+  /// decision: [days] becomes `weeklyGoal.sessionsTarget` verbatim, so a chip
+  /// the rewards system will not accept is a question the product cannot
+  /// answer. It offered a 5 for a while, and the 5 was silently clamped to a 4
+  /// on the way to the goal, which is how the defect was found.
+  ///
+  /// Five is not offered because the product counts weeks rather than days and
+  /// refuses to apply pressure by design: four sessions leaves three slack days
+  /// in a seven-day week, five leaves two, and a target missed often is the one
+  /// thing the research says destroys the motivation this app is built to
+  /// create. Adding a 5 back here needs `kMaxSessionsTarget` raised in the same
+  /// commit, and needs that comment's reasoning overturned first.
+  static const List<int> allowedDays = [2, 3, 4];
 
   /// The session lengths she may choose, in minutes.
   static const List<int> allowedMinutes = [10, 15, 20, 30];

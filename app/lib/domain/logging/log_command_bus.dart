@@ -56,6 +56,22 @@ class LogHandle {
   /// false rather than throwing, because a woman tapping Undo a moment late
   /// should not crash her session.
   bool undo() => _bus._undo(_id);
+
+  /// Runs [fn] the instant this log stops being undoable, whichever way it
+  /// ended: the window closed and the write went through, or she took it back.
+  ///
+  /// This exists so the undo *offer* can be driven by the window rather than by
+  /// a duration that only approximates it. `SnackBar.duration` starts counting
+  /// after the entrance animation and is followed by an exit animation, so a
+  /// bar given the five-second window stayed on screen for about five and a
+  /// half, and for that last second Undo was a live control over a write that
+  /// had already landed: tapping it dismissed the bar and left the session
+  /// logged.
+  ///
+  /// Called at most once. Registering after the window has closed runs [fn]
+  /// immediately, so a caller cannot be left holding a bar that will never be
+  /// told to go.
+  void whenClosed(void Function() fn) => _bus._whenClosed(_id, fn);
 }
 
 /// The single point every logging action in the product passes through.
@@ -98,10 +114,22 @@ class LogCommandBus {
     _pending.clear();
   }
 
+  void _whenClosed(Object id, void Function() fn) {
+    final pending = _pending[id];
+    if (pending == null) {
+      // Already closed. Running now rather than never, so the caller's bar is
+      // taken down even if the window shut between `submit` and this line.
+      fn();
+      return;
+    }
+    pending.onClosed.add(fn);
+  }
+
   bool _undo(Object id) {
     final pending = _pending.remove(id);
     if (pending == null) return false;
     pending.timer.cancel();
+    pending.close();
     // Nothing to roll back: the write never left this object.
     return true;
   }
@@ -110,6 +138,10 @@ class LogCommandBus {
     final pending = _pending.remove(id);
     if (pending == null) return;
     pending.timer.cancel();
+    // Before the commit, not after. The offer has to stop being a control at
+    // the same instant the write stops being reversible, and `commit` is a
+    // future that may take frames to settle.
+    pending.close();
     await pending.log.commit();
   }
 }
@@ -118,4 +150,14 @@ class _Pending {
   _Pending(this.log, this.timer);
   final UndoableLog log;
   final Timer timer;
+
+  /// What to take down when the window shuts. See [LogHandle.whenClosed].
+  final List<void Function()> onClosed = <void Function()>[];
+
+  void close() {
+    for (final fn in onClosed) {
+      fn();
+    }
+    onClosed.clear();
+  }
 }

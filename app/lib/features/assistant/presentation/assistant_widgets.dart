@@ -89,7 +89,10 @@ class AssistantNotice extends StatelessWidget {
 }
 
 /// One line of `X03`'s two lists: a tick or a cross, then the sentence.
-class AssistantBoundaryLine extends StatelessWidget {
+class AssistantBoundaryLine extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AssistantBoundaryLine';
+
   const AssistantBoundaryLine(this.text, {super.key, required this.allowed});
 
   final String text;
@@ -314,7 +317,7 @@ class AssistantRefusalBody extends StatelessWidget {
         children: [
           Text(l10n.whatIDidWithThatMessage, style: AppText.titleM),
           Text(
-            l10n.nothingWasLoggedAndNothingWasShared,
+            l10n.nothingWasSavedAndNothingWasShared,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
         ],

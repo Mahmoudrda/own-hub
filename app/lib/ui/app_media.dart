@@ -21,7 +21,10 @@ import 'hand/hand.dart';
 
 enum AppMediaKind { video, photo }
 
-class AppMedia extends StatelessWidget {
+class AppMedia extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => 'AppMedia';
+
   const AppMedia({
     super.key,
     this.width,

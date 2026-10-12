@@ -34,6 +34,12 @@ node_modules/
 # Working notes, plans and reviews: these stay on the machine
 *.md
 !/README.md
+# Not a working note: the licence record for the 57 bundled illustrations. It is
+# a shipped asset (pubspec includes the whole of assets/art/) and the evidence of
+# where each file came from, which is the one question about that pack nobody
+# could answer. `app_art_test.dart` reads it, so a clone without it is a red
+# build rather than a silent gap.
+!/app/assets/art/LICENCE.md
 docs/
 .impeccable/
 6-v2/plans/
@@ -50,9 +56,40 @@ docs/
 5-claude-design-canvas/
 own_hub_tmp/
 womens-fitness-app.html
+ownhub.html
 6-v2/prototype/
 6-v2/wireframe/
 
 # Screenshots and captures
 *.png.tmp
 captures/
+
+# Python virtualenv and caches for the verification functions. The venv is
+# rebuilt from requirements; committing it would add ~8,000 files and pin
+# platform-specific binaries to one machine.
+functions/.venv/
+**/__pycache__/
+**/.pytest_cache/
+
+# Emulator artefacts. `firestore-debug.log` is written into the working
+# directory every time the Firestore emulator starts.
+firestore-debug.log
+ui-debug.log
+firebase-debug.log
+
+# Node dependencies for the security-rules suite.
+test/rules/node_modules/
+functions/venv
+
+# Local working folders under .claude: audits, previews, briefs and
+# worktrees. They stay on the owner's machine, never in the repo.
+.claude/worktrees/
+.claude/mascot/
+.claude/onboarding-audit/
+.claude/release-compliance/
+.claude/feature-briefs/
+.claude/*.log
+
+# AI review working files
+.ai-review/
+!.github/review-kit/**

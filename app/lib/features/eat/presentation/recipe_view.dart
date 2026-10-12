@@ -17,6 +17,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
@@ -106,7 +107,7 @@ class _RecipeViewState extends State<RecipeView> {
   /// Her usual portion — the middle size, which is what she actually serves.
   int? _sizeIndex;
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
 
   @override
   void initState() {
@@ -126,6 +127,23 @@ class _RecipeViewState extends State<RecipeView> {
 
   FoodLibrary _library(AppL10n l10n) =>
       widget.library ?? eatSampleLibrary(l10n);
+
+  /// The **one** undo offer for one log (§2 rule 9).
+  ///
+  /// When [RecipeView.onLogged] is wired the handle travels on to E04, which
+  /// draws the in-page `AppUndoBar` for it. Raising a floating snackbar here as
+  /// well put two offers for the same meal on screen, and the one she reached
+  /// second had already expired. Without that handler nothing downstream would
+  /// offer the five seconds, so the snackbar stands in.
+  void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    if (widget.onLogged != null) return;
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: AppL10n.of(context).undo,
+      onUndo: onUndo,
+    );
+  }
 
   void _log(Food food, FoodSize size) {
     final l10n = AppL10n.of(context);
@@ -163,25 +181,20 @@ class _RecipeViewState extends State<RecipeView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
       );
-      showUndoSnackBar(
-        context,
-        handle: handle,
-        undoLabel: l10n.undo,
-        onUndo: session.settle,
-      );
+      _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
       return;
     }
 
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.foodLogged,
+        describe: l10n.mealAdded,
         commit: () => service.commit(prepared.write),
       ),
     );
-    showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
+    _offerUndo(handle);
     widget.onLogged?.call(handle);
   }
 
@@ -222,7 +235,7 @@ class _RecipeViewState extends State<RecipeView> {
       ),
       footer: [
         AppButton(
-          l10n.cookedItLogMyBowl,
+          l10n.iCookedItAndAteABowl,
           icon: Icons.check,
           onPressed: food == null || sizes.isEmpty
               ? null

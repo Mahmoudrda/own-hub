@@ -52,6 +52,7 @@ class CoachPayoutView extends StatefulWidget {
     this.onBack,
     this.onSaveAndClose,
     this.onSetPayout,
+    this.onPayoutLater,
   });
 
   final CoachSetupViewModel model;
@@ -67,6 +68,11 @@ class CoachPayoutView extends StatefulWidget {
   /// The draft is transient by contract: it is handed over and dropped, and the
   /// number is never held by this screen beyond the controller it was typed in.
   final ValueChanged<PayoutMethodDraft>? onSetPayout;
+
+  /// "Add payout later": submits her application without a payout method.
+  /// A reviewer reads certificates, not a wallet; she adds the method on
+  /// `K17` before she can be paid. Offered only while no method is set.
+  final VoidCallback? onPayoutLater;
 
   @override
   State<CoachPayoutView> createState() => _CoachPayoutViewState();
@@ -121,13 +127,19 @@ class _CoachPayoutViewState extends State<CoachPayoutView> {
       step: CoachSetupStep.payout,
       title: l10n.whereShouldWeSendYourMoney,
       subtitle: l10n.paidOutOnThe1stOfEach,
-      onBack: () => goToScreen(context, 'K04', widget.onBack),
+      onBack: () => goToScreen(context, 'K13', widget.onBack),
       onSaveAndClose: widget.onSaveAndClose,
       // Disabled until a rail can actually accept a method. Continuing here
       // would submit her application with no way to pay her.
       onPrimary: model.canAdvanceFrom(CoachSetupStep.payout)
           ? () => goToScreen(context, 'K06', widget.onContinue)
           : null,
+      secondaryLabel: model.canAdvanceFrom(CoachSetupStep.payout)
+          ? null
+          : l10n.addPayoutLater,
+      onSecondary: widget.onPayoutLater == null
+          ? null
+          : () => goToScreen(context, 'K06', widget.onPayoutLater),
       children: [
         if (!usable) ...[
           // The honest state: the rail cannot answer, so there is nothing to

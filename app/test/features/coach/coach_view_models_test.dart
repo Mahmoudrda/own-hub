@@ -57,15 +57,33 @@ void main() {
     CoachSetupViewModel fresh() =>
         CoachSetupViewModel(profile: const CoachProfile());
 
-    test('K01 needs a name and a city', () {
+    test('K08 needs a name and a city', () {
       final model = fresh();
-      expect(model.canAdvanceFrom(CoachSetupStep.basics), isFalse);
+      expect(model.canAdvanceFrom(CoachSetupStep.about), isFalse);
 
       model.displayName = 'Hala Mansour';
-      expect(model.canAdvanceFrom(CoachSetupStep.basics), isFalse);
+      expect(model.canAdvanceFrom(CoachSetupStep.about), isFalse);
 
       model.city = 'Tanta';
-      expect(model.canAdvanceFrom(CoachSetupStep.basics), isTrue);
+      expect(model.canAdvanceFrom(CoachSetupStep.about), isTrue);
+    });
+
+    test('K01, K10, K11 and K12 never hold her up', () {
+      for (final step in [
+        CoachSetupStep.photo,
+        CoachSetupStep.howYouCoach,
+        CoachSetupStep.results,
+        CoachSetupStep.reviews,
+      ]) {
+        expect(fresh().canAdvanceFrom(step), isTrue, reason: step.name);
+      }
+    });
+
+    test('K13 needs her agreement', () {
+      final model = fresh();
+      expect(model.canAdvanceFrom(CoachSetupStep.rules), isFalse);
+      model.rulesAgreed = true;
+      expect(model.canAdvanceFrom(CoachSetupStep.rules), isTrue);
     });
 
     test('K02 does not trap her — the check simply cannot start', () {

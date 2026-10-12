@@ -123,6 +123,27 @@ enum DeletionOutcome {
   alreadyInProgress,
 }
 
+/// What A02's deletion came to, as she is told it.
+enum AccountDeletionResult {
+  /// The server reported `done` (or there was no account, and this phone was
+  /// the whole of it). This phone is cleared.
+  done,
+
+  /// No connection: nothing was deleted anywhere.
+  offline,
+
+  /// App Check refused this copy of the app: nothing was deleted.
+  appCannotReach,
+
+  /// The server did not accept her sign-in: nothing was deleted. She signs
+  /// in again with her phone number, or uses the web deletion page.
+  signInAgain,
+
+  /// The server has the request and did not finish it; its sweeper will.
+  /// This phone is cleared. Never reported as done.
+  unfinished,
+}
+
 /// The callable and the progress channel.
 ///
 /// `requestAccountDeletion` is a **callable, not a write**, which is what makes
@@ -156,6 +177,11 @@ abstract class LocalWipe {
   Future<void> purgeLocalMeasurements();
 
   /// Manifest row 34 — the photo store's Keychain/Keystore key.
+  ///
+  /// Nothing in this release mints one: there is no camera path and no photo
+  /// store, so every implementation of this is a no-op today. The step is
+  /// enumerated and called anyway, because a row added the day the camera lands
+  /// is a row added after the first deletion has already run without it.
   Future<void> destroyPhotoStoreKey();
 }
 

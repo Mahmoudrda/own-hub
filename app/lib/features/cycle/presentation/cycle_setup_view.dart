@@ -28,6 +28,7 @@ import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_scaffold.dart';
 import '../domain/cycle_document.dart';
 import '../domain/cycle_repository.dart';
+import '../../../ui/medical_disclaimer.dart';
 
 class CycleSetupView extends StatefulWidget {
   const CycleSetupView({
@@ -144,7 +145,7 @@ class _CycleSetupViewState extends State<CycleSetupView> {
       children: [
         Text(l10n.makeItWorkForYou, style: AppText.display),
         Text(
-          l10n.youChooseWhatToLogYouCan,
+          l10n.youChooseWhatToAddYouCan,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         _ModeCard(
@@ -172,6 +173,8 @@ class _CycleSetupViewState extends State<CycleSetupView> {
           },
           onTap: (i) => _toggleFlag(_chipOrder[i]),
         ),
+        // What the app is not, before she starts tracking (APL-12).
+        const MedicalDisclaimer(),
       ],
     );
   }
@@ -220,7 +223,9 @@ class _ModeCard extends StatelessWidget {
             Icon(
               selected ? Icons.check_circle : Icons.circle_outlined,
               size: 26,
-              color: selected ? AppColors.primary : AppColors.outlineVariant,
+              // Unselected takes `outline`, the boundary role, for the same
+              // reason the intake answers do: it is a state, not a divider.
+              color: selected ? AppColors.primary : AppColors.outline,
             ),
           ],
         ),

@@ -13,13 +13,17 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
+import '../../eat/domain/meal_repository.dart' show MealSlot;
+import '../../eat/presentation/eat_day_view_model.dart' show EatDayViewModel;
 import '../domain/today_day.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
+import '../../../ui/app_chevron.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_week_segments.dart';
@@ -43,11 +47,61 @@ void openScreen(
   AppRouter.goTo(context, screenId);
 }
 
+/// Where each step of her first week leads.
+///
+/// The map is the arc's edge list, and it lives here rather than in
+/// `first_week_view.dart` because T01 counts the same arc T07 draws: "2 of 5"
+/// on Home and five rows on the arc have to be the same five.
+const Map<FirstWeekStep, String> firstWeekStepScreens = {
+  FirstWeekStep.logSet: 'R07',
+  FirstWeekStep.logMeal: 'E02',
+  FirstWeekStep.finishSession: 'R03',
+  FirstWeekStep.joinGroup: 'M04',
+  FirstWeekStep.followUp: 'M11',
+};
+
+/// Her first week, minus any step this build cannot offer.
+///
+/// Two of the five belong to Community, and the first release ships without
+/// it. `DECISIONS.md` D1 refused to *cut* those steps — they are written, they
+/// are translated and they come back the day Community is on — but an arc that
+/// asks her to join a group in a build with no groups is a week she cannot
+/// finish, so a dark step is not drawn and, just as importantly, is not
+/// counted. The domain stays flag-free (`today_day.dart` knows five steps and
+/// nothing about switches); the decision is made here, where every other
+/// rendering decision about a feature is made.
+List<FirstWeekStep> offeredFirstWeekSteps() => [
+  for (final entry in firstWeekStepScreens.entries)
+    if (AppRouter.screenIsOn(entry.value)) entry.key,
+];
+
+/// How many of the steps she is actually offered are done.
+///
+/// Never `arc.doneCount`: that counts every step she has completed, including
+/// one belonging to a feature since switched off, which would show four of
+/// three.
+int firstWeekDone(FirstWeekArc arc) =>
+    offeredFirstWeekSteps().where(arc.completed.contains).length;
+
+/// True when nothing is left of the arc this build offers.
+///
+/// This, not [FirstWeekArc.isComplete], is what decides whether T08 renders.
+/// With Community dark, `isComplete` can never be true, so the finished screen
+/// would be unreachable to every woman in the first release — exactly the
+/// outcome D1 was written to prevent, arriving from the other direction.
+bool firstWeekIsComplete(FirstWeekArc arc) {
+  final offered = offeredFirstWeekSteps();
+  return offered.isNotEmpty && offered.every(arc.completed.contains);
+}
+
 /// The day's name, from the date rather than from a hardcoded Tuesday.
 ///
-/// Saturday and Sunday have no full-name key in the dictionary — only the
-/// abbreviations `sat` and `sun` — so those two days render short. Flagged
-/// rather than papered over with an invented string.
+/// All seven are set in full. Saturday and Sunday used to fall back to the
+/// abbreviations `sat` and `sun`, which were the only keys the dictionary held
+/// for them — so Home's masthead said "Tuesday" on five days of the week and
+/// "Sat" on the sixth. `saturday` and `sunday` are now in both languages, so
+/// the exception is gone rather than flagged. The short forms stay where they
+/// belong: a calendar grid and a day strip, where the full name would not fit.
 String weekdayLabel(AppL10n l10n, DateTime date) {
   switch (date.weekday) {
     case DateTime.monday:
@@ -61,9 +115,9 @@ String weekdayLabel(AppL10n l10n, DateTime date) {
     case DateTime.friday:
       return l10n.friday;
     case DateTime.saturday:
-      return l10n.sat;
+      return l10n.saturday;
     default:
-      return l10n.sun;
+      return l10n.sunday;
   }
 }
 
@@ -97,6 +151,74 @@ String plateName(AppL10n l10n, String foodId) => switch (foodId) {
   'koshari_and_salad' => l10n.koshariBowlAndSalad,
   _ => foodId,
 };
+
+/// What to head Today's meal section with.
+///
+/// It was the fixed `breakfastYourUsual` — "Breakfast, your usual" — for every
+/// hour of every day, so a woman who logged a koshari bowl at one in the
+/// afternoon read "Breakfast, your usual" with her koshari underneath it. Same
+/// class as the week badge and the cover title: a line about her that is not
+/// true of her, on the first screen she sees.
+///
+/// The hour is turned into a meal by [EatDayViewModel.slotAt] rather than by
+/// boundaries written again here, so Home and Eat can never disagree about
+/// which meal five in the afternoon is.
+///
+/// Two headings, not one. Before she has logged, the card is a **guess** about
+/// the hour she is in and says so ("your usual"); once something is logged it
+/// names the meal plainly, because the time it happened is already printed at
+/// the other end of the same line.
+String mealSlotName(AppL10n l10n, MealSlot slot) => switch (slot) {
+  MealSlot.breakfast => l10n.breakfast,
+  MealSlot.lunch => l10n.lunch,
+  MealSlot.dinner => l10n.dinner,
+  MealSlot.snack => l10n.snack,
+};
+
+String mealHeading(
+  AppL10n l10n, {
+  DateTime? loggedAt,
+  DateTime? now,
+  bool hasUsual = false,
+}) {
+  final slot = EatDayViewModel.slotAt(loggedAt ?? now ?? AppClock.now());
+  if (loggedAt != null) return mealSlotName(l10n, slot);
+  // "Your usual" is a claim about a habit, and a woman on a fresh install has
+  // none: T01, T02 and E04 all headed the card "Lunch, your usual" over an
+  // empty card before she had logged a single meal. The slot logic was always
+  // right; the habit sentence is what had to earn itself.
+  if (!hasUsual) return mealSlotName(l10n, slot);
+  return switch (slot) {
+    MealSlot.breakfast => l10n.breakfastYourUsual,
+    MealSlot.lunch => l10n.lunchYourUsual,
+    MealSlot.dinner => l10n.dinnerYourUsual,
+    MealSlot.snack => l10n.snackYourUsual,
+  };
+}
+
+/// What to head T03's notification with.
+///
+/// The same slot logic as [mealHeading], asking, because a notification is a
+/// question and the button under it answers yes. T03 had the fixed
+/// "Breakfast, your usual?" — the sixth screen found carrying this defect,
+/// after T01, T02 and E04 were fixed and this one was missed — so the nudge
+/// that fires at the hour she usually logs said breakfast at six in the
+/// evening.
+///
+/// [hasUsual] is false when the caller has not named a meal. The nudge only
+/// fires for a meal she has had three times or more, so in the product it is
+/// always true here; a review surface opened with nothing gets the plain slot
+/// name rather than a habit she has not shown.
+String mealNudgeHeading(AppL10n l10n, {DateTime? now, bool hasUsual = false}) {
+  final slot = EatDayViewModel.slotAt(now ?? AppClock.now());
+  if (!hasUsual) return mealSlotName(l10n, slot);
+  return switch (slot) {
+    MealSlot.breakfast => l10n.breakfastYourUsual_1lb0u,
+    MealSlot.lunch => l10n.lunchYourUsual_1wxfd,
+    MealSlot.dinner => l10n.dinnerYourUsual_1rqgs,
+    MealSlot.snack => l10n.snackYourUsual_nkmpd,
+  };
+}
 
 /// The head of Today: the day, her level, and the way to the assistant.
 class TodayGreeting extends StatelessWidget {
@@ -162,6 +284,7 @@ class TodayGreeting extends StatelessWidget {
 class WorkoutCard extends StatelessWidget {
   const WorkoutCard({
     super.key,
+    this.title,
     this.onStart,
     this.onRecall,
     this.evening = false,
@@ -170,6 +293,16 @@ class WorkoutCard extends StatelessWidget {
     this.summary,
     this.weekBlock,
   });
+
+  /// What today's session is called, when her plan has said.
+  ///
+  /// This was the fixed `l10n.legsAndGlutes`, set as the page's cover — so the
+  /// first screen of the app named a programme to every woman who opened it,
+  /// while Train one tap away named a different one ("Postpartum rebuild") and
+  /// neither was hers. The cover is the page's subject and cannot simply be
+  /// withdrawn the way the week badge and [summary] are, so null falls back to
+  /// naming the thing itself rather than naming a programme nobody chose.
+  final String? title;
 
   /// Her week, set between the session and the action on Today's cover.
   /// Null on the screens that draw Today underneath a sheet.
@@ -207,12 +340,15 @@ class WorkoutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
-    final primary = evening
+    // "I already did it" is drawn only while recording from memory is on;
+    // with it off the card is one button, the start.
+    final recall = onRecall;
+    final primary = evening && recall != null
         ? AppButton(
             l10n.iAlreadyDidIt,
             height: 56,
             icon: Icons.check,
-            onPressed: onRecall,
+            onPressed: recall,
           )
         : AppButton(
             l10n.startEverythingsReady,
@@ -220,7 +356,9 @@ class WorkoutCard extends StatelessWidget {
             icon: Icons.play_arrow,
             onPressed: onStart,
           );
-    final secondary = evening
+    final secondary = recall == null
+        ? null
+        : evening
         ? AppButton(
             l10n.startEverythingsReady,
             variant: AppButtonVariant.outlined,
@@ -232,7 +370,7 @@ class WorkoutCard extends StatelessWidget {
             l10n.iAlreadyDidIt,
             variant: AppButtonVariant.text,
             height: 40,
-            onPressed: onRecall,
+            onPressed: recall,
           );
 
     // The cover. Not a card: the session is the page's subject, so it is set
@@ -250,7 +388,10 @@ class WorkoutCard extends StatelessWidget {
             width: HandStroke.felt,
             drawOn: true,
             gap: 4,
-            child: Text(l10n.legsAndGlutes, style: EditorialType.cover),
+            child: Text(
+              title ?? l10n.todaysWorkout,
+              style: EditorialType.cover,
+            ),
           ),
         ),
         if (week != null && totalWeeks != null) ...[
@@ -315,8 +456,7 @@ class WorkoutCard extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         primary,
-        const SizedBox(height: 10),
-        secondary,
+        if (secondary != null) ...[const SizedBox(height: 10), secondary],
       ],
     );
   }
@@ -372,6 +512,7 @@ class MealCard extends StatelessWidget {
     super.key,
     this.title,
     this.loggedAt,
+    this.now,
     this.plates = const <PlateSuggestion>[],
     this.onTap,
     this.onPlateTap,
@@ -382,8 +523,12 @@ class MealCard extends StatelessWidget {
   /// An illustration set in the card's head, on the cover.
   final Widget? art;
 
-  /// Defaults to "Breakfast, your usual"; T04 heads the same card differently.
+  /// Overrides the heading; T04 heads the same card differently. Null lets
+  /// [mealHeading] name the meal from the hour.
   final String? title;
+
+  /// The clock, injectable so a test can state the hour it means.
+  final DateTime? now;
 
   /// The plates on offer, each carrying its own figure. Empty renders none.
   ///
@@ -408,7 +553,15 @@ class MealCard extends StatelessWidget {
         Expanded(
           child: AppSplitRow(
             start: Text(
-              title ?? l10n.breakfastYourUsual,
+              title ??
+                  mealHeading(
+                    l10n,
+                    loggedAt: loggedAt,
+                    now: now,
+                    // She has a usual when there is a plate to name. Empty is a
+                    // woman with no history, and the card then names the meal.
+                    hasUsual: plates.isNotEmpty,
+                  ),
               style: AppText.titleM,
             ),
             end: loggedAt == null
@@ -476,16 +629,33 @@ class WeekCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (open) {
+      final lineText = Text(
+        line,
+        style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+      );
+      // Six screens hang off this block — P01, P02, P03, P04, T04, T05 and, now
+      // that the first-week row is drawn on Home too, T07 — and until this
+      // chevron it was a 358×159 point paragraph with nothing at all to say it
+      // opened anything: no card, no border, no underline, no button. A woman
+      // who never guessed it had a three-screen app. The chevron is the same
+      // mark every row in the product uses for "this leads somewhere", at the
+      // same size and in the same ink.
       final block = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           AppSplitRow(
             start: Text(title, style: AppText.titleM),
-            end: Text(
-              line,
-              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-            ),
+            end: onTap == null
+                ? lineText
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(child: lineText),
+                      const SizedBox(width: 4),
+                      const AppChevron(),
+                    ],
+                  ),
           ),
           const SizedBox(height: 12),
           Row(

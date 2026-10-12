@@ -16,6 +16,7 @@ import 'package:own_hub/features/signup/presentation/selfie_capture_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_white_button.dart';
+import 'package:own_hub/ui/hand/mascot/kitten.dart';
 
 Widget _host(
   Widget child, {
@@ -65,13 +66,72 @@ class _LiveCaptureService implements CaptureService {
   }
 }
 
+/// A live challenge step: the server's prompt, shown as guidance.
+class _StepSession implements CaptureSession {
+  _StepSession(this.guidance);
+
+  final CaptureGuidance guidance;
+
+  @override
+  CaptureState get current => CaptureState.framing(
+    sharp: false,
+    guidance: guidance,
+    stepNumber: 2,
+    stepCount: 4,
+  );
+
+  @override
+  Stream<CaptureState> watch() => Stream<CaptureState>.value(current);
+
+  @override
+  Future<void> capture() async {}
+
+  @override
+  Future<void> close() async {}
+}
+
+class _StepService implements CaptureService {
+  _StepService(this.guidance);
+
+  final CaptureGuidance guidance;
+
+  @override
+  Future<CaptureSession> open(CaptureTarget target) async =>
+      _StepSession(guidance);
+}
+
+/// A camera that is still opening: never live, never refused. The screen as
+/// designed, with the shutter waiting. (A camera that cannot run at all draws
+/// a different screen; see capture_views_test.dart.)
+class _OpeningSession implements CaptureSession {
+  @override
+  CaptureState get current => const CaptureState.preparing();
+
+  @override
+  Stream<CaptureState> watch() => Stream<CaptureState>.value(current);
+
+  @override
+  Future<void> capture() async =>
+      throw StateError('nothing to capture while the camera opens');
+
+  @override
+  Future<void> close() async {}
+}
+
+class _OpeningService implements CaptureService {
+  const _OpeningService();
+
+  @override
+  Future<CaptureSession> open(CaptureTarget target) async => _OpeningSession();
+}
+
 void main() {
   testWidgets('asks for one plain photograph, and explains why', (
     tester,
   ) async {
     await tester.pumpWidget(
       _host(
-        const SelfieCaptureView(captureService: UnavailableCaptureService()),
+        const SelfieCaptureView(captureService: _OpeningService()),
       ),
     );
     await tester.pumpAndSettle();
@@ -89,7 +149,7 @@ void main() {
     // inferred from this picture anywhere in the product.
     await tester.pumpWidget(
       _host(
-        const SelfieCaptureView(captureService: UnavailableCaptureService()),
+        const SelfieCaptureView(captureService: _OpeningService()),
       ),
     );
     await tester.pumpAndSettle();
@@ -105,14 +165,14 @@ void main() {
     );
   });
 
-  testWidgets('with no camera behind it, the shutter is disabled', (
+  testWidgets('until the camera is live, the shutter is disabled', (
     tester,
   ) async {
     var captured = 0;
     await tester.pumpWidget(
       _host(
         SelfieCaptureView(
-          captureService: const UnavailableCaptureService(),
+          captureService: const _OpeningService(),
           onCaptured: () => captured++,
         ),
       ),
@@ -162,15 +222,15 @@ void main() {
   testWidgets('reads in Arabic, from the dictionary', (tester) async {
     await tester.pumpWidget(
       _host(
-        const SelfieCaptureView(captureService: UnavailableCaptureService()),
+        const SelfieCaptureView(captureService: _OpeningService()),
         locale: const Locale('ar'),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('صورة ذاتية سريعة'), findsOneWidget);
+    expect(find.text('سيلفي سريعة'), findsOneWidget);
     expect(
-      find.textContaining('تُطابَق مع صورة بطاقتك ثم تُحذف'),
+      find.textContaining('بتتطابق مع صورة بطاقتك، وبعدين بتتمسح'),
       findsOneWidget,
     );
     expect(find.text('Quick selfie'), findsNothing);
@@ -181,7 +241,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _host(
-        const SelfieCaptureView(captureService: UnavailableCaptureService()),
+        const SelfieCaptureView(captureService: _OpeningService()),
         locale: const Locale('ar'),
         textScale: 1.6,
       ),
@@ -189,5 +249,39 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the kitten acts out each challenge step, beside the words', (
+    tester,
+  ) async {
+    const shown = {
+      CaptureGuidance.turnLeft: KittenPose.lookLeft,
+      CaptureGuidance.turnRight: KittenPose.lookRight,
+      CaptureGuidance.blink: KittenPose.blink,
+      CaptureGuidance.lookStraight: KittenPose.rest,
+    };
+    for (final MapEntry(key: guidance, value: pose) in shown.entries) {
+      await tester.pumpWidget(
+        _host(SelfieCaptureView(captureService: _StepService(guidance))),
+      );
+      await tester.pumpAndSettle();
+      final kitten = tester.widget<Kitten>(find.byType(Kitten));
+      expect(kitten.pose, pose, reason: guidance.name);
+      await tester.pumpWidget(const SizedBox());
+    }
+  });
+
+  testWidgets('a framing correction is hers to read: no kitten', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        SelfieCaptureView(
+          captureService: _StepService(CaptureGuidance.centreYourFace),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(Kitten), findsNothing);
   });
 }

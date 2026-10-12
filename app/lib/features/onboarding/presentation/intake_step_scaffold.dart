@@ -1,18 +1,20 @@
 /// The shape of a setup step — the prototype's `step()` helper.
 ///
-/// `6-v2/src/screens-onboarding.mjs` builds O01 through O04 from one local
-/// `step(n, title, sub, inner, next, back)`, so the four screens are the same
-/// page with different questions in it. Reproduced here as one widget for that
-/// reason: four copies of this frame is four chances for the step counter, the
-/// close button or the Skip link to drift.
+/// `6-v2/src/screens-onboarding.mjs` builds every setup question from one local
+/// `step(n, title, sub, inner, next, back)`, so the screens are the same page
+/// with a different question in it. Reproduced here as one widget for that
+/// reason: six copies of this frame is six chances for the step counter, the
+/// bar or the close button to drift.
 ///
 /// Three parts are fixed and are what make the flow safe to abandon:
 ///
-///  * **The counter tells her how much is left.** Four questions, and she can
-///    see it is four.
-///  * **`Skip` is always there, at every step.** Skipping is a designed path,
-///    not a failure — every question preselects a valid answer, so a woman who
-///    skips all four still gets a real programme (G2 §3.2 `DEFAULTED`).
+///  * **The counter tells her how much is left.** One question a screen, the
+///    count in the bar title ("2 of 6") and a line under it that fills as she
+///    goes, so she sees how short it is before she starts.
+///  * **Every answer is already chosen.** Skipping is a designed path, not a
+///    failure: every question preselects a valid answer, so a woman who just
+///    taps Continue through all of them still gets a real programme (G2 §3.2
+///    `DEFAULTED`).
 ///  * **The close button leaves.** She is never trapped in setup. Closing keeps
 ///    whatever she has already answered, because each step writes as she goes.
 ///
@@ -27,26 +29,50 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
-import '../../../ui/app_step_progress.dart';
+import '../../../ui/app_step_bar.dart';
 
 class IntakeStepScaffold extends StatelessWidget {
   const IntakeStepScaffold({
     super.key,
     required this.step,
+    required this.total,
     required this.title,
     required this.subtitle,
     required this.children,
+    this.lead,
     this.onContinue,
     this.onSkip,
     this.onBack,
     this.onClose,
+    this.titleOverride,
+    this.continueLabel,
   });
 
-  /// Which of the four questions this is.
+  /// Which question of the walk this is, counted from 1, and how many the
+  /// walk has (`setupProgress` in `onboarding_state.dart`).
   final int step;
+  final int total;
+
+  /// The bar title instead of "2 of 6": the short "Your week" before sign-up
+  /// says "1 of 3 · Your week", which counts the parts of joining. An empty
+  /// string shows no count in the title; the line under it still fills.
+  final String? titleOverride;
+
+  /// The primary button's words, when "Continue" undersells what it does.
+  final String? continueLabel;
 
   final String title;
   final String subtitle;
+
+  /// A line above the question, on the one step that needs it.
+  ///
+  /// The walk was designed as the tail of sign-up, where a woman arrived
+  /// already knowing she was being set up. It now opens the app on a fresh
+  /// install, so the first screen has to say what is about to happen and how
+  /// long it takes before it asks her anything. "1 of 6" in the bar is the
+  /// length; this is the rest of it, and only `O01` passes one. Same small
+  /// grey treatment `O05` opens with, so the flow reads as one piece.
+  final String? lead;
 
   /// The answers themselves.
   final List<Widget> children;
@@ -54,15 +80,15 @@ class IntakeStepScaffold extends StatelessWidget {
   final VoidCallback? onContinue;
 
   /// Leaves the question unanswered and moves on. The preselected default
-  /// stands, and nothing is written.
+  /// stands, and nothing is written. Null draws no Skip: on a screen where
+  /// every answer is already chosen, Skip and Continue are the same button.
   final VoidCallback? onSkip;
 
   final VoidCallback? onBack;
 
-  /// Leaves setup entirely — `X` in the design, which goes to Home.
+  /// Leaves setup entirely — `X` in the design, which goes to Home. Null draws
+  /// no `X`: before she has an account there is no Home to leave to.
   final VoidCallback? onClose;
-
-  static const int totalSteps = 4;
 
   @override
   Widget build(BuildContext context) {
@@ -70,29 +96,37 @@ class IntakeStepScaffold extends StatelessWidget {
 
     return AppScaffold(
       appBar: AppTopBar(
-        title: stepOfLabel(l10n, step: step, total: totalSteps),
+        title: titleOverride ?? l10n.countOfTotal('$step', '$total'),
         onBack: onBack,
         actions: [
-          IconButton(
-            onPressed: onClose,
-            iconSize: 24,
-            color: AppColors.onSurface,
-            icon: const Icon(Icons.close),
-            tooltip: l10n.skipSetup,
-          ),
+          if (onClose != null)
+            IconButton(
+              onPressed: onClose,
+              iconSize: 24,
+              color: AppColors.onSurface,
+              icon: const Icon(Icons.close),
+              tooltip: l10n.skipSetup,
+            ),
         ],
       ),
       footer: [
-        AppButton(l10n.continueLabel, onPressed: onContinue),
-        AppButton(
-          l10n.skip,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: onSkip,
-        ),
+        AppButton(continueLabel ?? l10n.continueLabel, onPressed: onContinue),
+        if (onSkip != null)
+          AppButton(
+            l10n.skip,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onSkip,
+          ),
       ],
       children: [
+        AppStepBar(step: step, total: total),
+        if (lead != null)
+          Text(
+            lead!,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
         Text(
           title,
           style: AppText.display.copyWith(color: AppColors.onPrimaryContainer),

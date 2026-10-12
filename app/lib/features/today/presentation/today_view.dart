@@ -17,17 +17,23 @@
 /// confirm anything (§2 rule 9).
 library;
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../theme/app_art.dart';
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../data/pending_answers.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../events/domain/hub_event.dart';
+import '../../events/presentation/upcoming_events_card.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
+import '../../../ui/app_chevron.dart';
 import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_avatar.dart';
 import '../../../ui/app_list_item.dart';
@@ -39,6 +45,8 @@ import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_scope.dart';
 import '../../../theme/screen_art.dart';
+import '../../onboarding/domain/intake.dart';
+import '../../onboarding/presentation/her_answers.dart';
 import '../domain/today_day.dart';
 import '../domain/today_repository.dart';
 import 'today_cards.dart';
@@ -50,6 +58,7 @@ class TodayView extends StatefulWidget {
     this.bus,
     this.now,
     this.level,
+    this.sessionTitle,
     this.onStartSession,
     this.onRecall,
     this.onOpenMeal,
@@ -64,7 +73,47 @@ class TodayView extends StatefulWidget {
     this.onTellUsWhatYouEat,
     this.onOpenBeginnersGroup,
     this.onSelectTab,
+    this.intake,
+    this.intakePlaceAnswered = false,
+    this.onOpenWeekPlan,
+    this.offerCycleSetup = false,
+    this.onTrackCycle,
+    this.onNotNowCycle,
+    this.onCountWalk,
+    this.nextEvent,
+    this.onOpenEvents,
   });
+
+  /// Her setup answers. On day one they are read back above "Start day 1",
+  /// so the week she just saw built is the week Home names.
+  final Intake? intake;
+
+  /// Whether she was asked where she trains. False after the one-screen
+  /// "Your week", which never asks: the line then names no place.
+  final bool intakePlaceAnswered;
+
+  /// "Plan this week's dinners": `E07`, the week plan and its shopping list.
+  final VoidCallback? onOpenWeekPlan;
+
+  /// Whether day one offers "Track my cycle". The router turns it off once
+  /// My cycle is set up or she has said "Not now".
+  final bool offerCycleSetup;
+
+  /// "Track my cycle": `Y01`.
+  final VoidCallback? onTrackCycle;
+
+  /// "Not now" on the cycle row. Hides it for good.
+  final VoidCallback? onNotNowCycle;
+
+  /// "Count it" on the walk row. Supplied, it replaces counting the walk:
+  /// the row stays on screen and nothing is written.
+  final VoidCallback? onCountWalk;
+
+  /// The soonest published event still to come, for the Upcoming card. The
+  /// card is drawn only while `T09` is switched on ([Feature.events]) and
+  /// there is one.
+  final HubEvent? nextEvent;
+  final VoidCallback? onOpenEvents;
 
   /// Injectable so a test — and later Firestore — can supply the day.
   final TodayRepository? repository;
@@ -83,6 +132,14 @@ class TodayView extends StatefulWidget {
   /// supplies it from the SAME derivation P01 uses, which is what keeps Home
   /// and Progress from disagreeing about the number.
   final int? level;
+
+  /// What her plan calls today's session, when there is a plan.
+  ///
+  /// Passed in for the same reason [level] is: Home does not read the Train
+  /// domain. Null renders "Today's workout" rather than the fixed
+  /// "Legs and glutes" this screen used to set as its cover for every woman on
+  /// earth. See [WorkoutCard.title].
+  final String? sessionTitle;
 
   final VoidCallback? onStartSession;
   final VoidCallback? onRecall;
@@ -156,7 +213,7 @@ class _TodayViewState extends State<TodayView> {
   /// After 20:00 an unlogged session is likelier to have happened than to be
   /// about to, so the two buttons swap weight. This is a rendering of the same
   /// day state, not a sixth state (plan G3 §3.1).
-  bool get _isEvening => (widget.now ?? DateTime.now()).hour >= 20;
+  bool get _isEvening => (widget.now ?? AppClock.now()).hour >= 20;
 
   /// The walk row's sentence, carrying the duration only when there is one.
   ///
@@ -170,6 +227,16 @@ class _TodayViewState extends State<TodayView> {
     return minutes == null
         ? l10n.walkThisMorning
         : l10n.walkThisMorningMinutesMin(countLabel(minutes));
+  }
+
+  /// What is left of her week, said in the week's own units.
+  ///
+  /// Never a fixed "Two more": a week she has finished says so, and a week she
+  /// has not counts down from her own target rather than from the prototype's.
+  String _weekLine(AppL10n l10n) {
+    final left = _day.week.sessionsTarget - _day.week.sessionsLogged;
+    if (left <= 0) return l10n.thisWeekCounts;
+    return l10n.countMoreAndTheWeekCounts(countLabel(left));
   }
 
   void _countWalk() {
@@ -206,9 +273,15 @@ class _TodayViewState extends State<TodayView> {
         },
       ),
       body: AppScaffold(
-        children: _day.isDayOne
-            ? _dayOne(context, l10n)
-            : _today(context, l10n),
+        // Three branches where there were two. `_dayOne` says "Day one" on a
+        // masthead and offers her the first session, which is the right screen
+        // for a woman who has never logged anything and a confident lie to a
+        // woman whose year of training has not been pulled down yet.
+        children: switch ((_day.isDayOne, _repo.dataState)) {
+          (true, DataState.unknown) => _stillLooking(context, l10n),
+          (true, _) => _dayOne(context, l10n),
+          (false, _) => _today(context, l10n),
+        },
       ),
     );
   }
@@ -223,17 +296,23 @@ class _TodayViewState extends State<TodayView> {
     Widget? artAt(int i, double size) =>
         i < art.length ? AppArt.image(art[i], size: size) : null;
 
+    const chevron = AppChevron();
+
     return [
       TodayGreeting(
         day: weekdayLabel(l10n, _day.date),
         level: widget.level,
         actions: [
-          IconButton(
-            tooltip: l10n.askSomething,
-            color: AppColors.onSurfaceVariant,
-            icon: const Icon(Icons.psychology),
-            onPressed: () => openScreen(context, 'X01', widget.onAsk),
-          ),
+          // The assistant ships dark in the first release, and an icon in the
+          // greeting is the most prominent control on the app's landing
+          // screen. Drawn only where there is something behind it.
+          if (AppRouter.screenIsOn('X01'))
+            IconButton(
+              tooltip: l10n.askSomething,
+              color: AppColors.onSurfaceVariant,
+              icon: const Icon(Icons.psychology),
+              onPressed: () => openScreen(context, 'X01', widget.onAsk),
+            ),
           IconButton(
             tooltip: l10n.notifications,
             color: AppColors.onSurfaceVariant,
@@ -244,8 +323,15 @@ class _TodayViewState extends State<TodayView> {
           // component, tested on its own, and until now rendered on no screen
           // in the running app — so a woman who chose BOTH roles had no way to
           // reach the coach side at all, which is the whole point of the choice.
+          //
+          // 44, not the 32 it was built at. My cycle, Language, notification
+          // settings, Privacy, the Safety Centre, allergies and "delete
+          // everything" are all behind this one control, and at 32 points it
+          // was both the least legible thing in the masthead and the hardest
+          // to hit — against 44 (iOS HIG), 48 (Material) and the 48 every
+          // other control in this same row measures.
           AppAvatar(
-            size: 32,
+            size: 44,
             onOpenProfile: () =>
                 openScreen(context, 'A02', widget.onOpenProfile),
           ),
@@ -254,13 +340,18 @@ class _TodayViewState extends State<TodayView> {
       if (_day.walkToCount && !_walkClaimed) _walkCard(l10n),
       WorkoutCard(
         evening: _isEvening,
+        // What her plan calls today's session, or "Today's workout". Never a
+        // programme name she did not choose — see WorkoutCard.title.
+        title: widget.sessionTitle,
         // Her week, or no badge. `summary` is deliberately not passed: the
         // line it would carry is a claim about a session this screen is handed
         // nothing about. See WorkoutCard.
         week: _day.programWeek,
         totalWeeks: _day.programTotalWeeks,
         onStart: () => openScreen(context, 'R07', widget.onStartSession),
-        onRecall: () => openScreen(context, 'T02', widget.onRecall),
+        onRecall: AppRouter.screenIsOn('T02')
+            ? () => openScreen(context, 'T02', widget.onRecall)
+            : null,
         // The week sits on the cover, between the session and the action.
         weekBlock: WeekCard(
           open: true,
@@ -278,7 +369,15 @@ class _TodayViewState extends State<TodayView> {
             _day.week.sessionsLogged,
             _day.week.sessionsTarget,
           ),
-          line: l10n.twoMoreAndTheWeekCounts,
+          // How many are actually left, from the same object as the title and
+          // the marks below it.
+          //
+          // `twoMoreAndTheWeekCounts` is fixed copy: it said "Two more and the
+          // week counts." directly beside "This week, 0 of 3", and it would
+          // have gone on saying two to a woman who had finished all three. The
+          // parameterised form was already in the dictionary and already used
+          // elsewhere; Home was still reading the constant.
+          line: _weekLine(l10n),
           total: _day.week.sessionsTarget,
           filled: _day.week.sessionsLogged,
           onTap: () => openScreen(context, 'P01', widget.onOpenWeek),
@@ -289,12 +388,45 @@ class _TodayViewState extends State<TodayView> {
       const HandRule(seed: 29, height: 22),
       MealCard(
         loggedAt: _day.mealLoggedAt,
+        // The heading follows the hour: the meal she logged, or the meal she
+        // is likely to be having now. It was "Breakfast, your usual" at every
+        // hour of the day, over whatever she had actually eaten.
+        now: widget.now,
         plates: _day.plates,
         onTap: () => openScreen(context, 'E02', widget.onOpenMeal),
         onPlateTap: () => openScreen(context, 'E04', widget.onOpenPlate),
         onPlateLog: widget.onLogPlate,
         art: artAt(0, 56),
       ),
+      // Her first week, on the ordinary Home and not only on day one.
+      //
+      // This row lived in `_dayOne` alone, and `_dayOne` renders only while
+      // `arc.hasAnyLog` is false — so the product's own self-guided tour, the
+      // one artefact written to teach her the app unaided, vanished for ever
+      // at her first log of anything. The only way left to it was tapping an
+      // unmarked paragraph on Home to reach Progress and spotting a row there.
+      //
+      // Drawn while the arc this build offers is unfinished, counted off the
+      // same list T07 draws, and gone of its own accord when she has done all
+      // of it. `firstWeekIsComplete`, never `arc.isComplete`: with Community
+      // dark two of the five steps cannot be offered, so the arc could never
+      // be "complete" and the row would sit on Home for ever.
+      if (!firstWeekIsComplete(_day.arc) && AppRouter.screenIsOn('T07'))
+        AppListItem(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          leading: const Icon(
+            Icons.checklist,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.yourFirstWeek,
+          subtitle: l10n.countOfTotal(
+            countLabel(firstWeekDone(_day.arc)),
+            countLabel(offeredFirstWeekSteps().length),
+          ),
+          trailing: chevron,
+          onTap: () => openScreen(context, 'T07', widget.onOpenFirstWeek),
+        ),
       // Only for a woman who actually uses My cycle.
       //
       // This row rendered unconditionally, so someone who skipped cycle setup
@@ -314,12 +446,15 @@ class _TodayViewState extends State<TodayView> {
             color: AppColors.primaryDim,
           ),
           title: l10n.myCycle,
-          trailing: const Icon(
-            Icons.chevron_right,
-            size: 22,
-            color: AppColors.onSurfaceVariant,
-          ),
+          trailing: const AppChevron(),
           onTap: () => openScreen(context, 'Y03', widget.onOpenCycle),
+        ),
+      // The owner's next event. Off with Feature.events, and absent when
+      // nothing is planned: an empty card would promise events nobody made.
+      if (widget.nextEvent case final next? when AppRouter.screenIsOn('T09'))
+        UpcomingEventsCard(
+          next: next,
+          onOpen: () => openScreen(context, 'T09', widget.onOpenEvents),
         ),
     ];
   }
@@ -338,7 +473,7 @@ class _TodayViewState extends State<TodayView> {
         variant: AppButtonVariant.text,
         height: 44,
         fontSize: 15,
-        onPressed: _countWalk,
+        onPressed: widget.onCountWalk ?? _countWalk,
       ),
     );
     final icon = HandIconRing(
@@ -385,14 +520,37 @@ class _TodayViewState extends State<TodayView> {
     );
   }
 
+  // ------------------------------------------------------- T06, unanswered ----
+
+  /// Home while nothing has yet said whether she has a history.
+  ///
+  /// Deliberately not a spinner: there was none here before, and the honest
+  /// thing to put on a screen that does not know is a sentence rather than an
+  /// animation implying the app is doing work she should wait for. It keeps the
+  /// masthead, because the weekday and her profile are true whatever the pull
+  /// says, and drops the "Day 1" pill, the cover, the button and the empty
+  /// state, because every one of them is a claim about a history nothing has
+  /// read yet.
+  List<Widget> _stillLooking(BuildContext context, AppL10n l10n) => [
+    TodayGreeting(
+      day: weekdayLabel(l10n, _day.date),
+      actions: [
+        AppAvatar(
+          size: 44,
+          onOpenProfile: () => openScreen(context, 'A02', widget.onOpenProfile),
+        ),
+      ],
+    ),
+    Text(
+      l10n.lookingForWhatYouHaveAdded,
+      style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
+    ),
+  ];
+
   // ---------------------------------------------------------------- T06 ----
 
   List<Widget> _dayOne(BuildContext context, AppL10n l10n) {
-    const chevron = Icon(
-      Icons.chevron_right,
-      size: 21,
-      color: AppColors.onSurfaceVariant,
-    );
+    const chevron = AppChevron(size: 21);
 
     return [
       // The same masthead as every other day, with "Day 1" where her level
@@ -408,58 +566,67 @@ class _TodayViewState extends State<TodayView> {
           const SizedBox(width: 8),
           // Day one needs it as much as any other day: this is the first
           // screen after sign-up, and it is where a woman who chose both
-          // roles would first look for the coach side.
+          // roles would first look for the coach side. 44 points, for the
+          // reason given on the other branch.
           AppAvatar(
-            size: 32,
+            size: 44,
             onOpenProfile: () =>
                 openScreen(context, 'A02', widget.onOpenProfile),
           ),
         ],
       ),
-      // The programme she just chose is the cover: its name set large and
-      // underlined once, its promise, and the one thing to do.
+      // The cover says what the app is for, and the button under it is the one
+      // obvious thing to do. Nothing else on the page is set this size.
       //
-      // "Monday, Tuesday, Thursday · 15 min" is not said. It names three
-      // weekdays and a session length, and T06 is handed neither — she picks
-      // her days in O04 and this screen never receives them. A woman who chose
-      // Saturday and Sunday read the prototype's three days under the
-      // programme she had just chosen. The programme's name and its promise
-      // are true of it for everyone.
+      // It used to name a programme — "Beginner foundations" — and promise a
+      // session: "Four moves on the floor. Nothing jumps." Both were fixed
+      // strings. Until the seed was fixed this branch had never rendered in the
+      // running product, so nobody had noticed that a woman who has answered no
+      // questions, and has no plan, was being told the name of her programme and
+      // what was in today's session on the first screen she ever sees. The same
+      // defect the week badge and `WorkoutCard.summary` were already fixed for,
+      // surviving here because nobody could see it.
+      //
+      // "Monday, Tuesday, Thursday · 15 min" went earlier and for the same
+      // reason: she picks her days in O04 and this screen is handed none of it.
+      //
+      // What is true of every woman on her first day is what this product is:
+      // it counts weeks rather than days, and it counts only what she logs.
+      // That is also the one thing she needs to know before she taps anything.
       const SizedBox(height: 4),
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: HandUnderline(
-                level: HandLevel.signature,
-                width: HandStroke.felt,
-                drawOn: true,
-                gap: 4,
-                child: Text(
-                  l10n.beginnerFoundations,
-                  style: EditorialType.cover,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: Icon(
-              Icons.workspace_premium,
-              size: 28,
-              color: AppColors.primaryDim,
-            ),
-          ),
-        ],
+      Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: HandUnderline(
+          level: HandLevel.signature,
+          width: HandStroke.felt,
+          drawOn: true,
+          gap: 4,
+          child: Text(l10n.yourTrainingWeekByWeek, style: EditorialType.cover),
+        ),
       ),
       Text(
-        l10n.fourMovesOnTheFloorNothingJumps,
+        l10n.thisAppCountsWeeksNotDaysAnd,
         style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
       ),
+      // Her week, as she set it. The same line O05 showed her, so what she
+      // saved and what Home says cannot disagree.
+      if (widget.intake case final intake?)
+        Text(
+          herAnswersLine(
+            l10n,
+            intake,
+            placeAnswered: widget.intakePlaceAnswered,
+          ),
+          key: const ValueKey('day-one-her-week'),
+          style: AppText.titleM.copyWith(color: AppColors.onPrimaryContainer),
+        ),
       const SizedBox(height: 4),
+      // Day one only: the kitten shows where to start. It goes with the
+      // day-one state, the moment she logs anything.
+      const Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Kitten(pose: KittenPose.point, size: 48, moment: 'T06'),
+      ),
       AppButton(
         l10n.startDay1,
         height: 56,
@@ -467,35 +634,42 @@ class _TodayViewState extends State<TodayView> {
         onPressed: () => openScreen(context, 'R03', widget.onStartSession),
       ),
       const HandRule(seed: 31, height: 18),
-      AppListItem(
-        variant: AppCardVariant.tonal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        leading: const Icon(
-          Icons.checklist,
-          size: 22,
-          color: AppColors.primaryDim,
-        ),
-        title: l10n.yourFirstWeek,
-        // Her arc, counted from the arc itself.
-        //
-        // This was the fixed `n2Of5DoneNothingExpires` — "2 of 5 done ·
-        // nothing expires" — on the ONE screen where nothing is done yet:
-        // T06 renders only when `arc.hasAnyLog` is false, so it told a woman
-        // with an empty arc that two of it were finished.
-        subtitle: l10n.countOfTotal(
-          countLabel(_day.arc.doneCount),
-          countLabel(_day.arc.stepCount),
-        ),
-        trailing: chevron,
-        onTap: () => openScreen(context, 'T07', widget.onOpenFirstWeek),
-      ),
       // Rule 17: the empty state states what will appear and why it is empty.
+      // It sits directly under the rule, above the rows, because it is the
+      // answer to the question the bare page raises — and each row below it is
+      // one of the "log one thing" it names.
       AppEmptyState(
         icon: Icons.history,
         art: AppArt.trainers,
-        title: l10n.nothingLoggedYet,
+        title: l10n.nothingAddedYet,
         body: l10n.todaysSessionAndTheMealYouUsually,
       ),
+      if (AppRouter.screenIsOn('T07'))
+        AppListItem(
+          variant: AppCardVariant.tonal,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          leading: const Icon(
+            Icons.checklist,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.yourFirstWeek,
+          // Her arc, counted from the arc itself.
+          //
+          // This was the fixed `n2Of5DoneNothingExpires` — "2 of 5 done ·
+          // nothing expires" — on the ONE screen where nothing is done yet:
+          // T06 renders only when `arc.hasAnyLog` is false, so it told a woman
+          // with an empty arc that two of it were finished.
+          // Counted over the steps this build offers, the same list T07 draws.
+          // `arc.stepCount` is always five, so with Community dark Home said
+          // "0 of 5" about an arc of three.
+          subtitle: l10n.countOfTotal(
+            countLabel(firstWeekDone(_day.arc)),
+            countLabel(offeredFirstWeekSteps().length),
+          ),
+          trailing: chevron,
+          onTap: () => openScreen(context, 'T07', widget.onOpenFirstWeek),
+        ),
       AppListItem(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         leading: const Icon(
@@ -512,25 +686,69 @@ class _TodayViewState extends State<TodayView> {
         // T06.
         onTap: () => openScreen(context, 'E01', widget.onTellUsWhatYouEat),
       ),
-      AppListItem(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        leading: const Icon(
-          Icons.groups,
-          size: 22,
-          color: AppColors.primaryDim,
+      // Planning her food is a reason she installed the app, and on day one
+      // the week plan had no door from Home or Eat.
+      if (AppRouter.screenIsOn('E07'))
+        AppListItem(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          leading: const Icon(
+            Icons.calendar_view_week,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.planThisWeeksDinners,
+          subtitle: l10n.fiveEgyptianDinnersAndOneShoppingList,
+          trailing: chevron,
+          onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
         ),
-        // `n4210WomenInTheBeginnersGroup` — "4,210 women in the beginners
-        // group" — is a membership figure nothing in this app counts, frozen
-        // into the dictionary on the screen a woman sees on her first day.
-        // The group has a name; the size is not claimed.
-        title: l10n.beginnersGroup,
-        subtitle: l10n.nobodyThereHasBeenTrainingOverA,
-        trailing: chevron,
-        // Same reasoning as above: M17 is Community's day-one state.
-        onTap: () => openScreen(context, 'M01', widget.onOpenBeginnersGroup),
-      ),
-      // The weekly rule, said once, before she can fail it.
-      AppSageNote(l10n.threeSessionsMakesTheWeekCountAnd),
+      // My cycle was four taps deep behind her avatar. Optional, and said so;
+      // gone once it is set up or she says not now.
+      if (widget.offerCycleSetup && AppRouter.screenIsOn('Y01'))
+        AppListItem(
+          key: const ValueKey('day-one-track-cycle'),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          leading: const Icon(
+            Icons.water_drop_outlined,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.trackMyCycle,
+          subtitle: l10n.optionalAndItStaysOnThisPhone,
+          trailing: TextButton(
+            onPressed: widget.onNotNowCycle,
+            child: Text(
+              l10n.notNow,
+              style: AppText.label.copyWith(color: AppColors.primaryDim),
+            ),
+          ),
+          onTap: () => openScreen(context, 'Y01', widget.onTrackCycle),
+        ),
+      // The community is dark in the first release, so on day one this row
+      // named a group she cannot join and opened the "switched off" panel.
+      // Not drawn rather than drawn and disabled: the rest of day one is three
+      // things she can actually do.
+      if (AppRouter.screenIsOn('M01'))
+        AppListItem(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          leading: const Icon(
+            Icons.groups,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          // `n4210WomenInTheBeginnersGroup` — "4,210 women in the beginners
+          // group" — is a membership figure nothing in this app counts, frozen
+          // into the dictionary on the screen a woman sees on her first day.
+          // The group has a name; the size is not claimed.
+          title: l10n.beginnersGroup,
+          subtitle: l10n.nobodyThereHasBeenTrainingOverA,
+          trailing: chevron,
+          // Same reasoning as above: M17 is Community's day-one state.
+          onTap: () => openScreen(context, 'M01', widget.onOpenBeginnersGroup),
+        ),
+      // The weekly rule, said once, before she can fail it. It states the
+      // rule and never the number: she sets her own target in setup, and this
+      // sat on the same screen telling her it was three.
+      AppSageNote(l10n.reachYourGoalAndTheWeekCounts),
     ];
   }
 }

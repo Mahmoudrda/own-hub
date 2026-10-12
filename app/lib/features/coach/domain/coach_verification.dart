@@ -175,13 +175,20 @@ class SetupCompleted extends CoachVerificationEvent {
     required this.hasCertificate,
     required this.hasPayoutMethod,
     required this.hasCapacity,
+    this.payoutDeferred = false,
   });
 
   final bool hasCertificate;
   final bool hasPayoutMethod;
   final bool hasCapacity;
 
-  bool get isComplete => hasCertificate && hasPayoutMethod && hasCapacity;
+  /// She chose "Add payout later" on `K05`. A reviewer reads certificates, not
+  /// a wallet, so the check may start without one; she cannot be paid until
+  /// she adds it, and nothing she sells is published before she is cleared.
+  final bool payoutDeferred;
+
+  bool get isComplete =>
+      hasCertificate && (hasPayoutMethod || payoutDeferred) && hasCapacity;
 }
 
 /// The automated issuing-body lookup started.

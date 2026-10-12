@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Own Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/music/audio-data.js"></script>
+    <style>
+      @font-face {
+        font-family: "Rubik";
+        src: url("assets/fonts/Rubik-400.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rubik";
+        src: url("assets/fonts/Rubik-500.ttf") format("truetype");
+        font-weight: 500;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rubik";
+        src: url("assets/fonts/Rubik-700.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Belle";
+        src: url("assets/fonts/LaBelleAurore-400.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      :root {
+        --canvas: #f2e8eb;
+        --surface: #fff8f9;
+        --rose: #a24661;
+        --rose-dim: #9a3f57;
+        --ink: #241a1e;
+        --ink-soft: #6b5c61;
+        --outline: #ebdcdf;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: "Rubik", system-ui, sans-serif;
+      }
+
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--canvas);
+      }
+
+      /* ---------------------------------------------------------- backdrop */
+
+      .wash {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            120% 70% at 18% 8%,
+            var(--surface) 0%,
+            rgba(255, 248, 249, 0) 62%
+          ),
+          radial-gradient(
+            90% 55% at 88% 96%,
+            #f6e3e9 0%,
+            rgba(246, 227, 233, 0) 70%
+          );
+      }
+
+      .grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.5;
+        background-image: radial-gradient(
+          rgba(162, 70, 97, 0.05) 1px,
+          transparent 1px
+        );
+        background-size: 7px 7px;
+      }
+
+      .halo {
+        position: absolute;
+        left: 90px;
+        top: 220px;
+        width: 900px;
+        height: 1640px;
+        border-radius: 50%;
+        background: radial-gradient(
+          closest-side,
+          rgba(162, 70, 97, 0.16) 0%,
+          rgba(162, 70, 97, 0.06) 48%,
+          rgba(162, 70, 97, 0) 78%
+        );
+        filter: blur(18px);
+      }
+
+      /* ------------------------------------------------------------ device */
+
+      .device {
+        position: absolute;
+        left: 200px;
+        top: 304px;
+        width: 680px;
+        height: 1472px;
+        border-radius: 56px;
+        background: #1c1417;
+        padding: 16px;
+        box-shadow:
+          0 2px 0 rgba(255, 255, 255, 0.28) inset,
+          0 34px 78px rgba(74, 28, 46, 0.26),
+          0 6px 18px rgba(74, 28, 46, 0.14);
+      }
+
+      .screen {
+        position: relative;
+        width: 648px;
+        height: 1440px;
+        border-radius: 42px;
+        overflow: hidden;
+        background: var(--surface);
+      }
+
+      .screen video {
+        position: absolute;
+        inset: 0;
+        width: 648px;
+        height: 1440px;
+        object-fit: cover;
+      }
+
+      /* the cut softener: a rose veil that blinks across every scene change */
+      .veil {
+        position: absolute;
+        inset: 0;
+        background: #f6e3e9;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* ---------------------------------------------------------- captions */
+
+      .cap {
+        position: absolute;
+        left: 80px;
+        top: 96px;
+        width: 920px;
+        height: 190px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        text-align: center;
+      }
+
+      .capline {
+        display: block;
+        margin: 0;
+        font-size: 58px;
+        line-height: 1.12;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        color: var(--ink);
+      }
+
+      .capsub {
+        display: block;
+        margin: 14px 0 0;
+        font-size: 33px;
+        line-height: 1.25;
+        font-weight: 400;
+        color: var(--ink-soft);
+      }
+
+      .wordmark {
+        display: block;
+        margin: 0;
+        font-size: 96px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--rose);
+      }
+
+      /* ------------------------------------------------------------- outro */
+
+      .outro {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .outro-mark {
+        display: block;
+        margin: 0;
+        width: 560px;
+        height: 436px;
+        font-size: 150px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        color: var(--rose);
+      }
+
+      .outro-rule {
+        display: block;
+        width: 300px;
+        height: 5px;
+        margin: 42px 0 40px;
+        border-radius: 3px;
+        background: var(--rose);
+        opacity: 0.55;
+      }
+
+      .outro-line {
+        display: block;
+        margin: 0;
+        font-size: 44px;
+        line-height: 1.35;
+        font-weight: 500;
+        color: var(--ink);
+      }
+
+      .outro-hand {
+        display: block;
+        margin: 34px 0 0;
+        font-family: "Belle", "Rubik", cursive;
+        font-size: 62px;
+        line-height: 1;
+        color: var(--rose-dim);
+      }
+
+      /* ----------------------------------------------------------- progress */
+
+      .rail {
+        position: absolute;
+        left: 200px;
+        bottom: 68px;
+        width: 680px;
+        height: 5px;
+        border-radius: 3px;
+        background: rgba(162, 70, 97, 0.20);
+      }
+
+      .rail-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 5px;
+        width: 680px;
+        border-radius: 3px;
+        background: var(--rose);
+        opacity: 0.8;
+        transform-origin: 0% 50%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-width="1080"
+      data-height="1920"
+      data-duration="40.25"
+    >
+      <div class="wash"></div>
+      <div class="grain"></div>
+      <div id="halo" class="halo"></div>
+
+      <div id="device" class="device">
+        <div class="screen">
+          <video id="s01" class="clip" src="assets/clips/s01.mp4" data-start="0"     data-duration="3.16" data-track-index="0" muted playsinline></video>
+          <video id="s02" class="clip" src="assets/clips/s02.mp4" data-start="3.16"  data-duration="2.61" data-track-index="0" muted playsinline></video>
+          <video id="s03" class="clip" src="assets/clips/s03.mp4" data-start="5.77"  data-duration="2.09" data-track-index="0" muted playsinline></video>
+          <video id="s04" class="clip" src="assets/clips/s04.mp4" data-start="7.86"  data-duration="2.62" data-track-index="0" muted playsinline></video>
+          <video id="s05" class="clip" src="assets/clips/s05.mp4" data-start="10.48" data-duration="3.13" data-track-index="0" muted playsinline></video>
+          <video id="s06" class="clip" src="assets/clips/s06.mp4" data-start="13.61" data-duration="2.09" data-track-index="0" muted playsinline></video>
+          <video id="s07" class="clip" src="assets/clips/s07.mp4" data-start="15.70" data-duration="2.61" data-track-index="0" muted playsinline></video>
+          <video id="s08" class="clip" src="assets/clips/s08.mp4" data-start="18.31" data-duration="3.14" data-track-index="0" muted playsinline></video>
+          <video id="s09" class="clip" src="assets/clips/s09.mp4" data-start="21.45" data-duration="2.09" data-track-index="0" muted playsinline></video>
+          <video id="s10" class="clip" src="assets/clips/s10.mp4" data-start="23.54" data-duration="2.61" data-track-index="0" muted playsinline></video>
+          <video id="s11" class="clip" src="assets/clips/s11.mp4" data-start="26.15" data-duration="2.09" data-track-index="0" muted playsinline></video>
+          <video id="s12" class="clip" src="assets/clips/s12.mp4" data-start="28.24" data-duration="3.14" data-track-index="0" muted playsinline></video>
+          <video id="s13" class="clip" src="assets/clips/s13.mp4" data-start="31.38" data-duration="2.09" data-track-index="0" muted playsinline></video>
+          <video id="s14" class="clip" src="assets/clips/s14.mp4" data-start="33.47" data-duration="2.09" data-track-index="0" muted playsinline></video>
+          <video id="s15" class="clip" src="assets/clips/s15.mp4" data-start="35.56" data-duration="2.09" data-track-index="0" muted playsinline></video>
+          <div id="veil" class="veil"></div>
+        </div>
+      </div>
+
+      <div class="rail"><div id="rail-fill" class="rail-fill"></div></div>
+
+      <!-- captions -->
+      <div id="cap-name" class="clip cap" data-start="0.55" data-duration="2.45" data-track-index="2">
+        <span class="wordmark cap-in">Own Hub</span>
+        <span class="capsub cap-in">A fitness app for women in Egypt</span>
+      </div>
+      <div id="cap-questions" class="clip cap" data-start="3.26" data-duration="2.35" data-track-index="2">
+        <span class="capline cap-in">Four short questions</span>
+      </div>
+      <div id="cap-skip" class="clip cap" data-start="5.87" data-duration="1.83" data-track-index="2">
+        <span class="capline cap-in">Skip any of them</span>
+      </div>
+      <div id="cap-plan" class="clip cap" data-start="7.96" data-duration="2.36" data-track-index="2">
+        <span class="capline cap-in">Then your week is ready</span>
+      </div>
+      <div id="cap-today" class="clip cap" data-start="10.58" data-duration="2.87" data-track-index="2">
+        <span class="capline cap-in">The day on one screen</span>
+      </div>
+      <div id="cap-session" class="clip cap" data-start="13.71" data-duration="1.83" data-track-index="2">
+        <span class="capline cap-in">Fifteen minutes, four moves</span>
+      </div>
+      <div id="cap-set" class="clip cap" data-start="15.80" data-duration="2.35" data-track-index="2">
+        <span class="capline cap-in">One tap logs the set</span>
+      </div>
+      <div id="cap-rest" class="clip cap" data-start="18.41" data-duration="2.88" data-track-index="2">
+        <span class="capline cap-in">Rest starts itself</span>
+      </div>
+      <div id="cap-done" class="clip cap" data-start="21.55" data-duration="1.83" data-track-index="2">
+        <span class="capline cap-in">That's Thursday done</span>
+      </div>
+      <div id="cap-meal" class="clip cap" data-start="23.64" data-duration="2.35" data-track-index="2">
+        <span class="capline cap-in">A meal logged in one tap</span>
+      </div>
+      <div id="cap-book" class="clip cap" data-start="26.25" data-duration="1.83" data-track-index="2">
+        <span class="capline cap-in">Rahma's recipe book</span>
+      </div>
+      <div id="cap-arabic-recipes" class="clip cap" data-start="28.34" data-duration="2.88" data-track-index="2">
+        <span class="capline cap-in">39 dishes in her own Arabic</span>
+      </div>
+      <div id="cap-week" class="clip cap" data-start="31.48" data-duration="1.83" data-track-index="2">
+        <span class="capline cap-in">Your week, counted</span>
+      </div>
+      <div id="cap-cycle" class="clip cap" data-start="33.57" data-duration="1.83" data-track-index="2">
+        <span class="capline cap-in">Your cycle, kept private</span>
+      </div>
+      <div id="cap-rtl" class="clip cap" data-start="35.66" data-duration="1.83" data-track-index="2">
+        <span class="capline cap-in">In Arabic, right to left</span>
+      </div>
+
+      <!-- close -->
+      <div id="outro" class="clip outro" data-start="37.65" data-duration="2.60" data-track-index="3">
+        <img id="outro-mark" class="outro-mark" src="assets/brand/ownhub-lockup.svg" alt="Own Hub" />
+        <span id="outro-rule" class="outro-rule"></span>
+        <span id="outro-line" class="outro-line">Strength, food and rest.</span>
+        <span id="outro-line2" class="outro-line">In Arabic and English.</span>
+        <span id="outro-hand" class="outro-hand">her week, her way</span>
+      </div>
+
+      <!-- audio -->
+      <audio
+        id="bed"
+        src="assets/music/bed.mp3"
+        data-start="0"
+        data-duration="40.25"
+        data-track-index="10"
+        data-volume="1"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0},{"t":1.1,"v":0.46},{"t":28.0,"v":0.46},{"t":28.6,"v":0.56},{"t":31.3,"v":0.56},{"t":32.0,"v":0.46},{"t":37.6,"v":0.46},{"t":38.4,"v":0.3},{"t":40.25,"v":0}]}]}'
+      ></audio>
+      <audio id="tap1" src="assets/sfx/tap.ogg" data-start="1.75" data-duration="0.06" data-track-index="11" data-volume="0.45"></audio>
+      <audio id="tap2" src="assets/sfx/tap.ogg" data-start="18.20" data-duration="0.06" data-track-index="12" data-volume="0.45"></audio>
+      <audio id="tap3" src="assets/sfx/tap.ogg" data-start="24.30" data-duration="0.06" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="land" src="assets/sfx/soft-impact.ogg" data-start="37.95" data-duration="0.18" data-track-index="14" data-volume="0.45"></audio>
+    </div>
+
+    <script>
+      (function () {
+        var DUR = 40.25;
+        var FPS = 30;
+
+        // Scene starts, all sitting on the track's beat grid (1.07 + n * 0.5225).
+        // beat-locked: 7.86s (built plan), 18.31s (rest timer),
+        //              28.24s (recipe book), 35.56s (Arabic).
+        var CUTS = [
+          3.16, 5.77, 7.86, 10.48, 13.61, 15.70, 18.31, 21.45, 23.54, 26.15,
+          28.24, 31.38, 33.47, 35.56,
+        ];
+        var PUNCH = [7.86, 18.31, 28.24, 35.56];
+
+        var tl = gsap.timeline({ paused: true });
+
+        // The device arrives once, then holds. Nothing else moves it.
+        tl.fromTo(
+          "#device",
+          { y: 54, scale: 0.965, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, duration: 0.85, ease: "power3.out" },
+          0,
+        );
+
+        // Every caption: fast in, then hold. Exit is a short lift out.
+        gsap.utils.toArray(".cap").forEach(function (cap) {
+          var start = parseFloat(cap.getAttribute("data-start"));
+          var dur = parseFloat(cap.getAttribute("data-duration"));
+          var lines = cap.querySelectorAll(".cap-in, .capline");
+          tl.fromTo(
+            lines,
+            { y: 22, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.34,
+              stagger: 0.09,
+              ease: "power3.out",
+            },
+            start,
+          );
+          tl.to(
+            lines,
+            { y: -14, opacity: 0, duration: 0.24, ease: "power2.in" },
+            start + dur - 0.24,
+          );
+        });
+
+        // Each cut gets a short rose veil so the change reads as a wipe, not a jolt.
+        CUTS.forEach(function (t) {
+          tl.fromTo(
+            "#veil",
+            { opacity: 0 },
+            { opacity: 0.42, duration: 0.1, ease: "power2.out" },
+            t - 0.1,
+          );
+          tl.to("#veil", { opacity: 0, duration: 0.22, ease: "power2.out" }, t);
+        });
+
+        // The four beat-locked moments get a small settle on the device itself.
+        PUNCH.forEach(function (t) {
+          tl.to("#device", { scale: 1.014, duration: 0.14, ease: "power2.out" }, t - 0.06);
+          tl.to("#device", { scale: 1, duration: 0.5, ease: "power2.out" }, t + 0.08);
+        });
+
+        // Progress rail, one continuous sweep.
+        tl.fromTo(
+          "#rail-fill",
+          { scaleX: 0 },
+          { scaleX: 1, duration: DUR, ease: "none" },
+          0,
+        );
+
+        // Close: the phone recedes, the name lands.
+        tl.to(
+          "#device",
+          { y: 38, scale: 0.94, opacity: 0, duration: 0.5, ease: "power2.inOut" },
+          37.65,
+        );
+        tl.to("#rail-fill", { opacity: 0, duration: 0.4 }, 37.75);
+        tl.fromTo(
+          "#outro-mark",
+          { y: 34, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" },
+          37.95,
+        );
+        tl.fromTo(
+          "#outro-rule",
+          { scaleX: 0, opacity: 0 },
+          { scaleX: 1, opacity: 0.55, duration: 0.45, ease: "power3.out" },
+          38.2,
+        );
+        tl.fromTo(
+          "#outro-line",
+          { y: 18, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.38, ease: "power3.out" },
+          38.35,
+        );
+        tl.fromTo(
+          "#outro-line2",
+          { y: 18, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.38, ease: "power3.out" },
+          38.5,
+        );
+        tl.fromTo(
+          "#outro-hand",
+          { y: 14, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+          38.85,
+        );
+
+        // Audio-reactive: the rose halo behind the phone breathes on the low band.
+        // Sampled per frame from the pre-extracted data, nothing else responds.
+        var frames =
+          window.AUDIO_DATA && window.AUDIO_DATA.frames
+            ? window.AUDIO_DATA.frames
+            : null;
+        if (frames && frames.length) {
+          var total = Math.round(DUR * FPS);
+          var halo = { v: 0 };
+          tl.to(
+            halo,
+            {
+              v: 1,
+              duration: DUR,
+              ease: "none",
+              onUpdate: function () {
+                var i = Math.min(
+                  frames.length - 1,
+                  Math.floor(halo.v * total),
+                );
+                var b = frames[i].bands;
+                var low = (b[0] + b[1]) / 2;
+                gsap.set("#halo", {
+                  scale: 0.985 + low * 0.05,
+                  opacity: 0.62 + low * 0.38,
+                });
+              },
+            },
+            0,
+          );
+        }
+
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

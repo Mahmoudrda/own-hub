@@ -150,7 +150,7 @@ class FollowAlongView extends StatelessWidget {
                       // otherwise take what it liked and overflow the row.
                       Flexible(
                         child: AppPill(
-                          l10n.logsItself,
+                          l10n.countsItself,
                           icon: Icons.check,
                           background: _onDarkSoft,
                           foreground: _onDark,

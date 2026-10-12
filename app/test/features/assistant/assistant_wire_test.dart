@@ -46,6 +46,9 @@ const Set<String> kForbiddenPayloadKeys = <String>{
   'lifeStage',
   'checkIn',
   'checkIns',
+  // Health data. Food is screened on the phone by AllergyGuard instead.
+  'allergies',
+  'allergens',
 };
 
 /// Field types that would let a quantity ride the wire.
@@ -56,7 +59,7 @@ const Set<String> kBannedWireFieldTypes = <String>{
   'BigInt',
 };
 
-AssistantSubject _subject({Set<String>? allergies, Set<String>? dietary}) =>
+AssistantSubject _subject({Set<String>? dietary}) =>
     AssistantSubject.boundToCaller(
       locale: 'ar',
       equipment: const {'mat', 'dumbbells'},
@@ -65,7 +68,6 @@ AssistantSubject _subject({Set<String>? allergies, Set<String>? dietary}) =>
           ContraindicationTag.deepKneeFlexion,
           ContraindicationTag.highImpact,
         },
-        allergies: allergies,
         dietary: dietary,
       ),
       sessionMinutes: '20',
@@ -77,10 +79,7 @@ void main() {
     test('the body contains the allowlist and nothing else', () {
       final body = AssistantRequest(
         question: 'my knee hurts on the squats today',
-        subject: _subject(
-          allergies: const {'nuts'},
-          dietary: const {'vegetarian'},
-        ),
+        subject: _subject(dietary: const {'vegetarian'}),
       ).toWire();
 
       expect(body.keys.toSet(), <String>{
@@ -88,7 +87,6 @@ void main() {
         'locale',
         'equipment',
         'avoid',
-        'allergies',
         'dietary',
         'sessionMinutes',
         'place',
@@ -98,7 +96,7 @@ void main() {
     test('no forbidden key appears, at any depth', () {
       final body = AssistantRequest(
         question: 'anything',
-        subject: _subject(allergies: const {'sesame'}),
+        subject: _subject(dietary: const {'vegetarian'}),
       ).toWire();
 
       final serialised = body.toString();
@@ -124,11 +122,22 @@ void main() {
       expect(body.containsKey('lifeStage'), isFalse);
     });
 
-    test('unreadable allergies are omitted, never sent as an empty claim', () {
+    test('an unreadable diet is omitted, never sent as an empty claim', () {
       // Null means "could not be read", which is NOT "she has none".
       final body = _subject().toWire();
-      expect(body.containsKey('allergies'), isFalse);
       expect(body.containsKey('dietary'), isFalse);
+    });
+
+    test('her allergies have no field, so they cannot leave the phone', () {
+      // APL-18: allergies are health data. AllergyGuard screens food on the
+      // device before ranking; the wire has nowhere to put the list.
+      final body = _subject(dietary: const {'vegetarian'}).toWire();
+      expect(body.containsKey('allergies'), isFalse);
+      final code = File('lib/features/assistant/domain/assistant_wire.dart')
+          .readAsLinesSync()
+          .where((l) => !l.trimLeft().startsWith('//'))
+          .join('\n');
+      expect(RegExp(r'\ballerg').hasMatch(code), isFalse);
     });
   });
 
@@ -137,7 +146,7 @@ void main() {
       // The strongest form of the guarantee: `AssistantSubject.boundToCaller`
       // takes no cycle parameter, so no caller — correct or careless — can put
       // cycle data into a payload. C12.
-      final body = _subject(allergies: const {}).toWire();
+      final body = _subject(dietary: const {}).toWire();
       for (final key in body.keys) {
         expect(
           RegExp('cycle|period|menstrual', caseSensitive: false).hasMatch(key),

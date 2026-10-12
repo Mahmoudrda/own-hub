@@ -1,9 +1,11 @@
 // R02 — Program.
 //
-// The programme page carries the medical promise and the week. The download
-// action is tested because it is the screen's quiet obligation: saving a week
-// costs her real money in data, and the offer belongs here rather than in
-// settings.
+// The programme page carries a programme's promise and its week, or it says
+// there is no programme. Both halves are pinned here, because the screen used
+// to carry one particular postpartum plan as its body and hand it to everyone.
+// The download action is tested because it is the screen's quiet obligation:
+// saving a week costs her real money in data, and the offer belongs here rather
+// than in settings — when there is a week to save.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/train/presentation/program_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_empty_state.dart';
 
 Widget _host(
   Widget child, {
@@ -30,39 +33,111 @@ Widget _host(
 }
 
 void main() {
-  testWidgets('carries the promise, the week and the way in', (tester) async {
+  testWidgets('with no programme, it says so and says what there is', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(const ProgramView()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Postpartum rebuild'), findsOneWidget);
-    // The medical promise is the reason this screen exists rather than a list.
-    expect(find.textContaining('pelvic floor first'), findsOneWidget);
-    expect(find.textContaining('week six'), findsOneWidget);
-    // The week line is hers or absent. `week3` and `n2Of3Done` were fixed
-    // strings, so every woman who opened her programme read "Week 3" and
-    // "2 of 3 done" — and `app_router.dart` builds R02 with no week at all.
-    expect(find.text('Week 3'), findsNothing);
-    expect(find.text('2 of 3 done'), findsNothing);
+    // The bar names the page, not a programme nobody chose. It read
+    // `title ?? 'Postpartum rebuild'` and `app_router.dart` builds R02 with no
+    // title, so every woman's programme page was headed "Postpartum rebuild" —
+    // absurd shown to a nineteen year old and cruel shown to a woman who lost
+    // a pregnancy. A programme she really is on still renders its own name;
+    // see the test below.
+    expect(find.text('Your training'), findsOneWidget);
+    expect(find.text('Postpartum rebuild'), findsNothing);
+    // Everything under the bar was that same programme said three more times.
+    // The postpartum promise is a medical claim, and it was addressed to
+    // whoever opened the screen.
+    expect(find.textContaining('pelvic floor'), findsNothing);
+    expect(find.textContaining('week six'), findsNothing);
+    // "8 weeks", "3 days a week": a length and a frequency nobody set.
+    expect(find.text('8 weeks'), findsNothing);
+    expect(find.text('3 days a week'), findsNothing);
+    // Three days of one plan's week, listed as hers.
+    expect(find.text('Day 1 · Full body'), findsNothing);
+    expect(find.text('Day 2 · Legs and glutes'), findsNothing);
+    expect(find.text('Day 3 · Upper body'), findsNothing);
+    // What is left is true: no programme, and one session ready now.
+    expect(find.byType(AppEmptyState), findsOneWidget);
+    expect(find.text('No program yet'), findsOneWidget);
+    expect(find.textContaining('One session is ready now'), findsOneWidget);
     // "Start day 2" named the prototype's day; the session it starts is
-    // today's on any day of any week.
+    // today's on any day of any week, and it is the one the empty state means.
     expect(find.text("Start today's session"), findsOneWidget);
+    // Nothing to download, so nothing offers to spend her data on it.
+    expect(find.byIcon(Icons.download), findsNothing);
+    // And "Change program" with no programme is an instruction she cannot
+    // follow. Same door, named for what is behind it.
+    expect(find.text('Change program'), findsNothing);
+    expect(find.text('All workouts'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('lists the programme, and claims nothing about her week', (
+  testWidgets('her programme is drawn in full when she has one', (
     tester,
   ) async {
-    // The titles are the programme's own shape and stay. The second lines did
-    // not: `n15MinDoneMonday` marked day one DONE and dated it to a Monday,
+    await tester.pumpWidget(
+      _host(
+        const ProgramView(
+          title: 'Strong at home',
+          promise: 'Built around what you can do in a corner of a room.',
+          days: [
+            ProgramDay(title: 'Day 1 · Mobility', detail: '10 min'),
+            ProgramDay(title: 'Day 2 · Legs'),
+          ],
+          week: 2,
+          totalWeeks: 6,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Strong at home'), findsOneWidget);
+    expect(
+      find.text('Built around what you can do in a corner of a room.'),
+      findsOneWidget,
+    );
+    expect(find.text('Day 1 · Mobility'), findsOneWidget);
+    expect(find.text('Day 2 · Legs'), findsOneWidget);
+    expect(find.text('Week 2 of 6'), findsOneWidget);
+    expect(find.byType(AppEmptyState), findsNothing);
+    // The week is hers to download once there is one.
+    expect(find.byIcon(Icons.download), findsOneWidget);
+    expect(find.text('Change program'), findsOneWidget);
+  });
+
+  testWidgets('a programme she is really on is named', (tester) async {
+    await tester.pumpWidget(_host(const ProgramView(title: 'Strong at home')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Strong at home'), findsOneWidget);
+    expect(find.text('Your training'), findsNothing);
+  });
+
+  testWidgets('a plan lists its days, and claims nothing about her week', (
+    tester,
+  ) async {
+    // `n15MinDoneMonday` marked day one DONE and dated it to a Monday,
     // `n15MinToday` declared today to be day two, `n20MinThursday` put day
     // three on a Thursday — three claims about a week this screen is handed
-    // nothing about. The test asserted the first of them as correct.
-    await tester.pumpWidget(_host(const ProgramView()));
+    // nothing about. A day's second line is her history, so it comes from the
+    // plan or it is not drawn.
+    await tester.pumpWidget(
+      _host(
+        const ProgramView(
+          days: [
+            ProgramDay(title: 'Day 1 · Full body'),
+            ProgramDay(title: 'Day 2 · Legs and glutes'),
+            ProgramDay(title: 'Day 3 · Upper body'),
+          ],
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Day 1 · Full body'), findsOneWidget);
-    expect(find.text('Day 2 · Legs and glutes'), findsOneWidget);
-    expect(find.text('Day 3 · Upper body'), findsOneWidget);
     expect(find.text('15 min · done Monday'), findsNothing);
     expect(find.text('15 min · today'), findsNothing);
     expect(find.text('20 min · Thursday'), findsNothing);
@@ -74,6 +149,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         const ProgramView(
+          days: [ProgramDay(title: 'Day 1 · Mobility')],
           week: 6,
           totalWeeks: 8,
           sessionsDone: 1,
@@ -90,7 +166,12 @@ void main() {
   testWidgets('downloading the week is offered here', (tester) async {
     var downloaded = 0;
     await tester.pumpWidget(
-      _host(ProgramView(onDownloadWeek: () => downloaded++)),
+      _host(
+        ProgramView(
+          days: const [ProgramDay(title: 'Day 1 · Mobility')],
+          onDownloadWeek: () => downloaded++,
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -124,11 +205,11 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text("Start today's session"));
-    // "Change program" is the last row of a scrolling body, so on a short
+    // The library door is the last row of a scrolling body, so on a short
     // viewport it starts below the fold and a tap would never land on it.
-    await tester.ensureVisible(find.text('Change program'));
+    await tester.ensureVisible(find.text('All workouts'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Change program'));
+    await tester.tap(find.text('All workouts'));
     await tester.pumpAndSettle();
 
     expect(started, 1);
@@ -141,9 +222,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('ابدئي تمرين اليوم'), findsOneWidget);
-    expect(find.text('غيّري البرنامج'), findsOneWidget);
+    expect(find.text('ابدئي تمرين النهارده'), findsOneWidget);
+    expect(find.text('لسه مفيش برنامج'), findsOneWidget);
     expect(find.text("Start today's session"), findsNothing);
+    expect(find.text('No program yet'), findsNothing);
   });
 
   testWidgets('does not overflow at the largest system text size in Arabic', (

@@ -39,7 +39,14 @@ const Set<String> _oneTimeFlows = {'signup', 'onboarding'};
 /// notification, which is not a thing. Every other entry here must carry the
 /// same kind of reason — this set is an argument, not a place to put screens
 /// that are merely inconvenient to route.
-const Set<String> _externalEntry = {'T03'};
+/// `T08` is the finished state of `T07`, rendered in place by the same widget
+/// the moment her arc completes. Nothing inside the app navigates to it and
+/// nothing should: a `goTo` into it would be Today claiming she had finished
+/// her first week. It is in `appDestinations` all the same, so `/today/t08` is a
+/// real address a link can carry, and it is built for exactly that reason —
+/// before, it resolved to the developer placeholder. Reachability from a tab
+/// root is the wrong question for an address that arrives from outside.
+const Set<String> _externalEntry = {'T03', 'T08'};
 
 /// Built, but reachable only from a screen that is **not built yet**.
 ///
@@ -236,11 +243,22 @@ bool _excusedForHavingNoRoute(
   final lines = File('lib/routing/app_router.dart').readAsLinesSync();
 
   // `    'T01': (context) => ...` — an entry in `_built`, at map indentation.
-  final entry = RegExp(r"^    '([A-Z]\d{2})':\s*\(context\)");
+  //
+  // The trailing `[a-z]?` is `C09b` and `C10b`, the consent step and the back
+  // of the ID card. They were inserted into a numbered flow whose ids are
+  // referenced across the specs, the plans and the prototype, so they carry a
+  // letter instead of renumbering seven screens.
+  //
+  // Both patterns had to change together, and the one that mattered is the
+  // first. Without it `'C09b': (context)` matches no entry, `current` stays on
+  // the screen above, and every edge in the consent screen's builder is
+  // silently credited to `C09` — a graph that is wrong rather than incomplete,
+  // which is the failure this parser is least able to report.
+  final entry = RegExp(r"^    '([A-Z]\d{2}[a-z]?)':\s*\(context\)");
   // Both ways a screen pushes another. `_goCarryingHandle` is the R08 path: it
   // carries a LogHandle as a route argument, and it is still one tap.
   final edge = RegExp(
-    r"(?:goTo|_goCarryingHandle)\(\s*context,\s*'([A-Z]\d{2})'",
+    r"(?:goTo|_goCarryingHandle)\(\s*context,\s*'([A-Z]\d{2}[a-z]?)'",
   );
 
   final start = lines.indexWhere(
@@ -375,6 +393,16 @@ void main() {
     });
   });
 
+  test('the front door opens the tour, and the tour opens sign-up', () {
+    // Sign-up is a one-time flow, so the depth measure below skips it. These
+    // edges are still the first a woman walks, and the parser can only see
+    // them while each `goTo` names its screen literally.
+    final edges = _navGraph().edges;
+    expect(edges['C01'], containsAll(<String>['C04', 'O03', 'O05', 'C06']));
+    expect(edges['C04'], containsAll(<String>['O03', 'O05', 'C06']));
+    expect(edges['C05'], containsAll(<String>['O03', 'O05', 'C06']));
+  });
+
   test('every built tab root wires its own bottom bar', () {
     // The defect this exists for: `TodayView` declares `onSelectTab` and hands
     // its `AppNavBar` an `onSelect` that calls it — and the `T01` route block
@@ -411,8 +439,11 @@ void main() {
     for (final id in roots) {
       final from = src.indexOf("    '$id': (context)");
       if (from < 0) continue;
+      // `[a-z]?` for the same reason as the parser above: a suffixed id ends
+      // the preceding block just as a numbered one does, and missing it would
+      // make one builder's block swallow the next.
       final next = src.indexOf(
-        RegExp("\\n    '[A-Z]\\d{2}': \\(context\\)"),
+        RegExp("\\n    '[A-Z]\\d{2}[a-z]?': \\(context\\)"),
         from + 1,
       );
       final block = src.substring(from, next < 0 ? src.length : next);

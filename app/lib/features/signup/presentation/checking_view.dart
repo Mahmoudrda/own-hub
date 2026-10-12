@@ -13,9 +13,12 @@
 /// application to keep this community safe and private. This view routes those
 /// states and never accuses.
 ///
-/// Known gap: the dictionary has no copy for the failed, provider-unavailable or
-/// offline states (G1 open question 7), so those are routed rather than
-/// narrated. The screen never invents an untranslated message.
+/// Three states are told on this screen rather than routed, because each is
+/// a stop and none is a review: a daily limit ("try again tomorrow"), an
+/// account that has used every automatic check, and a call that failed while
+/// asking for a reviewer failed too ("we could not reach Own Hub, nothing was
+/// decided"). A refusal goes to `C14`, which says so plainly; a missing
+/// agreement goes back to `C09b`.
 library;
 
 import 'dart:async';
@@ -25,24 +28,54 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
-import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_step_progress.dart';
 import '../domain/verification.dart';
 
 class CheckingView extends StatefulWidget {
   const CheckingView({
     super.key,
     required this.repository,
-    this.fraction = 0.72,
     this.onVerified,
     this.onAwaitingReviewer,
-    this.onContinue,
+    this.onRetake,
+    this.onTryAgain,
+    this.onRejected,
+    this.onConsentNeeded,
+    this.onAskForReviewer,
+    this.onAskForReviewerWhileChecking,
+    this.onClose,
+    this.onSignInAgain,
   });
+
+  /// The server did not accept her sign-in: out to sign in again (N4).
+  final VoidCallback? onSignInAgain;
+
+  /// The server refused her account for good: `C14`, which says so.
+  final VoidCallback? onRejected;
+
+  /// Her agreement is not on file: back to `C09b`.
+  final VoidCallback? onConsentNeeded;
+
+  /// She asks for a woman reviewer: when no automatic check is left, when
+  /// the check could not finish, and once the check has run longer than
+  /// [slowAfter]. The server refuses the last of these while her check is
+  /// still running (`verification_in_progress`), so asking early opens
+  /// nothing; this screen stays underneath and still routes the verdict.
+  final VoidCallback? onAskForReviewer;
+
+  /// The slow-check button's way to the reviewer, so `C15` can say the check
+  /// is still running rather than that it could not start. Falls back to
+  /// [onAskForReviewer].
+  final VoidCallback? onAskForReviewerWhileChecking;
+
+  /// Leaves the "try again tomorrow" stop.
+  final VoidCallback? onClose;
 
   final VerificationRepository repository;
 
-  /// How far round the ring has gone. 72% is the prototype's value.
-  final double fraction;
+  /// How long she waits before the screen says the check is slow.
+  static const Duration slowAfter = Duration(seconds: 20);
 
   /// The check passed — on to `C13`, carrying the result.
   ///
@@ -56,10 +89,18 @@ class CheckingView extends StatefulWidget {
   /// neither is a rejection and both end in the same place.
   final VoidCallback? onAwaitingReviewer;
 
-  /// The prototype's footer button. In the running product the transition is
-  /// the listener above, not a tap; this stays because the design has it and
-  /// because a woman staring at a stalled check needs something to press.
-  final VoidCallback? onContinue;
+  /// The photographs need taking again — back to `C10`.
+  ///
+  /// Falls back to [onAwaitingReviewer] when it is null, which is deliberate
+  /// and not laziness: an unwired build must send her to the video call rather
+  /// than leave her waiting on a screen with no control at all. Stranding a
+  /// woman on a wait is a worse bug than spending a review call she did not
+  /// need.
+  final VoidCallback? onRetake;
+
+  /// "Try again" once the check is slow: her choice, not a verdict, so the
+  /// router can tell the two apart. Falls back to [onRetake].
+  final VoidCallback? onTryAgain;
 
   @override
   State<CheckingView> createState() => _CheckingViewState();
@@ -68,14 +109,27 @@ class CheckingView extends StatefulWidget {
 class _CheckingViewState extends State<CheckingView> {
   StreamSubscription<VerificationState>? _subscription;
 
+  /// A stop told on this screen, or null while the check runs.
+  VerificationState? _stop;
+
+  /// Fires once, [CheckingView.slowAfter] into the wait.
+  Timer? _slowTimer;
+
+  /// True once the check has run longer than usual.
+  bool _slow = false;
+
   @override
   void initState() {
     super.initState();
     _subscription = widget.repository.watch().listen(_onState);
+    _slowTimer = Timer(CheckingView.slowAfter, () {
+      if (mounted) setState(() => _slow = true);
+    });
   }
 
   @override
   void dispose() {
+    _slowTimer?.cancel();
     _subscription?.cancel();
     super.dispose();
   }
@@ -88,38 +142,177 @@ class _CheckingViewState extends State<CheckingView> {
       case VerificationAwaitingReviewer():
       case VerificationNeedsAnotherLook():
         widget.onAwaitingReviewer?.call();
+      case VerificationRetakeNeeded():
+        // Her move, not a reviewer's. See the note on `onRetake`: with nothing
+        // wired up she goes to the video call rather than nowhere at all.
+        (widget.onRetake ?? widget.onAwaitingReviewer)?.call();
+      case VerificationRejected():
+        (widget.onRejected ?? widget.onAwaitingReviewer)?.call();
+      case VerificationConsentNeeded():
+        widget.onConsentNeeded?.call();
+      case VerificationTryTomorrow():
+      case VerificationChecksUsedUp():
+      case VerificationUnreachable():
+      case VerificationAppCannotReach():
+      case VerificationSignInAgain():
+        setState(() => _stop = state);
+      case VerificationReviewOffered():
+        // On to C15 with the "could not finish" wording, once. Coming back
+        // from it lands on the same offer here, not on another push.
+        final first = _stop is! VerificationReviewOffered;
+        setState(() => _stop = state);
+        if (first) widget.onAskForReviewer?.call();
       case VerificationNotStarted():
       case VerificationChecking():
-        break;
+        if (_stop != null) setState(() => _stop = null);
     }
+  }
+
+  Widget _stopped(BuildContext context, VerificationState stop) {
+    final l10n = AppL10n.of(context);
+    final (String title, String body, Widget? action) = switch (stop) {
+      VerificationTryTomorrow() => (
+        l10n.tryAgainTomorrow,
+        l10n.todaysLimitForIdentityChecksHasBeen,
+        widget.onClose == null
+            ? null
+            : AppButton(l10n.close, onPressed: widget.onClose),
+      ),
+      VerificationChecksUsedUp() => (
+        l10n.noAutomaticChecksLeft,
+        l10n.thisAccountHasUsedEveryAutomaticCheck_rc3un,
+        widget.onAskForReviewer == null
+            ? null
+            : AppButton(
+                l10n.askForAWomanReviewer,
+                onPressed: widget.onAskForReviewer,
+              ),
+      ),
+      VerificationReviewOffered() => (
+        l10n.theCheckDidNotFinish,
+        l10n.theAutomaticCheckCouldNotStartJust_1od6p,
+        widget.onAskForReviewer == null
+            ? null
+            : AppButton(
+                l10n.askForAWomanReviewer,
+                onPressed: widget.onAskForReviewer,
+              ),
+      ),
+      VerificationAppCannotReach() => (
+        l10n.thisCopyOfTheAppCannotReach,
+        l10n.pleaseInstallTheLatestVersionFromThe,
+        widget.onClose == null
+            ? null
+            : AppButton(l10n.close, onPressed: widget.onClose),
+      ),
+      VerificationSignInAgain() => (
+        l10n.pleaseSignInAgain,
+        l10n.yourSignInIsNoLongerValid,
+        widget.onSignInAgain == null
+            ? null
+            : AppButton(l10n.signInAgain, onPressed: widget.onSignInAgain),
+      ),
+      _ => (
+        l10n.weCouldNotReachOwnHub,
+        l10n.nothingWasDecidedAndYouAreNot,
+        widget.onRetake == null
+            ? null
+            : AppButton(l10n.tryAgain, onPressed: widget.onRetake),
+      ),
+    };
+    // The offer's other way forward. This screen has no back control, so
+    // "try again" is a button here, not a direction to go back.
+    final tryAgain =
+        stop is VerificationReviewOffered && widget.onRetake != null
+        ? AppButton(
+            l10n.tryAgain,
+            variant: AppButtonVariant.outlined,
+            onPressed: widget.onRetake,
+          )
+        : null;
+    return AppScaffold(
+      appBar: const AppTopBar(),
+      footer: [?action, ?tryAgain],
+      children: [
+        Semantics(
+          liveRegion: true,
+          child: Text(title, style: AppText.headline),
+        ),
+        Text(
+          body,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // No way back out of a running check, by gesture or by button: behind it
+    // are the camera screens, and a late verdict must find this screen where
+    // it left it. Every stop below has its own way forward.
+    return PopScope(canPop: false, child: _body(context));
+  }
+
+  Widget _body(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final stop = _stop;
+    if (stop != null) return _stopped(context, stop);
 
     return AppScaffold(
-      // No lead: there is no stepping back out of a running check.
-      appBar: const AppTopBar(),
+      // No lead: there is no stepping back out of a running check. The title
+      // is where she is in joining, the same count C09b showed.
+      appBar: AppTopBar(title: signupPhaseLabel(l10n, SignupPhase.check)),
       scrollable: false,
-      footer: [AppButton(l10n.continueLabel, onPressed: widget.onContinue)],
+      // No Continue. The only way on is the verdict, which the listener above
+      // routes. A Continue here used to open "You're in" before anything was
+      // decided, so a woman could be told she was verified and then meet the
+      // gate one screen later.
+      //
+      // Once the check is slow she gets two real ways forward, neither of
+      // which claims a verdict: a woman reviewer, or taking the photographs
+      // again. Asking for the reviewer opens C15 over this screen, so a
+      // verdict that still arrives moves her on from here.
+      footer: [
+        if (_slow &&
+            (widget.onAskForReviewerWhileChecking ?? widget.onAskForReviewer) !=
+                null)
+          AppButton(
+            l10n.askForAWomanReviewer,
+            key: const ValueKey('checking-ask-reviewer'),
+            onPressed:
+                widget.onAskForReviewerWhileChecking ?? widget.onAskForReviewer,
+          ),
+        if (_slow && (widget.onTryAgain ?? widget.onRetake) != null)
+          AppButton(
+            l10n.tryAgain,
+            key: const ValueKey('checking-try-again'),
+            variant: AppButtonVariant.outlined,
+            onPressed: widget.onTryAgain ?? widget.onRetake,
+          ),
+      ],
       children: [
         const AppSpacer(),
         Center(
-          // A ring with nothing in it: on this screen the progress *is* the
-          // message and the words underneath carry the detail, so `big` and
-          // `small` are empty exactly as the prototype has them. The label is
-          // announced instead, because a wordless ring is invisible to anyone
-          // not looking at it.
+          // A mark that claims no progress. The ring used to stand at a fixed
+          // 72% while nothing was measured, which is a number she did not
+          // earn. The words underneath carry the detail, and the label is
+          // announced for anyone not looking at it.
           child: Semantics(
             label: l10n.checkingYourCard,
-            child: AppRingStat(
-              fraction: widget.fraction,
-              big: '',
-              small: '',
-              size: 132,
-              thickness: 12,
-              color: AppColors.primary,
+            child: Container(
+              width: 132,
+              height: 132,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.hourglass_top,
+                size: 52,
+                color: AppColors.primary,
+              ),
             ),
           ),
         ),
@@ -133,24 +326,36 @@ class _CheckingViewState extends State<CheckingView> {
             color: AppColors.onPrimaryContainer,
           ),
         ),
+        // The first two are true by the time this screen opens: both sides of
+        // the card and the selfie were taken on the screens before it. The
+        // third is the one the server is working on.
         const _Step(
           icon: Icons.check_circle,
           done: true,
-          labelKey: _StepLabel.cardRead,
+          labelKey: _StepLabel.cardTaken,
         ),
         const _Step(
           icon: Icons.check_circle,
           done: true,
-          labelKey: _StepLabel.selfieMatched,
+          labelKey: _StepLabel.selfieTaken,
         ),
         const _Step(
           icon: Icons.autorenew,
           done: false,
-          labelKey: _StepLabel.finalCheck,
+          labelKey: _StepLabel.matching,
         ),
         const AppSpacer(),
+        if (_slow)
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              l10n.takingLongerThanUsualYourConnectionMay,
+              key: const ValueKey('checking-slow'),
+              style: AppText.bodyM.copyWith(color: AppColors.onSurface),
+            ),
+          ),
         Text(
-          l10n.usuallySecondsIfItNeedsAPerson,
+          l10n.theMatchUsuallyTakesUnderAMinute,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],
@@ -160,7 +365,7 @@ class _CheckingViewState extends State<CheckingView> {
 
 /// Which line a step shows. An enum rather than a string so the three steps
 /// cannot be given copy that is not in the dictionary.
-enum _StepLabel { cardRead, selfieMatched, finalCheck }
+enum _StepLabel { cardTaken, selfieTaken, matching }
 
 class _Step extends StatelessWidget {
   const _Step({required this.icon, required this.done, required this.labelKey});
@@ -173,9 +378,9 @@ class _Step extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final label = switch (labelKey) {
-      _StepLabel.cardRead => l10n.cardRead,
-      _StepLabel.selfieMatched => l10n.selfieMatchedToTheCard,
-      _StepLabel.finalCheck => l10n.finalCheck,
+      _StepLabel.cardTaken => l10n.bothSidesOfYourCardTaken,
+      _StepLabel.selfieTaken => l10n.selfieTaken,
+      _StepLabel.matching => l10n.matchingYourSelfieToYourCard,
     };
 
     return Row(

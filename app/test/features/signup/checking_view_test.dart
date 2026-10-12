@@ -17,6 +17,7 @@ import 'package:own_hub/features/signup/domain/verification_fake.dart';
 import 'package:own_hub/features/signup/presentation/checking_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_button.dart';
 
 Widget _host(
   Widget child, {
@@ -64,9 +65,188 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Checking your card'), findsWidgets);
-    expect(find.text('Card read'), findsOneWidget);
-    expect(find.text('Selfie matched to the card'), findsOneWidget);
-    expect(find.text('Final check'), findsOneWidget);
+    expect(find.text('Both sides of your card taken'), findsOneWidget);
+    expect(find.text('Selfie taken'), findsOneWidget);
+    expect(find.text('Matching your selfie to your card'), findsOneWidget);
+  });
+
+  // The judge's first blocker: a live Continue on this screen opened "You're
+  // in" before any verdict existed.
+  testWidgets('there is no button while the check runs', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AppButton), findsNothing);
+    expect(find.text('Continue'), findsNothing);
+  });
+
+  testWidgets('after 20 seconds it says the check is slow, and waits', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byKey(const ValueKey('checking-slow')), findsNothing);
+
+    await tester.pump(const Duration(seconds: 19));
+    expect(find.byKey(const ValueKey('checking-slow')), findsNothing);
+
+    await tester.pump(const Duration(seconds: 1));
+    expect(
+      find.text(
+        'Taking longer than usual. Your connection may be slow. '
+        'You can keep waiting here.',
+      ),
+      findsOneWidget,
+    );
+    // Nothing wired, so still no way forward but the verdict.
+    expect(find.byType(AppButton), findsNothing);
+  });
+
+  // The judge's 'Ask a woman reviewer' and 'Try again', once the check is
+  // slow and never before: neither claims a verdict.
+  testWidgets('after 20 seconds she may ask a woman reviewer or try again', (
+    tester,
+  ) async {
+    var asked = 0;
+    var askedWhileChecking = 0;
+    var retried = 0;
+    var retaken = 0;
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+          onAskForReviewer: () => asked++,
+          onAskForReviewerWhileChecking: () => askedWhileChecking++,
+          onTryAgain: () => retried++,
+          onRetake: () => retaken++,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 19));
+    expect(find.byKey(const ValueKey('checking-ask-reviewer')), findsNothing);
+    expect(find.byKey(const ValueKey('checking-try-again')), findsNothing);
+    expect(find.byType(AppButton), findsNothing);
+
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Ask for a woman reviewer'), findsOneWidget);
+    expect(find.text('Try again'), findsOneWidget);
+    expect(find.text('Continue'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('checking-ask-reviewer')));
+    await tester.tap(find.byKey(const ValueKey('checking-try-again')));
+    expect(askedWhileChecking, 1);
+    expect(retried, 1);
+    expect(asked, 0, reason: 'the slow button is told apart from a stop');
+    expect(retaken, 0, reason: 'trying again is her choice, not a verdict');
+  });
+
+  testWidgets('the slow buttons fall back to the plain callbacks', (
+    tester,
+  ) async {
+    var asked = 0;
+    var retaken = 0;
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+          onAskForReviewer: () => asked++,
+          onRetake: () => retaken++,
+        ),
+      ),
+    );
+    await tester.pump(CheckingView.slowAfter);
+    await tester.tap(find.byKey(const ValueKey('checking-ask-reviewer')));
+    await tester.tap(find.byKey(const ValueKey('checking-try-again')));
+    expect((asked, retaken), (1, 1));
+  });
+
+  testWidgets('the slow buttons in Arabic', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+          onAskForReviewer: () {},
+          onRetake: () {},
+        ),
+        locale: const Locale('ar'),
+      ),
+    );
+    await tester.pump(CheckingView.slowAfter);
+    expect(find.text('اطلبي مراجِعة'), findsOneWidget);
+    expect(find.text('جرّبي تاني'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a verdict after the slow line still routes', (tester) async {
+    final repository = FakeVerificationRepository(
+      const VerificationState.checking(),
+    );
+    var verified = 0;
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          repository: repository,
+          onVerified: (_) => verified++,
+          onAskForReviewer: () {},
+        ),
+      ),
+    );
+    await tester.pump(CheckingView.slowAfter);
+    repository.decide(_verified());
+    await tester.pumpAndSettle();
+    expect(verified, 1);
+  });
+
+  testWidgets('the back gesture cannot leave a running check', (tester) async {
+    final navigator = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigator,
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+        home: const Scaffold(body: Text('camera')),
+      ),
+    );
+    navigator.currentState!.push(
+      MaterialPageRoute<void>(
+        builder: (_) => CheckingView(
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final popped = await navigator.currentState!.maybePop();
+    await tester.pumpAndSettle();
+
+    expect(popped, isTrue, reason: 'the pop was asked for and refused');
+    expect(find.text('Checking your card'), findsWidgets);
+    expect(find.text('camera'), findsNothing);
   });
 
   testWidgets('promises the woman reviewer before it is needed', (
@@ -173,8 +353,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('نراجع بطاقتك'), findsWidgets);
-    expect(find.text('قُرئت البطاقة'), findsOneWidget);
+    expect(find.text('بنراجع بطاقتك'), findsWidgets);
+    expect(find.text('اتصوّرت بطاقتك من الناحيتين'), findsOneWidget);
     expect(find.text('Checking your card'), findsNothing);
   });
 
@@ -195,5 +375,107 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('stops told on this screen, never a review', () {
+    Future<FakeVerificationRepository> showStop(
+      WidgetTester tester,
+      VerificationState stop, {
+      VoidCallback? onAwaitingReviewer,
+      VoidCallback? onRetake,
+      VoidCallback? onAskForReviewer,
+      VoidCallback? onClose,
+    }) async {
+      final repository = FakeVerificationRepository();
+      await tester.pumpWidget(
+        _host(
+          CheckingView(
+            repository: repository,
+            onAwaitingReviewer: onAwaitingReviewer,
+            onRetake: onRetake,
+            onAskForReviewer: onAskForReviewer,
+            onClose: onClose,
+          ),
+        ),
+      );
+      repository.decide(stop);
+      await tester.pumpAndSettle();
+      return repository;
+    }
+
+    testWidgets('a daily limit says try again tomorrow', (tester) async {
+      var reviews = 0;
+      var closes = 0;
+      await showStop(
+        tester,
+        const VerificationState.tryTomorrow(),
+        onAwaitingReviewer: () => reviews++,
+        onClose: () => closes++,
+      );
+      expect(find.text('Try again tomorrow'), findsOneWidget);
+      expect(reviews, 0);
+      await tester.tap(find.text('Close'));
+      expect(closes, 1);
+    });
+
+    testWidgets('used-up checks offer a reviewer only if she asks', (
+      tester,
+    ) async {
+      var reviews = 0;
+      var asked = 0;
+      await showStop(
+        tester,
+        const VerificationState.checksUsedUp(),
+        onAwaitingReviewer: () => reviews++,
+        onAskForReviewer: () => asked++,
+      );
+      expect(find.text('No automatic checks left'), findsOneWidget);
+      expect(reviews, 0);
+      await tester.tap(find.text('Ask for a woman reviewer'));
+      expect(asked, 1);
+    });
+
+    testWidgets('unreachable says nothing was decided, and retries', (
+      tester,
+    ) async {
+      var retries = 0;
+      await showStop(
+        tester,
+        const VerificationState.unreachable(),
+        onRetake: () => retries++,
+      );
+      expect(find.text('We could not reach Own Hub'), findsOneWidget);
+      expect(find.textContaining('Nothing was decided'), findsOneWidget);
+      await tester.tap(find.text('Try again'));
+      expect(retries, 1);
+    });
+
+    testWidgets('a refused copy of the app is told to update', (tester) async {
+      var reviews = 0;
+      await showStop(
+        tester,
+        const VerificationState.appCannotReach(),
+        onAwaitingReviewer: () => reviews++,
+        onClose: () {},
+      );
+      expect(
+        find.text('This copy of the app cannot reach Own Hub'),
+        findsOneWidget,
+      );
+      expect(reviews, 0);
+    });
+
+    testWidgets('a refusal goes to the screen that says so', (tester) async {
+      var rejected = 0;
+      final repository = FakeVerificationRepository();
+      await tester.pumpWidget(
+        _host(
+          CheckingView(repository: repository, onRejected: () => rejected++),
+        ),
+      );
+      repository.decide(const VerificationState.rejected());
+      await tester.pumpAndSettle();
+      expect(rejected, 1);
+    });
   });
 }

@@ -397,6 +397,11 @@ void main() {
     });
 
     test('the bounds are 2 and 4', () {
+      // Restored. A fixing pass briefly moved the ceiling to five so that O03's
+      // fifth chip would take, which made the two tests above fail and was the
+      // wrong half of the conflict to move: the ceiling is a product rule (this
+      // app counts weeks, not days, and will not set a target it expects her to
+      // miss), and O03's chips are now 2, 3 and 4 to match it.
       expect(kMinSessionsTarget, 2);
       expect(kMaxSessionsTarget, 4);
       // Negative control: a 1 or a 5 must not be inside them.

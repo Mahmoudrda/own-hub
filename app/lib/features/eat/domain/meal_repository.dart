@@ -41,6 +41,8 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
+import '../../../data/pending_answers.dart';
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/week/week_key.dart';
 import 'plate_rollup.dart';
 
@@ -636,8 +638,23 @@ abstract class MealRepository {
   /// branch on the contents rather than on a null.
   Future<MealDay> day(String dayId);
 
+  /// Whether "she has logged nothing" is a fact or only a silence.
+  ///
+  /// Synchronous and about the whole store rather than about one day, because
+  /// the question it answers is not "has she eaten today" — [day] answers that
+  /// — but "is this app in a position to say". `E09` turns an empty day into
+  /// the sentence "Eat, day one", and that sentence is wrong for a woman
+  /// signing in on a new handset while `CloudStore` is still pulling. See
+  /// `lib/data/pending_answers.dart`.
+  DataState get dataState;
+
   /// A live view of the same document, for the screen that is open.
   Stream<MealDay> watchDay(String dayId);
+
+  /// How many meals she has added, across every day this phone holds: a
+  /// meal slot of a day with anything in it is one meal. Counted on the
+  /// phone, for her progress card (P05). Never a query.
+  int get mealsAdded;
 
   /// The single write path for a meal log.
   ///
@@ -685,6 +702,14 @@ class MealStore {
   final Map<String, MealDay> days = <String, MealDay>{};
   final Map<String, MealPlan> plans = <String, MealPlan>{};
   EatPrefs prefs = const EatPrefs();
+
+  /// Every meal she logged, every plan and her eating preferences. Account
+  /// deletion calls it, covering manifest rows 5, 13 and 14.
+  void reset() {
+    days.clear();
+    plans.clear();
+    prefs = const EatPrefs();
+  }
 
   /// Applies a write with the transform semantics Firestore would apply.
   ///
@@ -805,6 +830,15 @@ class InMemoryMealRepository implements MealRepository {
 
   /// The shared documents. Two repositories over one store are two devices.
   final MealStore store;
+
+
+  @override
+  int get mealsAdded => store.days.values.fold(
+    0,
+    (count, day) => count + day.slots.values.where((items) => items.isNotEmpty).length,
+  );
+  @override
+  DataState get dataState => dataStateOf(holdsNothing: store.days.isEmpty);
 
   final String tz;
   final int libVersion;
@@ -942,7 +976,7 @@ class InMemoryMealRepository implements MealRepository {
         ...plan.groceries,
         // Distinct map keys, last-write-wins per key — so two devices ticking
         // two different lines both survive (§4.4).
-        itemKey: line.copyWith(ticked: ticked, tickedAt: DateTime.now()),
+        itemKey: line.copyWith(ticked: ticked, tickedAt: AppClock.now()),
       },
     );
   }

@@ -14,7 +14,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
@@ -37,7 +39,7 @@ class PledgeView extends StatelessWidget {
       footer: [
         AppButton(l10n.iAgreeLetMeIn, onPressed: onAgree),
         Text(
-          l10n.breakOneAndYouLoseYourPlace,
+          l10n.breakingThemCanCloseYourAccountYou,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],
@@ -62,7 +64,10 @@ class PledgeView extends StatelessWidget {
         const HandRule(seed: 43, height: 8),
         _Rule(
           title: l10n.n3NoSellingNoRecruiting,
-          body: l10n.coachesHaveProfilesForThat,
+          // Coach profiles exist only with the coach app.
+          body: AppRouter.featureFlags.isOn(Feature.coachApp)
+              ? l10n.coachesHaveProfilesForThat
+              : l10n.ownHubIsForTrainingNotFor,
         ),
       ],
     );

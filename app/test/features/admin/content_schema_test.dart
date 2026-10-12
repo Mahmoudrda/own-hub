@@ -60,6 +60,16 @@ void main() {
     });
 
     test('recipes', () {
+      // Eight until Rahma's recipe book was authored. The nineteen that follow
+      // are the facts a recipe carries and a CSV can hold: where it sits in her
+      // book, who wrote it, who signed its allergen set, and the figures a
+      // screen renders only when they are present.
+      //
+      // What is NOT here matters as much: `bodyAr`, `steps[]`, `ingredients[]`
+      // and `components[]`. Her forty-line Egyptian colloquial paragraph with
+      // her own line breaks does not survive a CSV round trip, so it arrives as
+      // a JSON sidecar keyed by `recipeId`. `content_schema.dart` says so in
+      // the schema's own header, so the next reader does not "fix" it.
       expect(ContentSchema.of(ContentCollection.recipes).columnNames, [
         'recipeId',
         'name_en',
@@ -69,6 +79,29 @@ void main() {
         'allergens',
         'dietTags',
         'photoFile',
+        'sectionId',
+        'source',
+        'status',
+        'sourcePage',
+        'authoredBy',
+        'allergenReviewedBy',
+        'serves',
+        'activeMinutes',
+        'kcal',
+        'proteinG',
+        'carbsG',
+        'fatG',
+        'macroBasis',
+        'egpPerServing',
+        'egpPricedAt',
+        'advisories',
+        'doneness',
+        'markKey',
+        'tier',
+        // A console recipe's method, one step a line. Not her book's text,
+        // which stays a sidecar; both columns may be absent from a header.
+        'method_ar',
+        'method_en',
       ]);
     });
 
@@ -165,8 +198,13 @@ void main() {
       expect(ContentSchema.of(ContentCollection.foods).safetyTagColumns, [
         'allergens',
       ]);
+      // `advisories` joined `allergens`. It is not an allergen — a pregnancy
+      // note and a favism note are not things she ticks — but it is a safety
+      // vocabulary all the same, so the validator holds it to the same
+      // discipline rather than letting a free-text warning through.
       expect(ContentSchema.of(ContentCollection.recipes).safetyTagColumns, [
         'allergens',
+        'advisories',
       ]);
     });
 

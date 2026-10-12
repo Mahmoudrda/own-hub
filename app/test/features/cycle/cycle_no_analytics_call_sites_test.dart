@@ -45,6 +45,9 @@ const Set<String> _analyticsNames = {
   'AnalyticsValue',
   'AnalyticsSink',
   'NullAnalyticsSink',
+  'AnalyticsUserProperty',
+  'FirebaseAnalytics',
+  'FirebaseAnalyticsSink',
 };
 
 /// Collects analytics identifiers and imports from a parsed unit.
@@ -72,12 +75,14 @@ List<String> _analyticsHitsIn(String source) {
   return visitor.hits;
 }
 
-List<File> _cycleSources() =>
-    Directory('lib/features/cycle')
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((f) => f.path.endsWith('.dart'))
-        .toList();
+/// The feature, and the app-level state that holds her cycle for it.
+List<File> _cycleSources() => [
+  ...Directory('lib/features/cycle')
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where((f) => f.path.endsWith('.dart')),
+  File('lib/app_state/cycle_state.dart'),
+];
 
 void main() {
   test('the cycle feature exists and is being scanned', () {
@@ -94,7 +99,7 @@ void main() {
     );
   });
 
-  test('no file under lib/features/cycle/ has an analytics call site', () {
+  test('no cycle file has an analytics call site', () {
     final offenders = <String>[];
 
     for (final file in _cycleSources()) {
@@ -138,6 +143,13 @@ void main() {
             AnalyticsProp.countBucket: AnalyticsValue.bucket(cramps, [1, 2, 3]),
           });
         }
+      ''';
+      expect(_analyticsHitsIn(offender), isNotEmpty);
+    });
+
+    test('it catches the Firebase SDK directly', () {
+      const offender = '''
+        void log() => FirebaseAnalytics.instance.logEvent(name: 'period_day');
       ''';
       expect(_analyticsHitsIn(offender), isNotEmpty);
     });

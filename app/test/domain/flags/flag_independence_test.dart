@@ -41,6 +41,19 @@ const String _needle = 'FeatureFlags.' 'shipped';
 /// asserted below: an entry that is no longer needed is a failure rather than
 /// a harmless leftover.
 const Map<String, String> _mayReadTheDefaults = <String, String>{
+  'test/features/events/events_member_test.dart':
+      '"ships off" records that Feature.events is off in the shipped set, '
+      'which is the owner\'s promise that nothing about events shows until '
+      'she switches it on. Every other case there sets its own flags.',
+  'test/release/compliance_copy_test.dart':
+      'Its microphone group proves a privacy-policy claim about the build that '
+      'goes to the stores: voice logging is off in the shipped set, so E03 and '
+      'the microphone are unreachable. The shipped set is the thing under test.',
+  'test/release_readiness_test.dart':
+      'Its subject is the build that goes to the stores, so the shipped set is '
+      'the thing under test: that the first release opens on Home, that the '
+      'community and the coach side are dark, and that no testing aid is '
+      'reachable. Every other group in that file sets its own flags.',
   'test/domain/flags/feature_flags_test.dart':
       'Its first group asserts which features the owner has switched on. That '
       'group is the one place where the defaults are the subject rather than '
@@ -52,13 +65,34 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
   'test/features/assistant/assistant_service_test.dart':
       '"the assistant ships dark" records the default position of the kill '
       'switch. Every behavioural case in that file pins its own flags.',
+  'test/features/eat/recipe_guard_test.dart':
+      '"everything is open, because nothing is sold" and "the flag cannot be '
+      'switched on above its parent" both have the shipped position of '
+      '`payments` as their subject: `Feature.recipeTiering` has `payments` as '
+      'its parent, so a paid recipe tier is structurally unreachable rather '
+      'than merely unset. Every other case in that file builds its own world.',
   'test/features/coaching/checkout_gate_test.dart':
       '"this flow ships dark" records the default position of the '
       'marketplace. Every refusal tested around it pins its own flags.',
+  'test/routing/verification_gate_test.dart':
+      'One test there — "the flag is off in the shipped defaults, and that is '
+      'deliberate" — has the default position of `accountRequired` as its '
+      'subject. That flag is now the whole-app gate, and it is switched off '
+      'because the verification functions are not deployed: turning it on '
+      'first would lock out every user, silently. Every other group in that '
+      'file builds its own world.',
   'test/navigation_smoke_test.dart':
       'It pushes every destination through the real router as the app '
       'actually ships, so the defaults are the point of the walk rather than '
       'an inherited convenience.',
+  'test/domain/flags/every_feature_has_a_switch_test.dart':
+      'Its subject is the shipped set itself: that it decides every feature by '
+      'name, that no part ships on under a parent that ships off, and that '
+      'the launch carries no paid surface and no assistant.',
+  'test/store/store_screenshots_test.dart':
+      'The store screenshots must show the product as it ships, so the '
+      'shipped flags are its subject. It overrides only `accountRequired`, '
+      'so the screens open without a verified account.',
 };
 
 List<File> _testFiles() => Directory('test')

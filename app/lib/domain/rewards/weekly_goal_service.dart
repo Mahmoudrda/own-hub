@@ -90,6 +90,31 @@ import 'weekly_goal.dart';
 const int kMinSessionsTarget = 2;
 
 /// The most sessions a weekly goal may ask for.
+///
+/// **Four, and five is not offered anywhere.** `Intake.allowedDays` is 2, 3 and
+/// 4 for the same reason, and the two numbers are one decision.
+///
+/// The defect this settles: O03's chips used to offer 2, 3, 4 and 5 under "Be
+/// honest. This becomes your weekly goal", O05 read her answer back as "Days a
+/// week: 5", and then [WeeklyGoalService.setTarget] refused the five while
+/// `OnboardingState` clamped it at the call site — so the woman who said five
+/// was measured against four for every week afterwards with nothing on any
+/// screen telling her so.
+///
+/// There were two ways out: stop offering five, or let five be a goal. Raising
+/// this constant to five was tried and reversed, because it is not a bound that
+/// happened to be low. This product counts **weeks rather than days** (§2 rule
+/// 3) and the research behind it is explicit that a target a woman misses often
+/// erodes the motivation the product exists to build. Four sessions in a
+/// seven-day week still leaves three days of slack in the worst week; five
+/// leaves two, which is a schedule rather than a goal, and it turns one
+/// unplanned day into a failed week. The screen was asking a question the
+/// rewards system was never willing to answer, so the question changed.
+///
+/// Anything above this is refused and never clamped — see
+/// [WeeklyGoalService.setTarget]. Do not
+/// raise it to add a fifth chip to O03; add the chip only if this comment's
+/// reasoning is overturned by the owner, and then change both in one commit.
 const int kMaxSessionsTarget = 4;
 
 /// `DECISIONS.md` D16 — planned rest days allowed in any one ISO week.

@@ -246,6 +246,9 @@ class _Row extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // A row separator, so `outlineVariant` — the decorative hairline —
+        // is the right role. Nothing is lost by not seeing it; it is here so
+        // two ledger rows do not read as one.
         const ColoredBox(
           color: AppColors.outlineVariant,
           child: SizedBox(height: 1),

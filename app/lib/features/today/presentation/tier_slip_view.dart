@@ -47,6 +47,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/rewards/level_curve.dart';
 import '../../../domain/rewards/rewards.dart';
 import '../../../domain/rewards/stated_figure.dart';
@@ -54,6 +55,7 @@ import '../../../domain/rewards/tier_policy.dart';
 import '../../../domain/rewards/weekly_goal.dart';
 import '../../../domain/week/week_key.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -115,6 +117,11 @@ class _TierSlipViewState extends State<TierSlipView> {
   late final DateTime _date;
   late final bool _showSheet;
 
+  /// She has closed the notice by tapping the scrim. Not persisted, because
+  /// [initState] has already marked the notice seen for the week — this only
+  /// decides whether it is still on screen for the rest of this visit.
+  bool _dismissed = false;
+
   TierStanding get _standing => widget.standing ?? TierStanding.unknown;
 
   @override
@@ -122,7 +129,10 @@ class _TierSlipViewState extends State<TierSlipView> {
     super.initState();
     _ownsRepo = widget.repository == null;
     _repo = widget.repository ?? InMemoryTodayRepository();
-    _date = widget.date ?? DateTime(2026, 9, 14);
+    // Today, not the prototype's Monday. See the same fix in
+    // `quiet_week_view.dart`: the router passes no `date`, so this screen
+    // greeted every woman with 14 September 2026.
+    _date = widget.date ?? AppClock.now();
     final week = WeekKey.of(_date);
 
     // Two conditions, and the order matters. There must be a tier to talk
@@ -147,56 +157,89 @@ class _TierSlipViewState extends State<TierSlipView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
+    final raised = _showSheet && !_dismissed;
+
     return Scaffold(
       backgroundColor: AppColors.surface,
-      body: Stack(
+      // THE BAR IS THE TOP LAYER, AND THE SCRIM STOPS ABOVE IT.
+      //
+      // The rule `already_did_it_view.dart` (T02) states, applied here. The
+      // scrim and the sheet used to be siblings of this Column and were drawn
+      // AFTER it, so all three tabs were painted at the foot of T05 and every
+      // pointer aimed at them was taken by the coloured box on top — and the
+      // box carried no gesture at all, so it was a barrier that barred and did
+      // not dismiss. Between them that left exactly two ways off this screen,
+      // both of them buttons inside a notice she did not ask for.
+      //
+      // `tabs_live_journey_test.dart` names T02, T05 and R05 as the three
+      // screens that did this. All three are fixed now, and `r1_49d` (a real
+      // finger at the painted pixel) is the instrument that can see it —
+      // `tester.semantics.tap` does not hit-test, so the semantics sweeps pass
+      // either way. It cannot see this one on a fresh phone, because the
+      // notice only appears when there is a tier to talk about; that is a gap
+      // in the sweep, not evidence the screen was sound.
+      body: Column(
         children: [
-          Column(
-            children: [
-              Expanded(
-                child: AppScaffold(
+          Expanded(
+            child: Stack(
+              children: [
+                AppScaffold(
                   children: [
                     TodayGreeting(day: weekdayLabel(l10n, _date)),
                     WorkoutCard(
                       onStart: () =>
                           openScreen(context, 'R07', widget.onStartSession),
-                      onRecall: () =>
-                          openScreen(context, 'T02', widget.onRecall),
+                      onRecall: AppRouter.screenIsOn('T02')
+                          ? () => openScreen(context, 'T02', widget.onRecall)
+                          : null,
                     ),
                   ],
                 ),
-              ),
-              AppNavBar(
-                activeScreenId: 'T01',
-                onSelect: (id) {
-                  final onTab = widget.onSelectTab;
-                  if (onTab != null) {
-                    onTab(id);
-                    return;
-                  }
-                  openScreen(context, id);
-                },
-              ),
-            ],
-          ),
-          if (_showSheet) ...[
-            Positioned.fill(
-              child: ColoredBox(color: AppColors.ink.withValues(alpha: 0.45)),
-            ),
-            // Capped against this Stack's own constraints rather than the
-            // window — see the same note in T02.
-            LayoutBuilder(
-              builder: (context, constraints) => Align(
-                alignment: Alignment.bottomCenter,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: constraints.maxHeight * 0.92,
+                if (raised) ...[
+                  Positioned.fill(
+                    child: Semantics(
+                      button: true,
+                      label: l10n.close,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _dismissed = true),
+                        child: ColoredBox(
+                          color: AppColors.ink.withValues(alpha: 0.45),
+                        ),
+                      ),
+                    ),
                   ),
-                  child: SingleChildScrollView(child: _sheet(context, l10n)),
-                ),
-              ),
+                  // Capped against this Stack's own constraints rather than the
+                  // window — see the same note in T02.
+                  LayoutBuilder(
+                    builder: (context, constraints) => Align(
+                      alignment: Alignment.bottomCenter,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: constraints.maxHeight * 0.92,
+                        ),
+                        child: SingleChildScrollView(
+                          child: _sheet(context, l10n),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
+          AppNavBar(
+            // T05, not T01: see the note in `already_did_it_view.dart`.
+            activeScreenId: 'T05',
+            onSelect: (id) {
+              final onTab = widget.onSelectTab;
+              if (onTab != null) {
+                onTab(id);
+                return;
+              }
+              openScreen(context, id);
+            },
+          ),
         ],
       ),
     );

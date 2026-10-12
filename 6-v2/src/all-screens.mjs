@@ -22,8 +22,25 @@ import { screens as inventory, flows } from './inventory.mjs';
 const built = [...signup, ...onboarding, ...today, ...train, ...eat, ...progress, ...cycle, ...coached, ...community, ...coaching, ...account, ...coach, ...coachbrand, ...coachplan, ...coachbuild, ...firstrun, ...firstweek, ...assistant, ...admin];
 const byId = new Map(built.map(s => [s.id, s]));
 
+// A screen designed after the mockup was drawn has no markup here, and saying so
+// is the honest answer rather than a throw.
+//
+// The throw below is the integrity check that stops an inventory row being added
+// and then forgotten — a route to a screen nobody drew. It was right until two
+// screens arrived the other way round: C09b and C10b were designed straight into
+// Flutter during the verification build, so the inventory and the Dart both have
+// them and the mockup never will. The generator then refused to run AT ALL, which
+// took `app_routes.dart`, `app_tokens.dart` and both ARB files with it: nobody
+// could add a UI string to this project until this line changed.
+//
+// So the exception is per screen and explicit. `noMockup: true` in inventory.mjs
+// is a claim someone had to write down, which is what makes it different from a
+// silent fallback that would let a genuinely forgotten screen through.
 export const all = inventory.map(inv => {
   const b = byId.get(inv.id);
+  if (!b && inv.noMockup) {
+    return { ...inv, html: '', metric: '', note: 'Designed in Flutter, after the mockup. No markup here by decision; see inventory.mjs.' };
+  }
   if (!b) throw new Error(`no markup for screen ${inv.id}`);
   return { ...inv, ...b };
 });

@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/account/domain/safety.dart';
 import 'package:own_hub/features/account/presentation/safety_centre_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -43,9 +45,26 @@ Widget _host(
 Widget _screen({
   required InMemoryBlockService blocks,
   required InMemoryReportService reports,
-}) => SafetyCentreView(blockService: blocks, reportService: reports);
+  VoidCallback? onTalkToAHuman,
+  String Function(String uid)? nameOf,
+}) => SafetyCentreView(
+  blockService: blocks,
+  reportService: reports,
+  onTalkToAHuman: onTalkToAHuman,
+  nameOf: nameOf,
+);
 
 void main() {
+  // Every row here is about other women — verified members, reporting one,
+  // blocking one. A04 is tested in the build that has a community.
+  final savedFlags = AppRouter.featureFlags;
+  setUp(
+    () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.community: true,
+    }),
+  );
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('the screen renders its authored rows', () {
     testWidgets('verification, reporting, blocking, help and the 122 line', (
       tester,
@@ -57,6 +76,7 @@ void main() {
           _screen(
             blocks: InMemoryBlockService(selfUid: _self),
             reports: InMemoryReportService(reporterUid: _self),
+            onTalkToAHuman: () {},
           ),
         ),
       );
@@ -75,6 +95,104 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets('but the support row is absent while its page has no address', (
+      tester,
+    ) async {
+      // The rule A03 already follows, and the one `release_readiness_test`
+      // asserts: a row is drawn only once its page has somewhere to go. On the
+      // safety screen a "Talk to a human" that does nothing is worse than no
+      // row at all, because a woman who taps it concludes there is nobody.
+      _phone(tester);
+
+      await tester.pumpWidget(
+        _host(
+          _screen(
+            blocks: InMemoryBlockService(selfUid: _self),
+            reports: InMemoryReportService(reporterUid: _self),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Talk to a human'), findsNothing);
+      expect(find.text('Report someone'), findsOneWidget);
+    });
+  });
+
+  group('the rows that used to do nothing', () {
+    testWidgets('blocked members opens the list, and unblocking works', (
+      tester,
+    ) async {
+      _phone(tester);
+      final blocks = InMemoryBlockService(selfUid: _self);
+      await blocks.block('uid-nada', BlockSource.post);
+
+      await tester.pumpWidget(
+        _host(
+          _screen(
+            blocks: blocks,
+            reports: InMemoryReportService(reporterUid: _self),
+            nameOf: (uid) => uid == 'uid-nada' ? 'Nada' : '',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Blocked members'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nada'), findsOneWidget);
+      await tester.tap(find.text('Unblock'));
+      await tester.pumpAndSettle();
+
+      expect(blocks.blocks(), isEmpty);
+      expect(find.text('You have not blocked anyone.'), findsOneWidget);
+    });
+
+    testWidgets('and says so plainly when she has blocked nobody', (
+      tester,
+    ) async {
+      _phone(tester);
+
+      await tester.pumpWidget(
+        _host(
+          _screen(
+            blocks: InMemoryBlockService(selfUid: _self),
+            reports: InMemoryReportService(reporterUid: _self),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Blocked members'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('You have not blocked anyone.'), findsOneWidget);
+    });
+
+    testWidgets('the report question answers itself in three steps', (
+      tester,
+    ) async {
+      _phone(tester);
+
+      await tester.pumpWidget(
+        _host(
+          _screen(
+            blocks: InMemoryBlockService(selfUid: _self),
+            reports: InMemoryReportService(reporterUid: _self),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('What happens when I report?'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('You pick a reason and send it.'), findsOneWidget);
+      expect(find.text('A woman on the team reads it.'), findsOneWidget);
+      expect(find.text('She tells you what she did about it.'), findsOneWidget);
     });
   });
 
@@ -177,10 +295,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // The count is real (2) and the dictionary string happens to say "2
-      // blocked" — which would be right for her and wrong for everybody else.
-      // There is no parameterised form, so the subtitle is absent.
+      // The dictionary's "2 blocked" is the mockup's figure: right for her and
+      // wrong for everybody else. The parameterised form is what the row uses,
+      // so the count on screen is the count she has.
       expect(find.text('2 blocked'), findsNothing);
+      expect(find.text('Blocked: 2'), findsOneWidget);
       expect(blocks.blocks(), hasLength(2));
     });
 

@@ -10,6 +10,84 @@
 	<false/>
 	<key>CFBundleDisplayName</key>
 	<string>Own Hub</string>
+	<!-- The permission sheet is product copy, not a legal line. iOS shows this
+	     sentence under "Own Hub would like to access the camera", at the moment
+	     an Egyptian woman is deciding whether to hand over a photograph of her
+	     national ID card, and it is the only thing on that sheet we control.
+	     So it says what is taken and what happens to it afterwards, because
+	     "to verify your identity" answers neither question.
+
+	     Localised in en.lproj and ar.lproj/InfoPlist.strings; this copy is the
+	     development-region fallback and must stay in step with them. There is
+	     deliberately NO NSPhotoLibraryUsageDescription and no library
+	     entitlement anywhere in this target: the card is photographed live, and
+	     a flow that could take an existing picture could take a picture of
+	     someone else's card. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman. Nothing is uploaded until you tap send. The photographs are read in memory and never stored.</string>
+	<!-- Both locales the app ships in, so iOS picks the right
+	     InfoPlist.strings instead of falling back to English on an
+	     Arabic handset. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ar</string>
+	</array>
+	<!-- The way Firebase phone auth gets back INTO the app on iOS.
+	     Without this the sign-up flow cannot complete by either route, which
+	     is why it is here rather than filed as a nicety. Firebase verifies the
+	     app one of two ways: a silent push, or a reCAPTCHA web view. The push
+	     needs three things: aps-environment in Runner.entitlements and
+	     UIBackgroundModes remote-notification below (both here), and the
+	     APNs auth key uploaded to Firebase (the owner's step). Until that key
+	     is uploaded the web view is the live path, and it hands control back
+	     through this URL scheme. With no scheme registered it opens, she solves it, and then
+	     nothing happens: the callback has nowhere to land and the six-digit
+	     code never arrives.
+	     The value is the REVERSED_CLIENT_ID from GoogleService-Info.plist. It
+	     is not a secret; it is the client id read backwards and it ships in
+	     every build of every Firebase iOS app. Adding an APNs key later does
+	     not make this removable, because the web view stays the fallback
+	     whenever the push does not arrive. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.681714989950-ig46eu1jg345idchla73e8f8v0s9gr86</string>
+			</array>
+		</dict>
+		<!-- The Home Screen and Lock Screen widgets open the app with
+		     ownhub://widget?homeWidget=1&to=T01 (or R03, P01, E01).
+		     lib/app_state/widget_links.dart maps `to` through a whitelist and
+		     pushes it through the router, so the verification gate applies. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.ownhub.app.widget</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ownhub</string>
+			</array>
+		</dict>
+	</array>
+	<!-- Flutter's own deep linking is off. Left on, it would push every URL
+	     the app is opened with as a route name, so a widget URL would land on
+	     the unknown-route page, and Flutter documents that it breaks plugins
+	     that handle links themselves (home_widget, and the Firebase phone
+	     auth callback above). -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
+	<!-- Firebase phone auth verifies the app with a silent push before it
+	     falls back to reCAPTCHA. A silent push reaches the app only with this
+	     background mode. It shows nothing and asks for no permission. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -21,6 +99,36 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>FirebaseCrashlyticsCollectionEnabled</key>
+	<false/>
+	<!-- Usage statistics ("Help improve Own Hub") are off until she turns
+	     them on in C06 or Privacy; lib/app_state/firebase_boot.dart then
+	     grants analytics storage and enables collection, and turning it off
+	     disables collection and resets the instance id. Consent mode v2
+	     defaults: every storage denied. Advertising storage, ad user data
+	     and ad personalisation are never granted: Own Hub shows no
+	     advertising. No IDFV, no advertising identifier (the analytics pod is
+	     FirebaseAnalytics/Core, without AdSupport: see ios/Podfile and
+	     tool/build_release.sh), no on-device conversion measurement, and no
+	     automatic screen views (the router logs screen ids itself). -->
+	<key>FIREBASE_ANALYTICS_COLLECTION_ENABLED</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_ANALYTICS_STORAGE</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_STORAGE</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_USER_DATA</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_PERSONALIZATION_SIGNALS</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_ADID_COLLECTION_ENABLED</key>
+	<false/>
+	<key>GOOGLE_ADS_ON_DEVICE_CONVERSION_EVENT_DATA_ENABLED</key>
+	<false/>
+	<key>FirebaseAutomaticScreenReportingEnabled</key>
+	<false/>
 	<key>CFBundleName</key>
 	<string>own_hub</string>
 	<key>CFBundlePackageType</key>

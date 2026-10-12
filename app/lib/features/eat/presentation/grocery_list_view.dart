@@ -21,6 +21,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/week/week_key.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
@@ -64,7 +65,7 @@ class _GroceryListViewState extends State<GroceryListView> {
 
   WeekPlanView? _view;
 
-  DateTime get _now => widget.now ?? DateTime.now();
+  DateTime get _now => widget.now ?? AppClock.now();
   String get _weekId => WeekKey.of(_now).id;
 
   @override
@@ -110,6 +111,10 @@ class _GroceryListViewState extends State<GroceryListView> {
         actions: [
           IconButton(
             onPressed: widget.onShare,
+            // Named. It was an icon with no tooltip, no label and no hint, so
+            // E08 shipped a tappable a screen reader announces as nothing at
+            // all — the only unnamed control on the screen.
+            tooltip: l10n.share,
             iconSize: 24,
             color: AppColors.onSurfaceVariant,
             icon: const Icon(Icons.share),
@@ -117,7 +122,10 @@ class _GroceryListViewState extends State<GroceryListView> {
         ],
       ),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'E01',
+        // E08, which is what this screen is. Claiming 'E01' marked the Eat tab
+        // active, and the active tab is not a link to itself — so the Eat tab
+        // was dead from the grocery list.
+        activeScreenId: 'E08',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {

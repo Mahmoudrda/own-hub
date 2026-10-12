@@ -31,7 +31,7 @@ const Map<String, String> _arabicAllowed = {
   'lib/features/signup/presentation/language_view.dart':
       'C02 is the language chooser. It must be readable by a woman who has not '
       'chosen a language yet, so the heading appears in both languages at '
-      'once and each option is labelled with its own name. "العربية" is an '
+      'once and each option is labelled with its own name. "عربي" is an '
       'endonym — a language\'s name in itself — and endonyms are never '
       'translated. This is the only screen where hardcoded Arabic is correct.',
 

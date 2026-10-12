@@ -604,9 +604,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await _type(tester, 'معرّف الطعام', 'koshari');
-      await _type(tester, 'الاسم (بالإنجليزية)', 'Koshari');
-      await _type(tester, 'الاسم (بالعربية)', 'كشري');
+      await _type(tester, 'معرّف الأكلة', 'koshari');
+      await _type(tester, 'الاسم (بالإنجليزي)', 'Koshari');
+      await _type(tester, 'الاسم (بالعربي)', 'كشري');
       await _type(tester, 'سعرة', '٤٣٠');
       await _type(tester, 'البروتين (جم)', '13');
       await _type(tester, 'مسببات الحساسية', 'gluten');
@@ -788,6 +788,9 @@ void main() {
       await _type(tester, 'Ingredients', 'pastry|milk|nuts');
       await _type(tester, 'Allergens', 'nuts|dairy');
       await _type(tester, 'Diet tags', 'vegetarian');
+      // Two different people, or the rules refuse the write.
+      await _type(tester, 'Author', 'content_team');
+      await _type(tester, 'Allergens checked by', 'qa_reviewer');
       await _save(tester);
 
       expect(
@@ -1007,10 +1010,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('أضيفي تمرينًا'), findsOneWidget);
-      expect(find.text('وسوم موانع الأداء'), findsOneWidget);
+      expect(find.text('ضيفي حركة'), findsOneWidget);
+      expect(find.text('وسوم الموانع'), findsOneWidget);
       expect(
-        Directionality.of(tester.element(find.text('أضيفي تمرينًا'))),
+        Directionality.of(tester.element(find.text('ضيفي حركة'))),
         TextDirection.rtl,
       );
       expect(tester.takeException(), isNull);
@@ -1031,7 +1034,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('اكتبي «لا شيء» عند عدم وجودها. والفراغ ليس كذلك.'),
+        find.text('اكتبي «none» لو مفيش. والخانة الفاضية مش نفس الحاجة.'),
         findsWidgets,
       );
       expect(find.text('مطلوب'), findsWidgets);

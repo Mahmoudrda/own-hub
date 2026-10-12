@@ -1,26 +1,36 @@
-// `K01`–`K06`, against the prototype.
+// The coach's setup, one thing a screen, against the prototype.
 //
-// The two that carry rules rather than layout are `K01` (rule 6 — blur defaults
-// on, and showing her face is a named action with its consequence stated) and
-// `K02` (a certificate is picked from a verified list, never typed).
+// The steps that carry rules rather than layout are `K01` (rule 6 — blur
+// defaults on, and showing her face is a named action with its consequence
+// stated), `K02` (a certificate is picked from a verified list, never typed),
+// `K11` and `K12` (a coach cannot author a client's result or words, so the
+// steps show the shape with nothing invented in it) and `K13` (the three rules,
+// agreed with one tick).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/features/coach/domain/coach_credentials.dart';
 import 'package:own_hub/features/coach/domain/coach_profile.dart';
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/coach/domain/coach_verification.dart';
 import 'package:own_hub/features/coach/domain/payments.dart';
 import 'package:own_hub/features/coach/presentation/coach_basics_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_being_checked_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_certificates_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_packages_view.dart';
+import 'package:own_hub/features/coach/presentation/coach_how_you_coach_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_payout_view.dart';
+import 'package:own_hub/features/coach/presentation/coach_photo_view.dart';
+import 'package:own_hub/features/coach/presentation/coach_results_step_view.dart';
+import 'package:own_hub/features/coach/presentation/coach_reviews_step_view.dart';
+import 'package:own_hub/features/coach/presentation/coach_rules_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_specialties_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_view_models.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_step_bar.dart';
 import 'package:own_hub/ui/app_toggle.dart';
 
 final _issued = DateTime(2025, 11, 4);
@@ -79,19 +89,58 @@ CertificateDraft _draft() => CertificateDraft.validate(
 )!;
 
 void main() {
+  group('the walk — one thing a screen, counted', () {
+    final saved = AppRouter.featureFlags;
+    tearDown(() => AppRouter.featureFlags = saved);
+
+    test('eleven steps when her page is on, in her order', () {
+      AppRouter.featureFlags = FeatureFlags.allOff.with_({
+        Feature.coachApp: true,
+        Feature.coachPortfolio: true,
+        Feature.coachResults: true,
+        Feature.coachReviews: true,
+      });
+      expect(coachSetupWalk().map((s) => s.screenId), [
+        'K01',
+        'K08',
+        'K03',
+        'K10',
+        'K04',
+        'K11',
+        'K12',
+        'K02',
+        'K13',
+        'K05',
+        'K06',
+      ]);
+      expect(CoachSetupStep.packages.next, CoachSetupStep.results);
+    });
+
+    test('results and reviews are skipped, and not counted, while her page '
+        'is off', () {
+      AppRouter.featureFlags = FeatureFlags.allOff.with_({
+        Feature.coachApp: true,
+      });
+      expect(coachSetupWalk(), isNot(contains(CoachSetupStep.results)));
+      expect(coachSetupWalk(), isNot(contains(CoachSetupStep.reviews)));
+      expect(CoachSetupStep.total, 9);
+      expect(CoachSetupStep.packages.next, CoachSetupStep.certificates);
+    });
+  });
+
   group('K01 — rule 6 is a named action with its consequence stated', () {
     testWidgets(
       'blur is on when she arrives, and the line says what that means',
       (tester) async {
         _phone(tester);
-        await tester.pumpWidget(_host(CoachBasicsView(model: _model())));
+        await tester.pumpWidget(_host(CoachPhotoView(model: _model())));
         await tester.pumpAndSettle();
 
-        // The bar counts from `CoachSetupStep`, so it cannot disagree with the
-        // flow it is counting. It read "Step 1 of 6" from six fixed dictionary
-        // strings before that.
-        expect(find.text('1 of 6'), findsOneWidget);
-        expect(find.text('Tell clients who you are'), findsOneWidget);
+        // The bar counts the walk, so it cannot disagree with the flow it is
+        // counting, and the line under it fills to the same step.
+        expect(find.text('1 of ${CoachSetupStep.total}'), findsOneWidget);
+        expect(find.byType(AppStepBar), findsOneWidget);
+        expect(find.text('Add a photo of you'), findsOneWidget);
         expect(find.text('Blur faces in my photos'), findsOneWidget);
         expect(find.text('Faces blurred before it uploads'), findsOneWidget);
         expect(
@@ -109,7 +158,7 @@ void main() {
       (tester) async {
         _phone(tester);
         final model = _model();
-        await tester.pumpWidget(_host(CoachBasicsView(model: model)));
+        await tester.pumpWidget(_host(CoachPhotoView(model: model)));
         await tester.pumpAndSettle();
 
         await tester.tap(find.byType(AppToggle));
@@ -124,21 +173,40 @@ void main() {
       },
     );
 
-    testWidgets('Continue waits for a name and a city', (tester) async {
+    testWidgets('a photo is asked for, never demanded', (tester) async {
       _phone(tester);
+      var continued = 0;
+      await tester.pumpWidget(
+        _host(
+          CoachPhotoView(model: _model(), onContinue: () => continued++),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(continued, 1);
+    });
+
+    testWidgets('the camera is offered only when there is one to open', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(CoachPhotoView(model: _model())));
+      await tester.pumpAndSettle();
+      expect(find.text('Take a photo'), findsNothing);
+
       final model = _model();
-      await tester.pumpWidget(_host(CoachBasicsView(model: model)));
+      await tester.pumpWidget(
+        _host(
+          CoachPhotoView(model: model, onTakePhoto: () async => null),
+        ),
+      );
       await tester.pumpAndSettle();
-
-      expect(model.canAdvanceFrom(CoachSetupStep.basics), isFalse);
-
-      await tester.enterText(find.byType(TextField).at(0), 'Hala Mansour');
-      await tester.enterText(find.byType(TextField).at(1), 'Tanta');
+      expect(find.text('Take a photo'), findsOneWidget);
+      await tester.tap(find.text('Take a photo'));
       await tester.pumpAndSettle();
-
-      expect(model.canAdvanceFrom(CoachSetupStep.basics), isTrue);
-      expect(model.displayName, 'Hala Mansour');
-      expect(model.city, 'Tanta');
+      // She closed the camera: nothing is kept.
+      expect(model.photo, isNull);
     });
 
     testWidgets('it renders in Arabic without English leaking through', (
@@ -146,13 +214,44 @@ void main() {
     ) async {
       _phone(tester);
       await tester.pumpWidget(
-        _host(CoachBasicsView(model: _model()), locale: const Locale('ar')),
+        _host(CoachPhotoView(model: _model()), locale: const Locale('ar')),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Tell clients who you are'), findsNothing);
+      expect(find.text('Add a photo of you'), findsNothing);
       expect(find.text('Blur faces in my photos'), findsNothing);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('K08 — her name, her city and one line', () {
+    testWidgets('Continue waits for a name and a city', (tester) async {
+      _phone(tester);
+      final model = _model();
+      await tester.pumpWidget(_host(CoachBasicsView(model: model)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tell clients who you are'), findsOneWidget);
+      expect(model.canAdvanceFrom(CoachSetupStep.about), isFalse);
+
+      await tester.enterText(find.byType(TextField).at(0), 'Hala Mansour');
+      await tester.enterText(find.byType(TextField).at(1), 'Tanta');
+      await tester.pumpAndSettle();
+
+      expect(model.canAdvanceFrom(CoachSetupStep.about), isTrue);
+      expect(model.displayName, 'Hala Mansour');
+      expect(model.city, 'Tanta');
+    });
+
+    testWidgets('it asks nothing else: no photo, no switch, no rules', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(CoachBasicsView(model: _model())));
+      await tester.pumpAndSettle();
+      expect(find.byType(AppToggle), findsNothing);
+      expect(find.byType(CheckboxListTile), findsNothing);
+      expect(find.byType(TextField), findsNWidgets(3));
     });
 
     testWidgets('and does not overflow at the largest text size in Arabic', (
@@ -168,6 +267,67 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('K10 — languages and where her clients train, and nothing else', () {
+    testWidgets('both chip groups, each tap kept', (tester) async {
+      _phone(tester);
+      final model = _model();
+      await tester.pumpWidget(_host(CoachHowYouCoachView(model: model)));
+      await tester.pumpAndSettle();
+      expect(find.text('How you coach'), findsOneWidget);
+      await tester.tap(find.text('English'));
+      await tester.tap(find.text('At home'));
+      await tester.pumpAndSettle();
+      expect(model.languages, contains(CoachLanguage.english));
+      expect(model.clientPlaces, contains(ClientPlace.atHome));
+    });
+  });
+
+  group('K11 and K12 — the shape of what her clients give, nothing invented',
+      () {
+    testWidgets('K11 shows a before and an after with no figures and no '
+        'upload', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(const CoachResultsStepView()));
+      await tester.pumpAndSettle();
+      expect(find.text("Your clients' results"), findsOneWidget);
+      expect(find.text('Before'), findsOneWidget);
+      expect(find.text('After'), findsOneWidget);
+      expect(find.textContaining(RegExp(r'\d')), findsNWidgets(1),
+          reason: 'only the bar title carries a number');
+      expect(find.byType(TextField), findsNothing);
+    });
+
+    testWidgets('K12 shows the label and no words she did not write', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(const CoachReviewsStepView()));
+      await tester.pumpAndSettle();
+      expect(find.text('What your clients say'), findsOneWidget);
+      expect(find.text('Coached here'), findsOneWidget);
+      expect(find.byType(TextField), findsNothing);
+    });
+  });
+
+  group('K13 — the three rules, agreed with one tick', () {
+    testWidgets('Continue waits for her agreement', (tester) async {
+      _phone(tester);
+      final model = _model();
+      var continued = 0;
+      await tester.pumpWidget(
+        _host(CoachRulesView(model: model, onContinue: () => continued++)),
+      );
+      await tester.pumpAndSettle();
+      expect(model.canAdvanceFrom(CoachSetupStep.rules), isFalse);
+      await tester.tap(find.text('I agree to these three rules'));
+      await tester.pumpAndSettle();
+      expect(model.rulesAgreed, isTrue);
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(continued, 1);
     });
   });
 
@@ -299,7 +459,8 @@ void main() {
       ]) {
         expect(find.text(label), findsOneWidget, reason: label);
       }
-      expect(find.text('Where your clients train'), findsOneWidget);
+      // One question: where her clients train is the next screen (K10).
+      expect(find.text('Where your clients train'), findsNothing);
     });
 
     testWidgets('the fourth tap does nothing', (tester) async {
@@ -423,7 +584,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('6 of 6'), findsOneWidget);
+      // The last step of the walk, whatever the walk's length.
+      expect(
+        find.text('${CoachSetupStep.total} of ${CoachSetupStep.total}'),
+        findsOneWidget,
+      );
       expect(find.text("We're checking your certificates"), findsOneWidget);
       expect(find.text('You can start now'), findsOneWidget);
       expect(

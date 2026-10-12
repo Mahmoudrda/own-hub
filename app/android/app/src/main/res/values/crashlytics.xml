@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Own Hub does not apply the Crashlytics Gradle plugin (its compatibility with
+  AGP 9.1 is unverified, and Dart stack traces do not need it). Without the
+  plugin no build id is injected, and the Crashlytics Android SDK refuses to
+  start unless this check is turned off. Native crashes are then reported
+  without a mapping-file id, which only affects symbolication.
+-->
+<resources>
+    <bool name="com.crashlytics.RequireBuildId">false</bool>
+</resources>

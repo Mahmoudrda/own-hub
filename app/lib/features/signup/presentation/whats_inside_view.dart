@@ -12,7 +12,9 @@ import '../../../theme/app_art.dart';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
@@ -68,8 +70,8 @@ class WhatsInsideView extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         // The prototype sets an 18px gap on this body rather than the default
-        // 10, because four stacked promises need air to read as four things.
-        // The pencil rules take that gap, so the four read as entries in a list.
+        // 10, because stacked promises need air to read as separate things.
+        // The pencil rules take that gap, so they read as entries in a list.
         _Promise(
           icon: Icons.volume_off,
           title: l10n.quietWorkoutsForHome,
@@ -81,18 +83,38 @@ class WhatsInsideView extends StatelessWidget {
           title: l10n.foodYouAlreadyCook,
           body: l10n.koshariFulAndMolokhiaInThePortions,
         ),
+        // Tracking her cycle is one of the reasons she installs the app, and
+        // the pitch never said so. Promised only with My cycle on.
+        if (AppRouter.featureFlags.isOn(Feature.cycle)) ...[
+          const HandRule(seed: 34, height: 8),
+          _Promise(
+            icon: Icons.water_drop_outlined,
+            title: l10n.yourCycleOnThisPhone,
+            body: l10n.noteYourPeriodAndHowYouFeel,
+          ),
+        ],
         const HandRule(seed: 32, height: 8),
         _Promise(
           icon: Icons.verified_user,
           title: l10n.womenOnlyEveryMemberChecked,
-          body: l10n.everyAccountIsVerifiedWithIdBefore,
+          // "A single post" names the community; with it off the promise is
+          // the check itself.
+          body: AppRouter.featureFlags.isOn(Feature.community)
+              ? l10n.everyAccountIsVerifiedWithIdBefore
+              : l10n.everyAccountIsVerifiedWithIdBefore_p7ucu,
         ),
-        const HandRule(seed: 33, height: 8),
-        _Promise(
-          icon: Icons.sports_gymnastics,
-          title: l10n.coachesWhoGetIt,
-          body: l10n.verifiedWomenCoachesPaidMonthlyInEgyptian,
-        ),
+        // Coaches she pays monthly need the coach app, the directory and a
+        // payment rail. `payments` sits under `marketplace`, so one check on
+        // each end covers all three.
+        if (AppRouter.featureFlags.isOn(Feature.coachApp) &&
+            AppRouter.featureFlags.isOn(Feature.payments)) ...[
+          const HandRule(seed: 33, height: 8),
+          _Promise(
+            icon: Icons.sports_gymnastics,
+            title: l10n.coachesWhoGetIt,
+            body: l10n.verifiedWomenCoachesPaidMonthlyInEgyptian,
+          ),
+        ],
       ],
     );
   }

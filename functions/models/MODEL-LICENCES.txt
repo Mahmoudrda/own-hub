@@ -1,0 +1,108 @@
+Bundled model weights — licences, provenance, and why these two and not the
+obvious ones.
+
+Checked on 2026-09-25 against the upstream repositories. Re-check before any
+model is swapped: a permissive code licence on a repository does NOT imply a
+permissive licence on the weights inside it, and this is precisely where face
+recognition projects trip people up.
+
+
+-------------------------------------------------------------------------------
+1. face_detection_yunet_2023mar.onnx          (232,589 bytes)
+-------------------------------------------------------------------------------
+Purpose      Face detection + 5 facial landmarks. Used on the ID card portrait
+             and on every selfie frame.
+Upstream     https://github.com/opencv/opencv_zoo
+             models/face_detection_yunet/face_detection_yunet_2023mar.onnx
+Author       Shiqi Yu and Wei Wu (Shenzhen Institute of Artificial Intelligence
+             and Robotics for Society).
+Licence      MIT.
+             The directory README states verbatim:
+               "All files in this directory are licensed under MIT License."
+             MIT permits commercial use, modification and redistribution, and
+             requires only that the copyright notice and permission notice be
+             preserved. See LICENCE-yunet-MIT.txt in this directory.
+Published
+accuracy     WIDER Face validation set, AP:
+               Easy 0.8844   Medium 0.8656   Hard 0.7503
+             Our images are the easy end of that distribution: one large,
+             deliberately-framed, cooperative face. The Hard column is small
+             faces in crowds, which we never see.
+SHA-256      8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4
+
+
+-------------------------------------------------------------------------------
+2. face_recognition_sface_2021dec.onnx        (38,696,353 bytes)
+-------------------------------------------------------------------------------
+Purpose      128-dimension face embedding. Used to compare the card portrait
+             with the selfie, and the selfie frames with each other.
+Upstream     https://github.com/opencv/opencv_zoo
+             models/face_recognition_sface/face_recognition_sface_2021dec.onnx
+Author       Yaoyao Zhong (https://github.com/zhongyy), ONNX conversion by
+             Chengrui Wang. Architecture is MobileFaceNet trained under the
+             SFace loss.
+Paper        "SFace: Sigmoid-Constrained Hypersphere Loss for Robust Face
+             Recognition", https://arxiv.org/abs/2205.12010
+Licence      Apache License 2.0.
+             The directory README states verbatim:
+               "All files in this directory are licensed under Apache 2.0
+                License."
+             Apache 2.0 permits commercial use and includes an express patent
+             grant, which matters more than usual for face recognition — this
+             is a patent-dense field and a bare MIT grant would leave that
+             question open. See LICENCE-sface-Apache-2.0.txt.
+Published
+accuracy     0.9940 (float32) on the benchmark reported in the OpenCV Zoo
+             results table. See the CAVEAT below before quoting this number.
+SHA-256      0ba9fbfa01b5270c96627c4ef784da859931e02f04419c829e83484087c34e79
+
+
+-------------------------------------------------------------------------------
+CAVEAT on the published accuracy figure — read this before quoting it
+-------------------------------------------------------------------------------
+0.9940 is a verification accuracy on a benchmark of ordinary photographs of the
+same person. That is NOT the task this function performs.
+
+Our task is card-portrait-to-live-selfie:
+  * the card portrait is a laminated, sub-300-DPI print of a photograph that may
+    be up to seven years old (Egyptian national ID cards are valid for seven
+    years), re-photographed by a phone through a reflective surface;
+  * the selfie is a live capture under whatever light is in her room;
+  * for a large share of our users the card portrait shows a hijab and the
+    selfie may not, or the other way round.
+
+Every one of those shifts the similarity distribution downward relative to the
+benchmark. The published number therefore sets an optimistic ceiling and gives
+us no usable false-accept or false-reject rate for our own population. The
+operating point in identity/config.py is set conservatively for that reason,
+with an explicit band routed to a human rather than guessed at. See the
+reasoning recorded there.
+
+
+-------------------------------------------------------------------------------
+Models deliberately NOT used
+-------------------------------------------------------------------------------
+InsightFace / ArcFace pretrained packs (buffalo_l and friends)
+    Higher accuracy than SFace, and unusable here. The InsightFace project
+    states that its pretrained models are available for non-commercial research
+    purposes only. A paid product gating paid accounts is commercial use. The
+    accuracy would have been nice; the licence is not negotiable, and "nobody
+    checks" is not a licensing strategy for a company that will one day be
+    audited.
+
+dlib_face_recognition_resnet_model_v1
+    dlib's own code is Boost Software License, which is fine. The recognition
+    weights were trained on a scrape that includes datasets with research-only
+    terms, and dlib's model repository does not carry a clean, unambiguous
+    commercial grant covering that file. Unresolved provenance is the same
+    problem as a bad licence, so it was left alone.
+
+FaceNet ports (davidsandberg / facenet-pytorch)
+    MIT code, but the distributed checkpoints are trained on VGGFace2 and
+    CASIA-WebFace, whose own terms are research-oriented. Same unresolved
+    provenance question as dlib.
+
+A hosted face-match API (AWS Rekognition, Azure Face, Google Cloud Vision's
+face features)
+    Cost aside, sending her face to a third party is the exact thing this
+    design exists to avoid. Vision is used here for text only.

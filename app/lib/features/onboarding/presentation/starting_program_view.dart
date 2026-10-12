@@ -14,7 +14,18 @@
 /// programme and renders **no card at all** for a programme it has no copy for,
 /// rather than inventing a name for it.
 ///
+/// # Before sign-up
+///
+/// With [beforeSignup] this is the end of the short "Your week": her answers,
+/// the programme, and one way on, "Save my week and join". The note says what
+/// is next in plain words: one check keeps Own Hub women only, then day one is
+/// hers. There is no "start now" here, because nothing behind the gate opens
+/// before the check.
+///
 /// # "Pick a different program" goes to the Workout library
+///
+/// Drawn only while the catalogue holds more than one programme. With one, the
+/// button offered a choice that does not exist.
 ///
 /// The design routes it to `R11` (`screens-onboarding.mjs:37`), which the screen
 /// inventory names **"Workout library"** — 124 videos with filters, not a
@@ -37,15 +48,16 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
-import '../../../ui/app_media.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
 import '../domain/starting_program.dart';
+import 'her_answers.dart';
 
 /// The copy for one programme. Held together so a programme can never render a
 /// title from one entry and a description from another.
@@ -59,7 +71,29 @@ class StartingProgramView extends StatelessWidget {
     this.onStartNow,
     this.onStartTomorrow,
     this.onPickDifferentProgram,
+    this.beforeSignup = false,
+    this.onSaveAndJoin,
+    this.onSaveMyWeek,
+    this.title,
+    this.onBack,
   });
+
+  /// The end of the short "Your week", before she has an account.
+  final bool beforeSignup;
+
+  /// "Save my week and join": on to her number.
+  final VoidCallback? onSaveAndJoin;
+
+  /// "Save my week", the one way on when she built her week while a woman
+  /// reviewer has her check. Non-null replaces the start buttons: day one is
+  /// behind the gate until the check is done.
+  final VoidCallback? onSaveMyWeek;
+
+  /// The bar title, when the screen has a bar (before sign-up it does).
+  final String? title;
+
+  /// Back to "Your week", when the screen has a bar.
+  final VoidCallback? onBack;
 
   final IntakeRepository repository;
 
@@ -76,17 +110,23 @@ class StartingProgramView extends StatelessWidget {
   /// `R11` — the Workout library. See the note at the top of this file.
   final VoidCallback? onPickDifferentProgram;
 
+  // Her answers are read back by [herAnswersLine], shared with day-one Home.
+
   /// Dictionary copy for a programme id, or null when none has been written.
   ///
   /// TODO(owner): extend this with the authored catalogue. A programme with no
   /// copy renders no card, which is visibly incomplete — the deliberate
   /// alternative to showing her an English id or an invented name.
-  _ProgramCopy? _copyFor(AppL10n l10n, String programId) {
+  _ProgramCopy? _copyFor(AppL10n l10n, String programId, Intake intake) {
     switch (programId) {
       case 'beginner_foundations':
         return (
           title: l10n.beginnerFoundations,
-          detail: l10n.n8WeeksQuietNoEquipment,
+          // "Quiet, no equipment" is a promise about training at home. A
+          // woman who said she trains at a gym is not told it.
+          detail: intake.place == TrainingPlace.home
+              ? l10n.n8WeeksQuietNoEquipment
+              : l10n.n8WeeksForBeginners,
           firstWeek: l10n.week1StartsWithFourMovesOn,
         );
     }
@@ -98,52 +138,77 @@ class StartingProgramView extends StatelessWidget {
     final l10n = AppL10n.of(context);
     final Intake intake = repository.read();
     final program = selectStartingProgram(intake, catalogue: catalogue);
-    final copy = program == null ? null : _copyFor(l10n, program.programId);
+    final copy = program == null
+        ? null
+        : _copyFor(l10n, program.programId, intake);
+    final offersAnotherProgram =
+        catalogue.length > 1 && AppRouter.screenIsOn('R11');
 
     return AppScaffold(
-      footer: [
-        AppButton(
-          l10n.startDay1Now,
-          icon: Icons.play_arrow,
-          onPressed: onStartNow,
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: AppButton(
-                l10n.iWillStartTomorrow,
-                variant: AppButtonVariant.text,
-                height: 44,
-                fontSize: 15,
-                onPressed: onStartTomorrow,
+      appBar: title == null && onBack == null
+          ? null
+          : AppTopBar(title: title ?? '', onBack: onBack),
+      footer: beforeSignup
+          ? [AppButton(l10n.saveMyWeekAndJoin, onPressed: onSaveAndJoin)]
+          : onSaveMyWeek != null
+          ? [
+              AppButton(
+                l10n.saveMyWeek,
+                key: const ValueKey('o05-save-my-week'),
+                onPressed: onSaveMyWeek,
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: AppButton(
-                l10n.pickADifferentProgram,
-                variant: AppButtonVariant.text,
-                height: 44,
-                fontSize: 15,
-                onPressed: onPickDifferentProgram,
+            ]
+          : [
+              AppButton(
+                l10n.startDay1Now,
+                icon: Icons.play_arrow,
+                onPressed: onStartNow,
               ),
-            ),
-          ],
-        ),
-      ],
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      l10n.iWillStartTomorrow,
+                      variant: AppButtonVariant.text,
+                      height: 44,
+                      fontSize: 15,
+                      onPressed: onStartTomorrow,
+                    ),
+                  ),
+                  if (offersAnotherProgram) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: AppButton(
+                        l10n.pickADifferentProgram,
+                        variant: AppButtonVariant.text,
+                        height: 44,
+                        fontSize: 15,
+                        onPressed: onPickDifferentProgram,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // "Your answers", never a count: the walk is five questions or
+            // six, or three in the short "Your week".
             Text(
-              l10n.builtFromYourFourAnswers,
+              l10n.builtFromYourAnswers,
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
             const SizedBox(height: 6),
             // Her answers read back, at section scale under the small kicker.
             Text(
-              l10n.threeDaysAWeek15MinutesAt,
+              herAnswersLine(
+                l10n,
+                intake,
+                placeAnswered: repository.placeAnswered,
+              ),
               style: EditorialType.section.copyWith(
                 color: AppColors.onPrimaryContainer,
               ),
@@ -189,16 +254,43 @@ class StartingProgramView extends StatelessWidget {
                   ),
                 ],
               ),
-              // A still, not a video: O05 costs zero video egress (G2 §2.4).
-              // The prototype labels this block "coach demo still" in a
-              // monospace face — a designer's annotation marking what goes
-              // here, like "logotype" on C01, and not copy to be read aloud.
-              const AppMedia(height: 130),
+              // The prototype had a still here, labelled "coach demo still" in
+              // a monospace face: a designer's annotation marking what goes in
+              // the slot, like "logotype" on C01. There is no still to put in
+              // it, and an empty media block with a play button on the last
+              // screen of setup is a control that plays nothing, on the screen
+              // that hands her into the app. It comes back with the asset.
               Text(
                 copy.firstWeek,
                 style: AppText.bodyM.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
+              ),
+            ],
+          ),
+        // What happens next, before she taps: one check, then day one.
+        if (beforeSignup)
+          AppCard(
+            variant: AppCardVariant.sage,
+            borderRadius: AppRadius.md,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.verified_user_outlined,
+                    size: 24,
+                    color: AppColors.tertiary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.oneQuickCheckKeepsOwnHubWomen,
+                      style: AppText.bodyM.copyWith(color: AppColors.onSurface),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -216,9 +308,17 @@ class StartingProgramView extends StatelessWidget {
                   color: AppColors.tertiary,
                 ),
                 const SizedBox(width: 10),
+                // "Your week: Monday, Tuesday and Thursday. Change any day by
+                // tapping it." was false twice over. Nothing in this product
+                // schedules a weekday, so there were no days to change and no
+                // tap that changed one; and §2 rule 3 is that this app counts
+                // weeks and never days, so naming three of them on the last
+                // screen of setup taught her the opposite of how her week is
+                // scored. What the card says now is the rule that actually
+                // governs it.
                 Expanded(
                   child: Text(
-                    l10n.yourWeekMondayTuesdayAndThursdayChange,
+                    l10n.yourWeekCountsWhenYouFinishYour,
                     style: AppText.bodyM.copyWith(color: AppColors.onSurface),
                   ),
                 ),

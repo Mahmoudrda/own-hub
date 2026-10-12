@@ -46,7 +46,9 @@ class AlreadyDidItView extends StatefulWidget {
     this.onOpenMeal,
     this.onSpeak,
     this.onSelectTab,
+    this.onDismiss,
     this.plannedDetail,
+    this.lastOtherTitle,
     this.lastOtherDetail,
   });
 
@@ -54,7 +56,15 @@ class AlreadyDidItView extends StatefulWidget {
   final LogCommandBus? bus;
 
   /// Where a saved session lands — R12, "Logged from memory".
-  final VoidCallback? onLogged;
+  ///
+  /// **It is handed the session, and the id on it is the one Progress must
+  /// credit.** This used to be a plain `VoidCallback`, so the router had no id
+  /// to credit with and invented one keyed to the day. Today's three rows carry
+  /// three ids (`-planned`, `-other`, `-time<minutes>`), so a woman who logged
+  /// her planned session and then a walk on the same day was counted twice by
+  /// Home and once by Progress — the same disagreement as the missing dedupe in
+  /// `logRecalledSession`, arriving by a different route. One id, both ledgers.
+  final ValueChanged<RecalledSession>? onLogged;
 
   final VoidCallback? onStartSession;
   final VoidCallback? onOpenMeal;
@@ -66,16 +76,35 @@ class AlreadyDidItView extends StatefulWidget {
 
   final ValueChanged<String>? onSelectTab;
 
-  /// What today's planned session actually is — "15 min · 5 moves · last
-  /// week's weights" — and what her last other session was — "20 min · 6
-  /// moves". Null renders the row with its name and no second line.
+  /// Closes the sheet. Wired to the scrim, which is what a woman taps when she
+  /// opened this by accident.
   ///
-  /// They were two fixed strings, and T02 is handed no plan and no history: no
-  /// repository read on this screen returns either. So a woman recalling a
-  /// twenty-five-minute session of eight moves was offered "15 min · 5 moves ·
-  /// last week's weights" — including a claim about weights from a week she may
-  /// not have trained — and then tapped Save on it.
+  /// Null falls back to popping the route. The scrim used to be a
+  /// `Positioned.fill` over the whole Stack with no gesture on it at all, so it
+  /// was a barrier that barred and did not dismiss, and it also swallowed every
+  /// tap meant for the bottom bar underneath it.
+  final VoidCallback? onDismiss;
+
+  /// What today's planned session actually is — "15 minutes, 5 moves". Null
+  /// renders the row with its name and no second line.
+  ///
+  /// It was a fixed string, and T02 is handed no plan: no repository read on
+  /// this screen returns one. So a woman recalling a twenty-five-minute session
+  /// of eight moves was offered "15 min · 5 moves · last week's weights" —
+  /// including a claim about weights from a week she may not have trained — and
+  /// then tapped Save on it.
   final String? plannedDetail;
+
+  /// Her last other session, named and described. **Both or neither**: the row
+  /// is drawn only when [lastOtherTitle] is supplied.
+  ///
+  /// This row was "Upper body, like last Thursday" with a fixed second line,
+  /// offered to every woman on a fresh install, and tapping Save wrote that
+  /// sentence into her log as the session's title. Nothing in this build can
+  /// name her last other session — `TrainSession` carries no title and there is
+  /// no history read here — so the router passes nothing and the row is not
+  /// drawn. It returns with the data, not before.
+  final String? lastOtherTitle;
   final String? lastOtherDetail;
 
   @override
@@ -135,7 +164,8 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
       ),
     );
     showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
-    openScreen(context, 'R12', widget.onLogged);
+    final onLogged = widget.onLogged;
+    openScreen(context, 'R12', onLogged == null ? null : () => onLogged(session));
   }
 
   void _saveDuration(int index) {
@@ -153,35 +183,93 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
     );
   }
 
+  /// Closes the sheet. The caller's route if it gave one, otherwise a pop.
+  void _dismiss() {
+    final onDismiss = widget.onDismiss;
+    if (onDismiss != null) {
+      onDismiss();
+      return;
+    }
+    unawaited(Navigator.of(context).maybePop());
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      // THE BAR IS THE TOP LAYER, AND THE SCRIM STOPS ABOVE IT.
+      //
+      // The bar used to be a sibling drawn *under* a `Positioned.fill` scrim,
+      // so all three tabs were painted, marked live, and could not be touched:
+      // every pointer that reached them was taken by the coloured box on top.
+      // `tester.semantics.tap` does not hit-test, so every dead-control sweep
+      // in this repository passed it.
+      //
+      // So the scrim and the sheet live inside the Expanded above the bar, and
+      // the bar is the last thing laid down. Nothing overlaps it, which is also
+      // why the sheet can no longer cover the tabs it claims to keep live.
       body: Stack(
         children: [
           // Today, still visible underneath — she is logging against this day.
+          AppScaffold(
+            children: [
+              TodayGreeting(day: weekdayLabel(l10n, _day.date)),
+              WorkoutCard(
+                onStart: () => openScreen(context, 'R07', widget.onStartSession),
+              ),
+              MealCard(
+                loggedAt: _day.mealLoggedAt,
+                onTap: () => openScreen(context, 'E02', widget.onOpenMeal),
+              ),
+            ],
+          ),
           Column(
             children: [
               Expanded(
-                child: AppScaffold(
+                child: Stack(
                   children: [
-                    TodayGreeting(day: weekdayLabel(l10n, _day.date)),
-                    WorkoutCard(
-                      onStart: () =>
-                          openScreen(context, 'R07', widget.onStartSession),
+                    Positioned.fill(
+                      child: Semantics(
+                        button: true,
+                        label: l10n.close,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _dismiss,
+                          child: ColoredBox(
+                            color: AppColors.ink.withValues(alpha: 0.45),
+                          ),
+                        ),
+                      ),
                     ),
-                    MealCard(
-                      loggedAt: _day.mealLoggedAt,
-                      onTap: () =>
-                          openScreen(context, 'E02', widget.onOpenMeal),
+                    // Capped against the space this Stack actually has, not
+                    // against the window. A sheet that measured itself with
+                    // MediaQuery.sizeOf would collapse to nothing anywhere the
+                    // ambient MediaQuery is not the full screen — still drawn,
+                    // still in the tree, but impossible to tap.
+                    LayoutBuilder(
+                      builder: (context, constraints) => Align(
+                        alignment: Alignment.bottomCenter,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: constraints.maxHeight * 0.92,
+                          ),
+                          child: SingleChildScrollView(
+                            child: _sheet(context, l10n),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
               AppNavBar(
-                activeScreenId: 'T01',
+                // T02, not T01. The active tab is deliberately not a link to
+                // itself, so a screen that claims to be Home while it is a
+                // sheet over Home leaves the Home tab drawn, marked active,
+                // and doing nothing. Its own id keeps all three tabs live.
+                activeScreenId: 'T02',
                 onSelect: (id) {
                   final onTab = widget.onSelectTab;
                   if (onTab != null) {
@@ -192,24 +280,6 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
                 },
               ),
             ],
-          ),
-          Positioned.fill(
-            child: ColoredBox(color: AppColors.ink.withValues(alpha: 0.45)),
-          ),
-          // Capped against the space this Stack actually has, not against the
-          // window. A sheet that measured itself with MediaQuery.sizeOf would
-          // collapse to nothing anywhere the ambient MediaQuery is not the full
-          // screen — still drawn, still in the tree, but impossible to tap.
-          LayoutBuilder(
-            builder: (context, constraints) => Align(
-              alignment: Alignment.bottomCenter,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: constraints.maxHeight * 0.92,
-                ),
-                child: SingleChildScrollView(child: _sheet(context, l10n)),
-              ),
-            ),
           ),
         ],
       ),
@@ -242,19 +312,24 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
             ),
           ),
         ),
-        AppListItem(
-          title: l10n.upperBodyLikeLastThursday,
-          subtitle: widget.lastOtherDetail ?? '',
-          trailing: AppLogButton(
-            l10n.save,
-            onPressed: () => _save(
-              RecalledSession(
-                id: 'recalled-${_dateStamp()}-upper',
-                title: l10n.upperBodyLikeLastThursday,
+        // Her last other session, and only when something has told us what it
+        // was. The title is whatever the caller names, never a string from this
+        // file: it becomes `RecalledSession.title`, so an invented one does not
+        // stay on the screen, it goes into her log.
+        if (widget.lastOtherTitle case final String lastOther)
+          AppListItem(
+            title: lastOther,
+            subtitle: widget.lastOtherDetail ?? '',
+            trailing: AppLogButton(
+              l10n.save,
+              onPressed: () => _save(
+                RecalledSession(
+                  id: 'recalled-${_dateStamp()}-other',
+                  title: lastOther,
+                ),
               ),
             ),
           ),
-        ),
         AppCard(
           variant: AppCardVariant.filled,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

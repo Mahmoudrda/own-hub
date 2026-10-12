@@ -28,6 +28,7 @@ import '../../../ui/app_pill.dart';
 import '../../../ui/app_scaffold.dart';
 import '../domain/voice_note.dart';
 import 'coached_widgets.dart';
+import '../../../ui/hand/hand_seed_name.dart';
 
 class VoiceNoteView extends StatelessWidget {
   const VoiceNoteView({
@@ -177,7 +178,10 @@ class VoiceNoteView extends StatelessWidget {
 
 /// The bars while she records. Decoration: a real waveform of her voice would
 /// be a second copy of it.
-class _RecordingWaveform extends StatelessWidget {
+class _RecordingWaveform extends StatelessWidget implements HandSeedName {
+  @override
+  String get handSeedName => '_RecordingWaveform';
+
   const _RecordingWaveform();
 
   static const List<double> _heights = [
@@ -209,7 +213,8 @@ class _RecordingWaveform extends StatelessWidget {
               child: Container(
                 height: h,
                 decoration: BoxDecoration(
-                  color: i < 9 ? AppColors.primary : AppColors.outlineVariant,
+                  // Played against unplayed: a state, so `outline`.
+                  color: i < 9 ? AppColors.primary : AppColors.outline,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),

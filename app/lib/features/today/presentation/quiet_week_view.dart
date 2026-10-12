@@ -36,14 +36,20 @@
 ///     cannot disagree;
 ///   * the headline goes through `statedLine`, because the dictionary's only
 ///     form of it has "14" inside it. A woman with nine counted weeks is told
-///     that a rest week covered her week — which is true — and is not told she
-///     has fourteen. A parameterised headline is a reported dictionary gap.
+///     that a rest week covered her week and is not told she has fourteen. A
+///     parameterised headline is a reported dictionary gap;
+///   * and the card that carries both is drawn only when [WeeklyGoal
+///     .lastRepairedWeek] names a week. That sentence was unconditional and
+///     T04 has a route: P01 links to it, so a phone switched on that morning
+///     was two taps from being told a rest week had covered a week she was not
+///     here for.
 library;
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/rewards/stated_figure.dart';
 import '../../../domain/rewards/weekly_goal.dart';
 import '../../../domain/week/week_key.dart';
@@ -102,7 +108,11 @@ class _QuietWeekViewState extends State<QuietWeekView> {
     super.initState();
     _ownsRepo = widget.repository == null;
     _repo = widget.repository ?? InMemoryTodayRepository();
-    _date = widget.date ?? DateTime(2026, 9, 14);
+    // Today, not the prototype's Monday. `DateTime(2026, 9, 14)` was the
+    // mockup's date and the router passes no `date`, so T04 greeted every woman
+    // with "Monday 14 September" for ever while Home, T02 and R10 beside it all
+    // said the real day.
+    _date = widget.date ?? AppClock.now();
     // Shown once, never again that week.
     unawaited(_repo.markNoticeSeen(NoticeKind.quietWeek, WeekKey.of(_date)));
   }
@@ -118,6 +128,9 @@ class _QuietWeekViewState extends State<QuietWeekView> {
     final l10n = AppL10n.of(context);
     final week = _repo.day.week;
 
+    // The week a rest week covered, or null if none did. See the card below.
+    final repairedWeek = widget.goal?.lastRepairedWeek;
+
     // 'Your 14 weeks are safe' — a fixed string with her count inside it.
     final safe = statedLine<int>(
       l10n.your14WeeksAreSafe,
@@ -128,7 +141,10 @@ class _QuietWeekViewState extends State<QuietWeekView> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'T01',
+        // T04, not T01: see the note in `already_did_it_view.dart`. Claiming
+        // Home here killed the Home tab on the one screen a woman opens after
+        // a week she missed.
+        activeScreenId: 'T04',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {
@@ -143,34 +159,46 @@ class _QuietWeekViewState extends State<QuietWeekView> {
           TodayGreeting(day: weekdayLabel(l10n, _date)),
           // What was protected, before anything else on the screen.
           //
-          // The explanation is unconditional because it is true of every woman
-          // whose week was repaired: a rest week covered it, nothing changed,
-          // and the next one comes after four counted weeks — which is G6's own
-          // published cadence, not an inferred threshold.
-          AppCard(
-            variant: AppCardVariant.sage,
-            gap: 8,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.spa, size: 24, color: AppColors.tertiary),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: safe == null
-                        ? Text(
-                            l10n.aRestWeekCoveredLastWeekSo,
-                            style: AppText.body,
-                          )
-                        : Text(safe, style: AppText.titleM),
-                  ),
-                ],
-              ),
-              if (safe != null)
-                Text(l10n.aRestWeekCoveredLastWeekSo, style: AppText.body),
-            ],
-          ),
+          // **Only when a rest week actually covered one.** The sentence says
+          // "A rest week covered last week, so nothing changed" and it was
+          // printed unconditionally, to a phone that had been switched on that
+          // morning: P01 draws a row to T04, so two taps from Progress on day
+          // one told a brand-new woman that a rest week had covered a week she
+          // was not here for, at `restWeeksBanked = 0, countedWeeks = 0`. Same
+          // class as the headline three lines above, which already goes through
+          // `statedLine` for stating "14".
+          //
+          // [WeeklyGoal.lastRepairedWeek] is the field G6 publishes for exactly
+          // this — "so T04 can report a repair from the user document it
+          // already read" — so a repair it does not name is a repair that did
+          // not happen. Null also covers the caller that has wired no goal at
+          // all, which is the same answer: say nothing about her weeks rather
+          // than guess.
+          if (repairedWeek != null)
+            AppCard(
+              variant: AppCardVariant.sage,
+              gap: 8,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.spa, size: 24, color: AppColors.tertiary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: safe == null
+                          ? Text(
+                              l10n.aRestWeekCoveredLastWeekSo,
+                              style: AppText.body,
+                            )
+                          : Text(safe, style: AppText.titleM),
+                    ),
+                  ],
+                ),
+                if (safe != null)
+                  Text(l10n.aRestWeekCoveredLastWeekSo, style: AppText.body),
+              ],
+            ),
           // Then the ask, shrunk to the smallest thing that still counts.
           //
           // Set on the page as the cover, the way Today sets its session, with
@@ -226,7 +254,7 @@ class _QuietWeekViewState extends State<QuietWeekView> {
           ),
           const HandRule(seed: 53, height: 18),
           MealCard(
-            title: l10n.orJustLogBreakfast,
+            title: l10n.orJustAddBreakfast,
             loggedAt: DateTime(_date.year, _date.month, _date.day, 8, 40),
             onTap: () => openScreen(context, 'E02', widget.onOpenMeal),
           ),

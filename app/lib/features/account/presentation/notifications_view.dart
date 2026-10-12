@@ -56,8 +56,12 @@ class NotificationCopy {
       NotificationKind.groupMilestone => null,
       // Awaiting `{name} and {count} others liked your best`.
       NotificationKind.reaction => null,
-      // Awaiting a slot-parameterised nudge; the shipped string is breakfast
-      // only ("Breakfast, your usual?").
+      // The four slot strings now exist — `mealNudgeHeading` in
+      // `today_cards.dart` picks one from the hour, which is what T03 draws.
+      // What this switch cannot do is reach them: it is handed a [kind] and no
+      // notification, so it has no `createdAt` to read the slot from, and a
+      // meal nudge listed under the wrong meal is the defect T03 just had.
+      // Closing this means giving `titleFor` the row rather than its kind.
       NotificationKind.mealNudge => null,
       // Awaiting G7 Q11's MVP event set and its copy.
       NotificationKind.weekClosed => null,
@@ -80,7 +84,16 @@ class NotificationsView extends StatelessWidget {
     this.onRequestPermission,
     this.onOpenOsSettings,
     this.onSelectTab,
+    this.remindersOn = false,
+    this.onOpenReminders,
   });
+
+  /// Whether her training reminders are set.
+  final bool remindersOn;
+
+  /// The training reminders sheet: her days, her time, or off. No row when
+  /// null.
+  final VoidCallback? onOpenReminders;
 
   /// Already paged and capped by the repository. A01 never asks for more than
   /// [kInboxPageSize].
@@ -91,6 +104,12 @@ class NotificationsView extends StatelessWidget {
   final VoidCallback? onBack;
 
   /// The gear in the app bar, which the prototype sends to A02.
+  ///
+  /// The router used to send it to `A03`, the privacy centre. A gear on a
+  /// notifications screen does not mean "privacy" to anybody, and it carried no
+  /// label or tooltip, so a screen reader announced it as "button" and a
+  /// sighted woman had no way to guess. It is labelled, and it goes where the
+  /// line above always said it goes.
   final VoidCallback? onOpenSettings;
 
   /// Offers the OS prompt. Never called on open — G7 §3.1: the product prompts
@@ -121,12 +140,33 @@ class NotificationsView extends StatelessWidget {
             onPressed: onOpenSettings,
             iconSize: 24,
             color: AppColors.onSurface,
+            tooltip: l10n.settings,
             icon: const Icon(Icons.settings),
           ),
         ],
       ),
-      footer: [AppNavBar(activeScreenId: 'T01', onSelect: onSelectTab)],
+      // Its own id: A01 is not a tab, and claiming Home was the active one left
+      // the Home tab drawn and unresponsive. See `profile_view.dart`.
+      footer: [AppNavBar(activeScreenId: 'A01', onSelect: onSelectTab)],
       children: [
+        // Where she changes or stops the reminders she chose on R10.
+        if (onOpenReminders != null)
+          AppListItem(
+            key: const ValueKey('a01-reminders'),
+            leading: const Icon(
+              Icons.alarm,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.trainingReminders,
+            subtitle: remindersOn ? l10n.remindersAreOn : l10n.remindersAreOff,
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.onSurfaceVariant,
+            ),
+            onTap: onOpenReminders,
+          ),
         if (view.showsPermissionPrompt)
           AppListItem(
             leading: const Icon(
@@ -134,7 +174,20 @@ class NotificationsView extends StatelessWidget {
               size: 24,
               color: AppColors.primaryDim,
             ),
-            title: l10n.turnOnNotificationsSoWeCanTell,
+            // What this release can actually notify her about.
+            //
+            // It read "Turn on notifications so we can tell you when your
+            // check is done" — ID-verification copy, for a check this build
+            // does not run and a sign-up flow that is switched off. The
+            // promise below it, on the same screen, has always been "one nudge
+            // a day at most, at the hour you usually log", so that is what the
+            // permission is asked for.
+            title: l10n.turnNotificationsOnSoWeCanNudge,
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.onSurfaceVariant,
+            ),
             onTap: onRequestPermission,
           )
         else if (view.showsSettingsDeepLink)

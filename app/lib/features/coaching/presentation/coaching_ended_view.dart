@@ -170,7 +170,7 @@ class CoachingEndedView extends StatelessWidget {
 
         // Only when a Function really did it.
         if (model.maySaySharingCleared)
-          CoachingNote(l10n.yourOwnWorkoutsRecipesLogsAndMy),
+          CoachingNote(l10n.yourOwnWorkoutsRecipesMealsAndMy),
       ],
     );
   }

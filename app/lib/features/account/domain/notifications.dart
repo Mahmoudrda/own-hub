@@ -201,6 +201,13 @@ class InMemoryNotificationsRepository implements NotificationsRepository {
     return nudges.take(3).toList();
   }
 
+  /// Empties her inbox. Account deletion calls it; manifest row 15.
+  void reset() {
+    _items.clear();
+    reads.clear();
+    outcomes.clear();
+  }
+
   void _replace(String id, AppNotification Function(AppNotification) f) {
     final at = _items.indexWhere((n) => n.id == id);
     if (at >= 0) _items[at] = f(_items[at]);

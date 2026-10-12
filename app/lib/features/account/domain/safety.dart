@@ -383,4 +383,16 @@ class InMemoryReportService implements ReportService {
     _reports.add(report);
     return report;
   }
+
+  /// Drops every report she filed. Account deletion calls it.
+  ///
+  /// On a server, manifest row 30 **pseudonymises** the report rather than
+  /// deleting it: the safety record has to survive her leaving. There is no
+  /// server here and no other woman's copy to keep, so the only honest local
+  /// answer is to remove what is on this phone.
+  void reset() {
+    _reports.clear();
+    _seq = 0;
+    _online = true;
+  }
 }

@@ -15,12 +15,18 @@
 /// worth.
 library;
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../theme/app_art.dart';
 
 import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
+import '../../../domain/rewards/stated_figure.dart';
 import '../../../l10n/app_l10n.dart';
+// `weekdayLabel` is Home's, and the two screens must name the day the same
+// way or a woman sees Thursday on one and Tuesday on the next.
+import '../../today/presentation/today_cards.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -29,20 +35,39 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/train_repository.dart';
+import 'reminder_sheet.dart';
 
 class FinishedView extends StatelessWidget {
   const FinishedView({
     super.key,
     this.onBackToToday,
+    this.onPlanDinners,
     this.onShare,
     this.session,
+    this.finishedOn,
     this.sessionsThisWeek = 2,
     this.sessionsPrescribed = 3,
     this.levelProgressPercent = 50,
     this.eligibility = const PersonalBestEligibility(),
+    this.offerReminders = false,
+    this.onChooseReminderDays,
+    this.onDismissReminderOffer,
   });
 
+  /// The one-time offer of training reminders, after the first session she
+  /// finishes. Never shown again once she has answered it.
+  final bool offerReminders;
+
+  /// Opens the reminders sheet.
+  final VoidCallback? onChooseReminderDays;
+
+  /// "Not now": the offer is not made again. Notifications still has it.
+  final VoidCallback? onDismissReminderOffer;
+
   final VoidCallback? onBackToToday;
+
+  /// "Plan this week's dinners", the next step's second way on: `E07`.
+  final VoidCallback? onPlanDinners;
 
   /// Community. Hands over an intent only — no post is written from here.
   final VoidCallback? onShare;
@@ -50,6 +75,10 @@ class FinishedView extends StatelessWidget {
   /// The session just finished. Decides whether a personal best may be shown at
   /// all: only a measured live session can set one.
   final TrainSession? session;
+
+  /// The day she finished. Null means today, which is what it always is in
+  /// the product: this screen is shown the moment a session ends.
+  final DateTime? finishedOn;
 
   final int sessionsThisWeek;
   final int sessionsPrescribed;
@@ -89,19 +118,31 @@ class FinishedView extends StatelessWidget {
 
     // A live session may show the trophy. A recalled or unplanned one never
     // can — the numbers were copied or absent, not measured.
+    //
+    // **And no session at all can.** This read `session == null || eligible`,
+    // so the absence of a session was treated as permission, and the router
+    // passed none: every woman who reached R10 was handed "A personal best",
+    // including on her very first session, one tap away from a P03 that says
+    // "Nothing saved yet". An unstated session is not an eligible one.
     final mayShowPersonalBest =
-        session == null || eligibility.isEligible(session!);
+        session != null && eligibility.isEligible(session!);
 
     return AppScaffold(
       footer: [
         AppButton(l10n.backToToday, onPressed: onBackToToday),
-        AppButton(
-          l10n.shareTheSquatWithYourGroup,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: onShare,
-        ),
+        // The share link is Community's, and the first release ships without
+        // it. Offering a post at the peak moment when there is nowhere to
+        // post it is worse than a quiet link: it is the one screen a woman
+        // reaches by finishing something, and it would end on the
+        // switched-off panel.
+        if (AppRouter.screenIsOn('M03'))
+          AppButton(
+            l10n.shareTheSquatWithYourGroup,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onShare,
+          ),
       ],
       children: [
         const SizedBox(height: 6),
@@ -117,7 +158,14 @@ class FinishedView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Text(l10n.thatsTuesdayDone, style: AppText.display),
+              child: Text(
+                // Her day, not the prototype's Tuesday. `finishedOn` defaults
+                // to now, so a screen built with nothing still names today.
+                l10n.thatsDayDone(
+                  weekdayLabel(l10n, finishedOn ?? AppClock.now()),
+                ),
+                style: AppText.display,
+              ),
             ),
             const SizedBox(width: 12),
             const HandTick(
@@ -162,10 +210,26 @@ class FinishedView extends StatelessWidget {
               style: WeekStyle.marks,
             ),
             const SizedBox(height: 12),
-            Text(
-              l10n.oneMoreSessionAndThisWeekCounts,
-              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-            ),
+            // "One more session and this week counts" states the figure 1, and
+            // it was printed unconditionally under a segment bar drawing her
+            // real count: measured at a target of four, it was on screen at 0,
+            // 1, 2, 3 and 4 remaining. R12 got this guard a pass ago and R10 —
+            // the screen she sees the moment she finishes a workout — did not.
+            // `statedLine` renders it only to the woman it is true of and
+            // nothing at all to anyone else, which is what five other screens
+            // in this product already do with a fixed figure.
+            if (statedLine(
+                  l10n.oneMoreSessionAndThisWeekCounts,
+                  states: 1,
+                  hers: sessionsPrescribed - sessionsThisWeek,
+                )
+                case final String line)
+              Text(
+                line,
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
           ],
         ),
         // The points, written in the margin in sage, with the level they
@@ -213,6 +277,43 @@ class FinishedView extends StatelessWidget {
                 ],
               ),
             ],
+          ),
+        // The next step, while her week still has sessions left in it. The
+        // reason to come back is her own week, and it is said in the week's
+        // terms: the next session, any day this week. Never a day count.
+        if (sessionsThisWeek < sessionsPrescribed)
+          AppCard(
+            key: const ValueKey('r10-next-step'),
+            variant: AppCardVariant.sage,
+            borderRadius: AppRadius.md,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            children: [
+              Text(
+                l10n.nextSessionNumberOnAnyDayThis(
+                  countLabel(sessionsThisWeek + 1),
+                ),
+                style: AppText.bodyM.copyWith(color: AppColors.onSurface),
+              ),
+              if (AppRouter.screenIsOn('E07') && onPlanDinners != null)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: AppButton(
+                    l10n.planThisWeeksDinners,
+                    variant: AppButtonVariant.text,
+                    height: 40,
+                    fontSize: 15,
+                    onPressed: onPlanDinners,
+                  ),
+                ),
+            ],
+          ),
+        // Asked here and only here, once: she has just finished a session,
+        // so a note on her training days is about something she already
+        // does. Her own days and time, and nothing until she taps.
+        if (offerReminders)
+          ReminderOfferCard(
+            onChooseDays: onChooseReminderDays,
+            onNotNow: onDismissReminderOffer,
           ),
       ],
     );
