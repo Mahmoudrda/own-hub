@@ -148,9 +148,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         eyebrow = "Opening soon, for women in Egypt"
         hero_cta = """
           <div class="offer" id="download">
-            <p class="offer-t"><b>The first 100 women on the list</b> try Own
-            Hub before it opens to everyone, and get their first month of Pro
-            free when Pro arrives.</p>
+            <p class="offer-t"><b>Free, all of it.</b>
+            The first 100 women on the list try Own Hub before it opens to
+            everyone.</p>
             <div class="form-card">""" + FORM + """
             <p class="small">That is all we ask for. The waitlist is not an
             account. What we keep, and for how long, is in the
@@ -1435,11 +1435,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <div class="wrap">
       <div class="prose">
         <h1>Join the waitlist</h1>
-        <p class="lede">Own Hub is not open yet. Leave your Egyptian mobile
-        number or your email address. The first 100 women on the list try it
-        before it opens to everyone, and get their first month of Pro free
-        when Pro arrives. Everyone else hears from us once, the day it
-        opens.</p>
+        <p class="lede">Own Hub is not open yet, and it is free, all of it.
+        Leave your Egyptian mobile number or your email address. The first
+        100 women on the list try it before it opens to everyone. Everyone
+        else hears from us once, the day it opens.</p>
 """ + FORM + """
         <p>That is all we ask for. The waitlist is not an account, and what we
         keep, and for how long, is set out in the

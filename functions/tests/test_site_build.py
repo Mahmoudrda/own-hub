@@ -604,5 +604,17 @@ def test_before_launch_the_waitlist_is_the_first_thing_on_the_home_page():
         html = _home(_SITE, lang)
         form = html.index('class="waitlist"')
         assert html.index('<h1>') < html.index(offer) < form < html.index('id="inside"')
-        # The offer promises Pro for later and nothing the app does not do.
         assert html.count('class="waitlist"') == 1
+
+
+def test_the_launch_is_free_and_nothing_promises_a_paid_plan():
+    # Everything ships free. A paid plan may come later, and the site says
+    # nothing about one until it exists.
+    for lang in ("en", "ar"):
+        for page in ("index.html", "waitlist.html"):
+            folder = _SITE if lang == "en" else os.path.join(_SITE, "ar")
+            with open(os.path.join(folder, page), encoding="utf-8") as f:
+                text = " ".join(f.read().split())
+            assert not re.search(r"\bPro\b", text), (lang, page)
+    assert "Free, all of it." in _home(_SITE, "en")
+    assert "مجاني بالكامل" in _home(_SITE, "ar")
