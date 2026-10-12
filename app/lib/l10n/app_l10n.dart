@@ -15439,18 +15439,6 @@ abstract class AppL10n {
   /// **'Help improve Own Hub'**
   String get helpImproveOwnHub;
 
-  /// No description provided for @optionalSharesWhichScreensAndStepsYou.
-  ///
-  /// In en, this message translates to:
-  /// **'Optional. Shares which screens and steps you use with Google Analytics, which may process it outside Egypt. Never your health, your body, your name or your number. You can change this in Privacy.'**
-  String get optionalSharesWhichScreensAndStepsYou;
-
-  /// No description provided for @onGoogleAnalyticsReceivesWhichScreensAnd.
-  ///
-  /// In en, this message translates to:
-  /// **'On. Google Analytics receives which screens and steps you use, never your health, your body, your name or your number. Google may process it outside Egypt.'**
-  String get onGoogleAnalyticsReceivesWhichScreensAnd;
-
   /// No description provided for @offNothingAboutHowYouUseThe.
   ///
   /// In en, this message translates to:
@@ -16518,6 +16506,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'These switches change only this phone, so you can look at a part before it ships. To stop a part for every member, use the list at the end.'**
   String get theseSwitchesChangeOnlyThisPhoneSo;
+
+  /// No description provided for @optionalSharesBasicAppUsageWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. Shares basic app usage with Google Analytics and PostHog in the US. Never your health details, name, number or messages. You can change this in Privacy.'**
+  String get optionalSharesBasicAppUsageWithGoogle;
+
+  /// No description provided for @onGoogleAnalyticsAndPosthogReceiveBasic.
+  ///
+  /// In en, this message translates to:
+  /// **'On. Google Analytics and PostHog receive basic app usage outside Egypt, including in the US. Never your health details, name, number or messages.'**
+  String get onGoogleAnalyticsAndPosthogReceiveBasic;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -7,6 +7,11 @@
 	  the App Store Connect App Privacy answers. A mismatch between the three is
 	  one of the most common rejections.
 
+	  PostHog also receives consented product interaction milestones, a pseudonymous
+	  app identifier and SDK device metadata; one fixed diagnostic status log.
+	  No advertising, user identification, replay or health values are sent.
+	  The existing DeviceID/ProductInteraction declarations also cover this SDK;
+	  recheck App Store privacy answers against device traffic before release.
 	  WHAT THIS BINARY DOES TODAY. `Firebase.initializeApp` runs on every launch
 	  (`lib/app_state/firebase_boot.dart`), and pubspec carries nine Firebase
 	  packages: firebase_core, firebase_auth, cloud_firestore, firebase_storage,

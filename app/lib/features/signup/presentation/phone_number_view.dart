@@ -303,7 +303,7 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
         if (widget.onAnalyticsChosen != null)
           AppListItem(
             title: l10n.helpImproveOwnHub,
-            subtitle: l10n.optionalSharesWhichScreensAndStepsYou,
+            subtitle: l10n.optionalSharesBasicAppUsageWithGoogle,
             trailing: AppToggle(
               key: const ValueKey('phone-analytics'),
               value: _analytics,

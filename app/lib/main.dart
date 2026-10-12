@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 
 import 'app_state/analytics_consent.dart';
 import 'app_state/analytics_session.dart';
+import 'app_state/posthog_analytics.dart';
 import 'app_state/cloud_store.dart';
 import 'app_state/crash_consent.dart';
 import 'app_state/kitten_setting.dart';
@@ -60,7 +61,8 @@ Future<void> main() async {
     debugPrint('LegalLinks are empty: a release build will refuse to start.');
   }
 
-  // Usage statistics. A release build hands every event to Firebase, which
+  // Usage statistics. A release build uses Firebase and the bounded PostHog
+  // milestone sink. Each provider
   // sends nothing until she allows it ("Help improve Own Hub", C06 or
   // Privacy): collection is off natively and the sink checks her choice on
   // every event. A debug build prints the funnel to the console instead. See
@@ -88,6 +90,9 @@ Future<void> main() async {
   // Her usage-statistics choice, read before Firebase for the same reason.
   // Off unless she allowed it, and a separate choice from crash reports.
   await AnalyticsConsent.instance.load();
+  unawaited(
+    PostHogAnalytics.instance.applyConsent(AnalyticsConsent.instance.allowed),
+  );
   await KittenSetting.instance.load();
 
   // The back end, brought up AFTER her local week and unable to fail the

@@ -3503,8 +3503,6 @@
   "theKittenShowsYouAroundAndMoves": "القطة بتعرّفك على التطبيق وبتتحرك مرة واحدة لما تظهر.",
   "theKittenStaysStill": "القطة بتفضل ثابتة.",
   "helpImproveOwnHub": "ساعدينا نحسّن Own Hub",
-  "optionalSharesWhichScreensAndStepsYou": "اختياري. بيشارك مع Google Analytics الشاشات والخطوات اللي بتستخدميها، وGoogle ممكن تعالجها برّه مصر. عمره ما بيشمل صحتك أو جسمك أو اسمك أو رقمك. تقدري تغيّري ده من «الخصوصية».",
-  "onGoogleAnalyticsReceivesWhichScreensAnd": "شغّال. Google Analytics بيوصله الشاشات والخطوات اللي بتستخدميها، وعمره ما بيوصله صحتك ولا جسمك ولا اسمك ولا رقمك. وممكن Google تعالجها برّه مصر.",
   "offNothingAboutHowYouUseThe": "مقفول. مش بنبعت أي حاجة عن طريقة استخدامك للتطبيق. وقفله كمان بيمسح معرّف الإحصاءات على الموبايل ده.",
   "dashboard": "لوحة المتابعة",
   "logs": "السجلات",
@@ -3846,5 +3844,7 @@
       }
     }
   },
-  "theseSwitchesChangeOnlyThisPhoneSo": "المفاتيح دي بتغيّر الموبايل ده بس، عشان تشوفي أي جزء قبل ما ينزل. ولو عايزة توقفي جزء عند كل العضوات، استخدمي القايمة اللي في الآخر."
+  "theseSwitchesChangeOnlyThisPhoneSo": "المفاتيح دي بتغيّر الموبايل ده بس، عشان تشوفي أي جزء قبل ما ينزل. ولو عايزة توقفي جزء عند كل العضوات، استخدمي القايمة اللي في الآخر.",
+  "optionalSharesBasicAppUsageWithGoogle": "اختياري. بيشارك استخدام التطبيق الأساسي مع Google Analytics وPostHog في أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك. تقدري تغيّري ده من «الخصوصية».",
+  "onGoogleAnalyticsAndPosthogReceiveBasic": "شغّال. Google Analytics وPostHog بيوصلهم استخدام التطبيق الأساسي برّه مصر، ومنها أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك."
 }

@@ -457,7 +457,7 @@ class _PrivacyViewState extends State<PrivacyView> {
             ),
             title: l10n.helpImproveOwnHub,
             subtitle: _analytics
-                ? l10n.onGoogleAnalyticsReceivesWhichScreensAnd
+                ? l10n.onGoogleAnalyticsAndPosthogReceiveBasic
                 : l10n.offNothingAboutHowYouUseThe,
             trailing: AppToggle(
               key: const ValueKey('analytics-toggle'),

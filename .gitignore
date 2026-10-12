@@ -9,6 +9,7 @@ app/ios/Flutter/Flutter.framework
 app/ios/Flutter/Flutter.podspec
 app/ios/Flutter/ephemeral/
 app/android/.gradle/
+app/android/.kotlin/
 app/android/local.properties
 app/android/app/build/
 app/web/build/
