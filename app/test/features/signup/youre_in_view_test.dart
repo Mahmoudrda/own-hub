@@ -71,7 +71,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('أهلًا بك يا نور'), findsOneWidget);
+      expect(find.text('إنتِ معانا يا نور'), findsOneWidget);
     });
 
     testWidgets('a blank name is treated as no name', (tester) async {
@@ -164,7 +164,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(
-      find.textContaining('ونحتفظ بالنتيجة وأسبابها وبرمز مشفّر من رقمكِ القومي'),
+      find.textContaining('بنحتفظ بالنتيجة وأسبابها وكود مشفّر من رقمك القومي'),
       findsOneWidget,
     );
     expect(find.textContaining('لا غير'), findsNothing);
@@ -295,11 +295,9 @@ void main() {
     // after it, which is why this is a separate string rather than an empty
     // substitution.
     expect(find.text('إنتِ معانا'), findsOneWidget);
-    // Without the leading connective و: it belongs mid-sentence, after the
-    // duration clause, and a standalone sentence must not open with it. Dropping
-    // it here matches both the timed and untimed wording.
+    // The deletion promise remains explicit in the Egyptian Arabic copy.
     expect(
-      find.textContaining('حُذفت صورة بطاقتكِ وصورتكِ الذاتية'),
+      find.textContaining('صورة بطاقتك والسيلفي اتمسحوا'),
       findsOneWidget,
     );
     expect(find.text("You're in, Mai"), findsNothing);

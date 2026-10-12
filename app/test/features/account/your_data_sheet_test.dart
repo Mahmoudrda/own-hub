@@ -151,7 +151,7 @@ void main() {
       onDelete: () async => AccountDeletionResult.done,
       locale: const Locale('ar'),
     );
-    expect(find.textContaining('خوادمنا'), findsOneWidget);
+    expect(find.textContaining('حذف حسابك بيشيله من سيرفراتنا'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

@@ -576,10 +576,10 @@ void main() {
       );
     });
 
-    testWidgets('Progress is named to her, in the feminine', (tester) async {
+    testWidgets('Progress is named to her in Egyptian Arabic', (tester) async {
       await _pump(tester, locale: const Locale('ar'), initialStop: 6);
       expect(find.text('تقدّمك'), findsWidgets);
-      expect(find.text('تقدّمك'), findsNothing);
+      expect(find.text('Your progress'), findsNothing);
     });
 
     for (final locale in const [Locale('en'), Locale('ar')]) {

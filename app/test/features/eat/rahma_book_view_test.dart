@@ -544,7 +544,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('39 طبقًا'), findsOneWidget);
+      expect(find.textContaining('39 طبق'), findsOneWidget);
       expect(find.textContaining('39 أطباق'), findsNothing);
     });
 

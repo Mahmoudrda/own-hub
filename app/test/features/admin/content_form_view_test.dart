@@ -1010,10 +1010,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('أضيفي تمرينًا'), findsOneWidget);
+      expect(find.text('ضيفي حركة'), findsOneWidget);
       expect(find.text('وسوم الموانع'), findsOneWidget);
       expect(
-        Directionality.of(tester.element(find.text('أضيفي تمرينًا'))),
+        Directionality.of(tester.element(find.text('ضيفي حركة'))),
         TextDirection.rtl,
       );
       expect(tester.takeException(), isNull);

@@ -186,7 +186,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('4,100 صفًا'), findsOneWidget);
+    expect(find.text('4,100 صف'), findsOneWidget);
   });
 
   testWidgets('each collection opens its own list', (tester) async {

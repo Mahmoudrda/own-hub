@@ -185,7 +185,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.textContaining('اختاري عشاءً ليوم'), findsOneWidget);
+      expect(find.textContaining('اختاري عشا ليوم'), findsOneWidget);
     });
   });
 
