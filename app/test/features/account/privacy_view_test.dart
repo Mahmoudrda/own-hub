@@ -136,7 +136,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(choices, [true]);
       expect(crash, isEmpty, reason: 'two choices, never one');
-      expect(find.textContaining('Google Analytics receives'), findsOneWidget);
+      expect(find.textContaining('Google Analytics and PostHog receive'), findsOneWidget);
 
       await tester.ensureVisible(toggle);
       await tester.tap(toggle);

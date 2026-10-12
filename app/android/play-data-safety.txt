@@ -148,3 +148,12 @@ The +20 Firebase test number with its fixed code, and the reviewer allow-list
 Privacy policy URL
 ------------------
 https://own-hub.app/privacy
+
+PostHog addition (12 October 2026; submission answers must match the released build):
+Optional usage analytics also sends eight allowlisted app milestones, an anonymous
+app identifier and SDK device/app metadata to PostHog US after fresh consent.
+No account UID, health values, messages, replay or payment details are sent.
+A fixed integration status log is sent once per process with consent. Include
+app interactions, device identifiers and diagnostics as applicable; verify actual
+SDK traffic and processor terms before submitting Data safety answers. Revocation
+stops new collection and resets the identifier, not server-side historical data.

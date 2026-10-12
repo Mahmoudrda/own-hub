@@ -6,7 +6,7 @@
 // string literal is never mistaken for a call, and every detector is proven
 // against code that must trip it before it is trusted.
 //
-//  1. Only seven files may name the analytics API at all: the gateway, the
+//  1. Only the audited files may name the analytics API at all: the gateway, the
 //     two sinks, the session, `firebase_boot.dart`, `main.dart` and the
 //     router. Every screen, every
 //     feature (the cycle, measurements, allergies, setup answers, the ID
@@ -33,6 +33,8 @@ const Set<String> _analyticsNames = {
   'NullAnalyticsSink',
   'FirebaseAnalytics',
   'FirebaseAnalyticsSink',
+  'Posthog',
+  'PostHogAnalytics',
 };
 
 const Set<String> _allowedFiles = {
@@ -40,6 +42,8 @@ const Set<String> _allowedFiles = {
   'lib/app_state/debug_analytics_sink.dart',
   'lib/app_state/firebase_analytics_sink.dart',
   'lib/app_state/analytics_session.dart',
+  'lib/app_state/posthog_analytics.dart',
+  'lib/app_state/analytics_consent.dart',
   'lib/app_state/firebase_boot.dart',
   'lib/main.dart',
   'lib/routing/app_router.dart',
@@ -109,7 +113,7 @@ class _NameHits extends RecursiveAstVisitor<void> {
     // choice and is read by the deletion wipe and the router.
     final uri = node.uri.stringValue ?? '';
     if (RegExp(
-      r'domain/analytics/|firebase_analytics|analytics_sink|analytics_session',
+      r'domain/analytics/|firebase_analytics|posthog_flutter|posthog_analytics|analytics_sink|analytics_session',
     ).hasMatch(uri)) {
       hits.add('import $uri');
     }
@@ -188,7 +192,7 @@ void main() {
     expect(_libFiles().length, greaterThan(300));
   });
 
-  test('only the seven audited files name the analytics API', () {
+  test('only the audited files name the analytics API', () {
     final offenders = <String>[];
     for (final file in _libFiles()) {
       if (_allowedFiles.contains(file.path)) continue;

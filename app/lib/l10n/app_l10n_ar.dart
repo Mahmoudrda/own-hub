@@ -8530,14 +8530,6 @@ class AppL10nAr extends AppL10n {
   String get helpImproveOwnHub => 'ساعدينا نحسّن Own Hub';
 
   @override
-  String get optionalSharesWhichScreensAndStepsYou =>
-      'اختياري. بيشارك مع Google Analytics الشاشات والخطوات اللي بتستخدميها، وGoogle ممكن تعالجها برّه مصر. عمره ما بيشمل صحتك أو جسمك أو اسمك أو رقمك. تقدري تغيّري ده من «الخصوصية».';
-
-  @override
-  String get onGoogleAnalyticsReceivesWhichScreensAnd =>
-      'شغّال. Google Analytics بيوصله الشاشات والخطوات اللي بتستخدميها، وعمره ما بيوصله صحتك ولا جسمك ولا اسمك ولا رقمك. وممكن Google تعالجها برّه مصر.';
-
-  @override
   String get offNothingAboutHowYouUseThe =>
       'مقفول. مش بنبعت أي حاجة عن طريقة استخدامك للتطبيق. وقفله كمان بيمسح معرّف الإحصاءات على الموبايل ده.';
 
@@ -9138,4 +9130,12 @@ class AppL10nAr extends AppL10n {
   @override
   String get theseSwitchesChangeOnlyThisPhoneSo =>
       'المفاتيح دي بتغيّر الموبايل ده بس، عشان تشوفي أي جزء قبل ما ينزل. ولو عايزة توقفي جزء عند كل العضوات، استخدمي القايمة اللي في الآخر.';
+
+  @override
+  String get optionalSharesBasicAppUsageWithGoogle =>
+      'اختياري. بيشارك استخدام التطبيق الأساسي مع Google Analytics وPostHog في أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك. تقدري تغيّري ده من «الخصوصية».';
+
+  @override
+  String get onGoogleAnalyticsAndPosthogReceiveBasic =>
+      'شغّال. Google Analytics وPostHog بيوصلهم استخدام التطبيق الأساسي برّه مصر، ومنها أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك.';
 }

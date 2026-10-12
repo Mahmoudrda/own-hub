@@ -144,12 +144,11 @@ void main() {
       expect(find.text('Help improve Own Hub'), findsOneWidget);
       expect(
         find.textContaining(
-          'Never your health, your body, your name or your '
-          'number',
+          'Never your health details, name, number or messages',
         ),
         findsOneWidget,
       );
-      expect(find.textContaining('outside Egypt'), findsOneWidget);
+      expect(find.textContaining('PostHog in the US'), findsOneWidget);
 
       await tester.enterText(find.byType(TextField), '1005550132');
       await tester.pumpAndSettle();

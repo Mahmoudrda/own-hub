@@ -696,3 +696,9 @@ ids (D12, P0-EAT-01). Generators are run, never hand-edited. Navigation edges ar
 12. **Wrap long lists, not every row.** `AppScaffold` scrolls a plain column, and each hand-drawn
     surface already has its own `RepaintBoundary` so a scroll does not re-ink it. A list that can grow
     without bound (a chat, a feed) belongs in a `ListView.builder`.
+
+### Egypt launch handoff and analytics
+
+- [Free launch and coach commission implementation guide](docs/plan/FREE-LAUNCH-COACHING-PLAN.md): seven training improvements, first-gym onboarding, coach workflows, simple navigation and Egypt privacy requirements. Saudi/UAE expansion is deferred.
+- [Pre-implementation acceptance tests](acceptance/free_launch/README.md) and [launch checklist](acceptance/free_launch/ACCEPTANCE.md): run separately with `bash acceptance/free_launch/run.sh`; future-feature failures are intentional until implementation.
+- [Implemented PostHog setup and verification](docs/operations/POSTHOG.md): consent-gated mobile analytics with bounded events and logs; no replay.

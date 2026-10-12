@@ -758,8 +758,6 @@
  "The kitten shows you around and moves once when it appears.": "القطة بتعرّفك على التطبيق وبتتحرك مرة واحدة لما تظهر.",
  "The kitten stays still.": "القطة بتفضل ثابتة.",
  "Help improve Own Hub": "ساعدينا نحسّن Own Hub",
- "Optional. Shares which screens and steps you use with Google Analytics, which may process it outside Egypt. Never your health, your body, your name or your number. You can change this in Privacy.": "اختياري. بيشارك مع Google Analytics الشاشات والخطوات اللي بتستخدميها، وGoogle ممكن تعالجها برّه مصر. عمره ما بيشمل صحتك أو جسمك أو اسمك أو رقمك. تقدري تغيّري ده من «الخصوصية».",
- "On. Google Analytics receives which screens and steps you use, never your health, your body, your name or your number. Google may process it outside Egypt.": "شغّال. Google Analytics بيوصله الشاشات والخطوات اللي بتستخدميها، وعمره ما بيوصله صحتك ولا جسمك ولا اسمك ولا رقمك. وممكن Google تعالجها برّه مصر.",
  "Off. Nothing about how you use the app is sent. Turning it off also clears the statistics ID on this phone.": "مقفول. مش بنبعت أي حاجة عن طريقة استخدامك للتطبيق. وقفله كمان بيمسح معرّف الإحصاءات على الموبايل ده.",
  "Dashboard": "لوحة المتابعة",
  "Logs": "السجلات",
@@ -937,5 +935,7 @@
  "Coached here": "اتدرّبت هنا",
  "Her words show with her first name only, and she can take them back.": "كلامها بيظهر بأول اسم بس، وتقدر تشيله في أي وقت.",
  "Between {min} and {max} days, or leave it empty": "من {min} لـ {max} يوم، أو سيبيها فاضية",
- "These switches change only this phone, so you can look at a part before it ships. To stop a part for every member, use the list at the end.": "المفاتيح دي بتغيّر الموبايل ده بس، عشان تشوفي أي جزء قبل ما ينزل. ولو عايزة توقفي جزء عند كل العضوات، استخدمي القايمة اللي في الآخر."
+ "These switches change only this phone, so you can look at a part before it ships. To stop a part for every member, use the list at the end.": "المفاتيح دي بتغيّر الموبايل ده بس، عشان تشوفي أي جزء قبل ما ينزل. ولو عايزة توقفي جزء عند كل العضوات، استخدمي القايمة اللي في الآخر.",
+ "Optional. Shares basic app usage with Google Analytics and PostHog in the US. Never your health details, name, number or messages. You can change this in Privacy.": "اختياري. بيشارك استخدام التطبيق الأساسي مع Google Analytics وPostHog في أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك. تقدري تغيّري ده من «الخصوصية».",
+ "On. Google Analytics and PostHog receive basic app usage outside Egypt, including in the US. Never your health details, name, number or messages.": "شغّال. Google Analytics وPostHog بيوصلهم استخدام التطبيق الأساسي برّه مصر، ومنها أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك."
 }
