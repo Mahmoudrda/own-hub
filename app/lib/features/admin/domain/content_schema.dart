@@ -300,7 +300,7 @@ class ContentSchema {
       // A safety tag all the same, so the validator holds it to the same
       // vocabulary discipline.
       ContentColumn('advisories', required: true, list: true, safetyTag: true),
-      // A token from a fixed set, never a sentence. The Modern Standard copy
+      // A token from a fixed set, never a sentence. The copy in the app's voice
       // for each one is in the dictionary.
       ContentColumn('doneness'),
       // A drawn food mark, not a photograph. See `food_marks.dart`.

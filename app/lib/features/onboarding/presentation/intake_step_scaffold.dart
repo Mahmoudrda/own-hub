@@ -8,8 +8,9 @@
 ///
 /// Three parts are fixed and are what make the flow safe to abandon:
 ///
-///  * **The counter tells her how much is left.** Four questions, and she can
-///    see it is four.
+///  * **The counter tells her how much is left.** One question a screen, the
+///    count in the bar title ("2 of 6") and a line under it that fills as she
+///    goes, so she sees how short it is before she starts.
 ///  * **`Skip` is always there, at every step.** Skipping is a designed path,
 ///    not a failure — every question preselects a valid answer, so a woman who
 ///    skips all four still gets a real programme (G2 §3.2 `DEFAULTED`).
@@ -27,12 +28,13 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
-import '../../../ui/app_step_progress.dart';
+import '../../../ui/app_step_bar.dart';
 
 class IntakeStepScaffold extends StatelessWidget {
   const IntakeStepScaffold({
     super.key,
     required this.step,
+    required this.total,
     required this.title,
     required this.subtitle,
     required this.children,
@@ -45,12 +47,14 @@ class IntakeStepScaffold extends StatelessWidget {
     this.continueLabel,
   });
 
-  /// Which of the four questions this is.
+  /// Which question of the walk this is, counted from 1, and how many the
+  /// walk has (`setupProgress` in `onboarding_state.dart`).
   final int step;
+  final int total;
 
-  /// The bar title instead of "Step n of 4", when the screen is not one of
-  /// the four: the short "Your week" before sign-up says "1 of 3 · Your week".
-  /// An empty string shows no count at all.
+  /// The bar title instead of "2 of 6": the short "Your week" before sign-up
+  /// says "1 of 3 · Your week", which counts the parts of joining. An empty
+  /// string shows no count in the title; the line under it still fills.
   final String? titleOverride;
 
   /// The primary button's words, when "Continue" undersells what it does.
@@ -85,16 +89,13 @@ class IntakeStepScaffold extends StatelessWidget {
   /// no `X`: before she has an account there is no Home to leave to.
   final VoidCallback? onClose;
 
-  static const int totalSteps = 4;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
       appBar: AppTopBar(
-        title:
-            titleOverride ?? stepOfLabel(l10n, step: step, total: totalSteps),
+        title: titleOverride ?? l10n.countOfTotal('$step', '$total'),
         onBack: onBack,
         actions: [
           if (onClose != null)
@@ -119,6 +120,7 @@ class IntakeStepScaffold extends StatelessWidget {
           ),
       ],
       children: [
+        AppStepBar(step: step, total: total),
         if (lead != null)
           Text(
             lead!,

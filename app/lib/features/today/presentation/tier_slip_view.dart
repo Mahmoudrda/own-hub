@@ -55,6 +55,7 @@ import '../../../domain/rewards/tier_policy.dart';
 import '../../../domain/rewards/weekly_goal.dart';
 import '../../../domain/week/week_key.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -188,8 +189,9 @@ class _TierSlipViewState extends State<TierSlipView> {
                     WorkoutCard(
                       onStart: () =>
                           openScreen(context, 'R07', widget.onStartSession),
-                      onRecall: () =>
-                          openScreen(context, 'T02', widget.onRecall),
+                      onRecall: AppRouter.screenIsOn('T02')
+                          ? () => openScreen(context, 'T02', widget.onRecall)
+                          : null,
                     ),
                   ],
                 ),

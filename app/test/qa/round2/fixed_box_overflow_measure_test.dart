@@ -45,7 +45,7 @@ void main() {
 
       // The exact two labels rahma_recipe_view.dart:172 passes (E06, a
       // shipping eat-flow screen), read from lib/l10n/app_ar.arb.
-      const items = ['المكوّنات والخطوات', 'كما هي في الكتاب'];
+      const items = ['المكوّنات والخطوات', 'زي ما هي في الكتاب'];
 
       await tester.pumpWidget(
         MediaQuery(

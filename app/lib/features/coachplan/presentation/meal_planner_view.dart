@@ -165,16 +165,19 @@ class MealPlannerView extends StatelessWidget {
                   onPressed: onCreateMeal,
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: AppButton(
-                  l10n.draftAWeek,
-                  variant: AppButtonVariant.text,
-                  height: 44,
-                  fontSize: 14,
-                  onPressed: onDraftAWeek,
+              // Drawn only while the assistant that writes the draft is on.
+              if (onDraftAWeek != null) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: AppButton(
+                    l10n.draftAWeek,
+                    variant: AppButtonVariant.text,
+                    height: 44,
+                    fontSize: 14,
+                    onPressed: onDraftAWeek,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
           // Her month against her month. A gap is counted; a stated free

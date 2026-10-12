@@ -317,12 +317,17 @@ void main() {
   });
 
   group('the server switch', () {
-    test('only events can be switched from the server', () {
-      expect(RemoteFeatures.switchable, {Feature.events: 'events'});
+    test('events are the only thing the server can switch on', () {
+      expect(Feature.events.serverMayTurnOn, isTrue);
+      expect(
+        [for (final f in Feature.values) if (f.serverMayTurnOn) f],
+        [Feature.events],
+      );
     });
 
     test(
-      'a verified woman takes the owner\'s answer for events only',
+      'a verified woman takes the owner\'s answer for events, and nothing '
+      'switches on the community or off the gate',
       () async {
         AppRouter.lastVerification = VerificationResult(
           method: VerificationMethod.automatic,
@@ -350,11 +355,15 @@ void main() {
       expect(AppRouter.featureFlags.isOn(Feature.events), isFalse);
     });
 
-    test('Z14 publishes the events switch and refuses any other', () async {
+    test('Z14 publishes events, and refuses what the server cannot move', () async {
       final store = _FakeSwitches({});
       RemoteFeatures.store = () => store;
       expect(await RemoteFeatures.publish(Feature.events, true), isTrue);
-      expect(await RemoteFeatures.publish(Feature.community, true), isFalse);
+      expect(
+        await RemoteFeatures.publish(Feature.accountRequired, false),
+        isFalse,
+      );
+      expect(await RemoteFeatures.publish(Feature.verification, false), isFalse);
       expect(store.writes, [('events', true)]);
     });
   });

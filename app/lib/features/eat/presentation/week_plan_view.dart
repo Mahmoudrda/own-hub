@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/week/week_key.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -185,10 +186,12 @@ class _WeekPlanViewState extends State<WeekPlanView> {
         ],
       ),
       footer: [
-        AppButton(
-          l10n.seeTheGroceryList,
-          onPressed: () => openScreen(context, 'E08', widget.onOpenGroceryList),
-        ),
+        if (AppRouter.screenIsOn('E08'))
+          AppButton(
+            l10n.seeTheGroceryList,
+            onPressed: () =>
+                openScreen(context, 'E08', widget.onOpenGroceryList),
+          ),
       ],
       children: [
         // "Five dinners, built from recipes you have logged before. Swap any
@@ -254,43 +257,44 @@ class _WeekPlanViewState extends State<WeekPlanView> {
               openScreen(context, 'E06');
             },
           ),
-        AppCard(
-          variant: AppCardVariant.tonal,
-          onTap: () => openScreen(context, 'E08', widget.onOpenGroceryList),
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.shopping_cart,
-                  size: 24,
-                  color: AppColors.primaryDim,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(l10n.oneShopCoversIt, style: AppText.titleM),
-                      // Withheld rather than stated.
-                      //
-                      // This read `n23ItemsAbout640Egp` — "23 items · about
-                      // 640 EGP" — the prototype's list and the prototype's
-                      // bill, shown to a woman whose plan holds four dinners
-                      // and whose market is not Cairo's. The dictionary does
-                      // carry `countItemsAboutEgpEgp` and `view.itemCount` is
-                      // her real count, but NOTHING in this product costs a
-                      // grocery line: `GroceryLine` has an ingredient, a group
-                      // and a tick, and no price. Half of that sentence would
-                      // have to be invented, so the sentence is not said. The
-                      // dictionary gap is a price on the line, not a string.
-                    ],
+        if (AppRouter.screenIsOn('E08'))
+          AppCard(
+            variant: AppCardVariant.tonal,
+            onTap: () => openScreen(context, 'E08', widget.onOpenGroceryList),
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.shopping_cart,
+                    size: 24,
+                    color: AppColors.primaryDim,
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(l10n.oneShopCoversIt, style: AppText.titleM),
+                        // Withheld rather than stated.
+                        //
+                        // This read `n23ItemsAbout640Egp` — "23 items · about
+                        // 640 EGP" — the prototype's list and the prototype's
+                        // bill, shown to a woman whose plan holds four dinners
+                        // and whose market is not Cairo's. The dictionary does
+                        // carry `countItemsAboutEgpEgp` and `view.itemCount` is
+                        // her real count, but NOTHING in this product costs a
+                        // grocery line: `GroceryLine` has an ingredient, a group
+                        // and a tick, and no price. Half of that sentence would
+                        // have to be invented, so the sentence is not said. The
+                        // dictionary gap is a price on the line, not a string.
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
       ],
     );
   }

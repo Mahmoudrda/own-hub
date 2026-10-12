@@ -1,9 +1,9 @@
-/// `K02`'s camera: one photograph of one certificate.
+/// The coach side's camera: one photograph, taken live.
 ///
-/// Taken live with the back lens, as the ID card is, and returned to `K02` as
-/// JPEG bytes. Nothing is kept on the phone: the bytes go to the upload and are
-/// dropped. There is no picker for an existing picture, so this asks for no
-/// photo library permission.
+/// `K02` uses the back lens for a certificate, as the ID card is taken; `K01`
+/// uses the front lens for her own photo. Either way it returns JPEG bytes and
+/// keeps nothing on the phone. There is no picker for an existing picture, so
+/// this asks for no photo library permission.
 library;
 
 import 'package:camera/camera.dart';
@@ -25,11 +25,28 @@ Future<Uint8List?> photographCertificate(BuildContext context) =>
       ),
     );
 
+/// `K01`: her own photo, with the front lens.
+Future<Uint8List?> photographHerself(BuildContext context) =>
+    Navigator.of(context).push<Uint8List>(
+      MaterialPageRoute<Uint8List>(
+        fullscreenDialog: true,
+        builder: (_) => const CertificateCameraView(selfie: true),
+      ),
+    );
+
 /// Why the lens did not open.
 enum CertificateCameraProblem { permission, unavailable }
 
 class CertificateCameraView extends StatefulWidget {
-  const CertificateCameraView({super.key, this.lenses = availableCameras});
+  const CertificateCameraView({
+    super.key,
+    this.lenses = availableCameras,
+    this.selfie = false,
+  });
+
+  /// Her own photo with the front lens, rather than a certificate with the
+  /// back one.
+  final bool selfie;
 
   /// The phone's cameras. Injectable, so a test host with no camera plugin
   /// exercises the honest "could not start" state rather than a crash.
@@ -53,9 +70,10 @@ class _CertificateCameraViewState extends State<CertificateCameraView> {
   Future<void> _open() async {
     try {
       final lenses = await widget.lenses();
-      final back = lenses
-          .where((c) => c.lensDirection == CameraLensDirection.back)
-          .firstOrNull;
+      final wanted = widget.selfie
+          ? CameraLensDirection.front
+          : CameraLensDirection.back;
+      final back = lenses.where((c) => c.lensDirection == wanted).firstOrNull;
       if (back == null) {
         _fail(CertificateCameraProblem.unavailable);
         return;
@@ -124,7 +142,9 @@ class _CertificateCameraViewState extends State<CertificateCameraView> {
 
     return AppScaffold(
       appBar: AppTopBar(
-        title: l10n.photographYourCertificate,
+        title: widget.selfie
+            ? l10n.takeYourPhoto
+            : l10n.photographYourCertificate,
         onBack: () => Navigator.of(context).maybePop(),
       ),
       footer: [
@@ -143,7 +163,9 @@ class _CertificateCameraViewState extends State<CertificateCameraView> {
       children: [
         Text(
           problem == null
-              ? l10n.layItFlatInGoodLightWith
+              ? (widget.selfie
+                    ? l10n.faceTheLightWithAPlainWall
+                    : l10n.layItFlatInGoodLightWith)
               : switch (problem) {
                   CertificateCameraProblem.permission =>
                     l10n.cameraAccessIsOffYouCanTurn,

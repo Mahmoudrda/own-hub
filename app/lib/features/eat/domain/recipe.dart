@@ -35,11 +35,11 @@
 ///
 /// Everything Arabic on this type arrives from `assets/content/rahma_recipes.json`
 /// and never from the ARB. `i18n_guard_test.dart` forbids Arabic literals under
-/// `lib/`, which is exactly right: her colloquial is content, the interface is
-/// Modern Standard, and the two reach the screen through different pipes so
+/// `lib/`, which is exactly right: her words are content, the interface is the
+/// app's own voice, and the two reach the screen through different pipes so
 /// they cannot be smeared together. The reverse also holds: no safety sentence
 /// is ever on this type. [doneness] and [advisories] are **tokens**, and the
-/// MSA sentence each one renders lives in the dictionary.
+/// sentence each one renders lives in the dictionary.
 library;
 
 import 'package:meta/meta.dart';
@@ -473,7 +473,7 @@ class Recipe {
   final String titleEn;
 
   /// Null until Rahma writes it. Not translated from [titleEn] and not filled
-  /// from the MSA dictionary: a Modern Standard title over an Egyptian
+  /// from the dictionary: a title in the app's voice over an Egyptian
   /// colloquial body is exactly the register mixing the voice boundary exists
   /// to prevent.
   final String? titleAr;
@@ -525,7 +525,7 @@ class Recipe {
   /// derived ∪ extra − removed. What the screen names.
   final Set<String> allergensFinal;
 
-  /// `pregnancy_liver`, `g6pd_fava`. Tokens, not sentences: the MSA copy lives
+  /// `pregnancy_liver`, `g6pd_fava`. Tokens, not sentences: the copy lives
   /// in the dictionary. Rendered as a note and **never used to filter**,
   /// because this is not something she ticked.
   final Set<String> advisories;
@@ -534,7 +534,7 @@ class Recipe {
 
   /// A token from a fixed vocabulary, not free text, for the same reason
   /// [advisories] are tokens: the sentence a woman reads about undercooked
-  /// chicken is safety copy, so it is Modern Standard, it is in the dictionary,
+  /// chicken is safety copy, so it is in the app's voice, it is in the dictionary,
   /// and it is typographically unlike anything Rahma says.
   final String? doneness;
 

@@ -15,7 +15,7 @@ library;
 import '../../../l10n/app_l10n.dart';
 import '../domain/dietary_profile.dart';
 
-/// What to call [tag] on screen, in the interface's own Modern Standard Arabic.
+/// What to call [tag] on screen, in the interface's own Arabic.
 ///
 /// **This is chrome, not content.** The names are the app speaking, not Rahma,
 /// so they come through the dictionary like every other label. Her colloquial

@@ -3802,5 +3802,35 @@
         "example": "−2.5"
       }
     }
-  }
+  },
+  "forEveryMember": "For every member",
+  "switchingOneOffHereStopsItIn": "Switching one off here stops it in every member's app at her next launch. It cannot switch on anything this build does not ship.",
+  "thatDidNotReachTheServer": "That did not reach the server",
+  "notOpenRightNow": "Not open right now",
+  "thisPartOfOwnHubIsNot": "This part of Own Hub is not open right now. Everything else works as usual.",
+  "mostWomenStartWithNothingThatIs": "Most women start with nothing. That is plenty.",
+  "howManyDaysAWeek": "How many days a week?",
+  "howLongCanASessionBe": "How long can a session be?",
+  "shortIsFineFifteenMinutesDoneBeats": "Short is fine. Fifteen minutes done beats an hour planned.",
+  "between15And60DaysOrLeave": "Between 15 and 60 days, or leave it empty",
+  "aFewShortQuestionsOneAtA": "A few short questions, one at a time. Your week is ready at the end.",
+  "addAPhotoOfYou": "Add a photo of you",
+  "womenChooseAPersonTheyCanSee": "Women choose a person they can see. Take it now, or add it later from your page.",
+  "takeAPhoto": "Take a photo",
+  "takeItAgain": "Take it again",
+  "takeYourPhoto": "Take your photo",
+  "faceTheLightWithAPlainWall": "Face the light, with a plain wall behind you.",
+  "howYouCoach": "How you coach",
+  "clientsLookForACoachByLanguage": "Clients look for a coach by language and by where they train.",
+  "yourClientsResults": "Your clients' results",
+  "eachResultIsABeforeAndAn": "Each result is a before and an after, laid out the same way on every coach's page. Your client adds her own photos and agrees in her own app, so it is always hers to share.",
+  "before": "Before",
+  "after": "After",
+  "howItWillLook": "How it will look",
+  "facesStayHiddenUnlessSheChoosesTo": "Faces stay hidden unless she chooses to show hers.",
+  "whenYourCheckIsDoneAskAny": "When your check is done, ask any client from her page on your desk.",
+  "whatYourClientsSay": "What your clients say",
+  "onlyWomenYouCoachHereCanWrite": "Only women you coach here can write one, so every word is real.",
+  "coachedHere": "Coached here",
+  "herWordsShowWithHerFirstName": "Her words show with her first name only, and she can take them back."
 }

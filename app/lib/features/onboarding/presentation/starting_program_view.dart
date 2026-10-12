@@ -140,7 +140,8 @@ class StartingProgramView extends StatelessWidget {
     final copy = program == null
         ? null
         : _copyFor(l10n, program.programId, intake);
-    final offersAnotherProgram = catalogue.length > 1;
+    final offersAnotherProgram =
+        catalogue.length > 1 && onPickDifferentProgram != null;
 
     return AppScaffold(
       appBar: title == null && onBack == null

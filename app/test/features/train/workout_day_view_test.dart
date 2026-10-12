@@ -166,9 +166,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('الساقان والأرداف'), findsOneWidget);
+    expect(find.text('الرجلين والأرداف'), findsOneWidget);
     expect(find.text('جسر الأرداف'), findsOneWidget);
-    expect(find.text('ابدئي، كل شيء جاهز'), findsOneWidget);
+    expect(find.text('ابدئي، كل حاجة جاهزة'), findsOneWidget);
     expect(find.text('I already did it'), findsNothing);
   });
 

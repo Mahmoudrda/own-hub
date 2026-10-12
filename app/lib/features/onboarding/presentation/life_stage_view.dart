@@ -44,6 +44,7 @@ import '../domain/intake_repository.dart';
 import '../domain/starting_program.dart';
 import 'intake_option.dart';
 import 'intake_step_scaffold.dart';
+import '../../../app_state/onboarding_state.dart' show setupProgress;
 import '../../../ui/medical_disclaimer.dart';
 
 class LifeStageView extends StatefulWidget {
@@ -54,9 +55,17 @@ class LifeStageView extends StatefulWidget {
     this.onSkip,
     this.onBack,
     this.onClose,
+    this.titleOverride,
+    this.continueLabel,
   });
 
   final IntakeRepository repository;
+
+  /// See [IntakeStepScaffold.titleOverride].
+  final String? titleOverride;
+
+  /// See [IntakeStepScaffold.continueLabel].
+  final String? continueLabel;
   final VoidCallback? onContinue;
   final VoidCallback? onSkip;
   final VoidCallback? onBack;
@@ -118,8 +127,12 @@ class _LifeStageViewState extends State<LifeStageView> {
     final shapesTraining = lifeStageShapesTraining();
     final options = lifeStageOptions(l10n);
 
+    final at = setupProgress('O04', widget.repository.read());
     return IntakeStepScaffold(
-      step: 4,
+      step: at.step,
+      total: at.total,
+      titleOverride: widget.titleOverride,
+      continueLabel: widget.continueLabel,
       title: l10n.anythingWeShouldTrainAround,
       // "Only you and your coach ever see this" names a reader this release
       // does not have: the coach app ships dark, so there is no coach on the

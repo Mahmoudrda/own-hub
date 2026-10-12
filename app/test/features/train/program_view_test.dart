@@ -222,8 +222,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('ابدئي تمرين اليوم'), findsOneWidget);
-    expect(find.text('لا يوجد برنامج بعد'), findsOneWidget);
+    expect(find.text('ابدئي تمرين النهارده'), findsOneWidget);
+    expect(find.text('لسه مفيش برنامج'), findsOneWidget);
     expect(find.text("Start today's session"), findsNothing);
     expect(find.text('No program yet'), findsNothing);
   });

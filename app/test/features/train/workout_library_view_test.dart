@@ -212,8 +212,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('بحث'), findsOneWidget);
-    expect(find.text('الساقان والأرداف'), findsOneWidget);
-    expect(find.text('15 دقيقة · مبتدئة · بدون أدوات'), findsOneWidget);
+    expect(find.text('الرجلين والأرداف'), findsOneWidget);
+    expect(find.text('15 دقيقة · مبتدئة · من غير أدوات'), findsOneWidget);
     expect(find.text('Legs and glutes'), findsNothing);
   });
 

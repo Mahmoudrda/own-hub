@@ -307,7 +307,7 @@ function renderBuild() {
     '<div class="grid g3" style="margin-top:14px">' +
     '<div class="card"><strong>Material 3</strong><p class="q" style="margin:6px 0 0">useMaterial3, navigation bar with a pill indicator, bottom sheets, snackbars with undo. Rubik covers both scripts; icons are Material Symbols Rounded.</p></div>' +
     '<div class="card"><strong>' + D.screens.length + ' routes</strong><p class="q" style="margin:6px 0 0">One per screen, grouped by flow, generated into app_routes.dart.</p></div>' +
-    '<div class="card"><strong>Two locales</strong><p class="q" style="margin:6px 0 0">English and Modern Standard Arabic in app_en.arb and app_ar.arb, right-to-left layout, mirrored directional icons, and Western numerals kept inside Arabic text.</p></div>' +
+    '<div class="card"><strong>Two locales</strong><p class="q" style="margin:6px 0 0">English and Egyptian Arabic in app_en.arb and app_ar.arb, right-to-left layout, mirrored directional icons, and Western numerals kept inside Arabic text.</p></div>' +
     '</div>' +
     '<div class="sec"><h2 style="font-size:20px">State the screens assume</h2><div class="card" style="padding:0;margin-top:10px"><div class="tbl-wrap"><table><thead><tr><th>Record</th><th>What the screens read</th></tr></thead><tbody>' + rows + '</tbody></table></div></div></div>' +
     '<div class="sec"><h2 style="font-size:20px">Rules that belong in the domain layer</h2><div class="card" style="margin-top:10px"><ol class="q" style="margin:0;padding-left:20px;line-height:1.9">' + rules + '</ol></div></div>' +

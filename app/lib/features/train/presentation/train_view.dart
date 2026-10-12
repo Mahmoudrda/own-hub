@@ -122,11 +122,13 @@ class TrainView extends StatelessWidget {
     final shorts =
         shortSessions ??
         [
-          ShortSession(
-            duration: l10n.n10Min,
-            constraint: l10n.floorOnly,
-            onTap: onFollowAlong,
-          ),
+          // The follow-along tile, only while follow-along is on.
+          if (onFollowAlong != null)
+            ShortSession(
+              duration: l10n.n10Min,
+              constraint: l10n.floorOnly,
+              onTap: onFollowAlong,
+            ),
           ShortSession(
             duration: l10n.n15Min,
             constraint: l10n.quiet,
@@ -163,15 +165,17 @@ class TrainView extends StatelessWidget {
               // The section's drawings sit beside its name, as on a cover,
               // rather than in a strip above it.
               const ScreenArtInline(),
-              IconButton(
-                onPressed: onSearch,
-                iconSize: 24,
-                color: AppColors.onSurfaceVariant,
-                // The only door to the library, and it announced nothing at
-                // all to a screen reader.
-                tooltip: l10n.search,
-                icon: const Icon(Icons.search),
-              ),
+              // The library's door, only while the library is on.
+              if (onSearch != null)
+                IconButton(
+                  onPressed: onSearch,
+                  iconSize: 24,
+                  color: AppColors.onSurfaceVariant,
+                  // The only door to the library, and it announced nothing at
+                  // all to a screen reader.
+                  tooltip: l10n.search,
+                  icon: const Icon(Icons.search),
+                ),
             ],
           ),
           AppCard(
@@ -327,26 +331,28 @@ class TrainView extends StatelessWidget {
           // Filters wrap rather than scroll: a constraint she has — "quiet",
           // "no equipment" — must never sit off the edge of the screen where she
           // will not find it.
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              AppChip(l10n.quiet, icon: Icons.volume_off, onTap: onSearch),
-              AppChip(l10n.noEquipment, onTap: onSearch),
-              AppChip(l10n.n10Min, onTap: onSearch),
-            ],
-          ),
-          AppListItem(
-            title: l10n.notFeelingItToday,
-            subtitle: l10n.seeAGentlerOptionBasedOnYour,
-            leading: const Icon(
-              Icons.self_improvement,
-              size: 24,
-              color: AppColors.primaryDim,
+          if (onSearch != null)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                AppChip(l10n.quiet, icon: Icons.volume_off, onTap: onSearch),
+                AppChip(l10n.noEquipment, onTap: onSearch),
+                AppChip(l10n.n10Min, onTap: onSearch),
+              ],
             ),
-            trailing: const AppChevron(),
-            onTap: onGentlerOption,
-          ),
+          if (onGentlerOption != null)
+            AppListItem(
+              title: l10n.notFeelingItToday,
+              subtitle: l10n.seeAGentlerOptionBasedOnYour,
+              leading: const Icon(
+                Icons.self_improvement,
+                size: 24,
+                color: AppColors.primaryDim,
+              ),
+              trailing: const AppChevron(),
+              onTap: onGentlerOption,
+            ),
         ],
       ),
     );

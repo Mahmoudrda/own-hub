@@ -10,6 +10,14 @@
 /// is null, and null is what is saved. The design note is blunt about why: "an
 /// invented average becomes a prediction she never gave us the data for."
 ///
+/// ## Both answers are taps or one number
+///
+/// The last start opens the date picker from the row itself, the same picker
+/// `Y09` uses, never later than today. The usual length is one number on the
+/// number pad, kept only when it is a real cycle length (15 to 60 days), and
+/// "Not sure" when the field is empty. Both fields used to draw and ignore
+/// whatever she typed.
+///
 /// ## Sharing is not on this screen
 ///
 /// `savePreferences` takes no sharing parameter, so setup cannot grant a coach
@@ -72,7 +80,47 @@ class _CycleDatesViewState extends State<CycleDatesView> {
 
   late CycleAdaptation _adaptation = CycleAdaptation.y02Defaults;
 
+  final TextEditingController _length = TextEditingController();
+
+  /// True while the length field holds something that is not 15 to 60.
+  bool _lengthInvalid = false;
+
   DateTime get _today => widget.now ?? AppClock.now();
+
+  @override
+  void dispose() {
+    _length.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickLastStart() async {
+    final today = dayOnly(_today);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _lastStart ?? today,
+      firstDate: DateTime(today.year - 1),
+      // A future start is not offered in the first place.
+      lastDate: today,
+    );
+    if (picked != null) setState(() => _lastStart = dayOnly(picked));
+  }
+
+  void _lengthChanged(String text) {
+    final trimmed = text.trim();
+    final days = int.tryParse(trimmed);
+    setState(() {
+      if (trimmed.isEmpty) {
+        _cycleLength = null;
+        _lengthInvalid = false;
+      } else if (days != null && days >= 15 && days <= 60) {
+        _cycleLength = days;
+        _lengthInvalid = false;
+      } else {
+        _cycleLength = null;
+        _lengthInvalid = true;
+      }
+    });
+  }
 
   Future<void> _save() async {
     final repository = widget.repository;
@@ -107,16 +155,18 @@ class _CycleDatesViewState extends State<CycleDatesView> {
       footer: [AppButton(l10n.savePreferences, onPressed: _save)],
       children: [
         Text(l10n.yourDatesIfYouHaveThem, style: AppText.headline),
-        AppField(
-          label: l10n.lastPeriodStart,
-          // Her own date, or nothing. The mockup's "15 September 2026" is a
-          // sample and is not rendered as her answer.
-          hint: _lastStart == null ? l10n.iDontKnow : isoDay(_lastStart!),
+        // The whole row opens the picker: her own date, or "I don't know".
+        // The mockup's "15 September 2026" is a sample and is not rendered as
+        // her answer.
+        AppListItem(
+          title: l10n.lastPeriodStart,
+          subtitle: _lastStart == null ? l10n.iDontKnow : isoDay(_lastStart!),
           trailing: const Icon(
             Icons.calendar_month,
             size: 22,
             color: AppColors.primaryDim,
           ),
+          onTap: _pickLastStart,
         ),
         AppChipRow(
           items: [l10n.iDontKnow, l10n.stillBleeding],
@@ -134,10 +184,14 @@ class _CycleDatesViewState extends State<CycleDatesView> {
           }),
         ),
         AppField(
+          controller: _length,
           label: l10n.usualCycleLength,
           // "Not sure" until she says otherwise. See the library note.
-          hint: _cycleLength == null ? l10n.notSure : '$_cycleLength',
+          hint: l10n.notSure,
           helper: l10n.countFromTheFirstDayOfOne,
+          errorText: _lengthInvalid ? l10n.between15And60DaysOrLeave : '',
+          keyboardType: TextInputType.number,
+          onChanged: _lengthChanged,
         ),
         AppCard(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),

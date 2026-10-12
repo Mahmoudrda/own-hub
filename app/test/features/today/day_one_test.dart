@@ -87,9 +87,23 @@ void main() {
   setUp(
     () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
       Feature.today: true,
+      Feature.firstWeek: true,
+      Feature.quietWeek: true,
+      Feature.tiers: true,
+      Feature.lockScreenNudge: true,
       Feature.train: true,
+      Feature.recordFromMemory: true,
+      Feature.exerciseVideo: true,
+      Feature.exerciseSwap: true,
+      Feature.followAlong: true,
+      Feature.workoutLibrary: true,
+      Feature.trainingReminders: true,
       Feature.eat: true,
+      Feature.recipes: true,
+      Feature.weekPlan: true,
+      Feature.groceryList: true,
       Feature.community: true,
+      Feature.communityGroups: true,
     }),
   );
   tearDown(() => AppRouter.featureFlags = savedFlags);
@@ -209,9 +223,9 @@ void main() {
     await tester.pumpWidget(_host(_dayOne(), locale: const Locale('ar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('اليوم 1'), findsOneWidget);
-    expect(find.text('تدريبك، أسبوعًا بعد أسبوع'), findsOneWidget);
-    expect(find.text('لم تُضيفي شيئًا بعد'), findsOneWidget);
+    expect(find.text('يوم 1'), findsOneWidget);
+    expect(find.text('تمرينك، أسبوع بأسبوع'), findsOneWidget);
+    expect(find.text('لسه ماضفتيش حاجة'), findsOneWidget);
     expect(find.text('Your training, week by week'), findsNothing);
     expect(find.text('Nothing added yet'), findsNothing);
   });

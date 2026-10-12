@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Localisation. Arabic is Modern Standard Arabic; the ARB files in lib/l10n are
+  # Localisation. Arabic is polished Egyptian; the ARB files in lib/l10n are
   # generated from the mockup's translation dictionary and must not be hand-edited.
   flutter_localizations:
     sdk: flutter
@@ -213,7 +213,7 @@ flutter:
     # to work with one bar on a metro platform at 7am. It is also why her text
     # is a JSON asset and not the ARB: `i18n_guard_test.dart` forbids Arabic
     # literals under lib/, which is exactly right — her colloquial is content,
-    # the interface is Modern Standard, and they reach the screen through
+    # the interface is the app's own voice, and they reach the screen through
     # different pipes so they cannot be smeared into each other.
     - assets/content/rahma_recipes.json
 

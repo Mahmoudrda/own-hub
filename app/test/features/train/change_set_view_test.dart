@@ -206,10 +206,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('ماذا أدّيتِ؟'), findsOneWidget);
+    expect(find.text('عملتي إيه؟'), findsOneWidget);
     expect(find.text('الوزن'), findsOneWidget);
-    expect(find.text('التكرارات'), findsOneWidget);
-    expect(find.text('اكتبي رقمًا آخر'), findsOneWidget);
+    expect(find.text('العدّات'), findsOneWidget);
+    expect(find.text('اكتبي رقم تاني'), findsOneWidget);
     expect(find.text('Weight'), findsNothing);
   });
 

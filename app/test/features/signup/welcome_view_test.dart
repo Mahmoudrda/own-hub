@@ -74,14 +74,14 @@ void main() {
 
     // If a string were hardcoded in English it would still read English here,
     // which is exactly the failure a hardcoded string produces in production.
-    expect(find.text('تدريبكِ، وطعامكِ، ودورتكِ. للنساء فقط.'), findsOneWidget);
-    expect(find.text('خذيني في جولة'), findsOneWidget);
+    expect(find.text('تمرينك، وأكلك، ودورتك. للستات بس.'), findsOneWidget);
+    expect(find.text('خديني في جولة'), findsOneWidget);
     expect(find.text('تخطّي الجولة وانضمّي'), findsOneWidget);
     expect(
-      find.text('تستخدم الجولة أسبوعًا تجريبيًّا. دون حساب، ولا يُحفظ شيء.'),
+      find.text('الجولة بتستخدم أسبوع مثال. من غير حساب، ومفيش حاجة بتتحفظ.'),
       findsOneWidget,
     );
-    expect(find.text('لديّ حساب بالفعل'), findsOneWidget);
+    expect(find.text('عندي حساب أصلًا'), findsOneWidget);
     expect(find.text('Show me around'), findsNothing);
   });
 
@@ -92,7 +92,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final direction = Directionality.of(
-      tester.element(find.text('خذيني في جولة')),
+      tester.element(find.text('خديني في جولة')),
     );
     expect(direction, TextDirection.rtl);
   });
@@ -173,7 +173,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('English'), findsOneWidget);
-      expect(find.text('العربية'), findsOneWidget);
+      expect(find.text('عربي'), findsOneWidget);
       final chips = tester.widget<AppChipRow>(find.byType(AppChipRow));
       expect(chips.selected, {0}, reason: 'opened in English');
     });
@@ -201,12 +201,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Show me around'), findsOneWidget);
 
-      await tester.tap(find.text('العربية'));
+      await tester.tap(find.text('عربي'));
       await tester.pumpAndSettle();
 
       expect(preference.read(), AppLanguage.arabic);
       expect(locale.value, const Locale('ar'));
-      expect(find.text('خذيني في جولة'), findsOneWidget);
+      expect(find.text('خديني في جولة'), findsOneWidget);
       expect(find.text('Show me around'), findsNothing);
     });
   });

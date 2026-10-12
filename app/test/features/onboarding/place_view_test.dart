@@ -1,10 +1,10 @@
-// O02 — Where will you train, and with what?
+// O02 — Where will you train?
 //
-// Two answers on one screen, so there are two things to hold: the place writes
-// like any other single choice, and the equipment is a set with one exclusive
-// member. "Nothing" being exclusive is the part that would rot quietly — a woman
-// who owns nothing and a woman who owns a mat AND nothing are different answers,
-// and only one of them is possible.
+// One answer on this screen now: the place. What she has at home is its own
+// question (O06, `equipment_view_test.dart`), asked only when home is part of
+// her answer. So besides the write there is one more thing to hold: choosing a
+// ladies-only gym takes that question out of the walk, and the count on this
+// screen says so as she taps.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +16,7 @@ import 'package:own_hub/features/onboarding/presentation/place_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_chip_row.dart';
+import 'package:own_hub/ui/app_step_bar.dart';
 
 Widget _host(
   Widget child, {
@@ -40,26 +41,13 @@ bool _placeSelected(WidgetTester tester, String title) => tester
     )
     .selected;
 
-/// The equipment chips sit at the bottom of this screen and fall below the fold
-/// on a short viewport, so they are scrolled into view before being tapped —
-/// which is what a woman on a small phone does. Without this a tap lands outside
-/// the visible area and silently does nothing, so the assertion fails while the
-/// screen itself is perfectly correct.
-Future<void> _tapChip(WidgetTester tester, String label) async {
-  await tester.ensureVisible(find.text(label));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text(label));
-  await tester.pumpAndSettle();
+(int, int) _bar(WidgetTester tester) {
+  final bar = tester.widget<AppStepBar>(find.byType(AppStepBar));
+  return (bar.step, bar.total);
 }
 
-bool _chipSelected(WidgetTester tester, String label) => tester
-    .widget<AppChip>(
-      find.ancestor(of: find.text(label), matching: find.byType(AppChip)),
-    )
-    .selected;
-
 void main() {
-  group('both questions are on the screen', () {
+  group('the one question', () {
     testWidgets('three places, each with what it means', (tester) async {
       await tester.pumpWidget(
         _host(PlaceView(repository: InMemoryIntakeRepository())),
@@ -72,111 +60,58 @@ void main() {
       expect(find.text('A ladies-only gym'), findsOneWidget);
       expect(find.text('Both'), findsOneWidget);
       expect(find.text('Quiet moves, floor, nothing to carry'), findsOneWidget);
+      expect(find.text('2 of 6'), findsOneWidget);
     });
 
-    testWidgets('equipment is asked as chips, with "Nothing" among them', (
-      tester,
-    ) async {
-      // The design's reason: the honest answer for most women here is "nothing",
-      // and that answer has to be the easy one.
+    testWidgets('what she has at home is not asked here', (tester) async {
+      // One question a screen. The equipment chips are O06's.
       await tester.pumpWidget(
         _host(PlaceView(repository: InMemoryIntakeRepository())),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('What do you have at home?'), findsOneWidget);
-      for (final item in ['Nothing', 'A mat', 'Dumbbells', 'Bands']) {
-        expect(find.text(item), findsOneWidget, reason: item);
-      }
-      expect(find.text('Step 2 of 4'), findsOneWidget);
+      expect(find.text('What do you have at home?'), findsNothing);
+      expect(find.byType(AppChip), findsNothing);
+    });
+  });
+
+  group('the walk follows her answer', () {
+    testWidgets('a ladies-only gym is one question shorter, counted as she '
+        'taps', (tester) async {
+      // She is not asked about dumbbells in a living room she does not train
+      // in, and the count drops on this screen rather than one screen later.
+      await tester.pumpWidget(
+        _host(PlaceView(repository: InMemoryIntakeRepository())),
+      );
+      await tester.pumpAndSettle();
+      expect(_bar(tester), (2, 6));
+
+      await tester.tap(find.text('A ladies-only gym'));
+      await tester.pumpAndSettle();
+      expect(find.text('2 of 5'), findsOneWidget);
+      expect(_bar(tester), (2, 5));
+
+      await tester.tap(find.text('Both'));
+      await tester.pumpAndSettle();
+      expect(find.text('2 of 6'), findsOneWidget);
+      expect(_bar(tester), (2, 6));
     });
   });
 
   group('the defaults are the easy answers', () {
-    testWidgets('at home, owning nothing', (tester) async {
+    testWidgets('at home', (tester) async {
       await tester.pumpWidget(
         _host(PlaceView(repository: InMemoryIntakeRepository())),
       );
       await tester.pumpAndSettle();
 
       expect(_placeSelected(tester, 'At home'), isTrue);
-      expect(_chipSelected(tester, 'Nothing'), isTrue);
-      expect(_chipSelected(tester, 'Dumbbells'), isFalse);
-    });
-  });
-
-  group('"Nothing" is exclusive, in both directions', () {
-    testWidgets('choosing equipment clears it', (tester) async {
-      await tester.pumpWidget(
-        _host(PlaceView(repository: InMemoryIntakeRepository())),
-      );
-      await tester.pumpAndSettle();
-
-      await _tapChip(tester, 'Dumbbells');
-
-      expect(_chipSelected(tester, 'Dumbbells'), isTrue);
-      expect(
-        _chipSelected(tester, 'Nothing'),
-        isFalse,
-        reason: 'owning dumbbells and owning nothing cannot both be true',
-      );
-    });
-
-    testWidgets('choosing it clears the equipment', (tester) async {
-      await tester.pumpWidget(
-        _host(
-          PlaceView(
-            repository: InMemoryIntakeRepository(
-              const Intake(equipment: {Equipment.mat, Equipment.bands}),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await _tapChip(tester, 'Nothing');
-
-      expect(_chipSelected(tester, 'Nothing'), isTrue);
-      expect(_chipSelected(tester, 'A mat'), isFalse);
-      expect(_chipSelected(tester, 'Bands'), isFalse);
-    });
-
-    testWidgets('turning off the last item falls back to "Nothing"', (
-      tester,
-    ) async {
-      // "I own nothing" and "I did not say" must not look the same to the
-      // programme builder.
-      final repository = InMemoryIntakeRepository(
-        const Intake(equipment: {Equipment.mat}),
-      );
-      await tester.pumpWidget(_host(PlaceView(repository: repository)));
-      await tester.pumpAndSettle();
-
-      await _tapChip(tester, 'A mat');
-
-      expect(_chipSelected(tester, 'Nothing'), isTrue);
-    });
-
-    testWidgets('several pieces of equipment can be on at once', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _host(PlaceView(repository: InMemoryIntakeRepository())),
-      );
-      await tester.pumpAndSettle();
-
-      await _tapChip(tester, 'A mat');
-      await _tapChip(tester, 'Bands');
-
-      expect(_chipSelected(tester, 'A mat'), isTrue);
-      expect(_chipSelected(tester, 'Bands'), isTrue);
+      expect(_placeSelected(tester, 'A ladies-only gym'), isFalse);
     });
   });
 
   group('writing', () {
-    testWidgets('Continue writes this step\'s two fields and no others', (
-      tester,
-    ) async {
+    testWidgets('Continue writes the place, and nothing else', (tester) async {
       final repository = InMemoryIntakeRepository();
       var continued = 0;
       await tester.pumpWidget(
@@ -186,14 +121,13 @@ void main() {
 
       await tester.tap(find.text('A ladies-only gym'));
       await tester.pumpAndSettle();
-      await _tapChip(tester, 'Dumbbells');
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
       expect(repository.read().place, TrainingPlace.ladiesGym);
-      expect(repository.read().equipment, {Equipment.dumbbells});
+      expect(repository.read().equipment, {Equipment.none});
       expect(repository.writes, [
-        {'place', 'equipment'},
+        {'place'},
       ]);
       expect(continued, 1);
     });
@@ -219,19 +153,16 @@ void main() {
         _host(
           PlaceView(
             repository: InMemoryIntakeRepository(
-              const Intake(
-                place: TrainingPlace.both,
-                equipment: {Equipment.bands},
-              ),
+              const Intake(place: TrainingPlace.ladiesGym),
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(_placeSelected(tester, 'Both'), isTrue);
-      expect(_chipSelected(tester, 'Bands'), isTrue);
-      expect(_chipSelected(tester, 'Nothing'), isFalse);
+      expect(_placeSelected(tester, 'A ladies-only gym'), isTrue);
+      expect(_placeSelected(tester, 'At home'), isFalse);
+      expect(find.text('2 of 5'), findsOneWidget);
     });
   });
 
@@ -245,19 +176,19 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('أين ستتدرّبين؟'), findsOneWidget);
-      expect(find.text('في المنزل'), findsOneWidget);
-      expect(find.text('الخطوة 2 من 4'), findsOneWidget);
+      expect(find.text('هتتمرّني فين؟'), findsOneWidget);
+      expect(find.text('في البيت'), findsOneWidget);
+      expect(find.text('2 من 6'), findsOneWidget);
       expect(find.text('Where will you train?'), findsNothing);
-      expect(find.text('Dumbbells'), findsNothing);
+      expect(find.text('At home'), findsNothing);
     });
   });
 
   testWidgets('does not overflow at the largest system text size in Arabic', (
     tester,
   ) async {
-    // The tightest row in the flow: four chips across a phone width, with
-    // Arabic labels, at 1.6. They wrap rather than clip.
+    // Three places, each a wrapped title and subtitle, under the step bar, at
+    // 1.6. They wrap rather than clip.
     await tester.pumpWidget(
       _host(
         PlaceView(repository: InMemoryIntakeRepository()),

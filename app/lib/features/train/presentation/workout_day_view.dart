@@ -332,13 +332,14 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
             fontSize: 15,
             onPressed: widget.onNotToday ?? widget.onBack,
           ),
-        AppButton(
-          l10n.iAlreadyDidIt,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: widget.onAlreadyDidIt,
-        ),
+        if (widget.onAlreadyDidIt != null)
+          AppButton(
+            l10n.iAlreadyDidIt,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: widget.onAlreadyDidIt,
+          ),
       ],
       children: [
         if (caution != null)
@@ -381,12 +382,16 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
             // session she has not started: R03 is the screen with "Start,
             // everything's ready" on it.
             current: i == 0,
-            onTap: () => widget.onOpenMove?.call(day.moves[i]),
+            // Not tappable while the move videos are switched off.
+            onTap: widget.onOpenMove == null
+                ? null
+                : () => widget.onOpenMove!(day.moves[i]),
           ),
-        Text(
-          l10n.tapAnyMoveToWatchItOr,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
+        if (widget.onOpenMove != null)
+          Text(
+            l10n.tapAnyMoveToWatchItOr,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
       ],
     );
   }

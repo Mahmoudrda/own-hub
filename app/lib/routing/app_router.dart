@@ -81,9 +81,12 @@ import '../features/eat/presentation/say_it_view.dart';
 import '../features/eat/presentation/type_it_view.dart';
 import '../features/eat/presentation/week_plan_view.dart';
 import '../features/onboarding/domain/intake_repository.dart';
+import '../features/onboarding/domain/intake.dart' show TrainingPlace;
+import '../features/onboarding/presentation/equipment_view.dart';
 import '../features/onboarding/presentation/goal_view.dart';
 import '../features/onboarding/presentation/her_answers.dart';
 import '../features/onboarding/presentation/life_stage_view.dart';
+import '../features/onboarding/presentation/minutes_view.dart';
 import '../features/onboarding/presentation/place_view.dart';
 import '../features/onboarding/presentation/schedule_view.dart';
 import '../features/onboarding/presentation/starting_program_view.dart';
@@ -195,6 +198,11 @@ import '../features/train/presentation/authored_workout.dart';
 import '../features/coach/domain/coach_repository.dart';
 import '../features/coach/domain/enquiry.dart';
 import '../features/coach/presentation/coach_basics_view.dart';
+import '../features/coach/presentation/coach_how_you_coach_view.dart';
+import '../features/coach/presentation/coach_photo_view.dart';
+import '../features/coach/presentation/coach_results_step_view.dart';
+import '../features/coach/presentation/coach_reviews_step_view.dart';
+import '../features/coach/presentation/coach_rules_view.dart';
 import '../features/coach/presentation/coach_being_checked_view.dart';
 import '../features/coach/presentation/coach_certificates_view.dart';
 import '../features/coach/presentation/coach_chat_view.dart';
@@ -339,6 +347,7 @@ import '../features/community/presentation/story_viewer_view.dart';
 import '../l10n/app_l10n.dart';
 import '../theme/app_tokens.dart';
 import 'app_routes.dart';
+import 'screen_features.dart';
 
 /// Screens that are **states, not destinations**.
 ///
@@ -614,7 +623,7 @@ class AppRouter {
     _ => null,
   };
 
-  /// Screens whose flow is gated but which are not the gated feature.
+  /// Screens no switch can close.
   ///
   /// `C02` is the language chooser. It sits in the sign-up flow because that is
   /// where she first meets it, but choosing between Arabic and English is a
@@ -622,24 +631,43 @@ class AppRouter {
   /// `C02`'s own copy promises "you can change this any time in your profile".
   /// With sign-up dark the row landed on [FeatureOff], so the first release
   /// would have shipped in whatever language the handset happened to be in,
-  /// with no way to change it. That is the same failure `featureForFlow`
-  /// refuses to allow for `account` — a flag flip must never trap a woman —
-  /// so it is refused here too.
+  /// with no way to change it.
+  ///
+  /// `A01`–`A04` and `O01`–`O07` are the two flows [featureForFlow] leaves
+  /// ungated, named here one by one so a new screen in either has to be
+  /// placed on purpose: her settings, her data and her way out, and the
+  /// setup questions between signing up and having an account. A flag flip
+  /// must never trap a woman.
   ///
   /// An entry here has to carry that kind of reason. It is not a place for a
-  /// screen somebody wants reachable early.
-  static const Set<String> ungatedScreens = {'C02'};
-
-  /// Screens with a switch of their own, inside their flow's.
-  ///
-  /// `E03` is Eat's, but saying a meal needs a speech recogniser this build
-  /// does not have, so it answers to [Feature.voiceLogging] (whose parent is
-  /// [Feature.eat]). Every microphone on Eat asks [screenIsOn] for `E03`.
-  static const Map<String, Feature> screenFeatures = {
-    'E03': Feature.voiceLogging,
-    // The owner's events. Off until she switches it on from Z14.
-    'T09': Feature.events,
+  /// screen somebody wants reachable early. Every other screen has a switch
+  /// in [screenFeatures].
+  static const Set<String> ungatedScreens = {
+    'C02',
+    'A01',
+    'A02',
+    'A03',
+    'A04',
+    'O01',
+    'O02',
+    'O03',
+    'O04',
+    'O05',
+    'O06',
+    'O07',
   };
+
+  /// The switch every gated screen answers to, beside its flow's
+  /// (`lib/routing/screen_features.dart`).
+  static const Map<String, Feature> screenFeatures = kScreenFeatures;
+
+  /// The bar title of the short "Your week": "1 of 3 · Your week" before she
+  /// has an account, which counts the three parts of joining, and nothing
+  /// after it. The line under the title counts the questions either way.
+  static String _shortSetupTitle(BuildContext context) =>
+      OnboardingState.instance.beforeSignup
+      ? signupPhaseLabel(AppL10n.of(context), SignupPhase.week)
+      : '';
 
   /// Whether a control that leads to [screenId] may be drawn at all.
   ///
@@ -653,6 +681,7 @@ class AppRouter {
   /// else did; it now asks it here, so the bar and the screens cannot come to
   /// different answers about the same feature.
   ///
+  /// A screen is on when its flow's switch and its own switch are both on.
   /// An unknown id is **on**: this is not a gate (that is [onGenerateRoute]'s
   /// job, and it is the one that has to be conservative) but a rendering
   /// decision, and a typo should show a broken link rather than silently
@@ -660,10 +689,10 @@ class AppRouter {
   static bool screenIsOn(String screenId) {
     if (ungatedScreens.contains(screenId)) return true;
     final flow = appRoutes[screenId]?.flow;
-    final feature =
-        screenFeatures[screenId] ??
-        (flow == null ? null : featureForFlow(flow));
-    return feature == null || featureFlags.isOn(feature);
+    final flowFeature = flow == null ? null : featureForFlow(flow);
+    if (flowFeature != null && !featureFlags.isOn(flowFeature)) return false;
+    final own = screenFeatures[screenId];
+    return own == null || featureFlags.isOn(own);
   }
 
   // ------------------------------------------------- The whole-app gate (G1)
@@ -1076,7 +1105,7 @@ class AppRouter {
     // both edges (see the note at Y03's tabs).
     'C01': (context) => WelcomeView(
       preference: localePreference,
-      onLookAround: () => goTo(context, 'C04'),
+      onLookAround: screenIsOn('C04') ? () => goTo(context, 'C04') : null,
       onGetStarted: () {
         OnboardingState.instance
           ..beforeSignup = true
@@ -1138,7 +1167,7 @@ class AppRouter {
     ),
     'C03': (context) => WhatsInsideView(
       onCreateAccount: () => goTo(context, 'C06'),
-      onLookAround: () => goTo(context, 'C04'),
+      onLookAround: screenIsOn('C04') ? () => goTo(context, 'C04') : null,
       onBack: () => Navigator.of(context).maybePop(),
     ),
     // The tour: the real Home, Train, Eat, My cycle and Progress screens with
@@ -1279,8 +1308,7 @@ class AppRouter {
             )
             ? null
             : testCodeOf(authRepository)) {
-          final code? =>
-            AppL10n.of(context).testBuildNoTextMessageIsSent(code),
+          final code? => AppL10n.of(context).testBuildNoTextMessageIsSent(code),
           null => AppL10n.of(context).aNewCodeIsOnItsWay,
         });
       },
@@ -1333,9 +1361,9 @@ class AppRouter {
       // ID go is written down before a lens opens, never after.
       // C09b repeats this screen's promise for a woman who arrives there
       // straight, so from here it is told not to: one promise, read once.
-      onScanId: () => Navigator.of(
-        context,
-      ).pushNamed(appRoutes['C09b']!.name, arguments: _fromWhyWeCheck),
+      onScanId: () =>
+          Navigator.of(context)
+              .pushNamed(appRoutes['C09b']!.name, arguments: _fromWhyWeCheck),
       // The niqab path. Nothing on this route may ask for a selfie.
       onNiqabPath: () {
         pendingReviewPath = ReviewPath.niqab;
@@ -1658,7 +1686,7 @@ class AppRouter {
         Navigator.of(context)
             .pushNamedAndRemoveUntil(appRoutes['C13']!.name, (_) => false);
       },
-      onLookAround: () => goTo(context, 'C04'),
+      onLookAround: screenIsOn('C04') ? () => goTo(context, 'C04') : null,
       // One push, "your check is done", only if she asks for it here.
       onNotifyMe: signedInUid == null
           ? null
@@ -1769,40 +1797,68 @@ class AppRouter {
         onClose: () => OnboardingState.instance.leaveSetup(context),
       ),
     ),
+    // Where she trains. Home, or both, adds one question about what she has
+    // there (O06); a ladies-only gym goes straight to her days.
     'O02': (context) => PlaceView(
+      repository: intakeRepository,
+      onContinue: () => intakeRepository.read().place == TrainingPlace.ladiesGym
+          ? goTo(context, 'O03')
+          : goTo(context, 'O06'),
+      onBack: () => Navigator.of(context).maybePop(),
+      onClose: () => OnboardingState.instance.leaveSetup(context),
+    ),
+    'O06': (context) => EquipmentView(
       repository: intakeRepository,
       onContinue: () => goTo(context, 'O03'),
       onBack: () => Navigator.of(context).maybePop(),
       onClose: () => OnboardingState.instance.leaveSetup(context),
     ),
-    // Two shapes. The four-question walk (O01 to O05) is unchanged. The short
-    // "Your week" is this one screen with her life stage on it, then O05:
-    // before she has an account (from C01), or after her check when she had
-    // not built her week yet (from C13). Every answer is preselected, so there
-    // is no Skip; before sign-up there is no Home to close to either.
+    // Days, then minutes, then what to train around: one question a screen in
+    // both walks. The full walk (O01 to O05) reaches them after her goal and
+    // her place. The short "Your week" starts here: before she has an account
+    // (from C01), or after her check when she had not built her week yet (from
+    // C13 or C14). Before sign-up the bar says "1 of 3 · Your week" and there
+    // is no X, because there is no Home to close to.
     'O03': (context) => OnboardingState.instance.shortSetup
         ? ScheduleView(
             repository: intakeRepository,
-            includeLifeStage: true,
-            titleOverride: OnboardingState.instance.beforeSignup
-                ? signupPhaseLabel(AppL10n.of(context), SignupPhase.week)
-                : '',
-            continueLabel: AppL10n.of(context).seeMyWeek,
-            onContinue: () => goTo(context, 'O05'),
+            titleOverride: _shortSetupTitle(context),
+            onContinue: () => goTo(context, 'O07'),
             onBack: () => Navigator.of(context).maybePop(),
           )
         : ScheduleView(
+            repository: intakeRepository,
+            onContinue: () => goTo(context, 'O07'),
+            onBack: () => Navigator.of(context).maybePop(),
+            onClose: () => OnboardingState.instance.leaveSetup(context),
+          ),
+    'O07': (context) => OnboardingState.instance.shortSetup
+        ? MinutesView(
+            repository: intakeRepository,
+            titleOverride: _shortSetupTitle(context),
+            onContinue: () => goTo(context, 'O04'),
+            onBack: () => Navigator.of(context).maybePop(),
+          )
+        : MinutesView(
             repository: intakeRepository,
             onContinue: () => goTo(context, 'O04'),
             onBack: () => Navigator.of(context).maybePop(),
             onClose: () => OnboardingState.instance.leaveSetup(context),
           ),
-    'O04': (context) => LifeStageView(
-      repository: intakeRepository,
-      onContinue: () => goTo(context, 'O05'),
-      onBack: () => Navigator.of(context).maybePop(),
-      onClose: () => OnboardingState.instance.leaveSetup(context),
-    ),
+    'O04': (context) => OnboardingState.instance.shortSetup
+        ? LifeStageView(
+            repository: intakeRepository,
+            titleOverride: _shortSetupTitle(context),
+            continueLabel: AppL10n.of(context).seeMyWeek,
+            onContinue: () => goTo(context, 'O05'),
+            onBack: () => Navigator.of(context).maybePop(),
+          )
+        : LifeStageView(
+            repository: intakeRepository,
+            onContinue: () => goTo(context, 'O05'),
+            onBack: () => Navigator.of(context).maybePop(),
+            onClose: () => OnboardingState.instance.leaveSetup(context),
+          ),
     // The end of the walk. All three doors leave setup first, so the questions
     // are gone from the history whichever one she takes and no back gesture can
     // walk her into them again.
@@ -1863,7 +1919,9 @@ class AppRouter {
             },
             // Goes to the workout library, not a picker — no picker exists among
             // the 161 screens. Recorded as F4 in PHASE1-FINDINGS.md.
-            onPickDifferentProgram: () {
+            onPickDifferentProgram: !screenIsOn('R11')
+                ? null
+                : () {
               if (OnboardingState.instance.enteredFromSignup) {
                 OnboardingState.instance.leaveSetupToHome(
                   context,
@@ -1891,7 +1949,7 @@ class AppRouter {
       // "Today's workout" rather than naming a programme she never chose.
       sessionTitle: trainRepository.day?.title,
       onStartSession: () => goTo(context, 'R03'),
-      onRecall: () => goTo(context, 'T02'),
+      onRecall: screenIsOn('T02') ? () => goTo(context, 'T02') : null,
       onOpenMeal: () => goTo(context, 'E01'),
       // Her usual plate logs straight from Home and lands on the logged day.
       // `onOpenPlate` is the way in when the card has no plate to log; the
@@ -2002,7 +2060,7 @@ class AppRouter {
       repository: todayRepository,
       onStartShortSession: () => goTo(context, 'R03'),
       onStartSession: () => goTo(context, 'R03'),
-      onRecall: () => goTo(context, 'T02'),
+      onRecall: screenIsOn('T02') ? () => goTo(context, 'T02') : null,
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'T07': (context) => FirstWeekView(
@@ -2058,22 +2116,24 @@ class AppRouter {
       // Her week, from the same copy Home draws, so the two cannot disagree.
       sessionsThisWeek: todayRepository.day.week.sessionsLogged,
       sessionsPrescribed: todayRepository.day.week.sessionsTarget,
-      onSearch: () => goTo(context, 'R11'),
+      // Each door is passed only while its part is on; the view draws
+      // nothing for a null one.
+      onSearch: screenIsOn('R11') ? () => goTo(context, 'R11') : null,
       // The design sends "Continue" to G06, the coached-client screen. In
       // phase 1 no woman has a coach, so that would be a dead end — she goes
       // to today's session instead. Revisit when coaching ships (G4 OQ-12).
       onContinue: () => goTo(context, 'R03'),
       onSeeProgram: () => goTo(context, 'R02'),
       onOpenToday: () => goTo(context, 'T01'),
-      onGentlerOption: () => goTo(context, 'R05'),
+      onGentlerOption: screenIsOn('R05') ? () => goTo(context, 'R05') : null,
       // The first "Short ones that still count" tile, as the design has it.
-      onFollowAlong: () => goTo(context, 'R06'),
+      onFollowAlong: screenIsOn('R06') ? () => goTo(context, 'R06') : null,
       onShortSession: () => goTo(context, 'R03'),
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'R02': (context) => ProgramView(
       onBack: () => Navigator.of(context).maybePop(),
-      onChangeProgram: () => goTo(context, 'R11'),
+      onChangeProgram: screenIsOn('R11') ? () => goTo(context, 'R11') : null,
       onStart: () => goTo(context, 'R03'),
       onOpenDay: (screenId) => goTo(context, 'R03'),
     ),
@@ -2104,19 +2164,21 @@ class AppRouter {
         );
         goTo(context, 'R07');
       },
-      onAlreadyDidIt: () => goTo(context, 'T02'),
+      onAlreadyDidIt: screenIsOn('T02') ? () => goTo(context, 'T02') : null,
       // The move she tapped, carried through. It was discarded, so tapping
       // "Dead bug" opened a demo of a goblet squat.
-      onOpenMove: (move) {
-        WorkoutSessionState.instance.openMove(move);
-        goTo(context, 'R04');
-      },
+      onOpenMove: !screenIsOn('R04')
+          ? null
+          : (move) {
+              WorkoutSessionState.instance.openMove(move);
+              goTo(context, 'R04');
+            },
     ),
     'R04': (context) => ExerciseVideoView(
       move: WorkoutSessionState.instance.openedMove,
       onClose: () => Navigator.of(context).maybePop(),
       onBackToWorkout: () => goTo(context, 'R03'),
-      onSwap: () => goTo(context, 'R05'),
+      onSwap: screenIsOn('R05') ? () => goTo(context, 'R05') : null,
     ),
     'R05': (context) => SwapMoveView(
       repository: trainRepository,
@@ -2601,7 +2663,7 @@ class AppRouter {
       onOpenSettings: () => goTo(context, 'A02'),
       onSelectTab: (screenId) => goToTab(context, screenId),
       remindersOn: ReminderState.instance.schedule != null,
-      onOpenReminders: featureFlags.isOn(Feature.train)
+      onOpenReminders: featureFlags.isOn(Feature.trainingReminders)
           ? () => unawaited(openTrainingReminders(context))
           : null,
     ),
@@ -3036,7 +3098,7 @@ class AppRouter {
       // session — and the gentler card is gated on exactly this field.
       onSetWorkoutSuggestions: (on) =>
           unawaited(CycleAppState.instance.setWorkoutSuggestions(on)),
-      onOpenMeals: () => goTo(context, 'Y07'),
+      onOpenMeals: screenIsOn('Y07') ? () => goTo(context, 'Y07') : null,
       onAddDates: () => goTo(context, 'Y02'),
       // Y11's two outward routes, and what they say is what is actually
       // missing.
@@ -3196,7 +3258,11 @@ class AppRouter {
     'Y09': (context) => LogPeriodView(
       repository: periodRepository,
       onBack: () => Navigator.of(context).maybePop(),
-      onSaved: () => goTo(context, 'Y08'),
+      // To the calendar it was saved into, or back where she came from when
+      // the calendar is switched off.
+      onSaved: () => screenIsOn('Y08')
+          ? goTo(context, 'Y08')
+          : Navigator.of(context).maybePop(),
     ),
     'Y10': (context) => CyclePatternsView(
       // Y10 rendered its empty state permanently: no starts, no check-ins, so
@@ -3640,15 +3706,30 @@ class AppRouter {
     // write, and it goes through `CoachProfileEditor` — the same field-scoped,
     // rule-enforcing path a server would use — so four specialties or a
     // capacity of ninety is refused here too.
-    'K01': (context) => CoachBasicsView(
+    // One thing a screen, in her order: photo, name and city, what she
+    // coaches, how she coaches, prices and plans, results, what clients say,
+    // certificates, the three rules, getting paid, the check. A step whose
+    // screen is switched off (results and reviews live under her portfolio)
+    // is skipped, written out arm by arm so the navigation graph sees each
+    // edge.
+    'K01': (context) => CoachPhotoView(
       model: coachSetupModel,
-      // The community's three rules, agreed here rather than on C16: a coach
-      // goes from C13 straight to this screen (R1-P16).
-      rulesAgreed: PledgeState.instance.agreed,
+      onTakePhoto: () => photographHerself(context),
       onContinue: () {
-        if (!PledgeState.instance.agreed) recordPledge(context);
         CoachProfileState.instance.saveSetup();
-        goTo(context, 'K02');
+        goTo(context, 'K08');
+      },
+      onBack: () => Navigator.of(context).maybePop(),
+      onSaveAndClose: () {
+        CoachProfileState.instance.saveSetup();
+        goTo(context, 'K07');
+      },
+    ),
+    'K08': (context) => CoachBasicsView(
+      model: coachSetupModel,
+      onContinue: () {
+        CoachProfileState.instance.saveSetup();
+        goTo(context, 'K03');
       },
       onBack: () => Navigator.of(context).maybePop(),
       onSaveAndClose: () {
@@ -3669,9 +3750,9 @@ class AppRouter {
                 unawaited(addCertificatePhoto(context, credentialId)),
       onContinue: () {
         CoachProfileState.instance.saveSetup();
-        goTo(context, 'K03');
+        goTo(context, 'K13');
       },
-      // Back is back: K01 is already under this screen (M3).
+      // Back is back: the step before is already under this screen (M3).
       onBack: () => Navigator.of(context).maybePop(),
       onSaveAndClose: () {
         CoachProfileState.instance.saveSetup();
@@ -3679,6 +3760,18 @@ class AppRouter {
       },
     ),
     'K03': (context) => CoachSpecialtiesView(
+      model: coachSetupModel,
+      onContinue: () {
+        CoachProfileState.instance.saveSetup();
+        goTo(context, 'K10');
+      },
+      onBack: () => Navigator.of(context).maybePop(),
+      onSaveAndClose: () {
+        CoachProfileState.instance.saveSetup();
+        goTo(context, 'K07');
+      },
+    ),
+    'K10': (context) => CoachHowYouCoachView(
       model: coachSetupModel,
       onContinue: () {
         CoachProfileState.instance.saveSetup();
@@ -3698,6 +3791,47 @@ class AppRouter {
       editor: CoachProfileState.instance.packagesEditor,
       onOffersChanged: CoachProfileState.instance.publishOffersIfAllowed,
       onContinue: () {
+        CoachProfileState.instance.saveSetup();
+        if (screenIsOn('K11')) {
+          goTo(context, 'K11');
+        } else if (screenIsOn('K12')) {
+          goTo(context, 'K12');
+        } else {
+          goTo(context, 'K02');
+        }
+      },
+      onBack: () => Navigator.of(context).maybePop(),
+      onSaveAndClose: () {
+        CoachProfileState.instance.saveSetup();
+        goTo(context, 'K07');
+      },
+    ),
+    'K11': (context) => CoachResultsStepView(
+      onContinue: () =>
+          screenIsOn('K12') ? goTo(context, 'K12') : goTo(context, 'K02'),
+      onBack: () => Navigator.of(context).maybePop(),
+      onSaveAndClose: () {
+        CoachProfileState.instance.saveSetup();
+        goTo(context, 'K07');
+      },
+    ),
+    'K12': (context) => CoachReviewsStepView(
+      onContinue: () => goTo(context, 'K02'),
+      onBack: () => Navigator.of(context).maybePop(),
+      onSaveAndClose: () {
+        CoachProfileState.instance.saveSetup();
+        goTo(context, 'K07');
+      },
+    ),
+    // The community's three rules, agreed here rather than on C16: a coach
+    // goes from C13 into her own setup (R1-P16). A woman who has already
+    // agreed finds the box ticked.
+    'K13': (context) => CoachRulesView(
+      model: coachSetupModel
+        ..rulesAgreed =
+            coachSetupModel.rulesAgreed || PledgeState.instance.agreed,
+      onContinue: () {
+        if (!PledgeState.instance.agreed) recordPledge(context);
         CoachProfileState.instance.saveSetup();
         goTo(context, 'K05');
       },
@@ -4514,7 +4648,8 @@ class AppRouter {
               coachDesk.openSplitForEditing(null);
               goTo(context, 'K20');
             },
-            onDraftForMe: () => goTo(context, 'K26'),
+            // The draft is the assistant's. With it off there is no button.
+            onDraftForMe: screenIsOn('K26') ? () => goTo(context, 'K26') : null,
             onPublish: () => goTo(context, 'W08'),
             onBack: () => goTo(context, 'W02'),
           ),
@@ -4621,7 +4756,7 @@ class AppRouter {
           desk.startNewMeal();
           goTo(context, 'W07');
         },
-        onDraftAWeek: () => goTo(context, 'K27'),
+        onDraftAWeek: screenIsOn('K27') ? () => goTo(context, 'K27') : null,
         onPublish: () => goTo(context, 'W08'),
         onBack: () => goTo(context, 'W02'),
       );
@@ -7553,6 +7688,11 @@ class NotBuiltYet extends StatelessWidget {
 /// Deliberately distinct from [NotBuiltYet]: "we have not built this" and "this
 /// is built and currently off" are different facts, and collapsing them would
 /// make the switchboard impossible to reason about during a release.
+///
+/// A member can land here: the server can switch a part off while a link to
+/// it is on her screen. So it speaks to her, in her language, with no screen
+/// id and no word about flags, and the bar's back arrow takes her out. [title]
+/// is the route's English title, kept for the tests and never drawn.
 class FeatureOff extends StatelessWidget {
   const FeatureOff({super.key, required this.screenId, required this.title});
 
@@ -7561,20 +7701,24 @@ class FeatureOff extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       backgroundColor: AppColors.surfaceLow,
-      appBar: AppBar(title: Text(screenId, style: AppText.titleM)),
+      appBar: AppBar(backgroundColor: AppColors.surfaceLow),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(title, style: AppText.titleL, textAlign: TextAlign.center),
+              Text(
+                l10n.notOpenRightNow,
+                style: AppText.titleL,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 8),
               Text(
-                'Switched off. This screen is built and tested; its feature '
-                'flag is currently off.',
+                l10n.thisPartOfOwnHubIsNot,
                 style: AppText.bodyM.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),

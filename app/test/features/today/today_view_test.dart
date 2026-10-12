@@ -501,9 +501,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('الثلاثاء'), findsOneWidget);
-    expect(find.text('تمرين اليوم'), findsOneWidget);
-    expect(find.text('احتسبيها'), findsOneWidget);
-    expect(find.text('هذا الأسبوع، 1 من 3'), findsOneWidget);
+    expect(find.text('تمرين النهارده'), findsOneWidget);
+    expect(find.text('احسبيها'), findsOneWidget);
+    expect(find.text('الأسبوع ده، 1 من 3'), findsOneWidget);
     // English surviving here is exactly what a hardcoded string looks like.
     expect(find.text("Today's workout"), findsNothing);
     expect(find.text('Count it'), findsNothing);

@@ -207,7 +207,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('أُضيف من الذاكرة. ويحتسبه أسبوعك كأي تمرين آخر.'),
+      find.text('ضفتيه من الذاكرة. أسبوعك بيحسبه زي أي تمرين تاني.'),
       findsOneWidget,
     );
     expect(find.text('+15 نقطة'), findsOneWidget);

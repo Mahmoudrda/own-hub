@@ -87,13 +87,14 @@ class ExerciseVideoView extends StatelessWidget {
       appBar: TrainTopBar(onClose: onClose),
       footer: [
         AppButton(l10n.backToTheWorkout, onPressed: onBackToWorkout),
-        AppButton(
-          l10n.swapThisMove,
-          variant: AppButtonVariant.outlined,
-          height: 48,
-          fontSize: 15,
-          onPressed: onSwap,
-        ),
+        if (onSwap != null)
+          AppButton(
+            l10n.swapThisMove,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: onSwap,
+          ),
       ],
       children: [
         // `source` is null until the library is produced, so the placeholder is

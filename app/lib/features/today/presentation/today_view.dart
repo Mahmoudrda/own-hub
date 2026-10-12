@@ -349,7 +349,9 @@ class _TodayViewState extends State<TodayView> {
         week: _day.programWeek,
         totalWeeks: _day.programTotalWeeks,
         onStart: () => openScreen(context, 'R07', widget.onStartSession),
-        onRecall: () => openScreen(context, 'T02', widget.onRecall),
+        onRecall: AppRouter.screenIsOn('T02')
+            ? () => openScreen(context, 'T02', widget.onRecall)
+            : null,
         // The week sits on the cover, between the session and the action.
         weekBlock: WeekCard(
           open: true,
@@ -409,7 +411,7 @@ class _TodayViewState extends State<TodayView> {
       // of it. `firstWeekIsComplete`, never `arc.isComplete`: with Community
       // dark two of the five steps cannot be offered, so the arc could never
       // be "complete" and the row would sit on Home for ever.
-      if (!firstWeekIsComplete(_day.arc))
+      if (!firstWeekIsComplete(_day.arc) && AppRouter.screenIsOn('T07'))
         AppListItem(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           leading: const Icon(
@@ -642,31 +644,32 @@ class _TodayViewState extends State<TodayView> {
         title: l10n.nothingAddedYet,
         body: l10n.todaysSessionAndTheMealYouUsually,
       ),
-      AppListItem(
-        variant: AppCardVariant.tonal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        leading: const Icon(
-          Icons.checklist,
-          size: 22,
-          color: AppColors.primaryDim,
+      if (AppRouter.screenIsOn('T07'))
+        AppListItem(
+          variant: AppCardVariant.tonal,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          leading: const Icon(
+            Icons.checklist,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.yourFirstWeek,
+          // Her arc, counted from the arc itself.
+          //
+          // This was the fixed `n2Of5DoneNothingExpires` — "2 of 5 done ·
+          // nothing expires" — on the ONE screen where nothing is done yet:
+          // T06 renders only when `arc.hasAnyLog` is false, so it told a woman
+          // with an empty arc that two of it were finished.
+          // Counted over the steps this build offers, the same list T07 draws.
+          // `arc.stepCount` is always five, so with Community dark Home said
+          // "0 of 5" about an arc of three.
+          subtitle: l10n.countOfTotal(
+            countLabel(firstWeekDone(_day.arc)),
+            countLabel(offeredFirstWeekSteps().length),
+          ),
+          trailing: chevron,
+          onTap: () => openScreen(context, 'T07', widget.onOpenFirstWeek),
         ),
-        title: l10n.yourFirstWeek,
-        // Her arc, counted from the arc itself.
-        //
-        // This was the fixed `n2Of5DoneNothingExpires` — "2 of 5 done ·
-        // nothing expires" — on the ONE screen where nothing is done yet:
-        // T06 renders only when `arc.hasAnyLog` is false, so it told a woman
-        // with an empty arc that two of it were finished.
-        // Counted over the steps this build offers, the same list T07 draws.
-        // `arc.stepCount` is always five, so with Community dark Home said
-        // "0 of 5" about an arc of three.
-        subtitle: l10n.countOfTotal(
-          countLabel(firstWeekDone(_day.arc)),
-          countLabel(offeredFirstWeekSteps().length),
-        ),
-        trailing: chevron,
-        onTap: () => openScreen(context, 'T07', widget.onOpenFirstWeek),
-      ),
       AppListItem(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         leading: const Icon(

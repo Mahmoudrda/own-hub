@@ -228,7 +228,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('صورة ذاتية سريعة'), findsOneWidget);
+    expect(find.text('سيلفي سريعة'), findsOneWidget);
     expect(
       find.textContaining('تُطابَق مع صورة بطاقتك ثم تُحذف'),
       findsOneWidget,

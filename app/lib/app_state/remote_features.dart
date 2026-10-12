@@ -1,17 +1,23 @@
-/// The few switches a member's app takes from the server.
+/// The switches a member's app takes from the server.
 ///
-/// Feature flags are compiled in (`FeatureFlags.shipped`), so a switch the
-/// owner flips on Z14 changes only the phone she is holding. For a feature the
-/// owner runs herself, like events, that is the wrong answer: she should be
-/// able to turn it on for everyone without a release. So the switches named in
-/// [RemoteFeatures.switchable], and only those, are also kept in
-/// `meta/features` (`{events: true}`), which a verified woman reads once a
-/// launch and only an admin writes (firestore.rules, `meta/{docId}`).
+/// Feature flags are compiled in (`FeatureFlags.shipped`). Two things need an
+/// answer that does not wait for a release, and `meta/features` gives it: a
+/// verified woman reads it once a launch, and only an admin writes it
+/// (firestore.rules, `meta/{docId}`). Each key is a [Feature]'s name.
 ///
-/// Everything else stays compiled in. A remote document that could switch on
-/// the community, or switch off the whole-app gate, would be a way round every
-/// safety argument this product has made, so the list is short on purpose and
-/// a test holds it to exactly one entry.
+///  * **Off, when something breaks.** `{recipes: false}` takes recipes out
+///    of every member's app at her next launch, and nothing else. Any feature
+///    whose [Feature.serverMayTurnOff] is true can be stopped this way.
+///  * **On, for what the owner runs herself.** `{events: true}`. Only a
+///    feature whose [Feature.serverMayTurnOn] is true can be switched on from
+///    the document; `true` on any other key only lifts an earlier `false`,
+///    back to what the build ships.
+///
+/// What the document can never do is the point of it. It cannot switch on
+/// the community, the coach side or the assistant, which wait for a release
+/// that has their back ends, and it cannot switch off the whole-app gate,
+/// sign-up, verification, Home or the privacy centre. A remote document that
+/// could would be a way round every safety argument this product has made.
 library;
 
 import 'dart:async';
@@ -48,10 +54,12 @@ class FirestoreFeatureSwitchStore implements FeatureSwitchStore {
 }
 
 abstract final class RemoteFeatures {
-  /// The only switches the server may move, by their key in `meta/features`.
-  static const Map<Feature, String> switchable = {Feature.events: 'events'};
+  /// Whether `meta/features` can move [feature] in either direction.
+  static bool isSwitchable(Feature feature) =>
+      feature.serverMayTurnOff || feature.serverMayTurnOn;
 
-  static bool isSwitchable(Feature feature) => switchable.containsKey(feature);
+  /// What the document said at the last read, for `Z14`. Empty until then.
+  static Map<Feature, bool> lastRead = const {};
 
   /// Where the document is read from. Null when no read could succeed.
   static FeatureSwitchStore? Function() store = _liveStore;
@@ -66,8 +74,16 @@ abstract final class RemoteFeatures {
     }
   }
 
+  /// The overrides [data] is allowed to make. Every other key, and every
+  /// value that is not a bool, is ignored.
+  static Map<Feature, bool> overridesFrom(Map<String, Object?> data) => {
+    for (final f in Feature.values)
+      if (data[f.name] case final bool on)
+        if (on ? f.serverMayTurnOn : f.serverMayTurnOff) f: on,
+  };
+
   /// Lays the server's answer over [AppRouter.featureFlags]. Never throws; on
-  /// any failure the compiled-in value stands, which for events is off.
+  /// any failure the compiled-in values stand.
   static Future<void> load() async {
     if (!AppRouter.isVerified) return;
     final source = store();
@@ -75,26 +91,34 @@ abstract final class RemoteFeatures {
     try {
       final data = await source.read();
       if (data == null) return;
-      final overrides = <Feature, bool>{
-        for (final entry in switchable.entries)
-          if (data[entry.value] case final bool on) entry.key: on,
+      lastRead = {
+        for (final f in Feature.values)
+          if (data[f.name] case final bool on) f: on,
       };
+      final overrides = overridesFrom(data);
       if (overrides.isEmpty) return;
       AppRouter.featureFlags = AppRouter.featureFlags.with_(overrides);
       AppChanges.bump();
     } catch (_) {
-      // Offline, or not allowed to read: the shipped value is the answer.
+      // Offline, or not allowed to read: the shipped values are the answer.
     }
   }
 
-  /// Z14: writes the owner's switch for every member. True when it landed.
+  /// `Z14`: writes the owner's switch for every member. True when it landed.
+  ///
+  /// Refuses what the document could not act on: switching on a feature the
+  /// server may not turn on is allowed only as lifting a stop, so it needs
+  /// [Feature.serverMayTurnOff]; switching off needs it too.
   static Future<bool> publish(Feature feature, bool on) async {
-    final key = switchable[feature];
-    if (key == null) return false;
+    final allowed = on
+        ? feature.serverMayTurnOn || feature.serverMayTurnOff
+        : feature.serverMayTurnOff;
+    if (!allowed) return false;
     final source = store();
     if (source == null) return false;
     try {
-      await source.write(key, on);
+      await source.write(feature.name, on);
+      lastRead = {...lastRead, feature: on};
       return true;
     } catch (_) {
       return false;

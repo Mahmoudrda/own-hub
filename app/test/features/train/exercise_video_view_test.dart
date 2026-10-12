@@ -118,7 +118,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('القرفصاء بالدمبل'), findsOneWidget);
-    expect(find.text('العودة إلى التمرين'), findsOneWidget);
+    expect(find.text('ارجعي للتمرين'), findsOneWidget);
     expect(find.text('Back to the workout'), findsNothing);
   });
 

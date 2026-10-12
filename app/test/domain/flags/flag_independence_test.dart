@@ -85,6 +85,10 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
       'It pushes every destination through the real router as the app '
       'actually ships, so the defaults are the point of the walk rather than '
       'an inherited convenience.',
+  'test/domain/flags/every_feature_has_a_switch_test.dart':
+      'Its subject is the shipped set itself: that it decides every feature by '
+      'name, that no part ships on under a parent that ships off, and that '
+      'the launch carries no paid surface and no assistant.',
   'test/store/store_screenshots_test.dart':
       'The store screenshots must show the product as it ships, so the '
       'shipped flags are its subject. It overrides only `accountRequired`, '

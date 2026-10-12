@@ -564,7 +564,10 @@ void _shippingFlagsTests() {
     // E03 is Eat's, but saying a meal has a switch of its own and it is off,
     // so the screen is dark rather than walked.
     final darkScreens = AppRouter.screenFeatures.keys.where(
-      (id) => !_shipsItsOwnSwitch(id),
+      (id) =>
+          appDestinations.containsKey(id) &&
+          _shippingFlows.contains(appDestinations[id]!.flow) &&
+          !_shipsItsOwnSwitch(id),
     );
     for (final id in darkScreens) {
       testWidgets('$id is switched off in this release', (tester) async {

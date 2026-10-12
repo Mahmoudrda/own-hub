@@ -459,7 +459,19 @@ class _BodyPrivatelyViewState extends State<BodyPrivatelyView> {
                   variant: AppButtonVariant.tonal,
                   height: 40,
                   fontSize: 15,
-                  onPressed: () => setState(() => _adding = true),
+                  onPressed: () => setState(() {
+                    _adding = true;
+                    // Opens on her last weight, selected, so the same number
+                    // is one tap on Save and a new one simply types over it.
+                    final last = _latest?.weightKg;
+                    if (last != null && _weight.text.isEmpty) {
+                      _weight.text = weightLabel(last);
+                      _weight.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _weight.text.length,
+                      );
+                    }
+                  }),
                 ),
         ),
         if (_adding) ...[

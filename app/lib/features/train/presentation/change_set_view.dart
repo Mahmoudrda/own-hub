@@ -25,6 +25,7 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
+import '../../../ui/app_field.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
@@ -60,7 +61,7 @@ class ChangeSetView extends StatefulWidget {
     this.moveNumber,
     this.moveCount,
     this.weightOptionsKg = const [10, 12, 14],
-    this.repOptions = const [8, 9, 10, 12],
+    this.repOptions,
     this.openSheet = true,
     this.sessionId = 'session',
     this.repository,
@@ -90,7 +91,8 @@ class ChangeSetView extends StatefulWidget {
   final List<double> weightOptionsKg;
 
   /// Reps she is likeliest to mean. Bare numerals: see the note in build().
-  final List<int> repOptions;
+  /// Null builds them around the set she was asked for ([repOptionsAround]).
+  final List<int>? repOptions;
 
   /// R08 *is* the sheet raised over the set, so it opens by default.
   final bool openSheet;
@@ -139,7 +141,7 @@ class _ChangeSetViewState extends State<ChangeSetView> {
           prescribed: widget.prescribed,
           moveName: widget.moveName,
           weightOptionsKg: widget.weightOptionsKg,
-          repOptions: widget.repOptions,
+          repOptions: widget.repOptions ?? repOptionsAround(widget.prescribed),
           onTypeANumber: widget.onTypeANumber,
           onSave: (changed) {
             Navigator.of(context).pop();
@@ -223,6 +225,22 @@ class _ChangeSetViewState extends State<ChangeSetView> {
   }
 }
 
+/// The reps she most likely did, around what she was asked for.
+///
+/// Mostly fewer, because the usual reason to change a set is not finishing
+/// it, and one step more for the day it went well. The asked-for number is
+/// always among them and is what the sheet opens on, so a set she did as
+/// asked is one tap. It used to be a fixed 8, 9, 10, 12 with 8 chosen, so a
+/// woman asked for 15 had to find a keyboard to say 14.
+List<int> repOptionsAround(PrescribedSet set) {
+  final asked = set.reps;
+  if (asked == null) return const [8, 9, 10, 12];
+  return {
+    for (final r in [asked - 4, asked - 2, asked - 1, asked, asked + 2])
+      if (r > 0) r,
+  }.toList()..sort();
+}
+
 class _ChangeSetSheet extends StatefulWidget {
   const _ChangeSetSheet({
     required this.prescribed,
@@ -246,7 +264,31 @@ class _ChangeSetSheet extends StatefulWidget {
 
 class _ChangeSetSheetState extends State<_ChangeSetSheet> {
   late int _weightIndex = _indexOfPlannedWeight();
-  int _repIndex = 0;
+  late int _repIndex = _indexOfAskedReps();
+
+  /// "Type a different number": a number pad in the sheet itself, for the
+  /// set the chips do not cover. Null until she asks for it.
+  TextEditingController? _typed;
+
+  int _indexOfAskedReps() {
+    final asked = widget.prescribed.reps;
+    final found = asked == null ? -1 : widget.repOptions.indexOf(asked);
+    return found < 0 ? 0 : found;
+  }
+
+  /// What she typed, when it is a number of reps anyone could do in a set.
+  int? get _typedReps {
+    final n = int.tryParse(_typed?.text.trim() ?? '');
+    return n != null && n > 0 && n <= 200 ? n : null;
+  }
+
+  int get _reps => _typedReps ?? widget.repOptions[_repIndex];
+
+  @override
+  void dispose() {
+    _typed?.dispose();
+    super.dispose();
+  }
 
   int _indexOfPlannedWeight() {
     final planned = widget.prescribed.weightKg;
@@ -320,9 +362,22 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
         const SizedBox(height: 8),
         AppChipRow(
           items: repLabels,
-          selected: {_repIndex},
-          onTap: (i) => setState(() => _repIndex = i),
+          selected: {if (_typedReps == null) _repIndex},
+          onTap: (i) => setState(() {
+            _repIndex = i;
+            _typed?.clear();
+          }),
         ),
+        if (_typed != null) ...[
+          const SizedBox(height: 10),
+          AppField(
+            controller: _typed,
+            label: l10n.reps,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            onChanged: (_) => setState(() {}),
+          ),
+        ],
         const SizedBox(height: 14),
         // 'Next time we keep 12 kg and aim for 10 again.' — names the weight
         // and the rep target it is about, so it is shown only to the woman
@@ -347,7 +402,7 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
           setDoneLabel(
             l10n,
             weightKg: loaded ? widget.weightOptionsKg[_weightIndex] : null,
-            reps: widget.repOptions[_repIndex],
+            reps: _reps,
           ),
           onPressed: () => widget.onSave(
             ChangedSet(
@@ -356,22 +411,28 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
                 weightKg: loaded
                     ? widget.weightOptionsKg[_weightIndex]
                     : null,
-                reps: widget.repOptions[_repIndex],
+                reps: _reps,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        AppButton(
-          l10n.typeADifferentNumber,
-          variant: AppButtonVariant.text,
-          // 44, not 40: the iOS minimum, and this sheet is used mid-set with
-          // one hand. AppButton already floors the *tap target* at 44 — the
-          // block she can see is now the block she can hit.
-          height: 44,
-          fontSize: 15,
-          onPressed: widget.onTypeANumber,
-        ),
+        if (_typed == null) ...[
+          const SizedBox(height: 10),
+          AppButton(
+            l10n.typeADifferentNumber,
+            variant: AppButtonVariant.text,
+            // 44, not 40: the iOS minimum, and this sheet is used mid-set with
+            // one hand. AppButton already floors the *tap target* at 44 — the
+            // block she can see is now the block she can hit.
+            height: 44,
+            fontSize: 15,
+            // A caller's own route to a keyboard wins; otherwise the number
+            // pad opens here. It used to be a button that did nothing.
+            onPressed:
+                widget.onTypeANumber ??
+                () => setState(() => _typed = TextEditingController()),
+          ),
+        ],
       ],
     );
   }

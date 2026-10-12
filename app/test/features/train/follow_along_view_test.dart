@@ -111,9 +111,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('يُحتسب تلقائيًا'), findsOneWidget);
+    expect(find.text('بيتحسب لوحده'), findsOneWidget);
     expect(find.text('إيقاف مؤقت'), findsOneWidget);
-    expect(find.text('تخطّي هذا التمرين'), findsOneWidget);
+    expect(find.text('تخطّي الحركة دي'), findsOneWidget);
     expect(find.text('Pause'), findsNothing);
   });
 

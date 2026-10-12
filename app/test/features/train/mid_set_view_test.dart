@@ -371,15 +371,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('التمرين 2 من 5'), findsNothing);
-    expect(find.text('تمّ · 12 كجم × 10'), findsOneWidget);
+    expect(find.text('الحركة 2 من 5'), findsNothing);
+    expect(find.text('تمام · 12 كجم × 10'), findsOneWidget);
     expect(
       find.text(
-        'لا سجل لهذه الحركة بعد. ما تؤدّينه اليوم هو ما يُقاس عليه ما يليه.',
+        'لسه مفيش سجل للحركة دي. اللي هتعمليه النهارده هو اللي هنقيس عليه المرة الجاية.',
       ),
       findsOneWidget,
     );
-    expect(find.text('أدّيتُ المجموعات الثلاث'), findsOneWidget);
+    expect(find.text('خلّصت الـ 3 مجموعات'), findsOneWidget);
     expect(find.text('Done · 12 kg × 10'), findsNothing);
   });
 

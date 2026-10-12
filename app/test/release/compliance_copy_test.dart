@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/app_state/cloud_documents.dart';
+import 'package:own_hub/app_state/onboarding_state.dart';
 import 'package:own_hub/config/legal_links.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/eat/domain/allergy_guard.dart';
@@ -19,7 +20,6 @@ import 'package:own_hub/features/eat/presentation/eat_view.dart';
 import 'package:own_hub/features/eat/presentation/type_it_view.dart';
 import 'package:own_hub/features/onboarding/domain/intake_repository.dart';
 import 'package:own_hub/features/onboarding/presentation/life_stage_view.dart';
-import 'package:own_hub/features/onboarding/presentation/schedule_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -60,7 +60,6 @@ void main() {
         'lib/features/cycle/presentation/cycle_hub_view.dart',
         'lib/features/cycle/presentation/cycle_setup_view.dart',
         'lib/features/onboarding/presentation/life_stage_view.dart',
-        'lib/features/onboarding/presentation/schedule_view.dart',
       ]) {
         expect(
           File(path).readAsStringSync(),
@@ -68,6 +67,21 @@ void main() {
           reason: path,
         );
       }
+    });
+
+    test('every screen that asks about a pregnancy places it', () {
+      // The short "Your week" used to ask on O03, which put O03 on the list
+      // above. Both walks ask on O04 now; this holds the rule wherever the
+      // four answers are drawn next.
+      final askers = <String>[];
+      for (final file in Directory('lib/features').listSync(recursive: true)) {
+        if (file is! File || !file.path.endsWith('.dart')) continue;
+        final source = file.readAsStringSync();
+        if (!source.contains('lifeStageOptions(')) continue;
+        askers.add(file.path);
+        expect(source, contains('MedicalDisclaimer()'), reason: file.path);
+      }
+      expect(askers, isNotEmpty);
     });
 
     testWidgets('the life-stage question says it', (tester) async {
@@ -83,25 +97,32 @@ void main() {
       expect(find.textContaining('not a medical device'), findsOneWidget);
     });
 
-    testWidgets('"Your week" says it once she is pregnant, in Arabic too', (
+    testWidgets('"Your week" says it when she is pregnant, in Arabic too', (
       tester,
     ) async {
+      // The short walk asks about a pregnancy on O04, the same screen as the
+      // full walk, before she has an account. The sentence is there before
+      // she answers and still there once she says she is pregnant.
+      OnboardingState.instance.beforeSignup = true;
+      addTearDown(() => OnboardingState.instance.beforeSignup = false);
       for (final (locale, pregnant) in <(Locale, String)>[
         (const Locale('en'), 'Pregnant'),
         (const Locale('ar'), 'حامل'),
       ]) {
         await tester.pumpWidget(
           _host(
-            ScheduleView(
+            LifeStageView(
               key: UniqueKey(),
               repository: InMemoryIntakeRepository(),
-              includeLifeStage: true,
             ),
             locale: locale,
           ),
         );
         await tester.pumpAndSettle();
-        expect(find.byKey(MedicalDisclaimer.marker), findsNothing);
+        expect(
+          find.byKey(MedicalDisclaimer.marker, skipOffstage: false),
+          findsOneWidget,
+        );
         final option = find.text(pregnant);
         await tester.scrollUntilVisible(
           option,
@@ -110,6 +131,11 @@ void main() {
         );
         await tester.tap(option);
         await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.byKey(MedicalDisclaimer.marker),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
         expect(find.byKey(MedicalDisclaimer.marker), findsOneWidget);
       }
     });

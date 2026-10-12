@@ -127,7 +127,7 @@ class _CoachPayoutViewState extends State<CoachPayoutView> {
       step: CoachSetupStep.payout,
       title: l10n.whereShouldWeSendYourMoney,
       subtitle: l10n.paidOutOnThe1stOfEach,
-      onBack: () => goToScreen(context, 'K04', widget.onBack),
+      onBack: () => goToScreen(context, 'K13', widget.onBack),
       onSaveAndClose: widget.onSaveAndClose,
       // Disabled until a rail can actually accept a method. Continuing here
       // would submit her application with no way to pay her.

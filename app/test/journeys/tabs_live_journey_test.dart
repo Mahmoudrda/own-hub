@@ -51,9 +51,26 @@ void main() {
     // The first release: Community dark, so the bar is Home, Train and Eat.
     AppRouter.featureFlags = FeatureFlags.allOff.with_({
       Feature.today: true,
+      Feature.firstWeek: true,
+      Feature.quietWeek: true,
+      Feature.tiers: true,
+      Feature.lockScreenNudge: true,
       Feature.train: true,
+      Feature.recordFromMemory: true,
+      Feature.exerciseVideo: true,
+      Feature.exerciseSwap: true,
+      Feature.followAlong: true,
+      Feature.workoutLibrary: true,
+      Feature.trainingReminders: true,
       Feature.eat: true,
+      Feature.recipes: true,
+      Feature.weekPlan: true,
+      Feature.groceryList: true,
       Feature.progress: true,
+      Feature.milestones: true,
+      Feature.personalBests: true,
+      Feature.bodyPrivately: true,
+      Feature.shareCard: true,
     });
     AppRouter.todayRepository.reset();
     AppRouter.intakeRepository.markSetupDone();

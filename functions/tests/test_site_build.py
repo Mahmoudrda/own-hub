@@ -247,7 +247,7 @@ def test_the_legal_values_are_filled_in(prefix):
 
 def test_the_home_page_offers_the_tour_in_both_languages():
     assert "Show me around" in _page()
-    assert "«خذيني في جولة»" in _page("ar")
+    assert "«خديني في جولة»" in _page("ar")
 
 
 def test_the_home_page_does_not_say_she_reads_the_support_mailbox():

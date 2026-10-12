@@ -294,7 +294,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('ما رقمك؟'), findsOneWidget);
+    expect(find.text('رقم موبايلك إيه؟'), findsOneWidget);
     // A7: the neutral form, not a plural imperative to the team.
     expect(find.text('الموافقة وإرسال الرمز'), findsOneWidget);
     expect(
@@ -303,7 +303,7 @@ void main() {
       reason: 'English here means a string bypassed AppL10n',
     );
     expect(
-      Directionality.of(tester.element(find.text('ما رقمك؟'))),
+      Directionality.of(tester.element(find.text('رقم موبايلك إيه؟'))),
       TextDirection.rtl,
     );
   });

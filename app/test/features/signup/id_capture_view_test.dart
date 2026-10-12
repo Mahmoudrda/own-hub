@@ -190,7 +190,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('بطاقتك الشخصية'), findsOneWidget);
-    expect(find.text('سألتقطها بنفسي'), findsOneWidget);
+    expect(find.text('هصوّرها بنفسي'), findsOneWidget);
     expect(find.text('Your ID card'), findsNothing);
   });
 

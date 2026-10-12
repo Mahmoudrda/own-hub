@@ -174,10 +174,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('أيّهما أنتِ؟'), findsOneWidget);
-    expect(find.text('أنا هنا لأتدرّب'), findsOneWidget);
-    expect(find.text('أنا أدرّب النساء'), findsOneWidget);
-    expect(find.text('أتدرّب وأدرّب'), findsOneWidget);
+    expect(find.text('إنتِ مين فيهم؟'), findsOneWidget);
+    expect(find.text('أنا هنا عشان أتمرّن'), findsOneWidget);
+    expect(find.text('أنا بدرّب ستات'), findsOneWidget);
+    expect(find.text('بتمرّن وبدرّب'), findsOneWidget);
     expect(find.text('Which one are you?'), findsNothing);
   });
 

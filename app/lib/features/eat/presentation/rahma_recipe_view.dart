@@ -9,7 +9,7 @@
 /// **المكوّنات والخطوات** is the default: her ingredients lifted into a block,
 /// then her steps, with a timer chip where she gave a time and a temperature
 /// chip where she gave a temperature. Every one of those strings is hers,
-/// verbatim; the only new writing on the screen is Modern Standard chrome.
+/// verbatim; the only new writing on the screen is the app's own chrome.
 ///
 /// **كما هي في الكتاب** is the card as the book prints it, unsplit, on the pink
 /// paper. It exists because three things are lost in the split and none of them
@@ -23,7 +23,7 @@
 /// This is the rule the screen is built around. Rahma's words are on pink paper
 /// in her ink. Every safety line — what the dish contains, the pregnancy note,
 /// the favism note, how to tell chicken is cooked, and the standing "read the
-/// label yourself" — is Modern Standard, comes from the dictionary, and renders
+/// label yourself" — is in the app's voice, comes from the dictionary, and renders
 /// in `HandInk.print` inside a `HandLevel.structural` surface on the app's own
 /// ground. If a woman cannot tell at a glance whether a line is Rahma being
 /// lovely or the app being careful, the careful line has failed.
@@ -48,7 +48,7 @@ import '../../account/presentation/allergen_labels.dart';
 import '../domain/recipe.dart';
 import 'recipe_labels.dart';
 
-/// The MSA sentence for a doneness token.
+/// The sentence for a doneness token.
 ///
 /// Tokens rather than free text on the recipe, so that the sentence a woman
 /// reads about undercooked chicken is dictionary copy in one register, reviewed
@@ -65,7 +65,7 @@ String? donenessLine(AppL10n l10n, String? token) => switch (token) {
   _ => null,
 };
 
-/// The MSA sentence for an advisory token. Rendered as a note, never a filter:
+/// The sentence for an advisory token. Rendered as a note, never a filter:
 /// an advisory is not something she ticked, so the app does not get to decide
 /// anything about her body from it.
 String? advisoryLine(AppL10n l10n, String token) => switch (token) {
@@ -201,7 +201,7 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
           // ---------------------------------------------------- the careful half
           //
           // Everything below this line is the app speaking, not Rahma. It is on
-          // the app's own surface, in its own ink, in Modern Standard Arabic,
+          // the app's own surface, in its own ink, in its own Arabic,
           // and it is deliberately unlike the card above it.
           _SafetyNote(
             children: [

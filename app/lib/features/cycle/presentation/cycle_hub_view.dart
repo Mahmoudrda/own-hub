@@ -189,7 +189,7 @@ class CycleHubView extends StatelessWidget {
           suggestion is GentlerOption &&
           !gentlerDecided)
         _gentlerCard(l10n, suggestion),
-      if (snapshot.showMealSuggestions)
+      if (snapshot.showMealSuggestions && AppRouter.screenIsOn('Y07'))
         AppListItem(
           variant: AppCardVariant.filled,
           leading: const Icon(

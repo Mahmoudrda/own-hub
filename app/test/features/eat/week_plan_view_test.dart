@@ -167,7 +167,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('هذا الأسبوع'), findsOneWidget);
+      expect(find.text('الأسبوع ده'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

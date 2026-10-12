@@ -37,6 +37,7 @@ import 'package:own_hub/features/coach/domain/coach_profile.dart';
 import 'package:own_hub/features/coach/domain/coach_verification.dart';
 import 'package:own_hub/features/coach/presentation/certificate_camera_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_basics_view.dart';
+import 'package:own_hub/features/coach/presentation/coach_rules_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_certificates_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_packages_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_payout_view.dart';
@@ -423,7 +424,7 @@ void main() {
 
   // ------------------------------------------------------------ R1-P16
 
-  group('R1-P16: K01 carries the three rules', () {
+  group('R1-P16: K13 carries the three rules', () {
     CoachSetupViewModel filled() =>
         CoachSetupViewModel(profile: const CoachProfile())
           ..displayName = 'Hala'
@@ -433,7 +434,7 @@ void main() {
       _phone(tester);
       var continued = 0;
       await tester.pumpWidget(
-        _host(CoachBasicsView(model: filled(), onContinue: () => continued++)),
+        _host(CoachRulesView(model: filled(), onContinue: () => continued++)),
       );
       await tester.pumpAndSettle();
 
@@ -457,16 +458,16 @@ void main() {
     ) async {
       _phone(tester);
       await tester.pumpWidget(
-        _host(CoachBasicsView(model: filled(), rulesAgreed: true)),
+        _host(CoachRulesView(model: filled()..rulesAgreed = true)),
       );
       await tester.pumpAndSettle();
       expect(_button(tester, 'Continue').onPressed, isNotNull);
     });
 
-    testWidgets('in Arabic', (tester) async {
+    testWidgets('in Arabic, in the same words as the pledge', (tester) async {
       _phone(tester);
       await tester.pumpWidget(
-        _host(CoachBasicsView(model: filled()), locale: const Locale('ar')),
+        _host(CoachRulesView(model: filled()), locale: const Locale('ar')),
       );
       await tester.pumpAndSettle();
       expect(find.text('أوافق على هذه القواعد الثلاث'), findsOneWidget);

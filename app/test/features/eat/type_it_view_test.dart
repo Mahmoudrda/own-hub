@@ -257,7 +257,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('سنضيف'), findsOneWidget);
+      expect(find.text('هنضيف'), findsOneWidget);
       expect(find.text('طبق كشري'), findsOneWidget);
     });
 

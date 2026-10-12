@@ -9081,4 +9081,108 @@ class AppL10nEn extends AppL10n {
   String weightKg(String weight) {
     return '$weight kg';
   }
+
+  @override
+  String get forEveryMember => 'For every member';
+
+  @override
+  String get switchingOneOffHereStopsItIn =>
+      'Switching one off here stops it in every member\'s app at her next launch. It cannot switch on anything this build does not ship.';
+
+  @override
+  String get thatDidNotReachTheServer => 'That did not reach the server';
+
+  @override
+  String get notOpenRightNow => 'Not open right now';
+
+  @override
+  String get thisPartOfOwnHubIsNot =>
+      'This part of Own Hub is not open right now. Everything else works as usual.';
+
+  @override
+  String get mostWomenStartWithNothingThatIs =>
+      'Most women start with nothing. That is plenty.';
+
+  @override
+  String get howManyDaysAWeek => 'How many days a week?';
+
+  @override
+  String get howLongCanASessionBe => 'How long can a session be?';
+
+  @override
+  String get shortIsFineFifteenMinutesDoneBeats =>
+      'Short is fine. Fifteen minutes done beats an hour planned.';
+
+  @override
+  String get between15And60DaysOrLeave =>
+      'Between 15 and 60 days, or leave it empty';
+
+  @override
+  String get aFewShortQuestionsOneAtA =>
+      'A few short questions, one at a time. Your week is ready at the end.';
+
+  @override
+  String get addAPhotoOfYou => 'Add a photo of you';
+
+  @override
+  String get womenChooseAPersonTheyCanSee =>
+      'Women choose a person they can see. Take it now, or add it later from your page.';
+
+  @override
+  String get takeAPhoto => 'Take a photo';
+
+  @override
+  String get takeItAgain => 'Take it again';
+
+  @override
+  String get takeYourPhoto => 'Take your photo';
+
+  @override
+  String get faceTheLightWithAPlainWall =>
+      'Face the light, with a plain wall behind you.';
+
+  @override
+  String get howYouCoach => 'How you coach';
+
+  @override
+  String get clientsLookForACoachByLanguage =>
+      'Clients look for a coach by language and by where they train.';
+
+  @override
+  String get yourClientsResults => 'Your clients\' results';
+
+  @override
+  String get eachResultIsABeforeAndAn =>
+      'Each result is a before and an after, laid out the same way on every coach\'s page. Your client adds her own photos and agrees in her own app, so it is always hers to share.';
+
+  @override
+  String get before => 'Before';
+
+  @override
+  String get after => 'After';
+
+  @override
+  String get howItWillLook => 'How it will look';
+
+  @override
+  String get facesStayHiddenUnlessSheChoosesTo =>
+      'Faces stay hidden unless she chooses to show hers.';
+
+  @override
+  String get whenYourCheckIsDoneAskAny =>
+      'When your check is done, ask any client from her page on your desk.';
+
+  @override
+  String get whatYourClientsSay => 'What your clients say';
+
+  @override
+  String get onlyWomenYouCoachHereCanWrite =>
+      'Only women you coach here can write one, so every word is real.';
+
+  @override
+  String get coachedHere => 'Coached here';
+
+  @override
+  String get herWordsShowWithHerFirstName =>
+      'Her words show with her first name only, and she can take them back.';
 }

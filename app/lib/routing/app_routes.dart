@@ -6,7 +6,7 @@ class AppRoute {
   const AppRoute({required this.name, required this.flow, required this.title});
 }
 
-/// 185 screens across 17 flows.
+/// 192 screens across 17 flows.
 const Map<String, AppRoute> appRoutes = {
   'C01': AppRoute(name: '/signup/c01', flow: 'signup', title: "Welcome"),
   'C02': AppRoute(name: '/signup/c02', flow: 'signup', title: "Language"),
@@ -31,6 +31,8 @@ const Map<String, AppRoute> appRoutes = {
   'O03': AppRoute(name: '/onboarding/o03', flow: 'onboarding', title: "Days and minutes"),
   'O04': AppRoute(name: '/onboarding/o04', flow: 'onboarding', title: "Life stage"),
   'O05': AppRoute(name: '/onboarding/o05', flow: 'onboarding', title: "Your starting program"),
+  'O06': AppRoute(name: '/onboarding/o06', flow: 'onboarding', title: "What you have at home"),
+  'O07': AppRoute(name: '/onboarding/o07', flow: 'onboarding', title: "Minutes a session"),
   'T01': AppRoute(name: '/today/t01', flow: 'today', title: "Today"),
   'T02': AppRoute(name: '/today/t02', flow: 'today', title: "I already did it"),
   'T03': AppRoute(name: '/today/t03', flow: 'today', title: "From the lock screen"),
@@ -136,6 +138,11 @@ const Map<String, AppRoute> appRoutes = {
   'K04': AppRoute(name: '/coach-setup/k04', flow: 'coach-setup', title: "Your packages"),
   'K05': AppRoute(name: '/coach-setup/k05', flow: 'coach-setup', title: "Getting paid"),
   'K06': AppRoute(name: '/coach-setup/k06', flow: 'coach-setup', title: "Being checked"),
+  'K08': AppRoute(name: '/coach-setup/k08', flow: 'coach-setup', title: "About you"),
+  'K10': AppRoute(name: '/coach-setup/k10', flow: 'coach-setup', title: "How you coach"),
+  'K11': AppRoute(name: '/coach-setup/k11', flow: 'coach-setup', title: "Client results"),
+  'K12': AppRoute(name: '/coach-setup/k12', flow: 'coach-setup', title: "What clients say"),
+  'K13': AppRoute(name: '/coach-setup/k13', flow: 'coach-setup', title: "The three rules"),
   'K07': AppRoute(name: '/coach/k07', flow: 'coach', title: "Today"),
   'K09': AppRoute(name: '/coach/k09', flow: 'coach', title: "New enquiry"),
   'K16': AppRoute(name: '/coach/k16', flow: 'coach', title: "Conversation"),

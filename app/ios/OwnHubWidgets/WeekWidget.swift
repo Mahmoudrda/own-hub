@@ -169,9 +169,9 @@ struct WeekInline: View {
       week: "This week, 1 of 3", inline: "1 of 3 this week", a11y: "Sessions this week: 1 of 3",
       status: "Today's workout is ready", meal: "Log a meal", closed: "Open Own Hub to start")
     static let arabic = WidgetModel(
-      mode: .open, lang: "ar", done: 2, target: 4, title: "هذا الأسبوع", todayTitle: "اليوم",
-      week: "هذا الأسبوع، 2 من 4", inline: "2 من 4 هذا الأسبوع", a11y: "تمارين هذا الأسبوع: 2 من 4",
-      status: "يومكِ بدأ", meal: "سجّلي وجبة", closed: "افتحي Own Hub للبدء")
+      mode: .open, lang: "ar", done: 2, target: 4, title: "الأسبوع ده", todayTitle: "اليوم",
+      week: "الأسبوع ده، 2 من 4", inline: "2 من 4 الأسبوع ده", a11y: "تمارين الأسبوع ده: 2 من 4",
+      status: "يومك بدأ", meal: "سجّلي وجبة", closed: "افتحي Own Hub عشان تبدئي")
 
     static var previews: some View {
       Group {
@@ -182,7 +182,7 @@ struct WeekInline: View {
           .environment(\.colorScheme, .dark)
         WeekWidgetView(model: .preview)
           .previewContext(WidgetPreviewContext(family: .systemSmall))
-        WeekWidgetView(model: WidgetModel(mode: .closed, lang: "ar", closed: "افتحي Own Hub للبدء"))
+        WeekWidgetView(model: WidgetModel(mode: .closed, lang: "ar", closed: "افتحي Own Hub عشان تبدئي"))
           .previewContext(WidgetPreviewContext(family: .systemSmall))
           .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
       }

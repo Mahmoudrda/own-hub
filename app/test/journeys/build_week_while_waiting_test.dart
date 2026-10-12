@@ -2,9 +2,10 @@
 //
 // She signed in with an account she already had, or took the niqab path
 // before building one, so C14 has no week on it. "Build your week while we
-// check" opens the one-screen "Your week" (O03) and its result (O05), which
-// ends in "Save my week" and lands back on C14 with her week on it. Day one
-// is behind the gate, so nothing on the way offers it.
+// check" opens the short "Your week" (O03, O07 and O04, one question a
+// screen) and its result (O05), which ends in "Save my week" and lands back
+// on C14 with her week on it. Day one is behind the gate, so nothing on the
+// way offers it.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,11 +15,17 @@ import 'package:own_hub/features/signup/domain/server_verification.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/routing/app_routes.dart';
+import 'package:own_hub/ui/app_step_bar.dart';
 import 'package:own_hub/ui/screen_scope.dart';
 
 String? _showing(WidgetTester tester) {
   final scopes = tester.widgetList<ScreenScope>(find.byType(ScreenScope));
   return scopes.isEmpty ? null : scopes.last.screenId;
+}
+
+(int, int) _bar(WidgetTester tester) {
+  final bar = tester.widget<AppStepBar>(find.byType(AppStepBar));
+  return (bar.step, bar.total);
 }
 
 Future<void> _tap(WidgetTester tester, Finder target) async {
@@ -35,12 +42,33 @@ void main() {
     AppRouter.featureFlags = FeatureFlags.allOff.with_(const {
       Feature.accountRequired: true,
       Feature.signUp: true,
+      Feature.appTour: true,
       Feature.verification: true,
       Feature.today: true,
+      Feature.firstWeek: true,
+      Feature.quietWeek: true,
+      Feature.tiers: true,
+      Feature.lockScreenNudge: true,
       Feature.train: true,
+      Feature.recordFromMemory: true,
+      Feature.exerciseVideo: true,
+      Feature.exerciseSwap: true,
+      Feature.followAlong: true,
+      Feature.workoutLibrary: true,
+      Feature.trainingReminders: true,
       Feature.eat: true,
+      Feature.recipes: true,
+      Feature.weekPlan: true,
+      Feature.groceryList: true,
       Feature.progress: true,
+      Feature.milestones: true,
+      Feature.personalBests: true,
+      Feature.bodyPrivately: true,
+      Feature.shareCard: true,
       Feature.cycle: true,
+      Feature.cycleMeals: true,
+      Feature.cycleCalendar: true,
+      Feature.cyclePatterns: true,
       Feature.privacyCentre: true,
     });
     AppRouter.intakeRepository.reset();
@@ -83,8 +111,23 @@ void main() {
 
     await _tap(tester, find.text('Build your week while we check'));
     expect(_showing(tester), 'O03');
-    // The one-screen week: no step count and no Skip.
-    expect(find.textContaining('Step 1 of 4'), findsNothing);
+    // The short week: three questions on the bar, no count in the title (she
+    // has an account, so it is not "1 of 3 · Your week" either) and no Skip.
+    expect(_bar(tester), (1, 3));
+    expect(find.textContaining('1 of 6'), findsNothing);
+    expect(find.text('1 of 3'), findsNothing);
+    expect(find.text('1 of 3 · Your week'), findsNothing);
+    expect(find.text('Skip'), findsNothing);
+
+    await _tap(tester, find.text('Continue'));
+    expect(_showing(tester), 'O07');
+    expect(_bar(tester), (2, 3));
+    expect(find.text('Skip'), findsNothing);
+
+    await _tap(tester, find.text('Continue'));
+    expect(_showing(tester), 'O04');
+    expect(_bar(tester), (3, 3));
+    expect(find.text('Anything we should train around?'), findsOneWidget);
     expect(find.text('Skip'), findsNothing);
 
     await _tap(tester, find.text('See my week'));

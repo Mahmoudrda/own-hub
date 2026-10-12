@@ -394,8 +394,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('حُفظت المجموعة 2 · 12 كجم × 10'), findsOneWidget);
-    expect(find.text('جاهزة، المجموعة التالية'), findsOneWidget);
-    expect(find.text('أضيفي 30 ثانية'), findsOneWidget);
+    expect(find.text('جاهزة، المجموعة اللي بعدها'), findsOneWidget);
+    expect(find.text('ضيفي 30 ثانية'), findsOneWidget);
     expect(find.text("I'm ready, next set"), findsNothing);
   });
 

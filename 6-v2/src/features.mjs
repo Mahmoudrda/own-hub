@@ -6,7 +6,7 @@ export const areas = [
 
 export const features = [
   // Sign-up and safety
-  { id: 'F01', area: 'Sign-up and safety', name: 'Arabic and English', gets: 'Every screen in Modern Standard Arabic or English, right-to-left done properly, switchable any time — Arabic is a first-class version, not a translation layer.', who: 'Both', release: 'Launch', screens: ['C02', 'A02'] },
+  { id: 'F01', area: 'Sign-up and safety', name: 'Arabic and English', gets: 'Every screen in Egyptian Arabic or English, right-to-left done properly, switchable any time — Arabic is a first-class version, not a translation layer.', who: 'Both', release: 'Launch', screens: ['C02', 'A02'] },
   { id: 'F02', area: 'Sign-up and safety', name: 'Look around first', gets: 'Workouts, recipes and coach profiles before joining. Members and their posts stay hidden until she is verified.', who: 'Client', release: 'Launch', screens: ['C04', 'C05'] },
   { id: 'F03', area: 'Sign-up and safety', name: 'Phone sign-up', gets: 'Phone number and a six-digit code the phone reads by itself. No passwords.', who: 'Both', release: 'Launch', screens: ['C06', 'C07'] },
   { id: 'F04', area: 'Sign-up and safety', name: 'Women-only verification', gets: 'Every account is checked at sign-up: ID card scan and a selfie matched to it, usually under two minutes.', who: 'Both', release: 'Launch', screens: ['C09', 'C10', 'C11', 'C12', 'C13'] },

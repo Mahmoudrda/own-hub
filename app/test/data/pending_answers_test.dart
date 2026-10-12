@@ -235,7 +235,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('نبحث عمّا أضفتِه.'), findsOneWidget);
+      expect(find.text('بندوّر على اللي ضفتيه.'), findsOneWidget);
       expect(tester.takeException(), isNull);
       PendingAnswers.reset();
     });

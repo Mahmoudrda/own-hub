@@ -4,10 +4,10 @@
 /// fluent gestures, and this screen exists to make a misheard word obvious
 /// before anything is saved.
 ///
-/// ## The interface is MSA; the speech is Egyptian
+/// ## The interface is the app's voice; the speech is hers
 ///
 /// The two halves live in different places and this screen is where they meet.
-/// Every string comes from `AppL10n`, which is Modern Standard Arabic. The
+/// Every string comes from `AppL10n`, the app's own Arabic. The
 /// recogniser's locale is `ar-EG`, because dictation grammar is not how she
 /// actually talks. Nothing on this screen renders a literal, so one cannot leak
 /// into the other.

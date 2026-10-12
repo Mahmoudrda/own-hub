@@ -107,9 +107,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.textContaining('في المنزل'), findsNothing);
+      expect(find.textContaining('في البيت'), findsNothing);
       expect(
-        find.text('أيام التمرين في الأسبوع: 3 · مدة الحصة بالدقائق: 15'),
+        find.text('أيام في الأسبوع: 3 · دقايق كل تمرين: 15'),
         findsOneWidget,
       );
     });
@@ -257,11 +257,13 @@ void main() {
 
   group('one primary action, and two real alternatives', () {
     testWidgets('all three are on the screen', (tester) async {
+      // "Pick a different program" is drawn only where it leads somewhere.
       await tester.pumpWidget(
         _host(
           StartingProgramView(
             repository: InMemoryIntakeRepository(),
             catalogue: twoProgrammes,
+            onPickDifferentProgram: () {},
           ),
         ),
       );
@@ -344,9 +346,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('مبنية على إجاباتك الأربع'), findsOneWidget);
+      expect(find.text('مبني على إجاباتك الأربعة'), findsOneWidget);
       expect(find.text('أساسيات للمبتدئات'), findsOneWidget);
-      expect(find.text('ابدئي اليوم 1 الآن'), findsOneWidget);
+      expect(find.text('ابدئي اليوم 1 دلوقتي'), findsOneWidget);
       expect(find.text('Built from your four answers'), findsNothing);
       expect(find.text('Beginner foundations'), findsNothing);
     });
@@ -420,7 +422,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('احفظي أسبوعي وانضمّي'), findsOneWidget);
-      expect(find.text('مبنيّ على إجاباتكِ'), findsOneWidget);
+      expect(find.text('مبني على إجاباتك'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

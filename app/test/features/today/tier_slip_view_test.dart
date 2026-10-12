@@ -251,9 +251,9 @@ void main() {
     await tester.pumpWidget(_host(_view(), locale: const Locale('ar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('أنتِ «مواظِبة» في الوقت الحالي'), findsOneWidget);
-    expect(find.text('محفوظ، بالكامل'), findsOneWidget);
-    expect(find.text('اجعلي هذا الأسبوع تمرينين'), findsOneWidget);
+    expect(find.text('إنتِ «مواظِبة» دلوقتي'), findsOneWidget);
+    expect(find.text('محفوظ، كله'), findsOneWidget);
+    expect(find.text('خلّي الأسبوع ده تمرينين'), findsOneWidget);
     expect(find.text('Kept, all of it'), findsNothing);
 
     // P0-A11Y-01: Western numerals, in Arabic too.

@@ -229,7 +229,7 @@ void main() {
     });
 
     test('her Arabic is in the asset and nowhere in the dictionary', () {
-      // The voice boundary, made mechanical. MSA chrome goes through the ARB;
+      // The voice boundary, made mechanical. The app's chrome goes through the ARB;
       // her Egyptian colloquial comes out of this asset. The two arrive through
       // different pipes, so they cannot be smeared into each other.
       final en = File('lib/l10n/app_en.arb').readAsStringSync();
@@ -502,7 +502,7 @@ void main() {
         'done', () {
       // Her cards end `سيبيه يستوي`. For a general audience that is normal
       // Egyptian cooking; for a shipped app with a duty of care it is not
-      // enough. The target is a token and the sentence is Modern Standard copy
+      // enough. The target is a token and the sentence is copy in the app's voice
       // from the dictionary, so it reads as the app being careful rather than as
       // Rahma being lovely.
       const risky = {

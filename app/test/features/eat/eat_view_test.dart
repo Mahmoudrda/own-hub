@@ -504,9 +504,9 @@ void main() {
 
       // Twice on purpose: the heading and the Eat tab in the bottom bar are
       // the same word. Asserting one would be asserting a bug.
-      expect(find.text('الطعام'), findsWidgets);
+      expect(find.text('الأكل'), findsWidgets);
       expect(find.text('بروتين'), findsOneWidget);
-      expect(find.text('أكلتُ هذا'), findsOneWidget);
+      expect(find.text('أكلت ده'), findsOneWidget);
       expect(find.text('Eat'), findsNothing);
     });
 
@@ -521,7 +521,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        Directionality.of(tester.element(find.text('الطعام').first)),
+        Directionality.of(tester.element(find.text('الأكل').first)),
         TextDirection.rtl,
       );
     });

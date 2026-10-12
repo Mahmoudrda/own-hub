@@ -100,7 +100,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('غرفة مليئة بنساء يتدرّبن مثلك'), findsOneWidget);
+      expect(find.text('أوضة مليانة ستات بيتمرّنوا زيّك'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -115,7 +115,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        Directionality.of(tester.element(find.text('خذيني في جولة'))),
+        Directionality.of(tester.element(find.text('خديني في جولة'))),
         TextDirection.rtl,
       );
     });

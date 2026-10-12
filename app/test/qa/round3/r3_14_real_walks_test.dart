@@ -48,7 +48,7 @@ void main() {
 
       final saved = await tapControl(
         t,
-        RegExp(loc == 'en' ? 'Save what I avoid' : 'احفظي ما أتجنّبه'),
+        RegExp(loc == 'en' ? 'Save what I avoid' : 'احفظي اللي أتجنّبه'),
       );
       print('  saved by hand? $saved');
       print('  repository now: '
@@ -112,9 +112,9 @@ void main() {
       // severe pain, so what these two actually do is the highest-consequence
       // fact in the product.
       for (final care in <String>[
-        loc == 'en' ? 'Find care near you' : 'ابحثي عن رعاية قريبة منك',
+        loc == 'en' ? 'Find care near you' : 'دوّري على رعاية قريبة منك',
         loc == 'en' ? 'Read NHS guidance on period pain'
-            : 'اقرئي إرشادات NHS عن ألم الدورة',
+            : 'اقري إرشادات NHS عن ألم الدورة',
       ]) {
         final before = paintedText(t).toSet();
         await tapControl(t, care);

@@ -30,10 +30,30 @@ import 'package:own_hub/routing/app_routes.dart';
 /// to still mean the same six features tomorrow.
 final FeatureFlags _shipping = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.today: true,
+  Feature.firstWeek: true,
+  Feature.quietWeek: true,
+  Feature.tiers: true,
+  Feature.lockScreenNudge: true,
   Feature.train: true,
+  Feature.recordFromMemory: true,
+  Feature.exerciseVideo: true,
+  Feature.exerciseSwap: true,
+  Feature.followAlong: true,
+  Feature.workoutLibrary: true,
+  Feature.trainingReminders: true,
   Feature.eat: true,
+  Feature.recipes: true,
+  Feature.weekPlan: true,
+  Feature.groceryList: true,
   Feature.progress: true,
+  Feature.milestones: true,
+  Feature.personalBests: true,
+  Feature.bodyPrivately: true,
+  Feature.shareCard: true,
   Feature.cycle: true,
+  Feature.cycleMeals: true,
+  Feature.cycleCalendar: true,
+  Feature.cyclePatterns: true,
   Feature.privacyCentre: true,
 });
 
@@ -171,6 +191,159 @@ const Map<String, ({String file, String guard})> _sourceGuardedEdges = {
   ),
 };
 
+
+/// The guard on every door into a part of a feature the server can switch
+/// off on its own (`Feature.serverMayTurnOff`), cited the same way as
+/// [_sourceGuardedEdges]: a file, and the text of the check in it.
+///
+/// The owner can stop a broken part for every member without a release. That
+/// is only safe if no screen she can still reach draws a control leading into
+/// the stopped part; otherwise the stop leaves a door on a wall. The test
+/// below switches each part off in turn and requires every edge into it to be
+/// listed here, and every cited guard to still exist.
+const Map<String, ({String file, String guard})> _killSwitchGuards = {
+  'T01->T02': (
+    file: 'lib/features/today/presentation/today_view.dart',
+    guard: "onRecall: AppRouter.screenIsOn('T02')",
+  ),
+  'T05->T02': (
+    file: 'lib/features/today/presentation/tier_slip_view.dart',
+    guard: "onRecall: AppRouter.screenIsOn('T02')",
+  ),
+  'R03->T02': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onAlreadyDidIt: screenIsOn('T02')",
+  ),
+  'T01->T07': (
+    file: 'lib/features/today/presentation/today_view.dart',
+    guard: "if (AppRouter.screenIsOn('T07'))",
+  ),
+  'P01->T07': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('T07'))",
+  ),
+  'P01->T04': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('T04'))",
+  ),
+  'P01->T05': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('T05'))",
+  ),
+  'P01->P02': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('P02'))",
+  ),
+  'P01->P03': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('P03'))",
+  ),
+  'P01->P04': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('P04'))",
+  ),
+  'P01->P05': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('P05'))",
+  ),
+  'R01->R11': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onSearch: screenIsOn('R11')",
+  ),
+  'R02->R11': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onChangeProgram: screenIsOn('R11')",
+  ),
+  'O05->R11': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onPickDifferentProgram: !screenIsOn('R11')",
+  ),
+  'R01->R05': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onGentlerOption: screenIsOn('R05')",
+  ),
+  'R04->R05': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onSwap: screenIsOn('R05')",
+  ),
+  'R01->R06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onFollowAlong: screenIsOn('R06')",
+  ),
+  'R03->R04': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenMove: !screenIsOn('R04')",
+  ),
+  'E01->E05': (
+    file: 'lib/features/eat/presentation/eat_view.dart',
+    guard: "if (AppRouter.screenIsOn('E05'))",
+  ),
+  'E04->E05': (
+    file: 'lib/features/eat/presentation/eat_view.dart',
+    guard: "if (AppRouter.screenIsOn('E05'))",
+  ),
+  'E01->E07': (
+    file: 'lib/features/eat/presentation/eat_view.dart',
+    guard: "if (AppRouter.screenIsOn('E07'))",
+  ),
+  'E04->E07': (
+    file: 'lib/features/eat/presentation/eat_view.dart',
+    guard: "if (AppRouter.screenIsOn('E07'))",
+  ),
+  'T01->E07': (
+    file: 'lib/features/today/presentation/today_view.dart',
+    guard: "if (AppRouter.screenIsOn('E07'))",
+  ),
+  'R10->E07': (
+    file: 'lib/features/train/presentation/finished_view.dart',
+    guard: "if (AppRouter.screenIsOn('E07')",
+  ),
+  'E05->E07': (
+    file: 'lib/features/eat/presentation/recipes_view.dart',
+    guard: "AppRouter.screenIsOn('E07')",
+  ),
+  'E07->E08': (
+    file: 'lib/features/eat/presentation/week_plan_view.dart',
+    guard: "if (AppRouter.screenIsOn('E08'))",
+  ),
+  'Y03->Y07': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenMeals: screenIsOn('Y07')",
+  ),
+  'Y03->Y08': (
+    file: 'lib/features/cycle/presentation/cycle_widgets.dart',
+    guard: "AppRouter.screenIsOn('Y08')) CycleTab.calendar",
+  ),
+  'Y10->Y08': (
+    file: 'lib/features/cycle/presentation/cycle_widgets.dart',
+    guard: "AppRouter.screenIsOn('Y08')) CycleTab.calendar",
+  ),
+  'Y09->Y08': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onSaved: () => screenIsOn('Y08')",
+  ),
+  'Y03->Y10': (
+    file: 'lib/features/cycle/presentation/cycle_widgets.dart',
+    guard: "if (AppRouter.screenIsOn('Y10')) CycleTab.patterns",
+  ),
+  'Y08->Y10': (
+    file: 'lib/features/cycle/presentation/cycle_widgets.dart',
+    guard: "if (AppRouter.screenIsOn('Y10')) CycleTab.patterns",
+  ),
+  'C01->C04': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onLookAround: screenIsOn('C04')",
+  ),
+  'C14->C04': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onLookAround: screenIsOn('C04')",
+  ),
+  'C02->C03': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onContinue: screenIsOn('C03')",
+  ),
+};
+
 void main() {
   test(
     'every goTo/_goCarryingHandle literal in app/lib is inside AppRouter._built',
@@ -291,6 +464,79 @@ void main() {
         reason:
             'These edges lead from a screen whose flow ships into a screen '
             'whose flow is dark under the R2-19 shipping set:\n  '
+            '${offenders.join('\n  ')}',
+      );
+    },
+  );
+
+  test(
+    'switching off any one part leaves no door into it from what is still on',
+    () {
+      final saved = AppRouter.featureFlags;
+      addTearDown(() => AppRouter.featureFlags = saved);
+
+      final graph = _navGraph();
+      // The launch with sign-up in it, so the tour's doors are walked too.
+      final launch = _shipping.with_({
+        Feature.signUp: true,
+        Feature.appTour: true,
+      });
+      final parts = [
+        for (final f in Feature.values)
+          if (f.parent != null && f.serverMayTurnOff && launch.isOn(f)) f,
+      ];
+      expect(parts, isNotEmpty);
+
+      AppRouter.featureFlags = launch;
+      final onAtLaunch = {
+        for (final id in appRoutes.keys)
+          if (AppRouter.screenIsOn(id)) id,
+      };
+
+      final offenders = <String>[];
+      final used = <String>{};
+      for (final part in parts) {
+        AppRouter.featureFlags = launch.with_({part: false});
+        for (final source in graph.edges.keys) {
+          if (!AppRouter.screenIsOn(source)) continue;
+          for (final dest in graph.edges[source]!) {
+            // Only what this part's switch closed. A screen already dark at
+            // launch is the test above's subject.
+            if (AppRouter.screenIsOn(dest) || !onAtLaunch.contains(dest)) {
+              continue;
+            }
+            final key = '$source->$dest';
+            if (_killSwitchGuards.containsKey(key)) {
+              used.add(key);
+              continue;
+            }
+            offenders.add('${part.name}: $key');
+          }
+        }
+      }
+
+      for (final entry in _killSwitchGuards.entries) {
+        final source = File(entry.value.file).readAsStringSync();
+        expect(
+          source.contains(entry.value.guard),
+          isTrue,
+          reason:
+              '${entry.key} is exempted on the strength of a guard that is no '
+              'longer in ${entry.value.file}: "${entry.value.guard}"',
+        );
+      }
+      expect(
+        _killSwitchGuards.keys.toSet()..removeAll(used),
+        isEmpty,
+        reason: 'These guards no longer match an edge into a switchable part',
+      );
+      expect(
+        offenders..sort(),
+        isEmpty,
+        reason:
+            'Switching the named part off leaves a control leading into it. '
+            'Draw the control only while AppRouter.screenIsOn is true for '
+            'its screen, and cite the guard in _killSwitchGuards:\n  '
             '${offenders.join('\n  ')}',
       );
     },

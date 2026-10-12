@@ -13,6 +13,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/app_state/onboarding_state.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/onboarding/domain/intake_repository.dart';
@@ -22,6 +23,7 @@ import 'package:own_hub/features/onboarding/presentation/life_stage_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_step_bar.dart';
 
 Widget _host(
   Widget child, {
@@ -63,7 +65,8 @@ void main() {
       ]) {
         expect(find.text(option), findsOneWidget, reason: option);
       }
-      expect(find.text('Step 4 of 4'), findsOneWidget);
+      // The last question of the walk at home.
+      expect(find.text('6 of 6'), findsOneWidget);
     });
 
     testWidgets('it promises adaptation, and explicitly not diagnosis', (
@@ -288,23 +291,23 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('أشيء ينبغي أن نتجنّبه في التمرين؟'), findsOneWidget);
-      expect(find.text('لا شيء الآن'), findsOneWidget);
+      expect(find.text('فيه حاجة نراعيها في التمرين؟'), findsOneWidget);
+      expect(find.text('مفيش حاجة دلوقتي'), findsOneWidget);
       // Whatever this screen says about her training, it says it in the
       // language she reads. Both states are asserted in Arabic, so a row gated
       // in English and left in Arabic fails here.
       if (lifeStageShapesTraining()) {
-        expect(find.text('نتجنّب ما يؤلم، ولا نشخّص'), findsOneWidget);
+        expect(find.text('بنتجنّب اللي بيوجع، ومابنشخّصش'), findsOneWidget);
       } else {
-        expect(find.text('نتجنّب ما يؤلم، ولا نشخّص'), findsNothing);
+        expect(find.text('بنتجنّب اللي بيوجع، ومابنشخّصش'), findsNothing);
         expect(
           find.text(
-            'نحفظ إجابتكِ مع بقية إعدادكِ. ولا يتغيّر شيء في تمارينكِ بسببها حتى الآن.',
+            'بنحفظ إجابتك مع باقي إعداداتك. ولسه مفيش حاجة في تمارينك هتتغيّر بسببها.',
           ),
           findsOneWidget,
         );
       }
-      expect(find.text('الخطوة 4 من 4'), findsOneWidget);
+      expect(find.text('6 من 6'), findsOneWidget);
       expect(find.text('Anything we should train around?'), findsNothing);
     });
   });
@@ -322,5 +325,74 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('the short "Your week", before sign-up', () {
+    // The last of its three screens. Asking about a pregnancy before her first
+    // session is the safety reason the question is in the short walk at all.
+    setUp(() => OnboardingState.instance.beforeSignup = true);
+    tearDown(() => OnboardingState.instance.beforeSignup = false);
+
+    testWidgets('the third of three, and it ends on her week', (tester) async {
+      final saved = AppRouter.featureFlags;
+      addTearDown(() => AppRouter.featureFlags = saved);
+      AppRouter.featureFlags = FeatureFlags.allOff;
+      final repository = InMemoryIntakeRepository();
+      var continued = 0;
+      await tester.pumpWidget(
+        _host(
+          LifeStageView(
+            repository: repository,
+            titleOverride: '1 of 3 · Your week',
+            continueLabel: 'See my week',
+            onBack: () {},
+            onContinue: () => continued++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 of 3 · Your week'), findsOneWidget);
+      final bar = tester.widget<AppStepBar>(find.byType(AppStepBar));
+      expect((bar.step, bar.total), (3, 3));
+      expect(find.text('Only you ever see this.'), findsOneWidget);
+      // Everything is preselected, so there is nothing to skip, and before
+      // she has an account there is no Home to close to.
+      expect(find.text('Skip'), findsNothing);
+      expect(find.byIcon(Icons.close), findsNothing);
+
+      final pregnant = find.text('Pregnant');
+      await tester.ensureVisible(pregnant);
+      await tester.tap(pregnant);
+      await tester.pumpAndSettle();
+      final see = find.text('See my week');
+      await tester.ensureVisible(see);
+      await tester.tap(see);
+      await tester.pumpAndSettle();
+
+      expect(continued, 1);
+      expect(repository.writes, [
+        {'lifeStage'},
+      ]);
+      expect(repository.read().lifeStage, LifeStage.pregnant);
+    });
+
+    testWidgets('does not overflow in Arabic at the largest text size', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          LifeStageView(
+            repository: InMemoryIntakeRepository(),
+            titleOverride: '1 من 3 · أسبوعك',
+            continueLabel: 'شوفي أسبوعك',
+          ),
+          locale: const Locale('ar'),
+          textScale: 1.6,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
   });
 }

@@ -189,7 +189,7 @@ void main() {
     // no agreement at all.
     expect(find.text('تم حفظ القرفصاء بالدمبل · 3 مجموعات'), findsOneWidget);
     expect(find.text('2 من 5'), findsOneWidget);
-    expect(find.text('التمرين التالي · الطعن للخلف'), findsOneWidget);
+    expect(find.text('الحركة الجاية · لانج للخلف'), findsOneWidget);
     expect(find.text('Finish here'), findsNothing);
   });
 

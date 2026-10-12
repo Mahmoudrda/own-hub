@@ -38,6 +38,7 @@ final AppL10n ar = lookupAppL10n(const Locale('ar'));
 final FeatureFlags _release = FeatureFlags.allOff.with_(const {
   Feature.accountRequired: true,
   Feature.signUp: true,
+  Feature.appTour: true,
   Feature.verification: true,
   Feature.community: false,
   Feature.coachApp: false,
@@ -167,10 +168,30 @@ void main() {
     // are on here, as they are at launch.
     const product = {
       Feature.today: true,
+      Feature.firstWeek: true,
+      Feature.quietWeek: true,
+      Feature.tiers: true,
+      Feature.lockScreenNudge: true,
       Feature.train: true,
+      Feature.recordFromMemory: true,
+      Feature.exerciseVideo: true,
+      Feature.exerciseSwap: true,
+      Feature.followAlong: true,
+      Feature.workoutLibrary: true,
+      Feature.trainingReminders: true,
       Feature.eat: true,
+      Feature.recipes: true,
+      Feature.weekPlan: true,
+      Feature.groceryList: true,
       Feature.progress: true,
+      Feature.milestones: true,
+      Feature.personalBests: true,
+      Feature.bodyPrivately: true,
+      Feature.shareCard: true,
       Feature.cycle: true,
+      Feature.cycleMeals: true,
+      Feature.cycleCalendar: true,
+      Feature.cyclePatterns: true,
     };
 
     testWidgets('release flags: nothing switched off is shown; Join stays', (

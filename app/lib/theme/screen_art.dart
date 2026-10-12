@@ -126,6 +126,12 @@ abstract final class ScreenArt {
     'K04': [AppArt.gymBag],
     'K05': [AppArt.lungeWarrior],
     'K06': [AppArt.meditation],
+    // The coach's setup, one thing a screen.
+    'K08': [AppArt.strongArms],
+    'K10': [AppArt.yogaMat, AppArt.gymBag],
+    'K11': [AppArt.squatWeights],
+    'K12': [AppArt.sideStretch],
+    'K13': [AppArt.meditation],
     'K07': [AppArt.squatWeights],
     'K09': [AppArt.running],
     'K16': [AppArt.sideStretch],
@@ -160,6 +166,9 @@ abstract final class ScreenArt {
     'O03': [AppArt.trainers, AppArt.yogaMat],
     'O04': [AppArt.meditation],
     'O05': [AppArt.squatWeights, AppArt.running],
+    // What she has at home, and how long she has.
+    'O06': [AppArt.dumbbells, AppArt.yogaMat],
+    'O07': [AppArt.trainers],
     'P01': [AppArt.running],
     'P02': [AppArt.strongArms],
     'P03': [AppArt.overheadRaise],

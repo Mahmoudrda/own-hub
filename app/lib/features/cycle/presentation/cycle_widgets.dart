@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_nav_bar.dart';
@@ -29,11 +30,13 @@ class CycleTabs extends StatelessWidget {
 
   final ValueChanged<CycleTab>? onSelect;
 
-  /// The tabs actually shown, in order.
+  /// The tabs actually shown, in order. A tab whose screen is switched off
+  /// is not drawn, so the server can stop the calendar or the patterns
+  /// without leaving a tab that opens nothing.
   List<CycleTab> get tabs => [
     CycleTab.today,
-    if (showCalendar) CycleTab.calendar,
-    CycleTab.patterns,
+    if (showCalendar && AppRouter.screenIsOn('Y08')) CycleTab.calendar,
+    if (AppRouter.screenIsOn('Y10')) CycleTab.patterns,
   ];
 
   @override

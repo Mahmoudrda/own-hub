@@ -219,15 +219,17 @@ class WorkoutPlannerView extends StatelessWidget {
               onPressed: onSaveAsSplit,
             ),
           ),
-          Expanded(
-            child: AppButton(
-              l10n.draftItForMe,
-              variant: AppButtonVariant.text,
-              height: 40,
-              fontSize: 14,
-              onPressed: onDraftForMe,
+          // Drawn only while the assistant that writes the draft is on.
+          if (onDraftForMe != null)
+            Expanded(
+              child: AppButton(
+                l10n.draftItForMe,
+                variant: AppButtonVariant.text,
+                height: 40,
+                fontSize: 14,
+                onPressed: onDraftForMe,
+              ),
             ),
-          ),
         ],
       ),
     ];

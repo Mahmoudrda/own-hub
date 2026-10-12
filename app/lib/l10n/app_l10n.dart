@@ -16332,6 +16332,186 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{weight} kg'**
   String weightKg(String weight);
+
+  /// No description provided for @forEveryMember.
+  ///
+  /// In en, this message translates to:
+  /// **'For every member'**
+  String get forEveryMember;
+
+  /// No description provided for @switchingOneOffHereStopsItIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Switching one off here stops it in every member\'s app at her next launch. It cannot switch on anything this build does not ship.'**
+  String get switchingOneOffHereStopsItIn;
+
+  /// No description provided for @thatDidNotReachTheServer.
+  ///
+  /// In en, this message translates to:
+  /// **'That did not reach the server'**
+  String get thatDidNotReachTheServer;
+
+  /// No description provided for @notOpenRightNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not open right now'**
+  String get notOpenRightNow;
+
+  /// No description provided for @thisPartOfOwnHubIsNot.
+  ///
+  /// In en, this message translates to:
+  /// **'This part of Own Hub is not open right now. Everything else works as usual.'**
+  String get thisPartOfOwnHubIsNot;
+
+  /// No description provided for @mostWomenStartWithNothingThatIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Most women start with nothing. That is plenty.'**
+  String get mostWomenStartWithNothingThatIs;
+
+  /// No description provided for @howManyDaysAWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'How many days a week?'**
+  String get howManyDaysAWeek;
+
+  /// No description provided for @howLongCanASessionBe.
+  ///
+  /// In en, this message translates to:
+  /// **'How long can a session be?'**
+  String get howLongCanASessionBe;
+
+  /// No description provided for @shortIsFineFifteenMinutesDoneBeats.
+  ///
+  /// In en, this message translates to:
+  /// **'Short is fine. Fifteen minutes done beats an hour planned.'**
+  String get shortIsFineFifteenMinutesDoneBeats;
+
+  /// No description provided for @between15And60DaysOrLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Between 15 and 60 days, or leave it empty'**
+  String get between15And60DaysOrLeave;
+
+  /// No description provided for @aFewShortQuestionsOneAtA.
+  ///
+  /// In en, this message translates to:
+  /// **'A few short questions, one at a time. Your week is ready at the end.'**
+  String get aFewShortQuestionsOneAtA;
+
+  /// No description provided for @addAPhotoOfYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo of you'**
+  String get addAPhotoOfYou;
+
+  /// No description provided for @womenChooseAPersonTheyCanSee.
+  ///
+  /// In en, this message translates to:
+  /// **'Women choose a person they can see. Take it now, or add it later from your page.'**
+  String get womenChooseAPersonTheyCanSee;
+
+  /// No description provided for @takeAPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get takeAPhoto;
+
+  /// No description provided for @takeItAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Take it again'**
+  String get takeItAgain;
+
+  /// No description provided for @takeYourPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take your photo'**
+  String get takeYourPhoto;
+
+  /// No description provided for @faceTheLightWithAPlainWall.
+  ///
+  /// In en, this message translates to:
+  /// **'Face the light, with a plain wall behind you.'**
+  String get faceTheLightWithAPlainWall;
+
+  /// No description provided for @howYouCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'How you coach'**
+  String get howYouCoach;
+
+  /// No description provided for @clientsLookForACoachByLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients look for a coach by language and by where they train.'**
+  String get clientsLookForACoachByLanguage;
+
+  /// No description provided for @yourClientsResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Your clients\' results'**
+  String get yourClientsResults;
+
+  /// No description provided for @eachResultIsABeforeAndAn.
+  ///
+  /// In en, this message translates to:
+  /// **'Each result is a before and an after, laid out the same way on every coach\'s page. Your client adds her own photos and agrees in her own app, so it is always hers to share.'**
+  String get eachResultIsABeforeAndAn;
+
+  /// No description provided for @before.
+  ///
+  /// In en, this message translates to:
+  /// **'Before'**
+  String get before;
+
+  /// No description provided for @after.
+  ///
+  /// In en, this message translates to:
+  /// **'After'**
+  String get after;
+
+  /// No description provided for @howItWillLook.
+  ///
+  /// In en, this message translates to:
+  /// **'How it will look'**
+  String get howItWillLook;
+
+  /// No description provided for @facesStayHiddenUnlessSheChoosesTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Faces stay hidden unless she chooses to show hers.'**
+  String get facesStayHiddenUnlessSheChoosesTo;
+
+  /// No description provided for @whenYourCheckIsDoneAskAny.
+  ///
+  /// In en, this message translates to:
+  /// **'When your check is done, ask any client from her page on your desk.'**
+  String get whenYourCheckIsDoneAskAny;
+
+  /// No description provided for @whatYourClientsSay.
+  ///
+  /// In en, this message translates to:
+  /// **'What your clients say'**
+  String get whatYourClientsSay;
+
+  /// No description provided for @onlyWomenYouCoachHereCanWrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Only women you coach here can write one, so every word is real.'**
+  String get onlyWomenYouCoachHereCanWrite;
+
+  /// No description provided for @coachedHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Coached here'**
+  String get coachedHere;
+
+  /// No description provided for @herWordsShowWithHerFirstName.
+  ///
+  /// In en, this message translates to:
+  /// **'Her words show with her first name only, and she can take them back.'**
+  String get herWordsShowWithHerFirstName;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -50,14 +50,50 @@ import 'package:flutter/widgets.dart';
 
 import '../domain/flags/feature_flags.dart';
 import '../domain/rewards/weekly_goal_service.dart';
+import '../features/onboarding/domain/intake.dart';
 import '../features/today/domain/today_day.dart';
 import '../routing/app_router.dart';
 import '../routing/app_routes.dart';
 import 'app_changes.dart';
 import 'role_state.dart';
 
-/// The five setup screens, in the order she meets them.
-const List<String> kSetupScreenIds = ['O01', 'O02', 'O03', 'O04', 'O05'];
+/// Every setup screen. The order she meets them in is [setupWalk].
+const List<String> kSetupScreenIds = [
+  'O01',
+  'O02',
+  'O06',
+  'O03',
+  'O07',
+  'O04',
+  'O05',
+];
+
+/// The questions she is asked, one a screen, in order.
+///
+/// The full walk is her goal, where she trains, what she has at home (only
+/// when home is part of it), days a week, minutes a session and what to train
+/// around. The short "Your week" ([OnboardingState.shortSetup]) is the last
+/// three. `O05`, her week read back, follows either and is not a question.
+List<String> setupWalk(Intake intake, {required bool short}) => short
+    ? const ['O03', 'O07', 'O04']
+    : [
+        'O01',
+        'O02',
+        if (intake.place != TrainingPlace.ladiesGym) 'O06',
+        'O03',
+        'O07',
+        'O04',
+      ];
+
+/// Where [screenId] sits in the walk she is on: "2 of 6", and the bar.
+({int step, int total}) setupProgress(String screenId, Intake intake) {
+  final walk = setupWalk(
+    intake,
+    short: OnboardingState.instance.shortSetup,
+  );
+  final at = walk.indexOf(screenId);
+  return (step: at < 0 ? 1 : at + 1, total: walk.length);
+}
 
 class OnboardingState {
   OnboardingState._();

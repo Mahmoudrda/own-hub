@@ -39,7 +39,11 @@ void main() {
     // behind Feature.events. All five were designed in Flutter (`noMockup`).
     //
     // 184 -> 185 with `P05`, her progress card, opened from P01 to share.
-    expect(appRoutes.length, 185);
+    // 185 -> 187 when setup asked one thing a screen: `O06`, what she has at
+    // home, and `O07`, minutes a session. 187 -> 192 when the coach's setup
+    // did the same: `K08` her name and city, `K10` how she coaches, `K11` her
+    // clients' results, `K12` what clients say, `K13` the three rules.
+    expect(appRoutes.length, 192);
   });
 
   test('every screen is a destination except the eight first-run states', () {
@@ -56,8 +60,9 @@ void main() {
     //
     // 171 -> 176: Z15 to Z18 and T09 are all destinations.
     //
-    // 176 -> 177: P05 is a destination.
-    expect(appDestinations.length, 177);
+    // 176 -> 177: P05 is a destination. 177 -> 184: O06, O07, K08, K10,
+    // K11, K12 and K13 are all destinations.
+    expect(appDestinations.length, 184);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 

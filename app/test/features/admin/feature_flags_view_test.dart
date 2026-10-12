@@ -42,7 +42,7 @@ void main() {
   /// nine of the twenty-one rows are ever constructed and the rest cannot be
   /// found -- which looks exactly like a screen that is missing them.
   void tall(WidgetTester tester) {
-    tester.view.physicalSize = const Size(1200, 3000);
+    tester.view.physicalSize = const Size(1200, 8000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
   }
@@ -50,7 +50,26 @@ void main() {
   testWidgets('every feature has a switch', (tester) async {
     tall(tester);
     await tester.pumpWidget(_host());
-    expect(find.byType(Switch), findsNWidgets(Feature.values.length));
+    for (final f in Feature.values) {
+      expect(find.byKey(ValueKey('phone-${f.name}')), findsOneWidget);
+    }
+  });
+
+  testWidgets('only what the server may stop is offered as a stop for every '
+      'member', (tester) async {
+    tall(tester);
+    await tester.pumpWidget(_host());
+    for (final f in Feature.values) {
+      if (!f.serverMayTurnOff || f.serverMayTurnOn) {
+        expect(
+          find.byKey(ValueKey('members-${f.name}')),
+          findsNothing,
+          reason: f.name,
+        );
+      }
+    }
+    expect(find.byKey(const ValueKey('members-recipes')), findsOneWidget);
+    expect(find.byKey(const ValueKey('members-accountRequired')), findsNothing);
   });
 
   testWidgets('a child set on under an off parent says which parent', (

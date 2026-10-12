@@ -35,7 +35,7 @@ void main() {
     await open(t, appDestinations['A02']!.name, locale: const Locale('en'));
     await tapLabel(t, RegExp('Language'));
     print('after Language: top=${topScreen(t)}');
-    await tapLabel(t, RegExp('العربية'));
+    await tapLabel(t, RegExp('عربي'));
     await tapLabel(t, RegExp('Continue|متابعة'));
     print('after choosing Arabic: top=${topScreen(t)}');
     print('  PAINTED: ${paintedText(t).take(12).join(" | ")}');

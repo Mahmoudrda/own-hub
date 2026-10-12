@@ -234,8 +234,8 @@ void main() {
     // No programme name in either language: the Arabic fallback was the same
     // invention as the English one.
     expect(find.text('برنامج ما بعد الولادة'), findsNothing);
-    expect(find.text('متابعة · من سارة'), findsOneWidget);
-    expect(find.text('لا تشعرين بالرغبة اليوم؟'), findsOneWidget);
+    expect(find.text('كمّلي · من سارة'), findsOneWidget);
+    expect(find.text('مالكيش مزاج النهارده؟'), findsOneWidget);
     // English still on screen would mean a string bypassed the dictionary.
     expect(find.text('Postpartum rebuild'), findsNothing);
     expect(find.text('Train'), findsNothing);

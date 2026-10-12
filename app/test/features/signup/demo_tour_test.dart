@@ -32,12 +32,33 @@ import 'package:own_hub/theme/app_tokens.dart';
 final FeatureFlags _launch = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.accountRequired: true,
   Feature.signUp: true,
+  Feature.appTour: true,
   Feature.verification: true,
   Feature.today: true,
+  Feature.firstWeek: true,
+  Feature.quietWeek: true,
+  Feature.tiers: true,
+  Feature.lockScreenNudge: true,
   Feature.train: true,
+  Feature.recordFromMemory: true,
+  Feature.exerciseVideo: true,
+  Feature.exerciseSwap: true,
+  Feature.followAlong: true,
+  Feature.workoutLibrary: true,
+  Feature.trainingReminders: true,
   Feature.eat: true,
+  Feature.recipes: true,
+  Feature.weekPlan: true,
+  Feature.groceryList: true,
   Feature.progress: true,
+  Feature.milestones: true,
+  Feature.personalBests: true,
+  Feature.bodyPrivately: true,
+  Feature.shareCard: true,
   Feature.cycle: true,
+  Feature.cycleMeals: true,
+  Feature.cycleCalendar: true,
+  Feature.cyclePatterns: true,
   Feature.privacyCentre: true,
 });
 
@@ -547,17 +568,17 @@ void main() {
   group('in Arabic, and at large text', () {
     testWidgets('lays out right to left', (tester) async {
       await _pump(tester, locale: const Locale('ar'));
-      expect(find.text('عيّنة · لا يُحفظ شيء'), findsOneWidget);
-      expect(find.text('انضمّي إلى Own Hub'), findsOneWidget);
+      expect(find.text('مثال · مفيش حاجة بتتحفظ'), findsOneWidget);
+      expect(find.text('انضمّي لـ Own Hub'), findsOneWidget);
       expect(
-        Directionality.of(tester.element(find.text('الرئيسية، يومكِ في لمحة'))),
+        Directionality.of(tester.element(find.text('الرئيسية، يومك في نظرة واحدة'))),
         TextDirection.rtl,
       );
     });
 
     testWidgets('Progress is named to her, in the feminine', (tester) async {
       await _pump(tester, locale: const Locale('ar'), initialStop: 6);
-      expect(find.text('تقدّمكِ'), findsWidgets);
+      expect(find.text('تقدّمك'), findsWidgets);
       expect(find.text('تقدّمك'), findsNothing);
     });
 

@@ -559,8 +559,10 @@ class _EatViewState extends State<EatView> {
           onLog: () => _log(widget.yesterdaysLunch!.entries, view.activeSlot),
         ),
       if (_screenedToNothing(view.suggestions)) _guardNote(l10n),
-      _recipesRow(l10n),
-      _rahmaShelf(l10n),
+      if (AppRouter.screenIsOn('E05')) ...[
+        _recipesRow(l10n),
+        _rahmaShelf(l10n),
+      ],
       _box(l10n),
     ];
   }
@@ -676,7 +678,7 @@ class _EatViewState extends State<EatView> {
           ),
           onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
         ),
-      _rahmaShelf(l10n),
+      if (AppRouter.screenIsOn('E05')) _rahmaShelf(l10n),
       if (_screenedToNothing(view.starters))
         _guardNote(l10n)
       else ...[

@@ -1,6 +1,6 @@
 // The first minute, driven through the REAL app.
 //
-// The four setup questions were built, tested screen by screen, and wired to
+// The setup questions were built, tested screen by screen, and wired to
 // nothing: their only inbound route was `C16`, inside the switched-off sign-up
 // flow, so on a fresh install no woman was ever asked how many days a week she
 // could train — and every one of them was given a goal of three sessions,
@@ -22,7 +22,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
+import 'package:own_hub/features/onboarding/presentation/equipment_view.dart';
 import 'package:own_hub/features/onboarding/presentation/goal_view.dart';
+import 'package:own_hub/features/onboarding/presentation/minutes_view.dart';
 import 'package:own_hub/features/onboarding/presentation/starting_program_view.dart';
 import 'package:own_hub/features/account/presentation/profile_view.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
@@ -57,10 +59,30 @@ int get _progressTarget => AppRouter.progressStore.goal.sessionsTarget;
 /// The first release, named rather than borrowed.
 final FeatureFlags _firstRelease = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.today: true,
+  Feature.firstWeek: true,
+  Feature.quietWeek: true,
+  Feature.tiers: true,
+  Feature.lockScreenNudge: true,
   Feature.train: true,
+  Feature.recordFromMemory: true,
+  Feature.exerciseVideo: true,
+  Feature.exerciseSwap: true,
+  Feature.followAlong: true,
+  Feature.workoutLibrary: true,
+  Feature.trainingReminders: true,
   Feature.eat: true,
+  Feature.recipes: true,
+  Feature.weekPlan: true,
+  Feature.groceryList: true,
   Feature.progress: true,
+  Feature.milestones: true,
+  Feature.personalBests: true,
+  Feature.bodyPrivately: true,
+  Feature.shareCard: true,
   Feature.cycle: true,
+  Feature.cycleMeals: true,
+  Feature.cycleCalendar: true,
+  Feature.cyclePatterns: true,
   Feature.privacyCentre: true,
 });
 
@@ -88,11 +110,11 @@ void main() {
 
       // Question one, and it says what is about to happen before it asks.
       expect(find.byType(GoalView), findsOneWidget);
-      expect(find.text('Step 1 of 4'), findsOneWidget);
+      expect(find.text('1 of 6'), findsOneWidget);
       expect(
         find.text(
-          'Four short questions, then your week is ready. Skip any '
-          'of them.',
+          'A few short questions, one at a time. Your week is ready at the '
+          'end.',
         ),
         findsOneWidget,
       );
@@ -105,29 +127,39 @@ void main() {
       await _tap(tester, find.text('Get back into it'));
       await _tap(tester, find.text('Continue'));
 
-      // Two: where, and with what.
-      expect(find.text('Step 2 of 4'), findsOneWidget);
-      await _tap(tester, find.text('A ladies-only gym'));
+      // Two: where.
+      expect(find.text('2 of 6'), findsOneWidget);
+      await _tap(tester, find.text('Both'));
+      await _tap(tester, find.text('Continue'));
+
+      // Three: with what, asked because home is part of her answer.
+      expect(find.byType(EquipmentView), findsOneWidget);
+      expect(find.text('3 of 6'), findsOneWidget);
       await _tap(tester, find.text('Dumbbells'));
       await _tap(tester, find.text('Continue'));
 
-      // Three: the one that becomes her goal.
-      expect(find.text('Step 3 of 4'), findsOneWidget);
+      // Four: the one that becomes her goal.
+      expect(find.text('4 of 6'), findsOneWidget);
       await _tap(tester, find.text('4'));
-      await _tap(tester, find.text('30'));
       await _tap(tester, find.text('Continue'));
 
-      // Four: what the programme has to train around.
-      expect(find.text('Step 4 of 4'), findsOneWidget);
+      // Five: how long a session can be.
+      expect(find.byType(MinutesView), findsOneWidget);
+      expect(find.text('5 of 6'), findsOneWidget);
+      await _tap(tester, find.text('30 min'));
+      await _tap(tester, find.text('Continue'));
+
+      // Six: what the programme has to train around.
+      expect(find.text('6 of 6'), findsOneWidget);
       await _tap(tester, find.text('A knee, back or shoulder'));
       await _tap(tester, find.text('Continue'));
 
-      // Five: her four answers, read back as hers rather than as a fixed
-      // sentence about somebody who trains three days a week at home.
+      // Her answers, read back as hers rather than as a fixed sentence about
+      // somebody who trains three days a week at home.
       expect(find.byType(StartingProgramView), findsOneWidget);
       expect(
         find.text(
-          'Days a week: 4 · Minutes a session: 30 · At a ladies-only gym',
+          'Days a week: 4 · Minutes a session: 30 · At home and the gym',
         ),
         findsOneWidget,
       );
@@ -148,7 +180,7 @@ void main() {
       // Her answers reached the app.
       final intake = AppRouter.intakeRepository.read();
       expect(intake.goal, TrainingGoal.backIntoIt);
-      expect(intake.place, TrainingPlace.ladiesGym);
+      expect(intake.place, TrainingPlace.both);
       expect(intake.equipment, {Equipment.dumbbells});
       expect(intake.days, 4);
       expect(intake.minutes, 30);
@@ -160,11 +192,49 @@ void main() {
       expect(_homeTarget, 4);
     });
 
+    testWidgets('a ladies-only gym is five questions, and never asks what '
+        'she has at home', (tester) async {
+      await _launch(tester);
+      await _tap(tester, find.text('Continue')); // O01
+
+      expect(find.text('2 of 6'), findsOneWidget);
+      await _tap(tester, find.text('A ladies-only gym'));
+      expect(find.text('2 of 5'), findsOneWidget);
+      await _tap(tester, find.text('Continue'));
+
+      // Straight to her days: no O06.
+      expect(find.byType(EquipmentView), findsNothing);
+      expect(find.text('3 of 5'), findsOneWidget);
+      await _tap(tester, find.text('4'));
+      await _tap(tester, find.text('Continue'));
+      expect(find.text('4 of 5'), findsOneWidget);
+      await _tap(tester, find.text('Continue')); // O07
+      expect(find.text('5 of 5'), findsOneWidget);
+      await _tap(tester, find.text('Continue')); // O04
+
+      expect(find.byType(StartingProgramView), findsOneWidget);
+      expect(
+        find.text(
+          'Days a week: 4 · Minutes a session: 15 · At a ladies-only gym',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(EquipmentView, skipOffstage: false), findsNothing);
+      expect(AppRouter.intakeRepository.read().place, TrainingPlace.ladiesGym);
+      expect(
+        AppRouter.intakeRepository.read().equipment,
+        Intake.defaults.equipment,
+        reason: 'nothing was asked, so nothing was written',
+      );
+    });
+
     testWidgets('the second launch goes straight to Home', (tester) async {
       await _launch(tester);
       await _tap(tester, find.text('Continue')); // O01
       await _tap(tester, find.text('Continue')); // O02
+      await _tap(tester, find.text('Continue')); // O06
       await _tap(tester, find.text('Continue')); // O03
+      await _tap(tester, find.text('Continue')); // O07
       await _tap(tester, find.text('Continue')); // O04
       await _tap(
         tester,
@@ -186,8 +256,10 @@ void main() {
       await _launch(tester);
       await _tap(tester, find.text('Continue')); // O01
       await _tap(tester, find.text('Continue')); // O02
+      await _tap(tester, find.text('Continue')); // O06
       await _tap(tester, find.text('4')); // O03, four days a week
       await _tap(tester, find.text('Continue'));
+      await _tap(tester, find.text('Continue')); // O07
       await _tap(tester, find.text('Continue')); // O04
       await _tap(
         tester,
@@ -219,8 +291,8 @@ void main() {
         'on an honest Home', (tester) async {
       await _launch(tester);
 
-      for (var step = 1; step <= 4; step++) {
-        expect(find.text('Step $step of 4'), findsOneWidget);
+      for (var step = 1; step <= 6; step++) {
+        expect(find.text('$step of 6'), findsOneWidget);
         expect(find.widgetWithText(AppButton, 'Skip'), findsNothing);
         await _tap(tester, find.widgetWithText(AppButton, 'Continue'));
       }
@@ -249,7 +321,7 @@ void main() {
       await _launch(tester);
       expect(find.byType(GoalView), findsOneWidget);
 
-      // The X in the corner. It rendered on all four questions and was passed
+      // The X in the corner. It rendered on every question and was passed
       // no callback by anybody, so the one control promising she is not
       // trapped in setup was the one control that could not let her out.
       await _tap(tester, find.byTooltip('Skip setup'));
@@ -277,8 +349,10 @@ void main() {
       // Three days a week was the default she never chose. Two is.
       await _tap(tester, find.text('Continue')); // O01
       await _tap(tester, find.text('Continue')); // O02
+      await _tap(tester, find.text('Continue')); // O06
       await _tap(tester, find.text('2'));
       await _tap(tester, find.text('Continue')); // O03
+      await _tap(tester, find.text('Continue')); // O07
       await _tap(tester, find.text('Continue')); // O04
       await _tap(
         tester,

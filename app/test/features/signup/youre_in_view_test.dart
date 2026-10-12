@@ -279,7 +279,7 @@ void main() {
         _host(const YoureInView(), locale: const Locale('ar')),
       );
       await tester.pumpAndSettle();
-      expect(find.text('جهّزي ملفكِ كمدرِّبة'), findsOneWidget);
+      expect(find.text('جهّزي ملفك كمدرّبة'), findsOneWidget);
     });
   });
 
@@ -294,7 +294,7 @@ void main() {
     // The nameless Arabic greeting — no dangling vocative يا with nothing
     // after it, which is why this is a separate string rather than an empty
     // substitution.
-    expect(find.text('أهلًا بك'), findsOneWidget);
+    expect(find.text('إنتِ معانا'), findsOneWidget);
     // Without the leading connective و: it belongs mid-sentence, after the
     // duration clause, and a standalone sentence must not open with it. Dropping
     // it here matches both the timed and untimed wording.
@@ -359,8 +359,8 @@ void main() {
         _host(const YoureInView(), locale: const Locale('ar')),
       );
       await tester.pumpAndSettle();
-      expect(find.text('ابدئي اليوم 1'), findsOneWidget);
-      expect(find.text('الانتقال إلى الرئيسية'), findsOneWidget);
+      expect(find.text('ابدئي يوم 1'), findsOneWidget);
+      expect(find.text('روحي للرئيسية'), findsOneWidget);
     });
   });
 

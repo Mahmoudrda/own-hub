@@ -86,9 +86,9 @@ class CoachCertificatesView extends StatelessWidget {
       step: CoachSetupStep.certificates,
       title: l10n.showUsYourCertificates,
       subtitle: l10n.aWomanOnOurTeamChecksThem,
-      onBack: () => goToScreen(context, 'K01', onBack),
+      onBack: () => goToScreen(context, 'K12', onBack),
       onSaveAndClose: onSaveAndClose,
-      onPrimary: () => goToScreen(context, 'K03', onContinue),
+      onPrimary: () => goToScreen(context, 'K13', onContinue),
       children: [
         for (final certificate in model.certificates)
           _CertificateRow(certificate: certificate, now: at),

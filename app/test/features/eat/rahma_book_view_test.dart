@@ -2,7 +2,7 @@
 //
 // The question these are really asking is whether a woman can tell, at a
 // glance, whose words she is reading. Rahma's are on pink paper in her ink. The
-// app's are Modern Standard, printed, on the app's own ground. Where that
+// app's are in the app's voice, printed, on the app's own ground. Where that
 // distinction is asserted below it is asserted by colour and by widget type
 // rather than by eye, because "warmth and warning must not look the same" is a
 // rule and not a preference.
@@ -836,7 +836,7 @@ void main() {
       expect(find.text('Contains'), findsOneWidget);
     });
 
-    testWidgets('the advisory and the doneness note are Modern Standard', (
+    testWidgets('the advisory and the doneness note are in the app\'s voice', (
       tester,
     ) async {
       // Both are tokens on the recipe and sentences in the dictionary, which is

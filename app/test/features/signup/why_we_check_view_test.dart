@@ -135,7 +135,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('تحقّق واحد، ثم تدخلين'), findsOneWidget);
-    expect(find.text('صوّري بطاقتي'), findsOneWidget);
+    expect(find.text('صوّري بطاقتك'), findsOneWidget);
     expect(
       find.textContaining('ولا نخمّن من وجهك أبدًا'),
       findsOneWidget,

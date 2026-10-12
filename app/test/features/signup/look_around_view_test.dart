@@ -43,12 +43,33 @@ void main() {
     AppRouter.featureFlags = FeatureFlags.allOff.with_(const {
       Feature.accountRequired: true,
       Feature.signUp: true,
+      Feature.appTour: true,
       Feature.verification: true,
       Feature.today: true,
+      Feature.firstWeek: true,
+      Feature.quietWeek: true,
+      Feature.tiers: true,
+      Feature.lockScreenNudge: true,
       Feature.train: true,
+      Feature.recordFromMemory: true,
+      Feature.exerciseVideo: true,
+      Feature.exerciseSwap: true,
+      Feature.followAlong: true,
+      Feature.workoutLibrary: true,
+      Feature.trainingReminders: true,
       Feature.eat: true,
+      Feature.recipes: true,
+      Feature.weekPlan: true,
+      Feature.groceryList: true,
       Feature.progress: true,
+      Feature.milestones: true,
+      Feature.personalBests: true,
+      Feature.bodyPrivately: true,
+      Feature.shareCard: true,
       Feature.cycle: true,
+      Feature.cycleMeals: true,
+      Feature.cycleCalendar: true,
+      Feature.cyclePatterns: true,
     });
   });
   tearDown(() => AppRouter.featureFlags = saved);
@@ -118,7 +139,7 @@ void main() {
         findsNothing,
         reason: 'English here means a string bypassed the dictionary',
       );
-      expect(find.text('عيّنة · لا يُحفظ شيء'), findsOneWidget);
+      expect(find.text('مثال · مفيش حاجة بتتحفظ'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

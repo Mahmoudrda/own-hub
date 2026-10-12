@@ -135,7 +135,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <div class="panel">
           <div class="prose">
 """ + h2("download", "احصلي على Own Hub", "no-rule") + """
-        <p>مجاني على iPhone وAndroid. افتحيه واضغطي «خذيني في جولة» أولًا، إن
+        <p>مجاني على iPhone وAndroid. افتحيه واضغطي «خديني في جولة» أولًا، إن
         شئتِ.</p>
         <p><a href=""" + '"' + cfg.store_url("storeUrlIos") + '" rel="noopener">‏Own Hub على App Store</a>' + """ &middot; <a href=""" + '"' + cfg.store_url("storeUrlAndroid") + '" rel="noopener">‏Own Hub على Google Play</a></p>' + """
           </div>
@@ -189,7 +189,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <div class="prose">
 """ + h2("inside", "ما في داخله", "no-rule") + """
           <p class="lede">تمرّني، واطبخي، وتابعي دورتكِ، بخصوصية. وفي التطبيق،
-          يعرض «خذيني في جولة» كل شيء بأسبوع تجريبي قبل أن تنضمّي، ولا يُحفظ
+          يعرض «خديني في جولة» كل شيء بأسبوع تجريبي قبل أن تنضمّي، ولا يُحفظ
           شيء.</p>
         </div>
         <ul class="shots">

@@ -2,11 +2,11 @@
 //
 // A new woman taps "Show me around" on C01 and takes the tour (C04): the real
 // screens with a sample week, nothing asked and nothing kept. "Join Own Hub"
-// or "Make it mine" then starts sign-up the value-first way: one screen of
-// her week (O03, life stage included), her week (O05) saved, and only then
-// her number (C06). "Skip the tour and join" on C01 is the same start without
-// the tour. After the check, C13 is the root of the stack and "Start day 1"
-// lands her on day one over Home.
+// or "Make it mine" then starts sign-up the value-first way: three short
+// questions about her week (O03, O07 and O04, one a screen), her week (O05)
+// saved, and only then her number (C06). "Skip the tour and join" on C01 is
+// the same start without the tour. After the check, C13 is the root of the
+// stack and "Start day 1" lands her on day one over Home.
 //
 // Driven through the router's own builders, with the launch flags: the gate
 // is closed, the community and the coach app are off. Where a step needs a
@@ -105,11 +105,32 @@ VerificationResult _passed() => VerificationResult(
 final FeatureFlags _launch = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.accountRequired: true,
   Feature.signUp: true,
+  Feature.appTour: true,
   Feature.today: true,
+  Feature.firstWeek: true,
+  Feature.quietWeek: true,
+  Feature.tiers: true,
+  Feature.lockScreenNudge: true,
   Feature.train: true,
+  Feature.recordFromMemory: true,
+  Feature.exerciseVideo: true,
+  Feature.exerciseSwap: true,
+  Feature.followAlong: true,
+  Feature.workoutLibrary: true,
+  Feature.trainingReminders: true,
   Feature.eat: true,
+  Feature.recipes: true,
+  Feature.weekPlan: true,
+  Feature.groceryList: true,
   Feature.progress: true,
+  Feature.milestones: true,
+  Feature.personalBests: true,
+  Feature.bodyPrivately: true,
+  Feature.shareCard: true,
   Feature.cycle: true,
+  Feature.cycleMeals: true,
+  Feature.cycleCalendar: true,
+  Feature.cyclePatterns: true,
   Feature.privacyCentre: true,
 });
 
@@ -146,7 +167,7 @@ void main() {
   });
 
   group('before sign-up', () {
-    testWidgets('C01, one screen of her week, her week, then her number', (
+    testWidgets('C01, three questions, her week, then her number', (
       tester,
     ) async {
       expect(
@@ -156,13 +177,22 @@ void main() {
       );
       final (stack, _) = await _open(tester, 'C01');
 
-      await _tap(tester, 'Skip the tour and join');
-      expect(stack.names.last, _name('O03'));
-      expect(find.text('1 of 3 · Your week'), findsOneWidget);
-      expect(find.text('Skip'), findsNothing);
-      expect(find.byIcon(Icons.close), findsNothing);
+      // Each of the three is the first part of joining, has every answer
+      // preselected, and has no Home to close to before she has an account.
+      void expectYourWeek(String id) {
+        expect(stack.names.last, _name(id));
+        expect(find.text('1 of 3 · Your week'), findsOneWidget, reason: id);
+        expect(find.text('Skip'), findsNothing, reason: id);
+        expect(find.byIcon(Icons.close), findsNothing, reason: id);
+      }
 
+      await _tap(tester, 'Skip the tour and join');
+      expectYourWeek('O03');
       await _tap(tester, '4');
+      await _tap(tester, 'Continue');
+      expectYourWeek('O07');
+      await _tap(tester, 'Continue');
+      expectYourWeek('O04');
       await _tap(tester, 'A knee, back or shoulder');
       await _tap(tester, 'See my week');
       expect(stack.names.last, _name('O05'));
@@ -174,12 +204,14 @@ void main() {
       expect(stack.names, [
         _name('C01'),
         _name('O03'),
+        _name('O07'),
+        _name('O04'),
         _name('O05'),
         _name('C06'),
       ]);
       expect(find.text('2 of 3 · Your number'), findsOneWidget);
-      // M1: O03 and O05 never count as acceptance. C06 says what her tap will
-      // accept, and nothing is recorded until she taps it.
+      // M1: her week's screens never count as acceptance. C06 says what her
+      // tap will accept, and nothing is recorded until she taps it.
       expect(
         find.text(
           'By tapping Agree and send me a code, you accept the Terms of Use '
@@ -212,7 +244,9 @@ void main() {
     testWidgets('the funnel is reported in order', (tester) async {
       await _open(tester, 'C01');
       await _tap(tester, 'Skip the tour and join');
-      await _tap(tester, 'See my week');
+      await _tap(tester, 'Continue'); // O03
+      await _tap(tester, 'Continue'); // O07
+      await _tap(tester, 'See my week'); // O04
       await _tap(tester, 'Save my week and join');
 
       final funnel = [
@@ -227,6 +261,8 @@ void main() {
           'C01',
           'signUpStarted',
           'O03',
+          'O07',
+          'O04',
           'O05',
           'intakeCompleted',
           'C06',
@@ -245,6 +281,8 @@ void main() {
       await _open(tester, 'C01');
       await _tap(tester, 'Skip the tour and join');
       await _tap(tester, '4');
+      await _tap(tester, 'Continue'); // O03
+      await _tap(tester, 'Continue'); // O07
       await _tap(tester, 'A knee, back or shoulder');
       await _tap(tester, 'See my week');
       await _tap(tester, 'Save my week and join');
@@ -495,7 +533,13 @@ void main() {
       final (stack, _) = await _open(tester, 'C13');
 
       await _tap(tester, 'Start day 1');
+      // The same three questions, without the sign-up count: she has joined.
       expect(stack.names.last, _name('O03'));
+      expect(find.text('1 of 3 · Your week'), findsNothing);
+      await _tap(tester, 'Continue');
+      expect(stack.names.last, _name('O07'));
+      await _tap(tester, 'Continue');
+      expect(stack.names.last, _name('O04'));
       expect(find.text('Anything we should train around?'), findsOneWidget);
       expect(find.text('1 of 3 · Your week'), findsNothing);
 

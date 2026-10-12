@@ -200,10 +200,10 @@ class _CoachPackagesViewState extends State<CoachPackagesView> {
       step: CoachSetupStep.packages,
       title: l10n.howManyClientsCanYouTake,
       subtitle: l10n.yourPricesLiveOnYourPageWhere,
-      onBack: () => goToScreen(context, 'K03', widget.onBack),
+      onBack: () => goToScreen(context, 'K10', widget.onBack),
       onSaveAndClose: widget.onSaveAndClose,
       onPrimary: model.canAdvanceFrom(CoachSetupStep.packages)
-          ? () => goToScreen(context, 'K05', widget.onContinue)
+          ? () => goToScreen(context, 'K11', widget.onContinue)
           : null,
       children: [
         AppField(

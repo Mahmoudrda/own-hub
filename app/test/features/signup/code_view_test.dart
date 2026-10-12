@@ -329,7 +329,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('اكتبي الرمز'), findsOneWidget);
+    expect(find.text('اكتبي الكود'), findsOneWidget);
     expect(
       find.textContaining('ستة أرقام'),
       findsOneWidget,

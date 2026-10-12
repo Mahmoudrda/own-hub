@@ -24,7 +24,7 @@ DEVICES = "devices"
 
 APPROVED_TEXT = {
     "en": ("Own Hub", "Your check is done. You can open Own Hub now."),
-    "ar": ("Own Hub", "اكتمل التحقق. يمكنكِ فتح Own Hub الآن."),
+    "ar": ("Own Hub", "خلّصنا التحقق. تقدري تفتحي Own Hub دلوقتي."),
 }
 """Title and body by the device's locale. Arabic is the fallback: most of the
 women this is for read the app in Arabic."""

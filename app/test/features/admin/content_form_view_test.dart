@@ -604,9 +604,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await _type(tester, 'معرّف الطعام', 'koshari');
-      await _type(tester, 'الاسم (بالإنجليزية)', 'Koshari');
-      await _type(tester, 'الاسم (بالعربية)', 'كشري');
+      await _type(tester, 'معرّف الأكلة', 'koshari');
+      await _type(tester, 'الاسم (بالإنجليزي)', 'Koshari');
+      await _type(tester, 'الاسم (بالعربي)', 'كشري');
       await _type(tester, 'سعرة', '٤٣٠');
       await _type(tester, 'البروتين (جم)', '13');
       await _type(tester, 'مسببات الحساسية', 'gluten');
@@ -1011,7 +1011,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('أضيفي تمرينًا'), findsOneWidget);
-      expect(find.text('وسوم موانع الأداء'), findsOneWidget);
+      expect(find.text('وسوم الموانع'), findsOneWidget);
       expect(
         Directionality.of(tester.element(find.text('أضيفي تمرينًا'))),
         TextDirection.rtl,
@@ -1034,7 +1034,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('اكتبي «لا شيء» عند عدم وجودها. والفراغ ليس كذلك.'),
+        find.text('اكتبي «none» لو مفيش. والخانة الفاضية مش نفس الحاجة.'),
         findsWidgets,
       );
       expect(find.text('مطلوب'), findsWidgets);

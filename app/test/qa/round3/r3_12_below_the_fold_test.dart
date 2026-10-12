@@ -171,7 +171,7 @@ void main() {
               c.label.trim().isNotEmpty &&
               !<String>[
                 'Home', 'Train', 'Eat', 'Back', 'Close',
-                'الرئيسية', 'التمرين', 'الطعام', 'رجوع', 'إغلاق',
+                'الرئيسية', 'الحركة', 'الأكل', 'رجوع', 'إغلاق',
               ].contains(c.label.trim()),
           orElse: () => controls.first,
         );

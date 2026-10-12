@@ -158,9 +158,9 @@ void main() {
     await tester.pumpWidget(_host(_view(), locale: const Locale('ar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('الفطور المعتاد؟'), findsOneWidget);
-    expect(find.text('أضيفيه'), findsOneWidget);
-    expect(find.text('شيء آخر'), findsOneWidget);
+    expect(find.text('الفطار المعتاد؟'), findsOneWidget);
+    expect(find.text('ضيفيه'), findsOneWidget);
+    expect(find.text('حاجة تانية'), findsOneWidget);
     expect(find.text('Add it'), findsNothing);
     expect(find.text('Something else'), findsNothing);
   });

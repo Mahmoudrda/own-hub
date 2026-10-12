@@ -269,7 +269,7 @@ Both are **off until she turns them on**, separately, and the SDKs are disabled 
 | Recipes | `meta/recipes` (version), then `recipeIndex/en_v{N}` and the recipe documents | `own_hub.recipes` | at most once a day, verified accounts only |
 | Workout programmes | `meta/workouts`, then `workoutLibrary/v{N}` | `own_hub.workouts` | at most once a day |
 | Events | `events` where `status == 'published'` | in memory | at most once an hour, only when the events switch is on |
-| The events switch | `meta/features` | | each launch |
+| Feature switches (events on, any part off) | `meta/features` | | each launch |
 
 Rahma's 39 bundled recipes and the bundled day-one workout are always the floor: a remote library
 can add and replace, never remove them. One invalid recipe or programme makes every phone refuse
@@ -277,19 +277,41 @@ the whole new version and keep the previous one, so the console checks with the 
 
 ### 4.7 Feature flags (`domain/flags/feature_flags.dart`)
 
+**Every feature has its own flag, and so does every new one.** Each thing a woman can do is a
+`Feature`: the big areas (Today, Train, Eat, Progress, My cycle) and the parts inside them (recipes,
+the week plan, the grocery list, the share card, the workout library, the cycle calendar and so on).
+A new feature gets a new `Feature`, with a parent if it lives inside another, a line in
+`FeatureFlags.shipped`, and its screens in `lib/routing/screen_features.dart`. It arrives off and is
+switched on when it is ready. `test/domain/flags/every_feature_has_a_switch_test.dart` fails the
+build when a screen has no switch, a feature is missing from the shipped list, or a switch opens
+nothing.
+
 - `FeatureFlags.shipped` is what the stores get: sign-up, verification and the account gate on, with
-  Today, Train, Eat, Progress, My cycle and the privacy centre. Everything in section 1's "switched
-  off" list is off.
-- Flags have parents; switching one off switches off everything inside it.
-- The only flag a member's phone takes from the server is `events` (`meta/features`). Every other
-  flag is compiled in and needs an app update. Turning the community or coaching on also needs the
-  `communityLive()` / `coachLive()` switches in both storage and Firestore rules and `COACH_APP_LIVE`
-  in the functions.
+  Today, Train, Eat, Progress, My cycle, the privacy centre and every part inside them. The
+  community, the coach side, the marketplace, payments and the assistant are off. Nothing in the
+  launch is paid.
+- Flags have parents; switching one off switches off everything inside it. A screen opens only when
+  its flow's switch and its own switch are both on.
+- **The server can stop a broken part without a release.** `meta/features` holds `{name: false}`
+  for any feature whose `serverMayTurnOff` is true, and every member's app takes it at her next
+  launch. It can switch on only `events`; `true` on anything else just lifts an earlier stop. It can
+  never switch off sign-up, verification, the account gate, Home or the privacy centre. In the
+  console (Z14), "For every member" holds these stops; the switches above it change only the phone
+  in your hand.
+- A control that leads into a part that can be stopped is drawn only while
+  `AppRouter.screenIsOn` is true for its screen. `r2_19_no_dark_edges_test.dart` switches each part
+  off in turn and fails on any door left behind.
+- Turning the community or coaching on needs an app update, plus the `communityLive()` /
+  `coachLive()` switches in both storage and Firestore rules and `COACH_APP_LIVE` in the functions.
 
 ### 4.8 Strings and the two languages
 
-- Arabic is Modern Standard Arabic addressed to a woman (feminine second person). Western digits in
-  both languages. No em dashes in product copy.
+- Arabic is polished Egyptian Arabic (owner decision, 2026-10-12): warm, educated Cairene, never
+  street slang, addressed to a woman (feminine second person). Legal and consent wording (the
+  camera consent, the woman-reviewer consent, the pledge, the health-backup consent, the terms line
+  on `C06`, the legal update sheet, the medical disclaimer) stays in Modern Standard Arabic, because
+  each is a recorded agreement with a version number. Western digits in both languages. No em
+  dashes in product copy.
 - **All strings are generated.** The dictionary is `6-v2/i18n/` (English source to Arabic), and a
   string's getter name comes from the first seven words of its English text.
 - To add strings, write a JSON file and run the helper. It takes a lock, merges, regenerates and
@@ -628,6 +650,11 @@ test that fails.
 9. Undo, never a confirmation: no `showDialog` or `AlertDialog` for logging.
 10. The assistant selects; it never generates.
 11. Nothing is ranked by weight, weight lost, or followers.
+12. Setup asks one thing per screen, with a step bar (`AppStepBar`) and the count in the title. Her
+    setup and the coach's setup both work this way; a screen that asks several questions at once
+    is a defect.
+13. Everything ships free. A paid plan, when it exists, adds new things; it never takes away what
+    members already use.
 
 Also: the console never reads member data; no API key in the app; analytics carries nothing
 personal; body figures never leave the phone unless she chooses (the weight switch on her progress
@@ -643,7 +670,8 @@ ids (D12, P0-EAT-01). Generators are run, never hand-edited. Navigation edges ar
 
 1. **Generated files.** Never edit `app/lib/theme/app_tokens.dart`, `app/lib/routing/app_routes.dart`,
    `app/lib/l10n/*` or `6-v2/flutter/*` by hand. Adding a screen means a line in
-   `6-v2/src/inventory.mjs`, regenerating, then a builder in `app_router.dart`.
+   `6-v2/src/inventory.mjs`, its markup in the matching `6-v2/src/screens-*.mjs`, regenerating,
+   a builder in `app_router.dart`, and its switch in `lib/routing/screen_features.dart`.
 2. **`*.md` is gitignored** except this README and `app/assets/art/LICENCE.md`. So are `docs/` and
    `*.xlsx`. Planning notes live on the owner's machine, not in git.
 3. **App Check is enforced on every server call.** A debug or profile build needs a registered debug

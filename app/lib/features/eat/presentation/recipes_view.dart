@@ -32,6 +32,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../theme/recipe_book_tokens.dart';
 import '../../../ui/app_chip_row.dart';
@@ -443,7 +444,7 @@ class _RecipesViewState extends State<RecipesView> {
             ),
           // The week is a different kind of thing from a recipe, so it sits
           // on a flat tint below the ruled list rather than as one more line.
-          if (widget.onPick == null)
+          if (widget.onPick == null && AppRouter.screenIsOn('E07'))
             AppListItem(
               variant: AppCardVariant.filled,
               leading: const Icon(
@@ -738,7 +739,7 @@ class _HiddenRow extends StatelessWidget {
   }
 }
 
-/// The one Modern Standard line above her book. Everything below it is hers.
+/// The one line in the app's voice above her book. Everything below it is hers.
 class _BookHeading extends StatelessWidget {
   const _BookHeading({required this.title});
 
@@ -808,7 +809,7 @@ class _SectionDivider extends StatelessWidget {
 /// One of her cards in the list.
 ///
 /// Time and protein under the title where she states them, and nothing at all
-/// where she does not. An unsigned recipe carries one Modern Standard line
+/// where she does not. An unsigned recipe carries one line in the app's voice
 /// saying so, in the app's printed ink rather than hers: it is the app
 /// speaking, and it must not read as part of the card.
 class _RahmaCard extends StatelessWidget {

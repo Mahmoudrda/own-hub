@@ -128,8 +128,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('قيد المراجعة'), findsOneWidget);
-    expect(find.text('ستراجع امرأة من Own Hub تحققكِ'), findsOneWidget);
+    expect(find.text('تحت المراجعة'), findsOneWidget);
+    expect(find.text('واحدة من Own Hub هتراجع التحقق بتاعك'), findsOneWidget);
     expect(find.textContaining('فيديو'), findsNothing);
     expect(find.text('Being checked'), findsNothing);
   });
@@ -356,7 +356,7 @@ void main() {
         _host(BeingCheckedView(onBuildWeek: () {}), locale: const Locale('ar')),
       );
       await tester.pumpAndSettle();
-      expect(find.text('جهّزي أسبوعكِ ريثما نتحقّق'), findsOneWidget);
+      expect(find.text('جهّزي أسبوعك على ما نتحقّق'), findsOneWidget);
     });
   });
 

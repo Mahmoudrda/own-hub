@@ -196,7 +196,7 @@ void main() {
     );
     await tester.pump(CheckingView.slowAfter);
     expect(find.text('اطلبي مراجِعة'), findsOneWidget);
-    expect(find.text('حاولي مرة أخرى'), findsOneWidget);
+    expect(find.text('جرّبي تاني'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -353,8 +353,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('نراجع بطاقتك'), findsWidgets);
-    expect(find.text('تم تصوير وجهَي بطاقتكِ'), findsOneWidget);
+    expect(find.text('بنراجع بطاقتك'), findsWidgets);
+    expect(find.text('اتصوّرت بطاقتك من الناحيتين'), findsOneWidget);
     expect(find.text('Checking your card'), findsNothing);
   });
 

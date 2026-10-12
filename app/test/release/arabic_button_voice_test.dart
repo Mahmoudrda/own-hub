@@ -2,7 +2,7 @@
 //
 // A button is either her own words in the first person ("أنا مدرِّبة، أريد
 // إعداد ملفي"), a neutral verbal noun ("الموافقة وإرسال الرمز"), or "let us"
-// ("لنبدأ"). None of them gives the app an order as if it were a woman
+// ("يلا نبدأ"). None of them gives the app an order as if it were a woman
 // ("أدخليني", "أنشئي ملفي") or orders the team in the plural ("أرسلوا"). And an
 // exercise is named for what the body does, not by a literal "dead insect".
 
@@ -23,7 +23,7 @@ void main() {
   });
 
   test('the coach button is in her own words', () {
-    expect(ar['imACoachSetUpMyProfile'], 'أنا مدرِّبة، أريد إعداد ملفي');
+    expect(ar['imACoachSetUpMyProfile'], 'أنا مدرّبة، عايزة أجهّز ملفي');
   });
 
   test('the number screen button is neutral, and the line quoting it agrees',

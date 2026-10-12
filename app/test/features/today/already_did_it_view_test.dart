@@ -233,8 +233,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('ماذا أدّيتِ؟'), findsOneWidget);
-    expect(find.text('الساقان والأرداف، خطة اليوم'), findsOneWidget);
+    expect(find.text('عملتي إيه؟'), findsOneWidget);
+    expect(find.text('الرجلين والأرداف، خطة النهارده'), findsOneWidget);
     // `_viewWithNoHistory`, so the only strings on the screen are the screen's
     // own. The last-other row's title comes from its caller now, and a caller
     // passing an English one would be measuring the fixture rather than the

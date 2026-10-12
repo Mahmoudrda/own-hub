@@ -150,9 +150,9 @@ void main() {
     await tester.pumpWidget(_host(_view(), locale: const Locale('ar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('أنتِ تعرفين طريقك الآن'), findsOneWidget);
-    expect(find.text('ما بلغه المجموع'), findsOneWidget);
-    expect(find.text('العودة إلى اليوم'), findsOneWidget);
+    expect(find.text('بقيتي عارفة طريقك هنا'), findsOneWidget);
+    expect(find.text('ده اللي جمّعتيه'), findsOneWidget);
+    expect(find.text('ارجعي لصفحة اليوم'), findsOneWidget);
     expect(find.text('You know your way around'), findsNothing);
   });
 

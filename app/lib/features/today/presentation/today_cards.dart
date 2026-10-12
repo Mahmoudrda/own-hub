@@ -340,12 +340,15 @@ class WorkoutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
-    final primary = evening
+    // "I already did it" is drawn only while recording from memory is on;
+    // with it off the card is one button, the start.
+    final recall = onRecall;
+    final primary = evening && recall != null
         ? AppButton(
             l10n.iAlreadyDidIt,
             height: 56,
             icon: Icons.check,
-            onPressed: onRecall,
+            onPressed: recall,
           )
         : AppButton(
             l10n.startEverythingsReady,
@@ -353,7 +356,9 @@ class WorkoutCard extends StatelessWidget {
             icon: Icons.play_arrow,
             onPressed: onStart,
           );
-    final secondary = evening
+    final secondary = recall == null
+        ? null
+        : evening
         ? AppButton(
             l10n.startEverythingsReady,
             variant: AppButtonVariant.outlined,
@@ -365,7 +370,7 @@ class WorkoutCard extends StatelessWidget {
             l10n.iAlreadyDidIt,
             variant: AppButtonVariant.text,
             height: 40,
-            onPressed: onRecall,
+            onPressed: recall,
           );
 
     // The cover. Not a card: the session is the page's subject, so it is set
@@ -451,8 +456,7 @@ class WorkoutCard extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         primary,
-        const SizedBox(height: 10),
-        secondary,
+        if (secondary != null) ...[const SizedBox(height: 10), secondary],
       ],
     );
   }

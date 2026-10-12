@@ -60,6 +60,8 @@ export const screens = [
   { id: 'O03', flow: 'onboarding', title: 'Days and minutes' },
   { id: 'O04', flow: 'onboarding', title: 'Life stage' },
   { id: 'O05', flow: 'onboarding', title: 'Your starting program' },
+  { id: 'O06', flow: 'onboarding', title: 'What you have at home' },
+  { id: 'O07', flow: 'onboarding', title: 'Minutes a session' },
   // Today and logging
   { id: 'T01', flow: 'today', title: 'Today' },
   { id: 'T02', flow: 'today', title: 'I already did it' },
@@ -186,6 +188,11 @@ export const screens = [
   { id: 'K04', flow: 'coach-setup', title: 'Your packages' },
   { id: 'K05', flow: 'coach-setup', title: 'Getting paid' },
   { id: 'K06', flow: 'coach-setup', title: 'Being checked' },
+  { id: 'K08', flow: 'coach-setup', title: 'About you' },
+  { id: 'K10', flow: 'coach-setup', title: 'How you coach' },
+  { id: 'K11', flow: 'coach-setup', title: 'Client results' },
+  { id: 'K12', flow: 'coach-setup', title: 'What clients say' },
+  { id: 'K13', flow: 'coach-setup', title: 'The three rules' },
   // Coach app
   { id: 'K07', flow: 'coach', title: 'Today' },
   { id: 'K09', flow: 'coach', title: 'New enquiry' },

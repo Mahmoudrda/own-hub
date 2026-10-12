@@ -1,27 +1,19 @@
-/// O02 — Where will you train, and with what?
+/// O02 — Where will you train?
 ///
-/// Matches `6-v2/src/screens-onboarding.mjs` → `O02`. Two answers on one screen:
-/// the place, as a list, and the equipment, as chips.
-///
-/// **The equipment is chips rather than a list on purpose.** The design note
-/// says it plainly: the honest answer for most women here is "nothing", and that
-/// answer has to be the easy one. A list of equipment to tick reads as a list of
-/// things she ought to own; four chips with "Nothing" already chosen reads as a
-/// question she has already answered correctly.
-///
-/// "Nothing" is exclusive — the rule lives in [Intake.toggleEquipment], not in
-/// this widget, because My Profile will edit the same set later (D3) and a rule
-/// in a widget only holds on the screen that contains it.
+/// Matches `6-v2/src/screens-onboarding.mjs` → `O02`. One question: the place.
+/// What she has at home is the next screen (`O06`), and only when home is part
+/// of her answer: a woman who trains at a ladies-only gym is not asked about
+/// dumbbells in her living room.
 library;
 
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
-import '../../../ui/app_chip_row.dart';
 import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
 import 'intake_option.dart';
 import 'intake_step_scaffold.dart';
+import '../../../app_state/onboarding_state.dart' show setupProgress;
 
 class PlaceView extends StatefulWidget {
   const PlaceView({
@@ -45,26 +37,16 @@ class PlaceView extends StatefulWidget {
 
 class _PlaceViewState extends State<PlaceView> {
   late TrainingPlace _place;
-  late Set<Equipment> _equipment;
-
-  /// The chip order the design uses.
-  static const List<Equipment> _equipmentOrder = [
-    Equipment.none,
-    Equipment.mat,
-    Equipment.dumbbells,
-    Equipment.bands,
-  ];
 
   @override
   void initState() {
     super.initState();
     final intake = widget.repository.read();
     _place = intake.place;
-    _equipment = intake.equipment;
   }
 
   Future<void> _continue() async {
-    await widget.repository.merge(place: _place, equipment: _equipment);
+    await widget.repository.merge(place: _place);
     if (!mounted) return;
     widget.onContinue?.call();
   }
@@ -83,15 +65,15 @@ class _PlaceViewState extends State<PlaceView> {
       (TrainingPlace.both, l10n.both, l10n.homeOnWeekdaysGymWhenICan),
     ];
 
-    final equipmentLabels = <Equipment, String>{
-      Equipment.none: l10n.nothing,
-      Equipment.mat: l10n.aMat,
-      Equipment.dumbbells: l10n.dumbbells,
-      Equipment.bands: l10n.bands,
-    };
-
+    // Counted from what she has tapped, so choosing the gym shortens the
+    // walk on this screen rather than one screen later.
+    final at = setupProgress(
+      'O02',
+      widget.repository.read().copyWith(place: _place),
+    );
     return IntakeStepScaffold(
-      step: 2,
+      step: at.step,
+      total: at.total,
       title: l10n.whereWillYouTrain,
       subtitle: l10n.youCanChangeItOnAnyDay,
       onContinue: _continue,
@@ -106,26 +88,6 @@ class _PlaceViewState extends State<PlaceView> {
             selected: _place == place,
             onTap: () => setState(() => _place = place),
           ),
-        IntakeAnswerGroup(
-          label: l10n.whatDoYouHaveAtHome,
-          child: AppChipRow(
-            // Natural widths, not equal thirds: "Nothing" is much shorter than
-            // "Dumbbells" and stretching it would make the easiest answer look
-            // like the biggest commitment.
-            grow: false,
-            items: [for (final item in _equipmentOrder) equipmentLabels[item]!],
-            selected: {
-              for (var i = 0; i < _equipmentOrder.length; i++)
-                if (_equipment.contains(_equipmentOrder[i])) i,
-            },
-            onTap: (i) => setState(() {
-              _equipment = Intake.toggleEquipment(
-                _equipment,
-                _equipmentOrder[i],
-              );
-            }),
-          ),
-        ),
       ],
     );
   }

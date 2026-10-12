@@ -10,7 +10,7 @@
 /// advert wearing a letter's clothes, and a woman can tell.
 ///
 /// Her text arrives from `rahma_recipes.json` like every other word of hers.
-/// The only Modern Standard string on the screen is the route's own title in
+/// The only string in the app's voice on the screen is the route's own title in
 /// the bar above it.
 library;
 

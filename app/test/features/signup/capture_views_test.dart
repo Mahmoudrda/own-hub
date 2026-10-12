@@ -117,7 +117,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('ظهر بطاقتك'), findsOneWidget);
+      expect(find.text('ضهر بطاقتك'), findsOneWidget);
       expect(find.text('اقلبي البطاقة'), findsOneWidget);
     });
   });
@@ -313,16 +313,16 @@ void main() {
       const prompts = <CaptureGuidance, (String, String)>{
         CaptureGuidance.lookStraight: (
           'Look straight ahead',
-          'انظري إلى الأمام مباشرة',
+          'بصّي قدّامك على طول',
         ),
-        CaptureGuidance.blink: ('Blink slowly', 'أغمضي عينيك ثم افتحيهما ببطء'),
+        CaptureGuidance.blink: ('Blink slowly', 'رمّشي بالراحة'),
         CaptureGuidance.turnLeft: (
           'Turn your head slightly to the left',
-          'أديري رأسك قليلاً إلى اليسار',
+          'لفّي راسك شوية ناحية الشمال',
         ),
         CaptureGuidance.turnRight: (
           'Turn your head slightly to the right',
-          'أديري رأسك قليلاً إلى اليمين',
+          'لفّي راسك شوية ناحية اليمين',
         ),
       };
 

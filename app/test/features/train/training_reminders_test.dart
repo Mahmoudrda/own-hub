@@ -287,10 +287,10 @@ void main() {
 
     testWidgets('the sheet reads in Arabic', (tester) async {
       await _open(tester, 'R10', locale: const Locale('ar'));
-      expect(find.text('هل تريدين تذكيرًا في أيام تمرينكِ؟'), findsOneWidget);
+      expect(find.text('عايزة تذكير في أيام تمرينك؟'), findsOneWidget);
       await _tap(tester, _choose);
       expect(find.text('تذكيرات التمرين'), findsOneWidget);
-      expect(find.text('تفعيل التذكير'), findsOneWidget);
+      expect(find.text('فكّريني'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
@@ -355,7 +355,7 @@ void main() {
       expect(text.body.toLowerCase(), isNot(contains('streak')));
       expect(text.body.toLowerCase(), isNot(contains('miss')));
     }
-    expect(AppRouter.reminderText(ar).body, 'جلستكِ جاهزة متى شئتِ.');
+    expect(AppRouter.reminderText(ar).body, 'تمرينك جاهز وقت ما تحبي.');
   });
 
   test('re-set at launch only when she has them', () async {

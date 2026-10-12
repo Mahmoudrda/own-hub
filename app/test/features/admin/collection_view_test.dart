@@ -474,7 +474,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('التمارين'), findsOneWidget);
+    expect(find.text('الحركات'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

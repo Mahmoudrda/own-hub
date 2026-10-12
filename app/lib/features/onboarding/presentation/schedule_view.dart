@@ -1,4 +1,4 @@
-/// O03 — How much time do you really have?
+/// O03 — How many days a week?
 ///
 /// Matches `6-v2/src/screens-onboarding.mjs` → `O03`.
 ///
@@ -24,13 +24,11 @@
 /// than from translated strings, so "3" cannot become "٣" on one screen and stay
 /// "3" on the next.
 ///
-/// # The short "Your week"
+/// # One question
 ///
-/// With [includeLifeStage] this is the one setup screen a new woman meets
-/// before she has an account: days, minutes, and what to train around, all
-/// preselected, written in one merge. Asking about a pregnancy before her
-/// first session is the safety reason the question is here and not later. The
-/// answer stays on this phone, and the screen says so.
+/// Days only. Minutes a session are the next screen (`O07`), and what to
+/// train around the one after (`O04`), in the full walk and in the short
+/// "Your week" alike: one answer a screen, each already chosen.
 library;
 
 import 'package:flutter/material.dart';
@@ -41,10 +39,8 @@ import '../../../ui/app_card.dart';
 import '../../../ui/app_chip_row.dart';
 import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
-import 'intake_option.dart';
 import 'intake_step_scaffold.dart';
-import 'life_stage_view.dart' show lifeStageOptions;
-import '../../../ui/medical_disclaimer.dart';
+import '../../../app_state/onboarding_state.dart' show setupProgress;
 
 class ScheduleView extends StatefulWidget {
   const ScheduleView({
@@ -54,15 +50,11 @@ class ScheduleView extends StatefulWidget {
     this.onSkip,
     this.onBack,
     this.onClose,
-    this.includeLifeStage = false,
     this.titleOverride,
     this.continueLabel,
   });
 
   final IntakeRepository repository;
-
-  /// Adds the life-stage question and the "stays on this phone" note.
-  final bool includeLifeStage;
 
   /// See [IntakeStepScaffold.titleOverride].
   final String? titleOverride;
@@ -80,24 +72,16 @@ class ScheduleView extends StatefulWidget {
 
 class _ScheduleViewState extends State<ScheduleView> {
   late int _days;
-  late int _minutes;
-  late LifeStage _lifeStage;
 
   @override
   void initState() {
     super.initState();
     final intake = widget.repository.read();
     _days = intake.days;
-    _minutes = intake.minutes;
-    _lifeStage = intake.lifeStage;
   }
 
   Future<void> _continue() async {
-    await widget.repository.merge(
-      days: _days,
-      minutes: _minutes,
-      lifeStage: widget.includeLifeStage ? _lifeStage : null,
-    );
+    await widget.repository.merge(days: _days);
     if (!mounted) return;
     widget.onContinue?.call();
   }
@@ -106,9 +90,11 @@ class _ScheduleViewState extends State<ScheduleView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
+    final at = setupProgress('O03', widget.repository.read());
     return IntakeStepScaffold(
-      step: 3,
-      title: l10n.howMuchTimeDoYouReallyHave,
+      step: at.step,
+      total: at.total,
+      title: l10n.howManyDaysAWeek,
       subtitle: l10n.beHonestThisBecomesYourWeeklyGoal,
       onContinue: _continue,
       onSkip: widget.onSkip,
@@ -117,21 +103,10 @@ class _ScheduleViewState extends State<ScheduleView> {
       titleOverride: widget.titleOverride,
       continueLabel: widget.continueLabel,
       children: [
-        IntakeAnswerGroup(
-          label: l10n.daysAWeek,
-          child: AppChipRow(
-            items: [for (final d in Intake.allowedDays) '$d'],
-            selected: {Intake.allowedDays.indexOf(_days)},
-            onTap: (i) => setState(() => _days = Intake.allowedDays[i]),
-          ),
-        ),
-        IntakeAnswerGroup(
-          label: l10n.minutesASession,
-          child: AppChipRow(
-            items: [for (final m in Intake.allowedMinutes) '$m'],
-            selected: {Intake.allowedMinutes.indexOf(_minutes)},
-            onTap: (i) => setState(() => _minutes = Intake.allowedMinutes[i]),
-          ),
+        AppChipRow(
+          items: [for (final d in Intake.allowedDays) '$d'],
+          selected: {Intake.allowedDays.indexOf(_days)},
+          onTap: (i) => setState(() => _days = Intake.allowedDays[i]),
         ),
         // The rest-week rule, stated before she can fail it. Sage, because it is
         // restorative: a missed week costs her nothing once she has banked one.
@@ -155,35 +130,6 @@ class _ScheduleViewState extends State<ScheduleView> {
             ),
           ],
         ),
-        if (widget.includeLifeStage) ...[
-          IntakeAnswerGroup(
-            label: l10n.anythingWeShouldTrainAround,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final (stage, title, subtitle) in lifeStageOptions(l10n))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: IntakeOption(
-                      title: title,
-                      subtitle: subtitle,
-                      selected: _lifeStage == stage,
-                      onTap: () => setState(() => _lifeStage = stage),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Text(
-            l10n.onlyYouSeeThisItStaysOn,
-            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-          ),
-          // Inline, no extra step, once she says she is pregnant or has
-          // recently given birth.
-          if (_lifeStage == LifeStage.pregnant ||
-              _lifeStage == LifeStage.postpartum)
-            const MedicalDisclaimer(),
-        ],
       ],
     );
   }

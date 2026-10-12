@@ -44,11 +44,21 @@
 ///
 /// ## Where the values come from
 ///
-/// Today: [FeatureFlags.shipped], compiled in. Later: a remote config document,
-/// read once at startup and merged over the defaults with [FeatureFlags.with_].
-/// The specs already name the keys (`kill_switches.assistant`,
-/// `community_show_follower_counts`, `assistant_model`, `min_age`…). Nothing in
-/// this file talks to a network, so it stays testable and synchronous.
+/// [FeatureFlags.shipped], compiled in, and then `meta/features`, read once a
+/// launch by a verified woman and laid over it (`RemoteFeatures`). The
+/// document can switch a feature off when [Feature.serverMayTurnOff] allows
+/// it, and on only when [Feature.serverMayTurnOn] does. Nothing in this file
+/// talks to a network, so it stays testable and synchronous.
+///
+/// ## Every feature has a switch, and so does every new one
+///
+/// A new thing a woman can do gets its own [Feature] here, with a parent if
+/// it lives inside another, a line in [FeatureFlags.shipped], and its screens
+/// in `kScreenFeatures` (`lib/routing/screen_features.dart`). It arrives off,
+/// and is switched on when it is ready. `test/domain/flags/
+/// every_feature_has_a_switch_test.dart` fails the build when a screen has no
+/// switch, when a feature is missing from the shipped list, or when a switch
+/// opens nothing.
 library;
 
 import 'package:meta/meta.dart';
@@ -136,6 +146,93 @@ enum Feature {
   /// a woman is collected: there is no "interested" and no attendee list.
   events,
 
+  // ------------------------------------------------- Parts of a feature
+  //
+  // Each of these is one thing a woman can do, inside a feature above. Its
+  // own switch means it can be turned off on its own (from the server, at
+  // her next launch) when it breaks, without taking the rest of the feature
+  // with it, and a new part arrives dark until it is ready.
+
+  /// Her first week on Home: the arc and "First week done" (`T07`, `T08`).
+  firstWeek,
+
+  /// "After a quiet week" (`T04`): the rest week she has earned.
+  quietWeek,
+
+  /// "When a tier slips" (`T05`).
+  tiers,
+
+  /// The lock-screen nudge (`T03`).
+  lockScreenNudge,
+
+  /// "I already did it": a session from memory (`T02`, `R12`).
+  /// Inside [train], although `T02` opens from Home.
+  recordFromMemory,
+
+  /// The exercise video (`R04`).
+  exerciseVideo,
+
+  /// Swapping a move (`R05`).
+  exerciseSwap,
+
+  /// The follow-along move (`R06`).
+  followAlong,
+
+  /// The workout library the owner publishes (`R11`).
+  workoutLibrary,
+
+  /// Training reminders: the sheet on `A01` and `R10`. No screen of its own.
+  trainingReminders,
+
+  /// Recipes, one recipe and Rahma's letter (`E05`, `E06`, `E11`).
+  recipes,
+
+  /// The week plan (`E07`).
+  weekPlan,
+
+  /// The grocery list (`E08`).
+  groceryList,
+
+  /// Milestones (`P02`).
+  milestones,
+
+  /// Personal bests (`P03`).
+  personalBests,
+
+  /// Weight and measurements, kept privately (`P04`).
+  bodyPrivately,
+
+  /// The progress card she can share (`P05`).
+  shareCard,
+
+  /// Meals for the day of her cycle (`Y07`).
+  cycleMeals,
+
+  /// The cycle calendar (`Y08`).
+  cycleCalendar,
+
+  /// Her patterns (`Y10`).
+  cyclePatterns,
+
+  /// The tour before sign-up (`C03`, `C04`).
+  appTour,
+
+  /// Community groups (`M04`, `M05`, `M06`).
+  communityGroups,
+
+  /// Community stories (`M13`).
+  communityStories,
+
+  /// Before and after results on a coach's page (`B08`, `K11`), each one
+  /// shown only with the client's own agreement in the app.
+  coachResults,
+
+  /// What her clients say, on a coach's page (`K12`).
+  coachReviews,
+
+  /// The ad designer (`B09`).
+  coachAds,
+
   /// Whether a recipe's [RecipeTier] means anything.
   ///
   /// Its parent is [payments], deliberately: `isOn()` walks ancestors, so this
@@ -155,11 +252,83 @@ enum Feature {
     communityPosts ||
     communityVideo ||
     communityVoiceNotes ||
-    communityFollowerCounts => community,
+    communityFollowerCounts ||
+    communityGroups ||
+    communityStories => community,
     payments => marketplace,
-    voiceLogging => eat,
+    voiceLogging || recipes => eat,
+    // The plan is built from recipes, and the list from the plan.
+    weekPlan => recipes,
+    groceryList => weekPlan,
     recipeTiering => payments,
+    firstWeek || quietWeek || tiers || lockScreenNudge => today,
+    recordFromMemory ||
+    exerciseVideo ||
+    exerciseSwap ||
+    followAlong ||
+    workoutLibrary ||
+    trainingReminders => train,
+    milestones || personalBests || bodyPrivately || shareCard => progress,
+    cycleMeals || cycleCalendar || cyclePatterns => cycle,
+    appTour => signUp,
+    coachResults || coachReviews || coachAds => coachPortfolio,
     _ => null,
+  };
+
+  /// Whether `meta/features` may switch this off for every member.
+  ///
+  /// True for nearly everything: switching a broken part off, without a
+  /// release, is what a flag is for. False only where off is itself the
+  /// danger or the answer is a rule, not a setting:
+  ///
+  ///   * [accountRequired], [signUp], [verification] — off would open a
+  ///     women-only app to anyone, or leave women unable to join or be
+  ///     checked. Never from a document.
+  ///   * [today] — Home is the front door. Off would leave her nowhere.
+  ///   * [privacyCentre] — her data and her way out are never switched off.
+  ///   * [adminConsole] — compiled out of store builds anyway.
+  ///   * [communityFollowerCounts], [voiceLogging], [payments],
+  ///     [recipeTiering] — off already, and they stay off by rule or until
+  ///     a release that has what they need.
+  bool get serverMayTurnOff => !const {
+    Feature.accountRequired,
+    Feature.signUp,
+    Feature.verification,
+    Feature.today,
+    Feature.privacyCentre,
+    Feature.adminConsole,
+    Feature.communityFollowerCounts,
+    Feature.voiceLogging,
+    Feature.payments,
+    Feature.recipeTiering,
+  }.contains(this);
+
+  /// Whether `meta/features` may switch this on for every member, beyond
+  /// what the build ships.
+  ///
+  /// Only for a part that is finished in this build and needs nothing the
+  /// server does not already have. Everything else waits for a release:
+  /// a document that could switch on the community or the coach side would
+  /// be a way round the rules that keep them closed (`communityLive()`,
+  /// `coachLive()`), and a way round every safety argument they rest on.
+  bool get serverMayTurnOn => const {Feature.events}.contains(this);
+
+  /// Why a feature that opens no screen of its own still has a switch.
+  ///
+  /// Every other feature gates at least one screen in `kScreenFeatures`
+  /// (`lib/routing/screen_features.dart`), and a test holds both lists
+  /// together, so a switch that does nothing cannot sit on `Z14`.
+  static const Map<Feature, String> gatesNoScreen = {
+    Feature.accountRequired: 'The whole-app gate: AppRouter.verificationGate.',
+    Feature.verification: 'The check screens belong to signUp and open with '
+        'it. The switch stays so a release note can name it.',
+    Feature.privacyCentre: 'Her data and her way out live in account, which '
+        'is never gated. The switch stays so a release note can name it.',
+    Feature.communityPosts: 'Checked inside the community screens.',
+    Feature.communityVoiceNotes: 'Checked inside the community screens.',
+    Feature.communityFollowerCounts: 'Checked inside the community screens.',
+    Feature.recipeTiering: 'Checked by the recipe access gate.',
+    Feature.trainingReminders: 'A sheet on A01 and R10, not a screen.',
   };
 }
 
@@ -241,6 +410,37 @@ class FeatureFlags {
     // Nothing shows until the owner turns it on, from Z14.
     Feature.events: false,
 
+    // The parts of what ships. Each is on, and each can be switched off on
+    // its own from the server if it breaks.
+    Feature.firstWeek: true,
+    Feature.quietWeek: true,
+    Feature.tiers: true,
+    Feature.lockScreenNudge: true,
+    Feature.recordFromMemory: true,
+    Feature.exerciseVideo: true,
+    Feature.exerciseSwap: true,
+    Feature.followAlong: true,
+    Feature.workoutLibrary: true,
+    Feature.trainingReminders: true,
+    Feature.recipes: true,
+    Feature.weekPlan: true,
+    Feature.groceryList: true,
+    Feature.milestones: true,
+    Feature.personalBests: true,
+    Feature.bodyPrivately: true,
+    Feature.shareCard: true,
+    Feature.cycleMeals: true,
+    Feature.cycleCalendar: true,
+    Feature.cyclePatterns: true,
+    Feature.appTour: true,
+
+    // Parts of what is still waiting on a back end.
+    Feature.communityGroups: false,
+    Feature.communityStories: false,
+    Feature.coachResults: false,
+    Feature.coachReviews: false,
+    Feature.coachAds: false,
+
     // Off, and its parent is `payments`, so this line is belt as well as
     // braces: `isOn()` would refuse it even set to true.
     Feature.recipeTiering: false,
@@ -279,6 +479,10 @@ class FeatureFlags {
   /// its parent makes it unreachable — otherwise turning the parent on looks
   /// like it silently changed the children.
   bool isSetOn(Feature feature) => _values[feature] == true;
+
+  /// Whether this set names [feature] at all, on or off. `shipped` names
+  /// every feature, so its absence is never how a release decided.
+  bool decides(Feature feature) => _values.containsKey(feature);
 
   /// A copy with some switches moved.
   FeatureFlags with_(Map<Feature, bool> overrides) =>

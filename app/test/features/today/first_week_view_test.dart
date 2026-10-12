@@ -84,9 +84,23 @@ void main() {
   setUp(
     () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
       Feature.today: true,
+      Feature.firstWeek: true,
+      Feature.quietWeek: true,
+      Feature.tiers: true,
+      Feature.lockScreenNudge: true,
       Feature.train: true,
+      Feature.recordFromMemory: true,
+      Feature.exerciseVideo: true,
+      Feature.exerciseSwap: true,
+      Feature.followAlong: true,
+      Feature.workoutLibrary: true,
+      Feature.trainingReminders: true,
       Feature.eat: true,
+      Feature.recipes: true,
+      Feature.weekPlan: true,
+      Feature.groceryList: true,
       Feature.community: true,
+      Feature.communityGroups: true,
     }),
   );
   tearDown(() => AppRouter.featureFlags = savedFlags);
@@ -156,8 +170,21 @@ void main() {
       // "2 of 5" forever with nothing left to tap.
       AppRouter.featureFlags = FeatureFlags.allOff.with_({
         Feature.today: true,
+        Feature.firstWeek: true,
+        Feature.quietWeek: true,
+        Feature.tiers: true,
+        Feature.lockScreenNudge: true,
         Feature.train: true,
+        Feature.recordFromMemory: true,
+        Feature.exerciseVideo: true,
+        Feature.exerciseSwap: true,
+        Feature.followAlong: true,
+        Feature.workoutLibrary: true,
+        Feature.trainingReminders: true,
         Feature.eat: true,
+        Feature.recipes: true,
+        Feature.weekPlan: true,
+        Feature.groceryList: true,
       });
       _phone(tester);
       await tester.pumpWidget(_host(_view()));
@@ -269,8 +296,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('أسبوعك الأول'), findsOneWidget);
-    expect(find.text('أنهي مجموعة واحدة'), findsOneWidget);
-    expect(find.text('انضمّي إلى مجموعة واحدة'), findsOneWidget);
+    expect(find.text('خلّصي مجموعة واحدة'), findsOneWidget);
+    expect(find.text('انضمّي لمجموعة واحدة'), findsOneWidget);
     expect(find.text('Finish one set'), findsNothing);
   });
 

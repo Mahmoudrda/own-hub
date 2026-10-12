@@ -305,10 +305,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('بطاقة تقدّمك'), findsOneWidget);
+    expect(find.text('كارت تقدّمك'), findsOneWidget);
     expect(find.text('تقدّمي على Own Hub'), findsOneWidget);
-    expect(find.text('تمارين مُنجزة'), findsOneWidget);
-    expect(find.text('مشاركة بطاقتي'), findsOneWidget);
-    expect(find.text('own-hub.app · للنساء فقط.'), findsOneWidget);
+    expect(find.text('تمارين اتعملت'), findsOneWidget);
+    expect(find.text('شاركي كارتي'), findsOneWidget);
+    expect(find.text('own-hub.app · للستات بس.'), findsOneWidget);
   });
 }

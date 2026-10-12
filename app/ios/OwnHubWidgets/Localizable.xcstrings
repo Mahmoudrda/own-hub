@@ -7,7 +7,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "افتحي Own Hub للبدء"
+            "value": "افتحي Own Hub عشان تبدئي"
           }
         },
         "en": {
@@ -24,7 +24,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تمارين هذا الأسبوع في لمحة. لا شيء عن دورتكِ أو جسمكِ."
+            "value": "تمارين الأسبوع ده بنظرة سريعة. مفيش حاجة عن دورتك أو جسمك."
           }
         },
         "en": {
@@ -41,7 +41,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "هذا الأسبوع"
+            "value": "الأسبوع ده"
           }
         },
         "en": {
@@ -58,7 +58,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "اليوم"
+            "value": "النهارده"
           }
         },
         "en": {
@@ -75,7 +75,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تمرين اليوم ووجبتكِ، على بُعد لمسة."
+            "value": "تمرين ووجبة النهارده، بضغطة واحدة."
           }
         },
         "en": {
@@ -92,7 +92,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "أسبوعكِ"
+            "value": "أسبوعك"
           }
         },
         "en": {
@@ -109,7 +109,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "سيظهر أسبوعكِ هنا"
+            "value": "أسبوعك هيظهر هنا"
           }
         },
         "en": {

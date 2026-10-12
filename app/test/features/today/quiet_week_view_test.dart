@@ -292,8 +292,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('الاثنين'), findsOneWidget);
-    expect(find.text('أسابيعك الأربعة عشر في أمان'), findsOneWidget);
-    expect(find.text('ابدئي الدقائق العشر'), findsOneWidget);
+    expect(find.text('أسابيعك الـ 14 في أمان'), findsOneWidget);
+    expect(find.text('ابدئي الـ 10 دقايق'), findsOneWidget);
     expect(find.text('Your 14 weeks are safe'), findsNothing);
 
     // P0-A11Y-01: Western numerals, in Arabic too.
