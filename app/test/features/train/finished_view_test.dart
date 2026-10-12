@@ -152,7 +152,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('كده الثلاثاء خلص'), findsOneWidget);
+    expect(find.text('كده خلّصتي الثلاثاء'), findsOneWidget);
     expect(find.text('رقم شخصي جديد'), findsOneWidget);
     expect(find.text('ارجعي لصفحة اليوم'), findsOneWidget);
     expect(find.text('Back to today'), findsNothing);

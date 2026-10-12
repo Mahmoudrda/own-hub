@@ -82,6 +82,11 @@ class _CycleDatesViewState extends State<CycleDatesView> {
 
   final TextEditingController _length = TextEditingController();
 
+  /// The range a usual cycle length is kept in. Anything outside it is a
+  /// typo, not a cycle.
+  static const int _shortestCycle = 15;
+  static const int _longestCycle = 60;
+
   /// True while the length field holds something that is not 15 to 60.
   bool _lengthInvalid = false;
 
@@ -112,7 +117,9 @@ class _CycleDatesViewState extends State<CycleDatesView> {
       if (trimmed.isEmpty) {
         _cycleLength = null;
         _lengthInvalid = false;
-      } else if (days != null && days >= 15 && days <= 60) {
+      } else if (days != null &&
+          days >= _shortestCycle &&
+          days <= _longestCycle) {
         _cycleLength = days;
         _lengthInvalid = false;
       } else {
@@ -189,7 +196,12 @@ class _CycleDatesViewState extends State<CycleDatesView> {
           // "Not sure" until she says otherwise. See the library note.
           hint: l10n.notSure,
           helper: l10n.countFromTheFirstDayOfOne,
-          errorText: _lengthInvalid ? l10n.between15And60DaysOrLeave : '',
+          errorText: _lengthInvalid
+              ? l10n.betweenMinAndMaxDaysOrLeave(
+                  '$_shortestCycle',
+                  '$_longestCycle',
+                )
+              : '',
           keyboardType: TextInputType.number,
           onChanged: _lengthChanged,
         ),

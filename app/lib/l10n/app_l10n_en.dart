@@ -9114,10 +9114,6 @@ class AppL10nEn extends AppL10n {
       'Short is fine. Fifteen minutes done beats an hour planned.';
 
   @override
-  String get between15And60DaysOrLeave =>
-      'Between 15 and 60 days, or leave it empty';
-
-  @override
   String get aFewShortQuestionsOneAtA =>
       'A few short questions, one at a time. Your week is ready at the end.';
 
@@ -9185,4 +9181,13 @@ class AppL10nEn extends AppL10n {
   @override
   String get herWordsShowWithHerFirstName =>
       'Her words show with her first name only, and she can take them back.';
+
+  @override
+  String betweenMinAndMaxDaysOrLeave(String min, String max) {
+    return 'Between $min and $max days, or leave it empty';
+  }
+
+  @override
+  String get theseSwitchesChangeOnlyThisPhoneSo =>
+      'These switches change only this phone, so you can look at a part before it ships. To stop a part for every member, use the list at the end.';
 }

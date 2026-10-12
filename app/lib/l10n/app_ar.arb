@@ -3812,7 +3812,6 @@
   "howManyDaysAWeek": "كام يوم في الأسبوع؟",
   "howLongCanASessionBe": "التمرين ممكن ياخد قد إيه؟",
   "shortIsFineFifteenMinutesDoneBeats": "القصير كويس. ربع ساعة تعمليها أحسن من ساعة على الورق.",
-  "between15And60DaysOrLeave": "من 15 لـ 60 يوم، أو سيبيها فاضية",
   "aFewShortQuestionsOneAtA": "كام سؤال قصير، واحد واحد. وفي الآخر أسبوعك هيكون جاهز.",
   "addAPhotoOfYou": "ضيفي صورتك",
   "womenChooseAPersonTheyCanSee": "الستات بيختاروا حد شايفينه. صوّري دلوقتي، أو ضيفيها بعدين من صفحتك.",
@@ -3832,5 +3831,20 @@
   "whatYourClientsSay": "رأي عميلاتك",
   "onlyWomenYouCoachHereCanWrite": "مفيش غير الستات اللي بتدرّبيهم هنا يقدروا يكتبوا رأيهم، فكل كلمة حقيقية.",
   "coachedHere": "اتدرّبت هنا",
-  "herWordsShowWithHerFirstName": "كلامها بيظهر بأول اسم بس، وتقدر تشيله في أي وقت."
+  "herWordsShowWithHerFirstName": "كلامها بيظهر بأول اسم بس، وتقدر تشيله في أي وقت.",
+  "betweenMinAndMaxDaysOrLeave": "من {min} لـ {max} يوم، أو سيبيها فاضية",
+  "@betweenMinAndMaxDaysOrLeave": {
+    "description": "Y02, under the usual cycle length when what she typed is not a cycle length.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "15"
+      },
+      "max": {
+        "type": "String",
+        "example": "60"
+      }
+    }
+  },
+  "theseSwitchesChangeOnlyThisPhoneSo": "المفاتيح دي بتغيّر الموبايل ده بس، عشان تشوفي أي جزء قبل ما ينزل. ولو عايزة توقفي جزء عند كل العضوات، استخدمي القايمة اللي في الآخر."
 }

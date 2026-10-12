@@ -355,7 +355,12 @@ void main() {
       expect(find.text('1 of 3 · Your week'), findsOneWidget);
       final bar = tester.widget<AppStepBar>(find.byType(AppStepBar));
       expect((bar.step, bar.total), (3, 3));
-      expect(find.text('Only you ever see this.'), findsOneWidget);
+      // Before she has an account the answer stays on this phone, and the
+      // line says so.
+      expect(
+        find.text('Only you see this. It stays on this phone.'),
+        findsOneWidget,
+      );
       // Everything is preselected, so there is nothing to skip, and before
       // she has an account there is no Home to close to.
       expect(find.text('Skip'), findsNothing);

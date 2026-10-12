@@ -16387,12 +16387,6 @@ abstract class AppL10n {
   /// **'Short is fine. Fifteen minutes done beats an hour planned.'**
   String get shortIsFineFifteenMinutesDoneBeats;
 
-  /// No description provided for @between15And60DaysOrLeave.
-  ///
-  /// In en, this message translates to:
-  /// **'Between 15 and 60 days, or leave it empty'**
-  String get between15And60DaysOrLeave;
-
   /// No description provided for @aFewShortQuestionsOneAtA.
   ///
   /// In en, this message translates to:
@@ -16512,6 +16506,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Her words show with her first name only, and she can take them back.'**
   String get herWordsShowWithHerFirstName;
+
+  /// Y02, under the usual cycle length when what she typed is not a cycle length.
+  ///
+  /// In en, this message translates to:
+  /// **'Between {min} and {max} days, or leave it empty'**
+  String betweenMinAndMaxDaysOrLeave(String min, String max);
+
+  /// No description provided for @theseSwitchesChangeOnlyThisPhoneSo.
+  ///
+  /// In en, this message translates to:
+  /// **'These switches change only this phone, so you can look at a part before it ships. To stop a part for every member, use the list at the end.'**
+  String get theseSwitchesChangeOnlyThisPhoneSo;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

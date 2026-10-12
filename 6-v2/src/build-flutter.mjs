@@ -492,6 +492,7 @@ if (fs.existsSync(dictPath)) {
     "Upload its pictures under this id: {id}": {"description": "Z18, the event id the owner passes to tool/admin_access.sh upload-media for its cover.", "placeholders": {"id": {"type": "String", "example": "AbC123xyz"}}},
     "{sets} × {reps}": {"description": "A move's prescription: sets times reps, Western digits.", "placeholders": {"sets": {"type": "String", "example": "3"}, "reps": {"type": "String", "example": "12"}}},
     "{sets} × {seconds} seconds": {"description": "A held move's prescription: sets times seconds.", "placeholders": {"sets": {"type": "String", "example": "3"}, "seconds": {"type": "String", "example": "30"}}},
+    "Between {min} and {max} days, or leave it empty": {"description": "Y02, under the usual cycle length when what she typed is not a cycle length.", "placeholders": {"min": {"type": "String", "example": "15"}, "max": {"type": "String", "example": "60"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

@@ -1,19 +1,20 @@
 /// The shape of a setup step — the prototype's `step()` helper.
 ///
-/// `6-v2/src/screens-onboarding.mjs` builds O01 through O04 from one local
-/// `step(n, title, sub, inner, next, back)`, so the four screens are the same
-/// page with different questions in it. Reproduced here as one widget for that
-/// reason: four copies of this frame is four chances for the step counter, the
-/// close button or the Skip link to drift.
+/// `6-v2/src/screens-onboarding.mjs` builds every setup question from one local
+/// `step(n, title, sub, inner, next, back)`, so the screens are the same page
+/// with a different question in it. Reproduced here as one widget for that
+/// reason: six copies of this frame is six chances for the step counter, the
+/// bar or the close button to drift.
 ///
 /// Three parts are fixed and are what make the flow safe to abandon:
 ///
 ///  * **The counter tells her how much is left.** One question a screen, the
 ///    count in the bar title ("2 of 6") and a line under it that fills as she
 ///    goes, so she sees how short it is before she starts.
-///  * **`Skip` is always there, at every step.** Skipping is a designed path,
-///    not a failure — every question preselects a valid answer, so a woman who
-///    skips all four still gets a real programme (G2 §3.2 `DEFAULTED`).
+///  * **Every answer is already chosen.** Skipping is a designed path, not a
+///    failure: every question preselects a valid answer, so a woman who just
+///    taps Continue through all of them still gets a real programme (G2 §3.2
+///    `DEFAULTED`).
 ///  * **The close button leaves.** She is never trapped in setup. Closing keeps
 ///    whatever she has already answered, because each step writes as she goes.
 ///
@@ -68,7 +69,7 @@ class IntakeStepScaffold extends StatelessWidget {
   /// The walk was designed as the tail of sign-up, where a woman arrived
   /// already knowing she was being set up. It now opens the app on a fresh
   /// install, so the first screen has to say what is about to happen and how
-  /// long it takes before it asks her anything. "Step 1 of 4" in the bar is the
+  /// long it takes before it asks her anything. "1 of 6" in the bar is the
   /// length; this is the rest of it, and only `O01` passes one. Same small
   /// grey treatment `O05` opens with, so the flow reads as one piece.
   final String? lead;

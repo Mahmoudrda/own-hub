@@ -1,7 +1,7 @@
 /// O04 — Anything we should train around?
 ///
-/// Matches `6-v2/src/screens-onboarding.mjs` → `O04`. The last of the four
-/// questions, and the only safety-critical one.
+/// Matches `6-v2/src/screens-onboarding.mjs` → `O04`. The last question of
+/// either walk, and the only safety-critical one.
 ///
 /// # This is not a diagnosis, and the copy has to keep saying so
 ///
@@ -44,7 +44,8 @@ import '../domain/intake_repository.dart';
 import '../domain/starting_program.dart';
 import 'intake_option.dart';
 import 'intake_step_scaffold.dart';
-import '../../../app_state/onboarding_state.dart' show setupProgress;
+import '../../../app_state/onboarding_state.dart'
+    show OnboardingState, setupProgress;
 import '../../../ui/medical_disclaimer.dart';
 
 class LifeStageView extends StatefulWidget {
@@ -140,7 +141,11 @@ class _LifeStageViewState extends State<LifeStageView> {
       // promise is the same either way, and it is the one that has to be exact
       // on the only screen in the product that asks about a pregnancy — so it
       // names whoever can actually read the answer and nobody else.
-      subtitle: AppRouter.featureFlags.isOn(Feature.coachApp)
+      // Before she has an account the answer has nowhere to go but this
+      // phone, and the line says so.
+      subtitle: OnboardingState.instance.beforeSignup
+          ? l10n.onlyYouSeeThisItStaysOn
+          : AppRouter.featureFlags.isOn(Feature.coachApp)
           ? l10n.onlyYouAndYourCoachEverSee
           : l10n.onlyYouEverSeeThis,
       onContinue: _continue,
@@ -188,8 +193,8 @@ class _LifeStageViewState extends State<LifeStageView> {
 /// The four answers to "Anything we should train around?", with the line each
 /// one may carry.
 ///
-/// Shared with the short "Your week" (`O03` before sign-up), which asks the
-/// same question on one screen. The rule in the note inside
+/// The short "Your week" asks it on this same screen. The rule in the note
+/// inside
 /// [_LifeStageViewState.build] holds for both: a row promises nothing about
 /// training while [lifeStageShapesTraining] is false.
 List<(LifeStage, String, String)> lifeStageOptions(AppL10n l10n) {

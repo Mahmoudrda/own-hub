@@ -235,17 +235,19 @@ void main() {
     phone(t);
     final s = t.ensureSemantics();
     await boot(t, locale: const Locale('en'));
-    await tapLabel(t, 'Continue');
-    await tapLabel(t, 'Continue');
-    // On O03 now.
+    await tapLabel(t, 'Continue'); // O01 -> O02
+    await tapLabel(t, 'Continue'); // O02 -> O06, home is the default place
+    await tapLabel(t, 'Continue'); // O06 -> O03
+    expect(topScreen(t), 'O03');
     expect(
       hasLabel(t, '5'),
       isFalse,
       reason: 'a chip the rewards system would refuse must not be offered',
     );
     await tapLabel(t, '4');
-    await tapLabel(t, 'Continue');
-    await tapLabel(t, 'Continue');
+    await tapLabel(t, 'Continue'); // O03 -> O07
+    await tapLabel(t, 'Continue'); // O07 -> O04
+    await tapLabel(t, 'Continue'); // O04 -> O05
     expect(paintedText(t).any((e) => e.contains('Days a week: 4')), isTrue);
     await tapLabel(t, 'Start day 1 now');
     expect(

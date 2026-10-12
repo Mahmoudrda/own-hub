@@ -3812,7 +3812,6 @@
   "howManyDaysAWeek": "How many days a week?",
   "howLongCanASessionBe": "How long can a session be?",
   "shortIsFineFifteenMinutesDoneBeats": "Short is fine. Fifteen minutes done beats an hour planned.",
-  "between15And60DaysOrLeave": "Between 15 and 60 days, or leave it empty",
   "aFewShortQuestionsOneAtA": "A few short questions, one at a time. Your week is ready at the end.",
   "addAPhotoOfYou": "Add a photo of you",
   "womenChooseAPersonTheyCanSee": "Women choose a person they can see. Take it now, or add it later from your page.",
@@ -3832,5 +3831,20 @@
   "whatYourClientsSay": "What your clients say",
   "onlyWomenYouCoachHereCanWrite": "Only women you coach here can write one, so every word is real.",
   "coachedHere": "Coached here",
-  "herWordsShowWithHerFirstName": "Her words show with her first name only, and she can take them back."
+  "herWordsShowWithHerFirstName": "Her words show with her first name only, and she can take them back.",
+  "betweenMinAndMaxDaysOrLeave": "Between {min} and {max} days, or leave it empty",
+  "@betweenMinAndMaxDaysOrLeave": {
+    "description": "Y02, under the usual cycle length when what she typed is not a cycle length.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "15"
+      },
+      "max": {
+        "type": "String",
+        "example": "60"
+      }
+    }
+  },
+  "theseSwitchesChangeOnlyThisPhoneSo": "These switches change only this phone, so you can look at a part before it ships. To stop a part for every member, use the list at the end."
 }

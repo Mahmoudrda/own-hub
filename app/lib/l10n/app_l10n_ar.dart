@@ -9062,9 +9062,6 @@ class AppL10nAr extends AppL10n {
       'القصير كويس. ربع ساعة تعمليها أحسن من ساعة على الورق.';
 
   @override
-  String get between15And60DaysOrLeave => 'من 15 لـ 60 يوم، أو سيبيها فاضية';
-
-  @override
   String get aFewShortQuestionsOneAtA =>
       'كام سؤال قصير، واحد واحد. وفي الآخر أسبوعك هيكون جاهز.';
 
@@ -9132,4 +9129,13 @@ class AppL10nAr extends AppL10n {
   @override
   String get herWordsShowWithHerFirstName =>
       'كلامها بيظهر بأول اسم بس، وتقدر تشيله في أي وقت.';
+
+  @override
+  String betweenMinAndMaxDaysOrLeave(String min, String max) {
+    return 'من $min لـ $max يوم، أو سيبيها فاضية';
+  }
+
+  @override
+  String get theseSwitchesChangeOnlyThisPhoneSo =>
+      'المفاتيح دي بتغيّر الموبايل ده بس، عشان تشوفي أي جزء قبل ما ينزل. ولو عايزة توقفي جزء عند كل العضوات، استخدمي القايمة اللي في الآخر.';
 }

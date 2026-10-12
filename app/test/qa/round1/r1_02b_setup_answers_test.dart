@@ -16,7 +16,8 @@ import 'round1_harness.dart';
 Future<void> _toO03(WidgetTester t) async {
   await boot(t, locale: const Locale('en'));
   await tapLabel(t, 'Continue'); // O01 -> O02
-  await tapLabel(t, 'Continue'); // O02 -> O03
+  await tapLabel(t, 'Continue'); // O02 -> O06, home is the default place
+  await tapLabel(t, 'Continue'); // O06 -> O03
 }
 
 void main() {
@@ -33,6 +34,7 @@ void main() {
       expect(topScreen(t), 'O03');
       await tapLabel(t, days);
       print('O03 after tapping $days: ${paintedText(t).join(" | ")}');
+      await tapLabel(t, 'Continue'); // O07
       await tapLabel(t, 'Continue'); // O04
       await tapLabel(t, 'Continue'); // O05
       print('O05 summary: ${paintedText(t).take(4).join(" | ")}');
@@ -53,10 +55,10 @@ void main() {
     for (final exit in ['Start day 1 now', 'I will start tomorrow']) {
       wipe();
       await boot(t, locale: const Locale('en'));
-      await tapLabel(t, 'Continue');
-      await tapLabel(t, 'Continue');
-      await tapLabel(t, 'Continue');
-      await tapLabel(t, 'Continue');
+      // O01, O02, O06, O03, O07, O04: one question a screen.
+      for (var i = 0; i < 6; i++) {
+        await tapLabel(t, 'Continue');
+      }
       expect(topScreen(t), 'O05');
       await tapLabel(t, exit);
       print('O05 "$exit" -> TOP=${topScreen(t)} setupDone=${AppRouter.intakeRepository.setupDone}');
@@ -68,7 +70,8 @@ void main() {
   testWidgets('the X closes on each question', (t) async {
     phone(t);
     final s = t.ensureSemantics();
-    for (final n in [0, 1, 2, 3]) {
+    // O01, O02, O06, O03, O07, O04: every question of the default walk.
+    for (final n in [0, 1, 2, 3, 4, 5]) {
       wipe();
       await boot(t, locale: const Locale('en'));
       for (var i = 0; i < n; i++) { await tapLabel(t, 'Continue'); }

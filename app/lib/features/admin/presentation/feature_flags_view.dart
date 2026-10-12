@@ -161,7 +161,7 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    l10n.turningAFeatureOffHidesItEverywhere,
+                    l10n.theseSwitchesChangeOnlyThisPhoneSo,
                     style: AppText.bodyM,
                   ),
                 ),

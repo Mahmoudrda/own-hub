@@ -1,7 +1,7 @@
 /// Her setup answers read back to her in one line.
 ///
 /// This was the single dictionary entry "Three days a week, 15 minutes, at
-/// home", printed under the words "Built from your four answers" to every
+/// home", printed under the words "Built from your answers" to every
 /// woman who finished setup. A woman who chose four days and twenty minutes at
 /// a gym was told, on the screen whose entire job is to prove her answers
 /// counted, that she had chosen something else.

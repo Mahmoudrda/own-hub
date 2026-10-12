@@ -173,7 +173,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('English'), findsOneWidget);
-      expect(find.text('عربي'), findsOneWidget);
+      expect(find.text('العربية'), findsOneWidget);
       final chips = tester.widget<AppChipRow>(find.byType(AppChipRow));
       expect(chips.selected, {0}, reason: 'opened in English');
     });
@@ -201,7 +201,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Show me around'), findsOneWidget);
 
-      await tester.tap(find.text('عربي'));
+      await tester.tap(find.text('العربية'));
       await tester.pumpAndSettle();
 
       expect(preference.read(), AppLanguage.arabic);

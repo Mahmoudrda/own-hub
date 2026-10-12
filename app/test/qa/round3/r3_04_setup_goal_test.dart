@@ -69,7 +69,7 @@ void main() {
         await settle(t);
 
         // Continue, the way she would.
-        final cont = await tapControl(t, RegExp(r'Continue|متابعة|التالي'));
+        final cont = await tapControl(t, RegExp(r'Continue|كمّلي|التالي'));
         print('=== R3-04 $days days, $loc: continue tapped = $cont ===');
 
         print('  intake.days now = ${AppRouter.intakeRepository.read().days}');

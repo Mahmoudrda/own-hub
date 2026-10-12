@@ -49,7 +49,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Built from your four answers'), findsOneWidget);
+      // "Your answers", never a count: the walk is five questions or six.
+      expect(find.text('Built from your answers'), findsOneWidget);
+      expect(find.text('Built from your four answers'), findsNothing);
       // Her answers, not the prototype's. This line was one fixed dictionary
       // entry reading "Three days a week, 15 minutes, at home" under the words
       // "Built from your four answers", so the screen whose whole job is to
@@ -346,7 +348,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('مبني على إجاباتك الأربعة'), findsOneWidget);
+      expect(find.text('مبني على إجاباتك'), findsOneWidget);
       expect(find.text('أساسيات للمبتدئات'), findsOneWidget);
       expect(find.text('ابدئي اليوم 1 دلوقتي'), findsOneWidget);
       expect(find.text('Built from your four answers'), findsNothing);

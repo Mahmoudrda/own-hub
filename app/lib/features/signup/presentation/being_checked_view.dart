@@ -56,6 +56,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app_state/push_registration.dart' show PushOptIn;
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -452,7 +453,9 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
               variant: AppButtonVariant.outlined,
               onPressed: widget.onBuildWeek,
             ),
-          if (waiting && widget.onLookAround != null)
+          if (waiting &&
+              widget.onLookAround != null &&
+              AppRouter.screenIsOn('C04'))
             AppButton(
               l10n.lookAroundWhileYouWait,
               variant: AppButtonVariant.outlined,

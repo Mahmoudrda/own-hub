@@ -76,7 +76,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Endonyms: never translated, in either direction.
-        expect(find.text('عربي'), findsOneWidget, reason: '$locale');
+        expect(find.text('العربية'), findsOneWidget, reason: '$locale');
         expect(find.text('English'), findsOneWidget, reason: '$locale');
       }
     });
@@ -97,7 +97,7 @@ void main() {
 
       final arabicRow = tester.widget<AppListItem>(
         find.ancestor(
-          of: find.text('عربي'),
+          of: find.text('العربية'),
           matching: find.byType(AppListItem),
         ),
       );
@@ -119,8 +119,8 @@ void main() {
       addTearDown(tester.platformDispatcher.clearLocaleTestValue);
       addTearDown(tester.platformDispatcher.clearLocalesTestValue);
       for (final (locale, ticked, plain) in [
-        (const Locale('en'), 'English', 'عربي'),
-        (const Locale('ar'), 'عربي', 'English'),
+        (const Locale('en'), 'English', 'العربية'),
+        (const Locale('ar'), 'العربية', 'English'),
       ]) {
         await tester.pumpWidget(
           _host(
@@ -163,7 +163,7 @@ void main() {
       );
       final arabicRow = tester.widget<AppListItem>(
         find.ancestor(
-          of: find.text('عربي'),
+          of: find.text('العربية'),
           matching: find.byType(AppListItem),
         ),
       );
@@ -198,7 +198,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('عربي'));
+      await tester.tap(find.text('العربية'));
       await tester.pumpAndSettle();
 
       expect(notifier.value.languageCode, 'ar');

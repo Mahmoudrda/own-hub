@@ -116,7 +116,7 @@ class WelcomeView extends StatelessWidget {
       // view — it fills the viewport and scrolls only when it must.
       scrollable: false,
       footer: [
-        if (onLookAround != null)
+        if (AppRouter.screenIsOn('C04'))
           AppButton(l10n.showMeAround, onPressed: onLookAround),
         // What the tour is, said before she takes it: nothing is asked of her
         // and nothing she does in it is kept.

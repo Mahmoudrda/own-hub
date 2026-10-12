@@ -278,7 +278,14 @@ class _PackageCard extends StatelessWidget {
             // word — see coaching_money.dart.
             if (price != null) ...[
               const SizedBox(width: 12),
-              Text(price, style: AppText.titleM),
+              // Room to wrap: "a month" is longer in Arabic than in English.
+              Flexible(
+                child: Text(
+                  price,
+                  style: AppText.titleM,
+                  textAlign: TextAlign.end,
+                ),
+              ),
             ],
           ],
         ),

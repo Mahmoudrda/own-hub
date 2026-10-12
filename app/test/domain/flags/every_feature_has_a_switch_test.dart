@@ -153,8 +153,11 @@ void main() {
       );
       expect(AppRouter.screenIsOn('E05'), isFalse);
       expect(AppRouter.screenIsOn('E06'), isFalse);
+      // The week plan is built from recipes, and the list from the plan.
+      expect(AppRouter.screenIsOn('E07'), isFalse);
+      expect(AppRouter.screenIsOn('E08'), isFalse);
       expect(AppRouter.screenIsOn('E01'), isTrue);
-      expect(AppRouter.screenIsOn('E07'), isTrue);
+      expect(AppRouter.screenIsOn('E02'), isTrue);
     });
 
     test('a screen needs its flow and its own switch both on', () {

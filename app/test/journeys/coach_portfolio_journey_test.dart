@@ -55,16 +55,13 @@ void main() {
     await _boot(tester);
     await _open(tester, 'K01');
 
+    // K01: her photo is asked for, not demanded.
+    await _tap(tester, 'Continue');
+
+    // K08: her name and her city, on a screen of their own.
     await _type(tester, 'Name', 'Hala Mansour');
     await _type(tester, 'City', 'Tanta');
-    // The community's three rules are agreed here, not on C16 (R1-P16).
-    await _tap(tester, 'I agree to these three rules');
     await _tap(tester, 'Continue');
-    expect(
-      PledgeState.instance.agreed,
-      isTrue,
-      reason: 'her agreement is recorded as C16 records it',
-    );
 
     // The save, and the whole point of the walk: the form is not the profile,
     // and before this the two never met.
@@ -74,10 +71,6 @@ void main() {
     );
     expect(AppRouter.coachRepository.profileUnbilled.city, 'Tanta');
 
-    // K02: a certificate recorded without a photo, labelled as a test and as
-    // read by nobody.
-    await _tap(tester, 'Continue');
-
     // K03: one specialty, which is what lets the step advance.
     await _tap(tester, 'Postpartum');
     await _tap(tester, 'Continue');
@@ -86,6 +79,9 @@ void main() {
       isNotEmpty,
       reason: 'K03 saved her specialties into the profile K18 renders',
     );
+
+    // K10: how she coaches.
+    await _tap(tester, 'Continue');
 
     // K04: her capacity and one package she wrote herself.
     await _type(tester, 'Clients at once', '10');
@@ -97,6 +93,24 @@ void main() {
     expect(AppRouter.coachRepository.allOffers().single.pricePiastres, 180000);
     await _tap(tester, 'Continue');
     expect(AppRouter.coachRepository.profileUnbilled.capacity.max, 10);
+
+    // K11 and K12: the shape of her clients' results and words. Nothing to
+    // add yet; only a client can.
+    await _tap(tester, 'Continue');
+    await _tap(tester, 'Continue');
+
+    // K02: a certificate recorded without a photo, labelled as a test and as
+    // read by nobody.
+    await _tap(tester, 'Continue');
+
+    // K13: the community's three rules are agreed here, not on C16 (R1-P16).
+    await _tap(tester, 'I agree to these three rules');
+    await _tap(tester, 'Continue');
+    expect(
+      PledgeState.instance.agreed,
+      isTrue,
+      reason: 'her agreement is recorded as C16 records it',
+    );
 
     // K05: the test rail records where she would be paid and pays nobody.
     await _type(tester, 'Full name as on the account', 'Hala Mansour');

@@ -17,6 +17,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
@@ -87,7 +88,7 @@ class ExerciseVideoView extends StatelessWidget {
       appBar: TrainTopBar(onClose: onClose),
       footer: [
         AppButton(l10n.backToTheWorkout, onPressed: onBackToWorkout),
-        if (onSwap != null)
+        if (AppRouter.screenIsOn('R05'))
           AppButton(
             l10n.swapThisMove,
             variant: AppButtonVariant.outlined,

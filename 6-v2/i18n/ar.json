@@ -2714,7 +2714,6 @@
  "How many days a week?": "كام يوم في الأسبوع؟",
  "How long can a session be?": "التمرين ممكن ياخد قد إيه؟",
  "Short is fine. Fifteen minutes done beats an hour planned.": "القصير كويس. ربع ساعة تعمليها أحسن من ساعة على الورق.",
- "Between 15 and 60 days, or leave it empty": "من 15 لـ 60 يوم، أو سيبيها فاضية",
  "A few short questions, one at a time. Your week is ready at the end.": "كام سؤال قصير، واحد واحد. وفي الآخر أسبوعك هيكون جاهز.",
  "Add a photo of you": "ضيفي صورتك",
  "Women choose a person they can see. Take it now, or add it later from your page.": "الستات بيختاروا حد شايفينه. صوّري دلوقتي، أو ضيفيها بعدين من صفحتك.",
@@ -2734,5 +2733,7 @@
  "What your clients say": "رأي عميلاتك",
  "Only women you coach here can write one, so every word is real.": "مفيش غير الستات اللي بتدرّبيهم هنا يقدروا يكتبوا رأيهم، فكل كلمة حقيقية.",
  "Coached here": "اتدرّبت هنا",
- "Her words show with her first name only, and she can take them back.": "كلامها بيظهر بأول اسم بس، وتقدر تشيله في أي وقت."
+ "Her words show with her first name only, and she can take them back.": "كلامها بيظهر بأول اسم بس، وتقدر تشيله في أي وقت.",
+ "Between {min} and {max} days, or leave it empty": "من {min} لـ {max} يوم، أو سيبيها فاضية",
+ "These switches change only this phone, so you can look at a part before it ships. To stop a part for every member, use the list at the end.": "المفاتيح دي بتغيّر الموبايل ده بس، عشان تشوفي أي جزء قبل ما ينزل. ولو عايزة توقفي جزء عند كل العضوات، استخدمي القايمة اللي في الآخر."
 }

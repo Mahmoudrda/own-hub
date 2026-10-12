@@ -48,6 +48,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -141,7 +142,7 @@ class StartingProgramView extends StatelessWidget {
         ? null
         : _copyFor(l10n, program.programId, intake);
     final offersAnotherProgram =
-        catalogue.length > 1 && onPickDifferentProgram != null;
+        catalogue.length > 1 && AppRouter.screenIsOn('R11');
 
     return AppScaffold(
       appBar: title == null && onBack == null
@@ -194,10 +195,10 @@ class StartingProgramView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // "Your answers", never a count: the walk is five questions or
+            // six, or three in the short "Your week".
             Text(
-              beforeSignup || onSaveMyWeek != null
-                  ? l10n.builtFromYourAnswers
-                  : l10n.builtFromYourFourAnswers,
+              l10n.builtFromYourAnswers,
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
             const SizedBox(height: 6),

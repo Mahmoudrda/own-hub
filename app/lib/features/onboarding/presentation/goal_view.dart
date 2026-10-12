@@ -1,7 +1,7 @@
 /// O01 — What do you want most?
 ///
-/// Matches `6-v2/src/screens-onboarding.mjs` → `O01`, the first of four setup
-/// questions.
+/// Matches `6-v2/src/screens-onboarding.mjs` → `O01`, the first setup
+/// question.
 ///
 /// The subtitle is the promise the whole flow rests on: *"Pick one. It changes
 /// the program, not the app."* Her goal must never rearrange the interface —

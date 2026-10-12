@@ -459,7 +459,8 @@ void main() {
       ]) {
         expect(find.text(label), findsOneWidget, reason: label);
       }
-      expect(find.text('Where your clients train'), findsOneWidget);
+      // One question: where her clients train is the next screen (K10).
+      expect(find.text('Where your clients train'), findsNothing);
     });
 
     testWidgets('the fourth tap does nothing', (tester) async {

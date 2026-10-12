@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/clock/app_clock.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../domain/format/day_key.dart';
 import '../../../domain/format/number_label.dart';
@@ -332,7 +333,7 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
             fontSize: 15,
             onPressed: widget.onNotToday ?? widget.onBack,
           ),
-        if (widget.onAlreadyDidIt != null)
+        if (AppRouter.screenIsOn('T02'))
           AppButton(
             l10n.iAlreadyDidIt,
             variant: AppButtonVariant.text,
@@ -383,11 +384,11 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
             // everything's ready" on it.
             current: i == 0,
             // Not tappable while the move videos are switched off.
-            onTap: widget.onOpenMove == null
-                ? null
-                : () => widget.onOpenMove!(day.moves[i]),
+            onTap: AppRouter.screenIsOn('R04')
+                ? () => widget.onOpenMove?.call(day.moves[i])
+                : null,
           ),
-        if (widget.onOpenMove != null)
+        if (AppRouter.screenIsOn('R04'))
           Text(
             l10n.tapAnyMoveToWatchItOr,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),

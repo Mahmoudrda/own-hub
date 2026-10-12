@@ -40,7 +40,7 @@ void main() {
     phone(t);
     final s = t.ensureSemantics();
     await boot(t, locale: const Locale('en'));
-    for (var i = 0; i < 5; i++) { if (topScreen(t) == 'O05') break; await tapLabel(t, 'Continue'); }
+    for (var i = 0; i < 6; i++) { if (topScreen(t) == 'O05') break; await tapLabel(t, 'Continue'); }
     await tapLabel(t, 'I will start tomorrow');
     var taps = 0;
     print('start: ${topScreen(t)}');

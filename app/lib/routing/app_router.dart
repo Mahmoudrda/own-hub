@@ -1105,7 +1105,7 @@ class AppRouter {
     // both edges (see the note at Y03's tabs).
     'C01': (context) => WelcomeView(
       preference: localePreference,
-      onLookAround: screenIsOn('C04') ? () => goTo(context, 'C04') : null,
+      onLookAround: () => goTo(context, 'C04'),
       onGetStarted: () {
         OnboardingState.instance
           ..beforeSignup = true
@@ -1167,7 +1167,7 @@ class AppRouter {
     ),
     'C03': (context) => WhatsInsideView(
       onCreateAccount: () => goTo(context, 'C06'),
-      onLookAround: screenIsOn('C04') ? () => goTo(context, 'C04') : null,
+      onLookAround: () => goTo(context, 'C04'),
       onBack: () => Navigator.of(context).maybePop(),
     ),
     // The tour: the real Home, Train, Eat, My cycle and Progress screens with
@@ -1686,7 +1686,7 @@ class AppRouter {
         Navigator.of(context)
             .pushNamedAndRemoveUntil(appRoutes['C13']!.name, (_) => false);
       },
-      onLookAround: screenIsOn('C04') ? () => goTo(context, 'C04') : null,
+      onLookAround: () => goTo(context, 'C04'),
       // One push, "your check is done", only if she asks for it here.
       onNotifyMe: signedInUid == null
           ? null
@@ -1919,9 +1919,7 @@ class AppRouter {
             },
             // Goes to the workout library, not a picker — no picker exists among
             // the 161 screens. Recorded as F4 in PHASE1-FINDINGS.md.
-            onPickDifferentProgram: !screenIsOn('R11')
-                ? null
-                : () {
+            onPickDifferentProgram: () {
               if (OnboardingState.instance.enteredFromSignup) {
                 OnboardingState.instance.leaveSetupToHome(
                   context,
@@ -1949,7 +1947,7 @@ class AppRouter {
       // "Today's workout" rather than naming a programme she never chose.
       sessionTitle: trainRepository.day?.title,
       onStartSession: () => goTo(context, 'R03'),
-      onRecall: screenIsOn('T02') ? () => goTo(context, 'T02') : null,
+      onRecall: () => goTo(context, 'T02'),
       onOpenMeal: () => goTo(context, 'E01'),
       // Her usual plate logs straight from Home and lands on the logged day.
       // `onOpenPlate` is the way in when the card has no plate to log; the
@@ -2060,7 +2058,7 @@ class AppRouter {
       repository: todayRepository,
       onStartShortSession: () => goTo(context, 'R03'),
       onStartSession: () => goTo(context, 'R03'),
-      onRecall: screenIsOn('T02') ? () => goTo(context, 'T02') : null,
+      onRecall: () => goTo(context, 'T02'),
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'T07': (context) => FirstWeekView(
@@ -2116,24 +2114,22 @@ class AppRouter {
       // Her week, from the same copy Home draws, so the two cannot disagree.
       sessionsThisWeek: todayRepository.day.week.sessionsLogged,
       sessionsPrescribed: todayRepository.day.week.sessionsTarget,
-      // Each door is passed only while its part is on; the view draws
-      // nothing for a null one.
-      onSearch: screenIsOn('R11') ? () => goTo(context, 'R11') : null,
+      onSearch: () => goTo(context, 'R11'),
       // The design sends "Continue" to G06, the coached-client screen. In
       // phase 1 no woman has a coach, so that would be a dead end — she goes
       // to today's session instead. Revisit when coaching ships (G4 OQ-12).
       onContinue: () => goTo(context, 'R03'),
       onSeeProgram: () => goTo(context, 'R02'),
       onOpenToday: () => goTo(context, 'T01'),
-      onGentlerOption: screenIsOn('R05') ? () => goTo(context, 'R05') : null,
+      onGentlerOption: () => goTo(context, 'R05'),
       // The first "Short ones that still count" tile, as the design has it.
-      onFollowAlong: screenIsOn('R06') ? () => goTo(context, 'R06') : null,
+      onFollowAlong: () => goTo(context, 'R06'),
       onShortSession: () => goTo(context, 'R03'),
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'R02': (context) => ProgramView(
       onBack: () => Navigator.of(context).maybePop(),
-      onChangeProgram: screenIsOn('R11') ? () => goTo(context, 'R11') : null,
+      onChangeProgram: () => goTo(context, 'R11'),
       onStart: () => goTo(context, 'R03'),
       onOpenDay: (screenId) => goTo(context, 'R03'),
     ),
@@ -2164,21 +2160,19 @@ class AppRouter {
         );
         goTo(context, 'R07');
       },
-      onAlreadyDidIt: screenIsOn('T02') ? () => goTo(context, 'T02') : null,
+      onAlreadyDidIt: () => goTo(context, 'T02'),
       // The move she tapped, carried through. It was discarded, so tapping
       // "Dead bug" opened a demo of a goblet squat.
-      onOpenMove: !screenIsOn('R04')
-          ? null
-          : (move) {
-              WorkoutSessionState.instance.openMove(move);
-              goTo(context, 'R04');
-            },
+      onOpenMove: (move) {
+        WorkoutSessionState.instance.openMove(move);
+        goTo(context, 'R04');
+      },
     ),
     'R04': (context) => ExerciseVideoView(
       move: WorkoutSessionState.instance.openedMove,
       onClose: () => Navigator.of(context).maybePop(),
       onBackToWorkout: () => goTo(context, 'R03'),
-      onSwap: screenIsOn('R05') ? () => goTo(context, 'R05') : null,
+      onSwap: () => goTo(context, 'R05'),
     ),
     'R05': (context) => SwapMoveView(
       repository: trainRepository,

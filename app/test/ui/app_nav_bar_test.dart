@@ -82,7 +82,7 @@ void main() {
 
       // Tab labels are translated like everything else — a nav bar stuck in
       // English is a very visible way to bypass the dictionary.
-      expect(find.text('الحركة'), findsOneWidget);
+      expect(find.text('التمرين'), findsOneWidget);
       expect(find.text('المجتمع'), findsOneWidget);
       expect(find.text('Train'), findsNothing);
     });

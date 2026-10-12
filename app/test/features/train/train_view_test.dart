@@ -38,6 +38,11 @@ void main() {
   setUp(
     () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
       Feature.coachedLife: true,
+      // Train and the parts this screen opens onto.
+      Feature.train: true,
+      Feature.workoutLibrary: true,
+      Feature.exerciseSwap: true,
+      Feature.followAlong: true,
     }),
   );
   tearDown(() => AppRouter.featureFlags = savedFlags);

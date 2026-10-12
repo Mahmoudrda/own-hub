@@ -37,6 +37,7 @@ import 'package:own_hub/features/coach/domain/coach_profile.dart';
 import 'package:own_hub/features/coach/domain/coach_verification.dart';
 import 'package:own_hub/features/coach/presentation/certificate_camera_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_basics_view.dart';
+import 'package:own_hub/features/coach/presentation/coach_photo_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_rules_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_certificates_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_packages_view.dart';
@@ -877,8 +878,8 @@ void main() {
     });
   });
 
-  group('M3: Back on K02 to K05 goes back, it does not push', () {
-    testWidgets('K05, K04, K03, K02, K01 in that order', (tester) async {
+  group('M3: Back through her setup goes back, it does not push', () {
+    testWidgets('every step, last to first, in that order', (tester) async {
       _phone(tester);
       _asVerifiedWoman();
       AppRouter.intakeRepository.markSetupDone();
@@ -887,7 +888,14 @@ void main() {
       final navigator = tester.state<NavigatorState>(
         find.byType(Navigator).first,
       );
-      for (final id in ['K01', 'K02', 'K03', 'K04', 'K05']) {
+      // Every step she meets up to getting paid, in her order.
+      final walk = [
+        for (final step in coachSetupWalk())
+          if (step != CoachSetupStep.beingChecked) step.screenId,
+      ];
+      expect(walk.first, 'K01');
+      expect(walk.last, 'K05');
+      for (final id in walk) {
         navigator.pushNamed(appDestinations[id]!.name);
         await tester.pumpAndSettle();
       }
@@ -898,14 +906,19 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      await back();
-      expect(find.byType(CoachPackagesView), findsOneWidget);
-      await back();
-      expect(find.byType(CoachSpecialtiesView), findsOneWidget);
-      await back();
-      expect(find.byType(CoachCertificatesView), findsOneWidget);
-      await back();
-      expect(find.byType(CoachBasicsView), findsOneWidget);
+      // Each Back lands on the step before it, and nothing is pushed.
+      for (var i = walk.length - 2; i >= 0; i--) {
+        await back();
+        expect(
+          find.text(
+            '${i + 1} of ${CoachSetupStep.total}',
+            skipOffstage: true,
+          ),
+          findsOneWidget,
+          reason: 'Back from ${walk[i + 1]} lands on ${walk[i]}',
+        );
+      }
+      expect(find.byType(CoachPhotoView), findsOneWidget);
       expect(
         find.byType(CoachPayoutView),
         findsNothing,

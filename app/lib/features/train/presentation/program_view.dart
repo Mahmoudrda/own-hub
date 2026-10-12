@@ -34,6 +34,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_empty_state.dart';
@@ -270,13 +271,14 @@ class ProgramView extends StatelessWidget {
         // "Change program" with no programme to change is an instruction she
         // cannot follow. The same door, named for what is behind it: the
         // library, which is where a programme would be chosen.
-        AppButton(
-          hasProgram ? l10n.changeProgram : l10n.allWorkouts,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: onChangeProgram,
-        ),
+        if (AppRouter.screenIsOn('R11'))
+          AppButton(
+            hasProgram ? l10n.changeProgram : l10n.allWorkouts,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onChangeProgram,
+          ),
       ],
     );
   }

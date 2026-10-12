@@ -123,7 +123,7 @@ class TrainView extends StatelessWidget {
         shortSessions ??
         [
           // The follow-along tile, only while follow-along is on.
-          if (onFollowAlong != null)
+          if (AppRouter.screenIsOn('R06'))
             ShortSession(
               duration: l10n.n10Min,
               constraint: l10n.floorOnly,
@@ -166,7 +166,7 @@ class TrainView extends StatelessWidget {
               // rather than in a strip above it.
               const ScreenArtInline(),
               // The library's door, only while the library is on.
-              if (onSearch != null)
+              if (AppRouter.screenIsOn('R11'))
                 IconButton(
                   onPressed: onSearch,
                   iconSize: 24,
@@ -331,7 +331,7 @@ class TrainView extends StatelessWidget {
           // Filters wrap rather than scroll: a constraint she has — "quiet",
           // "no equipment" — must never sit off the edge of the screen where she
           // will not find it.
-          if (onSearch != null)
+          if (AppRouter.screenIsOn('R11'))
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -341,7 +341,7 @@ class TrainView extends StatelessWidget {
                 AppChip(l10n.n10Min, onTap: onSearch),
               ],
             ),
-          if (onGentlerOption != null)
+          if (AppRouter.screenIsOn('R05'))
             AppListItem(
               title: l10n.notFeelingItToday,
               subtitle: l10n.seeAGentlerOptionBasedOnYour,

@@ -211,8 +211,8 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
     guard: "onRecall: AppRouter.screenIsOn('T02')",
   ),
   'R03->T02': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onAlreadyDidIt: screenIsOn('T02')",
+    file: 'lib/features/train/presentation/workout_day_view.dart',
+    guard: "if (AppRouter.screenIsOn('T02'))",
   ),
   'T01->T07': (
     file: 'lib/features/today/presentation/today_view.dart',
@@ -247,32 +247,32 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
     guard: "if (AppRouter.screenIsOn('P05'))",
   ),
   'R01->R11': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onSearch: screenIsOn('R11')",
+    file: 'lib/features/train/presentation/train_view.dart',
+    guard: "if (AppRouter.screenIsOn('R11'))",
   ),
   'R02->R11': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onChangeProgram: screenIsOn('R11')",
+    file: 'lib/features/train/presentation/program_view.dart',
+    guard: "if (AppRouter.screenIsOn('R11'))",
   ),
   'O05->R11': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onPickDifferentProgram: !screenIsOn('R11')",
+    file: 'lib/features/onboarding/presentation/starting_program_view.dart',
+    guard: "catalogue.length > 1 && AppRouter.screenIsOn('R11')",
   ),
   'R01->R05': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onGentlerOption: screenIsOn('R05')",
+    file: 'lib/features/train/presentation/train_view.dart',
+    guard: "if (AppRouter.screenIsOn('R05'))",
   ),
   'R04->R05': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onSwap: screenIsOn('R05')",
+    file: 'lib/features/train/presentation/exercise_video_view.dart',
+    guard: "if (AppRouter.screenIsOn('R05'))",
   ),
   'R01->R06': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onFollowAlong: screenIsOn('R06')",
+    file: 'lib/features/train/presentation/train_view.dart',
+    guard: "if (AppRouter.screenIsOn('R06'))",
   ),
   'R03->R04': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onOpenMove: !screenIsOn('R04')",
+    file: 'lib/features/train/presentation/workout_day_view.dart',
+    guard: "onTap: AppRouter.screenIsOn('R04')",
   ),
   'E01->E05': (
     file: 'lib/features/eat/presentation/eat_view.dart',
@@ -331,12 +331,12 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
     guard: "if (AppRouter.screenIsOn('Y10')) CycleTab.patterns",
   ),
   'C01->C04': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onLookAround: screenIsOn('C04')",
+    file: 'lib/features/signup/presentation/welcome_view.dart',
+    guard: "if (AppRouter.screenIsOn('C04'))",
   ),
   'C14->C04': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onLookAround: screenIsOn('C04')",
+    file: 'lib/features/signup/presentation/being_checked_view.dart',
+    guard: "AppRouter.screenIsOn('C04')",
   ),
   'C02->C03': (
     file: 'lib/routing/app_router.dart',

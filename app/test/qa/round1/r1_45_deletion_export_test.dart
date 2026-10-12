@@ -36,7 +36,7 @@ void main() {
     await tapLabel(t, RegExp('Language'));
     print('after Language: top=${topScreen(t)}');
     await tapLabel(t, RegExp('عربي'));
-    await tapLabel(t, RegExp('Continue|متابعة'));
+    await tapLabel(t, RegExp('Continue|كمّلي'));
     print('after choosing Arabic: top=${topScreen(t)}');
     print('  PAINTED: ${paintedText(t).take(12).join(" | ")}');
     print('  dir=${Directionality.of(t.element(find.byType(Navigator).first))}');
