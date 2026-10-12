@@ -316,7 +316,7 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      expect(find.text('إعادة إرسال الرمز بعد 0:30'), findsOneWidget);
+      expect(find.text('ابعتوا الكود تاني بعد 0:30'), findsOneWidget);
       await tester.pump(CodeView.resendWait);
     });
   });

@@ -230,7 +230,7 @@ void main() {
 
     expect(find.text('سيلفي سريعة'), findsOneWidget);
     expect(
-      find.textContaining('تُطابَق مع صورة بطاقتك ثم تُحذف'),
+      find.textContaining('بتتطابق مع صورة بطاقتك، وبعدين بتتمسح'),
       findsOneWidget,
     );
     expect(find.text('Quick selfie'), findsNothing);
