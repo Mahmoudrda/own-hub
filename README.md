@@ -385,8 +385,9 @@ printf '\n' | gcloud secrets versions add store-reviewer-phones --data-file=- --
 ### 5.5 Deploying the backend
 
 There is no `.firebaserc`; always pass `--project own-hub`. The Firebase CLI deploys Python
-functions from a virtualenv it looks for at exactly `functions/venv` (the `.venv` used for the tests
-is not found), so make that once:
+functions from a virtualenv inside `functions/`: recent versions use `functions/.venv` (the one the
+tests use), older ones `functions/venv`, and the error names the one it wants. If neither exists,
+make one once:
 
 ```sh
 cd functions && python3.12 -m venv venv && venv/bin/pip install -r requirements.txt && cd ..

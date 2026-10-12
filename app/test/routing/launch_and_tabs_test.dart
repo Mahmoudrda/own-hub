@@ -16,7 +16,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/signup/domain/server_verification.dart';
-import 'package:own_hub/routing/app_routes.dart';
 import 'package:own_hub/routing/app_router.dart';
 
 import 'offline_verification_launch_test.dart' show FakeBackend;
