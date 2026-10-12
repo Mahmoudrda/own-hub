@@ -89,3 +89,7 @@ functions/venv
 .claude/release-compliance/
 .claude/feature-briefs/
 .claude/*.log
+
+# AI review working files
+.ai-review/
+!.github/review-kit/**
