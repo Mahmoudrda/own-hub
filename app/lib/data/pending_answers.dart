@@ -92,8 +92,7 @@ abstract final class PendingAnswers {
   static int get waiting => _waiting;
 
   /// What a store holding nothing may call itself right now.
-  static DataState get ifEmpty =>
-      settled ? DataState.empty : DataState.unknown;
+  static DataState get ifEmpty => settled ? DataState.empty : DataState.unknown;
 
   /// A source is going to answer and has not yet.
   ///

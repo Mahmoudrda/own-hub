@@ -4,7 +4,7 @@
 /// place a woman sees the app before she has an account. It used to be a
 /// browse page with two previews of workouts that did not exist. It is now a
 /// short tour of the **real** screens, Home, today's workout, the workout
-/// player, Rahma's recipes, the week's dinners, My cycle and Progress, each
+/// player, Rahma's recipes, the week's dinners, the daily check-in and Progress, each
 /// drawn by the product's own widget with a sample week in it.
 ///
 /// ## What keeps it a tour

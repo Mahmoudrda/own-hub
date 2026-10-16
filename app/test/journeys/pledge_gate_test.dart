@@ -58,9 +58,7 @@ void main() {
     AppRouter.pledgeStore = null;
   });
 
-  testWidgets('the first feed waits for the rules, then opens', (
-    tester,
-  ) async {
+  testWidgets('the first feed waits for the rules, then opens', (tester) async {
     await _open(tester, 'M01');
     expect(find.byType(PledgeView), findsOneWidget);
     expect(find.byType(FeedView), findsNothing);

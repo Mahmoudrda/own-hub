@@ -20,6 +20,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/rewards_state.dart';
+import 'package:own_hub/app_state/training_streak_state.dart';
 
 import 'package:own_hub/app_state/account_data.dart';
 import 'package:own_hub/app_state/community_state.dart';
@@ -120,6 +122,16 @@ Future<void> _fillTheOtherStores() async {
     reason: ReportReason.harassment,
   );
   AppRouter.todayRepository.recordSession('session-of-hers');
+  // D37 and D41: a paid award and a day of her training streak.
+  RewardsState.instance.creditFoodDay(
+    day: '2026-09-20',
+    progress: AppRouter.progressStore,
+    now: DateTime(2026, 9, 20, 9),
+  );
+  TrainingStreakState.instance.noteCredit(
+    DateTime(2026, 9, 20, 9),
+    progress: AppRouter.progressStore,
+  );
 }
 
 void main() {
@@ -173,12 +185,15 @@ void main() {
       expect(nothingOfHersRemains, isFalse, reason: 'she has put things in');
 
       // The row that used to do nothing.
+      await _tap(tester, find.text('Privacy and data'));
       await _tap(tester, find.text('Your data'));
       expect(find.byType(YourDataSheet), findsOneWidget);
       await _tap(tester, find.widgetWithText(AppButton, 'Delete everything'));
 
       // Everything, from every store this build holds.
       expect(nothingOfHersRemains, isTrue);
+      expect(RewardsState.instance.awardIds, isEmpty);
+      expect(TrainingStreakState.instance.touched, isFalse);
       expect(CommunityState.instance.store.posts, isEmpty);
       expect(
         AppRouter.dietaryRepository.read(),
@@ -200,6 +215,7 @@ void main() {
       tester,
     ) async {
       await _open(tester, 'A02');
+      await _tap(tester, find.text('Privacy and data'));
       await _tap(tester, find.text('Your data'));
 
       expect(
@@ -215,28 +231,37 @@ void main() {
       expect(find.textContaining('There is no server yet'), findsNothing);
     });
 
-    testWidgets('and offers a copy by request, never a download that is not there', (
-      tester,
-    ) async {
-      await _open(tester, 'A02');
-      await _tap(tester, find.text('Your data'));
+    testWidgets(
+      'and offers a copy by request, never a download that is not there',
+      (tester) async {
+        await _open(tester, 'A02');
+        await _tap(tester, find.text('Privacy and data'));
+        await _tap(tester, find.text('Your data'));
 
-      // M8: a copy is asked for by email, to the privacy mailbox, until the
-      // in-app download exists.
-      expect(find.textContaining('Want a copy of your data?'), findsOneWidget);
-      expect(find.widgetWithText(AppButton, 'Ask for a copy'), findsOneWidget);
-      expect(find.textContaining('not built yet'), findsNothing);
-      // The dead control this whole item is about. There is no download in
-      // this build, so there is no button pretending there is.
-      expect(find.widgetWithText(AppButton, 'Download'), findsNothing);
-      expect(find.widgetWithText(AppButton, 'Export'), findsNothing);
-    });
+        // M8: a copy is asked for by email, to the privacy mailbox, until the
+        // in-app download exists.
+        expect(
+          find.textContaining('Want a copy of your data?'),
+          findsOneWidget,
+        );
+        expect(
+          find.widgetWithText(AppButton, 'Ask for a copy'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('not built yet'), findsNothing);
+        // The dead control this whole item is about. There is no download in
+        // this build, so there is no button pretending there is.
+        expect(find.widgetWithText(AppButton, 'Download'), findsNothing);
+        expect(find.widgetWithText(AppButton, 'Export'), findsNothing);
+      },
+    );
 
     testWidgets('cancelling keeps every word she wrote', (tester) async {
       await _open(tester, 'M03');
       await _writePost(tester, 'Two rounds, no rush.');
 
       await _goTo(tester, 'A02');
+      await _tap(tester, find.text('Privacy and data'));
       await _tap(tester, find.text('Your data'));
       await _tap(tester, find.widgetWithText(AppButton, 'Cancel'));
 

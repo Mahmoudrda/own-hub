@@ -159,15 +159,21 @@ enum Feature {
   /// "After a quiet week" (`T04`): the rest week she has earned.
   quietWeek,
 
-  /// "When a tier slips" (`T05`).
+  /// "When a tier slips" (`T05`). **Off** for launch: the screen is not
+  /// finished.
   tiers,
 
-  /// The lock-screen nudge (`T03`).
+  /// The lock-screen nudge (`T03`). **Off** for launch: the screen is not
+  /// finished.
   lockScreenNudge,
 
   /// "I already did it": a session from memory (`T02`, `R12`).
   /// Inside [train], although `T02` opens from Home.
   recordFromMemory,
+
+  /// A programme and its days (`R02`). Back on with the three starting plans
+  /// (D47): her week, from her programme. Its parent is [train].
+  program,
 
   /// The exercise video (`R04`).
   exerciseVideo,
@@ -175,13 +181,17 @@ enum Feature {
   /// Swapping a move (`R05`).
   exerciseSwap,
 
-  /// The follow-along move (`R06`).
+  /// The follow-along move (`R06`): a hold counts itself down and logs.
   followAlong,
 
   /// The workout library the owner publishes (`R11`).
   workoutLibrary,
 
-  /// Training reminders: the sheet on `A01` and `R10`. No screen of its own.
+  /// The exercise library and one move's demo (`R14`, `R15`): the owner's
+  /// clips, kept on the phone after the first view (D42).
+  exerciseLibrary,
+
+  /// Training reminders: the sheet on `A01`, offered on Home. No screen of its own.
   trainingReminders,
 
   /// Recipes, one recipe and Rahma's letter (`E05`, `E06`, `E11`).
@@ -190,7 +200,7 @@ enum Feature {
   /// The week plan (`E07`).
   weekPlan,
 
-  /// The grocery list (`E08`).
+  /// The grocery list (`E08`), made from the dinners she plans.
   groceryList,
 
   /// Milestones (`P02`).
@@ -205,7 +215,8 @@ enum Feature {
   /// The progress card she can share (`P05`).
   shareCard,
 
-  /// Meals for the day of her cycle (`Y07`).
+  /// Meals for today (`Y07`): up to three of Rahma's recipes, picked from
+  /// today's check-in.
   cycleMeals,
 
   /// The cycle calendar (`Y08`).
@@ -245,7 +256,26 @@ enum Feature {
   /// built. The flag exists so the entitlement can be modelled and tested now,
   /// and so the day a paid tier is real, the shape it plugs into was designed
   /// when nobody was in a hurry.
-  recipeTiering;
+  recipeTiering,
+
+  // ------------------------------------------- Motivation design, D37–D41
+  /// Her training streak (D37): a line on Home, a row on P01, a stage on R10,
+  /// a sheet, and a switch on A02. Hers to pause or switch off.
+  trainingStreak,
+
+  /// One weekly challenge against her own last week (D38).
+  weeklyChallenge,
+
+  /// R10 as the peak (D40): her real results revealed one after another, and
+  /// paper confetti, once.
+  finishReveal,
+
+  /// A light touch on a logged set and on R10 (D40).
+  haptics,
+
+  /// Short named steps on O05 and C12, each one an operation that really ran
+  /// (D39).
+  reassuringWaits;
 
   /// The feature this one lives inside, or null when it is top level.
   Feature? get parent => switch (this) {
@@ -263,12 +293,19 @@ enum Feature {
     recipeTiering => payments,
     firstWeek || quietWeek || tiers || lockScreenNudge => today,
     recordFromMemory ||
+    program ||
     exerciseVideo ||
     exerciseSwap ||
     followAlong ||
     workoutLibrary ||
+    exerciseLibrary ||
     trainingReminders => train,
-    milestones || personalBests || bodyPrivately || shareCard => progress,
+    milestones ||
+    personalBests ||
+    bodyPrivately ||
+    shareCard ||
+    trainingStreak => progress,
+    weeklyChallenge || finishReveal => train,
     cycleMeals || cycleCalendar || cyclePatterns => cycle,
     appTour => signUp,
     coachResults || coachReviews || coachAds => coachPortfolio,
@@ -320,15 +357,27 @@ enum Feature {
   /// together, so a switch that does nothing cannot sit on `Z14`.
   static const Map<Feature, String> gatesNoScreen = {
     Feature.accountRequired: 'The whole-app gate: AppRouter.verificationGate.',
-    Feature.verification: 'The check screens belong to signUp and open with '
+    Feature.verification:
+        'The check screens belong to signUp and open with '
         'it. The switch stays so a release note can name it.',
-    Feature.privacyCentre: 'Her data and her way out live in account, which '
+    Feature.privacyCentre:
+        'Her data and her way out live in account, which '
         'is never gated. The switch stays so a release note can name it.',
     Feature.communityPosts: 'Checked inside the community screens.',
     Feature.communityVoiceNotes: 'Checked inside the community screens.',
     Feature.communityFollowerCounts: 'Checked inside the community screens.',
     Feature.recipeTiering: 'Checked by the recipe access gate.',
-    Feature.trainingReminders: 'A sheet on A01 and R10, not a screen.',
+    Feature.trainingReminders:
+        'A sheet on A01 and R10, and the one-line offer on T01.',
+    Feature.trainingStreak:
+        'A line on T01, a row on P01, a stage on R10, a '
+        'sheet, and a switch on A02.',
+    Feature.weeklyChallenge: 'One line on T01, a note on R03, a line on R10.',
+    Feature.finishReveal:
+        'How R10 arrives: the staged reveal and the paper '
+        'confetti.',
+    Feature.haptics: 'A light tap on a logged set and on R10.',
+    Feature.reassuringWaits: 'The named steps on O05 and C12.',
   };
 }
 
@@ -411,16 +460,21 @@ class FeatureFlags {
     Feature.events: false,
 
     // The parts of what ships. Each is on, and each can be switched off on
-    // its own from the server if it breaks.
+    // its own from the server if it breaks. Two are off for launch, each
+    // because its screen is not finished: `tiers` and `lockScreenNudge`. Each
+    // goes back on, with a line in DECISIONS.md (D43), when its screen is
+    // real.
     Feature.firstWeek: true,
     Feature.quietWeek: true,
-    Feature.tiers: true,
-    Feature.lockScreenNudge: true,
+    Feature.tiers: false,
+    Feature.lockScreenNudge: false,
     Feature.recordFromMemory: true,
+    Feature.program: true,
     Feature.exerciseVideo: true,
     Feature.exerciseSwap: true,
     Feature.followAlong: true,
     Feature.workoutLibrary: true,
+    Feature.exerciseLibrary: true,
     Feature.trainingReminders: true,
     Feature.recipes: true,
     Feature.weekPlan: true,
@@ -444,6 +498,14 @@ class FeatureFlags {
     // Off, and its parent is `payments`, so this line is belt as well as
     // braces: `isOn()` would refuse it even set to true.
     Feature.recipeTiering: false,
+
+    // D37–D41, the motivation design from the guide's §15. Each is on, and
+    // each can be switched off on its own from the server if it misbehaves.
+    Feature.trainingStreak: true,
+    Feature.weeklyChallenge: true,
+    Feature.finishReveal: true,
+    Feature.haptics: true,
+    Feature.reassuringWaits: true,
   });
 
   /// Every feature on, with no account required.

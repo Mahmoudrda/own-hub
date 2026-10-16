@@ -159,8 +159,22 @@ abstract final class FoodMarks {
   static const String cookie = 'cookie';
 
   static const List<String> all = [
-    cakeSlice, pancakeStack, jar, bowl, saladBowl, sandwich, friedEgg, fries,
-    cheeseWedge, flatbread, pot, pan, drumstick, steak, potato, cookie,
+    cakeSlice,
+    pancakeStack,
+    jar,
+    bowl,
+    saladBowl,
+    sandwich,
+    friedEgg,
+    fries,
+    cheeseWedge,
+    flatbread,
+    pot,
+    pan,
+    drumstick,
+    steak,
+    potato,
+    cookie,
   ];
 }
 
@@ -372,20 +386,26 @@ class FoodMarkPainter extends CustomPainter {
         // corner, because the outline is smoothed through every point it is
         // given: four corners alone came back as a rounded lump, which is the
         // pillow QA saw.
-        line([
-          const Offset(0.12, 0.86), const Offset(0.26, 0.68),
-          const Offset(0.40, 0.52), const Offset(0.54, 0.36),
-          // The crest is three points, not a corner: two would be pulled into
-          // a peak by the smoothing and the slice would come out a party hat.
-          const Offset(0.64, 0.33), const Offset(0.74, 0.34),
-          const Offset(0.82, 0.38), const Offset(0.83, 0.62),
-          const Offset(0.82, 0.86), const Offset(0.56, handMarkBaseline),
-          const Offset(0.34, handMarkBaseline),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.12, 0.86), const Offset(0.26, 0.68),
+            const Offset(0.40, 0.52), const Offset(0.54, 0.36),
+            // The crest is three points, not a corner: two would be pulled into
+            // a peak by the smoothing and the slice would come out a party hat.
+            const Offset(0.64, 0.33), const Offset(0.74, 0.34),
+            const Offset(0.82, 0.38), const Offset(0.83, 0.62),
+            const Offset(0.82, 0.86), const Offset(0.56, handMarkBaseline),
+            const Offset(0.34, handMarkBaseline),
+          ],
+          close: true,
+          filled: true,
+        );
         // The icing, following the top edge and over the crest.
         line([
-          const Offset(0.15, 0.80), const Offset(0.32, 0.62),
-          const Offset(0.52, 0.42), const Offset(0.70, 0.40),
+          const Offset(0.15, 0.80),
+          const Offset(0.32, 0.62),
+          const Offset(0.52, 0.42),
+          const Offset(0.70, 0.40),
           const Offset(0.81, 0.46),
         ]);
         // Two layers across the cut face.
@@ -398,85 +418,132 @@ class FoodMarkPainter extends CustomPainter {
       case FoodMarks.pancakeStack:
         for (var i = 0; i < 3; i++) {
           final y = handMarkBaseline - 0.08 - i * 0.16;
-          line([
-            Offset(0.20, y), Offset(0.30, y - 0.10), Offset(0.70, y - 0.10),
-            Offset(0.80, y), Offset(0.70, y + 0.08), Offset(0.30, y + 0.08),
-          ], close: true, filled: i == 0 || painted, second: painted && i == 2);
+          line(
+            [
+              Offset(0.20, y),
+              Offset(0.30, y - 0.10),
+              Offset(0.70, y - 0.10),
+              Offset(0.80, y),
+              Offset(0.70, y + 0.08),
+              Offset(0.30, y + 0.08),
+            ],
+            close: true,
+            filled: i == 0 || painted,
+            second: painted && i == 2,
+          );
         }
 
       case FoodMarks.jar:
         line([const Offset(0.30, 0.24), const Offset(0.70, 0.24)]);
-        line([
-          const Offset(0.32, 0.30), const Offset(0.68, 0.30),
-          const Offset(0.70, 0.60),
-          const Offset(0.72, handMarkBaseline),
-          // A point in the middle of the base. The outline is smoothed through
-          // the points it is given, so a base drawn corner to corner sags
-          // below the rule by more than the nib is wide.
-          const Offset(0.50, handMarkBaseline),
-          const Offset(0.28, handMarkBaseline),
-          const Offset(0.30, 0.60),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.32, 0.30), const Offset(0.68, 0.30),
+            const Offset(0.70, 0.60),
+            const Offset(0.72, handMarkBaseline),
+            // A point in the middle of the base. The outline is smoothed through
+            // the points it is given, so a base drawn corner to corner sags
+            // below the rule by more than the nib is wide.
+            const Offset(0.50, handMarkBaseline),
+            const Offset(0.28, handMarkBaseline),
+            const Offset(0.30, 0.60),
+          ],
+          close: true,
+          filled: true,
+        );
         line([const Offset(0.30, 0.58), const Offset(0.70, 0.58)]);
 
       case FoodMarks.bowl:
-        line([
-          const Offset(0.16, 0.46), const Offset(0.84, 0.46),
-          const Offset(0.70, handMarkBaseline),
-          const Offset(0.50, handMarkBaseline),
-          const Offset(0.30, handMarkBaseline),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.16, 0.46),
+            const Offset(0.84, 0.46),
+            const Offset(0.70, handMarkBaseline),
+            const Offset(0.50, handMarkBaseline),
+            const Offset(0.30, handMarkBaseline),
+          ],
+          close: true,
+          filled: true,
+        );
         // Steam, which is the only thing that says the bowl is hot.
         line([const Offset(0.42, 0.38), const Offset(0.46, 0.26)]);
         line([const Offset(0.58, 0.38), const Offset(0.54, 0.26)]);
 
       case FoodMarks.saladBowl:
-        line([
-          const Offset(0.14, 0.50), const Offset(0.86, 0.50),
-          const Offset(0.70, handMarkBaseline),
-          const Offset(0.50, handMarkBaseline),
-          const Offset(0.30, handMarkBaseline),
-        ], close: true, filled: true, second: true);
+        line(
+          [
+            const Offset(0.14, 0.50),
+            const Offset(0.86, 0.50),
+            const Offset(0.70, handMarkBaseline),
+            const Offset(0.50, handMarkBaseline),
+            const Offset(0.30, handMarkBaseline),
+          ],
+          close: true,
+          filled: true,
+          second: true,
+        );
         circle(const Offset(0.36, 0.42), 0.10, filled: painted);
         circle(const Offset(0.56, 0.38), 0.12, filled: painted);
         circle(const Offset(0.72, 0.44), 0.08, filled: painted);
 
       case FoodMarks.sandwich:
-        line([
-          const Offset(0.14, handMarkBaseline),
-          const Offset(0.50, handMarkBaseline),
-          const Offset(0.86, handMarkBaseline),
-          const Offset(0.68, 0.59), const Offset(0.50, 0.30),
-          const Offset(0.32, 0.59),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.14, handMarkBaseline),
+            const Offset(0.50, handMarkBaseline),
+            const Offset(0.86, handMarkBaseline),
+            const Offset(0.68, 0.59),
+            const Offset(0.50, 0.30),
+            const Offset(0.32, 0.59),
+          ],
+          close: true,
+          filled: true,
+        );
         line([const Offset(0.26, 0.68), const Offset(0.74, 0.68)]);
 
       case FoodMarks.friedEgg:
-        line([
-          const Offset(0.14, 0.48), const Offset(0.28, 0.28),
-          const Offset(0.58, 0.26), const Offset(0.84, 0.42),
-          const Offset(0.82, 0.70), const Offset(0.56, handMarkBaseline),
-          const Offset(0.26, 0.80),
-        ], close: true, filled: painted);
+        line(
+          [
+            const Offset(0.14, 0.48),
+            const Offset(0.28, 0.28),
+            const Offset(0.58, 0.26),
+            const Offset(0.84, 0.42),
+            const Offset(0.82, 0.70),
+            const Offset(0.56, handMarkBaseline),
+            const Offset(0.26, 0.80),
+          ],
+          close: true,
+          filled: painted,
+        );
         circle(const Offset(0.48, 0.54), 0.15, filled: true, second: true);
 
       case FoodMarks.fries:
-        line([
-          const Offset(0.28, 0.46), const Offset(0.72, 0.46),
-          const Offset(0.66, handMarkBaseline),
-          const Offset(0.50, handMarkBaseline),
-          const Offset(0.34, handMarkBaseline),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.28, 0.46),
+            const Offset(0.72, 0.46),
+            const Offset(0.66, handMarkBaseline),
+            const Offset(0.50, handMarkBaseline),
+            const Offset(0.34, handMarkBaseline),
+          ],
+          close: true,
+          filled: true,
+        );
         for (var i = 0; i < 4; i++) {
           final x = 0.34 + i * 0.11;
           line([Offset(x, 0.46), Offset(x - 0.02, 0.20 + i % 2 * 0.06)]);
         }
 
       case FoodMarks.cheeseWedge:
-        line([
-          const Offset(0.16, 0.78), const Offset(0.80, 0.36),
-          const Offset(0.84, 0.64), const Offset(0.22, handMarkBaseline),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.16, 0.78),
+            const Offset(0.80, 0.36),
+            const Offset(0.84, 0.64),
+            const Offset(0.22, handMarkBaseline),
+          ],
+          close: true,
+          filled: true,
+        );
         circle(const Offset(0.42, 0.70), 0.05);
         circle(const Offset(0.62, 0.58), 0.04);
 
@@ -488,20 +555,25 @@ class FoodMarkPainter extends CustomPainter {
         // Wide and flat rather than round, so it is not the cookie's disc and
         // not `potato`'s lump either: those two were the shapes it kept being
         // mistaken for.
-        line([
-          const Offset(0.50, 0.32), const Offset(0.72, 0.36),
-          const Offset(0.88, 0.48), const Offset(0.90, 0.62),
-          const Offset(0.74, 0.80), const Offset(0.50, handMarkBaseline),
-          const Offset(0.28, 0.85), const Offset(0.13, 0.72),
-          const Offset(0.10, 0.56), const Offset(0.22, 0.42),
-          // The tear: one rim point pulled in toward the middle.
-          const Offset(0.30, 0.46), const Offset(0.38, 0.34),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.50, 0.32), const Offset(0.72, 0.36),
+            const Offset(0.88, 0.48), const Offset(0.90, 0.62),
+            const Offset(0.74, 0.80), const Offset(0.50, handMarkBaseline),
+            const Offset(0.28, 0.85), const Offset(0.13, 0.72),
+            const Offset(0.10, 0.56), const Offset(0.22, 0.42),
+            // The tear: one rim point pulled in toward the middle.
+            const Offset(0.30, 0.46), const Offset(0.38, 0.34),
+          ],
+          close: true,
+          filled: true,
+        );
         // The folded-over edge along the bottom left, drawn as a crescent
         // inside the rim. A single slash across the middle was `potato`'s
         // crease, which is exactly the confusion this is fixing.
         line([
-          const Offset(0.17, 0.66), const Offset(0.28, 0.79),
+          const Offset(0.17, 0.66),
+          const Offset(0.28, 0.79),
           const Offset(0.46, 0.84),
         ]);
         // Scorched bubbles: open and unequal, against the cookie's three solid
@@ -511,26 +583,41 @@ class FoodMarkPainter extends CustomPainter {
         circle(const Offset(0.72, 0.66), 0.022, filled: painted, second: true);
 
       case FoodMarks.pot:
-        line([
-          const Offset(0.22, 0.44), const Offset(0.78, 0.44),
-          const Offset(0.70, handMarkBaseline),
-          const Offset(0.50, handMarkBaseline),
-          const Offset(0.30, handMarkBaseline),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.22, 0.44),
+            const Offset(0.78, 0.44),
+            const Offset(0.70, handMarkBaseline),
+            const Offset(0.50, handMarkBaseline),
+            const Offset(0.30, handMarkBaseline),
+          ],
+          close: true,
+          filled: true,
+        );
         line([const Offset(0.16, 0.44), const Offset(0.84, 0.44)]);
-        line([const Offset(0.44, 0.34), const Offset(0.56, 0.34)], second: true);
+        line([
+          const Offset(0.44, 0.34),
+          const Offset(0.56, 0.34),
+        ], second: true);
 
       case FoodMarks.pan:
         circle(const Offset(0.46, 0.60), 0.28, filled: true);
         line([const Offset(0.71, 0.49), const Offset(0.93, 0.38)]);
 
       case FoodMarks.drumstick:
-        line([
-          const Offset(0.34, 0.72), const Offset(0.28, 0.52),
-          const Offset(0.40, 0.32), const Offset(0.62, 0.24),
-          const Offset(0.78, 0.34), const Offset(0.76, 0.54),
-          const Offset(0.58, 0.64),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.34, 0.72),
+            const Offset(0.28, 0.52),
+            const Offset(0.40, 0.32),
+            const Offset(0.62, 0.24),
+            const Offset(0.78, 0.34),
+            const Offset(0.76, 0.54),
+            const Offset(0.58, 0.64),
+          ],
+          close: true,
+          filled: true,
+        );
         line([const Offset(0.34, 0.72), const Offset(0.20, handMarkBaseline)]);
         line([const Offset(0.20, handMarkBaseline), const Offset(0.13, 0.80)]);
 
@@ -540,23 +627,39 @@ class FoodMarkPainter extends CustomPainter {
         // outline is the whole drawing, so the bone is part of the silhouette
         // rather than a detail inside it, and the marbling is hooked so it
         // cannot be mistaken for a pair of grill bars on a pebble.
-        line([
-          const Offset(0.16, 0.56), const Offset(0.26, 0.36),
-          const Offset(0.48, 0.28), const Offset(0.72, 0.30),
-          const Offset(0.86, 0.46), const Offset(0.84, 0.66),
-          const Offset(0.66, 0.84), const Offset(0.42, handMarkBaseline),
-          const Offset(0.22, 0.74),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.16, 0.56),
+            const Offset(0.26, 0.36),
+            const Offset(0.48, 0.28),
+            const Offset(0.72, 0.30),
+            const Offset(0.86, 0.46),
+            const Offset(0.84, 0.66),
+            const Offset(0.66, 0.84),
+            const Offset(0.42, handMarkBaseline),
+            const Offset(0.22, 0.74),
+          ],
+          close: true,
+          filled: true,
+        );
         // The fat cap: a band hugging the top right edge, closed at both ends
         // so it reads as a rim of fat along one side of the cut rather than as
         // a crease. This is the cue that separates a steak from a stone, and
         // it has to be in the silhouette's edge because at 28 pt nothing in
         // the middle of the shape survives.
-        line([
-          const Offset(0.48, 0.28), const Offset(0.72, 0.30),
-          const Offset(0.86, 0.46), const Offset(0.78, 0.49),
-          const Offset(0.66, 0.38), const Offset(0.48, 0.36),
-        ], close: true, filled: painted, second: true);
+        line(
+          [
+            const Offset(0.48, 0.28),
+            const Offset(0.72, 0.30),
+            const Offset(0.86, 0.46),
+            const Offset(0.78, 0.49),
+            const Offset(0.66, 0.38),
+            const Offset(0.48, 0.36),
+          ],
+          close: true,
+          filled: painted,
+          second: true,
+        );
         // Grill marks: three, leaning together. Two parallel strokes on a
         // rounded shape is what QA read as a bread roll.
         line([const Offset(0.34, 0.54), const Offset(0.48, 0.48)]);
@@ -564,12 +667,19 @@ class FoodMarkPainter extends CustomPainter {
         line([const Offset(0.54, 0.78), const Offset(0.68, 0.71)]);
 
       case FoodMarks.potato:
-        line([
-          const Offset(0.22, 0.52), const Offset(0.34, 0.30),
-          const Offset(0.62, 0.26), const Offset(0.80, 0.44),
-          const Offset(0.76, 0.74), const Offset(0.46, handMarkBaseline),
-          const Offset(0.26, 0.74),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.22, 0.52),
+            const Offset(0.34, 0.30),
+            const Offset(0.62, 0.26),
+            const Offset(0.80, 0.44),
+            const Offset(0.76, 0.74),
+            const Offset(0.46, handMarkBaseline),
+            const Offset(0.26, 0.74),
+          ],
+          close: true,
+          filled: true,
+        );
         line([const Offset(0.40, 0.46), const Offset(0.62, 0.62)]);
 
       case FoodMarks.cookie:
@@ -581,15 +691,19 @@ class FoodMarkPainter extends CustomPainter {
         // The fallback is a cookie rather than nothing, because a card with a
         // blank corner reads as a failed image load. A name that reaches here
         // is a bug the seed test catches before a woman does.
-        line([
-          const Offset(0.50, 0.24), const Offset(0.66, 0.28),
-          // The bite: two rim points pulled in, so the edge is chewed rather
-          // than dented.
-          const Offset(0.68, 0.40), const Offset(0.74, 0.48),
-          const Offset(0.82, 0.56), const Offset(0.73, 0.79),
-          const Offset(0.50, handMarkBaseline), const Offset(0.27, 0.79),
-          const Offset(0.18, 0.56), const Offset(0.27, 0.33),
-        ], close: true, filled: true);
+        line(
+          [
+            const Offset(0.50, 0.24), const Offset(0.66, 0.28),
+            // The bite: two rim points pulled in, so the edge is chewed rather
+            // than dented.
+            const Offset(0.68, 0.40), const Offset(0.74, 0.48),
+            const Offset(0.82, 0.56), const Offset(0.73, 0.79),
+            const Offset(0.50, handMarkBaseline), const Offset(0.27, 0.79),
+            const Offset(0.18, 0.56), const Offset(0.27, 0.33),
+          ],
+          close: true,
+          filled: true,
+        );
         circle(const Offset(0.40, 0.45), 0.06, filled: true);
         circle(const Offset(0.58, 0.66), 0.065, filled: true);
         circle(const Offset(0.34, 0.70), 0.055, filled: true);

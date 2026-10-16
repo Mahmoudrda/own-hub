@@ -468,7 +468,7 @@ void main() {
         _host(CoachRulesView(model: filled()), locale: const Locale('ar')),
       );
       await tester.pumpAndSettle();
-      expect(find.text('أوافق على هذه القواعد الثلاث'), findsOneWidget);
+      expect(find.text('موافقة على القواعد التلاتة دي'), findsOneWidget);
     });
   });
 
@@ -784,11 +784,19 @@ void main() {
       await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
       await tester.pumpAndSettle();
       expect(find.byType(WelcomeView), findsOneWidget);
+      await tester.ensureVisible(find.text('More'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('More'));
+      await tester.pumpAndSettle();
       expect(find.text('I coach women'), findsOneWidget);
       expect(find.text('I have a code from my coach'), findsNothing);
 
       AppRouter.featureFlags = _coachLive;
       await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('More'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('More'));
       await tester.pumpAndSettle();
       expect(find.text('I coach women'), findsNothing);
       expect(find.text('I have a code from my coach'), findsOneWidget);
@@ -907,10 +915,7 @@ void main() {
       for (var i = walk.length - 2; i >= 0; i--) {
         await back();
         expect(
-          find.text(
-            '${i + 1} of ${CoachSetupStep.total}',
-            skipOffstage: true,
-          ),
+          find.text('${i + 1} of ${CoachSetupStep.total}', skipOffstage: true),
           findsOneWidget,
           reason: 'Back from ${walk[i + 1]} lands on ${walk[i]}',
         );

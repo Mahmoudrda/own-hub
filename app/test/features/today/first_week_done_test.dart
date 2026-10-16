@@ -13,8 +13,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/today/domain/today_day.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/first_week_view.dart';
+import 'package:own_hub/features/today/presentation/today_cards.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/hand/mascot/kitten.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532); // 390×844 at 3×
@@ -108,8 +110,7 @@ void main() {
       expect(find.textContaining('All done.'), findsOneWidget);
       expect(find.textContaining('All five done.'), findsNothing);
       expect(find.text('What it added up to'), findsOneWidget);
-      expect(find.text('Points'), findsOneWidget);
-      expect(find.text('90'), findsOneWidget);
+      expect(find.text('Points'), findsNothing);
       expect(find.text('Level'), findsOneWidget);
       expect(find.text('This week'), findsOneWidget);
       // "3 of 3 · it counted" declared a finished week from a fixed string,
@@ -166,5 +167,56 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  test('G09: a meal and a finished session complete the offered first week', () {
+    // Production wiring: the first-week steps are ticked by the same calls the
+    // app makes, not set by hand. With Community off three steps are offered.
+    final repository = InMemoryTodayRepository();
+    repository.recordMeal(at: DateTime.now());
+    repository.recordSession('live-1');
+    final arc = repository.day.arc;
+    expect(
+      arc.completed,
+      containsAll(<FirstWeekStep>{
+        FirstWeekStep.logSet,
+        FirstWeekStep.logMeal,
+        FirstWeekStep.finishSession,
+      }),
+    );
+    expect(firstWeekIsComplete(arc), isTrue, reason: 'T08 is reachable');
+  });
+
+  group('the kitten', () {
+    setUp(Kitten.resetPlayed);
+
+    testWidgets('gives one small cheer for the first week done', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(_view()));
+      await tester.pump();
+      expect(find.byType(Kitten), findsOneWidget);
+      final kitten = tester.widget<Kitten>(find.byType(Kitten));
+      expect(kitten.pose, KittenPose.cheer);
+      expect(kitten.size, 40);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('is not on the steps before it is done', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          FirstWeekView(
+            repository: InMemoryTodayRepository(),
+            onClose: () {},
+            onStartSession: () {},
+            onOpenStep: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(Kitten), findsNothing);
+    });
   });
 }

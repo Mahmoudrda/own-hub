@@ -25,6 +25,7 @@ import 'package:own_hub/features/today/presentation/quiet_week_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_card.dart';
+import 'package:own_hub/ui/hand/mascot/kitten.dart';
 
 // 14 September 2026 is a Monday — the fresh start this screen speaks on.
 final DateTime _monday = DateTime(2026, 9, 14);
@@ -147,9 +148,7 @@ void main() {
       tester,
     ) async {
       _phone(tester);
-      await tester.pumpWidget(
-        _host(_view(goal: _repaired(countedWeeks: 9))),
-      );
+      await tester.pumpWidget(_host(_view(goal: _repaired(countedWeeks: 9))));
       await tester.pumpAndSettle();
 
       expect(
@@ -168,9 +167,7 @@ void main() {
 
     testWidgets('and IS stated to the woman it describes', (tester) async {
       _phone(tester);
-      await tester.pumpWidget(
-        _host(_view(goal: _repaired(countedWeeks: 14))),
-      );
+      await tester.pumpWidget(_host(_view(goal: _repaired(countedWeeks: 14))));
       await tester.pumpAndSettle();
 
       expect(find.text('Your 14 weeks are safe'), findsOneWidget);
@@ -240,7 +237,7 @@ void main() {
         reason: 'the fixed string this screen used to render to everyone',
       );
       expect(
-        find.text('Nothing is lost. One session starts it.'),
+        find.text('Nothing\'s lost. One session gets it going again.'),
         findsOneWidget,
       );
 
@@ -320,5 +317,30 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('the kitten', () {
+    setUp(Kitten.resetPlayed);
+
+    testWidgets('waves once, and not again for the same week', (tester) async {
+      final repository = _repoWith(logged: 0, target: 2);
+      await tester.pumpWidget(_host(_view(repository: repository)));
+      await tester.pump();
+      expect(find.byType(Kitten), findsOneWidget);
+      final first = tester.widget<Kitten>(find.byType(Kitten));
+      expect(first.pose, KittenPose.wave);
+      expect(first.size, 40);
+      expect(first.holdStill, isFalse);
+      await tester.pumpAndSettle();
+
+      // The notice was marked seen on that first render: back here the same
+      // week, the kitten is simply there.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(_host(_view(repository: repository)));
+      await tester.pump();
+      expect(find.byType(Kitten), findsOneWidget);
+      expect(tester.widget<Kitten>(find.byType(Kitten)).holdStill, isTrue);
+      await tester.pumpAndSettle();
+    });
   });
 }

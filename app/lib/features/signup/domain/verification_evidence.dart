@@ -83,8 +83,7 @@ class VerificationEvidence {
   /// Both sides are required. One side is not a cheaper version of the check,
   /// it is a different check, and a server asked to cross-reference a word
   /// against a digit with only the digit in hand can only pretend.
-  bool get isComplete =>
-      front != null && back != null && _frames.isNotEmpty;
+  bool get isComplete => front != null && back != null && _frames.isNotEmpty;
 
   /// Total bytes held, for the size assertions and for a debug build's log.
   int get byteCount =>

@@ -7,9 +7,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/logging/log_command_bus.dart';
+import 'package:own_hub/domain/training/prescribed_set.dart';
+import 'package:own_hub/features/train/domain/train_repository.dart';
+
 import 'package:own_hub/features/train/presentation/follow_along_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_ring_stat.dart';
 
 Widget _host(
   Widget child, {
@@ -112,7 +117,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('بيتحسب لوحده'), findsOneWidget);
-    expect(find.text('إيقاف مؤقت'), findsOneWidget);
+    expect(find.text('وقّفي'), findsOneWidget);
     expect(find.text('تخطّي الحركة دي'), findsOneWidget);
     expect(find.text('Pause'), findsNothing);
   });
@@ -130,5 +135,139 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('a hold that counts itself down', () {
+    const hold = PrescribedSet(exerciseId: 'plank', order: 2, holdSeconds: 5);
+
+    Widget view({
+      required List<LogHandle> handles,
+      required LogCommandBus bus,
+      required InMemoryTrainRepository repository,
+      bool still = false,
+      VoidCallback? onSkip,
+    }) => MaterialApp(
+      localizationsDelegates: AppL10n.localizationsDelegates,
+      supportedLocales: AppL10n.supportedLocales,
+      theme: buildTheme(const Locale('en')),
+      home: MediaQuery(
+        data: MediaQueryData(disableAnimations: still),
+        child: FollowAlongView(
+          moveName: 'Plank',
+          holdSeconds: 5,
+          set: hold,
+          bus: bus,
+          repository: repository,
+          sessionId: 's1',
+          onSetLogged: handles.add,
+          onSkip: onSkip,
+        ),
+      ),
+    );
+
+    double ringFraction(WidgetTester tester) =>
+        tester.widget<AppRingStat>(find.byType(AppRingStat)).fraction;
+
+    testWidgets('counts down, fills the ring, and logs the set at zero', (
+      tester,
+    ) async {
+      final handles = <LogHandle>[];
+      final bus = LogCommandBus();
+      final repository = InMemoryTrainRepository();
+      addTearDown(bus.dispose);
+      await tester.pumpWidget(
+        view(handles: handles, bus: bus, repository: repository),
+      );
+      await tester.pump();
+      expect(find.text('0:05'), findsOneWidget);
+      expect(ringFraction(tester), 0);
+
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('0:03'), findsOneWidget);
+      expect(ringFraction(tester), closeTo(0.4, 0.05));
+      expect(handles, isEmpty);
+
+      await tester.pump(const Duration(seconds: 4));
+      expect(find.text('0:00'), findsOneWidget);
+      expect(handles, hasLength(1));
+      expect(handles.single.describe, 'Set 2 saved · 5 seconds');
+
+      // Through the bus: nothing is written inside the undo window.
+      expect(repository.flushes, isEmpty);
+      await tester.pump(const Duration(seconds: 6));
+      expect(repository.flushes, hasLength(1));
+      final logged = repository.flushes.single.sets.single;
+      expect(repository.flushes.single.exerciseId, 'plank');
+      expect(logged.outcome!.holdSeconds, 5);
+    });
+
+    testWidgets('pause stops the clock and resume carries on', (tester) async {
+      final handles = <LogHandle>[];
+      final bus = LogCommandBus();
+      addTearDown(bus.dispose);
+      await tester.pumpWidget(
+        view(handles: handles, bus: bus, repository: InMemoryTrainRepository()),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('0:03'), findsOneWidget);
+
+      await tester.tap(find.text('Pause'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 10));
+      expect(find.text('0:03'), findsOneWidget);
+      expect(handles, isEmpty);
+
+      await tester.tap(find.text('Resume'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('0:02'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 3));
+      expect(handles, hasLength(1));
+      await tester.pump(const Duration(seconds: 6));
+    });
+
+    testWidgets('under reduced motion the ring is still and the text counts', (
+      tester,
+    ) async {
+      final bus = LogCommandBus();
+      addTearDown(bus.dispose);
+      await tester.pumpWidget(
+        view(
+          handles: [],
+          bus: bus,
+          repository: InMemoryTrainRepository(),
+          still: true,
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('0:03'), findsOneWidget);
+      expect(ringFraction(tester), 0);
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(seconds: 6));
+    });
+
+    testWidgets('skipping logs nothing', (tester) async {
+      final handles = <LogHandle>[];
+      var skipped = 0;
+      final bus = LogCommandBus();
+      addTearDown(bus.dispose);
+      await tester.pumpWidget(
+        view(
+          handles: handles,
+          bus: bus,
+          repository: InMemoryTrainRepository(),
+          onSkip: () => skipped++,
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.text('Skip this move'));
+      await tester.pump();
+      expect(skipped, 1);
+      expect(handles, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+    });
   });
 }

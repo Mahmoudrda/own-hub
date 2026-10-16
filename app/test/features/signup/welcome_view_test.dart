@@ -33,21 +33,22 @@ Widget _host(
 }
 
 void main() {
-  testWidgets('shows the promise, the explanation and the three ways in', (
+  testWidgets('shows the promise, the explanation and the ways in', (
     tester,
   ) async {
     await tester.pumpWidget(_host(const WelcomeView()));
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Your training, your food, your cycle. Women only.'),
+      find.text('Your training, your food, your month. Women only.'),
       findsOneWidget,
     );
     expect(find.text('A room full of women training like you'), findsNothing);
     expect(find.textContaining('Quiet workouts for home'), findsOneWidget);
     expect(find.text('Show me around'), findsOneWidget);
-    expect(find.text('Skip the tour and join'), findsOneWidget);
     expect(find.text('I already have an account'), findsOneWidget);
+    expect(find.text('Skip the tour and join'), findsNothing);
+    expect(find.text('More'), findsOneWidget);
     expect(find.text('Set up my week'), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -74,9 +75,8 @@ void main() {
 
     // If a string were hardcoded in English it would still read English here,
     // which is exactly the failure a hardcoded string produces in production.
-    expect(find.text('تمرينك، وأكلك، ودورتك. للستات بس.'), findsOneWidget);
+    expect(find.text('تمرينك، وأكلك، وشهرك. للستات بس.'), findsOneWidget);
     expect(find.text('خديني في جولة'), findsOneWidget);
-    expect(find.text('تخطّي الجولة وانضمّي'), findsOneWidget);
     expect(
       find.text('الجولة بتستخدم أسبوع مثال. من غير حساب، ومفيش حاجة بتتحفظ.'),
       findsOneWidget,
@@ -116,29 +116,41 @@ void main() {
     );
   });
 
-  testWidgets('all three actions are reachable and fire', (tester) async {
+  testWidgets('every action is reachable and fires', (tester) async {
     var toured = 0;
-    var started = 0;
+    var whatsInside = 0;
     var signedIn = 0;
+    var coach = 0;
     await tester.pumpWidget(
       _host(
         WelcomeView(
           onLookAround: () => toured++,
-          onGetStarted: () => started++,
+          onWhatsInside: () => whatsInside++,
           onSignIn: () => signedIn++,
+          onCoachInterest: () => coach++,
         ),
       ),
     );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Show me around'));
-    await tester.tap(find.text('Skip the tour and join'));
     await tester.tap(find.text('I already have an account'));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Skip the tour and join'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I coach women'));
+    await tester.pumpAndSettle();
+
     expect(toured, 1);
-    expect(started, 1);
     expect(signedIn, 1);
+    expect(whatsInside, 1);
+    expect(coach, 1);
   });
 
   testWidgets('every action meets the minimum tap target', (tester) async {
@@ -147,8 +159,8 @@ void main() {
 
     for (final label in const [
       'Show me around',
-      'Skip the tour and join',
       'I already have an account',
+      'More',
     ]) {
       final size = tester.getSize(
         find

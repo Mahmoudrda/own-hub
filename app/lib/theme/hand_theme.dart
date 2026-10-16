@@ -9,6 +9,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../ui/hand/page_transition.dart';
 import 'app_tokens.dart';
 import 'hand_tokens.dart';
 
@@ -23,6 +24,7 @@ ThemeData handTheme(ThemeData base) {
   );
 
   return base.copyWith(
+    pageTransitionsTheme: handPageTransitions,
     splashFactory: NoSplash.splashFactory,
     highlightColor: HandInk.print.withValues(alpha: 0.04),
     hoverColor: Colors.transparent,
@@ -52,12 +54,88 @@ ThemeData handTheme(ThemeData base) {
       style: ButtonStyle(
         splashFactory: NoSplash.splashFactory,
         overlayColor: pressed,
-        foregroundColor: const WidgetStatePropertyAll(AppColors.onSurface),
+        foregroundColor: const WidgetStatePropertyAll(AppColors.primary),
         shape: const WidgetStatePropertyAll(tight),
         side: const WidgetStatePropertyAll(
           BorderSide(color: AppColors.outline, width: 1.2),
         ),
       ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: ButtonStyle(
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: pressed,
+        backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+          (s) => s.contains(WidgetState.disabled)
+              ? AppColors.surfaceHighest
+              : s.contains(WidgetState.pressed)
+              ? AppColors.actionPressed
+              : AppColors.actionPrimary,
+        ),
+        foregroundColor: WidgetStateProperty.resolveWith<Color?>(
+          (s) => s.contains(WidgetState.disabled)
+              ? AppColors.onSurfaceVariant
+              : AppColors.onActionPrimary,
+        ),
+        shape: const WidgetStatePropertyAll(tight),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: pressed,
+        elevation: const WidgetStatePropertyAll(0),
+        backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+          (s) => s.contains(WidgetState.disabled)
+              ? AppColors.surfaceHighest
+              : s.contains(WidgetState.pressed)
+              ? AppColors.actionPressed
+              : AppColors.actionPrimary,
+        ),
+        foregroundColor: WidgetStateProperty.resolveWith<Color?>(
+          (s) => s.contains(WidgetState.disabled)
+              ? AppColors.onSurfaceVariant
+              : AppColors.onActionPrimary,
+        ),
+        shape: const WidgetStatePropertyAll(tight),
+      ),
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: AppColors.actionPrimary,
+      foregroundColor: AppColors.onActionPrimary,
+      elevation: 0,
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: AppColors.surface,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: AppColors.primarySoft,
+      iconTheme: WidgetStateProperty.resolveWith(
+        (s) => IconThemeData(
+          color: s.contains(WidgetState.selected)
+              ? AppColors.primary
+              : AppColors.onSurfaceVariant,
+        ),
+      ),
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (s) => AppText.nav.copyWith(
+          color: s.contains(WidgetState.selected)
+              ? AppColors.primary
+              : AppColors.onSurfaceVariant,
+        ),
+      ),
+    ),
+    chipTheme: ChipThemeData(
+      selectedColor: AppColors.primaryContainer,
+      secondarySelectedColor: AppColors.primaryContainer,
+      labelStyle: AppText.label.copyWith(color: AppColors.onSurface),
+      secondaryLabelStyle: AppText.label.copyWith(
+        color: AppColors.onPrimaryContainer,
+      ),
+    ),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: AppColors.primary,
+      linearTrackColor: AppColors.primarySoft,
+      circularTrackColor: AppColors.primarySoft,
     ),
     dialogTheme: DialogThemeData(
       backgroundColor: AppColors.surfaceLowest,

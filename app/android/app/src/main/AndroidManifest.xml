@@ -38,8 +38,14 @@
     <!-- Training reminders: on the days she chose on R10 or in Notifications,
          scheduled on the phone (flutter_local_notifications). The phone
          forgets scheduled alarms when it restarts; this lets the app set them
-         again. Inexact on purpose: no exact-alarm permission is requested. -->
+         again. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- The "Rest is over" alert while the phone is in her pocket. Used only
+         when the phone allows it (canScheduleExactNotifications); otherwise
+         the alert is inexact. She is never sent to Settings for it. Reminders
+         and check-ins stay inexact either way. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <!-- No advertising ID. The analytics SDK's library manifest brings this
          permission; Own Hub shows no advertising and never reads the ID
@@ -158,6 +164,18 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
+        </receiver>
+        <!-- Home-screen "Today" widget (lib/app_state/home_widget_sync.dart
+             writes the payload it reads). -->
+        <receiver
+            android:name=".TodayWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/today_widget_info" />
         </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

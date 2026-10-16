@@ -93,14 +93,17 @@ void main() {
       expect(decision.reason, PublishBlockReason.clearanceWithheld);
     });
 
-    test('no clearance recorded at all also blocks — unknown is not absent', () {
-      final decision = LifeStageSafetyPolicy.publishGate(
-        stage: LifeStage.postpartum0to6w,
-        clearance: null,
-      );
-      expect(decision.allowed, isFalse);
-      expect(decision.reason, PublishBlockReason.clearanceUnrecorded);
-    });
+    test(
+      'no clearance recorded at all also blocks — unknown is not absent',
+      () {
+        final decision = LifeStageSafetyPolicy.publishGate(
+          stage: LifeStage.postpartum0to6w,
+          clearance: null,
+        );
+        expect(decision.allowed, isFalse);
+        expect(decision.reason, PublishBlockReason.clearanceUnrecorded);
+      },
+    );
 
     test('granted:true during p0_6w publishes', () {
       final decision = LifeStageSafetyPolicy.publishGate(
@@ -124,8 +127,10 @@ void main() {
         LifeStage.pregnant,
       ]) {
         expect(
-          LifeStageSafetyPolicy.publishGate(stage: stage, clearance: null)
-              .allowed,
+          LifeStageSafetyPolicy.publishGate(
+            stage: stage,
+            clearance: null,
+          ).allowed,
           isTrue,
           reason: '${stage.wireName} must not be gated on clearance',
         );

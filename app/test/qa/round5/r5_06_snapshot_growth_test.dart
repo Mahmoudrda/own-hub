@@ -80,10 +80,14 @@ String _document(int sessions) => jsonEncode(<String, Object?>{
 
 void main() {
   test('snapshot encode and decode against a year of training', () {
-    print('=== R5-06 snapshot cost by size (host; a budget Android is '
-        '4-6x slower) ===');
-    print('${"sessions".padRight(10)}${"document".padRight(12)}'
-        '${"decode".padRight(11)}encode');
+    print(
+      '=== R5-06 snapshot cost by size (host; a budget Android is '
+      '4-6x slower) ===',
+    );
+    print(
+      '${"sessions".padRight(10)}${"document".padRight(12)}'
+      '${"decode".padRight(11)}encode',
+    );
 
     // 4 sessions a week: ~200 a year, ~400 in two.
     for (final sessions in <int>[13, 52, 200, 400, 800]) {
@@ -102,15 +106,19 @@ void main() {
       encodeWatch.stop();
 
       final weeks = (sessions / 4).round();
-      print('${sessions.toString().padRight(10)}'
-          '${"${mb.toStringAsFixed(2)} MB".padRight(12)}'
-          '${"${decodeWatch.elapsedMilliseconds} ms".padRight(11)}'
-          '${encodeWatch.elapsedMilliseconds} ms'
-          '   (~$weeks weeks of training)');
+      print(
+        '${sessions.toString().padRight(10)}'
+        '${"${mb.toStringAsFixed(2)} MB".padRight(12)}'
+        '${"${decodeWatch.elapsedMilliseconds} ms".padRight(11)}'
+        '${encodeWatch.elapsedMilliseconds} ms'
+        '   (~$weeks weeks of training)',
+      );
     }
 
     print('  decode is on the cold-start path, awaited before runApp.');
-    print('  encode runs on every 400 ms debounced write, i.e. while she is '
-        'logging.');
+    print(
+      '  encode runs on every 400 ms debounced write, i.e. while she is '
+      'logging.',
+    );
   });
 }

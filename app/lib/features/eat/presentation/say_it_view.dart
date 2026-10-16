@@ -37,6 +37,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
@@ -158,6 +159,7 @@ class _SayItViewState extends State<SayItView> {
   /// second had already expired. Without that handler nothing downstream would
   /// offer the five seconds, so the snackbar stands in.
   void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    unawaited(AppHaptics.play(HapticMoment.actionDone));
     if (widget.onLogged != null) return;
     showUndoSnackBar(
       context,

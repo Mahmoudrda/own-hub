@@ -223,17 +223,7 @@ class MilestonesView extends StatelessWidget {
   ///
   /// Null for an id the dictionary cannot name, which is how an unauthored
   /// milestone stays off the screen instead of appearing as a blank row.
-  String? _label(AppL10n l10n, String id) => switch (id) {
-    'first_session' => l10n.firstSession,
-    'first_counted_week' => l10n.firstCountedWeek,
-    'first_personal_best' => l10n.firstPersonalBest,
-    'ten_sessions' => l10n.n10Sessions,
-    'twenty_counted_weeks' => l10n.n20CountedWeeks,
-    'first_program_finished' => l10n.firstProgramFinished,
-    'fifty_sessions' => l10n.n50Sessions,
-    'came_back' => l10n.cameBack,
-    _ => null,
-  };
+  String? _label(AppL10n l10n, String id) => milestoneTitle(l10n, id);
 
   /// When she earned it.
   ///
@@ -283,3 +273,20 @@ class MilestonesView extends StatelessWidget {
   static bool _on(DateTime at, int year, int month, int day) =>
       at.year == year && at.month == month && at.day == day;
 }
+
+/// A milestone's name, from the dictionary. Shared with P01's "next
+/// milestone", so the two screens cannot name one milestone two ways.
+///
+/// Null for an id the dictionary cannot name, which is how an unauthored
+/// milestone stays off the screen instead of appearing as a blank row.
+String? milestoneTitle(AppL10n l10n, String id) => switch (id) {
+  'first_session' => l10n.firstSession,
+  'first_counted_week' => l10n.firstCountedWeek,
+  'first_personal_best' => l10n.firstPersonalBest,
+  'ten_sessions' => l10n.n10Sessions,
+  'twenty_counted_weeks' => l10n.n20CountedWeeks,
+  'first_program_finished' => l10n.firstProgramFinished,
+  'fifty_sessions' => l10n.n50Sessions,
+  'came_back' => l10n.cameBack,
+  _ => null,
+};

@@ -71,7 +71,8 @@ Future<void> _checkIn(
 }) async {
   await _tap(tester, find.text('How are you feeling?'));
   await _tap(tester, find.text(energy));
-  await _tap(tester, find.text(cramps));
+  await _tap(tester, find.text('Cramps, appetite, sleep and more'));
+  await _tap(tester, find.text(cramps).first);
   await _tap(tester, find.text('Save check-in'));
 }
 

@@ -174,6 +174,7 @@ void main() {
       Feature.lockScreenNudge: true,
       Feature.train: true,
       Feature.recordFromMemory: true,
+      Feature.program: true,
       Feature.exerciseVideo: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
@@ -198,11 +199,7 @@ void main() {
       tester,
     ) async {
       var joined = 0;
-      await _pump(
-        tester,
-        LookAroundView(onJoin: () => joined++),
-        on: product,
-      );
+      await _pump(tester, LookAroundView(onJoin: () => joined++), on: product);
       expect(find.text(en.community), findsNothing);
       expect(find.text(en.coaches), findsNothing);
       expect(find.byTooltip(en.askSomething), findsNothing);

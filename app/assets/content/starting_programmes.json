@@ -1,0 +1,6204 @@
+{
+ "version": 1,
+ "review": "drafted 14 Oct 2026, pending Rahma's sign-off",
+ "programmes": [
+  {
+   "programId": "stronger_home",
+   "titleEn": "Get stronger, at home",
+   "titleAr": "اتقوّي في البيت",
+   "status": "published",
+   "version": 1,
+   "weeks": 8,
+   "goals": [
+    "stronger"
+   ],
+   "places": [],
+   "equipment": [],
+   "rank": 1,
+   "quiet": true,
+   "summaryEn": "Full-body strength. Fewer, heavier reps, with a long rest between sets.",
+   "summaryAr": "تمارين قوة للجسم كله. عدّات أقل بوزن أتقل وراحة طويلة بين المجموعات.",
+   "sessions": [
+    {
+     "sessionId": "a",
+     "titleEn": "Legs and glutes",
+     "titleAr": "رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "glute_bridge",
+       "nameEn": "Glute bridge",
+       "nameAr": "جسر المقعدة",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dead_bug",
+       "nameEn": "Dead bug",
+       "nameAr": "الحشرة الميتة",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b",
+     "titleEn": "Upper body and core",
+     "titleAr": "الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "reverse_lunge",
+       "nameEn": "Reverse lunge",
+       "nameAr": "اندفاع خلفي",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bicycle_crunch",
+       "nameEn": "Bicycle crunch",
+       "nameAr": "بايسكل كرانش",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load",
+        "loaded_twisting"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "half_kneeling_hip_flexor_stretch",
+       "nameEn": "Half-kneeling hip flexor stretch",
+       "nameAr": "إطالة الهيب فليكسور على ركبة واحدة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c",
+     "titleEn": "Glutes and full body",
+     "titleAr": "الأرداف والجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "push_up",
+       "nameEn": "Push-up",
+       "nameAr": "بوش أب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "reverse_lunge",
+       "nameEn": "Reverse lunge",
+       "nameAr": "اندفاع خلفي",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "childs_pose",
+       "nameEn": "Child's pose",
+       "nameAr": "وضع الطفل",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "a-gentle",
+     "titleEn": "Gentle legs and glutes",
+     "titleAr": "هادية: رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b-gentle",
+     "titleEn": "Gentle upper body and core",
+     "titleAr": "هادية: الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "reverse_lunge",
+       "nameEn": "Reverse lunge",
+       "nameAr": "اندفاع خلفي",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c-gentle",
+     "titleEn": "Gentle full body",
+     "titleAr": "هادية: الجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "cross_body_shoulder_stretch",
+       "nameEn": "Cross-body shoulder stretch",
+       "nameAr": "إطالة الكتف قدام الصدر",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "programId": "stronger_weights",
+   "titleEn": "Get stronger, with dumbbells at home",
+   "titleAr": "اتقوّي في البيت بالدمبل",
+   "status": "published",
+   "version": 1,
+   "weeks": 8,
+   "goals": [
+    "stronger"
+   ],
+   "places": [
+    "home"
+   ],
+   "equipment": [
+    "dumbbells"
+   ],
+   "rank": 2,
+   "quiet": true,
+   "summaryEn": "Full-body strength. Fewer, heavier reps, with a long rest between sets.",
+   "summaryAr": "تمارين قوة للجسم كله. عدّات أقل بوزن أتقل وراحة طويلة بين المجموعات.",
+   "sessions": [
+    {
+     "sessionId": "a",
+     "titleEn": "Legs and glutes",
+     "titleAr": "رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "romanian_deadlift",
+       "nameEn": "Dumbbell Romanian deadlift",
+       "nameAr": "رومانيان ديدليفت بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b",
+     "titleEn": "Upper body and core",
+     "titleAr": "الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "glute_bridge",
+       "nameEn": "Glute bridge",
+       "nameAr": "جسر المقعدة",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_lateral_raise",
+       "nameEn": "Dumbbell lateral raise",
+       "nameAr": "لاترال ريز بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c",
+     "titleEn": "Glutes and full body",
+     "titleAr": "الأرداف والجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_stiff_leg_deadlift",
+       "nameEn": "Dumbbell stiff-leg deadlift",
+       "nameAr": "ستيف ليج ديدليفت بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "push_up",
+       "nameEn": "Push-up",
+       "nameAr": "بوش أب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dead_bug",
+       "nameEn": "Dead bug",
+       "nameAr": "الحشرة الميتة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "half_kneeling_hip_flexor_stretch",
+       "nameEn": "Half-kneeling hip flexor stretch",
+       "nameAr": "إطالة الهيب فليكسور على ركبة واحدة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "a-gentle",
+     "titleEn": "Gentle legs and glutes",
+     "titleAr": "هادية: رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b-gentle",
+     "titleEn": "Gentle upper body and core",
+     "titleAr": "هادية: الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_lateral_raise",
+       "nameEn": "Dumbbell lateral raise",
+       "nameAr": "لاترال ريز بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c-gentle",
+     "titleEn": "Gentle full body",
+     "titleAr": "هادية: الجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "cross_body_shoulder_stretch",
+       "nameEn": "Cross-body shoulder stretch",
+       "nameAr": "إطالة الكتف قدام الصدر",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "programId": "stronger_gym",
+   "titleEn": "Get stronger, at the gym",
+   "titleAr": "اتقوّي في الجيم",
+   "status": "published",
+   "version": 1,
+   "weeks": 8,
+   "goals": [
+    "stronger"
+   ],
+   "places": [
+    "ladies_gym",
+    "both"
+   ],
+   "equipment": [],
+   "rank": 3,
+   "quiet": true,
+   "summaryEn": "Full-body strength. Fewer, heavier reps, with a long rest between sets.",
+   "summaryAr": "تمارين قوة للجسم كله. عدّات أقل بوزن أتقل وراحة طويلة بين المجموعات.",
+   "sessions": [
+    {
+     "sessionId": "a",
+     "titleEn": "Legs and glutes",
+     "titleAr": "رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "seated_leg_press",
+       "nameEn": "Seated leg press",
+       "nameAr": "ليج بريس قاعد",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "smith_machine_hip_thrust",
+       "nameEn": "Smith machine hip thrust",
+       "nameAr": "هيب ثرست على السميث",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "single_arm_machine_row",
+       "nameEn": "Single-arm machine row",
+       "nameAr": "رو على الجهاز بدراع واحدة",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b",
+     "titleEn": "Upper body and core",
+     "titleAr": "الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "single_arm_machine_row",
+       "nameEn": "Single-arm machine row",
+       "nameAr": "رو على الجهاز بدراع واحدة",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "romanian_deadlift",
+       "nameEn": "Dumbbell Romanian deadlift",
+       "nameAr": "رومانيان ديدليفت بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_shoulder_press",
+       "nameEn": "Machine shoulder press",
+       "nameAr": "شولدر بريس على الجهاز",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "overhead_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c",
+     "titleEn": "Glutes and full body",
+     "titleAr": "الأرداف والجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "smith_machine_hip_thrust",
+       "nameEn": "Smith machine hip thrust",
+       "nameAr": "هيب ثرست على السميث",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "lat_pulldown_wide",
+       "nameEn": "Lat pulldown, wide grip",
+       "nameAr": "لات بول داون مسكة واسعة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dead_bug",
+       "nameEn": "Dead bug",
+       "nameAr": "الحشرة الميتة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "pendulum_squat",
+       "nameEn": "Pendulum squat",
+       "nameAr": "بندولم سكوات",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "half_kneeling_hip_flexor_stretch",
+       "nameEn": "Half-kneeling hip flexor stretch",
+       "nameAr": "إطالة الهيب فليكسور على ركبة واحدة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "a-gentle",
+     "titleEn": "Gentle legs and glutes",
+     "titleAr": "هادية: رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "seated_cable_row",
+       "nameEn": "Seated cable row, V-handle",
+       "nameAr": "سيتد رو على الكابل بمسكة V",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b-gentle",
+     "titleEn": "Gentle upper body and core",
+     "titleAr": "هادية: الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "lat_pulldown_wide",
+       "nameEn": "Lat pulldown, wide grip",
+       "nameAr": "لات بول داون مسكة واسعة",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "machine_shoulder_press",
+       "nameEn": "Machine shoulder press",
+       "nameAr": "شولدر بريس على الجهاز",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "overhead_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 8,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c-gentle",
+     "titleEn": "Gentle full body",
+     "titleAr": "هادية: الجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "single_arm_machine_row",
+       "nameEn": "Single-arm machine row",
+       "nameAr": "رو على الجهاز بدراع واحدة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "cross_body_shoulder_stretch",
+       "nameEn": "Cross-body shoulder stretch",
+       "nameAr": "إطالة الكتف قدام الصدر",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "programId": "feel_better_home",
+   "titleEn": "Feel good and move, at home",
+   "titleAr": "اتحرّكي وحسّي بالفرق في البيت",
+   "status": "published",
+   "version": 1,
+   "weeks": 8,
+   "goals": [
+    "feel_better",
+    "back_into_it"
+   ],
+   "places": [],
+   "equipment": [],
+   "rank": 1,
+   "quiet": true,
+   "summaryEn": "Gentle full body with room to breathe and move. Easy reps, short rests.",
+   "summaryAr": "تمارين هادية للجسم كله. عدّات سهلة وراحة قصيرة، وتتحركي براحتك.",
+   "sessions": [
+    {
+     "sessionId": "a",
+     "titleEn": "Legs and glutes",
+     "titleAr": "رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "glute_bridge",
+       "nameEn": "Glute bridge",
+       "nameAr": "جسر المقعدة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dead_bug",
+       "nameEn": "Dead bug",
+       "nameAr": "الحشرة الميتة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b",
+     "titleEn": "Upper body and core",
+     "titleAr": "الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "reverse_lunge",
+       "nameEn": "Reverse lunge",
+       "nameAr": "اندفاع خلفي",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bicycle_crunch",
+       "nameEn": "Bicycle crunch",
+       "nameAr": "بايسكل كرانش",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load",
+        "loaded_twisting"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "half_kneeling_hip_flexor_stretch",
+       "nameEn": "Half-kneeling hip flexor stretch",
+       "nameAr": "إطالة الهيب فليكسور على ركبة واحدة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c",
+     "titleEn": "Glutes and full body",
+     "titleAr": "الأرداف والجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "push_up",
+       "nameEn": "Push-up",
+       "nameAr": "بوش أب",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "reverse_lunge",
+       "nameEn": "Reverse lunge",
+       "nameAr": "اندفاع خلفي",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "childs_pose",
+       "nameEn": "Child's pose",
+       "nameAr": "وضع الطفل",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "a-gentle",
+     "titleEn": "Gentle legs and glutes",
+     "titleAr": "هادية: رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b-gentle",
+     "titleEn": "Gentle upper body and core",
+     "titleAr": "هادية: الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "reverse_lunge",
+       "nameEn": "Reverse lunge",
+       "nameAr": "اندفاع خلفي",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c-gentle",
+     "titleEn": "Gentle full body",
+     "titleAr": "هادية: الجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "cross_body_shoulder_stretch",
+       "nameEn": "Cross-body shoulder stretch",
+       "nameAr": "إطالة الكتف قدام الصدر",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "programId": "feel_better_weights",
+   "titleEn": "Feel good and move, with dumbbells at home",
+   "titleAr": "اتحرّكي وحسّي بالفرق في البيت بالدمبل",
+   "status": "published",
+   "version": 1,
+   "weeks": 8,
+   "goals": [
+    "feel_better",
+    "back_into_it"
+   ],
+   "places": [
+    "home"
+   ],
+   "equipment": [
+    "dumbbells"
+   ],
+   "rank": 2,
+   "quiet": true,
+   "summaryEn": "Gentle full body with room to breathe and move. Easy reps, short rests.",
+   "summaryAr": "تمارين هادية للجسم كله. عدّات سهلة وراحة قصيرة، وتتحركي براحتك.",
+   "sessions": [
+    {
+     "sessionId": "a",
+     "titleEn": "Legs and glutes",
+     "titleAr": "رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "romanian_deadlift",
+       "nameEn": "Dumbbell Romanian deadlift",
+       "nameAr": "رومانيان ديدليفت بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b",
+     "titleEn": "Upper body and core",
+     "titleAr": "الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "glute_bridge",
+       "nameEn": "Glute bridge",
+       "nameAr": "جسر المقعدة",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_lateral_raise",
+       "nameEn": "Dumbbell lateral raise",
+       "nameAr": "لاترال ريز بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c",
+     "titleEn": "Glutes and full body",
+     "titleAr": "الأرداف والجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_stiff_leg_deadlift",
+       "nameEn": "Dumbbell stiff-leg deadlift",
+       "nameAr": "ستيف ليج ديدليفت بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "push_up",
+       "nameEn": "Push-up",
+       "nameAr": "بوش أب",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dead_bug",
+       "nameEn": "Dead bug",
+       "nameAr": "الحشرة الميتة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "half_kneeling_hip_flexor_stretch",
+       "nameEn": "Half-kneeling hip flexor stretch",
+       "nameAr": "إطالة الهيب فليكسور على ركبة واحدة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "a-gentle",
+     "titleEn": "Gentle legs and glutes",
+     "titleAr": "هادية: رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b-gentle",
+     "titleEn": "Gentle upper body and core",
+     "titleAr": "هادية: الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_lateral_raise",
+       "nameEn": "Dumbbell lateral raise",
+       "nameAr": "لاترال ريز بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c-gentle",
+     "titleEn": "Gentle full body",
+     "titleAr": "هادية: الجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "cross_body_shoulder_stretch",
+       "nameEn": "Cross-body shoulder stretch",
+       "nameAr": "إطالة الكتف قدام الصدر",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "programId": "feel_better_gym",
+   "titleEn": "Feel good and move, at the gym",
+   "titleAr": "اتحرّكي وحسّي بالفرق في الجيم",
+   "status": "published",
+   "version": 1,
+   "weeks": 8,
+   "goals": [
+    "feel_better",
+    "back_into_it"
+   ],
+   "places": [
+    "ladies_gym",
+    "both"
+   ],
+   "equipment": [],
+   "rank": 3,
+   "quiet": true,
+   "summaryEn": "Gentle full body with room to breathe and move. Easy reps, short rests.",
+   "summaryAr": "تمارين هادية للجسم كله. عدّات سهلة وراحة قصيرة، وتتحركي براحتك.",
+   "sessions": [
+    {
+     "sessionId": "a",
+     "titleEn": "Legs and glutes",
+     "titleAr": "رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "seated_leg_press",
+       "nameEn": "Seated leg press",
+       "nameAr": "ليج بريس قاعد",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "smith_machine_hip_thrust",
+       "nameEn": "Smith machine hip thrust",
+       "nameAr": "هيب ثرست على السميث",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "single_arm_machine_row",
+       "nameEn": "Single-arm machine row",
+       "nameAr": "رو على الجهاز بدراع واحدة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b",
+     "titleEn": "Upper body and core",
+     "titleAr": "الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "single_arm_machine_row",
+       "nameEn": "Single-arm machine row",
+       "nameAr": "رو على الجهاز بدراع واحدة",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "romanian_deadlift",
+       "nameEn": "Dumbbell Romanian deadlift",
+       "nameAr": "رومانيان ديدليفت بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_shoulder_press",
+       "nameEn": "Machine shoulder press",
+       "nameAr": "شولدر بريس على الجهاز",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "overhead_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c",
+     "titleEn": "Glutes and full body",
+     "titleAr": "الأرداف والجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "smith_machine_hip_thrust",
+       "nameEn": "Smith machine hip thrust",
+       "nameAr": "هيب ثرست على السميث",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "lat_pulldown_wide",
+       "nameEn": "Lat pulldown, wide grip",
+       "nameAr": "لات بول داون مسكة واسعة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dead_bug",
+       "nameEn": "Dead bug",
+       "nameAr": "الحشرة الميتة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "pendulum_squat",
+       "nameEn": "Pendulum squat",
+       "nameAr": "بندولم سكوات",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "half_kneeling_hip_flexor_stretch",
+       "nameEn": "Half-kneeling hip flexor stretch",
+       "nameAr": "إطالة الهيب فليكسور على ركبة واحدة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "a-gentle",
+     "titleEn": "Gentle legs and glutes",
+     "titleAr": "هادية: رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "seated_cable_row",
+       "nameEn": "Seated cable row, V-handle",
+       "nameAr": "سيتد رو على الكابل بمسكة V",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b-gentle",
+     "titleEn": "Gentle upper body and core",
+     "titleAr": "هادية: الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "lat_pulldown_wide",
+       "nameEn": "Lat pulldown, wide grip",
+       "nameAr": "لات بول داون مسكة واسعة",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 20,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "machine_shoulder_press",
+       "nameEn": "Machine shoulder press",
+       "nameAr": "شولدر بريس على الجهاز",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "overhead_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 10,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c-gentle",
+     "titleEn": "Gentle full body",
+     "titleAr": "هادية: الجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "single_arm_machine_row",
+       "nameEn": "Single-arm machine row",
+       "nameAr": "رو على الجهاز بدراع واحدة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "cross_body_shoulder_stretch",
+       "nameEn": "Cross-body shoulder stretch",
+       "nameAr": "إطالة الكتف قدام الصدر",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "programId": "lose_steadily_home",
+   "titleEn": "Lose steadily, at home",
+   "titleAr": "نزّلي وزنك بالتدريج في البيت",
+   "status": "published",
+   "version": 1,
+   "weeks": 8,
+   "goals": [
+    "lose_steadily"
+   ],
+   "places": [],
+   "equipment": [],
+   "rank": 1,
+   "quiet": true,
+   "summaryEn": "Circuit style. Steady reps and short rests that keep you moving.",
+   "summaryAr": "تمارين دايرة متواصلة. عدّات ثابتة وراحة قصيرة تخليكي متحركة.",
+   "sessions": [
+    {
+     "sessionId": "a",
+     "titleEn": "Legs and glutes",
+     "titleAr": "رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "glute_bridge",
+       "nameEn": "Glute bridge",
+       "nameAr": "جسر المقعدة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dead_bug",
+       "nameEn": "Dead bug",
+       "nameAr": "الحشرة الميتة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b",
+     "titleEn": "Upper body and core",
+     "titleAr": "الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "reverse_lunge",
+       "nameEn": "Reverse lunge",
+       "nameAr": "اندفاع خلفي",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bicycle_crunch",
+       "nameEn": "Bicycle crunch",
+       "nameAr": "بايسكل كرانش",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load",
+        "loaded_twisting"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "half_kneeling_hip_flexor_stretch",
+       "nameEn": "Half-kneeling hip flexor stretch",
+       "nameAr": "إطالة الهيب فليكسور على ركبة واحدة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c",
+     "titleEn": "Glutes and full body",
+     "titleAr": "الأرداف والجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "push_up",
+       "nameEn": "Push-up",
+       "nameAr": "بوش أب",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "reverse_lunge",
+       "nameEn": "Reverse lunge",
+       "nameAr": "اندفاع خلفي",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "childs_pose",
+       "nameEn": "Child's pose",
+       "nameAr": "وضع الطفل",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "a-gentle",
+     "titleEn": "Gentle legs and glutes",
+     "titleAr": "هادية: رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b-gentle",
+     "titleEn": "Gentle upper body and core",
+     "titleAr": "هادية: الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "reverse_lunge",
+       "nameEn": "Reverse lunge",
+       "nameAr": "اندفاع خلفي",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c-gentle",
+     "titleEn": "Gentle full body",
+     "titleAr": "هادية: الجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat",
+       "nameEn": "Bodyweight squat",
+       "nameAr": "قرفصاء بوزن الجسم",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "cross_body_shoulder_stretch",
+       "nameEn": "Cross-body shoulder stretch",
+       "nameAr": "إطالة الكتف قدام الصدر",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "programId": "lose_steadily_weights",
+   "titleEn": "Lose steadily, with dumbbells at home",
+   "titleAr": "نزّلي وزنك بالتدريج في البيت بالدمبل",
+   "status": "published",
+   "version": 1,
+   "weeks": 8,
+   "goals": [
+    "lose_steadily"
+   ],
+   "places": [
+    "home"
+   ],
+   "equipment": [
+    "dumbbells"
+   ],
+   "rank": 2,
+   "quiet": true,
+   "summaryEn": "Circuit style. Steady reps and short rests that keep you moving.",
+   "summaryAr": "تمارين دايرة متواصلة. عدّات ثابتة وراحة قصيرة تخليكي متحركة.",
+   "sessions": [
+    {
+     "sessionId": "a",
+     "titleEn": "Legs and glutes",
+     "titleAr": "رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "romanian_deadlift",
+       "nameEn": "Dumbbell Romanian deadlift",
+       "nameAr": "رومانيان ديدليفت بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b",
+     "titleEn": "Upper body and core",
+     "titleAr": "الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "glute_bridge",
+       "nameEn": "Glute bridge",
+       "nameAr": "جسر المقعدة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_lateral_raise",
+       "nameEn": "Dumbbell lateral raise",
+       "nameAr": "لاترال ريز بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c",
+     "titleEn": "Glutes and full body",
+     "titleAr": "الأرداف والجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_stiff_leg_deadlift",
+       "nameEn": "Dumbbell stiff-leg deadlift",
+       "nameAr": "ستيف ليج ديدليفت بالدمبل",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "push_up",
+       "nameEn": "Push-up",
+       "nameAr": "بوش أب",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dead_bug",
+       "nameEn": "Dead bug",
+       "nameAr": "الحشرة الميتة",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "half_kneeling_hip_flexor_stretch",
+       "nameEn": "Half-kneeling hip flexor stretch",
+       "nameAr": "إطالة الهيب فليكسور على ركبة واحدة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "a-gentle",
+     "titleEn": "Gentle legs and glutes",
+     "titleAr": "هادية: رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b-gentle",
+     "titleEn": "Gentle upper body and core",
+     "titleAr": "هادية: الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_lateral_raise",
+       "nameEn": "Dumbbell lateral raise",
+       "nameAr": "لاترال ريز بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c-gentle",
+     "titleEn": "Gentle full body",
+     "titleAr": "هادية: الجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_press_up",
+       "nameEn": "Wall press-up",
+       "nameAr": "ضغط على الحائط",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bent_over_row",
+       "nameEn": "Bent-over dumbbell row",
+       "nameAr": "بنت أوفر رو بالدمبل",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "cross_body_shoulder_stretch",
+       "nameEn": "Cross-body shoulder stretch",
+       "nameAr": "إطالة الكتف قدام الصدر",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "programId": "lose_steadily_gym",
+   "titleEn": "Lose steadily, at the gym",
+   "titleAr": "نزّلي وزنك بالتدريج في الجيم",
+   "status": "published",
+   "version": 1,
+   "weeks": 8,
+   "goals": [
+    "lose_steadily"
+   ],
+   "places": [
+    "ladies_gym",
+    "both"
+   ],
+   "equipment": [],
+   "rank": 3,
+   "quiet": true,
+   "summaryEn": "Circuit style. Steady reps and short rests that keep you moving.",
+   "summaryAr": "تمارين دايرة متواصلة. عدّات ثابتة وراحة قصيرة تخليكي متحركة.",
+   "sessions": [
+    {
+     "sessionId": "a",
+     "titleEn": "Legs and glutes",
+     "titleAr": "رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "seated_leg_press",
+       "nameEn": "Seated leg press",
+       "nameAr": "ليج بريس قاعد",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "smith_machine_hip_thrust",
+       "nameEn": "Smith machine hip thrust",
+       "nameAr": "هيب ثرست على السميث",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "single_arm_machine_row",
+       "nameEn": "Single-arm machine row",
+       "nameAr": "رو على الجهاز بدراع واحدة",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b",
+     "titleEn": "Upper body and core",
+     "titleAr": "الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "single_arm_machine_row",
+       "nameEn": "Single-arm machine row",
+       "nameAr": "رو على الجهاز بدراع واحدة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "romanian_deadlift",
+       "nameEn": "Dumbbell Romanian deadlift",
+       "nameAr": "رومانيان ديدليفت بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_shoulder_press",
+       "nameEn": "Machine shoulder press",
+       "nameAr": "شولدر بريس على الجهاز",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "overhead_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c",
+     "titleEn": "Glutes and full body",
+     "titleAr": "الأرداف والجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "none",
+      "pain_injury"
+     ],
+     "moves": [
+      {
+       "exerciseId": "smith_machine_hip_thrust",
+       "nameEn": "Smith machine hip thrust",
+       "nameAr": "هيب ثرست على السميث",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "lat_pulldown_wide",
+       "nameEn": "Lat pulldown, wide grip",
+       "nameAr": "لات بول داون مسكة واسعة",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dead_bug",
+       "nameEn": "Dead bug",
+       "nameAr": "الحشرة الميتة",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "pendulum_squat",
+       "nameEn": "Pendulum squat",
+       "nameAr": "بندولم سكوات",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "half_kneeling_hip_flexor_stretch",
+       "nameEn": "Half-kneeling hip flexor stretch",
+       "nameAr": "إطالة الهيب فليكسور على ركبة واحدة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "a-gentle",
+     "titleEn": "Gentle legs and glutes",
+     "titleAr": "هادية: رجلين وأرداف",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "dumbbell_sumo_squat",
+       "nameEn": "Dumbbell sumo squat",
+       "nameAr": "سومو سكوات بالدمبل",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "seated_cable_row",
+       "nameEn": "Seated cable row, V-handle",
+       "nameAr": "سيتد رو على الكابل بمسكة V",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "standing_forward_fold",
+       "nameEn": "Standing forward fold",
+       "nameAr": "إطالة خلفية من الوقوف",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "b-gentle",
+     "titleEn": "Gentle upper body and core",
+     "titleAr": "هادية: الجزء العلوي والبطن",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "lat_pulldown_wide",
+       "nameEn": "Lat pulldown, wide grip",
+       "nameAr": "لات بول داون مسكة واسعة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "dumbbell_reverse_lunge",
+       "nameEn": "Dumbbell reverse lunge",
+       "nameAr": "لانج لورا بالدمبل",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "side_plank",
+       "nameEn": "Side plank",
+       "nameAr": "بلانك جانبي",
+       "sets": 3,
+       "holdSeconds": 30,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "machine_shoulder_press",
+       "nameEn": "Machine shoulder press",
+       "nameAr": "شولدر بريس على الجهاز",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "overhead_load"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "calf_raise",
+       "nameEn": "Bodyweight calf raise",
+       "nameAr": "كالف ريز من غير وزن",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "wall_chest_stretch",
+       "nameEn": "Wall chest stretch",
+       "nameAr": "إطالة الصدر على الحيطة",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      }
+     ]
+    },
+    {
+     "sessionId": "c-gentle",
+     "titleEn": "Gentle full body",
+     "titleAr": "هادية: الجسم كله",
+     "minutes": 30,
+     "lifeStages": [
+      "pregnant",
+      "postpartum"
+     ],
+     "moves": [
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "single_arm_machine_row",
+       "nameEn": "Single-arm machine row",
+       "nameAr": "رو على الجهاز بدراع واحدة",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "bird_dog",
+       "nameEn": "Bird dog",
+       "nameAr": "الطائر والكلب",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "machine_chest_press",
+       "nameEn": "Machine chest press",
+       "nameAr": "تشيست بريس على الجهاز",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "seated_leg_curl",
+       "nameEn": "Seated leg curl",
+       "nameAr": "ليج كيرل قاعد على الجهاز",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "none"
+       ],
+       "quiet": true,
+       "floorOnly": false,
+       "needsEquipment": true
+      },
+      {
+       "exerciseId": "cross_body_shoulder_stretch",
+       "nameEn": "Cross-body shoulder stretch",
+       "nameAr": "إطالة الكتف قدام الصدر",
+       "sets": 1,
+       "holdSeconds": 30,
+       "restSeconds": 0,
+       "contraindications": [
+        "deep_knee_flexion"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

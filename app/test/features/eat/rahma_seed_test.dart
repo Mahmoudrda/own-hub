@@ -27,8 +27,7 @@ import 'package:own_hub/ui/hand/food_marks.dart';
 late RecipeBook _book;
 late Map<String, Object?> _raw;
 
-Recipe _recipe(String id) =>
-    _book.recipes.firstWhere((r) => r.recipeId == id);
+Recipe _recipe(String id) => _book.recipes.firstWhere((r) => r.recipeId == id);
 
 void main() {
   setUpAll(() {
@@ -56,10 +55,7 @@ void main() {
     });
 
     test('no recipe claims page 21, because page 21 is page 20 again', () {
-      expect(
-        _book.recipes.map((r) => r.sourcePage),
-        isNot(contains(21)),
-      );
+      expect(_book.recipes.map((r) => r.sourcePage), isNot(contains(21)));
     });
 
     test('four sections, character for character', () {
@@ -77,6 +73,18 @@ void main() {
         'WOW I am eating junky healthy food',
         'Eating light to sleep comfy girlie',
       ]);
+    });
+
+    test('every section line and every title also reads in Egyptian Arabic', () {
+      // Her English stays as the book's own title; the Arabic sits under it on
+      // the card and replaces the PS line when the app is in Arabic.
+      for (final section in _book.sections) {
+        expect(section.psLineAr, isNotEmpty, reason: section.sectionId);
+      }
+      for (final recipe in _book.recipes) {
+        expect(recipe.titleAr, isNotEmpty, reason: recipe.recipeId);
+        expect(recipe.titleAr, isNot(contains('—')), reason: recipe.recipeId);
+      }
     });
 
     test('her titles are hers, arabizi and all', () {
@@ -113,9 +121,10 @@ void main() {
         contains('light_tahina'),
       );
       expect(
-        _book.byId('rahma_makrona_bashmel')!.components.map(
-          (c) => c.componentId,
-        ),
+        _book
+            .byId('rahma_makrona_bashmel')!
+            .components
+            .map((c) => c.componentId),
         containsAll(<String>['bechamel', 'mince']),
       );
     });
@@ -143,8 +152,7 @@ void main() {
       expect(_book.letterAr, isNot(contains('عندكوحبي')));
     });
 
-    test('the words that only LOOK glued are left exactly as she wrote them', ()
-    {
+    test('the words that only LOOK glued are left exactly as she wrote them', () {
       // The other half of the rule above, and the more important half. `الفرنمن`
       // and `ونصمعلقة` are single word objects sitting mid-line with normal
       // gaps on both sides of them, so they are hers, in the same class as her
@@ -260,16 +268,57 @@ void main() {
       // A row now carries the line break and closes up on screen, so the rule
       // this asserts is simply: every row names something, not just an amount.
       const measures = {
-        'معلقه', 'معلقة', 'معالق', 'معلقتين', 'كوباية', 'كوبايتين', 'كيس',
-        'كيسين', 'رشة', 'رشه', 'حبة', 'حبه', 'نص', 'تلت', 'ربع', 'علبة',
-        'علبه', 'شريحة', 'شريحه', 'شرايح', 'قطعة', 'قطعتين', 'نقطة', 'نقطتين',
-        'مسحة', 'فص', 'فصين', 'اتنين', 'خمس', 'واحدة', 'واحد', 'كيلو', 'كيلة',
-        'جرام', 'جم', 'مل', 'صغيرين', 'صغيرة', 'صغيره', 'كبار', 'كبيره',
-        'كبيرة', 'و', 'من', 'او', 'أو',
+        'معلقه',
+        'معلقة',
+        'معالق',
+        'معلقتين',
+        'كوباية',
+        'كوبايتين',
+        'كيس',
+        'كيسين',
+        'رشة',
+        'رشه',
+        'حبة',
+        'حبه',
+        'نص',
+        'تلت',
+        'ربع',
+        'علبة',
+        'علبه',
+        'شريحة',
+        'شريحه',
+        'شرايح',
+        'قطعة',
+        'قطعتين',
+        'نقطة',
+        'نقطتين',
+        'مسحة',
+        'فص',
+        'فصين',
+        'اتنين',
+        'خمس',
+        'واحدة',
+        'واحد',
+        'كيلو',
+        'كيلة',
+        'جرام',
+        'جم',
+        'مل',
+        'صغيرين',
+        'صغيرة',
+        'صغيره',
+        'كبار',
+        'كبيره',
+        'كبيرة',
+        'و',
+        'من',
+        'او',
+        'أو',
       };
       final number = RegExp(r'^[\d½¼/\-]+$');
-      String bare(String word) =>
-          word.replaceAll(RegExp(r'^[وب]'), '').replaceAll(RegExp(r'[،.()+]'), '');
+      String bare(String word) => word
+          .replaceAll(RegExp(r'^[وب]'), '')
+          .replaceAll(RegExp(r'[،.()+]'), '');
 
       final offenders = <String>[];
       for (final recipe in _book.recipes) {
@@ -382,13 +431,18 @@ void main() {
       // Vacuous on today's seed, in the same deliberate way as the publication
       // gates below it.
       for (final recipe in _book.recipes) {
-        expect(recipe.status, isNot(RecipeStatus.draft), reason: recipe.recipeId);
+        expect(
+          recipe.status,
+          isNot(RecipeStatus.draft),
+          reason: recipe.recipeId,
+        );
       }
       final withDraft = RecipeBook.fromJson({
         'recipes': [
           ...(_raw['recipes']! as List),
           {
-            ...((_raw['recipes']! as List).first as Map).cast<String, Object?>(),
+            ...((_raw['recipes']! as List).first as Map)
+                .cast<String, Object?>(),
             'recipeId': 'half_written',
             'status': 'draft',
           },
@@ -477,9 +531,8 @@ void main() {
 
     test('the final set is derived, extended, then reduced by reasons', () {
       for (final recipe in _book.recipes) {
-        final expected =
-            {...recipe.allergensDerived, ...recipe.allergensExtra}
-              ..removeAll(recipe.allergensRemoved.keys);
+        final expected = {...recipe.allergensDerived, ...recipe.allergensExtra}
+          ..removeAll(recipe.allergensRemoved.keys);
         expect(recipe.allergensFinal, expected, reason: recipe.recipeId);
       }
     });
@@ -506,15 +559,28 @@ void main() {
       // from the dictionary, so it reads as the app being careful rather than as
       // Rahma being lovely.
       const risky = {
-        'rahma_chicken_pizza', 'rahma_bbq_burger', 'rahma_hwawshi',
-        'rahma_chicken_lemon', 'rahma_chicken_ranch_salad',
-        'rahma_shrimp_white_pasta', 'rahma_oven_tender_chicken',
-        'rahma_buffalo_sweet_wings', 'rahma_makrona_bashmel',
-        'rahma_kebda_meal', 'rahma_fattah', 'rahma_btates_bel_lahma',
-        'rahma_shakshoka', 'rahma_potato_w_eggs', 'rahma_egg_pizza',
-        'rahma_yummy_egg_sandwich', 'rahma_creamy_cottage_cheese',
-        'rahma_pancakes', 'rahma_crepe', 'rahma_french_toast',
-        'rahma_lazy_cake', 'rahma_bagel',
+        'rahma_chicken_pizza',
+        'rahma_bbq_burger',
+        'rahma_hwawshi',
+        'rahma_chicken_lemon',
+        'rahma_chicken_ranch_salad',
+        'rahma_shrimp_white_pasta',
+        'rahma_oven_tender_chicken',
+        'rahma_buffalo_sweet_wings',
+        'rahma_makrona_bashmel',
+        'rahma_kebda_meal',
+        'rahma_fattah',
+        'rahma_btates_bel_lahma',
+        'rahma_shakshoka',
+        'rahma_potato_w_eggs',
+        'rahma_egg_pizza',
+        'rahma_yummy_egg_sandwich',
+        'rahma_creamy_cottage_cheese',
+        'rahma_pancakes',
+        'rahma_crepe',
+        'rahma_french_toast',
+        'rahma_lazy_cake',
+        'rahma_bagel',
       };
       for (final id in risky) {
         expect(
@@ -702,7 +768,8 @@ void main() {
         File('assets/content/rahma_recipes.json').readAsStringSync(),
       ) as Map).cast<String, Object?>();
       var stripped = 0;
-      for (final recipe in (seed['recipes'] as List).cast<Map<String, Object?>>()) {
+      for (final recipe
+          in (seed['recipes'] as List).cast<Map<String, Object?>>()) {
         final finals = (recipe['allergensFinal'] as List).cast<String>();
         if (finals.remove('milk')) stripped++;
         recipe['allergensFinal'] = finals;

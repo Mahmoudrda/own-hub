@@ -54,14 +54,16 @@ void main() {
     expect(find.text('Coaches who get it'), findsOneWidget);
   });
 
-  // R1-P12: the cycle, which she installs the app for, is promised up front,
-  // and so is where its data stays.
-  testWidgets('promises cycle tracking, kept on this phone', (tester) async {
+  // R1-P12: the daily check-in is promised up front, and so is where what she
+  // notes stays. Before sign-in the cycle itself is not named.
+  testWidgets('promises the daily check-in, kept on this phone', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(const WhatsInsideView()));
     await tester.pumpAndSettle();
-    expect(find.text('Your cycle, on this phone'), findsOneWidget);
+    expect(find.text('A plan that adjusts to how you feel'), findsOneWidget);
     expect(
-      find.textContaining('Cycle data stays on your phone'),
+      find.textContaining('What you note stays on your phone'),
       findsOneWidget,
     );
 
@@ -70,7 +72,7 @@ void main() {
     });
     await tester.pumpWidget(_host(const WhatsInsideView(key: ValueKey(2))));
     await tester.pumpAndSettle();
-    expect(find.text('Your cycle, on this phone'), findsNothing);
+    expect(find.text('A plan that adjusts to how you feel'), findsNothing);
   });
 
   testWidgets('each promise carries its explanation, not just a headline', (

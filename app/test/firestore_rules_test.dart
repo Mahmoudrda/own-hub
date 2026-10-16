@@ -172,7 +172,8 @@ void main() {
       expect(
         _matchBlock(rules, 'match /plans/'),
         contains('allow write: if false;'),
-        reason: 'a client that can write a plan can prescribe training to '
+        reason:
+            'a client that can write a plan can prescribe training to '
             'another woman, which is the one thing a coach is verified for',
       );
     });

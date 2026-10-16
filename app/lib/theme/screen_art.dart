@@ -45,7 +45,6 @@ abstract final class ScreenArt {
   /// Screen id -> one or two illustrations, drawn at the top of the screen.
   static const Map<String, List<String>> forScreen = {
     'A01': [AppArt.headphones],
-    'A02': [AppArt.strongArms],
     'A03': [AppArt.meditation],
     'A04': [AppArt.meditation],
     'B01': [AppArt.strongArms, AppArt.lungeWarrior],
@@ -187,6 +186,8 @@ abstract final class ScreenArt {
     'R11': [AppArt.yogaMat, AppArt.gymBag],
     'R12': [AppArt.trainers],
     'R13': [AppArt.strongArms],
+    'R14': [AppArt.stretchSeated, AppArt.dumbbells],
+    'R15': [AppArt.squatWeights],
     'T01': [AppArt.breakfast, AppArt.running],
     'T02': [AppArt.strongArms],
     'T03': [AppArt.running],

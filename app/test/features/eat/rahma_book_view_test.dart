@@ -44,9 +44,8 @@ Widget _host(
   theme: buildTheme(locale),
   home: Builder(
     builder: (context) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(textScale)),
       child: child,
     ),
   ),
@@ -80,11 +79,7 @@ Recipe _kebda({String? reviewedBy}) => Recipe(
   ],
   ingredientsBasis: IngredientsBasis.measures,
   steps: const [
-    RecipeStep(
-      index: 1,
-      textAr: 'هنجيب نص كيلو كبدة فراخ',
-      usesRefs: ['k1'],
-    ),
+    RecipeStep(index: 1, textAr: 'هنجيب نص كيلو كبدة فراخ', usesRefs: ['k1']),
     RecipeStep(
       index: 2,
       textAr: 'ونسيبها نص ساعه',
@@ -254,10 +249,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(saved, {AllergenTag.sesame});
-      expect(
-        DietaryProfile(allergies: saved).toConstraints().allergies,
-        {'sesame'},
-      );
+      expect(DietaryProfile(allergies: saved).toConstraints().allergies, {
+        'sesame',
+      });
     });
 
     testWidgets('the live control on arrival is the commonest answer', (
@@ -506,7 +500,8 @@ void main() {
       expect(
         find.textContaining('This is not about what you avoid'),
         findsOneWidget,
-        reason: 'the empty state names the real reason and denies the false one',
+        reason:
+            'the empty state names the real reason and denies the false one',
       );
       expect(find.text('Nothing matches that.'), findsNothing);
       expect(
@@ -595,7 +590,7 @@ void main() {
       expect(find.text('Nothing matches that.'), findsOneWidget);
     });
 
-    testWidgets('the prototype rows still carry their cost in EGP', (
+    testWidgets('the prototype rows carry time and protein only', (
       tester,
     ) async {
       // The design note this screen has always had to keep. Rahma's cards being
@@ -612,10 +607,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(
-        find.text('22 min · 540 kcal · 18 g protein · 14 EGP'),
-        findsOneWidget,
-      );
+      expect(find.text('22 min · 18 g protein'), findsOneWidget);
     });
 
     testWidgets('reads in Arabic at 1.6 without overflowing', (tester) async {
@@ -1121,10 +1113,7 @@ void main() {
       // paragraph and comes out as `Ta3mya & Fool`.
       _phone(tester);
       await tester.pumpWidget(
-        _host(
-          RahmaRecipeView(recipe: _kebda()),
-          locale: const Locale('ar'),
-        ),
+        _host(RahmaRecipeView(recipe: _kebda()), locale: const Locale('ar')),
       );
       await tester.pumpAndSettle();
       final title = tester.widget<Directionality>(

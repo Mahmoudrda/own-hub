@@ -50,6 +50,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
+import '../../../ui/app_preparation_steps.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_scaffold.dart';
@@ -67,7 +68,7 @@ class StartingProgramView extends StatelessWidget {
   const StartingProgramView({
     super.key,
     required this.repository,
-    this.catalogue = kStartingProgramCatalogue,
+    this.catalogue,
     this.onStartNow,
     this.onStartTomorrow,
     this.onPickDifferentProgram,
@@ -76,6 +77,7 @@ class StartingProgramView extends StatelessWidget {
     this.onSaveMyWeek,
     this.title,
     this.onBack,
+    this.showSteps = false,
   });
 
   /// The end of the short "Your week", before she has an account.
@@ -95,11 +97,18 @@ class StartingProgramView extends StatelessWidget {
   /// Back to "Your week", when the screen has a bar.
   final VoidCallback? onBack;
 
+  /// D39: before her programme appears, tick off what was done to choose it —
+  /// her answers read, her equipment checked, her days and minutes matched,
+  /// and, at home, a quiet session preferred. Each is a step
+  /// [selectStartingProgram] really takes. Shown once per set of answers in a
+  /// run of the app; the footer works throughout.
+  final bool showSteps;
+
   final IntakeRepository repository;
 
-  /// Injectable, so the real catalogue replaces this one without touching the
-  /// screen — and so a test can prove the card comes from data.
-  final List<StartingProgram> catalogue;
+  /// Injectable, so a test can prove the card comes from data. Null reads the
+  /// bundled programmes ([kStartingProgramCatalogue]).
+  final List<StartingProgram>? catalogue;
 
   /// `R03` — into day one, now.
   final VoidCallback? onStartNow;
@@ -114,11 +123,39 @@ class StartingProgramView extends StatelessWidget {
 
   /// Dictionary copy for a programme id, or null when none has been written.
   ///
-  /// TODO(owner): extend this with the authored catalogue. A programme with no
-  /// copy renders no card, which is visibly incomplete — the deliberate
-  /// alternative to showing her an English id or an invented name.
+  /// A programme with no copy renders no card, which is visibly incomplete: the
+  /// deliberate alternative to showing her an English id or an invented name.
+  /// Every programme in the bundled file has an entry, and a test holds that.
   _ProgramCopy? _copyFor(AppL10n l10n, String programId, Intake intake) {
+    // The plan's name and its first week, then where it is done: the file's ids
+    // are `<plan>_<variant>`.
+    _ProgramCopy plan(String title, String firstWeek, String detail) =>
+        (title: title, detail: detail, firstWeek: firstWeek);
+    final stronger = l10n.eachSessionIsAFullBodyWith;
+    final feelGood = l10n.eachSessionIsAGentleFullBody;
+    final steady = l10n.eachSessionIsASteadyCircuitWith;
+    final atHome = l10n.atHomeQuietNothingToBuy;
+    final withDumbbells = l10n.atHomeQuietWithYourDumbbells;
+    final atGym = l10n.atTheGymWeightsAndMachines;
     switch (programId) {
+      case 'stronger_home':
+        return plan(l10n.getStronger, stronger, atHome);
+      case 'stronger_weights':
+        return plan(l10n.getStronger, stronger, withDumbbells);
+      case 'stronger_gym':
+        return plan(l10n.getStronger, stronger, atGym);
+      case 'feel_better_home':
+        return plan(l10n.feelGoodAndMove, feelGood, atHome);
+      case 'feel_better_weights':
+        return plan(l10n.feelGoodAndMove, feelGood, withDumbbells);
+      case 'feel_better_gym':
+        return plan(l10n.feelGoodAndMove, feelGood, atGym);
+      case 'lose_steadily_home':
+        return plan(l10n.loseSteadily, steady, atHome);
+      case 'lose_steadily_weights':
+        return plan(l10n.loseSteadily, steady, withDumbbells);
+      case 'lose_steadily_gym':
+        return plan(l10n.loseSteadily, steady, atGym);
       case 'beginner_foundations':
         return (
           title: l10n.beginnerFoundations,
@@ -127,7 +164,7 @@ class StartingProgramView extends StatelessWidget {
           detail: intake.place == TrainingPlace.home
               ? l10n.n8WeeksQuietNoEquipment
               : l10n.n8WeeksForBeginners,
-          firstWeek: l10n.week1StartsWithFourMovesOn,
+          firstWeek: l10n.week1StartsWithFourMovesOn_9iwwr,
         );
     }
     return null;
@@ -137,6 +174,7 @@ class StartingProgramView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final Intake intake = repository.read();
+    final catalogue = this.catalogue ?? kStartingProgramCatalogue;
     final program = selectStartingProgram(intake, catalogue: catalogue);
     final copy = program == null
         ? null
@@ -197,12 +235,18 @@ class StartingProgramView extends StatelessWidget {
           children: [
             // "Your answers", never a count: the walk is five questions or
             // six, or three in the short "Your week".
-            Text(
-              l10n.builtFromYourAnswers,
-              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-            ),
-            const SizedBox(height: 6),
-            // Her answers read back, at section scale under the small kicker.
+            // While the one tick is on its way in, it says the same words.
+            if (!(showSteps &&
+                !_stepsShownFor.contains(_answersKey(intake)))) ...[
+              Text(
+                l10n.builtFromYourAnswers,
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 6),
+            ],
+            // Her answers read back, at section scale.
             Text(
               herAnswersLine(
                 l10n,
@@ -216,57 +260,62 @@ class StartingProgramView extends StatelessWidget {
           ],
         ),
         if (copy != null)
-          AppCard(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // The programme is the page's one object, so its
-                        // name is the one thing marked.
-                        MarkerHighlight(
-                          drawOn: true,
-                          delay: const Duration(milliseconds: 240),
-                          child: Text(
-                            copy.title,
-                            textWidthBasis: TextWidthBasis.longestLine,
-                            style: AppText.titleL,
+          _StepsThenCard(
+            show: showSteps,
+            answers: _answersKey(intake),
+            steps: [l10n.builtFromYourAnswers],
+            card: AppCard(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // The programme is the page's one object, so its
+                          // name is the one thing marked.
+                          MarkerHighlight(
+                            drawOn: true,
+                            delay: HandTiming.medium,
+                            child: Text(
+                              copy.title,
+                              textWidthBasis: TextWidthBasis.longestLine,
+                              style: AppText.titleL,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          copy.detail,
-                          style: AppText.bodyM.copyWith(
-                            color: AppColors.onSurfaceVariant,
+                          const SizedBox(height: 3),
+                          Text(
+                            copy.detail,
+                            style: AppText.bodyM.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Icon(
-                    Icons.workspace_premium,
-                    size: 28,
-                    color: AppColors.primaryDim,
-                  ),
-                ],
-              ),
-              // The prototype had a still here, labelled "coach demo still" in
-              // a monospace face: a designer's annotation marking what goes in
-              // the slot, like "logotype" on C01. There is no still to put in
-              // it, and an empty media block with a play button on the last
-              // screen of setup is a control that plays nothing, on the screen
-              // that hands her into the app. It comes back with the asset.
-              Text(
-                copy.firstWeek,
-                style: AppText.bodyM.copyWith(
-                  color: AppColors.onSurfaceVariant,
+                    const SizedBox(width: 12),
+                    const Icon(
+                      Icons.workspace_premium,
+                      size: 28,
+                      color: AppColors.primaryDim,
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                // The prototype had a still here, labelled "coach demo still" in
+                // a monospace face: a designer's annotation marking what goes in
+                // the slot, like "logotype" on C01. There is no still to put in
+                // it, and an empty media block with a play button on the last
+                // screen of setup is a control that plays nothing, on the screen
+                // that hands her into the app. It comes back with the asset.
+                Text(
+                  copy.firstWeek,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         // What happens next, before she taps: one check, then day one.
         if (beforeSignup)
@@ -294,39 +343,63 @@ class StartingProgramView extends StatelessWidget {
               ),
             ],
           ),
-        AppCard(
-          variant: AppCardVariant.sage,
-          borderRadius: AppRadius.md,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.calendar_month,
-                  size: 24,
-                  color: AppColors.tertiary,
-                ),
-                const SizedBox(width: 10),
-                // "Your week: Monday, Tuesday and Thursday. Change any day by
-                // tapping it." was false twice over. Nothing in this product
-                // schedules a weekday, so there were no days to change and no
-                // tap that changed one; and §2 rule 3 is that this app counts
-                // weeks and never days, so naming three of them on the last
-                // screen of setup taught her the opposite of how her week is
-                // scored. What the card says now is the rule that actually
-                // governs it.
-                Expanded(
-                  child: Text(
-                    l10n.yourWeekCountsWhenYouFinishYour,
-                    style: AppText.bodyM.copyWith(color: AppColors.onSurface),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ],
     );
   }
+}
+
+/// Her answers as one string, so the steps are shown once for each set of
+/// answers rather than on every visit to the page.
+String _answersKey(Intake intake) =>
+    '${intake.goal.wireName}|${intake.place.wireName}|'
+    '${intake.equipment.map((e) => e.wireName).join(',')}|'
+    '${intake.days}|${intake.minutes}';
+
+/// The answer sets the steps have already been shown for, this run.
+final Set<String> _stepsShownFor = <String>{};
+
+@visibleForTesting
+void resetStartingProgramSteps() => _stepsShownFor.clear();
+
+/// The steps, then the programme they chose.
+class _StepsThenCard extends StatefulWidget {
+  const _StepsThenCard({
+    required this.show,
+    required this.answers,
+    required this.steps,
+    required this.card,
+  });
+
+  final bool show;
+  final String answers;
+  final List<String> steps;
+  final Widget card;
+
+  @override
+  State<_StepsThenCard> createState() => _StepsThenCardState();
+}
+
+class _StepsThenCardState extends State<_StepsThenCard> {
+  late final bool _stepsDue =
+      widget.show && !_stepsShownFor.contains(widget.answers);
+  late bool _cardShown = !_stepsDue;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (_stepsDue)
+        AppPreparationSteps(
+          key: const ValueKey('o05-steps'),
+          labels: widget.steps,
+          completed: widget.steps.length,
+          onShown: () {
+            _stepsShownFor.add(widget.answers);
+            if (mounted) setState(() => _cardShown = true);
+          },
+        ),
+      if (_cardShown) widget.card,
+    ],
+  );
 }

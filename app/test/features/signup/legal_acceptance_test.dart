@@ -18,14 +18,13 @@ import 'package:own_hub/features/signup/presentation/phone_number_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
-Widget _host(Widget child, {Locale locale = const Locale('en')}) =>
-    MaterialApp(
-      locale: locale,
-      localizationsDelegates: AppL10n.localizationsDelegates,
-      supportedLocales: AppL10n.supportedLocales,
-      theme: buildTheme(locale),
-      home: child,
-    );
+Widget _host(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(
+  locale: locale,
+  localizationsDelegates: AppL10n.localizationsDelegates,
+  supportedLocales: AppL10n.supportedLocales,
+  theme: buildTheme(locale),
+  home: child,
+);
 
 /// Records the order things happen in.
 class _OrderedAuth extends FakeAuthRepository {
@@ -36,7 +35,9 @@ class _OrderedAuth extends FakeAuthRepository {
   @override
   Future<void> sendCode(String phoneNumber) async {
     final pending = await PendingLegalAcceptance.read();
-    log.add(pending == null ? 'sent without acceptance' : 'sent after acceptance');
+    log.add(
+      pending == null ? 'sent without acceptance' : 'sent after acceptance',
+    );
     await super.sendCode(phoneNumber);
   }
 }
@@ -93,7 +94,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(log, ['crash choice applied', 'sent after acceptance']);
-      expect(crash, isFalse, reason: 'crash reports are off unless she opts in');
+      expect(
+        crash,
+        isFalse,
+        reason: 'crash reports are off unless she opts in',
+      );
       final pending = await PendingLegalAcceptance.read();
       expect(pending, isNotNull);
       expect(pending!.termsVersion, kTermsVersion);
@@ -140,13 +145,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         find.text(
-          'بالضغط على «الموافقة وإرسال الرمز» تقبلين شروط الاستخدام وسياسة الخصوصية.',
+          'لما تضغطي على «موافقة وعايزة الكود»، بتقبلي شروط الاستخدام وسياسة الخصوصية.',
         ),
         findsOneWidget,
       );
       await tester.enterText(find.byType(EditableText), '01001234567');
       await tester.pumpAndSettle();
-      await tester.tap(find.text('الموافقة وإرسال الرمز'));
+      await tester.tap(find.text('موافقة وعايزة الكود'));
       await tester.pumpAndSettle();
       expect((await PendingLegalAcceptance.read())!.locale, 'ar');
     });
@@ -300,10 +305,8 @@ void main() {
         _host(
           Builder(
             builder: (context) => TextButton(
-              onPressed: () => showLegalUpdateSheet(
-                context,
-                onAgree: () async => false,
-              ),
+              onPressed: () =>
+                  showLegalUpdateSheet(context, onAgree: () async => false),
               child: const Text('open'),
             ),
           ),

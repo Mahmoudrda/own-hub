@@ -152,7 +152,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             The first 100 women on the list try Own Hub before it opens to
             everyone.</p>
             <div class="form-card">""" + FORM + """
-            <p class="small">That is all we ask for. The waitlist is not an
+            <p class="small">That&rsquo;s all we ask for. The waitlist isn&rsquo;t an
             account. What we keep, and for how long, is in the
             <a href="/privacy#c-waitlist">privacy policy</a>.</p>
             </div>
@@ -173,9 +173,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       <div class="wrap hero-grid">
         <div class="hero-copy">
           <p class="eyebrow">""" + eyebrow + """</p>
-          <h1>Your training, your food, your cycle. <span class="hand">Women only.</span></h1>
-          <p class="lede">Home workouts, food you already cook, and your cycle,
-          in one app only verified women can enter. In Arabic and English.</p>
+          <h1>Workouts and food that fit your month. <span class="hand">Women only.</span></h1>
+          <p class="lede">Home workouts, food you already cook, and a plan that follows how you
+          feel from day to day. Only verified women get in. It works in Arabic and English.</p>
           """ + hero_cta + """
         </div>
         <div class="hero-art">
@@ -189,18 +189,16 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       <div class="wrap">
         <div class="prose">
 """ + h2("inside", "What is inside it", "no-rule") + """
-          <p class="lede">Train, cook and follow your cycle, privately. In the
-          app, &ldquo;Show me around&rdquo; shows it all on a sample week
-          before you join, and saves nothing.</p>
+          <p class="lede">Want to see it first? Tap &ldquo;Show me around&rdquo; in the app and
+          try everything on a sample week before you join. Nothing is saved.</p>
         </div>
         <ul class="shots">
           <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button for the set you just finished.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Tap a set when you finish it. The rest timer starts itself.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card of what you have done, to share if you want.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "08-tour-cycle", "My cycle in the tour: how are you feeling, with today, calendar and patterns.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>My cycle.</b> Private from the start, gentler on harder days.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card with everything you&rsquo;ve done. Share it if you like.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "07-tour-dinners", "The week of dinners in the tour: five sample dinners, planned for you.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Eat.</b> A week of dinners planned for you, gentler on harder days.</figcaption></figure></li>
         </ul>
-        <p class="small">What is not in this version: there is no community and no
-        coaching, so nothing in the app connects you to another member, and
-        there is no assistant.</p>
+        <p class="small">This version has no community, coaching or assistant, so
+        nothing in the app connects you to another member.</p>
       </div>
     </section>
 
@@ -208,17 +206,17 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       <div class="wrap split even">
         <div class="prose">
 """ + h2("women-only", "Women only, checked once", "no-rule") + """
-          <p class="lede">A space for women only means something only if it is
-          checked. So every member is checked once, at the door, and then the
-          check stays out of her way.</p>
-          <p>Your cycle, measurements and weight stay on your phone unless you
-          choose to back them up. The <a href="/privacy">privacy policy</a>
+          <p class="lede">A women-only space only means something if someone checks.
+          So we check every member once, at the door, and then stay out of her
+          way.</p>
+          <p>Whatever you note about your body, plus your measurements and weight,
+          stays on your phone unless you choose to back it up. The <a href="/privacy">privacy policy</a>
           says exactly what the app keeps, where, and for how long.</p>
         </div>
           <ol class="steps card">
             <li>You join with your Egyptian mobile number and a code sent by SMS.</li>
             <li>You show your national ID card and take a live selfie. If the
-            check cannot decide, a woman from Own Hub contacts you to arrange
+            check can&rsquo;t decide, a woman from Own Hub contacts you to arrange
             it.</li>
             <li>The check runs on our own server in Frankfurt, Germany. The
             photographs of your card and your face are never stored.</li>
@@ -234,7 +232,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <ul class="doorways">
           <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, where it is kept, and why your ID and selfie photos are never stored.</span></a></li>
           <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, what it is not, and the medical warning worth reading even if you skip the rest.</span></a></li>
-          <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person, the hours messages are read, and answers to the things women write in about.</span></a></li>
+          <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person, when messages get read, and answers to what women ask most.</span></a></li>
           <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to delete your account from inside the app, and how to ask without installing it.</span></a></li>
         </ul>
       </div>
@@ -553,6 +551,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           you have agreed to the check.</li>
         </ul>
 
+<section aria-label="PostHog"><h3>PostHog, only if you allow usage statistics</h3>
+        <p>PostHog receives a small set of app milestones (such as completing setup or a workout), an anonymous app identifier and technical device metadata in the United States. We send no account identifier, health values, messages or payment details, and do not enable session recordings. We send one fixed integration status log per app process while consent is enabled. Usage is optional and turning it off stops new collection and resets the identifier; this does not erase records already received by a provider. PostHog's free plan currently retains analytics for one year and logs for 14 days. The Google Analytics retention period below applies only to Google. New consent is required when this provider is introduced.</p></section>
+
 """ + h3("c-ai", "3.8 Artificial intelligence") + """
         <ul>
           <li><b>We never use your data to train AI models, ours or
@@ -599,6 +600,29 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         visits. The company that hosts it, listed in section 4, receives the
         standard data any website receives, such as your IP address and browser type, in
         order to deliver the pages.</p>
+
+""" + h3("c-notifications", "3.11 Reminders and notifications") + """
+        <p>Almost every notification Own Hub shows is made on your phone and
+        never comes from our servers.</p>
+        <ul>
+          <li><b>Scheduled on your phone.</b> Training reminders, rest-timer
+          alerts, the &ldquo;add a session you did&rdquo; nudge and the gentle
+          check-ins after some days away are all scheduled by the app on your
+          phone. They are never sent from our servers, and we do not receive
+          anything about them.</li>
+          <li><b>The one thing we store for push.</b> A device token, which lets
+          us tell you when your account check is done. We use it for nothing
+          else. It is deleted when you delete your account.</li>
+          <li><b>Quiet hours.</b> Reminders are never shown between 22:00 and
+          08:00. Anything due in that time waits until 08:00. Two things can
+          still reach you then: a rest timer you started yourself, and word
+          that your account check is done.</li>
+          <li><b>Your choice.</b> You can turn each type off in Notifications
+          in the app. You can also turn all of them off in your phone&rsquo;s
+          settings.</li>
+          <li><b>What they never show.</b> Notifications never show health,
+          cycle or weight details.</li>
+        </ul>
 
 """ + h2("where", "4. Who handles your data, and where") + """
         <p>We do not sell your data, and we do not share it with advertisers,
@@ -850,6 +874,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>12 October 2026, pre-release analytics update:</b> optional PostHog US usage milestones and one technical status log, requiring fresh analytics consent.</li>
           <li><b>3.0, update before release:</b> usage statistics with Google
           Analytics for Firebase, only with your separate consent (&ldquo;Help
           improve Own Hub&rdquo;), and more detail on what a crash report
@@ -1170,9 +1195,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <h1>Support</h1>
         <p class="meta"><b>Last updated:</b> {{effectiveDate}}</p>
 
-        <p class="lede">Write to {{mailto:contactSupport}} and you will get an
-        answer. There is no ticket system, no chatbot and no form to fill
-        in.</p>
+        <p class="lede">Write to {{mailto:contactSupport}} and a person will
+        answer. There&rsquo;s no ticket system or chatbot in the way.</p>
 
 """ + h2("who-reads", "Who reads it, and when") + """
         <div class="callout">
@@ -1435,7 +1459,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <div class="wrap">
       <div class="prose">
         <h1>Join the waitlist</h1>
-        <p class="lede">Own Hub is not open yet, and it is free, all of it.
+        <p class="lede">Own Hub isn&rsquo;t open yet, and all of it is free.
         Leave your Egyptian mobile number or your email address. The first
         100 women on the list try it before it opens to everyone. Everyone
         else hears from us once, the day it opens.</p>

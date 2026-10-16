@@ -123,7 +123,7 @@ class _ScheduleViewState extends State<ScheduleView> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           children: [
             Text(
-              l10n.reachYourGoalAndTheWeekCounts,
+              l10n.hitYourGoalAndTheWeekCounts,
               style: AppText.body.copyWith(
                 color: AppColors.onTertiaryContainer,
               ),

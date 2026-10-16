@@ -61,24 +61,24 @@
 /* ---------- Tokens (the app's, by name) ---------- */
 :root {
   color-scheme: light;
-  --paper: #FFF8F9;          /* surface */
+  --paper: #FCF8F2;          /* surface */
   --paper-raised: #FFFFFF;   /* surfaceLowest */
-  --paper-low: #FFF1F4;      /* surfaceLow */
-  --paper-sunk: #FBEAEF;     /* surfaceContainer */
-  --ink: #241A1E;            /* ink / onSurface */
-  --ink-soft: #6B5C61;       /* onSurfaceVariant */
-  --rose: #A24661;           /* primary */
-  --rose-deep: #9A3F57;      /* primaryDim */
-  --rose-ink: #4A1C2E;       /* onPrimaryContainer */
-  --rose-container: #FFD9E3; /* primaryContainer, the hand's marker */
-  --rose-soft: #F8E1E7;      /* primarySoft */
-  --rose-fill: #F2B6C6;      /* ArtTones.rose fill */
+  --paper-low: #F8F2EA;      /* surfaceLow */
+  --paper-sunk: #F4EDE3;     /* surfaceContainer */
+  --ink: #123F50;            /* ink / onSurface */
+  --ink-soft: #4E6068;       /* onSurfaceVariant */
+  --rose: #1A5D74;           /* primary */
+  --rose-deep: #123F50;      /* primaryDim */
+  --rose-ink: #123F50;       /* onPrimaryContainer */
+  --rose-container: #F4BEBB; /* primaryContainer, the hand's marker */
+  --rose-soft: #F9DEDC;      /* primarySoft */
+  --rose-fill: #F4BEBB;      /* ArtTones.rose fill */
   --sage: #4C6E55;           /* tertiary */
   --sage-wash: #DDEDE1;      /* tertiaryContainer */
-  --pencil: #977C84;         /* outline, the hand's pencil */
-  --rule: #EBDCDF;           /* outlineVariant */
-  --rule-strong: #D9C3C9;
-  --focus: #9A3F57;
+  --pencil: #60858F;         /* outline, the hand's pencil */
+  --rule: #E8DED3;           /* outlineVariant */
+  --rule-strong: #D6CABC;
+  --focus: #123F50;
 
   --measure: 38rem;
   --wide: 72rem;
@@ -650,8 +650,8 @@ html[lang="ar"] .cards dt {
   padding: 0.65rem 1.5rem;
   border: 0;
   border-radius: var(--r-btn);
-  background: var(--rose);
-  color: #FFFFFF;
+  background: var(--rose-fill);
+  color: var(--ink);
   font: inherit;
   font-size: 1.0625rem;
   font-weight: 600;
@@ -682,7 +682,7 @@ html[dir="rtl"] .btn::after {
    stuck in its hover colour. */
 @media (hover: hover) and (pointer: fine) {
   .btn:hover {
-    background: var(--rose-deep);
+    background: #E8A5A2;
   }
   .btn.ghost:hover {
     background: var(--rose-container);
@@ -814,7 +814,7 @@ html[dir="rtl"] .kitten {
   padding: 0.45rem;
   border-radius: 2.1rem;
   background: var(--ink);
-  box-shadow: 0 30px 60px -30px rgba(74, 28, 46, 0.45);
+  box-shadow: 0 30px 60px -30px rgba(18, 63, 80, 0.45);
 }
 .phone img {
   display: block;
@@ -902,7 +902,7 @@ ol.steps > li::before {
   inline-size: 100%;
   border-radius: var(--r-lg);
   border: 1px solid var(--rule);
-  box-shadow: 0 16px 32px -24px rgba(74, 28, 46, 0.5);
+  box-shadow: 0 16px 32px -24px rgba(18, 63, 80, 0.5);
   background: var(--paper);
 }
 .shots figcaption {

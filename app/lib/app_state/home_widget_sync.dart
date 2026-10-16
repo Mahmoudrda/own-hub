@@ -9,7 +9,8 @@
 /// ## Nothing leaves the phone
 ///
 /// The App Group is storage on this handset shared between the app and its
-/// own extension. No network call is made from here and none is reachable
+/// own extension (on Android, the app's own SharedPreferences, read by the
+/// widget provider in the same package). No network call is made from here and none is reachable
 /// from it. The manifest reason is 1C8F.1, the App Group one.
 ///
 /// ## When it writes
@@ -37,6 +38,8 @@ library;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/widgets.dart';
 import 'package:home_widget/home_widget.dart';
 
@@ -52,6 +55,10 @@ const String kWidgetAppGroup = 'group.com.ownhub.app';
 /// The `kind` of each widget in `ios/OwnHubWidgets`. A reload names them.
 const List<String> kWidgetKinds = ['OwnHubWeek', 'OwnHubToday'];
 
+/// The Android `AppWidgetProvider` class (in the app's package) that draws the
+/// Today widget. `android/app/src/main/kotlin/com/ownhub/app` holds it.
+const String kAndroidWidgetName = 'TodayWidgetProvider';
+
 /// Where the payload goes. One implementation ships; the interface exists so a
 /// test can watch what was written without a platform channel.
 abstract class WidgetStore {
@@ -60,7 +67,7 @@ abstract class WidgetStore {
   /// Writes [value] under [key], or removes the key when [value] is null.
   Future<void> save(String key, String? value);
 
-  /// Asks iOS to redraw the widget of [kind] from the stored payload.
+  /// Asks the platform to redraw the widget of [kind] from the stored payload.
   Future<void> reload(String kind);
 }
 
@@ -80,6 +87,12 @@ class HomeWidgetStore implements WidgetStore {
 
   @override
   Future<void> reload(String kind) async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      // Android has the Today widget only; the Week kind is iOS-only.
+      if (kind != kWidgetKinds[1]) return;
+      await HomeWidget.updateWidget(androidName: kAndroidWidgetName);
+      return;
+    }
     await HomeWidget.updateWidget(iOSName: kind);
   }
 }
@@ -126,7 +139,7 @@ class HomeWidgetSync {
 
   bool get isRunning => _running;
 
-  /// Starts listening and writes once. Called from `main()` on iOS only.
+  /// Starts listening and writes once. Called from `main()` on iOS and Android.
   void start({
     required TodayDay Function() readDay,
     required bool Function() isOpen,

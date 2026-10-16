@@ -55,7 +55,9 @@ import 'dart:convert';
 
 import '../domain/clock/app_clock.dart';
 import '../domain/identity/user_roles.dart';
+import '../domain/rewards/daily_cap.dart';
 import '../domain/rewards/personal_best_detector.dart';
+import '../domain/rewards/training_streak.dart';
 import '../domain/rewards/week_rollup.dart';
 import '../domain/rewards/weekly_goal.dart';
 import '../domain/training/prescribed_set.dart';
@@ -77,14 +79,19 @@ import '../features/progress/domain/progress_repository.dart';
 import '../features/signup/domain/locale_preference.dart';
 import '../features/today/domain/today_day.dart';
 import '../features/today/domain/today_repository.dart';
+import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/train_repository.dart';
 import '../features/train/domain/training_reminders.dart';
+import 'first_gym_guide_state.dart';
 import '../routing/app_router.dart';
 import 'coach_invite_state.dart';
 import 'coach_profile_state.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
+import 'rewards_state.dart';
+import 'workout_session_state.dart';
 import 'role_state.dart';
+import 'training_streak_state.dart';
 
 /// The shape this build writes.
 ///
@@ -119,6 +126,7 @@ abstract final class AppSnapshot {
     'today': _captureToday(),
     'progress': _captureProgress(),
     'train': _captureTrain(),
+    'liveSession': ?_captureLiveSession(),
     'meals': _captureMeals(),
     'eat': _captureEat(),
     'cycle': _captureCycle(),
@@ -128,9 +136,14 @@ abstract final class AppSnapshot {
     'language': _captureLanguage(),
     'pledge': _capturePledge(),
     'reminders': _captureReminders(),
+    'firstGymGuide': <String, Object?>{
+      'seen': FirstGymGuideState.instance.seen,
+    },
     'roles': _captureRoles(),
     'coach': _captureCoach(),
     'invite': _captureInvite(),
+    'awards': _captureAwards(),
+    'trainingStreak': _captureTrainingStreak(),
   };
 
   /// Reads [raw] and puts it back into the stores.
@@ -195,9 +208,14 @@ abstract final class AppSnapshot {
     'language': _readLanguage,
     'pledge': _readPledge,
     'reminders': _readReminders,
+    'firstGymGuide': _readFirstGymGuide,
     'roles': _readRoles,
     'coach': _readCoach,
     'invite': _readInvite,
+    'awards': _readAwards,
+    'trainingStreak': _readTrainingStreak,
+    // After `train`: it points at a session that section restores.
+    'liveSession': _readLiveSession,
   };
 }
 
@@ -737,13 +755,123 @@ void Function()? _readTrain(Object? raw) {
     sessions: sessions,
     flushes: flushes,
     swaps: swaps,
-    // The live session id is deliberately not carried across. A session she
-    // was midway through when the app was killed is over; `WorkoutSessionState`
-    // is gone with it, and pointing the repository at that id would attribute
-    // her next flush to a workout she is no longer doing. The counter IS
-    // carried, so the next live session gets an id no old one holds.
+    // The live session is carried by its own section, `liveSession`. The
+    // counter is carried here, so the next session gets an id no old one holds.
     sessionCounter: counter,
   );
+}
+
+Map<String, Object?>? _captureLiveSession() {
+  final state = WorkoutSessionState.instance;
+  final day = state.day;
+  final session = state.session;
+  if (!state.isLive || day == null || session == null) return null;
+  return <String, Object?>{
+    'sessionId': session.id,
+    'day': <String, Object?>{
+      'id': day.id,
+      'title': day.title,
+      'summary': day.summary,
+      'constraints': day.constraints,
+      'planVersion': ?day.planVersion,
+      'moves': [for (final move in day.moves) _plannedMove(move)],
+    },
+    'moveIndex': state.moveIndex,
+    'setIndex': state.setIndex,
+    'loggedSets': state.loggedSetCount,
+    if (state.startedAt case final at?) 'startedAt': at.toIso8601String(),
+    'swaps': [
+      for (final entry in state.swappedMoves.entries)
+        <String, Object?>{'for': entry.key, 'move': _plannedMove(entry.value)},
+    ],
+  };
+}
+
+Map<String, Object?> _plannedMove(PlannedMove move) => <String, Object?>{
+  'exerciseId': move.exerciseId,
+  'name': move.name,
+  'prescriptionLabel': move.prescriptionLabel,
+  'sets': [for (final set in move.sets) _prescription(set)],
+  if (move.cues.isNotEmpty) 'cues': move.cues,
+  if (move.quiet) 'quiet': true,
+  if (move.needsEquipment) 'needsEquipment': true,
+  if (move.floorOnly) 'floorOnly': true,
+  'videoAssetId': ?move.videoAssetId,
+};
+
+PlannedMove? _readPlannedMove(Object? raw) {
+  final row = _map(raw);
+  if (row == null) return null;
+  final exerciseId = _str(row['exerciseId']);
+  final name = _str(row['name']);
+  if (exerciseId == null || name == null) return null;
+  return PlannedMove(
+    exerciseId: exerciseId,
+    name: name,
+    prescriptionLabel: _str(row['prescriptionLabel']) ?? '',
+    sets: [
+      for (final entry in _list(row['sets']) ?? const <Object?>[])
+        ?_readPrescription(entry),
+    ],
+    cues: [
+      for (final cue in _list(row['cues']) ?? const <Object?>[])
+        if (cue is String) cue,
+    ],
+    quiet: _bool(row['quiet']) ?? false,
+    needsEquipment: _bool(row['needsEquipment']) ?? false,
+    floorOnly: _bool(row['floorOnly']) ?? false,
+    videoAssetId: _str(row['videoAssetId']),
+  );
+}
+
+void Function()? _readLiveSession(Object? raw) {
+  final section = _map(raw);
+  final dayRow = section == null ? null : _map(section['day']);
+  final sessionId = section == null ? null : _str(section['sessionId']);
+  if (section == null || dayRow == null || sessionId == null) return null;
+  final id = _str(dayRow['id']);
+  if (id == null) return null;
+  final moves = <PlannedMove>[
+    for (final entry in _list(dayRow['moves']) ?? const <Object?>[])
+      ?_readPlannedMove(entry),
+  ];
+  if (moves.isEmpty) return null;
+  final day = WorkoutDay(
+    id: id,
+    title: _str(dayRow['title']) ?? '',
+    summary: _str(dayRow['summary']) ?? '',
+    constraints: _str(dayRow['constraints']) ?? '',
+    planVersion: _str(dayRow['planVersion']),
+    moves: moves,
+  );
+  final swaps = <String, PlannedMove>{};
+  for (final entry in _list(section['swaps']) ?? const <Object?>[]) {
+    final row = _map(entry);
+    final replaced = row == null ? null : _str(row['for']);
+    final move = row == null ? null : _readPlannedMove(row['move']);
+    if (replaced != null && move != null) swaps[replaced] = move;
+  }
+  final moveIndex = _int(section['moveIndex']) ?? 0;
+  final setIndex = _int(section['setIndex']) ?? 0;
+  final loggedSets = _int(section['loggedSets']) ?? 0;
+  final startedAt = DateTime.tryParse(_str(section['startedAt']) ?? '');
+
+  return () {
+    // The session was restored by `train`, which runs first. Without it there
+    // is nothing for her next log to belong to, so she starts fresh.
+    final session = AppRouter.trainRepository.sessionById(sessionId);
+    if (session == null) return;
+    AppRouter.trainRepository.resumeLive(sessionId);
+    WorkoutSessionState.instance.restoreLive(
+      day: day,
+      session: session,
+      moveIndex: moveIndex,
+      setIndex: setIndex,
+      loggedSets: loggedSets,
+      startedAt: startedAt,
+      swaps: swaps,
+    );
+  };
 }
 
 Map<String, Object?> _session(TrainSession session) => <String, Object?>{
@@ -1056,6 +1184,8 @@ Map<String, Object?> _mealPlan(MealPlan plan) => <String, Object?>{
         'group': entry.value.group.name,
         'ticked': entry.value.ticked,
         'tickedAt': entry.value.tickedAt?.toIso8601String(),
+        'text': entry.value.text,
+        'recipeId': entry.value.recipeId,
       },
   },
   'recipeVersion': plan.recipeVersion,
@@ -1077,6 +1207,8 @@ MealPlan? _readMealPlan(String weekId, Object? raw) {
       group: _pick(GroceryGroup.values, line['group']) ?? GroceryGroup.cupboard,
       ticked: _bool(line['ticked']) ?? false,
       tickedAt: _time(line['tickedAt']),
+      text: _str(line['text']),
+      recipeId: _str(line['recipeId']),
     );
   }
   return MealPlan(
@@ -1584,11 +1716,22 @@ void Function()? _readPledge(Object? raw) {
   };
 }
 
+// The day, not the minute: the away count runs in days, and an open that
+// changes the minute alone must not make the snapshot look changed.
+String? _dayOf(DateTime? at) =>
+    at == null ? null : DateTime(at.year, at.month, at.day).toIso8601String();
+
 // Her training reminders: whether R10 has offered them, and the days and time
 // she chose. When to remind her, never a record of what she did.
 Map<String, Object?> _captureReminders() => <String, Object?>{
   'offered': ReminderState.instance.offered,
   'schedule': ReminderState.instance.schedule?.toJson(),
+  'permission': ReminderState.instance.permissionGranted,
+  'logNudge': ReminderState.instance.prefs.logNudge,
+  'checkIns': ReminderState.instance.prefs.checkIns,
+  'restAlert': ReminderState.instance.prefs.restAlert,
+  'lastActiveAt': _dayOf(ReminderState.instance.lastActiveAt),
+  'lastSessionAt': _dayOf(ReminderState.instance.lastSessionAt),
 };
 
 void Function()? _readReminders(Object? raw) {
@@ -1596,11 +1739,115 @@ void Function()? _readReminders(Object? raw) {
   if (section == null) return null;
   final offered = _bool(section['offered']) ?? false;
   final schedule = TrainingReminders.fromJson(section['schedule']);
+  final permission =
+      (_bool(section['permission']) ?? false) || schedule != null;
+  final prefs = NotificationPrefs(
+    logNudge: _bool(section['logNudge']) ?? true,
+    checkIns: _bool(section['checkIns']) ?? true,
+    restAlert: _bool(section['restAlert']) ?? true,
+  );
+  final active = DateTime.tryParse(_str(section['lastActiveAt']) ?? '');
+  final session = DateTime.tryParse(_str(section['lastSessionAt']) ?? '');
   return () {
     ReminderState.instance
       ..offered = offered
-      ..schedule = schedule;
+      ..schedule = schedule
+      ..permissionGranted = permission
+      ..prefs = prefs
+      ..lastActiveAt = active
+      ..lastSessionAt = session;
   };
+}
+
+void Function()? _readFirstGymGuide(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final seen = _bool(section['seen']) ?? false;
+  return () => FirstGymGuideState.instance.seen = seen;
+}
+
+// Her awards (D41): the ids already paid and today's cap. Without these every
+// launch began a fresh ledger, so the daily cap reset with the app and a week
+// could be paid twice.
+Map<String, Object?> _captureAwards() {
+  final rewards = RewardsState.instance;
+  final cap = rewards.capState;
+  return <String, Object?>{
+    'ids': rewards.awardIds.toList(),
+    'cap': <String, Object?>{
+      'day': cap.dayKey,
+      'points': cap.pointsToday,
+      'bests': cap.bestsToday,
+    },
+  };
+}
+
+void Function()? _readAwards(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final ids = _strings(section['ids']);
+  final cap = _map(section['cap']);
+  final state = cap == null
+      ? null
+      : DailyCapState(
+          dayKey: _str(cap['day']) ?? '',
+          pointsToday: _int(cap['points']) ?? 0,
+          bestsToday: _int(cap['bests']) ?? 0,
+        );
+  return () => RewardsState.instance.restore(awardIds: ids, cap: state);
+}
+
+// Her training streak (D37): her choices and her sessions per day. The length
+// is derived from these, never stored. Null until this phone has either.
+Map<String, Object?>? _captureTrainingStreak() {
+  final state = TrainingStreakState.instance;
+  if (!state.touched) return null;
+  final settings = state.settings();
+  return <String, Object?>{
+    'on': settings.enabled,
+    'since': settings.since,
+    'best': settings.best,
+    'pauses': [
+      for (final pause in settings.pauses)
+        <String, Object?>{'from': pause.start, 'to': pause.end},
+    ],
+    'days': state.sessionsByDay,
+  };
+}
+
+void Function()? _readTrainingStreak(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final since = _str(section['since']);
+  if (since == null || !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(since)) {
+    return null;
+  }
+  // Day ids only: a pause end that is not one would throw when the streak
+  // reads it, on Home.
+  bool isDay(String? value) =>
+      value != null && RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value);
+  final pauses = <StreakPause>[
+    for (final row in _list(section['pauses']) ?? const <Object?>[])
+      if (_map(row) case final pause?
+          when isDay(_str(pause['from'])) &&
+              (pause['to'] == null || isDay(_str(pause['to']))))
+        StreakPause(start: _str(pause['from'])!, end: _str(pause['to'])),
+  ];
+  final days = <String, int>{
+    for (final entry
+        in (_map(section['days']) ?? const <String, Object?>{}).entries)
+      if (_int(entry.value) case final count? when count > 0) entry.key: count,
+  };
+  final settings = StreakSettings(
+    enabled: _bool(section['on']) ?? true,
+    since: since,
+    pauses: pauses,
+    best: _int(section['best']) ?? 0,
+  );
+  return () => TrainingStreakState.instance.restore(
+    settings: settings,
+    sessionsByDay: days,
+  );
 }
 
 // Her roles (R1-P17): which apps she holds and which one she was looking at.

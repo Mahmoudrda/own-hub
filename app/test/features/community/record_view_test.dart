@@ -235,11 +235,7 @@ void main() {
       await tester.tap(find.byType(RecordShutterButton));
       await tester.pumpAndSettle();
       expect(captured, 1);
-      expect(
-        confirmed,
-        1,
-        reason: 'taking a picture is not publishing it',
-      );
+      expect(confirmed, 1, reason: 'taking a picture is not publishing it');
       expect(find.byType(AlertDialog), findsNothing);
     });
 

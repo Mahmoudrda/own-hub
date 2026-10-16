@@ -38,6 +38,7 @@ class SwapMoveView extends StatefulWidget {
     this.onSelectTab,
     this.alternatives,
     this.moves,
+    this.title,
     this.sessionId = 'session',
     this.exerciseId = 'goblet_squat',
     this.repository,
@@ -56,6 +57,9 @@ class SwapMoveView extends StatefulWidget {
 
   /// The day behind the sheet.
   final List<PlannedMove>? moves;
+
+  /// The day's title. Null is the sample day's.
+  final String? title;
 
   final String sessionId;
 
@@ -81,9 +85,18 @@ class _SwapMoveViewState extends State<SwapMoveView> {
   TrainRepository get _repository =>
       widget.repository ?? (_fallback ??= InMemoryTrainRepository());
 
+  /// What the repository found for the move, once it has answered.
+  List<MoveAlternative>? _found;
+
   @override
   void initState() {
     super.initState();
+    final repository = widget.repository;
+    if (widget.alternatives == null && repository != null) {
+      repository.alternativesFor(widget.exerciseId).then((found) {
+        if (mounted) setState(() => _found = found);
+      });
+    }
     if (widget.openSheet) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _offerSwap();
@@ -135,7 +148,11 @@ class _SwapMoveViewState extends State<SwapMoveView> {
     // equipment · floor" and every move in it is bodyweight, so offering a
     // loaded swap underneath that promise was the app contradicting its own
     // subtitle.
-    final behind = widget.moves ?? sampleWorkoutDay(l10n).moves;
+    final behind =
+        widget.moves ??
+        (widget.repository == null
+            ? sampleWorkoutDay(l10n).moves
+            : const <PlannedMove>[]);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -167,7 +184,7 @@ class _SwapMoveViewState extends State<SwapMoveView> {
           // she is changing, which is why this is a sheet and not a page.
           AppScaffold(
             appBar: TrainTopBar(
-              title: l10n.legsAndGlutes,
+              title: widget.title ?? l10n.legsAndGlutes,
               onClose: widget.onBack,
               closeIcon: Icons.arrow_back,
             ),
@@ -209,16 +226,15 @@ class _SwapMoveViewState extends State<SwapMoveView> {
                   child: AppSheet(
                     children: [
                       Text(l10n.swapThisMove, style: AppText.titleL),
-                      Text(
-                        l10n.sameMusclesQuieterOnTheFloor,
-                        style: AppText.bodyM.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
                       _SwapChoices(
                         candidates:
-                            widget.alternatives ?? _defaultAlternatives(l10n),
+                            widget.alternatives ??
+                            _found ??
+                            (widget.repository == null
+                                ? _defaultAlternatives(l10n)
+                                : const <MoveAlternative>[]),
                         onConfirm: _confirm,
+                        onClose: _dismiss,
                       ),
                     ],
                   ),
@@ -237,10 +253,15 @@ class _SwapMoveViewState extends State<SwapMoveView> {
 /// Stateful so the selection is visible before she confirms — picking and
 /// confirming are two different taps, and she should see what she picked.
 class _SwapChoices extends StatefulWidget {
-  const _SwapChoices({required this.candidates, required this.onConfirm});
+  const _SwapChoices({
+    required this.candidates,
+    required this.onConfirm,
+    required this.onClose,
+  });
 
   final List<MoveAlternative> candidates;
   final ValueChanged<MoveAlternative> onConfirm;
+  final VoidCallback onClose;
 
   @override
   State<_SwapChoices> createState() => _SwapChoicesState();
@@ -252,6 +273,25 @@ class _SwapChoicesState extends State<_SwapChoices> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+
+    if (widget.candidates.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            l10n.noSwapForThisMoveRightNow,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          const SizedBox(height: kStackGap),
+          AppButton(
+            l10n.close,
+            variant: AppButtonVariant.text,
+            onPressed: widget.onClose,
+          ),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -265,16 +305,16 @@ class _SwapChoicesState extends State<_SwapChoices> {
             variant: i == _chosen
                 ? AppCardVariant.selected
                 : AppCardVariant.outlined,
-            trailing: const AppChevron(),
+            trailing: i == _chosen
+                ? const Icon(Icons.check, color: AppColors.primary)
+                : const AppChevron(),
             onTap: () => setState(() => _chosen = i),
           ),
         ],
         const SizedBox(height: kStackGap),
         AppButton(
           l10n.swapIt,
-          onPressed: widget.candidates.isEmpty
-              ? null
-              : () => widget.onConfirm(widget.candidates[_chosen]),
+          onPressed: () => widget.onConfirm(widget.candidates[_chosen]),
         ),
       ],
     );

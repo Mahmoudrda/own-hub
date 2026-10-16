@@ -55,7 +55,7 @@ class AppStepBar extends StatelessWidget implements HandSeedName {
               Expanded(
                 child: TweenAnimationBuilder<double>(
                   tween: Tween(end: i < step ? 1 : 0),
-                  duration: const Duration(milliseconds: 260),
+                  duration: HandMotion.settle,
                   curve: Curves.easeOutCubic,
                   builder: (context, inked, _) => CustomPaint(
                     size: Size.infinite,

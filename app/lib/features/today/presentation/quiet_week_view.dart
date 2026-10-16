@@ -103,6 +103,10 @@ class _QuietWeekViewState extends State<QuietWeekView> {
   late final bool _ownsRepo;
   late final DateTime _date;
 
+  /// This Monday's notice was shown before. The kitten waves the first time
+  /// only, so the same week never gets a second wave.
+  late final bool _seenBefore;
+
   @override
   void initState() {
     super.initState();
@@ -113,6 +117,7 @@ class _QuietWeekViewState extends State<QuietWeekView> {
     // with "Monday 14 September" for ever while Home, T02 and R10 beside it all
     // said the real day.
     _date = widget.date ?? AppClock.now();
+    _seenBefore = _repo.noticeSeen(NoticeKind.quietWeek, WeekKey.of(_date));
     // Shown once, never again that week.
     unawaited(_repo.markNoticeSeen(NoticeKind.quietWeek, WeekKey.of(_date)));
   }
@@ -157,6 +162,18 @@ class _QuietWeekViewState extends State<QuietWeekView> {
       body: AppScaffold(
         children: [
           TodayGreeting(day: weekdayLabel(l10n, _date)),
+          // A wave, once a week, and nothing about what was missed: Monday is
+          // a fresh start.
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Kitten(
+              pose: KittenPose.wave,
+              size: 40,
+              moment: 'T04',
+              sessionBudget: true,
+              holdStill: _seenBefore,
+            ),
+          ),
           // What was protected, before anything else on the screen.
           //
           // **Only when a rest week actually covered one.** The sentence says
@@ -223,7 +240,7 @@ class _QuietWeekViewState extends State<QuietWeekView> {
                   child: HandCircled(
                     level: HandLevel.signature,
                     drawOn: true,
-                    delay: const Duration(milliseconds: 200),
+                    delay: HandTiming.medium,
                     child: Text(
                       l10n.n10Min,
                       style: AppText.label.copyWith(
@@ -265,7 +282,7 @@ class _QuietWeekViewState extends State<QuietWeekView> {
               week.sessionsLogged,
               week.sessionsTarget,
             ),
-            line: l10n.nothingIsLostOneSessionStartsIt,
+            line: l10n.nothingsLostOneSessionGetsItGoing,
             total: week.sessionsTarget,
             filled: week.sessionsLogged,
             onTap: () => openScreen(context, 'P01', widget.onOpenWeek),

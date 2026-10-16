@@ -86,10 +86,7 @@ class TestPaymentProvider implements PaymentProvider {
     // The test "webhook": the amount is the server's own price, so the
     // ledger's tamper check passes for the honest request and nothing else.
     record = _ledger
-        .apply(
-          record,
-          WebhookPaid(at: now, hmacVerifiedAt: now, amount: price),
-        )
+        .apply(record, WebhookPaid(at: now, hmacVerifiedAt: now, amount: price))
         .record;
     records[txnId] = record;
     return CheckoutOutcome.started(

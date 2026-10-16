@@ -27,7 +27,10 @@ PaymentRecord _created({PaymentRail rail = PaymentRail.card}) =>
 
 const PaymentLedger _ledger = PaymentLedger();
 
-PaymentRecord _opened({PaymentRail rail = PaymentRail.card, String? reference}) {
+PaymentRecord _opened({
+  PaymentRail rail = PaymentRail.card,
+  String? reference,
+}) {
   final result = _ledger.apply(
     _created(rail: rail),
     ProviderOpened(
@@ -198,11 +201,7 @@ void main() {
       // worse, one that already settled.
       for (final record in [_created(), _opened(), _paid()]) {
         expect(
-          _ledger.reissue(
-            record,
-            newProviderTxnId: 'pmb-999',
-            now: _createdAt,
-          ),
+          _ledger.reissue(record, newProviderTxnId: 'pmb-999', now: _createdAt),
           isNull,
           reason: 'reissue must refuse a ${record.state.name} payment',
         );
@@ -352,10 +351,7 @@ void main() {
       for (final record in [_created(), _opened()]) {
         final result = _ledger.apply(
           record,
-          RefundRequested(
-            at: _createdAt,
-            reason: RefundReason.coachSilent,
-          ),
+          RefundRequested(at: _createdAt, reason: RefundReason.coachSilent),
         );
         expect(result.changed, isFalse);
         expect(result.refundRefusal, RefundRefusal.nothingToRefund);
@@ -367,10 +363,7 @@ void main() {
       final pending = _ledger
           .apply(
             paid,
-            RefundRequested(
-              at: paid.paidAt!,
-              reason: RefundReason.coachSilent,
-            ),
+            RefundRequested(at: paid.paidAt!, reason: RefundReason.coachSilent),
           )
           .record;
 
@@ -404,10 +397,7 @@ void main() {
       final disputed = _ledger
           .apply(_paid(), ChargebackOpened(at: _createdAt))
           .record;
-      final again = _ledger.apply(
-        disputed,
-        ChargebackOpened(at: _createdAt),
-      );
+      final again = _ledger.apply(disputed, ChargebackOpened(at: _createdAt));
       expect(again.changed, isFalse);
       expect(again.refused, PaymentRefusal.alreadyApplied);
     });
@@ -445,10 +435,7 @@ void main() {
       final pending = _ledger
           .apply(
             paid,
-            RefundRequested(
-              at: paid.paidAt!,
-              reason: RefundReason.coachSilent,
-            ),
+            RefundRequested(at: paid.paidAt!, reason: RefundReason.coachSilent),
           )
           .record;
       reached.add(pending.state);

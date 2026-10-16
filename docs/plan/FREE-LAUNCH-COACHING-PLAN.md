@@ -58,6 +58,8 @@ All paths below are relative to the repository root. These are starting points, 
 | Swaps | `app/lib/features/train/presentation/swap_move_view.dart`, `app/lib/app_state/workout_session_state.dart` | The screen defaults to two fixed alternatives; the router does not pass the live exercise/session identifiers to the swap view. |
 | Session recovery | `app/lib/app_state/workout_session_state.dart`, `app_snapshot.dart`, `local_persistence.dart` | Persisted records exist; active session position and swaps are excluded from the snapshot. |
 | Logging and history | `app/lib/features/train/presentation/mid_set_view.dart`, `resting_view.dart`, `change_set_view.dart`, `app/lib/features/train/domain/set_history.dart` | Keep logging/undo/history. Extend equipment semantics, interruptions, and progression. |
+| Rewards (§15) | `app/lib/domain/rewards/`, `app/lib/app_state/workout_session_state.dart`, `app/lib/features/progress/` | Points, levels, tiers, milestones, weekly runs and rest-week repair exist; at baseline only session points were ever paid and weeks never closed. |
+| Streak and challenge (§15) | `app/lib/domain/rewards/training_streak.dart`, `app/lib/app_state/training_streak_state.dart`, `app/lib/features/train/domain/own_best_challenge.dart` (all new) | Device-local, derived from what she logged; never synced. |
 
 ## 3. C0: coaching and commission foundation
 
@@ -217,6 +219,7 @@ Acceptance: authentic last-session values, undo, skipped sets, per-hand labels, 
 | C: gym execution (F2/F4/F7) | A/B; filmed/reviewed content | Member completes the assigned workout offline with appropriate substitutions and logging. |
 | D: progression (F6) | Reliable actual results from C | Suggestions are explainable; coach-owned plans require publication. |
 | E: commerce (C0.3) | Owner's offer/commission decisions, billing classification, provider/store setup | Verified payments, refunds, entitlements, and payouts reconcile end to end. |
+| G: motivation design and honest rewards (§15) | Current reward engine; owner decisions D37–D41 | Rewards shown are rewards paid; R10, streak, challenge and waits pass G01–G19, with G20 on devices. |
 
 Free training cannot be called ready until A–D, U0 usability and P0 regional/privacy gates pass. U0/P0 design and data contracts begin before A and apply to every package. Commission revenue cannot be called ready until the relevant coaching paths and E pass. If money or content dependencies are unavailable, report that exact gap; do not enable a nonworking feature to meet a date.
 
@@ -352,7 +355,7 @@ Budget priorities: collect less, retain less, reuse existing local caches and pe
 
 Read [the acceptance test guide](../../acceptance/free_launch/README.md) and [the launch acceptance checklist](../../acceptance/free_launch/ACCEPTANCE.md) before coding. Executable tests are intentionally separate from the ordinary suite because some test future APIs. A missing API is an expected baseline failure, not a skipped release criterion.
 
-Run `bash acceptance/free_launch/run.sh` from the repository root. This must finish with a nonzero exit if any required suite fails or a tool is absent. Logs remain in `acceptance/free_launch/results/` (ignored). Do not rewrite a test to accept current broken behavior, add `skip`/`xfail`, or replace production calls with hardcoded expected outputs.
+Run `bash acceptance/free_launch/run.sh` from the repository root. The G suite (`gamification_contract`) covers §15 and is expected to pass. This must finish with a nonzero exit if any required suite fails or a tool is absent. Logs remain in `acceptance/free_launch/results/` (ignored). Do not rewrite a test to accept current broken behavior, add `skip`/`xfail`, or replace production calls with hardcoded expected outputs.
 
 The initial tests cover selected existing behaviors and proposed pure domain contracts. They do not prove real payments, authorization, media playback, notification delivery, multi-device synchronization, or coach/member usability. The checklist explicitly records the integration tests and device evidence that the implementing agent must add. Passing the initial pack alone is not launch approval.
 
@@ -379,3 +382,120 @@ Existing verification commands (read setup instructions first):
 Baseline validation before this guide: analyzer clean; full Flutter run had 5,302 passes and nine stale Arabic assertion failures, then all 175 tests in affected files passed after corrections. Backend 1,233, Firestore 337, Storage 14 passed. The entire Flutter suite was not repeated after those test-only corrections. These results are historical context, not evidence for any new feature.
 
 Research supporting product direction: [Hevy workout workflow](https://www.hevyapp.com/features/track-workouts/), [Sweat equipment substitutions and planning](https://sweat.com/blogs/community/how-to-use-the-sweat-app), [Fitbod progression](https://help.fitbod.me/hc/en-us/articles/43492523917207-How-does-Fitbod-adapt-as-I-get-stronger). Their feature presence does not establish a guaranteed retention or revenue effect for Own Hub.
+
+## 15. G: motivation design from two video studies
+
+Added 13 October 2026 on baseline `d353189`. Decisions: `DECISIONS.md` D37–D41. Acceptance rows: [G01–G20](../../acceptance/free_launch/ACCEPTANCE.md). This section applies to every member screen, not to one feature.
+
+Sources, both studied in full:
+
+- Tim Gabe, *I Studied 500+ Gamified Apps (Here's What Actually Works)*, May 2026, https://www.youtube.com/watch?v=LXX_qOA5D8E. Seven patterns.
+- Wyatt Feaster, *The psychology trick that makes any app feel 10x better*, September 2026, https://www.youtube.com/watch?v=MVOpq3WRnbo. Five patterns.
+
+Every figure below is the speaker's claim, quoted as a claim. None was verified for Own Hub, and none promises a retention or revenue effect.
+
+### 15.1 What each pattern says, and what Own Hub does with it
+
+| # | Pattern (video) | The claim | Own Hub decision |
+|---|---|---|---|
+| 1 | Points, badges, leaderboards are the scoreboard, not the game (V1) | Rewarding the metric breeds metric-chasing. LinkedIn retired Top Voice badges (2024), Foursquare dropped badges (2014), Google News dropped its badges; Strava reached 180M users without classic badges. | **Adopted.** No new point types. Points come only from training and eating, and R10 shows them as a quiet line under her real results. |
+| 2 | Local, winnable competition (V1) | Strava segments: thousands of small cohort leaderboards people can win; kudos increase later activity (2022 ScienceDirect study; clubs +59% in 2024; 14 billion kudos in 2025). | **Adapted (D38).** One weekly challenge against her own last week, always beatable by finishing her plan. No ranking of women, no kudos while community is off. |
+| 3 | The S-curve of feature richness (V1) | Engagement rises with mechanics, then falls (2025 *Frontiers in Psychology*); Habitica's game layer buried the real work. | **Adopted.** Only two mechanics are added (streak, challenge). The existing ones are made honest, not multiplied. |
+| 4 | The streak trap (V1) | Streaks turn from motivation into obligation (Decision Lab); a 2023 Belgian study of about 2,500 adolescents linked them with FOMO; Snapchat was sued (Nevada, 2024); the EU Digital Fairness Act targets them. Duolingo's safe version: she picks the goal, can freeze, can escape. | **Adapted (D37).** A training streak she controls: rest days count while the week's goal is reachable, an earned rest week covers a slipped week, pause and off switch, silent ending, never in notifications or widgets. |
+| 5 | Variable reward magnitude (V1) | Anticipation, a one-by-one reveal and a celebration with haptics pull people forward instead of threatening a loss. | **Adapted (D40).** R10 reveals her real results one by one. **Rejected:** any prize decided by chance. |
+| 6 | Completion drive (V1, the one to pick) | Apple's rings use Gestalt closure; claimed 49.5% behaviour change across 160,000 people, and 48% lower odds of poor sleep among ring-closers. | **Adopted.** The week marks close, a set bar runs through every workout, and the first-week arc can finally complete. |
+| 7 | Competence over badge theatre (V1) | Gamification lifts autonomy and relatedness but barely competence (2024 Springer Nature meta-analysis); Peloton's live output and automatic personal records (15% more workouts), Chess.com Elo, Garmin readiness. | **Adopted.** Personal bests only when she really improved, shown with her previous value; last-time numbers on every set; milestones that actually move. |
+| 8 | Goal gradient (V2) | Motivation rises near the finish line; show "5 of 7", not "complete this task". | **Adopted.** "{done} of {total} sets done" during the workout; "one more and this week counts"; the nearest milestone on Progress. |
+| 9 | Peak-end rule (V2) | People remember the best moment and the end (Airbnb and Duolingo success screens); broken flows are remembered for their friction. | **Adopted (D40).** R10 is the peak, with reveal, paper confetti, kitten cheer and haptics. The low points are fixed first: a duplicate session, a rest timer that opened at 0:38, undo that did not rewind, a last set that could be lost, rewards shown that were never paid. |
+| 10 | Labour illusion (V2) | People trust results more when they see the work; sensitive checks feel safer when not instant. | **Adapted (D39).** Short steps on O05 and C12 that each name an operation that really ran. **Rejected:** fake waits, and any wait on frequent actions. |
+| 11 | Von Restorff effect (V2) | The item that differs is the one remembered; good apps choose what to highlight. | **Adopted.** One emphasised element and at most one filled primary button per screen state; R11 marks one recommended session. |
+| 12 | Choice overload (V2) | Too many options cause hesitation; filter, group or remove. | **Adopted.** Home has one primary action and at most three secondary items; day one hides the optional rows behind "More you can do"; R11 shows filters only when there are more than three sessions; R08 offers only weights around her plan. |
+
+### 15.2 Rules that hold everywhere
+
+- Reward real training and eating only. Never reward opening the app, posting, inviting or completing a profile.
+- Nothing is decided by chance. No random prize, bonus or unlock.
+- Nothing ranks women. Competition is with her own past only.
+- Ending a streak, missing a challenge or skipping a week is silent and never red. The kitten is never sad.
+- One celebration per session, on R10. Every motion plays once, can be skipped by a tap, and holds still under Reduce Motion.
+- Show only figures that are hers. A number that was not earned is not shown.
+- Streak, challenge and rewards stay on the phone. `firestore.rules` and cloud sync are unchanged.
+- Copy: Egyptian Arabic and English as equals, feminine address, Western digits, no em dashes, no loss words ("lose", "break", "miss", "at risk") near the streak.
+
+### 15.3 Work packages
+
+| Package | Content | Rows |
+|---|---|---|
+| G0 | Decisions D37–D41, this section, acceptance rows | — |
+| G1 | Workout plumbing: one session per Start, a session-scoped log bus that flushes before credit, real rest timer and up-next, undo that rewinds, weights around the plan, hold seconds, set bar | G01, G02, G10 |
+| G2 | One current week and a day that rolls over; Home's done state; first week completes | G08, G09 |
+| G3 | Honest rewards: persisted ledger and cap, counted week, real bests, food day, milestones, week close on open and resume | G03–G07 |
+| G4 | Feature switches `trainingStreak`, `weeklyChallenge`, `finishReveal`, `haptics`, `reassuringWaits`; rule guards | G12, G18 |
+| G5 | Training streak (D37) | G11, G12 |
+| G6 | Weekly challenge (D38) | G14 |
+| G7 | Visible progress: set bar, week counted, first week inside the week block, next milestone | G08, G09 |
+| G8 | R10 peak (D40): staged reveal, paper confetti, haptics, sage bests, kitten budget | G15 |
+| G9 | Reassuring waits (D39) on O05 and C12 | G16 |
+| G10 | Fewer choices and one emphasis per screen | G17 |
+| G11 | Switches on, contract suite, design and mascot docs | G13, G19, G20 |
+
+### 15.4 Known limits
+
+- The streak and the ledger are not synced: a new phone starts them fresh.
+- A first-ever lift still counts as a personal best for tiers and the `first_personal_best` milestone, as before. R10 and points celebrate only a real improvement.
+- The week runs Monday to Sunday (ISO). Copy never names the last day of the week, because many Egyptian users think of Saturday as the first day.
+- Device evidence for haptics, Reduce Motion and Arabic at 200% text is the owner's to collect (G20).
+
+## 16. Animation quality: two video studies
+
+Added 15 October 2026. Decision: `DECISIONS.md` D46. This section applies to every member screen.
+
+Sources:
+
+- Jason Lee, *Watch Me Vibe Code an Animated App with Claude Opus 5.5*, https://www.youtube.com/watch?v=Rk6t9Uq1y9M (20:56).
+- John Kim, *AI App Animations is Hard Until You Learn This*, https://www.youtube.com/watch?v=f-Ar8mwm3kQ (22:50).
+
+**What was and was not available.** Only each video's description and chapter list were read. No transcript was available for either: the captions need a session token, and Lee's prompts page is behind an email signup that was not filled in. So nothing below quotes or paraphrases what either speaker said, and none of it is checked against the footage.
+
+- From Lee's chapters and description: build the app's structure first; then a dedicated animation-quality pass; then animation that responds to the phone's tilt; with screen references and generated motion assets.
+- From Kim's description and chapters: the toolbox is keyframes, springs, gestures, physics, layout transitions, particles, Rive and Lottie; you compose them; you review the motion yourself. His examples include a gesture-driven tilt and confetti on finish.
+- Finch and Gentler Streak are cited where the 14 October research of top-rated apps names them (guide section 15 and the plan's references); their exact timings were not published. Where a row says "Own Hub's choice", no source names it, and it is standard mobile practice or our own.
+
+Nothing here promises a retention or engagement effect for Own Hub.
+
+### 16.1 Pattern, decision, where
+
+| Pattern (source) | Own Hub decision | Where |
+|---|---|---|
+| A dedicated animation pass after the structure exists (Lee) | Motion is a separate work package (WP6) applied to finished screens, then reviewed in the screenshots. | whole app |
+| Animation that responds to phone tilt (Lee) | The accelerometer moves two pieces of art up to 8 px, low-pass filtered, while their screen is in front. Not the kitten. | C01, R10, `ui/hand/tilt_parallax.dart` |
+| Compose a few tools rather than one big effect (Kim) | Flutter's own animation classes only, combined as below. | `lib/ui/hand/` |
+| Springs (Kim) | Buttons and tappable rows shrink to 0.97 on a spring. | `AppButton`, `AppListItem` |
+| Gestures (Kim: gesture-driven tilt) | The progress card leans up to 6 degrees under a finger and springs back. | P05, `ui/hand/finger_tilt.dart` |
+| Layout transitions (Kim) | Cards and lists that change state fade and resize. | T01 cards, R03 moves, `ui/hand/hand_swap.dart` |
+| Particles on finish (Kim: confetti) | The existing paper confetti stays the only particles, and now comes last. | R10 |
+| A response to every finished action (Finch) | Already built in WP5; the press spring and the R10 staging extend it. | R07, R13, E04, E08, Y09, R10 |
+| Progress over comparison (Gentler Streak) | The week fills and its figure counts up against her own plan. | R10 |
+| Review the motion yourself (Kim) | Motion is checked in the screenshots and on a device, not accepted from a test alone. | WP7, G20 |
+| One set of timings (Own Hub's choice) | Three durations, 150, 220 and 400 ms, standard curves and one spring. | `ui/hand/motion.dart` |
+| Route transition (Own Hub's choice) | One Material fade-through for every route, none under reduced motion. | `theme/hand_theme.dart`, `ui/hand/page_transition.dart` |
+| Staggered entrances (Own Hub's choice) | The first eight rows ease in, 40 ms apart, once per visit. Bars tween. | R01, R11, R14, E05 |
+| Skeleton while a load lasts (Own Hub's choice) | A shimmer on posters, still under reduced motion, gone when the data arrives. | R14, R15 |
+
+### 16.2 Rejected
+
+- **Rive and Lottie** (both named by Kim). Each adds a runtime and an authoring file format for motion Flutter already does. The kitten must stay pure Flutter under the mascot rules, and a state machine in a binary file cannot be checked against the no-loop and budget tests.
+- **Shaders.** Budget phones in Egypt are the floor, and no screen needs a look a gradient cannot give.
+- **New looping animation.** The shimmer is the only one that repeats, and only while a load lasts.
+
+### 16.3 Rules that hold
+
+- Every animation asks `handMotionOff` and is still under Reduce Motion, Android "Remove animations" and, for the tilt, the Profile motion switch.
+- Nothing delays an action she is doing: presses answer at once, and entrances never block a tap.
+- Sensor readings stay on the screen. Nothing is stored or sent, and there is no permission prompt.
+
+### 16.4 Known limits
+
+- The fade-through replaces iOS's edge-swipe back gesture; the Back button and the system back action still work. Restoring the swipe means taking iOS out of the theme's transition map.
+- R10's heavy "big moment" haptic is no longer played; the one haptic is the medium impact as the kitten cheers.
+- Device evidence for the tilt, the haptic and reduced motion is the owner's to collect (G20).

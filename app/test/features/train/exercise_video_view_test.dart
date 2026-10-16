@@ -13,6 +13,8 @@ import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_media.dart';
 
+import '../../helpers/exercise_library_fixture.dart';
+
 Widget _host(
   Widget child, {
   Locale locale = const Locale('en'),
@@ -135,5 +137,39 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a move the library holds plays its clip inside the frame', (
+    tester,
+  ) async {
+    FakeClipPlayer.made.clear();
+    final bridge = sampleExerciseLibrary().byId('glute_bridge')!;
+    await tester.pumpWidget(
+      _host(
+        ExerciseVideoView(
+          clip: bridge,
+          media: FakeExerciseMedia(),
+          players: FakeClipPlayer.make,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final clip = find.byKey(const ValueKey('fake-clip'));
+    expect(clip, findsOneWidget);
+    expect(
+      find.ancestor(of: clip, matching: find.byType(AppMedia)),
+      findsOneWidget,
+    );
+    expect(FakeClipPlayer.made.single.plays, 1);
+  });
+
+  testWidgets('no swap is offered when there is nothing to swap in', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(const ExerciseVideoView(canSwap: false)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Swap this move'), findsNothing);
   });
 }

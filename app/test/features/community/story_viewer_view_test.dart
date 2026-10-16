@@ -188,10 +188,10 @@ void main() {
             model: _model(
               stories: <CommunityPost>[
                 _story(id: 's1'),
-                _story(id: 'h1', author: const AuthorCard(
-                  uid: 'habiba',
-                  name: 'Habiba Nasr',
-                )),
+                _story(
+                  id: 'h1',
+                  author: const AuthorCard(uid: 'habiba', name: 'Habiba Nasr'),
+                ),
               ],
               openPostId: 's1',
             ),

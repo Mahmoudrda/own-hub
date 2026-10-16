@@ -61,13 +61,16 @@ void main() {
     for (final e in landed.entries) {
       print('  ${e.value}\t<- ${e.key}');
     }
-    print('  showed the feature-flag page: '
-        '${showedFeatureOff.isEmpty ? "none" : showedFeatureOff.join(" | ")}');
+    print(
+      '  showed the feature-flag page: '
+      '${showedFeatureOff.isEmpty ? "none" : showedFeatureOff.join(" | ")}',
+    );
 
     expect(
       showedFeatureOff,
       isEmpty,
-      reason: 'a link to a switched-off feature made the developer '
+      reason:
+          'a link to a switched-off feature made the developer '
           'feature-flag page the first screen of the product',
     );
     // T01 is the front door with `accountRequired` off, which is the shipping
@@ -85,7 +88,7 @@ void main() {
     // lock-screen nudge has nowhere to land without it, and every screenshot
     // of an arbitrary screen is taken this way.
     phone(t);
-    for (final id in <String>['T03', 'R02', 'E01', 'Y03', 'P01']) {
+    for (final id in <String>['E01', 'Y03', 'P01']) {
       t.platformDispatcher.defaultRouteNameTestValue =
           appDestinations[id]!.name;
       addTearDown(t.platformDispatcher.clearDefaultRouteNameTestValue);

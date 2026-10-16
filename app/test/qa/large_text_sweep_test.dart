@@ -113,9 +113,7 @@ void main() {
       if (find.byType(RahmaRecipeView).evaluate().isNotEmpty) drawn++;
       final thrown = tester.takeException();
       if (thrown != null) {
-        overflowed.add(
-          '${recipe.recipeId}: $thrown'.split('\n').first,
-        );
+        overflowed.add('${recipe.recipeId}: $thrown'.split('\n').first);
       }
     }
 

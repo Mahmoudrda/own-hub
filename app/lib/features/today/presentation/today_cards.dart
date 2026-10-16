@@ -220,32 +220,19 @@ String mealNudgeHeading(AppL10n l10n, {DateTime? now, bool hasUsual = false}) {
   };
 }
 
-/// The head of Today: the day, her level, and the way to the assistant.
+/// The head of Today: the day and the tools at its edge. Her level is on
+/// Progress.
 class TodayGreeting extends StatelessWidget {
-  const TodayGreeting({
-    super.key,
-    required this.day,
-    this.level,
-    this.actions = const [],
-  });
+  const TodayGreeting({super.key, required this.day, this.actions = const []});
 
   final String day;
-
-  /// Her level, or null when it is not known.
-  ///
-  /// Null renders **no pill at all**, which is the honest state and not a
-  /// degraded one — see [build].
-  final int? level;
 
   final List<Widget> actions;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppL10n.of(context);
-    final level = this.level;
-
-    // A masthead, not a greeting: the day set small as the issue line, her
-    // level highlighted beside it, the tools at the far edge, and a pencil
+    // A masthead, not a greeting: the day set small as the issue line, the
+    // tools at the far edge, and a pencil
     // rule under all of it. The page's subject starts below the rule.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -253,26 +240,7 @@ class TodayGreeting extends StatelessWidget {
       children: [
         AppSplitRow(
           start: Text(day, style: EditorialType.folio),
-          end: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Her real level, and **no tier name**.
-              //
-              // This read the fixed `level7Regular` — "Level 7 · Regular" —
-              // which froze the mockup's level into Home's pill and announced
-              // level 7 to a woman on level 1, on the first screen she sees.
-              // The tier half is gone rather than parameterised:
-              // `DECISIONS.md` D6 records that no tier ladder is
-              // authoritative, which is why P01 renders no tier either. Home
-              // and Progress now agree, and both agree with what is known.
-              //
-              // Flexible so her level shortens rather than pushing the icon
-              // buttons off the edge at the largest text size.
-              if (level != null)
-                Flexible(child: AppPill(l10n.levelN(countLabel(level)))),
-              ...actions,
-            ],
-          ),
+          end: Row(mainAxisSize: MainAxisSize.min, children: [...actions]),
         ),
         HandRule(seed: day.hashCode, height: 8),
       ],
@@ -292,7 +260,14 @@ class WorkoutCard extends StatelessWidget {
     this.totalWeeks,
     this.summary,
     this.weekBlock,
+    this.done = false,
   });
+
+  /// Today's session is already logged. Home said "Start, everything's ready"
+  /// for the rest of the day after she had trained, and never anything else:
+  /// the card now says it is done, with a sage tick, and offers another
+  /// session as a quiet text action rather than as the page's main button.
+  final bool done;
 
   /// What today's session is called, when her plan has said.
   ///
@@ -337,8 +312,14 @@ class WorkoutCard extends StatelessWidget {
   final bool evening;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => HandSwap(
+    child: KeyedSubtree(key: ValueKey((done, evening)), child: _body(context)),
+  );
+
+  Widget _body(BuildContext context) {
     final l10n = AppL10n.of(context);
+
+    if (done) return _done(context, l10n);
 
     // "I already did it" is drawn only while recording from memory is on;
     // with it off the card is one button, the start.
@@ -460,6 +441,39 @@ class WorkoutCard extends StatelessWidget {
       ],
     );
   }
+
+  /// The cover once today's session is logged: what is true, in sage, and
+  /// the week under it. No filled button — the page's main job is done.
+  Widget _done(BuildContext context, AppL10n l10n) => Column(
+    key: const ValueKey('today-done'),
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const SizedBox(height: 10),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(l10n.todaysSessionIsDone, style: EditorialType.cover),
+          ),
+          const SizedBox(width: 10),
+          const HandTick(size: 40, seed: 17),
+        ],
+      ),
+      if (weekBlock != null) ...[const SizedBox(height: 22), weekBlock!],
+      const SizedBox(height: 8),
+      Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: AppButton(
+          l10n.anotherSession,
+          variant: AppButtonVariant.text,
+          height: 48,
+          fontSize: 15,
+          onPressed: onStart,
+        ),
+      ),
+    ],
+  );
 }
 
 /// One plate of a meal — the size she actually serves, never grams.

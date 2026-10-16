@@ -232,15 +232,18 @@ void main() {
   });
 
   group('M14 — people, not counters', () {
-    ActivityItem item(ActivityKind kind, {bool followsMe = false, String? postId}) =>
-        ActivityItem(
-          id: '$kind',
-          kind: kind,
-          at: _now,
-          actor: _habiba,
-          postId: postId,
-          followsMe: followsMe,
-        );
+    ActivityItem item(
+      ActivityKind kind, {
+      bool followsMe = false,
+      String? postId,
+    }) => ActivityItem(
+      id: '$kind',
+      kind: kind,
+      at: _now,
+      actor: _habiba,
+      postId: postId,
+      followsMe: followsMe,
+    );
 
     test('nothing on the screen is a number going up', () {
       final model = ActivityScreenModel.from(<ActivityItem>[
@@ -288,10 +291,7 @@ void main() {
     });
 
     test('empty says what will fill it', () {
-      expect(
-        ActivityScreenModel.from(const <ActivityItem>[]).isEmpty,
-        isTrue,
-      );
+      expect(ActivityScreenModel.from(const <ActivityItem>[]).isEmpty, isTrue);
     });
   });
 

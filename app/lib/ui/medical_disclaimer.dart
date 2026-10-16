@@ -12,7 +12,10 @@ import '../l10n/app_l10n.dart';
 import '../theme/app_tokens.dart';
 
 class MedicalDisclaimer extends StatelessWidget {
-  const MedicalDisclaimer({super.key});
+  const MedicalDisclaimer({super.key, this.caption = false});
+
+  /// Set small, for a footer under the screen's own content.
+  final bool caption;
 
   /// Finds it in a widget test.
   static const ValueKey<String> marker = ValueKey<String>('medical-disclaimer');
@@ -22,7 +25,10 @@ class MedicalDisclaimer extends StatelessWidget {
     return Text(
       AppL10n.of(context).ownHubIsAFitnessAndWellbeing,
       key: marker,
-      style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+      style: AppText.bodyM.copyWith(
+        fontSize: caption ? 12 : null,
+        color: AppColors.onSurfaceVariant,
+      ),
     );
   }
 }

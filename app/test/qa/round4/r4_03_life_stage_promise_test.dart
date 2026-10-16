@@ -73,8 +73,10 @@ void main() {
       print('  ${e.key.name.padRight(12)} -> ${e.value}');
     }
     // ignore: avoid_print
-    print('R4-03 catalogue size: ${kStartingProgramCatalogue.length}, '
-        'lifeStageShapesTraining = ${lifeStageShapesTraining()}');
+    print(
+      'R4-03 catalogue size: ${kStartingProgramCatalogue.length}, '
+      'lifeStageShapesTraining = ${lifeStageShapesTraining()}',
+    );
 
     // The predicate O04 is gated on has to agree with the table above, or the
     // gate is just another comment. Measured both ways, so neither a selector
@@ -91,7 +93,9 @@ void main() {
   });
 
   for (final loc in <String>['en', 'ar']) {
-    testWidgets('O04 promises training only when there is some, $loc', (t) async {
+    testWidgets('O04 promises training only when there is some, $loc', (
+      t,
+    ) async {
       phone(t);
       await open(t, appDestinations['O04']!.name, locale: Locale(loc));
       final painted = paintedText(t);
@@ -108,8 +112,10 @@ void main() {
       final shown = promises.where(painted.contains).toList();
 
       // ignore: avoid_print
-      print('=== R4-03 O04 $loc: lifeStageShapesTraining = $shapes, '
-          '${shown.length} of 3 promises painted ===');
+      print(
+        '=== R4-03 O04 $loc: lifeStageShapesTraining = $shapes, '
+        '${shown.length} of 3 promises painted ===',
+      );
       for (final line in painted) {
         // ignore: avoid_print
         print('  | $line');

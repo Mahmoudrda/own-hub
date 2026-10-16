@@ -56,3 +56,37 @@ SetOutcome? lastLoggedOutcome(
   }
   return null;
 }
+
+/// What she did on [exerciseId] the last time she trained it, as the sets in
+/// order, and the day of that session.
+///
+/// Every set that session logged for the move, not only the last one: a
+/// progression is about whether all of them were finished. Null when she has
+/// never logged the move, or for a repository that cannot say (see
+/// [lastLoggedOutcome]).
+({List<SetOutcome> sets, String? dateKey})? lastSessionSets(
+  TrainRepository? repository,
+  String? exerciseId, {
+  String? exceptSessionId,
+}) {
+  if (exerciseId == null) return null;
+  if (repository is! InMemoryTrainRepository) return null;
+
+  String? last;
+  for (final flush in repository.flushes.reversed) {
+    if (flush.exerciseId != exerciseId) continue;
+    if (exceptSessionId != null && flush.sessionId == exceptSessionId) continue;
+    if (flush.sets.any((s) => s.isLogged)) {
+      last = flush.sessionId;
+      break;
+    }
+  }
+  if (last == null) return null;
+  final sets = <SetOutcome>[
+    for (final flush in repository.flushes)
+      if (flush.sessionId == last && flush.exerciseId == exerciseId)
+        for (final set in flush.sets)
+          if (set.outcome != null && set.outcome!.isLogged) set.outcome!,
+  ];
+  return (sets: sets, dateKey: repository.sessionById(last)?.dateKey);
+}

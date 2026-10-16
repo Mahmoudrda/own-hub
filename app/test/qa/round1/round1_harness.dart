@@ -27,6 +27,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/community_state.dart';
 import 'package:own_hub/app_state/cycle_state.dart';
 import 'package:own_hub/app_state/eat_state.dart';
+import 'package:own_hub/app_state/exercise_library_state.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/signup/domain/locale_preference.dart';
@@ -44,26 +45,28 @@ FeatureFlags shippingFlags() => FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.today: true,
   Feature.firstWeek: true,
   Feature.quietWeek: true,
-  Feature.tiers: true,
-  Feature.lockScreenNudge: true,
   Feature.train: true,
   Feature.recordFromMemory: true,
+  Feature.program: true,
   Feature.exerciseVideo: true,
   Feature.exerciseSwap: true,
-  Feature.followAlong: true,
   Feature.workoutLibrary: true,
+  Feature.exerciseLibrary: true,
   Feature.trainingReminders: true,
+  Feature.trainingStreak: true,
+  Feature.weeklyChallenge: true,
+  Feature.finishReveal: true,
+  Feature.haptics: true,
+  Feature.reassuringWaits: true,
   Feature.eat: true,
   Feature.recipes: true,
   Feature.weekPlan: true,
-  Feature.groceryList: true,
   Feature.progress: true,
   Feature.milestones: true,
   Feature.personalBests: true,
   Feature.bodyPrivately: true,
   Feature.shareCard: true,
   Feature.cycle: true,
-  Feature.cycleMeals: true,
   Feature.cycleCalendar: true,
   Feature.cyclePatterns: true,
   Feature.privacyCentre: true,
@@ -97,6 +100,7 @@ void wipe() {
   AppRouter.notificationsRepository.reset();
   AppRouter.trainRepository.reset();
   AppRouter.todayRepository.reset();
+  ExerciseLibraryState.instance.reset();
 }
 
 /// Sets the shipping flags and wipes, for the whole file.
@@ -113,7 +117,10 @@ void useShippingApp() {
   });
 }
 
-Future<void> settle(WidgetTester t, {Duration timeout = const Duration(seconds: 3)}) async {
+Future<void> settle(
+  WidgetTester t, {
+  Duration timeout = const Duration(seconds: 3),
+}) async {
   try {
     await t.pumpAndSettle(
       const Duration(milliseconds: 50),
@@ -128,7 +135,9 @@ Future<void> settle(WidgetTester t, {Duration timeout = const Duration(seconds: 
 /// Boots the real app through the real router.
 Future<void> boot(WidgetTester t, {Locale? locale}) async {
   if (locale != null) {
-    await AppRouter.localePreference.write(AppLanguage.fromCode(locale.languageCode));
+    await AppRouter.localePreference.write(
+      AppLanguage.fromCode(locale.languageCode),
+    );
   }
   await t.pumpWidget(OwnHubApp(key: UniqueKey()));
   await settle(t);
@@ -235,12 +244,18 @@ List<({int id, String label, Rect rect})> tappables(WidgetTester t) {
   final out = <({int id, String label, Rect rect})>[];
   for (final n in find.semantics.byAction(SemanticsAction.tap).evaluate()) {
     final d = n.getSemanticsData();
-    final parts = <String>[d.label, d.tooltip, d.hint]
-        .where((s) => s.trim().isNotEmpty);
+    final parts = <String>[
+      d.label,
+      d.tooltip,
+      d.hint,
+    ].where((s) => s.trim().isNotEmpty);
     out.add((
       id: n.id,
       label: parts.join(' / ').replaceAll('\n', ' '),
-      rect: MatrixUtils.transformRect(n.transform ?? Matrix4.identity(), n.rect),
+      rect: MatrixUtils.transformRect(
+        n.transform ?? Matrix4.identity(),
+        n.rect,
+      ),
     ));
   }
   return out;

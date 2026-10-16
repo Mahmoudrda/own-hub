@@ -903,8 +903,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AB0D1D0E000000000000001B /* OwnHubWidgets.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OwnHubWidgets/OwnHubWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -934,8 +934,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AB0D1D0E000000000000001B /* OwnHubWidgets.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OwnHubWidgets/OwnHubWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -965,8 +965,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AB0D1D0E000000000000001B /* OwnHubWidgets.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OwnHubWidgets/OwnHubWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;

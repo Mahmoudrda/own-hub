@@ -70,6 +70,10 @@ check "widget privacy manifest present"    "[ -f ios/OwnHubWidgets/PrivacyInfo.x
 check "widget privacy manifest in Xcode target" "grep -q 'PrivacyInfo.xcprivacy in Resources' ios/Runner.xcodeproj/project.pbxproj && grep -q 'path = OwnHubWidgets;' ios/Runner.xcodeproj/project.pbxproj"
 check "widget manifest declares 1C8F.1"    "grep -q '1C8F.1' ios/OwnHubWidgets/PrivacyInfo.xcprivacy"
 check "app manifest declares 1C8F.1"       "grep -q '1C8F.1' ios/Runner/PrivacyInfo.xcprivacy"
+check "motion purpose string, both locales" "! grep -q '^  sensors_plus:' pubspec.yaml || (grep -q NSMotionUsageDescription ios/Runner/Info.plist && grep -q NSMotionUsageDescription ios/Runner/en.lproj/InfoPlist.strings && grep -q NSMotionUsageDescription ios/Runner/ar.lproj/InfoPlist.strings)"
+# path_provider is there for the exercise clip cache, and the file calls on
+# that folder read file timestamps: C617.1.
+check "file timestamps declared where used" "! grep -q '^  path_provider:' pubspec.yaml || grep -q 'C617.1' ios/Runner/PrivacyInfo.xcprivacy"
 check "both targets share the App Group"   "grep -q 'group.com.ownhub.app' ios/Runner/Runner.entitlements && grep -q 'group.com.ownhub.app' ios/OwnHubWidgets/OwnHubWidgets.entitlements"
 # Present is not the same as true. The manifest shipped declaring zero collected
 # data types, with a header saying the app "carries no Firebase", on a binary

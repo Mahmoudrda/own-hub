@@ -266,40 +266,51 @@ class _CycleSettingsViewState extends State<CycleSettingsView> {
             ),
             onTap: widget.onSymptomOnly,
           ),
-          if (_deletion.state == CycleDeletionState.confirming)
-            // Asks in place. No dialog — see the library note.
-            Row(
-              children: [
-                Expanded(
-                  child: AppButton(
-                    l10n.deleteCycleData,
-                    height: 44,
-                    fontSize: 15,
-                    onPressed: _confirmDelete,
-                  ),
+          // Deleting is kept apart and named, so it is never a stray tap on
+          // the way to a switch.
+          AppCard(
+            variant: AppCardVariant.error,
+            children: [
+              Text(
+                l10n.dangerZone,
+                style: AppText.titleM.copyWith(color: AppColors.error),
+              ),
+              if (_deletion.state == CycleDeletionState.confirming)
+                // Asks in place. No dialog — see the library note.
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppButton(
+                        l10n.deleteCycleData,
+                        height: 44,
+                        fontSize: 15,
+                        onPressed: _confirmDelete,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: AppButton(
+                        l10n.cancel,
+                        variant: AppButtonVariant.outlined,
+                        height: 44,
+                        fontSize: 15,
+                        onPressed: () =>
+                            setState(() => _deletion = _deletion.cancelled()),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                AppButton(
+                  l10n.deleteCycleData,
+                  variant: AppButtonVariant.outlined,
+                  height: 44,
+                  fontSize: 15,
+                  onPressed: () =>
+                      setState(() => _deletion = _deletion.requested()),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: AppButton(
-                    l10n.cancel,
-                    variant: AppButtonVariant.outlined,
-                    height: 44,
-                    fontSize: 15,
-                    onPressed: () =>
-                        setState(() => _deletion = _deletion.cancelled()),
-                  ),
-                ),
-              ],
-            )
-          else
-            AppButton(
-              l10n.deleteCycleData,
-              variant: AppButtonVariant.text,
-              height: 36,
-              fontSize: 15,
-              onPressed: () =>
-                  setState(() => _deletion = _deletion.requested()),
-            ),
+            ],
+          ),
         ],
       ),
     );

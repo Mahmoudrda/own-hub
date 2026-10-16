@@ -40,12 +40,16 @@ import '../features/account/domain/deletion_manifest.dart';
 import '../features/account/domain/dietary_profile.dart';
 import '../features/account/domain/health_backup.dart';
 import '../features/cycle/domain/today_check_in.dart';
+import '../features/train/data/exercise_library_sync.dart'
+    show kExerciseLibraryCacheKeys;
 import '../features/train/data/workout_sync.dart' show kWorkoutCacheKeys;
 import '../features/eat/data/recipe_sync.dart';
 import '../features/train/domain/training_reminders.dart';
+import 'first_gym_guide_state.dart';
 import '../features/signup/domain/legal_acceptance.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
+import 'exercise_library_state.dart';
 import 'workout_library_state.dart';
 import 'cloud_store.dart';
 import 'coach_portfolio_state.dart';
@@ -64,7 +68,9 @@ import 'home_widget_sync.dart';
 import 'install_id.dart';
 import 'pledge.dart';
 import 'coach_invite_state.dart';
+import 'rewards_state.dart';
 import 'role_state.dart';
+import 'training_streak_state.dart';
 import 'local_persistence.dart';
 import 'onboarding_state.dart';
 import 'workout_session_state.dart';
@@ -98,6 +104,9 @@ class ThisPhoneWipe implements LocalWipe {
     RoleState.instance.reset();
     AppRouter.lastReviewerPath = null;
     await AppRouter.authRepository.signOut();
+    unawaited(AppRouter.pushRegistrar.forget().catchError((Object _) {}));
+    ReminderState.instance.reset();
+    unawaited(AppRouter.reminderScheduler.cancel().catchError((Object _) {}));
     // The Home Screen and Lock Screen widgets go back to "Open Own Hub to
     // start". Not awaited, on the same terms as the snapshot erase below.
     unawaited(HomeWidgetSync.instance.clear());
@@ -201,6 +210,17 @@ class ThisPhoneWipe implements LocalWipe {
       );
     }
     WorkoutLibraryState.instance.chosenRowId = null;
+    // The exercise library: its cached catalogue, the clips kept on the phone
+    // and the move she last opened. None of it is hers, and all of it goes.
+    for (final key in kExerciseLibraryCacheKeys) {
+      unawaited(
+        PreferencesSnapshotStorage(key: key).erase().catchError((Object _) {}),
+      );
+    }
+    unawaited(
+      ExerciseLibraryState.instance.media.eraseAll().catchError((Object _) {}),
+    );
+    ExerciseLibraryState.instance.openExerciseId = null;
 
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();
@@ -214,6 +234,10 @@ class ThisPhoneWipe implements LocalWipe {
     // bests map by reference, so both are reset and neither is replaced.
     AppRouter.progressStore.reset();
     AppRouter.personalBestLedger.reset();
+    // The awards already paid and today's cap (D41), and her training streak
+    // with its sessions per day (D37). Both live only on this phone.
+    RewardsState.instance.reset();
+    TrainingStreakState.instance.reset();
 
     // Rows 35, 36 — her cycle document and every period date. `CycleState`
     // already purges the repository; it also takes Today's cycle row down.
@@ -244,6 +268,8 @@ class ThisPhoneWipe implements LocalWipe {
     // Her training reminders: the days she chose, and the ones the phone
     // has scheduled.
     ReminderState.instance.reset();
+    unawaited(AppRouter.pushRegistrar.forget().catchError((Object _) {}));
+    FirstGymGuideState.instance.reset();
     unawaited(AppRouter.reminderScheduler.cancel().catchError((Object _) {}));
     AppRouter.dietaryRepository.reset();
     AppRouter.privacyRepository.reset();
@@ -306,6 +332,7 @@ class ThisPhoneWipe implements LocalWipe {
     AppRouter.coachPlanWeekIndex = 0;
     AppRouter.coachPlanOpenSplit = null;
     AppRouter.lastSwappedFor = null;
+    AppRouter.lastRecallOutcome = null;
   }
 }
 
@@ -446,5 +473,7 @@ bool get nothingOfHersRemains {
       AppRouter.cycleRepository.store.periods.isEmpty &&
       AppRouter.blockService.blocks().isEmpty &&
       AppRouter.reportService.reports().isEmpty &&
-      AppRouter.dietaryRepository.read() == DietaryProfile.unasked;
+      AppRouter.dietaryRepository.read() == DietaryProfile.unasked &&
+      RewardsState.instance.awardIds.isEmpty &&
+      !TrainingStreakState.instance.touched;
 }

@@ -116,6 +116,15 @@ dependencies:
   firebase_analytics: ^12.6.0
   share_plus: ^13.3.1
   posthog_flutter: ^5.53.0
+  # The exercise library's demo clips (R15, D42): played muted and looping
+  # from a file on the phone, mixing with whatever she is listening to.
+  video_player: ^2.14.1
+  # Only for the cache folder those clips are kept in after the first view:
+  # library content, nothing of hers. Dart's file calls stat, so
+  # ios/Runner/PrivacyInfo.xcprivacy declares the file-timestamp reason C617.1.
+  path_provider: ^2.1.6
+  animations: ^3.0.0
+  sensors_plus: ^7.1.1
 
 dev_dependencies:
   flutter_test:
@@ -217,6 +226,10 @@ flutter:
     # the interface is the app's own voice, and they reach the screen through
     # different pipes so they cannot be smeared into each other.
     - assets/content/rahma_recipes.json
+    # The three starting plans by goal, each in a home, a dumbbell and a gym
+    # variant (D47). Content, so JSON, for the reason above. Drafted, and
+    # marked as pending Rahma's sign-off inside the file.
+    - assets/content/starting_programmes.json
 
   fonts:
     - family: Rubik
@@ -262,13 +275,13 @@ flutter:
 #
 # adaptive_icon_background was #FFFFFF while icon-foreground.png was a mark in
 # near-white paper, which on Android is a white mark on a white tile: an icon
-# nobody can see. The background is now the rose the iOS tile has always used,
+# nobody can see. The background is now the Pale Pink the iOS tile uses,
 # so both platforms show the same thing.
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/icon-1024.png"
   remove_alpha_ios: true
-  adaptive_icon_background: "#A24661"
+  adaptive_icon_background: "#F4BEBB"
   adaptive_icon_foreground: "assets/icon/icon-foreground.png"
   min_sdk_android: 24

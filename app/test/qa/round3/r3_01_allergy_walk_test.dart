@@ -33,9 +33,9 @@ bool _looksLikeDish(String label) =>
     label.contains('جم بروتين');
 
 RecipeBook _book() => RecipeBook.fromJson(
-  (jsonDecode(File('assets/content/rahma_recipes.json').readAsStringSync())
-          as Map)
-      .cast<String, Object?>(),
+  (jsonDecode(
+    File('assets/content/rahma_recipes.json').readAsStringSync(),
+  ) as Map).cast<String, Object?>(),
 );
 
 /// The four rows the prototype draws, by the name a woman reads.
@@ -148,15 +148,15 @@ void main() {
   // The reference point: no allergy declared. If the prototype rows are gone
   // here too, the fix took the tab away from everybody.
   for (final loc in <String>['en', 'ar']) {
-    testWidgets('E05 with nothing declared still has its rows, $loc', (t) async {
+    testWidgets('E05 with nothing declared still has its rows, $loc', (
+      t,
+    ) async {
       phone(t);
       final s = t.ensureSemantics();
       EatAppState.instance.seedRecipeBook(_book());
       await open(t, appDestinations['E05']!.name, locale: Locale(loc));
       final taps = tappables(t).map((e) => e.label).toList();
-      final dishes = taps
-          .where(_looksLikeDish)
-          .toList();
+      final dishes = taps.where(_looksLikeDish).toList();
       print('=== R3-01 E05 UNASKED, $loc: ${dishes.length} dish rows ===');
       for (final d in dishes) {
         print('  | $d');

@@ -39,22 +39,20 @@
 /// [kProvisionalProteinTargetG].
 library;
 
-import '../../../theme/app_art.dart';
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../data/pending_answers.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
-import '../../../app_state/eat_state.dart';
 import '../../../routing/app_router.dart';
+import '../../../theme/app_art.dart';
 import '../../../theme/app_tokens.dart';
-import '../../../theme/recipe_book_tokens.dart';
 import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
@@ -66,7 +64,8 @@ import '../../../ui/app_undo_bar.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_art_strip.dart';
-import '../../today/presentation/today_cards.dart' show mealSlotName, openScreen;
+import '../../today/presentation/today_cards.dart'
+    show mealSlotName, openScreen;
 import '../domain/allergy_guard.dart';
 import '../domain/day_totals.dart';
 import '../domain/food_library.dart';
@@ -113,6 +112,7 @@ class EatView extends StatefulWidget {
     this.library,
     this.now,
     this.justLogged,
+    this.foodPointsPreview = 0,
     this.plannedMeal,
     this.yesterdaysLunch,
     this.onOpenRecipes,
@@ -166,6 +166,12 @@ class EatView extends StatefulWidget {
   /// protein delta, exactly as `screens-eat.mjs` → `E04` draws them.
   final LogHandle? justLogged;
 
+  /// What [justLogged] will actually pay when its window closes: five points
+  /// for the first meal of a day, nothing after that or once the day's cap is
+  /// reached. The pill is drawn only when this is above zero, and it reads the
+  /// number, never a fixed "+5".
+  final int foodPointsPreview;
+
   /// Null for every woman in the MVP — see [PlannedMeal].
   final PlannedMeal? plannedMeal;
 
@@ -203,6 +209,12 @@ class _EatViewState extends State<EatView> {
   StreamSubscription<MealDay>? _sub;
   MealDay? _day;
   EatPrefs _prefs = const EatPrefs();
+
+  /// The points the pill names, read once for the log it is about. After the
+  /// write lands the day has paid and a fresh read would say nothing, so the
+  /// figure is held for as long as that one log is on screen.
+  LogHandle? _pointsFor;
+  int _pointsShown = 0;
 
   /// Items logged in the last five seconds, shown before the write is issued.
   ///
@@ -312,6 +324,7 @@ class _EatViewState extends State<EatView> {
   /// With no handler to carry the handle onward nothing else would offer the
   /// window, so the snackbar stands in.
   void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    unawaited(AppHaptics.play(HapticMoment.actionDone));
     if (widget.onLogged != null) return;
     showUndoSnackBar(
       context,
@@ -401,6 +414,10 @@ class _EatViewState extends State<EatView> {
 
   @override
   Widget build(BuildContext context) {
+    if (!identical(widget.justLogged, _pointsFor)) {
+      _pointsFor = widget.justLogged;
+      _pointsShown = widget.justLogged == null ? 0 : widget.foodPointsPreview;
+    }
     final l10n = AppL10n.of(context);
     final library = _library(l10n);
 
@@ -490,24 +507,32 @@ class _EatViewState extends State<EatView> {
                 }
               : null,
         ),
-      AppSplitRow(
-        start: _masthead(l10n),
-        end: justLogged == null
-            ? AppPill(
-                l10n.ramadanModeOff,
-                background: AppColors.surfaceContainer,
-                foreground: AppColors.onSurfaceVariant,
-              )
-            // Five points land once a day for logging anything — never per
-            // item, so there is no reason for her to split a plate. G6 awards
-            // them on the day document, which is what makes that structural.
-            : AppPill(
-                l10n.n5Points,
-                background: AppColors.tertiaryContainer,
-                foreground: AppColors.tertiary,
-                icon: Icons.add,
-              ),
-      ),
+      // The pill appears only for something true now: the points a log pays,
+      // or Ramadan mode while it is on.
+      if (justLogged != null && _pointsShown > 0)
+        AppSplitRow(
+          start: _masthead(l10n),
+          // Points land once a day for logging anything — never per item,
+          // so there is no reason for her to split a plate. The figure is
+          // what this log will really pay (D41); it was a fixed "+5" on every
+          // log, and nothing was ever paid.
+          end: AppPill(
+            l10n.pointsPoints(countLabel(_pointsShown)),
+            background: AppColors.tertiaryContainer,
+            foreground: AppColors.tertiary,
+          ),
+        )
+      else if (view.ramadanMode == RamadanMode.on)
+        AppSplitRow(
+          start: _masthead(l10n),
+          end: AppPill(
+            l10n.ramadanModeOn,
+            background: AppColors.surfaceContainer,
+            foreground: AppColors.onSurfaceVariant,
+          ),
+        )
+      else
+        _masthead(l10n),
       DayCard(
         slots: _slotColumns(l10n, view),
         proteinTitle: l10n.protein,
@@ -518,6 +543,9 @@ class _EatViewState extends State<EatView> {
         // LogHandle carries a description and an undo, not a delta.
         totals: view.totals,
       ),
+      // The one thing to do here, straight under the day: say or type what she
+      // ate. The suggestions come after it.
+      _box(l10n),
       // Rendered only for a woman who actually has a coach — null for everyone
       // in the MVP.
       if (widget.plannedMeal != null) ..._plannedBlock(l10n),
@@ -559,11 +587,7 @@ class _EatViewState extends State<EatView> {
           onLog: () => _log(widget.yesterdaysLunch!.entries, view.activeSlot),
         ),
       if (_screenedToNothing(view.suggestions)) _guardNote(l10n),
-      if (AppRouter.screenIsOn('E05')) ...[
-        _recipesRow(l10n),
-        _rahmaShelf(l10n),
-      ],
-      _box(l10n),
+      if (AppRouter.screenIsOn('E05')) _recipesRow(l10n),
     ];
   }
 
@@ -678,7 +702,7 @@ class _EatViewState extends State<EatView> {
           ),
           onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
         ),
-      if (AppRouter.screenIsOn('E05')) _rahmaShelf(l10n),
+      if (AppRouter.screenIsOn('E05')) _recipesRow(l10n),
       if (_screenedToNothing(view.starters))
         _guardNote(l10n)
       else ...[
@@ -777,42 +801,24 @@ class _EatViewState extends State<EatView> {
   String _titleOf(SuggestionView suggestion) =>
       suggestion.entries.map((e) => e.food.names.first).join(', ');
 
-  /// "460 kcal · 34 g protein" — computed from the food she is looking at.
-  ///
-  /// The old doc comment claimed the macros were "picked from the dictionary by
-  /// the row it describes, so the row and its macros cannot disagree". They
-  /// disagreed for every food outside a six-case switch, because the default
-  /// arm was `n540Kcal18GProtein`: two boiled eggs — 156 kcal and 13 g — showed
-  /// koshari's 540 and 18. The dictionary even held `n156Kcal13GProtein`, the
-  /// correct figure, unused.
-  ///
-  /// Summed across entries, because one suggestion can hold several foods;
-  /// `_titleOf` already joins their names. `countLabel` keeps the digits
-  /// Western under `ar`, which `NumberFormat` would not.
+  /// "34 g protein" — computed from the food she is looking at, and summed
+  /// across entries because one suggestion can hold several foods.
+  /// `countLabel` keeps the digits Western under `ar`, which `NumberFormat`
+  /// would not. Energy is not shown: the app counts protein only.
   String _metaOf(AppL10n l10n, SuggestionView suggestion) {
-    final kcal = suggestion.entries.fold<int>(0, (sum, e) => sum + e.kcal);
     final protein = suggestion.entries.fold<int>(
       0,
       (sum, e) => sum + e.proteinG,
     );
-    return l10n.kcalKcalProteinGProtein(countLabel(kcal), countLabel(protein));
+    return l10n.nGProtein(countLabel(protein));
   }
 
-  /// The same defect as [_metaOf], one screen earlier and with the slot in it.
-  ///
-  /// Three hardcoded cases and `_ => lunch540Kcal18GProtein`, so E01's starter
-  /// list told a woman that boiled eggs were a 540 kcal lunch. The slot now
-  /// comes from the slot she is actually logging into — the one tapping Log
-  /// writes to — rather than a guess baked into the string about when a food
-  /// is usually eaten.
+  /// The same figure with the slot she is actually logging into — the one
+  /// tapping Log writes to — rather than a guess about when a food is usually
+  /// eaten.
   String _starterMeta(AppL10n l10n, MealSlot slot, SuggestionView starter) {
-    final kcal = starter.entries.fold<int>(0, (sum, e) => sum + e.kcal);
     final protein = starter.entries.fold<int>(0, (sum, e) => sum + e.proteinG);
-    return l10n.slotKcalKcalProteinGProtein(
-      _slotName(l10n, slot),
-      countLabel(kcal),
-      countLabel(protein),
-    );
+    return '${_slotName(l10n, slot)} · ${l10n.nGProtein(countLabel(protein))}';
   }
 
   Widget _recipesRow(AppL10n l10n) => AppListItem(
@@ -826,69 +832,6 @@ class _EatViewState extends State<EatView> {
     ),
     onTap: () => openScreen(context, 'E05', widget.onOpenRecipes),
   );
-
-  /// A shelf of her four sections, one small card each.
-  ///
-  /// **The rest of E01 is not restyled.** This is the logging screen: the day
-  /// totals, the suggestions, the say-or-type box and the guard note all stay
-  /// exactly as they are. Turning the whole tab pink would mean turning the day
-  /// totals pink, and the day totals are not a recipe book.
-  ///
-  /// Empty until the seed has been read, and empty is drawn as nothing at all
-  /// rather than as four grey placeholders: a shelf of loading cards on a screen
-  /// whose main job is logging a meal is noise.
-  Widget _rahmaShelf(AppL10n l10n) {
-    final book = (EatAppState.instance..ensureRecipeBook()).recipeBook;
-    if (book.sections.isEmpty) return const SizedBox.shrink();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(l10n.rahmasRecipes, style: AppText.titleM),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 108,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.zero,
-            itemCount: book.sections.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              final section = book.sections[index];
-              return SizedBox(
-                width: 168,
-                child: HandSurface(
-                  seed: handSeed(['eat-shelf', section.sectionId]),
-                  fill: BookInk.paper,
-                  level: HandLevel.crafted,
-                  radius: 8,
-                  looseCorner: 16,
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                  onTap: () => openScreen(context, 'E05', widget.onOpenRecipes),
-                  semanticsButton: true,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: BookTitle(
-                          titleEn: section.titleEn,
-                          style: AppText.titleS.copyWith(color: BookInk.ink),
-                        ),
-                      ),
-                      FoodMark(
-                        markKey: section.markKey,
-                        size: 30,
-                        ink: BookInk.ink,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
 
   // The microphone is drawn only when saying a meal is on in this build. With
   // `Feature.voiceLogging` off there is no recogniser and no microphone

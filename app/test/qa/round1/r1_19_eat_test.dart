@@ -8,21 +8,35 @@
 // R1-19 to R1-27: the Eat flow and the allergy path.
 @Tags(['qa'])
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 void main() {
   useShippingApp();
-  for (final id in ['E01','E02','E03','E04','E05','E10','E07','E08','E11']) {
+  for (final id in [
+    'E01',
+    'E02',
+    'E03',
+    'E04',
+    'E05',
+    'E10',
+    'E07',
+    'E08',
+    'E11',
+  ]) {
     testWidgets('$id as opened, day one', (t) async {
       phone(t);
       final s = t.ensureSemantics();
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
       print('$id PAINTED: ${paintedText(t).join(" | ")}');
       print('$id TAPPABLE: ${tappables(t).map((e) => e.label).join(" | ")}');
-      print('$id dialogs=${find.byType(Dialog).evaluate().length + find.byType(AlertDialog).evaluate().length} sheets=${find.byType(BottomSheet).evaluate().length}');
+      print(
+        '$id dialogs=${find.byType(Dialog).evaluate().length + find.byType(AlertDialog).evaluate().length} sheets=${find.byType(BottomSheet).evaluate().length}',
+      );
       s.dispose();
     });
   }
@@ -30,7 +44,9 @@ void main() {
     phone(t);
     final s = t.ensureSemantics();
     await open(t, appDestinations['E01']!.name, locale: const Locale('en'));
-    print('BEFORE: ${paintedText(t).where((e)=>e.contains("Day")||e.contains("plates")).join(" | ")}');
+    print(
+      'BEFORE: ${paintedText(t).where((e) => e.contains("Day") || e.contains("plates")).join(" | ")}',
+    );
     // `tapControl`, not `tapLabel`: E01 draws a "Log" on every suggested plate,
     // so `byLabel('I ate this')` matches two nodes and `semantics.tap` throws "too
     // many elements". Three identical Logs is what the screen honestly has —
@@ -39,7 +55,9 @@ void main() {
     expect(logged, isTrue, reason: 'E01 must offer a one-tap log');
     print('AFTER LOG top=${topScreen(t)}');
     print('AFTER LOG painted: ${paintedText(t).join(" | ")}');
-    print('snackbars=${find.byType(SnackBar).evaluate().length} dialogs=${find.byType(Dialog).evaluate().length + find.byType(AlertDialog).evaluate().length}');
+    print(
+      'snackbars=${find.byType(SnackBar).evaluate().length} dialogs=${find.byType(Dialog).evaluate().length + find.byType(AlertDialog).evaluate().length}',
+    );
     // wait past the undo window
     await t.pump(const Duration(seconds: 6));
     print('AFTER 6s snackbars=${find.byType(SnackBar).evaluate().length}');

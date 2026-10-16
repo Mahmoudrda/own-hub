@@ -49,9 +49,12 @@ final _library = <ScreenableExercise>[
   _ex('fx_4417_floor_breathing', const {
     ContraindicationTag.none,
   }, floorOnly: true),
-  _ex('fx_4417_loud_shuttle', const {
-    ContraindicationTag.none,
-  }, quiet: false, floorOnly: true),
+  _ex(
+    'fx_4417_loud_shuttle',
+    const {ContraindicationTag.none},
+    quiet: false,
+    floorOnly: true,
+  ),
 ];
 
 List<String> _ids(List<ScreenableExercise> moves) => [
@@ -209,9 +212,7 @@ void main() {
       final candidates = ExerciseCandidateFilter(declared).screen(_library);
       for (final move in candidates) {
         expect(
-          move.blocks(
-            LifeStageSafetyPolicy.derivedAvoid(LifeStage.pregnant),
-          ),
+          move.blocks(LifeStageSafetyPolicy.derivedAvoid(LifeStage.pregnant)),
           isFalse,
         );
       }
@@ -245,15 +246,20 @@ void main() {
       // HANDOFF 14: refer is not a failure state. The publish gate does not
       // take a referral at all — the only thing that can block is withheld
       // clearance during p0_6w.
-      expect(ReferralRegistry.activeTags(_assessment(
-        screening: [
-          ScreeningItem(
-            id: 'fx_scr_4417_pelvic',
-            outcome: ScreeningOutcome.refer,
-            suppresses: const {ContraindicationTag.pelvicFloorLoad},
+      expect(
+        ReferralRegistry.activeTags(
+          _assessment(
+            screening: [
+              ScreeningItem(
+                id: 'fx_scr_4417_pelvic',
+                outcome: ScreeningOutcome.refer,
+                suppresses: const {ContraindicationTag.pelvicFloorLoad},
+              ),
+            ],
           ),
-        ],
-      )), isNotEmpty);
+        ),
+        isNotEmpty,
+      );
       final decision = LifeStageSafetyPolicy.publishGate(
         stage: LifeStage.none,
         clearance: null,
@@ -275,21 +281,25 @@ void main() {
   });
 
   group('a recorded life stage restricts on its own — PHASE3-PLAN §1.4', () {
-    test('pregnancy removes the jumping and supine moves with no avoid list', () {
-      // The hole being closed: before this, a recorded pregnancy restricted
-      // nothing unless a coach happened to tick the chips.
-      final constraints = ClientConstraintResolver.resolve(
-        assessment: _assessment(lifeStage: LifeStage.pregnant),
-      );
-      final candidates = ExerciseCandidateFilter(constraints).screen(_library);
-      expect(_ids(candidates), isNot(contains('fx_4417_box_jump')));
-      expect(_ids(candidates), isNot(contains('fx_4417_bridge_hold')));
-      expect(
-        _ids(candidates),
-        contains('fx_4417_deep_lunge'),
-        reason: 'deep_knee_flexion is not derived, so it must survive',
-      );
-    });
+    test(
+      'pregnancy removes the jumping and supine moves with no avoid list',
+      () {
+        // The hole being closed: before this, a recorded pregnancy restricted
+        // nothing unless a coach happened to tick the chips.
+        final constraints = ClientConstraintResolver.resolve(
+          assessment: _assessment(lifeStage: LifeStage.pregnant),
+        );
+        final candidates = ExerciseCandidateFilter(constraints)
+            .screen(_library);
+        expect(_ids(candidates), isNot(contains('fx_4417_box_jump')));
+        expect(_ids(candidates), isNot(contains('fx_4417_bridge_hold')));
+        expect(
+          _ids(candidates),
+          contains('fx_4417_deep_lunge'),
+          reason: 'deep_knee_flexion is not derived, so it must survive',
+        );
+      },
+    );
 
     test('her self-declared stage restricts even with a bare assessment', () {
       final constraints = ClientConstraintResolver.resolve(

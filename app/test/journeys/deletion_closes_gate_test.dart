@@ -97,6 +97,9 @@ void main() {
         .pushNamed(appDestinations['A02']!.name);
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Privacy and data').first);
+    await tester.tap(find.text('Privacy and data').first);
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Your data').first);
     await tester.tap(find.text('Your data').first);
     await tester.pumpAndSettle();

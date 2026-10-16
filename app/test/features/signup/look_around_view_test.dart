@@ -52,6 +52,7 @@ void main() {
       Feature.lockScreenNudge: true,
       Feature.train: true,
       Feature.recordFromMemory: true,
+      Feature.program: true,
       Feature.exerciseVideo: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
@@ -156,7 +157,7 @@ void main() {
       // Join opens her week first, so the sheet does not promise her number.
       expect(
         find.text(
-          'First your week, then your number and a quick check that you are '
+          'First your week, then your number and a quick check that you\'re '
           'a woman.',
         ),
         findsOneWidget,
@@ -177,7 +178,7 @@ void main() {
 
       expect(
         find.text(
-          'We just need your number and a quick check that you are '
+          'We just need your number and a quick check that you\'re '
           'a woman.',
         ),
         findsOneWidget,

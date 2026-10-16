@@ -31,17 +31,14 @@ String herAnswersLine(
   final days = '${intake.days}';
   final minutes = '${intake.minutes}';
   if (!placeAnswered) {
-    return l10n.daysAWeekDaysMinutesASession_1a2wl(days, minutes);
+    return l10n.daysDaysAWeekMinutesMinA(days, minutes);
   }
   return switch (intake.place) {
-    TrainingPlace.home => l10n.daysAWeekDaysMinutesASession(days, minutes),
-    TrainingPlace.ladiesGym => l10n.daysAWeekDaysMinutesASession_1qm7e(
+    TrainingPlace.home => l10n.daysDaysAWeekMinutesMinA_ew0mi(days, minutes),
+    TrainingPlace.ladiesGym => l10n.daysDaysAWeekMinutesMinA_q73s6(
       days,
       minutes,
     ),
-    TrainingPlace.both => l10n.daysAWeekDaysMinutesASession_1cc8s(
-      days,
-      minutes,
-    ),
+    TrainingPlace.both => l10n.daysDaysAWeekMinutesMinA_3morb(days, minutes),
   };
 }

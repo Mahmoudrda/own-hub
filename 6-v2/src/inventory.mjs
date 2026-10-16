@@ -88,6 +88,8 @@ export const screens = [
   { id: 'R11', flow: 'train', title: 'Workout library' },
   { id: 'R12', flow: 'train', title: 'Logged from memory' },
   { id: 'R13', flow: 'train', title: 'Move logged' },
+  { id: 'R14', flow: 'train', title: 'Exercise library', noMockup: true },
+  { id: 'R15', flow: 'train', title: 'Exercise demo', noMockup: true },
   // Eat
   { id: 'E01', flow: 'eat', title: 'Eat' },
   { id: 'E02', flow: 'eat', title: 'Type it' },

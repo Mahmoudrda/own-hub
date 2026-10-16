@@ -126,8 +126,8 @@ class DemoCoachCard extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onNext;
 
-  /// Whether the kitten points at this stop. Off on the Cycle stop: nothing
-  /// reacts to her cycle.
+  /// Whether the kitten points at this stop. Off on the check-in stop: nothing
+  /// reacts to how she feels.
   final bool guide;
 
   @override
@@ -280,7 +280,7 @@ class DemoEndCard extends StatelessWidget {
                     width: HandStroke.felt,
                     gap: 6,
                     child: Text(
-                      l10n.thatIsOwnHub,
+                      l10n.thatsOwnHub,
                       style: EditorialType.section,
                     ),
                   ),
@@ -329,8 +329,8 @@ Future<void> showJoinSheet(
       if (!waiting)
         Text(
           setupDone
-              ? l10n.weJustNeedYourNumberAndA_1jn4g
-              : l10n.firstYourWeekThenYourNumberAnd_flrzo,
+              ? l10n.weJustNeedYourNumberAndA_1vu4x
+              : l10n.firstYourWeekThenYourNumberAnd_10ray,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
       AppButton(

@@ -190,12 +190,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('قبل أن تفتح الكاميرا'), findsOneWidget);
-    expect(find.text('أوافق وأبدأ التصوير'), findsOneWidget);
+    expect(find.text('قبل ما الكاميرا تفتح'), findsOneWidget);
+    expect(find.text('موافقة، يلا نشغّل الكاميرا'), findsOneWidget);
     expect(find.text('Before the camera opens'), findsNothing);
     // Right to left, so the disclosure is laid out the way she reads it.
     expect(
-      Directionality.of(tester.element(find.text('أوافق وأبدأ التصوير'))),
+      Directionality.of(
+        tester.element(find.text('موافقة، يلا نشغّل الكاميرا')),
+      ),
       TextDirection.rtl,
     );
   });
@@ -227,10 +229,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('أوافق وأبدأ التصوير'));
+    await tester.tap(find.text('موافقة، يلا نشغّل الكاميرا'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('consent-error')), findsOneWidget);
-    expect(find.textContaining('تعذّر حفظ موافقتكِ'), findsOneWidget);
+    expect(find.textContaining('ماقدرناش نحفظ موافقتك'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -248,7 +250,7 @@ void main() {
   // check is explained and agreed to on one screen. The disclosure is the v1
   // text, every bullet visible, and agreeing still writes the record first.
   group('with the promise above it', () {
-    testWidgets('promise, all six disclosures, and three ways on', (
+    testWidgets('title, all six disclosures, and three ways on', (
       tester,
     ) async {
       var niqab = 0;
@@ -266,16 +268,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('3 of 3 · Quick check'), findsOneWidget);
-      expect(find.text('One check, then you are in'), findsOneWidget);
-      expect(find.textContaining('national ID card'), findsWidgets);
-      expect(find.textContaining('a couple of minutes'), findsOneWidget);
+      expect(find.text('One check, then you are in'), findsNothing);
+      expect(find.textContaining('a couple of minutes'), findsNothing);
       expect(find.text('Before the camera opens'), findsOneWidget);
       expect(find.textContaining('Google Cloud'), findsOneWidget);
-      expect(find.byType(VerificationBullet), findsNWidgets(3 + 6));
+      expect(find.byType(VerificationBullet), findsNWidgets(6));
       expect(
         kCaptureConsentVersion,
-        2,
-        reason: 'privacy policy v3 rewrote the disclosure',
+        3,
+        reason: 'v2 was privacy policy v3; v3 is the same wording in Egyptian Arabic',
       );
 
       final link = find.text('I wear niqab, check me another way');
@@ -285,7 +286,9 @@ void main() {
       expect(niqab, 1);
     });
 
-    testWidgets('agreeing still writes the record before the camera', (tester) async {
+    testWidgets('agreeing still writes the record before the camera', (
+      tester,
+    ) async {
       final store = InMemoryCaptureConsentStore();
       final order = <String>[];
       await tester.pumpWidget(

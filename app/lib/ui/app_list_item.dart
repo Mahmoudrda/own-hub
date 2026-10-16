@@ -108,7 +108,8 @@ class AppListItem extends StatelessWidget implements HandSeedName {
       if (onTap == null) return ruled;
       return HandPressable(
         onTap: onTap,
-        scale: 0.985,
+        scale: HandTiming.pressScale,
+        spring: true,
         builder: (_, _) => ruled,
       );
     }
@@ -126,6 +127,8 @@ class AppListItem extends StatelessWidget implements HandSeedName {
       radius: handTightRadius(borderRadius),
       looseCorner: handLooseRadius(borderRadius),
       onTap: onTap,
+      pressScale: HandTiming.pressScale,
+      springPress: true,
       padding: padding,
       child: row,
     );

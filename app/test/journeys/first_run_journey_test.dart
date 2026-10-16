@@ -69,6 +69,7 @@ void main() {
       Feature.lockScreenNudge: true,
       Feature.train: true,
       Feature.recordFromMemory: true,
+      Feature.program: true,
       Feature.exerciseVideo: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
@@ -198,7 +199,7 @@ void main() {
       // without a number because the number is hers.
       expect(
         find.text(
-          'Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.',
+          'Hit your goal and the week counts. If you miss a week, a rest week you\'ve earned covers it.',
         ),
         findsOneWidget,
       );
@@ -249,11 +250,11 @@ void main() {
         reason: 'one log leaves the day-one branch permanently',
       );
 
-      expect(find.text('Your first week'), findsOneWidget);
-      // One of the three steps is done, counted off the same list T07 draws.
-      expect(_rowSubtitle('Your first week', '1 of 3'), findsOneWidget);
+      // One line in the week block now, with its count (§15): one of the
+      // three steps is done, counted off the same list T07 draws.
+      expect(find.text('Your first week: 1 of 3 steps'), findsOneWidget);
 
-      await tester.tap(find.text('Your first week'));
+      await tester.tap(find.text('Your first week: 1 of 3 steps'));
       await tester.pumpAndSettle();
       expect(find.text('Finish one set'), findsOneWidget);
     });

@@ -7,7 +7,7 @@
    "titleEn": "Sweet Tooth Breakfast",
    "titleAr": null,
    "psLineEn": "PS: You may need it on your period girl i got you :)",
-   "psLineAr": null,
+   "psLineAr": "ملحوظة: ممكن تحتاجيها أيام الدورة يا قمر، أنا معاكي :)",
    "order": 1,
    "markKey": "cake_slice"
   },
@@ -16,7 +16,7 @@
    "titleEn": "Salty fulling Breakfast",
    "titleAr": null,
    "psLineEn": "PS: I am keeping you full until lunch dear",
-   "psLineAr": null,
+   "psLineAr": "ملحوظة: هخليكي شبعانة لحد الغدا يا حبيبتي",
    "order": 2,
    "markKey": "fried_egg"
   },
@@ -25,7 +25,7 @@
    "titleEn": "Lunchy junky yum",
    "titleAr": null,
    "psLineEn": "WOW I am eating junky healthy food",
-   "psLineAr": null,
+   "psLineAr": "واو! باكل جانك فود بس صحي",
    "order": 3,
    "markKey": "pot"
   },
@@ -34,7 +34,7 @@
    "titleEn": "Comfy Dinner",
    "titleAr": null,
    "psLineEn": "Eating light to sleep comfy girlie",
-   "psLineAr": null,
+   "psLineAr": "باكل خفيف عشان أنام مرتاحة يا بنوتة",
    "order": 4,
    "markKey": "jar"
   }
@@ -49,7 +49,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Lazy Cake",
-   "titleAr": null,
+   "titleAr": "كيكة الكسالى",
    "titleSearch": [
     "lazy cake"
    ],
@@ -209,7 +209,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Pancakes",
-   "titleAr": null,
+   "titleAr": "بان كيك",
    "titleSearch": [
     "pancakes"
    ],
@@ -365,7 +365,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Chia Pudding",
-   "titleAr": null,
+   "titleAr": "بودينج الشيا",
    "titleSearch": [
     "chia pudding"
    ],
@@ -531,7 +531,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Coconut apple Pudding",
-   "titleAr": null,
+   "titleAr": "بودينج جوز الهند والتفاح",
    "titleSearch": [
     "coconut apple pudding"
    ],
@@ -703,7 +703,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Overnight oats",
-   "titleAr": null,
+   "titleAr": "شوفان بايت",
    "titleSearch": [
     "overnight oats"
    ],
@@ -927,7 +927,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Simple oat meal",
-   "titleAr": null,
+   "titleAr": "شوفان بسيط",
    "titleSearch": [
     "simple oat meal"
    ],
@@ -1095,7 +1095,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Club Sandwich",
-   "titleAr": null,
+   "titleAr": "كلوب ساندويتش",
    "titleSearch": [
     "club sandwich"
    ],
@@ -1258,7 +1258,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Yummy Egg Sandwich",
-   "titleAr": null,
+   "titleAr": "ساندويتش بيض يجنن",
    "titleSearch": [
     "yummy egg sandwich"
    ],
@@ -1394,7 +1394,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Cottage Freshy salad",
-   "titleAr": null,
+   "titleAr": "سلطة جبنة قريش فريش",
    "titleSearch": [
     "cottage freshy salad"
    ],
@@ -1578,7 +1578,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Lazy Ranch Fries",
-   "titleAr": null,
+   "titleAr": "بطاطس رانش للكسالى",
    "titleSearch": [
     "lazy ranch fries"
    ],
@@ -1755,7 +1755,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Creamy cottage cheese",
-   "titleAr": null,
+   "titleAr": "جبنة قريش كريمي",
    "titleSearch": [
     "creamy cottage cheese"
    ],
@@ -1972,7 +1972,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Egg Pizza",
-   "titleAr": null,
+   "titleAr": "بيتزا البيض",
    "titleSearch": [
     "egg pizza"
    ],
@@ -2148,7 +2148,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Shakshoka",
-   "titleAr": null,
+   "titleAr": "شكشوكة",
    "titleSearch": [
     "shakshoka",
     "shakshuka",
@@ -2371,7 +2371,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Fool & Ta3mya",
-   "titleAr": null,
+   "titleAr": "فول وطعمية",
    "titleSearch": [
     "fool & ta3mya",
     "ful",
@@ -2600,7 +2600,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Potato w Eggs",
-   "titleAr": null,
+   "titleAr": "بطاطس بالبيض",
    "titleSearch": [
     "potato w eggs"
    ],
@@ -2815,7 +2815,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Pizza toast",
-   "titleAr": null,
+   "titleAr": "توست بيتزا",
    "titleSearch": [
     "pizza toast"
    ],
@@ -2993,7 +2993,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Chicken Pizza",
-   "titleAr": null,
+   "titleAr": "بيتزا فراخ",
    "titleSearch": [
     "chicken pizza"
    ],
@@ -3156,7 +3156,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "BBQ Burger",
-   "titleAr": null,
+   "titleAr": "برجر باربكيو",
    "titleSearch": [
     "bbq burger"
    ],
@@ -3360,7 +3360,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Hwawshi",
-   "titleAr": null,
+   "titleAr": "حواوشي",
    "titleSearch": [
     "hwawshi",
     "hawawshi",
@@ -3478,7 +3478,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Chicken lemon",
-   "titleAr": null,
+   "titleAr": "فراخ بالليمون",
    "titleSearch": [
     "chicken lemon"
    ],
@@ -3637,7 +3637,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Chicken Ranch Salad",
-   "titleAr": null,
+   "titleAr": "سلطة فراخ رانش",
    "titleSearch": [
     "chicken ranch salad"
    ],
@@ -3824,7 +3824,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Tuna Wrap",
-   "titleAr": null,
+   "titleAr": "راب تونة",
    "titleSearch": [
     "tuna wrap"
    ],
@@ -3997,7 +3997,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Shrimp white sauce pasta",
-   "titleAr": null,
+   "titleAr": "مكرونة جمبري بالوايت صوص",
    "titleSearch": [
     "shrimp white sauce pasta"
    ],
@@ -4212,7 +4212,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Steak Meal",
-   "titleAr": null,
+   "titleAr": "وجبة ستيك",
    "titleSearch": [
     "steak meal"
    ],
@@ -4378,7 +4378,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Oven Tender Chicken",
-   "titleAr": null,
+   "titleAr": "فراخ طرية في الفرن",
    "titleSearch": [
     "oven tender chicken"
    ],
@@ -4618,7 +4618,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Buffalo sweet Wings",
-   "titleAr": null,
+   "titleAr": "أجنحة بافلو سويت",
    "titleSearch": [
     "buffalo sweet wings"
    ],
@@ -4848,7 +4848,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Makrona Bashmel",
-   "titleAr": null,
+   "titleAr": "مكرونة بشاميل",
    "titleSearch": [
     "makrona bashmel",
     "macarona bechamel",
@@ -5123,7 +5123,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Kebda Meal",
-   "titleAr": null,
+   "titleAr": "وجبة كبدة",
    "titleSearch": [
     "kebda meal",
     "kebda",
@@ -5390,7 +5390,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Fattah",
-   "titleAr": null,
+   "titleAr": "فتة",
    "titleSearch": [
     "fattah",
     "fatta",
@@ -5688,7 +5688,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Lahma bel basl",
-   "titleAr": null,
+   "titleAr": "لحمة بالبصل",
    "titleSearch": [
     "lahma bel basl",
     "lahma bel basal",
@@ -5816,7 +5816,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "shorbt 3ads",
-   "titleAr": null,
+   "titleAr": "شوربة عدس",
    "titleSearch": [
     "shorbt 3ads",
     "shorbet ads",
@@ -6043,7 +6043,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Btates bel lahma",
-   "titleAr": null,
+   "titleAr": "بطاطس باللحمة",
    "titleSearch": [
     "btates bel lahma",
     "batates",
@@ -6300,7 +6300,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Cookies with shay blabn",
-   "titleAr": null,
+   "titleAr": "كوكيز مع شاي بلبن",
    "titleSearch": [
     "cookies with shay blabn",
     "cookies",
@@ -6472,7 +6472,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Bagel",
-   "titleAr": null,
+   "titleAr": "بيجل",
    "titleSearch": [
     "bagel"
    ],
@@ -6672,7 +6672,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Crepe",
-   "titleAr": null,
+   "titleAr": "كريب",
    "titleSearch": [
     "crepe"
    ],
@@ -6943,7 +6943,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Banana pudding",
-   "titleAr": null,
+   "titleAr": "بودينج الموز",
    "titleSearch": [
     "banana pudding"
    ],
@@ -7158,7 +7158,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Cheese cake",
-   "titleAr": null,
+   "titleAr": "تشيز كيك",
    "titleSearch": [
     "cheese cake"
    ],
@@ -7345,7 +7345,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "French toast",
-   "titleAr": null,
+   "titleAr": "فرنش توست",
    "titleSearch": [
     "french toast"
    ],
@@ -7540,7 +7540,7 @@
    "status": "review",
    "version": 1,
    "titleEn": "Ice cream",
-   "titleAr": null,
+   "titleAr": "آيس كريم",
    "titleSearch": [
     "ice cream"
    ],

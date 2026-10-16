@@ -377,6 +377,40 @@ void main() {
       },
     );
 
+    test('a download cut short leaves no "checked" stamp, so the next launch '
+        'asks again', () async {
+      final source = _remote();
+      final checks = _MemoryStorage();
+      final cache = _MemoryStorage();
+      final clock = _Clock();
+      source.failOn = source.recipes.keys.first;
+
+      final first = await _sync(
+        source: source,
+        cache: cache,
+        checks: checks,
+        clock: clock,
+      ).refresh();
+      expect(first.outcome, RecipeRefreshOutcome.failed);
+      expect(checks.value, isNull);
+      expect(cache.value, isNull);
+
+      source.failOn = null;
+      final second = await _sync(
+        source: source,
+        cache: cache,
+        checks: checks,
+        clock: clock,
+      ).refresh();
+      expect(second.outcome, RecipeRefreshOutcome.updated);
+      expect(checks.value, isNotNull);
+      expect(source.versionReads, 2);
+    });
+
+    test('a server read gives up after ten seconds', () {
+      expect(FirestoreRecipeSource.readTimeout, const Duration(seconds: 10));
+    });
+
     test('a full fetch happens only on a version bump', () async {
       final source = _remote();
       final cache = _MemoryStorage();

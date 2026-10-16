@@ -167,8 +167,8 @@ class SeededRecipeLibrary implements RecipeLibrary {
   Future<RecipeBook> load() async {
     final cached = _cache;
     if (cached != null) return cached;
-    final raw = await (readAsset?.call(assetKey) ??
-        rootBundle.loadString(assetKey));
+    final raw =
+        await (readAsset?.call(assetKey) ?? rootBundle.loadString(assetKey));
     final book = RecipeBook.fromJson(
       (jsonDecode(raw) as Map).cast<String, Object?>(),
     );

@@ -90,6 +90,7 @@ void main() {
       Feature.lockScreenNudge: true,
       Feature.train: true,
       Feature.recordFromMemory: true,
+      Feature.program: true,
       Feature.exerciseVideo: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
@@ -176,6 +177,7 @@ void main() {
         Feature.lockScreenNudge: true,
         Feature.train: true,
         Feature.recordFromMemory: true,
+        Feature.program: true,
         Feature.exerciseVideo: true,
         Feature.exerciseSwap: true,
         Feature.followAlong: true,
@@ -227,26 +229,18 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.textContaining('is not a deadline'), findsOneWidget);
+      expect(find.textContaining('no deadline'), findsOneWidget);
     });
 
-    testWidgets('the reward is the points the app already gives', (
-      tester,
-    ) async {
+    testWidgets('shows no points card', (tester) async {
       _phone(tester);
       await tester.pumpWidget(_host(_view()));
       await tester.pumpAndSettle();
 
-      // "35 points so far" was a fixed string sitting two lines from
-      // `widget.points`, the real figure. Label and value now, the same shape
-      // T08 uses.
-      expect(find.text('Points'), findsOneWidget);
-      expect(find.text('90'), findsOneWidget);
+      // Competence over badges: no points card on the arc.
+      expect(find.text('Points'), findsNothing);
+      expect(find.text('90'), findsNothing);
       expect(find.text('35 points so far'), findsNothing);
-      expect(
-        find.textContaining('Nothing extra for opening it.'),
-        findsOneWidget,
-      );
     });
 
     testWidgets('and an unwired screen states a new woman, not the mockup', (
@@ -278,8 +272,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Points'), findsOneWidget);
-      expect(find.text('0'), findsOneWidget);
+      expect(find.text('Points'), findsNothing);
       expect(
         find.text('90'),
         findsNothing,

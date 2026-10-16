@@ -478,11 +478,10 @@ class _LensSession implements CaptureSession, Viewfinder {
     if (fill < 0.25) return CaptureGuidance.moveCloser;
     if (fill > 0.80) return CaptureGuidance.moveBack;
 
-    final offCentre =
-        math.max(
-          (box.center.dx - upright.width / 2).abs() / (upright.width / 2),
-          (box.center.dy - upright.height / 2).abs() / (upright.height / 2),
-        );
+    final offCentre = math.max(
+      (box.center.dx - upright.width / 2).abs() / (upright.width / 2),
+      (box.center.dy - upright.height / 2).abs() / (upright.height / 2),
+    );
     if (offCentre > 0.35) return CaptureGuidance.centreYourFace;
 
     // **No eye check during a challenge, and this is not an oversight.** An

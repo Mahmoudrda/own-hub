@@ -51,6 +51,7 @@ const Map<String, Color> _now = {
   'onErrorContainer': AppColors.onErrorContainer,
   'inverseOnSurface': AppColors.inverseOnSurface,
   'onPrimary': AppColors.onPrimary,
+  'onActionPrimary': AppColors.onActionPrimary,
   'onTertiary': AppColors.onTertiary,
   'onError': AppColors.onError,
 };
@@ -71,6 +72,8 @@ const Map<String, Color> _backgrounds = {
   'canvas': AppColors.canvas,
   'inverseSurface': AppColors.inverseSurface,
   'primary': AppColors.primary,
+  'actionPrimary': AppColors.actionPrimary,
+  'actionPressed': AppColors.actionPressed,
   'tertiary': AppColors.tertiary,
   'error': AppColors.error,
 };
@@ -129,6 +132,7 @@ const Map<String, List<String>> _text = {
   'onErrorContainer': ['errorContainer'],
   'inverseOnSurface': ['inverseSurface'],
   'onPrimary': ['primary'],
+  'onActionPrimary': ['actionPrimary', 'actionPressed'],
   'onTertiary': ['tertiary'],
   'onError': ['error'],
 };
@@ -161,8 +165,9 @@ String _f(double v) => v.toStringAsFixed(2);
 Color _fg(String role, {required bool before}) =>
     before ? (_before[role] ?? _now[role]!) : _now[role]!;
 
-Color _bg(String name, {required bool before}) =>
-    before ? (_backgroundsBefore[name] ?? _backgrounds[name]!) : _backgrounds[name]!;
+Color _bg(String name, {required bool before}) => before
+    ? (_backgroundsBefore[name] ?? _backgrounds[name]!)
+    : _backgrounds[name]!;
 
 void main() {
   test('nothing sits within 0.2 of its floor', () {
@@ -211,8 +216,10 @@ void main() {
     }
 
     // ignore: avoid_print
-    print('R4-01: $measured pairs measured, '
-        '${failures.length} failing, ${fragile.toSet().length} fragile');
+    print(
+      'R4-01: $measured pairs measured, '
+      '${failures.length} failing, ${fragile.toSet().length} fragile',
+    );
     for (final line in fragile.toSet()) {
       // ignore: avoid_print
       print('  FRAGILE $line');
@@ -226,7 +233,8 @@ void main() {
     expect(
       fragile.toSet(),
       isEmpty,
-      reason: 'the commit and tokens.mjs both say nothing is left within 0.2 '
+      reason:
+          'the commit and tokens.mjs both say nothing is left within 0.2 '
           'of a floor:\n${fragile.toSet().join('\n')}',
     );
   });
@@ -263,8 +271,14 @@ void main() {
       }
     }
     for (final (fgName, bgName) in _nonText) {
-      final was = contrastRatio(_fg(fgName, before: true), _bg(bgName, before: true));
-      final now = contrastRatio(_fg(fgName, before: false), _bg(bgName, before: false));
+      final was = contrastRatio(
+        _fg(fgName, before: true),
+        _bg(bgName, before: true),
+      );
+      final now = contrastRatio(
+        _fg(fgName, before: false),
+        _bg(bgName, before: false),
+      );
       const needed = ContrastThresholds.nonText;
       if (was >= needed && now < needed) {
         regressions.add('$fgName on $bgName: ${_f(was)} -> ${_f(now)}');
@@ -275,8 +289,10 @@ void main() {
     }
 
     // ignore: avoid_print
-    print('R4-01: ${improvements.length} pair-styles moved from FAIL to ok, '
-        '${regressions.length} the other way');
+    print(
+      'R4-01: ${improvements.length} pair-styles moved from FAIL to ok, '
+      '${regressions.length} the other way',
+    );
     for (final line in regressions) {
       // ignore: avoid_print
       print('  REGRESSION $line');
@@ -314,8 +330,7 @@ void main() {
       'lib/ui/app_progress.dart':
           'a SENTINEL default, swapped for AppColors.outline in build and never '
           'painted as itself',
-      'lib/ui/app_ring_stat.dart':
-          'the same sentinel, for the ring track',
+      'lib/ui/app_ring_stat.dart': 'the same sentinel, for the ring track',
     };
 
     final offenders = <String>[];
@@ -340,8 +355,10 @@ void main() {
     }
 
     // ignore: avoid_print
-    print('R4-01: ${allowed.length} files may draw with outlineVariant, '
-        '${offenders.length} others do');
+    print(
+      'R4-01: ${allowed.length} files may draw with outlineVariant, '
+      '${offenders.length} others do',
+    );
     for (final line in offenders) {
       // ignore: avoid_print
       print('  MEANINGFUL $line');
@@ -353,7 +370,7 @@ void main() {
       reason:
           'outlineVariant is exempt from WCAG 1.4.11 because it is decoration. '
           'Every site below draws a boundary that carries meaning, so it needs '
-          'AppColors.outline, which this file measures at 3.62:1 on the page:\n'
+          'AppColors.outline, which this file measures at 3.78:1 on the page:\n'
           '${offenders.join('\n')}',
     );
   });
@@ -362,6 +379,6 @@ void main() {
     // The dartdoc states two ratios as facts. Both are asserted here as well as
     // in round two's file, because a comment is the easiest thing in the repo
     // to leave behind.
-    expect(_f(contrastRatio(AppColors.primary, AppColors.surface)), '5.59');
+    expect(_f(contrastRatio(AppColors.primary, AppColors.surface)), '6.94');
   });
 }

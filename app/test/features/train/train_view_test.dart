@@ -41,8 +41,10 @@ void main() {
       // Train and the parts this screen opens onto.
       Feature.train: true,
       Feature.workoutLibrary: true,
+      Feature.exerciseLibrary: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
+      Feature.program: true,
     }),
   );
   tearDown(() => AppRouter.featureFlags = savedFlags);
@@ -144,21 +146,28 @@ void main() {
   testWidgets('short sessions sit above the library', (tester) async {
     // A ten-minute floor session is what gets done on a bad day, and it counts
     // the same. If it ever falls below the library this ordering is broken.
-    await tester.pumpWidget(_host(const TrainView()));
+    await tester.pumpWidget(_host(TrainView(onOpenExerciseLibrary: () {})));
     await tester.pumpAndSettle();
 
     final shortHeading = tester.getTopLeft(
       find.text('Short ones that still count'),
     );
-    final libraryHeading = tester.getTopLeft(find.text('All workouts'));
+    final libraryHeading = tester.getTopLeft(find.text('Exercise library'));
     expect(shortHeading.dy, lessThan(libraryHeading.dy));
 
-    expect(find.text('Floor only'), findsOneWidget);
-    expect(find.text('Dumbbells'), findsOneWidget);
+    expect(find.text('10 min · Floor only'), findsOneWidget);
+    expect(find.text('20 min · Dumbbells'), findsOneWidget);
     // '124 videos' is gone: `WorkoutVideoRepository` states that the 124
     // titles do not exist yet, so the count sat above tiles that all draw the
     // unreleased placeholder.
     expect(find.text('124 videos'), findsNothing);
+  });
+
+  testWidgets('the kitten has a caption beside it', (tester) async {
+    await tester.pumpWidget(_host(const TrainView()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ready when you are.'), findsOneWidget);
   });
 
   testWidgets('the gentler option is offered, not buried', (tester) async {
@@ -186,8 +195,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('8 min'), findsOneWidget);
-    expect(find.text('Floor only'), findsNothing);
+    expect(find.text('8 min · Before work'), findsOneWidget);
+    expect(find.textContaining('Floor only'), findsNothing);
   });
 
   testWidgets('every way onward fires its own callback', (tester) async {

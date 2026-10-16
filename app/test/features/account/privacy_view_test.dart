@@ -92,7 +92,10 @@ void main() {
       await tester.tap(toggle);
       await tester.pumpAndSettle();
       expect(choices, [true]);
-      expect(find.textContaining('Nothing about you is attached'), findsOneWidget);
+      expect(
+        find.textContaining('Nothing about you is attached'),
+        findsOneWidget,
+      );
 
       await tester.ensureVisible(toggle);
       await tester.tap(toggle);
@@ -103,7 +106,11 @@ void main() {
     testWidgets('no row without a place to record the choice', (tester) async {
       _phone(tester);
       await tester.pumpWidget(
-        _host(PrivacyView(service: PrivacySettingsService(InMemoryPrivacyRepository()))),
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+          ),
+        ),
       );
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('crash-reports-toggle')), findsNothing);
@@ -136,7 +143,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(choices, [true]);
       expect(crash, isEmpty, reason: 'two choices, never one');
-      expect(find.textContaining('Google Analytics and PostHog receive'), findsOneWidget);
+      expect(
+        find.textContaining('Google Analytics and PostHog receive'),
+        findsOneWidget,
+      );
 
       await tester.ensureVisible(toggle);
       await tester.tap(toggle);

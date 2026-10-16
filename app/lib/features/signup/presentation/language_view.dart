@@ -103,7 +103,7 @@ class _LanguageViewState extends State<LanguageView> {
         const SizedBox(height: 8),
         AppListItem(
           title: 'العربية',
-          subtitle: l10n.arabicText_vqu26,
+          subtitle: l10n.arabicText_3cakp,
           padding: const EdgeInsets.all(16),
           variant: selected == AppLanguage.arabic
               ? AppCardVariant.selected

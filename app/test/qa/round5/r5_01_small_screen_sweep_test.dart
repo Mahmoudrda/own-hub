@@ -136,7 +136,8 @@ Future<void> _sweep(
     await settle(t);
     if (sanity.isEmpty) {
       final mq = MediaQuery.of(t.element(find.byType(Navigator).first));
-      sanity = 'MediaQuery=${mq.size.width.toStringAsFixed(0)}x'
+      sanity =
+          'MediaQuery=${mq.size.width.toStringAsFixed(0)}x'
           '${mq.size.height.toStringAsFixed(0)} '
           'textScale=${mq.textScaler.scale(10) / 10} '
           'paintedOn$id=${paintedText(t).length}';
@@ -181,8 +182,10 @@ Future<void> _sweep(
   for (final x in rescued) {
     print('    $x');
   }
-  print('  CONTROLS BELOW A FIXED SCREEN\'S BOTTOM EDGE '
-      '(${lostControls.length}):');
+  print(
+    '  CONTROLS BELOW A FIXED SCREEN\'S BOTTOM EDGE '
+    '(${lostControls.length}):',
+  );
   for (final x in lostControls) {
     print('    $x');
   }
@@ -193,11 +196,7 @@ Future<void> _sweep(
   // Asserted, not merely printed: a control painted off the bottom of a screen
   // that cannot scroll is unreachable, and an overflow with no scroll view is
   // content she can never see. Both are defects at any size.
-  expect(
-    threw,
-    isEmpty,
-    reason: '$tag: a shipping screen failed to build',
-  );
+  expect(threw, isEmpty, reason: '$tag: a shipping screen failed to build');
   expect(
     unrescued,
     isEmpty,

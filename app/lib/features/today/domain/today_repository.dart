@@ -18,6 +18,7 @@ import 'package:meta/meta.dart';
 
 import '../../../data/pending_answers.dart';
 import '../../../domain/clock/app_clock.dart';
+import '../../../domain/format/day_key.dart';
 import '../../../domain/week/week_key.dart';
 import 'today_day.dart';
 
@@ -102,9 +103,24 @@ class InMemoryTodayRepository implements TodayRepository {
   /// reads her snapshot before `runApp` and [restore] replaces this day
   /// wholesale. Day one is what she gets only when there is genuinely nothing
   /// stored.
-  InMemoryTodayRepository({TodayDay? day, Set<String>? seenNotices})
-    : _day = day ?? dayOne(),
-      _seen = seenNotices ?? <String>{};
+  InMemoryTodayRepository({
+    TodayDay? day,
+    Set<String>? seenNotices,
+    this.weekSource,
+  }) : _day = day ?? dayOne(),
+       _seen = seenNotices ?? <String>{};
+
+  /// Her week as the week document has it, for the week containing the moment
+  /// given, or null when there is no document for that week.
+  ///
+  /// Today keeps its own copy of the week so Home can draw offline, and that
+  /// copy was never reconciled with anything: it was incremented, and restored,
+  /// and that was all. So on the first Monday after a woman's first week Home
+  /// still said "This week, 3 of 3" while Progress, reading the week document,
+  /// said "0 of 3". [rollTo] and [refresh] read this to put the two back
+  /// together. Production passes the progress store; a test that seeds only
+  /// Today passes nothing, and its copy is left alone.
+  final WeekProgress? Function(DateTime now)? weekSource;
 
   /// The day T01 is drawn against in `6-v2/src/screens-today.mjs`: one session
   /// logged of three, a walk waiting to be counted, breakfast already logged.
@@ -177,6 +193,59 @@ class InMemoryTodayRepository implements TodayRepository {
     if (!_days.isClosed) _days.add(next);
   }
 
+  /// Moves her day on when [now] is a later calendar day than the one Home is
+  /// holding. Returns whether it did.
+  ///
+  /// The day was never moved at all. Its date, its state, the meal she logged
+  /// and the walk her phone counted were all whatever they had been on the day
+  /// they were written, so Home named last Tuesday's weekday on a Thursday and
+  /// said "Today's session is done" about a session two days old — and a
+  /// session recalled on T02, whose id is built from this date, reused the same
+  /// id every day after the first, so the second recall of a week was dropped
+  /// as a duplicate.
+  ///
+  /// Her first-week arc, her usual plates and whether she uses My cycle carry
+  /// over: they are about her, not about the day. On a new ISO week the week
+  /// is taken from [weekSource], or starts again from nothing against the same
+  /// target when there is no document for it yet.
+  ///
+  /// Forward only: a write stamped earlier than the day Home holds — a meal
+  /// logged just before midnight landing after it — never moves Home back.
+  bool rollTo(DateTime now) {
+    if (dayKey(now).compareTo(dayKey(_day.date)) <= 0) return false;
+    final newWeek = WeekKey.of(now) != WeekKey.of(_day.date);
+    final week =
+        weekSource?.call(now) ??
+        (newWeek
+            ? WeekProgress(
+                sessionsLogged: 0,
+                sessionsTarget: _day.week.sessionsTarget,
+              )
+            : _day.week);
+    _emit(
+      TodayDay(
+        date: now,
+        state: _day.arc.hasAnyLog ? DayState.nothingDone : DayState.dayOne,
+        arc: _day.arc,
+        week: week,
+        showCycleCard: _day.showCycleCard,
+        plates: _day.plates,
+        programWeek: _day.programWeek,
+        programTotalWeeks: _day.programTotalWeeks,
+      ),
+    );
+    return true;
+  }
+
+  /// Re-reads the week from [weekSource], when it has a document for the week
+  /// Home is in. Called when the app opens or comes back, and after a setup
+  /// answer changes her target.
+  void refresh() {
+    final week = weekSource?.call(_day.date);
+    if (week == null) return;
+    _emit(_day.copyWith(week: week));
+  }
+
   @override
   Future<void> countWalk() async {
     _emit(
@@ -209,7 +278,10 @@ class InMemoryTodayRepository implements TodayRepository {
     _emit(
       _day.copyWith(
         state: DayState.recalled,
-        arc: _day.arc.started,
+        // A session she did and logged from memory is a finished session. The
+        // arc's third step was never ticked by anything, so with Community off
+        // "First week done" could not be reached by anyone.
+        arc: _day.arc.withStep(FirstWeekStep.finishSession).started,
         week: firstCredit
             ? WeekProgress(
                 // Optimistic week credit: the authoritative increment is a
@@ -248,7 +320,10 @@ class InMemoryTodayRepository implements TodayRepository {
     _emit(
       _day.copyWith(
         state: DayState.done,
-        arc: _day.arc.withStep(FirstWeekStep.logSet).started,
+        arc: _day.arc
+            .withStep(FirstWeekStep.logSet)
+            .withStep(FirstWeekStep.finishSession)
+            .started,
         week: WeekProgress(
           sessionsLogged: _day.week.sessionsLogged + 1,
           sessionsTarget: _day.week.sessionsTarget,

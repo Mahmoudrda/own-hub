@@ -62,10 +62,17 @@ class AppButton extends StatelessWidget implements HandSeedName {
 
   @override
   Widget build(BuildContext context) {
+    final disabled = onPressed == null;
     final (fill, foreground, outline, frame) = switch (variant) {
+      AppButtonVariant.filled when disabled => (
+        AppColors.surfaceHighest,
+        AppColors.onSurfaceVariant,
+        AppColors.outline,
+        null,
+      ),
       AppButtonVariant.filled => (
-        AppColors.primary,
-        AppColors.onPrimary,
+        AppColors.actionPrimary,
+        AppColors.onActionPrimary,
         AppColors.primaryDim,
         null,
       ),
@@ -126,6 +133,9 @@ class AppButton extends StatelessWidget implements HandSeedName {
       child: HandSurface(
         seed: handSeed(['btn', this.label, variant.index]),
         fill: fill,
+        pressedFill: variant == AppButtonVariant.filled && !disabled
+            ? AppColors.actionPressed
+            : null,
         frame: frame,
         frameWidth: 1.2,
         offsetOutline: outline,
@@ -136,7 +146,8 @@ class AppButton extends StatelessWidget implements HandSeedName {
         onTap: onPressed,
         pressable: true,
         semanticsButton: true,
-        pressScale: 0.97,
+        pressScale: HandTiming.pressScale,
+        springPress: true,
         // A floor, not a fixed height: at the largest text size a label that
         // wraps grows the button instead of overflowing it.
         child: Container(

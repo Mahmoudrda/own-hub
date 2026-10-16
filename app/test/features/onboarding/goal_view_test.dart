@@ -56,7 +56,7 @@ void main() {
       // The promise the whole flow rests on: her goal changes the training, not
       // the interface.
       expect(
-        find.text('Pick one. It changes the program, not the app.'),
+        find.text('Pick one. It shapes your program.'),
         findsOneWidget,
       );
       for (final goal in [

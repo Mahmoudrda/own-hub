@@ -98,10 +98,7 @@ void main() {
     expect(HandMarkPen.recipeCard.minStroke, 1.2);
     expect(HandMarkPen.recipeCard.wobbleReference, 56);
     expect(
-      FoodMarkPainter(
-        markKey: FoodMarks.jar,
-        ink: const Color(0xFF000000),
-      ).pen,
+      FoodMarkPainter(markKey: FoodMarks.jar, ink: const Color(0xFF000000)).pen,
       HandMarkPen.recipeCard,
       reason: 'a card gets the card pen unless it is told otherwise',
     );

@@ -299,12 +299,7 @@ class SplitProvenance {
 /// One day of the month.
 @immutable
 class PlanDay {
-  const PlanDay({
-    required this.kind,
-    this.workout,
-    this.meal,
-    this.fromSplit,
-  });
+  const PlanDay({required this.kind, this.workout, this.meal, this.fromSplit});
 
   /// A rest day the coach chose. Carries meals like any other day — a woman
   /// still eats on a rest day, which is why `meal` is independent of `kind`.
@@ -446,8 +441,7 @@ class PlanDraft {
 
   /// Every day that already holds something, in date order. W05 names these
   /// **before** it replaces them.
-  List<String> get plannedDayKeys =>
-      days.keys.toList(growable: false)..sort();
+  List<String> get plannedDayKeys => days.keys.toList(growable: false)..sort();
 
   PlanDraft withDay(String dayKey, PlanDay? day) {
     final next = Map<String, PlanDay>.of(days);
@@ -470,10 +464,8 @@ class PlanDraft {
 
   PlanDraft withTemplateRef(String? ref) => _copyWith(templateRef: ref);
 
-  PlanDraft withLastPublished(LastPublished published) => _copyWith(
-    lastPublished: published,
-    basedOnVersion: published.version,
-  );
+  PlanDraft withLastPublished(LastPublished published) =>
+      _copyWith(lastPublished: published, basedOnVersion: published.version);
 
   PlanDraft withEffectiveFrom(String? day) => _copyWith(effectiveFrom: day);
 

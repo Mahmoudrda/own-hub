@@ -9,9 +9,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/rewards_state.dart';
+import 'package:own_hub/app_state/training_streak_state.dart';
 
 import 'package:own_hub/domain/flags/feature_flags.dart';
-import 'package:own_hub/features/cycle/presentation/cycle_hub_view.dart';
 import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
 import 'package:own_hub/features/eat/presentation/rahma_recipe_view.dart';
 import 'package:own_hub/features/eat/presentation/recipes_view.dart';
@@ -37,15 +38,20 @@ final FeatureFlags _launch = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.today: true,
   Feature.firstWeek: true,
   Feature.quietWeek: true,
-  Feature.tiers: true,
-  Feature.lockScreenNudge: true,
   Feature.train: true,
   Feature.recordFromMemory: true,
+  Feature.program: true,
   Feature.exerciseVideo: true,
   Feature.exerciseSwap: true,
   Feature.followAlong: true,
   Feature.workoutLibrary: true,
   Feature.trainingReminders: true,
+  Feature.reassuringWaits: true,
+  Feature.haptics: true,
+  Feature.finishReveal: true,
+  Feature.weeklyChallenge: true,
+  Feature.trainingStreak: true,
+  Feature.exerciseLibrary: true,
   Feature.eat: true,
   Feature.recipes: true,
   Feature.weekPlan: true,
@@ -56,9 +62,9 @@ final FeatureFlags _launch = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.bodyPrivately: true,
   Feature.shareCard: true,
   Feature.cycle: true,
-  Feature.cycleMeals: true,
   Feature.cycleCalendar: true,
   Feature.cyclePatterns: true,
+  Feature.cycleMeals: true,
   Feature.privacyCentre: true,
 });
 
@@ -71,7 +77,7 @@ const List<Type> _stopTypes = [
   MidSetView,
   RecipesView,
   WeekPlanView,
-  CycleHubView,
+  CheckInStopView,
   ProgressView,
 ];
 
@@ -164,7 +170,7 @@ void main() {
         expect(find.text('${i + 1} of 7'), findsOneWidget);
         await _tap(tester, find.text('Next'));
       }
-      expect(find.text('That is Own Hub'), findsOneWidget);
+      expect(find.text('That\'s Own Hub'), findsOneWidget);
       expect(find.text('Make it mine'), findsOneWidget);
       expect(find.text('See the tour again'), findsOneWidget);
       for (final type in _stopTypes) {
@@ -190,7 +196,11 @@ void main() {
       expect(find.text('Legs and glutes'), findsOneWidget);
       expect(find.text('This week, 1 of 3'), findsOneWidget);
       expect(find.textContaining('Week 3'), findsNothing);
-      expect(find.text('My cycle'), findsOneWidget);
+      expect(
+        find.text('My cycle'),
+        findsNothing,
+        reason: 'the cycle is not named before sign-in',
+      );
     });
 
     testWidgets('the player starts on the first set of the first move', (
@@ -199,9 +209,9 @@ void main() {
       await _pump(tester, initialStop: 2);
       expect(find.text('Glute bridge'), findsOneWidget);
       expect(find.text('Move 1 of 4'), findsOneWidget);
-      // The heading, and the first row of the set list under it.
-      expect(find.text('1 of 3'), findsNWidgets(2));
-      expect(find.text('2 of 3'), findsOneWidget);
+      // Only the set she is on is drawn; the top bar carries the progress.
+      expect(find.text('1 of 3'), findsOneWidget);
+      expect(find.text('2 of 3'), findsNothing);
     });
 
     testWidgets('the week plan says it is a sample, and promises no swap', (
@@ -257,10 +267,6 @@ void main() {
     });
 
     testWidgets('the screens own links move the tour too', (tester) async {
-      await _pump(tester);
-      await _tap(tester, find.text('My cycle'));
-      expect(find.byType(CycleHubView), findsOneWidget);
-
       await _pump(tester);
       await _tap(tester, find.text('This week, 1 of 3'));
       expect(find.byType(ProgressView), findsOneWidget);
@@ -425,15 +431,14 @@ void main() {
       (0, 'a plate', () => find.text('Ful and baladi')),
       (0, 'notifications', () => find.byTooltip('Notifications')),
       (0, 'her profile', () => find.bySemanticsLabel('Your profile')),
-      (0, 'her first week', () => find.text('Your first week')),
+      (0, 'her first week', () => find.textContaining('Your first week')),
       (1, 'start', () => find.text("Start, everything's ready")),
-      (1, 'already did it', () => _onStop(find.text('I already did it'))),
       (1, 'a move', () => find.text('Glute bridge')),
       (1, 'more', () => _onStop(find.byTooltip('More'))),
       (2, 'log a set', () => find.text('Done · 12 reps')),
       (2, 'log the move', () => find.text('I did all 3 sets')),
       (2, 'pause', () => find.byTooltip('Pause')),
-      (2, 'change the set', () => find.text('Change')),
+      (2, 'change the set', () => find.byTooltip('Change')),
       (3, 'another recipe', () => find.text('Koshari, portioned')),
       (3, 'another of hers', () => find.text('Pancakes')),
       (3, 'search', () => find.byTooltip('Search recipes')),
@@ -442,14 +447,11 @@ void main() {
       (4, 'rearrange', () => find.byTooltip('Rearrange the week')),
       (4, 'the grocery list', () => find.text('See the grocery list')),
       (5, 'check in', () => find.text('How are you feeling?')),
-      (5, 'settings', () => find.byTooltip('Cycle settings')),
-      (5, 'the calendar', () => find.text('Calendar')),
-      (5, 'patterns', () => find.text('Patterns')),
+      (5, 'view the gentler option', () => find.text('View option')),
+      (5, 'keep mine', () => find.text('Keep mine')),
       (6, 'milestones', () => find.text('Milestones')),
       (6, 'bests', () => find.text('Bests')),
       (6, 'her first week', () => find.text('Your first week')),
-      (6, 'rest week', () => find.text('What a rest week covers')),
-      (6, 'tier slip', () => find.text('If a tier slips')),
     ];
 
     for (final (stop, what, finder) in triggers) {
@@ -476,6 +478,21 @@ void main() {
         expect(sample.meal.writes, isEmpty);
       });
     }
+
+    testWidgets('stop 7: rest week, one tap behind How weeks count', (
+      tester,
+    ) async {
+      final sample = await _pump(tester, initialStop: 6);
+      await _tap(tester, find.text('How weeks count').first);
+      await _tap(tester, find.text('What a rest week covers').first);
+      expect(find.text('Join to make this yours'), findsOneWidget);
+      expect(find.text('Join Own Hub'), findsNWidgets(2));
+
+      await _tap(tester, find.text('Keep looking'));
+      expect(find.text('Join to make this yours'), findsNothing);
+      expect(find.byType(_stopTypes[6]), findsOneWidget);
+      expect(sample.train.sessions, isEmpty);
+    });
 
     testWidgets('counting the walk leaves the sample day as it was', (
       tester,
@@ -571,7 +588,9 @@ void main() {
       expect(find.text('مثال · مفيش حاجة بتتحفظ'), findsOneWidget);
       expect(find.text('انضمّي لـ Own Hub'), findsOneWidget);
       expect(
-        Directionality.of(tester.element(find.text('الرئيسية، يومك في نظرة واحدة'))),
+        Directionality.of(
+          tester.element(find.text('الرئيسية، يومك في نظرة واحدة')),
+        ),
         TextDirection.rtl,
       );
     });
@@ -600,5 +619,17 @@ void main() {
         }
       });
     }
+  });
+
+  testWidgets('G13: the tour writes nothing to her rewards or her streak', (
+    tester,
+  ) async {
+    RewardsState.instance.reset();
+    TrainingStreakState.instance.reset();
+    await _pump(tester, initialStop: 2);
+    await _tap(tester, find.text('Done · 12 reps').first);
+    await _tap(tester, find.text('Keep looking'));
+    expect(RewardsState.instance.awardIds, isEmpty);
+    expect(TrainingStreakState.instance.touched, isFalse);
   });
 }

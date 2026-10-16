@@ -134,10 +134,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('تحقّق واحد، ثم تدخلين'), findsOneWidget);
+    expect(find.text('تحقّق واحد وتدخلي'), findsOneWidget);
     expect(find.text('صوّري بطاقتك'), findsOneWidget);
     expect(
-      find.textContaining('ولا نخمّن من وجهك أبدًا'),
+      find.textContaining('ومابنخمّنش من وشّك أبدًا'),
       findsOneWidget,
       reason: 'rule 8 must be as plain in Arabic as in English',
     );

@@ -134,7 +134,7 @@ class _RoleViewState extends State<RoleView> {
           _RoleCard(
             icon: Icons.swap_horiz,
             title: l10n.iTrainAndICoach,
-            body: l10n.twoAppsInOneSwitchBetweenThem,
+            body: l10n.bothSwitchBetweenThemWheneverYouLike,
             selected: _role == SignupRole.both,
             onTap: () => setState(() => _role = SignupRole.both),
           ),

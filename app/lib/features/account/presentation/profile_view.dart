@@ -49,12 +49,10 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_avatar.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
-import '../../../app_state/kitten_setting.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
-import '../../../ui/app_toggle.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/dietary_profile.dart';
 import 'allergen_labels.dart';
@@ -253,50 +251,12 @@ class _ProfileViewState extends State<ProfileView> {
           subtitle: view.notifyIsDefault ? l10n.oneADayQuiet10pmTo8am : '',
           onTap: widget.onOpenNotifications,
         ),
-        // The kitten that guides her through onboarding. Off, it is still
-        // there but never moves.
-        AppListItem(
-          leading: const Icon(
-            Icons.pets_outlined,
-            size: 24,
-            color: AppColors.primaryDim,
-          ),
-          title: l10n.movingKitten,
-          subtitle: KittenSetting.instance.moves
-              ? l10n.theKittenShowsYouAroundAndMoves
-              : l10n.theKittenStaysStill,
-          trailing: AppToggle(
-            key: const ValueKey('kitten-moves-toggle'),
-            value: KittenSetting.instance.moves,
-            semanticLabel: l10n.movingKitten,
-            onChanged: _setKittenMoves,
-          ),
-          onTap: () => _setKittenMoves(!KittenSetting.instance.moves),
-        ),
+        // Privacy, the Safety Centre and Your data, one row to open and a
+        // short list behind it.
         _row(
           icon: Icons.lock_outline,
-          title: l10n.privacy,
-          // "Who sees your profile and wins" describes a profile other women
-          // read. With the community dark nobody sees either, so the row
-          // carries no subtitle rather than a promise about a room that is
-          // not open.
-          subtitle: _community ? l10n.whoSeesYourProfileAndWins : '',
-          onTap: widget.onOpenPrivacy,
-        ),
-        _row(
-          icon: Icons.shield_outlined,
-          title: l10n.safetyCentre,
-          // Same rule: reports and blocked members are about members. What is
-          // left on A04 with the community off is the help route and the
-          // emergency line, which are worth keeping and are not a list.
-          subtitle: _community ? l10n.reportsBlockedMembersHelp : '',
-          onTap: widget.onOpenSafetyCentre,
-        ),
-        _row(
-          icon: Icons.delete_outline,
-          title: l10n.yourData,
-          subtitle: l10n.deleteYourAccountAndEverythingInIt,
-          onTap: widget.onOpenYourData,
+          title: l10n.privacyAndData,
+          onTap: _openPrivacyAndData,
         ),
         if (widget.onOpenAdmin != null)
           _row(
@@ -357,9 +317,65 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  void _setKittenMoves(bool moves) {
-    unawaited(KittenSetting.instance.set(moves));
-    setState(() {});
+  /// The three privacy rows, behind one. Each closes the sheet and then opens
+  /// its screen, so back from that screen lands on My profile.
+  Future<void> _openPrivacyAndData() async {
+    final l10n = AppL10n.of(context);
+    final open = await showAppSheet<VoidCallback>(
+      context: context,
+      gap: 8,
+      children: [
+        Text(l10n.privacyAndData, style: AppText.titleL),
+        _sheetRow(
+          icon: Icons.lock_outline,
+          title: l10n.privacy,
+          // "Who sees your profile and wins" describes a profile other women
+          // read. With the community dark nobody sees either, so the row
+          // carries no subtitle rather than a promise about a room that is
+          // not open.
+          subtitle: _community ? l10n.whoSeesYourProfileAndWins : '',
+          onOpen: widget.onOpenPrivacy,
+        ),
+        _sheetRow(
+          icon: Icons.shield_outlined,
+          title: l10n.safetyCentre,
+          // Same rule: reports and blocked members are about members. What is
+          // left on A04 with the community off is the help route and the
+          // emergency line, which are worth keeping and are not a list.
+          subtitle: _community ? l10n.reportsBlockedMembersHelp : '',
+          onOpen: widget.onOpenSafetyCentre,
+        ),
+        _sheetRow(
+          icon: Icons.delete_outline,
+          title: l10n.yourData,
+          subtitle: l10n.deleteYourAccountAndEverythingInIt,
+          onOpen: widget.onOpenYourData,
+        ),
+      ],
+    );
+    if (open == null || !mounted) return;
+    open();
+  }
+
+  Widget _sheetRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback? onOpen,
+  }) {
+    return Builder(
+      builder: (sheet) => AppListItem(
+        leading: Icon(icon, size: 24, color: AppColors.primaryDim),
+        title: title,
+        subtitle: subtitle,
+        trailing: const Icon(
+          Icons.chevron_right,
+          size: 22,
+          color: AppColors.onSurfaceVariant,
+        ),
+        onTap: onOpen == null ? null : () => Navigator.of(sheet).pop(onOpen),
+      ),
+    );
   }
 
   Widget _row({

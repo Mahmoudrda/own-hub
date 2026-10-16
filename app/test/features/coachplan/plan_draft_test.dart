@@ -22,7 +22,9 @@ final DateTime _today = DateTime(2026, 9, 19);
 Food _food(String id, {Set<String> allergens = const <String>{}}) => Food(
   foodId: id,
   names: <String>[id],
-  sizes: <FoodSize>[FoodSize(id: 'M', label: 'Medium', kcal: 410, proteinG: 22)],
+  sizes: <FoodSize>[
+    FoodSize(id: 'M', label: 'Medium', kcal: 410, proteinG: 22),
+  ],
   allergens: allergens,
   dietTags: const <String>{'vegetarian'},
 );
@@ -121,9 +123,8 @@ void main() {
       // Not a field on any type here — this is the map arriving from a
       // migration, an import or a future refactor.
       expect(
-        () => InMemoryPlanDraftRepository.assertWritable(
-          _FakeDraftWithActual(),
-        ),
+        () =>
+            InMemoryPlanDraftRepository.assertWritable(_FakeDraftWithActual()),
         throwsA(anything),
       );
     });
@@ -230,38 +231,47 @@ void main() {
       expect(summary.isNonDestructive, isFalse);
     });
 
-    test('cancelling writes nothing; confirming replaces exactly those', () async {
-      final repo = InMemoryPlanDraftRepository(safety: _safety());
-      final draft = _draft(
-        days: <String, PlanDay>{
-          '2026-09-14': _workoutDay('Source'),
-          '2026-09-21': _workoutDay('Existing'),
-        },
-      );
-      await repo.save(draft);
-      final writesBefore = repo.writes;
+    test(
+      'cancelling writes nothing; confirming replaces exactly those',
+      () async {
+        final repo = InMemoryPlanDraftRepository(safety: _safety());
+        final draft = _draft(
+          days: <String, PlanDay>{
+            '2026-09-14': _workoutDay('Source'),
+            '2026-09-21': _workoutDay('Existing'),
+          },
+        );
+        await repo.save(draft);
+        final writesBefore = repo.writes;
 
-      const planner = CopyWeekPlanner();
-      final projection = planner.project(
-        draft: draft,
-        sourceDayKeys: <String>['2026-09-14'],
-        targetStarts: <DateTime>[DateTime(2026, 9, 21)],
-      );
-      planner.summarise(draft: draft, projection: projection);
+        const planner = CopyWeekPlanner();
+        final projection = planner.project(
+          draft: draft,
+          sourceDayKeys: <String>['2026-09-14'],
+          targetStarts: <DateTime>[DateTime(2026, 9, 21)],
+        );
+        planner.summarise(draft: draft, projection: projection);
 
-      // Cancelling is simply not calling apply.
-      expect(repo.writes, writesBefore);
+        // Cancelling is simply not calling apply.
+        expect(repo.writes, writesBefore);
 
-      await repo.save(planner.apply(draft: draft, projection: projection));
-      final after = repo.contents[draft.draftId]!;
-      expect(after.days['2026-09-21']!.workout!.title, 'Source');
-      expect(after.days['2026-09-14']!.workout!.title, 'Source');
-      expect(after.days, hasLength(2), reason: 'exactly those days, no others');
-      expect(after.origin, DraftOrigin.copy);
-    });
+        await repo.save(planner.apply(draft: draft, projection: projection));
+        final after = repo.contents[draft.draftId]!;
+        expect(after.days['2026-09-21']!.workout!.title, 'Source');
+        expect(after.days['2026-09-14']!.workout!.title, 'Source');
+        expect(
+          after.days,
+          hasLength(2),
+          reason: 'exactly those days, no others',
+        );
+        expect(after.origin, DraftOrigin.copy);
+      },
+    );
 
     test('a copy that leaves the month is named rather than half-applied', () {
-      final draft = _draft(days: <String, PlanDay>{'2026-09-28': _workoutDay('W4')});
+      final draft = _draft(
+        days: <String, PlanDay>{'2026-09-28': _workoutDay('W4')},
+      );
       const planner = CopyWeekPlanner();
       final projection = planner.project(
         draft: draft,
@@ -275,7 +285,9 @@ void main() {
     });
 
     test('a copied day is a copy, not the same object', () {
-      final draft = _draft(days: <String, PlanDay>{'2026-09-14': _workoutDay('S')});
+      final draft = _draft(
+        days: <String, PlanDay>{'2026-09-14': _workoutDay('S')},
+      );
       final projection = const CopyWeekPlanner().project(
         draft: draft,
         sourceDayKeys: <String>['2026-09-14'],
@@ -289,40 +301,46 @@ void main() {
   });
 
   group('P0-PLAN-05 — two devices, one month', () {
-    test('distinct days merge; the same day is last-write-wins on that day', () {
-      final base = _draft(
-        days: <String, PlanDay>{'2026-09-14': _workoutDay('Monday')},
-      );
+    test(
+      'distinct days merge; the same day is last-write-wins on that day',
+      () {
+        final base = _draft(
+          days: <String, PlanDay>{'2026-09-14': _workoutDay('Monday')},
+        );
 
-      // Device A edits Tuesday, device B edits Thursday, both from `base`.
-      final deviceA = base
-          .withDay('2026-09-15', _workoutDay('Tuesday from A'))
-          .withDevice('phone-a');
-      final deviceB = base
-          .withDay('2026-09-17', _workoutDay('Thursday from B'))
-          .withDevice('phone-b');
+        // Device A edits Tuesday, device B edits Thursday, both from `base`.
+        final deviceA = base
+            .withDay('2026-09-15', _workoutDay('Tuesday from A'))
+            .withDevice('phone-a');
+        final deviceB = base
+            .withDay('2026-09-17', _workoutDay('Thursday from B'))
+            .withDevice('phone-b');
 
-      // Field-level merge on `days.{yyyy-MM-dd}` — what a map buys and an
-      // array does not.
-      final merged = deviceA.withDays(<String, PlanDay>{
-        for (final key in deviceB.days.keys)
-          if (!deviceA.days.containsKey(key)) key: deviceB.days[key]!,
-      });
+        // Field-level merge on `days.{yyyy-MM-dd}` — what a map buys and an
+        // array does not.
+        final merged = deviceA.withDays(<String, PlanDay>{
+          for (final key in deviceB.days.keys)
+            if (!deviceA.days.containsKey(key)) key: deviceB.days[key]!,
+        });
 
-      expect(merged.days.keys.toList()..sort(), <String>[
-        '2026-09-14',
-        '2026-09-15',
-        '2026-09-17',
-      ]);
-      expect(merged.days['2026-09-15']!.workout!.title, 'Tuesday from A');
-      expect(merged.days['2026-09-17']!.workout!.title, 'Thursday from B');
+        expect(merged.days.keys.toList()..sort(), <String>[
+          '2026-09-14',
+          '2026-09-15',
+          '2026-09-17',
+        ]);
+        expect(merged.days['2026-09-15']!.workout!.title, 'Tuesday from A');
+        expect(merged.days['2026-09-17']!.workout!.title, 'Thursday from B');
 
-      // The same day from both: one wins, and only that day is affected.
-      final sameDay = deviceA.withDay('2026-09-15', _workoutDay('Tuesday from B'));
-      expect(sameDay.days['2026-09-15']!.workout!.title, 'Tuesday from B');
-      expect(sameDay.days['2026-09-14']!.workout!.title, 'Monday');
-      expect(deviceA.lastEditedByDevice, 'phone-a');
-    });
+        // The same day from both: one wins, and only that day is affected.
+        final sameDay = deviceA.withDay(
+          '2026-09-15',
+          _workoutDay('Tuesday from B'),
+        );
+        expect(sameDay.days['2026-09-15']!.workout!.title, 'Tuesday from B');
+        expect(sameDay.days['2026-09-14']!.workout!.title, 'Monday');
+        expect(deviceA.lastEditedByDevice, 'phone-a');
+      },
+    );
   });
 
   group('counting the gaps', () {
@@ -378,14 +396,13 @@ class _FakeDraftWithActual implements PlanDraft {
   };
 
   @override
-  dynamic noSuchMethod(Invocation invocation) => switch (invocation
-      .memberName
-      .toString()) {
-    'Symbol("status")' => PlanDraftStatus.draft,
-    'Symbol("draftId")' => 'u1__2026-09',
-    'Symbol("clientUid")' => 'u1',
-    'Symbol("month")' => '2026-09',
-    'Symbol("days")' => const <String, PlanDay>{},
-    _ => super.noSuchMethod(invocation),
-  };
+  dynamic noSuchMethod(Invocation invocation) =>
+      switch (invocation.memberName.toString()) {
+        'Symbol("status")' => PlanDraftStatus.draft,
+        'Symbol("draftId")' => 'u1__2026-09',
+        'Symbol("clientUid")' => 'u1',
+        'Symbol("month")' => '2026-09',
+        'Symbol("days")' => const <String, PlanDay>{},
+        _ => super.noSuchMethod(invocation),
+      };
 }

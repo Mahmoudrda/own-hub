@@ -115,16 +115,19 @@ void main() {
       );
     });
 
-    test('the id is deterministic, so a replayed save is one document', () async {
-      final repo = InMemoryAssessmentRepository();
-      final record = _form().build(takenAt: _september);
+    test(
+      'the id is deterministic, so a replayed save is one document',
+      () async {
+        final repo = InMemoryAssessmentRepository();
+        final record = _form().build(takenAt: _september);
 
-      await repo.record(record);
-      await repo.record(record);
+        await repo.record(record);
+        await repo.record(record);
 
-      expect(repo.contents, hasLength(1));
-      expect(record.assessmentId, 'c1_u1__${_september.toIso8601String()}');
-    });
+        expect(repo.contents, hasLength(1));
+        expect(record.assessmentId, 'c1_u1__${_september.toIso8601String()}');
+      },
+    );
   });
 
   group('P0-ASMT-02 — the avoid list is chips, and it suppresses', () {
@@ -234,57 +237,65 @@ void main() {
       expect(suggestion.publishes, isFalse);
     });
 
-    test('clearing needs an explicit reason, and writes a new document', () async {
-      final repo = InMemoryAssessmentRepository();
-      final parent = _form(
-        screening: <ScreeningItem>[
-          _item(
-            'pelvic_floor',
-            ScreeningOutcome.refer,
-            suppresses: <ContraindicationTag>{
-              ContraindicationTag.pelvicFloorLoad,
-            },
+    test(
+      'clearing needs an explicit reason, and writes a new document',
+      () async {
+        final repo = InMemoryAssessmentRepository();
+        final parent = _form(
+          screening: <ScreeningItem>[
+            _item(
+              'pelvic_floor',
+              ScreeningOutcome.refer,
+              suppresses: <ContraindicationTag>{
+                ContraindicationTag.pelvicFloorLoad,
+              },
+            ),
+          ],
+        ).build(takenAt: _september);
+        await repo.record(parent);
+
+        final service = ReassessmentService(repo);
+
+        expect(
+          () => service.clearReferral(
+            previous: parent,
+            screeningId: 'pelvic_floor',
+            reason: '   ',
+            takenAt: _october,
           ),
-        ],
-      ).build(takenAt: _september);
-      await repo.record(parent);
+          throwsA(isA<ArgumentError>()),
+          reason: 'neither a stray tap nor an empty field ends a suppression',
+        );
 
-      final service = ReassessmentService(repo);
-
-      expect(
-        () => service.clearReferral(
+        final cleared = await service.clearReferral(
           previous: parent,
           screeningId: 'pelvic_floor',
-          reason: '   ',
+          reason: 'Physiotherapist discharged her on 28 September.',
           takenAt: _october,
-        ),
-        throwsA(isA<ArgumentError>()),
-        reason: 'neither a stray tap nor an empty field ends a suppression',
-      );
+        );
 
-      final cleared = await service.clearReferral(
-        previous: parent,
-        screeningId: 'pelvic_floor',
-        reason: 'Physiotherapist discharged her on 28 September.',
-        takenAt: _october,
-      );
-
-      expect(repo.contents, hasLength(2), reason: 'a new document');
-      expect(
-        repo.contents[parent.assessmentId]!.status,
-        AssessmentStatus.superseded,
-      );
-      expect(
-        repo.contents[parent.assessmentId]!.assessment.screening.single.outcome,
-        ScreeningOutcome.refer,
-        reason: 'the old document is untouched, not rewritten',
-      );
-      expect(ReferralRegistry.activeTags(cleared.assessment), isEmpty);
-      expect(
-        cleared.assessment.screening.single.clearedReason,
-        contains('Physiotherapist'),
-      );
-    });
+        expect(repo.contents, hasLength(2), reason: 'a new document');
+        expect(
+          repo.contents[parent.assessmentId]!.status,
+          AssessmentStatus.superseded,
+        );
+        expect(
+          repo
+              .contents[parent.assessmentId]!
+              .assessment
+              .screening
+              .single
+              .outcome,
+          ScreeningOutcome.refer,
+          reason: 'the old document is untouched, not rewritten',
+        );
+        expect(ReferralRegistry.activeTags(cleared.assessment), isEmpty);
+        expect(
+          cleared.assessment.screening.single.clearedReason,
+          contains('Physiotherapist'),
+        );
+      },
+    );
 
     test('a referral has no clock to expire against', () {
       final parent = _form(
@@ -326,10 +337,7 @@ void main() {
         ),
       );
 
-      expect(
-        () => repo.record(edited),
-        throwsA(isA<AssessmentIsAppendOnly>()),
-      );
+      expect(() => repo.record(edited), throwsA(isA<AssessmentIsAppendOnly>()));
     });
 
     test('deletion is denied outright', () {
@@ -424,31 +432,32 @@ void main() {
   });
 
   group('K22 — the re-assessment is filled in from her intake', () {
-    test('the form pre-fills, and nothing is overwritten until saved', () async {
-      final repo = InMemoryAssessmentRepository();
-      final parent = _form(
-        avoid: <ContraindicationTag>{ContraindicationTag.highImpact},
-        painNotes: 'Knee sore on stairs',
-      ).build(takenAt: _september);
-      await repo.record(parent);
+    test(
+      'the form pre-fills, and nothing is overwritten until saved',
+      () async {
+        final repo = InMemoryAssessmentRepository();
+        final parent = _form(
+          avoid: <ContraindicationTag>{ContraindicationTag.highImpact},
+          painNotes: 'Knee sore on stairs',
+        ).build(takenAt: _september);
+        await repo.record(parent);
 
-      final prefilled = AssessmentForm.from(parent);
-      expect(prefilled.avoid, parent.assessment.avoid);
-      expect(prefilled.painNotes, 'Knee sore on stairs');
-      expect(prefilled.parentAssessmentId, parent.assessmentId);
-      expect(
-        repo.contents[parent.assessmentId]!.status,
-        AssessmentStatus.recorded,
-        reason: 'opening K22 wrote nothing',
-      );
-    });
+        final prefilled = AssessmentForm.from(parent);
+        expect(prefilled.avoid, parent.assessment.avoid);
+        expect(prefilled.painNotes, 'Knee sore on stairs');
+        expect(prefilled.parentAssessmentId, parent.assessmentId);
+        expect(
+          repo.contents[parent.assessmentId]!.status,
+          AssessmentStatus.recorded,
+          reason: 'opening K22 wrote nothing',
+        );
+      },
+    );
 
     test('history is at most five, newest first', () async {
       final repo = InMemoryAssessmentRepository();
       for (var month = 1; month <= 7; month++) {
-        await repo.record(
-          _form().build(takenAt: DateTime(2026, month, 1, 8)),
-        );
+        await repo.record(_form().build(takenAt: DateTime(2026, month, 1, 8)));
       }
       final history = await repo.history(clientUid: 'u1', coachUid: 'c1');
       expect(history, hasLength(5));

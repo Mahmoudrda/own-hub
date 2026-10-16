@@ -74,8 +74,10 @@ enum RecipeStatus {
   review,
   published;
 
-  static RecipeStatus fromWire(String wire) =>
-      values.firstWhere((v) => v.name == wire, orElse: () => RecipeStatus.draft);
+  static RecipeStatus fromWire(String wire) => values.firstWhere(
+    (v) => v.name == wire,
+    orElse: () => RecipeStatus.draft,
+  );
 }
 
 /// Whether the four macro fields were summed or withheld.
@@ -88,8 +90,10 @@ enum MacroBasis {
   computed,
   withheld;
 
-  static MacroBasis fromWire(String wire) =>
-      values.firstWhere((v) => v.name == wire, orElse: () => MacroBasis.withheld);
+  static MacroBasis fromWire(String wire) => values.firstWhere(
+    (v) => v.name == wire,
+    orElse: () => MacroBasis.withheld,
+  );
 }
 
 /// Where a gram figure came from.
@@ -110,8 +114,10 @@ enum GramsBasis {
   /// [RecipeStatus.published].
   unknown;
 
-  static GramsBasis fromWire(String wire) =>
-      values.firstWhere((v) => v.name == wire, orElse: () => GramsBasis.unknown);
+  static GramsBasis fromWire(String wire) => values.firstWhere(
+    (v) => v.name == wire,
+    orElse: () => GramsBasis.unknown,
+  );
 }
 
 /// What the page actually gives by way of an ingredient list.
@@ -435,10 +441,9 @@ class Recipe {
     egpPricedAt: DateTime.tryParse(json['egpPricedAt'] as String? ?? ''),
     allergensDerived: _tags(json['allergensDerived']),
     allergensExtra: _tags(json['allergensExtra']),
-    allergensRemoved:
-        ((json['allergensRemoved'] as Map?) ?? const {})
-            .cast<String, Object?>()
-            .map((k, v) => MapEntry(k, v as String? ?? '')),
+    allergensRemoved: ((json['allergensRemoved'] as Map?) ?? const {})
+        .cast<String, Object?>()
+        .map((k, v) => MapEntry(k, v as String? ?? '')),
     allergensFinal: _tags(json['allergensFinal']),
     advisories: _tags(json['advisories']),
     dietTags: _tags(json['dietTags']),
@@ -454,10 +459,9 @@ class Recipe {
     markKey: json['markKey'] as String?,
     photoPath: _photoPath(json['photoPath']),
     tier: RecipeTier.fromWire(json['tier'] as String? ?? ''),
-    brandHints:
-        ((json['brandHints'] as Map?) ?? const {})
-            .cast<String, Object?>()
-            .map((k, v) => MapEntry(k, v as String? ?? '')),
+    brandHints: ((json['brandHints'] as Map?) ?? const {})
+        .cast<String, Object?>()
+        .map((k, v) => MapEntry(k, v as String? ?? '')),
   );
 
   final String recipeId;
@@ -601,9 +605,7 @@ class Recipe {
 /// A photo uploaded to the content library, or null. Only a path under
 /// `content/recipes/` is taken: anything else is not a place the app reads.
 String? _photoPath(Object? raw) =>
-    raw is String &&
-        raw.startsWith('content/recipes/') &&
-        !raw.contains('..')
+    raw is String && raw.startsWith('content/recipes/') && !raw.contains('..')
     ? raw
     : null;
 
@@ -618,5 +620,6 @@ List<RecipeStep> _steps(Object? raw) => [
 ];
 
 Set<String> _tags(Object? raw) => {
-  for (final t in (raw as List?) ?? const []) (t as String).trim().toLowerCase(),
+  for (final t in (raw as List?) ?? const [])
+    (t as String).trim().toLowerCase(),
 };

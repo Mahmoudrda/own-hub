@@ -43,13 +43,12 @@ APP = os.path.dirname(HERE)
 MASTER = os.path.join(APP, 'assets', 'brand', 'ownhub-mark.svg')
 ICONS = os.path.join(APP, 'assets', 'icon')
 
-# The master's own ink. The icons are drawn in paper on rose, so the renderer
-# swaps this for whatever `--ink` asks for; it insists on finding it exactly
-# twice, because a quiet miss would ship a rose mark on a rose ground.
-MASTER_INK = '#A24661'
+# The master's own ink. The icons are drawn in petrol on Pale Pink, so the
+# renderer swaps this for whatever `--ink` asks for; it insists on finding it
+# exactly twice, because a quiet miss would ship a wrongly coloured mark.
+MASTER_INK = '#1A5D74'
 
-ROSE = '#A24661'   # AppTokens.primary, the ground the app icon has always had
-PAPER = '#FFF8F9'  # AppTokens.surface
+ROSE = '#F4BEBB'   # Pale Pink (primaryContainer), the app icon's ground
 
 # Geometry of the master, repeated here so the arithmetic below reads:
 BOX = 1000.0       # the master's viewBox
@@ -201,7 +200,7 @@ def main():
     # The app icon: the ring a little over half the tile, which puts the blade
     # tips about 14% in from the top and bottom edges.
     p.add_argument('--ring', type=float, default=0.56)
-    p.add_argument('--ink', default=PAPER)
+    p.add_argument('--ink', default=MASTER_INK)
     p.add_argument('--ground', default=ROSE)
     args = p.parse_args()
 

@@ -97,9 +97,8 @@ void main() {
       // Hiding the whole library from everybody makes nobody safer and makes
       // the tab look broken. She sees it, and the card says out loud that
       // nobody has signed it.
-      final kept = AllergyGuard(DietaryConstraints.none).screenRecipes([
-        _recipe(id: 'unsigned', reviewedBy: null),
-      ]);
+      final kept = AllergyGuard(DietaryConstraints.none)
+          .screenRecipes([_recipe(id: 'unsigned', reviewedBy: null)]);
       expect(kept, hasLength(1));
     });
 
@@ -246,9 +245,7 @@ void main() {
     test('the flag cannot be switched on above its parent', () {
       // `isOn()` walks ancestors, so this is structurally impossible rather
       // than merely unset. That is the honest version of "the flag is off".
-      final forced = FeatureFlags.shipped.with_({
-        Feature.recipeTiering: true,
-      });
+      final forced = FeatureFlags.shipped.with_({Feature.recipeTiering: true});
       expect(forced.isSetOn(Feature.recipeTiering), isTrue);
       expect(
         forced.isOn(Feature.recipeTiering),
@@ -294,9 +291,10 @@ void main() {
       // the source rather than of any behaviour, so it is read as source. A gate
       // with an escape hatch is a gate somebody reaches for at the end of a long
       // day.
-      final source = File(
-        'lib/features/eat/domain/recipe_access_gate.dart',
-      ).readAsLinesSync().where((l) => !l.trimLeft().startsWith('//')).join();
+      final source = File('lib/features/eat/domain/recipe_access_gate.dart')
+          .readAsLinesSync()
+          .where((l) => !l.trimLeft().startsWith('//'))
+          .join();
       // `override` is not in the list: `@override` is an annotation, not an
       // escape hatch, and a guard that could not tell them apart would be the
       // kind of vacuous check this codebase has already been bitten by twice.

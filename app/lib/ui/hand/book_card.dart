@@ -94,11 +94,7 @@ class BookCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (markKey != null) ...[
-                  FoodMark(
-                    markKey: markKey!,
-                    size: markSize,
-                    ink: BookInk.ink,
-                  ),
+                  FoodMark(markKey: markKey!, size: markSize, ink: BookInk.ink),
                   const SizedBox(width: 10),
                 ],
                 Expanded(child: child),

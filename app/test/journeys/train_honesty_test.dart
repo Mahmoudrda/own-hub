@@ -200,8 +200,9 @@ void main() {
       expect(find.textContaining('Last time'), findsNothing);
       expect(
         find.textContaining('No history for this move yet'),
-        findsOneWidget,
-        reason: 'the true thing to say when there is no last time',
+        findsNothing,
+        reason:
+            'with no last time there is nothing to say, so no line is drawn',
       );
     });
 

@@ -100,8 +100,17 @@ class LogCommandBus {
 
   /// Commits everything still waiting. Call when a screen is leaving, so a log is
   /// never lost because she navigated away inside the window.
+  ///
+  /// Every timer is cancelled before the first `await`. A flush that awaits a
+  /// slow commit used to leave the later logs' timers running, so a caller that
+  /// flushed and then moved on still had writes landing on their own schedule
+  /// behind it — and a widget test ending there failed on the pending timer.
   Future<void> flushAll() async {
-    for (final id in _pending.keys.toList()) {
+    final ids = _pending.keys.toList();
+    for (final id in ids) {
+      _pending[id]?.timer.cancel();
+    }
+    for (final id in ids) {
       await _flush(id);
     }
   }

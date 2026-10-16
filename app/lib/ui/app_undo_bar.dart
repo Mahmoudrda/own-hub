@@ -13,6 +13,9 @@
 /// The text must name the same numbers the button named. If the button said
 /// "12 kg × 10", this says "12 kg × 10" — a woman should never have to wonder
 /// what she just agreed to.
+///
+/// A tick is drawn on beside the words (D48): every completed action gets a
+/// response she can see.
 library;
 
 import 'package:flutter/material.dart';
@@ -48,6 +51,14 @@ class AppUndoBar extends StatelessWidget {
       padding: const EdgeInsetsDirectional.fromSTEB(18, 8, 8, 8),
       child: Row(
         children: [
+          // The hand draws the tick as the bar arrives: the save is seen as
+          // well as read. Instant under reduced motion.
+          const HandTick(
+            size: 18,
+            color: AppColors.primaryContainer,
+            drawOn: true,
+          ),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
@@ -74,7 +85,7 @@ class AppUndoBar extends StatelessWidget {
                     undoLabel,
                     style: AppText.label.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryContainer,
+                      color: AppColors.inverseOnSurface,
                     ),
                   ),
                 ),

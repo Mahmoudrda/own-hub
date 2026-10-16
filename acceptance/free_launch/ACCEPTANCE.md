@@ -86,6 +86,33 @@ Saudi/UAE checks in P11/P12 are **DEFERRED—future expansion**, not Egypt launc
 | P12 (DEFERRED) | EGP/SAR/AED offer display and supported payout countries | Actual currency/minor units preserved; unsupported purchases blocked honestly; no renamed historical amounts | Add commerce/UI + provider evidence |
 | P10 | Turn all optional analytics/backup/sharing off; finish full core user journeys | Free training/history/cycle and required coach delivery still work with minimum necessary data | Add end-to-end regression |
 
+## G — motivation and honest rewards
+
+From the guide's §15 and DECISIONS D37–D41. Pure contracts are in `flutter/gamification_contract_test.dart`; the evidence column names the app tests that hold each row. Rows stay OPEN until the owner has reviewed them; G20 needs her devices.
+
+| ID | Given / action | Required result | Evidence type |
+|---|---|---|---|
+| G01 | Tap Start on R03 | Exactly one live session exists; no orphan unfinished session is stored | `app/test/journeys/train_journey_test.dart` (G01 and G02), `app/test/features/train/workout_day_view_test.dart`, `app/test/app_state/workout_session_state_test.dart` |
+| G02 | Log the last set, then finish or leave R10 inside the undo window | The last set is written before credit; a personal best on the last move reaches R10 | `app/test/journeys/train_journey_test.dart`, `app/test/app_state/workout_session_state_test.dart` |
+| G03 | Earn points, restart the app, earn again the same day | Ledger ids and the 60-point daily cap survive the restart | `app/test/app_state/rewards_state_test.dart`, `app/test/app_state/training_streak_state_test.dart` (snapshot round trip) |
+| G04 | Reach the week target; replay the credit; close the week | 40 points exactly once; nothing back-paid for weeks counted before this change | `app/test/app_state/rewards_state_test.dart`, `acceptance/free_launch/flutter/gamification_contract_test.dart` |
+| G05 | Open or resume after one or more weeks, including weeks with no session | Weeks close; run, best run, rest-week bank and repair match `RestWeekRepair`; a repaired week pays nothing | `app/test/app_state/rewards_state_test.dart` |
+| G06 | Improve on a move; set a first-ever mark; set four bests in one day | Points only for improvements, at most 3 a day; first marks pay nothing | `app/test/app_state/rewards_state_test.dart`, gamification contract |
+| G07 | Log three meals in a day, undo one | 5 points once a day; the E04 pill shows only when points were really earned | `app/test/app_state/rewards_state_test.dart`, `app/test/features/eat/eat_view_test.dart`, gamification contract |
+| G08 | Cross midnight and a Monday | T01, R01, R10, R12 and P01 show the same week; Home's day resets; recalled ids carry the real date | `app/test/features/today/today_rollover_test.dart` |
+| G09 | Log a meal and finish a session in production wiring | The first week completes and T08 renders | `app/test/features/today/first_week_done_test.dart`, `app/test/journeys/first_run_journey_test.dart` |
+| G10 | Rest after a set; undo on R09 and R13; change a loaded set and a hold | Real timer and up-next; undo rewinds the position; R08 offers weights around the plan and seconds for holds | `app/test/features/motivation_surfaces_test.dart`, `app/test/app_state/workout_session_state_test.dart` |
+| G11 | Streak rule table: trained, rest, unreachable week, covered week, pause, multiple sessions, target change | Exactly as D37 states | `app/test/domain/rewards/training_streak_test.dart`, gamification contract |
+| G12 | Pause, resume, switch off; let a streak end | Never in notifications, reminders or widgets; ending is silent and best is kept | `app/test/gamification_rules_test.dart`, `app/test/app_state/training_streak_state_test.dart`, `app/test/features/account/profile_view_test.dart` |
+| G13 | Tap through the tour | Rewards, streak and challenge state are untouched | `app/test/features/signup/demo_tour_test.dart` (G13) |
+| G14 | Weeks with and without last-week history; plan changes | Deterministic choice; finishing the plan always beats or matches it; none without history | `app/test/features/train/own_best_challenge_test.dart`, gamification contract |
+| G15 | Finish a session with and without a real best, with reduced motion on and off | Staged reveal, tap to skip, static under reduced motion, confetti on R10 only, bests in sage, kitten within budget | `app/test/features/train/finished_view_test.dart`, `app/test/ui/hand/paper_confetti_test.dart`, `app/test/ui/hand/kitten_test.dart`, `app/test/app_state/haptics_test.dart` |
+| G16 | Reach O05 and C12 | Only steps that really ran tick; the verdict is never held | `app/test/features/signup/checking_view_test.dart` (G16), `app/test/features/motivation_surfaces_test.dart` (O05) |
+| G17 | Open T01 (normal, day one, done), R03, R07, R09, R10, R13, O05, P01, R11 | At most one filled primary action; Home secondary items limited; R11 leads with one recommendation | `app/test/qa/one_primary_action_test.dart`, `app/test/features/motivation_surfaces_test.dart` (R11) |
+| G18 | Read every new English and Arabic string | No em dashes, Western digits, no loss vocabulary around the streak | `app/test/product_rules_test.dart`, `app/test/gamification_rules_test.dart` |
+| G19 | Changed screens at 200% text and in Arabic RTL | No overflow; nothing clipped | `app/test/qa/large_text_sweep_test.dart`, `app/test/store/store_screenshots_test.dart`, `app/test/qa/tap_crawler_test.dart` |
+| G20 | Real Android and iPhone | Haptics felt, Reduce Motion respected, Arabic at 200% readable, Monday rollover observed | Owner device evidence |
+
 ## PostHog — implemented now, separate from future features
 
 | ID | Given / action | Required result | Evidence type |

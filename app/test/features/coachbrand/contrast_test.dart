@@ -138,7 +138,7 @@ void main() {
 
     test('it is symmetric — order of the pair does not change the answer', () {
       const a = Color(0xFFB4526E);
-      const b = Color(0xFFFFF8F9);
+      const b = Color(0xFFFCF8F2);
       expect(contrastRatio(a, b), contrastRatio(b, a));
     });
 

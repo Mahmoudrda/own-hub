@@ -177,7 +177,7 @@ class YoureInView extends StatelessWidget {
               level: HandLevel.signature,
               inflate: const EdgeInsets.all(7),
               drawOn: true,
-              delay: const Duration(milliseconds: 200),
+              delay: HandTiming.medium,
               child: Container(
                 width: 96,
                 height: 96,

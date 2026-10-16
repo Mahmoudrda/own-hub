@@ -51,8 +51,10 @@ void main() {
         RegExp(loc == 'en' ? 'Save what I avoid' : 'احفظي اللي أتجنّبه'),
       );
       print('  saved by hand? $saved');
-      print('  repository now: '
-          '${AppRouter.dietaryRepository.read().allergies?.map((e) => e.name)}');
+      print(
+        '  repository now: '
+        '${AppRouter.dietaryRepository.read().allergies?.map((e) => e.name)}',
+      );
       expect(
         AppRouter.dietaryRepository.read().asked,
         isTrue,
@@ -93,10 +95,7 @@ void main() {
       );
       await tapControl(t, RegExp(loc == 'en' ? 'Continue' : 'متابعة'));
       if (topScreen(t) == 'Y02') {
-        await tapControl(
-          t,
-          RegExp(loc == 'en' ? 'Save preferences' : 'احفظي'),
-        );
+        await tapControl(t, RegExp(loc == 'en' ? 'Save preferences' : 'احفظي'));
       }
       nav(t).pushNamed(appDestinations['Y04']!.name);
       await settle(t);
@@ -113,15 +112,18 @@ void main() {
       // fact in the product.
       for (final care in <String>[
         loc == 'en' ? 'Find care near you' : 'دوّري على رعاية قريبة منك',
-        loc == 'en' ? 'Read NHS guidance on period pain'
+        loc == 'en'
+            ? 'Read NHS guidance on period pain'
             : 'اقري إرشادات NHS عن ألم الدورة',
       ]) {
         final before = paintedText(t).toSet();
         await tapControl(t, care);
         t.takeException();
         final after = paintedText(t).where((e) => !before.contains(e)).toList();
-        print('  TAP "$care" -> ${topScreen(t)}  new on screen: '
-            '${after.join(" // ")}');
+        print(
+          '  TAP "$care" -> ${topScreen(t)}  new on screen: '
+          '${after.join(" // ")}',
+        );
       }
       s.dispose();
     });
@@ -132,11 +134,24 @@ void main() {
     phone(t);
     final days = <String, Set<String>>{};
     const names = <String>[
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
       'Sunday',
     ];
     for (final id in <String>[
-      'T01', 'T02', 'T03', 'T04', 'T05', 'R10', 'R12', 'P01', 'E01',
+      'T01',
+      'T02',
+      'T03',
+      'T04',
+      'T05',
+      'R10',
+      'R12',
+      'P01',
+      'E01',
     ]) {
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
       for (final line in paintedText(t)) {
@@ -145,10 +160,15 @@ void main() {
         }
       }
     }
-    print('=== R3-14 weekday names on screen: '
-        '${DateTime.now().weekday} is today ===');
+    print(
+      '=== R3-14 weekday names on screen: '
+      '${DateTime.now().weekday} is today ===',
+    );
     days.forEach((k, v) => print('  $k: ${v.join(", ")}'));
-    expect(days.keys.length, lessThanOrEqualTo(1),
-        reason: 'two screens name two different days');
+    expect(
+      days.keys.length,
+      lessThanOrEqualTo(1),
+      reason: 'two screens name two different days',
+    );
   });
 }

@@ -39,6 +39,7 @@ import 'package:own_hub/app_state/app_changes.dart';
 import 'package:own_hub/routing/app_router.dart';
 
 import '../round1/round1_harness.dart';
+import '../round6/history_fixture.dart';
 import 'r5_01_small_screen_sweep_test.dart' show device;
 
 /// Milliseconds for one bump, as the median of [runs] pumps.
@@ -69,8 +70,10 @@ void main() {
 
     await boot(t, locale: const Locale('ar'));
     print('=== R5-05 one AppChanges.bump(), 375x667, Arabic ===');
-    print('  depth 1 (front door alone): '
-        '${(await _bumpCost(t)).toStringAsFixed(2)} ms');
+    print(
+      '  depth 1 (front door alone): '
+      '${(await _bumpCost(t)).toStringAsFixed(2)} ms',
+    );
 
     for (var i = 0; i < stack.length; i++) {
       nav(t).pushNamed(appDestinations[stack[i]]!.name);
@@ -83,5 +86,26 @@ void main() {
     // No assertion on a number a laptop produced. The case exists so the cost
     // is written down and so a change that makes it worse is visible in a
     // diff rather than on a handset in Cairo.
+  });
+
+  testWidgets('one bump, with two years of training behind it', (t) async {
+    // The same stack, but over 400 finished sessions: the screens that read
+    // her history (Home, Train, the challenge) pay for it on every bump, and an
+    // empty history hides that. Printed, like the case above, not asserted.
+    addTearDown(AppRouter.trainRepository.reset);
+    device(t, width: 375, height: 667, dpr: 2.0);
+    fillTrainHistory(sessions: 400);
+
+    await boot(t, locale: const Locale('ar'));
+    final alone = await _bumpCost(t);
+    for (final id in const <String>['R01', 'R02', 'E01']) {
+      nav(t).pushNamed(appDestinations[id]!.name);
+      await settle(t);
+      t.takeException();
+    }
+    final deep = await _bumpCost(t);
+    print('=== R5-05 one bump, 400 sessions of history, 375x667, Arabic ===');
+    print('  front door alone: ${alone.toStringAsFixed(2)} ms');
+    print('  three screens deep: ${deep.toStringAsFixed(2)} ms');
   });
 }

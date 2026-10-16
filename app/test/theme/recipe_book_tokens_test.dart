@@ -1,15 +1,11 @@
 // The one colour in Rahma's book that cannot ship, measured rather than argued.
 //
-// Everything else in her palette is excellent — better than the app's own, in
-// fact, which is the finding worth keeping in view. Her ink on her paper is
-// 10.55:1. `AppColors.primary` on `AppColors.surface` is 5.59:1 — it was 4.58
-// until QA round two darkened the rose to clear AA on the raised surfaces, and
-// hers is still nearly twice as readable. Adopting her ink made this the most
-// readable surface in the product.
+// The book now uses the app's own Linen, Petrol and Pale Pink. Dark petrol ink
+// on the white card is 11.34:1, and `AppColors.primary` on `AppColors.surface`
+// is 6.94:1, so the book is still the more readable surface.
 //
 // The exception is the divider's huge stacked section title, `#D3737E`. It
-// fails AA at any size on both grounds it is drawn over, and it fails by more
-// on the one it is actually drawn over. It is replaced, and the replacement is
+// fails AA at any size on both grounds it is drawn over. It is replaced, and the replacement is
 // measured here rather than trusted to a comment, because a designer adjusting
 // a hex by eye is exactly how a 3.0 becomes a 2.9.
 
@@ -25,6 +21,9 @@ import 'package:own_hub/theme/recipe_book_tokens.dart';
 /// into `lib/`; it exists here so the measurement that rejected it is on the
 /// record.
 const Color _bookRose = Color(0xFFD3737E);
+// The book's own paper, before it took the app's palette: a before-value,
+// kept so the title is measured on the page it was designed for.
+const Color _bookPaper = Color(0xFFFBDCD9);
 
 void main() {
   group('her palette is more readable than ours', () {
@@ -43,7 +42,7 @@ void main() {
       );
     });
 
-    test('her ink also holds on the deeper pink ground', () {
+    test('her ink also holds on the soft pink ground', () {
       // Used for anything drawn straight onto the page rather than onto a card.
       expect(contrastRatio(BookInk.ink, BookInk.bg), greaterThanOrEqualTo(4.5));
     });
@@ -51,22 +50,25 @@ void main() {
 
   group('the section title is replaced, and the replacement is measured', () {
     test('the book own rose fails AA on both grounds', () {
-      // 2.51:1 on the paper, 1.68:1 on the pink it is drawn over. The large-text
-      // carve-out is 3:1 and it does not reach that either.
-      expect(contrastRatio(_bookRose, BookInk.paper), lessThan(3.0));
+      // 2.51:1 on the book's own paper, 2.53:1 on the soft pink it is drawn
+      // over. The large-text carve-out is 3:1 and it does not reach that either.
+      expect(contrastRatio(_bookRose, _bookPaper), lessThan(3.0));
       expect(contrastRatio(_bookRose, BookInk.bg), lessThan(3.0));
     });
 
-    test('the replacement clears normal text on paper and large text on pink', () {
-      expect(
-        contrastRatio(BookInk.roseTitle, BookInk.paper),
-        greaterThanOrEqualTo(4.5),
-      );
-      expect(
-        contrastRatio(BookInk.roseTitle, BookInk.bg),
-        greaterThanOrEqualTo(3.0),
-      );
-    });
+    test(
+      'the replacement clears normal text on paper and large text on pink',
+      () {
+        expect(
+          contrastRatio(BookInk.roseTitle, BookInk.paper),
+          greaterThanOrEqualTo(4.5),
+        );
+        expect(
+          contrastRatio(BookInk.roseTitle, BookInk.bg),
+          greaterThanOrEqualTo(3.0),
+        );
+      },
+    );
 
     test('nothing in lib/ draws the failing colour', () {
       // The belt to the braces above. A hex copied out of the PDF by hand would
@@ -76,10 +78,11 @@ void main() {
       // reader knows why `roseTitle` is not the hex in the PDF. A guard that
       // punished explaining itself would get the explanation deleted.
       final offenders = <String>[];
-      for (final file in Directory('lib')
-          .listSync(recursive: true)
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.dart'))) {
+      for (final file
+          in Directory('lib')
+              .listSync(recursive: true)
+              .whereType<File>()
+              .where((f) => f.path.endsWith('.dart'))) {
         for (final line in file.readAsLinesSync()) {
           final trimmed = line.trimLeft();
           if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue;

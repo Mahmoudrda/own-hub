@@ -81,15 +81,52 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('both ways in are on the same screen', (tester) async {
-    // Most women train without the phone. "I already did it" is not a fallback,
-    // it is the other half of the front door.
+  testWidgets('one way in: Start. Recalling a session lives on Home', (
+    tester,
+  ) async {
+    // R03 carries a single primary action. "I already did it" (T02) is offered
+    // on Home, so the day's screen asks for one decision.
     await tester.pumpWidget(_host(const WorkoutDayView()));
     await tester.pumpAndSettle();
 
     expect(find.text("Start, everything's ready"), findsOneWidget);
-    expect(find.text('I already did it'), findsOneWidget);
+    expect(find.text('I already did it'), findsNothing);
   });
+
+  testWidgets(
+    'the week\'s challenge sits on the move it is about, only there',
+    (tester) async {
+      const note = "Goblet squat: more than last week's 24 reps";
+      await tester.pumpWidget(
+        _host(
+          const WorkoutDayView(
+            day: _day,
+            challengeExerciseId: 'goblet_squat',
+            challengeNote: note,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // Under the move's prescription, in the same row.
+      expect(find.textContaining(note), findsOneWidget);
+
+      await tester.pumpWidget(
+        _host(
+          const WorkoutDayView(
+            day: _day,
+            challengeExerciseId: 'dead_bug',
+            challengeNote: note,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(note),
+        findsNothing,
+        reason: 'not a move in this day',
+      );
+    },
+  );
 
   testWidgets('"More" is drawn only when it does something', (tester) async {
     await tester.pumpWidget(_host(const WorkoutDayView()));
@@ -124,28 +161,13 @@ void main() {
     expect(started, 1);
   });
 
-  testWidgets('"I already did it" leads away without starting one', (
-    tester,
-  ) async {
-    final repository = InMemoryTrainRepository();
-    var recalled = 0;
-
+  testWidgets('"I already did it" lives on Home, not here', (tester) async {
     await tester.pumpWidget(
-      _host(
-        WorkoutDayView(
-          day: _day,
-          repository: repository,
-          onAlreadyDidIt: () => recalled++,
-        ),
-      ),
+      _host(WorkoutDayView(day: _day, repository: InMemoryTrainRepository())),
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('I already did it'));
-    await tester.pumpAndSettle();
-
-    expect(recalled, 1);
-    expect(repository.flushes, isEmpty);
+    expect(find.text('I already did it'), findsNothing);
   });
 
   test('P1-RULE-01 — a session is born with every outcome empty', () async {
@@ -181,5 +203,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('G01: with a caller, Start starts nothing of its own', (
+    tester,
+  ) async {
+    final repository = InMemoryTrainRepository();
+    var started = 0;
+    await tester.pumpWidget(
+      _host(WorkoutDayView(repository: repository, onStart: () => started++)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("Start, everything's ready").first);
+    await tester.pumpAndSettle();
+    expect(started, 1);
+    expect(repository.liveSessionId, isNull, reason: 'one session, the caller');
   });
 }

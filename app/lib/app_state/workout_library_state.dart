@@ -32,6 +32,10 @@ class WorkoutLibraryState {
   /// The R11 row she tapped, or null for the bundled session.
   String? chosenRowId;
 
+  /// The day of her week she opened on R02, or null for today's. Counted from
+  /// the first day, never a weekday.
+  int? openedSlot;
+
   Future<void>? _loaded;
 
   static WorkoutRemoteSource? _liveSource() {
@@ -87,6 +91,7 @@ class WorkoutLibraryState {
   void reset() {
     library = WorkoutLibrary.empty;
     chosenRowId = null;
+    openedSlot = null;
     _loaded = null;
     sync = WorkoutSync(source: _liveSource);
   }

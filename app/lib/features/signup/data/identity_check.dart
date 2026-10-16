@@ -175,6 +175,8 @@ class IdentityCheck {
   static Future<void> _refreshIdToken() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-    await user.getIdToken(true);
+    // Bounded: on a poor connection this is the call that used to hang the
+    // "You're in" screen. A timeout throws, and the caller retries.
+    await user.getIdToken(true).timeout(const Duration(seconds: 10));
   }
 }

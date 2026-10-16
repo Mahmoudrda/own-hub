@@ -21,15 +21,61 @@ import 'round1_harness.dart';
 /// The 55 screens the shipping flag set actually resolves to, as measured by
 /// r1_53_shipping_surface_test.dart.
 const List<String> shippingScreens = [
-  'C02', 'O01', 'O02', 'O03', 'O04', 'O05',
-  'T01', 'T02', 'T03', 'T04', 'T05', 'T07',
-  'R01', 'R02', 'R03', 'R04', 'R05', 'R06', 'R07', 'R08', 'R09', 'R10',
-  'R11', 'R12', 'R13',
-  'E01', 'E02', 'E03', 'E04', 'E05', 'E06', 'E07', 'E08', 'E10', 'E11',
-  'P01', 'P02', 'P03', 'P04',
-  'Y01', 'Y02', 'Y03', 'Y04', 'Y05', 'Y06', 'Y07', 'Y08', 'Y09', 'Y10',
-  'Y12', 'Y13',
-  'A01', 'A02', 'A03', 'A04',
+  'C02',
+  'O01',
+  'O02',
+  'O03',
+  'O04',
+  'O05',
+  'T01',
+  'T02',
+  'T03',
+  'T04',
+  'T05',
+  'T07',
+  'R01',
+  'R02',
+  'R03',
+  'R04',
+  'R05',
+  'R06',
+  'R07',
+  'R08',
+  'R09',
+  'R10',
+  'R11',
+  'R12',
+  'R13',
+  'E01',
+  'E02',
+  'E03',
+  'E04',
+  'E05',
+  'E06',
+  'E07',
+  'E08',
+  'E10',
+  'E11',
+  'P01',
+  'P02',
+  'P03',
+  'P04',
+  'Y01',
+  'Y02',
+  'Y03',
+  'Y04',
+  'Y05',
+  'Y06',
+  'Y07',
+  'Y08',
+  'Y09',
+  'Y10',
+  'Y12',
+  'Y13',
+  'A01',
+  'A02',
+  'A03',
+  'A04',
 ];
 
 /// Every paragraph on screen that lost a line to `maxLines`.
@@ -93,8 +139,10 @@ Future<void> _sweep(
   var lines = 0;
   truncations.forEach((_, v) => lines += v.length);
   // ignore: avoid_print
-  print('SCREENS WITH A TRUNCATED LINE (${truncations.length}), '
-      'lines lost ($lines):');
+  print(
+    'SCREENS WITH A TRUNCATED LINE (${truncations.length}), '
+    'lines lost ($lines):',
+  );
   truncations.forEach((id, v) {
     for (final s in v) {
       // ignore: avoid_print

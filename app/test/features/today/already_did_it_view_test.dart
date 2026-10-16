@@ -105,7 +105,7 @@ void main() {
 
       expect(find.text('What did you do?'), findsOneWidget);
       expect(
-        find.text('Tap one and it is saved. Undo for five seconds.'),
+        find.text('Tap one and it\'s saved. You can undo for five seconds.'),
         findsOneWidget,
       );
       expect(find.text("Legs and glutes, today's plan"), findsOneWidget);

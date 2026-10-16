@@ -43,6 +43,7 @@ import 'package:own_hub/app_state/workout_session_state.dart';
 import 'package:own_hub/domain/clock/app_clock.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
+import 'package:own_hub/features/eat/presentation/recipe_labels.dart';
 import 'package:own_hub/features/signup/presentation/demo/demo_stops.dart';
 import 'package:own_hub/features/today/presentation/today_cards.dart'
     show weekdayLabel;
@@ -50,6 +51,7 @@ import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/ui/hand/tilt_parallax.dart';
 import 'package:own_hub/routing/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -265,6 +267,8 @@ void main() {
   setUpAll(() async {
     await loadAppFonts();
     await _loadIconFont();
+    // No accelerometer plugin under `flutter test`: the art stays still.
+    TiltParallax.source = () => const Stream.empty();
   });
 
   test('the encoder writes an RGB PNG with no alpha channel', () {
@@ -404,6 +408,29 @@ Future<void> _render(
       await tester.runAsync(
         () => Scrollable.ensureVisible(tester.element(heading.first)),
       );
+      // Store pages are seen before sign-in, so the shot opens on her second
+      // section: the first one's PS line names the period outright.
+      final sections = EatAppState.instance.recipeBook.sections;
+      final savoury = find.text(
+        sectionTitle(
+          l10n,
+          sections.firstWhere(
+            (s) => s.sectionId == 'salty_fulling_breakfast',
+            orElse: () => sections[1],
+          ),
+        ),
+      );
+      await tester.scrollUntilVisible(
+        savoury,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.runAsync(
+        () => Scrollable.ensureVisible(
+          tester.element(savoury.first),
+          alignment: 0.1,
+        ),
+      );
       await _settle(tester);
       await _shootBoth(tester, set, '04-eat');
 
@@ -441,8 +468,8 @@ Future<void> _render(
       }
       await _shootBoth(tester, set, '07-tour-dinners');
       await _tapText(tester, l10n.next);
-      expect(find.text(l10n.yourCycleIfYouWantIt), findsOneWidget);
-      await _shootBoth(tester, set, '08-tour-cycle');
+      expect(find.text(l10n.howYouFeelToday), findsOneWidget);
+      await _shootBoth(tester, set, '08-tour-checkin');
     } finally {
       debugDisableShadows = true;
     }

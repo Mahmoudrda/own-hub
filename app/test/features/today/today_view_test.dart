@@ -72,7 +72,6 @@ TodayView _today({
           day: InMemoryTodayRepository.defaultDay(date: _tuesday),
         ),
     now: now ?? _tuesday,
-    level: level,
     sessionTitle: sessionTitle,
     onStartSession: () {},
     onRecall: () {},
@@ -94,6 +93,13 @@ Future<void> _countWalk(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 800));
 }
+
+// With her first week open that arc is the one progress line, so the week's
+// own count line is only asserted once the arc is done.
+final _firstWeekDone = FirstWeekArc(
+  hasAnyLog: true,
+  completed: FirstWeekStep.values.toSet(),
+);
 
 void main() {
   group('everything she might log today is already on the screen', () {
@@ -225,6 +231,7 @@ void main() {
             repository: InMemoryTodayRepository(
               day: InMemoryTodayRepository.defaultDay(date: _tuesday).copyWith(
                 week: const WeekProgress(sessionsLogged: 2, sessionsTarget: 4),
+                arc: _firstWeekDone,
               ),
             ),
           ),
@@ -252,6 +259,7 @@ void main() {
             repository: InMemoryTodayRepository(
               day: InMemoryTodayRepository.defaultDay(date: _tuesday).copyWith(
                 week: const WeekProgress(sessionsLogged: 3, sessionsTarget: 3),
+                arc: _firstWeekDone,
               ),
             ),
           ),
@@ -277,7 +285,7 @@ void main() {
       await tester.pumpWidget(_host(_today(level: 3)));
       await tester.pumpAndSettle();
 
-      expect(find.text('Level 3'), findsOneWidget);
+      expect(find.text('Level 3'), findsNothing, reason: 'the level is on P01');
       expect(find.text('Level 7 · Regular'), findsNothing);
       expect(find.text('Level 7'), findsNothing);
       expect(

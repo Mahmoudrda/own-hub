@@ -20,13 +20,15 @@ import 'package:own_hub/features/coaching/domain/checkout_gate.dart';
 import 'package:own_hub/features/coaching/domain/coach_directory.dart';
 
 const String _feature = 'lib/features/coaching';
-const String _ledger = 'lib/features/coaching/domain/payment_state_machine.dart';
+const String _ledger =
+    'lib/features/coaching/domain/payment_state_machine.dart';
 
-List<File> _source() => Directory(_feature)
-    .listSync(recursive: true)
-    .whereType<File>()
-    .where((f) => f.path.endsWith('.dart'))
-    .toList();
+List<File> _source() =>
+    Directory(_feature)
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))
+        .toList();
 
 /// True for a line that is only a comment.
 ///
@@ -177,8 +179,11 @@ void main() {
         'const PaymentKnown(record)',
         'CheckoutStarted(checkout)',
       ]) {
-        expect(_isDeclarationOrPattern(notExcused), isFalse,
-            reason: notExcused);
+        expect(
+          _isDeclarationOrPattern(notExcused),
+          isFalse,
+          reason: notExcused,
+        );
       }
     });
 
@@ -217,9 +222,8 @@ void main() {
     });
 
     test('the seam that refuses is the one the app is wired to', () {
-      final seam = File(
-        '$_feature/domain/payment_provider.dart',
-      ).readAsStringSync();
+      final seam = File('$_feature/domain/payment_provider.dart')
+          .readAsStringSync();
       expect(seam, contains('class UnavailablePaymentProvider'));
       // Nothing in it may reach for the ledger: a provider that could build a
       // record is a provider that could pay.
@@ -231,9 +235,8 @@ void main() {
     });
 
     test('the checkout request has no amount to tamper with', () {
-      final seam = File(
-        '$_feature/domain/payment_provider.dart',
-      ).readAsStringSync();
+      final seam = File('$_feature/domain/payment_provider.dart')
+          .readAsStringSync();
       final start = seam.indexOf('class CheckoutRequest');
       final end = seam.indexOf('class HostedCheckout');
       expect(start, isNot(-1));
@@ -267,9 +270,8 @@ void main() {
     });
 
     test('the confirm step is a real step, not a comment', () {
-      final packages = File(
-        '$_feature/presentation/packages_view.dart',
-      ).readAsStringSync();
+      final packages = File('$_feature/presentation/packages_view.dart')
+          .readAsStringSync();
       expect(packages, contains('_confirming'));
     });
   });
@@ -315,7 +317,11 @@ void main() {
         r'|rankBy(Weight|Followers|Rating))',
         caseSensitive: false,
       );
-      expect(_hits(banned), isEmpty, reason: 'rule 11: displayed, never ranked');
+      expect(
+        _hits(banned),
+        isEmpty,
+        reason: 'rule 11: displayed, never ranked',
+      );
 
       for (final offender in [
         "query.orderBy('followerCount')",
@@ -327,9 +333,8 @@ void main() {
     });
 
     test('a directory row has no follower count to display or sort', () {
-      final source = File(
-        '$_feature/domain/coach_directory.dart',
-      ).readAsLinesSync();
+      final source = File('$_feature/domain/coach_directory.dart')
+          .readAsLinesSync();
       final fields = source
           .where((l) => !_isComment(l))
           .where((l) => l.trimLeft().startsWith('final '))
@@ -401,9 +406,9 @@ void main() {
         'about2HoursMeasuredNotTyped',
       };
 
-      final arb =
-          jsonDecode(File('lib/l10n/app_en.arb').readAsStringSync())
-              as Map<String, dynamic>;
+      final arb = jsonDecode(
+        File('lib/l10n/app_en.arb').readAsStringSync(),
+      ) as Map<String, dynamic>;
       bool baked(String v) =>
           !v.contains('{') &&
           RegExp(r'\d').hasMatch(v) &&
@@ -459,9 +464,8 @@ void main() {
       final offenders = <String>[];
       for (final file in _source()) {
         for (final line in file.readAsLinesSync()) {
-          final match = RegExp(r'''^import\s+['"]([^'"]+)['"]''').firstMatch(
-            line,
-          );
+          final match = RegExp(r'''^import\s+['"]([^'"]+)['"]''')
+              .firstMatch(line);
           if (match == null) continue;
           final path = match.group(1)!;
           if (path.contains('features/') && !path.contains('coaching')) {
@@ -481,9 +485,8 @@ void main() {
     test('the echoed constants still agree with the folders that own them', () {
       // Two constants, one authority, stated. Read as text rather than
       // imported, because importing is the coupling this test exists to avoid.
-      final capacity = File(
-        'lib/features/coach/domain/coach_capacity.dart',
-      ).readAsStringSync();
+      final capacity = File('lib/features/coach/domain/coach_capacity.dart')
+          .readAsStringSync();
       expect(
         RegExp(r'static const int ceiling = 60\b').hasMatch(capacity),
         isTrue,
@@ -493,9 +496,8 @@ void main() {
       );
       expect(kCoachCapacityCeiling, 60);
 
-      final profile = File(
-        'lib/features/coach/domain/coach_profile.dart',
-      ).readAsStringSync();
+      final profile = File('lib/features/coach/domain/coach_profile.dart')
+          .readAsStringSync();
       expect(
         RegExp(r'static const int minimumReviews = 5\b').hasMatch(profile),
         isTrue,

@@ -133,7 +133,10 @@ void main() {
         );
         await tester.pumpAndSettle();
         AppListItem row(String label) => tester.widget<AppListItem>(
-          find.ancestor(of: find.text(label), matching: find.byType(AppListItem)),
+          find.ancestor(
+            of: find.text(label),
+            matching: find.byType(AppListItem),
+          ),
         );
         expect(row(ticked).variant, AppCardVariant.selected, reason: '$locale');
         expect(row(plain).variant, AppCardVariant.outlined, reason: '$locale');

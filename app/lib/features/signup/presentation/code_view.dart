@@ -36,6 +36,7 @@ import '../../../ui/app_card.dart';
 import '../../../ui/app_code_field.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_step_progress.dart';
+import '../../../ui/hand/mascot/kitten.dart';
 import '../domain/auth_repository.dart';
 
 class CodeView extends StatefulWidget {
@@ -68,6 +69,10 @@ class CodeView extends StatefulWidget {
   /// decide where she goes next are not a silent wait with a live button.
   final Future<void> Function()? onConfirmed;
 
+  /// How long she waits, once the code is sent, before the screen says it is
+  /// still working (the same idea as `CheckingView.slowAfter`).
+  static const Duration slowAfter = Duration(seconds: 8);
+
   /// A new code has gone out. The caller says so, because what there is to say
   /// depends on whether anything was really sent — see [testCode].
   final VoidCallback? onResent;
@@ -88,6 +93,10 @@ class _CodeViewState extends State<CodeView> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _resendFocus = FocusNode();
   bool _checking = false;
+
+  /// True once the confirmation has run longer than [CodeView.slowAfter].
+  bool _slow = false;
+  Timer? _slowTimer;
 
   /// Why the last check failed, or null. Cleared when she edits the code.
   AuthFailure? _failure;
@@ -140,6 +149,7 @@ class _CodeViewState extends State<CodeView> {
       ..dispose();
     _resendFocus.dispose();
     _resendTimer?.cancel();
+    _slowTimer?.cancel();
     super.dispose();
   }
 
@@ -160,7 +170,12 @@ class _CodeViewState extends State<CodeView> {
     if (_checking || code.length != kVerificationCodeLength) return;
     setState(() {
       _checking = true;
+      _slow = false;
       _failure = null;
+    });
+    _slowTimer?.cancel();
+    _slowTimer = Timer(CodeView.slowAfter, () {
+      if (mounted) setState(() => _slow = true);
     });
     try {
       await widget.repository.confirmCode(code);
@@ -179,7 +194,13 @@ class _CodeViewState extends State<CodeView> {
         }
       }
     } finally {
-      if (mounted) setState(() => _checking = false);
+      _slowTimer?.cancel();
+      if (mounted) {
+        setState(() {
+          _checking = false;
+          _slow = false;
+        });
+      }
     }
   }
 
@@ -219,11 +240,34 @@ class _CodeViewState extends State<CodeView> {
       ),
       footer: [
         if (_checking)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Thinking, on its last frame: the wait has a face, and nothing
+              // on screen moves.
+              const Kitten(pose: KittenPose.think, size: 32, holdStill: true),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    l10n.checkingYourCode,
+                    key: const ValueKey('code-checking'),
+                    textAlign: TextAlign.center,
+                    style: AppText.bodyM.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        if (_checking && _slow)
           Semantics(
             liveRegion: true,
             child: Text(
-              l10n.checkingYourCode,
-              key: const ValueKey('code-checking'),
+              l10n.stillWorkingASlowConnectionCanTake,
+              key: const ValueKey('code-slow'),
               textAlign: TextAlign.center,
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
@@ -237,7 +281,9 @@ class _CodeViewState extends State<CodeView> {
           focusNode: _resendFocus,
           child: AppButton(
             _resendIn > 0
-                ? l10n.sendItAgainInTime('0:${_resendIn.toString().padLeft(2, '0')}')
+                ? l10n.sendItAgainInTime(
+                    '0:${_resendIn.toString().padLeft(2, '0')}',
+                  )
                 : l10n.sendItAgain,
             variant: AppButtonVariant.text,
             height: 44,

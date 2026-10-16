@@ -139,6 +139,9 @@ class CycleHubView extends StatelessWidget {
         // Before she has set anything up the hub is a title page: the
         // drawing, what this is, and one action within thumb reach.
         scrollable: snapshot.branch != HubBranch.notSetUp,
+        // What the app is not, under her cycle (APL-12), as a caption at the
+        // foot: the check-in is the page, the disclaimer is the small print.
+        footerScrollsWhenLarge: true,
         footer: snapshot.branch == HubBranch.notSetUp
             ? [
                 AppButton(
@@ -147,7 +150,7 @@ class CycleHubView extends StatelessWidget {
                   onPressed: onSetUp,
                 ),
               ]
-            : const [],
+            : const [MedicalDisclaimer(caption: true)],
         children: [
           ...switch (snapshot.branch) {
             HubBranch.notSetUp => _notSetUp(context, l10n),
@@ -155,9 +158,6 @@ class CycleHubView extends StatelessWidget {
             HubBranch.symptomsOnly => _symptomsOnly(context, l10n, snapshot),
             HubBranch.today => _today(context, l10n, snapshot),
           },
-          // What the app is not, under her cycle (APL-12). Not on the title
-          // page, which does not scroll; setup (Y01) says it there.
-          if (snapshot.branch != HubBranch.notSetUp) const MedicalDisclaimer(),
         ],
       ),
     );

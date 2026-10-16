@@ -50,11 +50,13 @@ import 'package:flutter/widgets.dart';
 
 import '../domain/flags/feature_flags.dart';
 import '../domain/rewards/weekly_goal_service.dart';
+import '../domain/clock/app_clock.dart';
 import '../features/onboarding/domain/intake.dart';
 import '../features/today/domain/today_day.dart';
 import '../routing/app_router.dart';
 import '../routing/app_routes.dart';
 import 'app_changes.dart';
+import 'rewards_state.dart';
 import 'role_state.dart';
 
 /// Every setup screen. The order she meets them in is [setupWalk].
@@ -87,10 +89,7 @@ List<String> setupWalk(Intake intake, {required bool short}) => short
 
 /// Where [screenId] sits in the walk she is on: "2 of 6", and the bar.
 ({int step, int total}) setupProgress(String screenId, Intake intake) {
-  final walk = setupWalk(
-    intake,
-    short: OnboardingState.instance.shortSetup,
-  );
+  final walk = setupWalk(intake, short: OnboardingState.instance.shortSetup);
   final at = walk.indexOf(screenId);
   return (step: at < 0 ? 1 : at + 1, total: walk.length);
 }
@@ -193,19 +192,38 @@ class OnboardingState {
     final decision = _goals.setTarget(AppRouter.progressStore.goal, days);
     if (!decision.accepted) return;
     AppRouter.progressStore.goal = decision.goal;
+    // The week she is in follows her answer too. With no week document yet,
+    // the new target is this week's. A lower target than the week started
+    // with can count it there and then, and that pays the week once (D41); a
+    // higher one waits for next week, because a week that has begun keeps the
+    // target it started with.
+    RewardsState.instance.retargetCurrentWeek(
+      decision.goal.sessionsTarget,
+      progress: AppRouter.progressStore,
+    );
+    // The target this week is actually measured against: the week document's
+    // when there is one, so Home, R10 and the week's credit agree.
+    final weekTarget =
+        AppRouter.weekFromStore(AppClock.now())?.sessionsTarget ??
+        decision.goal.sessionsTarget;
 
     // Home keeps its own copy of the week so it can draw offline, and that copy
     // is what "This week, 0 of 3" is read from. Updated through the repository's
     // own `restore`, carrying its two sets of memory back in untouched, because
     // nothing else in Today may be disturbed by a setup answer.
     final today = AppRouter.todayRepository;
+    // With a week document, Today reads both numbers from it — one source.
+    if (AppRouter.weekFromStore(AppClock.now()) != null) {
+      today.refresh();
+      return;
+    }
     final day = today.day;
-    if (day.week.sessionsTarget == decision.goal.sessionsTarget) return;
+    if (day.week.sessionsTarget == weekTarget) return;
     today.restore(
       day: day.copyWith(
         week: WeekProgress(
           sessionsLogged: day.week.sessionsLogged,
-          sessionsTarget: decision.goal.sessionsTarget,
+          sessionsTarget: weekTarget,
           repairedByRestWeek: day.week.repairedByRestWeek,
         ),
       ),

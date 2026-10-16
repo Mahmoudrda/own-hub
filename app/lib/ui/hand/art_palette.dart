@@ -3,7 +3,7 @@
 /// ## Why this file exists
 ///
 /// The marks in `art_marks.dart` and `food_marks.dart` were first drawn in one
-/// ink: a thin rose outline with a 12% wash inside it. That was licence-clean
+/// ink: a thin pink outline with a 12% wash inside it. That was licence-clean
 /// and cost nothing, and it was also the thing the owner looked at and
 /// rejected — the product he had asked for was **clean, flat and colourful**,
 /// and a page of single-ink line drawings is none of those. See
@@ -29,7 +29,7 @@
 /// ## Why these particular colours
 ///
 /// All of them are mixed against the product's own surface (`AppColors.surface`,
-/// a warm `#FFF8F9`) and its rose (`AppColors.primary`). The pack that was
+/// Linen `#FCF8F2`) and its petrol (`AppColors.primary`). The pack that was
 /// removed was flat saturated vector art that sat on that page like a sticker;
 /// these are tuned to sit on it like print.
 ///
@@ -51,6 +51,8 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+
+import '../../theme/app_tokens.dart';
 
 /// One mark's two colours: a solid interior and the line drawn round it.
 @immutable
@@ -78,38 +80,39 @@ class ArtTone {
 /// two bowls of leaves on one screen look like they came from the same hand.
 abstract final class ArtTones {
   /// Every figure, and anything that is about her rather than about a thing.
-  static const rose = ArtTone(Color(0xFFF2B6C6), Color(0xFFA24661));
+  /// Pink with a petrol outline: pink alone is 1.53:1 on Linen.
+  static const rose = ArtTone(AppColors.brandPink, AppColors.primary);
 
-  /// Paler rose, for a surface that sits behind something else.
-  static const blush = ArtTone(Color(0xFFFBDCE4), Color(0xFFA24661));
+  /// Paler pink, for a surface that sits behind something else.
+  static const blush = ArtTone(AppColors.pinkSoft, AppColors.primary);
 
   /// Kit she wears or carries.
-  static const plum = ArtTone(Color(0xFFC890B2), Color(0xFF6E3356));
+  static const plum = ArtTone(Color(0xFF9FB8C0), AppColors.petrolDark);
 
   /// Leaves, and anything green on a plate.
   static const leaf = ArtTone(Color(0xFFA6CCAC), Color(0xFF41634B));
 
   /// Bread, grain, pastry, nuts.
-  static const amber = ArtTone(Color(0xFFF1C68A), Color(0xFF8A5A17));
+  static const amber = ArtTone(AppColors.pinkShade, AppColors.petrolDark);
 
   /// Crockery, and the white of an egg.
-  static const cream = ArtTone(Color(0xFFF7E7D4), Color(0xFF866A48));
+  static const cream = ArtTone(AppColors.surfaceContainer, AppColors.secondary);
 
-  /// Grapes, and the one bag that is not rose.
-  static const berry = ArtTone(Color(0xFFB98AC4), Color(0xFF5B3770));
+  /// Grapes, and the one bag that is not pink.
+  static const berry = ArtTone(AppColors.petrolMuted, AppColors.petrolDark);
 
   /// Meat, and the red fruit.
-  static const ember = ArtTone(Color(0xFFEE9A92), Color(0xFF9D4040));
+  static const ember = ArtTone(AppColors.pinkDeep, AppColors.petrolDark);
 
   /// A mat, a bottle, anything cool next to all that warmth.
-  static const teal = ArtTone(Color(0xFF9CC6C1), Color(0xFF3C6A66));
+  static const teal = ArtTone(Color(0xFFC9D8DC), AppColors.primary);
 
   /// Metal: a bar, a pot, a frame, a pair of headphones.
-  static const slate = ArtTone(Color(0xFFCDC0C4), Color(0xFF645458));
+  static const slate = ArtTone(Color(0xFFB9CCD1), Color(0xFF4F7480));
 
   /// A yolk, and a drizzle of honey.
-  static const yolk = ArtTone(Color(0xFFF6C95C), Color(0xFF936510));
+  static const yolk = ArtTone(AppColors.brandPink, AppColors.petrolDark);
 
   /// The dark of a rind or a sole, where a shape needs a foot to stand on.
-  static const shade = ArtTone(Color(0xFF8C6F76), Color(0xFF4A3A3F));
+  static const shade = ArtTone(Color(0xFF4F7480), AppColors.petrolDark);
 }

@@ -63,8 +63,8 @@ class RecipeRow {
   final String recipeId;
   final String title;
 
-  /// "22 min · 540 kcal · 18 g protein · 14 EGP" — time, energy, protein and
-  /// **cost**, which is the one the design insists on.
+  /// "22 min · 18 g protein" — time and protein. Energy and cost are on the
+  /// recipe's own page.
   final String detail;
 
   /// The three figures [detail] states, as numbers the filters can read.
@@ -146,7 +146,10 @@ bool matchesFilter(RecipeRow row, RecipeFilter filter) => switch (filter) {
 /// Read off her own steps rather than off a tag somebody typed: a recipe uses
 /// the oven when one of her steps says so, which cannot drift from the card the
 /// way a hand-maintained tag can.
-bool recipeMatchesFilter(Recipe recipe, RecipeFilter filter) => switch (filter) {
+bool recipeMatchesFilter(
+  Recipe recipe,
+  RecipeFilter filter,
+) => switch (filter) {
   RecipeFilter.highProtein => recipe.dietTags.contains('high_protein'),
   // Hands-on time where the recipe states one, because that is what the chip
   // means. It read `totalMinutes`, which counts a night in the fridge, so
@@ -174,9 +177,13 @@ bool recipeMatchesFilter(Recipe recipe, RecipeFilter filter) => switch (filter) 
   // "no nuts" chip would be the app making exactly the claim it refuses to make.
   RecipeFilter.noNuts =>
     recipe.allergensReviewed &&
-    !recipe.allergensFinal.contains('tree_nuts') &&
-    !recipe.allergensFinal.contains('peanuts'),
+        !recipe.allergensFinal.contains('tree_nuts') &&
+        !recipe.allergensFinal.contains('peanuts'),
 };
+
+/// "22 min · 18 g protein". Energy and cost are on the recipe's own page.
+String _timeAndProtein(AppL10n l10n, int minutes, int proteinG) =>
+    '${l10n.nMin(countLabel(minutes))} · ${l10n.nGProtein(countLabel(proteinG))}';
 
 /// The four the prototype draws.
 ///
@@ -190,7 +197,7 @@ List<RecipeRow> sampleRecipes(AppL10n l10n) => [
   RecipeRow(
     recipeId: 'koshari_portioned',
     title: l10n.koshariPortioned,
-    detail: l10n.n22Min540Kcal18GProtein,
+    detail: _timeAndProtein(l10n, 22, 18),
     minutes: 22,
     proteinG: 18,
     egp: 14,
@@ -198,7 +205,7 @@ List<RecipeRow> sampleRecipes(AppL10n l10n) => [
   RecipeRow(
     recipeId: 'ful_with_egg_cumin',
     title: l10n.fulWithEggAndCumin,
-    detail: l10n.n10Min310Kcal19GProtein,
+    detail: _timeAndProtein(l10n, 10, 19),
     minutes: 10,
     proteinG: 19,
     egp: 8,
@@ -206,7 +213,7 @@ List<RecipeRow> sampleRecipes(AppL10n l10n) => [
   RecipeRow(
     recipeId: 'molokhia_chicken',
     title: l10n.molokhiaWithChicken,
-    detail: l10n.n45Min460Kcal34GProtein,
+    detail: _timeAndProtein(l10n, 45, 34),
     minutes: 45,
     proteinG: 34,
     egp: 26,
@@ -214,7 +221,7 @@ List<RecipeRow> sampleRecipes(AppL10n l10n) => [
   RecipeRow(
     recipeId: 'yoghurt_dates_nuts',
     title: l10n.yoghurtDatesAndNuts,
-    detail: l10n.n3Min280Kcal14GProtein,
+    detail: _timeAndProtein(l10n, 3, 14),
     minutes: 3,
     proteinG: 14,
     egp: 12,
@@ -380,6 +387,7 @@ class _RecipesViewState extends State<RecipesView> {
         },
       ),
       body: AppScaffold(
+        staggerGroup: 'e05',
         children: [
           if (widget.pickLabel case final label?)
             Text(
@@ -487,7 +495,11 @@ class _RecipesViewState extends State<RecipesView> {
   /// Same discipline as [_emptyLine] below, ordered by cause rather than by
   /// severity. [hiddenUnchecked] is the guard's removal and it comes first,
   /// because it happened first.
-  String _topEmptyLine(AppL10n l10n, int hiddenUnchecked, RecipeFilter? filter) {
+  String _topEmptyLine(
+    AppL10n l10n,
+    int hiddenUnchecked,
+    RecipeFilter? filter,
+  ) {
     // Says whose check is missing, because it is not hers.
     //
     // This read "None of these dishes has been checked FOR WHAT YOU AVOID, so
@@ -779,23 +791,44 @@ class _SectionDivider extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FoodMark(markKey: section.markKey, size: 48, ink: BookInk.roseTitle),
+            FoodMark(
+              markKey: section.markKey,
+              size: 48,
+              ink: BookInk.roseTitle,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  BookTitle(
-                    titleEn: section.titleEn,
-                    style: EditorialType.cover.copyWith(
-                      color: BookInk.roseTitle,
+                  if (AppL10n.of(context).localeName == 'ar')
+                    Text(
+                      sectionTitle(AppL10n.of(context), section),
+                      style: EditorialType.cover.copyWith(
+                        color: BookInk.roseTitle,
+                      ),
+                    )
+                  else
+                    BookTitle(
+                      titleEn: section.titleEn,
+                      style: EditorialType.cover.copyWith(
+                        color: BookInk.roseTitle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  BookTitle(
-                    titleEn: section.psLineEn,
-                    style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
-                  ),
+                  if (section.psLineEn.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    if (section.psLineAr != null &&
+                        AppL10n.of(context).localeName == 'ar')
+                      Text(
+                        section.psLineAr!,
+                        style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+                      )
+                    else
+                      BookTitle(
+                        titleEn: section.psLineEn,
+                        style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+                      ),
+                  ],
                 ],
               ),
             ),
@@ -825,13 +858,12 @@ class _RahmaCard extends StatelessWidget {
     // work and a day in the fridge, and this card said "1,445 min" — a number
     // that is true, unusable, and reads as a bug. The total still has its say
     // on E06, where there is room for both.
-    final time = handsOnLabel(l10n, recipe.activeMinutes) ??
+    final time =
+        handsOnLabel(l10n, recipe.activeMinutes) ??
         totalTimeLabel(l10n, recipe.totalMinutes);
     final facts = <String>[
       ?time,
       if (recipe.proteinG != null) l10n.nGProtein(countLabel(recipe.proteinG!)),
-      if (recipe.egpPerServing != null)
-        l10n.nEgpAServing(countLabel(recipe.egpPerServing!)),
     ];
     return Padding(
       padding: const EdgeInsets.only(bottom: BookMetrics.cardGap),

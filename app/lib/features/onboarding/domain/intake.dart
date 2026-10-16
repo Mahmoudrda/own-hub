@@ -56,7 +56,15 @@ enum Equipment {
   none('none'),
   mat('mat'),
   dumbbells('dumbbells'),
-  bands('bands');
+  bands('bands'),
+  // Gym kit. O06 never offers these: a woman who trains at a ladies' gym has
+  // them by being there (`selectStartingProgram` reads the place, not a tick).
+  // They exist as wire values so a profile written with them round-trips.
+  bench('bench'),
+  barbell('barbell'),
+  cable('cable'),
+  smithMachine('smith_machine'),
+  machine('machine');
 
   const Equipment(this.wireName);
 

@@ -40,7 +40,10 @@ SemanticsNode? _tabNode(WidgetTester t, String label, Rect bar) {
     var rect = n.rect;
     SemanticsNode? cur = n;
     while (cur != null) {
-      rect = MatrixUtils.transformRect(cur.transform ?? Matrix4.identity(), rect);
+      rect = MatrixUtils.transformRect(
+        cur.transform ?? Matrix4.identity(),
+        rect,
+      );
       cur = cur.parent;
     }
     if (bar.contains(rect.center) || bar.contains(r.center)) return n;
@@ -70,7 +73,9 @@ void main() {
         if (find.byType(AppNavBar).evaluate().isEmpty) continue;
 
         final ctx = tester.element(find.byType(AppNavBar).first);
-        final barWidget = tester.widget<AppNavBar>(find.byType(AppNavBar).first);
+        final barWidget = tester.widget<AppNavBar>(
+          find.byType(AppNavBar).first,
+        );
         final l10n = AppL10n.of(ctx);
         final tabs =
             barWidget.destinations ?? tabsFor(RoleScope.rolesOf(ctx).active);

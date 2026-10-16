@@ -568,6 +568,11 @@ enum GroceryGroup { vegetables, protein, cupboard }
 ///
 /// Keyed by [itemKey] = `sha1(ingredientId + ':' + unit)`, so a tick made on two
 /// devices converges on one line instead of ticking two.
+///
+/// A line made from one of Rahma's recipes carries her own words in [text] and
+/// the recipe it belongs to in [recipeId], and is keyed by the recipe id and
+/// her `ingredientRef`. A line with neither is the older kind: [ingredientId]
+/// names a fixed sample ingredient, and a snapshot that holds one still reads.
 @immutable
 class GroceryLine {
   const GroceryLine({
@@ -576,6 +581,8 @@ class GroceryLine {
     required this.group,
     this.ticked = false,
     this.tickedAt,
+    this.text,
+    this.recipeId,
   });
 
   final String itemKey;
@@ -584,12 +591,20 @@ class GroceryLine {
   final bool ticked;
   final DateTime? tickedAt;
 
+  /// The ingredient as her recipe writes it. Null on a sample line.
+  final String? text;
+
+  /// The dinner the line is for. Null on a sample line.
+  final String? recipeId;
+
   GroceryLine copyWith({bool? ticked, DateTime? tickedAt}) => GroceryLine(
     itemKey: itemKey,
     ingredientId: ingredientId,
     group: group,
     ticked: ticked ?? this.ticked,
     tickedAt: tickedAt ?? this.tickedAt,
+    text: text,
+    recipeId: recipeId,
   );
 }
 
@@ -688,6 +703,15 @@ abstract class MealRepository {
     required String weekId,
     required String itemKey,
     required bool ticked,
+  });
+
+  /// Makes the list match the dinners: [lines] are the lines her dinners need,
+  /// and a tick she already made on the same line is kept. Lines made from a
+  /// recipe that is no longer on the plan go. Sample lines (no recipe) go too
+  /// once there are real ones, and stay when there are none.
+  Future<void> syncGroceries({
+    required String weekId,
+    required List<GroceryLine> lines,
   });
 
   Future<void> dispose();
@@ -831,11 +855,11 @@ class InMemoryMealRepository implements MealRepository {
   /// The shared documents. Two repositories over one store are two devices.
   final MealStore store;
 
-
   @override
   int get mealsAdded => store.days.values.fold(
     0,
-    (count, day) => count + day.slots.values.where((items) => items.isNotEmpty).length,
+    (count, day) =>
+        count + day.slots.values.where((items) => items.isNotEmpty).length,
   );
   @override
   DataState get dataState => dataStateOf(holdsNothing: store.days.isEmpty);
@@ -979,6 +1003,28 @@ class InMemoryMealRepository implements MealRepository {
         itemKey: line.copyWith(ticked: ticked, tickedAt: AppClock.now()),
       },
     );
+  }
+
+  @override
+  Future<void> syncGroceries({
+    required String weekId,
+    required List<GroceryLine> lines,
+  }) async {
+    final plan = store.plans[weekId];
+    if (plan == null) return;
+    final next = <String, GroceryLine>{
+      // Sample lines stay until a real line replaces them.
+      if (lines.isEmpty)
+        for (final entry in plan.groceries.entries)
+          if (entry.value.recipeId == null) entry.key: entry.value,
+    };
+    for (final line in lines.take(kGroceryCap)) {
+      final before = plan.groceries[line.itemKey];
+      next[line.itemKey] = before == null
+          ? line
+          : line.copyWith(ticked: before.ticked, tickedAt: before.tickedAt);
+    }
+    store.plans[weekId] = plan.copyWith(groceries: next);
   }
 
   @override

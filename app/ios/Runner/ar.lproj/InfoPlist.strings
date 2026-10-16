@@ -2,4 +2,5 @@
    the second person feminine, like the rest of the product's copy. Kept in step
    with en.lproj/InfoPlist.strings and with NSCameraUsageDescription in
    Info.plist. No photo-library key, here or anywhere. */
+"NSMotionUsageDescription" = "Own Hub بتستخدم حركة تليفونك بس عشان تميّل كام رسمة ميلة خفيفة. مفيش حاجة بتتسجّل ولا بتتبعت.";
 "NSCameraUsageDescription" = "يستخدم Own Hub الكاميرا لتصوير وجهي بطاقتكِ الشخصية والتقاط صورة ذاتية واحدة، للتحقق من أنكِ امرأة. لا يُرفع شيء قبل أن تضغطي إرسال، وتُقرأ الصور في الذاكرة ولا تُخزَّن أبدًا.";

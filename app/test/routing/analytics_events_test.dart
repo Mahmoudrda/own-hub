@@ -163,7 +163,11 @@ void main() {
     tester,
   ) async {
     await _open(tester, 'C01');
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Skip the tour and join'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create my account'));
     await tester.pumpAndSettle();
     expect(recording.last('signUpStarted'), {'source': 'welcome'});
   });
@@ -185,7 +189,7 @@ void main() {
       'C07 counts sign_up or login, by the phone, after the claim is read',
       () {
         final block = _builderBlock('C07');
-        final claim = block.indexOf('await readVerificationClaim();');
+        final claim = block.indexOf('await readAfterSignIn();');
         final track = block.indexOf('AnalyticsEvent.loggedIn');
         expect(claim, greaterThan(-1));
         expect(track, greaterThan(claim));
@@ -302,6 +306,8 @@ void main() {
         'T01',
         'R01',
         'R03',
+        'R14',
+        'R15',
         'E01',
         'E07',
         'P01',

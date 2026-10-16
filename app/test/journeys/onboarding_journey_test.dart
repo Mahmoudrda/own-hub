@@ -61,26 +61,28 @@ final FeatureFlags _firstRelease = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.today: true,
   Feature.firstWeek: true,
   Feature.quietWeek: true,
-  Feature.tiers: true,
-  Feature.lockScreenNudge: true,
   Feature.train: true,
   Feature.recordFromMemory: true,
+  Feature.program: true,
   Feature.exerciseVideo: true,
   Feature.exerciseSwap: true,
-  Feature.followAlong: true,
   Feature.workoutLibrary: true,
   Feature.trainingReminders: true,
+  Feature.reassuringWaits: true,
+  Feature.haptics: true,
+  Feature.finishReveal: true,
+  Feature.weeklyChallenge: true,
+  Feature.trainingStreak: true,
+  Feature.exerciseLibrary: true,
   Feature.eat: true,
   Feature.recipes: true,
   Feature.weekPlan: true,
-  Feature.groceryList: true,
   Feature.progress: true,
   Feature.milestones: true,
   Feature.personalBests: true,
   Feature.bodyPrivately: true,
   Feature.shareCard: true,
   Feature.cycle: true,
-  Feature.cycleMeals: true,
   Feature.cycleCalendar: true,
   Feature.cyclePatterns: true,
   Feature.privacyCentre: true,
@@ -158,9 +160,7 @@ void main() {
       // somebody who trains three days a week at home.
       expect(find.byType(StartingProgramView), findsOneWidget);
       expect(
-        find.text(
-          'Days a week: 4 · Minutes a session: 30 · At home and the gym',
-        ),
+        find.text('4 days a week · 30 min a session · At home and the gym'),
         findsOneWidget,
       );
 
@@ -214,9 +214,7 @@ void main() {
 
       expect(find.byType(StartingProgramView), findsOneWidget);
       expect(
-        find.text(
-          'Days a week: 4 · Minutes a session: 15 · At a ladies-only gym',
-        ),
+        find.text('4 days a week · 15 min a session · At a ladies-only gym'),
         findsOneWidget,
       );
       expect(find.byType(EquipmentView, skipOffstage: false), findsNothing);
@@ -271,6 +269,7 @@ void main() {
       // Her profile, and the row that deletes everything.
       await _tap(tester, find.bySemanticsLabel('Your profile'));
       expect(find.byType(ProfileView), findsOneWidget);
+      await _tap(tester, find.text('Privacy and data'));
       await _tap(tester, find.text('Your data'));
       await _tap(tester, find.widgetWithText(AppButton, 'Delete everything'));
 

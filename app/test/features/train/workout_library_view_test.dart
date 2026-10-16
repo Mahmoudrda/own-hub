@@ -103,20 +103,13 @@ void main() {
     expect(find.text('Legs and glutes'), findsOneWidget);
   });
 
-  testWidgets('says why the list is short, without a count', (tester) async {
-    // Padding it out with rows the app cannot open is what produced the three
-    // invented coaches. It says what it has instead — and says it without a
-    // number, so it stays true as titles land.
+  testWidgets('carries no note about the library being written', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(const WorkoutLibraryView()));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(
-        'The library is still being written. What is here is what the app '
-        'ships with today.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.textContaining('still being written'), findsNothing);
   });
 
   testWidgets('filtering happens locally, with no query', (tester) async {
@@ -211,7 +204,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('بحث'), findsOneWidget);
+    expect(find.text('دوّري'), findsOneWidget);
     expect(find.text('الرجلين والأرداف'), findsOneWidget);
     expect(find.text('15 دقيقة · مبتدئة · من غير أدوات'), findsOneWidget);
     expect(find.text('Legs and glutes'), findsNothing);

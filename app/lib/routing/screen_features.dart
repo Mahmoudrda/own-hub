@@ -48,7 +48,7 @@ const Map<String, Feature> kScreenFeatures = {
 
   // Train.
   'R01': Feature.train,
-  'R02': Feature.train,
+  'R02': Feature.program,
   'R03': Feature.train,
   'R04': Feature.exerciseVideo,
   'R05': Feature.exerciseSwap,
@@ -60,6 +60,8 @@ const Map<String, Feature> kScreenFeatures = {
   'R11': Feature.workoutLibrary,
   'R12': Feature.recordFromMemory,
   'R13': Feature.train,
+  'R14': Feature.exerciseLibrary,
+  'R15': Feature.exerciseLibrary,
 
   // Eat. `E10` stays on Eat itself: what she cannot eat is a safety
   // setting, and it is never switched off apart from the meals it guards.

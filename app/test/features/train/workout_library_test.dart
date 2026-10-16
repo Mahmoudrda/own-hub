@@ -1,3 +1,4 @@
+import 'dart:io';
 // The owner's workouts: the document format, the rules the member app holds
 // it to, life-stage gating, the member reader, and the mapping onto Train's
 // own types.
@@ -82,6 +83,9 @@ class _Source implements WorkoutRemoteSource {
   int? version;
   Map<String, Object?>? library;
   Object? offline;
+
+  /// Thrown from the library read only, after the version read succeeded.
+  Object? libraryFails;
   int versionReads = 0;
   int libraryReads = 0;
 
@@ -95,6 +99,7 @@ class _Source implements WorkoutRemoteSource {
   @override
   Future<Map<String, Object?>?> readLibrary(int version) async {
     libraryReads++;
+    if (libraryFails != null) throw libraryFails!;
     return library;
   }
 }
@@ -293,6 +298,32 @@ void main() {
         checks: _Memory(),
       );
       expect((await offline.load()).version, 4);
+    });
+
+    test('a download that fails leaves no "checked" stamp, so the next launch '
+        'asks again; a cached library stamps it', () async {
+      final source = remote()..libraryFails = const SocketException('cut');
+      final checks = _Memory();
+      final cache = _Memory();
+      final now = DateTime.utc(2026, 10, 7, 9);
+      WorkoutSync make() => WorkoutSync(
+        source: () => source,
+        cache: cache,
+        checks: checks,
+        now: () => now,
+      );
+      expect((await make().refresh()).$1, WorkoutRefreshOutcome.failed);
+      expect(checks.value, isNull);
+      expect(cache.value, isNull);
+
+      source.libraryFails = null;
+      expect((await make().refresh()).$1, WorkoutRefreshOutcome.updated);
+      expect(checks.value, isNotNull);
+      expect(source.versionReads, 2);
+    });
+
+    test('a server read gives up after ten seconds', () {
+      expect(FirestoreWorkoutSource.readTimeout, const Duration(seconds: 10));
     });
 
     test('the version is read at most once a day', () async {

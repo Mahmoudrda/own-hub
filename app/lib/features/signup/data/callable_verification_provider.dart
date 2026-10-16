@@ -90,6 +90,10 @@ const String kVerifyIdentityRegion = kFunctionsRegion;
 const int _fallbackExpirySeconds = 90;
 
 class CallableVerificationProvider implements VerificationProvider {
+  /// How long `verify_identity` is waited for: the server's own limit, so the
+  /// phone never gives up on a check the server is still finishing.
+  static const Duration submitTimeout = Duration(seconds: 120);
+
   CallableVerificationProvider({
     FirebaseFunctions? functions,
     DateTime Function()? now,
@@ -169,10 +173,10 @@ class CallableVerificationProvider implements VerificationProvider {
 
     final callable = _functions.httpsCallable(
       kVerifyIdentityCallable,
-      // Sixty seconds is the callable default and it is the right one here.
-      // OCR plus a face match on a cold function is slow, and a client that
-      // gives up at ten seconds turns a completed check into a duplicate one.
-      options: HttpsCallableOptions(timeout: const Duration(seconds: 60)),
+      // The same 120 seconds the function is given (`TIMEOUT_SEC`). OCR plus a
+      // face match on a cold function is slow, and a client that gives up
+      // before the server does turns a completed check into a duplicate one.
+      options: HttpsCallableOptions(timeout: submitTimeout),
     );
 
     final HttpsCallableResult<Object?> response;

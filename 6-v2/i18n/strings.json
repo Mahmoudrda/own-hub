@@ -20,12 +20,12 @@
   "n": 56
  },
  {
-  "s": "Today",
+  "s": "Continue",
   "n": 24
  },
  {
-  "s": "Continue",
-  "n": 17
+  "s": "Today",
+  "n": 24
  },
  {
   "s": "train",
@@ -60,15 +60,11 @@
   "n": 11
  },
  {
-  "s": "Nourhan El-Sayed",
-  "n": 11
- },
- {
   "s": "Goblet squat",
   "n": 10
  },
  {
-  "s": "I ate this",
+  "s": "Log",
   "n": 10
  },
  {
@@ -80,7 +76,15 @@
   "n": 10
  },
  {
+  "s": "Save and close",
+  "n": 10
+ },
+ {
   "s": "Calendar",
+  "n": 9
+ },
+ {
+  "s": "Nourhan El-Sayed",
   "n": 9
  },
  {
@@ -180,10 +184,6 @@
   "n": 6
  },
  {
-  "s": "Skip",
-  "n": 6
- },
- {
   "s": "10 min",
   "n": 5
  },
@@ -220,11 +220,11 @@
   "n": 5
  },
  {
-  "s": "Sara Adel",
+  "s": "On",
   "n": 5
  },
  {
-  "s": "Save and close",
+  "s": "Sara Adel",
   "n": 5
  },
  {
@@ -340,10 +340,6 @@
   "n": 4
  },
  {
-  "s": "On",
-  "n": 4
- },
- {
   "s": "Programmes",
   "n": 4
  },
@@ -448,7 +444,7 @@
   "n": 3
  },
  {
-  "s": "Noted by you",
+  "s": "Logged by you",
   "n": 3
  },
  {
@@ -584,12 +580,16 @@
   "n": 3
  },
  {
-  "s": "You noted low energy and mild cramps.",
+  "s": "You logged low energy and mild cramps.",
   "n": 3
  },
  {
   "s": "Your coaching",
   "n": 3
+ },
+ {
+  "s": "1 · What is said here stays here",
+  "n": 2
  },
  {
   "s": "1,860 women · 12 posts today",
@@ -612,6 +612,10 @@
   "n": 2
  },
  {
+  "s": "2 · No comments on anyone else's body",
+  "n": 2
+ },
+ {
   "s": "2 days ago",
   "n": 2
  },
@@ -621,6 +625,10 @@
  },
  {
   "s": "21,600 EGP",
+  "n": 2
+ },
+ {
+  "s": "3 · No selling, no recruiting",
   "n": 2
  },
  {
@@ -716,6 +724,10 @@
   "n": 2
  },
  {
+  "s": "Blur faces in my photos",
+  "n": 2
+ },
+ {
   "s": "Box squat to a chair",
   "n": 2
  },
@@ -764,6 +776,10 @@
   "n": 2
  },
  {
+  "s": "Coaches have profiles for that.",
+  "n": 2
+ },
+ {
   "s": "CSV",
   "n": 2
  },
@@ -773,10 +789,6 @@
  },
  {
   "s": "Day 9",
-  "n": 2
- },
- {
-  "s": "Days a week",
   "n": 2
  },
  {
@@ -864,6 +876,10 @@
   "n": 2
  },
  {
+  "s": "How we treat each other",
+  "n": 2
+ },
+ {
   "s": "I'm ready, next set",
   "n": 2
  },
@@ -880,15 +896,11 @@
   "n": 2
  },
  {
-  "s": "Note a period",
+  "s": "Log a period",
   "n": 2
  },
  {
-  "s": "eaten",
-  "n": 2
- },
- {
-  "s": "logotype",
+  "s": "logged",
   "n": 2
  },
  {
@@ -921,6 +933,14 @@
  },
  {
   "s": "No photo",
+  "n": 2
+ },
+ {
+  "s": "No screenshots, no sharing anyone else outside.",
+  "n": 2
+ },
+ {
+  "s": "Not even a compliment. Talk about the work instead.",
   "n": 2
  },
  {
@@ -1072,6 +1092,10 @@
   "n": 2
  },
  {
+  "s": "Skip",
+  "n": 2
+ },
+ {
   "s": "Small",
   "n": 2
  },
@@ -1161,6 +1185,10 @@
  },
  {
   "s": "What did you do?",
+  "n": 2
+ },
+ {
+  "s": "When your check is done, ask any client from her page on your desk.",
   "n": 2
  },
  {
@@ -1264,15 +1292,19 @@
   "n": 1
  },
  {
-  "s": "1 · What is said here stays here",
-  "n": 1
- },
- {
   "s": "1 hour",
   "n": 1
  },
  {
   "s": "1 Jul",
+  "n": 1
+ },
+ {
+  "s": "1 of 11",
+  "n": 1
+ },
+ {
+  "s": "1 of 6",
   "n": 1
  },
  {
@@ -1344,7 +1376,15 @@
   "n": 1
  },
  {
+  "s": "10 of 11",
+  "n": 1
+ },
+ {
   "s": "10 sessions",
+  "n": 1
+ },
+ {
+  "s": "11 of 11",
   "n": 1
  },
  {
@@ -1488,10 +1528,6 @@
   "n": 1
  },
  {
-  "s": "2 · No comments on anyone else's body",
-  "n": 1
- },
- {
   "s": "2 · Sun 20, Tue 22",
   "n": 1
  },
@@ -1512,6 +1548,10 @@
   "n": 1
  },
  {
+  "s": "2 of 11",
+  "n": 1
+ },
+ {
   "s": "2 of 3 done",
   "n": 1
  },
@@ -1525,6 +1565,10 @@
  },
  {
   "s": "2 of 5 moves done",
+  "n": 1
+ },
+ {
+  "s": "2 of 6",
   "n": 1
  },
  {
@@ -1612,10 +1656,6 @@
   "n": 1
  },
  {
-  "s": "3 · No selling, no recruiting",
-  "n": 1
- },
- {
   "s": "3 × 10 · 12 kg",
   "n": 1
  },
@@ -1676,6 +1716,10 @@
   "n": 1
  },
  {
+  "s": "3 of 11",
+  "n": 1
+ },
+ {
   "s": "3 of 3",
   "n": 1
  },
@@ -1689,6 +1733,10 @@
  },
  {
   "s": "3 of 4 sessions",
+  "n": 1
+ },
+ {
+  "s": "3 of 6",
   "n": 1
  },
  {
@@ -1756,11 +1804,19 @@
   "n": 1
  },
  {
+  "s": "4 of 11",
+  "n": 1
+ },
+ {
   "s": "4 of 12",
   "n": 1
  },
  {
   "s": "4 of 30 days still need a meal or an explicit free choice.",
+  "n": 1
+ },
+ {
+  "s": "4 of 6",
   "n": 1
  },
  {
@@ -1836,7 +1892,7 @@
   "n": 1
  },
  {
-  "s": "5 days · 2 days not noted",
+  "s": "5 days · 2 days not logged",
   "n": 1
  },
  {
@@ -1853,6 +1909,14 @@
  },
  {
   "s": "5 no hands",
+  "n": 1
+ },
+ {
+  "s": "5 of 11",
+  "n": 1
+ },
+ {
+  "s": "5 of 6",
   "n": 1
  },
  {
@@ -1880,7 +1944,15 @@
   "n": 1
  },
  {
-  "s": "6 noted days · 2 cycles",
+  "s": "6 logged days · 2 cycles",
+  "n": 1
+ },
+ {
+  "s": "6 of 11",
+  "n": 1
+ },
+ {
+  "s": "6 of 6",
   "n": 1
  },
  {
@@ -1897,6 +1969,10 @@
  },
  {
   "s": "7 days",
+  "n": 1
+ },
+ {
+  "s": "7 of 11",
   "n": 1
  },
  {
@@ -1921,6 +1997,10 @@
  },
  {
   "s": "8 of 10",
+  "n": 1
+ },
+ {
+  "s": "8 of 11",
   "n": 1
  },
  {
@@ -1965,6 +2045,10 @@
  },
  {
   "s": "9 MB",
+  "n": 1
+ },
+ {
+  "s": "9 of 11",
   "n": 1
  },
  {
@@ -2140,6 +2224,10 @@
   "n": 1
  },
  {
+  "s": "Add a certificate",
+  "n": 1
+ },
+ {
   "s": "Add a follow-up",
   "n": 1
  },
@@ -2160,15 +2248,15 @@
   "n": 1
  },
  {
+  "s": "Add a photo of you",
+  "n": 1
+ },
+ {
   "s": "Add a step",
   "n": 1
  },
  {
   "s": "Add an easier option",
-  "n": 1
- },
- {
-  "s": "Add another certificate",
   "n": 1
  },
  {
@@ -2208,7 +2296,7 @@
   "n": 1
  },
  {
-  "s": "Adding updates your plan. It does not mark the meal as eaten.",
+  "s": "Adding updates your plan. It does not log the meal as eaten.",
   "n": 1
  },
  {
@@ -2221,6 +2309,10 @@
  },
  {
   "s": "Adjust workouts",
+  "n": 1
+ },
+ {
+  "s": "After",
   "n": 1
  },
  {
@@ -2344,6 +2436,10 @@
   "n": 1
  },
  {
+  "s": "As a coach you agree to the same three rules as every woman here.",
+  "n": 1
+ },
+ {
   "s": "Ask about this",
   "n": 1
  },
@@ -2424,6 +2520,10 @@
   "n": 1
  },
  {
+  "s": "Before",
+  "n": 1
+ },
+ {
   "s": "Beginners",
   "n": 1
  },
@@ -2477,10 +2577,6 @@
  },
  {
   "s": "Blur any client who is in shot",
-  "n": 1
- },
- {
-  "s": "Blur faces in my photos",
   "n": 1
  },
  {
@@ -2616,7 +2712,7 @@
   "n": 1
  },
  {
-  "s": "Changing the plan never changes a meal you already added. Tapping twice does not add it twice.",
+  "s": "Changing the plan never changes a log you already saved. Tapping twice does not create a second log.",
   "n": 1
  },
  {
@@ -2637,10 +2733,6 @@
  },
  {
   "s": "Checked by Own Hub's own system. Your ID and selfie photos are never stored. Tap to read exactly what is kept.",
-  "n": 1
- },
- {
-  "s": "Checking",
   "n": 1
  },
  {
@@ -2684,6 +2776,10 @@
   "n": 1
  },
  {
+  "s": "Clients look for a coach by language and by where they train.",
+  "n": 1
+ },
+ {
   "s": "Coach",
   "n": 1
  },
@@ -2708,7 +2804,7 @@
   "n": 1
  },
  {
-  "s": "Coaches have profiles for that.",
+  "s": "Coached here",
   "n": 1
  },
  {
@@ -2768,7 +2864,7 @@
   "n": 1
  },
  {
-  "s": "I cooked it and ate a bowl",
+  "s": "Cooked it, log my bowl",
   "n": 1
  },
  {
@@ -2940,6 +3036,10 @@
   "n": 1
  },
  {
+  "s": "Days a week",
+  "n": 1
+ },
+ {
   "s": "Days written",
   "n": 1
  },
@@ -2948,7 +3048,7 @@
   "n": 1
  },
  {
-  "s": "Days you added what you ate",
+  "s": "Days you logged food",
   "n": 1
  },
  {
@@ -3061,6 +3161,10 @@
  },
  {
   "s": "Each one is work a client will actually see. None of it is a tour.",
+  "n": 1
+ },
+ {
+  "s": "Each result is a before and an after, laid out the same way on every coach's page. Your client adds her own photos and agrees in her own app, so it is always hers to share.",
   "n": 1
  },
  {
@@ -3216,10 +3320,6 @@
   "n": 1
  },
  {
-  "s": "Face visible. Clients pick a person, not a logo.",
-  "n": 1
- },
- {
   "s": "Faces arrive blurred, and nothing here leaves the room.",
   "n": 1
  },
@@ -3232,7 +3332,15 @@
   "n": 1
  },
  {
+  "s": "Faces blurred before it uploads.",
+  "n": 1
+ },
+ {
   "s": "Faces blurred in both",
+  "n": 1
+ },
+ {
+  "s": "Faces stay hidden unless she chooses to show hers.",
   "n": 1
  },
  {
@@ -3316,7 +3424,7 @@
   "n": 1
  },
  {
-  "s": "Five dinners, built from recipes you have eaten before. Swap any of them.",
+  "s": "Five dinners, built from recipes you have logged before. Swap any of them.",
   "n": 1
  },
  {
@@ -3360,7 +3468,7 @@
   "n": 1
  },
  {
-  "s": "Meal added",
+  "s": "Food logged",
   "n": 1
  },
  {
@@ -3448,10 +3556,6 @@
   "n": 1
  },
  {
-  "s": "Full name as on the account",
-  "n": 1
- },
- {
   "s": "Full-body strength · 34 minutes · from Coach Sara",
   "n": 1
  },
@@ -3481,10 +3585,6 @@
  },
  {
   "s": "Get stronger after birth",
-  "n": 1
- },
- {
-  "s": "Giza",
   "n": 1
  },
  {
@@ -3608,6 +3708,10 @@
   "n": 1
  },
  {
+  "s": "Her words show with her first name only, and she can take them back.",
+  "n": 1
+ },
+ {
   "s": "hidden",
   "n": 1
  },
@@ -3656,6 +3760,10 @@
   "n": 1
  },
  {
+  "s": "How long can a session be?",
+  "n": 1
+ },
+ {
   "s": "How manageable was your plan?",
   "n": 1
  },
@@ -3664,19 +3772,19 @@
   "n": 1
  },
  {
+  "s": "How many days a week?",
+  "n": 1
+ },
+ {
   "s": "How many days before it repeats?",
   "n": 1
  },
  {
-  "s": "How much time do you really have?",
-  "n": 1
- },
- {
-  "s": "How we treat each other",
-  "n": 1
- },
- {
   "s": "How would you like to pay?",
+  "n": 1
+ },
+ {
+  "s": "How you coach",
   "n": 1
  },
  {
@@ -3685,6 +3793,10 @@
  },
  {
   "s": "How you work",
+  "n": 1
+ },
+ {
+  "s": "I agree to these three rules",
   "n": 1
  },
  {
@@ -3708,7 +3820,7 @@
   "n": 1
  },
  {
-  "s": "I did all 3 sets",
+  "s": "I did all 3 sets, log them",
   "n": 1
  },
  {
@@ -3717,10 +3829,6 @@
  },
  {
   "s": "I have sharp pain low down and bleeding between periods. Is that normal?",
-  "n": 1
- },
- {
-  "s": "I take women back to lifting after birth.",
   "n": 1
  },
  {
@@ -3816,7 +3924,7 @@
   "n": 1
  },
  {
-  "s": "Irregular cycles, hormonal contraception and perimenopause all use this mode: what you noted, no forecast.",
+  "s": "Irregular cycles, hormonal contraception and perimenopause all use this mode: your logs, no forecast.",
   "n": 1
  },
  {
@@ -4092,39 +4200,43 @@
   "n": 1
  },
  {
-  "s": "I ate both · 696 kcal",
+  "s": "Log both · 696 kcal",
   "n": 1
  },
  {
-  "s": "Add it",
+  "s": "Log it",
   "n": 1
  },
  {
-  "s": "I ate lunch",
+  "s": "Log lunch",
   "n": 1
  },
  {
-  "s": "Add one meal you ate",
+  "s": "Log one meal",
   "n": 1
  },
  {
-  "s": "Finish one set",
+  "s": "Log one set",
   "n": 1
  },
  {
-  "s": "Add something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.",
+  "s": "Log something twice and it becomes a one-tap plate here, in the size you actually serve, not in grams.",
   "n": 1
  },
  {
-  "s": "Added 1:13 · 1 serving",
+  "s": "Logged 1:13 · 1 serving",
   "n": 1
  },
  {
-  "s": "Added from memory. Your week counts it like any other session.",
+  "s": "Logged from memory. Your week counts it like any other session.",
   "n": 1
  },
  {
-  "s": "counts itself",
+  "s": "logotype",
+  "n": 1
+ },
+ {
+  "s": "logs itself",
   "n": 1
  },
  {
@@ -4164,11 +4276,11 @@
   "n": 1
  },
  {
-  "s": "Lunch added · 1 serving",
+  "s": "Lunch logged · 1 serving",
   "n": 1
  },
  {
-  "s": "Lunch added · 696 kcal",
+  "s": "Lunch logged · 696 kcal",
   "n": 1
  },
  {
@@ -4268,10 +4380,6 @@
   "n": 1
  },
  {
-  "s": "Minutes a session",
-  "n": 1
- },
- {
   "s": "Missed sessions",
   "n": 1
  },
@@ -4308,7 +4416,7 @@
   "n": 1
  },
  {
-  "s": "More to note: sleep, bloating, bleeding",
+  "s": "More to log: sleep, bloating, bleeding",
   "n": 1
  },
  {
@@ -4321,6 +4429,10 @@
  },
  {
   "s": "Most days",
+  "n": 1
+ },
+ {
+  "s": "Most women start with nothing. That is plenty.",
   "n": 1
  },
  {
@@ -4348,7 +4460,7 @@
   "n": 1
  },
  {
-  "s": "My coach can see my meals and workouts",
+  "s": "My coach can see my logs",
   "n": 1
  },
  {
@@ -4381,10 +4493,6 @@
  },
  {
   "s": "Name, tier and groups",
-  "n": 1
- },
- {
-  "s": "NASM CPT",
   "n": 1
  },
  {
@@ -4484,7 +4592,7 @@
   "n": 1
  },
  {
-  "s": "No member data is ever included: no meals or workouts, no photos, no cycle.",
+  "s": "No member data is ever included: no logs, no photos, no cycle.",
   "n": 1
  },
  {
@@ -4517,10 +4625,6 @@
  },
  {
   "s": "No recipes yet",
-  "n": 1
- },
- {
-  "s": "No screenshots, no sharing anyone else outside.",
   "n": 1
  },
  {
@@ -4573,10 +4677,6 @@
  },
  {
   "s": "Not a template with your name dropped in. A stack of sections you choose and order yourself.",
-  "n": 1
- },
- {
-  "s": "Not even a compliment. Talk about the work instead.",
   "n": 1
  },
  {
@@ -4652,7 +4752,7 @@
   "n": 1
  },
  {
-  "s": "Nothing added yet",
+  "s": "Nothing logged yet",
   "n": 1
  },
  {
@@ -4668,7 +4768,7 @@
   "n": 1
  },
  {
-  "s": "Nothing was saved and nothing was shared. Your cycle information is not visible to me unless you turn that on.",
+  "s": "Nothing was logged and nothing was shared. Your cycle information is not visible to me unless you turn that on.",
   "n": 1
  },
  {
@@ -4744,7 +4844,7 @@
   "n": 1
  },
  {
-  "s": "Offer an easier workout when I note low energy",
+  "s": "Offer an easier workout when I log low energy",
   "n": 1
  },
  {
@@ -4816,7 +4916,7 @@
   "n": 1
  },
  {
-  "s": "One minute · it is filled in from what you added",
+  "s": "One minute · it is filled in from your logs",
   "n": 1
  },
  {
@@ -4828,7 +4928,7 @@
   "n": 1
  },
  {
-  "s": "One nudge a day at most, at your usual time. Ignore three and they stop by themselves.",
+  "s": "One nudge a day at most, at the hour you usually log. Ignore three and they stop by themselves.",
   "n": 1
  },
  {
@@ -4861,6 +4961,10 @@
  },
  {
   "s": "Only women review these checks. No man ever sees your face, your card or your name.",
+  "n": 1
+ },
+ {
+  "s": "Only women you coach here can write one, so every word is real.",
   "n": 1
  },
  {
@@ -4904,7 +5008,7 @@
   "n": 1
  },
  {
-  "s": "Or just add breakfast",
+  "s": "Or just log breakfast",
   "n": 1
  },
  {
@@ -4925,6 +5029,10 @@
  },
  {
   "s": "Ovulation",
+  "n": 1
+ },
+ {
+  "s": "Own Hub",
   "n": 1
  },
  {
@@ -5364,7 +5472,7 @@
   "n": 1
  },
  {
-  "s": "Revisions default to future dates. A session she has already started, and anything she has already added, stay on the version she used.",
+  "s": "Revisions default to future dates. A session she has already started, and anything she has already logged, stay on the version she used.",
   "n": 1
  },
  {
@@ -5684,7 +5792,7 @@
   "n": 1
  },
  {
-  "s": "Sessions you added with \"I already did it\" never set a best, because the numbers were copied.",
+  "s": "Sessions you logged as \"I already did it\" never set a best, because the numbers were copied.",
   "n": 1
  },
  {
@@ -5728,7 +5836,7 @@
   "n": 1
  },
  {
-  "s": "Severe cramps noted",
+  "s": "Severe cramps logged",
   "n": 1
  },
  {
@@ -5780,7 +5888,7 @@
   "n": 1
  },
  {
-  "s": "She chooses what shows here. Meals, workouts, weight and photos are never on a profile.",
+  "s": "She chooses what shows here. Logs, weight and photos are never on a profile.",
   "n": 1
  },
  {
@@ -5801,6 +5909,10 @@
  },
  {
   "s": "She pays only once you accept",
+  "n": 1
+ },
+ {
+  "s": "Short is fine. Fifteen minutes done beats an hour planned.",
   "n": 1
  },
  {
@@ -5880,7 +5992,7 @@
   "n": 1
  },
  {
-  "s": "So we're adding",
+  "s": "So we're logging",
   "n": 1
  },
  {
@@ -5964,51 +6076,11 @@
   "n": 1
  },
  {
-  "s": "Step 1 of 4",
-  "n": 1
- },
- {
-  "s": "Step 1 of 6",
-  "n": 1
- },
- {
   "s": "Step 2 of 3",
   "n": 1
  },
  {
-  "s": "Step 2 of 4",
-  "n": 1
- },
- {
-  "s": "Step 2 of 6",
-  "n": 1
- },
- {
   "s": "Step 3 of 3",
-  "n": 1
- },
- {
-  "s": "Step 3 of 4",
-  "n": 1
- },
- {
-  "s": "Step 3 of 6",
-  "n": 1
- },
- {
-  "s": "Step 4 of 4",
-  "n": 1
- },
- {
-  "s": "Step 4 of 6",
-  "n": 1
- },
- {
-  "s": "Step 5 of 6",
-  "n": 1
- },
- {
-  "s": "Step 6 of 6",
   "n": 1
  },
  {
@@ -6092,6 +6164,10 @@
   "n": 1
  },
  {
+  "s": "Take a photo",
+  "n": 1
+ },
+ {
   "s": "Take clients, set your packages, keep 80%.",
   "n": 1
  },
@@ -6120,7 +6196,7 @@
   "n": 1
  },
  {
-  "s": "Tell you the portion of a dish you already eat",
+  "s": "Tell you the portion of a dish you already log",
   "n": 1
  },
  {
@@ -6136,7 +6212,7 @@
   "n": 1
  },
  {
-  "s": "That's right · add 696 kcal",
+  "s": "That's right · log 696 kcal",
   "n": 1
  },
  {
@@ -6184,7 +6260,7 @@
   "n": 1
  },
  {
-  "s": "This describes what you noted. It does not explain the cause or predict every cycle.",
+  "s": "This describes your logs. It does not explain the cause or predict every cycle.",
   "n": 1
  },
  {
@@ -6300,7 +6376,7 @@
   "n": 1
  },
  {
-  "s": "Today's session and the meal you usually eat at this hour will sit here. Add one thing and it starts filling itself in.",
+  "s": "Today's session and the meal you usually eat at this hour will sit here. Log one thing and it starts filling itself in.",
   "n": 1
  },
  {
@@ -6348,7 +6424,7 @@
   "n": 1
  },
  {
-  "s": "Tuesday 8:40 · added from the lock screen",
+  "s": "Tuesday 8:40 · logged from the lock screen",
   "n": 1
  },
  {
@@ -6376,7 +6452,7 @@
   "n": 1
  },
  {
-  "s": "Two days with no meal added are shown as nothing added, not as meals skipped.",
+  "s": "Two days without a food log are shown as not logged, not as meals skipped.",
   "n": 1
  },
  {
@@ -6437,10 +6513,6 @@
  },
  {
   "s": "Upload videos and pictures",
-  "n": 1
- },
- {
-  "s": "Uploaded · checking",
   "n": 1
  },
  {
@@ -6556,7 +6628,7 @@
   "n": 1
  },
  {
-  "s": "Vodafone Cash · 010 xxx xx32",
+  "s": "Vodafone Cash",
   "n": 1
  },
  {
@@ -6652,7 +6724,7 @@
   "n": 1
  },
  {
-  "s": "We'll add",
+  "s": "We'll log",
   "n": 1
  },
  {
@@ -6796,7 +6868,11 @@
   "n": 1
  },
  {
-  "s": "What you added",
+  "s": "What you logged",
+  "n": 1
+ },
+ {
+  "s": "What your clients say",
   "n": 1
  },
  {
@@ -6857,6 +6933,10 @@
  },
  {
   "s": "Women already reading it see the old one until it swaps.",
+  "n": 1
+ },
+ {
+  "s": "Women choose a person they can see. Take it now, or add it later from your page.",
   "n": 1
  },
  {
@@ -6936,7 +7016,7 @@
   "n": 1
  },
  {
-  "s": "What you added yesterday and any session you already started stay as they were.",
+  "s": "Yesterday’s logs and any session you already started stay as they were.",
   "n": 1
  },
  {
@@ -6984,7 +7064,7 @@
   "n": 1
  },
  {
-  "s": "You choose what to add. You can change or delete it any time.",
+  "s": "You choose what to log. You can change or delete it any time.",
   "n": 1
  },
  {
@@ -7016,11 +7096,11 @@
   "n": 1
  },
  {
-  "s": "You noted low energy on 4 of 6 noted days in the first 3 days of your last 2 periods.",
+  "s": "You logged low energy on 4 of 6 logged days in the first 3 days of your last 2 periods.",
   "n": 1
  },
  {
-  "s": "You noted more hunger. Add a snack if you want one.",
+  "s": "You logged more hunger. Add a snack if you want one.",
   "n": 1
  },
  {
@@ -7065,6 +7145,10 @@
  },
  {
   "s": "Your check-in guides today",
+  "n": 1
+ },
+ {
+  "s": "Your clients' results",
   "n": 1
  },
  {
@@ -7120,7 +7204,7 @@
   "n": 1
  },
  {
-  "s": "Your meals, workouts, weight, photos and phone number are never visible to another member. These settings are only about what you choose to show.",
+  "s": "Your logs, weight, photos and phone number are never visible to another member. These settings are only about what you choose to show.",
   "n": 1
  },
  {
@@ -7144,11 +7228,11 @@
   "n": 1
  },
  {
-  "s": "Your number, your ID, your meals and your workouts are never shown to members.",
+  "s": "Your number, your ID and your logs are never shown to members.",
   "n": 1
  },
  {
-  "s": "Your own workouts, recipes, meals and My cycle carry on exactly as before. Cycle sharing switched itself off when the coaching ended.",
+  "s": "Your own workouts, recipes, logs and My cycle carry on exactly as before. Cycle sharing switched itself off when the coaching ended.",
   "n": 1
  },
  {
@@ -7173,10 +7257,6 @@
  },
  {
   "s": "Your phone number is used only to arrange this call.",
-  "n": 1
- },
- {
-  "s": "Your photo",
   "n": 1
  },
  {
@@ -7220,7 +7300,7 @@
   "n": 1
  },
  {
-  "s": "Your sessions count here as you save them. There is nothing extra to do. Nobody sees your weights, only that a session happened.",
+  "s": "Your sessions count here as you save them. There is nothing extra to log. Nobody sees your weights, only that a session happened.",
   "n": 1
  },
  {
@@ -7236,7 +7316,7 @@
   "n": 1
  },
  {
-  "s": "Your week, from what you added",
+  "s": "Your week, from your logs",
   "n": 1
  },
  {
@@ -7244,7 +7324,7 @@
   "n": 1
  },
  {
-  "s": "Your workout results and the meals you add are part of coaching. Cycle information is separate, and yours.",
+  "s": "Your workout results and food logs are part of coaching. Cycle information is separate, and yours.",
   "n": 1
  },
  {
@@ -7252,7 +7332,7 @@
   "n": 1
  },
  {
-  "s": "الفصحى · كل شيء في التطبيق",
+  "s": "مصري · كل حاجة في التطبيق",
   "n": 1
  }
 ]

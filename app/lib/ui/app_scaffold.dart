@@ -39,6 +39,7 @@ class AppScaffold extends StatelessWidget {
     this.backgroundColor,
     this.scrollable = true,
     this.footerScrollsWhenLarge = false,
+    this.staggerGroup,
   });
 
   /// The body. Laid out in a column with [kStackGap] between each child, exactly
@@ -72,6 +73,11 @@ class AppScaffold extends StatelessWidget {
   /// does not leave the body a sliver of the screen.
   final bool footerScrollsWhenLarge;
 
+  /// Names this screen's list when its first rows should ease in, once per
+  /// visit: 40 ms apart, at most eight, none under reduced motion. Null
+  /// leaves the body as it is.
+  final String? staggerGroup;
+
   @override
   Widget build(BuildContext context) {
     // This screen's illustrations, from the one table that holds them all.
@@ -85,7 +91,11 @@ class AppScaffold extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: _withGaps([
         if (art.isNotEmpty) const ScreenArtStrip(),
-        ...children,
+        if (staggerGroup case final group?)
+          for (var i = 0; i < children.length; i++)
+            StaggerIn(index: i, group: group, child: children[i])
+        else
+          ...children,
         if (footerInBody) ...[const SizedBox(height: 6), ...footer],
       ]),
     );

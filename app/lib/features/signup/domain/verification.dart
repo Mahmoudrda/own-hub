@@ -124,6 +124,13 @@ sealed class VerificationState {
   /// signs in again with her phone number. Never a review.
   const factory VerificationState.signInAgain() = VerificationSignInAgain;
 
+  /// The connection was too slow for the check to finish in time. Nothing was
+  /// decided on this phone and she is in no queue; her photographs are already
+  /// deleted, so she takes them again. The retry carries the same operation id,
+  /// so a check the server did finish is not run and billed a second time.
+  /// Never a review: the connection is not a reason to spend a woman's call.
+  const factory VerificationState.tooSlow() = VerificationTooSlow;
+
   /// Whether the community is open to her.
   bool get isVerified => this is VerificationVerified;
 
@@ -195,6 +202,10 @@ class VerificationReviewOffered extends VerificationState {
 
 class VerificationAppCannotReach extends VerificationState {
   const VerificationAppCannotReach();
+}
+
+class VerificationTooSlow extends VerificationState {
+  const VerificationTooSlow();
 }
 
 class VerificationSignInAgain extends VerificationState {

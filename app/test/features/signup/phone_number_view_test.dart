@@ -295,7 +295,7 @@ void main() {
 
     expect(find.text('رقم موبايلك إيه؟'), findsOneWidget);
     // A7: the neutral form, not a plural imperative to the team.
-    expect(find.text('الموافقة وإرسال الرمز'), findsOneWidget);
+    expect(find.text('موافقة وعايزة الكود'), findsOneWidget);
     expect(
       find.text("What's your number?"),
       findsNothing,

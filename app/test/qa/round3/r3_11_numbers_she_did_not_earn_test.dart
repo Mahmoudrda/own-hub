@@ -44,8 +44,10 @@ void main() {
         await open(t, appDestinations[id]!.name, locale: Locale(loc));
         final painted = paintedText(t);
         print('=== R3-11 $id $loc ===');
-        print('  real points = ${AppRouter.progressStore.rewards.points}, '
-            'real level = ${AppRouter.progressStore.rewards.level}');
+        print(
+          '  real points = ${AppRouter.progressStore.rewards.points}, '
+          'real level = ${AppRouter.progressStore.rewards.level}',
+        );
         print('  screen says: ${painted.join(" | ")}');
         expect(
           painted.contains('90'),
@@ -86,8 +88,10 @@ void main() {
         final claim = painted
             .where((e) => e.contains('One more session'))
             .toList();
-        print('  $id  done=$done  week="$week"  '
-            'says "one more"? ${claim.isNotEmpty}');
+        print(
+          '  $id  done=$done  week="$week"  '
+          'says "one more"? ${claim.isNotEmpty}',
+        );
 
         // At 1 of 4 the true sentence is "three more". Anything that says one
         // is stating a fact about her week that is not true — so the sentence
@@ -117,9 +121,11 @@ void main() {
       final p01 = tappables(t).map((e) => e.label).toList();
       print('=== R3-11 P01 day one, $loc ===');
       print('  controls: ${p01.join(" // ")}');
-      print('  restWeeksBanked = '
-          '${AppRouter.progressStore.goal.restWeeksBanked}, '
-          'countedWeeks = ${AppRouter.progressStore.goal.countedWeeks}');
+      print(
+        '  restWeeksBanked = '
+        '${AppRouter.progressStore.goal.restWeeksBanked}, '
+        'countedWeeks = ${AppRouter.progressStore.goal.countedWeeks}',
+      );
 
       await open(t, appDestinations['T04']!.name, locale: Locale(loc));
       final painted = paintedText(t);

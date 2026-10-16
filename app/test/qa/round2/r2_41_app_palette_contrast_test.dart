@@ -55,6 +55,8 @@ const Map<String, Color> _backgrounds = {
   'canvas': AppColors.canvas,
   'inverseSurface (undo bar)': AppColors.inverseSurface,
   'primary (filled button)': AppColors.primary,
+  'actionPrimary (pink filled button)': AppColors.actionPrimary,
+  'actionPressed (pressed pink button)': AppColors.actionPressed,
   'tertiary': AppColors.tertiary,
   'error': AppColors.error,
 };
@@ -118,10 +120,7 @@ const Map<String, (Color, List<String>)> _foregrounds = {
       'errorContainer (error card)',
     ],
   ),
-  'amber': (
-    AppColors.amber,
-    ['surface (page)', 'amberContainer (amber card)'],
-  ),
+  'amber': (AppColors.amber, ['surface (page)', 'amberContainer (amber card)']),
   // `outline` and `tertiarySoft` are NOT text colours. Every call site is a
   // stroke, a rule, a progress fill or a week segment:
   //   app_field.dart:245, app_week_segments.dart:143/218 (pencil rules),
@@ -141,9 +140,22 @@ const Map<String, (Color, List<String>)> _foregrounds = {
     AppColors.onTertiaryContainer,
     ['tertiaryContainer (sage card)'],
   ),
-  'onErrorContainer': (AppColors.onErrorContainer, ['errorContainer (error card)']),
-  'inverseOnSurface': (AppColors.inverseOnSurface, ['inverseSurface (undo bar)']),
+  'onErrorContainer': (
+    AppColors.onErrorContainer,
+    ['errorContainer (error card)'],
+  ),
+  'inverseOnSurface': (
+    AppColors.inverseOnSurface,
+    ['inverseSurface (undo bar)'],
+  ),
   'onPrimary': (AppColors.onPrimary, ['primary (filled button)']),
+  'onActionPrimary': (
+    AppColors.onActionPrimary,
+    [
+      'actionPrimary (pink filled button)',
+      'actionPressed (pressed pink button)',
+    ],
+  ),
   'onTertiary': (AppColors.onTertiary, ['tertiary']),
   'onError': (AppColors.onError, ['error']),
 };
@@ -157,12 +169,24 @@ const Map<String, (Color, List<String>)> _foregrounds = {
 /// and the unticked grocery box (grocery_list_view.dart:207).
 const List<(String, Color, String)> _nonText = [
   ('tertiarySoft fill', AppColors.tertiarySoft, 'surface (page)'),
-  ('tertiarySoft fill', AppColors.tertiarySoft, 'surfaceLowest (outlined/selected card)'),
+  (
+    'tertiarySoft fill',
+    AppColors.tertiarySoft,
+    'surfaceLowest (outlined/selected card)',
+  ),
   // R12 draws AppProgressBar inside AppCard(variant: sage) —
   // logged_from_memory_view.dart:99 and :117.
-  ('tertiarySoft fill', AppColors.tertiarySoft, 'tertiaryContainer (sage card)'),
+  (
+    'tertiarySoft fill',
+    AppColors.tertiarySoft,
+    'tertiaryContainer (sage card)',
+  ),
   ('outline stroke', AppColors.outline, 'surface (page)'),
-  ('outline stroke', AppColors.outline, 'surfaceLowest (outlined/selected card)'),
+  (
+    'outline stroke',
+    AppColors.outline,
+    'surfaceLowest (outlined/selected card)',
+  ),
   ('outline stroke', AppColors.outline, 'surfaceContainer (filled card)'),
   // `outlineVariant` IS NOT MEASURED HERE, AND THAT IS THE FINDING OF ROUND
   // THREE RATHER THAN A RELAXATION.
@@ -270,9 +294,6 @@ void main() {
     // more readable than ours — is unchanged and is still the point; only the
     // number it quotes moved, and this case exists so the comment cannot drift
     // away from the palette a second time.
-    expect(
-      _f(contrastRatio(AppColors.primary, AppColors.surface)),
-      '5.59',
-    );
+    expect(_f(contrastRatio(AppColors.primary, AppColors.surface)), '6.94');
   });
 }

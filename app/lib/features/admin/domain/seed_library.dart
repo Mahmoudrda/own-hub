@@ -203,6 +203,15 @@ Map<String, String> _exercise({
   // never uploaded is refused by the importer.
   'videoFile': '',
   'thumbFile': '',
+  // The exercise library's columns (D42), blank: the seed predates it, and the
+  // owner's filmed moves arrive through publish_exercise_library.py.
+  'angleVideoFile': '',
+  'primaryMuscles': '',
+  'secondaryMuscles': '',
+  'bodyRegion': '',
+  'place': '',
+  'level': '',
+  'kind': '',
 };
 
 /// One seeded recipe row.

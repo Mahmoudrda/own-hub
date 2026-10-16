@@ -2,8 +2,8 @@
 /// where that is not obvious, then sits still.
 ///
 /// Where it may appear is a short list on purpose: the start of onboarding,
-/// the tour, the face check, the end of onboarding and the first day on Home.
-/// One per screen. It never speaks, takes no tap and is not read out; the
+/// the tour, the face check, the waits and the end of onboarding, the first
+/// day and the first week on Home, and the end of a session. One per screen. It never speaks, takes no tap and is not read out; the
 /// words beside it carry the meaning.
 library;
 
@@ -13,7 +13,7 @@ import '../../../app_state/kitten_setting.dart';
 import '../draw_on.dart';
 import 'kitten_painter.dart';
 
-export 'kitten_painter.dart' show KittenPose;
+export 'kitten_painter.dart' show KittenPose, KittenProp, KittenTint;
 
 /// Whether the kitten should hold still: the system asks for less motion,
 /// the screen is not the one being looked at, or she turned it off.
@@ -30,7 +30,36 @@ class Kitten extends StatefulWidget {
     this.size = 56,
     this.moment,
     this.replayKey,
+    this.sessionBudget = false,
+    this.tint = KittenTint.rose,
+    this.holdStill = false,
+    this.prop,
+    this.blinkOnRevisit = false,
   });
+
+  /// How many animated appearances a run of the app allows (D48). The first
+  /// [sessionBudgetLimit] budgeted kittens to arrive move; every budgeted one
+  /// after them holds still. One kitten keeps its place when its pose changes
+  /// on the same screen, as C12 does while the check goes on. Named moments
+  /// still play once each on top of this — the budget is the cap across them.
+  static const int sessionBudgetLimit = 3;
+
+  /// Counts against [sessionBudgetLimit].
+  final bool sessionBudget;
+
+  /// Drawn on its last frame and never moves, as beside "Checking your code".
+  /// Takes nothing from the budget.
+  final bool holdStill;
+
+  /// The colour it is drawn in.
+  final KittenTint tint;
+
+  /// What it holds, if anything.
+  final KittenProp? prop;
+
+  /// A kitten that is otherwise still blinks once, only once, the second time
+  /// this [moment] is opened in a run of the app. Needs a [moment].
+  final bool blinkOnRevisit;
 
   final KittenPose pose;
   final double size;
@@ -45,9 +74,18 @@ class Kitten extends StatefulWidget {
 
   /// Moments already played in this run of the app.
   static final Set<String> _played = {};
+  static final Map<String, int> _opened = {};
+  static int _budgetUsed = 0;
 
   @visibleForTesting
-  static void resetPlayed() => _played.clear();
+  static void resetPlayed() {
+    _played.clear();
+    _opened.clear();
+    _budgetUsed = 0;
+  }
+
+  @visibleForTesting
+  static int get budgetUsed => _budgetUsed;
 
   @override
   State<Kitten> createState() => _KittenState();
@@ -59,6 +97,10 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
     duration: kittenRunFor(widget.pose),
   );
   bool _started = false;
+  bool _blinking = false;
+
+  /// This kitten already took one of the budgeted appearances.
+  bool _holdsSlot = false;
 
   @override
   void initState() {
@@ -76,6 +118,10 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
     super.didChangeDependencies();
     if (!_started) {
       _started = true;
+      final moment = widget.moment;
+      if (moment != null) {
+        Kitten._opened.update(moment, (n) => n + 1, ifAbsent: () => 1);
+      }
       _play();
     } else if (kittenStill(context) && _c.isAnimating) {
       // Reduce Motion switched on mid-move.
@@ -94,12 +140,30 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
 
   void _play() {
     final moment = widget.moment;
+    _blinking = false;
     final seen = moment != null && Kitten._played.contains(moment);
-    if (seen || kittenStill(context)) {
+    final overBudget =
+        widget.sessionBudget &&
+        !_holdsSlot &&
+        Kitten._budgetUsed >= Kitten.sessionBudgetLimit;
+    if (widget.holdStill || seen || overBudget || kittenStill(context)) {
       _c.value = 1;
+      // The second time she is here, a still one blinks once.
+      if (widget.blinkOnRevisit &&
+          moment != null &&
+          Kitten._opened[moment] == 2 &&
+          !kittenStill(context)) {
+        _blinking = true;
+        _c.duration = const Duration(milliseconds: 700);
+        _c.forward(from: 0);
+      }
       return;
     }
     if (moment != null) Kitten._played.add(moment);
+    if (widget.sessionBudget && !_holdsSlot) {
+      _holdsSlot = true;
+      Kitten._budgetUsed++;
+    }
     _c.forward(from: 0);
   }
 
@@ -118,7 +182,14 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
         child: SizedBox.square(
           dimension: widget.size,
           child: CustomPaint(
-            painter: KittenPainter(progress: _c, pose: widget.pose, rtl: rtl),
+            painter: KittenPainter(
+              progress: _c,
+              pose: widget.pose,
+              rtl: rtl,
+              tint: widget.tint,
+              prop: widget.prop,
+              blinking: _blinking,
+            ),
           ),
         ),
       ),

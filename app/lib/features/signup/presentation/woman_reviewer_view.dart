@@ -156,7 +156,7 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         // Shown before `request_review`, which records her agreement to the
-        // review route on the server (users/{uid}/consents/review-v2, written
+        // review route on the server (users/{uid}/consents/review-v3, written
         // before the flag): who calls, how, and what her number is used for.
         // This sentence and the one above are that consent's wording. PENDING COUNSEL: this wording is part of the consent
         // mechanism the PDPC must approve, and needs a lawyer's sign-off.
@@ -188,19 +188,23 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
         if (_failure != _Failure.none)
           Semantics(
             liveRegion: true,
-            child: Text(switch (_failure) {
-              _Failure.tooManyToday => l10n.youHaveAskedForAReviewerToo,
-              _Failure.appCannotReach => l10n.thisCopyOfTheAppCannotReach_agbhf,
-              _Failure.signInAgain => l10n.yourSignInIsNoLongerValid_1y16r,
-              _Failure.checkStillRunning =>
-                l10n.yourAutomaticCheckIsStillRunningSo,
-              _ => l10n.weCouldNotReachOwnHubSo_3usbb,
-            }, style: AppText.bodyM.copyWith(
-              // Waiting on her own check is not an error.
-              color: _failure == _Failure.checkStillRunning
-                  ? AppColors.onSurfaceVariant
-                  : AppColors.error,
-            )),
+            child: Text(
+              switch (_failure) {
+                _Failure.tooManyToday => l10n.youHaveAskedForAReviewerToo,
+                _Failure.appCannotReach =>
+                  l10n.thisCopyOfTheAppCannotReach_agbhf,
+                _Failure.signInAgain => l10n.yourSignInIsNoLongerValid_1y16r,
+                _Failure.checkStillRunning =>
+                  l10n.yourAutomaticCheckIsStillRunningSo,
+                _ => l10n.weCouldNotReachOwnHubSo_3usbb,
+              },
+              style: AppText.bodyM.copyWith(
+                // Waiting on her own check is not an error.
+                color: _failure == _Failure.checkStillRunning
+                    ? AppColors.onSurfaceVariant
+                    : AppColors.error,
+              ),
+            ),
           ),
         if (_failure == _Failure.signInAgain && widget.onSignInAgain != null)
           AppButton(

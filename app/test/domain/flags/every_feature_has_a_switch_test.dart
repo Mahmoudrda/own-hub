@@ -52,7 +52,11 @@ void main() {
         'O07',
       });
       for (final id in AppRouter.ungatedScreens.where((id) => id != 'C02')) {
-        expect(AppRouter.featureForFlow(appRoutes[id]!.flow), isNull, reason: id);
+        expect(
+          AppRouter.featureForFlow(appRoutes[id]!.flow),
+          isNull,
+          reason: id,
+        );
       }
     });
   });
@@ -117,7 +121,10 @@ void main() {
 
     test('it can switch on only what the owner runs herself', () {
       expect(
-        [for (final f in Feature.values) if (f.serverMayTurnOn) f],
+        [
+          for (final f in Feature.values)
+            if (f.serverMayTurnOn) f,
+        ],
         [Feature.events],
       );
     });

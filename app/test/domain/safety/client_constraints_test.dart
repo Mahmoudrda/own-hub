@@ -150,7 +150,10 @@ void main() {
         allergies: const {'nuts'},
         dietary: const {'vegetarian'},
       );
-      expect(() => constraints.allergies!.add('sesame'), throwsUnsupportedError);
+      expect(
+        () => constraints.allergies!.add('sesame'),
+        throwsUnsupportedError,
+      );
       expect(() => constraints.dietary!.add('halal'), throwsUnsupportedError);
     });
   });
@@ -217,21 +220,24 @@ void main() {
       expect(constraints.isResolved, isFalse);
     });
 
-    test('an avoid token outside the vocabulary fails the whole resolution', () {
-      // Dropping the unknown token would leave a constraint set that looks
-      // authored and is short by one tag.
-      expect(
-        () => SafetyAssessment.fromWire(
-          assessmentId: 'fx_a4417',
-          clientUid: 'fx_client_4417',
-          coachUid: 'fx_coach_2031',
-          takenAt: DateTime.utc(2031, 2, 17),
-          lifeStage: 'none',
-          avoid: const ['deep_knee_flexion', 'knee'],
-        ),
-        throwsA(isA<UnknownContraindicationTag>()),
-      );
-    });
+    test(
+      'an avoid token outside the vocabulary fails the whole resolution',
+      () {
+        // Dropping the unknown token would leave a constraint set that looks
+        // authored and is short by one tag.
+        expect(
+          () => SafetyAssessment.fromWire(
+            assessmentId: 'fx_a4417',
+            clientUid: 'fx_client_4417',
+            coachUid: 'fx_coach_2031',
+            takenAt: DateTime.utc(2031, 2, 17),
+            lifeStage: 'none',
+            avoid: const ['deep_knee_flexion', 'knee'],
+          ),
+          throwsA(isA<UnknownContraindicationTag>()),
+        );
+      },
+    );
 
     test('a wholly known wire assessment resolves', () {
       final assessment = SafetyAssessment.fromWire(

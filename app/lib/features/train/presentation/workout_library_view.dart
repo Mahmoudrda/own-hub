@@ -46,7 +46,6 @@ import '../../../ui/app_field.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_media.dart';
 import '../../../ui/app_nav_bar.dart';
-import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../domain/train_repository.dart';
 import 'train_widgets.dart';
@@ -59,7 +58,12 @@ class WorkoutLibraryView extends StatefulWidget {
     this.onOpenWorkout,
     this.onSelectTab,
     this.workouts,
+    this.recommendedId,
   });
+
+  /// The row to lead with, set apart above the rest (§15). Null leads with
+  /// nothing and lists every row as before.
+  final String? recommendedId;
 
   final VoidCallback? onBack;
   final ValueChanged<LibraryWorkout>? onOpenWorkout;
@@ -104,7 +108,19 @@ class _WorkoutLibraryViewState extends State<WorkoutLibraryView> {
 
     final all = widget.workouts ?? sampleWorkoutLibrary(l10n);
 
-    final visible = _visible(all);
+    // The one she is offered first, out of the list and above it. The rest
+    // follow; search and filters appear only when there are enough of them to
+    // need narrowing.
+    LibraryWorkout? lead;
+    for (final row in all) {
+      if (row.id == widget.recommendedId) lead = row;
+    }
+    final rest = [
+      for (final row in all)
+        if (!identical(row, lead)) row,
+    ];
+    final narrowing = lead == null || rest.length > 3;
+    final visible = narrowing ? _visible(rest) : rest;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -114,34 +130,64 @@ class _WorkoutLibraryViewState extends State<WorkoutLibraryView> {
         onSelect: widget.onSelectTab,
       ),
       body: AppScaffold(
+        staggerGroup: 'r11',
         appBar: TrainTopBar(
           onClose: widget.onBack,
           closeIcon: Icons.arrow_back,
         ),
         children: [
-          AppField(
-            // `search124Workouts` — "Search 124 workouts" — counts a library
-            // that does not exist yet: `WorkoutVideoRepository` states plainly
-            // that "the 124 titles do not exist yet", and this screen filters
-            // three bundled rows. The box searches; it does not claim a size.
-            hint: l10n.search,
-            onChanged: (value) => setState(() => _query = value),
-            trailing: const Icon(
-              Icons.search,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
+          if (lead != null) ...[
+            Text(
+              l10n.forYou,
+              style: AppText.label.copyWith(color: AppColors.primaryDim),
             ),
-          ),
-          AppChipRow(
-            grow: false,
-            items: [l10n.quiet, l10n.noEquipment, l10n.n10Min],
-            selected: _filters,
-            onTap: (i) => setState(() {
-              // Multi-select: these are constraints that stack, not a choice
-              // between three.
-              _filters.contains(i) ? _filters.remove(i) : _filters.add(i);
-            }),
-          ),
+            AppListItem(
+              key: const ValueKey('r11-for-you'),
+              variant: AppCardVariant.selected,
+              title: lead.title,
+              subtitle: lead.detail,
+              leading: const AppMedia(
+                width: 72,
+                height: 56,
+                borderRadius: AppRadius.sm,
+                showPlayButton: false,
+              ),
+              trailing: const AppChevron(),
+              onTap: () => widget.onOpenWorkout?.call(lead!),
+            ),
+            if (rest.isNotEmpty)
+              Text(
+                l10n.moreSessions,
+                style: AppText.label.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+          ],
+          if (narrowing) ...[
+            AppField(
+              // `search124Workouts` — "Search 124 workouts" — counts a library
+              // that does not exist yet: `WorkoutVideoRepository` states plainly
+              // that "the 124 titles do not exist yet", and this screen filters
+              // three bundled rows. The box searches; it does not claim a size.
+              hint: l10n.search,
+              onChanged: (value) => setState(() => _query = value),
+              trailing: const Icon(
+                Icons.search,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+            ),
+            AppChipRow(
+              grow: false,
+              items: [l10n.quiet, l10n.noEquipment, l10n.n10Min],
+              selected: _filters,
+              onTap: (i) => setState(() {
+                // Multi-select: these are constraints that stack, not a choice
+                // between three.
+                _filters.contains(i) ? _filters.remove(i) : _filters.add(i);
+              }),
+            ),
+          ],
           // `n18WorkoutsQuietAndNoEquipment` — "18 workouts, quiet and no
           // equipment" — sat directly above `visible`, the list the filters had
           // just produced, and said eighteen however many rows were under it
@@ -168,14 +214,12 @@ class _WorkoutLibraryViewState extends State<WorkoutLibraryView> {
           // Why the list is as short as it is. Stated rather than padded out
           // with rows the app cannot open — and stated without a count, so it
           // stays true as titles land.
-          if (visible.isEmpty)
+          if (visible.isEmpty && lead == null)
             AppEmptyState(
               icon: Icons.fitness_center,
               title: l10n.nothingMatchesThoseFilters,
-              body: l10n.theLibraryIsStillBeingWrittenWhat,
-            )
-          else
-            AppSageNote(l10n.theLibraryIsStillBeingWrittenWhat),
+              body: l10n.tryFewerFiltersToSeeMoreWorkouts,
+            ),
         ],
       ),
     );

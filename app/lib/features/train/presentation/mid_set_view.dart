@@ -26,7 +26,11 @@
 /// on this path — there is no parameter on this screen that could produce one.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import '../../../app_state/haptics.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
@@ -62,10 +66,30 @@ class MidSetView extends StatefulWidget {
     this.lastLogged,
     this.moveNumber,
     this.moveCount,
+    this.sets,
+    this.onAttach,
+    this.onDetach,
+    this.progressionLine,
   });
 
   final VoidCallback? onClose;
+
+  /// Why the weight is what it is, for a loaded move she has trained before:
+  /// the next weight up, or why it is not going up yet. Read from her own
+  /// history by `loadAdviceFor`, and null for a move that has none.
+  final String? progressionLine;
+
+  /// Null draws no pause control. A pause icon that did nothing was on this
+  /// screen, R09 and R13 for every woman.
   final VoidCallback? onPause;
+
+  /// Sets of today's session behind her, for the bar under the title.
+  final ({int done, int total})? sets;
+
+  /// Told when this screen opens and closes, so the session's one log bus is
+  /// committed when the last training screen goes, never dropped with it.
+  final VoidCallback? onAttach;
+  final VoidCallback? onDetach;
 
   /// R08 — she did something other than what was asked.
   final VoidCallback? onChange;
@@ -110,16 +134,26 @@ class _MidSetViewState extends State<MidSetView> {
   TrainRepository? _fallbackRepository;
   LogCommandBus? _fallbackBus;
 
+  /// Whether the sets other than the current one are drawn.
+  bool _allSets = false;
+
   TrainRepository get _repository =>
       widget.repository ?? (_fallbackRepository ??= InMemoryTrainRepository());
 
   LogCommandBus get _bus => widget.bus ?? (_fallbackBus ??= LogCommandBus());
 
   @override
+  void initState() {
+    super.initState();
+    widget.onAttach?.call();
+  }
+
+  @override
   void dispose() {
     // Only the one this screen created. A bus passed in belongs to the caller,
     // and disposing it would drop a log the caller is still holding.
     _fallbackBus?.dispose();
+    widget.onDetach?.call();
     super.dispose();
   }
 
@@ -234,20 +268,22 @@ class _MidSetViewState extends State<MidSetView> {
         ),
       ),
     );
+    unawaited(AppHaptics.play(HapticMoment.setLogged));
     widget.onSetLogged?.call(handle);
   }
 
-  /// The sage note under the prescription: what she did last time, or that
-  /// there is no last time yet.
+  /// The sage note under the prescription: what she did last time. Null when
+  /// there is no last time.
   ///
   /// Every figure in it comes from [MidSetView.lastLogged], which is a set she
   /// logged. Nothing here reads a prescription for a number, so there is no
   /// path by which this line can state a session that did not happen.
-  Widget _progressionNote(AppL10n l10n, PrescribedSet? prescribed) {
+  Widget? _progressionNote(AppL10n l10n, PrescribedSet? prescribed) {
+    final line = widget.progressionLine;
+    if (line != null) return AppSageNote(line);
     final last = widget.lastLogged;
-    if (last == null) {
-      return AppSageNote(l10n.noHistoryForThisMoveYetWhat);
-    }
+    // No history, nothing to say: an empty note is not worth a line mid-set.
+    if (last == null) return null;
 
     final was = setFigure(
       l10n,
@@ -256,7 +292,7 @@ class _MidSetViewState extends State<MidSetView> {
       holdSeconds: last.holdSeconds,
     );
     // A logged set with nothing in it to state. Nothing is claimed about it.
-    if (was.isEmpty) return const SizedBox.shrink();
+    if (was.isEmpty) return null;
 
     final lastKg = last.weightKg;
     final nowKg = prescribed?.weightKg;
@@ -284,6 +320,7 @@ class _MidSetViewState extends State<MidSetView> {
         ),
       ),
     );
+    unawaited(AppHaptics.play(HapticMoment.setLogged));
     widget.onMoveLogged?.call(handle);
   }
 
@@ -302,14 +339,16 @@ class _MidSetViewState extends State<MidSetView> {
         // four-move session. A caller that does not know says nothing.
         title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
         onClose: widget.onClose,
+        sets: widget.sets,
         actions: [
-          IconButton(
-            onPressed: widget.onPause,
-            iconSize: 24,
-            color: AppColors.onSurfaceVariant,
-            tooltip: l10n.pause,
-            icon: const Icon(Icons.pause),
-          ),
+          if (widget.onPause != null)
+            IconButton(
+              onPressed: widget.onPause,
+              iconSize: 24,
+              color: AppColors.onSurfaceVariant,
+              tooltip: l10n.pause,
+              icon: const Icon(Icons.pause),
+            ),
         ],
       ),
       footer: [
@@ -359,22 +398,16 @@ class _MidSetViewState extends State<MidSetView> {
         ),
       ],
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
           children: [
-            Text(move.name, style: AppText.headline),
-            const SizedBox(height: 2),
-            Text(
-              // Her set, of the sets her move actually has.
-              //
-              // This was the fixed `set2Of3`, so a woman on the first of four
-              // sets read "Set 2 of 3" — and the list below it drew three rows
-              // whatever her move prescribed. Both now come off `move.sets`.
-              l10n.countOfTotal(
-                countLabel(_setNumberOf(move)),
-                countLabel(move.sets.length),
-              ),
-              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+            Expanded(child: Text(move.name, style: AppText.headline)),
+            IconButton(
+              key: const ValueKey('r07-change'),
+              tooltip: l10n.change,
+              onPressed: widget.onChange,
+              iconSize: 24,
+              color: AppColors.onSurfaceVariant,
+              icon: const Icon(Icons.tune),
             ),
           ],
         ),
@@ -405,34 +438,9 @@ class _MidSetViewState extends State<MidSetView> {
                     ),
                   ),
                 );
-                final change = AppButton(
-                  l10n.change,
-                  variant: AppButtonVariant.tonal,
-                  height: 44,
-                  fontSize: 15,
-                  onPressed: widget.onChange,
-                );
-                if (scaler.scale(1) > 1.3) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      figure,
-                      const SizedBox(height: 12),
-                      IntrinsicWidth(child: change),
-                    ],
-                  );
-                }
-                return Row(
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: figure,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    change,
-                  ],
+                return Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: figure,
                 );
               },
             ),
@@ -451,30 +459,90 @@ class _MidSetViewState extends State<MidSetView> {
             // prescription, so it reaches only a woman who has one. Where she
             // has none, the true thing to say is that this is the first, and
             // that what she logs today is the measure for the next one.
-            _progressionNote(l10n, prescribed),
+            ?_progressionNote(l10n, prescribed),
           ],
         ),
-        Text(
-          l10n.thisMove,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        // The set she is on, and the rest one tap away.
+        _ThisMoveHeading(
+          label: l10n.thisMove,
+          open: _allSets,
+          onTap: () => setState(() => _allSets = !_allSets),
         ),
         // One row per set her move prescribes.
         //
-        // These were three fixed rows — `set1`/`set2`/`set3`, each valued
-        // `n12Kg10` — so a two-set move grew a third set that did not exist, a
-        // four-set move lost one, and every row read "12 kg × 10" however
-        // little that had to do with her plan.
+        // These were three fixed rows, each valued `n12Kg10`, so a two-set
+        // move grew a third set that did not exist and every row read
+        // "12 kg x 10" however little that had to do with her plan.
         for (var i = 0; i < move.sets.length; i++)
-          SetRow(
-            label: l10n.countOfTotal(
-              countLabel(i + 1),
-              countLabel(move.sets.length),
+          if (_allSets || i == _setNumberOf(move) - 1)
+            SetRow(
+              label: l10n.countOfTotal(
+                countLabel(i + 1),
+                countLabel(move.sets.length),
+              ),
+              value: _setValue(l10n, move, i),
+              done: i < _setNumberOf(move) - 1,
+              current: i == _setNumberOf(move) - 1,
             ),
-            value: move.prescriptionLabel,
-            done: i < _setNumberOf(move) - 1,
-            current: i == _setNumberOf(move) - 1,
-          ),
       ],
+    );
+  }
+
+  /// One set's own figure, never the whole move's "3 × 30 seconds" repeated on
+  /// every row.
+  static String _setValue(AppL10n l10n, PlannedMove move, int i) {
+    final set = move.sets[i];
+    final figure = setFigure(
+      l10n,
+      weightKg: set.weightKg,
+      reps: set.reps,
+      holdSeconds: set.holdSeconds,
+    );
+    return figure.isEmpty ? move.prescriptionLabel : figure;
+  }
+}
+
+/// "This move", which opens the other sets when tapped.
+class _ThisMoveHeading extends StatelessWidget {
+  const _ThisMoveHeading({
+    required this.label,
+    required this.open,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool open;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      expanded: open,
+      child: InkWell(
+        key: const ValueKey('r07-all-sets'),
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              Icon(
+                open ? Icons.expand_less : Icons.expand_more,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -320,33 +320,33 @@ void main() {
     test('events are the only thing the server can switch on', () {
       expect(Feature.events.serverMayTurnOn, isTrue);
       expect(
-        [for (final f in Feature.values) if (f.serverMayTurnOn) f],
+        [
+          for (final f in Feature.values)
+            if (f.serverMayTurnOn) f,
+        ],
         [Feature.events],
       );
     });
 
-    test(
-      'a verified woman takes the owner\'s answer for events, and nothing '
-      'switches on the community or off the gate',
-      () async {
-        AppRouter.lastVerification = VerificationResult(
-          method: VerificationMethod.automatic,
-          decidedAt: DateTime(2026, 10, 2),
-          imagesDeletedAt: DateTime(2026, 10, 2),
-        );
-        final store = _FakeSwitches({
-          'events': true,
-          // Anything else in the document is ignored.
-          'community': true,
-          'accountRequired': false,
-        });
-        RemoteFeatures.store = () => store;
-        await RemoteFeatures.load();
-        expect(AppRouter.featureFlags.isOn(Feature.events), isTrue);
-        expect(AppRouter.featureFlags.isOn(Feature.community), isFalse);
-        expect(AppRouter.featureFlags.isOn(Feature.accountRequired), isTrue);
-      },
-    );
+    test('a verified woman takes the owner\'s answer for events, and nothing '
+        'switches on the community or off the gate', () async {
+      AppRouter.lastVerification = VerificationResult(
+        method: VerificationMethod.automatic,
+        decidedAt: DateTime(2026, 10, 2),
+        imagesDeletedAt: DateTime(2026, 10, 2),
+      );
+      final store = _FakeSwitches({
+        'events': true,
+        // Anything else in the document is ignored.
+        'community': true,
+        'accountRequired': false,
+      });
+      RemoteFeatures.store = () => store;
+      await RemoteFeatures.load();
+      expect(AppRouter.featureFlags.isOn(Feature.events), isTrue);
+      expect(AppRouter.featureFlags.isOn(Feature.community), isFalse);
+      expect(AppRouter.featureFlags.isOn(Feature.accountRequired), isTrue);
+    });
 
     test('nothing is read before she is verified', () async {
       final store = _FakeSwitches({'events': true});
@@ -355,16 +355,22 @@ void main() {
       expect(AppRouter.featureFlags.isOn(Feature.events), isFalse);
     });
 
-    test('Z14 publishes events, and refuses what the server cannot move', () async {
-      final store = _FakeSwitches({});
-      RemoteFeatures.store = () => store;
-      expect(await RemoteFeatures.publish(Feature.events, true), isTrue);
-      expect(
-        await RemoteFeatures.publish(Feature.accountRequired, false),
-        isFalse,
-      );
-      expect(await RemoteFeatures.publish(Feature.verification, false), isFalse);
-      expect(store.writes, [('events', true)]);
-    });
+    test(
+      'Z14 publishes events, and refuses what the server cannot move',
+      () async {
+        final store = _FakeSwitches({});
+        RemoteFeatures.store = () => store;
+        expect(await RemoteFeatures.publish(Feature.events, true), isTrue);
+        expect(
+          await RemoteFeatures.publish(Feature.accountRequired, false),
+          isFalse,
+        );
+        expect(
+          await RemoteFeatures.publish(Feature.verification, false),
+          isFalse,
+        );
+        expect(store.writes, [('events', true)]);
+      },
+    );
   });
 }

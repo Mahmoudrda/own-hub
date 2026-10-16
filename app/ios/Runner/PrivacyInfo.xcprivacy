@@ -66,11 +66,21 @@
 	  There is no combined "health and fitness" key in Apple's list; Fitness
 	  and Health are declared separately.
 
-	  NSPrivacyAccessedAPITypes for the APP TARGET holds one entry: UserDefaults
+	  NSPrivacyAccessedAPITypes for the APP TARGET holds three entries. UserDefaults
 	  1C8F.1, for the App Group group.com.ownhub.app that home_widget writes the
 	  widget payload to (lib/app_state/home_widget_sync.dart). home_widget
 	  0.10.0 ships no privacy manifest of its own, so the reason is declared
 	  here. The widget extension declares the same reason in its own manifest.
+	  FileTimestamp C617.1, for the exercise library's clips and posters kept in
+	  the app's own cache folder (lib/features/train/data/exercise_media_store.dart):
+	  Dart's file calls read the size and timestamps of those files, inside the
+	  app container only. path_provider_foundation ships no manifest of its own.
+	  SystemBootTime 35F9.1, for the accelerometer that tilts the welcome and
+	  finished art a few pixels (lib/ui/hand/tilt_parallax.dart):
+	  sensors_plus 7.1.1 reads ProcessInfo.systemUptime to stamp each reading
+	  and its own manifest declares no API types. The accelerometer is CoreMotion,
+	  so Info.plist carries NSMotionUsageDescription (localised in the
+	  InfoPlist.strings files), and the readings never leave the screen.
 	  Every other required-reason API this product touches is touched by a
 	  package that ships its own manifest, which Xcode merges into the privacy
 	  report at build time: shared_preferences declares NSUserDefaults 1C8F.1,
@@ -241,6 +251,22 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>1C8F.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>35F9.1</string>
 			</array>
 		</dict>
 	</array>

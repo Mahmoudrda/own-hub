@@ -59,9 +59,9 @@ class AssessmentRecord {
     Map<String, BaselineMeasure> baseline = const <String, BaselineMeasure>{},
     this.status = AssessmentStatus.recorded,
   }) : baseline = Map<String, BaselineMeasure>.unmodifiable(baseline) {
-    PrescriptionOnlyValidator.assertNoBodyMeasure(
-      <String, Object?>{for (final key in this.baseline.keys) key: null},
-    );
+    PrescriptionOnlyValidator.assertNoBodyMeasure(<String, Object?>{
+      for (final key in this.baseline.keys) key: null,
+    });
   }
 
   final SafetyAssessment assessment;

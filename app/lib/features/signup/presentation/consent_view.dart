@@ -44,7 +44,6 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
-import '../../../ui/app_card.dart';
 import '../../../ui/app_scaffold.dart';
 import '../domain/capture_consent.dart';
 import '../domain/legal_acceptance.dart';
@@ -70,7 +69,8 @@ class ConsentView extends StatefulWidget {
   /// Opens the privacy policy in her language. Null while it has no address.
   final VoidCallback? onOpenPrivacy;
 
-  /// Opens with `C09`'s promise above the disclosure.
+  /// True on the first run through sign-up. The screen shows its own title
+  /// and the disclosure either way; `C09`'s promise is not repeated here.
   final bool showPromise;
 
   /// "I wear niqab, check me another way": `C15`, no selfie on that route.
@@ -212,39 +212,14 @@ class _ConsentViewState extends State<ConsentView> {
         ),
       ],
       children: [
-        if (widget.showPromise) ...[
-          Text(l10n.oneCheckThenYouAreIn, style: AppText.display),
-          AppCard(
-            variant: AppCardVariant.sage,
-            children: [
-              // The card itself says she is a woman; we never guess from her
-              // face.
-              VerificationBullet(
-                icon: Icons.badge,
-                text: l10n.weReadYourNationalIdCardThe,
-              ),
-              VerificationBullet(
-                icon: Icons.face,
-                text: l10n.aSelfieIsMatchedToThePhoto,
-              ),
-              VerificationBullet(
-                icon: Icons.schedule,
-                text: l10n.usuallyACoupleOfMinutesIfA,
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-        ],
-        Text(
-          l10n.beforeTheCameraOpens,
-          style: widget.showPromise ? AppText.headline : AppText.display,
-        ),
+        Text(l10n.beforeTheCameraOpens, style: AppText.display),
         Text(
           l10n.youWillPhotographTheFrontAndBack,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
-        AppCard(
-          variant: AppCardVariant.sage,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 14,
           children: [
             // Named, not implied. "Processed securely" is what a privacy page
             // says when it does not want to say Frankfurt. Google Cloud alone:

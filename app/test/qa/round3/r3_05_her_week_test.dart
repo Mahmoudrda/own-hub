@@ -33,11 +33,15 @@ void main() {
       OnboardingState.instance.finish();
 
       print('=== R3-05 chose $days ===');
-      print('  goal.sessionsTarget      = '
-          '${AppRouter.progressStore.goal.sessionsTarget}');
-      print('  today.day.week           = '
-          '${AppRouter.todayRepository.day.week.sessionsLogged} of '
-          '${AppRouter.todayRepository.day.week.sessionsTarget}');
+      print(
+        '  goal.sessionsTarget      = '
+        '${AppRouter.progressStore.goal.sessionsTarget}',
+      );
+      print(
+        '  today.day.week           = '
+        '${AppRouter.todayRepository.day.week.sessionsLogged} of '
+        '${AppRouter.todayRepository.day.week.sessionsTarget}',
+      );
 
       for (final id in <String>['T01', 'R01', 'P01', 'T04', 'T07']) {
         await open(t, appDestinations[id]!.name, locale: const Locale('en'));
@@ -73,12 +77,16 @@ void main() {
         .where((e) => RegExp(r'\d+\s*(of|/)\s*\d+').hasMatch(e))
         .toList();
     print('=== R3-05 after one session, chose 4 ===');
-    print('  week = ${AppRouter.todayRepository.day.week.sessionsLogged} of '
-        '${AppRouter.todayRepository.day.week.sessionsTarget}');
+    print(
+      '  week = ${AppRouter.todayRepository.day.week.sessionsLogged} of '
+      '${AppRouter.todayRepository.day.week.sessionsTarget}',
+    );
     print('  T01 lines: ${lines.join(" // ")}');
     for (final id in <String>['R01', 'P01']) {
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
-      print('  $id: ${paintedText(t).where((e) => RegExp(r"\d+\s*(of|/)\s*\d+").hasMatch(e)).join(" // ")}');
+      print(
+        '  $id: ${paintedText(t).where((e) => RegExp(r"\d+\s*(of|/)\s*\d+").hasMatch(e)).join(" // ")}',
+      );
     }
     s.dispose();
   });

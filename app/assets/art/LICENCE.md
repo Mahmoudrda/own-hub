@@ -17,7 +17,7 @@ recipe-card shapes the same way and for the same reason.
 
 `app/lib/ui/hand/art_palette.dart` — what they are painted in. Twelve
 two-colour tones, each a solid fill and a deeper line, mixed against the
-product's own `#FFF8F9` surface and `#A24661` rose.
+product's own `#FCF8F2` Linen surface and `#1A5D74` Petrol.
 
 `app/lib/theme/app_art.dart` names them. `app/lib/theme/screen_art.dart` places
 them, one table for the whole product.
@@ -254,3 +254,16 @@ icons were exported from (or the purchase record for each) in this file. If
 that record cannot be produced, the painted marks are still in
 `lib/ui/hand/art_marks.dart` and switching back is a one-line change to
 `AppArt.image`.
+
+## 16 October 2026: recoloured to the brand palette
+
+The 32 bundled files, at 1x, 2x and 3x, were recoloured to the Linen, Petrol and
+Pale Pink inks as a limited-ink print look: clothing, props, equipment and food
+were remapped, and skin on the twelve figures kept its original colour.
+Dimensions are unchanged. Five pale subjects (boxing gloves, dumbbells,
+headphones, seated stretch, strong arms) gained a thin petrol outline just
+outside their silhouette, so their alpha grew by that outline; every other
+file keeps its original alpha. They are derivatives of the same originals, so the
+licence question above is still open exactly as documented: the recolour does
+not resolve it, and the record of the Canva account or purchase is still needed
+before the store submission.

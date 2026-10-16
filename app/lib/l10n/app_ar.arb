@@ -47,7 +47,7 @@
   "n12Kg12": "12 كجم × 12",
   "atHome": "في البيت",
   "breakfast": "الفطار",
-  "cancel": "إلغاء",
+  "cancel": "إلغي",
   "dinner": "العشا",
   "energyAndAppetite": "الطاقة والشهية",
   "fromSara": "من سارة",
@@ -62,7 +62,7 @@
   "recipes": "الوصفات",
   "startEverythingsReady": "ابدئي، كل حاجة جاهزة",
   "tue": "الثلاثاء",
-  "undo": "تراجع",
+  "undo": "تراجعي",
   "workouts": "التمارين",
   "n1800Egp": "1,800 جنيه",
   "n20Min": "20 دقيقة",
@@ -117,7 +117,7 @@
   "breakfastYourUsual": "الفطار المعتاد",
   "breakfastYourUsual_1lb0u": "الفطار المعتاد؟",
   "cairoWestSide": "القاهرة، الناحية الغربية",
-  "close": "إغلاق",
+  "close": "اقفلي",
   "coachDemoStill": "لقطة من فيديو المدرّبة",
   "coachSaraHany": "المدرّبة سارة هاني",
   "coaches": "المدرّبات",
@@ -186,7 +186,7 @@
   "set2": "المجموعة 2",
   "set2Of3": "المجموعة 2 من 3",
   "set3": "المجموعة 3",
-  "showTheCycleCardOnHome": "عرض كارت الدورة في الرئيسية",
+  "showTheCycleCardOnHome": "وريني كارت الدورة في الرئيسية",
   "small": "صغير",
   "somethingElse": "حاجة تانية",
   "start": "ابدئي",
@@ -224,7 +224,7 @@
   "n1GobletSquat12Kg": "1 · القرفصاء بالدمبل 12 كجم",
   "n1GobletSquat12Kg12": "1 · القرفصاء بالدمبل 12 كجم × 12",
   "n1ResolvedIn40Minutes": "1 · اتحلّت في 40 دقيقة",
-  "n1WhatIsSaidHereStaysHere": "1 · ما يُقال هنا يبقى هنا",
+  "n1WhatIsSaidHereStaysHere": "1 · اللي بيتقال هنا بيفضل هنا",
   "n1Hour": "ساعة",
   "n1Jul": "1 يوليو",
   "n1RenewalFromAugust": "تجديد واحد من أغسطس",
@@ -274,7 +274,7 @@
   "n18WorkoutsQuietAndNoEquipment": "18 تمرين، هادية ومن غير أدوات",
   "n18000EgpYourShare14400": "18,000 جنيه · نصيبك 14,400",
   "n2Lunges": "2 · لانج",
-  "n2NoCommentsOnAnyoneElsesBody": "2 · لا تعليق على جسد أي امرأة أخرى",
+  "n2NoCommentsOnAnyoneElsesBody": "2 · مفيش تعليق على جسم أي ست تانية",
   "n2Sun20Tue22": "2 · الأحد 20، الثلاثاء 22",
   "n2Blocked": "2 محظورين",
   "n2HoursAfterYouSentIt": "بعد ما بعتيها بساعتين",
@@ -299,7 +299,7 @@
   "n23ItemsAbout640Egp": "23 صنف · حوالي 640 جنيه",
   "n23Of50": "23 من 50",
   "n27Comments": "27 تعليق",
-  "n3NoSellingNoRecruiting": "3 · لا بيع ولا استقطاب",
+  "n3NoSellingNoRecruiting": "3 · مفيش بيع ولا استقطاب",
   "n31012Kg": "3 × 10 · 12 كجم",
   "n31012KgSuggested": "3 × 10 · مقترح 12 كجم",
   "n31212Kg": "3 × 12 · 12 كجم",
@@ -373,7 +373,7 @@
   "aPlanBuiltForYourDaysAnd": "خطة معمولة على أيامك وأدواتك",
   "aRestWeekCoveredLastWeekSo": "أسبوع راحة غطّى الأسبوع اللي فات، فمفيش حاجة اتغيّرت. اللي بعده بييجي بعد أربع أسابيع محسوبة.",
   "aRoomFullOfWomenTrainingLike": "أوضة مليانة ستات بيتمرّنوا زيّك",
-  "aSelfieIsMatchedToThePhoto": "تُطابَق الصورة الذاتية مع صورة البطاقة، فقط للتأكّد من أن البطاقة لك.",
+  "aSelfieIsMatchedToThePhoto": "الصورة الذاتية بتتقارن بصورة البطاقة، عشان نتأكد بس إن البطاقة بتاعتك.",
   "aShortVideoCheck": "تحقق قصير بالفيديو",
   "aSimpleOptionForALowEnergy": "اختيار بسيط ليوم طاقتك فيه قليلة.",
   "aWeeklyCheckInSheAnswersBy": "متابعة أسبوعية بتردّ عليها بالصوت",
@@ -452,7 +452,7 @@
   "both": "الاتنين",
   "bothImagesAreDeletedAfterTheCheck": "الصورتين بيتمسحوا بعد التحقق. بنحتفظ بالنتيجة بس، ومفيش حاجة غيرها.",
   "boxSquatToAChair": "سكوات على كرسي",
-  "boxSquatToAChairApprovedSubstitution": "سكوات على كرسي · بديل معتمَد",
+  "boxSquatToAChairApprovedSubstitution": "سكوات على كرسي · بديل متوافق عليه",
   "breakOneAndYouLoseYourPlace": "لو خالفتي واحدة منهم، هتخسري مكانك. وتقدري تقريهم تاني في أي وقت.",
   "breakfast22GProtein4AWeek": "الفطار · 22 جم بروتين · 4 مرات في الأسبوع",
   "browseMessageWhenYouAreVerified": "اتفرّجي، وراسلي بعد ما نتأكد منك",
@@ -481,7 +481,7 @@
   "cheap": "اقتصادي",
   "checkIn1Of3SessionsSecond": "متابعة · 1 من 3 تمارين · تاني أسبوع هادي",
   "checkIns": "المتابعات",
-  "checkedByAWomanNoPhotoKept": "تراجعها امرأة، ولا تُحفظ أي صورة",
+  "checkedByAWomanNoPhotoKept": "بتراجعها ست، ومفيش صورة بتتحفظ",
   "checking": "بنراجعها",
   "checkingYourCard": "بنراجع بطاقتك",
   "chestUpWeightHeldAtYourChest": "صدرك لفوق، والوزن ماسكاه عند صدرك",
@@ -496,10 +496,10 @@
   "coachReplied": "المدرّبة ردّت",
   "coachApprovedNothingStanding": "بموافقة المدرّبة · من غير وقوف",
   "coachApprovedSameMusclesLessDepth": "بموافقة المدرّبة · نفس العضلات، بعمق أقل",
-  "coachesHaveProfilesForThat": "للمدرِّبات ملفات مخصّصة لذلك.",
+  "coachesHaveProfilesForThat": "المدرّبات ليهم ملفات مخصوصة لده.",
   "coachesWhoGetIt": "مدرّبات فاهمينك",
   "completeSet2": "خلّصي المجموعة 2",
-  "completed": "مكتملة",
+  "completed": "خلصت",
   "continue1800Egp": "كمّلي · 1,800 جنيه",
   "continueFromSara": "كمّلي · من سارة",
   "iCookedItAndAteABowl": "طبختها وأكلت طبق",
@@ -552,7 +552,7 @@
   "dumbbells3Kg": "دمبل 3 كجم",
   "earned": "اتحقّقت",
   "earningsThisMonth": "أرباح الشهر ده",
-  "edit": "تعديل",
+  "edit": "عدّلي",
   "editingHereNeverChangesTheLibraryWorkout": "التعديل هنا عمره ما بيغيّر التمرين اللي في المكتبة، بيغيّر بس اللي متحدّد لنور.",
   "eggs20": "بيض 20",
   "egpAMonth": "جنيه في الشهر",
@@ -656,9 +656,9 @@
   "howManageableWasYourPlan": "خطتك كانت مناسبة قد إيه؟",
   "howManyClientsCanYouTake": "تقدري تاخدي كام عميلة؟",
   "howMuchTimeDoYouReallyHave": "عندك وقت قد إيه فعلًا؟",
-  "howWeTreatEachOther": "كيف نعامل بعضنا",
+  "howWeTreatEachOther": "إزاي بنعامل بعض",
   "howWouldYouLikeToPay": "تحبي تدفعي إزاي؟",
-  "iAgreeLetMeIn": "أوافق، لنبدأ",
+  "iAgreeLetMeIn": "موافقة، يلا نبدأ",
   "iAlreadyHaveAnAccount": "عندي حساب أصلًا",
   "iCoachWomen": "أنا بدرّب ستات",
   "iCouldNotTrainThisWeekWork": "ماقدرتش أتمرّن الأسبوع ده، الشغل كان مستحيل.",
@@ -666,7 +666,7 @@
   "iDontKnow": "مش عارفة",
   "iTakeWomenBackToLiftingAfter": "برجّع الستات لرفع الأوزان بعد الولادة.",
   "iTakeWomenFromSixWeeksAfter": "برجّع الستات لرفع الأوزان بالراحة، من بعد الولادة بستة أسابيع. وأغلب عميلاتي بيتمرّنوا في البيت بدمبلين و20 دقيقة.",
-  "iWearNiqabCheckMeAnotherWay": "أرتدي النقاب، تحقّقوا مني بطريقة أخرى",
+  "iWearNiqabCheckMeAnotherWay": "أنا لابسة نقاب، عايزة أتحقق بطريقة تانية",
   "imACoachSetUpMyProfile": "أنا مدرّبة، عايزة أجهّز ملفي",
   "imHereToTrain": "أنا هنا عشان أتمرّن",
   "idCheckedWomenOnlyReviewedByWomen": "البطاقة اتراجعت، ستات بس، والمراجعة من ستات",
@@ -786,14 +786,14 @@
   "noJumping": "من غير نط",
   "noJumpingNoEquipmentTenMinutesCounts": "من غير نط ولا أدوات، وعشر دقايق بتتحسب. جيرانك عمرهم ما هيعرفوا.",
   "noNutsVegetarianOnWeekdays": "من غير مكسرات. نباتي في أيام الشغل.",
-  "noScreenshotsNoSharingAnyoneElseOutside": "لا لقطات شاشة، ولا نشر لأي امرأة أخرى في الخارج.",
+  "noScreenshotsNoSharingAnyoneElseOutside": "مفيش لقطات شاشة، ومفيش نشر لأي ست تانية برّه.",
   "noStandingNothingToHold": "من غير وقوف، ومفيش حاجة تمسكيها",
   "nobodyHereHasBeenTrainingMoreThan": "مفيش حد هنا بقاله أكتر من سنة بيتمرّن.",
   "nobodySeesThisNotTheCommunityNot": "محدّش بيشوف ده. لا المجتمع ولا مدرّبتك، إلا لو بعتيه إنتِ.",
   "none": "مفيش",
   "noneOfThese": "ولا واحدة من دول",
   "notAFitForMe": "مش مناسبة ليّا",
-  "notEvenAComplimentTalkAboutThe": "ولا حتى مجاملة. تحدّثي عن العمل نفسه بدلًا من ذلك.",
+  "notEvenAComplimentTalkAboutThe": "ولا حتى مجاملة. اتكلمي عن المجهود نفسه بدل كده.",
   "notFeelingItToday": "مالكيش مزاج النهارده؟",
   "notNow": "مش دلوقتي",
   "notShared": "مش متشاركة",
@@ -823,7 +823,7 @@
   "onTrackFinishedHerProgram": "ماشية تمام · خلّصت برنامجها",
   "onTrackWeek4Of8": "ماشية تمام · الأسبوع 4 من 8",
   "oneADayQuiet10pmTo8am": "مرة في اليوم، وهدوء من 10 بالليل لـ 8 الصبح",
-  "oneCheckThenYouAreIn": "تحقّق واحد، ثم تدخلين",
+  "oneCheckThenYouAreIn": "تحقّق واحد وتدخلي",
   "oneLegAtATimeHoldsThe": "رجل واحدة في المرة، وإنتِ شايلة الوزن",
   "oneLineAboutYou": "سطر واحد عنك",
   "oneMinuteItIsFilledInFrom": "دقيقة واحدة · بتتعبّى من اللي ضفتيه",
@@ -835,7 +835,7 @@
   "oneShortSheetItDoesNotMean": "ورقة قصيرة واحدة. ومش معناها ردّ كل يوم.",
   "onions1Kg": "بصل 1 كجم",
   "onlyIfYouWantEstimatesLater": "بس لو عايزة تقديرات بعدين",
-  "onlyWomenReviewTheseChecksNoMan": "لا يراجع هذه الفحوص إلا النساء. ولا يرى أي رجل وجهك ولا بطاقتك ولا اسمك أبدًا.",
+  "onlyWomenReviewTheseChecksNoMan": "الستات بس هما اللي بيراجعوا الفحوصات دي. ومفيش راجل بيشوف وشّك ولا بطاقتك ولا اسمك أبدًا.",
   "onlyYouAndYourCoachEverSee": "محدّش بيشوف ده غيرك إنتِ ومدرّبتك.",
   "open": "افتحي",
   "openAsAnEditableDraftNothingIs": "بتتفتح كمسودة تقدري تعدّليها. مفيش حاجة بتتبعت لوحدها كتقييم شخصي.",
@@ -851,7 +851,7 @@
   "packages": "الاشتراكات",
   "paidOutOnThe1stOfEach": "بيتحوّل يوم 1 من كل شهر.",
   "pasta500G": "مكرونة 500 جم",
-  "pause": "إيقاف مؤقت",
+  "pause": "وقّفي",
   "pay": "ادفعي",
   "pay1800Egp": "ادفعي 1,800 جنيه",
   "payWithACodeAtAnyFawry": "ادفعي بكود من أي منفذ فوري",
@@ -883,8 +883,8 @@
   "pregnant": "حامل",
   "pregnantOrPostpartum": "حامل أو بعد الولادة",
   "prepTime": "وقت التحضير",
-  "preparing": "جاري التجهيز",
-  "preview": "معاينة",
+  "preparing": "بنجهّز",
+  "preview": "عايني",
   "previewHerDay": "عايني يومها",
   "price": "السعر",
   "priceAMonth": "السعر في الشهر",
@@ -911,7 +911,7 @@
   "readableNoNewAssignments": "للقراءة · مفيش تكليفات جديدة",
   "rebuiltAroundThePelvicFloorFirstCleared": "متبني على قاع الحوض الأول. ومسموح بيه بعد الولادة من الأسبوع السادس، بموافقة دكتورتك.",
   "recent": "الأخيرة",
-  "recording": "جاري التسجيل…",
+  "recording": "بنسجّل…",
   "registeredDietitianAndCoachPostpartumStrength": "أخصائية تغذية مسجّلة ومدرّبة · القوة بعد الولادة",
   "regular": "منتظمة",
   "regularAsksForFourOfYourLast": "«منتظمة» محتاجة أربعة من آخر تمن أسابيع، واتحسب منهم تلاتة. أسبوع محسوب كمان يرجّعها.",
@@ -960,7 +960,7 @@
   "saySomethingKind": "قولي كلمة حلوة",
   "scanMyId": "صوّري بطاقتك",
   "schedule": "المواعيد",
-  "search": "بحث",
+  "search": "دوّري",
   "search124Moves": "دوّري في 124 حركة",
   "search124Workouts": "دوّري في 124 تمرين",
   "secondQuietWeekHerRestWeekIs": "تاني أسبوع هادي. وأسبوع الراحة بتاعها استخدمته خلاص.",
@@ -976,7 +976,7 @@
   "selectAppMeal": "اختاري وجبة من التطبيق",
   "selfieMatchedToTheCard": "السيلفي اتطابقت مع البطاقة",
   "send": "ابعتي",
-  "sendItAgain": "ابعتوا الكود تاني",
+  "sendItAgain": "اطلبي الكود تاني",
   "sendMeACode": "ابعتولي كود",
   "sendReplyAndPlanChange": "ابعتي الرد وتعديل الخطة",
   "sendThisWeekToMai": "ابعتي الأسبوع ده لمي",
@@ -1018,7 +1018,7 @@
   "shareCycleInformationWithSara": "شاركي معلومات الدورة مع سارة",
   "shareFormVideo": "شاركي فيديو الأداء",
   "shareTheSquatWithYourGroup": "شاركي رقم السكوات مع مجموعتك",
-  "shareWithMyCoach": "المشاركة مع مدرّبتي",
+  "shareWithMyCoach": "شاركي مع مدرّبتي",
   "shared": "متشارك",
   "sharedByNour": "نور شاركتها",
   "sharedWellbeing": "بيانات حالتك المتشاركة",
@@ -1028,10 +1028,10 @@
   "sheDisappearsFromYourFeedAndCannot": "هتختفي من صفحتك ومش هتقدر تبعتلك رسايل",
   "sheHasYourIntakeMostPlansArrive": "عندها بياناتك. أغلب الخطط بتوصل خلال يوم عمل.",
   "shortOnesThatStillCount": "تمارين قصيرة وبتتحسب برضه",
-  "showMealSuggestions": "عرض اقتراحات الوجبات",
-  "showMyPersonalBests": "اعرضي أحسن أرقامي",
+  "showMealSuggestions": "وريني اقتراحات الوجبات",
+  "showMyPersonalBests": "وريني أحسن أرقامي",
   "showUsYourCertificates": "ورّينا شهاداتك",
-  "showWorkoutSuggestions": "عرض اقتراحات التمارين",
+  "showWorkoutSuggestions": "وريني اقتراحات التمارين",
   "showingUp": "مواظبة",
   "skipSetup": "تخطّي الإعداد",
   "skipThisExercise": "تخطّي الحركة دي",
@@ -1112,7 +1112,7 @@
   "thisWeek1Of3": "الأسبوع ده، 1 من 3",
   "thisWeeksPlanAndList": "خطة الأسبوع والقائمة",
   "threeDaysAWeek15MinutesAt": "تلات أيام في الأسبوع، 15 دقيقة، في البيت",
-  "threeRulesTheyAreTheWholeReason": "ثلاث قواعد. وهي السبب كله في نجاح هذا المكان.",
+  "threeRulesTheyAreTheWholeReason": "تلات قواعد. وهي السبب كله في إن المكان ده شغّال.",
   "thu18": "الخميس 18",
   "thursday": "الخميس",
   "thursdayFullBodyStrength": "الخميس · قوة للجسم كله",
@@ -1192,7 +1192,7 @@
   "weJustNeedYourNumberAndA": "محتاجين بس رقمك وتحقق سريع إنك ست. بياخد حوالي دقيقتين، مرة واحدة.",
   "weKeepTheCommunityForVerifiedWomen": "المجتمع ده للستات الموثّقات بس. انضمّي وهتشوفيه كله.",
   "weNeverShowYourWalletNumberOr": "عمرنا ما بنعرض رقم محفظتك ولا عنوانك للعميلات.",
-  "weReadYourNationalIdCardThe": "نقرأ بطاقتك الشخصية. فالبطاقة نفسها تُثبت أنك امرأة، ولا نخمّن من وجهك أبدًا.",
+  "weReadYourNationalIdCardThe": "بنقرا بطاقتك الشخصية. والبطاقة نفسها بتثبت إنك ست، ومابنخمّنش من وشّك أبدًا.",
   "weSentSixDigitsToPhone": "بعتنا ستة أرقام على {phone}.",
   "@weSentSixDigitsToPhone": {
     "description": "C07. Her number, so a mistyped one is obvious before she waits.",
@@ -1393,7 +1393,7 @@
   "backToEditing": "ارجعي للتعديل",
   "badgeMostPicked": "شارة: الأكتر اختيارًا",
   "beginnersGroupJustNow": "مجموعة المبتدئات · دلوقتي",
-  "blur": "تمويه",
+  "blur": "موّهي",
   "blurAnyClientWhoIsInShot": "موّهي أي عميلة ظاهرة في الكادر",
   "calmAndPlain": "هادي وبسيط",
   "carriedBothKidsUpTheStairs24": "شالت ولادها الاتنين وطلعت السلم. 24 تمرين، ومحدش اتكلم عن الوزن ولا مرة.",
@@ -1405,7 +1405,7 @@
   "contrastIsCheckedForYou": "بنتأكد من التباين عشانك",
   "corners": "الزوايا",
   "coverPhoto": "صورة الغلاف",
-  "create": "إنشاء",
+  "create": "اعملي",
   "darkenThePhoto": "غمّقي الصورة",
   "designIt": "صمّميها",
   "designYourPage": "صمّمي صفحتك",
@@ -1506,7 +1506,7 @@
   "verifiedWomanJoinedMarchShowingUp": "ست موثّقة · انضمّت في مارس · مواظِبة",
   "version3IsKept": "النسخة 3 بتفضل محفوظة",
   "views": "مشاهدة",
-  "viewsProfileEnquiries": "المشاهدات ثم الصفحة ثم الطلبات",
+  "viewsProfileEnquiries": "المشاهدات، وبعدين الصفحة، وبعدين الطلبات",
   "voice": "صوت",
   "walkBeforeTheSchoolRun": "مشي قبل مشوار المدرسة",
   "weAskHerShePicksThePictures": "بنسألها، وهي اللي بتختار الصور، وتقدر تسحب موافقتها بعدين.",
@@ -1533,9 +1533,9 @@
   "yourPriceChangeAppliesToNewClients": "تغيير السعر بيسري على العميلات الجداد بس. وكل واحدة معاكي دلوقتي بتفضل على اللي اتفقت عليه.",
   "atIntake": "في التقييم الأول",
   "n15Min5MovesQuietNoEquipment": "15 دقيقة · 5 حركات · هادية، من غير أدوات، وأوزان الأسبوع اللي فات",
-  "modify": "تعديل",
+  "modify": "عدّلي",
   "pass": "سليم",
-  "refer": "تحويل",
+  "refer": "حوّلي",
   "buildASplit": "اعملي تقسيمة",
   "clientsAtOnce": "عدد العميلات في نفس الوقت",
   "egyptianDishesWithPortionsAndCostPer": "أكلات مصرية بالحصص وتكلفة الحصة الواحدة",
@@ -1750,7 +1750,7 @@
   "askSaraInstead": "اسألي سارة بدل كده",
   "askSomething": "اسألي أي حاجة",
   "askOrHoldToTalk": "اسألي، أو دوسي مطوّل واتكلمي",
-  "back": "رجوع",
+  "back": "ارجعي",
   "beginnersPostpartumOrYourCity": "مبتدئات، بعد الولادة، أو مدينتك",
   "bleedingBetweenPeriodsWithSharpPainShould": "النزيف بين الدورات مع ألم حاد لازم دكتورة تشوفه.",
   "certificatesClearedThisMorning": "الشهادات اتقبلت النهارده الصبح",
@@ -1814,7 +1814,7 @@
   "shePaysOnlyOnceYouAccept": "مش هتدفع غير لما تقبليها",
   "someQuestionsItWillNotAnswerAnd": "فيه أسئلة مش هيجاوب عليها، وماينفعش يجاوب",
   "split": "التقسيمة",
-  "swapTodaysExerciseForAnApprovedAlternative": "يغيّر حركة النهارده ببديل معتمَد",
+  "swapTodaysExerciseForAnApprovedAlternative": "يغيّر حركة النهارده ببديل متوافق عليه",
   "swappingChangesTodayOnlyYourPlanFrom": "التبديل بيغيّر النهارده بس. وخطتك من سارة زي ما هي.",
   "tellYouThePortionOfADish": "يقولّك حصة طبق بتاكليه أصلًا",
   "theSamePointsTheRestOfThe": "نفس النقاط اللي باقي التطبيق بيديها. مفيش حاجة زيادة عشان فتحتيه.",
@@ -1865,7 +1865,6 @@
   "youCanKeepGoingItSendsItself": "تقدري تكمّلي. هيتبعت لوحده بعدين.",
   "walkThisMorning32Min": "مشي النهارده الصبح · 32 دقيقة",
   "n20MinVegetarian": "20 دقيقة · نباتي",
-  "arabicText_vqu26": "الفصحى · كل شيء في التطبيق",
   "iTrainAndICoach": "بتمرّن وبدرّب",
   "twoAppsInOneSwitchBetweenThem": "تطبيقين في واحد. بدّلي بينهم وقت ما تحبي.",
   "youCanChangeThisLaterInYour": "تقدري تغيّري ده بعدين من ملفك.",
@@ -2174,7 +2173,7 @@
     }
   },
   "importEverything_damon": "نستورد كل حاجة؟",
-  "backToTheFile": "رجوع للملف",
+  "backToTheFile": "ارجعي للملف",
   "noExercisesYet": "لسه مفيش حركات",
   "noFoodsYet": "لسه مفيش أكلات",
   "noRecipesYet": "لسه مفيش وصفات",
@@ -2334,7 +2333,7 @@
   "sheIsNotTakingClientsRightNow": "مش بتاخد عميلات دلوقتي",
   "preparingYourPayment": "بنجهّز عملية الدفع",
   "paid": "اتدفع",
-  "sort": "ترتيب",
+  "sort": "رتّبي",
   "bestMatch": "الأنسب",
   "repliesFastest": "أسرع واحدة بتردّ",
   "priceLowToHigh": "السعر: من الأرخص للأغلى",
@@ -2696,7 +2695,7 @@
   "noRecipeCarriesARamadanTagYet": "لسه مفيش وصفة عليها وسم رمضان.",
   "removedFromSaved": "اتشالت من المحفوظات",
   "weDoNotKnowWhatYouAvoid": "لسه مانعرفش إنتِ بتتجنّبي إيه، فمش هينفع نضيف أي حاجة.",
-  "endThisCoachingNowTest": "أنهي التدريب ده دلوقتي (اختبار)",
+  "endThisCoachingNowTest": "خلّصي التدريب ده دلوقتي (اختبار)",
   "thisDishIsNotInTheFood": "الطبق ده لسه مش في قائمة الأكلات، فماينفعش يتضاف من هنا.",
   "rose": "وردي",
   "sage": "زيتوني",
@@ -2824,13 +2823,13 @@
   "underReview": "تحت المراجعة",
   "verificationUnsuccessful": "التحقق مانجحش",
   "pleaseRetakeThePhoto": "لو سمحتي صوّري تاني",
-  "beforeTheCameraOpens": "قبل أن تفتح الكاميرا",
-  "youWillPhotographTheFrontAndBack": "ستصوّرين الوجه الأمامي والخلفي لبطاقتك الشخصية، ثم تلتقطين صورة ذاتية قصيرة.",
+  "beforeTheCameraOpens": "قبل ما الكاميرا تفتح",
+  "youWillPhotographTheFrontAndBack": "هتصوّري وش بطاقتك الشخصية وضهرها، وبعدين تاخدي سيلفي قصيرة.",
   "thePhotographsAreProcessedByGoogleCloud": "الصور بتتعالج عند Google Cloud وAmazon Web Services، على سيرفرات برّه مصر.",
   "ifYourCheckIsApprovedOrRefused": "سواء التحقق اتقبل أو اترفض، مش بنحتفظ بأي حاجة غير بصمة مشفّرة بمفتاح، في اتجاه واحد، لرقم بطاقتك. ومينفعش تتحوّل تاني للرقم.",
-  "theCameraIsTheOnlyWayIn": "الكاميرا هي الطريقة الوحيدة. لا يمكنك اختيار صورة محفوظة لديك.",
-  "iAgreeStartTheCamera": "أوافق وأبدأ التصوير",
-  "iWouldRatherNot": "أفضّل ألا أفعل",
+  "theCameraIsTheOnlyWayIn": "الكاميرا هي الطريقة الوحيدة. مش هينفع تختاري صورة متخزّنة عندك.",
+  "iAgreeStartTheCamera": "موافقة، يلا نشغّل الكاميرا",
+  "iWouldRatherNot": "مش عايزة",
   "weCannotRunThisStepOnYour": "مانقدرش نعمل الخطوة دي على موبايلك دلوقتي. ممكن واحدة ست تراجع بطاقتك بدل كده.",
   "stepStepOfTotal": "الخطوة {step} من {total}",
   "@stepStepOfTotal": {
@@ -3084,23 +3083,23 @@
   "nobodyHasSignedOffWhatIsIn_127cj": "لسه محدش اعتمد مكوّنات الأطباق دي، فمفيش ولا واحد منها ظاهر. دي مراجعتنا إحنا، مش قائمتك.",
   "nothingIsPlannedForThisWeekYet": "لسه مفيش حاجة متخطّطة للأسبوع ده. اختاري عشا لأي يوم تحت.",
   "lookingForWhatYouHaveAdded": "بندوّر على اللي ضفتيه.",
-  "weCouldNotSaveYourAgreementSo": "تعذّر حفظ موافقتكِ، لذلك لم تُفتح الكاميرا. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
+  "weCouldNotSaveYourAgreementSo": "ماقدرناش نحفظ موافقتك، فالكاميرا ماتفتحتش. اتأكدي من النت وجرّبي تاني.",
   "backUpMyHealthData": "نسخة احتياطية من بياناتي الصحية",
   "offYourCycleCheckInsMeasurementsLife": "مقفول. دورتك وتسجيلاتك اليومية وقياساتك ومرحلتك الحياتية والحساسية عندك بيفضلوا على الموبايل ده بس.",
   "onACopyIsKeptInYour": "شغّال. فيه نسخة محفوظة في حسابك على Own Hub، متخزّنة في ألمانيا.",
   "backUpYourHealthData": "تعملي نسخة احتياطية من بياناتك الصحية؟",
   "ifYouTurnThisOnACopy": "لو شغّلتيه، بتتحفظ في حسابك على Own Hub نسخة من تواريخ دورتك وأيام نزولها، وتسجيلاتك اليومية، وقياسات جسمك ومنها الوزن، ومرحلة الحمل أو ما بعد الولادة أو الإصابة، والحساسية عندك، عشان ترجعلك لو غيّرتي موبايلك.",
   "theCopyIsStoredOnGoogleCloud": "النسخة دي متخزّنة على Google Cloud في فرانكفورت في ألمانيا، يعني برّه مصر. ورقم الموبايل اللي بتسجّلي بيه بتحتفظ بيه خدمة Firebase Authentication، وممكن تخزّنه في الولايات المتحدة.",
-  "thisIsHealthDataSoWeOnly": "هذه بيانات صحية، لذلك لا ننسخها إلا بموافقتكِ الصريحة. يمكنكِ إيقاف هذا الخيار في أي وقت، وإيقافه يحذف النسخة من حسابكِ.",
+  "thisIsHealthDataSoWeOnly": "دي بيانات صحية، فمش بننسخها غير بموافقتك الصريحة. تقدري توقّفي الخيار ده في أي وقت، وإيقافه بيمسح النسخة من حسابك.",
   "ifYouDoNotTurnItOn": "لو ماشغّلتيهوش، مفيش حاجة تانية هتتغيّر. بياناتك الصحية هتفضل على الموبايل ده بس.",
-  "iAgreeBackUpMyHealthData": "أوافق، انسخوا بياناتي الصحية احتياطيًا",
+  "iAgreeBackUpMyHealthData": "موافقة، عايزة نسخة احتياطية لبياناتي الصحية",
   "weCouldNotReachOwnHubSo": "ماقدرناش نوصل لـ Own Hub، فالنسخة الاحتياطية الصحية ماتغيّرتش. اتأكدي من النت وجرّبي تاني.",
   "checkedByOwnHubsOwnSystemYour": "التحقق بيتم بنظام Own Hub الخاص. صور بطاقتك والسيلفي مش بتتحفظ أبدًا. اضغطي عشان تعرفي بالظبط إيه اللي بيتحفظ.",
   "ifYouDoNotShowYourFace": "لو مابتظهريش وشّك قدام الكاميرا، مفيش حاجة هنا هتطلب منك كده. مراجِعة ست من Own Hub هتتصل بيكي عشان تحدّد مكالمة فيديو قصيرة، وهتتحقق معاكي من بطاقتك في المكالمة دي.",
   "askForAVideoCheck": "اطلبي تحقق بالفيديو",
-  "theAutomaticCheckCouldNotStartJust": "تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تعودي وتحاولي مرة أخرى.",
-  "weCouldNotReachOwnHubSo_3usbb": "تعذّر الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار بعد. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
-  "youHaveAskedForAReviewerToo": "لقد طلبتِ مراجِعة مرات كثيرة اليوم. يُرجى المحاولة مرة أخرى غدًا.",
+  "theAutomaticCheckCouldNotStartJust": "ماقدرناش نبدأ التحقق التلقائي دلوقتي. تقدري تطلبي مراجِعة ست بدل كده، أو ترجعي وتجرّبي تاني.",
+  "weCouldNotReachOwnHubSo_3usbb": "ماقدرناش نوصل لـ Own Hub، فإنتِ لسه مادخلتيش قائمة الانتظار. اتأكدي من النت وجرّبي تاني.",
+  "youHaveAskedForAReviewerToo": "طلبتي مراجِعة مرات كتير النهارده. جرّبي تاني بكرة.",
   "aWomanReviewerFromOwnHubWill": "مراجِعة ست من Own Hub هتتصل بيكي عشان تحدّد مكالمة فيديو قصيرة. مش بنبعت رسايل نصية عن الموضوع ده.",
   "yourVideoCallIsBookedForTime": "مكالمة الفيديو بتاعتك محجوزة {time}.",
   "@yourVideoCallIsBookedForTime": {
@@ -3129,7 +3128,7 @@
   "yourPhoneNumberIsUsedOnlyTo": "رقم موبايلك بيتستخدم بس عشان نرتّب المكالمة دي.",
   "thisCopyOfTheAppCannotReach": "النسخة دي من التطبيق مش قادرة توصل لـ Own Hub",
   "pleaseInstallTheLatestVersionFromThe": "من فضلك نزّلي أحدث إصدار من App Store أو Google Play، وبعدين جرّبي تاني. مفيش أي قرار اتاخد.",
-  "thisCopyOfTheAppCannotReach_agbhf": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
+  "thisCopyOfTheAppCannotReach_agbhf": "النسخة دي من التطبيق مش قادرة توصل لـ Own Hub، فإنتِ مش في قائمة الانتظار. نزّلي آخر إصدار من App Store أو Google Play.",
   "deletingYourAccountRemovesItFromOur": "حذف حسابك بيشيله من سيرفراتنا وبيمسح الموبايل ده. وبنحتفظ بتلات حاجات: سجل مقفول إن بطاقتك اتستخدمت، عشان مايتفتحش بيها حساب تاني، والبلاغات بعد ما نشيل اسمك منها، وسجل إن الحذف حصل.",
   "youHaveNoAccountOnThisPhone": "معندكيش حساب على الموبايل ده، فكل حاجة متخزّنة هنا، والحذف بيمسحها.",
   "deletingYourAccountThisCanTakeA": "بنحذف حسابك. ده ممكن ياخد دقيقة.",
@@ -3141,7 +3140,7 @@
   "yourCheckIsDone": "التحقق خلص",
   "youAreVerifiedOpenOwnHubTo": "اتأكدنا من حسابك. افتحي Own Hub عشان تكمّلي.",
   "openOwnHub": "افتحي Own Hub",
-  "thisCopyOfTheAppCannotReach_1dlg6": "لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُحفظ موافقتكِ ولم تُفتح الكاميرا. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.",
+  "thisCopyOfTheAppCannotReach_1dlg6": "النسخة دي من التطبيق مش قادرة توصل لـ Own Hub، فموافقتك ماتحفظتش والكاميرا ماتفتحتش. نزّلي آخر إصدار من App Store أو Google Play.",
   "thisCopyOfTheAppCannotReach_mr83s": "النسخة دي من التطبيق مش قادرة توصل لـ Own Hub، فالنسخة الاحتياطية الصحية ماتغيّرتش. من فضلك نزّلي آخر إصدار من App Store أو Google Play.",
   "youCanAlsoDeleteYourAccountOn": "وتقدري كمان تحذفي حسابك من موقعنا: {url}",
   "@youCanAlsoDeleteYourAccountOn": {
@@ -3159,8 +3158,8 @@
   "pleaseSignInAgain": "من فضلك سجّلي دخول تاني",
   "signInAgain": "سجّلي الدخول مرة أخرى",
   "yourSignInIsNoLongerValid": "تسجيل دخولك مابقاش صالح، فمفيش أي قرار اتاخد. سجّلي دخول تاني برقم موبايلك، وبعدين كمّلي التحقق.",
-  "yourSignInIsNoLongerValid_1cfl5": "لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُحفظ موافقتكِ ولم تُفتح الكاميرا. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.",
-  "yourSignInIsNoLongerValid_1y16r": "لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.",
+  "yourSignInIsNoLongerValid_1cfl5": "تسجيل دخولك مابقاش صالح، فموافقتك ماتحفظتش والكاميرا ماتفتحتش. سجّلي دخولك تاني برقم موبايلك.",
+  "yourSignInIsNoLongerValid_1y16r": "تسجيل دخولك مابقاش صالح، فإنتِ مش في قائمة الانتظار. سجّلي دخولك تاني برقم موبايلك.",
   "yourSignInIsNoLongerValid_1ccq0": "تسجيل دخولك مابقاش صالح، فالنسخة الاحتياطية الصحية ماتغيّرتش. من فضلك سجّلي دخولك تاني برقم موبايلك.",
   "yourSignInIsNoLongerValid_1g4zq": "تسجيل دخولك مابقاش صالح، فمااتحذفش أي حاجة. من فضلك سجّلي دخولك من جديد برقم موبايلك وجرّبي تاني.",
   "healthBackupIsOffOnThisPhone_1x622": "النسخة الاحتياطية الصحية مقفولة على الموبايل ده، فمفيش حاجة تانية هتترفع. النسخة دي من التطبيق مش قادرة توصل لـ Own Hub، فالنسخة اللي في حسابك لسه مااتمسحتش. من فضلك نزّلي آخر إصدار من App Store أو Google Play.",
@@ -3174,9 +3173,9 @@
   "workoutsRecipesAndYourProgressFree": "تمارين ووصفات وتقدّمك. ببلاش.",
   "thisIsWhatKeepsOwnHubWomen": "ده اللي بيخلّي Own Hub للستات بس: كل ست بنتأكد منها قبل ما تدخل.",
   "yourNumberYourIdYourMealsAnd_1ix08": "رقمك وبطاقتك ووجباتك وتمارينك بتفضل خاصة بيكي.",
-  "ownHubIsForTrainingNotFor": "Own Hub للتدريب، لا للبيع.",
+  "ownHubIsForTrainingNotFor": "Own Hub للتدريب، مش للبيع.",
   "yourTrainingYourFoodYourCycleWomen": "تمرينك، وأكلك، ودورتك. للستات بس.",
-  "setUpMyWeek": "تجهيز أسبوعي",
+  "setUpMyWeek": "جهّزي أسبوعي",
   "n1Of3YourWeek": "1 من 3 · أسبوعك",
   "n2Of3YourNumber": "2 من 3 · رقمك",
   "n3Of3QuickCheck": "3 من 3 · تحقق سريع",
@@ -3198,7 +3197,7 @@
   "ownHubNeedsTheCameraToRead": "Own Hub محتاج الكاميرا عشان يقرا بطاقتك. تقدري تفتحيها من الإعدادات، أو ممكن ست من Own Hub تتحقق منك بطريقة تانية.",
   "ownHubNeedsTheCameraForA": "Own Hub محتاج الكاميرا عشان سيلفي قصيرة. تقدري تفتحيها من الإعدادات، أو ممكن ست من Own Hub تتحقق منك بطريقة تانية.",
   "theCameraCouldNotStartThisIs": "الكاميرا ماشتغلتش، والمشكلة مش منك. جرّبي تاني، أو ممكن ست من Own Hub تتحقق منك بطريقة تانية.",
-  "checkMeAnotherWay": "تحقّق بطريقة تانية",
+  "checkMeAnotherWay": "عايزة أتحقق بطريقة تانية",
   "noConnectionYourPhotosAreStillHere": "مفيش نت. صورك لسه هنا، جرّبي تاني.",
   "bothSidesOfYourCardTaken": "اتصوّرت بطاقتك من الناحيتين",
   "selfieTaken": "السيلفي اتاخدت",
@@ -3244,7 +3243,7 @@
   "sampleNothingIsSaved": "مثال · مفيش حاجة بتتحفظ",
   "joinOwnHub": "انضمّي لـ Own Hub",
   "leaveTheTour": "اخرجي من الجولة",
-  "backToMyCheck": "رجوع للتحقق",
+  "backToMyCheck": "ارجعي للتحقق",
   "joinToMakeThisYours": "انضمّي عشان يبقى بتاعك",
   "keepLooking": "كمّلي التصفّح",
   "showMeAround": "خديني في جولة",
@@ -3253,34 +3252,34 @@
   "firstYourWeekThenYourNumberAnd": "الأول أسبوعك، بعدين رقمك وتحقق سريع إنك ست. حوالي دقيقتين، مرة واحدة بس.",
   "homeCookingYouAlreadyKnowWrittenBy_7q8w1": "أكل بيتي إنتِ عارفاه، من كتابة المدرّبة رحمة محسن. الوصفات بتتفتح مع حسابك.",
   "toSendYourCodeYourNumberGoes": "عشان نبعتلك الكود، رقمك بيروح لـ Google Firebase في الولايات المتحدة. وحسابك وبيانات تمرينك بتتحفظ عند Google Cloud في فرانكفورت بألمانيا.",
-  "sendCrashReports": "إرسال تقارير الأعطال",
+  "sendCrashReports": "ابعتي تقارير الأعطال",
   "optionalHelpsUsFixTheAppNo": "اختياري. بيساعدنا نصلّح التطبيق. مش بيترفق بيه اسم ولا رقم ولا حساب. تقدري تغيّري ده من «الخصوصية».",
-  "agreeAndSendMeACode": "الموافقة وإرسال الرمز",
-  "byTappingAgreeAndSendMeA": "بالضغط على «الموافقة وإرسال الرمز» تقبلين شروط الاستخدام وسياسة الخصوصية.",
+  "agreeAndSendMeACode": "موافقة وعايزة الكود",
+  "byTappingAgreeAndSendMeA": "لما تضغطي على «موافقة وعايزة الكود»، بتقبلي شروط الاستخدام وسياسة الخصوصية.",
   "weHaveUpdatedOurTermsAndPrivacy": "حدّثنا شروط الاستخدام وسياسة الخصوصية",
-  "pleaseReadWhatChangedToKeepUsing": "يُرجى قراءة ما تغيّر. ولمواصلة استخدام Own Hub، وافقي على الإصدارين الجديدين.",
-  "yourAgreementIsNowRecordedWhenYou": "يُسجَّل قبولكِ الآن عند التسجيل، مع اللغة وإصدار التطبيق.",
-  "crashReportsAreSentOnlyIfYou": "لا تُرسل تقارير الأعطال إلا إذا سمحتِ بها، وتبقى متوقفة حتى تفعلي.",
-  "youCanAskForACopyOf": "يمكنكِ طلب نسخة من بياناتكِ، وتبيّن السياسة مدة الاحتفاظ بكل نوع منها.",
-  "agreeAndContinue": "أوافق وأتابع",
-  "deleteMyAccountInstead": "أفضّل حذف حسابي",
-  "weCouldNotSaveYourAgreementCheck": "تعذّر حفظ موافقتكِ. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.",
+  "pleaseReadWhatChangedToKeepUsing": "اقري اللي اتغيّر. وعشان تكمّلي في استخدام Own Hub، وافقي على الإصدارين الجديدين.",
+  "yourAgreementIsNowRecordedWhenYou": "موافقتك دلوقتي بتتسجّل وقت التسجيل، مع اللغة وإصدار التطبيق.",
+  "crashReportsAreSentOnlyIfYou": "تقارير الأعطال مابتتبعتش غير لو سمحتي بيها. وهي مقفولة لحد ما تسمحي.",
+  "youCanAskForACopyOf": "تقدري تطلبي نسخة من بياناتك، والسياسة بتوضّح بنحتفظ بكل نوع منها قد إيه.",
+  "agreeAndContinue": "موافقة وهكمّل",
+  "deleteMyAccountInstead": "عايزة أحذف حسابي بدل كده",
+  "weCouldNotSaveYourAgreementCheck": "ماقدرناش نحفظ موافقتك. اتأكدي من النت وجرّبي تاني.",
   "crashReports": "تقارير الأعطال",
   "onIfTheAppCrashesTheError": "شغّالة. لو التطبيق قفل فجأة، بيتبعت الخطأ وموديل موبايلك لـ Firebase. ومفيش أي حاجة عنك بتتبعت معاهم.",
   "offNothingIsSentWhenTheApp": "مقفولة. مش بنبعت أي حاجة لو التطبيق قفل فجأة.",
-  "yourPhotosGoToOurServerIn": "تُرسل صوركِ إلى خادمنا في فرانكفورت بألمانيا، ويقرأ Google Cloud Vision نص البطاقة داخل الاتحاد الأوروبي.",
-  "yourFaceIsMatchedOnOurOwn": "تجري مطابقة وجهكِ على خادمنا نفسه، ولا تطّلع عليه أي خدمة خارجية للتعرّف على الوجوه.",
-  "noPhotoIsEverStoredBothSides": "لا تُخزَّن أي صورة أبدًا. يُحذف وجها البطاقة والصورة الذاتية من الذاكرة فور انتهاء التحقق، أيًا كانت النتيجة.",
-  "weKeepTheResultAndItsReasons": "نحتفظ بالنتيجة وأسبابها 180 يومًا، وبرمز مشفّر من رقمكِ القومي حتى لا تفتح البطاقة الواحدة أكثر من حساب. ولا يمكن تحويل الرمز إلى رقمكِ.",
-  "ifTheCheckCannotDecideYouCan": "إذا تعذّر حسم التحقق، يمكنكِ أن تطلبي أن تتحقق منكِ امرأة من Own Hub.",
-  "readThePrivacyPolicy": "اقرئي سياسة الخصوصية",
-  "ownHubIsAFitnessAndWellbeing": "Own Hub تطبيق للياقة والعافية، وليس جهازًا طبيًا، ولا يشخّص أي حالة ولا يعالجها ولا يشفيها ولا يقي منها. استشيري طبيبكِ قبل البدء، خاصةً إذا كنتِ حاملًا أو وضعتِ حديثًا.",
-  "usuallyACoupleOfMinutesIfA": "عادةً دقيقتان تقريبًا، وإذا احتاجت امرأة إلى التحقق فقد يستغرق ذلك حتى 3 أيام.",
+  "yourPhotosGoToOurServerIn": "صورك بتروح لسيرفرنا في فرانكفورت بألمانيا، وGoogle Cloud Vision بيقرا الكلام اللي على البطاقة جوه الاتحاد الأوروبي.",
+  "yourFaceIsMatchedOnOurOwn": "وشّك بيتطابق على سيرفرنا إحنا، ومفيش أي خدمة برّه بتشوفه للتعرّف على الوشوش.",
+  "noPhotoIsEverStoredBothSides": "مفيش أي صورة بتتخزّن أبدًا. وش البطاقة وضهرها والسيلفي بيتمسحوا من الذاكرة أول ما التحقق يخلص، أيًا كانت النتيجة.",
+  "weKeepTheResultAndItsReasons": "بنحتفظ بالنتيجة وأسبابها 180 يوم، وبكود مشفّر بمفتاح من رقمك القومي عشان البطاقة الواحدة ماتفتحش أكتر من حساب. والكود ده مينفعش يتحوّل تاني لرقمك.",
+  "ifTheCheckCannotDecideYouCan": "لو التحقق ماقدرش يحسم، تقدري تطلبي إن واحدة ست من Own Hub تتحقق منك بدله.",
+  "readThePrivacyPolicy": "اقري سياسة الخصوصية",
+  "ownHubIsAFitnessAndWellbeing": "Own Hub تطبيق للياقة والعافية، مش جهاز طبي، وما بيشخّصش أي حالة ولا بيعالجها ولا بيشفيها ولا بيمنعها. اسألي دكتورك قبل ما تبدئي، خصوصًا لو إنتِ حامل أو ولدتي من وقت قريب.",
+  "usuallyACoupleOfMinutesIfA": "غالبًا في دقيقتين تقريبًا. ولو واحدة ست احتاجت تتحقق بنفسها، لحد 3 أيام.",
   "bothImagesAreDeletedAfterTheCheck_8iuyd": "الصورتين بيتمسحوا بعد التحقق. وبنحتفظ بالنتيجة وبكود مشفّر من رقمك القومي.",
   "yourIdAndSelfieWereDeletedAfter_nl9hl": "بطاقتك والسيلفي اتمسحوا بعد التحقق. بنحتفظ بالنتيجة وبكود مشفّر من رقم بطاقتك.",
-  "aWomanReviewerChecksYourCardWith": "تتحقق مراجِعة من بطاقتكِ معكِ. لا يُسجَّل شيء، ولا تحتفظ إلا بقرارها وتاريخه.",
-  "askAWomanToCheckMe": "اطلبي أن تتحقق منكِ امرأة",
-  "aCheckWithAWoman": "تحقق مع امرأة",
+  "aWomanReviewerChecksYourCardWith": "مراجِعة ست بتتحقق من بطاقتك معاكي. مفيش حاجة بتتسجّل. وهي بتحتفظ بقرارها وتاريخه بس.",
+  "askAWomanToCheckMe": "اطلبي إن واحدة ست تتحقق مني",
+  "aCheckWithAWoman": "تحقّق مع واحدة ست",
   "emailUsReadSundayToThursday9": "ابعتيلنا إيميل. بنقرا الإيميلات من الأحد للخميس، من 9:00 لـ 17:00 بتوقيت القاهرة.",
   "wantACopyOfYourDataAsk": "عايزة نسخة من بياناتك؟ اطلبيها مننا وهنبعتهالك.",
   "askForACopy": "اطلبي نسخة",
@@ -3292,7 +3291,7 @@
   "deletingYourAccountThisUsuallyTakesUnder": "بنحذف حسابك. ده عادةً بياخد أقل من دقيقة.",
   "deletingYourAccountRemovesItFromOur_1xldi": "حذف حسابك بيشيله من سيرفراتنا وبيمسح الموبايل ده. وفيه حاجات بنحتفظ بيها عن قصد: سجل مقفول إن بطاقتك اتستخدمت، عشان مايتفتحش بيها حساب تاني، والبلاغات بعد ما نشيل اسمك منها، وسجل إن الحذف حصل. أما محاولات التحقق اللي مانجحتش وكود متشفّر للتثبيت ده، ومش مربوطين بأي حساب، فبيتمسحوا بعد 180 يوم من آخر محاولة، وسجل مين من المراجِعات فتحت حالتك بيتمسح بعد سنة.",
   "weTextYouASixDigitCode_18wn2": "بنبعتلك كود من ستة أرقام في رسالة. مفيش أي عضوة تانية بتشوف رقمك أبدًا.",
-  "yourPhoneNumberIsUsedOnlyTo_thda4": "يُستخدم رقم هاتفكِ فقط لترتيب التحقق.",
+  "yourPhoneNumberIsUsedOnlyTo_thda4": "رقم موبايلك بيتستخدم بس عشان نرتّب التحقق.",
   "aWomanFromOwnHubWillReview": "واحدة من Own Hub هتراجع التحقق بتاعك",
   "aWomanFromOwnHubReviewsYour": "واحدة من Own Hub بتراجع حالتك وبتتواصل معاكي بالتليفون خلال 72 ساعة. مابنبعتش رسائل نصية عن ده.",
   "aWomanFromOwnHubWillContact": "واحدة من Own Hub هتتواصل معاكي في {time}.",
@@ -3307,13 +3306,13 @@
   },
   "aWomanFromOwnHubCanContact": "واحدة من Own Hub ماتقدرش تتواصل معاكي غير بعد ما تطلبي. لو طلبتي، هتراجع حالتك وتتواصل معاكي بالتليفون خلال 72 ساعة عشان تكمّل التحقق بتاعك.",
   "askAWomanToContactMe": "عايزة واحدة تتواصل معايا",
-  "ifYouDoNotShowYourFace_1pr0p": "إن كنتِ لا تكشفين وجهكِ أمام الكاميرا، فلا شيء هنا يطلب منكِ ذلك. تراجع امرأة من Own Hub حالتكِ وتتواصل معكِ هاتفيًا خلال 72 ساعة لتتحقق معكِ من بطاقتكِ الشخصية.",
+  "ifYouDoNotShowYourFace_1pr0p": "لو مابتظهريش وشّك قدام الكاميرا، مفيش حاجة هنا هتطلب منك كده. واحدة ست من Own Hub بتراجع حالتك وبتتواصل معاكي بالتليفون خلال 72 ساعة، وتتحقق من بطاقتك الشخصية معاكي.",
   "thisAccountHasUsedEveryAutomaticCheck_rc3un": "الحساب ده استخدم كل محاولات التحقق التلقائي المتاحة له. مفيش حاجة من اللي صوّرتيه اتحفظت. وممكن واحدة من Own Hub تراجع حالتك بدل كده وتتواصل معاكي خلال 72 ساعة.",
-  "yourAutomaticCheckIsStillRunningSo": "ما زال فحصكِ التلقائي جاريًا، لذا لم يُرسَل شيء. ستنتقلين إلى الخطوة التالية عند انتهائه. وإن لم يحدث شيء، فاطلبي مرة أخرى بعد دقيقة.",
+  "yourAutomaticCheckIsStillRunningSo": "التحقق التلقائي بتاعك لسه شغّال، فمفيش حاجة اتبعتت. هتتنقلي للخطوة اللي بعدها أول ما يخلص. ولو مفيش حاجة حصلت، اطلبي تاني بعد دقيقة.",
   "theMatchUsuallyTakesUnderAMinute": "المطابقة عادةً بتاخد أقل من دقيقة. ولو احتاجت شخص، واحدة مراجِعة هتكمّلها من هنا.",
   "buildYourWeekWhileWeCheck": "جهّزي أسبوعك على ما نتحقّق",
   "saveMyWeek": "احفظي أسبوعي",
-  "breakingThemCanCloseYourAccountYou": "مخالفتها قد تؤدّي إلى إغلاق حسابكِ. ويمكنكِ قراءتها مرة أخرى في أي وقت.",
+  "breakingThemCanCloseYourAccountYou": "مخالفتها ممكن تقفل حسابك. وتقدري تقريها تاني في أي وقت.",
   "firstYourWeekThenYourNumberAnd_flrzo": "الأول أسبوعك، وبعدين رقمك وتحقّق سريع إنك ست.",
   "weJustNeedYourNumberAndA_1jn4g": "محتاجين بس رقمك وتحقّق سريع إنك ست.",
   "daysAWeekDaysMinutesASession_1a2wl": "أيام في الأسبوع: {days} · دقايق كل تمرين: {minutes}",
@@ -3375,7 +3374,7 @@
   },
   "time": "الوقت",
   "changeTime": "غيّري الوقت",
-  "remindMe": "فكّريني",
+  "remindMe": "فكّرني",
   "turnRemindersOff": "اقفلي التذكيرات",
   "pickAtLeastOneDay": "اختاري يوم واحد على الأقل.",
   "remindersAreOn": "التذكيرات شغّالة.",
@@ -3450,8 +3449,8 @@
   },
   "coachingOnOwnHub": "التدريب على Own Hub",
   "weCouldNotOpenAMessageOn": "ماقدرناش نفتح رسالة على الموبايل ده.",
-  "iAgreeToTheseThreeRules": "أوافق على هذه القواعد الثلاث",
-  "asACoachYouAgreeToThe": "بصفتكِ مدرّبة، توافقين على القواعد الثلاث نفسها التي توافق عليها كل امرأة هنا.",
+  "iAgreeToTheseThreeRules": "موافقة على القواعد التلاتة دي",
+  "asACoachYouAgreeToThe": "كمدرّبة، إنتِ بتوافقي على نفس القواعد التلاتة اللي بتوافق عليها كل ست هنا.",
   "photographYourCertificate": "صوّري شهادتك",
   "takeThePhoto": "خدي الصورة",
   "layItFlatInGoodLightWith": "حطّيها مفرودة في إضاءة كويسة، بحيث كل كلمة تتقري.",
@@ -3555,7 +3554,7 @@
       }
     }
   },
-  "refresh": "تحديث",
+  "refresh": "حدّثي",
   "thisAccountDoesNotHaveAdminAccess": "الحساب ده ماعندوش صلاحية الإدارة.",
   "signInWithYourPhoneNumberTo": "سجّلي دخولك برقم موبايلك عشان تفتحي لوحة الإدارة.",
   "theConsoleNeedsAConnectionTryAgain": "لوحة الإدارة محتاجة نت. جرّبي تاني كمان شوية.",
@@ -3766,7 +3765,7 @@
   },
   "iDidThemAll": "عملتهم كلهم",
   "nothingInTheLogYet": "لسه مفيش حاجة في السجل",
-  "sendItAgainInTime": "ابعتوا الكود تاني بعد {time}",
+  "sendItAgainInTime": "اطلبي الكود تاني بعد {time}",
   "@sendItAgainInTime": {
     "description": "C07, while the resend waits after a code was sent. time is minutes:seconds in Western digits, e.g. 0:27.",
     "placeholders": {
@@ -3815,7 +3814,7 @@
   "womenChooseAPersonTheyCanSee": "الستات بيختاروا حد شايفينه. صوّري دلوقتي، أو ضيفيها بعدين من صفحتك.",
   "takeAPhoto": "خدي صورة",
   "takeItAgain": "صوّري تاني",
-  "takeYourPhoto": "صورتك",
+  "takeYourPhoto": "خدي صورتك",
   "faceTheLightWithAPlainWall": "خلّي النور قدامك، ووراكي حيطة سادة.",
   "howYouCoach": "بتدرّبي إزاي",
   "clientsLookForACoachByLanguage": "العميلات بيدوّروا على مدرّبة باللغة وبالمكان اللي بيتمرّنوا فيه.",
@@ -3846,5 +3845,538 @@
   },
   "theseSwitchesChangeOnlyThisPhoneSo": "المفاتيح دي بتغيّر الموبايل ده بس، عشان تشوفي أي جزء قبل ما ينزل. ولو عايزة توقفي جزء عند كل العضوات، استخدمي القايمة اللي في الآخر.",
   "optionalSharesBasicAppUsageWithGoogle": "اختياري. بيشارك استخدام التطبيق الأساسي مع Google Analytics وPostHog في أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك. تقدري تغيّري ده من «الخصوصية».",
-  "onGoogleAnalyticsAndPosthogReceiveBasic": "شغّال. Google Analytics وPostHog بيوصلهم استخدام التطبيق الأساسي برّه مصر، ومنها أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك."
+  "onGoogleAnalyticsAndPosthogReceiveBasic": "شغّال. Google Analytics وPostHog بيوصلهم استخدام التطبيق الأساسي برّه مصر، ومنها أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك.",
+  "resume": "كمّلي",
+  "setsDoneDoneOfTotal": "المجموعات اللي خلصت: {done} من {total}",
+  "@setsDoneDoneOfTotal": {
+    "description": "R07/R08/R09/R13 set bar: sets of today's session behind her, out of all of them.",
+    "placeholders": {
+      "done": {
+        "type": "String",
+        "example": "4"
+      },
+      "total": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "todaysSessionIsDone": "تمرين النهارده خلص",
+  "anotherSession": "تمرين كمان",
+  "trainingStreak": "سلسلة تمرينك",
+  "trainingStreakDaysDays": "سلسلة تمرينك: {days} يوم",
+  "@trainingStreakDaysDays": {
+    "description": "T01 week block: her training streak (D37). Never shown when she has switched it off.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "daysDays": "{days} يوم",
+  "@daysDays": {
+    "description": "P01 and the streak sheet: the length of her current training streak.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "yourBestDaysDays": "أطول سلسلة ليكي: {days} يوم",
+  "@yourBestDaysDays": {
+    "description": "P01 and the streak sheet: her longest training streak. Never taken away.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "21"
+      }
+    }
+  },
+  "day1StartsWithYourNextSession": "يوم 1 بيبدأ مع تمرينك الجاي.",
+  "pausedUntilDate": "متوقفة لحد {date}",
+  "@pausedUntilDate": {
+    "description": "Streak sheet and P01 while a pause with an end date runs.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Monday 20 October"
+      }
+    }
+  },
+  "pausedUntilYouComeBack": "متوقفة لحد ما ترجعي",
+  "restDaysCountWhileYourWeekGoal": "أيام الراحة بتتحسب طول ما هدف أسبوعك لسه في إيدك. وأسبوع الراحة اللي كسبتيه بيغطي أي أسبوع يفلت منك. محفوظة على الموبايل ده بس.",
+  "pauseForAWeek": "وقّفيها أسبوع",
+  "pauseForTwoWeeks": "وقّفيها أسبوعين",
+  "pauseUntilIComeBack": "وقّفيها لحد ما أرجع",
+  "resumeNow": "رجّعيها دلوقتي",
+  "showMyTrainingStreak": "وريني سلسلة تمريني",
+  "keptOnThisPhoneTurnItOff": "محفوظة على الموبايل ده. تقدري تقفليها في أي وقت.",
+  "yourWeeksCountAndSoDoThe": "أسابيعك بتتحسب، والأيام اللي بتخلي أسبوعك في إيدك بتتحسب كمان. وبس اللي بتضيفيه بنفسك.",
+  "thisWeeksChallenge": "تحدي الأسبوع ده",
+  "moveMoreThanLastWeeksAmount": "{move}: أكتر من {amount} الأسبوع اللي فات",
+  "@moveMoreThanLastWeeksAmount": {
+    "description": "T01/R03 weekly challenge (D38): beat her own last-week total on one move.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Glute bridge"
+      },
+      "amount": {
+        "type": "String",
+        "example": "24 reps"
+      }
+    }
+  },
+  "moveMatchLastWeeksAmount": "{move}: زي {amount} الأسبوع اللي فات",
+  "@moveMatchLastWeeksAmount": {
+    "description": "T01/R03 weekly challenge (D38): match her own last-week total on one move.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Glute bridge"
+      },
+      "amount": {
+        "type": "String",
+        "example": "30 reps"
+      }
+    }
+  },
+  "youBeatLastWeekOnMoveAmount": "عدّيتي الأسبوع اللي فات في {move}: {amount}",
+  "@youBeatLastWeekOnMoveAmount": {
+    "description": "R10 reveal: the weekly challenge, met by beating last week. Her total this week.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Glute bridge"
+      },
+      "amount": {
+        "type": "String",
+        "example": "32 reps"
+      }
+    }
+  },
+  "youMatchedLastWeekOnMoveAmount": "عملتي زي الأسبوع اللي فات في {move}: {amount}",
+  "@youMatchedLastWeekOnMoveAmount": {
+    "description": "R10 reveal: the weekly challenge, met by matching last week. Her total this week.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Glute bridge"
+      },
+      "amount": {
+        "type": "String",
+        "example": "30 reps"
+      }
+    }
+  },
+  "nextMilestone": "الإنجاز الجاي",
+  "movesMovesSetsSetsMinutesMin": "{moves} حركات · {sets} مجموعات · {minutes} دقيقة",
+  "@movesMovesSetsSetsMinutesMin": {
+    "description": "R10 reveal: the effort she actually logged in this session.",
+    "placeholders": {
+      "moves": {
+        "type": "String",
+        "example": "4"
+      },
+      "sets": {
+        "type": "String",
+        "example": "11"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "24"
+      }
+    }
+  },
+  "moveNowUpFromBefore": "{move}: {now}، وكانت {before}",
+  "@moveNowUpFromBefore": {
+    "description": "R10 reveal: a real personal best, with her previous best on the same move.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Goblet squat"
+      },
+      "now": {
+        "type": "String",
+        "example": "14 kg × 10"
+      },
+      "before": {
+        "type": "String",
+        "example": "12 kg × 10"
+      }
+    }
+  },
+  "moveAHarderVersionThanBefore": "{move}: نسخة أصعب من قبل",
+  "@moveAHarderVersionThanBefore": {
+    "description": "R10 reveal: a personal best that is a harder variation rather than a bigger number.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Push-up"
+      }
+    }
+  },
+  "firstMarksSetOnCountMoves": "سجّلتي أول أرقامك في {count} حركات.",
+  "@firstMarksSetOnCountMoves": {
+    "description": "R10 reveal: moves she logged for the first time ever. A first mark, not a best.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "readYourAnswers": "قرينا إجاباتك",
+  "checkedYourEquipment": "راجعنا أدواتك",
+  "matchedYourDaysAndMinutes": "ظبطنا أيامك ودقايقك",
+  "preferredAQuietSessionForHome": "اخترنا تمرين هادي للبيت",
+  "moreYouCanDo": "حاجات تانية تقدري تعمليها",
+  "moreSessions": "تمارين تانية",
+  "daysPluralOneTrainingStreak1Day": "{days, plural, one{سلسلة تمرينك: يوم واحد} two{سلسلة تمرينك: يومين} few{سلسلة تمرينك: {days} أيام} many{سلسلة تمرينك: {days} يوم} other{سلسلة تمرينك: {days} يوم}}",
+  "@daysPluralOneTrainingStreak1Day": {
+    "description": "T01 week block and R10: her training streak (D37). A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up. Never shown when she has switched it off.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "daysPluralOneYourBest1Day": "{days, plural, one{أطول سلسلة ليكي: يوم واحد} two{أطول سلسلة ليكي: يومين} few{أطول سلسلة ليكي: {days} أيام} many{أطول سلسلة ليكي: {days} يوم} other{أطول سلسلة ليكي: {days} يوم}}",
+  "@daysPluralOneYourBest1Day": {
+    "description": "P01 and the streak sheet: her longest training streak. Never taken away.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "21"
+      }
+    }
+  },
+  "countPluralOneFirstMarkSetOn": "{count, plural, one{سجّلتي أول رقم ليكي في حركة واحدة.} two{سجّلتي أول أرقامك في حركتين.} few{سجّلتي أول أرقامك في {count} حركات.} many{سجّلتي أول أرقامك في {count} حركة.} other{سجّلتي أول أرقامك في {count} حركة.}}",
+  "@countPluralOneFirstMarkSetOn": {
+    "description": "R10 reveal: moves she logged for the first time ever. A first mark, not a best.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "movesMovesSetsSetsTimeMinutesMin": "الحركات: {moves} · المجموعات: {sets} · الوقت: {minutes} دقيقة",
+  "@movesMovesSetsSetsTimeMinutesMin": {
+    "description": "R10 reveal: the effort she actually logged in this session. Labels before each figure so no noun has to agree with its number.",
+    "placeholders": {
+      "moves": {
+        "type": "String",
+        "example": "4"
+      },
+      "sets": {
+        "type": "String",
+        "example": "11"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "24"
+      }
+    }
+  },
+  "minutesPluralOneMovesMovesSetsSets": "{minutes, plural, one{الحركات: {moves} · المجموعات: {sets} · الوقت: دقيقة واحدة} two{الحركات: {moves} · المجموعات: {sets} · الوقت: دقيقتين} few{الحركات: {moves} · المجموعات: {sets} · الوقت: {minutes} دقايق} many{الحركات: {moves} · المجموعات: {sets} · الوقت: {minutes} دقيقة} other{الحركات: {moves} · المجموعات: {sets} · الوقت: {minutes} دقيقة}}",
+  "@minutesPluralOneMovesMovesSetsSets": {
+    "description": "R10 reveal: the effort she actually logged in this session. Moves and sets are labelled so they need no agreement; the minutes are a plural because Arabic says دقيقة واحدة, دقيقتين, 3 دقايق and 11 دقيقة.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "24"
+      },
+      "moves": {
+        "type": "String",
+        "example": "4"
+      },
+      "sets": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "exerciseLibrary": "مكتبة الحركات",
+  "seeHowEveryMoveIsDone": "شوفي كل حركة بتتعمل إزاي",
+  "watchTheMoves": "اتفرّجي على الحركات",
+  "searchMoves": "دوّري على حركة",
+  "play": "شغّلي",
+  "chooseAMoveFromTheLibrary": "اختاري حركة من المكتبة",
+  "openTheExerciseLibrary": "افتحي مكتبة الحركات",
+  "stretchesAndWarmUps": "إطالات وإحماء",
+  "homeOrGym": "في البيت أو الجيم",
+  "gymOnly": "في الجيم بس",
+  "gymMachines": "أجهزة الجيم",
+  "mat": "سجادة تمرين",
+  "machine": "جهاز",
+  "cableMachine": "جهاز كابل",
+  "barbell": "بار",
+  "smithMachine": "جهاز سميث",
+  "bench": "بنش",
+  "step": "ستيب",
+  "kettlebell": "كيتل بيل",
+  "glutes": "الأرداف",
+  "frontOfThighs": "الفخذ من قدام",
+  "backOfThighs": "الفخذ من ورا",
+  "innerAndOuterThighs": "الفخذ من جوه وبره",
+  "innerThighs": "الفخذ من جوه",
+  "outerThighs": "الفخذ من بره",
+  "calves": "السمانة",
+  "absAndSides": "البطن والجناب",
+  "core": "وسط الجسم",
+  "sidesOfTheWaist": "جناب البطن",
+  "lowerBack": "أسفل الظهر",
+  "chest": "الصدر",
+  "upperBack": "أعلى الظهر",
+  "sidesOfTheBack": "جناب الظهر",
+  "shoulders": "الكتاف",
+  "frontOfTheShoulders": "الكتف من قدام",
+  "sidesOfTheShoulders": "الكتف من الجنب",
+  "backOfTheShoulders": "الكتف من ورا",
+  "arms": "الدراعات",
+  "biceps": "البايسبس",
+  "triceps": "الترايسبس",
+  "forearms": "السواعد",
+  "musclesWorked": "العضلات اللي بتشتغل",
+  "alsoWorks": "وبتشغّل كمان",
+  "howToSetUp": "إزاي تجهّزي",
+  "beginner": "مبتدئة",
+  "intermediate": "متوسطة",
+  "front": "من قدام",
+  "side": "من الجنب",
+  "fromBehind": "من ورا",
+  "otherSide": "الناحية التانية",
+  "gettingTheVideo": "بنجهّز الفيديو",
+  "thisVideoNeedsAConnectionTheFirst": "الفيديو ده محتاج نت أول مرة بس، وبعد كده هيشتغل من غيره.",
+  "theExerciseLibraryIsOnItsWay": "مكتبة الحركات في الطريق",
+  "itArrivesTheNextTimeYouOpen": "هتوصل أول ما تفتحي التطبيق وإنتِ على النت.",
+  "tryAnotherFilterOrClearTheSearch": "جرّبي فلتر تاني، أو امسحي البحث.",
+  "someMovesAreHiddenWhileYouAre": "في حركات مخفية عشان إنتِ حامل. اسألي دكتورك قبل ما تجرّبي أي حاجة جديدة.",
+  "someMovesAreHiddenInTheWeeks": "في حركات مخفية في الأسابيع اللي بعد الولادة. استني موافقة دكتورك قبل ما تجرّبيها.",
+  "feelGoodAndMove": "اتحرّكي وحسّي بالفرق",
+  "loseSteadily": "نزّلي وزنك بالتدريج",
+  "atHomeQuietNothingToBuy": "في البيت · هادية · من غير أدوات",
+  "atHomeQuietWithYourDumbbells": "في البيت · هادية · بالدمبل بتاعك",
+  "atTheGymWeightsAndMachines": "في الجيم · أوزان وأجهزة",
+  "youFinishedEverySetAtWeightTry": "خلّصتي كل المجموعات بـ {weight}. جرّبي {next} النهارده.",
+  "@youFinishedEverySetAtWeightTry": {
+    "description": "R07 and R08: her last session's weight for a loaded move, and the next weight up.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "10 kg"
+      },
+      "next": {
+        "type": "String",
+        "example": "12 kg"
+      }
+    }
+  },
+  "lastTimeYouDidWeightStayThere": "آخر مرة عملتي {weight}. خليكي عليه لحد ما تخلّصي كل المجموعات.",
+  "@lastTimeYouDidWeightStayThere": {
+    "description": "R07 and R08: why the weight is not going up yet.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "10 kg"
+      }
+    }
+  },
+  "itHasBeenAWhileSinceWeight": "بقالك فترة من آخر مرة بـ {weight}. ابدئي بأخف شوية وارجعي بالتدريج.",
+  "@itHasBeenAWhileSinceWeight": {
+    "description": "R07 and R08: she is coming back to a loaded move after a break.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "10 kg"
+      }
+    }
+  },
+  "firstTimeAtTheGym": "أول مرة في الجيم؟",
+  "beforeYouStart": "قبل ما تبدئي",
+  "todaysSessionIsShortBringWaterAnd": "تمرينة النهارده قصيرة. خدي معاكي مية ومنشفة صغيرة، والبسي جزمة مريحة للحركة. موظفين الجيم هيساعدوكي تلاقي الأجهزة.",
+  "findYourEquipment": "دوّري على الجهاز",
+  "lookForTheStationYourFirstMove": "دوّري على الجهاز اللي أول تمرين بيقول عليه. لو مش لاقياه اسألي الموظفين. ولو مشغول، بدّلي التمرين من شاشة التمرينة وارجعيله بعدين.",
+  "whatASetIs": "يعني إيه مجموعة",
+  "aRepIsOneTimeThroughA": "العدّة هي مرة واحدة من التمرين. والمجموعة كذا عدّة ورا بعض. ارتاحي بين المجموعات وبعدين كمّلي.",
+  "tryItLogAPracticeSet": "جرّبي: سجّلي مجموعة تجريبية",
+  "practiceSetLoggedNothingIsSaved": "اتسجّلت مجموعة تجريبية. مفيش حاجة بتتحفظ.",
+  "startWithConfidence": "ابدئي بثقة",
+  "goAtYourOwnPaceIfYou": "ماشيها على راحتك. لو حسّيتي بألم أو تعب، وقّفي واطلبي مساعدة من موظفين الجيم.",
+  "tapChangeToAddTheWeightYou": "دوسي على تغيير وسجّلي الوزن اللي رفعتيه، عشان المرة الجاية نبدأ منه.",
+  "eachSessionIsAFullBodyWith": "كل تمرينة للجسم كله، بعدّات أقل وأتقل وراحة طويلة.",
+  "eachSessionIsAGentleFullBody": "كل تمرينة للجسم كله بهدوء، بعدّات سهلة وراحة قصيرة.",
+  "eachSessionIsASteadyCircuitWith": "كل تمرينة دايرة متواصلة، بعدّات كتير وراحة قصيرة.",
+  "yourEnergyIsLowToday": "طاقتك قليلة النهارده.",
+  "youHaveCrampsToday": "عندك مغص النهارده.",
+  "yourEnergyIsLowAndYouHave": "طاقتك قليلة وعندك مغص النهارده.",
+  "aComfyDinnerHighInProtein": "عشا مريح وفيه بروتين عالي.",
+  "aComfyDinner": "عشا مريح.",
+  "highInProtein": "فيه بروتين عالي.",
+  "yourWeekIsFullSwapADinner": "أسبوعك مليان. بدّلي عشا عشان تدخّلي ده.",
+  "planYourWeekFirst": "خطّطي أسبوعك الأول",
+  "pickYourDinnersForTheWeekAnd": "اختاري عشا الأسبوع وقايمة الشراء هتتعمل لوحدها.",
+  "planMyWeek": "خطّطي أسبوعي",
+  "yourConnectionIsTooSlow": "النت عندك بطيء أوي",
+  "stillWorkingASlowConnectionCanTake": "لسه شغالين على الموضوع. النت البطيء ممكن ياخد وقت أطول شوية.",
+  "slowConnectionStillGettingTheVideo": "النت بطيء، لسه بنجيب الفيديو",
+  "weCouldNotFinishTheCheckIn": "ماقدرناش نخلّص الفحص في الوقت. صورك اتمسحت من الموبايل خلاص. روحي مكان فيه شبكة أقوى وصوّريها تاني.",
+  "arabicText_3cakp": "مصري · كل حاجة في التطبيق",
+  "swapToName": "غيّريها لـ {name}",
+  "@swapToName": {
+    "description": "R05 confirm button, names the move she picked.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Glute bridge"
+      }
+    }
+  },
+  "noSwapForThisMoveRightNow": "مفيش بديل للحركة دي دلوقتي",
+  "tryFewerFiltersToSeeMoreWorkouts": "جرّبي فلاتر أقل عشان تشوفي تمارين أكتر.",
+  "gladYouShowedUpToday": "مبسوطة إنك جيتي النهارده.",
+  "countPluralOne1MoreAndThe": "{count, plural, one{تمرين واحد كمان والأسبوع يتحسب.} two{تمرينين كمان والأسبوع يتحسب.} few{{count} تمارين كمان والأسبوع يتحسب.} many{{count} تمرين كمان والأسبوع يتحسب.} other{{count} تمرين كمان والأسبوع يتحسب.}}",
+  "@countPluralOne1MoreAndThe": {
+    "description": "T01 week line while sessions are still to go. A plural message because Arabic says تمرين واحد, تمرينين, 3 تمارين and 11 تمرين.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "dayOneStartsWithYourNextSession": "أول يوم بيبدأ مع تمرينك الجاي.",
+  "ramadanModeOn": "وضع رمضان شغال",
+  "dangerZone": "منطقة الحذف",
+  "readyWhenYouAre": "جاهزة وقت ما تحبي.",
+  "trainedTodayAddItInATap": "اتمرنتي النهارده؟ سجّليه بضغطة.",
+  "aShortSessionStillCountsReadyWhen": "جلسة قصيرة برضه بتفرق. جاهزة وقت ما تحبي.",
+  "newMovesAreWaitingInTheLibrary": "فيه حركات جديدة مستنياكي في المكتبة.",
+  "yourPlanIsWhereYouLeftIt": "خطتك زي ما سيبتيها. كملي في أي وقت.",
+  "aLittleMovementTodayNoPressure": "شوية حركة النهارده؟ من غير أي ضغط.",
+  "restIsOverYourNextSetIs": "الراحة خلصت. المجموعة اللي بعدها جاهزة.",
+  "gentleCheckIns": "تذكيرات لطيفة",
+  "aKindWordIfYouHaveBeen": "كلمة لطيفة لو غبتي عننا فترة.",
+  "restTimer": "مؤقت الراحة",
+  "tellsYouWhenYourRestBetweenSets": "بيقولك لما راحتك بين المجموعات تخلص.",
+  "remindMeToAddASessionI": "فكّرني أسجّل تمرين عملته",
+  "gentleCheckInsWhenIveBeenAway": "تذكير لطيف لما أغيب",
+  "restTimerAlert": "تنبيه انتهاء الراحة",
+  "remindersThatFitYourDay": "تذكيرات على مقاسك",
+  "aQuietNoteOnTheDaysYou": "تذكير هادي في الأيام اللي تختاريها",
+  "aPingWhenYourRestBetweenSets": "تنبيه لما راحتك بين المجموعات تخلص",
+  "turnOnReminders": "شغّلي التذكيرات",
+  "yourTrainingYourFoodYourMonthWomen": "تمرينك، وأكلك، وشهرك. للستات بس.",
+  "aPlanThatListensToYourBody": "خطة بتسمع لجسمك",
+  "sayHowYouFeelTodayOnHarder": "قولي حاسة بإيه النهارده. وفي الأيام الأصعب، Own Hub ممكن يقترح تمرين ألطف. اللي بتسجليه بيفضل على موبايلك إلا لو اخترتي تعملي له نسخة احتياطية.",
+  "yourDayAsYouFeelIt": "يومك زي ما إنتي حاسة بيه",
+  "howYouFeelToday": "إحساسك النهارده",
+  "lowOnEnergyALighterVersionOf": "طاقتك واطية؟ هتلاقي هنا نسخة أخف من تمرين النهارده.",
+  "aFewGentleRemindersTurnAnyOf": "كام تذكير لطيف. تقدري توقفي أي واحد منهم من هنا.",
+  "yourFirstWeekDoneOfTotalSteps": "أسبوعك الأول: {done} من {total} خطوات",
+  "@yourFirstWeekDoneOfTotalSteps": {
+    "description": "Home: the first-week arc, counted in steps so it is never read against this week's sessions.",
+    "placeholders": {
+      "done": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "crampsAppetiteSleepAndMore": "التقلصات والشهية والنوم وغيرها",
+  "remindersAndExtras": "التذكيرات وحاجات تانية",
+  "privacyAndData": "الخصوصية وبياناتك",
+  "filters": "الفلاتر",
+  "howWeeksCount": "إزاي الأسابيع بتتحسب",
+  "daysDaysAWeekMinutesMinA": "{days} أيام في الأسبوع · {minutes} دقيقة في التمرين",
+  "@daysDaysAWeekMinutesMinA": {
+    "description": "O05 headline: her days and minutes.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "sweetToothBreakfast": "فطار للي بتحب الحلو",
+  "saltyFullingBreakfast": "فطار مالح بيشبّع",
+  "lunchyJunkyYum": "غدا لذيذ على الخفيف",
+  "comfyDinner": "عشا مريح",
+  "daysDaysAWeekMinutesMinA_ew0mi": "{days} أيام في الأسبوع · {minutes} دقيقة في التمرين · في البيت",
+  "@daysDaysAWeekMinutesMinA_ew0mi": {
+    "description": "Her answers read back: days and minutes, trained at home.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "daysDaysAWeekMinutesMinA_q73s6": "{days} أيام في الأسبوع · {minutes} دقيقة في التمرين · في جيم للستات بس",
+  "@daysDaysAWeekMinutesMinA_q73s6": {
+    "description": "Her answers read back: days and minutes, at a ladies-only gym.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "daysDaysAWeekMinutesMinA_3morb": "{days} أيام في الأسبوع · {minutes} دقيقة في التمرين · في البيت والجيم",
+  "@daysDaysAWeekMinutesMinA_3morb": {
+    "description": "Her answers read back: days and minutes, at home and the gym.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "remindersNeverComeBetween10PmAnd": "التذكيرات مش بتيجي من 10 بالليل لحد 8 الصبح. بس مؤقت راحة إنتي شغّلتيه، أو خبر إن التحقق خلص، ممكن يوصلك.",
+  "aQuickWayToAddASession": "طريقة سريعة تسجّلي بيها تمرين عملتيه",
+  "pickOneItShapesYourProgram": "اختاري واحد. هو اللي بيحدّد برنامجك.",
+  "makeItLookLikeYou": "خليها تشبهك",
+  "bothSwitchBetweenThemWheneverYouLike": "الاتنين. بدّلي بينهم وقت ما تحبي.",
+  "aPlanThatAdjustsToHowYou": "خطة بتتظبط على حالتك",
+  "thatsOwnHub": "ده هو Own Hub",
+  "weJustNeedYourNumberAndA_1vu4x": "محتاجين بس رقمك وتحقّق سريع إنك ست.",
+  "firstYourWeekThenYourNumberAnd_10ray": "الأول أسبوعك، وبعدين رقمك وتحقّق سريع إنك ست.",
+  "ownHubIsAFitnessAppFor_loijw": "Own Hub تطبيق لياقة للستات بس. الرئيسية بتوريكي تمرين النهارده، واللي أكلتيه، وأسبوعك ماشي إزاي. ده أسبوع مثال، فاضغطي على أي حاجة.",
+  "mostWomenStartWithNothingAndThats": "أغلب الستات بيبدأوا من غير أي حاجة، وده كفاية.",
+  "hitYourGoalAndTheWeekCounts": "حقّقي هدفك والأسبوع يتحسب. ولو فاتك أسبوع، أسبوع راحة كسبتيه بيغطّيه.",
+  "week1StartsWithFourMovesOn_9iwwr": "الأسبوع 1 بيبدأ بأربع حركات على الأرض. من غير نط، فمحدّش من جيرانك هيحس بحاجة.",
+  "theresNoDeadlineFinishingThemAllIs": "مفيش ميعاد. إنك تخلّصيهم كلهم هو بس أسرع طريق تعرفي بيه كل حاجة مكانها فين.",
+  "allDoneTheAppWontChangeFrom": "خلّصتي كل حاجة. التطبيق مش هيتغيّر من هنا، إنتِ بس جرّبتي كل جزء فيه مرة.",
+  "nothingsLostOneSessionGetsItGoing": "مفيش حاجة راحت. تمرين واحد ويرجع يمشي من تاني.",
+  "tapOneAndItsSavedYouCan": "اضغطي على واحدة وهتتحفظ. وتقدري تتراجعي خلال خمس ثواني.",
+  "ifYouDontTurnItOnNothing": "لو ماشغّلتيهوش، مفيش حاجة تانية هتتغيّر. بياناتك الصحية بتفضل على الموبايل ده.",
+  "takeItAtWhateverPaceFeelsRight": "خدي وقتك. لو حاجة وجعتك أو حسّيتي بتعب، وقّفي واطلبي مساعدة من موظفين الجيم.",
+  "aShortOneStillCountsWheneverYoure": "تمرين قصير برضه بيتحسب. وقت ما تحبي.",
+  "aFriendlyNudgeIfYouveBeenAway": "تذكير بسيط لو غبتي عننا فترة.",
+  "remindersNeverComeBetween10PmAnd_z63uh": "التذكيرات مش بتيجي من 10 بالليل لحد 8 الصبح. بس مؤقت راحة إنتِ شغّلتيه، أو خبر إن التحقق خلص، ممكن يوصلك.",
+  "remindersCantBeSetOnThisPhone": "مينفعش نظبط تذكيرات على الموبايل ده."
 }

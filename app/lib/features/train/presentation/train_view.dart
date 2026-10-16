@@ -35,7 +35,6 @@ import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
-import '../../../ui/screen_art_strip.dart';
 
 /// One of the three short sessions offered above the library.
 class ShortSession {
@@ -62,8 +61,10 @@ class TrainView extends StatelessWidget {
     this.onSeeProgram,
     this.onOpenToday,
     this.onGentlerOption,
+    this.showGentlerOption = true,
     this.onFollowAlong,
     this.onShortSession,
+    this.onOpenExerciseLibrary,
     this.onSelectTab,
     this.shortSessions,
     this.programTitle,
@@ -90,6 +91,10 @@ class TrainView extends StatelessWidget {
 
   final VoidCallback? onGentlerOption;
 
+  /// False when the library has no swap for the move she is on: the row is
+  /// not drawn rather than opening an empty sheet.
+  final bool showGentlerOption;
+
   /// The timed follow-along short session — `R06`.
   ///
   /// The design puts this on the FIRST of the three "Short ones that still
@@ -103,6 +108,10 @@ class TrainView extends StatelessWidget {
 
   /// The other short sessions — an ordinary workout day, `R03`.
   final VoidCallback? onShortSession;
+
+  /// The exercise library (`R14`). Null while the phone holds no library, so
+  /// an empty one is never offered.
+  final VoidCallback? onOpenExerciseLibrary;
 
   final ValueChanged<String>? onSelectTab;
 
@@ -148,6 +157,7 @@ class TrainView extends StatelessWidget {
         onSelect: onSelectTab,
       ),
       body: AppScaffold(
+        staggerGroup: 'r01',
         children: [
           // The section's own page: its name set large with one swipe of
           // marker behind it. The programme sheet below is what she opens.
@@ -162,9 +172,6 @@ class TrainView extends StatelessWidget {
                   ),
                 ),
               ),
-              // The section's drawings sit beside its name, as on a cover,
-              // rather than in a strip above it.
-              const ScreenArtInline(),
               // The library's door, only while the library is on.
               if (AppRouter.screenIsOn('R11'))
                 IconButton(
@@ -176,6 +183,27 @@ class TrainView extends StatelessWidget {
                   tooltip: l10n.search,
                   icon: const Icon(Icons.search),
                 ),
+            ],
+          ),
+          Row(
+            children: [
+              const Kitten(
+                pose: KittenPose.lift,
+                prop: KittenProp.dumbbell,
+                size: 40,
+                moment: 'R01',
+                holdStill: true,
+                blinkOnRevisit: true,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  l10n.readyWhenYouAre,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
             ],
           ),
           AppCard(
@@ -288,60 +316,44 @@ class TrainView extends StatelessWidget {
                 icon: Icons.play_arrow,
                 onPressed: onContinue,
               ),
-              AppButton(
-                l10n.seeTheWholeProgram,
-                variant: AppButtonVariant.text,
-                height: 44,
-                fontSize: 15,
-                onPressed: onSeeProgram,
-              ),
+              if (AppRouter.screenIsOn('R02'))
+                AppButton(
+                  l10n.seeTheWholeProgram,
+                  variant: AppButtonVariant.text,
+                  height: 44,
+                  fontSize: 15,
+                  onPressed: onSeeProgram,
+                ),
             ],
           ),
           Text(l10n.shortOnesThatStillCount, style: AppText.titleM),
-          // IntrinsicHeight so the three tiles match each other's height —
-          // "Floor only" and "Dumbbells" wrap to different line counts in
-          // Arabic, and three cards of different heights read as a mistake.
-          //
-          // It is needed rather than decorative: CrossAxisAlignment.stretch in a
-          // scroll view asks the Row to fill an unbounded height, which is a
-          // layout assertion rather than a stretched card.
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var i = 0; i < shorts.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 8),
-                  Expanded(child: _ShortSessionTile(session: shorts[i])),
-                ],
-              ],
-            ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final session in shorts)
+                AppChip(
+                  '${session.duration} · ${session.constraint}',
+                  onTap: session.onTap,
+                ),
+            ],
           ),
           // The library is a second, quieter section of the page.
           const HandRule(seed: 41, height: 14),
-          Row(
-            children: [
-              Expanded(child: Text(l10n.allWorkouts, style: AppText.titleM)),
-              // `n124Videos` — "124 videos" — is the size of a library
-              // `WorkoutVideoRepository` says has not been produced: every
-              // `urlFor` returns null and every tile below draws a placeholder.
-              // A count beside a list that contradicts it is worse than no
-              // count.
-            ],
-          ),
-          // Filters wrap rather than scroll: a constraint she has — "quiet",
-          // "no equipment" — must never sit off the edge of the screen where she
-          // will not find it.
-          if (AppRouter.screenIsOn('R11'))
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                AppChip(l10n.quiet, icon: Icons.volume_off, onTap: onSearch),
-                AppChip(l10n.noEquipment, onTap: onSearch),
-                AppChip(l10n.n10Min, onTap: onSearch),
-              ],
+          if (AppRouter.screenIsOn('R14') && onOpenExerciseLibrary != null)
+            AppListItem(
+              key: const ValueKey('r01-exercise-library'),
+              title: l10n.exerciseLibrary,
+              subtitle: l10n.seeHowEveryMoveIsDone,
+              leading: const Icon(
+                Icons.play_circle_outline,
+                size: 24,
+                color: AppColors.primaryDim,
+              ),
+              trailing: const AppChevron(),
+              onTap: onOpenExerciseLibrary,
             ),
-          if (AppRouter.screenIsOn('R05'))
+          if (AppRouter.screenIsOn('R05') && showGentlerOption)
             AppListItem(
               title: l10n.notFeelingItToday,
               subtitle: l10n.seeAGentlerOptionBasedOnYour,
@@ -353,51 +365,6 @@ class TrainView extends StatelessWidget {
               trailing: const AppChevron(),
               onTap: onGentlerOption,
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ShortSessionTile extends StatelessWidget {
-  const _ShortSessionTile({required this.session});
-
-  final ShortSession session;
-
-  @override
-  Widget build(BuildContext context) {
-    // Three slips of the page rather than three more cards under the
-    // programme sheet: a faint tint, framed in pencil, pressed in when tapped.
-    return HandSurface(
-      seed: handSeed(['short', session.duration, session.constraint]),
-      fill: AppColors.surfaceLow,
-      frame: AppColors.outline.withValues(alpha: 0.5),
-      frameWidth: 1,
-      radius: 5,
-      looseCorner: 14,
-      onTap: session.onTap,
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            session.duration,
-            style: AppText.label.copyWith(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            session.constraint,
-            style: AppText.label.copyWith(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
         ],
       ),
     );

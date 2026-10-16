@@ -151,7 +151,7 @@ class AppL10nAr extends AppL10n {
   String get breakfast => 'الفطار';
 
   @override
-  String get cancel => 'إلغاء';
+  String get cancel => 'إلغي';
 
   @override
   String get dinner => 'العشا';
@@ -196,7 +196,7 @@ class AppL10nAr extends AppL10n {
   String get tue => 'الثلاثاء';
 
   @override
-  String get undo => 'تراجع';
+  String get undo => 'تراجعي';
 
   @override
   String get workouts => 'التمارين';
@@ -363,7 +363,7 @@ class AppL10nAr extends AppL10n {
   String get cairoWestSide => 'القاهرة، الناحية الغربية';
 
   @override
-  String get close => 'إغلاق';
+  String get close => 'اقفلي';
 
   @override
   String get coachDemoStill => 'لقطة من فيديو المدرّبة';
@@ -573,7 +573,7 @@ class AppL10nAr extends AppL10n {
   String get set3 => 'المجموعة 3';
 
   @override
-  String get showTheCycleCardOnHome => 'عرض كارت الدورة في الرئيسية';
+  String get showTheCycleCardOnHome => 'وريني كارت الدورة في الرئيسية';
 
   @override
   String get small => 'صغير';
@@ -694,7 +694,7 @@ class AppL10nAr extends AppL10n {
   String get n1ResolvedIn40Minutes => '1 · اتحلّت في 40 دقيقة';
 
   @override
-  String get n1WhatIsSaidHereStaysHere => '1 · ما يُقال هنا يبقى هنا';
+  String get n1WhatIsSaidHereStaysHere => '1 · اللي بيتقال هنا بيفضل هنا';
 
   @override
   String get n1Hour => 'ساعة';
@@ -853,7 +853,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get n2NoCommentsOnAnyoneElsesBody =>
-      '2 · لا تعليق على جسد أي امرأة أخرى';
+      '2 · مفيش تعليق على جسم أي ست تانية';
 
   @override
   String get n2Sun20Tue22 => '2 · الأحد 20، الثلاثاء 22';
@@ -931,7 +931,7 @@ class AppL10nAr extends AppL10n {
   String get n27Comments => '27 تعليق';
 
   @override
-  String get n3NoSellingNoRecruiting => '3 · لا بيع ولا استقطاب';
+  String get n3NoSellingNoRecruiting => '3 · مفيش بيع ولا استقطاب';
 
   @override
   String get n31012Kg => '3 × 10 · 12 كجم';
@@ -1164,7 +1164,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get aSelfieIsMatchedToThePhoto =>
-      'تُطابَق الصورة الذاتية مع صورة البطاقة، فقط للتأكّد من أن البطاقة لك.';
+      'الصورة الذاتية بتتقارن بصورة البطاقة، عشان نتأكد بس إن البطاقة بتاعتك.';
 
   @override
   String get aShortVideoCheck => 'تحقق قصير بالفيديو';
@@ -1417,7 +1417,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get boxSquatToAChairApprovedSubstitution =>
-      'سكوات على كرسي · بديل معتمَد';
+      'سكوات على كرسي · بديل متوافق عليه';
 
   @override
   String get breakOneAndYouLoseYourPlace =>
@@ -1515,7 +1515,7 @@ class AppL10nAr extends AppL10n {
   String get checkIns => 'المتابعات';
 
   @override
-  String get checkedByAWomanNoPhotoKept => 'تراجعها امرأة، ولا تُحفظ أي صورة';
+  String get checkedByAWomanNoPhotoKept => 'بتراجعها ست، ومفيش صورة بتتحفظ';
 
   @override
   String get checking => 'بنراجعها';
@@ -1563,7 +1563,7 @@ class AppL10nAr extends AppL10n {
       'بموافقة المدرّبة · نفس العضلات، بعمق أقل';
 
   @override
-  String get coachesHaveProfilesForThat => 'للمدرِّبات ملفات مخصّصة لذلك.';
+  String get coachesHaveProfilesForThat => 'المدرّبات ليهم ملفات مخصوصة لده.';
 
   @override
   String get coachesWhoGetIt => 'مدرّبات فاهمينك';
@@ -1572,7 +1572,7 @@ class AppL10nAr extends AppL10n {
   String get completeSet2 => 'خلّصي المجموعة 2';
 
   @override
-  String get completed => 'مكتملة';
+  String get completed => 'خلصت';
 
   @override
   String get continue1800Egp => 'كمّلي · 1,800 جنيه';
@@ -1735,7 +1735,7 @@ class AppL10nAr extends AppL10n {
   String get earningsThisMonth => 'أرباح الشهر ده';
 
   @override
-  String get edit => 'تعديل';
+  String get edit => 'عدّلي';
 
   @override
   String get editingHereNeverChangesTheLibraryWorkout =>
@@ -2074,13 +2074,13 @@ class AppL10nAr extends AppL10n {
   String get howMuchTimeDoYouReallyHave => 'عندك وقت قد إيه فعلًا؟';
 
   @override
-  String get howWeTreatEachOther => 'كيف نعامل بعضنا';
+  String get howWeTreatEachOther => 'إزاي بنعامل بعض';
 
   @override
   String get howWouldYouLikeToPay => 'تحبي تدفعي إزاي؟';
 
   @override
-  String get iAgreeLetMeIn => 'أوافق، لنبدأ';
+  String get iAgreeLetMeIn => 'موافقة، يلا نبدأ';
 
   @override
   String get iAlreadyHaveAnAccount => 'عندي حساب أصلًا';
@@ -2108,7 +2108,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get iWearNiqabCheckMeAnotherWay =>
-      'أرتدي النقاب، تحقّقوا مني بطريقة أخرى';
+      'أنا لابسة نقاب، عايزة أتحقق بطريقة تانية';
 
   @override
   String get imACoachSetUpMyProfile => 'أنا مدرّبة، عايزة أجهّز ملفي';
@@ -2500,7 +2500,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get noScreenshotsNoSharingAnyoneElseOutside =>
-      'لا لقطات شاشة، ولا نشر لأي امرأة أخرى في الخارج.';
+      'مفيش لقطات شاشة، ومفيش نشر لأي ست تانية برّه.';
 
   @override
   String get noStandingNothingToHold => 'من غير وقوف، ومفيش حاجة تمسكيها';
@@ -2524,7 +2524,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get notEvenAComplimentTalkAboutThe =>
-      'ولا حتى مجاملة. تحدّثي عن العمل نفسه بدلًا من ذلك.';
+      'ولا حتى مجاملة. اتكلمي عن المجهود نفسه بدل كده.';
 
   @override
   String get notFeelingItToday => 'مالكيش مزاج النهارده؟';
@@ -2628,7 +2628,7 @@ class AppL10nAr extends AppL10n {
       'مرة في اليوم، وهدوء من 10 بالليل لـ 8 الصبح';
 
   @override
-  String get oneCheckThenYouAreIn => 'تحقّق واحد، ثم تدخلين';
+  String get oneCheckThenYouAreIn => 'تحقّق واحد وتدخلي';
 
   @override
   String get oneLegAtATimeHoldsThe => 'رجل واحدة في المرة، وإنتِ شايلة الوزن';
@@ -2670,7 +2670,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get onlyWomenReviewTheseChecksNoMan =>
-      'لا يراجع هذه الفحوص إلا النساء. ولا يرى أي رجل وجهك ولا بطاقتك ولا اسمك أبدًا.';
+      'الستات بس هما اللي بيراجعوا الفحوصات دي. ومفيش راجل بيشوف وشّك ولا بطاقتك ولا اسمك أبدًا.';
 
   @override
   String get onlyYouAndYourCoachEverSee => 'محدّش بيشوف ده غيرك إنتِ ومدرّبتك.';
@@ -2720,7 +2720,7 @@ class AppL10nAr extends AppL10n {
   String get pasta500G => 'مكرونة 500 جم';
 
   @override
-  String get pause => 'إيقاف مؤقت';
+  String get pause => 'وقّفي';
 
   @override
   String get pay => 'ادفعي';
@@ -2825,10 +2825,10 @@ class AppL10nAr extends AppL10n {
   String get prepTime => 'وقت التحضير';
 
   @override
-  String get preparing => 'جاري التجهيز';
+  String get preparing => 'بنجهّز';
 
   @override
-  String get preview => 'معاينة';
+  String get preview => 'عايني';
 
   @override
   String get previewHerDay => 'عايني يومها';
@@ -2913,7 +2913,7 @@ class AppL10nAr extends AppL10n {
   String get recent => 'الأخيرة';
 
   @override
-  String get recording => 'جاري التسجيل…';
+  String get recording => 'بنسجّل…';
 
   @override
   String get registeredDietitianAndCoachPostpartumStrength =>
@@ -3072,7 +3072,7 @@ class AppL10nAr extends AppL10n {
   String get schedule => 'المواعيد';
 
   @override
-  String get search => 'بحث';
+  String get search => 'دوّري';
 
   @override
   String get search124Moves => 'دوّري في 124 حركة';
@@ -3121,7 +3121,7 @@ class AppL10nAr extends AppL10n {
   String get send => 'ابعتي';
 
   @override
-  String get sendItAgain => 'ابعتوا الكود تاني';
+  String get sendItAgain => 'اطلبي الكود تاني';
 
   @override
   String get sendMeACode => 'ابعتولي كود';
@@ -3200,7 +3200,7 @@ class AppL10nAr extends AppL10n {
   String get shareTheSquatWithYourGroup => 'شاركي رقم السكوات مع مجموعتك';
 
   @override
-  String get shareWithMyCoach => 'المشاركة مع مدرّبتي';
+  String get shareWithMyCoach => 'شاركي مع مدرّبتي';
 
   @override
   String get shared => 'متشارك';
@@ -3233,16 +3233,16 @@ class AppL10nAr extends AppL10n {
   String get shortOnesThatStillCount => 'تمارين قصيرة وبتتحسب برضه';
 
   @override
-  String get showMealSuggestions => 'عرض اقتراحات الوجبات';
+  String get showMealSuggestions => 'وريني اقتراحات الوجبات';
 
   @override
-  String get showMyPersonalBests => 'اعرضي أحسن أرقامي';
+  String get showMyPersonalBests => 'وريني أحسن أرقامي';
 
   @override
   String get showUsYourCertificates => 'ورّينا شهاداتك';
 
   @override
-  String get showWorkoutSuggestions => 'عرض اقتراحات التمارين';
+  String get showWorkoutSuggestions => 'وريني اقتراحات التمارين';
 
   @override
   String get showingUp => 'مواظبة';
@@ -3503,7 +3503,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get threeRulesTheyAreTheWholeReason =>
-      'ثلاث قواعد. وهي السبب كله في نجاح هذا المكان.';
+      'تلات قواعد. وهي السبب كله في إن المكان ده شغّال.';
 
   @override
   String get thu18 => 'الخميس 18';
@@ -3738,7 +3738,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get weReadYourNationalIdCardThe =>
-      'نقرأ بطاقتك الشخصية. فالبطاقة نفسها تُثبت أنك امرأة، ولا نخمّن من وجهك أبدًا.';
+      'بنقرا بطاقتك الشخصية. والبطاقة نفسها بتثبت إنك ست، ومابنخمّنش من وشّك أبدًا.';
 
   @override
   String weSentSixDigitsToPhone(String phone) {
@@ -4324,7 +4324,7 @@ class AppL10nAr extends AppL10n {
   String get beginnersGroupJustNow => 'مجموعة المبتدئات · دلوقتي';
 
   @override
-  String get blur => 'تمويه';
+  String get blur => 'موّهي';
 
   @override
   String get blurAnyClientWhoIsInShot => 'موّهي أي عميلة ظاهرة في الكادر';
@@ -4363,7 +4363,7 @@ class AppL10nAr extends AppL10n {
   String get coverPhoto => 'صورة الغلاف';
 
   @override
-  String get create => 'إنشاء';
+  String get create => 'اعملي';
 
   @override
   String get darkenThePhoto => 'غمّقي الصورة';
@@ -4690,7 +4690,8 @@ class AppL10nAr extends AppL10n {
   String get views => 'مشاهدة';
 
   @override
-  String get viewsProfileEnquiries => 'المشاهدات ثم الصفحة ثم الطلبات';
+  String get viewsProfileEnquiries =>
+      'المشاهدات، وبعدين الصفحة، وبعدين الطلبات';
 
   @override
   String get voice => 'صوت';
@@ -4781,13 +4782,13 @@ class AppL10nAr extends AppL10n {
       '15 دقيقة · 5 حركات · هادية، من غير أدوات، وأوزان الأسبوع اللي فات';
 
   @override
-  String get modify => 'تعديل';
+  String get modify => 'عدّلي';
 
   @override
   String get pass => 'سليم';
 
   @override
-  String get refer => 'تحويل';
+  String get refer => 'حوّلي';
 
   @override
   String get buildASplit => 'اعملي تقسيمة';
@@ -5447,7 +5448,7 @@ class AppL10nAr extends AppL10n {
   String get askOrHoldToTalk => 'اسألي، أو دوسي مطوّل واتكلمي';
 
   @override
-  String get back => 'رجوع';
+  String get back => 'ارجعي';
 
   @override
   String get beginnersPostpartumOrYourCity => 'مبتدئات، بعد الولادة، أو مدينتك';
@@ -5662,7 +5663,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get swapTodaysExerciseForAnApprovedAlternative =>
-      'يغيّر حركة النهارده ببديل معتمَد';
+      'يغيّر حركة النهارده ببديل متوافق عليه';
 
   @override
   String get swappingChangesTodayOnlyYourPlanFrom =>
@@ -5833,9 +5834,6 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get n20MinVegetarian => '20 دقيقة · نباتي';
-
-  @override
-  String get arabicText_vqu26 => 'الفصحى · كل شيء في التطبيق';
 
   @override
   String get iTrainAndICoach => 'بتمرّن وبدرّب';
@@ -6137,7 +6135,7 @@ class AppL10nAr extends AppL10n {
   String get importEverything_damon => 'نستورد كل حاجة؟';
 
   @override
-  String get backToTheFile => 'رجوع للملف';
+  String get backToTheFile => 'ارجعي للملف';
 
   @override
   String get noExercisesYet => 'لسه مفيش حركات';
@@ -6418,7 +6416,7 @@ class AppL10nAr extends AppL10n {
   String get paid => 'اتدفع';
 
   @override
-  String get sort => 'ترتيب';
+  String get sort => 'رتّبي';
 
   @override
   String get bestMatch => 'الأنسب';
@@ -6820,7 +6818,7 @@ class AppL10nAr extends AppL10n {
       'لسه مانعرفش إنتِ بتتجنّبي إيه، فمش هينفع نضيف أي حاجة.';
 
   @override
-  String get endThisCoachingNowTest => 'أنهي التدريب ده دلوقتي (اختبار)';
+  String get endThisCoachingNowTest => 'خلّصي التدريب ده دلوقتي (اختبار)';
 
   @override
   String get thisDishIsNotInTheFood =>
@@ -7060,11 +7058,11 @@ class AppL10nAr extends AppL10n {
   String get pleaseRetakeThePhoto => 'لو سمحتي صوّري تاني';
 
   @override
-  String get beforeTheCameraOpens => 'قبل أن تفتح الكاميرا';
+  String get beforeTheCameraOpens => 'قبل ما الكاميرا تفتح';
 
   @override
   String get youWillPhotographTheFrontAndBack =>
-      'ستصوّرين الوجه الأمامي والخلفي لبطاقتك الشخصية، ثم تلتقطين صورة ذاتية قصيرة.';
+      'هتصوّري وش بطاقتك الشخصية وضهرها، وبعدين تاخدي سيلفي قصيرة.';
 
   @override
   String get thePhotographsAreProcessedByGoogleCloud =>
@@ -7076,13 +7074,13 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get theCameraIsTheOnlyWayIn =>
-      'الكاميرا هي الطريقة الوحيدة. لا يمكنك اختيار صورة محفوظة لديك.';
+      'الكاميرا هي الطريقة الوحيدة. مش هينفع تختاري صورة متخزّنة عندك.';
 
   @override
-  String get iAgreeStartTheCamera => 'أوافق وأبدأ التصوير';
+  String get iAgreeStartTheCamera => 'موافقة، يلا نشغّل الكاميرا';
 
   @override
-  String get iWouldRatherNot => 'أفضّل ألا أفعل';
+  String get iWouldRatherNot => 'مش عايزة';
 
   @override
   String get weCannotRunThisStepOnYour =>
@@ -7511,7 +7509,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get weCouldNotSaveYourAgreementSo =>
-      'تعذّر حفظ موافقتكِ، لذلك لم تُفتح الكاميرا. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
+      'ماقدرناش نحفظ موافقتك، فالكاميرا ماتفتحتش. اتأكدي من النت وجرّبي تاني.';
 
   @override
   String get backUpMyHealthData => 'نسخة احتياطية من بياناتي الصحية';
@@ -7537,7 +7535,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get thisIsHealthDataSoWeOnly =>
-      'هذه بيانات صحية، لذلك لا ننسخها إلا بموافقتكِ الصريحة. يمكنكِ إيقاف هذا الخيار في أي وقت، وإيقافه يحذف النسخة من حسابكِ.';
+      'دي بيانات صحية، فمش بننسخها غير بموافقتك الصريحة. تقدري توقّفي الخيار ده في أي وقت، وإيقافه بيمسح النسخة من حسابك.';
 
   @override
   String get ifYouDoNotTurnItOn =>
@@ -7545,7 +7543,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get iAgreeBackUpMyHealthData =>
-      'أوافق، انسخوا بياناتي الصحية احتياطيًا';
+      'موافقة، عايزة نسخة احتياطية لبياناتي الصحية';
 
   @override
   String get weCouldNotReachOwnHubSo =>
@@ -7564,15 +7562,15 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get theAutomaticCheckCouldNotStartJust =>
-      'تعذّر بدء التحقق التلقائي الآن. يمكنكِ أن تطلبي مراجِعة بدلًا من ذلك، أو أن تعودي وتحاولي مرة أخرى.';
+      'ماقدرناش نبدأ التحقق التلقائي دلوقتي. تقدري تطلبي مراجِعة ست بدل كده، أو ترجعي وتجرّبي تاني.';
 
   @override
   String get weCouldNotReachOwnHubSo_3usbb =>
-      'تعذّر الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار بعد. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
+      'ماقدرناش نوصل لـ Own Hub، فإنتِ لسه مادخلتيش قائمة الانتظار. اتأكدي من النت وجرّبي تاني.';
 
   @override
   String get youHaveAskedForAReviewerToo =>
-      'لقد طلبتِ مراجِعة مرات كثيرة اليوم. يُرجى المحاولة مرة أخرى غدًا.';
+      'طلبتي مراجِعة مرات كتير النهارده. جرّبي تاني بكرة.';
 
   @override
   String get aWomanReviewerFromOwnHubWill =>
@@ -7644,7 +7642,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get thisCopyOfTheAppCannotReach_agbhf =>
-      'لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.';
+      'النسخة دي من التطبيق مش قادرة توصل لـ Own Hub، فإنتِ مش في قائمة الانتظار. نزّلي آخر إصدار من App Store أو Google Play.';
 
   @override
   String get deletingYourAccountRemovesItFromOur =>
@@ -7690,7 +7688,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get thisCopyOfTheAppCannotReach_1dlg6 =>
-      'لا تستطيع هذه النسخة من التطبيق الوصول إلى Own Hub، لذلك لم تُحفظ موافقتكِ ولم تُفتح الكاميرا. يُرجى تثبيت أحدث إصدار من App Store أو Google Play.';
+      'النسخة دي من التطبيق مش قادرة توصل لـ Own Hub، فموافقتك ماتحفظتش والكاميرا ماتفتحتش. نزّلي آخر إصدار من App Store أو Google Play.';
 
   @override
   String get thisCopyOfTheAppCannotReach_mr83s =>
@@ -7723,11 +7721,11 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get yourSignInIsNoLongerValid_1cfl5 =>
-      'لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُحفظ موافقتكِ ولم تُفتح الكاميرا. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.';
+      'تسجيل دخولك مابقاش صالح، فموافقتك ماتحفظتش والكاميرا ماتفتحتش. سجّلي دخولك تاني برقم موبايلك.';
 
   @override
   String get yourSignInIsNoLongerValid_1y16r =>
-      'لم يعد تسجيل دخولكِ صالحًا، لذلك لم تُضافي إلى قائمة الانتظار. يُرجى تسجيل الدخول مرة أخرى برقم هاتفكِ.';
+      'تسجيل دخولك مابقاش صالح، فإنتِ مش في قائمة الانتظار. سجّلي دخولك تاني برقم موبايلك.';
 
   @override
   String get yourSignInIsNoLongerValid_1ccq0 =>
@@ -7782,14 +7780,14 @@ class AppL10nAr extends AppL10n {
       'رقمك وبطاقتك ووجباتك وتمارينك بتفضل خاصة بيكي.';
 
   @override
-  String get ownHubIsForTrainingNotFor => 'Own Hub للتدريب، لا للبيع.';
+  String get ownHubIsForTrainingNotFor => 'Own Hub للتدريب، مش للبيع.';
 
   @override
   String get yourTrainingYourFoodYourCycleWomen =>
       'تمرينك، وأكلك، ودورتك. للستات بس.';
 
   @override
-  String get setUpMyWeek => 'تجهيز أسبوعي';
+  String get setUpMyWeek => 'جهّزي أسبوعي';
 
   @override
   String get n1Of3YourWeek => '1 من 3 · أسبوعك';
@@ -7867,7 +7865,7 @@ class AppL10nAr extends AppL10n {
       'الكاميرا ماشتغلتش، والمشكلة مش منك. جرّبي تاني، أو ممكن ست من Own Hub تتحقق منك بطريقة تانية.';
 
   @override
-  String get checkMeAnotherWay => 'تحقّق بطريقة تانية';
+  String get checkMeAnotherWay => 'عايزة أتحقق بطريقة تانية';
 
   @override
   String get noConnectionYourPhotosAreStillHere =>
@@ -7995,7 +7993,7 @@ class AppL10nAr extends AppL10n {
   String get leaveTheTour => 'اخرجي من الجولة';
 
   @override
-  String get backToMyCheck => 'رجوع للتحقق';
+  String get backToMyCheck => 'ارجعي للتحقق';
 
   @override
   String get joinToMakeThisYours => 'انضمّي عشان يبقى بتاعك';
@@ -8026,18 +8024,18 @@ class AppL10nAr extends AppL10n {
       'عشان نبعتلك الكود، رقمك بيروح لـ Google Firebase في الولايات المتحدة. وحسابك وبيانات تمرينك بتتحفظ عند Google Cloud في فرانكفورت بألمانيا.';
 
   @override
-  String get sendCrashReports => 'إرسال تقارير الأعطال';
+  String get sendCrashReports => 'ابعتي تقارير الأعطال';
 
   @override
   String get optionalHelpsUsFixTheAppNo =>
       'اختياري. بيساعدنا نصلّح التطبيق. مش بيترفق بيه اسم ولا رقم ولا حساب. تقدري تغيّري ده من «الخصوصية».';
 
   @override
-  String get agreeAndSendMeACode => 'الموافقة وإرسال الرمز';
+  String get agreeAndSendMeACode => 'موافقة وعايزة الكود';
 
   @override
   String get byTappingAgreeAndSendMeA =>
-      'بالضغط على «الموافقة وإرسال الرمز» تقبلين شروط الاستخدام وسياسة الخصوصية.';
+      'لما تضغطي على «موافقة وعايزة الكود»، بتقبلي شروط الاستخدام وسياسة الخصوصية.';
 
   @override
   String get weHaveUpdatedOurTermsAndPrivacy =>
@@ -8045,29 +8043,29 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get pleaseReadWhatChangedToKeepUsing =>
-      'يُرجى قراءة ما تغيّر. ولمواصلة استخدام Own Hub، وافقي على الإصدارين الجديدين.';
+      'اقري اللي اتغيّر. وعشان تكمّلي في استخدام Own Hub، وافقي على الإصدارين الجديدين.';
 
   @override
   String get yourAgreementIsNowRecordedWhenYou =>
-      'يُسجَّل قبولكِ الآن عند التسجيل، مع اللغة وإصدار التطبيق.';
+      'موافقتك دلوقتي بتتسجّل وقت التسجيل، مع اللغة وإصدار التطبيق.';
 
   @override
   String get crashReportsAreSentOnlyIfYou =>
-      'لا تُرسل تقارير الأعطال إلا إذا سمحتِ بها، وتبقى متوقفة حتى تفعلي.';
+      'تقارير الأعطال مابتتبعتش غير لو سمحتي بيها. وهي مقفولة لحد ما تسمحي.';
 
   @override
   String get youCanAskForACopyOf =>
-      'يمكنكِ طلب نسخة من بياناتكِ، وتبيّن السياسة مدة الاحتفاظ بكل نوع منها.';
+      'تقدري تطلبي نسخة من بياناتك، والسياسة بتوضّح بنحتفظ بكل نوع منها قد إيه.';
 
   @override
-  String get agreeAndContinue => 'أوافق وأتابع';
+  String get agreeAndContinue => 'موافقة وهكمّل';
 
   @override
-  String get deleteMyAccountInstead => 'أفضّل حذف حسابي';
+  String get deleteMyAccountInstead => 'عايزة أحذف حسابي بدل كده';
 
   @override
   String get weCouldNotSaveYourAgreementCheck =>
-      'تعذّر حفظ موافقتكِ. تحقّقي من اتصالكِ ثم حاولي مرة أخرى.';
+      'ماقدرناش نحفظ موافقتك. اتأكدي من النت وجرّبي تاني.';
 
   @override
   String get crashReports => 'تقارير الأعطال';
@@ -8082,34 +8080,34 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get yourPhotosGoToOurServerIn =>
-      'تُرسل صوركِ إلى خادمنا في فرانكفورت بألمانيا، ويقرأ Google Cloud Vision نص البطاقة داخل الاتحاد الأوروبي.';
+      'صورك بتروح لسيرفرنا في فرانكفورت بألمانيا، وGoogle Cloud Vision بيقرا الكلام اللي على البطاقة جوه الاتحاد الأوروبي.';
 
   @override
   String get yourFaceIsMatchedOnOurOwn =>
-      'تجري مطابقة وجهكِ على خادمنا نفسه، ولا تطّلع عليه أي خدمة خارجية للتعرّف على الوجوه.';
+      'وشّك بيتطابق على سيرفرنا إحنا، ومفيش أي خدمة برّه بتشوفه للتعرّف على الوشوش.';
 
   @override
   String get noPhotoIsEverStoredBothSides =>
-      'لا تُخزَّن أي صورة أبدًا. يُحذف وجها البطاقة والصورة الذاتية من الذاكرة فور انتهاء التحقق، أيًا كانت النتيجة.';
+      'مفيش أي صورة بتتخزّن أبدًا. وش البطاقة وضهرها والسيلفي بيتمسحوا من الذاكرة أول ما التحقق يخلص، أيًا كانت النتيجة.';
 
   @override
   String get weKeepTheResultAndItsReasons =>
-      'نحتفظ بالنتيجة وأسبابها 180 يومًا، وبرمز مشفّر من رقمكِ القومي حتى لا تفتح البطاقة الواحدة أكثر من حساب. ولا يمكن تحويل الرمز إلى رقمكِ.';
+      'بنحتفظ بالنتيجة وأسبابها 180 يوم، وبكود مشفّر بمفتاح من رقمك القومي عشان البطاقة الواحدة ماتفتحش أكتر من حساب. والكود ده مينفعش يتحوّل تاني لرقمك.';
 
   @override
   String get ifTheCheckCannotDecideYouCan =>
-      'إذا تعذّر حسم التحقق، يمكنكِ أن تطلبي أن تتحقق منكِ امرأة من Own Hub.';
+      'لو التحقق ماقدرش يحسم، تقدري تطلبي إن واحدة ست من Own Hub تتحقق منك بدله.';
 
   @override
-  String get readThePrivacyPolicy => 'اقرئي سياسة الخصوصية';
+  String get readThePrivacyPolicy => 'اقري سياسة الخصوصية';
 
   @override
   String get ownHubIsAFitnessAndWellbeing =>
-      'Own Hub تطبيق للياقة والعافية، وليس جهازًا طبيًا، ولا يشخّص أي حالة ولا يعالجها ولا يشفيها ولا يقي منها. استشيري طبيبكِ قبل البدء، خاصةً إذا كنتِ حاملًا أو وضعتِ حديثًا.';
+      'Own Hub تطبيق للياقة والعافية، مش جهاز طبي، وما بيشخّصش أي حالة ولا بيعالجها ولا بيشفيها ولا بيمنعها. اسألي دكتورك قبل ما تبدئي، خصوصًا لو إنتِ حامل أو ولدتي من وقت قريب.';
 
   @override
   String get usuallyACoupleOfMinutesIfA =>
-      'عادةً دقيقتان تقريبًا، وإذا احتاجت امرأة إلى التحقق فقد يستغرق ذلك حتى 3 أيام.';
+      'غالبًا في دقيقتين تقريبًا. ولو واحدة ست احتاجت تتحقق بنفسها، لحد 3 أيام.';
 
   @override
   String get bothImagesAreDeletedAfterTheCheck_8iuyd =>
@@ -8121,13 +8119,13 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get aWomanReviewerChecksYourCardWith =>
-      'تتحقق مراجِعة من بطاقتكِ معكِ. لا يُسجَّل شيء، ولا تحتفظ إلا بقرارها وتاريخه.';
+      'مراجِعة ست بتتحقق من بطاقتك معاكي. مفيش حاجة بتتسجّل. وهي بتحتفظ بقرارها وتاريخه بس.';
 
   @override
-  String get askAWomanToCheckMe => 'اطلبي أن تتحقق منكِ امرأة';
+  String get askAWomanToCheckMe => 'اطلبي إن واحدة ست تتحقق مني';
 
   @override
-  String get aCheckWithAWoman => 'تحقق مع امرأة';
+  String get aCheckWithAWoman => 'تحقّق مع واحدة ست';
 
   @override
   String get emailUsReadSundayToThursday9 =>
@@ -8172,7 +8170,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get yourPhoneNumberIsUsedOnlyTo_thda4 =>
-      'يُستخدم رقم هاتفكِ فقط لترتيب التحقق.';
+      'رقم موبايلك بيتستخدم بس عشان نرتّب التحقق.';
 
   @override
   String get aWomanFromOwnHubWillReview =>
@@ -8196,7 +8194,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get ifYouDoNotShowYourFace_1pr0p =>
-      'إن كنتِ لا تكشفين وجهكِ أمام الكاميرا، فلا شيء هنا يطلب منكِ ذلك. تراجع امرأة من Own Hub حالتكِ وتتواصل معكِ هاتفيًا خلال 72 ساعة لتتحقق معكِ من بطاقتكِ الشخصية.';
+      'لو مابتظهريش وشّك قدام الكاميرا، مفيش حاجة هنا هتطلب منك كده. واحدة ست من Own Hub بتراجع حالتك وبتتواصل معاكي بالتليفون خلال 72 ساعة، وتتحقق من بطاقتك الشخصية معاكي.';
 
   @override
   String get thisAccountHasUsedEveryAutomaticCheck_rc3un =>
@@ -8204,7 +8202,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get yourAutomaticCheckIsStillRunningSo =>
-      'ما زال فحصكِ التلقائي جاريًا، لذا لم يُرسَل شيء. ستنتقلين إلى الخطوة التالية عند انتهائه. وإن لم يحدث شيء، فاطلبي مرة أخرى بعد دقيقة.';
+      'التحقق التلقائي بتاعك لسه شغّال، فمفيش حاجة اتبعتت. هتتنقلي للخطوة اللي بعدها أول ما يخلص. ولو مفيش حاجة حصلت، اطلبي تاني بعد دقيقة.';
 
   @override
   String get theMatchUsuallyTakesUnderAMinute =>
@@ -8218,7 +8216,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get breakingThemCanCloseYourAccountYou =>
-      'مخالفتها قد تؤدّي إلى إغلاق حسابكِ. ويمكنكِ قراءتها مرة أخرى في أي وقت.';
+      'مخالفتها ممكن تقفل حسابك. وتقدري تقريها تاني في أي وقت.';
 
   @override
   String get firstYourWeekThenYourNumberAnd_flrzo =>
@@ -8299,7 +8297,7 @@ class AppL10nAr extends AppL10n {
   String get changeTime => 'غيّري الوقت';
 
   @override
-  String get remindMe => 'فكّريني';
+  String get remindMe => 'فكّرني';
 
   @override
   String get turnRemindersOff => 'اقفلي التذكيرات';
@@ -8437,11 +8435,11 @@ class AppL10nAr extends AppL10n {
   String get weCouldNotOpenAMessageOn => 'ماقدرناش نفتح رسالة على الموبايل ده.';
 
   @override
-  String get iAgreeToTheseThreeRules => 'أوافق على هذه القواعد الثلاث';
+  String get iAgreeToTheseThreeRules => 'موافقة على القواعد التلاتة دي';
 
   @override
   String get asACoachYouAgreeToThe =>
-      'بصفتكِ مدرّبة، توافقين على القواعد الثلاث نفسها التي توافق عليها كل امرأة هنا.';
+      'كمدرّبة، إنتِ بتوافقي على نفس القواعد التلاتة اللي بتوافق عليها كل ست هنا.';
 
   @override
   String get photographYourCertificate => 'صوّري شهادتك';
@@ -8602,7 +8600,7 @@ class AppL10nAr extends AppL10n {
   }
 
   @override
-  String get refresh => 'تحديث';
+  String get refresh => 'حدّثي';
 
   @override
   String get thisAccountDoesNotHaveAdminAccess =>
@@ -8967,7 +8965,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String sendItAgainInTime(String time) {
-    return 'ابعتوا الكود تاني بعد $time';
+    return 'اطلبي الكود تاني بعد $time';
   }
 
   @override
@@ -9071,7 +9069,7 @@ class AppL10nAr extends AppL10n {
   String get takeItAgain => 'صوّري تاني';
 
   @override
-  String get takeYourPhoto => 'صورتك';
+  String get takeYourPhoto => 'خدي صورتك';
 
   @override
   String get faceTheLightWithAPlainWall =>
@@ -9138,4 +9136,784 @@ class AppL10nAr extends AppL10n {
   @override
   String get onGoogleAnalyticsAndPosthogReceiveBasic =>
       'شغّال. Google Analytics وPostHog بيوصلهم استخدام التطبيق الأساسي برّه مصر، ومنها أمريكا. من غير تفاصيل صحتك أو اسمك أو رقمك أو رسايلك.';
+
+  @override
+  String get resume => 'كمّلي';
+
+  @override
+  String setsDoneDoneOfTotal(String done, String total) {
+    return 'المجموعات اللي خلصت: $done من $total';
+  }
+
+  @override
+  String get todaysSessionIsDone => 'تمرين النهارده خلص';
+
+  @override
+  String get anotherSession => 'تمرين كمان';
+
+  @override
+  String get trainingStreak => 'سلسلة تمرينك';
+
+  @override
+  String trainingStreakDaysDays(String days) {
+    return 'سلسلة تمرينك: $days يوم';
+  }
+
+  @override
+  String daysDays(String days) {
+    return '$days يوم';
+  }
+
+  @override
+  String yourBestDaysDays(String days) {
+    return 'أطول سلسلة ليكي: $days يوم';
+  }
+
+  @override
+  String get day1StartsWithYourNextSession => 'يوم 1 بيبدأ مع تمرينك الجاي.';
+
+  @override
+  String pausedUntilDate(String date) {
+    return 'متوقفة لحد $date';
+  }
+
+  @override
+  String get pausedUntilYouComeBack => 'متوقفة لحد ما ترجعي';
+
+  @override
+  String get restDaysCountWhileYourWeekGoal =>
+      'أيام الراحة بتتحسب طول ما هدف أسبوعك لسه في إيدك. وأسبوع الراحة اللي كسبتيه بيغطي أي أسبوع يفلت منك. محفوظة على الموبايل ده بس.';
+
+  @override
+  String get pauseForAWeek => 'وقّفيها أسبوع';
+
+  @override
+  String get pauseForTwoWeeks => 'وقّفيها أسبوعين';
+
+  @override
+  String get pauseUntilIComeBack => 'وقّفيها لحد ما أرجع';
+
+  @override
+  String get resumeNow => 'رجّعيها دلوقتي';
+
+  @override
+  String get showMyTrainingStreak => 'وريني سلسلة تمريني';
+
+  @override
+  String get keptOnThisPhoneTurnItOff =>
+      'محفوظة على الموبايل ده. تقدري تقفليها في أي وقت.';
+
+  @override
+  String get yourWeeksCountAndSoDoThe =>
+      'أسابيعك بتتحسب، والأيام اللي بتخلي أسبوعك في إيدك بتتحسب كمان. وبس اللي بتضيفيه بنفسك.';
+
+  @override
+  String get thisWeeksChallenge => 'تحدي الأسبوع ده';
+
+  @override
+  String moveMoreThanLastWeeksAmount(String move, String amount) {
+    return '$move: أكتر من $amount الأسبوع اللي فات';
+  }
+
+  @override
+  String moveMatchLastWeeksAmount(String move, String amount) {
+    return '$move: زي $amount الأسبوع اللي فات';
+  }
+
+  @override
+  String youBeatLastWeekOnMoveAmount(String move, String amount) {
+    return 'عدّيتي الأسبوع اللي فات في $move: $amount';
+  }
+
+  @override
+  String youMatchedLastWeekOnMoveAmount(String move, String amount) {
+    return 'عملتي زي الأسبوع اللي فات في $move: $amount';
+  }
+
+  @override
+  String get nextMilestone => 'الإنجاز الجاي';
+
+  @override
+  String movesMovesSetsSetsMinutesMin(
+    String moves,
+    String sets,
+    String minutes,
+  ) {
+    return '$moves حركات · $sets مجموعات · $minutes دقيقة';
+  }
+
+  @override
+  String moveNowUpFromBefore(String move, String now, String before) {
+    return '$move: $now، وكانت $before';
+  }
+
+  @override
+  String moveAHarderVersionThanBefore(String move) {
+    return '$move: نسخة أصعب من قبل';
+  }
+
+  @override
+  String firstMarksSetOnCountMoves(String count) {
+    return 'سجّلتي أول أرقامك في $count حركات.';
+  }
+
+  @override
+  String get readYourAnswers => 'قرينا إجاباتك';
+
+  @override
+  String get checkedYourEquipment => 'راجعنا أدواتك';
+
+  @override
+  String get matchedYourDaysAndMinutes => 'ظبطنا أيامك ودقايقك';
+
+  @override
+  String get preferredAQuietSessionForHome => 'اخترنا تمرين هادي للبيت';
+
+  @override
+  String get moreYouCanDo => 'حاجات تانية تقدري تعمليها';
+
+  @override
+  String get moreSessions => 'تمارين تانية';
+
+  @override
+  String daysPluralOneTrainingStreak1Day(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'سلسلة تمرينك: $days يوم',
+      many: 'سلسلة تمرينك: $days يوم',
+      few: 'سلسلة تمرينك: $days أيام',
+      two: 'سلسلة تمرينك: يومين',
+      one: 'سلسلة تمرينك: يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysPluralOneYourBest1Day(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'أطول سلسلة ليكي: $days يوم',
+      many: 'أطول سلسلة ليكي: $days يوم',
+      few: 'أطول سلسلة ليكي: $days أيام',
+      two: 'أطول سلسلة ليكي: يومين',
+      one: 'أطول سلسلة ليكي: يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOneFirstMarkSetOn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'سجّلتي أول أرقامك في $count حركة.',
+      many: 'سجّلتي أول أرقامك في $count حركة.',
+      few: 'سجّلتي أول أرقامك في $count حركات.',
+      two: 'سجّلتي أول أرقامك في حركتين.',
+      one: 'سجّلتي أول رقم ليكي في حركة واحدة.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String movesMovesSetsSetsTimeMinutesMin(
+    String moves,
+    String sets,
+    String minutes,
+  ) {
+    return 'الحركات: $moves · المجموعات: $sets · الوقت: $minutes دقيقة';
+  }
+
+  @override
+  String minutesPluralOneMovesMovesSetsSets(
+    int minutes,
+    String moves,
+    String sets,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'الحركات: $moves · المجموعات: $sets · الوقت: $minutes دقيقة',
+      many: 'الحركات: $moves · المجموعات: $sets · الوقت: $minutes دقيقة',
+      few: 'الحركات: $moves · المجموعات: $sets · الوقت: $minutes دقايق',
+      two: 'الحركات: $moves · المجموعات: $sets · الوقت: دقيقتين',
+      one: 'الحركات: $moves · المجموعات: $sets · الوقت: دقيقة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exerciseLibrary => 'مكتبة الحركات';
+
+  @override
+  String get seeHowEveryMoveIsDone => 'شوفي كل حركة بتتعمل إزاي';
+
+  @override
+  String get watchTheMoves => 'اتفرّجي على الحركات';
+
+  @override
+  String get searchMoves => 'دوّري على حركة';
+
+  @override
+  String get play => 'شغّلي';
+
+  @override
+  String get chooseAMoveFromTheLibrary => 'اختاري حركة من المكتبة';
+
+  @override
+  String get openTheExerciseLibrary => 'افتحي مكتبة الحركات';
+
+  @override
+  String get stretchesAndWarmUps => 'إطالات وإحماء';
+
+  @override
+  String get homeOrGym => 'في البيت أو الجيم';
+
+  @override
+  String get gymOnly => 'في الجيم بس';
+
+  @override
+  String get gymMachines => 'أجهزة الجيم';
+
+  @override
+  String get mat => 'سجادة تمرين';
+
+  @override
+  String get machine => 'جهاز';
+
+  @override
+  String get cableMachine => 'جهاز كابل';
+
+  @override
+  String get barbell => 'بار';
+
+  @override
+  String get smithMachine => 'جهاز سميث';
+
+  @override
+  String get bench => 'بنش';
+
+  @override
+  String get step => 'ستيب';
+
+  @override
+  String get kettlebell => 'كيتل بيل';
+
+  @override
+  String get glutes => 'الأرداف';
+
+  @override
+  String get frontOfThighs => 'الفخذ من قدام';
+
+  @override
+  String get backOfThighs => 'الفخذ من ورا';
+
+  @override
+  String get innerAndOuterThighs => 'الفخذ من جوه وبره';
+
+  @override
+  String get innerThighs => 'الفخذ من جوه';
+
+  @override
+  String get outerThighs => 'الفخذ من بره';
+
+  @override
+  String get calves => 'السمانة';
+
+  @override
+  String get absAndSides => 'البطن والجناب';
+
+  @override
+  String get core => 'وسط الجسم';
+
+  @override
+  String get sidesOfTheWaist => 'جناب البطن';
+
+  @override
+  String get lowerBack => 'أسفل الظهر';
+
+  @override
+  String get chest => 'الصدر';
+
+  @override
+  String get upperBack => 'أعلى الظهر';
+
+  @override
+  String get sidesOfTheBack => 'جناب الظهر';
+
+  @override
+  String get shoulders => 'الكتاف';
+
+  @override
+  String get frontOfTheShoulders => 'الكتف من قدام';
+
+  @override
+  String get sidesOfTheShoulders => 'الكتف من الجنب';
+
+  @override
+  String get backOfTheShoulders => 'الكتف من ورا';
+
+  @override
+  String get arms => 'الدراعات';
+
+  @override
+  String get biceps => 'البايسبس';
+
+  @override
+  String get triceps => 'الترايسبس';
+
+  @override
+  String get forearms => 'السواعد';
+
+  @override
+  String get musclesWorked => 'العضلات اللي بتشتغل';
+
+  @override
+  String get alsoWorks => 'وبتشغّل كمان';
+
+  @override
+  String get howToSetUp => 'إزاي تجهّزي';
+
+  @override
+  String get beginner => 'مبتدئة';
+
+  @override
+  String get intermediate => 'متوسطة';
+
+  @override
+  String get front => 'من قدام';
+
+  @override
+  String get side => 'من الجنب';
+
+  @override
+  String get fromBehind => 'من ورا';
+
+  @override
+  String get otherSide => 'الناحية التانية';
+
+  @override
+  String get gettingTheVideo => 'بنجهّز الفيديو';
+
+  @override
+  String get thisVideoNeedsAConnectionTheFirst =>
+      'الفيديو ده محتاج نت أول مرة بس، وبعد كده هيشتغل من غيره.';
+
+  @override
+  String get theExerciseLibraryIsOnItsWay => 'مكتبة الحركات في الطريق';
+
+  @override
+  String get itArrivesTheNextTimeYouOpen =>
+      'هتوصل أول ما تفتحي التطبيق وإنتِ على النت.';
+
+  @override
+  String get tryAnotherFilterOrClearTheSearch =>
+      'جرّبي فلتر تاني، أو امسحي البحث.';
+
+  @override
+  String get someMovesAreHiddenWhileYouAre =>
+      'في حركات مخفية عشان إنتِ حامل. اسألي دكتورك قبل ما تجرّبي أي حاجة جديدة.';
+
+  @override
+  String get someMovesAreHiddenInTheWeeks =>
+      'في حركات مخفية في الأسابيع اللي بعد الولادة. استني موافقة دكتورك قبل ما تجرّبيها.';
+
+  @override
+  String get feelGoodAndMove => 'اتحرّكي وحسّي بالفرق';
+
+  @override
+  String get loseSteadily => 'نزّلي وزنك بالتدريج';
+
+  @override
+  String get atHomeQuietNothingToBuy => 'في البيت · هادية · من غير أدوات';
+
+  @override
+  String get atHomeQuietWithYourDumbbells => 'في البيت · هادية · بالدمبل بتاعك';
+
+  @override
+  String get atTheGymWeightsAndMachines => 'في الجيم · أوزان وأجهزة';
+
+  @override
+  String youFinishedEverySetAtWeightTry(String weight, String next) {
+    return 'خلّصتي كل المجموعات بـ $weight. جرّبي $next النهارده.';
+  }
+
+  @override
+  String lastTimeYouDidWeightStayThere(String weight) {
+    return 'آخر مرة عملتي $weight. خليكي عليه لحد ما تخلّصي كل المجموعات.';
+  }
+
+  @override
+  String itHasBeenAWhileSinceWeight(String weight) {
+    return 'بقالك فترة من آخر مرة بـ $weight. ابدئي بأخف شوية وارجعي بالتدريج.';
+  }
+
+  @override
+  String get firstTimeAtTheGym => 'أول مرة في الجيم؟';
+
+  @override
+  String get beforeYouStart => 'قبل ما تبدئي';
+
+  @override
+  String get todaysSessionIsShortBringWaterAnd =>
+      'تمرينة النهارده قصيرة. خدي معاكي مية ومنشفة صغيرة، والبسي جزمة مريحة للحركة. موظفين الجيم هيساعدوكي تلاقي الأجهزة.';
+
+  @override
+  String get findYourEquipment => 'دوّري على الجهاز';
+
+  @override
+  String get lookForTheStationYourFirstMove =>
+      'دوّري على الجهاز اللي أول تمرين بيقول عليه. لو مش لاقياه اسألي الموظفين. ولو مشغول، بدّلي التمرين من شاشة التمرينة وارجعيله بعدين.';
+
+  @override
+  String get whatASetIs => 'يعني إيه مجموعة';
+
+  @override
+  String get aRepIsOneTimeThroughA =>
+      'العدّة هي مرة واحدة من التمرين. والمجموعة كذا عدّة ورا بعض. ارتاحي بين المجموعات وبعدين كمّلي.';
+
+  @override
+  String get tryItLogAPracticeSet => 'جرّبي: سجّلي مجموعة تجريبية';
+
+  @override
+  String get practiceSetLoggedNothingIsSaved =>
+      'اتسجّلت مجموعة تجريبية. مفيش حاجة بتتحفظ.';
+
+  @override
+  String get startWithConfidence => 'ابدئي بثقة';
+
+  @override
+  String get goAtYourOwnPaceIfYou =>
+      'ماشيها على راحتك. لو حسّيتي بألم أو تعب، وقّفي واطلبي مساعدة من موظفين الجيم.';
+
+  @override
+  String get tapChangeToAddTheWeightYou =>
+      'دوسي على تغيير وسجّلي الوزن اللي رفعتيه، عشان المرة الجاية نبدأ منه.';
+
+  @override
+  String get eachSessionIsAFullBodyWith =>
+      'كل تمرينة للجسم كله، بعدّات أقل وأتقل وراحة طويلة.';
+
+  @override
+  String get eachSessionIsAGentleFullBody =>
+      'كل تمرينة للجسم كله بهدوء، بعدّات سهلة وراحة قصيرة.';
+
+  @override
+  String get eachSessionIsASteadyCircuitWith =>
+      'كل تمرينة دايرة متواصلة، بعدّات كتير وراحة قصيرة.';
+
+  @override
+  String get yourEnergyIsLowToday => 'طاقتك قليلة النهارده.';
+
+  @override
+  String get youHaveCrampsToday => 'عندك مغص النهارده.';
+
+  @override
+  String get yourEnergyIsLowAndYouHave => 'طاقتك قليلة وعندك مغص النهارده.';
+
+  @override
+  String get aComfyDinnerHighInProtein => 'عشا مريح وفيه بروتين عالي.';
+
+  @override
+  String get aComfyDinner => 'عشا مريح.';
+
+  @override
+  String get highInProtein => 'فيه بروتين عالي.';
+
+  @override
+  String get yourWeekIsFullSwapADinner =>
+      'أسبوعك مليان. بدّلي عشا عشان تدخّلي ده.';
+
+  @override
+  String get planYourWeekFirst => 'خطّطي أسبوعك الأول';
+
+  @override
+  String get pickYourDinnersForTheWeekAnd =>
+      'اختاري عشا الأسبوع وقايمة الشراء هتتعمل لوحدها.';
+
+  @override
+  String get planMyWeek => 'خطّطي أسبوعي';
+
+  @override
+  String get yourConnectionIsTooSlow => 'النت عندك بطيء أوي';
+
+  @override
+  String get stillWorkingASlowConnectionCanTake =>
+      'لسه شغالين على الموضوع. النت البطيء ممكن ياخد وقت أطول شوية.';
+
+  @override
+  String get slowConnectionStillGettingTheVideo =>
+      'النت بطيء، لسه بنجيب الفيديو';
+
+  @override
+  String get weCouldNotFinishTheCheckIn =>
+      'ماقدرناش نخلّص الفحص في الوقت. صورك اتمسحت من الموبايل خلاص. روحي مكان فيه شبكة أقوى وصوّريها تاني.';
+
+  @override
+  String get arabicText_3cakp => 'مصري · كل حاجة في التطبيق';
+
+  @override
+  String swapToName(String name) {
+    return 'غيّريها لـ $name';
+  }
+
+  @override
+  String get noSwapForThisMoveRightNow => 'مفيش بديل للحركة دي دلوقتي';
+
+  @override
+  String get tryFewerFiltersToSeeMoreWorkouts =>
+      'جرّبي فلاتر أقل عشان تشوفي تمارين أكتر.';
+
+  @override
+  String get gladYouShowedUpToday => 'مبسوطة إنك جيتي النهارده.';
+
+  @override
+  String countPluralOne1MoreAndThe(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تمرين كمان والأسبوع يتحسب.',
+      many: '$count تمرين كمان والأسبوع يتحسب.',
+      few: '$count تمارين كمان والأسبوع يتحسب.',
+      two: 'تمرينين كمان والأسبوع يتحسب.',
+      one: 'تمرين واحد كمان والأسبوع يتحسب.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayOneStartsWithYourNextSession =>
+      'أول يوم بيبدأ مع تمرينك الجاي.';
+
+  @override
+  String get ramadanModeOn => 'وضع رمضان شغال';
+
+  @override
+  String get dangerZone => 'منطقة الحذف';
+
+  @override
+  String get readyWhenYouAre => 'جاهزة وقت ما تحبي.';
+
+  @override
+  String get trainedTodayAddItInATap => 'اتمرنتي النهارده؟ سجّليه بضغطة.';
+
+  @override
+  String get aShortSessionStillCountsReadyWhen =>
+      'جلسة قصيرة برضه بتفرق. جاهزة وقت ما تحبي.';
+
+  @override
+  String get newMovesAreWaitingInTheLibrary =>
+      'فيه حركات جديدة مستنياكي في المكتبة.';
+
+  @override
+  String get yourPlanIsWhereYouLeftIt => 'خطتك زي ما سيبتيها. كملي في أي وقت.';
+
+  @override
+  String get aLittleMovementTodayNoPressure =>
+      'شوية حركة النهارده؟ من غير أي ضغط.';
+
+  @override
+  String get restIsOverYourNextSetIs =>
+      'الراحة خلصت. المجموعة اللي بعدها جاهزة.';
+
+  @override
+  String get gentleCheckIns => 'تذكيرات لطيفة';
+
+  @override
+  String get aKindWordIfYouHaveBeen => 'كلمة لطيفة لو غبتي عننا فترة.';
+
+  @override
+  String get restTimer => 'مؤقت الراحة';
+
+  @override
+  String get tellsYouWhenYourRestBetweenSets =>
+      'بيقولك لما راحتك بين المجموعات تخلص.';
+
+  @override
+  String get remindMeToAddASessionI => 'فكّرني أسجّل تمرين عملته';
+
+  @override
+  String get gentleCheckInsWhenIveBeenAway => 'تذكير لطيف لما أغيب';
+
+  @override
+  String get restTimerAlert => 'تنبيه انتهاء الراحة';
+
+  @override
+  String get remindersThatFitYourDay => 'تذكيرات على مقاسك';
+
+  @override
+  String get aQuietNoteOnTheDaysYou => 'تذكير هادي في الأيام اللي تختاريها';
+
+  @override
+  String get aPingWhenYourRestBetweenSets =>
+      'تنبيه لما راحتك بين المجموعات تخلص';
+
+  @override
+  String get turnOnReminders => 'شغّلي التذكيرات';
+
+  @override
+  String get yourTrainingYourFoodYourMonthWomen =>
+      'تمرينك، وأكلك، وشهرك. للستات بس.';
+
+  @override
+  String get aPlanThatListensToYourBody => 'خطة بتسمع لجسمك';
+
+  @override
+  String get sayHowYouFeelTodayOnHarder =>
+      'قولي حاسة بإيه النهارده. وفي الأيام الأصعب، Own Hub ممكن يقترح تمرين ألطف. اللي بتسجليه بيفضل على موبايلك إلا لو اخترتي تعملي له نسخة احتياطية.';
+
+  @override
+  String get yourDayAsYouFeelIt => 'يومك زي ما إنتي حاسة بيه';
+
+  @override
+  String get howYouFeelToday => 'إحساسك النهارده';
+
+  @override
+  String get lowOnEnergyALighterVersionOf =>
+      'طاقتك واطية؟ هتلاقي هنا نسخة أخف من تمرين النهارده.';
+
+  @override
+  String get aFewGentleRemindersTurnAnyOf =>
+      'كام تذكير لطيف. تقدري توقفي أي واحد منهم من هنا.';
+
+  @override
+  String yourFirstWeekDoneOfTotalSteps(String done, String total) {
+    return 'أسبوعك الأول: $done من $total خطوات';
+  }
+
+  @override
+  String get crampsAppetiteSleepAndMore => 'التقلصات والشهية والنوم وغيرها';
+
+  @override
+  String get remindersAndExtras => 'التذكيرات وحاجات تانية';
+
+  @override
+  String get privacyAndData => 'الخصوصية وبياناتك';
+
+  @override
+  String get filters => 'الفلاتر';
+
+  @override
+  String get howWeeksCount => 'إزاي الأسابيع بتتحسب';
+
+  @override
+  String daysDaysAWeekMinutesMinA(String days, String minutes) {
+    return '$days أيام في الأسبوع · $minutes دقيقة في التمرين';
+  }
+
+  @override
+  String get sweetToothBreakfast => 'فطار للي بتحب الحلو';
+
+  @override
+  String get saltyFullingBreakfast => 'فطار مالح بيشبّع';
+
+  @override
+  String get lunchyJunkyYum => 'غدا لذيذ على الخفيف';
+
+  @override
+  String get comfyDinner => 'عشا مريح';
+
+  @override
+  String daysDaysAWeekMinutesMinA_ew0mi(String days, String minutes) {
+    return '$days أيام في الأسبوع · $minutes دقيقة في التمرين · في البيت';
+  }
+
+  @override
+  String daysDaysAWeekMinutesMinA_q73s6(String days, String minutes) {
+    return '$days أيام في الأسبوع · $minutes دقيقة في التمرين · في جيم للستات بس';
+  }
+
+  @override
+  String daysDaysAWeekMinutesMinA_3morb(String days, String minutes) {
+    return '$days أيام في الأسبوع · $minutes دقيقة في التمرين · في البيت والجيم';
+  }
+
+  @override
+  String get remindersNeverComeBetween10PmAnd =>
+      'التذكيرات مش بتيجي من 10 بالليل لحد 8 الصبح. بس مؤقت راحة إنتي شغّلتيه، أو خبر إن التحقق خلص، ممكن يوصلك.';
+
+  @override
+  String get aQuickWayToAddASession => 'طريقة سريعة تسجّلي بيها تمرين عملتيه';
+
+  @override
+  String get pickOneItShapesYourProgram =>
+      'اختاري واحد. هو اللي بيحدّد برنامجك.';
+
+  @override
+  String get makeItLookLikeYou => 'خليها تشبهك';
+
+  @override
+  String get bothSwitchBetweenThemWheneverYouLike =>
+      'الاتنين. بدّلي بينهم وقت ما تحبي.';
+
+  @override
+  String get aPlanThatAdjustsToHowYou => 'خطة بتتظبط على حالتك';
+
+  @override
+  String get thatsOwnHub => 'ده هو Own Hub';
+
+  @override
+  String get weJustNeedYourNumberAndA_1vu4x =>
+      'محتاجين بس رقمك وتحقّق سريع إنك ست.';
+
+  @override
+  String get firstYourWeekThenYourNumberAnd_10ray =>
+      'الأول أسبوعك، وبعدين رقمك وتحقّق سريع إنك ست.';
+
+  @override
+  String get ownHubIsAFitnessAppFor_loijw =>
+      'Own Hub تطبيق لياقة للستات بس. الرئيسية بتوريكي تمرين النهارده، واللي أكلتيه، وأسبوعك ماشي إزاي. ده أسبوع مثال، فاضغطي على أي حاجة.';
+
+  @override
+  String get mostWomenStartWithNothingAndThats =>
+      'أغلب الستات بيبدأوا من غير أي حاجة، وده كفاية.';
+
+  @override
+  String get hitYourGoalAndTheWeekCounts =>
+      'حقّقي هدفك والأسبوع يتحسب. ولو فاتك أسبوع، أسبوع راحة كسبتيه بيغطّيه.';
+
+  @override
+  String get week1StartsWithFourMovesOn_9iwwr =>
+      'الأسبوع 1 بيبدأ بأربع حركات على الأرض. من غير نط، فمحدّش من جيرانك هيحس بحاجة.';
+
+  @override
+  String get theresNoDeadlineFinishingThemAllIs =>
+      'مفيش ميعاد. إنك تخلّصيهم كلهم هو بس أسرع طريق تعرفي بيه كل حاجة مكانها فين.';
+
+  @override
+  String get allDoneTheAppWontChangeFrom =>
+      'خلّصتي كل حاجة. التطبيق مش هيتغيّر من هنا، إنتِ بس جرّبتي كل جزء فيه مرة.';
+
+  @override
+  String get nothingsLostOneSessionGetsItGoing =>
+      'مفيش حاجة راحت. تمرين واحد ويرجع يمشي من تاني.';
+
+  @override
+  String get tapOneAndItsSavedYouCan =>
+      'اضغطي على واحدة وهتتحفظ. وتقدري تتراجعي خلال خمس ثواني.';
+
+  @override
+  String get ifYouDontTurnItOnNothing =>
+      'لو ماشغّلتيهوش، مفيش حاجة تانية هتتغيّر. بياناتك الصحية بتفضل على الموبايل ده.';
+
+  @override
+  String get takeItAtWhateverPaceFeelsRight =>
+      'خدي وقتك. لو حاجة وجعتك أو حسّيتي بتعب، وقّفي واطلبي مساعدة من موظفين الجيم.';
+
+  @override
+  String get aShortOneStillCountsWheneverYoure =>
+      'تمرين قصير برضه بيتحسب. وقت ما تحبي.';
+
+  @override
+  String get aFriendlyNudgeIfYouveBeenAway => 'تذكير بسيط لو غبتي عننا فترة.';
+
+  @override
+  String get remindersNeverComeBetween10PmAnd_z63uh =>
+      'التذكيرات مش بتيجي من 10 بالليل لحد 8 الصبح. بس مؤقت راحة إنتِ شغّلتيه، أو خبر إن التحقق خلص، ممكن يوصلك.';
+
+  @override
+  String get remindersCantBeSetOnThisPhone =>
+      'مينفعش نظبط تذكيرات على الموبايل ده.';
 }

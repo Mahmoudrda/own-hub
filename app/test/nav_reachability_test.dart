@@ -208,7 +208,7 @@ const double _measuredFloor = 71.0;
 ///
 /// Raise it when it rises. Never lower it: a screen that was two taps away and
 /// now is not is a defect, whatever the ratio says.
-const int _withinTwoTapsFloor = 101;
+const int _withinTwoTapsFloor = 115;
 
 /// Whether [id] is excused for having no inbound route.
 ///

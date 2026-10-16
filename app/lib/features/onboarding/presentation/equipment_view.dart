@@ -77,7 +77,7 @@ class _EquipmentViewState extends State<EquipmentView> {
       step: at.step,
       total: at.total,
       title: l10n.whatDoYouHaveAtHome,
-      subtitle: l10n.mostWomenStartWithNothingThatIs,
+      subtitle: l10n.mostWomenStartWithNothingAndThats,
       onContinue: _continue,
       onBack: widget.onBack,
       onClose: widget.onClose,

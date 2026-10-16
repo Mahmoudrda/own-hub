@@ -15,7 +15,6 @@ import '../../../app_state/reminder_scheduler.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
-import '../../../ui/app_card.dart';
 import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_sheet.dart';
 import '../domain/training_reminders.dart';
@@ -30,47 +29,6 @@ String reminderWeekdayLabel(AppL10n l10n, int weekday) => switch (weekday) {
   DateTime.saturday => l10n.saturday,
   _ => l10n.sunday,
 };
-
-/// The offer on `R10`, shown once.
-class ReminderOfferCard extends StatelessWidget {
-  const ReminderOfferCard({super.key, this.onChooseDays, this.onNotNow});
-
-  final VoidCallback? onChooseDays;
-  final VoidCallback? onNotNow;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppL10n.of(context);
-    return AppCard(
-      key: const ValueKey('r10-reminder-offer'),
-      variant: AppCardVariant.tonal,
-      children: [
-        Text(l10n.aReminderOnYourTrainingDays, style: AppText.titleM),
-        const SizedBox(height: 6),
-        Text(
-          l10n.oneQuietNoteOnTheDaysYou,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
-        const SizedBox(height: 12),
-        AppButton(
-          l10n.chooseMyDays,
-          key: const ValueKey('r10-reminder-choose'),
-          variant: AppButtonVariant.outlined,
-          height: 48,
-          onPressed: onChooseDays,
-        ),
-        AppButton(
-          l10n.notNow,
-          key: const ValueKey('r10-reminder-not-now'),
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: onNotNow,
-        ),
-      ],
-    );
-  }
-}
 
 /// Opens the sheet. Completes when it closes.
 Future<void> showReminderSheet(
@@ -231,7 +189,7 @@ class _ReminderSheetState extends State<ReminderSheet> {
             child: Text(
               refused == ReminderPermission.denied
                   ? l10n.notificationsAreOffForOwnHubOn
-                  : l10n.remindersCannotBeSetOnThisPhone,
+                  : l10n.remindersCantBeSetOnThisPhone,
               key: const ValueKey('reminder-refused'),
               style: quiet,
             ),

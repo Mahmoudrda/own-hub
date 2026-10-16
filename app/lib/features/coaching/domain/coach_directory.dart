@@ -378,9 +378,9 @@ abstract final class CoachDirectory {
   /// Ties break on the normalised name, never on anything about her body or
   /// her popularity. A stable tiebreak also stops the list reshuffling between
   /// two identical renders, which reads as a bug.
-  static int _byName(DirectoryRow a, DirectoryRow b) => normaliseForSearch(
-    a.displayName,
-  ).compareTo(normaliseForSearch(b.displayName));
+  static int _byName(DirectoryRow a, DirectoryRow b) =>
+      normaliseForSearch(a.displayName)
+          .compareTo(normaliseForSearch(b.displayName));
 }
 
 /// Folds Arabic orthography so that a name types the way it is spoken.
@@ -403,7 +403,11 @@ String normaliseForSearch(String input) {
     out.writeCharCode(_folded[rune] ?? rune);
   }
   // Collapse runs of whitespace so "Sara  Adel" finds "Sara Adel".
-  return out.toString().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).join(' ');
+  return out
+      .toString()
+      .split(RegExp(r'\s+'))
+      .where((p) => p.isNotEmpty)
+      .join(' ');
 }
 
 /// Marks and joiners that carry no identity: the harakat, the dagger alef, the

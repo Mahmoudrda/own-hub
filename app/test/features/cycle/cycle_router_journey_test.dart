@@ -59,7 +59,6 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
   await tester.pumpAndSettle();
 }
 
-
 /// The shipped build closes the whole app until she is verified. This file is
 /// about the product behind the gate, so she is walked as a verified woman,
 /// through the same seam C12 sets when the server approves her. The flags
@@ -94,7 +93,7 @@ void main() {
     await tester.pumpWidget(_app('Y04'));
     await tester.pumpAndSettle();
 
-    await _tap(tester, find.text('More to note: sleep, bloating, bleeding'));
+    await _tap(tester, find.text('Cramps, appetite, sleep and more'));
     await _tap(tester, find.text('Heavy'));
     await _tap(tester, find.text('Save check-in'));
 

@@ -211,11 +211,15 @@ class _ShareProgressViewState extends State<ShareProgressView> {
             l10n.everythingYouHaveDoneOnOneCard,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
-          RepaintBoundary(
-            key: _card,
-            child: _ProgressCard(
-              story: story,
-              weightChange: _showWeight ? change : null,
+          // The lean is outside the boundary, so the shared picture is the
+          // card standing straight.
+          FingerTilt(
+            child: RepaintBoundary(
+              key: _card,
+              child: _ProgressCard(
+                story: story,
+                weightChange: _showWeight ? change : null,
+              ),
             ),
           ),
           if (change != null)

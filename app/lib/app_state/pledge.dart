@@ -23,7 +23,7 @@ import 'firebase_boot.dart';
 /// `config.PLEDGE_VERSION`; `contracts/identity_contract.json` pins both. Bump
 /// it when the rules change in either language, and every woman is shown them
 /// again before the community opens.
-const int kPledgeVersion = 1;
+const int kPledgeVersion = 2;
 
 /// Callable name, identical on both sides of the contract.
 const String kRecordPledgeCallable = 'record_pledge';

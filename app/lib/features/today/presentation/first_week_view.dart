@@ -39,7 +39,6 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_chevron.dart';
 import '../../../ui/app_ring_stat.dart';
-import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/hand/hand.dart';
@@ -283,57 +282,16 @@ class _FirstWeekViewState extends State<FirstWeekView> {
           ),
           const SizedBox(height: 0),
         ],
-        // The reward is the points system that already exists. Nothing extra is
-        // given for opening the app, and the copy says so.
-        AppCard(
-          variant: AppCardVariant.tonal,
-          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.workspace_premium,
-                  size: 22,
-                  color: AppColors.primaryDim,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Her points, as a label and a value — the shape T08
-                      // below already uses.
-                      //
-                      // This was `n35PointsSoFar` — "35 points so far" — a
-                      // fixed string sitting two lines above `widget.points`,
-                      // which is the real figure. A woman with five points read
-                      // thirty-five.
-                      AppSplitRow(
-                        start: Text(l10n.points, style: AppText.titleM),
-                        end: Text(
-                          countLabel(widget.points),
-                          style: AppText.titleM,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        l10n.theSamePointsTheRestOfThe,
-                        style: AppText.bodyM.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
         // No number. `offeredFirstWeekSteps` returns three in this build, and
         // "Finishing all five is not a deadline" sat under a ring, a heading
         // and three rows that all said three.
-        AppSageNote(l10n.finishingThemAllIsNotADeadline),
+        Text(
+          l10n.theresNoDeadlineFinishingThemAllIs,
+          style: AppText.nav.copyWith(
+            fontSize: 13,
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
@@ -374,7 +332,7 @@ class _FirstWeekViewState extends State<FirstWeekView> {
         // purpose — the confetti belongs to finishing a workout.
         Center(
           child: DrawOn(
-            delay: const Duration(milliseconds: 200),
+            delay: HandTiming.medium,
             builder: (context, progress) => CustomPaint(
               foregroundPainter: LoopPainter(
                 seed: 61,
@@ -404,6 +362,16 @@ class _FirstWeekViewState extends State<FirstWeekView> {
             ),
           ),
         ),
+        // A small cheer, once, for the first week done.
+        const Center(
+          child: Kitten(
+            pose: KittenPose.cheer,
+            prop: KittenProp.heart,
+            size: 40,
+            moment: 'T08',
+            sessionBudget: true,
+          ),
+        ),
         const SizedBox(height: 6),
         Text(
           l10n.youKnowYourWayAround,
@@ -419,7 +387,7 @@ class _FirstWeekViewState extends State<FirstWeekView> {
           child: Text(
             // No number, for the same reason the line on T07 has none: this
             // build offers three of the five steps.
-            l10n.allDoneNothingAboutTheAppChanges,
+            l10n.allDoneTheAppWontChangeFrom,
             textAlign: TextAlign.center,
             style: AppText.bodyM.copyWith(
               height: 23 / 15,
@@ -433,7 +401,6 @@ class _FirstWeekViewState extends State<FirstWeekView> {
           gap: 7,
           children: [
             Text(l10n.whatItAddedUpTo, style: AppText.titleM),
-            _tally(l10n.points, '${widget.points}'),
             _tally(l10n.level, '${widget.level}'),
             // Her week, from the same two numbers everything else counts
             // with. `n3Of3ItCounted` — "3 of 3 · it counted" — declared a

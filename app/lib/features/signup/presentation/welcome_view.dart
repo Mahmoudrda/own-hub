@@ -12,7 +12,7 @@
 ///    product is named now, so the slot holds the name until there is an asset.
 ///
 /// It says what the app does in one line while the community is off ("Your
-/// training, your food, your cycle. Women only."), and its first button is
+/// training, your food, your month. Women only."), and its first button is
 /// "Show me around": a short tour of the real app with a sample week (`C04`),
 /// before she is asked for anything. The line under it says so plainly: no
 /// account, nothing saved. "Skip the tour and join" is for the woman who
@@ -42,12 +42,12 @@ class WelcomeView extends StatelessWidget {
   const WelcomeView({
     super.key,
     this.onLookAround,
-    this.onGetStarted,
     this.onSignIn,
     this.preference,
     this.onDeleteSaved,
     this.onCoachInterest,
     this.onInviteCode,
+    this.onWhatsInside,
   });
 
   /// Where her language is kept. Null draws no language chips.
@@ -59,8 +59,9 @@ class WelcomeView extends StatelessWidget {
   /// "Show me around": the tour, `C04`.
   final VoidCallback? onLookAround;
 
-  /// "Skip the tour and join": her week, then her number.
-  final VoidCallback? onGetStarted;
+  /// "Skip the tour and join", in the More sheet: opens `C03`, whose
+  /// "Create my account" starts her week, then her number.
+  final VoidCallback? onWhatsInside;
   final VoidCallback? onSignIn;
 
   /// Deletes what she saved on this phone before she had an account. Null,
@@ -107,14 +108,60 @@ class WelcomeView extends StatelessWidget {
     await delete();
   }
 
+  /// The doors a first-time woman rarely needs, behind one link. Each closes
+  /// the sheet before it acts, so the screen under it is the one that
+  /// navigates.
+  Future<void> _openMore(BuildContext context) async {
+    final l10n = AppL10n.of(context);
+    final pick = await showAppSheet<VoidCallback>(
+      context: context,
+      children: [
+        if (onWhatsInside != null)
+          AppButton(
+            l10n.skipTheTourAndJoin,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: () => Navigator.of(context).pop(onWhatsInside),
+          ),
+        if (onInviteCode != null)
+          AppButton(
+            l10n.iHaveACodeFromMyCoach,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: () => Navigator.of(context).pop(onInviteCode),
+          ),
+        if (onCoachInterest != null)
+          AppButton(
+            l10n.iCoachWomen,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: () => Navigator.of(context).pop(onCoachInterest),
+          ),
+        if (onDeleteSaved != null)
+          AppButton(
+            l10n.deleteWhatISavedOnThisPhone,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: () =>
+                Navigator.of(context).pop(() => _confirmDelete(context)),
+          ),
+      ],
+    );
+    if (pick == null || !context.mounted) return;
+    pick();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
-      // Spacers centre the content optically, so this is not a plain scroll
-      // view — it fills the viewport and scrolls only when it must.
-      scrollable: false,
+      // The body scrolls above the pinned tour button, so the headline is
+      // never covered at a large text size.
       footer: [
         if (AppRouter.screenIsOn('C04'))
           AppButton(l10n.showMeAround, onPressed: onLookAround),
@@ -128,44 +175,6 @@ class WelcomeView extends StatelessWidget {
             color: AppColors.onSurfaceVariant,
           ),
         ),
-        AppButton(
-          l10n.skipTheTourAndJoin,
-          variant: AppButtonVariant.text,
-          height: 48,
-          fontSize: 15,
-          onPressed: onGetStarted,
-        ),
-        AppButton(
-          l10n.iAlreadyHaveAnAccount,
-          variant: AppButtonVariant.text,
-          height: 48,
-          fontSize: 15,
-          onPressed: onSignIn,
-        ),
-        if (onInviteCode != null)
-          AppButton(
-            l10n.iHaveACodeFromMyCoach,
-            variant: AppButtonVariant.text,
-            height: 48,
-            fontSize: 15,
-            onPressed: onInviteCode,
-          ),
-        if (onCoachInterest != null)
-          AppButton(
-            l10n.iCoachWomen,
-            variant: AppButtonVariant.text,
-            height: 48,
-            fontSize: 15,
-            onPressed: onCoachInterest,
-          ),
-        if (onDeleteSaved != null)
-          AppButton(
-            l10n.deleteWhatISavedOnThisPhone,
-            variant: AppButtonVariant.text,
-            height: 48,
-            fontSize: 15,
-            onPressed: () => _confirmDelete(context),
-          ),
       ],
       children: [
         // The kitten waves hello from the top row, in space the screen was
@@ -181,54 +190,31 @@ class WelcomeView extends StatelessWidget {
               LanguageToggle(preference: preference),
           ],
         ),
-        const AppSpacer(),
-        // The brand mark, the Concept 02 monogram on the rose tile, as on the
-        // home screen. Rendered from the vector at 1x, 2x and 3x, so it is
-        // drawn at its own size and never scaled. Decorative: the name is
-        // read out from the caption below it.
-        Center(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: Image.asset(
-              WelcomeView.logoAsset,
-              width: 88,
-              height: 88,
-              filterQuality: FilterQuality.medium,
-              excludeFromSemantics: true,
-            ),
-          ),
-        ),
-        // The mark has no wordmark of its own, so the name stays under it.
-        Text(
-          'Own Hub',
-          textAlign: TextAlign.center,
-          style: AppText.label.copyWith(
-            fontSize: 13,
-            letterSpacing: 0.4,
-            color: AppColors.onSurfaceVariant,
-          ),
-        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           // The cover line, set at editorial scale and underlined once by
           // hand — the first ink she sees. Sized to its longest line so the
           // underline sits under the words rather than across the column.
           child: Center(
-            child: HandUnderline(
-              level: HandLevel.signature,
-              width: HandStroke.felt,
-              drawOn: true,
-              delay: const Duration(milliseconds: 240),
-              gap: 6,
-              child: Text(
-                // What the app does, while the room it used to promise is
-                // switched off.
-                AppRouter.featureFlags.isOn(Feature.community)
-                    ? l10n.aRoomFullOfWomenTrainingLike
-                    : l10n.yourTrainingYourFoodYourCycleWomen,
-                textAlign: TextAlign.center,
-                textWidthBasis: TextWidthBasis.longestLine,
-                style: EditorialType.cover,
+            // The cover line leans a few pixels with the phone (D46). The
+            // kitten above it never does.
+            child: TiltParallax(
+              child: HandUnderline(
+                level: HandLevel.signature,
+                width: HandStroke.felt,
+                drawOn: true,
+                delay: HandTiming.medium,
+                gap: 6,
+                child: Text(
+                  // What the app does, while the room it used to promise is
+                  // switched off.
+                  AppRouter.featureFlags.isOn(Feature.community)
+                      ? l10n.aRoomFullOfWomenTrainingLike
+                      : l10n.yourTrainingYourFoodYourMonthWomen,
+                  textAlign: TextAlign.center,
+                  textWidthBasis: TextWidthBasis.longestLine,
+                  style: EditorialType.cover,
+                ),
               ),
             ),
           ),
@@ -249,7 +235,21 @@ class WelcomeView extends StatelessWidget {
             ),
           ),
         ),
-        const AppSpacer(),
+        const SizedBox(height: 6),
+        AppButton(
+          l10n.iAlreadyHaveAnAccount,
+          variant: AppButtonVariant.text,
+          height: 48,
+          fontSize: 15,
+          onPressed: onSignIn,
+        ),
+        AppButton(
+          l10n.more,
+          variant: AppButtonVariant.text,
+          height: 48,
+          fontSize: 15,
+          onPressed: () => _openMore(context),
+        ),
       ],
     );
   }

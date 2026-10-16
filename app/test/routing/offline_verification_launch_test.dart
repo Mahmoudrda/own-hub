@@ -216,6 +216,90 @@ void main() {
     }, timeout: const Timeout(Duration(seconds: 20)));
   });
 
+  group('a remembered launch does not wait for the network (D44)', () {
+    const approved = ServerVerification(ServerVerificationState.approved);
+
+    test('memory and the on-device status agree: open at once, with a token '
+        'and a server that never answer', () async {
+      await VerificationMemory.rememberVerified('u1');
+      final backend = FakeBackend(
+        cached: approved,
+        status: () => Completer<Never>().future,
+      );
+      AppRouter.verificationBackend = backend;
+
+      final clock = Stopwatch()..start();
+      await AppRouter.readVerificationAtLaunch();
+      clock.stop();
+
+      expect(clock.elapsed, lessThan(const Duration(milliseconds: 500)));
+      expect(AppRouter.isVerified, isTrue);
+      expect(AppRouter.verificationGate('T01'), isNull);
+    });
+
+    test('the claim read right behind it still decides: a revoked claim '
+        'closes the gate', () async {
+      await VerificationMemory.rememberVerified('u1');
+      final answer = Completer<bool>();
+      final backend = FakeBackend(
+        cached: approved,
+        claim: ({bool forceRefresh = false}) => answer.future,
+      );
+      AppRouter.verificationBackend = backend;
+
+      await AppRouter.readVerificationAtLaunch();
+      expect(AppRouter.isVerified, isTrue);
+
+      answer.complete(false);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      expect(AppRouter.isVerified, isFalse);
+      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(await VerificationMemory.verifiedUid(), isNull);
+    });
+
+    test('a failure that is not the network closes what the memory opened, '
+        'as the full read would', () async {
+      await VerificationMemory.rememberVerified('u1');
+      final backend = FakeBackend(
+        cached: approved,
+        claim: _throws(FirebaseAuthException(code: 'user-disabled')),
+        status: () async =>
+            const ServerVerification(ServerVerificationState.rejected),
+      );
+      AppRouter.verificationBackend = backend;
+
+      await AppRouter.readVerificationAtLaunch();
+      expect(AppRouter.isVerified, isTrue, reason: 'open for the first frame');
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      expect(AppRouter.isVerified, isFalse);
+      expect(AppRouter.verificationGate('T01'), isNotNull);
+    });
+
+    test('memory alone is not enough: without the cached approval the full '
+        'read runs', () async {
+      await VerificationMemory.rememberVerified('u1');
+      final backend = FakeBackend(claim: _says(false));
+      AppRouter.verificationBackend = backend;
+
+      await AppRouter.readVerificationAtLaunch();
+
+      expect(AppRouter.isVerified, isFalse);
+    });
+
+    test('a cached approval alone is not enough for an account this phone '
+        'never proved', () async {
+      await VerificationMemory.rememberVerified('someone-else');
+      final backend = FakeBackend(cached: approved, claim: _says(false));
+      AppRouter.verificationBackend = backend;
+
+      await AppRouter.readVerificationAtLaunch();
+
+      expect(AppRouter.isVerified, isFalse);
+    });
+  });
+
   group('the refresh is retried, not fired once', () {
     test('on resume, an approved woman gets the claim once online', () async {
       final backend = FakeBackend(

@@ -15,6 +15,7 @@ import 'app_state/crash_reports.dart';
 import 'app_state/eat_state.dart';
 import 'app_state/events_state.dart';
 import 'app_state/remote_features.dart';
+import 'app_state/exercise_library_state.dart';
 import 'app_state/workout_library_state.dart';
 import 'app_state/content_images.dart';
 import 'ui/content_image.dart';
@@ -23,9 +24,12 @@ import 'app_state/home_widget_sync.dart';
 import 'app_state/local_persistence.dart';
 import 'app_state/onboarding_state.dart';
 import 'app_state/role_state.dart';
+import 'app_state/notification_taps.dart';
 import 'app_state/widget_links.dart';
 import 'config/legal_links.dart';
 import 'features/account/domain/health_backup.dart';
+import 'features/onboarding/domain/starting_program.dart'
+    show StartingProgrammes;
 import 'domain/analytics/analytics_gateway.dart';
 import 'domain/flags/feature_flags.dart';
 import 'domain/identity/user_roles.dart';
@@ -84,6 +88,10 @@ Future<void> main() async {
   await LocalPersistence.instance.load();
   LocalPersistence.instance.start();
 
+  // Her day moves on to today, and any week that ended while the app was
+  // closed is closed now (D41). After the restore, so it works on her data.
+  AppRouter.startOfDay();
+
   // Her crash-report choice, read before Firebase so collection is set from
   // it at once. Off unless she allowed it (privacy policy v3, 3.7).
   await CrashConsent.instance.load();
@@ -94,6 +102,13 @@ Future<void> main() async {
     PostHogAnalytics.instance.applyConsent(AnalyticsConsent.instance.allowed),
   );
   await KittenSetting.instance.load();
+  // The starting programmes, bundled. A file that cannot be read leaves the
+  // placeholder catalogue, and Train is what it was.
+  try {
+    StartingProgrammes.adopt(
+      await rootBundle.loadString(StartingProgrammes.assetPath),
+    );
+  } catch (_) {}
 
   // The back end, brought up AFTER her local week and unable to fail the
   // launch. The order matters: whatever Firebase does or does not do, the
@@ -148,13 +163,16 @@ Future<void> main() async {
   await AppRouter.readVerificationAtLaunch();
   AppRouter.watchVerificationToken();
 
-  // The Home Screen and Lock Screen widgets, iOS only. They read this week's
+  // The Home Screen and Lock Screen widgets (iOS), and the Android Today
+  // widget. They read this week's
   // count and today's state from the same repository Home draws, and only
   // while she is signed in and verified; otherwise they say "Open Own Hub to
   // start". Started after the verification read above, so the first payload
   // it writes already knows whether she is let in. See
   // `lib/app_state/home_widget_sync.dart`.
-  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+  if (!kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.android)) {
     HomeWidgetSync.instance.start(
       readDay: () => AppRouter.todayRepository.day,
       isOpen: () => AppRouter.isVerified && AppRouter.signedInUid != null,
@@ -223,6 +241,12 @@ Future<void> main() async {
   WidgetsBinding.instance.addPostFrameCallback(
     (_) => unawaited(WorkoutLibraryState.instance.refresh()),
   );
+
+  // The exercise library (D42) the same way. Its clips are fetched only when
+  // she opens a move.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(ExerciseLibraryState.instance.refresh()),
+  );
 }
 
 /// Every OFL face bundled in `assets/fonts/`. The licence asks that its text
@@ -287,7 +311,14 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // language she left. Nothing happens when she has none. After the first
     // frame: setting them up first reads the whole time-zone database, which
     // the first frame has no use for.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _reapplyReminders());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Opening the app starts the gentle check-ins counting again. The
+      // navigator exists by now, so a tap on a notification that launched
+      // the app can open its screen.
+      _noteOpened();
+      NotificationTaps.start(_navigatorKey);
+      unawaited(AppRouter.startPushWatch(_locale.value.languageCode));
+    });
     _locale.addListener(_reapplyReminders);
     // The widgets speak the language she chose here, not the phone's.
     _relabelWidgets();
@@ -331,14 +362,26 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     AppRouter.reapplyTrainingReminders(lookupAppL10n(_locale.value)),
   );
 
+  /// Opened or brought back: notes it, then sets everything again, which also
+  /// catches a new time zone or a day that moved on.
+  void _noteOpened() =>
+      unawaited(AppRouter.noteAppOpened(lookupAppL10n(_locale.value)));
+
   /// Back in the foreground: a refresh the network refused at launch is
   /// tried again (R1). Does nothing when nothing is owed.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // A phone left open overnight comes back on a new day, and on a Monday
+      // on a new week.
+      AppRouter.startOfDay();
       unawaited(AppRouter.refreshVerificationIfOwed());
+      // A library published while she was away, or one an offline launch
+      // could not fetch. Rate-limited inside; usually a no-op.
+      unawaited(ExerciseLibraryState.instance.refresh());
       unawaited(CrashReports.trail(CrashTrail.resumed));
       unawaited(AnalyticsSession.noteOpened(DateTime.now()));
+      _noteOpened();
     }
   }
 
@@ -556,9 +599,25 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
             onGenerateInitialRoutes: _firstRunStack,
             onGenerateRoute: AppRouter.onGenerateRoute,
             onUnknownRoute: AppRouter.onUnknownRoute,
+            scrollBehavior: const _CalmScrollBehavior(),
           ),
         ),
       ),
     );
   }
+}
+
+/// A list stops at its end. Android 12 and later otherwise stretch the whole
+/// page when she scrolls past the top or bottom, which reads as the app
+/// sagging under her thumb. iPhone keeps its own bounce, which is what people
+/// there expect from every app.
+class _CalmScrollBehavior extends MaterialScrollBehavior {
+  const _CalmScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
 }

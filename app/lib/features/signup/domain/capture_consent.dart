@@ -34,6 +34,11 @@ import 'package:meta/meta.dart';
 /// when the check cannot decide. A woman verified under version 1 is not
 /// asked again; one still on her way through sees version 2.
 ///
+/// Version 3 (14 October 2026) is the same consent in Egyptian Arabic instead
+/// of formal Arabic. Nothing about what is processed, where, or for how long
+/// changed. Women verified under version 2 are not asked again; one still on
+/// her way through sees version 3.
+///
 /// **Bump this whenever the consent copy changes in either language**, and in
 /// particular whenever the list of processors changes. Adding a processor to
 /// that screen without bumping this would leave every existing woman recorded
@@ -51,7 +56,7 @@ import 'package:meta/meta.dart';
 /// changes happened on 2026-09-25, before any build reached a handset, so there
 /// is no record anywhere that was taken against the superseded wording. The
 /// next change to this text will not have that excuse.
-const int kCaptureConsentVersion = 2;
+const int kCaptureConsentVersion = 3;
 
 /// One agreement, as it is stored.
 @immutable

@@ -9,22 +9,33 @@
 // carries it?
 @Tags(['qa'])
 library;
+
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/eat_state.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
-RecipeBook _book() => RecipeBook.fromJson((jsonDecode(
-  File('assets/content/rahma_recipes.json').readAsStringSync()) as Map).cast<String, Object?>());
+RecipeBook _book() => RecipeBook.fromJson(
+  (jsonDecode(
+    File('assets/content/rahma_recipes.json').readAsStringSync(),
+  ) as Map).cast<String, Object?>(),
+);
 
 void main() {
   useShippingApp();
-  for (final tag in [AllergenTag.treeNuts, AllergenTag.sesame, AllergenTag.milk, AllergenTag.gluten]) {
+  for (final tag in [
+    AllergenTag.treeNuts,
+    AllergenTag.sesame,
+    AllergenTag.milk,
+    AllergenTag.gluten,
+  ]) {
     testWidgets('E05 with ${tag.name} declared', (t) async {
       phone(t);
       final s = t.ensureSemantics();
@@ -32,7 +43,10 @@ void main() {
       await AppRouter.dietaryRepository.save(allergies: {tag});
       await open(t, appDestinations['E05']!.name, locale: const Locale('en'));
       final cards = paintedText(t).where((e) => e.contains('kcal')).toList();
-      final names = tappables(t).map((e)=>e.label).where((e)=>e.contains('kcal')).toList();
+      final names = tappables(t)
+          .map((e) => e.label)
+          .where((e) => e.contains('kcal'))
+          .toList();
       print('${tag.name}: still offered = ${names.join(" // ")}');
       print('${tag.name}: nutrition lines = ${cards.join(" // ")}');
       s.dispose();

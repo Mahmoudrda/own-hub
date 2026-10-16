@@ -127,9 +127,7 @@ void main() {
 
     testWidgets('the heading is the hour she is actually in', (tester) async {
       _phone(tester);
-      await tester.pumpWidget(
-        _host(_view(at: DateTime(2026, 9, 15, 19, 10))),
-      );
+      await tester.pumpWidget(_host(_view(at: DateTime(2026, 9, 15, 19, 10))));
       await tester.pumpAndSettle();
 
       expect(find.text('Dinner, your usual?'), findsOneWidget);

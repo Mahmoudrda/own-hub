@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { all, flows } from './all-screens.mjs';
-import { C, TY, R, M } from './tokens.mjs';
+import { C, TY, R, M, BRAND, ALIAS, SPACE, ICON_SIZE } from './tokens.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(here, '../flutter');
@@ -11,6 +11,12 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const dartColor = (hex) => `Color(0xFF${hex.replace('#', '').toUpperCase()})`;
 const colorLines = Object.entries(C).filter(([, v]) => /^#([0-9a-f]{6})$/i.test(v)).map(([k, v]) => `  static const ${k} = ${dartColor(v)};`).join('\n');
+const brandLines = Object.entries(BRAND).map(([k, v]) => `  static const ${k} = ${dartColor(v)};`).join('\n');
+const aliasLines = Object.entries(ALIAS).map(([k, v]) => `  static const ${k} = ${v};`).join('\n');
+const spaceLines = SPACE.map((v) => `  static const s${v} = ${v}.0;`).join('\n');
+const iconLines = ICON_SIZE.map((v) => `  static const s${v} = ${v}.0;`).join('\n');
+// petrolDark at 6% and 8%, as straight ARGB so the shadows stay const.
+const petrolShadow = (pct) => `Color(0x${Math.round(pct * 2.55).toString(16).toUpperCase().padStart(2, '0')}${C.ink.replace('#', '').toUpperCase()})`;
 const textLines = Object.entries(TY).map(([k, [size, lh, w]]) => `  static const ${k} = TextStyle(fontFamily: _family, fontSize: ${size}, height: ${(lh / size).toFixed(3)}, fontWeight: FontWeight.w${w});`).join('\n');
 const radiusLines = Object.entries(R).map(([k, v]) => `  static const ${k} = ${v}.0;`).join('\n');
 const motionLines = Object.entries(M).filter(([, v]) => typeof v === 'number').map(([k, v]) => `  static const ${k} = Duration(milliseconds: ${v});`).join('\n');
@@ -21,6 +27,28 @@ import 'package:flutter/services.dart';
 
 class AppColors {
 ${colorLines}
+
+${brandLines}
+
+${aliasLines}
+}
+
+class AppSpace {
+${spaceLines}
+}
+
+class AppIconSize {
+${iconLines}
+}
+
+class AppShadow {
+  static const List<BoxShadow> none = <BoxShadow>[];
+  static const List<BoxShadow> card = <BoxShadow>[
+    BoxShadow(color: ${petrolShadow(6)}, blurRadius: 3, offset: Offset(0, 1)),
+  ];
+  static const List<BoxShadow> raised = <BoxShadow>[
+    BoxShadow(color: ${petrolShadow(8)}, blurRadius: 8, offset: Offset(0, 2)),
+  ];
 }
 
 class AppText {
@@ -48,16 +76,38 @@ ThemeData buildTheme(Locale locale) => ThemeData(
         onPrimary: AppColors.onPrimary,
         primaryContainer: AppColors.primaryContainer,
         onPrimaryContainer: AppColors.onPrimaryContainer,
+        secondary: AppColors.secondary,
+        onSecondary: AppColors.onSecondary,
         secondaryContainer: AppColors.secondaryContainer,
+        onSecondaryContainer: AppColors.onSecondaryContainer,
         tertiary: AppColors.tertiary,
         onTertiary: AppColors.onTertiary,
         tertiaryContainer: AppColors.tertiaryContainer,
         onTertiaryContainer: AppColors.onTertiaryContainer,
         error: AppColors.error,
         onError: AppColors.onError,
+        errorContainer: AppColors.errorContainer,
+        onErrorContainer: AppColors.onErrorContainer,
         surface: AppColors.surface,
         onSurface: AppColors.onSurface,
+        onSurfaceVariant: AppColors.onSurfaceVariant,
+        surfaceContainerLowest: AppColors.surfaceLowest,
+        surfaceContainerLow: AppColors.surfaceLow,
+        surfaceContainer: AppColors.surfaceContainer,
+        surfaceContainerHigh: AppColors.surfaceHigh,
+        surfaceContainerHighest: AppColors.surfaceHighest,
+        outline: AppColors.outline,
         outlineVariant: AppColors.outlineVariant,
+        inverseSurface: AppColors.inverseSurface,
+        onInverseSurface: AppColors.inverseOnSurface,
+      ),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700),
+        displayMedium: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700),
+        displaySmall: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700),
+        headlineLarge: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700),
+        headlineMedium: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700),
+        headlineSmall: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w700),
       ),
       scaffoldBackgroundColor: AppColors.surface,
       // Dark status-bar content, always.
@@ -493,6 +543,34 @@ if (fs.existsSync(dictPath)) {
     "{sets} × {reps}": {"description": "A move's prescription: sets times reps, Western digits.", "placeholders": {"sets": {"type": "String", "example": "3"}, "reps": {"type": "String", "example": "12"}}},
     "{sets} × {seconds} seconds": {"description": "A held move's prescription: sets times seconds.", "placeholders": {"sets": {"type": "String", "example": "3"}, "seconds": {"type": "String", "example": "30"}}},
     "Between {min} and {max} days, or leave it empty": {"description": "Y02, under the usual cycle length when what she typed is not a cycle length.", "placeholders": {"min": {"type": "String", "example": "15"}, "max": {"type": "String", "example": "60"}}},
+    "Sets done: {done} of {total}": {"description": "R07/R08/R09/R13 set bar: sets of today's session behind her, out of all of them.", "placeholders": {"done": {"type": "String", "example": "4"}, "total": {"type": "String", "example": "12"}}},
+    "Training streak: {days} days": {"description": "T01 week block: her training streak (D37). Never shown when she has switched it off.", "placeholders": {"days": {"type": "String", "example": "12"}}},
+    "{days} days": {"description": "P01 and the streak sheet: the length of her current training streak.", "placeholders": {"days": {"type": "String", "example": "12"}}},
+    "Your best: {days} days": {"description": "P01 and the streak sheet: her longest training streak. Never taken away.", "placeholders": {"days": {"type": "String", "example": "21"}}},
+    "Paused until {date}": {"description": "Streak sheet and P01 while a pause with an end date runs.", "placeholders": {"date": {"type": "String", "example": "Monday 20 October"}}},
+    "{move}: more than last week's {amount}": {"description": "T01/R03 weekly challenge (D38): beat her own last-week total on one move.", "placeholders": {"move": {"type": "String", "example": "Glute bridge"}, "amount": {"type": "String", "example": "24 reps"}}},
+    "{move}: match last week's {amount}": {"description": "T01/R03 weekly challenge (D38): match her own last-week total on one move.", "placeholders": {"move": {"type": "String", "example": "Glute bridge"}, "amount": {"type": "String", "example": "30 reps"}}},
+    "You beat last week on {move}: {amount}": {"description": "R10 reveal: the weekly challenge, met by beating last week. Her total this week.", "placeholders": {"move": {"type": "String", "example": "Glute bridge"}, "amount": {"type": "String", "example": "32 reps"}}},
+    "You matched last week on {move}: {amount}": {"description": "R10 reveal: the weekly challenge, met by matching last week. Her total this week.", "placeholders": {"move": {"type": "String", "example": "Glute bridge"}, "amount": {"type": "String", "example": "30 reps"}}},
+    "{moves} moves · {sets} sets · {minutes} min": {"description": "R10 reveal: the effort she actually logged in this session.", "placeholders": {"moves": {"type": "String", "example": "4"}, "sets": {"type": "String", "example": "11"}, "minutes": {"type": "String", "example": "24"}}},
+    "{move}: {now}, up from {before}": {"description": "R10 reveal: a real personal best, with her previous best on the same move.", "placeholders": {"move": {"type": "String", "example": "Goblet squat"}, "now": {"type": "String", "example": "14 kg × 10"}, "before": {"type": "String", "example": "12 kg × 10"}}},
+    "{move}: a harder version than before": {"description": "R10 reveal: a personal best that is a harder variation rather than a bigger number.", "placeholders": {"move": {"type": "String", "example": "Push-up"}}},
+    "First marks set on {count} moves.": {"description": "R10 reveal: moves she logged for the first time ever. A first mark, not a best.", "placeholders": {"count": {"type": "String", "example": "4"}}},
+    "{days, plural, one{Training streak: 1 day} other{Training streak: {days} days}}": {"description": "T01 week block and R10: her training streak (D37). A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up. Never shown when she has switched it off.", "placeholders": {"days": {"type": "int", "example": "12"}}},
+    "{days, plural, one{Your best: 1 day} other{Your best: {days} days}}": {"description": "P01 and the streak sheet: her longest training streak. Never taken away.", "placeholders": {"days": {"type": "int", "example": "21"}}},
+    "{count, plural, one{First mark set on 1 move.} other{First marks set on {count} moves.}}": {"description": "R10 reveal: moves she logged for the first time ever. A first mark, not a best.", "placeholders": {"count": {"type": "int", "example": "4"}}},
+    "Moves: {moves} · Sets: {sets} · Time: {minutes} min": {"description": "R10 reveal: the effort she actually logged in this session. Labels before each figure so no noun has to agree with its number.", "placeholders": {"moves": {"type": "String", "example": "4"}, "sets": {"type": "String", "example": "11"}, "minutes": {"type": "String", "example": "24"}}},
+    "{minutes, plural, one{Moves: {moves} · Sets: {sets} · Time: 1 min} other{Moves: {moves} · Sets: {sets} · Time: {minutes} min}}": {"description": "R10 reveal: the effort she actually logged in this session. Moves and sets are labelled so they need no agreement; the minutes are a plural because Arabic says دقيقة واحدة, دقيقتين, 3 دقايق and 11 دقيقة.", "placeholders": {"minutes": {"type": "int", "example": "24"}, "moves": {"type": "String", "example": "4"}, "sets": {"type": "String", "example": "11"}}},
+    "You finished every set at {weight}. Try {next} today.": {"description": "R07 and R08: her last session's weight for a loaded move, and the next weight up.", "placeholders": {"weight": {"type": "String", "example": "10 kg"}, "next": {"type": "String", "example": "12 kg"}}},
+    "Last time you did {weight}. Stay there until every set is done.": {"description": "R07 and R08: why the weight is not going up yet.", "placeholders": {"weight": {"type": "String", "example": "10 kg"}}},
+    "It has been a while since {weight}. Start a little lighter and build back.": {"description": "R07 and R08: she is coming back to a loaded move after a break.", "placeholders": {"weight": {"type": "String", "example": "10 kg"}}},
+    "Swap to {name}": {"description": "R05 confirm button, names the move she picked.", "placeholders": {"name": {"type": "String", "example": "Glute bridge"}}},
+    "{count, plural, one{1 more and the week counts.} other{{count} more and the week counts.}}": {"description": "T01 week line while sessions are still to go. A plural message because Arabic says تمرين واحد, تمرينين, 3 تمارين and 11 تمرين.", "placeholders": {"count": {"type": "int", "example": "3"}}},
+    "Your first week: {done} of {total} steps": {"description": "Home: the first-week arc, counted in steps so it is never read against this week's sessions.", "placeholders": {"done": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "3"}}},
+    "{days} days a week · {minutes} min a session": {"description": "O05 headline: her days and minutes.", "placeholders": {"days": {"type": "String", "example": "3"}, "minutes": {"type": "String", "example": "15"}}},
+    "{days} days a week · {minutes} min a session · At home": {"description": "Her answers read back: days and minutes, trained at home.", "placeholders": {"days": {"type": "String", "example": "3"}, "minutes": {"type": "String", "example": "15"}}},
+    "{days} days a week · {minutes} min a session · At a ladies-only gym": {"description": "Her answers read back: days and minutes, at a ladies-only gym.", "placeholders": {"days": {"type": "String", "example": "3"}, "minutes": {"type": "String", "example": "15"}}},
+    "{days} days a week · {minutes} min a session · At home and the gym": {"description": "Her answers read back: days and minutes, at home and the gym.", "placeholders": {"days": {"type": "String", "example": "3"}, "minutes": {"type": "String", "example": "15"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

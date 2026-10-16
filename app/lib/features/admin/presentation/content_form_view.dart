@@ -151,7 +151,6 @@ class ContentFormView extends StatefulWidget {
   )?
   onSaveProgramme;
 
-
   /// The row being edited, keyed by CSV column. Empty means this is a new row,
   /// which is the case D12 actually asked for.
   final Map<String, String> values;
@@ -255,8 +254,7 @@ class _ContentFormViewState extends State<ContentFormView> {
               semanticLabel: l10n.showThisProgrammeToMembers,
               onChanged: (next) => setState(() => _publishProgramme = next),
             ),
-            onTap: () =>
-                setState(() => _publishProgramme = !_publishProgramme),
+            onTap: () => setState(() => _publishProgramme = !_publishProgramme),
           ),
         ],
       ],
@@ -522,7 +520,9 @@ class _ContentFormViewState extends State<ContentFormView> {
             : _text[column.name]!.text.trim(),
     };
     row.forEach((name, value) {
-      if (value.isEmpty && _defaults[name] != null) row[name] = _defaults[name]!;
+      if (value.isEmpty && _defaults[name] != null) {
+        row[name] = _defaults[name]!;
+      }
     });
     if (_isRecipe) {
       row['sectionId'] = _sectionId;

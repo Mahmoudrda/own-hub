@@ -57,21 +57,17 @@ void main() {
     expect(find.text('Ramadan'), findsOneWidget);
   });
 
-  testWidgets('every card carries its cost per serving in EGP', (tester) async {
+  testWidgets('every card carries time and protein, and no energy or cost', (
+    tester,
+  ) async {
     _phone(tester);
     await tester.pumpWidget(_host(_recipes()));
     await tester.pumpAndSettle();
 
     expect(find.text('Koshari, portioned'), findsOneWidget);
-    expect(
-      find.text('22 min · 540 kcal · 18 g protein · 14 EGP'),
-      findsOneWidget,
-    );
+    expect(find.text('22 min · 18 g protein'), findsOneWidget);
     expect(find.text('Ful with egg and cumin'), findsOneWidget);
-    expect(
-      find.text('10 min · 310 kcal · 19 g protein · 8 EGP'),
-      findsOneWidget,
-    );
+    expect(find.text('10 min · 19 g protein'), findsOneWidget);
     expect(find.text('Molokhia with chicken'), findsOneWidget);
     expect(find.text('Yoghurt, dates and nuts'), findsOneWidget);
   });

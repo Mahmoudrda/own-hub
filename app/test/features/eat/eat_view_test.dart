@@ -98,6 +98,7 @@ EatView _eat({
   MealRepository? repository,
   LogCommandBus? bus,
   LogHandle? justLogged,
+  int foodPointsPreview = 0,
   ValueChanged<LogHandle>? onLogged,
   DietaryConstraints constraints = DietaryConstraints.none,
 }) {
@@ -107,6 +108,7 @@ EatView _eat({
     bus: bus,
     now: _lunchtime,
     justLogged: justLogged,
+    foodPointsPreview: foodPointsPreview,
     onLogged: onLogged,
     onOpenRecipes: () {},
     onType: () {},
@@ -127,7 +129,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Molokhia with chicken'), findsOneWidget);
-      expect(find.text('460 kcal · 34 g protein'), findsOneWidget);
+      expect(find.text('34 g protein'), findsOneWidget);
       expect(find.text('I ate this'), findsOneWidget);
     });
 
@@ -269,8 +271,8 @@ void main() {
 
       expect(
         find.text('About ${countLabel(kcal)} kcal so far today'),
-        findsOneWidget,
-        reason: 'the sentence must state what she actually logged',
+        findsNothing,
+        reason: 'the app promises no calorie line',
       );
       expect(
         find.textContaining('${countLabel(protein)} of '),
@@ -425,7 +427,7 @@ void main() {
       bus.dispose();
     });
 
-    testWidgets('five points land once a day, not once an item', (
+    testWidgets('no points are claimed for a log that will pay nothing (D41)', (
       tester,
     ) async {
       _phone(tester);
@@ -436,6 +438,32 @@ void main() {
 
       await tester.pumpWidget(
         _host(_eat(repository: _repositoryWithHistory(), justLogged: handle)),
+      );
+      await tester.pumpAndSettle();
+
+      // The second meal of a day, or a day already at its cap: the pill used
+      // to say "+5 points" regardless, and nothing was ever paid.
+      expect(find.textContaining('points'), findsNothing);
+      bus.dispose();
+    });
+
+    testWidgets('five points land once a day, not once an item', (
+      tester,
+    ) async {
+      _phone(tester);
+      final bus = LogCommandBus();
+      final handle = bus.submit(
+        UndoableLog(describe: 'Meal added', commit: () async {}),
+      );
+
+      await tester.pumpWidget(
+        _host(
+          _eat(
+            repository: _repositoryWithHistory(),
+            justLogged: handle,
+            foodPointsPreview: 5,
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -456,12 +484,7 @@ void main() {
         find.byWidgetPredicate(
           (w) =>
               w is Text &&
-              const [
-                'Breakfast',
-                'Lunch',
-                'Dinner',
-                'Snack',
-              ].contains(w.data),
+              const ['Breakfast', 'Lunch', 'Dinner', 'Snack'].contains(w.data),
         ),
         findsWidgets,
       );
@@ -476,16 +499,14 @@ void main() {
       bus.dispose();
     });
 
-    testWidgets('E01 shows the Ramadan pill instead, not the points one', (
-      tester,
-    ) async {
+    testWidgets('E01 shows no pill while Ramadan mode is off', (tester) async {
       _phone(tester);
       await tester.pumpWidget(
         _host(_eat(repository: _repositoryWithHistory())),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Ramadan mode off'), findsOneWidget);
+      expect(find.text('Ramadan mode off'), findsNothing);
       expect(find.text('+5 points'), findsNothing);
       expect(find.text('Undo'), findsNothing);
     });
@@ -539,8 +560,8 @@ void main() {
       // The dictionary uses Western digits in all of its values containing a
       // number, and P0-A11Y-01 requires it. Eastern Arabic digits here would
       // mean something reached for NumberFormat.
-      expect(find.textContaining('٤٦٠'), findsNothing);
-      expect(find.textContaining('460'), findsOneWidget);
+      expect(find.textContaining(RegExp('[٠-٩]')), findsNothing);
+      expect(find.textContaining(RegExp('[0-9]')), findsWidgets);
     });
 
     testWidgets('does not overflow at the largest text size in Arabic', (

@@ -51,7 +51,9 @@ String _labelOf(SemanticsNode n) {
   final d = n.getSemanticsData();
   final parts = [d.label, d.tooltip, d.hint].where((s) => s.trim().isNotEmpty);
   final s = parts.join(' / ').replaceAll('\n', ' ');
-  return s.isEmpty ? '(unlabelled)' : (s.length > 60 ? '${s.substring(0, 60)}…' : s);
+  return s.isEmpty
+      ? '(unlabelled)'
+      : (s.length > 60 ? '${s.substring(0, 60)}…' : s);
 }
 
 Future<void> _settle(WidgetTester t) async {
@@ -76,8 +78,16 @@ Future<bool> _open(WidgetTester t, String route) async {
 }
 
 const _skip = {
-  'Home', 'Train', 'Community', 'Eat', 'Today', 'Clients', 'Chats',
-  'Earnings', 'Back', 'رجوع',
+  'Home',
+  'Train',
+  'Community',
+  'Eat',
+  'Today',
+  'Clients',
+  'Chats',
+  'Earnings',
+  'Back',
+  'ارجعي',
 };
 
 void main() {

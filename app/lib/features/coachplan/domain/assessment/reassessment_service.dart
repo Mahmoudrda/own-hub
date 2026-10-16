@@ -78,9 +78,8 @@ class ReassessmentService {
     return PlanRevisionSuggestion(
       clientUid: child.clientUid,
       month: month,
-      activeReferralCount: ReferralRegistry.activeReferrals(
-        child.assessment,
-      ).length,
+      activeReferralCount: ReferralRegistry.activeReferrals(child.assessment)
+          .length,
       newlyClearedCount: _newlyCleared(parent, child),
     );
   }

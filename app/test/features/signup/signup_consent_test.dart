@@ -238,11 +238,14 @@ void main() {
       }
     });
 
-    test('and an unmintable session sends her to a reviewer, not to a lens', () {
-      // `C11` with no challenge is a camera open for frames the server has no
-      // question to match, which is two minutes of her time spent on nothing.
-      expect(_builderBlock('C10b'), contains("goTo(context, 'C15')"));
-    });
+    test(
+      'and an unmintable session sends her to a reviewer, not to a lens',
+      () {
+        // `C11` with no challenge is a camera open for frames the server has no
+        // question to match, which is two minutes of her time spent on nothing.
+        expect(_builderBlock('C10b'), contains("goTo(context, 'C15')"));
+      },
+    );
 
     testWidgets('the card steps run with no session at all', (tester) async {
       AppRouter.consentRecorded = true;
@@ -294,7 +297,8 @@ void main() {
 
     testWidgets('opening it submits the automatic path', (tester) async {
       final repository =
-          AppRouter.identityCheck.verification as ProviderVerificationRepository;
+          AppRouter.identityCheck.verification
+              as ProviderVerificationRepository;
       expect(repository.current, isA<VerificationNotStarted>());
 
       await _open(tester, 'C12');
@@ -322,9 +326,12 @@ void main() {
       expect(find.byType(IdCaptureView), findsOneWidget);
     });
 
-    test('a retake lifts the submit guard, or the second attempt never runs', () {
-      expect(_builderBlock('C12'), contains('_automaticSubmitted = false'));
-      expect(_builderBlock('C12'), contains("goTo(context, 'C10')"));
-    });
+    test(
+      'a retake lifts the submit guard, or the second attempt never runs',
+      () {
+        expect(_builderBlock('C12'), contains('_automaticSubmitted = false'));
+        expect(_builderBlock('C12'), contains("goTo(context, 'C10')"));
+      },
+    );
   });
 }

@@ -23,6 +23,7 @@ import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/ui/app_nav_bar.dart';
 import 'package:own_hub/ui/app_undo_bar.dart';
+import 'package:own_hub/ui/hand/hand.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -171,7 +172,7 @@ void main() {
         findsOneWidget,
         reason: 'E04 offers the undo the moment it opens, not five seconds in',
       );
-      expect(find.text('About 540 kcal so far today'), findsOneWidget);
+      expect(find.text('18 of 95 g'), findsOneWidget);
       expect(
         find.text('No plates yet'),
         findsNothing,
@@ -192,7 +193,7 @@ void main() {
         ),
         findsNothing,
       );
-      expect(find.text('About 540 kcal so far today'), findsOneWidget);
+      expect(find.text('18 of 95 g'), findsOneWidget);
     });
 
     testWidgets('E01 shows the same day, and Home shows the meal', (
@@ -204,7 +205,7 @@ void main() {
       await _windowCloses(tester);
 
       await _open(tester, 'E01');
-      expect(find.text('About 540 kcal so far today'), findsOneWidget);
+      expect(find.text('18 of 95 g'), findsOneWidget);
       expect(find.text('18 of 95 g'), findsOneWidget);
 
       await _home(tester);
@@ -231,7 +232,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('About 540 kcal so far today'), findsNothing);
+      expect(find.text('18 of 95 g'), findsNothing);
       expect(
         find.byType(AppUndoBar),
         findsNothing,
@@ -266,12 +267,12 @@ void main() {
         findsOneWidget,
         reason: 'log something twice and it becomes a plate — E09 says so',
       );
-      expect(find.text('540 kcal · 18 g protein'), findsOneWidget);
+      expect(find.text('18 g protein'), findsOneWidget);
 
       await tester.tap(find.text('I ate this'));
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
-      expect(find.text('About 1,620 kcal so far today'), findsOneWidget);
+      expect(find.text('54 of 95 g'), findsOneWidget);
 
       await _windowCloses(tester);
       expect(_written.length, 3);
@@ -298,7 +299,7 @@ void main() {
       // carry the same handle to E04's bar.
       expect(find.byType(SnackBar), findsNothing);
       expect(find.text('Undo'), findsOneWidget);
-      expect(find.text('About 1,080 kcal so far today'), findsOneWidget);
+      expect(find.text('36 of 95 g'), findsOneWidget);
 
       await _windowCloses(tester);
       expect(_written.length, 2);
@@ -390,10 +391,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // The sample week opens with one line already ticked.
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(find.byType(HandTick), findsOneWidget);
     await tester.tap(find.text('Onions 1 kg'));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(2));
+    expect(find.byType(HandTick), findsNWidgets(2));
 
     // Away and back — through E07, which reads the same document.
     _nav(tester).pop();
@@ -401,7 +402,7 @@ void main() {
     await tester.tap(find.text('See the grocery list'));
     await tester.pumpAndSettle();
     expect(
-      find.byIcon(Icons.check_circle),
+      find.byType(HandTick),
       findsNWidgets(2),
       reason: 'a shop survives being closed mid-market',
     );

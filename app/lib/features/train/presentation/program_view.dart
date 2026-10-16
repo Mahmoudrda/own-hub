@@ -23,11 +23,6 @@
 /// the low-data profile, which at Egyptian prepaid rates is real money — so the
 /// offer belongs where she is already deciding how much of this programme she
 /// wants, not buried in settings.
-///
-/// The header still is an [AppMedia] placeholder. The prototype labels it "coach
-/// demo still" in a monospace face; that is a designer's annotation marking where
-/// footage goes, not copy, so it is not rendered. See the report note on
-/// `coachDemoStill`.
 library;
 
 import 'package:flutter/material.dart';
@@ -38,7 +33,6 @@ import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_empty_state.dart';
-import '../../../ui/app_media.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
 import 'train_widgets.dart';
@@ -157,7 +151,9 @@ class ProgramView extends StatelessWidget {
           // The download surface, when there is a week to download. With no
           // programme there is nothing to fetch, and an offer to spend roughly
           // 120 MB of her data on it would be the worst kind of empty control.
-          if (hasProgram)
+          // The same when nothing is wired to fetch it: a disabled icon reads
+          // as a broken one.
+          if (hasProgram && onDownloadWeek != null)
             IconButton(
               onPressed: onDownloadWeek,
               iconSize: 24,
@@ -178,17 +174,6 @@ class ProgramView extends StatelessWidget {
         ),
       ],
       children: [
-        // The coach demo still.
-        //
-        // Its badge was the fixed `n8Weeks`, so every woman's programme ran
-        // eight weeks whatever it was and whether or not she had one. The
-        // badge is gone rather than parameterised: the week line below states
-        // her place and her total already, and stating it twice is how two
-        // numbers for one thing start to disagree. With no programme there is
-        // no footage to stand in for either, so the frame does not draw at all
-        // — a 150 point placeholder over an empty state is decoration
-        // standing in for content.
-        if (hasProgram) const AppMedia(height: 150),
         // The three chips — "3 days a week", "At home", "Quiet" — are gone
         // rather than parameterised. Each is a property of one programme, this
         // screen is handed none of them, and a chip is read as a fact about
@@ -253,13 +238,20 @@ class ProgramView extends StatelessWidget {
         // written for her, and one session is ready now. It names the footer
         // button rather than offering a second way in, because rule 17 asks
         // for the single smallest action and the footer already is it.
-        if (!hasProgram)
+        if (!hasProgram) ...[
           AppEmptyState(
             icon: Icons.checklist,
             title: l10n.noProgramYet,
             body: l10n.aProgramSetsOutYourWeeksAnd,
-          )
-        else
+          ),
+          // First view with no plan only: it peeks in once.
+          const Kitten(
+            pose: KittenPose.peek,
+            size: 56,
+            moment: 'R02',
+            sessionBudget: true,
+          ),
+        ] else
           for (final day in days)
             MoveRow(
               name: day.title,

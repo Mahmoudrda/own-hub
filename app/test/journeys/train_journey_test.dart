@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
+import 'package:own_hub/domain/clock/app_clock.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/week/week_key.dart';
 import 'package:own_hub/main.dart';
@@ -160,5 +161,67 @@ void main() {
       anyOf(progressBefore, progressBefore + 1),
       reason: 'never more than one credit for one recalled session',
     );
+  });
+
+  testWidgets('G01 and G02: one session per Start, and the last set is kept', (
+    tester,
+  ) async {
+    // Her clock, so the session lasts as long as a real one: a test that
+    // finishes inside a second would have no minutes for R10 to state.
+    var now = DateTime.now();
+    AppClock.debugNow = () => now;
+    addTearDown(() => AppClock.debugNow = null);
+
+    final flushesBefore = AppRouter.trainRepository.flushes.length;
+    await _open(tester, 'R03');
+    final liveBefore = AppRouter.trainRepository.liveSessionId;
+    await tester.tap(find.textContaining('Start'));
+    await tester.pumpAndSettle();
+    now = now.add(const Duration(minutes: 4));
+    final live = AppRouter.trainRepository.liveSessionId;
+    expect(live, isNot(liveBefore), reason: 'Start made a session');
+    // Exactly one: the id counter moved by one, not two.
+    int number(String? id) => int.tryParse(id?.split('-').last ?? '') ?? 0;
+    expect(number(live) - number(liveBefore), 1);
+
+    // Log the whole first move and finish at once, inside the undo window.
+    await tester.tap(find.textContaining('I did').first);
+    // Through R13's page transition, and well inside the five seconds.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.text('Finish here'));
+    await tester.pumpAndSettle();
+
+    // The move she logged a moment before finishing was written, and R10
+    // was told about it.
+    expect(AppRouter.trainRepository.flushes.length, flushesBefore + 1);
+    final summary = WorkoutSessionState.instance.lastSummary;
+    expect(summary, isNotNull);
+    expect(summary!.sets, greaterThan(0));
+    expect(find.textContaining('Moves: 1'), findsOneWidget);
+  });
+
+  testWidgets('G10: undo on R09 puts her back on the set, on R07', (
+    tester,
+  ) async {
+    await _open(tester, 'R03');
+    await tester.tap(find.textContaining('Start'));
+    await tester.pumpAndSettle();
+    final state = WorkoutSessionState.instance;
+    expect(state.setIndex, 0);
+
+    await tester.tap(find.textContaining('Done ·').first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text("I'm ready, next set"), findsOneWidget);
+    expect(state.setIndex, 1);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(state.setIndex, 0, reason: 'the position came back with the set');
+    expect(state.loggedSetCount, 0);
+    expect(find.text("I'm ready, next set"), findsNothing, reason: 'off R09');
+    expect(find.textContaining('Done ·'), findsWidgets, reason: 'on R07');
   });
 }

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_brand"
+        android:textColor="@color/widget_primary"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_preview_text"
+        android:textAlignment="viewStart"
+        android:textColor="@color/widget_ink"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal">
+        <View android:layout_width="0dp" android:layout_height="8dp" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/widget_segment_empty" />
+        <View android:layout_width="0dp" android:layout_height="8dp" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/widget_segment_empty" />
+        <View android:layout_width="0dp" android:layout_height="8dp" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/widget_segment_empty" />
+    </LinearLayout>
+</LinearLayout>

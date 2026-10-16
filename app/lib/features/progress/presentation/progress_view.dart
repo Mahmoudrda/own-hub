@@ -52,6 +52,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../domain/rewards/stated_figure.dart';
+import '../../../domain/rewards/training_streak.dart';
 import '../../../domain/rewards/tier_policy.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -60,13 +61,18 @@ import '../../../ui/app_card.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
+import '../../../ui/app_progress.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_sheet.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
 import '../../today/domain/today_day.dart' show FirstWeekArc;
 import '../../today/presentation/today_cards.dart'
     show firstWeekDone, offeredFirstWeekSteps, openScreen;
+import '../../today/presentation/streak_sheet.dart' show trainingStreakLine;
+import '../domain/milestone.dart';
+import 'milestones_view.dart' show milestoneTitle;
 import 'progress_view_model.dart';
 import 'progress_widgets.dart';
 
@@ -84,6 +90,9 @@ class ProgressView extends StatelessWidget {
     this.onOpenRestWeek,
     this.onOpenTierSlip,
     this.onSelectTab,
+    this.trainingStreak,
+    this.onOpenStreak,
+    this.nextMilestone,
   });
 
   /// Her progress, already computed. The screen does no arithmetic.
@@ -124,6 +133,70 @@ class ProgressView extends StatelessWidget {
 
   final ValueChanged<String>? onSelectTab;
 
+  /// Her training streak (D37), or null when it is off. No kitten here: the
+  /// mascot never appears on Progress.
+  final StreakStatus? trainingStreak;
+  final VoidCallback? onOpenStreak;
+
+  /// What a rest week covers and what happens if a tier slips, one tap
+  /// behind "How weeks count". Each row closes the sheet, then opens its
+  /// screen.
+  Future<void> _openHowWeeksCount(BuildContext context, AppL10n l10n) async {
+    final open = await showAppSheet<VoidCallback>(
+      context: context,
+      gap: 8,
+      children: [
+        Text(l10n.howWeeksCount, style: AppText.titleL),
+        if (AppRouter.screenIsOn('T04'))
+          Builder(
+            builder: (sheet) => AppListItem(
+              leading: const Icon(
+                Icons.spa,
+                size: 22,
+                color: AppColors.tertiary,
+              ),
+              title: l10n.whatARestWeekCovers,
+              subtitle: l10n.aMissedWeekRepairedWithoutAsking,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: () =>
+                  Navigator.of(sheet)
+                      .pop(() => openScreen(context, 'T04', onOpenRestWeek)),
+            ),
+          ),
+        if (AppRouter.screenIsOn('T05'))
+          Builder(
+            builder: (sheet) => AppListItem(
+              leading: const Icon(
+                Icons.info_outline,
+                size: 22,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.ifATierSlips,
+              subtitle: l10n.oneCountedWeekBringsItBack,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: () =>
+                  Navigator.of(sheet)
+                      .pop(() => openScreen(context, 'T05', onOpenTierSlip)),
+            ),
+          ),
+      ],
+    );
+    if (open == null || !context.mounted) return;
+    open();
+  }
+
+  /// The milestone nearest to done, with how far along she is (§15, goal
+  /// gradient). Null when every one is earned or none can be named.
+  final MilestoneStanding? nextMilestone;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -147,6 +220,29 @@ class ProgressView extends StatelessWidget {
           ..._tierCard(l10n),
           ..._nextTierCard(l10n),
           _weekCard(l10n),
+          if (trainingStreak case final streakStatus?)
+            AppListItem(
+              key: const ValueKey('p01TrainingStreak'),
+              leading: const Icon(
+                Icons.local_florist_outlined,
+                size: 22,
+                color: AppColors.tertiary,
+              ),
+              // The line already names the streak, so it is the title and
+              // her best sits under it.
+              title: trainingStreakLine(l10n, streakStatus),
+              subtitle: streakStatus.best > 0
+                  ? l10n.daysPluralOneYourBest1Day(streakStatus.best)
+                  : '',
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              onTap: onOpenStreak,
+            ),
+          ?_nextMilestone(l10n),
           if (AppRouter.screenIsOn('P05'))
             AppListItem(
               leading: const Icon(
@@ -161,7 +257,6 @@ class ProgressView extends StatelessWidget {
                 size: 22,
                 color: AppColors.onSurfaceVariant,
               ),
-              variant: AppCardVariant.tonal,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               onTap: () => openScreen(context, 'P05', onOpenShare),
             ),
@@ -188,42 +283,58 @@ class ProgressView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               onTap: () => openScreen(context, 'T07', onOpenFirstWeek),
             ),
-          if (AppRouter.screenIsOn('T04'))
+          // The rest week and the tier policy, behind one row.
+          if (AppRouter.screenIsOn('T04') || AppRouter.screenIsOn('T05'))
             AppListItem(
+              key: const ValueKey('p01-how-weeks-count'),
               leading: const Icon(
                 Icons.spa,
                 size: 22,
                 color: AppColors.tertiary,
               ),
-              title: l10n.whatARestWeekCovers,
-              subtitle: l10n.aMissedWeekRepairedWithoutAsking,
+              title: l10n.howWeeksCount,
               trailing: const Icon(
                 Icons.chevron_right,
                 size: 22,
                 color: AppColors.onSurfaceVariant,
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              onTap: () => openScreen(context, 'T04', onOpenRestWeek),
-            ),
-          if (AppRouter.screenIsOn('T05'))
-            AppListItem(
-              leading: const Icon(
-                Icons.info_outline,
-                size: 22,
-                color: AppColors.primaryDim,
-              ),
-              title: l10n.ifATierSlips,
-              subtitle: l10n.oneCountedWeekBringsItBack,
-              trailing: const Icon(
-                Icons.chevron_right,
-                size: 22,
-                color: AppColors.onSurfaceVariant,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              onTap: () => openScreen(context, 'T05', onOpenTierSlip),
+              onTap: () => _openHowWeeksCount(context, l10n),
             ),
         ],
       ),
+    );
+  }
+
+  /// The milestone nearest to done: its name, how far along, and a bar.
+  Widget? _nextMilestone(AppL10n l10n) {
+    final standing = nextMilestone;
+    if (standing == null || standing.earned) return null;
+    final title = milestoneTitle(l10n, standing.milestone.id);
+    if (title == null) return null;
+    return Column(
+      key: const ValueKey('p01-next-milestone'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          l10n.nextMilestone,
+          style: AppText.label.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        const SizedBox(height: 4),
+        AppSplitRow(
+          start: Text(title, style: AppText.titleS),
+          end: Text(
+            l10n.countOfTotal(
+              countLabel(standing.shown),
+              countLabel(standing.milestone.target),
+            ),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        ),
+        const SizedBox(height: 6),
+        AppProgressBar(percent: standing.percent, height: 5),
+      ],
     );
   }
 
@@ -485,11 +596,13 @@ class ProgressView extends StatelessWidget {
               children: [
                 for (var i = 0; i < entries.length; i++) ...[
                   if (i > 0)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       child: SizedBox(
                         width: 1,
-                        child: ColoredBox(color: Color(0x669C838A)),
+                        child: ColoredBox(
+                          color: AppColors.outline.withValues(alpha: 0.4),
+                        ),
                       ),
                     ),
                   Expanded(child: entries[i]),

@@ -638,28 +638,26 @@ MealDay? _readMealDay(String dayId, Map<String, Object?> row) {
 /// One logged item. [includeHealth] false (the backup off) leaves out
 /// `allergenOverride`, the allergens she chose to eat anyway: it is allergy
 /// data, and the copy says allergies stay on the phone (N12).
-Map<String, Object?> _mealItem(
-  MealItem item, {
-  required bool includeHealth,
-}) => <String, Object?>{
-  'itemId': item.itemId,
-  'foodId': item.foodId,
-  'servings': item.servings,
-  'size': item.size,
-  'loggedAt': item.loggedAt,
-  'source': item.source.name,
-  'origin': item.origin.name,
-  'kcal': item.kcal,
-  'proteinG': item.proteinG,
-  if (item.planRef case final ref?)
-    'planRef': <String, Object?>{
-      'assignmentId': ref.assignmentId,
-      'slot': ref.slot.name,
-      'idx': ref.idx,
-    },
-  'helpingOf': ?item.helpingOf,
-  if (includeHealth) 'allergenOverride': item.allergenOverride,
-};
+Map<String, Object?> _mealItem(MealItem item, {required bool includeHealth}) =>
+    <String, Object?>{
+      'itemId': item.itemId,
+      'foodId': item.foodId,
+      'servings': item.servings,
+      'size': item.size,
+      'loggedAt': item.loggedAt,
+      'source': item.source.name,
+      'origin': item.origin.name,
+      'kcal': item.kcal,
+      'proteinG': item.proteinG,
+      if (item.planRef case final ref?)
+        'planRef': <String, Object?>{
+          'assignmentId': ref.assignmentId,
+          'slot': ref.slot.name,
+          'idx': ref.idx,
+        },
+      'helpingOf': ?item.helpingOf,
+      if (includeHealth) 'allergenOverride': item.allergenOverride,
+    };
 
 MealItem? _readMealItem(Object? raw) {
   final row = _map(raw);
@@ -835,6 +833,8 @@ Iterable<CloudDoc> _mealPlans() sync* {
               'group': line.value.group.name,
               'ticked': line.value.ticked,
               'tickedAt': ?line.value.tickedAt,
+              'text': ?line.value.text,
+              'recipeId': ?line.value.recipeId,
             },
         },
         'recipeVersion': plan.recipeVersion,
@@ -871,6 +871,8 @@ MealPlan? _readMealPlan(String weekId, Map<String, Object?> row) {
       group: _pick(GroceryGroup.values, line['group']) ?? GroceryGroup.cupboard,
       ticked: _bool(line['ticked']) ?? false,
       tickedAt: _time(line['tickedAt']),
+      text: _str(line['text']),
+      recipeId: _str(line['recipeId']),
     );
   }
   return MealPlan(
@@ -1025,7 +1027,9 @@ CloudDoc? _cycleDoc() {
     data: <String, Object?>{
       'mode': cycle.mode.name,
       'contextFlags': [
-        for (final flag in cycle.contextFlags.take(CycleDocument.maxContextFlags))
+        for (final flag in cycle.contextFlags.take(
+          CycleDocument.maxContextFlags,
+        ))
           flag.name,
       ],
       // Explicitly null rather than absent: `cycleLengthDays == null` is a case

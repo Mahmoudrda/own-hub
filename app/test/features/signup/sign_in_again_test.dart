@@ -156,7 +156,9 @@ void main() {
         expect(signIn, 1);
       });
 
-      testWidgets('C14 "Ask a woman to contact me" says sign in again', (tester) async {
+      testWidgets('C14 "Ask a woman to contact me" says sign in again', (
+        tester,
+      ) async {
         _tall(tester);
         var signIn = 0;
         await tester.pumpWidget(

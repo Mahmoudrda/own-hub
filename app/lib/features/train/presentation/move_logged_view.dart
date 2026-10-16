@@ -37,7 +37,16 @@ class MoveLoggedView extends StatelessWidget {
     this.handle,
     this.moves,
     this.loggedCount = 2,
+    this.title,
+    this.sets,
   });
+
+  /// The session's own name. Null falls back to the bundled session's, which
+  /// is the only one this screen was ever drawn for.
+  final String? title;
+
+  /// Sets of today's session behind her, for the bar under the title.
+  final ({int done, int total})? sets;
 
   final VoidCallback? onClose;
   final VoidCallback? onPause;
@@ -109,17 +118,19 @@ class MoveLoggedView extends StatelessWidget {
 
     return AppScaffold(
       appBar: TrainTopBar(
-        title: l10n.legsAndGlutes,
+        title: title ?? l10n.legsAndGlutes,
         onClose: onClose,
         closeIcon: Icons.arrow_back,
+        sets: sets,
         actions: [
-          IconButton(
-            onPressed: onPause,
-            iconSize: 24,
-            color: AppColors.onSurfaceVariant,
-            tooltip: l10n.pause,
-            icon: const Icon(Icons.pause),
-          ),
+          if (onPause != null)
+            IconButton(
+              onPressed: onPause,
+              iconSize: 24,
+              color: AppColors.onSurfaceVariant,
+              tooltip: l10n.pause,
+              icon: const Icon(Icons.pause),
+            ),
         ],
       ),
       footer: [

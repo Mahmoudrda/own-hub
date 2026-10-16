@@ -10,11 +10,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 const String _folder = 'lib/domain/safety';
 
-List<File> _safetySource() => Directory(_folder)
-    .listSync(recursive: true)
-    .whereType<File>()
-    .where((f) => f.path.endsWith('.dart'))
-    .toList();
+List<File> _safetySource() =>
+    Directory(_folder)
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))
+        .toList();
 
 bool _isComment(String line) {
   final t = line.trimLeft();
@@ -154,7 +155,8 @@ void main() {
     final imports = <String>[];
     for (final file in _safetySource()) {
       for (final line in file.readAsLinesSync()) {
-        final match = RegExp(r'''^import\s+['"]([^'"]+)['"]''').firstMatch(line);
+        final match = RegExp(r'''^import\s+['"]([^'"]+)['"]''')
+            .firstMatch(line);
         if (match != null) imports.add(match.group(1)!);
       }
     }

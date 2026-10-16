@@ -221,7 +221,9 @@ void main() {
           allergies: {AllergenTag.treeNuts},
           dietary: {DietaryTag.vegetarianWeekdays},
         );
-        await repository.save(allergies: {AllergenTag.treeNuts, AllergenTag.milk});
+        await repository.save(
+          allergies: {AllergenTag.treeNuts, AllergenTag.milk},
+        );
 
         expect(repository.writes, [
           {'profile.allergies', 'profile.dietary'},
@@ -318,10 +320,10 @@ void main() {
       // back as `crustaceans` — what an Egyptian kitchen means by it. Screening
       // widens it again, because a woman who saved it told us she cannot eat
       // calamari either. Narrow on read, widen on screen: the safe direction.
-      expect(
-        AllergenTag.expandAliases(const ['shellfish']),
-        {'crustaceans', 'molluscs'},
-      );
+      expect(AllergenTag.expandAliases(const ['shellfish']), {
+        'crustaceans',
+        'molluscs',
+      });
       // A token from a content release newer than this binary is kept, not
       // dropped. Forgetting it would fail open.
       expect(AllergenTag.expandAliases(const ['lupin_flour']), {'lupin_flour'});

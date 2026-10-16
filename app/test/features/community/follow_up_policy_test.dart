@@ -23,16 +23,10 @@ void main() {
   group('only the parent s author may attach — P0-COM-04', () {
     test('her own post is fine', () {
       expect(
-        () => _policy.assertCanAttach(
-          parent: _parent(),
-          authorUid: 'habiba',
-        ),
+        () => _policy.assertCanAttach(parent: _parent(), authorUid: 'habiba'),
         returnsNormally,
       );
-      expect(
-        _policy.canAttach(parent: _parent(), authorUid: 'habiba'),
-        isTrue,
-      );
+      expect(_policy.canAttach(parent: _parent(), authorUid: 'habiba'), isTrue);
     });
 
     test('another woman s post throws NotYourPostError', () {
@@ -50,7 +44,10 @@ void main() {
       // rules". A view model that only had the throwing form would have to
       // catch an exception to decide whether to draw a button.
       expect(
-        _policy.canAttach(parent: _parent(author: 'habiba'), authorUid: 'nada'),
+        _policy.canAttach(
+          parent: _parent(author: 'habiba'),
+          authorUid: 'nada',
+        ),
         isFalse,
       );
     });
@@ -156,8 +153,10 @@ void main() {
       ).toWire().keys.join(' ');
 
       expect(RegExp('weight', caseSensitive: false).hasMatch(keys), isFalse);
-      expect(RegExp('lost|kg|scale', caseSensitive: false).hasMatch(keys),
-          isFalse);
+      expect(
+        RegExp('lost|kg|scale', caseSensitive: false).hasMatch(keys),
+        isFalse,
+      );
     });
 
     test('negative figures are not constructible', () {

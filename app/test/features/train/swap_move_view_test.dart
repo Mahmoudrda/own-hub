@@ -28,6 +28,19 @@ Widget _host(
   );
 }
 
+const _twoMoves = [
+  MoveAlternative(
+    exerciseId: 'glute_bridge',
+    name: 'Glute bridge',
+    reason: 'No standing, nothing to hold',
+  ),
+  MoveAlternative(
+    exerciseId: 'step_back_lunge',
+    name: 'Step-back lunge',
+    reason: 'One leg at a time',
+  ),
+];
+
 void main() {
   testWidgets('offers same-muscle alternatives over the visible list', (
     tester,
@@ -36,7 +49,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Swap this move'), findsOneWidget);
-    expect(find.text('Same muscles, quieter on the floor.'), findsOneWidget);
+    expect(find.text('Same muscles, quieter on the floor.'), findsNothing);
     expect(find.text('No standing, nothing to hold'), findsOneWidget);
     expect(find.text('One leg at a time, holds the weight'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -54,7 +67,7 @@ void main() {
   testWidgets('swapping records against the session, and never the plan', (
     tester,
   ) async {
-    final repository = InMemoryTrainRepository();
+    final repository = InMemoryTrainRepository(alternatives: _twoMoves);
     MoveAlternative? chosen;
 
     await tester.pumpWidget(
@@ -81,7 +94,7 @@ void main() {
   testWidgets('choosing the other candidate changes what is swapped in', (
     tester,
   ) async {
-    final repository = InMemoryTrainRepository();
+    final repository = InMemoryTrainRepository(alternatives: _twoMoves);
 
     await tester.pumpWidget(_host(SwapMoveView(repository: repository)));
     await tester.pumpAndSettle();
@@ -114,6 +127,19 @@ void main() {
     expect(find.text('No standing, nothing to hold'), findsNothing);
   });
 
+  testWidgets('with nothing to swap to, it says so and offers Close', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(const SwapMoveView(alternatives: <MoveAlternative>[])),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('No swap for this move right now'), findsOneWidget);
+    expect(find.text('Close'), findsOneWidget);
+    expect(find.textContaining('Swap to'), findsNothing);
+  });
+
   testWidgets('reads in Arabic, from the dictionary', (tester) async {
     await tester.pumpWidget(
       _host(const SwapMoveView(), locale: const Locale('ar')),
@@ -121,7 +147,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('غيّري الحركة دي'), findsOneWidget);
-    expect(find.text('نفس العضلات، وأهدى على الأرض.'), findsOneWidget);
     expect(find.text('غيّريها'), findsOneWidget);
     expect(find.text('Swap it'), findsNothing);
   });

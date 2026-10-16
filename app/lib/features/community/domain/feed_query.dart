@@ -137,11 +137,7 @@ class FeedQueryFactory {
         : chunks;
     return <FeedQuery>[
       for (final chunk in capped)
-        FeedQuery(
-          audienceKeys: chunk,
-          limit: pageSize,
-          startAfter: startAfter,
-        ),
+        FeedQuery(audienceKeys: chunk, limit: pageSize, startAfter: startAfter),
     ];
   }
 

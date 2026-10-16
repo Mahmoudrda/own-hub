@@ -202,9 +202,9 @@ class _PrivacyViewState extends State<PrivacyView> {
         Text(l10n.ifYouTurnThisOnACopy, style: body),
         Text(l10n.theCopyIsStoredOnGoogleCloud, style: body),
         Text(l10n.thisIsHealthDataSoWeOnly, style: body),
-        Text(l10n.ifYouDoNotTurnItOn, style: body),
-        // The policy, one tap away. The wording above is unchanged, so the
-        // consent it records is still health-v1.
+        Text(l10n.ifYouDontTurnItOnNothing, style: body),
+        // The policy, one tap away. Version 1 of the consent is the Egyptian
+        // wording (DECISIONS.md D45).
         if (widget.onOpenPrivacyPolicy != null)
           AppButton(
             l10n.readThePrivacyPolicy,

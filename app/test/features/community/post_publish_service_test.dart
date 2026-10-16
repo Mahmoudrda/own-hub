@@ -178,8 +178,7 @@ void main() {
       expect(post.blurOptOut, isNull);
     });
 
-    test('an opted-out image is published unblurred WITH its record',
-        () async {
+    test('an opted-out image is published unblurred WITH its record', () async {
       final h = _harness();
       addTearDown(h.bus.dispose);
       final at = DateTime(2026, 9, 19, 9, 41);
@@ -245,11 +244,7 @@ void main() {
       addTearDown(h.bus.dispose);
 
       expect(
-        () => h.service.publish(
-          draft: _draft(),
-          describe: 'Posted',
-          now: _now,
-        ),
+        () => h.service.publish(draft: _draft(), describe: 'Posted', now: _now),
         throwsA(isA<FeatureDeferredError>()),
         reason:
             'Feature.community is false until the feature is proven. A screen '

@@ -1,9 +1,9 @@
 /// R03 — Workout day.
 ///
 /// Matches `6-v2/src/screens-train.mjs` → `R03`. The day is a list of moves with
-/// the suggested weights already on them, and **both ways in are on the same
-/// screen**: start it now, or say she already did it. That second route is not a
-/// fallback — most women train without the phone in their hand.
+/// the suggested weights already on them, and one way in: start it now. Saying
+/// she already did it (`T02`) is offered on Home, so this screen asks for one
+/// decision.
 ///
 /// The weights shown here are prescriptions. Nothing on this screen can become a
 /// result: starting a session creates it with every outcome null, and the
@@ -228,14 +228,16 @@ class WorkoutDayView extends StatefulWidget {
     super.key,
     this.onBack,
     this.onStart,
-    this.onAlreadyDidIt,
     this.onOpenMove,
+    this.canOpenMove,
     this.onMore,
     this.day,
     this.repository,
     this.lifeStage,
     this.writtenForHerStage = false,
     this.onNotToday,
+    this.challengeExerciseId,
+    this.challengeNote,
   });
 
   final VoidCallback? onBack;
@@ -259,11 +261,17 @@ class WorkoutDayView extends StatefulWidget {
   /// Called once the session has been created.
   final VoidCallback? onStart;
 
-  /// T02 — she trained without the phone.
-  final VoidCallback? onAlreadyDidIt;
-
   final ValueChanged<PlannedMove>? onOpenMove;
+
+  /// Whether a move has a demo to open. Null means every move does; a move
+  /// with none is not tappable, and the hint under the list is dropped when no
+  /// move has one.
+  final bool Function(PlannedMove move)? canOpenMove;
   final VoidCallback? onMore;
+
+  /// The move this week's challenge is about, and what it says (D38).
+  final String? challengeExerciseId;
+  final String? challengeNote;
 
   /// Today's assignment. Injectable; defaults to the design's day, built from
   /// the dictionary rather than written into the widget.
@@ -278,19 +286,30 @@ class WorkoutDayView extends StatefulWidget {
 class _WorkoutDayViewState extends State<WorkoutDayView> {
   TrainRepository? _fallbackRepository;
 
+  /// Starts [day]: through the caller when there is one, here only when this
+  /// screen is shown on its own.
+  ///
+  /// It did both. This started a session and then called the router's
+  /// `onStart`, which started another, so every Start left an unfinished
+  /// session behind in her history — and anything counting her sessions from
+  /// that history counted one that never happened.
   Future<void> _start(WorkoutDay day) async {
+    final onStart = widget.onStart;
+    if (onStart != null) {
+      onStart();
+      return;
+    }
     final repository =
         widget.repository ??
         (_fallbackRepository ??= InMemoryTrainRepository());
     await repository.startSession(day);
-    if (!mounted) return;
-    widget.onStart?.call();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final day = widget.day ?? sampleWorkoutDay(l10n);
+    final canOpen = widget.canOpenMove ?? (_) => true;
     final caution = switch ((widget.lifeStage, widget.writtenForHerStage)) {
       (LifeStage.pregnant, true) => l10n.writtenForPregnancyCheckWithYourDoctor,
       (LifeStage.postpartum, true) => l10n.writtenForAfterABirthCheckWith,
@@ -333,14 +352,6 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
             fontSize: 15,
             onPressed: widget.onNotToday ?? widget.onBack,
           ),
-        if (AppRouter.screenIsOn('T02'))
-          AppButton(
-            l10n.iAlreadyDidIt,
-            variant: AppButtonVariant.text,
-            height: 44,
-            fontSize: 15,
-            onPressed: widget.onAlreadyDidIt,
-          ),
       ],
       children: [
         if (caution != null)
@@ -374,21 +385,51 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
             ),
           ],
         ),
-        for (var i = 0; i < day.moves.length; i++)
-          MoveRow(
-            name: day.moves[i].name,
-            detail: day.moves[i].prescriptionLabel,
-            // The first move is the one she is on. The design marked the
-            // second, which is a claim that she is already one move into a
-            // session she has not started: R03 is the screen with "Start,
-            // everything's ready" on it.
-            current: i == 0,
-            // Not tappable while the move videos are switched off.
-            onTap: AppRouter.screenIsOn('R04')
-                ? () => widget.onOpenMove?.call(day.moves[i])
-                : null,
+        // A long stretch before the moves begin, still; it blinks once the
+        // second time she opens the day in a run.
+        const Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Kitten(
+            pose: KittenPose.stretch,
+            size: 40,
+            moment: 'R03',
+            holdStill: true,
+            blinkOnRevisit: true,
           ),
-        if (AppRouter.screenIsOn('R04'))
+        ),
+        // One block, so a different day (or a swapped move) eases in rather
+        // than the list jumping. Keyed by what is in it.
+        HandSwap(
+          child: Column(
+            key: ValueKey(
+              day.moves.map((m) => '${m.name}|${m.prescriptionLabel}').join(),
+            ),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            spacing: kStackGap,
+            children: [
+              for (var i = 0; i < day.moves.length; i++)
+                MoveRow(
+                  name: day.moves[i].name,
+                  detail: day.moves[i].prescriptionLabel,
+                  // The first move is the one she is on. The design marked the
+                  // second, which is a claim that she is already one move into a
+                  // session she has not started: R03 is the screen with "Start,
+                  // everything's ready" on it.
+                  current: i == 0,
+                  // This week's challenge, on the move it is about (D38).
+                  note: day.moves[i].exerciseId == widget.challengeExerciseId
+                      ? widget.challengeNote
+                      : null,
+                  // Not tappable while the move videos are switched off.
+                  onTap: AppRouter.screenIsOn('R04') && canOpen(day.moves[i])
+                      ? () => widget.onOpenMove?.call(day.moves[i])
+                      : null,
+                ),
+            ],
+          ),
+        ),
+        if (AppRouter.screenIsOn('R04') && day.moves.any(canOpen))
           Text(
             l10n.tapAnyMoveToWatchItOr,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),

@@ -684,7 +684,7 @@ again, which quietly breaks the one-card-one-account rule. With it, a rotation
 can compute both and migrate.
 """
 
-CONSENT_VERSION = 2
+CONSENT_VERSION = 3
 """Bumped whenever the consent text changes. The version is what ties a record
 to what she was actually shown.
 
@@ -693,7 +693,11 @@ Cloud Vision endpoint, the self-hosted face match, the 180-day result and the
 keyed ID code, and a woman from Own Hub as the fallback. The record now also
 carries the language she read it in and the app version that showed it, so
 "which words did she see" has an answer. Women verified under version 1 are
-not asked again: only start_verification and verify_identity read it."""
+not asked again: only start_verification and verify_identity read it.
+
+Version 3 (14 October 2026): the same consent wording in Egyptian Arabic
+instead of formal Arabic. Nothing about what is processed, where or for how
+long changed, and women verified under version 2 are not asked again."""
 
 CONSENT_LOCALES = ("en", "ar")
 """The languages a consent or an acceptance can be recorded in."""
@@ -718,7 +722,7 @@ rules as TERMS_VERSION, mirrored by the app's `kPrivacyVersion`."""
 LEGAL_PLATFORMS = ("android", "ios")
 """Where an acceptance may come from."""
 
-PLEDGE_VERSION = 1
+PLEDGE_VERSION = 2
 """The version of the community's three rules she agrees to on C16
 ("How we treat each other"). Moves with the app's `kPledgeVersion`
 (lib/app_state/pledge.dart). Recorded once at users/{uid}/consents/pledge-v{N};
@@ -733,9 +737,9 @@ life-stage or allergy write reaches the cloud; the rules refuse those writes
 without it. Bumped whenever that wording changes. The wording is PENDING
 COUNSEL and PDPC approval of the consent mechanism."""
 
-REVIEW_CONSENT_VERSION = 2
+REVIEW_CONSENT_VERSION = 3
 """N7: version of the review-route consent recorded by request_review at
-users/{uid}/consents/review-v2 = {version, at, path, flagId}. Asking for a woman
+users/{uid}/consents/review-v3 = {version, at, path, flagId}. Asking for a woman
 reviewer IS the consent: the app shows the wording (a woman from Own Hub
 reviews her case, looks up her phone number and contacts her by phone within
 REVIEW_SLA_HOURS) immediately before it calls request_review. The wording is
@@ -744,4 +748,7 @@ PENDING COUNSEL. Bumped whenever that wording changes, together with the app's
 
 Version 2 (6 October 2026) removed the promise of a video call: no video
 service exists. A version-1 record (review-v1) is no longer read, so a flag
-asked for under the old wording needs her to ask again before contact()."""
+asked for under the old wording needs her to ask again before contact().
+
+Version 3 (14 October 2026): the same wording in Egyptian Arabic instead of
+formal Arabic. What she is told did not change."""

@@ -42,6 +42,8 @@ class AppWeekSegments extends StatelessWidget implements HandSeedName {
     this.height = 10,
     this.color = AppColors.tertiarySoft,
     this.style = WeekStyle.bar,
+    this.lead = Duration.zero,
+    this.popIndex,
   });
 
   /// Sessions the week asks for.
@@ -53,6 +55,14 @@ class AppWeekSegments extends StatelessWidget implements HandSeedName {
   final double height;
   final Color color;
   final WeekStyle style;
+
+  /// How long the marks wait before they are drawn, for a screen that brings
+  /// the week in at a point in its own sequence.
+  final Duration lead;
+
+  /// The mark just earned, which arrives with a spring instead of simply
+  /// being there. Null when nothing was earned just now.
+  final int? popIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +108,8 @@ class AppWeekSegments extends StatelessWidget implements HandSeedName {
               _Mark(
                 index: i,
                 size: size,
+                lead: lead,
+                pop: i == popIndex,
                 state: i < filled
                     ? _MarkState.done
                     : i == filled
@@ -114,18 +126,26 @@ class AppWeekSegments extends StatelessWidget implements HandSeedName {
 enum _MarkState { done, next, waiting }
 
 class _Mark extends StatelessWidget {
-  const _Mark({required this.index, required this.size, required this.state});
+  const _Mark({
+    required this.index,
+    required this.size,
+    required this.state,
+    this.lead = Duration.zero,
+    this.pop = false,
+  });
 
+  final bool pop;
   final int index;
   final double size;
   final _MarkState state;
+  final Duration lead;
 
   @override
   Widget build(BuildContext context) {
     final dir = Directionality.of(context);
     final ring = switch (state) {
       _MarkState.next => DrawOn(
-        delay: const Duration(milliseconds: 180),
+        delay: lead + HandTiming.short,
         builder: (context, p) => CustomPaint(
           size: Size.square(size),
           painter: LoopPainter(
@@ -152,31 +172,32 @@ class _Mark extends StatelessWidget {
       ),
     };
 
-    return ExcludeSemantics(
-      child: SizedBox.square(
-        dimension: size,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            ring,
-            if (state == _MarkState.done)
-              HandTick(
-                size: size * 0.5,
-                seed: index + 1,
-                drawOn: true,
-                delay: Duration(milliseconds: 90 * index),
-              )
-            else
-              HandFigure(
-                '${index + 1}',
-                size: size * 0.42,
-                color: state == _MarkState.next
-                    ? HandInk.ink
-                    : AppColors.onSurfaceVariant,
-              ),
-          ],
-        ),
+    final mark = SizedBox.square(
+      dimension: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          ring,
+          if (state == _MarkState.done)
+            HandTick(
+              size: size * 0.5,
+              seed: index + 1,
+              drawOn: true,
+              delay: lead + Duration(milliseconds: 90 * index),
+            )
+          else
+            HandFigure(
+              '${index + 1}',
+              size: size * 0.42,
+              color: state == _MarkState.next
+                  ? HandInk.ink
+                  : AppColors.onSurfaceVariant,
+            ),
+        ],
       ),
+    );
+    return ExcludeSemantics(
+      child: pop ? SpringPop(delay: lead, child: mark) : mark,
     );
   }
 }

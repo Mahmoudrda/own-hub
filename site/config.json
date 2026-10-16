@@ -109,7 +109,7 @@
     "dataProtectionOfficer": {
       "value": {
         "en": "Mahmoud Reda acts as data protection officer himself, as the law requires of an individual who holds a permit. Contact: info@own-hub.app",
-        "ar": "يتولى محمود رضا بنفسه مهام مسؤول حماية البيانات، كما يقتضي القانون من الشخص الطبيعي الحاصل على تصريح. للتواصل: info@own-hub.app"
+        "ar": "محمود رضا بنفسه هو مسؤول حماية البيانات، زي ما القانون بيشترط على الشخص الطبيعي اللي معاه تصريح. للتواصل: info@own-hub.app"
       },
       "label": {
         "en": "data protection officer",
@@ -121,7 +121,7 @@
     "pdpcContact": {
       "value": {
         "en": "Website portal.pdpc.gov.eg · email info@pdpc.gov.eg · hotline 17372.",
-        "ar": "الموقع portal.pdpc.gov.eg · البريد الإلكتروني info@pdpc.gov.eg · الخط الساخن 17372."
+        "ar": "الموقع portal.pdpc.gov.eg · الإيميل info@pdpc.gov.eg · الخط الساخن 17372."
       },
       "label": {
         "en": "contact details for Egypt's Personal Data Protection Centre",
@@ -132,7 +132,7 @@
     "pdpcPermit": {
       "value": {
         "en": "Not yet issued. We will publish the permit number and its expiry date here as soon as the Personal Data Protection Centre issues it.",
-        "ar": "لم يصدر بعد. سننشر رقم التصريح وتاريخ انتهائه هنا فور إصداره من مركز حماية البيانات الشخصية."
+        "ar": "لسه ماصدرش. هننشر رقم التصريح وتاريخ انتهائه هنا أول ما مركز حماية البيانات الشخصية يصدره."
       },
       "label": {
         "en": "Personal Data Protection Centre permit number and expiry",
@@ -143,7 +143,7 @@
     "courtVenue": {
       "value": {
         "en": "the competent courts in Cairo, including the Cairo Economic Court for the matters the law assigns to it. This does not take away your right to bring a claim before any other Egyptian court the law allows you to use",
-        "ar": "المحاكم المختصة في القاهرة، ومنها المحكمة الاقتصادية بالقاهرة في المسائل التي يُسندها إليها القانون. ولا يمس ذلك حقك في رفع دعواك أمام أي محكمة مصرية أخرى يتيحها لك القانون"
+        "ar": "المحاكم المختصة في القاهرة، ومنها المحكمة الاقتصادية بالقاهرة في المسائل اللي القانون بيسندها ليها. وده مبيمسّش حقك في إنك ترفعي دعواك قدام أي محكمة مصرية تانية القانون بيتيحها لك"
       },
       "label": {
         "en": "the governorate or court that hears disputes",
@@ -154,7 +154,7 @@
     "liabilityCap": {
       "value": {
         "en": "the amount of damage Egyptian law obliges us to make good. Because Own Hub is free, we set no other cap",
-        "ar": "مقدار الضرر الذي يُلزمنا القانون المصري بجبره. ولأن Own Hub مجاني، فلا نضع أي حد آخر"
+        "ar": "مقدار الضرر اللي القانون المصري بيلزمنا نعوّضه. ولأن Own Hub مجاني، مبنحطش أي حد تاني"
       },
       "label": {
         "en": "the cap on liability",
@@ -184,7 +184,7 @@
     "transferCountries": {
       "value": {
         "en": "Germany and the European Union: Google Cloud in Frankfurt (europe-west3) and the Cloud Vision EU endpoint, where Google stores and processes data only in the EU. The United States: Firebase Authentication, which Google runs only from US data centres. Google data centres worldwide, which include the United States: Firebase App Check, Google ML Kit performance data, Firebase Crashlytics if you allow it, and Google Analytics for Firebase if you allow it. Google does not let us choose one country for these. Also outside Egypt: Zoho Mail keeps the emails you send to info@own-hub.app or support@own-hub.app in Zoho data centres, and Cloudflare serves this website from its global network, which includes the United States. Each transfer needs your consent, which we ask for before it happens, and our transfer permit from the Personal Data Protection Centre. Google acts only on our instructions under its data processing terms, encrypts the data in transit and at rest, and may not use it to train AI models. The Centre has not yet published a list of countries it considers adequate.",
-        "ar": "ألمانيا والاتحاد الأوروبي: خدمات Google Cloud في فرانكفورت (europe-west3)، ونقطة الاتصال الأوروبية لخدمة Cloud Vision، حيث تخزّن Google البيانات وتعالجها داخل الاتحاد الأوروبي فقط. الولايات المتحدة: خدمة Firebase Authentication، التي تشغّلها Google من مراكز بيانات أمريكية فقط. مراكز بيانات Google حول العالم، ومنها الولايات المتحدة: Firebase App Check، وبيانات الأداء الخاصة بـ Google ML Kit، وFirebase Crashlytics إن سمحتِ بها، وGoogle Analytics for Firebase إن سمحتِ بها، ولا تتيح Google اختيار دولة واحدة لهذه الخدمات. وخارج مصر أيضًا: يحفظ Zoho Mail الرسائل التي ترسلينها إلى info@own-hub.app أو support@own-hub.app في مراكز بيانات Zoho، وتقدّم Cloudflare هذا الموقع من شبكتها العالمية، ومنها الولايات المتحدة. لا يتم أي نقل إلا بموافقتك التي نطلبها قبل حدوثه، وبموجب تصريح النقل الصادر لنا من مركز حماية البيانات الشخصية. وتعالج Google البيانات وفق تعليماتنا فقط بموجب شروط معالجة البيانات لديها، وتشفّرها أثناء النقل والتخزين، ولا يجوز لها استخدامها لتدريب نماذج الذكاء الاصطناعي. ولم يصدر المركز بعد قائمة بالدول التي يعدّها توفر مستوى حماية كافيًا."
+        "ar": "ألمانيا والاتحاد الأوروبي: خدمات Google Cloud في فرانكفورت (europe-west3)، ونقطة الاتصال الأوروبية لخدمة Cloud Vision، واللي Google بتخزّن فيها البيانات وبتعالجها جوه الاتحاد الأوروبي بس. الولايات المتحدة: خدمة Firebase Authentication، اللي Google بتشغّلها من مراكز بيانات أمريكية بس. مراكز بيانات Google حوالين العالم، ومنها الولايات المتحدة: Firebase App Check، وبيانات الأداء الخاصة بـ Google ML Kit، وFirebase Crashlytics لو سمحتي بيها، وGoogle Analytics for Firebase لو سمحتي بيها، وGoogle مش بتتيح اختيار دولة واحدة للخدمات دي. وبرّه مصر كمان: Zoho Mail بيحفظ الرسايل اللي بتبعتيها لـ info@own-hub.app أو support@own-hub.app في مراكز بيانات Zoho، وCloudflare بتقدّم الموقع ده من شبكتها العالمية، ومنها الولايات المتحدة. مفيش أي نقل بيحصل إلا بموافقتك اللي بنطلبها قبل ما يحصل، وبموجب تصريح النقل اللي مركز حماية البيانات الشخصية أصدره لنا. وGoogle بتعالج البيانات حسب تعليماتنا بس بموجب شروط معالجة البيانات عندها، وبتشفّرها وقت النقل والتخزين، ومش مسموح لها تستخدمها في تدريب نماذج الذكاء الاصطناعي. والمركز لسه ماصدرش قايمة بالدول اللي بيعتبرها بتوفر مستوى حماية كافي."
       },
       "label": {
         "en": "the countries data would reach, and the transfer mechanism",
@@ -239,7 +239,7 @@
     "providerIdentity": {
       "value": {
         "en": "Our own server on Google Cloud Functions, with Google Cloud Vision for reading the card",
-        "ar": "خادمنا الخاص على Google Cloud Functions، مع Google Cloud Vision لقراءة البطاقة"
+        "ar": "سيرفرنا الخاص على Google Cloud Functions، مع Google Cloud Vision عشان يقرا البطاقة"
       },
       "label": {
         "en": "the identity verification provider",
@@ -250,7 +250,7 @@
     "providerIdentityRegion": {
       "value": {
         "en": "Germany and the EU. Images are never stored, and are not processed in Egypt.",
-        "ar": "ألمانيا والاتحاد الأوروبي. لا تُخزَّن الصور، ولا تُعالَج داخل مصر."
+        "ar": "ألمانيا والاتحاد الأوروبي. الصور مش بتتخزّن، ومش بتتعالج جوه مصر."
       },
       "label": {
         "en": "where it processes, and whether images stay in Egypt",
@@ -343,7 +343,7 @@
     "policyEffectiveDate": {
       "value": {
         "en": "the day this version of the app is released",
-        "ar": "يوم إصدار هذا الإصدار من التطبيق"
+        "ar": "يوم صدور الإصدار ده من التطبيق"
       },
       "label": {
         "en": "the date version 3.0 takes effect",
@@ -365,7 +365,7 @@
     "hostingProviderRegion": {
       "value": {
         "en": "Cloudflare's global network of data centres, which includes the United States",
-        "ar": "شبكة مراكز بيانات Cloudflare حول العالم، ومنها الولايات المتحدة"
+        "ar": "شبكة مراكز بيانات Cloudflare حوالين العالم، ومنها الولايات المتحدة"
       },
       "label": {
         "en": "where the host processes requests",
@@ -376,7 +376,7 @@
     "chatService": {
       "value": {
         "en": "a team chat service",
-        "ar": "خدمة محادثة للفريق"
+        "ar": "خدمة شات للفريق"
       },
       "label": {
         "en": "the chat service for review alerts",
@@ -387,7 +387,7 @@
     "chatServiceRegion": {
       "value": {
         "en": "the chat service's servers, which may be outside Egypt",
-        "ar": "خوادم خدمة المحادثة، وقد تكون خارج مصر"
+        "ar": "سيرفرات خدمة الشات، وممكن تكون برّه مصر"
       },
       "label": {
         "en": "where the chat service processes",
@@ -409,7 +409,7 @@
     "emailProviderRegion": {
       "value": {
         "en": "Zoho data centres, which are outside Egypt",
-        "ar": "مراكز بيانات Zoho، وهي خارج مصر"
+        "ar": "مراكز بيانات Zoho، وهي برّه مصر"
       },
       "label": {
         "en": "where the email provider stores mail",
@@ -420,7 +420,7 @@
     "deletionVerifyMethod": {
       "value": {
         "en": "a one-time code we send by SMS to that number, which you send back to us",
-        "ar": "رمز يُستخدم مرة واحدة نرسله برسالة نصية إلى ذلك الرقم، وتعيدينه إلينا"
+        "ar": "كود لمرة واحدة بنبعته في رسالة نصية على الرقم ده، وإنتِ بتبعتيه لنا تاني"
       },
       "label": {
         "en": "how we confirm a deletion or copy request is hers",
@@ -475,7 +475,7 @@
     "crashReportRetention": {
       "value": {
         "en": "90 days, after which Google starts removing them from its live and backup systems",
-        "ar": "90 يومًا، تبدأ Google بعدها حذفها من أنظمتها الحية والاحتياطية"
+        "ar": "90 يومًا، وبعدها Google بتبدأ تمسحها من أنظمتها الحية والاحتياطية"
       },
       "label": {
         "en": "how long crash reports are kept",
@@ -486,7 +486,7 @@
     "exportDelivery": {
       "value": {
         "en": "by email to the address you wrote from, as a password-protected file. We send the password separately, by SMS to the number on the account",
-        "ar": "بالبريد الإلكتروني إلى العنوان الذي راسلتِنا منه، في ملف محمي بكلمة مرور، ونرسل كلمة المرور منفصلة برسالة نصية إلى الرقم المسجّل في الحساب"
+        "ar": "بالإيميل على العنوان اللي راسلتينا منه، في ملف محمي بكلمة سر، وبنبعت كلمة السر لوحدها في رسالة نصية على الرقم المسجّل في الحساب"
       },
       "label": {
         "en": "how a copy of your data is delivered",

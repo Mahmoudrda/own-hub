@@ -39,7 +39,9 @@ void main() {
   useShippingApp();
 
   for (final loc in <String>['en', 'ar']) {
-    testWidgets('T02: a finger on each duration chip and Save, $loc', (t) async {
+    testWidgets('T02: a finger on each duration chip and Save, $loc', (
+      t,
+    ) async {
       phone(t);
       final s = t.ensureSemantics();
       await open(t, appDestinations['T02']!.name, locale: Locale(loc));
@@ -76,10 +78,14 @@ void main() {
           print('  Save is no longer painted after picking 30');
         }
         final week = AppRouter.todayRepository.day.week;
-        final prog = AppRouter.progressStore.weeks.values
-            .fold<int>(0, (a, w) => a + w.sessionsLogged);
-        print('  today week = ${week.sessionsLogged} of ${week.sessionsTarget},'
-            ' progress sessions = $prog');
+        final prog = AppRouter.progressStore.weeks.values.fold<int>(
+          0,
+          (a, w) => a + w.sessionsLogged,
+        );
+        print(
+          '  today week = ${week.sessionsLogged} of ${week.sessionsTarget},'
+          ' progress sessions = $prog',
+        );
       }
       s.dispose();
     });
@@ -98,9 +104,11 @@ void main() {
         await t.tapAt(const Offset(195, 120));
         await settle(t);
         t.takeException();
-        print('=== R3-08 scrim tap on $id $loc: $before -> ${topScreen(t)} '
-            '(sheet still up? '
-            '${find.text(loc == "en" ? "Save" : "احفظي").evaluate().isNotEmpty}) ===');
+        print(
+          '=== R3-08 scrim tap on $id $loc: $before -> ${topScreen(t)} '
+          '(sheet still up? '
+          '${find.text(loc == "en" ? "Save" : "احفظي").evaluate().isNotEmpty}) ===',
+        );
       }
       s.dispose();
     });

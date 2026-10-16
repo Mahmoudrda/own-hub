@@ -17,6 +17,17 @@ String _pick(String languageCode, String en, String ar) {
   return mine.trim().isNotEmpty ? mine : (languageCode == 'ar' ? en : ar);
 }
 
+/// "3 × 12 · Rest 60 seconds". In Arabic each half is its own isolate, so the
+/// digits and the Arabic words keep their order inside a right-to-left row
+/// instead of the halves swapping places.
+String _joined(String languageCode, String amount, String rest) {
+  if (languageCode != 'ar') return rest.isEmpty ? amount : '$amount · $rest';
+  const open = '\u2068';
+  const close = '\u2069';
+  final first = '$open$amount$close';
+  return rest.isEmpty ? first : '$first · $open$rest$close';
+}
+
 /// One move, with its sets prescribed and nothing logged (spine C8).
 PlannedMove plannedMoveFrom(
   AppL10n l10n,
@@ -30,12 +41,12 @@ PlannedMove plannedMoveFrom(
           countLabel(move.holdSeconds ?? 0),
         );
   final rest = move.restSeconds > 0
-      ? ' · ${l10n.restSecondsSeconds(countLabel(move.restSeconds))}'
+      ? l10n.restSecondsSeconds(countLabel(move.restSeconds))
       : '';
   return PlannedMove(
     exerciseId: move.exerciseId,
     name: _pick(languageCode, move.nameEn, move.nameAr),
-    prescriptionLabel: '$amount$rest',
+    prescriptionLabel: _joined(languageCode, amount, rest),
     quiet: move.quiet,
     floorOnly: move.floorOnly,
     needsEquipment: move.needsEquipment,

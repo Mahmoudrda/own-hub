@@ -31,14 +31,18 @@
 /// is how she supplies the value, not a prompt asking her to approve one.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_field.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/hand/hand.dart';
 import '../domain/cycle_repository.dart';
 import '../domain/period_entry.dart';
 
@@ -73,6 +77,10 @@ class _LogPeriodViewState extends State<LogPeriodView> {
 
   /// The reasons the last attempt was refused. Empty until she tries.
   Set<PeriodProblem> _problems = const <PeriodProblem>{};
+
+  /// The entry is written and the tick is drawing; Save waits so a second
+  /// tap cannot write it again.
+  bool _saved = false;
 
   DateTime get _today => dayOnly(widget.now ?? AppClock.now());
 
@@ -126,6 +134,11 @@ class _LogPeriodViewState extends State<LogPeriodView> {
     }
 
     if (!mounted) return;
+    // Saved: she feels it and sees the tick drawn before the page moves on.
+    unawaited(AppHaptics.play(HapticMoment.actionDone));
+    setState(() => _saved = true);
+    if (!handMotionOff(context)) await Future<void>.delayed(HandMotion.draw);
+    if (!mounted) return;
     widget.onSaved?.call();
   }
 
@@ -148,7 +161,9 @@ class _LogPeriodViewState extends State<LogPeriodView> {
         leadingIcon: Icons.close,
       ),
       footer: [
-        AppButton(l10n.save, onPressed: _save),
+        if (_saved)
+          const Center(child: HandTick(size: 28, seed: 21, drawOn: true)),
+        AppButton(l10n.save, onPressed: _saved ? null : _save),
         Row(
           children: [
             if (widget.existing != null)

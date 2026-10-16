@@ -172,7 +172,7 @@ void main() {
     test('the version and document match the server', () {
       final doc = documents['reviewConsent'] as Map<String, dynamic>;
       expect('users/{uid}/consents/$kReviewConsentDocId', doc['path']);
-      expect(kReviewConsentVersion, 2);
+      expect(kReviewConsentVersion, 3);
       expect(
         doc['fields'],
         unorderedEquals(<String>['at', 'flagId', 'path', 'version']),

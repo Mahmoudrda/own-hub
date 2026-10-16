@@ -49,7 +49,7 @@ void main() {
       expect(
         _arb('ar').values
             .whereType<String>()
-            .any((v) => v.contains('وليس جهازًا طبيًا')),
+            .any((v) => v.contains('مش جهاز طبي')),
         isTrue,
       );
     });
@@ -63,7 +63,7 @@ void main() {
       ]) {
         expect(
           File(path).readAsStringSync(),
-          contains('MedicalDisclaimer()'),
+          contains('MedicalDisclaimer('),
           reason: path,
         );
       }
@@ -79,7 +79,7 @@ void main() {
         final source = file.readAsStringSync();
         if (!source.contains('lifeStageOptions(')) continue;
         askers.add(file.path);
-        expect(source, contains('MedicalDisclaimer()'), reason: file.path);
+        expect(source, contains('MedicalDisclaimer('), reason: file.path);
       }
       expect(askers, isNotEmpty);
     });
@@ -191,7 +191,6 @@ void main() {
 
     test('no copy promises a time it cannot keep', () {
       for (final path in <String>[
-        'lib/features/signup/presentation/consent_view.dart',
         'lib/features/signup/presentation/why_we_check_view.dart',
       ]) {
         expect(

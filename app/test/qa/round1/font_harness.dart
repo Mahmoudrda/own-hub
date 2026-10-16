@@ -53,9 +53,7 @@ Future<void> loadAppFonts() async {
         throw StateError('R1-00: font file missing: $path');
       }
       loader.addFont(
-        Future<ByteData>.value(
-          ByteData.sublistView(file.readAsBytesSync()),
-        ),
+        Future<ByteData>.value(ByteData.sublistView(file.readAsBytesSync())),
       );
     }
     await loader.load();

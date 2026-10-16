@@ -62,6 +62,7 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/hand/mascot/kitten.dart';
 import '../domain/review_request.dart';
 import '../domain/server_verification.dart';
 
@@ -284,7 +285,7 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
             ? l10n.aWomanFromOwnHubWillContact(_when(context, booked))
             // PENDING COUNSEL: with "Your phone number is used only to
             // arrange your check" below, this is the review consent wording
-            // (review-v2, the same substance as C15), shown before she asks.
+            // (review-v3, the same substance as C15), shown before she asks.
             // No video: a woman from Own Hub reviews and contacts her within
             // config.REVIEW_SLA_HOURS (72).
             : !_asked && widget.requester != null
@@ -316,15 +317,21 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    waiting
-                        ? Icons.hourglass_top
-                        : approved
-                        ? Icons.check_circle
-                        : Icons.info_outline,
-                    size: 26,
-                    color: AppColors.amber,
-                  ),
+                  if (waiting)
+                    // Sits and waits, settling once. Only while the check is
+                    // still to come: never beside a refusal or a retry.
+                    const Kitten(
+                      pose: KittenPose.wait,
+                      size: 56,
+                      tint: KittenTint.sage,
+                      sessionBudget: true,
+                    )
+                  else
+                    Icon(
+                      approved ? Icons.check_circle : Icons.info_outline,
+                      size: 26,
+                      color: AppColors.amber,
+                    ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -444,9 +451,7 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
                 onPressed: widget.onOpenSettings,
               ),
           ],
-          if (waiting &&
-              widget.savedWeek == null &&
-              widget.onBuildWeek != null)
+          if (waiting && widget.savedWeek == null && widget.onBuildWeek != null)
             AppButton(
               l10n.buildYourWeekWhileWeCheck,
               key: const ValueKey('c14-build-week'),

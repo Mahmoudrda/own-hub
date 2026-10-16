@@ -235,10 +235,7 @@ void main() {
   group('the two routes are told two different things', () {
     test('offline names the act she cannot do, and promises nothing', () {
       expect(
-        assistantUnavailableLine(
-          _l10n,
-          AssistantUnavailableReason.offline,
-        ),
+        assistantUnavailableLine(_l10n, AssistantUnavailableReason.offline),
         _l10n.askingNeedsAConnection,
         reason: 'X01 is the asking route, and that is its default',
       );

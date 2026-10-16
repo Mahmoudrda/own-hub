@@ -49,14 +49,14 @@ def test_the_firestore_store_writes_exactly_version_at_path(monkeypatch):
     db = fake_firestore.FakeFirestore()
     monkeypatch.setattr(store, "db", lambda: db)
     store.write_review_consent("her", "declined", "f1")
-    doc = db.docs[f"{config.COL_USERS}/her/{config.COL_CONSENTS}/review-v2"]
+    doc = db.docs[f"{config.COL_USERS}/her/{config.COL_CONSENTS}/review-v3"]
     assert doc == {
         "version": config.REVIEW_CONSENT_VERSION,
         "at": db.now,
         "path": "declined",
         "flagId": "f1",
     }
-    assert config.REVIEW_CONSENT_VERSION == 2
+    assert config.REVIEW_CONSENT_VERSION == 3
 
 
 def test_the_consent_lives_under_users_so_account_deletion_takes_it(monkeypatch):

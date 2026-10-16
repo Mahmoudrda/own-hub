@@ -153,11 +153,11 @@ void main() {
   ) async {
     await tester.pumpWidget(_host(const YoureInView(verifiedInSeconds: 31)));
     await tester.pumpAndSettle();
+    expect(find.textContaining('Verified in 31 seconds.'), findsOneWidget);
     expect(
-      find.textContaining('Verified in 31 seconds.'),
+      find.textContaining('a keyed code of your ID number'),
       findsOneWidget,
     );
-    expect(find.textContaining('a keyed code of your ID number'), findsOneWidget);
 
     await tester.pumpWidget(
       _host(const YoureInView(), locale: const Locale('ar')),
@@ -203,11 +203,10 @@ void main() {
   });
 
   group('R1-P16: her role decides the primary', () {
-    AppButton buttonFor(WidgetTester tester, String label) => tester
-        .widget<AppButton>(find.ancestor(
-          of: find.text(label),
-          matching: find.byType(AppButton),
-        ));
+    AppButton buttonFor(WidgetTester tester, String label) =>
+        tester.widget<AppButton>(
+          find.ancestor(of: find.text(label), matching: find.byType(AppButton)),
+        );
 
     testWidgets('a coach: her profile is the primary, and day one is not '
         'offered', (tester) async {
@@ -296,10 +295,7 @@ void main() {
     // substitution.
     expect(find.text('إنتِ معانا'), findsOneWidget);
     // The deletion promise remains explicit in the Egyptian Arabic copy.
-    expect(
-      find.textContaining('صورة بطاقتك والسيلفي اتمسحوا'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('صورة بطاقتك والسيلفي اتمسحوا'), findsOneWidget);
     expect(find.text("You're in, Mai"), findsNothing);
   });
 

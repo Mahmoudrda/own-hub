@@ -17,14 +17,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/app_state/onboarding_state.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
-import 'package:own_hub/features/train/domain/train_repository.dart' show SessionSource;
+import 'package:own_hub/features/train/domain/train_repository.dart'
+    show SessionSource;
 import 'package:own_hub/routing/app_router.dart';
 
 import '../round1/round1_harness.dart';
 
-List<String> _counts(WidgetTester t) => paintedText(t)
-    .where((e) => RegExp(r'\d+\s*(of|/|من)\s*\d+').hasMatch(e))
-    .toList();
+List<String> _counts(WidgetTester t) =>
+    paintedText(t)
+        .where((e) => RegExp(r'\d+\s*(of|/|من)\s*\d+').hasMatch(e))
+        .toList();
 
 void main() {
   useShippingApp();
@@ -49,9 +51,13 @@ void main() {
     final today = AppRouter.todayRepository.day.week;
     final key = AppRouter.progressStore.weeks.keys.toList();
     print('=== R3-06 after one real session (target 4) ===');
-    print('  today copy    : ${today.sessionsLogged} of ${today.sessionsTarget}');
-    print('  progress weeks: $key -> '
-        '${AppRouter.progressStore.weeks.values.map((w) => "${w.sessionsLogged}/${w.sessionsTarget}").join(",")}');
+    print(
+      '  today copy    : ${today.sessionsLogged} of ${today.sessionsTarget}',
+    );
+    print(
+      '  progress weeks: $key -> '
+      '${AppRouter.progressStore.weeks.values.map((w) => "${w.sessionsLogged}/${w.sessionsTarget}").join(",")}',
+    );
 
     for (final id in <String>['T01', 'R01', 'P01']) {
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
@@ -85,10 +91,12 @@ void main() {
       );
     }
     final week = AppRouter.todayRepository.day.week;
-    print('=== R3-06 double credit: ${week.sessionsLogged} of '
-        '${week.sessionsTarget}, points='
-        '${AppRouter.progressStore.rewards.points}, sessionsLogged='
-        '${AppRouter.progressStore.rewards.sessionsLogged} ===');
+    print(
+      '=== R3-06 double credit: ${week.sessionsLogged} of '
+      '${week.sessionsTarget}, points='
+      '${AppRouter.progressStore.rewards.points}, sessionsLogged='
+      '${AppRouter.progressStore.rewards.sessionsLogged} ===',
+    );
     expect(week.sessionsLogged, 1, reason: 'a double tap counted twice');
     expect(AppRouter.progressStore.rewards.sessionsLogged, 1);
   });
@@ -101,10 +109,14 @@ void main() {
     OnboardingState.instance.finish();
 
     await open(t, appDestinations['T02']!.name, locale: const Locale('en'));
-    print('=== R3-06 T02 controls: '
-        '${tappables(t).map((e) => e.label).join(" // ")} ===');
-    final before = AppRouter.progressStore.weeks.values
-        .fold<int>(0, (a, w) => a + w.sessionsLogged);
+    print(
+      '=== R3-06 T02 controls: '
+      '${tappables(t).map((e) => e.label).join(" // ")} ===',
+    );
+    final before = AppRouter.progressStore.weeks.values.fold<int>(
+      0,
+      (a, w) => a + w.sessionsLogged,
+    );
 
     final hit = await tapControl(t, RegExp('already did it'));
     print('  first tap reached the control? $hit  -> ${topScreen(t)}');
@@ -113,12 +125,16 @@ void main() {
     final hit2 = await tapControl(t, RegExp('already did it'));
     print('  second tap reached the control? $hit2 -> ${topScreen(t)}');
 
-    final after = AppRouter.progressStore.weeks.values
-        .fold<int>(0, (a, w) => a + w.sessionsLogged);
+    final after = AppRouter.progressStore.weeks.values.fold<int>(
+      0,
+      (a, w) => a + w.sessionsLogged,
+    );
     final todayCopy = AppRouter.todayRepository.day.week;
     print('  progress sessions: $before -> $after');
-    print('  today copy: ${todayCopy.sessionsLogged} of '
-        '${todayCopy.sessionsTarget}');
+    print(
+      '  today copy: ${todayCopy.sessionsLogged} of '
+      '${todayCopy.sessionsTarget}',
+    );
     await open(t, appDestinations['P01']!.name, locale: const Locale('en'));
     print('  P01: ${_counts(t).join(" // ")}');
     await open(t, appDestinations['T01']!.name, locale: const Locale('en'));

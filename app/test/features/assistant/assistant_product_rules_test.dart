@@ -139,7 +139,8 @@ void main() {
       expect(
         file.existsSync(),
         isTrue,
-        reason: 'The exempted file must exist, or the exemption is stale and '
+        reason:
+            'The exempted file must exist, or the exemption is stale and '
             'should be deleted rather than left pointing at nothing.',
       );
 
@@ -147,7 +148,8 @@ void main() {
       expect(
         source.contains('DefaultFirebaseOptions'),
         isTrue,
-        reason: 'The exempted path must be the FlutterFire generated file. If '
+        reason:
+            'The exempted path must be the FlutterFire generated file. If '
             'it is something else, the exemption is being reused for a file it '
             'was never reasoned about.',
       );
@@ -168,7 +170,8 @@ void main() {
       expect(
         misplaced,
         isEmpty,
-        reason: 'A key-shaped literal in the generated file that is not the '
+        reason:
+            'A key-shaped literal in the generated file that is not the '
             'Firebase apiKey field is not covered by the reasoning for this '
             'exemption.',
       );

@@ -99,7 +99,10 @@ void main() {
       ]) {
         final at = source.indexOf(call);
         expect(at, greaterThan(-1), reason: call);
-        final guard = source.lastIndexOf('if (kDebugMode && _kEmulatorHost', at);
+        final guard = source.lastIndexOf(
+          'if (kDebugMode && _kEmulatorHost',
+          at,
+        );
         expect(guard, greaterThan(-1), reason: call);
       }
     });

@@ -117,12 +117,12 @@ class SlotColumn extends StatelessWidget {
   }
 }
 
-/// The card at the top of E01 and E04: three slots, the protein bar, the kcal
-/// line.
+/// The card at the top of E01 and E04: the slots and the protein bar. There is
+/// no calorie line: the app promises no grams and no calorie shaming.
 ///
 /// **There is no countdown on this card and there cannot be one.** The bar is
-/// [DayTotals.proteinPercent], which clamps at 100 and has no "over by" partner;
-/// the kcal line is prose. Nothing here computes a remainder, because nothing in
+/// [DayTotals.proteinPercent], which clamps at 100 and has no "over by" partner.
+/// Nothing here computes a remainder, because nothing in
 /// the domain can (§1.5).
 class DayCard extends StatelessWidget {
   const DayCard({
@@ -172,9 +172,6 @@ class DayCard extends StatelessWidget {
     final proteinLabel = l10n.sofarOfTargetG(
       countLabel(totals.proteinSoFar),
       countLabel(totals.proteinTargetG),
-    );
-    final kcalLabel = l10n.aboutKcalKcalSoFarToday(
-      countLabel(totals.kcalSoFar),
     );
 
     return AppCard(
@@ -227,10 +224,6 @@ class DayCard extends StatelessWidget {
             AppProgressBar(percent: totals.proteinPercent, height: 10),
           ],
         ),
-        Text(
-          kcalLabel,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
       ],
     );
   }
@@ -250,7 +243,7 @@ class MealRow extends StatelessWidget {
 
   final String title;
 
-  /// "460 kcal · 34 g protein".
+  /// "34 g protein".
   final String meta;
 
   final String logLabel;

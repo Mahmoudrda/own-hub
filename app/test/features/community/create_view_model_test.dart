@@ -78,9 +78,8 @@ void main() {
 
     test('the voice note row is absent, and flag-gated too', () {
       expect(
-        CreateOptionsModel.from(flags: _communityOn).offers(
-          CreateOption.voiceNote,
-        ),
+        CreateOptionsModel.from(flags: _communityOn)
+            .offers(CreateOption.voiceNote),
         isFalse,
       );
       expect(

@@ -83,7 +83,7 @@ void main() {
     // to everybody. So the first set a woman was ever asked to do cited a
     // Tuesday she had not trained.
 
-    testWidgets('a woman with no logged history is told there is none', (
+    testWidgets('a woman with no logged history is told nothing about one', (
       tester,
     ) async {
       await tester.pumpWidget(_host(const MidSetView()));
@@ -91,13 +91,9 @@ void main() {
 
       expect(find.textContaining('Last Tuesday'), findsNothing);
       expect(find.textContaining('Last time'), findsNothing);
-      expect(
-        find.text(
-          'No history for this move yet. What you do today is what the next '
-          'one is measured against.',
-        ),
-        findsOneWidget,
-      );
+      // An empty note is not worth a line mid-set: nothing is said at all.
+      expect(find.textContaining('No history'), findsNothing);
+      expect(find.textContaining('So we added'), findsNothing);
     });
 
     testWidgets('and a woman who has one is told what she lifted', (
@@ -373,12 +369,7 @@ void main() {
 
     expect(find.text('الحركة 2 من 5'), findsNothing);
     expect(find.text('تمام · 12 كجم × 10'), findsOneWidget);
-    expect(
-      find.text(
-        'لسه مفيش سجل للحركة دي. اللي هتعمليه النهارده هو اللي هنقيس عليه المرة الجاية.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.textContaining('لسه مفيش سجل'), findsNothing);
     expect(find.text('خلّصت الـ 3 مجموعات'), findsOneWidget);
     expect(find.text('Done · 12 kg × 10'), findsNothing);
   });

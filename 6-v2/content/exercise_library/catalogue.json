@@ -1,0 +1,3013 @@
+{
+  "tagsReview": "pending coach review: drafted conservatively from the clips on 14 Oct 2026",
+  "exercises": [
+    {
+      "exerciseId": "ez_bar_skull_crusher",
+      "name_en": "EZ-bar skull crusher",
+      "name_ar": "سكال كراشر بالبار EZ",
+      "kind": "strength",
+      "primaryMuscles": [
+        "triceps"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "barbell",
+        "bench"
+      ],
+      "place": "gym",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "supine_load",
+        "overhead_load"
+      ],
+      "clips": [
+        {
+          "file": "ez_bar_skull_crusher_front_e7a8f885.mp4",
+          "angle": "front",
+          "seconds": 5.73,
+          "source": "IMG_8209.mov",
+          "md5": "b4a266f170500775fc5654930f5d9e81"
+        }
+      ],
+      "poster": {
+        "file": "ez_bar_skull_crusher_89a91754.webp",
+        "md5": "9a0515df61ac98ff6104cbefdb3e5111"
+      }
+    },
+    {
+      "exerciseId": "machine_shoulder_press",
+      "name_en": "Machine shoulder press",
+      "name_ar": "شولدر بريس على الجهاز",
+      "kind": "strength",
+      "primaryMuscles": [
+        "front_delts",
+        "side_delts"
+      ],
+      "secondaryMuscles": [
+        "triceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "push_vertical",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "overhead_load"
+      ],
+      "clips": [
+        {
+          "file": "machine_shoulder_press_front_89b989a2.mp4",
+          "angle": "front",
+          "seconds": 5.23,
+          "source": "IMG_8212.mov",
+          "md5": "2fe72a1d26ff27fdc0b231f8b553a763"
+        }
+      ],
+      "poster": {
+        "file": "machine_shoulder_press_c5a7e5a7.webp",
+        "md5": "60c16f36a1b38872749ec302d3f53396"
+      }
+    },
+    {
+      "exerciseId": "cable_rope_triceps_pushdown",
+      "name_en": "Cable rope triceps pushdown",
+      "name_ar": "ترايسبس بوش داون بالحبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "triceps"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "cable"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "cable_rope_triceps_pushdown_front_cb21d55a.mp4",
+          "angle": "front",
+          "seconds": 4.8,
+          "source": "IMG_8215.mov",
+          "md5": "f8c296a9ab5b8e8a9bf308cf7c60c825"
+        }
+      ],
+      "poster": {
+        "file": "cable_rope_triceps_pushdown_3dd8e9f2.webp",
+        "md5": "697468b2a6e6f5007782965944b9d452"
+      }
+    },
+    {
+      "exerciseId": "single_arm_machine_row",
+      "name_en": "Single-arm machine row",
+      "name_ar": "رو على الجهاز بدراع واحدة",
+      "kind": "strength",
+      "primaryMuscles": [
+        "lats",
+        "upper_back"
+      ],
+      "secondaryMuscles": [
+        "rear_delts",
+        "biceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "pull_horizontal",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "single_arm_machine_row_front_6c07cf89.mp4",
+          "angle": "front",
+          "seconds": 5.9,
+          "source": "IMG_8217.mov",
+          "md5": "3c942a95fbe758bf2a47047620851133"
+        }
+      ],
+      "poster": {
+        "file": "single_arm_machine_row_2ef1e18d.webp",
+        "md5": "526e26f41c45a8f6f30403bb9fbdefcd"
+      }
+    },
+    {
+      "exerciseId": "cable_biceps_curl",
+      "name_en": "Cable biceps curl",
+      "name_ar": "بايسبس كيرل على الكابل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "biceps"
+      ],
+      "secondaryMuscles": [
+        "forearms"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "cable"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "cable_biceps_curl_front_9b3ee912.mp4",
+          "angle": "front",
+          "seconds": 4.83,
+          "source": "IMG_8219.mov",
+          "md5": "df3ef80ed916641a38bf1e77e6e06aed"
+        }
+      ],
+      "poster": {
+        "file": "cable_biceps_curl_8ab71e68.webp",
+        "md5": "5c93b1d1adb239edcd90ee496d94ee1f"
+      }
+    },
+    {
+      "exerciseId": "plank",
+      "name_en": "High plank",
+      "name_ar": "بلانك على الإيدين",
+      "kind": "strength",
+      "primaryMuscles": [
+        "core"
+      ],
+      "secondaryMuscles": [
+        "front_delts",
+        "glutes"
+      ],
+      "bodyRegion": "core",
+      "pattern": "core_anti_extension",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "wrist_load",
+        "prone_position"
+      ],
+      "clips": [
+        {
+          "file": "plank_front_be7545d0.mp4",
+          "angle": "front",
+          "seconds": 4.03,
+          "source": "IMG_8220.mov",
+          "md5": "7952bfe5635e0b329dd6a6169ab98628"
+        }
+      ],
+      "poster": {
+        "file": "plank_026bfe1f.webp",
+        "md5": "91a721d89a2d2547a2330507eef35c3f"
+      }
+    },
+    {
+      "exerciseId": "forearm_plank",
+      "name_en": "Forearm plank",
+      "name_ar": "بلانك على الكوعين",
+      "kind": "strength",
+      "primaryMuscles": [
+        "core"
+      ],
+      "secondaryMuscles": [
+        "front_delts",
+        "glutes"
+      ],
+      "bodyRegion": "core",
+      "pattern": "core_anti_extension",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "prone_position"
+      ],
+      "clips": [
+        {
+          "file": "forearm_plank_front_3655b79a.mp4",
+          "angle": "front",
+          "seconds": 4.03,
+          "source": "IMG_8222.mov",
+          "md5": "5c74d89cea9695cae27450794a79b65e"
+        }
+      ],
+      "poster": {
+        "file": "forearm_plank_5604af12.webp",
+        "md5": "f6555062d23b5f4577fecc91f79a7c9b"
+      }
+    },
+    {
+      "exerciseId": "reach_crunch",
+      "name_en": "Reach crunch",
+      "name_ar": "كرانش مع مد الدراعات",
+      "kind": "strength",
+      "primaryMuscles": [
+        "core"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "core",
+      "pattern": "core_flexion",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "reach_crunch_front_173f7a23.mp4",
+          "angle": "front",
+          "seconds": 6.53,
+          "source": "IMG_8224 2.mov",
+          "md5": "6f40f5a1101bbe5c902b830794e65d8c"
+        }
+      ],
+      "poster": {
+        "file": "reach_crunch_2e4af3fc.webp",
+        "md5": "8c169f2ace2a21abd1e7d2b39f876583"
+      }
+    },
+    {
+      "exerciseId": "crunch",
+      "name_en": "Crunch",
+      "name_ar": "كرانش",
+      "kind": "strength",
+      "primaryMuscles": [
+        "core"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "core",
+      "pattern": "core_flexion",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "crunch_front_1a758a1a.mp4",
+          "angle": "front",
+          "seconds": 6.5,
+          "source": "IMG_8224.mov",
+          "md5": "ff823c7b21b100e991a3e352c7df8d14"
+        }
+      ],
+      "poster": {
+        "file": "crunch_72493ae3.webp",
+        "md5": "a452f620dd2d4eefe21266db8235858f"
+      }
+    },
+    {
+      "exerciseId": "russian_twist",
+      "name_en": "Russian twist",
+      "name_ar": "رشن تويست",
+      "kind": "strength",
+      "primaryMuscles": [
+        "obliques",
+        "core"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "core",
+      "pattern": "core_rotation",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "loaded_twisting",
+        "pelvic_floor_load"
+      ],
+      "clips": [
+        {
+          "file": "russian_twist_front_96659275.mp4",
+          "angle": "front",
+          "seconds": 3.73,
+          "source": "IMG_8226.mov",
+          "md5": "e41386fe1ffdefa7051b726aeba96182"
+        }
+      ],
+      "poster": {
+        "file": "russian_twist_042074e8.webp",
+        "md5": "8a3463ffbef30125da12bea60c89a806"
+      }
+    },
+    {
+      "exerciseId": "heel_touches",
+      "name_en": "Heel touches",
+      "name_ar": "لمس الكعب من النوم على الضهر",
+      "kind": "strength",
+      "primaryMuscles": [
+        "obliques"
+      ],
+      "secondaryMuscles": [
+        "core"
+      ],
+      "bodyRegion": "core",
+      "pattern": "core_flexion",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "heel_touches_front_efd543bf.mp4",
+          "angle": "front",
+          "seconds": 4.87,
+          "source": "IMG_8227.mov",
+          "md5": "b0ffa52e456045d8c37a25d6d21e9346"
+        }
+      ],
+      "poster": {
+        "file": "heel_touches_aa68984e.webp",
+        "md5": "8f21ce18f0362cde71cbf35f27141c70"
+      }
+    },
+    {
+      "exerciseId": "lying_bicycle_legs",
+      "name_en": "Lying bicycle legs",
+      "name_ar": "بايسكل بالرجلين على الضهر",
+      "kind": "strength",
+      "primaryMuscles": [
+        "core"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "core",
+      "pattern": "core_anti_extension",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "lying_bicycle_legs_front_48b5a232.mp4",
+          "angle": "front",
+          "seconds": 4.53,
+          "source": "IMG_8232.mov",
+          "md5": "100e11ea4d9bb93b9b08f377bef2c32a"
+        }
+      ],
+      "poster": {
+        "file": "lying_bicycle_legs_be211f78.webp",
+        "md5": "93093cdbdef2acf156b4877ada2d71a4"
+      }
+    },
+    {
+      "exerciseId": "bicycle_crunch",
+      "name_en": "Bicycle crunch",
+      "name_ar": "بايسكل كرانش",
+      "kind": "strength",
+      "primaryMuscles": [
+        "obliques",
+        "core"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "core",
+      "pattern": "core_rotation",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load",
+        "loaded_twisting"
+      ],
+      "clips": [
+        {
+          "file": "bicycle_crunch_front_ce7297d2.mp4",
+          "angle": "front",
+          "seconds": 4.0,
+          "source": "IMG_8234.mov",
+          "md5": "a7517cc648cbe0b82630bb4e3adc0289"
+        }
+      ],
+      "poster": {
+        "file": "bicycle_crunch_49bc7c41.webp",
+        "md5": "8a875839997ea1ea013a1b71188283e5"
+      }
+    },
+    {
+      "exerciseId": "flutter_kicks",
+      "name_en": "Flutter kicks",
+      "name_ar": "فلاتر كيكس",
+      "kind": "strength",
+      "primaryMuscles": [
+        "core"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "core",
+      "pattern": "core_anti_extension",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "flutter_kicks_front_f22d1d74.mp4",
+          "angle": "front",
+          "seconds": 4.57,
+          "source": "IMG_8237.mov",
+          "md5": "a60e1da9ddd365b469a80f28222048c4"
+        }
+      ],
+      "poster": {
+        "file": "flutter_kicks_a4869ebf.webp",
+        "md5": "fba5003e22987129b8dbda61361bb9ef"
+      }
+    },
+    {
+      "exerciseId": "reach_up_crunch_pulses",
+      "name_en": "Reach-up crunch pulses",
+      "name_ar": "كرانش بمد الإيدين لفوق",
+      "kind": "strength",
+      "primaryMuscles": [
+        "core"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "core",
+      "pattern": "core_flexion",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "reach_up_crunch_pulses_front_2e5dd10a.mp4",
+          "angle": "front",
+          "seconds": 3.83,
+          "source": "IMG_8238.mov",
+          "md5": "5144eb62f971c5ca9086e1154074350d"
+        }
+      ],
+      "poster": {
+        "file": "reach_up_crunch_pulses_b7df8470.webp",
+        "md5": "7cb35834b051ab508076f4559e8cc70b"
+      }
+    },
+    {
+      "exerciseId": "mountain_climbers",
+      "name_en": "Mountain climbers",
+      "name_ar": "ماونتن كلايمبرز",
+      "kind": "strength",
+      "primaryMuscles": [
+        "core"
+      ],
+      "secondaryMuscles": [
+        "front_delts",
+        "quads"
+      ],
+      "bodyRegion": "core",
+      "pattern": "core_anti_extension",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "wrist_load",
+        "pelvic_floor_load"
+      ],
+      "clips": [
+        {
+          "file": "mountain_climbers_front_c5318a34.mp4",
+          "angle": "front",
+          "seconds": 5.9,
+          "source": "IMG_8240.mov",
+          "md5": "656ba1a3303546ec6d83e7fa8d300691"
+        }
+      ],
+      "poster": {
+        "file": "mountain_climbers_1afa9313.webp",
+        "md5": "0f504e4fa97fa2c98cd9a83546ece46b"
+      }
+    },
+    {
+      "exerciseId": "dumbbell_bulgarian_split_squat",
+      "name_en": "Dumbbell Bulgarian split squat",
+      "name_ar": "بلغاري سبليت سكوات بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "glutes",
+        "quads"
+      ],
+      "secondaryMuscles": [
+        "adductors",
+        "hamstrings"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "lunge",
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "place": "both",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "dumbbell_bulgarian_split_squat_front_0ba60373.mp4",
+          "angle": "front",
+          "seconds": 4.73,
+          "source": "IMG_8244.mov",
+          "md5": "ddfc8177c62ce97ffb171e039bcaa4da"
+        }
+      ],
+      "poster": {
+        "file": "dumbbell_bulgarian_split_squat_e9a3f155.webp",
+        "md5": "4aa0e789744eb62647e8718208073980"
+      }
+    },
+    {
+      "exerciseId": "dumbbell_reverse_lunge",
+      "name_en": "Dumbbell reverse lunge",
+      "name_ar": "لانج لورا بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "glutes",
+        "quads"
+      ],
+      "secondaryMuscles": [
+        "hamstrings",
+        "adductors"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "lunge",
+      "equipment": [
+        "dumbbells"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "dumbbell_reverse_lunge_side_29a9525f.mp4",
+          "angle": "side",
+          "seconds": 5.33,
+          "source": "IMG_8247.mov",
+          "md5": "92fcdfd5ee8872012a7b96e816485bf8"
+        }
+      ],
+      "poster": {
+        "file": "dumbbell_reverse_lunge_13b42811.webp",
+        "md5": "97a16ba4e6ea8d76213f8f51fd721b56"
+      }
+    },
+    {
+      "exerciseId": "heel_elevated_goblet_squat",
+      "name_en": "Heel-elevated goblet squat",
+      "name_ar": "جوبلت سكوات والكعب مرفوع",
+      "kind": "strength",
+      "primaryMuscles": [
+        "quads"
+      ],
+      "secondaryMuscles": [
+        "glutes",
+        "core"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "squat",
+      "equipment": [
+        "dumbbells",
+        "step"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "heel_elevated_goblet_squat_side_dcd83d03.mp4",
+          "angle": "side",
+          "seconds": 5.97,
+          "source": "IMG_8248.mov",
+          "md5": "b9c50c2166b172a2949f9b3dcb27f5c8"
+        }
+      ],
+      "poster": {
+        "file": "heel_elevated_goblet_squat_b103fcb9.webp",
+        "md5": "2dcb43a471cbe4f6ff533e91f64203ce"
+      }
+    },
+    {
+      "exerciseId": "dumbbell_stiff_leg_deadlift",
+      "name_en": "Dumbbell stiff-leg deadlift",
+      "name_ar": "ستيف ليج ديدليفت بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "hamstrings",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "lower_back",
+        "forearms"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "hinge",
+      "equipment": [
+        "dumbbells"
+      ],
+      "place": "both",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+      ],
+      "clips": [
+        {
+          "file": "dumbbell_stiff_leg_deadlift_side_6f4af36b.mp4",
+          "angle": "side",
+          "seconds": 6.67,
+          "source": "IMG_8250.mov",
+          "md5": "ee591fbe6f7bb88c362f575dd8f2fca9"
+        }
+      ],
+      "poster": {
+        "file": "dumbbell_stiff_leg_deadlift_87a1ddc3.webp",
+        "md5": "8f20a1396470c77b473cbd739b973362"
+      }
+    },
+    {
+      "exerciseId": "barbell_deadlift",
+      "name_en": "Barbell deadlift",
+      "name_ar": "ديدليفت بالبار",
+      "kind": "strength",
+      "primaryMuscles": [
+        "glutes",
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "quads",
+        "lower_back",
+        "upper_back",
+        "forearms"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "hinge",
+      "equipment": [
+        "barbell"
+      ],
+      "place": "gym",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+      ],
+      "clips": [
+        {
+          "file": "barbell_deadlift_side_a888ec51.mp4",
+          "angle": "side",
+          "seconds": 7.63,
+          "source": "IMG_8253.mov",
+          "md5": "1ce8160aebb6635d229c3fc67289b8d1"
+        }
+      ],
+      "poster": {
+        "file": "barbell_deadlift_4b61dd69.webp",
+        "md5": "b564be3c369144dcf14ecac24813e1cb"
+      }
+    },
+    {
+      "exerciseId": "barbell_back_squat",
+      "name_en": "Barbell back squat",
+      "name_ar": "باك سكوات بالبار",
+      "kind": "strength",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "adductors",
+        "core"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "squat",
+      "equipment": [
+        "barbell"
+      ],
+      "place": "gym",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "deep_knee_flexion",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+      ],
+      "clips": [
+        {
+          "file": "barbell_back_squat_front_3b421521.mp4",
+          "angle": "front",
+          "seconds": 3.9,
+          "source": "IMG_8257.mov",
+          "md5": "5f8e55a8560311a13949d7e2c55fdce4"
+        }
+      ],
+      "poster": {
+        "file": "barbell_back_squat_aba08f4f.webp",
+        "md5": "00ba78b8b4b0c84e9e717c6409e7baf9"
+      }
+    },
+    {
+      "exerciseId": "dumbbell_sumo_squat",
+      "name_en": "Dumbbell sumo squat",
+      "name_ar": "سومو سكوات بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "quads",
+        "glutes",
+        "adductors"
+      ],
+      "secondaryMuscles": [
+        "core"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "squat",
+      "equipment": [
+        "dumbbells"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "dumbbell_sumo_squat_front_0a2eda83.mp4",
+          "angle": "front",
+          "seconds": 4.03,
+          "source": "IMG_8261.mov",
+          "md5": "dde79f6c927a33cb671315c3e289a13f"
+        }
+      ],
+      "poster": {
+        "file": "dumbbell_sumo_squat_36716744.webp",
+        "md5": "a7e988071db3a4982ff69ebab4effbc7"
+      }
+    },
+    {
+      "exerciseId": "seated_leg_curl",
+      "name_en": "Seated leg curl",
+      "name_ar": "ليج كيرل قاعد على الجهاز",
+      "kind": "strength",
+      "primaryMuscles": [
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "calves"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "isolation_lower",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "seated_leg_curl_side_e7839810.mp4",
+          "angle": "side",
+          "seconds": 3.8,
+          "source": "IMG_8263.mov",
+          "md5": "6289b4bec3cbce93aae945796b2e0389"
+        }
+      ],
+      "poster": {
+        "file": "seated_leg_curl_66490c00.webp",
+        "md5": "0d3968c080d46b40bf7ebbf61a5e9fcb"
+      }
+    },
+    {
+      "exerciseId": "straight_leg_glute_kickback",
+      "name_en": "Straight-leg glute kickback",
+      "name_ar": "جلوت كيك باك والرجل مفرودة",
+      "kind": "strength",
+      "primaryMuscles": [
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "isolation_lower",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "wrist_load"
+      ],
+      "clips": [
+        {
+          "file": "straight_leg_glute_kickback_side_4dafe0bc.mp4",
+          "angle": "side",
+          "seconds": 3.8,
+          "source": "IMG_8265.mov",
+          "md5": "5a45e7215dfe886b959756b017138218"
+        }
+      ],
+      "poster": {
+        "file": "straight_leg_glute_kickback_56767b1a.webp",
+        "md5": "2f130f0e6e2f49213359d98a6996f506"
+      }
+    },
+    {
+      "exerciseId": "donkey_kick",
+      "name_en": "Donkey kick",
+      "name_ar": "دونكي كيك",
+      "kind": "strength",
+      "primaryMuscles": [
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "core"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "isolation_lower",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "wrist_load"
+      ],
+      "clips": [
+        {
+          "file": "donkey_kick_side_f605da41.mp4",
+          "angle": "side",
+          "seconds": 3.23,
+          "source": "IMG_8268.mov",
+          "md5": "0a11e08175abd413256f1a4a57702ee6"
+        }
+      ],
+      "poster": {
+        "file": "donkey_kick_30c3ed65.webp",
+        "md5": "2dd938d0f72e447ffd7f5643a63a73c5"
+      }
+    },
+    {
+      "exerciseId": "kettlebell_glute_bridge",
+      "name_en": "Kettlebell glute bridge",
+      "name_ar": "جلوت بريدج بالكيتل بيل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "hip_thrust_bridge",
+      "equipment": [
+        "kettlebell",
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load",
+        "pelvic_floor_load"
+      ],
+      "clips": [
+        {
+          "file": "kettlebell_glute_bridge_side_fe3850e2.mp4",
+          "angle": "side",
+          "seconds": 5.4,
+          "source": "IMG_8269.mov",
+          "md5": "ff65949a894670490196375f05f5ed9a"
+        }
+      ],
+      "poster": {
+        "file": "kettlebell_glute_bridge_ae0dac67.webp",
+        "md5": "54c4e651e203a2a313ccc5aefa53aeec"
+      }
+    },
+    {
+      "exerciseId": "side_lying_clamshell",
+      "name_en": "Side-lying clamshell",
+      "name_ar": "كلام شيل على الجنب",
+      "kind": "strength",
+      "primaryMuscles": [
+        "abductors",
+        "glutes"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "lower_body",
+      "pattern": "isolation_lower",
+      "equipment": [
+        "dumbbells",
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "side_lying_clamshell_front_c761154b.mp4",
+          "angle": "front",
+          "seconds": 4.77,
+          "source": "IMG_8271.mov",
+          "md5": "52c6c89cc5c50871d457a8037b31b36c"
+        }
+      ],
+      "poster": {
+        "file": "side_lying_clamshell_1e546e5c.webp",
+        "md5": "8871893344b2728c782ead689a5fc555"
+      }
+    },
+    {
+      "exerciseId": "smith_machine_hip_thrust",
+      "name_en": "Smith machine hip thrust",
+      "name_ar": "هيب ثرست على السميث",
+      "kind": "strength",
+      "primaryMuscles": [
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings",
+        "quads"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "hip_thrust_bridge",
+      "equipment": [
+        "smith_machine",
+        "bench"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "supine_load",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+      ],
+      "clips": [
+        {
+          "file": "smith_machine_hip_thrust_side_0b0b3611.mp4",
+          "angle": "side",
+          "seconds": 5.6,
+          "source": "IMG_8276.mov",
+          "md5": "d9a29fd9ef82aad7b951b643d1c91c9b"
+        }
+      ],
+      "poster": {
+        "file": "smith_machine_hip_thrust_1faa6f60.webp",
+        "md5": "fd0f0929c5b372b7d6061ab6b7cd2c7e"
+      }
+    },
+    {
+      "exerciseId": "barbell_hip_thrust",
+      "name_en": "Barbell hip thrust",
+      "name_ar": "هيب ثرست بالبار",
+      "kind": "strength",
+      "primaryMuscles": [
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings",
+        "quads"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "hip_thrust_bridge",
+      "equipment": [
+        "barbell",
+        "bench"
+      ],
+      "place": "gym",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "supine_load",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+      ],
+      "clips": [
+        {
+          "file": "barbell_hip_thrust_side_c02151c2.mp4",
+          "angle": "side",
+          "seconds": 4.4,
+          "source": "IMG_8278.mov",
+          "md5": "732cc4740e9c2d246e7aee778b64c953"
+        }
+      ],
+      "poster": {
+        "file": "barbell_hip_thrust_3f320c4a.webp",
+        "md5": "25be03ac7f0266375b4374ccc7e6b5ef"
+      }
+    },
+    {
+      "exerciseId": "dumbbell_calf_raise",
+      "name_en": "Dumbbell calf raise on a plate",
+      "name_ar": "كالف ريز بالدمبل على طارة",
+      "kind": "strength",
+      "primaryMuscles": [
+        "calves"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "lower_body",
+      "pattern": "isolation_lower",
+      "equipment": [
+        "dumbbells",
+        "step"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "dumbbell_calf_raise_side_4a59e71a.mp4",
+          "angle": "side",
+          "seconds": 4.07,
+          "source": "IMG_8281.mov",
+          "md5": "db9e3b9d763b4f81551824e35d5fd568"
+        }
+      ],
+      "poster": {
+        "file": "dumbbell_calf_raise_7aea9195.webp",
+        "md5": "89ba51b04186e99f8825ec8efb9787d8"
+      }
+    },
+    {
+      "exerciseId": "pendulum_squat",
+      "name_en": "Pendulum squat",
+      "name_ar": "بندولم سكوات",
+      "kind": "strength",
+      "primaryMuscles": [
+        "quads"
+      ],
+      "secondaryMuscles": [
+        "glutes"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "squat",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "deep_knee_flexion",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+      ],
+      "clips": [
+        {
+          "file": "pendulum_squat_front_9d8d572e.mp4",
+          "angle": "front",
+          "seconds": 5.7,
+          "source": "IMG_8288.mov",
+          "md5": "161d36e61635645bb1f27ed1d9695e7c"
+        }
+      ],
+      "poster": {
+        "file": "pendulum_squat_f09d2feb.webp",
+        "md5": "ab3d4872d5711c1691a2f7d4b7d1d1f2"
+      }
+    },
+    {
+      "exerciseId": "seated_leg_press",
+      "name_en": "Seated leg press",
+      "name_ar": "ليج بريس قاعد",
+      "kind": "strength",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings",
+        "adductors"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "squat",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "deep_knee_flexion",
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+      ],
+      "clips": [
+        {
+          "file": "seated_leg_press_side_8a614d9b.mp4",
+          "angle": "side",
+          "seconds": 6.5,
+          "source": "IMG_8291.mov",
+          "md5": "6d0678fde2a7d898c225a95442d9183a"
+        }
+      ],
+      "poster": {
+        "file": "seated_leg_press_ce9be8b5.webp",
+        "md5": "edcc66077d4618981655af9dcd5a4c8c"
+      }
+    },
+    {
+      "exerciseId": "seated_dumbbell_calf_raise",
+      "name_en": "Seated dumbbell calf raise",
+      "name_ar": "كالف ريز قاعد بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "calves"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "lower_body",
+      "pattern": "isolation_lower",
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "seated_dumbbell_calf_raise_side_e59bfc67.mp4",
+          "angle": "side",
+          "seconds": 4.23,
+          "source": "IMG_8293.mov",
+          "md5": "e6eaa0a2325fb5fe5f70bf1e2cb46628"
+        }
+      ],
+      "poster": {
+        "file": "seated_dumbbell_calf_raise_0cab5a88.webp",
+        "md5": "6aed41fc505a613040599d3f4097b54a"
+      }
+    },
+    {
+      "exerciseId": "machine_chest_press",
+      "name_en": "Machine chest press",
+      "name_ar": "تشيست بريس على الجهاز",
+      "kind": "strength",
+      "primaryMuscles": [
+        "chest"
+      ],
+      "secondaryMuscles": [
+        "front_delts",
+        "triceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "push_horizontal",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "machine_chest_press_front_4edc7a9d.mp4",
+          "angle": "front",
+          "seconds": 6.4,
+          "source": "IMG_9424.mov",
+          "md5": "d3541db00a79e110660c72dab1f4470a"
+        }
+      ],
+      "poster": {
+        "file": "machine_chest_press_a87697aa.webp",
+        "md5": "433e72c98caae8bd9071fa9e67ebb409"
+      }
+    },
+    {
+      "exerciseId": "pec_deck_fly",
+      "name_en": "Pec deck fly",
+      "name_ar": "بيك ديك فلاي",
+      "kind": "strength",
+      "primaryMuscles": [
+        "chest"
+      ],
+      "secondaryMuscles": [
+        "front_delts"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "pec_deck_fly_front_f844aff1.mp4",
+          "angle": "front",
+          "seconds": 5.87,
+          "source": "IMG_9427.mov",
+          "md5": "26fa56869ecf6979b5a2b4872fc9d8d8"
+        }
+      ],
+      "poster": {
+        "file": "pec_deck_fly_66469ea7.webp",
+        "md5": "7e950ee489bbbe1fd2145ae2919a23da"
+      }
+    },
+    {
+      "exerciseId": "plate_loaded_shoulder_press",
+      "name_en": "Plate-loaded shoulder press",
+      "name_ar": "شولدر بريس على جهاز الطارات",
+      "kind": "strength",
+      "primaryMuscles": [
+        "front_delts",
+        "side_delts"
+      ],
+      "secondaryMuscles": [
+        "triceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "push_vertical",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "overhead_load"
+      ],
+      "clips": [
+        {
+          "file": "plate_loaded_shoulder_press_front_2804a540.mp4",
+          "angle": "front",
+          "seconds": 5.67,
+          "source": "IMG_9429.mov",
+          "md5": "054554e577083db9abf982e7c9e8e1f8"
+        }
+      ],
+      "poster": {
+        "file": "plate_loaded_shoulder_press_a057ae95.webp",
+        "md5": "bc1938d23c9023e28c120983b44e1914"
+      }
+    },
+    {
+      "exerciseId": "barbell_bench_press",
+      "name_en": "Barbell bench press",
+      "name_ar": "بنش بريس بالبار",
+      "kind": "strength",
+      "primaryMuscles": [
+        "chest"
+      ],
+      "secondaryMuscles": [
+        "front_delts",
+        "triceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "push_horizontal",
+      "equipment": [
+        "barbell",
+        "bench"
+      ],
+      "place": "gym",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "supine_load",
+        "breath_hold_valsalva"
+      ],
+      "clips": [
+        {
+          "file": "barbell_bench_press_side_5ce994a0.mp4",
+          "angle": "side",
+          "seconds": 6.13,
+          "source": "IMG_9431.mov",
+          "md5": "22b9e89430c044e4c41e4d9735bef9d9"
+        }
+      ],
+      "poster": {
+        "file": "barbell_bench_press_5e04465c.webp",
+        "md5": "12aee021caa30e14b2db33684d1df5c1"
+      }
+    },
+    {
+      "exerciseId": "dumbbell_bench_press",
+      "name_en": "Dumbbell bench press",
+      "name_ar": "بنش بريس بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "chest"
+      ],
+      "secondaryMuscles": [
+        "front_delts",
+        "triceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "push_horizontal",
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "dumbbell_bench_press_side_26427828.mp4",
+          "angle": "side",
+          "seconds": 5.7,
+          "source": "IMG_9443.mov",
+          "md5": "344c50038c7747fa7c0442e50bebab36"
+        }
+      ],
+      "poster": {
+        "file": "dumbbell_bench_press_d80a6df0.webp",
+        "md5": "447d647daedc8a0adc2678bfd10203b2"
+      }
+    },
+    {
+      "exerciseId": "incline_dumbbell_press",
+      "name_en": "Incline dumbbell press",
+      "name_ar": "إنكلاين بريس بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "chest",
+        "front_delts"
+      ],
+      "secondaryMuscles": [
+        "triceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "push_horizontal",
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "incline_dumbbell_press_side_09304723.mp4",
+          "angle": "side",
+          "seconds": 5.57,
+          "source": "IMG_9445.mov",
+          "md5": "ca6514844629ae3fed53e949d9eefa27"
+        }
+      ],
+      "poster": {
+        "file": "incline_dumbbell_press_d8502fa9.webp",
+        "md5": "608eec330d83c0735dc9de92682d423b"
+      }
+    },
+    {
+      "exerciseId": "knee_press_up",
+      "name_en": "Kneeling push-up",
+      "name_ar": "بوش أب على الركب",
+      "kind": "strength",
+      "primaryMuscles": [
+        "chest"
+      ],
+      "secondaryMuscles": [
+        "triceps",
+        "front_delts",
+        "core"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "push_horizontal",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "knee_press_up_side_833e1495.mp4",
+          "angle": "side",
+          "seconds": 5.87,
+          "source": "IMG_9448.mov",
+          "md5": "7252f3efc1298a3de1584e85a997a1f2"
+        }
+      ],
+      "poster": {
+        "file": "knee_press_up_d3e8c2cf.webp",
+        "md5": "e15a6c0526ed9d781fcb1db1755aa375"
+      }
+    },
+    {
+      "exerciseId": "push_up",
+      "name_en": "Push-up",
+      "name_ar": "بوش أب",
+      "kind": "strength",
+      "primaryMuscles": [
+        "chest"
+      ],
+      "secondaryMuscles": [
+        "triceps",
+        "front_delts",
+        "core"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "push_horizontal",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "intermediate",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "wrist_load",
+        "prone_position"
+      ],
+      "clips": [
+        {
+          "file": "push_up_side_e8bf75dd.mp4",
+          "angle": "side",
+          "seconds": 5.5,
+          "source": "IMG_9449.mov",
+          "md5": "2651d1146fb0830f7e29bc7b20558c84"
+        }
+      ],
+      "poster": {
+        "file": "push_up_5806dec0.webp",
+        "md5": "bbd27cfca217baeb6e915d5616c5646b"
+      }
+    },
+    {
+      "exerciseId": "seated_cable_row",
+      "name_en": "Seated cable row, V-handle",
+      "name_ar": "سيتد رو على الكابل بمسكة V",
+      "kind": "strength",
+      "primaryMuscles": [
+        "upper_back",
+        "lats"
+      ],
+      "secondaryMuscles": [
+        "biceps",
+        "rear_delts"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "pull_horizontal",
+      "equipment": [
+        "cable",
+        "bench"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "seated_cable_row_side_83a05e27.mp4",
+          "angle": "side",
+          "seconds": 6.23,
+          "source": "IMG_9450.mov",
+          "md5": "d8000ec7ce2537da4ff289af7de033c6"
+        }
+      ],
+      "poster": {
+        "file": "seated_cable_row_53058ffe.webp",
+        "md5": "85a54c6c4995992ee45f8db01c71832a"
+      }
+    },
+    {
+      "exerciseId": "single_arm_low_cable_row",
+      "name_en": "Single-arm low cable row",
+      "name_ar": "رو على الكابل بدراع واحدة",
+      "kind": "strength",
+      "primaryMuscles": [
+        "lats",
+        "upper_back"
+      ],
+      "secondaryMuscles": [
+        "biceps",
+        "rear_delts"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "pull_horizontal",
+      "equipment": [
+        "cable",
+        "bench"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "single_arm_low_cable_row_front_e0cdeb81.mp4",
+          "angle": "front",
+          "seconds": 6.33,
+          "source": "IMG_9451.mov",
+          "md5": "3011f29f3a269b14397d513891b056ab"
+        },
+        {
+          "file": "single_arm_low_cable_row_rear_30136457.mp4",
+          "angle": "rear",
+          "seconds": 5.7,
+          "source": "IMG_9464.mov",
+          "md5": "63fef2fefa1c6b0f1c4546db2fd44ddb"
+        }
+      ],
+      "poster": {
+        "file": "single_arm_low_cable_row_d4af482a.webp",
+        "md5": "c3a476c8adc9776a318ed6e69d8fcd74"
+      }
+    },
+    {
+      "exerciseId": "lat_pulldown_wide",
+      "name_en": "Lat pulldown, wide grip",
+      "name_ar": "لات بول داون مسكة واسعة",
+      "kind": "strength",
+      "primaryMuscles": [
+        "lats"
+      ],
+      "secondaryMuscles": [
+        "upper_back",
+        "biceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "pull_vertical",
+      "equipment": [
+        "cable"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "lat_pulldown_wide_front_eb6cddbb.mp4",
+          "angle": "front",
+          "seconds": 5.5,
+          "source": "IMG_9458.mov",
+          "md5": "4afa29d14379dac2b32e1f4858609712"
+        },
+        {
+          "file": "lat_pulldown_wide_side_19b340c9.mp4",
+          "angle": "side",
+          "seconds": 6.27,
+          "source": "IMG_9460.mov",
+          "md5": "8562547cc6451bffd39199b30504e8e6"
+        }
+      ],
+      "poster": {
+        "file": "lat_pulldown_wide_71ce9640.webp",
+        "md5": "b5ee6f41398e296a19429355ce1d8eb8"
+      }
+    },
+    {
+      "exerciseId": "close_grip_lat_pulldown",
+      "name_en": "Close-grip lat pulldown",
+      "name_ar": "لات بول داون مسكة ضيقة",
+      "kind": "strength",
+      "primaryMuscles": [
+        "lats"
+      ],
+      "secondaryMuscles": [
+        "biceps",
+        "upper_back"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "pull_vertical",
+      "equipment": [
+        "cable"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "close_grip_lat_pulldown_front_1dcc167a.mp4",
+          "angle": "front",
+          "seconds": 6.47,
+          "source": "IMG_9461.mov",
+          "md5": "b9e4aa6540bef6bab77981c97bd0abe2"
+        }
+      ],
+      "poster": {
+        "file": "close_grip_lat_pulldown_ab47f596.webp",
+        "md5": "fd3e07ae6ccb98b4f2a09258a795fe22"
+      }
+    },
+    {
+      "exerciseId": "romanian_deadlift",
+      "name_en": "Dumbbell Romanian deadlift",
+      "name_ar": "رومانيان ديدليفت بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "hamstrings",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "lower_back",
+        "forearms"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "hinge",
+      "equipment": [
+        "dumbbells"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "pelvic_floor_load",
+        "breath_hold_valsalva"
+      ],
+      "clips": [
+        {
+          "file": "romanian_deadlift_side_10aaa094.mp4",
+          "angle": "side",
+          "seconds": 4.07,
+          "source": "IMG_9466.mov",
+          "md5": "ffbc51767fd6e238ef1783604a702e07"
+        }
+      ],
+      "poster": {
+        "file": "romanian_deadlift_7f728596.webp",
+        "md5": "1ec6614b081665f72872d1eaff98691a"
+      }
+    },
+    {
+      "exerciseId": "back_extension",
+      "name_en": "45-degree back extension",
+      "name_ar": "باك إكستنشن على بنش 45",
+      "kind": "strength",
+      "primaryMuscles": [
+        "lower_back",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "hinge",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "prone_position"
+      ],
+      "clips": [
+        {
+          "file": "back_extension_side_957caffa.mp4",
+          "angle": "side",
+          "seconds": 6.03,
+          "source": "IMG_9475.mov",
+          "md5": "b2e0efeac252e5127dc02525866936aa"
+        }
+      ],
+      "poster": {
+        "file": "back_extension_39dba36d.webp",
+        "md5": "47174a135c9d383ccc320341b419fb39"
+      }
+    },
+    {
+      "exerciseId": "seated_dumbbell_front_raise",
+      "name_en": "Seated dumbbell front raise",
+      "name_ar": "فرونت ريز قاعد بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "front_delts"
+      ],
+      "secondaryMuscles": [
+        "side_delts"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "seated_dumbbell_front_raise_front_93298224.mp4",
+          "angle": "front",
+          "seconds": 5.3,
+          "source": "IMG_9477.mov",
+          "md5": "d38f05d6c5ae0212d1f7fc53b36bd2f0"
+        }
+      ],
+      "poster": {
+        "file": "seated_dumbbell_front_raise_48e1c048.webp",
+        "md5": "649ee6caef0ecea9d259823a69c71216"
+      }
+    },
+    {
+      "exerciseId": "seated_dumbbell_biceps_curl",
+      "name_en": "Seated dumbbell biceps curl",
+      "name_ar": "بايسبس كيرل قاعد بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "biceps"
+      ],
+      "secondaryMuscles": [
+        "forearms"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "seated_dumbbell_biceps_curl_front_5f80c03d.mp4",
+          "angle": "front",
+          "seconds": 4.7,
+          "source": "IMG_9481.mov",
+          "md5": "79e2a0e4be7edb47ca1458affca8f70f"
+        }
+      ],
+      "poster": {
+        "file": "seated_dumbbell_biceps_curl_d31e5bdf.webp",
+        "md5": "5dace3bdb8c534d929ebd2b3e7eeb572"
+      }
+    },
+    {
+      "exerciseId": "dumbbell_hammer_curl",
+      "name_en": "Dumbbell hammer curl",
+      "name_ar": "هامر كيرل بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "biceps",
+        "forearms"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "dumbbells"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "dumbbell_hammer_curl_front_e76c07ac.mp4",
+          "angle": "front",
+          "seconds": 4.0,
+          "source": "IMG_9484.mov",
+          "md5": "19658bdac9f6fe3402c9308438aeb7e5"
+        }
+      ],
+      "poster": {
+        "file": "dumbbell_hammer_curl_cc5a38f2.webp",
+        "md5": "309be6f5fb0b167a177847c923a01927"
+      }
+    },
+    {
+      "exerciseId": "shoulder_press",
+      "name_en": "Seated dumbbell shoulder press",
+      "name_ar": "شولدر بريس قاعد بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "front_delts",
+        "side_delts"
+      ],
+      "secondaryMuscles": [
+        "triceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "push_vertical",
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "overhead_load"
+      ],
+      "clips": [
+        {
+          "file": "shoulder_press_front_0064fff3.mp4",
+          "angle": "front",
+          "seconds": 3.67,
+          "source": "IMG_9486.mov",
+          "md5": "f7f05fe639740d27bc98131f273ba6e3"
+        }
+      ],
+      "poster": {
+        "file": "shoulder_press_6ed2fb56.webp",
+        "md5": "4c76662b58c2dd8c3d879014bbdb9ff4"
+      }
+    },
+    {
+      "exerciseId": "cable_face_pull",
+      "name_en": "Cable face pull",
+      "name_ar": "فيس بول بالحبل على الكابل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "rear_delts",
+        "upper_back"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "upper_body",
+      "pattern": "pull_horizontal",
+      "equipment": [
+        "cable"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "cable_face_pull_side_e4da63ea.mp4",
+          "angle": "side",
+          "seconds": 5.8,
+          "source": "IMG_9493.mov",
+          "md5": "49809b5d6300bb0ee8cd7bcf6bec191d"
+        }
+      ],
+      "poster": {
+        "file": "cable_face_pull_77203de0.webp",
+        "md5": "41f7dd17ab7c535cb7aa94fb5ba60108"
+      }
+    },
+    {
+      "exerciseId": "reverse_pec_deck",
+      "name_en": "Reverse pec deck",
+      "name_ar": "ريفيرس بيك ديك",
+      "kind": "strength",
+      "primaryMuscles": [
+        "rear_delts"
+      ],
+      "secondaryMuscles": [
+        "upper_back"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "machine"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "reverse_pec_deck_front_cb49b24d.mp4",
+          "angle": "front",
+          "seconds": 6.23,
+          "source": "IMG_9496.mov",
+          "md5": "3ba94191b189a2180f7a32e80f3dc1cb"
+        }
+      ],
+      "poster": {
+        "file": "reverse_pec_deck_28ae7e4a.webp",
+        "md5": "d07e096db866f7ccd63b12f53762a092"
+      }
+    },
+    {
+      "exerciseId": "ez_bar_curl",
+      "name_en": "EZ-bar curl",
+      "name_ar": "بايسبس كيرل بالبار EZ",
+      "kind": "strength",
+      "primaryMuscles": [
+        "biceps"
+      ],
+      "secondaryMuscles": [
+        "forearms"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "barbell"
+      ],
+      "place": "gym",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "ez_bar_curl_front_1a315a5a.mp4",
+          "angle": "front",
+          "seconds": 5.3,
+          "source": "IMG_9499.mov",
+          "md5": "c1f33ba6055258776e7111f4ab927de5"
+        }
+      ],
+      "poster": {
+        "file": "ez_bar_curl_20c0d00e.webp",
+        "md5": "58ab4130af494d54fc111b561113c8fe"
+      }
+    },
+    {
+      "exerciseId": "dumbbell_lateral_raise",
+      "name_en": "Dumbbell lateral raise",
+      "name_ar": "لاترال ريز بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "side_delts"
+      ],
+      "secondaryMuscles": [
+        "upper_back"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "dumbbells"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "dumbbell_lateral_raise_front_ca0036da.mp4",
+          "angle": "front",
+          "seconds": 3.3,
+          "source": "IMG_9897 10.mov",
+          "md5": "cad883770483322bc911d8d3da9751b5"
+        }
+      ],
+      "poster": {
+        "file": "dumbbell_lateral_raise_8650ec2e.webp",
+        "md5": "9dcccc9715b4c81b8c9893f768f25ce1"
+      }
+    },
+    {
+      "exerciseId": "bent_over_row",
+      "name_en": "Bent-over dumbbell row",
+      "name_ar": "بنت أوفر رو بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "upper_back",
+        "lats"
+      ],
+      "secondaryMuscles": [
+        "rear_delts",
+        "biceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "pull_horizontal",
+      "equipment": [
+        "dumbbells"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "bent_over_row_side_110cebb3.mp4",
+          "angle": "side",
+          "seconds": 2.83,
+          "source": "IMG_9897 11.mov",
+          "md5": "6f1233e59faa63791cd01cc51f65ebef"
+        }
+      ],
+      "poster": {
+        "file": "bent_over_row_da5bd9e3.webp",
+        "md5": "0446e8040f3277943e2093a372602455"
+      }
+    },
+    {
+      "exerciseId": "standing_forward_fold",
+      "name_en": "Standing forward fold",
+      "name_ar": "إطالة خلفية من الوقوف",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "lower_back",
+        "calves"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "standing_forward_fold_side_98a3d82a.mp4",
+          "angle": "side",
+          "seconds": 3.5,
+          "source": "IMG_9897 2.mov",
+          "md5": "f94a1f25737445499929da967ccbafcd"
+        }
+      ],
+      "poster": {
+        "file": "standing_forward_fold_96092d32.webp",
+        "md5": "7996a9e1ee264519c0ade07bfedba73d"
+      }
+    },
+    {
+      "exerciseId": "calf_raise",
+      "name_en": "Bodyweight calf raise",
+      "name_ar": "كالف ريز من غير وزن",
+      "kind": "strength",
+      "primaryMuscles": [
+        "calves"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "lower_body",
+      "pattern": "isolation_lower",
+      "equipment": [
+        "none"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "calf_raise_side_f3241265.mp4",
+          "angle": "side",
+          "seconds": 2.93,
+          "source": "IMG_9897 3.mov",
+          "md5": "ce11c6a07dd8a7810a467169eed944fe"
+        }
+      ],
+      "poster": {
+        "file": "calf_raise_5b9f57cf.webp",
+        "md5": "c29eaa5959509f775bdbe1b1da770394"
+      }
+    },
+    {
+      "exerciseId": "standing_dumbbell_biceps_curl",
+      "name_en": "Standing dumbbell biceps curl",
+      "name_ar": "بايسبس كيرل واقفة بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "biceps"
+      ],
+      "secondaryMuscles": [
+        "forearms"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "dumbbells"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "standing_dumbbell_biceps_curl_front_7c2f8ccc.mp4",
+          "angle": "front",
+          "seconds": 2.33,
+          "source": "IMG_9897 5.MOV",
+          "md5": "7e2840b0134a121d883743ffff8826d0"
+        }
+      ],
+      "poster": {
+        "file": "standing_dumbbell_biceps_curl_ffbdf334.webp",
+        "md5": "9a82613b13c5147e6be0f764958e29a8"
+      }
+    },
+    {
+      "exerciseId": "arm_circles",
+      "name_en": "Big arm circles",
+      "name_ar": "دوران الدراعات",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "front_delts",
+        "side_delts"
+      ],
+      "secondaryMuscles": [
+        "upper_back"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "mobility",
+      "equipment": [
+        "none"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "arm_circles_front_007ce952.mp4",
+          "angle": "front",
+          "seconds": 9.8,
+          "source": "IMG_9897 6.MOV",
+          "md5": "de36b15820f19fefa0a2b7e67d8b1752"
+        }
+      ],
+      "poster": {
+        "file": "arm_circles_ec669982.webp",
+        "md5": "d946791bd1045299f982b2fce6246b67"
+      }
+    },
+    {
+      "exerciseId": "band_shoulder_pass_through",
+      "name_en": "Band shoulder pass-through",
+      "name_ar": "باس ثرو للكتف بالأستك",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "chest",
+        "front_delts"
+      ],
+      "secondaryMuscles": [
+        "upper_back"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "mobility",
+      "equipment": [
+        "bands"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "band_shoulder_pass_through_front_0bfecc3c.mp4",
+          "angle": "front",
+          "seconds": 5.27,
+          "source": "IMG_9897 7.mov",
+          "md5": "d138e20e1e17276f4cb7820d10ab70cd"
+        }
+      ],
+      "poster": {
+        "file": "band_shoulder_pass_through_1c7837ba.webp",
+        "md5": "bef6a8c36604c1fa42ee1a44ac2635b7"
+      }
+    },
+    {
+      "exerciseId": "dumbbell_external_rotation",
+      "name_en": "Dumbbell 90/90 external rotation",
+      "name_ar": "إكسترنال روتيشن للكتف بالدمبل",
+      "kind": "strength",
+      "primaryMuscles": [
+        "rear_delts"
+      ],
+      "secondaryMuscles": [
+        "upper_back"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "isolation_upper",
+      "equipment": [
+        "dumbbells"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "dumbbell_external_rotation_front_fa5c2390.mp4",
+          "angle": "front",
+          "seconds": 4.07,
+          "source": "IMG_9897 8.mov",
+          "md5": "dc62893690a3e5cbc8d01881f9b1462e"
+        }
+      ],
+      "poster": {
+        "file": "dumbbell_external_rotation_183e29b1.webp",
+        "md5": "49a02a66974397644ba4d47bf5ab8ecb"
+      }
+    },
+    {
+      "exerciseId": "seated_hamstring_stretch",
+      "name_en": "Seated single-leg hamstring stretch",
+      "name_ar": "إطالة خلفية قعدة برجل واحدة",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "lower_back",
+        "calves"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "seated_hamstring_stretch_front_8bc73655.mp4",
+          "angle": "front",
+          "seconds": 4.83,
+          "source": "IMG_9911 2.MOV",
+          "md5": "46d4991f7ab016cafdfbfd3f8979c84e"
+        },
+        {
+          "file": "seated_hamstring_stretch_other_side_6f544b64.mp4",
+          "angle": "otherSide",
+          "seconds": 1.0,
+          "source": "IMG_9911.MOV",
+          "md5": "a6cf979b52af938efc2509bc049c547f"
+        }
+      ],
+      "poster": {
+        "file": "seated_hamstring_stretch_f7215f19.webp",
+        "md5": "314d00dd7f3b8005801e87a9c9d77080"
+      }
+    },
+    {
+      "exerciseId": "figure_four_glute_stretch",
+      "name_en": "Lying figure-4 glute stretch",
+      "name_ar": "إطالة الأرداف على شكل 4",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "glutes"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "lower_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "figure_four_glute_stretch_front_81d46505.mp4",
+          "angle": "front",
+          "seconds": 1.83,
+          "source": "IMG_9911 3.MOV",
+          "md5": "060d58b2168b546bbecc9551ebf5cc85"
+        }
+      ],
+      "poster": {
+        "file": "figure_four_glute_stretch_15587a31.webp",
+        "md5": "47beb2bdb316f1a28974d48bf8ef86b6"
+      }
+    },
+    {
+      "exerciseId": "butterfly_stretch",
+      "name_en": "Butterfly stretch",
+      "name_ar": "إطالة الفراشة",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "adductors"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "lower_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "butterfly_stretch_front_1f3dbc88.mp4",
+          "angle": "front",
+          "seconds": 3.0,
+          "source": "IMG_9912 2.MOV",
+          "md5": "341909357797cd2e14a11dfe17013e64"
+        }
+      ],
+      "poster": {
+        "file": "butterfly_stretch_b5f1efa9.webp",
+        "md5": "42f34e7603c7552e96cedbc6c0c4ba60"
+      }
+    },
+    {
+      "exerciseId": "cross_body_shoulder_stretch",
+      "name_en": "Cross-body shoulder stretch",
+      "name_ar": "إطالة الكتف قدام الصدر",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "rear_delts"
+      ],
+      "secondaryMuscles": [
+        "upper_back"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "cross_body_shoulder_stretch_front_b6e115e8.mp4",
+          "angle": "front",
+          "seconds": 3.83,
+          "source": "IMG_9912 3.MOV",
+          "md5": "cae10b4443f06a1f605bf7954d826323"
+        }
+      ],
+      "poster": {
+        "file": "cross_body_shoulder_stretch_877bef0b.webp",
+        "md5": "08459655cc89cde6618d7614753f623b"
+      }
+    },
+    {
+      "exerciseId": "childs_pose",
+      "name_en": "Child's pose",
+      "name_ar": "وضع الطفل",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "lower_back",
+        "lats"
+      ],
+      "secondaryMuscles": [
+        "glutes"
+      ],
+      "bodyRegion": "full_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "childs_pose_side_e238f411.mp4",
+          "angle": "side",
+          "seconds": 3.03,
+          "source": "IMG_9912 4.MOV",
+          "md5": "bd64fe28436eb9e73f2f0f7d9005c280"
+        }
+      ],
+      "poster": {
+        "file": "childs_pose_b6dacb0b.webp",
+        "md5": "f10bbda39fd6f371fec8d81800f40e55"
+      }
+    },
+    {
+      "exerciseId": "wrist_flexor_stretch",
+      "name_en": "Wrist-flexor stretch",
+      "name_ar": "إطالة الساعد",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "forearms"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "upper_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "wrist_flexor_stretch_front_9fdbae64.mp4",
+          "angle": "front",
+          "seconds": 2.93,
+          "source": "IMG_9912 5.MOV",
+          "md5": "f1748260d9695aef838d81a8342658fb"
+        }
+      ],
+      "poster": {
+        "file": "wrist_flexor_stretch_98ef61a7.webp",
+        "md5": "704016cf86ec93e47e1e4c149a73e1ca"
+      }
+    },
+    {
+      "exerciseId": "overhead_triceps_stretch",
+      "name_en": "Overhead triceps stretch",
+      "name_ar": "إطالة الترايسبس فوق الراس",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "triceps"
+      ],
+      "secondaryMuscles": [
+        "lats"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "overhead_triceps_stretch_front_842605ec.mp4",
+          "angle": "front",
+          "seconds": 2.83,
+          "source": "IMG_9912 6.MOV",
+          "md5": "967c5feea9983f75124eb855c948d386"
+        }
+      ],
+      "poster": {
+        "file": "overhead_triceps_stretch_7ad691dd.webp",
+        "md5": "3b91d73ad2637c798bec20cb1de8ebb0"
+      }
+    },
+    {
+      "exerciseId": "knees_to_chest_stretch",
+      "name_en": "Knees-to-chest stretch",
+      "name_ar": "إطالة الركب للصدر",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "lower_back"
+      ],
+      "secondaryMuscles": [
+        "glutes"
+      ],
+      "bodyRegion": "core",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "supine_load"
+      ],
+      "clips": [
+        {
+          "file": "knees_to_chest_stretch_front_57a514f8.mp4",
+          "angle": "front",
+          "seconds": 5.1,
+          "source": "IMG_9912.MOV",
+          "md5": "4581c4f7866a6879afe5dd73e8a7cff7"
+        }
+      ],
+      "poster": {
+        "file": "knees_to_chest_stretch_1397812a.webp",
+        "md5": "a3b47b2c877a7d6f270493f758c57852"
+      }
+    },
+    {
+      "exerciseId": "wall_chest_stretch",
+      "name_en": "Wall chest stretch",
+      "name_ar": "إطالة الصدر على الحيطة",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "chest"
+      ],
+      "secondaryMuscles": [
+        "front_delts",
+        "biceps"
+      ],
+      "bodyRegion": "upper_body",
+      "pattern": "mobility",
+      "equipment": [
+        "none"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "wall_chest_stretch_side_b3df58d6.mp4",
+          "angle": "side",
+          "seconds": 0.97,
+          "source": "IMG_9913.MOV",
+          "md5": "f73d2ac891870d76cdd473c2a6b0d828"
+        }
+      ],
+      "poster": {
+        "file": "wall_chest_stretch_ce7b0266.webp",
+        "md5": "a611f8153fcdf8aec4be97a3cc102a9f"
+      }
+    },
+    {
+      "exerciseId": "cobra_stretch",
+      "name_en": "Cobra stretch",
+      "name_ar": "إطالة الكوبرا",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "core"
+      ],
+      "secondaryMuscles": [
+        "lower_back"
+      ],
+      "bodyRegion": "core",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "prone_position",
+        "wrist_load"
+      ],
+      "clips": [
+        {
+          "file": "cobra_stretch_side_ab80d1ba.mp4",
+          "angle": "side",
+          "seconds": 1.6,
+          "source": "IMG_9914.MOV",
+          "md5": "9cb43f1d11d122c8e46ebf0e68b44222"
+        }
+      ],
+      "poster": {
+        "file": "cobra_stretch_da6d284d.webp",
+        "md5": "d0fe1780978e88153731a4581f91384c"
+      }
+    },
+    {
+      "exerciseId": "windmill_toe_touch",
+      "name_en": "Windmill toe touch",
+      "name_ar": "ويندميل لمس الرجل بالإيد العكسية",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "hamstrings",
+        "obliques"
+      ],
+      "secondaryMuscles": [
+        "lower_back",
+        "adductors"
+      ],
+      "bodyRegion": "full_body",
+      "pattern": "mobility",
+      "equipment": [
+        "none"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "windmill_toe_touch_front_3c565d46.mp4",
+          "angle": "front",
+          "seconds": 3.9,
+          "source": "copy_93E4A454-9341-4977-BAA6-DF0B64EF24E3 2.mov",
+          "md5": "c7623b39837e845d52a0ef21446c0dc9"
+        }
+      ],
+      "poster": {
+        "file": "windmill_toe_touch_dbbdba03.webp",
+        "md5": "34d5f65e606151a52c1fa2559bc287cf"
+      }
+    },
+    {
+      "exerciseId": "hip_flexor_rock_back",
+      "name_en": "Hip flexor to hamstring rock-back",
+      "name_ar": "إطالة الهيب فليكسور مع رجوع للخلفية",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "hamstrings",
+        "quads"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "lower_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "hip_flexor_rock_back_side_03c96c93.mp4",
+          "angle": "side",
+          "seconds": 3.47,
+          "source": "copy_93E4A454-9341-4977-BAA6-DF0B64EF24E3 3.MOV",
+          "md5": "d34809c1edf3945659e3baee548cfe34"
+        }
+      ],
+      "poster": {
+        "file": "hip_flexor_rock_back_945e6acc.webp",
+        "md5": "3460f9d5151d51166997c78d60a089ad"
+      }
+    },
+    {
+      "exerciseId": "leg_swing",
+      "name_en": "Front-to-back leg swing",
+      "name_ar": "مرجحة الرجل لقدام وورا",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "glutes",
+        "quads"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "mobility",
+      "equipment": [
+        "none"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "leg_swing_side_0eb2d6c2.mp4",
+          "angle": "side",
+          "seconds": 4.67,
+          "source": "copy_93E4A454-9341-4977-BAA6-DF0B64EF24E3 5.MOV",
+          "md5": "f4dc562ffd6f31082b7be0e95b06124c"
+        }
+      ],
+      "poster": {
+        "file": "leg_swing_23c59c56.webp",
+        "md5": "e9104fb297b99da660f51a4f6f88f05c"
+      }
+    },
+    {
+      "exerciseId": "bent_knee_leg_swing",
+      "name_en": "Bent-knee leg swing",
+      "name_ar": "مرجحة الرجل والركبة مثنية",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "glutes",
+        "quads"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "mobility",
+      "equipment": [
+        "none"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "bent_knee_leg_swing_side_41219e2e.mp4",
+          "angle": "side",
+          "seconds": 5.0,
+          "source": "copy_93E4A454-9341-4977-BAA6-DF0B64EF24E3 6.mov",
+          "md5": "99a7bd0e0f39279b944e2694870738dd"
+        }
+      ],
+      "poster": {
+        "file": "bent_knee_leg_swing_5fa9c50d.webp",
+        "md5": "e6478353ce75e1f50c331e11eb08008a"
+      }
+    },
+    {
+      "exerciseId": "bodyweight_squat_arm_swing",
+      "name_en": "Bodyweight squat with arm swing",
+      "name_ar": "سكوات بوزن الجسم مع مرجحة الدراعات",
+      "kind": "strength",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [],
+      "bodyRegion": "lower_body",
+      "pattern": "squat",
+      "equipment": [
+        "none"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": false,
+      "contraindicationTags": [
+        "deep_knee_flexion"
+      ],
+      "clips": [
+        {
+          "file": "bodyweight_squat_arm_swing_front_dd9b79fc.mp4",
+          "angle": "front",
+          "seconds": 3.47,
+          "source": "copy_93E4A454-9341-4977-BAA6-DF0B64EF24E3 7.MOV",
+          "md5": "65fdc462fdf334e82852c3cc46e3cba4"
+        }
+      ],
+      "poster": {
+        "file": "bodyweight_squat_arm_swing_2b27a039.webp",
+        "md5": "90513d50aaf9303f26390a9448c9f23d"
+      }
+    },
+    {
+      "exerciseId": "half_kneeling_hip_flexor_stretch",
+      "name_en": "Half-kneeling hip flexor stretch",
+      "name_ar": "إطالة الهيب فليكسور على ركبة واحدة",
+      "kind": "stretch",
+      "primaryMuscles": [
+        "quads"
+      ],
+      "secondaryMuscles": [
+        "glutes"
+      ],
+      "bodyRegion": "lower_body",
+      "pattern": "mobility",
+      "equipment": [
+        "mat"
+      ],
+      "place": "both",
+      "level": "beginner",
+      "quiet": true,
+      "floorOnly": true,
+      "contraindicationTags": [
+        "none"
+      ],
+      "clips": [
+        {
+          "file": "half_kneeling_hip_flexor_stretch_side_be413187.mp4",
+          "angle": "side",
+          "seconds": 3.87,
+          "source": "copy_93E4A454-9341-4977-BAA6-DF0B64EF24E3.MOV",
+          "md5": "67b1342bd9e736c29af0e04929be29d8"
+        }
+      ],
+      "poster": {
+        "file": "half_kneeling_hip_flexor_stretch_27307a88.webp",
+        "md5": "dbcaa0494f5dcbdd63ae4fb792735b96"
+      }
+    }
+  ]
+}

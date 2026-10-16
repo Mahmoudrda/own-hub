@@ -46,7 +46,8 @@ around family. Membership is women-only and checked once against the national ID
 | Progress | Weeks trained, milestones, personal bests, her body measurements (kept on the phone only), and her shareable progress card |
 | My cycle | Symptoms she notes today shape the suggestion. Never an inferred phase. Severe symptoms bring medical guidance instead of a workout |
 
-**What it refuses to do.** No ranking of women, no daily streaks (progress counts weeks, not days),
+**What it refuses to do.** No ranking of women, no streak she can lose (weeks are the unit of reward;
+the one training streak she keeps is hers to pause or switch off, D37), no rewards left to chance,
 no calorie countdowns, no weight-loss claims, no red "you failed" states. These are product rules,
 not taste, and tests enforce them (section 9).
 
@@ -306,12 +307,15 @@ nothing.
 
 ### 4.8 Strings and the two languages
 
-- Arabic is polished Egyptian Arabic (owner decision, 2026-10-12): warm, educated Cairene, never
-  street slang, addressed to a woman (feminine second person). Legal and consent wording (the
-  camera consent, the woman-reviewer consent, the pledge, the health-backup consent, the terms line
-  on `C06`, the legal update sheet, the medical disclaimer) stays in Modern Standard Arabic, because
-  each is a recorded agreement with a version number. Western digits in both languages. No em
-  dashes in product copy.
+- Arabic is Egyptian everywhere, including legal and consent (owner decision 14 Oct 2026).
+  The Arabic is warm, educated Cairene, never street slang, addressed to a woman (feminine second
+  person). That covers the camera consent, the woman-reviewer consent, the pledge, the health-backup
+  consent, the terms line on `C06`, the legal update sheet and the medical disclaimer. Each of those
+  is a recorded agreement with a version number, so a rewording moves the number
+  (`kCaptureConsentVersion`, `kReviewConsentVersion`, `kPledgeVersion`) together with the server. The health-backup consent stays at `health-v1` for now, because the Firestore rules gate on that
+  document id (DECISIONS.md D45).
+  `app/test/i18n/egyptian_arabic_test.dart` fails on formal-Arabic marker words. Western digits in
+  both languages. No em dashes in product copy.
 - **All strings are generated.** The dictionary is `6-v2/i18n/` (English source to Arabic), and a
   string's getter name comes from the first seven words of its English text.
 - To add strings, write a JSON file and run the helper. It takes a lock, merges, regenerates and
@@ -515,6 +519,38 @@ cd app && bash tool/admin_access.sh upload-media recipes <recipeId> ~/Pictures/f
 5. Members see it in the workout library (R11) within a day; it lists only sessions that suit her
    life stage.
 
+### 6.4b Add exercise demo videos
+
+1. Make each clip an app clip: the whole take, scaled to 720×1280, no sound, no metadata:
+
+```sh
+ffmpeg -i IMG_1234.MOV -map 0:v:0 -vf "scale=720:1280:in_range=auto:out_range=tv,fps=30,format=yuv420p" \
+  -c:v libx264 -profile:v main -preset slow -crf 23 -movflags +faststart -an -map_metadata -1 -map_chapters -1 \
+  glute_bridge_front_a1b2c3d4.mp4
+```
+
+   Blur anyone else in the shot before uploading. Make a WebP poster from the finished clip. Name
+   them `<id>_<angle>_<sha8>.mp4` and `<id>_<sha8>.webp`, where `sha8` is the first 8 characters of the
+   file's SHA-256: a corrected clip then gets a new name, and phones fetch it again.
+2. Upload the clips and the poster under the exercise id, as they are:
+
+```sh
+cd app && bash tool/admin_access.sh upload-media exercises glute_bridge --keep-original glute_bridge_front_a1b2c3d4.mp4 glute_bridge_e5f6a7b8.webp
+```
+
+3. Add the move to `6-v2/content/exercise_library/catalogue.json` (names in both languages,
+   muscles, equipment, place, level, contraindication tags, each clip's file, angle, seconds and
+   md5), then publish. Without `--write` it only prints what would change:
+
+```sh
+cd app && bash tool/admin_access.sh publish-exercises ../6-v2/content/exercise_library/catalogue.json
+cd app && bash tool/admin_access.sh publish-exercises ../6-v2/content/exercise_library/catalogue.json --write
+```
+
+4. Members' phones pick it up within a day (within an hour if they had no library yet). Edits made
+   to an exercise in the console are overwritten by the next publish; the catalogue file is the
+   source. The dry run lists every exercise id with its safety tags, so the coach can check them.
+
 ### 6.5 Create an event
 
 1. Once only: Z14 > switch `events` on. This writes `meta/features` and every member's phone shows
@@ -641,7 +677,8 @@ test that fails.
 
 1. A prescribed value is never a result: entries start empty.
 2. A coach's message never changes a plan; only publishing does.
-3. Weeks, not days. No daily streak counter, ever. Rest weeks repair a missed week.
+3. Weeks are the unit of reward. A training streak exists only as D37 defines it: hers to pause or
+   switch off, never lost loudly, never in notifications. Rest weeks repair a missed week.
 4. Cycle suggestions follow symptoms she noted today, never an inferred phase.
 5. Severe symptoms replace the workout with medical guidance.
 6. Face blur is on by default for any uploaded image.

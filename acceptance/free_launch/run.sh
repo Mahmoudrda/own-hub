@@ -19,7 +19,7 @@ run_suite() {
 }
 cd "$repo_root/app" || exit 1
 if command -v flutter >/dev/null 2>&1; then
-  for suite in existing_behavior media_surface progression_contract first_gym_contract; do
+  for suite in existing_behavior media_surface progression_contract first_gym_contract gamification_contract; do
     run_suite "$suite" flutter test --no-pub "../acceptance/free_launch/flutter/${suite}_test.dart"
   done
 else

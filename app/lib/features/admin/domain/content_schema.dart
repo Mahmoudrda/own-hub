@@ -213,6 +213,22 @@ class ContentSchema {
       // finished. §3.4 requires only that a file which IS named exists.
       ContentColumn('videoFile', media: true, video: true),
       ContentColumn('thumbFile', media: true),
+      // The exercise library (D42), written by
+      // functions/tools/publish_exercise_library.py. Each may be absent from a
+      // header, so every file written before them still imports. Z03 has no
+      // label for them: it does not draw them and keeps them on an edit.
+      ContentColumn(
+        'angleVideoFile',
+        media: true,
+        video: true,
+        mayBeAbsent: true,
+      ),
+      ContentColumn('primaryMuscles', list: true, mayBeAbsent: true),
+      ContentColumn('secondaryMuscles', list: true, mayBeAbsent: true),
+      ContentColumn('bodyRegion', mayBeAbsent: true),
+      ContentColumn('place', mayBeAbsent: true),
+      ContentColumn('level', mayBeAbsent: true),
+      ContentColumn('kind', mayBeAbsent: true),
     ],
   );
 

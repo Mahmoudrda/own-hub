@@ -177,9 +177,7 @@ void main() {
       _phone(tester);
       var continued = 0;
       await tester.pumpWidget(
-        _host(
-          CoachPhotoView(model: _model(), onContinue: () => continued++),
-        ),
+        _host(CoachPhotoView(model: _model(), onContinue: () => continued++)),
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Continue'));
@@ -197,9 +195,7 @@ void main() {
 
       final model = _model();
       await tester.pumpWidget(
-        _host(
-          CoachPhotoView(model: model, onTakePhoto: () async => null),
-        ),
+        _host(CoachPhotoView(model: model, onTakePhoto: () async => null)),
       );
       await tester.pumpAndSettle();
       expect(find.text('Take a photo'), findsOneWidget);
@@ -285,32 +281,37 @@ void main() {
     });
   });
 
-  group('K11 and K12 — the shape of what her clients give, nothing invented',
-      () {
-    testWidgets('K11 shows a before and an after with no figures and no '
-        'upload', (tester) async {
-      _phone(tester);
-      await tester.pumpWidget(_host(const CoachResultsStepView()));
-      await tester.pumpAndSettle();
-      expect(find.text("Your clients' results"), findsOneWidget);
-      expect(find.text('Before'), findsOneWidget);
-      expect(find.text('After'), findsOneWidget);
-      expect(find.textContaining(RegExp(r'\d')), findsNWidgets(1),
-          reason: 'only the bar title carries a number');
-      expect(find.byType(TextField), findsNothing);
-    });
+  group(
+    'K11 and K12 — the shape of what her clients give, nothing invented',
+    () {
+      testWidgets('K11 shows a before and an after with no figures and no '
+          'upload', (tester) async {
+        _phone(tester);
+        await tester.pumpWidget(_host(const CoachResultsStepView()));
+        await tester.pumpAndSettle();
+        expect(find.text("Your clients' results"), findsOneWidget);
+        expect(find.text('Before'), findsOneWidget);
+        expect(find.text('After'), findsOneWidget);
+        expect(
+          find.textContaining(RegExp(r'\d')),
+          findsNWidgets(1),
+          reason: 'only the bar title carries a number',
+        );
+        expect(find.byType(TextField), findsNothing);
+      });
 
-    testWidgets('K12 shows the label and no words she did not write', (
-      tester,
-    ) async {
-      _phone(tester);
-      await tester.pumpWidget(_host(const CoachReviewsStepView()));
-      await tester.pumpAndSettle();
-      expect(find.text('What your clients say'), findsOneWidget);
-      expect(find.text('Coached here'), findsOneWidget);
-      expect(find.byType(TextField), findsNothing);
-    });
-  });
+      testWidgets('K12 shows the label and no words she did not write', (
+        tester,
+      ) async {
+        _phone(tester);
+        await tester.pumpWidget(_host(const CoachReviewsStepView()));
+        await tester.pumpAndSettle();
+        expect(find.text('What your clients say'), findsOneWidget);
+        expect(find.text('Coached here'), findsOneWidget);
+        expect(find.byType(TextField), findsNothing);
+      });
+    },
+  );
 
   group('K13 — the three rules, agreed with one tick', () {
     testWidgets('Continue waits for her agreement', (tester) async {

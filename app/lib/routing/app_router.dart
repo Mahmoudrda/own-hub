@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert' show jsonDecode;
 import 'dart:typed_data' show Uint8List;
+import 'dart:ui' show PlatformDispatcher;
 
 // The ID token, and nothing else from this package. `verified` is a custom
 // claim the Cloud Function mints and the security rules read, so it is the one
@@ -42,23 +43,31 @@ import '../app_state/community_state.dart';
 import '../app_state/cycle_state.dart';
 import '../app_state/eat_state.dart';
 import '../app_state/events_state.dart';
+import '../app_state/exercise_library_state.dart';
+import '../app_state/first_gym_guide_state.dart';
 import '../app_state/workout_library_state.dart';
 import '../app_state/demo_mode.dart';
 import '../app_state/honest_notice.dart';
 import '../app_state/onboarding_state.dart';
 import '../app_state/pledge.dart';
+import '../app_state/notification_sync.dart';
 import '../app_state/push_registration.dart';
 import '../app_state/reminder_scheduler.dart';
 import '../app_state/role_state.dart';
 import '../app_state/open_app_settings.dart';
 import '../app_state/open_link.dart';
 import '../app_state/workout_session_state.dart';
+import '../app_state/rewards_state.dart';
+import '../domain/rewards/credit_outcome.dart';
+import '../app_state/training_streak_state.dart';
+import '../domain/rewards/training_streak.dart';
 import '../domain/clock/app_clock.dart';
 import '../domain/rewards/level_curve.dart';
 import '../features/testing/presentation/all_screens_view.dart';
 
 import '../domain/analytics/analytics_gateway.dart';
 import '../domain/flags/feature_flags.dart';
+import '../domain/format/day_key.dart';
 import '../domain/format/number_label.dart' show countLabel;
 import '../ui/app_step_progress.dart';
 import '../ui/app_undo_snackbar.dart';
@@ -68,6 +77,7 @@ import '../domain/rewards/personal_best_ledger.dart';
 import '../domain/week/week_key.dart';
 import '../features/eat/domain/allergy_guard.dart';
 import '../features/eat/domain/meal_repository.dart';
+import '../features/eat/domain/recipe.dart' show Recipe, RecipeSource;
 import '../features/eat/domain/meal_repository.dart' as eat_plan show PlanDay;
 import '../features/eat/presentation/allergy_question_view.dart';
 import '../features/eat/presentation/eat_sample_library.dart';
@@ -125,7 +135,8 @@ import '../features/signup/presentation/whats_inside_view.dart';
 import '../features/signup/presentation/why_we_check_view.dart';
 import '../features/signup/presentation/woman_reviewer_view.dart';
 import '../features/signup/presentation/youre_in_view.dart';
-import '../features/today/domain/today_day.dart' show WeekProgress;
+import '../features/today/domain/today_day.dart'
+    show FirstWeekStep, WeekProgress;
 import '../features/today/domain/today_repository.dart';
 import '../features/today/presentation/already_did_it_view.dart';
 import '../features/today/presentation/first_week_view.dart';
@@ -133,24 +144,36 @@ import '../features/today/presentation/lock_screen_nudge_view.dart';
 import '../features/today/presentation/quiet_week_view.dart';
 import '../features/today/presentation/tier_slip_view.dart';
 import '../domain/logging/log_command_bus.dart';
+import '../features/today/presentation/streak_sheet.dart';
 import '../features/today/presentation/today_view.dart';
+import '../features/train/domain/library_recommendation.dart';
+import '../features/train/domain/own_best_challenge.dart';
+import '../features/train/domain/rest_policy.dart';
 import '../features/train/domain/session_bests_bridge.dart';
 import '../features/train/domain/set_history.dart';
+import '../features/train/domain/exercise_library.dart' show LibraryExercise;
 import '../features/train/domain/train_repository.dart';
+import '../features/train/presentation/exercise_labels.dart' show equipmentLine;
 import '../features/train/presentation/change_set_view.dart';
+import '../features/train/presentation/set_labels.dart' show moveTitle;
 import '../features/train/presentation/exercise_video_view.dart';
+import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/training_reminders.dart';
 import '../features/train/presentation/finished_view.dart';
+import '../features/train/presentation/notification_explainer.dart';
 import '../features/train/presentation/reminder_sheet.dart';
 import '../features/train/presentation/follow_along_view.dart';
 import '../features/train/presentation/logged_from_memory_view.dart';
 import '../features/train/presentation/mid_set_view.dart';
 import '../features/train/presentation/move_logged_view.dart';
+import '../features/train/presentation/first_gym_guide_view.dart';
 import '../features/train/presentation/program_view.dart';
 import '../features/train/presentation/resting_view.dart';
 import '../features/train/presentation/swap_move_view.dart';
 import '../features/train/presentation/train_view.dart';
 import '../features/train/presentation/workout_day_view.dart';
+import '../features/train/presentation/exercise_demo_view.dart';
+import '../features/train/presentation/exercise_library_view.dart';
 import '../features/train/presentation/workout_library_view.dart';
 import '../features/account/domain/account_deletion_service.dart';
 import '../features/account/data/callable_health_consent_store.dart';
@@ -193,7 +216,14 @@ import '../features/eat/data/seeded_recipe_library.dart'
 import '../features/events/domain/event_repository.dart';
 import '../features/events/domain/hub_event.dart';
 import '../features/events/presentation/events_view.dart';
-import '../features/train/domain/workout_library.dart' show AuthoredSession;
+import '../features/onboarding/domain/starting_program.dart'
+    show StartingProgram, StartingProgrammes, selectStartingProgram;
+import '../domain/training/prescribed_set.dart' show PrescribedSet;
+import '../features/train/domain/load_advice.dart';
+import '../features/train/domain/weight_label.dart' show weightLabel;
+import '../features/train/domain/programme_week.dart';
+import '../features/train/domain/workout_library.dart'
+    show AuthoredProgramme, AuthoredSession;
 import '../features/train/presentation/authored_workout.dart';
 import '../features/coach/domain/coach_repository.dart';
 import '../features/coach/domain/enquiry.dart';
@@ -257,6 +287,7 @@ import '../features/community/presentation/profile_view_model.dart';
 import '../features/community/presentation/safety_sheet_view.dart';
 import '../features/community/presentation/saved_view.dart';
 import '../features/cycle/domain/cycle_repository.dart';
+import '../features/cycle/domain/meal_picks.dart';
 import '../features/cycle/domain/period_entry.dart';
 import '../features/cycle/domain/today_check_in.dart';
 import '../features/cycle/presentation/check_in_view.dart';
@@ -272,9 +303,9 @@ import '../features/cycle/presentation/cycle_widgets.dart';
 import '../features/cycle/presentation/gentler_option_view.dart';
 import '../features/cycle/presentation/log_period_view.dart';
 import '../features/cycle/presentation/why_suggestion_view.dart';
-import '../features/progress/domain/milestone.dart';
 import '../features/progress/domain/progress_repository.dart';
 import '../features/progress/presentation/body_privately_view.dart';
+import '../features/progress/domain/milestone.dart';
 import '../features/progress/presentation/milestones_view.dart';
 import '../features/progress/presentation/personal_bests_view.dart';
 import '../features/progress/presentation/progress_view.dart';
@@ -884,6 +915,7 @@ class AppRouter {
   static Future<void> readVerificationAtLaunch({
     Duration bound = const Duration(seconds: 5),
   }) async {
+    if (await _openFromMemoryThenConfirm()) return;
     try {
       await () async {
         await readVerificationClaim();
@@ -900,6 +932,90 @@ class AppRouter {
     } catch (_) {
       // Out of time. The claim read is bounded on its own, so its fallback
       // has already been applied.
+    }
+  }
+
+  /// The fast launch for a woman this phone already knows (D44): it
+  /// remembered her verified ([VerificationMemory]) AND the on-device copy of
+  /// her check, read with no network (about a second at most), says
+  /// `approved`. Both must agree, for the account signed in right now, or this
+  /// returns false and the full read above runs as before.
+  ///
+  /// Then the first frame does not wait for a token: the gate opens on the
+  /// same evidence the offline launch already accepts (R1), and the real
+  /// claim is read right behind it. [_settleClaim] applies it, so a claim that
+  /// has been revoked closes the gate and the widgets, and the server rules
+  /// read the real claim on every request whatever the phone believed.
+  static Future<bool> _openFromMemoryThenConfirm() async {
+    final backend = verificationBackend;
+    if (!backend.isReady) return false;
+    final uid = backend.currentUid;
+    if (uid == null) return false;
+    try {
+      if (await VerificationMemory.verifiedUid() != uid) return false;
+      final cached = await backend.cachedStatus(uid);
+      if (cached?.state != ServerVerificationState.approved) return false;
+      serverVerification = cached;
+    } catch (_) {
+      return false;
+    }
+    final generation = _claimGeneration;
+    _verifiedOnThisPhone = true;
+    unawaited(_confirmRememberedLaunch(uid, generation));
+    return true;
+  }
+
+  static Future<void> _confirmRememberedLaunch(
+    String uid,
+    int generation,
+  ) async {
+    try {
+      final verified = await verificationBackend.verifiedClaim().timeout(
+        claimTimeout,
+      );
+      _settleClaim(uid, verified, generation);
+    } catch (error) {
+      if (!_stillAbout(uid, generation)) return;
+      if (!isUnreachableFailure(error)) {
+        // Not the network: the same refusal the full read makes. The memory
+        // and the cached approval no longer speak for her, and the widgets
+        // follow the gate.
+        final wasVerified = isVerified;
+        _verifiedOnThisPhone = false;
+        serverVerification = null;
+        if (wasVerified != isVerified) AppChanges.bump();
+        return;
+      }
+      // No network or no answer: the memory stands, as it does offline.
+    }
+    if (!_stillAbout(uid, generation)) return;
+    await readVerificationStatus();
+  }
+
+  /// How long the reads after a confirmed code may take, all together.
+  @visibleForTesting
+  static const Duration afterSignInCap = Duration(seconds: 8);
+
+  /// Everything read once her code is accepted, side by side under one cap:
+  /// her claim, her check's status and the legal versions she accepted (M1).
+  /// They used to run one after another, so three slow round trips added up.
+  /// The acceptance she made at C06 goes to the server here; if it cannot be
+  /// shown to cover the versions in force, `legalUpdateDue` says so and she
+  /// answers the legal update sheet before anything else.
+  ///
+  /// Whatever is still running when the cap is reached finishes in the
+  /// background and lands in the same fields. A legal read that never landed
+  /// is asked again at the next launch ([checkLegalAtLaunch]), and the gate
+  /// still fails closed on a claim not yet read. Never throws.
+  static Future<void> readAfterSignIn({Duration cap = afterSignInCap}) async {
+    try {
+      await Future.wait<void>([
+        readVerificationClaim(),
+        readVerificationStatus(),
+        reconcileLegal(),
+      ]).timeout(cap);
+    } catch (_) {
+      // Out of time or a read failed; each read is safe to leave unfinished.
     }
   }
 
@@ -958,6 +1074,10 @@ class AppRouter {
     _freshClaimRead = true;
     // The gate moved: the widgets open or close with it (home_widget_sync).
     if (isVerified != wasVerified) AppChanges.bump();
+    // Just verified: the exercise library she could not read until now.
+    if (isVerified && !wasVerified) {
+      unawaited(ExerciseLibraryState.instance.refresh());
+    }
     unawaited(VerificationMemory.rememberSignedIn(uid));
     if (verified) {
       unawaited(VerificationMemory.rememberVerified(uid));
@@ -1106,20 +1226,27 @@ class AppRouter {
     'C01': (context) => WelcomeView(
       preference: localePreference,
       onLookAround: () => goTo(context, 'C04'),
-      onGetStarted: () {
-        OnboardingState.instance
-          ..beforeSignup = true
-          ..whileWaiting = false;
-        unawaited(
-          analytics.track(AnalyticsEvent.signUpStarted, {
-            AnalyticsProp.source: const AnalyticsValue.token('welcome'),
-          }),
-        );
-        if (intakeRepository.setupDone) {
-          goTo(context, 'O05');
-        } else {
-          goTo(context, 'O03');
+      // "Skip the tour and join" is in the More sheet and opens the pitch
+      // (C03), whose button starts her week. With C03 off it starts her week
+      // itself, so the way in is never lost.
+      onWhatsInside: () {
+        if (!screenIsOn('C03')) {
+          OnboardingState.instance
+            ..beforeSignup = true
+            ..whileWaiting = false;
+          unawaited(
+            analytics.track(AnalyticsEvent.signUpStarted, {
+              AnalyticsProp.source: const AnalyticsValue.token('welcome'),
+            }),
+          );
+          if (intakeRepository.setupDone) {
+            goTo(context, 'O05');
+          } else {
+            goTo(context, 'O03');
+          }
+          return;
         }
+        goTo(context, 'C03');
       },
       onSignIn: () => goTo(context, 'C06'),
       // While the coach app is off a coach is not asked at C08, so she says
@@ -1166,7 +1293,23 @@ class AppRouter {
           : () => Navigator.of(context).maybePop(),
     ),
     'C03': (context) => WhatsInsideView(
-      onCreateAccount: () => goTo(context, 'C06'),
+      // The value-first start: her week, then her number. It used to be C01's
+      // "Skip the tour and join"; C03 is where the pitch is, so it lives here.
+      onCreateAccount: () {
+        OnboardingState.instance
+          ..beforeSignup = true
+          ..whileWaiting = false;
+        unawaited(
+          analytics.track(AnalyticsEvent.signUpStarted, {
+            AnalyticsProp.source: const AnalyticsValue.token('welcome'),
+          }),
+        );
+        if (intakeRepository.setupDone) {
+          goTo(context, 'O05');
+        } else {
+          goTo(context, 'O03');
+        }
+      },
       onLookAround: () => goTo(context, 'C04'),
       onBack: () => Navigator.of(context).maybePop(),
     ),
@@ -1246,8 +1389,7 @@ class AppRouter {
         final navigator = Navigator.of(context);
         // She has an account now: the short setup is no longer "before".
         OnboardingState.instance.beforeSignup = false;
-        await readVerificationClaim();
-        await readVerificationStatus();
+        await readAfterSignIn();
         // Firebase's recommended `sign_up` for an account new to the check,
         // `login` for a woman already verified. The method is the only
         // parameter, and it is always the phone.
@@ -1259,10 +1401,6 @@ class AppRouter {
             {AnalyticsProp.method: const AnalyticsValue.token('phone')},
           ),
         );
-        // The acceptance she made at C06 goes to the server now that she has
-        // an account. If it cannot be shown to cover the versions in force,
-        // she answers the legal update sheet before anything else (M1).
-        await reconcileLegal();
         if (!navigator.mounted || !context.mounted) return;
         if (!await answerLegalUpdate(context)) return;
         // A returning verified woman with her backup on has her setup in the
@@ -1550,6 +1688,7 @@ class AppRouter {
     // submits once per attempt and hands back the same repository the frames
     // were captured into.
     'C12': (context) => CheckingView(
+      reassuringSteps: featureFlags.isOn(Feature.reassuringWaits),
       repository: _checkingRepository(),
       // C13 becomes the root: nothing of sign-up stays behind "You're in" for
       // a back gesture to find, the camera least of all.
@@ -1690,10 +1829,15 @@ class AppRouter {
       // One push, "your check is done", only if she asks for it here.
       onNotifyMe: signedInUid == null
           ? null
-          : () => pushRegistrar.optIn(
-              uid: signedInUid!,
-              locale: Localizations.localeOf(context).languageCode,
-            ),
+          : () async {
+              final locale = Localizations.localeOf(context).languageCode;
+              final outcome = await pushRegistrar.optIn(
+                uid: signedInUid!,
+                locale: locale,
+              );
+              if (outcome == PushOptIn.on) unawaited(startPushWatch(locale));
+              return outcome;
+            },
       onOpenSettings: () => unawaited(openAppSettings()),
       // A woman waiting with no week of hers yet builds it here: the short
       // "Your week" (O03, O05), which ends back on this screen.
@@ -1873,6 +2017,7 @@ class AppRouter {
         // Built while a reviewer has her check (from C14): saved, and back
         // to the wait. Day one opens with the app.
         ? StartingProgramView(
+            showSteps: featureFlags.isOn(Feature.reassuringWaits),
             repository: intakeRepository,
             onBack: () => Navigator.of(context).maybePop(),
             title: '',
@@ -1886,6 +2031,7 @@ class AppRouter {
           )
         : OnboardingState.instance.beforeSignup
         ? StartingProgramView(
+            showSteps: featureFlags.isOn(Feature.reassuringWaits),
             repository: intakeRepository,
             beforeSignup: true,
             title: signupPhaseLabel(AppL10n.of(context), SignupPhase.week),
@@ -1897,6 +2043,7 @@ class AppRouter {
             },
           )
         : StartingProgramView(
+            showSteps: featureFlags.isOn(Feature.reassuringWaits),
             repository: intakeRepository,
             onStartNow: () {
               if (OnboardingState.instance.enteredFromSignup) {
@@ -1937,15 +2084,37 @@ class AppRouter {
     // T07 too, and is built below anyway: see the note at its entry.
     'T01': (context) => TodayView(
       repository: todayRepository,
-      // The same figure P01 shows, from the same derivation, so Home and
-      // Progress cannot disagree about her level.
-      level: progressSummary.level,
       // What her plan calls today's session, or nothing. Home's cover was the
       // fixed `l10n.legsAndGlutes` while Train, one tap away, named
       // "Postpartum rebuild" — two names for one programme, neither of them
       // hers. Null until a plan says otherwise, and the card then heads itself
       // "Today's workout" rather than naming a programme she never chose.
-      sessionTitle: trainRepository.day?.title,
+      //
+      // `trainRepository.day` is never set, so this was always null and the
+      // cover always read "Today's workout". It is the session R03 will open:
+      // her pick from the library, or the bundled one.
+      sessionTitle:
+          (chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)))
+              .title,
+      // D37 and D38: one line each under the week's marks, when they are on
+      // and have something true to say.
+      // Reminders on her training days, offered once as one line after a
+      // session she finished. "Not now" is an answer: the offer is not made
+      // again, and Notifications (A01) keeps the way in.
+      offerReminders:
+          featureFlags.isOn(Feature.trainingReminders) &&
+          ReminderState.instance.offerDue,
+      onChooseReminderDays: () => unawaited(openTrainingReminders(context)),
+      onDismissReminderOffer: () {
+        ReminderState.instance.offered = true;
+        AppChanges.bump();
+      },
+      trainingStreak: trainingStreakNow,
+      onOpenStreak: () => unawaited(openTrainingStreak(context)),
+      challengeLine: challengeLineFor(
+        context,
+        chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
+      ),
       onStartSession: () => goTo(context, 'R03'),
       onRecall: () => goTo(context, 'T02'),
       onOpenMeal: () => goTo(context, 'E01'),
@@ -2024,7 +2193,8 @@ class AppRouter {
       // Counted weeks and tier standing come off Progress, so Home was the one
       // lying. Same id, same ledger.
       onLogged: (session) {
-        WorkoutSessionState.creditSession(
+        unawaited(noteSessionLogged());
+        lastRecallOutcome = WorkoutSessionState.creditSession(
           sessionId: session.id,
           source: SessionSource.recalled,
           today: todayRepository,
@@ -2122,60 +2292,187 @@ class AppRouter {
       onSeeProgram: () => goTo(context, 'R02'),
       onOpenToday: () => goTo(context, 'T01'),
       onGentlerOption: () => goTo(context, 'R05'),
+      showGentlerOption: canSwap(
+        WorkoutSessionState.instance.currentMove?.exerciseId,
+      ),
       // The first "Short ones that still count" tile, as the design has it.
-      onFollowAlong: () => goTo(context, 'R06'),
+      // A follow-along starts from a session: R03 opens R06 itself for a
+      // hold move, with a live session to log into.
+      onFollowAlong: () => goTo(context, 'R03'),
       onShortSession: () => goTo(context, 'R03'),
+      // Offered only once the phone holds a library to open. Asking here, on
+      // the Train tab, is what brings it in for a woman verified since the
+      // app launched: the check is rate-limited and returns at once when it
+      // is not due.
+      onOpenExerciseLibrary: _exerciseLibraryReady
+          ? () => goTo(context, 'R14')
+          : null,
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
-    'R02': (context) => ProgramView(
-      onBack: () => Navigator.of(context).maybePop(),
-      onChangeProgram: () => goTo(context, 'R11'),
-      onStart: () => goTo(context, 'R03'),
-      onOpenDay: (screenId) => goTo(context, 'R03'),
-    ),
+    'R02': (context) {
+      final l10n = AppL10n.of(context);
+      final language = Localizations.localeOf(context).languageCode;
+      final intake = intakeRepository.read();
+      final her = herProgramme;
+      final sessions = her == null
+          ? const <AuthoredSession>[]
+          : programmeSessionsFor(her.content, intake.lifeStage);
+      final done = sessionsDoneThisWeek(trainRepository.sessions);
+      final next = nextSlot(intake.days, done);
+      void open(int? slot) {
+        WorkoutLibraryState.instance
+          ..chosenRowId = null
+          ..openedSlot = slot;
+        goTo(context, 'R03');
+      }
+
+      return ProgramView(
+        onBack: () => Navigator.of(context).maybePop(),
+        onChangeProgram: () => goTo(context, 'R11'),
+        onStart: () => open(null),
+        title: her == null
+            ? null
+            : (language == 'ar' ? her.content.titleAr : her.content.titleEn),
+        promise: her == null
+            ? null
+            : StartingProgrammes.summary(her.program.programId, language),
+        sessionsDone: sessions.isEmpty ? null : done.clamp(0, intake.days),
+        sessionsTarget: sessions.isEmpty ? null : intake.days,
+        days: [
+          for (final slot in weekSlots(
+            sessions,
+            days: intake.days,
+            minutes: intake.minutes,
+            done: done,
+          ))
+            ProgramDay(
+              title: slot.session.title(language),
+              detail: l10n.minutesMinutesMovesMoves(
+                countLabel(slot.session.minutes),
+                countLabel(slot.session.moves.length),
+              ),
+              done: slot.done,
+              today: slot.index == next,
+              onTap: () => open(slot.index),
+            ),
+        ],
+      );
+    },
     'R03': (context) => WorkoutDayView(
       repository: trainRepository,
       // The session she chose on R11, when it came from the owner's library
       // and still suits her life stage. Null is the bundled session, which is
       // what day one always is.
       day: chosenWorkoutDay(context),
-      writtenForHerStage: chosenWorkoutDay(context) != null,
+      // Only a library pick is written for her stage. The starting plans are
+      // drafts until Rahma signs them off, so they never claim it.
+      writtenForHerStage:
+          WorkoutLibraryState.instance.chosenFor(
+            intakeRepository.read().lifeStage,
+          ) !=
+          null,
       // Pregnant or after a birth: day one was not written for her, and the
       // screen says so before she starts.
       lifeStage: intakeRepository.read().lifeStage,
+      // This week's challenge, marked on the move it is about (D38).
+      challengeExerciseId: challengeFor(
+        chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
+      )?.challenge.exerciseId,
+      challengeNote: challengeLineFor(
+        context,
+        chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
+      ),
       onBack: () => Navigator.of(context).maybePop(),
       // Starts the session this screen is listing, so R07 opens on its first
       // move and its first set rather than on a fixed example.
       onStart: () {
-        unawaited(
-          analytics.track(AnalyticsEvent.sessionStarted, {
-            AnalyticsProp.isFirstTime: AnalyticsValue.flag(
-              todayRepository.day.isDayOne,
+        void begin() {
+          unawaited(
+            analytics.track(AnalyticsEvent.sessionStarted, {
+              AnalyticsProp.isFirstTime: AnalyticsValue.flag(
+                todayRepository.day.isDayOne,
+              ),
+            }),
+          );
+          final plan =
+              chosenWorkoutDay(context) ??
+              sampleWorkoutDay(AppL10n.of(context));
+          WorkoutSessionState.instance.start(
+            plan,
+            trainRepository,
+            challenge: challengeFor(plan),
+          );
+          WorkoutLibraryState.instance.openedSlot = null;
+          if (_holdIsNext()) {
+            goTo(context, 'R06');
+          } else {
+            goTo(context, 'R07');
+          }
+        }
+
+        // "First time at the gym?", once, before her first session there. She
+        // may read it or skip it; either way it is not offered again, and her
+        // session starts from the guide's own button or from here.
+        final gym = intakeRepository.read().place != TrainingPlace.home;
+        if (gym && !FirstGymGuideState.instance.seen) {
+          FirstGymGuideState.instance.seen = true;
+          AppChanges.bump();
+          unawaited(
+            Navigator.of(context).push<void>(
+              MaterialPageRoute<void>(
+                builder: (guide) => FirstGymGuideView(
+                  onStartWorkout: () {
+                    Navigator.of(guide).pop();
+                    begin();
+                  },
+                  onClose: () => Navigator.of(guide).pop(),
+                ),
+              ),
             ),
-          }),
-        );
-        WorkoutSessionState.instance.start(
-          chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
-          trainRepository,
-        );
-        goTo(context, 'R07');
+          );
+          return;
+        }
+        begin();
       },
-      onAlreadyDidIt: () => goTo(context, 'T02'),
       // The move she tapped, carried through. It was discarded, so tapping
       // "Dead bug" opened a demo of a goblet squat.
+      canOpenMove: (move) => clipFor(move.exerciseId) != null,
       onOpenMove: (move) {
         WorkoutSessionState.instance.openMove(move);
         goTo(context, 'R04');
       },
     ),
-    'R04': (context) => ExerciseVideoView(
-      move: WorkoutSessionState.instance.openedMove,
-      onClose: () => Navigator.of(context).maybePop(),
-      onBackToWorkout: () => goTo(context, 'R03'),
-      onSwap: () => goTo(context, 'R05'),
-    ),
+    'R04': (context) {
+      final opened = WorkoutSessionState.instance.openedMove;
+      final library = opened == null ? null : clipFor(opened.exerciseId);
+      // A move the library does not hold has no clip to show: R15's empty
+      // state, never a placeholder that pretends to be a video.
+      if (opened != null && library == null) {
+        return ExerciseDemoView(
+          media: ExerciseLibraryState.instance.media,
+          onClose: () => Navigator.of(context).maybePop(),
+          onOpenLibrary: screenIsOn('R14') ? () => goTo(context, 'R14') : null,
+        );
+      }
+      return ExerciseVideoView(
+        move: opened,
+        clip: library,
+        media: ExerciseLibraryState.instance.media,
+        players: ExerciseLibraryState.instance.players,
+        canSwap: canSwap(WorkoutSessionState.instance.currentMove?.exerciseId),
+        onClose: () => Navigator.of(context).maybePop(),
+        onBackToWorkout: () => goTo(context, 'R03'),
+        onSwap: () => goTo(context, 'R05'),
+      );
+    },
     'R05': (context) => SwapMoveView(
       repository: trainRepository,
+      sessionId: WorkoutSessionState.instance.sessionId,
+      exerciseId:
+          WorkoutSessionState.instance.currentMove?.exerciseId ??
+          'goblet_squat',
+      moves: WorkoutSessionState.instance.moves,
+      title: WorkoutSessionState.instance.day?.title,
       onBack: () => Navigator.of(context).maybePop(),
       // The swap replaces the move she is on, carrying its prescription with
       // it. It used to be assigned to a field nothing read, so she chose an
@@ -2183,14 +2480,47 @@ class AppRouter {
       onSwapped: (alternative) {
         lastSwappedFor = alternative;
         WorkoutSessionState.instance.swapCurrent(alternative, trainRepository);
-        goTo(context, 'R07');
+        if (_holdIsNext()) {
+          goTo(context, 'R06');
+        } else {
+          goTo(context, 'R07');
+        }
       },
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
-    'R06': (context) => FollowAlongView(
-      onPause: () => Navigator.of(context).maybePop(),
-      onSkip: () => goTo(context, 'R07'),
-    ),
+    'R06': (context) {
+      final session = WorkoutSessionState.instance;
+      final move = session.currentMove;
+      final set = session.currentSet;
+      final l10n = AppL10n.of(context);
+      return FollowAlongView(
+        // The move and the hold she is on. Without a live hold set the screen
+        // only draws the design, and logs nothing.
+        moveName: move == null ? null : localisedMove(l10n, move).name,
+        positionLabel: session.day == null
+            ? null
+            : moveTitle(l10n, session.moveIndex + 1, session.moveCount),
+        holdSeconds: set?.holdSeconds,
+        set: set,
+        repository: trainRepository,
+        sessionId: session.sessionId,
+        clip: move == null ? null : clipFor(move.exerciseId),
+        media: ExerciseLibraryState.instance.media,
+        players: ExerciseLibraryState.instance.players,
+        bus: session.bus,
+        onAttach: session.attachScreen,
+        onDetach: session.detachScreen,
+        // The clock running out logs the set, exactly as R07's tap does, and
+        // goes on to the rest.
+        onSetLogged: (handle) {
+          session.setLogged();
+          _trackSetLogged('set');
+          _goCarryingHandle(context, 'R09', handle);
+        },
+        // Skipping logs nothing: R07 offers the same set to log by hand.
+        onSkip: () => goTo(context, 'R07'),
+      );
+    },
     // One tap logs the set and starts the rest timer.
     //
     // The LogHandle is carried forward, not discarded. It IS the five-second
@@ -2212,9 +2542,16 @@ class AppRouter {
       // prescribed 12 kg inside a session whose own subtitle on R03 reads
       // "Quiet · no equipment · floor". Every move the app actually has is
       // bodyweight.
-      move:
-          WorkoutSessionState.instance.currentMove ??
-          sampleWorkoutDay(AppL10n.of(context)).moves.first,
+      move: loadFor(
+        context,
+        WorkoutSessionState.instance.currentMove ??
+            sampleWorkoutDay(AppL10n.of(context)).moves.first,
+      ).move,
+      progressionLine: loadFor(
+        context,
+        WorkoutSessionState.instance.currentMove ??
+            sampleWorkoutDay(AppL10n.of(context)).moves.first,
+      ).line,
       setIndex: WorkoutSessionState.instance.setIndex,
       // Which move of how many. The bar read a fixed "Move 2 of 5".
       moveNumber: WorkoutSessionState.instance.moveIndex + 1,
@@ -2228,6 +2565,12 @@ class AppRouter {
         WorkoutSessionState.instance.currentMove?.exerciseId,
         exceptSessionId: WorkoutSessionState.instance.sessionId,
       ),
+      // The session's one bus, so a set inside its five seconds is committed
+      // when she leaves rather than dropped with this screen (D41, G02).
+      bus: WorkoutSessionState.instance.bus,
+      onAttach: WorkoutSessionState.instance.attachScreen,
+      onDetach: WorkoutSessionState.instance.detachScreen,
+      sets: _setsProgress,
       onClose: () => Navigator.of(context).maybePop(),
       onChange: () => goTo(context, 'R08'),
       onSetLogged: (handle) {
@@ -2251,10 +2594,26 @@ class AppRouter {
       // This was a hand-written goblet squat at 12 kg, so R08 opened cold
       // offered 10/12/14 kg inside a session whose own subtitle promises no
       // equipment at all.
-      prescribed:
-          WorkoutSessionState.instance.currentSet ??
-          sampleWorkoutDay(AppL10n.of(context)).moves.first.sets.first,
+      prescribed: _setWithAdvice(
+        context,
+        WorkoutSessionState.instance.currentSet ??
+            sampleWorkoutDay(AppL10n.of(context)).moves.first.sets.first,
+      ),
       moveName: WorkoutSessionState.instance.currentMove?.name,
+      // Her planned weight and a step either side. Nothing was passed, so a
+      // 17.5 kg set opened on the widget's own 10/12/14 with 10 chosen.
+      //
+      // A loaded move the plan gave no weight offers the weights around what
+      // she lifted last time, or a starting ladder on a first session, so the
+      // weight can be recorded at all.
+      weightOptionsKg: _weightOptionsFor(context),
+      askWeight:
+          WorkoutSessionState.instance.currentMove?.needsEquipment ?? false,
+      progressionLine: _loadAdviceLine(context),
+      bus: WorkoutSessionState.instance.bus,
+      onAttach: WorkoutSessionState.instance.attachScreen,
+      onDetach: WorkoutSessionState.instance.detachScreen,
+      sets: _setsProgress,
       onClose: () => Navigator.of(context).maybePop(),
       // Carries the handle, exactly as R07 does. It used to assign the
       // change to a field nothing read, which silently discarded her
@@ -2270,6 +2629,34 @@ class AppRouter {
       // Which move of how many. The bar read a fixed "Move 2 of 5".
       moveNumber: WorkoutSessionState.instance.moveIndex + 1,
       moveCount: WorkoutSessionState.instance.moveCount,
+      // A full minute, from full. Nothing was passed, so the clock opened at
+      // the preview's 0:38 of 60 and the "Up next" card never appeared.
+      remaining: kRestDuration,
+      total: kRestDuration,
+      upNext: WorkoutSessionState.instance.isComplete
+          ? null
+          : _upNext(AppL10n.of(context)),
+      upNextPrescription: WorkoutSessionState.instance.isComplete
+          ? null
+          : WorkoutSessionState.instance.currentMove?.prescriptionLabel,
+      sets: _setsProgress,
+      // Rest is measured against a deadline, and a phone put down mid-rest
+      // is told when it ends (F504).
+      onBackgrounded: (deadline) => unawaited(
+        NotificationSync.restBackgrounded(
+          reminderScheduler,
+          deadline,
+          now: AppClock.now(),
+        ),
+      ),
+      onAlertCancel: () =>
+          unawaited(NotificationSync.restCancelled(reminderScheduler)),
+      // The bus took the set back; this puts her back on it.
+      // Back to the set she took back, on R07 — never to R08 if the set was
+      // saved from there.
+      onUndo: () {
+        if (WorkoutSessionState.instance.undoLast()) _backToSet(context);
+      },
       onClose: () => Navigator.of(context).maybePop(),
       // The next set, or the end of the session when there is no next set.
       onReady: () {
@@ -2277,7 +2664,11 @@ class AppRouter {
           _finishWorkout();
           goTo(context, 'R10');
         } else {
-          goTo(context, 'R07');
+          if (_holdIsNext()) {
+            goTo(context, 'R06');
+          } else {
+            goTo(context, 'R07');
+          }
         }
       },
     ),
@@ -2286,6 +2677,15 @@ class AppRouter {
       // tell a measured session from a recalled one and drew the personal-best
       // card for every woman who finished anything at all.
       session: WorkoutSessionState.instance.lastFinished,
+      // What the session really was, once its credit has landed (D40). R10
+      // redraws when it does.
+      summary: WorkoutSessionState.instance.lastSummary,
+      awaitingSummary:
+          WorkoutSessionState.instance.lastFinished != null &&
+          WorkoutSessionState.instance.lastSummary == null,
+      // The kitten cheers her first sessions and the one that counts her
+      // week, within its one-per-sitting budget.
+      cheer: _cheerOnFinish,
       // Her week, her points — the same numbers Home and Progress read.
       sessionsThisWeek: todayRepository.day.week.sessionsLogged,
       sessionsPrescribed: todayRepository.day.week.sessionsTarget,
@@ -2295,17 +2695,7 @@ class AppRouter {
       onBackToToday: () =>
           Navigator.of(context)
               .pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false),
-      onPlanDinners: () => goTo(context, 'E07'),
       onShare: () => goTo(context, 'M03'),
-      // Reminders on her training days, offered once, after a session she
-      // finished. "Not now" is an answer: the offer is not made again, and
-      // Notifications (A01) keeps the way in.
-      offerReminders: ReminderState.instance.offerDue,
-      onChooseReminderDays: () => unawaited(openTrainingReminders(context)),
-      onDismissReminderOffer: () {
-        ReminderState.instance.offered = true;
-        AppChanges.bump();
-      },
     ),
     // The row she taps is the session she gets.
     //
@@ -2336,15 +2726,34 @@ class AppRouter {
             entry.session,
           ),
       ],
+      // One session set apart above the rest (§15): the one she chose, else
+      // the first that fits her answers.
+      recommendedId: recommendedWorkout(
+        [
+          ...sampleWorkoutLibrary(AppL10n.of(context)),
+          for (final entry in WorkoutLibraryState.instance.sessionsFor(
+            intakeRepository.read().lifeStage,
+          ))
+            libraryRowFrom(
+              AppL10n.of(context),
+              Localizations.localeOf(context).languageCode,
+              entry.programme,
+              entry.session,
+            ),
+        ],
+        intakeRepository.read(),
+        chosenRowId: WorkoutLibraryState.instance.chosenRowId,
+      )?.id,
       onBack: () => Navigator.of(context).maybePop(),
       onOpenWorkout: (workout) {
         final library = WorkoutLibraryState.instance;
         if (workout.id.startsWith('library:')) {
           library.chosenRowId = workout.id;
-          if (chosenWorkoutDay(context) == null) {
+          if (library.chosenFor(intakeRepository.read().lifeStage) == null) {
             library.chosenRowId = null;
             return;
           }
+          library.openedSlot = null;
           goTo(context, 'R03');
           return;
         }
@@ -2408,6 +2817,7 @@ class AppRouter {
       repository: mealRepository,
       session: EatAppState.instance.session,
       justLogged: handleFrom(context),
+      foodPointsPreview: _foodPointsPreview(handleFrom(context)),
       onOpenRecipes: () => goTo(context, 'E05'),
       onOpenWeekPlan: () => goTo(context, 'E07'),
       onType: () => goTo(context, 'E02'),
@@ -2496,9 +2906,9 @@ class AppRouter {
       repository: mealRepository,
       // A day is chosen on E05 in pick mode; the week reads itself again
       // once she is back.
-      onPickDinner: (day) => Navigator.of(
-        context,
-      ).pushNamed(appRoutes['E05']!.name, arguments: day),
+      onPickDinner: (day) =>
+          Navigator.of(context)
+              .pushNamed(appRoutes['E05']!.name, arguments: day),
       fillFrom: rahmaDinners(),
       recipeTitle: (recipeId) =>
           EatAppState.instance.recipeBook.byId(recipeId)?.titleEn,
@@ -2528,6 +2938,11 @@ class AppRouter {
     ),
     'E08': (context) => GroceryListView(
       repository: mealRepository,
+      // The list is her dinners' own ingredients: Rahma's recipes only, and
+      // nothing at all until she has planned some.
+      recipeOf: rahmaRecipe,
+      recipeTitle: (recipeId) => rahmaRecipe(recipeId)?.titleEn,
+      onPlanWeek: () => goTo(context, 'E07'),
       onBack: () => Navigator.of(context).maybePop(),
       // There is no share plugin in `pubspec.yaml`, so nothing here can open an
       // OS share sheet. G5 §9 Q8 stands; this says what the build can do.
@@ -2539,6 +2954,11 @@ class AppRouter {
     ),
 
     'R12': (context) => LoggedFromMemoryView(
+      // What the ledger actually granted. It printed "+15 points" whatever
+      // happened, a capped third session of the day included.
+      // Nothing credited, nothing claimed: zero draws no points line.
+      // The session and, when it counted her week, the week too.
+      pointsGranted: lastRecallOutcome?.pointsGranted ?? 0,
       sessionsThisWeek: todayRepository.day.week.sessionsLogged,
       sessionsPrescribed: todayRepository.day.week.sessionsTarget,
       levelProgressPercent: _levelProgressPercent,
@@ -2552,6 +2972,13 @@ class AppRouter {
       // rendered as moves, so two moves of three sets each read "6 of 5" over
       // a list of five, every row struck through and none marked next.
       loggedCount: WorkoutSessionState.instance.moveIndex,
+      title: WorkoutSessionState.instance.day?.title,
+      sets: _setsProgress,
+      // Back to the set she took back, on R07 — never to R08 if the set was
+      // saved from there.
+      onUndo: () {
+        if (WorkoutSessionState.instance.undoLast()) _backToSet(context);
+      },
       onClose: () => Navigator.of(context).maybePop(),
       // The next move, or the end of the session when that was the last one.
       onNextMove: () {
@@ -2559,7 +2986,11 @@ class AppRouter {
           _finishWorkout();
           goTo(context, 'R10');
         } else {
-          goTo(context, 'R07');
+          if (_holdIsNext()) {
+            goTo(context, 'R06');
+          } else {
+            goTo(context, 'R07');
+          }
         }
       },
       onFinishHere: () {
@@ -2572,6 +3003,35 @@ class AppRouter {
         goTo(context, 'R10');
       },
     ),
+    // The exercise library (D42): every move the owner filmed, by the part of
+    // the body it works, screened for her life stage before anything is drawn.
+    'R14': (context) {
+      unawaited(ExerciseLibraryState.instance.refresh());
+      final stage = intakeRepository.read().lifeStage;
+      final screened = ExerciseLibraryState.instance.screenedFor(stage);
+      return ExerciseLibraryView(
+        exercises: screened.shown,
+        hiddenFor: screened.someHidden ? stage : null,
+        media: ExerciseLibraryState.instance.media,
+        onBack: () => Navigator.of(context).maybePop(),
+        onOpenExercise: (exercise) {
+          ExerciseLibraryState.instance.openExerciseId = exercise.id;
+          goTo(context, 'R15');
+        },
+        onSelectTab: (screenId) => goToTab(context, screenId),
+      );
+    },
+    // One move's clip. Re-screened here, so a move hidden for her cannot be
+    // reached by an id left over from before her answers changed.
+    'R15': (context) => ExerciseDemoView(
+      exercise: ExerciseLibraryState.instance.openedFor(
+        intakeRepository.read().lifeStage,
+      ),
+      media: ExerciseLibraryState.instance.media,
+      players: ExerciseLibraryState.instance.players,
+      onClose: () => Navigator.of(context).maybePop(),
+      onOpenLibrary: () => goTo(context, 'R14'),
+    ),
 
     // ---------------------------------------------------- Progress (G6)
     //
@@ -2583,6 +3043,10 @@ class AppRouter {
       // Her first week, so the row that opens T07 counts it instead of
       // stating "All five done" to a woman who has done none of it.
       firstWeek: todayRepository.day.arc,
+      trainingStreak: trainingStreakNow,
+      onOpenStreak: () => unawaited(openTrainingStreak(context)),
+      // The milestone nearest to done, from her real counts (§15).
+      nextMilestone: _nextMilestone,
       onBack: () => Navigator.of(context).maybePop(),
       onOpenMilestones: () => goTo(context, 'P02'),
       onOpenBests: () => goTo(context, 'P03'),
@@ -2627,10 +3091,9 @@ class AppRouter {
         catalogue: authoredMilestones,
         // Her earn dates, so a tick can say when rather than only that.
         earnedAt: progressStore.rewards.milestones,
-        // All zeros until real counters are wired, so the "next" rows read
-        // "0 of 10". That is true of a woman who has logged nothing, which is
-        // exactly who this store describes.
-        counts: const MilestoneCounts(),
+        // Her real counts (D41). This was all zeros, so "Ten sessions" read
+        // "0 of 10" to a woman on her twelfth.
+        counts: RewardsState.instance.milestoneCounts(progressStore),
       ),
       onBack: () => Navigator.of(context).maybePop(),
       onSelectTab: (screenId) => goToTab(context, screenId),
@@ -2649,17 +3112,15 @@ class AppRouter {
     // ----------------------------------------------------- Account (G7)
     'A01': (context) => NotificationsView(
       onBack: () => Navigator.of(context).maybePop(),
-      // The gear goes to settings, which is what a gear means. It went to
-      // `A03`, the privacy centre — not what a gear on a notifications screen
-      // says it will do, and it carried no label to say otherwise. `A02` is
-      // where the notification and privacy rows both live, so nothing becomes
-      // less reachable: privacy is still two taps from Home.
-      onOpenSettings: () => goTo(context, 'A02'),
       onSelectTab: (screenId) => goToTab(context, screenId),
       remindersOn: ReminderState.instance.schedule != null,
       onOpenReminders: featureFlags.isOn(Feature.trainingReminders)
           ? () => unawaited(openTrainingReminders(context))
           : null,
+      prefs: ReminderState.instance.permitted
+          ? ReminderState.instance.prefs
+          : null,
+      onPrefsChanged: (prefs) => unawaited(setNotificationPrefs(prefs)),
     ),
     'A02': (context) => ProfileView(
       dietaryRepository: dietaryRepository,
@@ -3211,6 +3672,15 @@ class AppRouter {
       onClose: () => Navigator.of(context).maybePop(),
     ),
     'Y07': (context) => CycleMealsView(
+      // Up to three of Rahma's recipes, from what she logged today and what
+      // the recipes are tagged. The allergy guard has already taken out what
+      // she cannot eat, and nothing here reads a date.
+      options: [
+        for (final pick in mealsForToday(todayCheckIn, rahmaRecipes()))
+          cycleMealOption(AppL10n.of(context), pick),
+      ],
+      // Onto the week, never into what she has eaten.
+      onAddToPlan: (option) => unawaited(_addToWeek(context, option.recipeId)),
       onBack: () => Navigator.of(context).maybePop(),
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
@@ -3335,43 +3805,43 @@ class AppRouter {
             onBack: () => Navigator.of(context).maybePop(),
           )
         : FeedView(
-      model: communityFeedModel(AppL10n.of(context)),
-      // The only way this screen re-reads. There is no listener in community
-      // by design, so refreshing is her gesture and nothing else.
-      onRefresh: () async => AppChanges.bump(),
-      onLike: CommunityState.instance.toggleLike,
-      onSave: CommunityState.instance.toggleSave,
-      onFollow: CommunityState.instance.toggleFollow,
-      onJoinGroup: CommunityState.instance.joinGroup,
-      onOpenPost: (postId) {
-        communityOpenPostId = postId;
-        goTo(context, 'M02');
-      },
-      onOpenProfile: (uid) {
-        communityOpenProfileUid = uid;
-        goTo(context, 'M07');
-      },
-      onOpenGroups: () => goTo(context, 'M04'),
-      onOpenActivity: () => goTo(context, 'M14'),
-      onOpenSearch: () => goTo(context, 'M10'),
-      onOpenCreate: () {
-        CommunityState.instance.composeGroupId = null;
-        goTo(context, 'M03');
-      },
-      onOpenStory: (postId) {
-        communityOpenPostId = postId;
-        goTo(context, 'M13');
-      },
-      onMore: (postId) {
-        communityOpenPostId = postId;
-        communitySafetySubject = communityAuthorName(postId);
-        communitySafetyUid = communityAuthorUid(postId);
-        communitySafetyInGroup = false;
-        CommunityState.instance.safetyPostId = postId;
-        goTo(context, 'M08');
-      },
-      onSelectTab: (screenId) => goToTab(context, screenId),
-    ),
+            model: communityFeedModel(AppL10n.of(context)),
+            // The only way this screen re-reads. There is no listener in community
+            // by design, so refreshing is her gesture and nothing else.
+            onRefresh: () async => AppChanges.bump(),
+            onLike: CommunityState.instance.toggleLike,
+            onSave: CommunityState.instance.toggleSave,
+            onFollow: CommunityState.instance.toggleFollow,
+            onJoinGroup: CommunityState.instance.joinGroup,
+            onOpenPost: (postId) {
+              communityOpenPostId = postId;
+              goTo(context, 'M02');
+            },
+            onOpenProfile: (uid) {
+              communityOpenProfileUid = uid;
+              goTo(context, 'M07');
+            },
+            onOpenGroups: () => goTo(context, 'M04'),
+            onOpenActivity: () => goTo(context, 'M14'),
+            onOpenSearch: () => goTo(context, 'M10'),
+            onOpenCreate: () {
+              CommunityState.instance.composeGroupId = null;
+              goTo(context, 'M03');
+            },
+            onOpenStory: (postId) {
+              communityOpenPostId = postId;
+              goTo(context, 'M13');
+            },
+            onMore: (postId) {
+              communityOpenPostId = postId;
+              communitySafetySubject = communityAuthorName(postId);
+              communitySafetyUid = communityAuthorUid(postId);
+              communitySafetyInGroup = false;
+              CommunityState.instance.safetyPostId = postId;
+              goTo(context, 'M08');
+            },
+            onSelectTab: (screenId) => goToTab(context, screenId),
+          ),
     'M02': (context) => PostView(
       model: communityPostModel,
       onBack: () => Navigator.of(context).maybePop(),
@@ -4223,7 +4693,7 @@ class AppRouter {
       // The five-second undo, and the only way back out of a log.
       undoMessage: coachedLife.lastLogged == null
           ? null
-          : AppL10n.of(context).tapOneAndItIsSavedUndo,
+          : AppL10n.of(context).tapOneAndItsSavedYouCan,
       onUndo: coachedLife.lastLogged == null
           ? null
           : () {
@@ -5503,14 +5973,195 @@ class AppRouter {
     // how far her week was from its target.
     final firstEver = todayRepository.day.isDayOne;
     final before = todayRepository.day.week;
+    final plan = WorkoutSessionState.instance.day;
     unawaited(
       WorkoutSessionState.instance
           .finish(
             repository: trainRepository,
             today: todayRepository,
             progress: progressStore,
+            challengeNow: plan == null ? null : () => challengeFor(plan),
           )
-          .then((_) => _trackWorkoutFinished(firstEver, before)),
+          .then((_) => _trackWorkoutFinished(firstEver, before))
+          .then((_) => noteSessionLogged()),
+    );
+  }
+
+  /// What the meal behind [handle] will pay when its window closes (D41).
+  ///
+  /// Five for the first meal of its day, under the cap; nothing once that day
+  /// has paid, and nothing for a second meal logged while the first of the
+  /// same day is still inside its undo window — only one of them will pay.
+  static int _foodPointsPreview(LogHandle? handle) {
+    if (handle == null) return 0;
+    final pending = EatAppState.instance.session.pending;
+    final index = pending.indexWhere((meal) => identical(meal.handle, handle));
+    final day = dayKey(index < 0 ? AppClock.now() : pending[index].at);
+    final earlier =
+        index > 0 && pending.take(index).any((meal) => dayKey(meal.at) == day);
+    return RewardsState.instance.foodDayPointsAvailable(
+      day,
+      anotherPendingToday: earlier,
+    );
+  }
+
+  /// Her training streak for the screens that show it (D37), or null when it
+  /// is switched off — by the build or by her. A null draws nothing anywhere.
+  static StreakStatus? get trainingStreakNow {
+    if (!featureFlags.isOn(Feature.trainingStreak)) return null;
+    final status = TrainingStreakState.instance.status(progress: progressStore);
+    return status.enabled ? status : null;
+  }
+
+  /// The streak sheet: the rule, the pauses, resume, and the off switch.
+  static Future<void> openTrainingStreak(BuildContext context) {
+    final state = TrainingStreakState.instance;
+    return showTrainingStreakSheet(
+      context,
+      status: state.status(progress: progressStore),
+      onPause: state.pause,
+      onResume: state.resume,
+      onSwitch: (on) => state.setEnabled(on, progress: progressStore),
+    );
+  }
+
+  /// The moves R05 offers in place of [exerciseId], from the exercise library
+  /// and in the language she reads, or none when the library does not hold the
+  /// move. Sync, so an entry point can hide itself without waiting.
+  static List<MoveAlternative> swapOptionsFor(String exerciseId) {
+    final candidates = ExerciseLibraryState.instance.swapCandidates(
+      exerciseId,
+      intakeRepository.read(),
+    );
+    if (candidates.isEmpty) return const <MoveAlternative>[];
+    final code =
+        localePreference.read()?.code ??
+        PlatformDispatcher.instance.locale.languageCode;
+    final language = code == 'ar' ? 'ar' : 'en';
+    final l10n = lookupAppL10n(Locale(language));
+    return [
+      for (final e in candidates)
+        MoveAlternative(
+          exerciseId: e.id,
+          name: e.name(language),
+          reason: [
+            equipmentLine(l10n, e.equipment),
+            if (e.quiet) l10n.quiet,
+          ].join(' · '),
+        ),
+    ];
+  }
+
+  /// Whether the move has a swap to offer.
+  static bool canSwap(String? exerciseId) =>
+      exerciseId != null && swapOptionsFor(exerciseId).isNotEmpty;
+
+  /// The library's clip for a move, or null: R04 has nothing to show without
+  /// one, so nothing opens it.
+  static LibraryExercise? clipFor(String exerciseId) => ExerciseLibraryState
+      .instance
+      .clipFor(exerciseId, intakeRepository.read().lifeStage);
+
+  /// Whether R01 and R11 offer the exercise library: only once the phone
+  /// holds one. Asks for it on the way, so a woman verified since the app
+  /// launched does not wait for the next launch to get it; the check is
+  /// rate-limited and returns at once when it is not due.
+  static bool get _exerciseLibraryReady {
+    unawaited(ExerciseLibraryState.instance.refresh());
+    return !ExerciseLibraryState.instance.library.isEmpty;
+  }
+
+  /// This week's challenge as Home and R03 state it, or null.
+  static String? challengeLineFor(BuildContext context, WorkoutDay plan) {
+    final progress = challengeFor(plan);
+    if (progress == null) return null;
+    final l10n = AppL10n.of(context);
+    final challenge = progress.challenge;
+    final name = localisedMove(
+      l10n,
+      plan.moves.firstWhere((m) => m.exerciseId == challenge.exerciseId),
+    ).name;
+    final amount = challenge.unit == ChallengeUnit.reps
+        ? l10n.repsReps(countLabel(challenge.lastWeek))
+        : l10n.secondsSeconds(countLabel(challenge.lastWeek));
+    return challenge.kind == ChallengeKind.beat
+        ? l10n.moveMoreThanLastWeeksAmount(name, amount)
+        : l10n.moveMatchLastWeeksAmount(name, amount);
+  }
+
+  /// The authored milestone nearest to done that she has not earned.
+  static MilestoneStanding? get _nextMilestone {
+    final ahead = MilestonesSummary.from(
+      catalogue: authoredMilestones,
+      earnedAt: progressStore.rewards.milestones,
+      counts: RewardsState.instance.milestoneCounts(progressStore),
+    ).ahead;
+    for (final standing in ahead) {
+      // "Came back" is not something to aim at; it only happens. Programme
+      // days are not counted on the phone, so a milestone measured in them
+      // would stand at nothing however much she trained.
+      if (standing.milestone.measure == MilestoneMeasure.cameBack ||
+          standing.milestone.measure == MilestoneMeasure.programDays) {
+        continue;
+      }
+      return standing;
+    }
+    return null;
+  }
+
+  /// Whether R10's kitten cheers: the first three sessions she ever finishes,
+  /// and the session that counts her week.
+  static bool get _cheerOnFinish {
+    final summary = WorkoutSessionState.instance.lastSummary;
+    if (summary == null) return false;
+    return summary.credit.weekCountedNow ||
+        progressStore.rewards.sessionsLogged <= 3;
+  }
+
+  /// What T02's last credit actually did, for R12.
+  static CreditOutcome? lastRecallOutcome;
+
+  /// Sets of today's session behind her and all of them, for the bar on the
+  /// training screens. Null outside a live session.
+  static ({int done, int total})? get _setsProgress {
+    final session = WorkoutSessionState.instance;
+    if (session.day == null || session.setsTotal <= 0) return null;
+    return (done: session.setsDone, total: session.setsTotal);
+  }
+
+  /// Pops back to the R07 under this screen: R09 or R13 sits on R07, or on
+  /// R08 over R07 when the set was changed there. Never more than two
+  /// screens, so a stack shaped any other way is left where it is rather than
+  /// emptied down to whatever happens to be first.
+  static void _backToSet(BuildContext context) {
+    final r07 = appRoutes['R07']!.name;
+    final r06 = appRoutes['R06']!.name;
+    var popped = 0;
+    Navigator.of(context).popUntil(
+      (route) =>
+          route.settings.name == r07 ||
+          route.settings.name == r06 ||
+          popped++ >= 2,
+    );
+  }
+
+  /// Whether the set she is on is a hold, which R06 counts down; every other
+  /// set is R07's. The callers spell out both `goTo`s so the route graph can
+  /// see both edges.
+  static bool _holdIsNext() {
+    final set = WorkoutSessionState.instance.currentSet;
+    final hold = set != null && set.reps == null && (set.holdSeconds ?? 0) > 0;
+    return hold && screenIsOn('R06');
+  }
+
+  /// R09's "Up next": the move and set she goes back to.
+  static String? _upNext(AppL10n l10n) {
+    final session = WorkoutSessionState.instance;
+    final move = session.currentMove;
+    if (move == null) return null;
+    return l10n.moveSetSet(
+      localisedMove(l10n, move).name,
+      countLabel(session.setIndex + 1),
     );
   }
 
@@ -5684,10 +6335,11 @@ class AppRouter {
     if (uid == null || (!FirebaseBoot.isReady && legalStoreOverride == null)) {
       return;
     }
-    final status = await reconcileLegalAcceptance(
-      store: legalStore,
-      uid: uid,
-    ).timeout(const Duration(seconds: 10), onTimeout: () => LegalStatus.unknown);
+    final status = await reconcileLegalAcceptance(store: legalStore, uid: uid)
+        .timeout(
+          const Duration(seconds: 10),
+          onTimeout: () => LegalStatus.unknown,
+        );
     legalUpdateDue = status == LegalStatus.needsAgreement;
   }
 
@@ -6014,8 +6666,7 @@ class AppRouter {
   /// is shown literally by some).
   static String _mailQuery(Map<String, String> fields) => fields.entries
       .map(
-        (e) =>
-            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+        (e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
       )
       .join('&');
 
@@ -6165,9 +6816,7 @@ class AppRouter {
     PledgeState.instance.agree();
     final locale = Localizations.localeOf(context).languageCode;
     if (signedInUid != null) {
-      unawaited(
-        pledgeStore.record(locale: locale).catchError((Object _) {}),
-      );
+      unawaited(pledgeStore.record(locale: locale).catchError((Object _) {}));
     }
   }
 
@@ -6179,12 +6828,25 @@ class AppRouter {
   static set reminderScheduler(ReminderScheduler? value) =>
       _reminderScheduler = value;
 
-  /// The words a reminder carries, in [l10n]'s language.
+  /// The words her notifications carry, in [l10n]'s language.
   static ReminderText reminderText(AppL10n l10n) => ReminderText(
     title: 'Own Hub',
     body: l10n.yourSessionIsReadyWhenYouAre,
     channelName: l10n.trainingReminders,
     channelDescription: l10n.aNoteOnTheDaysYouChose,
+    logBody: l10n.trainedTodayAddItInATap,
+    // As many as [kCheckInVariants]: the plan picks one by index.
+    checkInBodies: [
+      l10n.aShortOneStillCountsWheneverYoure,
+      l10n.newMovesAreWaitingInTheLibrary,
+      l10n.yourPlanIsWhereYouLeftIt,
+      l10n.aLittleMovementTodayNoPressure,
+    ],
+    restBody: l10n.restIsOverYourNextSetIs,
+    checkInChannelName: l10n.gentleCheckIns,
+    checkInChannelDescription: l10n.aFriendlyNudgeIfYouveBeenAway,
+    restChannelName: l10n.restTimer,
+    restChannelDescription: l10n.tellsYouWhenYourRestBetweenSets,
   );
 
   /// The training reminders sheet, from `R10` or `A01`.
@@ -6199,6 +6861,13 @@ class AppRouter {
     final l10n = AppL10n.of(context);
     state.offered = true;
     AppChanges.bump();
+    // A value moment, so the sentence before the phone's own prompt is
+    // worth reading. Skipped once she has said yes, and "Not now" is final
+    // for this visit: nothing was asked of the phone.
+    if (!state.permitted) {
+      final go = await showNotificationExplainer(context);
+      if (go != true || !context.mounted) return;
+    }
     await showReminderSheet(
       context,
       sessionsAWeek: todayRepository.day.week.sessionsTarget,
@@ -6209,13 +6878,22 @@ class AppRouter {
           _trackReminders(remindersOutcomeToken(permission));
           return permission;
         }
+        final previous = (state.schedule, state.permissionGranted);
+        state.schedule = reminders;
+        state.permissionGranted = true;
         try {
-          await reminderScheduler.schedule(reminders, reminderText(l10n));
+          await NotificationSync.reapply(
+            reminderScheduler,
+            reminderText(l10n),
+            now: AppClock.now(),
+            quiet: false,
+          );
         } catch (_) {
+          state.schedule = previous.$1;
+          state.permissionGranted = previous.$2;
           _trackReminders('unavailable');
           return ReminderPermission.unavailable;
         }
-        state.schedule = reminders;
         AppChanges.bump();
         _trackReminders('on');
         showHonestNoticeOn(messenger, l10n.remindersAreOn);
@@ -6223,38 +6901,84 @@ class AppRouter {
       },
       onTurnOff: () async {
         _trackReminders('off');
+        // Saved before the flag existed, her days still prove she allowed it.
+        state.permissionGranted = state.permitted;
         state.schedule = null;
         AppChanges.bump();
-        try {
-          await reminderScheduler.cancel();
-        } catch (_) {}
+        // Her days and "Trained today?" go; the check-ins and the rest alert
+        // are their own switches and stay as she left them.
+        await NotificationSync.reapply(
+          reminderScheduler,
+          reminderText(l10n),
+          now: AppClock.now(),
+        );
         showHonestNoticeOn(messenger, l10n.remindersAreOff);
       },
       onOpenSettings: () => unawaited(openAppSettings()),
     );
   }
 
-  /// Sets her reminders again at launch, in the language the app opens in.
-  /// The phone keeps them by itself; this repairs a restored backup, a new
-  /// time zone or a changed language. Asks for nothing.
-  static Future<void> reapplyTrainingReminders(AppL10n l10n) async {
-    final reminders = ReminderState.instance.schedule;
-    if (reminders == null) return;
-    try {
-      await reminderScheduler.schedule(reminders, reminderText(l10n));
-    } catch (_) {}
+  /// Sets her notifications again, in the language the app is in. The phone
+  /// keeps them by itself; this repairs a restored backup, a new time zone, a
+  /// changed language or a day that has moved on. Asks for nothing.
+  static Future<void> reapplyTrainingReminders(AppL10n l10n) =>
+      NotificationSync.reapply(
+        reminderScheduler,
+        reminderText(l10n),
+        now: AppClock.now(),
+      );
+
+  /// She opened the app: the gentle check-ins start counting from now.
+  ///
+  /// Not written to disk by itself: the next launch notes it again before
+  /// anything reads it, so an open that changed nothing else costs no write.
+  static Future<void> noteAppOpened(AppL10n l10n) {
+    ReminderState.instance.noteActive(AppClock.now());
+    return reapplyTrainingReminders(l10n);
+  }
+
+  /// She logged a session, trained or recalled: today's "Trained today?" is
+  /// answered and the check-ins start counting from now.
+  static Future<void> noteSessionLogged() {
+    final now = AppClock.now();
+    ReminderState.instance
+      ..lastSessionAt = now
+      ..lastActiveAt = now;
+    // The session's own write carries these with it.
+    return NotificationSync.reapplyLast(reminderScheduler, now: now);
+  }
+
+  /// One of the extra switches on `A01`.
+  static Future<void> setNotificationPrefs(NotificationPrefs prefs) {
+    ReminderState.instance.prefs = prefs;
+    AppChanges.bump();
+    return NotificationSync.reapplyLast(reminderScheduler, now: AppClock.now());
   }
 
   /// Registers this phone for the approval push (`C14`). Firebase's when it
   /// is up, else one that says push cannot reach this phone. Replaceable in
   /// tests.
   static PushRegistrar? _pushRegistrar;
-  static PushRegistrar get pushRegistrar => _pushRegistrar ??=
-      FirebaseBoot.isReady
+  static PushRegistrar get pushRegistrar =>
+      _pushRegistrar ??= FirebaseBoot.isReady
       ? FirebasePushRegistrar()
       : const UnavailablePushRegistrar();
   @visibleForTesting
   static set pushRegistrar(PushRegistrar? value) => _pushRegistrar = value;
+
+  /// Keeps this phone's push token current and listens for the approval push
+  /// while the app is open. Quiet for a phone that never opted in.
+  static Future<void> startPushWatch(String locale) async {
+    final uid = signedInUid;
+    if (uid == null) return;
+    await pushRegistrar.watch(
+      uid: uid,
+      locale: locale,
+      // The system shows nothing while the app is open. A fresh token
+      // carries the new claim, and the waiting screen moves on with it.
+      onApproval: () => unawaited(refreshVerificationClaim()),
+    );
+  }
 
   /// Which way she reached `C15`, sent to `request_review`.
   ///
@@ -6368,7 +7092,101 @@ class AppRouter {
   static final InMemoryIntakeRepository intakeRepository =
       InMemoryIntakeRepository();
   static final InMemoryTodayRepository todayRepository =
-      InMemoryTodayRepository();
+      InMemoryTodayRepository(weekSource: weekFromStore);
+
+  /// Her week as its week document has it, for the week containing [now], or
+  /// null when she has no document for that week yet. What Today re-reads
+  /// when the day or the week turns over, so Home and Progress agree.
+  static WeekProgress? weekFromStore(DateTime now) {
+    final doc = progressStore.weeks[WeekKey.of(now).id];
+    if (doc == null) return null;
+    return WeekProgress(
+      sessionsLogged: doc.sessionsLogged,
+      sessionsTarget: doc.sessionsTarget,
+      repairedByRestWeek: doc.repairedByRestWeek,
+    );
+  }
+
+  /// Runs when the app opens and every time it comes back: her day moves on
+  /// if the date has, weeks that have ended are closed (empty ones included,
+  /// D41), and Home's copy of the week is read again from the week document.
+  ///
+  /// Nothing did any of this, so a week never closed, a run never ended, the
+  /// rest-week bank never filled and Home kept the day she last opened it on.
+  static void startOfDay([DateTime? now]) {
+    final on = now ?? AppClock.now();
+    todayRepository.rollTo(on);
+    RewardsState.instance.closeStaleWeeks(progress: progressStore, now: on);
+    todayRepository.refresh();
+    AppChanges.bump();
+  }
+
+  /// This week's challenge against her own last week (D38), with her progress
+  /// on it, for the plan she is training. Null when it is switched off or there
+  /// is no last week to compare with.
+  static ChallengeProgress? challengeFor(WorkoutDay plan, {DateTime? now}) {
+    if (!featureFlags.isOn(Feature.weeklyChallenge)) return null;
+    final on = now ?? AppClock.now();
+    final week = WeekKey.of(on);
+    // Home, Train and the player all ask on every redraw, and each answer
+    // walks her whole set history twice. The history only ever grows (a set is
+    // flushed once), so the same week, plan, target and number of flushes give
+    // the same answer.
+    final target =
+        progressStore.weeks[week.id]?.sessionsTarget ??
+        progressStore.goal.sessionsTarget;
+    final key = (
+      week.id,
+      plan.id,
+      Object.hashAll(plan.moves.map((m) => m.exerciseId)),
+      target,
+      trainRepository.flushes.length,
+    );
+    final held = _challengeMemo;
+    if (held != null && held.key == key) return held.value;
+    final value = _challengeUncached(plan, week, on, target);
+    _challengeMemo = (key: key, value: value);
+    return value;
+  }
+
+  static ({Object key, ChallengeProgress? value})? _challengeMemo;
+
+  /// Forgets the held challenge. Tests, and anything that swaps her history
+  /// without changing its length.
+  @visibleForTesting
+  static void forgetChallengeMemo() => _challengeMemo = null;
+
+  static ChallengeProgress? _challengeUncached(
+    WorkoutDay plan,
+    WeekKey week,
+    DateTime on,
+    int target,
+  ) {
+    final lastWeek = WeekKey.of(DateTime(on.year, on.month, on.day - 7));
+    String? liveDay(String sessionId) {
+      final session = trainRepository.sessionById(sessionId);
+      return session != null && session.source == SessionSource.live
+          ? session.dateKey
+          : null;
+    }
+
+    const own = OwnBestChallenge();
+    final challenge = own.choose(
+      week: week,
+      plan: plan.moves,
+      sessionsTarget: target,
+      lastWeek: own.totals(
+        lastWeek,
+        trainRepository.flushes,
+        liveDayOf: liveDay,
+      ),
+    );
+    if (challenge == null) return null;
+    return own.progress(
+      challenge,
+      own.totals(week, trainRepository.flushes, liveDayOf: liveDay),
+    );
+  }
 
   /// The Cloud Function's job, done in memory: a set is flushed, detection
   /// runs, and her bests and her lifetime count are updated.
@@ -6390,8 +7208,9 @@ class AppRouter {
 
   static final InMemoryTrainRepository trainRepository =
       InMemoryTrainRepository(
+        alternativesFinder: swapOptionsFor,
         onFlushed: ({session, required exerciseId, required sets}) {
-          sessionBests.record(
+          final bests = sessionBests.record(
             session: session,
             exerciseId: exerciseId,
             sets: sets,
@@ -6399,6 +7218,26 @@ class AppRouter {
           progressStore.rewards = progressStore.rewards.copyWith(
             bestsCount: personalBestLedger.bestsCount,
           );
+          // A best that beat one she had pays (D41), and R10 states it with
+          // the value it beat. A first mark on a new move counts toward her
+          // tally as before, and pays nothing.
+          if (session != null && bests.counted.isNotEmpty) {
+            final paid = RewardsState.instance.creditPersonalBests(
+              bests.counted,
+              sessionId: session.id,
+              progress: progressStore,
+            );
+            WorkoutSessionState.instance.noteBests(
+              session.id,
+              bests.counted,
+              points: paid,
+            );
+          }
+          // Her first logged set is her first-week step, as it lands — not
+          // only once the whole session is over.
+          if (session != null) {
+            unawaited(todayRepository.completeStep(FirstWeekStep.logSet));
+          }
         },
       );
 
@@ -6549,9 +7388,9 @@ class AppRouter {
   /// The bundled recipe seed as JSON, read and parsed once a run. A console
   /// recipe save reads its version and sections from it.
   static Future<Map<String, Object?>> seedRecipesJson() async =>
-      _seedRecipesJson ??=
-          (jsonDecode(await rootBundle.loadString(kRahmaRecipesAsset)) as Map)
-              .cast<String, Object?>();
+      _seedRecipesJson ??= (jsonDecode(
+        await rootBundle.loadString(kRahmaRecipesAsset),
+      ) as Map).cast<String, Object?>();
 
   /// Tests point the library at an in-memory server here.
   static ContentDocuments? contentDocumentsOverride;
@@ -6679,13 +7518,128 @@ class AppRouter {
     }
   }
 
-  /// The library session she chose on R11, as today's [WorkoutDay], or null
-  /// for the bundled one. Null too when it no longer suits her life stage.
+  /// Advice for the move she is on, from her own history, or null.
+  static LoadAdvice? _adviceFor(PlannedMove? move) => loadAdviceFor(
+    trainRepository,
+    move,
+    exceptSessionId: WorkoutSessionState.instance.sessionId,
+  );
+
+  static String _kgLabel(AppL10n l10n, double kg) =>
+      '${weightLabel(kg)} ${l10n.kg}';
+
+  /// The one line R07 and R08 show about the weight of a loaded move: why it
+  /// went up, why it did not, or how to record it. Null for a bodyweight move.
+  static String? _lineFor(AppL10n l10n, PlannedMove move, LoadAdvice? advice) {
+    if (!move.needsEquipment) return null;
+    if (advice == null) {
+      return move.sets.any((s) => s.weightKg != null)
+          ? null
+          : l10n.tapChangeToAddTheWeightYou;
+    }
+    final last = _kgLabel(l10n, advice.lastWeightKg);
+    return switch (advice.decision.action) {
+      'increase' => l10n.youFinishedEverySetAtWeightTry(
+        last,
+        _kgLabel(l10n, advice.startKg),
+      ),
+      'review' => l10n.itHasBeenAWhileSinceWeight(last),
+      _ => l10n.lastTimeYouDidWeightStayThere(last),
+    };
+  }
+
+  /// [move] carrying the weight to open on, and the line that explains it.
+  static ({PlannedMove move, String? line}) loadFor(
+    BuildContext context,
+    PlannedMove move,
+  ) {
+    final l10n = AppL10n.of(context);
+    final advice = _adviceFor(move);
+    return (
+      move: advice == null
+          ? move
+          : withSuggestedWeight(
+              move,
+              advice.startKg,
+              _kgLabel(l10n, advice.startKg),
+            ),
+      line: _lineFor(l10n, move, advice),
+    );
+  }
+
+  static String? _loadAdviceLine(BuildContext context) {
+    final move = WorkoutSessionState.instance.currentMove;
+    return move == null
+        ? null
+        : _lineFor(AppL10n.of(context), move, _adviceFor(move));
+  }
+
+  /// [set] with the weight R08 opens on, when her history has one.
+  static PrescribedSet _setWithAdvice(BuildContext context, PrescribedSet set) {
+    final advice = _adviceFor(WorkoutSessionState.instance.currentMove);
+    if (advice == null || set.weightKg != null) return set;
+    return PrescribedSet(
+      exerciseId: set.exerciseId,
+      order: set.order,
+      weightKg: advice.startKg,
+      reps: set.reps,
+      holdSeconds: set.holdSeconds,
+    );
+  }
+
+  static List<double> _weightOptionsFor(BuildContext context) {
+    final move = WorkoutSessionState.instance.currentMove;
+    final set = _setWithAdvice(
+      context,
+      WorkoutSessionState.instance.currentSet ??
+          sampleWorkoutDay(AppL10n.of(context)).moves.first.sets.first,
+    );
+    final advice = _adviceFor(move);
+    if (advice != null) return advice.optionsKg;
+    if (set.weightKg == null && (move?.needsEquipment ?? false)) {
+      return kStarterWeightsKg;
+    }
+    return weightOptionsAround(set);
+  }
+
+  /// The programme O05 chose for her and the content behind it, or null while
+  /// none is loaded for her answers.
+  static ({StartingProgram program, AuthoredProgramme content})?
+  get herProgramme {
+    final program = selectStartingProgram(intakeRepository.read());
+    if (program == null) return null;
+    final content = StartingProgrammes.programme(program.programId);
+    return content == null ? null : (program: program, content: content);
+  }
+
+  /// The session of her programme for today, or the one she opened on R02, cut
+  /// to her minutes. Null with no programme, which is the bundled session.
+  static WorkoutDay? programmeWorkoutDay(BuildContext context) {
+    final her = herProgramme;
+    if (her == null) return null;
+    final intake = intakeRepository.read();
+    final sessions = programmeSessionsFor(her.content, intake.lifeStage);
+    if (sessions.isEmpty) return null;
+    final slot =
+        WorkoutLibraryState.instance.openedSlot ??
+        sessionsDoneThisWeek(trainRepository.sessions);
+    return workoutDayFrom(
+      AppL10n.of(context),
+      Localizations.localeOf(context).languageCode,
+      her.content,
+      scaleSession(sessions[slot % sessions.length], intake.minutes),
+      now: AppClock.now(),
+    );
+  }
+
+  /// The library session she chose on R11, else today's session of her
+  /// programme, as today's [WorkoutDay], or null for the bundled one. Null too
+  /// when a library pick no longer suits her life stage.
   static WorkoutDay? chosenWorkoutDay(BuildContext context) {
     final entry = WorkoutLibraryState.instance.chosenFor(
       intakeRepository.read().lifeStage,
     );
-    if (entry == null) return null;
+    if (entry == null) return programmeWorkoutDay(context);
     return workoutDayFrom(
       AppL10n.of(context),
       Localizations.localeOf(context).languageCode,
@@ -6769,20 +7723,71 @@ class AppRouter {
     milestoneCount: authoredMilestones.count,
   );
 
-  /// Seeded with this week's plan, so E07 and E08 have something to draw.
-  static final InMemoryMealRepository mealRepository = InMemoryMealRepository(
-    plans: {
-      WeekKey.of(AppClock.now()).id: sampleMealPlan(
-        WeekKey.of(AppClock.now()).id,
-      ),
-    },
-  );
+  /// Her week plan. It starts empty: E07 offers to fill it from Rahma's
+  /// recipes and E08 is made from what she plans, so no fixed sample week is
+  /// ever shown as hers.
+  static final InMemoryMealRepository mealRepository = InMemoryMealRepository();
 
   /// The day `E05` was opened to choose a dinner for, carried as the route's
   /// argument so the ordinary library never inherits it.
   static eat_plan.PlanDay? _pickDayOf(BuildContext context) {
     final day = ModalRoute.of(context)?.settings.arguments;
     return day is eat_plan.PlanDay ? day : null;
+  }
+
+  /// One of Rahma's own recipes by id, or null: an assembly is not hers, and
+  /// an id the book does not hold is not a recipe.
+  static Recipe? rahmaRecipe(String recipeId) {
+    final recipe = (EatAppState.instance..ensureRecipeBook()).recipeBook.byId(
+      recipeId,
+    );
+    return recipe == null || recipe.source == RecipeSource.assembly
+        ? null
+        : recipe;
+  }
+
+  /// All of Rahma's recipes the allergy guard lets through, in her book's
+  /// order. Nothing until she has answered the allergy question.
+  static List<Recipe> rahmaRecipes() {
+    if (!dietaryRepository.read().asked) return const <Recipe>[];
+    final book = (EatAppState.instance..ensureRecipeBook()).recipeBook;
+    return AllergyGuard(eatConstraints).screenRecipes([
+      for (final section in book.sections) ...book.inSection(section.sectionId),
+    ]);
+  }
+
+  /// Puts [recipeId] on the first empty weekday of this week's dinners and
+  /// opens E07. A full week is left as she made it.
+  static Future<void> _addToWeek(BuildContext context, String? recipeId) async {
+    if (recipeId == null) return;
+    final weekId = WeekKey.of(AppClock.now()).id;
+    final plan = await mealRepository.mealPlan(weekId);
+    final planned = plan?.dinners ?? const <eat_plan.PlanDay, String>{};
+    if (!planned.containsValue(recipeId)) {
+      final free = [
+        eat_plan.PlanDay.mon,
+        eat_plan.PlanDay.tue,
+        eat_plan.PlanDay.wed,
+        eat_plan.PlanDay.thu,
+        eat_plan.PlanDay.fri,
+      ].where((d) => !planned.containsKey(d));
+      if (free.isEmpty) {
+        if (context.mounted) {
+          showHonestNotice(
+            context,
+            AppL10n.of(context).yourWeekIsFullSwapADinner,
+          );
+        }
+      } else {
+        await mealRepository.swapDinner(
+          weekId: weekId,
+          day: free.first,
+          recipeId: recipeId,
+        );
+        AppChanges.bump();
+      }
+    }
+    if (context.mounted) goTo(context, 'E07');
   }
 
   /// What "Fill my week" on `E07` may use: Rahma's dinners, then her lunches,

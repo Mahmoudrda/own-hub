@@ -11,17 +11,15 @@
 /// none of them is on.
 library;
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
-import '../../../../app_state/honest_notice.dart';
-import '../../../../app_state/open_link.dart';
-import '../../../../config/care_links.dart';
 import '../../../../l10n/app_l10n.dart';
-import '../../../cycle/domain/today_check_in.dart';
-import '../../../cycle/presentation/cycle_hub_view.dart';
-import '../../../cycle/presentation/cycle_widgets.dart' show CycleTab;
+import '../../../../theme/app_tokens.dart';
+import '../../../../ui/app_button.dart';
+import '../../../../ui/app_card.dart';
+import '../../../../ui/app_pill.dart';
+import '../../../../ui/app_scaffold.dart';
+
 import '../../../eat/data/seeded_recipe_library.dart';
 import '../../../eat/domain/allergy_guard.dart';
 import '../../../eat/domain/recipe.dart';
@@ -55,17 +53,17 @@ enum DemoStop {
     DemoStop.player => l10n.duringAWorkout,
     DemoStop.recipes => l10n.rahmasRecipes,
     DemoStop.weekPlan => l10n.yourWeekOfDinners,
-    DemoStop.cycle => l10n.yourCycleIfYouWantIt,
+    DemoStop.cycle => l10n.yourDayAsYouFeelIt,
     DemoStop.progress => l10n.yourProgress,
   };
 
   String line(AppL10n l10n) => switch (this) {
-    DemoStop.home => l10n.ownHubIsAFitnessAppFor,
+    DemoStop.home => l10n.ownHubIsAFitnessAppFor_loijw,
     DemoStop.workoutDay => l10n.quietSessionsYouCanDoAtHome,
     DemoStop.player => l10n.oneMoveAtATimeTapWhen,
     DemoStop.recipes => l10n.homeCookingYouAlreadyKnowWrittenBy,
     DemoStop.weekPlan => l10n.aWeekOfDinnersPlannedForYou,
-    DemoStop.cycle => l10n.noteYourPeriodAndHowYouFeel,
+    DemoStop.cycle => l10n.sayHowYouFeelTodayOnHarder,
     DemoStop.progress => l10n.yourWeeksYourPersonalBestsAndYour,
   };
 }
@@ -79,6 +77,37 @@ Recipe? firstBookRecipe(RecipeBook? book) {
     if (recipes.isNotEmpty) return recipes.first;
   }
   return null;
+}
+
+/// Rahma's book as the tour shows it. Her verbatim PS under a section can name
+/// the period; before sign-in the cycle is not named, so that one line is left
+/// off here. The book itself, and the same section after sign-in, are not
+/// touched.
+RecipeBook? beforeSignInBook(RecipeBook? book) {
+  if (book == null) return null;
+  final names = RegExp(r'\b(cycles?|periods?)\b', caseSensitive: false);
+  if (!book.sections.any((s) => names.hasMatch(s.psLineEn))) return book;
+  return RecipeBook(
+    schemaVersion: book.schemaVersion,
+    contentVersion: book.contentVersion,
+    sections: [
+      for (final s in book.sections)
+        names.hasMatch(s.psLineEn)
+            ? RecipeSection(
+                sectionId: s.sectionId,
+                titleEn: s.titleEn,
+                titleAr: s.titleAr,
+                psLineEn: '',
+                psLineAr: s.psLineAr,
+                order: s.order,
+                markKey: s.markKey,
+              )
+            : s,
+    ],
+    recipes: book.recipes,
+    assemblies: book.assemblies,
+    letterAr: book.letterAr,
+  );
 }
 
 /// What a stop needs from the tour.
@@ -122,7 +151,6 @@ Widget buildDemoStop(BuildContext context, DemoStop stop, DemoWiring w) {
     DemoStop.home => TodayView(
       repository: sample.today,
       bus: sample.bus,
-      level: sample.progress.level,
       sessionTitle: day.title,
       onStartSession: () => w.show(DemoStop.workoutDay),
       onRecall: join,
@@ -151,7 +179,6 @@ Widget buildDemoStop(BuildContext context, DemoStop stop, DemoWiring w) {
       // Never reached: the sample refuses to start a session, and the
       // refusal opens the join sheet.
       onStart: join,
-      onAlreadyDidIt: join,
       onOpenMove: (_) => join(),
       onNotToday: join,
       onMore: join,
@@ -178,7 +205,7 @@ Widget buildDemoStop(BuildContext context, DemoStop stop, DemoWiring w) {
       },
     ),
     DemoStop.recipes => RecipesView(
-      book: sample.book,
+      book: beforeSignInBook(sample.book),
       // The sample woman was asked and avoids nothing, so the book is open
       // and its "nothing here has been checked" line is shown, exactly as it
       // is to a real woman who gave that answer. Asking the tour's visitor
@@ -204,38 +231,9 @@ Widget buildDemoStop(BuildContext context, DemoStop stop, DemoWiring w) {
       onOpenRecipe: w.openRecipe,
       onOpenGroceryList: join,
     ),
-    DemoStop.cycle => CycleHubView(
-      cycle: sample.cycle,
-      checkIn: TodayCheckIn.absent,
-      periods: sample.periods,
-      now: sample.now,
+    DemoStop.cycle => CheckInStopView(
       onBack: () => w.show(DemoStop.weekPlan),
-      onSettings: join,
-      onCheckIn: join,
-      onViewOption: join,
-      onKeepMine: join,
-      onOpenMeals: join,
-      onRest: join,
-      onAddDates: join,
-      onSetUp: join,
-      onSetWorkoutSuggestions: (_) => join(),
-      // The same honest answers the real hub gives.
-      onFindCare: () => showHonestNotice(
-        context,
-        AppL10n.of(context).weDoNotHaveACareDirectory,
-      ),
-      onReadGuidance: CareLinks.periodPainGuidance.isEmpty
-          ? () => showHonestNotice(
-              context,
-              AppL10n.of(context).weDoNotHaveAGuidancePage,
-            )
-          : () => unawaited(
-              openExternalLink(context, CareLinks.periodPainGuidance),
-            ),
-      onSelectTab: w.tab,
-      onSelectCycleTab: (tab) {
-        if (tab != CycleTab.today) join();
-      },
+      onJoin: join,
     ),
     DemoStop.progress => ProgressView(
       summary: sample.progress,
@@ -250,4 +248,81 @@ Widget buildDemoStop(BuildContext context, DemoStop stop, DemoWiring w) {
       onSelectTab: w.tab,
     ),
   };
+}
+
+/// The tour's check-in stop. Before she signs in the cycle is not named, so
+/// this is the daily check-in on its own: "How are you feeling?" and the
+/// gentler plan it can lead to. The real Y03 is a cycle screen and opens only
+/// after sign-in. Nothing here is wired to anything but the join sheet.
+class CheckInStopView extends StatelessWidget {
+  const CheckInStopView({
+    super.key,
+    required this.onBack,
+    required this.onJoin,
+  });
+
+  final VoidCallback onBack;
+  final VoidCallback onJoin;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      appBar: AppTopBar(title: l10n.howYouFeelToday, onBack: onBack),
+      body: AppScaffold(
+        children: [
+          AppButton(
+            l10n.howAreYouFeeling,
+            height: 48,
+            icon: Icons.mood,
+            onPressed: onJoin,
+          ),
+          AppCard(
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(l10n.aGentlerOptionToday, style: AppText.titleM),
+                  AppPill(
+                    l10n.appSuggestion,
+                    background: AppColors.surfaceContainer,
+                    foreground: AppColors.onSurfaceVariant,
+                  ),
+                ],
+              ),
+              Text(
+                l10n.lowOnEnergyALighterVersionOf,
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  AppButton(
+                    l10n.viewOption,
+                    variant: AppButtonVariant.tonal,
+                    height: 44,
+                    fontSize: 15,
+                    onPressed: onJoin,
+                  ),
+                  AppButton(
+                    l10n.keepMine,
+                    variant: AppButtonVariant.outlined,
+                    height: 44,
+                    fontSize: 15,
+                    onPressed: onJoin,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }

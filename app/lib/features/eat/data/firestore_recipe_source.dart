@@ -18,9 +18,13 @@ class FirestoreRecipeSource implements RecipeRemoteSource {
 
   static const GetOptions _server = GetOptions(source: Source.server);
 
+  /// A read that has not answered by now is a connection too poor to use. It
+  /// throws, the check counts as failed and tries again in an hour.
+  static const Duration readTimeout = Duration(seconds: 10);
+
   @override
   Future<int?> readVersion() async {
-    final doc = await _db.doc('meta/recipes').get(_server);
+    final doc = await _db.doc('meta/recipes').get(_server).timeout(readTimeout);
     final version = doc.data()?['version'];
     return version is int ? version : null;
   }
@@ -29,14 +33,19 @@ class FirestoreRecipeSource implements RecipeRemoteSource {
   Future<Map<String, Object?>?> readIndex(int version) async {
     final doc = await _db
         .doc('recipeIndex/${kRecipeIndexLocale}_v$version')
-        .get(_server);
+        .get(_server)
+        .timeout(readTimeout);
     final data = doc.data();
     return data == null ? null : plainFirestoreData(data);
   }
 
   @override
   Future<Map<String, Object?>?> readRecipe(String recipeId) async {
-    final doc = await _db.collection('recipes').doc(recipeId).get(_server);
+    final doc = await _db
+        .collection('recipes')
+        .doc(recipeId)
+        .get(_server)
+        .timeout(readTimeout);
     final data = doc.data();
     return data == null ? null : plainFirestoreData(data);
   }

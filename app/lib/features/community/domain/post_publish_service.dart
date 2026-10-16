@@ -147,7 +147,8 @@ class PostDraft {
 
 /// One attempt at publishing, and the state it is in.
 class PostPublication {
-  PostPublication._(this._service, this.draft) : _state = PublishState.composing;
+  PostPublication._(this._service, this.draft)
+    : _state = PublishState.composing;
 
   final PostPublishService _service;
   final PostDraft draft;
@@ -293,9 +294,9 @@ class PostPublishService {
   /// flag and not with a code change. `Feature.communityVideo` is off today.
   bool allows(PostKind kind) => switch (kind) {
     PostKind.reel => flags.isOn(Feature.communityVideo),
-    PostKind.photo || PostKind.story || PostKind.best => flags.isOn(
-      Feature.communityPosts,
-    ),
+    PostKind.photo ||
+    PostKind.story ||
+    PostKind.best => flags.isOn(Feature.communityPosts),
   };
 
   void _assertAllowed(PostKind kind) {

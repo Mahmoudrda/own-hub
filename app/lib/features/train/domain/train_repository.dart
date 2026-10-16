@@ -232,6 +232,10 @@ class PersonalBestEligibility {
 /// A widget that reached for a Firebase Storage download URL instead would cost
 /// roughly $1,352 a month in egress at launch scale. Hence an interface: there is
 /// one place that decision lives, and it is not a screen.
+///
+/// The exercise library's short demo clips (R15) are the exception D42
+/// records: downloaded once from the content bucket and kept on the phone
+/// (`exercise_media_store.dart`). The follow-along titles stay here.
 abstract class WorkoutVideoRepository {
   /// The playable URL, or null when the asset has not been produced yet.
   Uri? urlFor(String assetId);
@@ -337,6 +341,7 @@ class InMemoryTrainRepository implements TrainRepository {
     this.day,
     this.workouts = const <LibraryWorkout>[],
     this.alternatives = const <MoveAlternative>[],
+    this.alternativesFinder,
     this.onFlushed,
   });
 
@@ -348,6 +353,10 @@ class InMemoryTrainRepository implements TrainRepository {
 
   /// Swap candidates offered on R05.
   final List<MoveAlternative> alternatives;
+
+  /// Candidates worked out for one move, from the exercise library. When set
+  /// it is the only source: a move it finds nothing for has no swap.
+  final List<MoveAlternative> Function(String exerciseId)? alternativesFinder;
 
   /// Run after a flush has landed, the way a Cloud Function runs after a write.
   ///
@@ -385,8 +394,11 @@ class InMemoryTrainRepository implements TrainRepository {
   Future<List<LibraryWorkout>> library() async => workouts;
 
   @override
-  Future<List<MoveAlternative>> alternativesFor(String exerciseId) async =>
-      alternatives.where((a) => a.exerciseId != exerciseId).toList();
+  Future<List<MoveAlternative>> alternativesFor(String exerciseId) async {
+    final finder = alternativesFinder;
+    if (finder != null) return finder(exerciseId);
+    return alternatives.where((a) => a.exerciseId != exerciseId).toList();
+  }
 
   @override
   Future<TrainSession> startSession(WorkoutDay day) async {
@@ -549,6 +561,13 @@ class InMemoryTrainRepository implements TrainRepository {
       ..addAll(swaps);
     _liveSessionId = liveSessionId;
     _counter = sessionCounter;
+  }
+
+  /// Points the repository back at a live session that was under way when the
+  /// app closed, so her next flush is attributed to it. Nothing when the
+  /// repository does not hold that session.
+  void resumeLive(String sessionId) {
+    if (_sessions.containsKey(sessionId)) _liveSessionId = sessionId;
   }
 
   /// Drops every session and every flush, keeping the bundled library.

@@ -16,7 +16,11 @@
 /// reach.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import '../../../app_state/haptics.dart';
 
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../domain/rewards/stated_figure.dart';
@@ -66,9 +70,30 @@ class ChangeSetView extends StatefulWidget {
     this.sessionId = 'session',
     this.repository,
     this.bus,
+    this.sets,
+    this.onAttach,
+    this.onDetach,
+    this.progressionLine,
+    this.askWeight = false,
   });
 
   final VoidCallback? onClose;
+
+  /// Why the weight is what it is, from her own history (see R07). Replaces
+  /// the fixed note when there is one.
+  final String? progressionLine;
+
+  /// A loaded move the plan gave no weight: the sheet offers weights anyway,
+  /// from [weightOptionsKg], so the session can record what she lifted.
+  final bool askWeight;
+
+  /// Sets of today's session behind her, for the bar under the title.
+  final ({int done, int total})? sets;
+
+  /// Told when this screen opens and closes, as R07 is, so the session's bus
+  /// is committed when the last training screen goes.
+  final VoidCallback? onAttach;
+  final VoidCallback? onDetach;
 
   /// R09 — the rest screen, carrying the log this screen just made, so the undo
   /// bar there names *her* numbers and Undo reaches this very write.
@@ -118,6 +143,7 @@ class _ChangeSetViewState extends State<ChangeSetView> {
   @override
   void initState() {
     super.initState();
+    widget.onAttach?.call();
     if (widget.openSheet) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _openSheet();
@@ -130,6 +156,7 @@ class _ChangeSetViewState extends State<ChangeSetView> {
     // Only the one this screen created. A bus passed in belongs to the caller,
     // and disposing it would drop a log the caller is still holding.
     _fallbackBus?.dispose();
+    widget.onDetach?.call();
     super.dispose();
   }
 
@@ -141,7 +168,17 @@ class _ChangeSetViewState extends State<ChangeSetView> {
           prescribed: widget.prescribed,
           moveName: widget.moveName,
           weightOptionsKg: widget.weightOptionsKg,
-          repOptions: widget.repOptions ?? repOptionsAround(widget.prescribed),
+          // A hold is changed in seconds. It used to be offered rep chips —
+          // 8, 9, 10, 12 — and the one she tapped was written as reps onto a
+          // plank.
+          repOptions:
+              widget.repOptions ??
+              (_isHold(widget.prescribed)
+                  ? holdOptionsAround(widget.prescribed)
+                  : repOptionsAround(widget.prescribed)),
+          hold: _isHold(widget.prescribed),
+          askWeight: widget.askWeight,
+          progressionLine: widget.progressionLine,
           onTypeANumber: widget.onTypeANumber,
           onSave: (changed) {
             Navigator.of(context).pop();
@@ -170,7 +207,10 @@ class _ChangeSetViewState extends State<ChangeSetView> {
     // plan gave none, so "0 kg x 12" is a sentence about a weight she never
     // lifted — `setSavedLabel` says "12 reps" instead.
     final weightKg = changed.outcome.weightKg ?? changed.prescribed.weightKg;
-    final reps = changed.outcome.reps ?? changed.prescribed.reps;
+    final hold = changed.outcome.holdSeconds;
+    final reps = hold != null
+        ? null
+        : changed.outcome.reps ?? changed.prescribed.reps;
 
     final handle = _bus.submit(
       UndoableLog(
@@ -180,7 +220,7 @@ class _ChangeSetViewState extends State<ChangeSetView> {
           setNumber: changed.prescribed.order,
           weightKg: weightKg,
           reps: reps,
-          holdSeconds: changed.prescribed.holdSeconds,
+          holdSeconds: hold ?? changed.prescribed.holdSeconds,
         ),
         commit: () => _repository.flushMove(
           sessionId: widget.sessionId,
@@ -192,6 +232,7 @@ class _ChangeSetViewState extends State<ChangeSetView> {
         ),
       ),
     );
+    unawaited(AppHaptics.play(HapticMoment.setLogged));
     widget.onSaved?.call(handle);
   }
 
@@ -203,6 +244,7 @@ class _ChangeSetViewState extends State<ChangeSetView> {
       appBar: TrainTopBar(
         title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
         onClose: widget.onClose,
+        sets: widget.sets,
       ),
       children: [
         Column(
@@ -232,6 +274,35 @@ class _ChangeSetViewState extends State<ChangeSetView> {
 /// always among them and is what the sheet opens on, so a set she did as
 /// asked is one tap. It used to be a fixed 8, 9, 10, 12 with 8 chosen, so a
 /// woman asked for 15 had to find a keyboard to say 14.
+/// A timed hold: seconds asked for, and no reps.
+bool _isHold(PrescribedSet set) =>
+    set.reps == null && (set.holdSeconds ?? 0) > 0;
+
+/// The planned weight and one step either side, for a loaded set. Empty for a
+/// bodyweight one.
+///
+/// The router passed nothing, so every loaded set was offered the widget's own
+/// 10, 12 and 14 kg — and a plan asking for 17.5 kg opened with 10 selected,
+/// because the planned weight was not among the chips at all.
+List<double> weightOptionsAround(PrescribedSet set, {double step = 2}) {
+  final planned = set.weightKg;
+  if (planned == null || planned <= 0) return const <double>[];
+  return {
+    for (final kg in [planned - step, planned, planned + step])
+      if (kg > 0) kg,
+  }.toList()..sort();
+}
+
+/// Seconds she most likely held, around the hold she was asked for.
+List<int> holdOptionsAround(PrescribedSet set) {
+  final asked = set.holdSeconds;
+  if (asked == null || asked <= 0) return const <int>[];
+  return {
+    for (final s in [asked - 10, asked - 5, asked, asked + 5, asked + 10])
+      if (s > 0) s,
+  }.toList()..sort();
+}
+
 List<int> repOptionsAround(PrescribedSet set) {
   final asked = set.reps;
   if (asked == null) return const [8, 9, 10, 12];
@@ -249,7 +320,16 @@ class _ChangeSetSheet extends StatefulWidget {
     required this.onSave,
     this.moveName,
     this.onTypeANumber,
+    this.hold = false,
+    this.askWeight = false,
+    this.progressionLine,
   });
+
+  final bool askWeight;
+  final String? progressionLine;
+
+  /// The chips are seconds of a hold rather than reps.
+  final bool hold;
 
   final PrescribedSet prescribed;
   final String? moveName;
@@ -271,7 +351,9 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
   TextEditingController? _typed;
 
   int _indexOfAskedReps() {
-    final asked = widget.prescribed.reps;
+    final asked = widget.hold
+        ? widget.prescribed.holdSeconds
+        : widget.prescribed.reps;
     final found = asked == null ? -1 : widget.repOptions.indexOf(asked);
     return found < 0 ? 0 : found;
   }
@@ -324,7 +406,9 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
     // equipment · floor" and every move in it is bodyweight, so this sheet used
     // to offer 10/12/14 kg over a glute bridge and then write whichever she
     // tapped into her log as a weight she had lifted.
-    final loaded = widget.prescribed.weightKg != null;
+    final loaded =
+        widget.prescribed.weightKg != null ||
+        (widget.askWeight && widget.weightOptionsKg.isNotEmpty);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -356,7 +440,7 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
         ],
         const SizedBox(height: 14),
         Text(
-          l10n.reps,
+          widget.hold ? l10n.seconds : l10n.reps,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         const SizedBox(height: 8),
@@ -372,7 +456,7 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
           const SizedBox(height: 10),
           AppField(
             controller: _typed,
-            label: l10n.reps,
+            label: widget.hold ? l10n.seconds : l10n.reps,
             keyboardType: TextInputType.number,
             autofocus: true,
             onChanged: (_) => setState(() {}),
@@ -384,7 +468,9 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
         // whose set those are. The rule inside it is general; the two figures
         // are not, and the dictionary has no parameterised form. Withheld
         // rather than told to a woman who was asked for 20 kg × 8.
-        if (statesHerFigure<(num?, int?)>(
+        if (widget.progressionLine != null)
+          AppSageNote(widget.progressionLine!)
+        else if (statesHerFigure<(num?, int?)>(
           states: const (12, 10),
           hers: (widget.prescribed.weightKg, widget.prescribed.reps),
         ))
@@ -402,16 +488,16 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
           setDoneLabel(
             l10n,
             weightKg: loaded ? widget.weightOptionsKg[_weightIndex] : null,
-            reps: _reps,
+            reps: widget.hold ? null : _reps,
+            holdSeconds: widget.hold ? _reps : null,
           ),
           onPressed: () => widget.onSave(
             ChangedSet(
               prescribed: widget.prescribed,
               outcome: SetOutcome(
-                weightKg: loaded
-                    ? widget.weightOptionsKg[_weightIndex]
-                    : null,
-                reps: _reps,
+                weightKg: loaded ? widget.weightOptionsKg[_weightIndex] : null,
+                reps: widget.hold ? null : _reps,
+                holdSeconds: widget.hold ? _reps : null,
               ),
             ),
           ),

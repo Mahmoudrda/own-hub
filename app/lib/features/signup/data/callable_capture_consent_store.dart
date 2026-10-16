@@ -98,7 +98,10 @@ class CallableCaptureConsentStore implements CaptureConsentStore {
     // The version, the language and the app version travel. The uid comes
     // from the auth token, which is the only copy of it worth anything, and
     // the timestamp is the server's.
-    final callable = _functions.httpsCallable(kRecordConsentCallable);
+    final callable = _functions.httpsCallable(
+      kRecordConsentCallable,
+      options: HttpsCallableOptions(timeout: kConsentCallTimeout),
+    );
     try {
       await callable.call<Object?>(
         payloadFor(

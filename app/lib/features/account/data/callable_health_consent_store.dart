@@ -47,7 +47,10 @@ class CallableHealthConsentStore implements HealthConsentStore {
 
   @override
   Future<void> record({required bool granted}) async {
-    final callable = _functions.httpsCallable(kRecordHealthConsentCallable);
+    final callable = _functions.httpsCallable(
+      kRecordHealthConsentCallable,
+      options: HttpsCallableOptions(timeout: kConsentCallTimeout),
+    );
     try {
       await callable.call<Object?>(payloadFor(granted: granted));
     } on FirebaseFunctionsException catch (error) {

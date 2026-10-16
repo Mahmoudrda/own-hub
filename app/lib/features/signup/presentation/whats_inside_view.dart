@@ -60,7 +60,7 @@ class WhatsInsideView extends StatelessWidget {
           alignment: AlignmentDirectional.centerStart,
           child: MarkerHighlight(
             drawOn: true,
-            delay: const Duration(milliseconds: 200),
+            delay: HandTiming.medium,
             child: Text(
               l10n.whatsInside,
               textWidthBasis: TextWidthBasis.longestLine,
@@ -83,14 +83,14 @@ class WhatsInsideView extends StatelessWidget {
           title: l10n.foodYouAlreadyCook,
           body: l10n.koshariFulAndMolokhiaInThePortions,
         ),
-        // Tracking her cycle is one of the reasons she installs the app, and
-        // the pitch never said so. Promised only with My cycle on.
+        // Before she signs in this names the daily check-in, never the cycle
+        // behind it. Promised only with that feature on.
         if (AppRouter.featureFlags.isOn(Feature.cycle)) ...[
           const HandRule(seed: 34, height: 8),
           _Promise(
             icon: Icons.water_drop_outlined,
-            title: l10n.yourCycleOnThisPhone,
-            body: l10n.noteYourPeriodAndHowYouFeel,
+            title: l10n.aPlanThatAdjustsToHowYou,
+            body: l10n.sayHowYouFeelTodayOnHarder,
           ),
         ],
         const HandRule(seed: 32, height: 8),

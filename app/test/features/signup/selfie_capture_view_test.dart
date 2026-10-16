@@ -130,9 +130,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _host(
-        const SelfieCaptureView(captureService: _OpeningService()),
-      ),
+      _host(const SelfieCaptureView(captureService: _OpeningService())),
     );
     await tester.pumpAndSettle();
 
@@ -148,9 +146,7 @@ void main() {
     // Matched, then deleted. Never classified: no gender, age or appearance is
     // inferred from this picture anywhere in the product.
     await tester.pumpWidget(
-      _host(
-        const SelfieCaptureView(captureService: _OpeningService()),
-      ),
+      _host(const SelfieCaptureView(captureService: _OpeningService())),
     );
     await tester.pumpAndSettle();
 

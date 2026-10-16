@@ -80,15 +80,16 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _host(
-        const ProgramView(
+        ProgramView(
           title: 'Strong at home',
           promise: 'Built around what you can do in a corner of a room.',
-          days: [
+          days: const [
             ProgramDay(title: 'Day 1 · Mobility', detail: '10 min'),
             ProgramDay(title: 'Day 2 · Legs'),
           ],
           week: 2,
           totalWeeks: 6,
+          onDownloadWeek: () {},
         ),
       ),
     );
@@ -103,7 +104,7 @@ void main() {
     expect(find.text('Day 2 · Legs'), findsOneWidget);
     expect(find.text('Week 2 of 6'), findsOneWidget);
     expect(find.byType(AppEmptyState), findsNothing);
-    // The week is hers to download once there is one.
+    // The week is hers to download once there is one and something fetches it.
     expect(find.byIcon(Icons.download), findsOneWidget);
     expect(find.text('Change program'), findsOneWidget);
   });

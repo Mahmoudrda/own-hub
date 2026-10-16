@@ -94,3 +94,5 @@ functions/venv
 # AI review working files
 .ai-review/
 !.github/review-kit/**
+.wrangler/
+.claude/launch-pass.lock

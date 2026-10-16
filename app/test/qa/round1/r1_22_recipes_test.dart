@@ -8,18 +8,24 @@
 // R1-22 to R1-26: the recipe book, with the book actually loaded.
 @Tags(['qa'])
 library;
+
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/eat_state.dart';
 import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
-RecipeBook _book() => RecipeBook.fromJson((jsonDecode(
-  File('assets/content/rahma_recipes.json').readAsStringSync()) as Map).cast<String, Object?>());
+RecipeBook _book() => RecipeBook.fromJson(
+  (jsonDecode(
+    File('assets/content/rahma_recipes.json').readAsStringSync(),
+  ) as Map).cast<String, Object?>(),
+);
 
 void main() {
   useShippingApp();
@@ -55,10 +61,12 @@ void main() {
     phone(t);
     final s = t.ensureSemantics();
     await open(t, appDestinations['E10']!.name, locale: const Locale('en'));
-    print('E10 before: ${tappables(t).map((e)=>e.label).join(" | ")}');
+    print('E10 before: ${tappables(t).map((e) => e.label).join(" | ")}');
     await tapLabel(t, 'Sesame');
     print('E10 after ticking Sesame, painted: ${paintedText(t).join(" | ")}');
-    print('E10 after ticking Sesame, tappable: ${tappables(t).map((e)=>e.label).join(" | ")}');
+    print(
+      'E10 after ticking Sesame, tappable: ${tappables(t).map((e) => e.label).join(" | ")}',
+    );
     // now try to leave without saving
     //
     // `tapControl`, not `tapLabel`: E10's back arrow is an IconButton named by
@@ -66,9 +74,11 @@ void main() {
     // semantics label is empty and the regex below only ever matched the
     // TOOLTIP printed above. The control is reachable; the matcher was reading
     // the wrong field, and this case never got past this line.
-    final left = await tapControl(t, RegExp(r'^(Back|رجوع)$'));
+    final left = await tapControl(t, RegExp(r'^(Back|ارجعي)$'));
     expect(left, isTrue, reason: 'E10 must have a way back');
-    print('after Back: top=${topScreen(t)} sheets=${find.byType(BottomSheet).evaluate().length} dialogs=${find.byType(Dialog).evaluate().length + find.byType(AlertDialog).evaluate().length}');
+    print(
+      'after Back: top=${topScreen(t)} sheets=${find.byType(BottomSheet).evaluate().length} dialogs=${find.byType(Dialog).evaluate().length + find.byType(AlertDialog).evaluate().length}',
+    );
     print('   painted: ${paintedText(t).join(" | ")}');
     s.dispose();
   });

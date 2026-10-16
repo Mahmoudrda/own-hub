@@ -165,7 +165,11 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
     );
     showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
     final onLogged = widget.onLogged;
-    openScreen(context, 'R12', onLogged == null ? null : () => onLogged(session));
+    openScreen(
+      context,
+      'R12',
+      onLogged == null ? null : () => onLogged(session),
+    );
   }
 
   void _saveDuration(int index) {
@@ -217,7 +221,8 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
             children: [
               TodayGreeting(day: weekdayLabel(l10n, _day.date)),
               WorkoutCard(
-                onStart: () => openScreen(context, 'R07', widget.onStartSession),
+                onStart: () =>
+                    openScreen(context, 'R07', widget.onStartSession),
               ),
               MealCard(
                 loggedAt: _day.mealLoggedAt,
@@ -292,7 +297,7 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
       children: [
         Text(l10n.whatDidYouDo, style: AppText.titleL),
         Text(
-          l10n.tapOneAndItIsSavedUndo,
+          l10n.tapOneAndItsSavedYouCan,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         // Three likely answers instead of one guess: today's plan, her last

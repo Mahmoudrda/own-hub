@@ -32,7 +32,9 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// Written as two adjacent literals so that this file, which has to name it,
 /// does not match itself.
-const String _needle = 'FeatureFlags.' 'shipped';
+const String _needle =
+    'FeatureFlags.'
+    'shipped';
 
 /// Files permitted to read the shipped defaults, each with a reason.
 ///
@@ -95,11 +97,12 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
       'so the screens open without a verified account.',
 };
 
-List<File> _testFiles() => Directory('test')
-    .listSync(recursive: true)
-    .whereType<File>()
-    .where((f) => f.path.endsWith('.dart'))
-    .toList();
+List<File> _testFiles() =>
+    Directory('test')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))
+        .toList();
 
 String _rel(File f) => f.path.replaceFirst(RegExp(r'^.*?/?test/'), 'test/');
 

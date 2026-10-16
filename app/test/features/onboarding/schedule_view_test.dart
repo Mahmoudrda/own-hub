@@ -85,7 +85,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('the week counts'), findsOneWidget);
-      expect(find.textContaining('covered by a rest week'), findsOneWidget);
+      expect(find.textContaining('a rest week you'), findsOneWidget);
     });
 
     testWidgets('three days are preselected', (tester) async {
@@ -241,9 +241,7 @@ void main() {
     setUp(() => OnboardingState.instance.beforeSignup = true);
     tearDown(() => OnboardingState.instance.beforeSignup = false);
 
-    testWidgets('the first of three: days alone, in one write', (
-      tester,
-    ) async {
+    testWidgets('the first of three: days alone, in one write', (tester) async {
       final repository = InMemoryIntakeRepository();
       var continued = 0;
       await tester.pumpWidget(

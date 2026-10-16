@@ -35,13 +35,14 @@ class AppBigButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const onColour = Color(0xFFFFFFFF);
+    final onColour = sage ? AppColors.onTertiary : AppColors.onActionPrimary;
 
     // The largest printed block in the product, set off-register like every
     // primary action, and pushed into the page by the tap that logs the set.
     return HandSurface(
       seed: handSeed(['big', label]),
-      fill: sage ? AppColors.tertiary : AppColors.primary,
+      fill: sage ? AppColors.tertiary : AppColors.actionPrimary,
+      pressedFill: sage ? null : AppColors.actionPressed,
       offsetOutline: sage
           ? AppColors.onTertiaryContainer
           : AppColors.primaryDim,

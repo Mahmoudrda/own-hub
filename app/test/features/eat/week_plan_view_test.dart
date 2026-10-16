@@ -6,6 +6,9 @@
 // rather than assumed.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:own_hub/app_state/haptics.dart';
+import 'package:own_hub/ui/hand/hand.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/domain/week/week_key.dart';
@@ -259,6 +262,53 @@ void main() {
         repository.store.plans[_weekId]!.groceries[tomatoes]!.ticked,
         isFalse,
       );
+    });
+
+    testWidgets('ticking a line draws the tick and gives a light tap', (
+      tester,
+    ) async {
+      _phone(tester);
+      final felt = <String?>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'HapticFeedback.vibrate') {
+              felt.add(call.arguments as String?);
+            }
+            return null;
+          });
+      final saved = AppHaptics.enabled;
+      AppHaptics.enabled = () => true;
+      addTearDown(() {
+        AppHaptics.enabled = saved;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null);
+      });
+
+      await tester.pumpWidget(
+        _host(
+          GroceryListView(
+            repository: _seeded(),
+            now: _tuesday,
+            onBack: () {},
+            onShare: () {},
+            onSelectTab: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final before = find.byType(HandTick).evaluate().length;
+
+      await tester.tap(find.text('Onions 1 kg'));
+      await tester.pump();
+      expect(find.byType(HandTick), findsNWidgets(before + 1));
+      expect(felt, ['HapticFeedbackType.lightImpact']);
+      await tester.pumpAndSettle();
+
+      // Taking a tick back is not a thing to celebrate.
+      await tester.tap(find.text('Onions 1 kg'));
+      await tester.pumpAndSettle();
+      expect(find.byType(HandTick), findsNWidgets(before));
+      expect(felt, hasLength(1));
     });
 
     testWidgets('reads in Arabic without overflowing at 1.6', (tester) async {

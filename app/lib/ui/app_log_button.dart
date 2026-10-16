@@ -30,13 +30,16 @@ class AppLogButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = primary ? AppColors.onPrimary : AppColors.primaryDim;
+    final foreground = primary
+        ? AppColors.onActionPrimary
+        : AppColors.primaryDim;
 
     // The likeliest answer is printed and set off-register like the primary
     // button; the others are blush slips, pressed into the page when tapped.
     return HandSurface(
       seed: handSeed(['log', label]),
-      fill: primary ? AppColors.primary : AppColors.primarySoft,
+      fill: primary ? AppColors.actionPrimary : AppColors.primarySoft,
+      pressedFill: primary ? AppColors.actionPressed : null,
       offsetOutline: primary ? AppColors.primaryDim : null,
       frame: primary ? null : AppColors.primary.withValues(alpha: 0.35),
       frameWidth: 1.1,

@@ -123,8 +123,10 @@ void main() {
     await tapControl(t, RegExp('Continue'));
     OnboardingState.instance.finish();
     print('=== R3-04 changed her mind 4 -> 2 -> 3 ===');
-    print('  intake=${AppRouter.intakeRepository.read().days} '
-        'goal=${AppRouter.progressStore.goal.sessionsTarget}');
+    print(
+      '  intake=${AppRouter.intakeRepository.read().days} '
+      'goal=${AppRouter.progressStore.goal.sessionsTarget}',
+    );
     expect(AppRouter.intakeRepository.read().days, 3);
     expect(AppRouter.progressStore.goal.sessionsTarget, 3);
     s.dispose();

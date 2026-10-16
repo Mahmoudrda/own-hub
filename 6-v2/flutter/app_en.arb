@@ -1865,7 +1865,6 @@
   "youCanKeepGoingItSendsItself": "You can keep going. It sends itself later.",
   "walkThisMorning32Min": "Walk this morning · 32 min",
   "n20MinVegetarian": "20 min · vegetarian",
-  "arabicText_vqu26": "الفصحى · كل شيء في التطبيق",
   "iTrainAndICoach": "I train and I coach",
   "twoAppsInOneSwitchBetweenThem": "Two apps in one. Switch between them whenever you like.",
   "youCanChangeThisLaterInYour": "You can change this later in your profile.",
@@ -3846,5 +3845,538 @@
   },
   "theseSwitchesChangeOnlyThisPhoneSo": "These switches change only this phone, so you can look at a part before it ships. To stop a part for every member, use the list at the end.",
   "optionalSharesBasicAppUsageWithGoogle": "Optional. Shares basic app usage with Google Analytics and PostHog in the US. Never your health details, name, number or messages. You can change this in Privacy.",
-  "onGoogleAnalyticsAndPosthogReceiveBasic": "On. Google Analytics and PostHog receive basic app usage outside Egypt, including in the US. Never your health details, name, number or messages."
+  "onGoogleAnalyticsAndPosthogReceiveBasic": "On. Google Analytics and PostHog receive basic app usage outside Egypt, including in the US. Never your health details, name, number or messages.",
+  "resume": "Resume",
+  "setsDoneDoneOfTotal": "Sets done: {done} of {total}",
+  "@setsDoneDoneOfTotal": {
+    "description": "R07/R08/R09/R13 set bar: sets of today's session behind her, out of all of them.",
+    "placeholders": {
+      "done": {
+        "type": "String",
+        "example": "4"
+      },
+      "total": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "todaysSessionIsDone": "Today's session is done",
+  "anotherSession": "Another session",
+  "trainingStreak": "Training streak",
+  "trainingStreakDaysDays": "Training streak: {days} days",
+  "@trainingStreakDaysDays": {
+    "description": "T01 week block: her training streak (D37). Never shown when she has switched it off.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "daysDays": "{days} days",
+  "@daysDays": {
+    "description": "P01 and the streak sheet: the length of her current training streak.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "yourBestDaysDays": "Your best: {days} days",
+  "@yourBestDaysDays": {
+    "description": "P01 and the streak sheet: her longest training streak. Never taken away.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "21"
+      }
+    }
+  },
+  "day1StartsWithYourNextSession": "Day 1 starts with your next session.",
+  "pausedUntilDate": "Paused until {date}",
+  "@pausedUntilDate": {
+    "description": "Streak sheet and P01 while a pause with an end date runs.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Monday 20 October"
+      }
+    }
+  },
+  "pausedUntilYouComeBack": "Paused until you come back",
+  "restDaysCountWhileYourWeekGoal": "Rest days count while your week goal is still in reach. A rest week you have earned covers a week that slips. Kept on this phone.",
+  "pauseForAWeek": "Pause for a week",
+  "pauseForTwoWeeks": "Pause for two weeks",
+  "pauseUntilIComeBack": "Pause until I come back",
+  "resumeNow": "Resume now",
+  "showMyTrainingStreak": "Show my training streak",
+  "keptOnThisPhoneTurnItOff": "Kept on this phone. Turn it off any time.",
+  "yourWeeksCountAndSoDoThe": "Your weeks count, and so do the days that keep your week in reach. Only what you add yourself.",
+  "thisWeeksChallenge": "This week's challenge",
+  "moveMoreThanLastWeeksAmount": "{move}: more than last week's {amount}",
+  "@moveMoreThanLastWeeksAmount": {
+    "description": "T01/R03 weekly challenge (D38): beat her own last-week total on one move.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Glute bridge"
+      },
+      "amount": {
+        "type": "String",
+        "example": "24 reps"
+      }
+    }
+  },
+  "moveMatchLastWeeksAmount": "{move}: match last week's {amount}",
+  "@moveMatchLastWeeksAmount": {
+    "description": "T01/R03 weekly challenge (D38): match her own last-week total on one move.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Glute bridge"
+      },
+      "amount": {
+        "type": "String",
+        "example": "30 reps"
+      }
+    }
+  },
+  "youBeatLastWeekOnMoveAmount": "You beat last week on {move}: {amount}",
+  "@youBeatLastWeekOnMoveAmount": {
+    "description": "R10 reveal: the weekly challenge, met by beating last week. Her total this week.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Glute bridge"
+      },
+      "amount": {
+        "type": "String",
+        "example": "32 reps"
+      }
+    }
+  },
+  "youMatchedLastWeekOnMoveAmount": "You matched last week on {move}: {amount}",
+  "@youMatchedLastWeekOnMoveAmount": {
+    "description": "R10 reveal: the weekly challenge, met by matching last week. Her total this week.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Glute bridge"
+      },
+      "amount": {
+        "type": "String",
+        "example": "30 reps"
+      }
+    }
+  },
+  "nextMilestone": "Next milestone",
+  "movesMovesSetsSetsMinutesMin": "{moves} moves · {sets} sets · {minutes} min",
+  "@movesMovesSetsSetsMinutesMin": {
+    "description": "R10 reveal: the effort she actually logged in this session.",
+    "placeholders": {
+      "moves": {
+        "type": "String",
+        "example": "4"
+      },
+      "sets": {
+        "type": "String",
+        "example": "11"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "24"
+      }
+    }
+  },
+  "moveNowUpFromBefore": "{move}: {now}, up from {before}",
+  "@moveNowUpFromBefore": {
+    "description": "R10 reveal: a real personal best, with her previous best on the same move.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Goblet squat"
+      },
+      "now": {
+        "type": "String",
+        "example": "14 kg × 10"
+      },
+      "before": {
+        "type": "String",
+        "example": "12 kg × 10"
+      }
+    }
+  },
+  "moveAHarderVersionThanBefore": "{move}: a harder version than before",
+  "@moveAHarderVersionThanBefore": {
+    "description": "R10 reveal: a personal best that is a harder variation rather than a bigger number.",
+    "placeholders": {
+      "move": {
+        "type": "String",
+        "example": "Push-up"
+      }
+    }
+  },
+  "firstMarksSetOnCountMoves": "First marks set on {count} moves.",
+  "@firstMarksSetOnCountMoves": {
+    "description": "R10 reveal: moves she logged for the first time ever. A first mark, not a best.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "readYourAnswers": "Read your answers",
+  "checkedYourEquipment": "Checked your equipment",
+  "matchedYourDaysAndMinutes": "Matched your days and minutes",
+  "preferredAQuietSessionForHome": "Preferred a quiet session for home",
+  "moreYouCanDo": "More you can do",
+  "moreSessions": "More sessions",
+  "daysPluralOneTrainingStreak1Day": "{days, plural, one{Training streak: 1 day} other{Training streak: {days} days}}",
+  "@daysPluralOneTrainingStreak1Day": {
+    "description": "T01 week block and R10: her training streak (D37). A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up. Never shown when she has switched it off.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "daysPluralOneYourBest1Day": "{days, plural, one{Your best: 1 day} other{Your best: {days} days}}",
+  "@daysPluralOneYourBest1Day": {
+    "description": "P01 and the streak sheet: her longest training streak. Never taken away.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "21"
+      }
+    }
+  },
+  "countPluralOneFirstMarkSetOn": "{count, plural, one{First mark set on 1 move.} other{First marks set on {count} moves.}}",
+  "@countPluralOneFirstMarkSetOn": {
+    "description": "R10 reveal: moves she logged for the first time ever. A first mark, not a best.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "movesMovesSetsSetsTimeMinutesMin": "Moves: {moves} · Sets: {sets} · Time: {minutes} min",
+  "@movesMovesSetsSetsTimeMinutesMin": {
+    "description": "R10 reveal: the effort she actually logged in this session. Labels before each figure so no noun has to agree with its number.",
+    "placeholders": {
+      "moves": {
+        "type": "String",
+        "example": "4"
+      },
+      "sets": {
+        "type": "String",
+        "example": "11"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "24"
+      }
+    }
+  },
+  "minutesPluralOneMovesMovesSetsSets": "{minutes, plural, one{Moves: {moves} · Sets: {sets} · Time: 1 min} other{Moves: {moves} · Sets: {sets} · Time: {minutes} min}}",
+  "@minutesPluralOneMovesMovesSetsSets": {
+    "description": "R10 reveal: the effort she actually logged in this session. Moves and sets are labelled so they need no agreement; the minutes are a plural because Arabic says دقيقة واحدة, دقيقتين, 3 دقايق and 11 دقيقة.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "24"
+      },
+      "moves": {
+        "type": "String",
+        "example": "4"
+      },
+      "sets": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "exerciseLibrary": "Exercise library",
+  "seeHowEveryMoveIsDone": "See how every move is done",
+  "watchTheMoves": "Watch the moves",
+  "searchMoves": "Search moves",
+  "play": "Play",
+  "chooseAMoveFromTheLibrary": "Choose a move from the library",
+  "openTheExerciseLibrary": "Open the exercise library",
+  "stretchesAndWarmUps": "Stretches and warm-ups",
+  "homeOrGym": "Home or gym",
+  "gymOnly": "Gym only",
+  "gymMachines": "Gym machines",
+  "mat": "Mat",
+  "machine": "Machine",
+  "cableMachine": "Cable machine",
+  "barbell": "Barbell",
+  "smithMachine": "Smith machine",
+  "bench": "Bench",
+  "step": "Step",
+  "kettlebell": "Kettlebell",
+  "glutes": "Glutes",
+  "frontOfThighs": "Front of thighs",
+  "backOfThighs": "Back of thighs",
+  "innerAndOuterThighs": "Inner and outer thighs",
+  "innerThighs": "Inner thighs",
+  "outerThighs": "Outer thighs",
+  "calves": "Calves",
+  "absAndSides": "Abs and sides",
+  "core": "Core",
+  "sidesOfTheWaist": "Sides of the waist",
+  "lowerBack": "Lower back",
+  "chest": "Chest",
+  "upperBack": "Upper back",
+  "sidesOfTheBack": "Sides of the back",
+  "shoulders": "Shoulders",
+  "frontOfTheShoulders": "Front of the shoulders",
+  "sidesOfTheShoulders": "Sides of the shoulders",
+  "backOfTheShoulders": "Back of the shoulders",
+  "arms": "Arms",
+  "biceps": "Biceps",
+  "triceps": "Triceps",
+  "forearms": "Forearms",
+  "musclesWorked": "Muscles worked",
+  "alsoWorks": "Also works",
+  "howToSetUp": "How to set up",
+  "beginner": "Beginner",
+  "intermediate": "Intermediate",
+  "front": "Front",
+  "side": "Side",
+  "fromBehind": "From behind",
+  "otherSide": "Other side",
+  "gettingTheVideo": "Getting the video",
+  "thisVideoNeedsAConnectionTheFirst": "This video needs a connection the first time. After that it plays without one.",
+  "theExerciseLibraryIsOnItsWay": "The exercise library is on its way",
+  "itArrivesTheNextTimeYouOpen": "It arrives the next time you open the app online.",
+  "tryAnotherFilterOrClearTheSearch": "Try another filter, or clear the search.",
+  "someMovesAreHiddenWhileYouAre": "Some moves are hidden while you are pregnant. Ask your doctor before you try anything new.",
+  "someMovesAreHiddenInTheWeeks": "Some moves are hidden in the weeks after a birth. Wait for your doctor's OK before you try them.",
+  "feelGoodAndMove": "Feel good and move",
+  "loseSteadily": "Lose steadily",
+  "atHomeQuietNothingToBuy": "At home · quiet · nothing to buy",
+  "atHomeQuietWithYourDumbbells": "At home · quiet · with your dumbbells",
+  "atTheGymWeightsAndMachines": "At the gym · weights and machines",
+  "youFinishedEverySetAtWeightTry": "You finished every set at {weight}. Try {next} today.",
+  "@youFinishedEverySetAtWeightTry": {
+    "description": "R07 and R08: her last session's weight for a loaded move, and the next weight up.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "10 kg"
+      },
+      "next": {
+        "type": "String",
+        "example": "12 kg"
+      }
+    }
+  },
+  "lastTimeYouDidWeightStayThere": "Last time you did {weight}. Stay there until every set is done.",
+  "@lastTimeYouDidWeightStayThere": {
+    "description": "R07 and R08: why the weight is not going up yet.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "10 kg"
+      }
+    }
+  },
+  "itHasBeenAWhileSinceWeight": "It has been a while since {weight}. Start a little lighter and build back.",
+  "@itHasBeenAWhileSinceWeight": {
+    "description": "R07 and R08: she is coming back to a loaded move after a break.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "10 kg"
+      }
+    }
+  },
+  "firstTimeAtTheGym": "First time at the gym?",
+  "beforeYouStart": "Before you start",
+  "todaysSessionIsShortBringWaterAnd": "Today's session is short. Bring water and a small towel, and wear shoes you can move in. The staff at the gym are happy to show you where things are.",
+  "findYourEquipment": "Find your equipment",
+  "lookForTheStationYourFirstMove": "Look for the station your first move names. If you cannot find it, ask the staff. If it is busy, swap the move from the workout and come back to it later.",
+  "whatASetIs": "What a set is",
+  "aRepIsOneTimeThroughA": "A rep is one time through a move. A set is a few reps in a row. Rest between sets, then go again.",
+  "tryItLogAPracticeSet": "Try it: log a practice set",
+  "practiceSetLoggedNothingIsSaved": "Practice set logged. Nothing is saved.",
+  "startWithConfidence": "Start with confidence",
+  "goAtYourOwnPaceIfYou": "Go at your own pace. If you feel pain or feel unwell, stop and ask the gym staff for help.",
+  "tapChangeToAddTheWeightYou": "Tap Change to add the weight you lifted, so next time starts from it.",
+  "eachSessionIsAFullBodyWith": "Each session is a full body, with fewer, heavier reps and a long rest.",
+  "eachSessionIsAGentleFullBody": "Each session is a gentle full body, with easy reps and short rests.",
+  "eachSessionIsASteadyCircuitWith": "Each session is a steady circuit, with plenty of reps and short rests.",
+  "yourEnergyIsLowToday": "Your energy is low today.",
+  "youHaveCrampsToday": "You have cramps today.",
+  "yourEnergyIsLowAndYouHave": "Your energy is low and you have cramps today.",
+  "aComfyDinnerHighInProtein": "A comfy dinner, high in protein.",
+  "aComfyDinner": "A comfy dinner.",
+  "highInProtein": "High in protein.",
+  "yourWeekIsFullSwapADinner": "Your week is full. Swap a dinner to fit this one in.",
+  "planYourWeekFirst": "Plan your week first",
+  "pickYourDinnersForTheWeekAnd": "Pick your dinners for the week and your shopping list builds itself.",
+  "planMyWeek": "Plan my week",
+  "yourConnectionIsTooSlow": "Your connection is too slow",
+  "stillWorkingASlowConnectionCanTake": "Still working. A slow connection can take a little longer.",
+  "slowConnectionStillGettingTheVideo": "Slow connection, still getting the video",
+  "weCouldNotFinishTheCheckIn": "We could not finish the check in time. Your photos are already deleted from this phone. Move somewhere with a stronger signal and take them again.",
+  "arabicText_3cakp": "مصري · كل حاجة في التطبيق",
+  "swapToName": "Swap to {name}",
+  "@swapToName": {
+    "description": "R05 confirm button, names the move she picked.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Glute bridge"
+      }
+    }
+  },
+  "noSwapForThisMoveRightNow": "No swap for this move right now",
+  "tryFewerFiltersToSeeMoreWorkouts": "Try fewer filters to see more workouts.",
+  "gladYouShowedUpToday": "Glad you showed up today.",
+  "countPluralOne1MoreAndThe": "{count, plural, one{1 more and the week counts.} other{{count} more and the week counts.}}",
+  "@countPluralOne1MoreAndThe": {
+    "description": "T01 week line while sessions are still to go. A plural message because Arabic says تمرين واحد, تمرينين, 3 تمارين and 11 تمرين.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "dayOneStartsWithYourNextSession": "Day one starts with your next session.",
+  "ramadanModeOn": "Ramadan mode on",
+  "dangerZone": "Danger zone",
+  "readyWhenYouAre": "Ready when you are.",
+  "trainedTodayAddItInATap": "Trained today? Add it in a tap.",
+  "aShortSessionStillCountsReadyWhen": "A short session still counts. Ready when you are.",
+  "newMovesAreWaitingInTheLibrary": "New moves are waiting in the library.",
+  "yourPlanIsWhereYouLeftIt": "Your plan is where you left it. Pick it up any time.",
+  "aLittleMovementTodayNoPressure": "A little movement today? No pressure.",
+  "restIsOverYourNextSetIs": "Rest is over. Your next set is ready.",
+  "gentleCheckIns": "Gentle check-ins",
+  "aKindWordIfYouHaveBeen": "A kind word if you have been away for a while.",
+  "restTimer": "Rest timer",
+  "tellsYouWhenYourRestBetweenSets": "Tells you when your rest between sets is over.",
+  "remindMeToAddASessionI": "Remind me to add a session I did",
+  "gentleCheckInsWhenIveBeenAway": "Gentle check-ins when I've been away",
+  "restTimerAlert": "Rest timer alert",
+  "remindersThatFitYourDay": "Reminders that fit your day",
+  "aQuietNoteOnTheDaysYou": "A quiet note on the days you pick",
+  "aPingWhenYourRestBetweenSets": "A ping when your rest between sets ends",
+  "turnOnReminders": "Turn on reminders",
+  "yourTrainingYourFoodYourMonthWomen": "Your training, your food, your month. Women only.",
+  "aPlanThatListensToYourBody": "A plan that listens to your body",
+  "sayHowYouFeelTodayOnHarder": "Say how you feel today. On harder days Own Hub can suggest a gentler session. What you note stays on your phone unless you choose to back it up.",
+  "yourDayAsYouFeelIt": "Your day, as you feel it",
+  "howYouFeelToday": "How you feel today",
+  "lowOnEnergyALighterVersionOf": "Low on energy? A lighter version of today's session would show up here.",
+  "aFewGentleRemindersTurnAnyOf": "A few gentle reminders. Turn any of them off here.",
+  "yourFirstWeekDoneOfTotalSteps": "Your first week: {done} of {total} steps",
+  "@yourFirstWeekDoneOfTotalSteps": {
+    "description": "Home: the first-week arc, counted in steps so it is never read against this week's sessions.",
+    "placeholders": {
+      "done": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "crampsAppetiteSleepAndMore": "Cramps, appetite, sleep and more",
+  "remindersAndExtras": "Reminders and extras",
+  "privacyAndData": "Privacy and data",
+  "filters": "Filters",
+  "howWeeksCount": "How weeks count",
+  "daysDaysAWeekMinutesMinA": "{days} days a week · {minutes} min a session",
+  "@daysDaysAWeekMinutesMinA": {
+    "description": "O05 headline: her days and minutes.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "sweetToothBreakfast": "Sweet Tooth Breakfast",
+  "saltyFullingBreakfast": "Salty fulling Breakfast",
+  "lunchyJunkyYum": "Lunchy junky yum",
+  "comfyDinner": "Comfy Dinner",
+  "daysDaysAWeekMinutesMinA_ew0mi": "{days} days a week · {minutes} min a session · At home",
+  "@daysDaysAWeekMinutesMinA_ew0mi": {
+    "description": "Her answers read back: days and minutes, trained at home.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "daysDaysAWeekMinutesMinA_q73s6": "{days} days a week · {minutes} min a session · At a ladies-only gym",
+  "@daysDaysAWeekMinutesMinA_q73s6": {
+    "description": "Her answers read back: days and minutes, at a ladies-only gym.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "daysDaysAWeekMinutesMinA_3morb": "{days} days a week · {minutes} min a session · At home and the gym",
+  "@daysDaysAWeekMinutesMinA_3morb": {
+    "description": "Her answers read back: days and minutes, at home and the gym.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "remindersNeverComeBetween10PmAnd": "Reminders never come between 10 pm and 8 am. A rest timer you started, or word that your check is done, can still reach you.",
+  "aQuickWayToAddASession": "A quick way to add a session you did",
+  "pickOneItShapesYourProgram": "Pick one. It shapes your program.",
+  "makeItLookLikeYou": "Make it look like you",
+  "bothSwitchBetweenThemWheneverYouLike": "Both. Switch between them whenever you like.",
+  "aPlanThatAdjustsToHowYou": "A plan that adjusts to how you feel",
+  "thatsOwnHub": "That's Own Hub",
+  "weJustNeedYourNumberAndA_1vu4x": "We just need your number and a quick check that you're a woman.",
+  "firstYourWeekThenYourNumberAnd_10ray": "First your week, then your number and a quick check that you're a woman.",
+  "ownHubIsAFitnessAppFor_loijw": "Own Hub is a fitness app for women only. Home shows today's workout, what you've eaten and how your week is going. It's a sample week, so tap anything.",
+  "mostWomenStartWithNothingAndThats": "Most women start with nothing, and that's plenty.",
+  "hitYourGoalAndTheWeekCounts": "Hit your goal and the week counts. If you miss a week, a rest week you've earned covers it.",
+  "week1StartsWithFourMovesOn_9iwwr": "Week 1 starts with four moves on the floor. No jumping, so nobody next door will hear a thing.",
+  "theresNoDeadlineFinishingThemAllIs": "There's no deadline. Finishing them all is just the quickest way to learn where everything is.",
+  "allDoneTheAppWontChangeFrom": "All done. The app won't change from here, you've just used every part of it once.",
+  "nothingsLostOneSessionGetsItGoing": "Nothing's lost. One session gets it going again.",
+  "tapOneAndItsSavedYouCan": "Tap one and it's saved. You can undo for five seconds.",
+  "ifYouDontTurnItOnNothing": "If you don't turn it on, nothing else changes. Your health data stays on this phone.",
+  "takeItAtWhateverPaceFeelsRight": "Take it at whatever pace feels right. If something hurts or you feel unwell, stop and ask the gym staff for help.",
+  "aShortOneStillCountsWheneverYoure": "A short one still counts. Whenever you're ready.",
+  "aFriendlyNudgeIfYouveBeenAway": "A friendly nudge if you've been away a while.",
+  "remindersNeverComeBetween10PmAnd_z63uh": "Reminders never come between 10 pm and 8 am. A rest timer you started, or news that your check is done, can still get through.",
+  "remindersCantBeSetOnThisPhone": "Reminders can't be set on this phone."
 }

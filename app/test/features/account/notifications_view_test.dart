@@ -61,10 +61,7 @@ void main() {
       // appear and states the rule about them stopping.
       expect(find.byType(AppEmptyState), findsOneWidget);
       expect(
-        find.text(
-          'One nudge a day at most, at your usual time. Ignore three '
-          'and they stop by themselves.',
-        ),
+        find.text('A few gentle reminders. Turn any of them off here.'),
         findsOneWidget,
       );
     });

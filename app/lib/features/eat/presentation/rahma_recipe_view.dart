@@ -335,13 +335,10 @@ class _Structured extends StatelessWidget {
         ],
         if (recipe.ingredientsBasis != IngredientsBasis.measures) ...[
           const SizedBox(height: 4),
-          Text(
-            switch (recipe.ingredientsBasis) {
-              IngredientsBasis.none => l10n.theBookWritesThisOneAsA,
-              _ => l10n.theBookNamesWhatGoesInAnd,
-            },
-            style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
-          ),
+          Text(switch (recipe.ingredientsBasis) {
+            IngredientsBasis.none => l10n.theBookWritesThisOneAsA,
+            _ => l10n.theBookNamesWhatGoesInAnd,
+          }, style: AppText.bodyM.copyWith(color: BookInk.inkSoft)),
         ],
         if (main.any((i) => i.gramsBasis == GramsBasis.estimated)) ...[
           const SizedBox(height: 4),
@@ -352,7 +349,10 @@ class _Structured extends StatelessWidget {
         ],
         if (sides.isNotEmpty) ...[
           const SizedBox(height: 10),
-          Text(l10n.servedWith, style: AppText.titleS.copyWith(color: BookInk.ink)),
+          Text(
+            l10n.servedWith,
+            style: AppText.titleS.copyWith(color: BookInk.ink),
+          ),
           for (final side in sides) _IngredientRow(ingredient: side),
         ],
         const SizedBox(height: 16),

@@ -88,10 +88,11 @@ void main() {
         final barriers = find.byType(ModalBarrier).evaluate().length;
         print('=== $id $loc   ModalBarriers=$barriers ===');
 
-        for (final el in find
-            .byWidgetPredicate(_interactive, skipOffstage: true)
-            .evaluate()
-            .toList()) {
+        for (final el
+            in find
+                .byWidgetPredicate(_interactive, skipOffstage: true)
+                .evaluate()
+                .toList()) {
           final ro = el.renderObject;
           if (ro is! RenderBox || !ro.hasSize || ro.size.isEmpty) continue;
           final rect = ro.localToGlobal(Offset.zero) & ro.size;
@@ -99,8 +100,10 @@ void main() {
           final self = find.byElementPredicate((e) => e == el);
           if (self.hitTestable().evaluate().isNotEmpty) continue;
 
-          print('  BLOCKED ${el.widget.runtimeType}  ${rect.center}  '
-              '${_text(el)}');
+          print(
+            '  BLOCKED ${el.widget.runtimeType}  ${rect.center}  '
+            '${_text(el)}',
+          );
           print('    on top: ${_onTopOf(t, rect.center).join(" < ")}');
 
           // Would a scroll rescue it?

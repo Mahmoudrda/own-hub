@@ -60,7 +60,7 @@ void main() {
 
       expect(find.text('What do you have at home?'), findsOneWidget);
       expect(
-        find.text('Most women start with nothing. That is plenty.'),
+        find.text('Most women start with nothing, and that\'s plenty.'),
         findsOneWidget,
       );
       for (final item in ['Nothing', 'A mat', 'Dumbbells', 'Bands']) {

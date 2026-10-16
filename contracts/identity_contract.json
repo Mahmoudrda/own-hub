@@ -10,11 +10,11 @@
     "record_consent": {
       "request": {
         "appVersion": "1.0.0+1",
-        "consentVersion": 2,
+        "consentVersion": 3,
         "locale": "en"
       },
       "response": {
-        "consentVersion": 2,
+        "consentVersion": 3,
         "ok": true
       }
     },
@@ -47,11 +47,11 @@
       "request": {
         "appVersion": "1.0.0+1",
         "locale": "en",
-        "version": 1
+        "version": 2
       },
       "response": {
         "ok": true,
-        "version": 1
+        "version": 2
       }
     },
     "request_review": {
@@ -135,7 +135,7 @@
         "locale",
         "version"
       ],
-      "path": "users/{uid}/consents/pledge-v1"
+      "path": "users/{uid}/consents/pledge-v2"
     },
     "reviewConsent": {
       "fields": [
@@ -144,7 +144,7 @@
         "path",
         "version"
       ],
-      "path": "users/{uid}/consents/review-v2"
+      "path": "users/{uid}/consents/review-v3"
     },
     "verificationConsent": {
       "fields": [
@@ -153,7 +153,7 @@
         "locale",
         "version"
       ],
-      "path": "users/{uid}/consents/verification-v2"
+      "path": "users/{uid}/consents/verification-v3"
     },
     "verificationState": {
       "fields": [

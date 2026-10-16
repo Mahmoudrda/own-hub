@@ -32,15 +32,20 @@ final FeatureFlags _shipping = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.today: true,
   Feature.firstWeek: true,
   Feature.quietWeek: true,
-  Feature.tiers: true,
-  Feature.lockScreenNudge: true,
   Feature.train: true,
   Feature.recordFromMemory: true,
+  Feature.program: true,
   Feature.exerciseVideo: true,
   Feature.exerciseSwap: true,
   Feature.followAlong: true,
   Feature.workoutLibrary: true,
+  Feature.exerciseLibrary: true,
   Feature.trainingReminders: true,
+  Feature.trainingStreak: true,
+  Feature.weeklyChallenge: true,
+  Feature.finishReveal: true,
+  Feature.haptics: true,
+  Feature.reassuringWaits: true,
   Feature.eat: true,
   Feature.recipes: true,
   Feature.weekPlan: true,
@@ -51,9 +56,9 @@ final FeatureFlags _shipping = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.bodyPrivately: true,
   Feature.shareCard: true,
   Feature.cycle: true,
-  Feature.cycleMeals: true,
   Feature.cycleCalendar: true,
   Feature.cyclePatterns: true,
+  Feature.cycleMeals: true,
   Feature.privacyCentre: true,
 });
 
@@ -189,8 +194,13 @@ const Map<String, ({String file, String guard})> _sourceGuardedEdges = {
     guard:
         "onOpenAdmin: adminConsoleOffered ? () => goTo(context, 'Z01') : null",
   ),
+  // Dark at launch (D43): the doors into these are drawn only while the
+  // screen is on.
+  'P01->T05': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('T05'))",
+  ),
 };
-
 
 /// The guard on every door into a part of a feature the server can switch
 /// off on its own (`Feature.serverMayTurnOff`), cited the same way as
@@ -202,17 +212,35 @@ const Map<String, ({String file, String guard})> _sourceGuardedEdges = {
 /// below switches each part off in turn and requires every edge into it to be
 /// listed here, and every cited guard to still exist.
 const Map<String, ({String file, String guard})> _killSwitchGuards = {
+  'E07->E08': (
+    file: 'lib/features/eat/presentation/week_plan_view.dart',
+    guard: "if (AppRouter.screenIsOn('E08'))",
+  ),
+  'Y03->Y07': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenMeals: screenIsOn('Y07')",
+  ),
+  // The set she is on is sent to R06 only for a hold, and only while R06 is
+  // on (`_holdIsNext`); otherwise it is R07's.
+  'R03->R06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "return hold && screenIsOn('R06');",
+  ),
+  'R05->R06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "return hold && screenIsOn('R06');",
+  ),
+  'R09->R06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "return hold && screenIsOn('R06');",
+  ),
+  'R13->R06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "return hold && screenIsOn('R06');",
+  ),
   'T01->T02': (
     file: 'lib/features/today/presentation/today_view.dart',
     guard: "onRecall: AppRouter.screenIsOn('T02')",
-  ),
-  'T05->T02': (
-    file: 'lib/features/today/presentation/tier_slip_view.dart',
-    guard: "onRecall: AppRouter.screenIsOn('T02')",
-  ),
-  'R03->T02': (
-    file: 'lib/features/train/presentation/workout_day_view.dart',
-    guard: "if (AppRouter.screenIsOn('T02'))",
   ),
   'T01->T07': (
     file: 'lib/features/today/presentation/today_view.dart',
@@ -225,10 +253,6 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   'P01->T04': (
     file: 'lib/features/progress/presentation/progress_view.dart',
     guard: "if (AppRouter.screenIsOn('T04'))",
-  ),
-  'P01->T05': (
-    file: 'lib/features/progress/presentation/progress_view.dart',
-    guard: "if (AppRouter.screenIsOn('T05'))",
   ),
   'P01->P02': (
     file: 'lib/features/progress/presentation/progress_view.dart',
@@ -250,25 +274,33 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
     file: 'lib/features/train/presentation/train_view.dart',
     guard: "if (AppRouter.screenIsOn('R11'))",
   ),
-  'R02->R11': (
-    file: 'lib/features/train/presentation/program_view.dart',
-    guard: "if (AppRouter.screenIsOn('R11'))",
-  ),
   'O05->R11': (
     file: 'lib/features/onboarding/presentation/starting_program_view.dart',
     guard: "catalogue.length > 1 && AppRouter.screenIsOn('R11')",
   ),
+  'R01->R02': (
+    file: 'lib/features/train/presentation/train_view.dart',
+    guard: "if (AppRouter.screenIsOn('R02'))",
+  ),
+  'R02->R11': (
+    file: 'lib/features/train/presentation/program_view.dart',
+    guard: "if (AppRouter.screenIsOn('R11'))",
+  ),
   'R01->R05': (
     file: 'lib/features/train/presentation/train_view.dart',
-    guard: "if (AppRouter.screenIsOn('R05'))",
+    guard: "if (AppRouter.screenIsOn('R05') && showGentlerOption)",
+  ),
+  'R01->R14': (
+    file: 'lib/features/train/presentation/train_view.dart',
+    guard: "if (AppRouter.screenIsOn('R14') && onOpenExerciseLibrary != null)",
+  ),
+  'R04->R14': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenLibrary: screenIsOn('R14')",
   ),
   'R04->R05': (
     file: 'lib/features/train/presentation/exercise_video_view.dart',
-    guard: "if (AppRouter.screenIsOn('R05'))",
-  ),
-  'R01->R06': (
-    file: 'lib/features/train/presentation/train_view.dart',
-    guard: "if (AppRouter.screenIsOn('R06'))",
+    guard: "if (AppRouter.screenIsOn('R05') && canSwap)",
   ),
   'R03->R04': (
     file: 'lib/features/train/presentation/workout_day_view.dart',
@@ -294,21 +326,9 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
     file: 'lib/features/today/presentation/today_view.dart',
     guard: "if (AppRouter.screenIsOn('E07'))",
   ),
-  'R10->E07': (
-    file: 'lib/features/train/presentation/finished_view.dart',
-    guard: "if (AppRouter.screenIsOn('E07')",
-  ),
   'E05->E07': (
     file: 'lib/features/eat/presentation/recipes_view.dart',
     guard: "AppRouter.screenIsOn('E07')",
-  ),
-  'E07->E08': (
-    file: 'lib/features/eat/presentation/week_plan_view.dart',
-    guard: "if (AppRouter.screenIsOn('E08'))",
-  ),
-  'Y03->Y07': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onOpenMeals: screenIsOn('Y07')",
   ),
   'Y03->Y08': (
     file: 'lib/features/cycle/presentation/cycle_widgets.dart',
@@ -334,6 +354,10 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
     file: 'lib/features/signup/presentation/welcome_view.dart',
     guard: "if (AppRouter.screenIsOn('C04'))",
   ),
+  'C01->C03': (
+    file: 'lib/routing/app_router.dart',
+    guard: "if (!screenIsOn('C03'))",
+  ),
   'C14->C04': (
     file: 'lib/features/signup/presentation/being_checked_view.dart',
     guard: "AppRouter.screenIsOn('C04')",
@@ -345,48 +369,46 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
 };
 
 void main() {
-  test(
-    'every goTo/_goCarryingHandle literal in app/lib is inside AppRouter._built',
-    () {
-      // Confirms the premise this test relies on: that scanning `_built` is
-      // scanning EVERY real call site in the app, not a subset of them. Text
-      // that merely MENTIONS `goTo(context, 'XX')` inside a comment or a
-      // doc string is excluded the same way `nav_reachability_test.dart`
-      // excludes it -- by requiring the call to appear inside `_built`,
-      // which a comment line describing it does not.
-      final libDir = Directory('lib');
-      final offenders = <String>[];
-      final call = RegExp(
-        r"(?:goTo|_goCarryingHandle)\(\s*context,\s*'[A-Za-z0-9]+'",
-      );
-      for (final f in libDir
-          .listSync(recursive: true)
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.dart'))) {
-        if (f.path.endsWith('routing/app_router.dart')) continue;
-        final lines = f.readAsLinesSync();
-        for (var i = 0; i < lines.length; i++) {
-          final line = lines[i];
-          final trimmed = line.trimLeft();
-          if (trimmed.startsWith('//') ||
-              trimmed.startsWith('///') ||
-              trimmed.startsWith('*')) {
-            continue;
-          }
-          if (call.hasMatch(line)) {
-            offenders.add('${f.path}:${i + 1}  ${line.trim()}');
-          }
+  test('every goTo/_goCarryingHandle literal in app/lib is inside AppRouter._built', () {
+    // Confirms the premise this test relies on: that scanning `_built` is
+    // scanning EVERY real call site in the app, not a subset of them. Text
+    // that merely MENTIONS `goTo(context, 'XX')` inside a comment or a
+    // doc string is excluded the same way `nav_reachability_test.dart`
+    // excludes it -- by requiring the call to appear inside `_built`,
+    // which a comment line describing it does not.
+    final libDir = Directory('lib');
+    final offenders = <String>[];
+    final call = RegExp(
+      r"(?:goTo|_goCarryingHandle)\(\s*context,\s*'[A-Za-z0-9]+'",
+    );
+    for (final f
+        in libDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'))) {
+      if (f.path.endsWith('routing/app_router.dart')) continue;
+      final lines = f.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        final line = lines[i];
+        final trimmed = line.trimLeft();
+        if (trimmed.startsWith('//') ||
+            trimmed.startsWith('///') ||
+            trimmed.startsWith('*')) {
+          continue;
+        }
+        if (call.hasMatch(line)) {
+          offenders.add('${f.path}:${i + 1}  ${line.trim()}');
         }
       }
-      expect(
-        offenders,
-        isEmpty,
-        reason:
-            'A real navigation call exists outside AppRouter._built, so the '
-            'edge scan below is incomplete:\n  ${offenders.join('\n  ')}',
-      );
-    },
-  );
+    }
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          'A real navigation call exists outside AppRouter._built, so the '
+          'edge scan below is incomplete:\n  ${offenders.join('\n  ')}',
+    );
+  });
 
   test(
     'no edge in AppRouter._built routes from a shipping screen into a dark one',
@@ -405,7 +427,8 @@ void main() {
         final sourceOn = AppRouter.screenIsOn(source);
         for (final dest in graph.edges[source]!) {
           totalEdges++;
-          if (!sourceOn) continue; // the case is about edges FROM a shipping screen
+          // The case is about edges FROM a shipping screen.
+          if (!sourceOn) continue;
           if (!AppRouter.screenIsOn(dest)) {
             final key = '$source->$dest';
             if (_sourceGuardedEdges.containsKey(key)) {

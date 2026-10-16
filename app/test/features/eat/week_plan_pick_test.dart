@@ -13,6 +13,7 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/week/week_key.dart';
 import 'package:own_hub/features/eat/domain/allergy_guard.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
+import 'package:own_hub/features/eat/presentation/eat_sample_library.dart';
 import 'package:own_hub/features/eat/presentation/eat_view.dart';
 import 'package:own_hub/features/eat/presentation/recipes_view.dart';
 import 'package:own_hub/features/eat/presentation/week_plan_view.dart';
@@ -30,14 +31,13 @@ void _phone(WidgetTester tester) {
   addTearDown(tester.view.reset);
 }
 
-Widget _host(Widget child, {Locale locale = const Locale('en')}) =>
-    MaterialApp(
-      locale: locale,
-      localizationsDelegates: AppL10n.localizationsDelegates,
-      supportedLocales: AppL10n.supportedLocales,
-      theme: buildTheme(locale),
-      home: child,
-    );
+Widget _host(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(
+  locale: locale,
+  localizationsDelegates: AppL10n.localizationsDelegates,
+  supportedLocales: AppL10n.supportedLocales,
+  theme: buildTheme(locale),
+  home: child,
+);
 
 const Map<String, String> _titles = {
   'rahma_a': 'Molokhia, her way',
@@ -120,16 +120,21 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.byKey(const ValueKey('e07-day-wed')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('e07-plan-week')));
+      await tester.pumpAndSettle();
+      expect(asked, [PlanDay.mon]);
+      expect(find.text('Molokhia, her way'), findsOneWidget);
+
       await tester.tap(find.byKey(const ValueKey('e07-day-wed')));
       await tester.pumpAndSettle();
-      expect(asked, [PlanDay.wed]);
-      expect(find.text('Molokhia, her way'), findsOneWidget);
+      expect(asked, [PlanDay.mon, PlanDay.wed]);
 
       // A planned day changes from its swap icon.
       expect(find.byTooltip('Change this dinner'), findsWidgets);
       await tester.tap(find.byKey(const ValueKey('e07-swap-wed')));
       await tester.pumpAndSettle();
-      expect(asked, [PlanDay.wed, PlanDay.wed]);
+      expect(asked, [PlanDay.mon, PlanDay.wed, PlanDay.wed]);
     });
   });
 
@@ -175,9 +180,8 @@ void main() {
         _host(
           Builder(
             builder: (context) => RecipesView(
-              pickLabel: AppL10n.of(context).pickADinnerForDay(
-                AppL10n.of(context).monday,
-              ),
+              pickLabel: AppL10n.of(context)
+                  .pickADinnerForDay(AppL10n.of(context).monday),
               onPick: (_) {},
             ),
           ),
@@ -226,14 +230,9 @@ void main() {
     ) async {
       _phone(tester);
       final weekId = WeekKey.of(DateTime.now()).id;
-      final before = (await AppRouter.mealRepository.mealPlan(weekId))!;
-      addTearDown(
-        () => AppRouter.mealRepository.swapDinner(
-          weekId: weekId,
-          day: PlanDay.wed,
-          recipeId: before.dinners[PlanDay.wed]!,
-        ),
-      );
+      // Her app starts with no week; this one has a week to swap in.
+      AppRouter.mealRepository.store.plans[weekId] = sampleMealPlan(weekId);
+      addTearDown(() => AppRouter.mealRepository.store.plans.remove(weekId));
       await tester.pumpWidget(
         MaterialApp(
           onGenerateRoute: AppRouter.onGenerateRoute,

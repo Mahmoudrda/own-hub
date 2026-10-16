@@ -7,12 +7,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/training_streak_state.dart';
 
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/account/domain/verification_claim.dart';
 import 'package:own_hub/features/account/presentation/allergen_labels.dart';
+import 'package:own_hub/features/account/presentation/notifications_view.dart';
 import 'package:own_hub/features/account/presentation/profile_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -296,5 +298,22 @@ void main() {
 
       expect(tester.takeException(), isNull);
     });
+  });
+
+  testWidgets('D37: she can switch her training streak off on A01', (
+    tester,
+  ) async {
+    _phone(tester);
+    TrainingStreakState.instance.reset();
+    AppRouter.featureFlags = FeatureFlags.everything;
+    await tester.pumpWidget(_host(const NotificationsView()));
+    await tester.pumpAndSettle();
+    final toggle = find.byKey(const ValueKey('trainingStreakToggle'));
+    await tester.scrollUntilVisible(toggle, 200);
+    expect(TrainingStreakState.instance.settings().enabled, isTrue);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(TrainingStreakState.instance.settings().enabled, isFalse);
+    TrainingStreakState.instance.reset();
   });
 }

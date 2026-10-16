@@ -23,6 +23,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// The consent wording version for the health backup. Must move together with
 /// the server's `config.HEALTH_CONSENT_VERSION`; the shared contract pins both.
+/// Version 1 is the Egyptian wording: no record of the earlier wording existed
+/// in production (DECISIONS.md D45). Any later change to the wording bumps it.
 const int kHealthConsentVersion = 1;
 
 /// The server's consent document id, under `users/{uid}/consents/`.

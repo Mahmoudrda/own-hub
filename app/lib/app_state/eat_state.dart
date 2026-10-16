@@ -57,7 +57,9 @@ import '../domain/logging/log_command_bus.dart';
 import '../l10n/app_l10n.dart';
 import '../routing/app_router.dart';
 import '../ui/app_undo_snackbar.dart';
+import '../domain/format/day_key.dart';
 import 'app_changes.dart';
+import 'rewards_state.dart';
 import 'firebase_boot.dart';
 import 'honest_notice.dart';
 
@@ -146,10 +148,7 @@ class EatAppState {
   /// rate-limited inside [RecipeSync], so calling this from a build costs
   /// nothing after the first time.
   void ensureRecipeBook({RecipeLibrary? library}) {
-    _bookLoad ??= (library ?? recipeSync).load().then(
-      _adopt,
-      onError: (_) {},
-    );
+    _bookLoad ??= (library ?? recipeSync).load().then(_adopt, onError: (_) {});
     if (library == null) unawaited(refreshRecipes());
   }
 
@@ -503,7 +502,16 @@ class EatAppState {
       lastAt: meal.at,
     );
 
+    // A meal is the first thing logged on many days: Home's day moves on to
+    // the meal's before the meal is written into it.
+    AppRouter.todayRepository.rollTo(meal.at);
     AppRouter.todayRepository.recordMeal(at: meal.at, plates: homePlates);
+    // The first meal of the day pays once (D41). E04 announced "+5 points" on
+    // every log for months while nothing was ever credited.
+    RewardsState.instance.creditFoodDay(
+      day: dayKey(meal.at),
+      progress: AppRouter.progressStore,
+    );
     AppChanges.bump();
   }
 }

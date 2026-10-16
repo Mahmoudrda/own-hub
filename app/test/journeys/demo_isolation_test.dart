@@ -61,6 +61,7 @@ final FeatureFlags _launch = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.lockScreenNudge: true,
   Feature.train: true,
   Feature.recordFromMemory: true,
+  Feature.program: true,
   Feature.exerciseVideo: true,
   Feature.exerciseSwap: true,
   Feature.followAlong: true,
@@ -95,8 +96,7 @@ class _Recording implements AnalyticsSink {
   /// The tour's funnel, as (event, source, stop).
   List<(String, Object?, Object?)> get tour => [
     for (final (event, props) in sent)
-      if (event.startsWith('tour'))
-        (event, props['source'], props['tourStop']),
+      if (event.startsWith('tour')) (event, props['source'], props['tourStop']),
   ];
 
   @override

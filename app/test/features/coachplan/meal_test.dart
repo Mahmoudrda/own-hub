@@ -36,7 +36,9 @@ final DateTime _today = DateTime(2026, 9, 19);
 const _ful = Food(
   foodId: 'ful_medames',
   names: <String>['Ful medames'],
-  sizes: <FoodSize>[FoodSize(id: 'M', label: 'A plate', kcal: 410, proteinG: 22)],
+  sizes: <FoodSize>[
+    FoodSize(id: 'M', label: 'A plate', kcal: 410, proteinG: 22),
+  ],
   allergens: <String>{},
   dietTags: <String>{'vegetarian'},
 );
@@ -52,7 +54,9 @@ const _nutBar = Food(
 const _grilledChicken = Food(
   foodId: 'grilled_chicken',
   names: <String>['Grilled chicken'],
-  sizes: <FoodSize>[FoodSize(id: 'M', label: 'A piece', kcal: 320, proteinG: 40)],
+  sizes: <FoodSize>[
+    FoodSize(id: 'M', label: 'A piece', kcal: 320, proteinG: 40),
+  ],
   allergens: <String>{},
   dietTags: <String>{'halal'},
 );
@@ -61,7 +65,9 @@ const _grilledChicken = Food(
 const _mysteryStew = Food(
   foodId: 'mystery_stew',
   names: <String>['Stew'],
-  sizes: <FoodSize>[FoodSize(id: 'M', label: 'A bowl', kcal: 300, proteinG: 12)],
+  sizes: <FoodSize>[
+    FoodSize(id: 'M', label: 'A bowl', kcal: 300, proteinG: 12),
+  ],
 );
 
 const _pack = <String, Food>{
@@ -173,13 +179,16 @@ void main() {
       expect(offered.map((f) => f.foodId), contains('ful_medames'));
     });
 
-    test('a dish with no allergen list is absent too — unknown is not none', () {
-      expect(
-        planner.offerable(_pack.values).map((f) => f.foodId),
-        isNot(contains('mystery_stew')),
-        reason: 'she has an allergy and nobody has said what is in this dish',
-      );
-    });
+    test(
+      'a dish with no allergen list is absent too — unknown is not none',
+      () {
+        expect(
+          planner.offerable(_pack.values).map((f) => f.foodId),
+          isNot(contains('mystery_stew')),
+          reason: 'she has an allergy and nobody has said what is in this dish',
+        );
+      },
+    );
 
     test('a preference is filtered with no warning and no override', () {
       final offered = planner.offerable(_pack.values).map((f) => f.foodId);
@@ -195,16 +204,16 @@ void main() {
 
     test('order is preserved — screening is not a ranking', () {
       final candidates = <Food>[_ful, _nutBar, _grilledChicken];
-      expect(
-        planner.offerable(candidates).map((f) => f.foodId),
-        <String>['ful_medames'],
-      );
+      expect(planner.offerable(candidates).map((f) => f.foodId), <String>[
+        'ful_medames',
+      ]);
       expect(
         MealSlotPlanner(
           _safety(allergies: const <String>{}, dietary: const <String>{}),
         ).offerable(candidates).map((f) => f.foodId),
         <String>['ful_medames', 'nut_bar', 'grilled_chicken'],
-        reason: 'she was asked and named nothing: nothing is removed, and '
+        reason:
+            'she was asked and named nothing: nothing is removed, and '
             'nothing is reordered either',
       );
     });
@@ -220,13 +229,12 @@ void main() {
         lookup: _lookup,
       );
       expect(
-        MealSlotPlanner(_safety()).offerableMeals(<CoachMeal>[
-          _fulPlate(),
-          nutty,
-          _grandmothersMix(),
-        ]).map((m) => m.mealId),
+        MealSlotPlanner(_safety())
+            .offerableMeals(<CoachMeal>[_fulPlate(), nutty, _grandmothersMix()])
+            .map((m) => m.mealId),
         <String>['m_ful'],
-        reason: 'a coach cannot un-cook the nuts out of it, and a dish with an '
+        reason:
+            'a coach cannot un-cook the nuts out of it, and a dish with an '
             'unresolved line has not been declared clear by anybody',
       );
     });
@@ -334,28 +342,33 @@ void main() {
       });
 
       expect(
-        MealSlotPlanner(
-          _safety(meals: (id) => id == 'm_nutty' ? nutty : null),
-        ).blockedSlots(draft).single.allergens,
+        MealSlotPlanner(_safety(meals: (id) => id == 'm_nutty' ? nutty : null))
+            .blockedSlots(draft)
+            .single
+            .allergens,
         <String>{'nuts'},
       );
     });
 
-    test('unreadable constraints block the write, they do not wave it through', () {
-      final draft = _draftWith(<PlanMealSlot, MealSlotAssignment?>{
-        PlanMealSlot.breakfast: const MealSlotAssignment.fromLibrary(
-          foodIds: <String>['ful_medames'],
-        ),
-      });
+    test(
+      'unreadable constraints block the write, they do not wave it through',
+      () {
+        final draft = _draftWith(<PlanMealSlot, MealSlotAssignment?>{
+          PlanMealSlot.breakfast: const MealSlotAssignment.fromLibrary(
+            foodIds: <String>['ful_medames'],
+          ),
+        });
 
-      expect(
-        MealSlotPlanner(
-          _safety(allergies: null, dietary: null),
-        ).blockedSlots(draft).single.reason,
-        AllergyBlockReason.constraintsUnavailable,
-        reason: 'an unknown constraint is not an absent one',
-      );
-    });
+        expect(
+          MealSlotPlanner(_safety(allergies: null, dietary: null))
+              .blockedSlots(draft)
+              .single
+              .reason,
+          AllergyBlockReason.constraintsUnavailable,
+          reason: 'an unknown constraint is not an absent one',
+        );
+      },
+    );
 
     test('a meal cannot be planned at all without her constraints', () {
       final repo = InMemoryPlanDraftRepository();
@@ -414,38 +427,47 @@ void main() {
       );
     });
 
-    test('an id the pack no longer carries makes the whole dish unavailable', () {
-      expect(
-        CoachMeal.nutritionFor(<MealIngredient>[
-          _line('Ful', foodId: 'ful_medames'),
-          _line('Something', foodId: 'withdrawn_from_the_pack'),
-        ], _lookup).resolved,
-        isFalse,
-      );
-    });
+    test(
+      'an id the pack no longer carries makes the whole dish unavailable',
+      () {
+        expect(
+          CoachMeal.nutritionFor(<MealIngredient>[
+            _line('Ful', foodId: 'ful_medames'),
+            _line('Something', foodId: 'withdrawn_from_the_pack'),
+          ], _lookup).resolved,
+          isFalse,
+        );
+      },
+    );
 
-    test('a meal claiming to be resolved with an unresolved line is refused', () {
-      final lying = CoachMeal(
-        mealId: 'm_lie',
-        name: 'Ful and something',
-        ingredients: <MealIngredient>[
-          _line('Ful', foodId: 'ful_medames'),
-          _line('Something of my own'),
-        ],
-        nutrition: const MealNutrition.resolved(kcal: 410, proteinG: 22),
-      );
-      expect(
-        () => InMemoryCoachMealRepository().save(lying),
-        throwsA(isA<UnverifiedNutritionStored>()),
-      );
-    });
+    test(
+      'a meal claiming to be resolved with an unresolved line is refused',
+      () {
+        final lying = CoachMeal(
+          mealId: 'm_lie',
+          name: 'Ful and something',
+          ingredients: <MealIngredient>[
+            _line('Ful', foodId: 'ful_medames'),
+            _line('Something of my own'),
+          ],
+          nutrition: const MealNutrition.resolved(kcal: 410, proteinG: 22),
+        );
+        expect(
+          () => InMemoryCoachMealRepository().save(lying),
+          throwsA(isA<UnverifiedNutritionStored>()),
+        );
+      },
+    );
 
-    test('the figures that do exist came from the pack, not from the coach', () {
-      final resolved = _fulPlate();
-      expect(resolved.nutrition.resolved, isTrue);
-      expect(resolved.nutrition.kcal, _ful.sizes.first.kcal);
-      expect(resolved.nutrition.proteinG, _ful.sizes.first.proteinG);
-    });
+    test(
+      'the figures that do exist came from the pack, not from the coach',
+      () {
+        final resolved = _fulPlate();
+        expect(resolved.nutrition.resolved, isTrue);
+        expect(resolved.nutrition.kcal, _ful.sizes.first.kcal);
+        expect(resolved.nutrition.proteinG, _ful.sizes.first.proteinG);
+      },
+    );
 
     test('her dish never enters the verified pack', () {
       final sources = coachPlanSources();
@@ -477,50 +499,58 @@ void main() {
         'servings',
       });
       for (final banned in kForbiddenQuantityKeys) {
-        expect(assignment.toWire().containsKey(banned), isFalse, reason: banned);
+        expect(
+          assignment.toWire().containsKey(banned),
+          isFalse,
+          reason: banned,
+        );
       }
     });
 
-    test('a coach meal publishes by value, and its id does not travel', () async {
-      final gateway = _RecordingGateway();
-      final publisher = CoachPlanPublisher(
-        gateway: gateway,
-        queue: InMemoryPublishIntentQueue(),
-        coachMeals: (id) => id == 'm_ful' ? _fulPlate() : null,
-      );
+    test(
+      'a coach meal publishes by value, and its id does not travel',
+      () async {
+        final gateway = _RecordingGateway();
+        final publisher = CoachPlanPublisher(
+          gateway: gateway,
+          queue: InMemoryPublishIntentQueue(),
+          coachMeals: (id) => id == 'm_ful' ? _fulPlate() : null,
+        );
 
-      final outcome = await publisher.publish(
-        draft: _draftWith(<PlanMealSlot, MealSlotAssignment?>{
-          PlanMealSlot.lunch: const MealSlotAssignment.coachMeal(
-            coachMealId: 'm_ful',
-            servings: 2,
-            note: 'Skip the bread today',
-          ),
-        }),
-        context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
-      );
-      expect(outcome.isPublished, isTrue);
+        final outcome = await publisher.publish(
+          draft: _draftWith(<PlanMealSlot, MealSlotAssignment?>{
+            PlanMealSlot.lunch: const MealSlotAssignment.coachMeal(
+              coachMealId: 'm_ful',
+              servings: 2,
+              note: 'Skip the bread today',
+            ),
+          }),
+          context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
+        );
+        expect(outcome.isPublished, isTrue);
 
-      final days = gateway.requests.single.payload['days']!
-          as Map<String, Object?>;
-      final day = days['2026-09-20']! as Map<String, Object?>;
-      final slots =
-          (day['meal']! as Map<String, Object?>)['slots']!
-              as Map<String, Object?>;
-      final lunch = slots['lunch']! as Map<String, Object?>;
+        final days =
+            gateway.requests.single.payload['days']! as Map<String, Object?>;
+        final day = days['2026-09-20']! as Map<String, Object?>;
+        final slots =
+            (day['meal']! as Map<String, Object?>)['slots']!
+                as Map<String, Object?>;
+        final lunch = slots['lunch']! as Map<String, Object?>;
 
-      expect(lunch['name'], 'Ful and salad');
-      expect(lunch['servings'], 2);
-      expect(lunch['note'], 'Skip the bread today');
-      expect((lunch['ingredients']! as List<Object?>), hasLength(1));
-      expect(
-        lunch.containsKey('coachMealId'),
-        isFalse,
-        reason: 'a reference left in the payload is a reference somebody will '
-            'eventually dereference — and she may not read the coach\'s '
-            'document',
-      );
-    });
+        expect(lunch['name'], 'Ful and salad');
+        expect(lunch['servings'], 2);
+        expect(lunch['note'], 'Skip the bread today');
+        expect((lunch['ingredients']! as List<Object?>), hasLength(1));
+        expect(
+          lunch.containsKey('coachMealId'),
+          isFalse,
+          reason:
+              'a reference left in the payload is a reference somebody will '
+              'eventually dereference — and she may not read the coach\'s '
+              'document',
+        );
+      },
+    );
 
     test('a later edit to her dish does not reach the published day', () async {
       final gateway = _RecordingGateway();
@@ -560,18 +590,19 @@ void main() {
 
     test('a dish that cannot be read refuses the publish', () async {
       final gateway = _RecordingGateway();
-      final outcome = await CoachPlanPublisher(
-        gateway: gateway,
-        queue: InMemoryPublishIntentQueue(),
-        // Her meals are not readable on this device right now.
-      ).publish(
-        draft: _draftWith(<PlanMealSlot, MealSlotAssignment?>{
-          PlanMealSlot.lunch: const MealSlotAssignment.coachMeal(
-            coachMealId: 'm_ful',
-          ),
-        }),
-        context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
-      );
+      final outcome =
+          await CoachPlanPublisher(
+            gateway: gateway,
+            queue: InMemoryPublishIntentQueue(),
+            // Her meals are not readable on this device right now.
+          ).publish(
+            draft: _draftWith(<PlanMealSlot, MealSlotAssignment?>{
+              PlanMealSlot.lunch: const MealSlotAssignment.coachMeal(
+                coachMealId: 'm_ful',
+              ),
+            }),
+            context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
+          );
 
       expect(outcome.refusal, PublishRefusal.coachMealUnreadable);
       expect(gateway.requests, isEmpty);
@@ -584,18 +615,19 @@ void main() {
 
     test('a workout-only month needs no meal resolver at all', () async {
       final gateway = _RecordingGateway();
-      final outcome = await CoachPlanPublisher(
-        gateway: gateway,
-        queue: InMemoryPublishIntentQueue(),
-      ).publish(
-        draft: PlanDraft(
-          clientUid: 'u1',
-          coachUid: 'c1',
-          month: '2026-09',
-          days: <String, PlanDay>{'2026-09-20': const PlanDay.rest()},
-        ),
-        context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
-      );
+      final outcome =
+          await CoachPlanPublisher(
+            gateway: gateway,
+            queue: InMemoryPublishIntentQueue(),
+          ).publish(
+            draft: PlanDraft(
+              clientUid: 'u1',
+              coachUid: 'c1',
+              month: '2026-09',
+              days: <String, PlanDay>{'2026-09-20': const PlanDay.rest()},
+            ),
+            context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
+          );
       expect(outcome.isPublished, isTrue);
     });
   });

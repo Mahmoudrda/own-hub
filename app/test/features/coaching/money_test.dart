@@ -59,14 +59,8 @@ void main() {
 
     test('equality and ordering are by value', () {
       expect(const Money.pounds(1800), const Money.piastres(180000));
-      expect(
-        const Money.pounds(900) <= const Money.pounds(1800),
-        isTrue,
-      );
-      expect(
-        const Money.pounds(2200) >= const Money.pounds(1800),
-        isTrue,
-      );
+      expect(const Money.pounds(900) <= const Money.pounds(1800), isTrue);
+      expect(const Money.pounds(2200) >= const Money.pounds(1800), isTrue);
       final sorted = <Money>[
         const Money.pounds(2200),
         const Money.pounds(900),

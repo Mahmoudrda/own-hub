@@ -100,8 +100,8 @@ def test_the_consent_sentence_is_plain():
     ) in _page("waitlist")
     # The brand name is isolated left to right inside the Arabic sentence.
     assert (
-        "سنراسلك مرة واحدة: بدعوة مبكرة إن كنتِ من أول 100، أو يوم افتتاح "
-        "<bdi>Own Hub</bdi>. ثم نحذف بيانات التواصل الخاصة بك."
+        "هنراسلك مرة واحدة: بدعوة بدري لو كنتِ من أول 100، أو يوم افتتاح "
+        "<bdi>Own Hub</bdi>. وبعدين هنمسح بيانات التواصل بتاعتك."
     ) in _page("ar", "waitlist")
 
 
@@ -253,7 +253,7 @@ def test_the_home_page_offers_the_tour_in_both_languages():
 def test_the_home_page_does_not_say_she_reads_the_support_mailbox():
     # The support page says the publisher reads it himself.
     assert "when she reads" not in _page()
-    assert "the hours messages are read" in _page()
+    assert "when messages get read" in _page()
 
 
 def _build_with(tmp_path, **values):
@@ -596,11 +596,11 @@ def test_the_home_pages_promise_only_what_this_version_does():
     for claim in ("video call", "gym", "marketplace", "ai assistant", "artificial intelligence",
                   "join the community", "book a coach", "chat with"):
         assert claim not in en, claim
-    assert "there is no community and no coaching" in " ".join(en.split())
+    assert "no community, coaching or assistant" in " ".join(en.split())
 
 
 def test_before_launch_the_waitlist_is_the_first_thing_on_the_home_page():
-    for lang, offer in (("en", "The first 100 women on the list"), ("ar", "أول 100 امرأة في القائمة")):
+    for lang, offer in (("en", "The first 100 women on the list"), ("ar", "أول 100 ست في القايمة")):
         html = _home(_SITE, lang)
         form = html.index('class="waitlist"')
         assert html.index('<h1>') < html.index(offer) < form < html.index('id="inside"')

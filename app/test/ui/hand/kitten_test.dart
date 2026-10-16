@@ -35,6 +35,7 @@ List<double> _values(KittenFrame f) => [
   f.smile,
   f.tail,
   f.ear,
+  f.dip,
 ];
 
 AnimationController _controllerOf(WidgetTester tester) {
@@ -174,6 +175,156 @@ void main() {
     expect(f.look.dx, greaterThan(0.9));
   });
 
+  test('the think puts a paw at the chin, face tipped, eyes up and away', () {
+    final f = KittenFrame.end(KittenPose.think);
+    final paw = KittenPainter.pawOf(f, lead: true);
+    // Below the mouth (0.578), on the leading side of the chin, inside the
+    // head's width, and nearer the face than the shoulder is.
+    expect(paw.dy, inInclusiveRange(0.6, 0.7));
+    expect(paw.dx, inInclusiveRange(0.56, 0.7));
+    expect(paw.dx, lessThan(KittenPainter.shoulderOf(lead: true).dx));
+    expect(f.headTilt, greaterThan(0.06));
+    expect(f.look.dy, lessThan(-0.5));
+    expect(f.look.dx, lessThan(-0.3));
+    // The other paw stays down.
+    expect(KittenPainter.pawOf(f, lead: false).dy, greaterThan(0.85));
+    // It stays there through the breaths: one move, then still.
+    for (var ms = 900.0; ms <= 3500; ms += 50) {
+      final held = KittenPainter.pawOf(
+        KittenFrame.at(KittenPose.think, ms),
+        lead: true,
+      );
+      expect((held - paw).distance, lessThan(1e-9), reason: 'ms=$ms');
+    }
+  });
+
+  test('the wait sits lower with both paws folded in front, eyes soft', () {
+    final f = KittenFrame.end(KittenPose.wait);
+    final lead = KittenPainter.pawOf(f, lead: true);
+    final trail = KittenPainter.pawOf(f, lead: false);
+    expect(lead.dx, inInclusiveRange(0.5, 0.58));
+    expect(trail.dx, inInclusiveRange(0.42, 0.5));
+    expect(lead.dy, inInclusiveRange(0.78, 0.9));
+    expect(trail.dy, inInclusiveRange(0.78, 0.9));
+    expect(f.squash, lessThan(0.97));
+    // Soft, never shut or smiling: waiting is not sleep and not cheer.
+    expect(f.eyeOpen, inInclusiveRange(0.7, 0.9));
+    expect(f.happy, 0);
+    expect(f.smile, 0);
+    // Never sad: it does not droop below where it sits.
+    expect(f.squash, greaterThan(0.9));
+  });
+
+  test('the nod dips the head twice and comes back, nothing else moves', () {
+    const nod = KittenPose.nod;
+    var peaks = 0;
+    var previous = 0.0;
+    var rising = true;
+    var maxDip = 0.0;
+    for (var ms = 0.0; ms <= nod.moveMs; ms += 2) {
+      final f = KittenFrame.at(nod, ms);
+      maxDip = math.max(maxDip, f.dip);
+      if (rising && f.dip < previous - 1e-9) {
+        peaks++;
+        rising = false;
+      } else if (!rising && f.dip > previous + 1e-9) {
+        rising = true;
+      }
+      previous = f.dip;
+      // Paws stay at rest and the face does not turn.
+      expect(f.lead, f.trail);
+      expect(f.look, Offset.zero);
+      expect(f.happy, 0);
+    }
+    expect(peaks, 2);
+    expect(maxDip, inInclusiveRange(0.03, 0.06));
+    expect(KittenFrame.end(nod).dip, closeTo(0, 1e-9));
+    expect(nod.moveMs, lessThanOrEqualTo(600));
+  });
+
+  test('the stretch takes one paw over the head and the other out wide', () {
+    final f = KittenFrame.end(KittenPose.stretch);
+    final lead = KittenPainter.pawOf(f, lead: true);
+    final trail = KittenPainter.pawOf(f, lead: false);
+    expect(lead.dy, lessThan(0.45));
+    expect(trail.dx, lessThan(0.3));
+    expect(f.happy, 1);
+  });
+
+  test('the lift curls both paws up to the chest, together', () {
+    final f = KittenFrame.end(KittenPose.lift);
+    final lead = KittenPainter.pawOf(f, lead: true);
+    final trail = KittenPainter.pawOf(f, lead: false);
+    expect(lead.dy, inInclusiveRange(0.62, 0.75));
+    expect(trail.dy, closeTo(lead.dy, 1e-9));
+    expect(lead.dx - trail.dx, inInclusiveRange(0.12, 0.3));
+  });
+
+  test('the peek ends low in its box with both paws on the edge', () {
+    final start = KittenFrame.at(KittenPose.peek, 0);
+    final end = KittenFrame.end(KittenPose.peek);
+    expect(start.lift, lessThan(-0.9));
+    expect(end.lift, closeTo(-0.4, 1e-9));
+    for (final lead in [true, false]) {
+      final paw = KittenPainter.placed(
+        end,
+        KittenPainter.pawOf(end, lead: lead),
+      );
+      expect(paw.dy, inInclusiveRange(0.8, 0.94));
+    }
+  });
+
+  testWidgets('every prop draws, in both directions, without throwing', (
+    tester,
+  ) async {
+    for (final dir in TextDirection.values) {
+      for (final prop in KittenProp.values) {
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: dir,
+            child: MediaQuery(
+              data: const MediaQueryData(disableAnimations: true),
+              child: Center(
+                child: Kitten(
+                  pose: prop == KittenProp.dumbbell
+                      ? KittenPose.lift
+                      : KittenPose.rest,
+                  prop: prop,
+                ),
+              ),
+            ),
+          ),
+        );
+        expect(tester.takeException(), isNull, reason: '${dir.name} $prop');
+      }
+    }
+  });
+
+  test('no pose is sad, sleepy, pleading or angry', () {
+    for (final pose in KittenPose.values) {
+      final run = kittenRunFor(pose).inMilliseconds;
+      for (var ms = 0; ms <= run; ms += 10) {
+        final f = KittenFrame.at(pose, ms.toDouble());
+        final why = '${pose.name} $ms';
+        // Not drooping or slumped.
+        expect(f.squash, greaterThan(0.88), reason: why);
+        // Eyes are only fully shut for a blink, never held shut.
+        if (f.eyeOpen < 0.5) {
+          expect(f.eyeOpen, greaterThan(0.0), reason: why);
+        }
+        // The head never hangs.
+        expect(f.dip, lessThan(0.06), reason: why);
+        expect(f.headTilt.abs(), lessThan(0.15), reason: why);
+      }
+      // And it ends awake.
+      expect(
+        KittenFrame.end(pose).eyeOpen,
+        greaterThan(0.7),
+        reason: pose.name,
+      );
+    }
+  });
+
   test('no part leaves the box at any instant', () {
     for (final pose in KittenPose.values) {
       final run = kittenRunFor(pose).inMilliseconds;
@@ -190,6 +341,9 @@ void main() {
           expect(paw.dx - r, greaterThan(0), reason: why);
           expect(paw.dx + r, lessThan(1), reason: why);
           expect(paw.dy - r, greaterThan(0), reason: why);
+          // The peek comes up from below the edge, which clips it, so its
+          // paws are below the box on the way in and inside it at the end.
+          if (pose == KittenPose.peek && ms < pose.moveMs) continue;
           expect(paw.dy + r, lessThan(1), reason: why);
         }
       }
@@ -231,6 +385,63 @@ void main() {
     );
     expect(_controllerOf(tester).value, 1);
     expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('three budgeted appearances move per sitting, then it holds', (
+    tester,
+  ) async {
+    // D48: the first three budgeted kittens to arrive move, whichever screen
+    // they are on; the fourth is simply there.
+    final poses = [
+      (KittenPose.point, 'T06'),
+      (KittenPose.cheer, 'R10'),
+      (KittenPose.wave, 'T04'),
+      (KittenPose.cheer, 'T08'),
+    ];
+    for (final (i, (pose, moment)) in poses.indexed) {
+      await tester.pumpWidget(
+        _host(Kitten(pose: pose, moment: moment, sessionBudget: true)),
+      );
+      if (i < Kitten.sessionBudgetLimit) {
+        expect(_controllerOf(tester).isAnimating, isTrue, reason: moment);
+        await tester.pumpAndSettle();
+      } else {
+        expect(_controllerOf(tester).value, 1, reason: moment);
+        expect(tester.binding.hasScheduledFrame, isFalse);
+      }
+      await tester.pumpWidget(const SizedBox());
+    }
+    expect(Kitten.sessionBudgetLimit, 3);
+    expect(Kitten.budgetUsed, 3);
+  });
+
+  testWidgets('one kitten changing pose on a screen takes one place', (
+    tester,
+  ) async {
+    // C12 goes from think to point to cheer: three moves, one appearance.
+    for (final pose in [KittenPose.think, KittenPose.point, KittenPose.cheer]) {
+      await tester.pumpWidget(_host(Kitten(pose: pose, sessionBudget: true)));
+      expect(_controllerOf(tester).isAnimating, isTrue, reason: pose.name);
+      await tester.pumpAndSettle();
+    }
+    expect(Kitten.budgetUsed, 1);
+  });
+
+  testWidgets('a kitten held still takes nothing from the budget', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        const Kitten(
+          pose: KittenPose.think,
+          holdStill: true,
+          sessionBudget: true,
+        ),
+      ),
+    );
+    expect(_controllerOf(tester).value, 1);
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    expect(Kitten.budgetUsed, 0);
   });
 
   testWidgets('a new replay key moves it again', (tester) async {
@@ -319,6 +530,31 @@ void main() {
     }
   });
 
+  test('one kitten per screen: a file places at most one', () {
+    // Two files place more than one, each as exclusive arms of one choice:
+    // C11's strip shows the one guidance step she is on, and the tour shows
+    // the card for a stop or the closing card, never both.
+    const exclusive = {
+      'lib/features/signup/presentation/selfie_capture_view.dart',
+      'lib/features/signup/presentation/demo/demo_chrome.dart',
+    };
+    final call = RegExp(r'\bKitten\(');
+    for (final f in Directory('lib').listSync(recursive: true)) {
+      if (f is! File || !f.path.endsWith('.dart')) continue;
+      if (f.path.startsWith('lib/ui/hand/mascot') ||
+          f.path.startsWith('lib/l10n')) {
+        continue;
+      }
+      var count = 0;
+      for (final line in f.readAsLinesSync()) {
+        if (line.trimLeft().startsWith('//')) continue;
+        count += call.allMatches(line).length;
+      }
+      if (exclusive.contains(f.path)) continue;
+      expect(count, lessThanOrEqualTo(1), reason: f.path);
+    }
+  });
+
   test('never on the screens it must stay off', () {
     // Cycle, body data, deletion, Rahma's content, the assistant, errors.
     const offLimits = [
@@ -328,6 +564,23 @@ void main() {
       'lib/features/eat/presentation/rahma_letter_view.dart',
       'lib/features/eat/presentation/rahma_recipe_view.dart',
       'lib/features/account/presentation/your_data_sheet.dart',
+      // The ID card and the camera screens' frames, the consent, and the
+      // training screens where the phone is on the floor.
+      'lib/features/signup/presentation/why_we_check_view.dart',
+      'lib/features/signup/presentation/consent_view.dart',
+      'lib/features/signup/presentation/id_capture_view.dart',
+      'lib/features/train/presentation/mid_set_view.dart',
+      'lib/features/train/presentation/resting_view.dart',
+      'lib/features/train/presentation/follow_along_view.dart',
+      'lib/features/signup/presentation/pledge_view.dart',
+      'lib/features/signup/presentation/woman_reviewer_view.dart',
+      // The new variations stay off the clips, the logging screens and the
+      // coaching screens.
+      'lib/features/train/presentation/exercise_video_view.dart',
+      'lib/features/train/presentation/exercise_demo_view.dart',
+      'lib/features/train/presentation/move_logged_view.dart',
+      'lib/features/train/presentation/logged_from_memory_view.dart',
+      'lib/features/coach',
     ];
     for (final path in offLimits) {
       final entity = FileSystemEntity.typeSync(path);
@@ -345,6 +598,95 @@ void main() {
           reason: f.path,
         );
       }
+    }
+  });
+
+  test('the new variations sit only where they were placed', () {
+    String src(String path) => File('lib/features/$path').readAsStringSync();
+    // Still, at 40, on Train and on the day's page.
+    final train = src('train/presentation/train_view.dart');
+    expect(train, contains('KittenPose.lift'));
+    expect(train, contains('KittenProp.dumbbell'));
+    final day = src('train/presentation/workout_day_view.dart');
+    expect(day, contains('KittenPose.stretch'));
+    for (final file in [train, day]) {
+      expect(file, contains('holdStill: true'));
+      expect(file, contains('size: 40'));
+    }
+    // The heart on the two cheers.
+    expect(
+      src('today/presentation/first_week_view.dart'),
+      contains('KittenProp.heart'),
+    );
+    expect(
+      src('train/presentation/finished_view.dart'),
+      contains('cheer ? KittenProp.heart : null'),
+    );
+    // The peek on first-view empty states only, and nowhere else.
+    const peeks = {
+      'train/presentation/exercise_library_view.dart': 'R14',
+      'eat/presentation/week_plan_view.dart': 'E07',
+      'train/presentation/program_view.dart': 'R02',
+    };
+    for (final e in peeks.entries) {
+      final text = src(e.key);
+      expect(text, contains('KittenPose.peek'), reason: e.key);
+      expect(text, contains("moment: '${e.value}'"), reason: e.key);
+    }
+    for (final f in Directory('lib').listSync(recursive: true)) {
+      if (f is! File || !f.path.endsWith('.dart')) continue;
+      if (f.path.startsWith('lib/ui/hand/mascot')) continue;
+      final text = f.readAsStringSync();
+      final onlyPeek = peeks.keys.any((k) => f.path.endsWith(k));
+      if (!onlyPeek) {
+        expect(text.contains('KittenPose.peek'), isFalse, reason: f.path);
+      }
+    }
+  });
+
+  testWidgets('a still kitten blinks once the second time it is opened', (
+    tester,
+  ) async {
+    Widget kitten() => _host(
+      const Kitten(
+        pose: KittenPose.stretch,
+        moment: 'R03',
+        holdStill: true,
+        blinkOnRevisit: true,
+      ),
+    );
+    await tester.pumpWidget(kitten());
+    expect(_controllerOf(tester).isAnimating, isFalse);
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(kitten());
+    // The second time: one blink, 700 ms, and then nothing is scheduled.
+    expect(_controllerOf(tester).isAnimating, isTrue);
+    await tester.pumpAndSettle();
+    expect(_controllerOf(tester).value, 1);
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    // Never a third.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(kitten());
+    expect(_controllerOf(tester).isAnimating, isFalse);
+  });
+
+  testWidgets('the revisit blink holds still under reduced motion', (
+    tester,
+  ) async {
+    Widget kitten() => _host(
+      const Kitten(
+        pose: KittenPose.lift,
+        moment: 'R01',
+        holdStill: true,
+        blinkOnRevisit: true,
+      ),
+      disableAnimations: true,
+    );
+    for (var i = 0; i < 2; i++) {
+      await tester.pumpWidget(kitten());
+      expect(_controllerOf(tester).isAnimating, isFalse);
+      await tester.pumpWidget(const SizedBox());
     }
   });
 }

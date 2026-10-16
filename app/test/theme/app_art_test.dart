@@ -217,7 +217,8 @@ void main() {
       expect(
         noOpFlip,
         isEmpty,
-        reason: 'these are in `facing` but mirror to the same picture, so the '
+        reason:
+            'these are in `facing` but mirror to the same picture, so the '
             'entry buys nothing',
       );
       expect(
@@ -247,10 +248,7 @@ void main() {
       ArtMarkPainter.accentFor.keys.toSet().difference(AppArt.all.toSet()),
       isEmpty,
     );
-    expect(
-      ArtMarkPainter.figures.difference(AppArt.all.toSet()),
-      isEmpty,
-    );
+    expect(ArtMarkPainter.figures.difference(AppArt.all.toSet()), isEmpty);
   });
 
   test('every figure is rose, and nothing else is', () {
@@ -260,6 +258,11 @@ void main() {
     // Egypt covers her hair is hers to decide, and an empty-state drawing has
     // no business answering it -- which is also why Microsoft Fluent Emoji was
     // turned down despite being MIT. See `assets/art/LICENCE.md`.
+    //
+    // "Rose" is the tone's name and is kept; since the Linen, Petrol and Pale
+    // Pink palette it is a Pale Pink fill with a petrol line (`ArtTones.rose`).
+    // The bundled WebP illustrations were recoloured to the same inks on
+    // 16 October 2026, but their pixels are not asserted here.
     //
     // Asserting the colour rather than the absence is what makes this
     // checkable: a second tone appearing on a figure is how a face or a
@@ -374,7 +377,8 @@ void main() {
       expect(
         _digest(borrowed),
         isNot(_digest(onACard)),
-        reason: 'the recipe card pen and the art pen cannot be the same, or '
+        reason:
+            'the recipe card pen and the art pen cannot be the same, or '
             'this whole fix is a no-op',
       );
       // Measured rather than asserted from the constants: the art pen is
@@ -437,7 +441,8 @@ void main() {
       expect(
         off,
         isEmpty,
-        reason: 'lowest ink should sit on handMarkBaseline ($rule); each entry '
+        reason:
+            'lowest ink should sit on handMarkBaseline ($rule); each entry '
             'names the mark and where its lowest ink actually landed',
       );
     });

@@ -32,7 +32,7 @@ class AssessmentIsAppendOnly implements Exception {
   @override
   String toString() =>
       'AssessmentIsAppendOnly($assessmentId${attempted == null ? '' : ', '
-          '$attempted'}) — correct it by recording a new one';
+                '$attempted'}) — correct it by recording a new one';
 }
 
 abstract class AssessmentRepository {
@@ -104,8 +104,12 @@ class InMemoryAssessmentRepository implements AssessmentRepository {
   }) async {
     final parent = _store[parentId];
     if (parent == null) {
-      throw AssessmentIsAppendOnly(parentId, attempted: 'supersede a missing '
-          'assessment');
+      throw AssessmentIsAppendOnly(
+        parentId,
+        attempted:
+            'supersede a missing '
+            'assessment',
+      );
     }
     if (child.assessment.parentAssessmentId != parentId) {
       throw AssessmentIsAppendOnly(

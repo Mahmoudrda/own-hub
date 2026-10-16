@@ -269,7 +269,7 @@ void main() {
 
       expect(find.byType(AlertDialog), findsNothing);
       expect(find.byType(Dialog), findsNothing);
-      expect(find.text('تراجع'), findsOneWidget);
+      expect(find.text('تراجعي'), findsOneWidget);
 
       bus.dispose();
     });

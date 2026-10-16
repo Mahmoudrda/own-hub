@@ -22,7 +22,9 @@ void main() {
   useShippingApp();
 
   for (final loc in <String>['en', 'ar']) {
-    testWidgets('she declares sesame, then tries to log a meal, $loc', (t) async {
+    testWidgets('she declares sesame, then tries to log a meal, $loc', (
+      t,
+    ) async {
       phone(t);
       final s = t.ensureSemantics();
       await AppRouter.dietaryRepository.save(
@@ -44,8 +46,10 @@ void main() {
       if (fields.evaluate().isNotEmpty) {
         await t.enterText(fields.first, loc == 'en' ? 'ful' : 'فول');
         await settle(t);
-        print('  E02 after typing: '
-            '${tappables(t).map((e) => e.label).join(" // ")}');
+        print(
+          '  E02 after typing: '
+          '${tappables(t).map((e) => e.label).join(" // ")}',
+        );
         for (final line in paintedText(t)) {
           print('  > $line');
         }

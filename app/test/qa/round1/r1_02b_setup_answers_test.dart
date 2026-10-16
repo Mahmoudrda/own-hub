@@ -8,9 +8,11 @@
 // R1-02: does her answer reach the target she is measured against?
 @Tags(['qa'])
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 Future<void> _toO03(WidgetTester t) async {
@@ -39,10 +41,12 @@ void main() {
       await tapLabel(t, 'Continue'); // O05
       print('O05 summary: ${paintedText(t).take(4).join(" | ")}');
       await tapLabel(t, 'Start day 1 now');
-      print('PICKED $days -> TOP=${topScreen(t)} setupDone=${AppRouter.intakeRepository.setupDone} '
-            'intakeDays=${AppRouter.intakeRepository.read().days} '
-            'homeTarget=${AppRouter.todayRepository.day.week.sessionsTarget} '
-            'progressTarget=${AppRouter.progressStore.goal.sessionsTarget}');
+      print(
+        'PICKED $days -> TOP=${topScreen(t)} setupDone=${AppRouter.intakeRepository.setupDone} '
+        'intakeDays=${AppRouter.intakeRepository.read().days} '
+        'homeTarget=${AppRouter.todayRepository.day.week.sessionsTarget} '
+        'progressTarget=${AppRouter.progressStore.goal.sessionsTarget}',
+      );
       s.dispose();
     });
   }
@@ -61,7 +65,9 @@ void main() {
       }
       expect(topScreen(t), 'O05');
       await tapLabel(t, exit);
-      print('O05 "$exit" -> TOP=${topScreen(t)} setupDone=${AppRouter.intakeRepository.setupDone}');
+      print(
+        'O05 "$exit" -> TOP=${topScreen(t)} setupDone=${AppRouter.intakeRepository.setupDone}',
+      );
       print('   now tappable: ${tappables(t).map((e) => e.label).join(" | ")}');
     }
     s.dispose();
@@ -74,7 +80,9 @@ void main() {
     for (final n in [0, 1, 2, 3, 4, 5]) {
       wipe();
       await boot(t, locale: const Locale('en'));
-      for (var i = 0; i < n; i++) { await tapLabel(t, 'Continue'); }
+      for (var i = 0; i < n; i++) {
+        await tapLabel(t, 'Continue');
+      }
       final before = topScreen(t);
       // `tapControl`, not `tapLabel`: the X is an IconButton named by its
       // tooltip (app_scaffold.dart:202), so its semantics LABEL is empty and
@@ -82,8 +90,10 @@ void main() {
       // by a screen reader; the matcher was reading the wrong field.
       final closed = await tapControl(t, 'Skip setup');
       expect(closed, isTrue, reason: 'every question must offer a way out');
-      print('X on $before -> TOP=${topScreen(t)} setupDone=${AppRouter.intakeRepository.setupDone} '
-            'homeTarget=${AppRouter.todayRepository.day.week.sessionsTarget}');
+      print(
+        'X on $before -> TOP=${topScreen(t)} setupDone=${AppRouter.intakeRepository.setupDone} '
+        'homeTarget=${AppRouter.todayRepository.day.week.sessionsTarget}',
+      );
     }
     s.dispose();
   });

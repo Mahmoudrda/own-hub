@@ -108,9 +108,10 @@ class FirestoreCloudTransport implements CloudTransport {
       for (final collection in CloudDocuments.readableCollections) {
         final single = _singletons[collection];
         if (single != null) {
-          final snapshot = await _root(
-            uid,
-          ).collection(collection).doc(single).get();
+          final snapshot = await _root(uid)
+              .collection(collection)
+              .doc(single)
+              .get();
           final data = snapshot.data();
           if (data == null) continue;
           out.add(
@@ -208,7 +209,9 @@ class FirestoreCloudTransport implements CloudTransport {
     final Map<String, Object?> map => <String, Object?>{
       for (final entry in map.entries) entry.key: _plain(entry.value),
     },
-    final List<Object?> list => <Object?>[for (final item in list) _plain(item)],
+    final List<Object?> list => <Object?>[
+      for (final item in list) _plain(item),
+    ],
     _ => value,
   };
 
@@ -222,7 +225,9 @@ class FirestoreCloudTransport implements CloudTransport {
       final Map<String, Object?> map => <String, Object?>{
         for (final entry in map.entries) entry.key: _wire(entry.value),
       },
-      final List<Object?> list => <Object?>[for (final item in list) _wire(item)],
+      final List<Object?> list => <Object?>[
+        for (final item in list) _wire(item),
+      ],
       _ => value,
     };
   }
