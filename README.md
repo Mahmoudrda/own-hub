@@ -11,8 +11,8 @@ the files to open next.
 - Website: https://own-hub.app (Arabic at /ar/)
 - Contact: info@own-hub.app (privacy), support@own-hub.app (support)
 - Firebase project: `own-hub`
-- Store ids: `com.ownhub.app` on both stores, the iPhone widget is `com.ownhub.app.OwnHubWidgets`,
-  the App Group is `group.com.ownhub.app`, the Apple team is `NC94DG55XR`
+- Store ids: Android `com.ownhub.app`; iPhone `com.ownhub.fitness` (com.ownhub.app is owned by another Apple team), the iPhone widget is `com.ownhub.fitness.OwnHubWidgets`,
+  the App Group is `group.com.ownhub.fitness`, the Apple team is `NC94DG55XR`
 
 ---
 

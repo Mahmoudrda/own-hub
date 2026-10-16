@@ -98,7 +98,7 @@ dependencies:
   timezone: ^0.11.1
   flutter_timezone: ^5.1.1
   # The Home Screen and Lock Screen widgets (ios/OwnHubWidgets). Writes one
-  # JSON string to the App Group group.com.ownhub.app: this week's session
+  # JSON string to the App Group group.com.ownhub.fitness: this week's session
   # count against her target, today's state and whether a meal is logged,
   # never her cycle, life stage, body or programme
   # (lib/features/today/domain/widget_projection.dart). It stays on the phone.

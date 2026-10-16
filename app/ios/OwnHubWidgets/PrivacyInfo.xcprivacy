@@ -5,7 +5,7 @@
 	<!--
 	  Own Hub widgets privacy manifest.
 
-	  The extension reads one string from the App Group group.com.ownhub.app,
+	  The extension reads one string from the App Group group.com.ownhub.fitness,
 	  written by the app (lib/app_state/home_widget_sync.dart): this week's
 	  session count, today's state and whether a meal is logged. It makes no
 	  network call, collects nothing and tracks nothing.

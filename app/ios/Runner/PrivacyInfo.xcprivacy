@@ -67,7 +67,7 @@
 	  and Health are declared separately.
 
 	  NSPrivacyAccessedAPITypes for the APP TARGET holds three entries. UserDefaults
-	  1C8F.1, for the App Group group.com.ownhub.app that home_widget writes the
+	  1C8F.1, for the App Group group.com.ownhub.fitness that home_widget writes the
 	  widget payload to (lib/app_state/home_widget_sync.dart). home_widget
 	  0.10.0 ships no privacy manifest of its own, so the reason is declared
 	  here. The widget extension declares the same reason in its own manifest.

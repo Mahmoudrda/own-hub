@@ -2,7 +2,7 @@ import Foundation
 
 /// Shared with Runner. Must match both entitlements files and
 /// `kWidgetAppGroup` in lib/app_state/home_widget_sync.dart.
-let ownHubAppGroup = "group.com.ownhub.app"
+let ownHubAppGroup = "group.com.ownhub.fitness"
 
 /// `kWidgetPayloadKey` in lib/features/today/domain/widget_projection.dart.
 let ownHubPayloadKey = "ownhub.widget.v1"

@@ -54,7 +54,7 @@ SYMBOLS="build/symbols/$VERSION-ios"
 
 # The iOS app the dSYMs and Dart symbols belong to, checked against
 # firebase_options.dart so a reconfigured project cannot point this elsewhere.
-IOS_APP_ID="1:681714989950:ios:0e2cab381dd5cd91fbd12f"
+IOS_APP_ID="1:681714989950:ios:02417d9df27fbcf2fbd12f"
 grep -q "appId: '$IOS_APP_ID'" lib/firebase_options.dart || stop "the iOS app id here no longer matches lib/firebase_options.dart."
 
 echo "== Own Hub iPhone build $VERSION (Xcode $XCODE) =="

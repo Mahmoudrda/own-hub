@@ -64,7 +64,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.681714989950-ig46eu1jg345idchla73e8f8v0s9gr86</string>
+				<string>com.googleusercontent.apps.681714989950-deq8mmf6lfmk9ou7vugq02eev2louetd</string>
 			</array>
 		</dict>
 		<!-- The Home Screen and Lock Screen widgets open the app with
@@ -75,7 +75,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.ownhub.app.widget</string>
+			<string>com.ownhub.fitness.widget</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>ownhub</string>

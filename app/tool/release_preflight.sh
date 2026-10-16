@@ -74,7 +74,7 @@ check "motion purpose string, both locales" "! grep -q '^  sensors_plus:' pubspe
 # path_provider is there for the exercise clip cache, and the file calls on
 # that folder read file timestamps: C617.1.
 check "file timestamps declared where used" "! grep -q '^  path_provider:' pubspec.yaml || grep -q 'C617.1' ios/Runner/PrivacyInfo.xcprivacy"
-check "both targets share the App Group"   "grep -q 'group.com.ownhub.app' ios/Runner/Runner.entitlements && grep -q 'group.com.ownhub.app' ios/OwnHubWidgets/OwnHubWidgets.entitlements"
+check "both targets share the App Group"   "grep -q 'group.com.ownhub.fitness' ios/Runner/Runner.entitlements && grep -q 'group.com.ownhub.fitness' ios/OwnHubWidgets/OwnHubWidgets.entitlements"
 # Present is not the same as true. The manifest shipped declaring zero collected
 # data types, with a header saying the app "carries no Firebase", on a binary
 # with five Firebase packages and `Firebase.initializeApp` on every launch.

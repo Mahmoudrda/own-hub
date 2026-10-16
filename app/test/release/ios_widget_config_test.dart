@@ -13,7 +13,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/home_widget_sync.dart';
 
-const String _group = 'group.com.ownhub.app';
+const String _group = 'group.com.ownhub.fitness';
 
 String _read(String path) => File(path).readAsStringSync();
 
@@ -106,7 +106,7 @@ void main() {
     final project = _read('ios/Runner.xcodeproj/project.pbxproj');
     expect(
       project,
-      contains('PRODUCT_BUNDLE_IDENTIFIER = com.ownhub.app.OwnHubWidgets;'),
+      contains('PRODUCT_BUNDLE_IDENTIFIER = com.ownhub.fitness.OwnHubWidgets;'),
     );
     expect(project, contains('"com.apple.product-type.app-extension"'));
     expect(

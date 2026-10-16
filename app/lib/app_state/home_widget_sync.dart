@@ -2,7 +2,7 @@
 ///
 /// The widgets (`ios/OwnHubWidgets`) are a separate process and cannot ask the
 /// app anything. They read one JSON string from the App Group
-/// `group.com.ownhub.app`, and this file writes it, through `home_widget`.
+/// `group.com.ownhub.fitness`, and this file writes it, through `home_widget`.
 /// What the string may contain is decided in `widget_projection.dart` and
 /// nowhere else.
 ///
@@ -50,7 +50,7 @@ import 'app_changes.dart';
 
 /// The App Group shared with the widget extension. Must match both
 /// entitlements files.
-const String kWidgetAppGroup = 'group.com.ownhub.app';
+const String kWidgetAppGroup = 'group.com.ownhub.fitness';
 
 /// The `kind` of each widget in `ios/OwnHubWidgets`. A reload names them.
 const List<String> kWidgetKinds = ['OwnHubWeek', 'OwnHubToday'];
