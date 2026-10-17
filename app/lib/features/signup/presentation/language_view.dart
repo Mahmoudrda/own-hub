@@ -176,6 +176,11 @@ Future<void> applyLanguage(
   LocaleScope.maybeOf(context)?.value = language.locale;
 }
 
+/// The name of the language the small switch button changes to, written in
+/// that language: "العربية" while English is on, "English" while Arabic is.
+String languageSwitchLabel({required bool isEnglish}) =>
+    isEnglish ? 'العربية' : 'English';
+
 /// "English · العربية" as two chips, for the welcome screen.
 ///
 /// Preselected from what the app opened in, which is her phone's language

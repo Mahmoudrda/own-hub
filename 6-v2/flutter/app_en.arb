@@ -4381,5 +4381,7 @@
   "remindersCantBeSetOnThisPhone": "Reminders can't be set on this phone.",
   "joinAsACoach": "Join as a coach",
   "howManyDaysAndForHowLong": "How many days, and for how long?",
-  "useADifferentNumber": "Use a different number"
+  "useADifferentNumber": "Use a different number",
+  "switchLanguageToArabic": "Switch language to Arabic",
+  "switchLanguageToEnglish": "Switch language to English"
 }

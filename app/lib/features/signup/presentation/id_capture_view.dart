@@ -31,6 +31,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
+import '../data/cover_fit_viewfinder.dart' show idCardAspectRatio;
 import '../domain/id_capture.dart';
 import 'widgets/capture_scaffold.dart';
 
@@ -254,7 +255,7 @@ class _IdCaptureViewState extends State<IdCaptureView>
       onClose: widget.onClose,
       frame: Container(
         width: 300,
-        height: 190,
+        height: 300 / idCardAspectRatio,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),

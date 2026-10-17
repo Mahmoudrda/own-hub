@@ -17772,6 +17772,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Use a different number'**
   String get useADifferentNumber;
+
+  /// No description provided for @switchLanguageToArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch language to Arabic'**
+  String get switchLanguageToArabic;
+
+  /// No description provided for @switchLanguageToEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch language to English'**
+  String get switchLanguageToEnglish;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -4381,5 +4381,7 @@
   "remindersCantBeSetOnThisPhone": "مينفعش نظبط تذكيرات على الموبايل ده.",
   "joinAsACoach": "انضمّي كمدرّبة",
   "howManyDaysAndForHowLong": "كام يوم في الأسبوع، وكل تمرين قد إيه؟",
-  "useADifferentNumber": "ادخلي برقم تاني"
+  "useADifferentNumber": "ادخلي برقم تاني",
+  "switchLanguageToArabic": "غيّري اللغة للعربية",
+  "switchLanguageToEnglish": "غيّري اللغة للإنجليزية"
 }

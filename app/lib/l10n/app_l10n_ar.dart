@@ -9926,4 +9926,10 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get useADifferentNumber => 'ادخلي برقم تاني';
+
+  @override
+  String get switchLanguageToArabic => 'غيّري اللغة للعربية';
+
+  @override
+  String get switchLanguageToEnglish => 'غيّري اللغة للإنجليزية';
 }

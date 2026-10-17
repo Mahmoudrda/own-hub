@@ -208,6 +208,17 @@ class _ProfileViewState extends State<ProfileView> {
             onTap: widget.onOpenTraining,
           ),
 
+        // The language chooser lives in the sign-up flow and is a setting all
+        // the same, which is why `AppRouter.ungatedScreens` keeps it
+        // reachable with sign-up dark. Without that this row was the one
+        // control in the product that could strand a woman in a language she
+        // does not read.
+        _row(
+          icon: Icons.language,
+          title: l10n.language,
+          subtitle: l10n.english_imxmn,
+          onTap: widget.onOpenLanguage,
+        ),
         _row(
           icon: Icons.self_improvement,
           title: l10n.myCycle,
@@ -231,17 +242,6 @@ class _ProfileViewState extends State<ProfileView> {
           onTap: _editDietary,
         ),
 
-        // The language chooser lives in the sign-up flow and is a setting all
-        // the same, which is why `AppRouter.ungatedScreens` keeps it
-        // reachable with sign-up dark. Without that this row was the one
-        // control in the product that could strand a woman in a language she
-        // does not read.
-        _row(
-          icon: Icons.language,
-          title: l10n.language,
-          subtitle: l10n.english_imxmn,
-          onTap: widget.onOpenLanguage,
-        ),
         _row(
           icon: Icons.notifications_none,
           title: l10n.notifications,

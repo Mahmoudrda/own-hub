@@ -56,6 +56,7 @@ import '../domain/id_capture.dart';
 import '../domain/liveness_challenge.dart';
 import '../domain/verification_evidence.dart';
 import 'frame_budget.dart';
+import 'cover_fit_viewfinder.dart';
 import 'frame_quality.dart';
 
 /// How often a preview frame is actually measured.
@@ -86,9 +87,9 @@ const int _steadyFramesBeforeAutoCapture = 3;
 ///
 /// So the measured box is defined against the frame's own long and short axes:
 /// a fifth of the long axis by half the short one, centred. Under the portrait
-/// mapping the card guide covers roughly a quarter of the long axis and
-/// three quarters of the short one, so this sits inside it whichever way the
-/// platform hands us the buffer. What it gives up is noticing a card with one
+/// mapping the card guide fills the full short axis and about half of the long
+/// one, so this sits inside it whichever way the platform hands us the
+/// buffer. What it gives up is noticing a card with one
 /// corner outside the guide, which is the gap already recorded at
 /// [CardFrameGate.minContrast].
 const double _cardRegionLongAxisFraction = 0.20;
@@ -303,7 +304,18 @@ class _LensSession implements CaptureSession, Viewfinder {
   }
 
   @override
-  Widget buildViewfinder() => CameraPreview(controller);
+  Widget buildViewfinder() {
+    // The selfie stays a portrait preview. The card fills its landscape frame,
+    // cropped, so the strip she sees is the middle of a photograph that is
+    // taken whole.
+    if (target == CaptureTarget.selfie) return CameraPreview(controller);
+    final ratio = controller.value.aspectRatio;
+    final upright = ratio > 1 ? Size(1, ratio) : Size(ratio, 1);
+    return CoverFitViewfinder(
+      previewSize: Size(upright.width * 1000, upright.height * 1000),
+      preview: CameraPreview(controller),
+    );
+  }
 
   @override
   Future<void> capture() async {

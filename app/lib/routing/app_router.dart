@@ -71,6 +71,7 @@ import '../domain/format/day_key.dart';
 import '../domain/format/number_label.dart' show countLabel;
 import '../ui/app_step_progress.dart';
 import '../ui/app_undo_snackbar.dart';
+import '../ui/language_switch.dart';
 import '../ui/screen_scope.dart';
 import '../domain/identity/user_roles.dart';
 import '../domain/rewards/personal_best_ledger.dart';
@@ -556,8 +557,16 @@ class AppRouter {
           // here, not while it is buried under one. See `app_changes.dart` for
           // what the plain listener cost at six screens deep.
           : (_) => RedrawOnChange(
-              builder: (context) =>
-                  ScreenScope(screenId: id, child: built(context)),
+              builder: (context) => ScreenScope(
+                screenId: id,
+                child: _languageSwitchScreens.contains(id)
+                    ? LanguageSwitchFrame(
+                        preference: localePreference,
+                        onDark: _opensALens.contains(id),
+                        child: built(context),
+                      )
+                    : built(context),
+              ),
             ),
     );
   }
@@ -6803,6 +6812,31 @@ class AppRouter {
   /// reaches any of them — which is what makes the niqab route camera-free
   /// structurally rather than by promise.
   static const Set<String> _opensALens = {'C10', 'C10b', 'C11'};
+
+  /// Screens that carry the small language button in a strip above them: the
+  /// sign-up and verification flow after the welcome screen (which has its own
+  /// two chips, and C02 is the language screen) and the four main tabs.
+  static const Set<String> _languageSwitchScreens = {
+    'C03',
+    'C04',
+    'C05',
+    'C06',
+    'C07',
+    'C08',
+    'C09',
+    'C09b',
+    'C10',
+    'C10b',
+    'C11',
+    'C12',
+    'C13',
+    'C14',
+    'C15',
+    'T01',
+    'R01',
+    'E01',
+    'P01',
+  };
 
   /// Liveness starts in this attempt that failed for want of a network. The
   /// reviewer is offered beside "Try again" from the third.

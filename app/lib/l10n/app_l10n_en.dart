@@ -9968,4 +9968,10 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get useADifferentNumber => 'Use a different number';
+
+  @override
+  String get switchLanguageToArabic => 'Switch language to Arabic';
+
+  @override
+  String get switchLanguageToEnglish => 'Switch language to English';
 }
