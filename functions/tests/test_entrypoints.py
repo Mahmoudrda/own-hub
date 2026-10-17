@@ -55,6 +55,8 @@ CALLABLES = {
     "accept_coach_invite",
     "admin_dashboard",
     "admin_logs",
+    "record_meal_photo_consent",
+    "analyze_meal_photo",
 }
 
 

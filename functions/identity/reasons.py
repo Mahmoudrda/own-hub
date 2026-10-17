@@ -228,6 +228,22 @@ REVIEW_CONSENT_MISSING = "review_consent_missing"
 machine-raised flag has no consent until she taps "Ask for the call".
 Reviewer-facing only."""
 
+# ---------------------------------------------------------- meal photos
+# analyze_meal_photo's refusals. Each is the whole message the app maps to its
+# own words; none says anything about her.
+
+MEAL_SCAN_DAILY_LIMIT = "meal_scan_daily_limit"
+"""Her own scans for today are used up (nutrition.config.MEAL_SCANS_PER_UID_PER_DAY)."""
+MEAL_SCANS_PAUSED = "meal_scans_paused"
+"""The app-wide daily cost cap is reached; scans resume tomorrow."""
+NO_FOOD_SEEN = "no_food_seen"
+"""The model saw no food or drink in the photo."""
+MEAL_UNCLEAR = "meal_unclear"
+"""The model answered, but not with anything usable: malformed or cut-off
+JSON, or no entry with a name and a sensible weight."""
+MEAL_SERVICE_UNAVAILABLE = "meal_service_unavailable"
+"""The model could not be reached or failed. Her scan is not counted."""
+
 
 # ------------------------------------------------- what crosses the wire
 #
@@ -322,3 +338,6 @@ Belt and braces against exactly one thing: somebody, one day, under deadline,
 passing an f-string into a reasons list and putting a sentence about a woman
 into a document support staff can read.
 """
+NOT_VERIFIED = "not_verified"
+"""A member-only callable was asked by an account that has not passed the
+women-only check. Meal scans spend money, so only verified members reach them."""

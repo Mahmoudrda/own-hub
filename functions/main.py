@@ -58,6 +58,8 @@ Callables, in the order a woman meets them:
     expire_stale_reviews      hourly  72-hour SLA -> RETRY_REQUIRED
     admin_dashboard           admin   counts only, for the owner's console
     admin_logs                admin   codes and times, a page at a time
+    record_meal_photo_consent free    E12, before her first meal photo
+    analyze_meal_photo        paid    E12/E13, one photo to foods, grams, macros
 
 Wire contract, agreed with the Flutter worker:
     `verify_identity` takes {front, back, frames, liveness:{sessionId}} and
@@ -1470,3 +1472,188 @@ def accept_coach_invite(request: https_fn.CallableRequest) -> dict:
         now=dt.datetime.now(dt.timezone.utc),
         timestamp=firestore.SERVER_TIMESTAMP,
     )
+
+
+# ------------------------------------------------------------- meal photos
+#
+# E12 and E13: she photographs a meal, the model names the foods and estimates
+# their grams, and every energy and macro number comes from nutrition/ (the
+# Egyptian dish table, then USDA FoodData Central). The photo is checked,
+# re-encoded without its metadata, sent once to Vertex AI in Frankfurt, and
+# never stored or logged, under the same rule as the ID photos at the top of
+# this file.
+
+
+@https_fn.on_call()
+def record_meal_photo_consent(request: https_fn.CallableRequest) -> dict:
+    """E12: her consent to send a meal photo to Google Vertex AI for an estimate.
+
+    Request {consentVersion, locale?, appVersion?}. The version must be
+    config.MEAL_PHOTO_CONSENT_VERSION; any other is agreement to words we
+    cannot account for and is refused with consent_missing. Recorded once at
+    users/{uid}/consents/meal-photo-v1; agreeing again changes nothing. A
+    locale or app version of the wrong shape is left out rather than stored.
+    """
+    uid = _require_auth(request)
+    data = _body(request)
+    version = data.get("consentVersion")
+    if isinstance(version, bool) or version != config.MEAL_PHOTO_CONSENT_VERSION:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
+        )
+    store.write_meal_photo_consent(uid, data.get("locale"), data.get("appVersion"))
+    return {"ok": True, "consentVersion": config.MEAL_PHOTO_CONSENT_VERSION}
+
+
+@https_fn.on_call()
+def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
+    """One meal photo to the foods on it, with grams and macros she can edit.
+
+    Request {imageJpeg: base64, locale: "en" | "ar"}. Order: App Check, auth,
+    body, consent (meal-photo-v1), the image's size and header, her daily
+    scans, the app's daily scans, then the image is decoded and re-encoded and
+    the model is called exactly once.
+
+    Response {items, totals, estimate: true}; nutrition/meal.py documents each
+    item. Refusals, each the whole message:
+      consent_missing            FAILED_PRECONDITION
+      image_undecodable,
+      image_too_large            INVALID_ARGUMENT
+      meal_scan_daily_limit,
+      meal_scans_paused          RESOURCE_EXHAUSTED
+      no_food_seen               NOT_FOUND
+      meal_unclear               FAILED_PRECONDITION
+      meal_service_unavailable   UNAVAILABLE (her scan is given back)
+    """
+    started = time.monotonic()
+    uid = _require_auth(request)
+    # Meal logging is for verified members only (the meal rules say the same),
+    # and a scan costs money, so nobody else reaches the model.
+    if _claim(request, "verified") is not True:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.NOT_VERIFIED
+        )
+    data = _body(request)
+    locale = data.get("locale")
+    if locale is not None and not store.valid_locale(locale):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    if not store.has_meal_photo_consent(uid):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
+        )
+
+    # Free checks first: the base64 length, the decode, and a JPEG, PNG or WebP
+    # header declaring a sane size. A request that is not a photo does not
+    # spend one of her scans.
+    raw = _decode_image(data.get("imageJpeg"), {})
+    refused = imagesize.refusal(raw)
+    if refused is not None:
+        raise https_fn.HttpsError(https_fn.FunctionsErrorCode.INVALID_ARGUMENT, refused)
+
+    from nutrition import config as meal_config
+
+    if (
+        store.uid_daily_count_and_increment(uid, meal_config.UID_COUNTER_FIELD)
+        > meal_config.MEAL_SCANS_PER_UID_PER_DAY
+    ):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.MEAL_SCAN_DAILY_LIMIT
+        )
+    if (
+        store.daily_count_and_increment(meal_config.GLOBAL_COUNTER_FIELD)
+        > meal_config.MEAL_SCANS_GLOBAL_PER_DAY
+    ):
+        logs.warn("meal_scans_paused", field=meal_config.GLOBAL_COUNTER_FIELD)
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.MEAL_SCANS_PAUSED
+        )
+
+    from nutrition import meal, model, photo
+
+    try:
+        jpeg = photo.reencode(raw)
+    except photo.PhotoRejected as rejected:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, rejected.code
+        )
+    finally:
+        del raw
+
+    try:
+        result = model.analyse(jpeg)
+    except model.ServiceUnavailable:
+        _refund_meal_scan(uid, meal_config.UID_COUNTER_FIELD)
+        _log_meal("unavailable", reasons.MEAL_SERVICE_UNAVAILABLE, started)
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.UNAVAILABLE, reasons.MEAL_SERVICE_UNAVAILABLE
+        )
+    except model.Unclear as unclear:
+        _log_meal(
+            "unclear",
+            reasons.MEAL_UNCLEAR,
+            started,
+            prompt_tokens=unclear.prompt_tokens,
+            output_tokens=unclear.output_tokens,
+        )
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.MEAL_UNCLEAR
+        )
+    finally:
+        del jpeg
+
+    if not result.items:
+        _log_meal(
+            "no_food",
+            reasons.NO_FOOD_SEEN,
+            started,
+            prompt_tokens=result.prompt_tokens,
+            output_tokens=result.output_tokens,
+        )
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.NOT_FOUND, reasons.NO_FOOD_SEEN
+        )
+
+    answer = meal.resolve(result.items)
+    _log_meal(
+        "estimated",
+        None,
+        started,
+        count=len(answer["items"]),
+        prompt_tokens=result.prompt_tokens,
+        output_tokens=result.output_tokens,
+    )
+    return answer
+
+
+def _refund_meal_scan(uid: str, field: str) -> None:
+    """Best effort: our outage must not cost her a scan, and a failed refund
+    must not turn the honest answer into a different error."""
+    try:
+        store.uid_daily_refund(uid, field)
+    except Exception:
+        logs.warn("meal_scan_refund_failed")
+
+
+def _log_meal(
+    outcome: str,
+    reason: Optional[str],
+    started: float,
+    *,
+    count: Optional[int] = None,
+    prompt_tokens: Optional[int] = None,
+    output_tokens: Optional[int] = None,
+) -> None:
+    """One decision line per model call: outcome, item count, latency and the
+    token usage Vertex AI reported. Never the photo, never a food name."""
+    fields: dict = {"outcome": outcome, "latencyMs": _ms(started)}
+    if reason:
+        fields["reasons"] = [reason]
+    if count is not None:
+        fields["count"] = count
+    if prompt_tokens is not None:
+        fields["promptTokens"] = prompt_tokens
+    if output_tokens is not None:
+        fields["outputTokens"] = output_tokens
+    logs.decision("analyze_meal_photo", **fields)

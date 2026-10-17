@@ -1,4 +1,5 @@
-"""Suite-wide guard: no test may open a real Firestore client or read a secret.
+"""Suite-wide guard: no test may open a real Firestore client, read a secret
+or call Vertex AI.
 
 The store module creates `firestore.Client(project="own-hub")` lazily. On a
 machine with Application Default Credentials that is the production project, so
@@ -53,4 +54,23 @@ def _no_real_firestore(monkeypatch):
     monkeypatch.setattr(
         review, "_now", lambda: dt.datetime(2026, 10, 2, 12, tzinfo=dt.timezone.utc)
     )
+
+    # No test may reach Vertex AI. A test that wants a model answer injects a
+    # fake client; any other call raises past nutrition.model's `except
+    # Exception`, so it fails the test instead of reading as an outage.
+    from nutrition import model as meal_model
+
+    meal_model.set_client(_NoVertex())
     yield
+    meal_model.set_client(None)
+
+
+class ReachedVertex(BaseException):
+    """Raised when a test calls the model without a fake client."""
+
+
+class _NoVertex:
+    class models:
+        @staticmethod
+        def generate_content(**kwargs):
+            raise ReachedVertex("a test reached Vertex AI: inject a fake client")

@@ -737,6 +737,13 @@ life-stage or allergy write reaches the cloud; the rules refuse those writes
 without it. Bumped whenever that wording changes. The wording is PENDING
 COUNSEL and PDPC approval of the consent mechanism."""
 
+MEAL_PHOTO_CONSENT_VERSION = 1
+"""Version of her consent to send a meal photo to Google Vertex AI in
+Frankfurt for an estimate (E12). Recorded once at
+users/{uid}/consents/meal-photo-v1 by record_meal_photo_consent;
+analyze_meal_photo refuses with consent_missing until it exists. Bumped
+whenever that wording changes, together with the app."""
+
 REVIEW_CONSENT_VERSION = 3
 """N7: version of the review-route consent recorded by request_review at
 users/{uid}/consents/review-v3 = {version, at, path, flagId}. Asking for a woman

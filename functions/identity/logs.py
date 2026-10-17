@@ -30,6 +30,8 @@ ALLOWED_KEYS = frozenset(
         "state",
         "count",
         "field",
+        "promptTokens",
+        "outputTokens",
     }
 )
 

@@ -30,6 +30,8 @@ USER_CALLABLES = (
     "submit_coach_certificate",
     "create_coach_invite",
     "accept_coach_invite",
+    "record_meal_photo_consent",
+    "analyze_meal_photo",
 )
 STAFF_CALLABLES = (
     "list_verification_flags",

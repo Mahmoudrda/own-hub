@@ -29,3 +29,9 @@ opencv-python-headless==4.10.0.84
 # ABI. Installing numpy 2.x alongside it produces a runtime crash inside cv2
 # rather than a resolver error, which is the worst kind.
 numpy==1.26.4
+
+# The meal photo estimate (analyze_meal_photo): Gemini on Vertex AI in
+# europe-west3. Imported lazily inside nutrition/model.py, so no other function
+# loads it. 2.28.0 is the version the tests ran against; the SDK's own retries
+# stay off, so a scan is exactly one model call.
+google-genai==2.28.0
