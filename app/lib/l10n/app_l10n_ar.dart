@@ -9994,4 +9994,238 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get startAgain => 'ابدئي من تاني';
+
+  @override
+  String photoNumberOfTotal(String number, String total) {
+    return 'صورة $number من $total';
+  }
+
+  @override
+  String get yourMuscles => 'عضلاتك';
+
+  @override
+  String get seeTheBack => 'شوفي من ورا';
+
+  @override
+  String get seeTheFront => 'شوفي من قدّام';
+
+  @override
+  String get dragToTurnTapAMuscleFor =>
+      'اسحبي عشان تلفّي. دوسي على أي عضلة تشوفي مجموعاتها.';
+
+  @override
+  String get moreTraining => 'تمرين أكتر';
+
+  @override
+  String lastTrainedDay(String day) {
+    return 'آخر تمرين: $day';
+  }
+
+  @override
+  String get notTrainedYet => 'لسه ما اتمرّنتيش هنا';
+
+  @override
+  String daysPluralOne1DayAgoOther(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'من $days يوم',
+      many: 'من $days يوم',
+      few: 'من $days أيام',
+      two: 'من يومين',
+      one: 'من يوم',
+      zero: 'النهارده',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mostTrained => 'الأكتر تمرين';
+
+  @override
+  String inSetsList(String list) {
+    return 'بعدد المجموعات: $list';
+  }
+
+  @override
+  String get movesYouCouldAdd => 'حركات ممكن تضيفيها';
+
+  @override
+  String get beenAWhile => 'بقالك فترة';
+
+  @override
+  String get balance => 'التوازن';
+
+  @override
+  String get yourUpperAndLowerBodyGotAbout =>
+      'الجزء الفوقاني والتحتاني من جسمك اتمرّنوا تقريبًا قد بعض.';
+
+  @override
+  String get theFrontAndBackOfYourBody =>
+      'قدّام جسمك وورا جسمك اتمرّنوا تقريبًا قد بعض.';
+
+  @override
+  String timesPlural0AllOfTheseSets(int times) {
+    String _temp0 = intl.Intl.pluralLogic(
+      times,
+      locale: localeName,
+      other: 'الجزء التحتاني من جسمك اتمرّن حوالي $times ضعف الفوقاني.',
+      many: 'الجزء التحتاني من جسمك اتمرّن حوالي $times ضعف الفوقاني.',
+      few: 'الجزء التحتاني من جسمك اتمرّن حوالي $times أضعاف الفوقاني.',
+      two: 'الجزء التحتاني من جسمك اتمرّن حوالي الضعف عن الفوقاني.',
+      one: 'الجزء التحتاني من جسمك اتمرّن أكتر شوية من الفوقاني.',
+      zero: 'كل المجموعات دي راحت للجزء التحتاني من جسمك.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timesPlural0AllOfTheseSets_izoa9(int times) {
+    String _temp0 = intl.Intl.pluralLogic(
+      times,
+      locale: localeName,
+      other: 'الجزء الفوقاني من جسمك اتمرّن حوالي $times ضعف التحتاني.',
+      many: 'الجزء الفوقاني من جسمك اتمرّن حوالي $times ضعف التحتاني.',
+      few: 'الجزء الفوقاني من جسمك اتمرّن حوالي $times أضعاف التحتاني.',
+      two: 'الجزء الفوقاني من جسمك اتمرّن حوالي الضعف عن التحتاني.',
+      one: 'الجزء الفوقاني من جسمك اتمرّن أكتر شوية من التحتاني.',
+      zero: 'كل المجموعات دي راحت للجزء الفوقاني من جسمك.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timesPlural0AllOfTheseSets_2tsm2(int times) {
+    String _temp0 = intl.Intl.pluralLogic(
+      times,
+      locale: localeName,
+      other: 'قدّام جسمك اتمرّن حوالي $times ضعف ورا.',
+      many: 'قدّام جسمك اتمرّن حوالي $times ضعف ورا.',
+      few: 'قدّام جسمك اتمرّن حوالي $times أضعاف ورا.',
+      two: 'قدّام جسمك اتمرّن حوالي الضعف عن ورا.',
+      one: 'قدّام جسمك اتمرّن أكتر شوية من ورا.',
+      zero: 'كل المجموعات دي راحت لقدّام جسمك.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timesPlural0AllOfTheseSets_1ysmj(int times) {
+    String _temp0 = intl.Intl.pluralLogic(
+      times,
+      locale: localeName,
+      other: 'ورا جسمك اتمرّن حوالي $times ضعف قدّام.',
+      many: 'ورا جسمك اتمرّن حوالي $times ضعف قدّام.',
+      few: 'ورا جسمك اتمرّن حوالي $times أضعاف قدّام.',
+      two: 'ورا جسمك اتمرّن حوالي الضعف عن قدّام.',
+      one: 'ورا جسمك اتمرّن أكتر شوية من قدّام.',
+      zero: 'كل المجموعات دي راحت لورا جسمك.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String inSetsUpperBodyUpperLowerBody(String upper, String lower) {
+    return 'بعدد المجموعات: الجزء الفوقاني $upper · الجزء التحتاني $lower';
+  }
+
+  @override
+  String inSetsFrontFrontBackBack(String front, String back) {
+    return 'بعدد المجموعات: قدّام $front · ورا $back';
+  }
+
+  @override
+  String get ifYouWouldLikeItMoreEven =>
+      'لو حابة يبقى متوازن أكتر، حركة ولا اتنين للجزء الفوقاني هيعملوا الفرق.';
+
+  @override
+  String get ifYouWouldLikeItMoreEven_fk4be =>
+      'لو حابة يبقى متوازن أكتر، حركة ولا اتنين للجزء التحتاني هيعملوا الفرق.';
+
+  @override
+  String get ifYouWouldLikeItMoreEven_1jmf2 =>
+      'لو حابة يبقى متوازن أكتر، حركة لقدّام جسمك هتعمل الفرق.';
+
+  @override
+  String get ifYouWouldLikeItMoreEven_v8jiq =>
+      'لو حابة يبقى متوازن أكتر، حركة لورا جسمك هتعمل الفرق.';
+
+  @override
+  String get logYourFirstWorkoutAndYourMuscles =>
+      'سجّلي أول تمرين ليكي، وعضلاتك هتنوّر هنا.';
+
+  @override
+  String get allYourMuscles => 'كل عضلاتك';
+
+  @override
+  String get howWeCountASetCountsIn =>
+      'إزاي بنحسب: المجموعة بتتحسب كاملة للعضلة اللي الحركة بتشغّلها أكتر، ونص مجموعة لكل عضلة بتساعد. الإطالات مش بتتحسب.';
+
+  @override
+  String bodyMapInSetsList(String list) {
+    return 'خريطة الجسم. بعدد المجموعات: $list';
+  }
+
+  @override
+  String get whatYouTrainedOnABodyMap => 'اللي اتمرّنتي عليه، على خريطة الجسم';
+
+  @override
+  String daysPluralOne1DayOtherDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days يوم',
+      many: '$days يوم',
+      few: '$days أيام',
+      two: 'يومين',
+      one: 'يوم واحد',
+      zero: '$days يوم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysPluralOneSetsIn1Day(int days, String sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'مجموعات آخر $days يوم: $sets',
+      many: 'مجموعات آخر $days يوم: $sets',
+      few: 'مجموعات آخر $days أيام: $sets',
+      two: 'مجموعات آخر يومين: $sets',
+      one: 'مجموعات آخر يوم: $sets',
+      zero: 'مجموعات آخر $days يوم: $sets',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysPluralOneSetsIn1Day_1w8hx(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'مجموعات آخر $days يوم',
+      many: 'مجموعات آخر $days يوم',
+      few: 'مجموعات آخر $days أيام',
+      two: 'مجموعات آخر يومين',
+      one: 'مجموعات آخر يوم',
+      zero: 'مجموعات آخر $days يوم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysPluralOneNoSetsLoggedToday(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'مفيش مجموعات متسجّلة في آخر $days يوم.',
+      many: 'مفيش مجموعات متسجّلة في آخر $days يوم.',
+      few: 'مفيش مجموعات متسجّلة في آخر $days أيام.',
+      two: 'مفيش مجموعات متسجّلة في آخر يومين.',
+      one: 'مفيش مجموعات متسجّلة النهارده.',
+      zero: 'مفيش مجموعات متسجّلة.',
+    );
+    return '$_temp0';
+  }
 }

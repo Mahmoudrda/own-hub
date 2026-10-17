@@ -10039,4 +10039,214 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get startAgain => 'Start again';
+
+  @override
+  String photoNumberOfTotal(String number, String total) {
+    return 'Photo $number of $total';
+  }
+
+  @override
+  String get yourMuscles => 'Your muscles';
+
+  @override
+  String get seeTheBack => 'See the back';
+
+  @override
+  String get seeTheFront => 'See the front';
+
+  @override
+  String get dragToTurnTapAMuscleFor =>
+      'Drag to turn. Tap a muscle for its sets.';
+
+  @override
+  String get moreTraining => 'More training';
+
+  @override
+  String lastTrainedDay(String day) {
+    return 'Last trained: $day';
+  }
+
+  @override
+  String get notTrainedYet => 'Not trained yet';
+
+  @override
+  String daysPluralOne1DayAgoOther(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mostTrained => 'Most trained';
+
+  @override
+  String inSetsList(String list) {
+    return 'In sets: $list';
+  }
+
+  @override
+  String get movesYouCouldAdd => 'Moves you could add';
+
+  @override
+  String get beenAWhile => 'Been a while';
+
+  @override
+  String get balance => 'Balance';
+
+  @override
+  String get yourUpperAndLowerBodyGotAbout =>
+      'Your upper and lower body got about the same.';
+
+  @override
+  String get theFrontAndBackOfYourBody =>
+      'The front and back of your body got about the same.';
+
+  @override
+  String timesPlural0AllOfTheseSets(int times) {
+    String _temp0 = intl.Intl.pluralLogic(
+      times,
+      locale: localeName,
+      other:
+          'Your lower body got about $times times as much as your upper body.',
+      two: 'Your lower body got about twice as much as your upper body.',
+      one: 'Your lower body got a little more than your upper body.',
+      zero: 'All of these sets went to your lower body.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timesPlural0AllOfTheseSets_izoa9(int times) {
+    String _temp0 = intl.Intl.pluralLogic(
+      times,
+      locale: localeName,
+      other:
+          'Your upper body got about $times times as much as your lower body.',
+      two: 'Your upper body got about twice as much as your lower body.',
+      one: 'Your upper body got a little more than your lower body.',
+      zero: 'All of these sets went to your upper body.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timesPlural0AllOfTheseSets_2tsm2(int times) {
+    String _temp0 = intl.Intl.pluralLogic(
+      times,
+      locale: localeName,
+      other:
+          'The front of your body got about $times times as much as the back.',
+      two: 'The front of your body got about twice as much as the back.',
+      one: 'The front of your body got a little more than the back.',
+      zero: 'All of these sets went to the front of your body.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timesPlural0AllOfTheseSets_1ysmj(int times) {
+    String _temp0 = intl.Intl.pluralLogic(
+      times,
+      locale: localeName,
+      other:
+          'The back of your body got about $times times as much as the front.',
+      two: 'The back of your body got about twice as much as the front.',
+      one: 'The back of your body got a little more than the front.',
+      zero: 'All of these sets went to the back of your body.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String inSetsUpperBodyUpperLowerBody(String upper, String lower) {
+    return 'In sets: upper body $upper · lower body $lower';
+  }
+
+  @override
+  String inSetsFrontFrontBackBack(String front, String back) {
+    return 'In sets: front $front · back $back';
+  }
+
+  @override
+  String get ifYouWouldLikeItMoreEven =>
+      'If you would like it more even, an upper-body move or two would do it.';
+
+  @override
+  String get ifYouWouldLikeItMoreEven_fk4be =>
+      'If you would like it more even, a lower-body move or two would do it.';
+
+  @override
+  String get ifYouWouldLikeItMoreEven_1jmf2 =>
+      'If you would like it more even, a move for the front of your body would do it.';
+
+  @override
+  String get ifYouWouldLikeItMoreEven_v8jiq =>
+      'If you would like it more even, a move for the back of your body would do it.';
+
+  @override
+  String get logYourFirstWorkoutAndYourMuscles =>
+      'Log your first workout and your muscles light up here.';
+
+  @override
+  String get allYourMuscles => 'All your muscles';
+
+  @override
+  String get howWeCountASetCountsIn =>
+      'How we count: a set counts in full for the muscle a move works most, and as half a set for each muscle that helps. Stretches are not counted.';
+
+  @override
+  String bodyMapInSetsList(String list) {
+    return 'Body map. In sets: $list';
+  }
+
+  @override
+  String get whatYouTrainedOnABodyMap => 'What you trained, on a body map';
+
+  @override
+  String daysPluralOne1DayOtherDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysPluralOneSetsIn1Day(int days, String sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Sets in $days days: $sets',
+      one: 'Sets in 1 day: $sets',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysPluralOneSetsIn1Day_1w8hx(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Sets in $days days',
+      one: 'Sets in 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysPluralOneNoSetsLoggedToday(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'No sets logged in the last $days days.',
+      one: 'No sets logged today.',
+    );
+    return '$_temp0';
+  }
 }

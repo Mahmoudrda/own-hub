@@ -373,6 +373,9 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
   }
 
   @override
+  int get neededCount => steps.isEmpty ? 1 : steps.length;
+
+  @override
   bool get looksLikeFront => _takenLooksLikeFront;
 
   @override
@@ -399,8 +402,19 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
     } catch (_) {
       // Disposing is the point; a stream that has already stopped is fine.
     }
-    await controller.dispose();
-    await _faces.close();
+    // Closing is called on the way out of a screen and when the app goes to
+    // the background, often unawaited. It must release what it can and never
+    // throw into a zone nobody is listening to.
+    try {
+      await controller.dispose();
+    } catch (error) {
+      if (kDebugMode) debugPrint('camera dispose failed: $error');
+    }
+    try {
+      await _faces.close();
+    } catch (error) {
+      if (kDebugMode) debugPrint('detector close failed: $error');
+    }
     await _states.close();
   }
 
@@ -732,7 +746,15 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
 
       final shot = await controller.takePicture();
       final bytes = await _readAndDelete(shot);
-      if (bytes == null || _closed) return;
+      if (_closed) return;
+      if (bytes == null) {
+        // The photograph could not be read. Nothing was taken for this step,
+        // so the preview and its hints come back and she presses again.
+        _steadyFrames = 0;
+        _emit(_framing(sharp: false));
+        await _resumeStream();
+        return;
+      }
 
       if (kDebugMode && !frameIsWithinBudget(bytes)) {
         debugPrint(
@@ -759,9 +781,7 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
         _step++;
         _steadyFrames = 0;
         _emit(_framing(sharp: false));
-        if (!_closed && !controller.value.isStreamingImages) {
-          await controller.startImageStream(_onFrame);
-        }
+        await _resumeStream();
         return;
       }
 
@@ -769,15 +789,31 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
       // here, and the review she sees next needs no camera.
       _done = true;
       _emit(const CaptureState.captured());
-    } on CameraException catch (error) {
-      if (kDebugMode) debugPrint('capture failed: ${error.code}');
+    } catch (error) {
+      // Never out of here. A camera that failed, or one released under the
+      // shutter because the app went to the background, is a frame not taken,
+      // not a crash on the screen she is holding.
+      if (kDebugMode) debugPrint('capture failed: $error');
+      if (_closed) return;
       _steadyFrames = 0;
       _emit(_framing(sharp: false));
-      if (!_closed && !controller.value.isStreamingImages) {
-        await controller.startImageStream(_onFrame);
-      }
+      await _resumeStream();
     } finally {
       _taking = false;
+    }
+  }
+
+  /// Starts the preview stream again after the shutter stopped it, so the
+  /// framing hints keep coming. Quietly does nothing on a closed or failed
+  /// camera: the next press, or the screen reopening it, is the recovery.
+  Future<void> _resumeStream() async {
+    if (_closed) return;
+    try {
+      if (!controller.value.isStreamingImages) {
+        await controller.startImageStream(_onFrame);
+      }
+    } catch (error) {
+      if (kDebugMode) debugPrint('could not restart the preview: $error');
     }
   }
 

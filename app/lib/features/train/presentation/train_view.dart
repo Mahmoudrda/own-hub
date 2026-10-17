@@ -65,6 +65,7 @@ class TrainView extends StatelessWidget {
     this.onFollowAlong,
     this.onShortSession,
     this.onOpenExerciseLibrary,
+    this.onOpenMuscles,
     this.onSelectTab,
     this.shortSessions,
     this.programTitle,
@@ -112,6 +113,9 @@ class TrainView extends StatelessWidget {
   /// The exercise library (`R14`). Null while the phone holds no library, so
   /// an empty one is never offered.
   final VoidCallback? onOpenExerciseLibrary;
+
+  /// Her muscles on a body she can turn (`P06`).
+  final VoidCallback? onOpenMuscles;
 
   final ValueChanged<String>? onSelectTab;
 
@@ -352,6 +356,19 @@ class TrainView extends StatelessWidget {
               ),
               trailing: const AppChevron(),
               onTap: onOpenExerciseLibrary,
+            ),
+          if (AppRouter.screenIsOn('P06') && onOpenMuscles != null)
+            AppListItem(
+              key: const ValueKey('r01-muscles'),
+              title: l10n.yourMuscles,
+              subtitle: l10n.whatYouTrainedOnABodyMap,
+              leading: const Icon(
+                Icons.accessibility_new,
+                size: 24,
+                color: AppColors.primaryDim,
+              ),
+              trailing: const AppChevron(),
+              onTap: onOpenMuscles,
             ),
           if (AppRouter.screenIsOn('R05') && showGentlerOption)
             AppListItem(

@@ -215,6 +215,10 @@ enum Feature {
   /// The progress card she can share (`P05`).
   shareCard,
 
+  /// Her muscles on a body she can turn, coloured by the sets she logged
+  /// (`P06`).
+  muscleMap,
+
   /// Meals for today (`Y07`): up to three of Rahma's recipes, picked from
   /// today's check-in.
   cycleMeals,
@@ -304,6 +308,7 @@ enum Feature {
     personalBests ||
     bodyPrivately ||
     shareCard ||
+    muscleMap ||
     trainingStreak => progress,
     weeklyChallenge || finishReveal => train,
     cycleMeals || cycleCalendar || cyclePatterns => cycle,
@@ -483,6 +488,7 @@ class FeatureFlags {
     Feature.personalBests: true,
     Feature.bodyPrivately: true,
     Feature.shareCard: true,
+    Feature.muscleMap: true,
     Feature.cycleMeals: true,
     Feature.cycleCalendar: true,
     Feature.cyclePatterns: true,

@@ -52,9 +52,13 @@ class _FakeSession implements CaptureSession, CaptureReview {
     this.steps = const <CaptureGuidance>[],
     this.hint,
     this.faceOnBack = false,
+    this.finishEarly = false,
   }) {
     _state = _framingFor(0);
   }
+
+  /// A broken run: `captured` arrives one frame short of the steps.
+  final bool finishEarly;
 
   final CaptureTarget target;
   final List<CaptureGuidance> steps;
@@ -117,7 +121,8 @@ class _FakeSession implements CaptureSession, CaptureReview {
       return;
     }
     answered.add(steps[_step]);
-    if (_step + 1 < steps.length) {
+    final last = finishEarly ? steps.length - 1 : steps.length;
+    if (_step + 1 < last) {
       _step++;
       emit(_framingFor(_step));
     } else {
@@ -133,6 +138,9 @@ class _FakeSession implements CaptureSession, CaptureReview {
 
   @override
   int get takenCount => steps.isEmpty ? (_cardTaken ? 1 : 0) : answered.length;
+
+  @override
+  int get neededCount => steps.isEmpty ? 1 : steps.length;
 
   @override
   Widget buildTaken(int index) =>
@@ -154,11 +162,15 @@ class _FakeService implements CaptureService {
     this.steps = const <CaptureGuidance>[],
     this.hint,
     this.faceOnBack = false,
+    this.finishEarlyOnce = false,
   });
 
   final List<CaptureGuidance> steps;
   final CaptureGuidance? hint;
   final bool faceOnBack;
+
+  /// The first session opened ends one frame short; later ones are whole.
+  final bool finishEarlyOnce;
   final List<_FakeSession> opened = <_FakeSession>[];
 
   @override
@@ -168,6 +180,7 @@ class _FakeService implements CaptureService {
       steps: target == CaptureTarget.selfie ? steps : const [],
       hint: hint,
       faceOnBack: faceOnBack,
+      finishEarly: finishEarlyOnce && opened.isEmpty,
     );
     opened.add(session);
     return session;
@@ -639,6 +652,235 @@ void main() {
     });
   });
 
+  group('leaving for a woman reviewer leaves nothing running', () {
+    for (final screen in const ['C10', 'C10b', 'C11']) {
+      testWidgets('on $screen the camera is closed and the photos wiped first', (
+        tester,
+      ) async {
+        final service = _FakeService(steps: _challenge);
+        _FakeSession? session;
+        var closedFirst = false;
+        var wipedFirst = false;
+        void ask() {
+          final open = session!;
+          closedFirst = open.closed;
+          wipedFirst = open.discards == 1;
+        }
+
+        await tester.pumpWidget(
+          _host(switch (screen) {
+            'C10' => IdCaptureView(captureService: service, onAskWoman: ask),
+            'C10b' => IdCaptureView(
+              captureService: service,
+              side: CaptureTarget.idBack,
+              onAskWoman: ask,
+            ),
+            _ => SelfieCaptureView(captureService: service, onAskWoman: ask),
+          }),
+        );
+        await tester.pumpAndSettle();
+        if (screen == 'C10b') await _tap(tester, 'Ready');
+        session = service.opened.single;
+        await _tap(tester, screen == 'C11' ? 'Take photo' : 'Take it myself');
+
+        await _tap(tester, 'Having trouble? Ask a woman to check you');
+
+        expect(closedFirst, isTrue, reason: 'closed before the reviewer');
+        expect(wipedFirst, isTrue, reason: 'wiped before the reviewer');
+        // Nothing left to fire under the reviewer screen.
+        expect(find.text('Use this photo'), findsNothing);
+        expect(find.text('Use these photos'), findsNothing);
+      });
+    }
+
+    testWidgets('back from the reviewer, the selfie starts clean at step 1', (
+      tester,
+    ) async {
+      final service = _FakeService(steps: _challenge);
+      final navigator = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorKey: navigator,
+          localizationsDelegates: AppL10n.localizationsDelegates,
+          supportedLocales: AppL10n.supportedLocales,
+          home: Builder(
+            builder: (context) => SelfieCaptureView(
+              captureService: service,
+              onAskWoman: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const SizedBox()),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, 'Take photo');
+      await _tap(tester, 'Take photo');
+      expect(find.text('Step 3 of 4'), findsOneWidget);
+
+      await _tap(tester, 'Having trouble? Ask a woman to check you');
+      navigator.currentState!.pop();
+      await tester.pumpAndSettle();
+
+      expect(service.opened, hasLength(2), reason: 'a fresh camera');
+      expect(find.text('Step 1 of 4'), findsOneWidget);
+      expect(service.opened.first.answered, isEmpty);
+    });
+  });
+
+  group('the review gate counts the frames', () {
+    testWidgets('a set one frame short is never offered, and the steps restart', (
+      tester,
+    ) async {
+      final service = _FakeService(steps: _challenge, finishEarlyOnce: true);
+      var captured = 0;
+      await tester.pumpWidget(
+        _host(
+          SelfieCaptureView(
+            captureService: service,
+            onCaptured: () => captured++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (var i = 0; i < 3; i++) {
+        await _tap(tester, 'Take photo');
+      }
+
+      // Three frames for four steps: no review, a fresh run.
+      expect(find.text('Use these photos'), findsNothing);
+      expect(service.opened.first.discards, 1);
+      expect(service.opened, hasLength(2));
+      expect(find.text('Step 1 of 4'), findsOneWidget);
+
+      for (var i = 0; i < 4; i++) {
+        await _tap(tester, 'Take photo');
+      }
+      expect(_shutter(tester), isNotNull, reason: 'a whole set may be used');
+      await _tap(tester, 'Use these photos');
+      expect(captured, 1);
+    });
+
+    testWidgets('each thumbnail is read out as Photo n of N', (tester) async {
+      final handle = tester.ensureSemantics();
+      final service = _FakeService(steps: _challenge);
+      await tester.pumpWidget(
+        _host(SelfieCaptureView(captureService: service)),
+      );
+      await tester.pumpAndSettle();
+      for (var i = 0; i < 4; i++) {
+        await _tap(tester, 'Take photo');
+      }
+      for (var n = 1; n <= 4; n++) {
+        expect(find.bySemanticsLabel('Photo $n of 4'), findsOneWidget);
+      }
+      handle.dispose();
+    });
+  });
+
+  group('leaving mid-steps wipes the frames', () {
+    testWidgets('closing C11 halfway zeroes what was taken', (tester) async {
+      final service = _FakeService(steps: _challenge);
+      await tester.pumpWidget(
+        _host(SelfieCaptureView(captureService: service)),
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, 'Take photo');
+      await _tap(tester, 'Take photo');
+
+      await tester.pumpWidget(_host(const SizedBox()));
+      await tester.pumpAndSettle();
+
+      final session = service.opened.single;
+      expect(session.discards, 1);
+      expect(session.answered, isEmpty);
+      expect(session.closed, isTrue);
+    });
+
+    testWidgets('photos she chose to use are the submit\'s to wipe', (
+      tester,
+    ) async {
+      final service = _FakeService(steps: _challenge);
+      await tester.pumpWidget(
+        _host(SelfieCaptureView(captureService: service, onCaptured: () {})),
+      );
+      await tester.pumpAndSettle();
+      for (var i = 0; i < 4; i++) {
+        await _tap(tester, 'Take photo');
+      }
+      await _tap(tester, 'Use these photos');
+
+      await tester.pumpWidget(_host(const SizedBox()));
+      await tester.pumpAndSettle();
+      expect(service.opened.single.discards, 0);
+    });
+  });
+
+  group('the app going to the background releases the camera', () {
+    for (final screen in const ['C10', 'C11']) {
+      testWidgets('on $screen, and it opens again on return', (tester) async {
+        final service = _FakeService(steps: _challenge);
+        await tester.pumpWidget(
+          _host(
+            screen == 'C10'
+                ? IdCaptureView(captureService: service)
+                : SelfieCaptureView(captureService: service),
+          ),
+        );
+        await tester.pumpAndSettle();
+        if (screen == 'C11') await _tap(tester, 'Take photo');
+        final first = service.opened.single;
+
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        await tester.pumpAndSettle();
+
+        expect(first.closed, isTrue);
+        expect(service.opened, hasLength(1), reason: 'nothing opens while away');
+        if (screen == 'C11') {
+          expect(first.discards, 1, reason: 'an unfinished run is wiped');
+        }
+
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pumpAndSettle();
+
+        expect(service.opened, hasLength(2));
+        expect(_shutter(tester), isNotNull);
+        if (screen == 'C11') {
+          expect(find.text('Step 1 of 4'), findsOneWidget);
+        }
+      });
+    }
+
+    testWidgets('a photo under review stays, only the camera goes', (
+      tester,
+    ) async {
+      final service = _FakeService();
+      await tester.pumpWidget(_host(IdCaptureView(captureService: service)));
+      await tester.pumpAndSettle();
+      await _tap(tester, 'Take it myself');
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pumpAndSettle();
+      expect(service.opened.single.closed, isTrue);
+      expect(service.opened.single.discards, 0);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(service.opened, hasLength(1));
+      expect(find.text('Use this photo'), findsOneWidget);
+    });
+  });
+
   group('the real camera session keeps the shutter hers', () {
     // The view tests run against fakes, and the bug lived in the camera
     // service: a selfie tap dropped unless the frame was "sharp", and frames
@@ -673,6 +915,25 @@ void main() {
   });
 
   group('the frames are wiped, not dropped', () {
+    test('a new front zeroes frames left from an earlier run', () {
+      final stale = Uint8List.fromList([5, 5]);
+      final evidence = VerificationEvidence()..addFrame(stale);
+
+      evidence.holdCardSide(CaptureTarget.idFront, Uint8List.fromList([1]));
+
+      expect(evidence.frames, isEmpty);
+      expect(stale, [0, 0]);
+    });
+
+    test('the back keeps the frames of the run it belongs to', () {
+      final frame = Uint8List.fromList([5, 5]);
+      final evidence = VerificationEvidence()
+        ..holdCardSide(CaptureTarget.idFront, Uint8List.fromList([1]))
+        ..addFrame(frame)
+        ..holdCardSide(CaptureTarget.idBack, Uint8List.fromList([2]));
+      expect(evidence.frames.single, same(frame));
+    });
+
     test('dropFrames leaves the card and zeroes the frames', () {
       final frame = Uint8List.fromList([7, 7, 7]);
       final front = Uint8List.fromList([1, 2]);

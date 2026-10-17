@@ -312,6 +312,11 @@ abstract class CaptureReview {
   /// of the card, one per step for the selfie.
   int get takenCount;
 
+  /// How many photographs a complete set is: one for a side of the card, one
+  /// per server step for the selfie. A set that is not exactly this size is
+  /// never offered for use, because the server matches frame `n` to step `n`.
+  int get neededCount;
+
   /// Photograph [index], in the order they were taken, drawn to fill its box.
   Widget buildTaken(int index);
 

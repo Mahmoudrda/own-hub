@@ -55,6 +55,7 @@ final FeatureFlags _shipping = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.personalBests: true,
   Feature.bodyPrivately: true,
   Feature.shareCard: true,
+  Feature.muscleMap: true,
   Feature.cycle: true,
   Feature.cycleCalendar: true,
   Feature.cyclePatterns: true,
@@ -281,6 +282,24 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   'P01->P05': (
     file: 'lib/features/progress/presentation/progress_view.dart',
     guard: "if (AppRouter.screenIsOn('P05'))",
+  ),
+  'P01->P06': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('P06'))",
+  ),
+  'R01->P06': (
+    file: 'lib/features/train/presentation/train_view.dart',
+    guard: "if (AppRouter.screenIsOn('P06') && onOpenMuscles != null)",
+  ),
+  // P06 names moves for a muscle group and links them to their demo, and to
+  // the library, only while each is on.
+  'P06->R15': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenMove: screenIsOn('R15')",
+  ),
+  'P06->R14': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenLibrary: screenIsOn('R14') && !library.isEmpty",
   ),
   'R01->R11': (
     file: 'lib/features/train/presentation/train_view.dart',

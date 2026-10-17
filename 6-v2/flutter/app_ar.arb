@@ -4402,5 +4402,191 @@
   "havingTroubleAskAWomanToCheck": "في مشكلة؟ اطلبي واحدة ست تتحقق منك",
   "timeIsUpForThisStep": "وقت الخطوة دي خلص",
   "forYourSafetyItStaysOpenA": "عشان أمانك، الخطوة دي بتفضل مفتوحة كام دقيقة بس. ابدئي من تاني، مش هتاخد وقت.",
-  "startAgain": "ابدئي من تاني"
+  "startAgain": "ابدئي من تاني",
+  "photoNumberOfTotal": "صورة {number} من {total}",
+  "@photoNumberOfTotal": {
+    "description": "Screen reader label on each selfie thumbnail on the C11 review. The count comes from the server's liveness challenge, so it cannot be baked into the sentence.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "yourMuscles": "عضلاتك",
+  "seeTheBack": "شوفي من ورا",
+  "seeTheFront": "شوفي من قدّام",
+  "dragToTurnTapAMuscleFor": "اسحبي عشان تلفّي. دوسي على أي عضلة تشوفي مجموعاتها.",
+  "moreTraining": "تمرين أكتر",
+  "lastTrainedDay": "آخر تمرين: {day}",
+  "@lastTrainedDay": {
+    "description": "P06: the last day she logged a set for this muscle group. {day} is Today, Yesterday, a weekday name, or 'N days ago'.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "Tuesday"
+      }
+    }
+  },
+  "notTrainedYet": "لسه ما اتمرّنتيش هنا",
+  "daysPluralOne1DayAgoOther": "{days, plural, zero{النهارده} one{من يوم} two{من يومين} few{من {days} أيام} many{من {days} يوم} other{من {days} يوم}}",
+  "@daysPluralOne1DayAgoOther": {
+    "description": "P06: how long since a muscle group last had a set, when it is more than a week. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "mostTrained": "الأكتر تمرين",
+  "inSetsList": "بعدد المجموعات: {list}",
+  "@inSetsList": {
+    "description": "P06 most trained: her top muscle groups with their weighted sets, joined with a middle dot, e.g. 'Glutes 9 · Front of thighs 6'.",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "example": "Glutes 9 · Front of thighs 6"
+      }
+    }
+  },
+  "movesYouCouldAdd": "حركات ممكن تضيفيها",
+  "beenAWhile": "بقالك فترة",
+  "balance": "التوازن",
+  "yourUpperAndLowerBodyGotAbout": "الجزء الفوقاني والتحتاني من جسمك اتمرّنوا تقريبًا قد بعض.",
+  "theFrontAndBackOfYourBody": "قدّام جسمك وورا جسمك اتمرّنوا تقريبًا قد بعض.",
+  "timesPlural0AllOfTheseSets": "{times, plural, =0{كل المجموعات دي راحت للجزء التحتاني من جسمك.} =1{الجزء التحتاني من جسمك اتمرّن أكتر شوية من الفوقاني.} =2{الجزء التحتاني من جسمك اتمرّن حوالي الضعف عن الفوقاني.} few{الجزء التحتاني من جسمك اتمرّن حوالي {times} أضعاف الفوقاني.} many{الجزء التحتاني من جسمك اتمرّن حوالي {times} ضعف الفوقاني.} other{الجزء التحتاني من جسمك اتمرّن حوالي {times} ضعف الفوقاني.}}",
+  "@timesPlural0AllOfTheseSets": {
+    "description": "P06 balance: her lower body had more sets than her upper body. 0 means every set went to the lower body, 1 a little more, otherwise about how many times as much. Never a judgement.",
+    "placeholders": {
+      "times": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "timesPlural0AllOfTheseSets_izoa9": "{times, plural, =0{كل المجموعات دي راحت للجزء الفوقاني من جسمك.} =1{الجزء الفوقاني من جسمك اتمرّن أكتر شوية من التحتاني.} =2{الجزء الفوقاني من جسمك اتمرّن حوالي الضعف عن التحتاني.} few{الجزء الفوقاني من جسمك اتمرّن حوالي {times} أضعاف التحتاني.} many{الجزء الفوقاني من جسمك اتمرّن حوالي {times} ضعف التحتاني.} other{الجزء الفوقاني من جسمك اتمرّن حوالي {times} ضعف التحتاني.}}",
+  "@timesPlural0AllOfTheseSets_izoa9": {
+    "description": "P06 balance: her upper body had more sets than her lower body. 0 means every set, 1 a little more, otherwise about how many times as much.",
+    "placeholders": {
+      "times": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "timesPlural0AllOfTheseSets_2tsm2": "{times, plural, =0{كل المجموعات دي راحت لقدّام جسمك.} =1{قدّام جسمك اتمرّن أكتر شوية من ورا.} =2{قدّام جسمك اتمرّن حوالي الضعف عن ورا.} few{قدّام جسمك اتمرّن حوالي {times} أضعاف ورا.} many{قدّام جسمك اتمرّن حوالي {times} ضعف ورا.} other{قدّام جسمك اتمرّن حوالي {times} ضعف ورا.}}",
+  "@timesPlural0AllOfTheseSets_2tsm2": {
+    "description": "P06 balance: the front of her body had more sets than the back. 0 means every set, 1 a little more, otherwise about how many times as much.",
+    "placeholders": {
+      "times": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "timesPlural0AllOfTheseSets_1ysmj": "{times, plural, =0{كل المجموعات دي راحت لورا جسمك.} =1{ورا جسمك اتمرّن أكتر شوية من قدّام.} =2{ورا جسمك اتمرّن حوالي الضعف عن قدّام.} few{ورا جسمك اتمرّن حوالي {times} أضعاف قدّام.} many{ورا جسمك اتمرّن حوالي {times} ضعف قدّام.} other{ورا جسمك اتمرّن حوالي {times} ضعف قدّام.}}",
+  "@timesPlural0AllOfTheseSets_1ysmj": {
+    "description": "P06 balance: the back of her body had more sets than the front. 0 means every set, 1 a little more, otherwise about how many times as much.",
+    "placeholders": {
+      "times": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "inSetsUpperBodyUpperLowerBody": "بعدد المجموعات: الجزء الفوقاني {upper} · الجزء التحتاني {lower}",
+  "@inSetsUpperBodyUpperLowerBody": {
+    "description": "P06 balance: weighted sets for her upper and lower body in the window. Numbers can be halves.",
+    "placeholders": {
+      "upper": {
+        "type": "String",
+        "example": "6"
+      },
+      "lower": {
+        "type": "String",
+        "example": "18.5"
+      }
+    }
+  },
+  "inSetsFrontFrontBackBack": "بعدد المجموعات: قدّام {front} · ورا {back}",
+  "@inSetsFrontFrontBackBack": {
+    "description": "P06 balance: weighted sets for the front and back of her body in the window. Numbers can be halves.",
+    "placeholders": {
+      "front": {
+        "type": "String",
+        "example": "8"
+      },
+      "back": {
+        "type": "String",
+        "example": "16.5"
+      }
+    }
+  },
+  "ifYouWouldLikeItMoreEven": "لو حابة يبقى متوازن أكتر، حركة ولا اتنين للجزء الفوقاني هيعملوا الفرق.",
+  "ifYouWouldLikeItMoreEven_fk4be": "لو حابة يبقى متوازن أكتر، حركة ولا اتنين للجزء التحتاني هيعملوا الفرق.",
+  "ifYouWouldLikeItMoreEven_1jmf2": "لو حابة يبقى متوازن أكتر، حركة لقدّام جسمك هتعمل الفرق.",
+  "ifYouWouldLikeItMoreEven_v8jiq": "لو حابة يبقى متوازن أكتر، حركة لورا جسمك هتعمل الفرق.",
+  "logYourFirstWorkoutAndYourMuscles": "سجّلي أول تمرين ليكي، وعضلاتك هتنوّر هنا.",
+  "allYourMuscles": "كل عضلاتك",
+  "howWeCountASetCountsIn": "إزاي بنحسب: المجموعة بتتحسب كاملة للعضلة اللي الحركة بتشغّلها أكتر، ونص مجموعة لكل عضلة بتساعد. الإطالات مش بتتحسب.",
+  "bodyMapInSetsList": "خريطة الجسم. بعدد المجموعات: {list}",
+  "@bodyMapInSetsList": {
+    "description": "P06: what a screen reader hears for the 3D figure: every muscle group with its weighted sets.",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "example": "Glutes 9, Chest 0"
+      }
+    }
+  },
+  "whatYouTrainedOnABodyMap": "اللي اتمرّنتي عليه، على خريطة الجسم",
+  "daysPluralOne1DayOtherDays": "{days, plural, zero{{days} يوم} one{يوم واحد} two{يومين} few{{days} أيام} many{{days} يوم} other{{days} يوم}}",
+  "@daysPluralOne1DayOtherDays": {
+    "description": "P06 window switch: 7 days or 30 days, each a rolling window ending today. A plural message because Arabic says 7 أيام but 30 يوم.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "daysPluralOneSetsIn1Day": "{days, plural, zero{مجموعات آخر {days} يوم: {sets}} one{مجموعات آخر يوم: {sets}} two{مجموعات آخر يومين: {sets}} few{مجموعات آخر {days} أيام: {sets}} many{مجموعات آخر {days} يوم: {sets}} other{مجموعات آخر {days} يوم: {sets}}}",
+  "@daysPluralOneSetsIn1Day": {
+    "description": "P06 tap card: weighted sets for one muscle group over the rolling window (7 or 30 days, ending today; not the calendar week Home counts). {sets} can be a half, like 7.5.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "7"
+      },
+      "sets": {
+        "type": "String",
+        "example": "7.5"
+      }
+    }
+  },
+  "daysPluralOneSetsIn1Day_1w8hx": "{days, plural, zero{مجموعات آخر {days} يوم} one{مجموعات آخر يوم} two{مجموعات آخر يومين} few{مجموعات آخر {days} أيام} many{مجموعات آخر {days} يوم} other{مجموعات آخر {days} يوم}}",
+  "@daysPluralOneSetsIn1Day_1w8hx": {
+    "description": "P06: the heading over the numbers in the list of muscle groups, for the rolling 7 or 30 days.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "30"
+      }
+    }
+  },
+  "daysPluralOneNoSetsLoggedToday": "{days, plural, zero{مفيش مجموعات متسجّلة.} one{مفيش مجموعات متسجّلة النهارده.} two{مفيش مجموعات متسجّلة في آخر يومين.} few{مفيش مجموعات متسجّلة في آخر {days} أيام.} many{مفيش مجموعات متسجّلة في آخر {days} يوم.} other{مفيش مجموعات متسجّلة في آخر {days} يوم.}}",
+  "@daysPluralOneNoSetsLoggedToday": {
+    "description": "P06: the window she chose holds no sets, though she has logged before.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  }
 }

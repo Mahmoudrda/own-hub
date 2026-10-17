@@ -86,6 +86,7 @@ class ProgressView extends StatelessWidget {
     this.onOpenBests,
     this.onOpenBody,
     this.onOpenShare,
+    this.onOpenMuscles,
     this.onOpenFirstWeek,
     this.onOpenRestWeek,
     this.onOpenTierSlip,
@@ -122,6 +123,9 @@ class ProgressView extends StatelessWidget {
 
   /// P05, her progress card.
   final VoidCallback? onOpenShare;
+
+  /// P06, her muscles on a body she can turn.
+  final VoidCallback? onOpenMuscles;
   final VoidCallback? onOpenFirstWeek;
 
   /// "What a rest week covers" → T04. This is T04's only inbound edge in the
@@ -220,6 +224,27 @@ class ProgressView extends StatelessWidget {
           ..._tierCard(l10n),
           ..._nextTierCard(l10n),
           _weekCard(l10n),
+          // Her muscles, straight under her week: the one place in Progress
+          // that shows what the sets were for.
+          if (AppRouter.screenIsOn('P06'))
+            AppListItem(
+              key: const ValueKey('p01-muscles'),
+              variant: AppCardVariant.tonal,
+              leading: const Icon(
+                Icons.accessibility_new,
+                size: 26,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.yourMuscles,
+              subtitle: l10n.whatYouTrainedOnABodyMap,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              onTap: () => openScreen(context, 'P06', onOpenMuscles),
+            ),
           if (trainingStreak case final streakStatus?)
             AppListItem(
               key: const ValueKey('p01TrainingStreak'),

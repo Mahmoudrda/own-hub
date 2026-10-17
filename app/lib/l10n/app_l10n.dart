@@ -17898,6 +17898,216 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Start again'**
   String get startAgain;
+
+  /// Screen reader label on each selfie thumbnail on the C11 review. The count comes from the server's liveness challenge, so it cannot be baked into the sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo {number} of {total}'**
+  String photoNumberOfTotal(String number, String total);
+
+  /// No description provided for @yourMuscles.
+  ///
+  /// In en, this message translates to:
+  /// **'Your muscles'**
+  String get yourMuscles;
+
+  /// No description provided for @seeTheBack.
+  ///
+  /// In en, this message translates to:
+  /// **'See the back'**
+  String get seeTheBack;
+
+  /// No description provided for @seeTheFront.
+  ///
+  /// In en, this message translates to:
+  /// **'See the front'**
+  String get seeTheFront;
+
+  /// No description provided for @dragToTurnTapAMuscleFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to turn. Tap a muscle for its sets.'**
+  String get dragToTurnTapAMuscleFor;
+
+  /// No description provided for @moreTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'More training'**
+  String get moreTraining;
+
+  /// P06: the last day she logged a set for this muscle group. {day} is Today, Yesterday, a weekday name, or 'N days ago'.
+  ///
+  /// In en, this message translates to:
+  /// **'Last trained: {day}'**
+  String lastTrainedDay(String day);
+
+  /// No description provided for @notTrainedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not trained yet'**
+  String get notTrainedYet;
+
+  /// P06: how long since a muscle group last had a set, when it is more than a week. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{1 day ago} other{{days} days ago}}'**
+  String daysPluralOne1DayAgoOther(int days);
+
+  /// No description provided for @mostTrained.
+  ///
+  /// In en, this message translates to:
+  /// **'Most trained'**
+  String get mostTrained;
+
+  /// P06 most trained: her top muscle groups with their weighted sets, joined with a middle dot, e.g. 'Glutes 9 · Front of thighs 6'.
+  ///
+  /// In en, this message translates to:
+  /// **'In sets: {list}'**
+  String inSetsList(String list);
+
+  /// No description provided for @movesYouCouldAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves you could add'**
+  String get movesYouCouldAdd;
+
+  /// No description provided for @beenAWhile.
+  ///
+  /// In en, this message translates to:
+  /// **'Been a while'**
+  String get beenAWhile;
+
+  /// No description provided for @balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
+
+  /// No description provided for @yourUpperAndLowerBodyGotAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'Your upper and lower body got about the same.'**
+  String get yourUpperAndLowerBodyGotAbout;
+
+  /// No description provided for @theFrontAndBackOfYourBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The front and back of your body got about the same.'**
+  String get theFrontAndBackOfYourBody;
+
+  /// P06 balance: her lower body had more sets than her upper body. 0 means every set went to the lower body, 1 a little more, otherwise about how many times as much. Never a judgement.
+  ///
+  /// In en, this message translates to:
+  /// **'{times, plural, =0{All of these sets went to your lower body.} =1{Your lower body got a little more than your upper body.} =2{Your lower body got about twice as much as your upper body.} other{Your lower body got about {times} times as much as your upper body.}}'**
+  String timesPlural0AllOfTheseSets(int times);
+
+  /// P06 balance: her upper body had more sets than her lower body. 0 means every set, 1 a little more, otherwise about how many times as much.
+  ///
+  /// In en, this message translates to:
+  /// **'{times, plural, =0{All of these sets went to your upper body.} =1{Your upper body got a little more than your lower body.} =2{Your upper body got about twice as much as your lower body.} other{Your upper body got about {times} times as much as your lower body.}}'**
+  String timesPlural0AllOfTheseSets_izoa9(int times);
+
+  /// P06 balance: the front of her body had more sets than the back. 0 means every set, 1 a little more, otherwise about how many times as much.
+  ///
+  /// In en, this message translates to:
+  /// **'{times, plural, =0{All of these sets went to the front of your body.} =1{The front of your body got a little more than the back.} =2{The front of your body got about twice as much as the back.} other{The front of your body got about {times} times as much as the back.}}'**
+  String timesPlural0AllOfTheseSets_2tsm2(int times);
+
+  /// P06 balance: the back of her body had more sets than the front. 0 means every set, 1 a little more, otherwise about how many times as much.
+  ///
+  /// In en, this message translates to:
+  /// **'{times, plural, =0{All of these sets went to the back of your body.} =1{The back of your body got a little more than the front.} =2{The back of your body got about twice as much as the front.} other{The back of your body got about {times} times as much as the front.}}'**
+  String timesPlural0AllOfTheseSets_1ysmj(int times);
+
+  /// P06 balance: weighted sets for her upper and lower body in the window. Numbers can be halves.
+  ///
+  /// In en, this message translates to:
+  /// **'In sets: upper body {upper} · lower body {lower}'**
+  String inSetsUpperBodyUpperLowerBody(String upper, String lower);
+
+  /// P06 balance: weighted sets for the front and back of her body in the window. Numbers can be halves.
+  ///
+  /// In en, this message translates to:
+  /// **'In sets: front {front} · back {back}'**
+  String inSetsFrontFrontBackBack(String front, String back);
+
+  /// No description provided for @ifYouWouldLikeItMoreEven.
+  ///
+  /// In en, this message translates to:
+  /// **'If you would like it more even, an upper-body move or two would do it.'**
+  String get ifYouWouldLikeItMoreEven;
+
+  /// No description provided for @ifYouWouldLikeItMoreEven_fk4be.
+  ///
+  /// In en, this message translates to:
+  /// **'If you would like it more even, a lower-body move or two would do it.'**
+  String get ifYouWouldLikeItMoreEven_fk4be;
+
+  /// No description provided for @ifYouWouldLikeItMoreEven_1jmf2.
+  ///
+  /// In en, this message translates to:
+  /// **'If you would like it more even, a move for the front of your body would do it.'**
+  String get ifYouWouldLikeItMoreEven_1jmf2;
+
+  /// No description provided for @ifYouWouldLikeItMoreEven_v8jiq.
+  ///
+  /// In en, this message translates to:
+  /// **'If you would like it more even, a move for the back of your body would do it.'**
+  String get ifYouWouldLikeItMoreEven_v8jiq;
+
+  /// No description provided for @logYourFirstWorkoutAndYourMuscles.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your first workout and your muscles light up here.'**
+  String get logYourFirstWorkoutAndYourMuscles;
+
+  /// No description provided for @allYourMuscles.
+  ///
+  /// In en, this message translates to:
+  /// **'All your muscles'**
+  String get allYourMuscles;
+
+  /// No description provided for @howWeCountASetCountsIn.
+  ///
+  /// In en, this message translates to:
+  /// **'How we count: a set counts in full for the muscle a move works most, and as half a set for each muscle that helps. Stretches are not counted.'**
+  String get howWeCountASetCountsIn;
+
+  /// P06: what a screen reader hears for the 3D figure: every muscle group with its weighted sets.
+  ///
+  /// In en, this message translates to:
+  /// **'Body map. In sets: {list}'**
+  String bodyMapInSetsList(String list);
+
+  /// No description provided for @whatYouTrainedOnABodyMap.
+  ///
+  /// In en, this message translates to:
+  /// **'What you trained, on a body map'**
+  String get whatYouTrainedOnABodyMap;
+
+  /// P06 window switch: 7 days or 30 days, each a rolling window ending today. A plural message because Arabic says 7 أيام but 30 يوم.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{1 day} other{{days} days}}'**
+  String daysPluralOne1DayOtherDays(int days);
+
+  /// P06 tap card: weighted sets for one muscle group over the rolling window (7 or 30 days, ending today; not the calendar week Home counts). {sets} can be a half, like 7.5.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{Sets in 1 day: {sets}} other{Sets in {days} days: {sets}}}'**
+  String daysPluralOneSetsIn1Day(int days, String sets);
+
+  /// P06: the heading over the numbers in the list of muscle groups, for the rolling 7 or 30 days.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{Sets in 1 day} other{Sets in {days} days}}'**
+  String daysPluralOneSetsIn1Day_1w8hx(int days);
+
+  /// P06: the window she chose holds no sets, though she has logged before.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{No sets logged today.} other{No sets logged in the last {days} days.}}'**
+  String daysPluralOneNoSetsLoggedToday(int days);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

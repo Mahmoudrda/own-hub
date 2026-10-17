@@ -66,6 +66,7 @@ FeatureFlags shippingFlags() => FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.personalBests: true,
   Feature.bodyPrivately: true,
   Feature.shareCard: true,
+  Feature.muscleMap: true,
   Feature.cycle: true,
   Feature.cycleCalendar: true,
   Feature.cyclePatterns: true,

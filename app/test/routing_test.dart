@@ -47,8 +47,9 @@ void main() {
     // of the body they work, `R15` one move's clip.
     //
     // 194 -> 193 on 17 October 2026: `O07`, minutes a session, was folded
-    // into `O03`, days and minutes on one screen.
-    expect(appRoutes.length, 193);
+    // into `O03`, days and minutes on one screen. 193 -> 194 the same day
+    // with `P06`, her muscles on a body she can turn.
+    expect(appRoutes.length, 194);
   });
 
   test('every screen is a destination except the eight first-run states', () {
@@ -69,7 +70,8 @@ void main() {
     // K11, K12 and K13 are all destinations. 184 -> 186: R14 and R15 are.
     //
     // 186 -> 185 on 17 October 2026: `O07` was folded into `O03`.
-    expect(appDestinations.length, 185);
+    // 185 -> 186: P06 is a destination, opened from P01 and R01.
+    expect(appDestinations.length, 186);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 

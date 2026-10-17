@@ -146,6 +146,14 @@ class _IdCaptureViewState extends State<IdCaptureView>
   /// only while it is.
   bool _onTop = true;
 
+  /// She went to a woman reviewer from here. The camera was closed and the
+  /// photograph wiped on the way out, and if she comes back the screen starts
+  /// clean.
+  bool _parked = false;
+
+  /// The camera was let go because the app left the foreground.
+  bool _backgrounded = false;
+
   @override
   void initState() {
     super.initState();
@@ -158,7 +166,14 @@ class _IdCaptureViewState extends State<IdCaptureView>
     super.didChangeDependencies();
     final onTop = ModalRoute.isCurrentOf(context) ?? true;
     // Back on this screen after moving on: the choice is hers again.
-    if (onTop && !_onTop) _reported = false;
+    if (onTop && !_onTop) {
+      _reported = false;
+      if (_parked) {
+        // Back from the reviewer: a clean start, from Ready on the back.
+        _parked = false;
+        if (_turnedOver) unawaited(_open());
+      }
+    }
     _onTop = onTop;
   }
 
@@ -170,14 +185,70 @@ class _IdCaptureViewState extends State<IdCaptureView>
     super.dispose();
   }
 
-  /// Back from the settings page: the camera is asked for again, so a woman
-  /// who turned access on finds it working rather than still refused.
+  /// The camera is let go whenever the app leaves the foreground, and opened
+  /// again, from scratch, when she comes back. Back from the settings page it
+  /// is asked for again too, so a woman who turned access on finds it working
+  /// rather than still refused.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _awaitingSettings) {
-      _awaitingSettings = false;
-      unawaited(_reopen());
+    switch (state) {
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        _releaseForBackground();
+      case AppLifecycleState.resumed:
+        final reopen =
+            _awaitingSettings || (_backgrounded && !_reviewing && !_parked);
+        _awaitingSettings = false;
+        _backgrounded = false;
+        if (reopen) unawaited(_reopen());
+      case AppLifecycleState.detached:
+        break;
     }
+  }
+
+  /// Lets the lens go while the app is in the background. A photograph under
+  /// review stays held, and only the camera behind it is released.
+  void _releaseForBackground() {
+    if (_backgrounded || _awaitingSettings || _parked) return;
+    final session = _session;
+    // Nothing open, still opening (a permission sheet makes the app inactive
+    // too), or a camera that never ran.
+    if (session == null || session.current is CaptureUnavailable) return;
+    _backgrounded = true;
+    unawaited(_subscription?.cancel());
+    _subscription = null;
+    unawaited(session.close());
+    if (_reviewing) return;
+    setState(() {
+      _session = null;
+      _state = const CaptureState.preparing();
+      _capturing = false;
+    });
+  }
+
+  /// The way to a woman reviewer, from any state of this screen. The camera
+  /// is closed and her photograph wiped before the reviewer screen opens, so
+  /// nothing can fire underneath it.
+  Future<void> _leaveForReviewer(VoidCallback go) async {
+    if (_parked) return;
+    _parked = true;
+    _review?.discardTaken();
+    final session = _session;
+    unawaited(_subscription?.cancel());
+    _subscription = null;
+    setState(() {
+      _session = null;
+      _state = const CaptureState.preparing();
+      _reviewing = false;
+      _reported = false;
+      _capturing = false;
+      _handOffFailed = null;
+      _turnedOver = widget.side != CaptureTarget.idBack;
+    });
+    await session?.close();
+    if (!mounted) return;
+    go();
   }
 
   /// Closes whatever session is open and opens a fresh one.
@@ -260,7 +331,9 @@ class _IdCaptureViewState extends State<IdCaptureView>
     } finally {
       if (mounted) setState(() => _capturing = false);
     }
-    if (!mounted) return;
+    // The camera may have been let go under the shutter: the app went to the
+    // background, or she went to a reviewer.
+    if (!mounted || !identical(_session, session)) return;
     // A shutter that failed on the camera leaves nothing to check. A session
     // that cannot show its photograph is reviewed all the same: she still
     // decides before anything moves on.
@@ -272,7 +345,7 @@ class _IdCaptureViewState extends State<IdCaptureView>
   void _usePhoto() {
     if (_reported || _handingOff) return;
     final review = _review;
-    if (review != null && review.takenCount == 0) return;
+    if (review != null && review.takenCount != review.neededCount) return;
     _reported = true;
     // The lens is let go before the next screen opens its own. The
     // photograph stays held for the check; only the camera is released.
@@ -323,6 +396,10 @@ class _IdCaptureViewState extends State<IdCaptureView>
     final isBack = widget.side == CaptureTarget.idBack;
     final title = isBack ? l10n.theBackOfYourCard : l10n.yourIdCard;
     final placeholder = isBack ? l10n.backOfTheCard : l10n.frontOfTheCard;
+    final askWoman = widget.onAskWoman;
+    final VoidCallback? onAskWoman = askWoman == null
+        ? null
+        : () => unawaited(_leaveForReviewer(askWoman));
 
     Widget cardFrame(Widget child) => Container(
       width: 300,
@@ -354,7 +431,7 @@ class _IdCaptureViewState extends State<IdCaptureView>
         body: l10n.theBackHasNoPhotoOnIt,
         actionLabel: l10n.ready,
         onAction: _ready,
-        onAskWoman: widget.onAskWoman,
+        onAskWoman: onAskWoman,
       );
     }
 
@@ -383,11 +460,15 @@ class _IdCaptureViewState extends State<IdCaptureView>
     final VoidCallback? askReviewer =
         unavailable == null || widget.onAskReviewer == null || !offerReviewer
         ? null
-        : () => widget.onAskReviewer!(unavailable);
+        : () => unawaited(
+            _leaveForReviewer(() => widget.onAskReviewer!(unavailable)),
+          );
+
 
     if (_reviewing) {
       final review = _review;
       final held = review?.takenCount ?? 1;
+      final complete = review == null || held == review.neededCount;
       final photo = _onTop && review != null && held > 0
           ? review.buildTaken(0)
           : null;
@@ -410,14 +491,14 @@ class _IdCaptureViewState extends State<IdCaptureView>
             ? l10n.thisLooksLikeTheFrontOfThe
             : null,
         actionLabel: l10n.useThisPhoto,
-        onAction: _handingOff || held == 0 ? null : _usePhoto,
+        onAction: _handingOff || !complete ? null : _usePhoto,
         secondaryActionLabel: l10n.retake,
         onSecondaryAction: _handingOff ? null : () => unawaited(_retake()),
         unavailable: unavailable,
         onOpenSettings: _openSettings,
         onRetry: retry,
         onAskReviewer: askReviewer,
-        onAskWoman: widget.onAskWoman,
+        onAskWoman: onAskWoman,
       );
     }
 
@@ -451,7 +532,7 @@ class _IdCaptureViewState extends State<IdCaptureView>
       onOpenSettings: _openSettings,
       onRetry: retry,
       onAskReviewer: askReviewer,
-      onAskWoman: widget.onAskWoman,
+      onAskWoman: onAskWoman,
     );
   }
 }

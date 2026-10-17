@@ -133,6 +133,14 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
   /// it is.
   bool _onTop = true;
 
+  /// She went to a woman reviewer from here. The camera was closed and the
+  /// frames wiped on the way out, and if she comes back the steps start again
+  /// from the first.
+  bool _parked = false;
+
+  /// The camera was let go because the app left the foreground.
+  bool _backgrounded = false;
+
   Timer? _deadline;
 
   @override
@@ -152,6 +160,11 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
       _reported = false;
       _armDeadline();
     }
+    if (onTop && !_onTop && _parked) {
+      // Back from the reviewer: a clean start, from the first step.
+      _parked = false;
+      unawaited(_open());
+    }
     _onTop = onTop;
   }
 
@@ -160,18 +173,81 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
     WidgetsBinding.instance.removeObserver(this);
     _deadline?.cancel();
     _subscription?.cancel();
+    // Leaving mid-steps, by back or close: the frames taken so far answer a
+    // run that will never be sent, so they are zeroed and let go now. Frames
+    // she chose to use are the submit's to wipe.
+    if (!_reported) _review?.discardTaken();
     _session?.close();
     super.dispose();
   }
 
-  /// Back from the settings page: the camera is asked for again, so a woman
-  /// who turned access on finds it working rather than still refused.
+  /// The camera is let go whenever the app leaves the foreground, and the
+  /// steps start again, from scratch, when she comes back. Back from the
+  /// settings page it is asked for again too, so a woman who turned access on
+  /// finds it working rather than still refused.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _awaitingSettings) {
-      _awaitingSettings = false;
-      unawaited(_reopen());
+    switch (state) {
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        _releaseForBackground();
+      case AppLifecycleState.resumed:
+        final reopen =
+            _awaitingSettings ||
+            (_backgrounded && !_reviewing && !_parked && !_expired);
+        _awaitingSettings = false;
+        _backgrounded = false;
+        if (reopen) unawaited(_reopen());
+      case AppLifecycleState.detached:
+        break;
     }
+  }
+
+  /// Lets the lens go while the app is in the background. Frames from an
+  /// unfinished run are wiped, because the run restarts from the first step;
+  /// a finished set under review stays held, and only the camera is released.
+  void _releaseForBackground() {
+    if (_backgrounded || _awaitingSettings || _parked || _expired) return;
+    final session = _session;
+    // Nothing open, still opening (a permission sheet makes the app inactive
+    // too), or a camera that never ran.
+    if (session == null || session.current is CaptureUnavailable) return;
+    _backgrounded = true;
+    if (!_reviewing) _review?.discardTaken();
+    unawaited(_subscription?.cancel());
+    _subscription = null;
+    unawaited(session.close());
+    if (_reviewing) return;
+    setState(() {
+      _session = null;
+      _state = const CaptureState.preparing();
+      _capturing = false;
+    });
+  }
+
+  /// The way to a woman reviewer, from any state of this screen. The camera
+  /// is closed and the frames wiped before the reviewer screen opens.
+  Future<void> _leaveForReviewer(VoidCallback go) async {
+    if (_parked) return;
+    _parked = true;
+    _deadline?.cancel();
+    _deadline = null;
+    _review?.discardTaken();
+    final session = _session;
+    unawaited(_subscription?.cancel());
+    _subscription = null;
+    setState(() {
+      _session = null;
+      _state = const CaptureState.preparing();
+      _reviewing = false;
+      _reported = false;
+      _capturing = false;
+      _expired = false;
+    });
+    await session?.close();
+    if (!mounted) return;
+    go();
   }
 
   /// Closes whatever session is open and opens a fresh one.
@@ -283,6 +359,13 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
 
   void _enterReview() {
     if (_reviewing || _expired || !mounted) return;
+    final review = _review;
+    if (review != null && review.takenCount != review.neededCount) {
+      // Not one frame per step. A set like that can only be refused, so it is
+      // never offered: the steps start again.
+      unawaited(_retake());
+      return;
+    }
     setState(() => _reviewing = true);
   }
 
@@ -296,7 +379,9 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
     } finally {
       if (mounted) setState(() => _capturing = false);
     }
-    if (!mounted) return;
+    // The camera may have been let go under the shutter: the app went to the
+    // background, or she went to a reviewer.
+    if (!mounted || !identical(_session, session)) return;
     if (session.current is CaptureCaptured) _enterReview();
   }
 
@@ -304,7 +389,10 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
   void _usePhotos() {
     if (_reported) return;
     final review = _review;
-    if (review != null && review.takenCount == 0) return;
+    if (review != null && review.takenCount != review.neededCount) {
+      unawaited(_retake());
+      return;
+    }
     if (_pastDeadline) {
       _expire();
       return;
@@ -335,6 +423,10 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final askWoman = widget.onAskWoman;
+    final VoidCallback? onAskWoman = askWoman == null
+        ? null
+        : () => unawaited(_leaveForReviewer(askWoman));
 
     Widget oval(Widget child) => Container(
       width: 230,
@@ -359,27 +451,34 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
         actionLabel: l10n.startAgain,
         onAction: _startingAgain ? null : () => unawaited(_startAgain()),
         isSelfie: true,
-        onAskWoman: widget.onAskWoman,
+        onAskWoman: onAskWoman,
       );
     }
 
     if (_reviewing) {
       final review = _review;
       final held = review?.takenCount ?? 0;
+      // One frame per step, exactly, or "Use these photos" stays off.
+      final complete =
+          review == null || (held > 0 && held == review.neededCount);
       return CaptureScaffold(
         title: l10n.quickSelfie,
         onClose: widget.onClose,
         frame: _onTop && review != null && held > 0
-            ? _Thumbnails(review: review, count: held, label: l10n.yourPhoto)
+            ? _Thumbnails(
+                review: review,
+                count: held,
+                label: (number) => l10n.photoNumberOfTotal('$number', '$held'),
+              )
             : oval(CaptureFrameLabel(l10n.herFaceLive)),
         headline: l10n.checkYourPhotos,
         body: l10n.isYourFaceClearInEachOne,
         actionLabel: l10n.useThesePhotos,
-        onAction: review != null && held == 0 ? null : _usePhotos,
+        onAction: complete ? _usePhotos : null,
         secondaryActionLabel: l10n.retake,
         onSecondaryAction: () => unawaited(_retake()),
         isSelfie: true,
-        onAskWoman: widget.onAskWoman,
+        onAskWoman: onAskWoman,
       );
     }
 
@@ -446,8 +545,10 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
       onRetry: () => unawaited(_reopen()),
       onAskReviewer: unavailable == null || widget.onAskReviewer == null
           ? null
-          : () => widget.onAskReviewer!(unavailable),
-      onAskWoman: widget.onAskWoman,
+          : () => unawaited(
+              _leaveForReviewer(() => widget.onAskReviewer!(unavailable)),
+            ),
+      onAskWoman: onAskWoman,
     );
   }
 }
@@ -482,7 +583,9 @@ class _Thumbnails extends StatelessWidget {
 
   final CaptureReview review;
   final int count;
-  final String label;
+
+  /// "Photo 2 of 4", for a screen reader, from the photo's 1-based number.
+  final String Function(int number) label;
 
   @override
   Widget build(BuildContext context) {
@@ -497,7 +600,7 @@ class _Thumbnails extends StatelessWidget {
           for (var index = 0; index < count; index++)
             Semantics(
               image: true,
-              label: label,
+              label: label(index + 1),
               child: Container(
                 width: 70,
                 height: 94,

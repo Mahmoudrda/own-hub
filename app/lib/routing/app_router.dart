@@ -304,6 +304,9 @@ import '../features/cycle/presentation/gentler_option_view.dart';
 import '../features/cycle/presentation/log_period_view.dart';
 import '../features/cycle/presentation/why_suggestion_view.dart';
 import '../features/progress/domain/progress_repository.dart';
+import '../features/progress/domain/muscle_map.dart';
+import '../features/progress/domain/muscle_report.dart';
+import '../features/progress/presentation/muscles_view.dart';
 import '../features/progress/presentation/body_privately_view.dart';
 import '../features/progress/domain/milestone.dart';
 import '../features/progress/presentation/milestones_view.dart';
@@ -2432,6 +2435,7 @@ class AppRouter {
       onOpenExerciseLibrary: _exerciseLibraryReady
           ? () => goTo(context, 'R14')
           : null,
+      onOpenMuscles: () => goTo(context, 'P06'),
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'R02': (context) {
@@ -3177,6 +3181,7 @@ class AppRouter {
       onOpenBests: () => goTo(context, 'P03'),
       onOpenBody: () => goTo(context, 'P04'),
       onOpenShare: () => goTo(context, 'P05'),
+      onOpenMuscles: () => goTo(context, 'P06'),
       onOpenFirstWeek: () => goTo(context, 'T07'),
       onOpenRestWeek: () => goTo(context, 'T04'),
       onOpenTierSlip: () => goTo(context, 'T05'),
@@ -3205,6 +3210,31 @@ class AppRouter {
       onBack: () => Navigator.of(context).maybePop(),
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
+    // Her muscles: what she logged, read onto a body she can turn. Worked
+    // out each time it opens from the same flushes her bests read, so there
+    // is nothing of its own to store, sync or wipe.
+    'P06': (context) {
+      final intake = intakeRepository.read();
+      final library = ExerciseLibraryState.instance.library;
+      return MusclesView(
+        report: muscleReport,
+        library: library.exercises,
+        lifeStage: intake.lifeStage,
+        place: intake.place,
+        equipment: intake.equipment,
+        onOpenMove: screenIsOn('R15')
+            ? (move) {
+                ExerciseLibraryState.instance.openExerciseId = move.id;
+                goTo(context, 'R15');
+              }
+            : null,
+        onOpenLibrary: screenIsOn('R14') && !library.isEmpty
+            ? () => goTo(context, 'R14')
+            : null,
+        onBack: () => Navigator.of(context).maybePop(),
+        onSelectTab: (screenId) => goToTab(context, screenId),
+      );
+    },
     'P02': (context) => MilestonesView(
       summary: MilestonesSummary.from(
         // The eight milestones that are actually authored, not the empty
@@ -7854,6 +7884,18 @@ class AppRouter {
         uploadedMedia: const <String>{},
         existingIds: const <String>{},
       );
+
+  /// P06's report: her logged sets, read onto muscle groups, ending today.
+  /// The library's muscles where the phone holds the library, the bundled
+  /// table otherwise.
+  static MuscleReport get muscleReport {
+    final library = ExerciseLibraryState.instance.library;
+    return buildMuscleReport(
+      log: loggedMovesFrom(trainRepository),
+      musclesOf: (id) => musclesFor(id, library),
+      today: AppClock.now(),
+    );
+  }
 
   /// P01's view model, assembled from the one progress store.
   ///

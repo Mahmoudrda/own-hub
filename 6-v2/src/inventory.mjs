@@ -116,6 +116,9 @@ export const screens = [
   { id: 'P03', flow: 'progress', title: 'Personal bests' },
   { id: 'P04', flow: 'progress', title: 'Body, privately' },
   { id: 'P05', flow: 'progress', title: 'Your progress card', noMockup: true },
+  // Her body, turned and tapped, coloured by the sets she logged. Designed
+  // in Flutter, after the mockup.
+  { id: 'P06', flow: 'progress', title: 'Your muscles', noMockup: true },
   // My cycle
   { id: 'Y01', flow: 'cycle', title: 'Set up My cycle' },
   { id: 'Y02', flow: 'cycle', title: 'Dates and preferences' },

@@ -52,6 +52,11 @@ class VerificationEvidence {
   /// quietly leave the first attempt in the heap beside the second. Asserts on
   /// [CaptureTarget.selfie] rather than accepting it, because a selfie filed as
   /// a card side would be submitted as a document and read as one.
+  ///
+  /// A new front starts a new run, so any liveness frames still held from an
+  /// earlier one are zeroed and let go here: the selfie always comes after
+  /// both sides, and frames from before this front answer a session that is
+  /// no longer the one she is on.
   void holdCardSide(CaptureTarget side, Uint8List jpeg) {
     assert(
       side == CaptureTarget.idFront || side == CaptureTarget.idBack,
@@ -59,6 +64,7 @@ class VerificationEvidence {
     );
     final previous = _cardSides[side];
     if (previous != null) _wipe(previous);
+    if (side == CaptureTarget.idFront) dropFrames();
     _cardSides[side] = jpeg;
   }
 
@@ -82,6 +88,8 @@ class VerificationEvidence {
   /// to the old ones, and the server refuses a frame count that does not
   /// match its steps.
   void dropFrames() {
+    // Zeroed first, then let go: clearing the list alone would leave every
+    // frame in the heap until the collector got round to it.
     for (final frame in _frames) {
       _wipe(frame);
     }

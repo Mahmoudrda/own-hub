@@ -173,6 +173,9 @@ abstract final class ScreenArt {
     'P04': [AppArt.meditation],
     // Her card: what she did, to celebrate. The weight on it is hers to add.
     'P05': [AppArt.dance],
+    // Her muscles: the figure is the page's picture, so one small drawing
+    // sits beside the note on how sets are counted.
+    'P06': [AppArt.strongArms],
     'R01': [AppArt.dumbbells, AppArt.running],
     'R02': [AppArt.lungeWarrior, AppArt.squatWeights],
     'R03': [AppArt.overheadRaise, AppArt.yogaMat],
@@ -267,7 +270,8 @@ abstract final class ScreenArt {
   /// through [inlineFor].
   ///
   /// The setup questions `O01` to `O04` and `O06` set one small drawing beside
-  /// their title, so the answers fit the screen without scrolling.
+  /// their title, so the answers fit the screen without scrolling. `P06`'s
+  /// figure is its picture, so its drawing sits at the foot of the page.
   static const Set<String> placesOwnArt = {
     'T01',
     'R01',
@@ -278,6 +282,7 @@ abstract final class ScreenArt {
     'O03',
     'O04',
     'O06',
+    'P06',
   };
 
   /// The illustrations to draw at the top of [screenId], or none.

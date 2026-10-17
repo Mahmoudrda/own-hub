@@ -607,3 +607,29 @@ List<LibraryExercise> swapCandidatesFor(
       if (e.pattern != current.pattern) e,
   ].take(limit).toList(growable: false);
 }
+
+/// Strength moves that work [section] as a primary muscle, which she can do
+/// where she trains with what she has, for P06 to suggest. [shown] is already
+/// screened for her life stage ([screenForLifeStage]). Moves whose own
+/// heading is [section] first; the library's order otherwise.
+List<LibraryExercise> movesForSection(
+  List<LibraryExercise> shown,
+  MuscleSection section, {
+  required TrainingPlace place,
+  required Set<Equipment> equipment,
+  int limit = 3,
+}) {
+  final out = [
+    for (final e in shown)
+      if (e.kind == ExerciseKind.strength &&
+          e.sections.contains(section) &&
+          _canDoHere(e, place, equipment))
+        e,
+  ];
+  return [
+    for (final e in out)
+      if (e.section == section) e,
+    for (final e in out)
+      if (e.section != section) e,
+  ].take(limit).toList(growable: false);
+}
