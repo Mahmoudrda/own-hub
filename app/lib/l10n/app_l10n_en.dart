@@ -9965,4 +9965,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get howManyDaysAndForHowLong => 'How many days, and for how long?';
+
+  @override
+  String get useADifferentNumber => 'Use a different number';
 }

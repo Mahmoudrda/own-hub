@@ -466,6 +466,15 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
               variant: AppButtonVariant.outlined,
               onPressed: widget.onLookAround,
             ),
+          // Never a dead end: whatever she is waiting on, she can leave this
+          // account on this phone and sign in with another number.
+          if (widget.onSignInAgain != null)
+            AppButton(
+              l10n.useADifferentNumber,
+              key: const ValueKey('c14-use-another-number'),
+              variant: AppButtonVariant.text,
+              onPressed: widget.onSignInAgain,
+            ),
         ],
       ),
     );

@@ -17766,6 +17766,12 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'How many days, and for how long?'**
   String get howManyDaysAndForHowLong;
+
+  /// No description provided for @useADifferentNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a different number'**
+  String get useADifferentNumber;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

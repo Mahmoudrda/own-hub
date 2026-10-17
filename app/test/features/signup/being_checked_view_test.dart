@@ -488,4 +488,22 @@ void main() {
       }
     });
   });
+
+  testWidgets('she can always leave and sign in with another number', (
+    tester,
+  ) async {
+    var tapped = 0;
+    await tester.pumpWidget(
+      _host(BeingCheckedView(onSignInAgain: () => tapped++)),
+    );
+    await tester.pumpAndSettle();
+    final button = find.byKey(const ValueKey('c14-use-another-number'));
+    await tester.scrollUntilVisible(
+      button,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(button);
+    expect(tapped, 1);
+  });
 }

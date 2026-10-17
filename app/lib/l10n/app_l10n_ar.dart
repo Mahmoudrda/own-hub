@@ -9923,4 +9923,7 @@ class AppL10nAr extends AppL10n {
   @override
   String get howManyDaysAndForHowLong =>
       'كام يوم في الأسبوع، وكل تمرين قد إيه؟';
+
+  @override
+  String get useADifferentNumber => 'ادخلي برقم تاني';
 }

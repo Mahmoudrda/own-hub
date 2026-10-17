@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../firebase_options.dart';
 import 'analytics_consent.dart';
@@ -208,6 +209,38 @@ abstract final class FirebaseBoot {
     }
   }
 
+  /// Marks that this install has launched once. It lives in the app's own
+  /// preferences, which iOS deletes with the app.
+  static const String kInstallSeenKey = 'own_hub.install_seen';
+
+  /// iOS keeps a Firebase sign-in in the Keychain, and the Keychain outlives
+  /// deleting the app, so a fresh install would open on the last account,
+  /// even one deleted since. Only a truly fresh install (no marker and no
+  /// preferences at all) forgets it; an update from an older build does not.
+  @visibleForTesting
+  static bool shouldForgetEarlierSignIn({
+    required bool installSeen,
+    required bool preferencesEmpty,
+  }) => !installSeen && preferencesEmpty;
+
+  static Future<void> _forgetSignInFromAnEarlierInstall() async {
+    if (defaultTargetPlatform != TargetPlatform.iOS) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final seen = prefs.getBool(kInstallSeenKey) ?? false;
+      if (shouldForgetEarlierSignIn(
+            installSeen: seen,
+            preferencesEmpty: prefs.getKeys().isEmpty,
+          ) &&
+          FirebaseAuth.instance.currentUser != null) {
+        await FirebaseAuth.instance.signOut();
+      }
+      if (!seen) await prefs.setBool(kInstallSeenKey, true);
+    } catch (error) {
+      if (kDebugMode) debugPrint('Install check failed: $error');
+    }
+  }
+
   static Future<void> start() async {
     if (_status != BackendStatus.notAttempted) return;
     try {
@@ -215,6 +248,7 @@ abstract final class FirebaseBoot {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       _status = BackendStatus.ready;
+      await _forgetSignInFromAnEarlierInstall();
     } catch (error, stack) {
       _status = BackendStatus.unavailable;
       _failure = error;
