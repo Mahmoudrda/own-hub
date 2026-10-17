@@ -57,6 +57,19 @@ class TrainingStreakState {
     _keepBest(progress, on);
   }
 
+  /// A credited session on [on]'s day was removed. The count for that day
+  /// comes down by one; nothing else changes, and her best stays hers.
+  void noteUncredit(DateTime on) {
+    final key = dayKey(on);
+    final count = _byDay[key];
+    if (count == null) return;
+    if (count <= 1) {
+      _byDay.remove(key);
+    } else {
+      _byDay[key] = count - 1;
+    }
+  }
+
   /// Her run as of [now]. [StreakStatus.off] when she switched it off.
   StreakStatus status({required ProgressStore progress, DateTime? now}) {
     final today = now ?? AppClock.now();

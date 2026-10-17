@@ -43,12 +43,14 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_undo_bar.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/train_repository.dart';
 import '../domain/weight_label.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
 import 'workout_day_view.dart' show localisedMove;
+import 'session_notice.dart';
 
 class MidSetView extends StatefulWidget {
   const MidSetView({
@@ -70,7 +72,12 @@ class MidSetView extends StatefulWidget {
     this.onAttach,
     this.onDetach,
     this.progressionLine,
+    this.notice,
   });
+
+  /// A swap or a skip that brought her here, with its Undo, drawn in the page
+  /// above the move so it never covers the button she taps next.
+  final SessionNotice? notice;
 
   final VoidCallback? onClose;
 
@@ -398,6 +405,13 @@ class _MidSetViewState extends State<MidSetView> {
         ),
       ],
       children: [
+        if (widget.notice case final notice?)
+          AppLiveUndoBar(
+            handle: notice.handle,
+            message: notice.handle.describe,
+            undoLabel: l10n.undo,
+            onUndo: notice.onUndo,
+          ),
         Row(
           children: [
             Expanded(child: Text(move.name, style: AppText.headline)),

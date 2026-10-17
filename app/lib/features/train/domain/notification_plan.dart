@@ -35,6 +35,10 @@ enum PlanKind {
 
   /// "Rest is over", while the phone is in her pocket.
   restOver,
+
+  /// One of the getting started tips, in her first fortnight, only while she
+  /// is not opening the app. [PlannedNotification.variant] is which one.
+  tip,
 }
 
 /// The switches on A01 beyond the training days themselves. On by default
@@ -45,6 +49,7 @@ class NotificationPrefs {
     this.logNudge = true,
     this.checkIns = true,
     this.restAlert = true,
+    this.tips = true,
   });
 
   /// "Remind me to add a session I did".
@@ -56,14 +61,19 @@ class NotificationPrefs {
   /// "Rest timer alert".
   final bool restAlert;
 
+  /// "Getting started tips". Turning it off cancels the ones still to come.
+  final bool tips;
+
   NotificationPrefs copyWith({
     bool? logNudge,
     bool? checkIns,
     bool? restAlert,
+    bool? tips,
   }) => NotificationPrefs(
     logNudge: logNudge ?? this.logNudge,
     checkIns: checkIns ?? this.checkIns,
     restAlert: restAlert ?? this.restAlert,
+    tips: tips ?? this.tips,
   );
 
   @override
@@ -71,10 +81,11 @@ class NotificationPrefs {
       other is NotificationPrefs &&
       other.logNudge == logNudge &&
       other.checkIns == checkIns &&
-      other.restAlert == restAlert;
+      other.restAlert == restAlert &&
+      other.tips == tips;
 
   @override
-  int get hashCode => Object.hash(logNudge, checkIns, restAlert);
+  int get hashCode => Object.hash(logNudge, checkIns, restAlert, tips);
 }
 
 /// One notification to schedule.
@@ -97,7 +108,7 @@ class PlannedNotification {
 
   final bool weekly;
 
-  /// Which of the rotating texts a check-in carries.
+  /// Which of the rotating texts a check-in carries, or which tip a tip is.
   final int variant;
 
   @override
@@ -125,6 +136,12 @@ const int kCheckInFirstId = 7131;
 const int kCheckInSecondId = 7132;
 const int kRestOverId = 7141;
 
+/// How many getting started tips there are.
+const int kTipCount = 7;
+
+/// The id of the getting started tip at [index], 7151 to 7157.
+int tipNotificationId(int index) => 7151 + index;
+
 /// Every id the plan may use, so replacing it removes what no longer applies.
 /// The rest alert is not in it: it has its own lifetime.
 final List<int> kPlannedIds = <int>[
@@ -133,6 +150,7 @@ final List<int> kPlannedIds = <int>[
   kDidYouTrainId,
   kCheckInFirstId,
   kCheckInSecondId,
+  for (var index = 0; index < kTipCount; index++) tipNotificationId(index),
 ];
 
 /// Quiet from 22:00 up to, not including, 08:00.
@@ -195,6 +213,11 @@ abstract final class NotificationPlan {
   /// [lastActiveAt] and [lastSessionAt] are when she last opened the app and
   /// when she last logged a session; the later of them starts the away
   /// count.
+  ///
+  /// [tips] are the getting started tips already worked out by `TipPlan`
+  /// (`getting_started_tips.dart`). They are kept only while
+  /// [NotificationPrefs.tips] is on, and a check-in that would land on the
+  /// same day as one of them is dropped: one note that day is enough.
   static List<PlannedNotification> build({
     required DateTime now,
     required bool permitted,
@@ -202,6 +225,7 @@ abstract final class NotificationPlan {
     NotificationPrefs prefs = const NotificationPrefs(),
     DateTime? lastActiveAt,
     DateTime? lastSessionAt,
+    List<PlannedNotification> tips = const <PlannedNotification>[],
   }) {
     if (!permitted) return const <PlannedNotification>[];
     final plan = <PlannedNotification>[];
@@ -237,9 +261,18 @@ abstract final class NotificationPlan {
       }
     }
 
+    final kept = prefs.tips ? tips : const <PlannedNotification>[];
     if (prefs.checkIns) {
-      plan.addAll(_checkIns(now, reminders, lastActiveAt, lastSessionAt));
+      plan.addAll(
+        _checkIns(
+          now,
+          reminders,
+          lastActiveAt,
+          lastSessionAt,
+        ).where((checkIn) => !kept.any((tip) => _sameDay(tip.at, checkIn.at))),
+      );
     }
+    plan.addAll(kept);
     return plan;
   }
 

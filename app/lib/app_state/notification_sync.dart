@@ -8,10 +8,17 @@
 ///
 /// Every call is safe to repeat and asks for nothing. A failure is swallowed:
 /// a notification that could not be set must never stop a feature (U09).
+///
+/// The getting started tips ride along: each call works them out again from
+/// the moment and what she has done (`GettingStarted.facts`), and what the
+/// phone accepted is remembered, so the next open can tell a tip that was
+/// shown from one still to come.
 library;
 
+import '../features/train/domain/getting_started_tips.dart';
 import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/training_reminders.dart';
+import 'getting_started.dart';
 import 'reminder_scheduler.dart';
 
 abstract final class NotificationSync {
@@ -21,16 +28,36 @@ abstract final class NotificationSync {
   /// still reschedules in hers.
   static ReminderText? get lastText => _text;
 
-  static List<PlannedNotification> planFor(DateTime now) {
+  static List<PlannedNotification> planFor(DateTime now) => _plan(now).plan;
+
+  /// The whole plan, and the tip series as it stands once the plan is set.
+  /// With the tips switched off nothing about the series moves.
+  static ({List<PlannedNotification> plan, TipSeries tips}) _plan(
+    DateTime now,
+  ) {
     final state = ReminderState.instance;
-    return NotificationPlan.build(
+    final tipsOn =
+        state.permitted && state.prefs.tips && GettingStarted.allowed;
+    final tips = tipsOn
+        ? TipPlan.next(
+            now: now,
+            series: state.tips,
+            facts: GettingStarted.facts(),
+            lastActiveAt: state.lastActiveAt,
+            hour: state.schedule?.hour ?? TrainingReminders.defaultHour,
+            minute: state.schedule?.minute ?? 0,
+          )
+        : (plan: const <PlannedNotification>[], series: state.tips);
+    final plan = NotificationPlan.build(
       now: now,
       permitted: state.permitted,
       reminders: state.schedule,
       prefs: state.prefs,
       lastActiveAt: state.lastActiveAt,
       lastSessionAt: state.lastSessionAt,
+      tips: tips.plan,
     );
+    return (plan: plan, tips: tips.series);
   }
 
   /// Replaces what is scheduled. Does nothing until the phone has agreed to
@@ -45,7 +72,14 @@ abstract final class NotificationSync {
     _text = text;
     if (!ReminderState.instance.permitted) return;
     try {
-      await scheduler.apply(planFor(now ?? DateTime.now()), text);
+      final state = ReminderState.instance;
+      final before = state.tips;
+      final next = _plan(now ?? DateTime.now());
+      await scheduler.apply(next.plan, text);
+      // Remembered only once the phone has them, so a tip that was never set
+      // does not later read as one that was shown; and not over a series a
+      // sign-out cleared meanwhile.
+      if (identical(state.tips, before)) state.tips = next.tips;
     } catch (_) {
       // Only the sheet that just asked wants to hear that it failed.
       if (!quiet) rethrow;

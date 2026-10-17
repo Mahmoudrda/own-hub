@@ -97,6 +97,10 @@ abstract final class ScreenArt {
     // deliberately not a dish: a picture of food beside a letter about why we
     // try to eat well would be the screen changing the subject.
     'E11': [AppArt.fruitBasket],
+    // Her plate, photographed and then checked: one small drawing each, so
+    // the camera's window keeps the page.
+    'E12': [AppArt.bruschetta],
+    'E13': [AppArt.bowlSalad],
     'G01': [AppArt.trainers],
     'G02': [AppArt.meditation],
     'G03': [AppArt.yogaMat],

@@ -42,6 +42,8 @@ class AlreadyDidItView extends StatefulWidget {
     this.repository,
     this.bus,
     this.onLogged,
+    this.onCredit,
+    this.onUndone,
     this.onStartSession,
     this.onOpenMeal,
     this.onSpeak,
@@ -65,6 +67,16 @@ class AlreadyDidItView extends StatefulWidget {
   /// Home and once by Progress — the same disagreement as the missing dedupe in
   /// `logRecalledSession`, arriving by a different route. One id, both ledgers.
   final ValueChanged<RecalledSession>? onLogged;
+
+  /// Credits the session to her week and her points, once the undo window has
+  /// closed and the write has landed. Never before: a credit paid at the tap
+  /// stayed paid after Undo, so her week said done for a session she took
+  /// back. Must not touch a `BuildContext`: this screen may be gone by then.
+  final ValueChanged<RecalledSession>? onCredit;
+
+  /// She took the session back inside its window. Nothing was written and
+  /// nothing was credited.
+  final ValueChanged<RecalledSession>? onUndone;
 
   final VoidCallback? onStartSession;
   final VoidCallback? onOpenMeal;
@@ -157,13 +169,24 @@ class _AlreadyDidItViewState extends State<AlreadyDidItView> {
   /// resurface later.
   void _save(RecalledSession session) {
     final l10n = AppL10n.of(context);
+    final onCredit = widget.onCredit;
     final handle = _bus.submit(
       UndoableLog(
-        describe: session.title,
-        commit: () => _repo.logRecalledSession(session),
+        // What was added, and that it was added from memory.
+        describe: l10n.addedFromMemoryTitle(session.title),
+        commit: () async {
+          await _repo.logRecalledSession(session);
+          onCredit?.call(session);
+        },
       ),
     );
-    showUndoSnackBar(context, handle: handle, undoLabel: l10n.undo);
+    final onUndone = widget.onUndone;
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: l10n.undo,
+      onUndo: onUndone == null ? null : () => onUndone(session),
+    );
     final onLogged = widget.onLogged;
     openScreen(
       context,

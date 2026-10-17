@@ -102,7 +102,7 @@ class WhatsInsideView extends StatelessWidget {
         _Promise(
           icon: Icons.restaurant,
           title: l10n.foodYouAlreadyCook,
-          body: l10n.koshariFulAndMolokhiaInThePortions,
+          body: l10n.koshariFulAndMolokhiaInThePortions_1am39,
         ),
         // Before she signs in this names the daily check-in, never the cycle
         // behind it. Promised only with that feature on.

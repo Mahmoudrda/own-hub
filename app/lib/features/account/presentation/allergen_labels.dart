@@ -50,3 +50,15 @@ String? allergenLabelForWire(AppL10n l10n, String wire) {
   final tag = AllergenTag.fromWire(wire);
   return tag == null ? null : allergenLabel(l10n, tag);
 }
+
+/// What saving her allergies changed, said plainly: "Saved. Dishes with nuts,
+/// eggs are hidden now.", or, with none, where to change it later. A safety
+/// setting is never saved in silence.
+String allergiesSavedLabel(AppL10n l10n, Set<AllergenTag>? allergies) {
+  final tags = [...?allergies]..sort((a, b) => a.index.compareTo(b.index));
+  if (tags.isEmpty) return l10n.savedChangeItAnyTimeInYour;
+  final names = [for (final tag in tags) allergenLabel(l10n, tag)];
+  return l10n.savedDishesWithAllergensAreHiddenNow(
+    names.skip(1).fold(names.first, l10n.listItem),
+  );
+}

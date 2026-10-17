@@ -35,6 +35,7 @@ class LoggedFromMemoryView extends StatelessWidget {
   const LoggedFromMemoryView({
     super.key,
     this.onBackToToday,
+    this.onRemove,
     this.session,
     this.loggedOn,
     this.sessionsThisWeek = 2,
@@ -45,6 +46,10 @@ class LoggedFromMemoryView extends StatelessWidget {
   });
 
   final VoidCallback? onBackToToday;
+
+  /// Takes this session off her week, after a confirmation. Null draws nothing:
+  /// there is no credited session yet while its undo window is open.
+  final VoidCallback? onRemove;
 
   /// The session just recorded. Defaults to a recalled one, which is what this
   /// screen exists to report.
@@ -104,7 +109,17 @@ class LoggedFromMemoryView extends StatelessWidget {
     final mayShowPersonalBest = eligibility.isEligible(recorded);
 
     return AppScaffold(
-      footer: [AppButton(l10n.backToToday, onPressed: onBackToToday)],
+      footer: [
+        AppButton(l10n.backToToday, onPressed: onBackToToday),
+        if (onRemove != null)
+          AppButton(
+            l10n.removeThisSession,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onRemove,
+          ),
+      ],
       children: [
         const SizedBox(height: 6),
         Column(

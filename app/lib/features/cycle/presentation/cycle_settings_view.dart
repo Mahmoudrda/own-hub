@@ -32,16 +32,16 @@
 /// argument about this one action, not a licence to put a dialog in the feature
 /// that owns the most sensitive data in the product.
 ///
-/// **What it cannot yet say.** Y12 must state "what was deleted and what was
-/// kept" — the check-ins survive, because they are G3's and hold energy, sleep
-/// and appetite the rest of the app uses. G9 OQ-8 is explicit that the copy and
-/// its Arabic "must not be invented", and the dictionary has only "Delete cycle
-/// data". So the confirming state offers the action and no explanation, and
-/// `P0-CYC-16` cannot fully pass.
+/// **What it says.** The confirming state names what goes before she confirms:
+/// her period dates, her check-ins and her cycle settings, from this phone, for
+/// good. The check-ins go too, by the owner's decision of 17 October 2026, so
+/// the sentence and the deletion agree. After it, Home says it is done and
+/// where to set My cycle up again.
 library;
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/honest_notice.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -120,7 +120,16 @@ class _CycleSettingsViewState extends State<CycleSettingsView> {
 
   Future<void> _confirmDelete() async {
     setState(() => _deletion = _deletion.confirmed());
-    await widget.repository?.purge();
+    try {
+      await widget.repository?.purge();
+    } catch (_) {
+      // Nothing is claimed that was not done: the row comes back, and she is
+      // told it did not happen.
+      if (!mounted) return;
+      setState(() => _deletion = _deletion.markFailed());
+      showHonestNotice(context, AppL10n.of(context).nothingWasDeletedTryAgain);
+      return;
+    }
     if (!mounted) return;
     setState(() => _deletion = _deletion.localPurged().markRemotePurged());
     widget.onDeleted?.call();
@@ -275,7 +284,13 @@ class _CycleSettingsViewState extends State<CycleSettingsView> {
                 l10n.dangerZone,
                 style: AppText.titleM.copyWith(color: AppColors.error),
               ),
-              if (_deletion.state == CycleDeletionState.confirming)
+              if (_deletion.state == CycleDeletionState.confirming) ...[
+                // What goes, said before she confirms it.
+                Text(
+                  l10n.thisDeletesYourPeriodDatesCheckIns,
+                  key: const ValueKey('y12-what-goes'),
+                  style: AppText.bodyM,
+                ),
                 // Asks in place. No dialog — see the library note.
                 Row(
                   children: [
@@ -299,8 +314,8 @@ class _CycleSettingsViewState extends State<CycleSettingsView> {
                       ),
                     ),
                   ],
-                )
-              else
+                ),
+              ] else
                 AppButton(
                   l10n.deleteCycleData,
                   variant: AppButtonVariant.outlined,

@@ -633,3 +633,29 @@ List<LibraryExercise> movesForSection(
       if (e.section != section) e,
   ].take(limit).toList(growable: false);
 }
+
+/// Strength moves that work [muscle] as a primary muscle, which she can do
+/// where she trains with what she has, for P06's card on one muscle. [shown]
+/// is already screened for her life stage ([screenForLifeStage]). Moves that
+/// name [muscle] first come first; the library's order otherwise.
+List<LibraryExercise> movesForMuscle(
+  List<LibraryExercise> shown,
+  Muscle muscle, {
+  required TrainingPlace place,
+  required Set<Equipment> equipment,
+  int limit = 3,
+}) {
+  final out = [
+    for (final e in shown)
+      if (e.kind == ExerciseKind.strength &&
+          e.primaryMuscles.contains(muscle) &&
+          _canDoHere(e, place, equipment))
+        e,
+  ];
+  return [
+    for (final e in out)
+      if (e.primaryMuscles.first == muscle) e,
+    for (final e in out)
+      if (e.primaryMuscles.first != muscle) e,
+  ].take(limit).toList(growable: false);
+}

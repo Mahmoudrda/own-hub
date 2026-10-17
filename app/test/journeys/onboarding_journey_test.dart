@@ -368,13 +368,17 @@ void main() {
       await _tap(tester, find.text('2'));
       await _tap(tester, find.text('Continue')); // O03
       await _tap(tester, find.text('Continue')); // O04
-      await _tap(
-        tester,
-        find.widgetWithText(AppButton, 'I will start tomorrow'),
-      );
+      // From her profile O05 saves her changes rather than offering to
+      // start a programme she is already in.
+      expect(find.text('I will start tomorrow'), findsNothing);
+      await _tap(tester, find.widgetWithText(AppButton, 'Save my changes'));
 
-      // Back where she opened them from, not on Home.
+      // Back where she opened them from, not on Home, and told her week.
       expect(find.byType(ProfileView), findsOneWidget);
+      expect(
+        find.textContaining('Your week is updated · 2 days'),
+        findsOneWidget,
+      );
       expect(find.byType(TodayView), findsNothing);
       expect(AppRouter.intakeRepository.read().days, 2);
       expect(_progressTarget, 2);

@@ -46,16 +46,19 @@
 /// reported rather than faked.
 library;
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import '../domain/flags/feature_flags.dart';
 import '../domain/rewards/weekly_goal_service.dart';
 import '../domain/clock/app_clock.dart';
 import '../features/onboarding/domain/intake.dart';
 import '../features/today/domain/today_day.dart';
+import '../l10n/app_l10n.dart';
 import '../routing/app_router.dart';
 import '../routing/app_routes.dart';
 import 'app_changes.dart';
+import 'honest_notice.dart';
+import 'pledge.dart';
 import 'rewards_state.dart';
 import 'role_state.dart';
 
@@ -117,12 +120,29 @@ class OnboardingState {
   /// to `C14`: day one is behind the gate. Cleared whenever she leaves setup.
   bool whileWaiting = false;
 
+  /// True when she reopened her answers from her profile (`A02`, "Your
+  /// training"). `O05` then saves her changes and goes back, instead of
+  /// offering to start day one to a woman already in her programme. Cleared
+  /// whenever she leaves setup.
+  bool editingFromProfile = false;
+
   /// True once she tapped Skip on a question before the life-stage question
   /// (`O04`). Skip never bypasses `O04`: it keeps the preselected answers for
   /// the questions she skipped and goes to `O04`, which has no Skip. Once she
   /// answers it, [skipSetup] takes her where Skip would have gone. Cleared by
   /// [finish].
   bool skippingSetup = false;
+
+  /// True once she finished building her week before she had an account
+  /// ([beforeSignup]), until an account is claimed on this phone or she signs
+  /// out. Kept on the phone with her answers.
+  ///
+  /// It is what tells a change of account apart: the answers on the phone are
+  /// either the ones the woman signing in just gave, which stay, or the
+  /// previous woman's, which go (`ThisPhoneWipe.keepsSignUp`). [beforeSignup]
+  /// itself cannot say, because it is cleared when her code is accepted, in
+  /// no fixed order with the sign-in that triggers the claim.
+  bool weekBuiltSignedOut = false;
 
   /// True once she said "Not now" to "Track my cycle" on day-one Home.
   ///
@@ -189,13 +209,20 @@ class OnboardingState {
   /// same walk a month later: it re-applies whatever is stored rather than
   /// doing anything a second time.
   void finish() {
+    if (beforeSignup) weekBuiltSignedOut = true;
     skippingSetup = false;
     shortSetupAfterSignup = false;
     whileWaiting = false;
+    editingFromProfile = false;
     AppRouter.intakeRepository.markSetupDone();
     _applyWeeklyTarget(AppRouter.intakeRepository.read().days);
     AppChanges.bump();
   }
+
+  /// Applies her stored days a week to the weekly target again, touching no
+  /// flag. For a wipe that kept her answers and reset her week around them.
+  void reapplyWeeklyTarget() =>
+      _applyWeeklyTarget(AppRouter.intakeRepository.read().days);
 
   /// Her days a week become the weekly session target. Her number, unclamped.
   ///
@@ -296,7 +323,15 @@ class OnboardingState {
     finish();
     enteredFromSignup = false;
     final navigator = Navigator.of(context);
+    // Agreed to the rules on the way in: said once she is Home, where it
+    // covers nothing she has to tap next, and only when nothing opens over it.
+    final thanks = PledgeState.instance.thankOnArrival && then == null
+        ? AppL10n.of(context).thanksForAgreeingTheRulesAreIn
+        : null;
+    PledgeState.instance.thankOnArrival = false;
+    final messenger = ScaffoldMessenger.maybeOf(context);
     navigator.pushNamedAndRemoveUntil(appRoutes[home]!.name, (_) => false);
     if (then != null) navigator.pushNamed(appRoutes[then]!.name);
+    if (thanks != null) showHonestNoticeOn(messenger, thanks);
   }
 }

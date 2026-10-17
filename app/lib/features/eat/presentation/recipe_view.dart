@@ -39,6 +39,7 @@ import '../domain/meal_sentence_parser.dart';
 import 'eat_day_view_model.dart';
 import 'eat_sample_library.dart';
 import 'meal_log_session.dart';
+import 'meal_labels.dart';
 
 class RecipeView extends StatefulWidget {
   const RecipeView({
@@ -183,7 +184,11 @@ class _RecipeViewState extends State<RecipeView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
       );
       _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
@@ -192,7 +197,11 @@ class _RecipeViewState extends State<RecipeView> {
 
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
         commit: () => service.commit(prepared.write),
       ),
     );
@@ -227,12 +236,15 @@ class _RecipeViewState extends State<RecipeView> {
                 : AppColors.onSurfaceVariant,
             icon: Icon(widget.saved ? Icons.bookmark : Icons.bookmark_border),
           ),
-          IconButton(
-            onPressed: widget.onShare,
-            iconSize: 24,
-            color: AppColors.onSurfaceVariant,
-            icon: const Icon(Icons.share),
-          ),
+          // Drawn only with somewhere to share to. A button that answers "not
+          // connected" is a dead end.
+          if (widget.onShare != null)
+            IconButton(
+              onPressed: widget.onShare,
+              iconSize: 24,
+              color: AppColors.onSurfaceVariant,
+              icon: const Icon(Icons.share),
+            ),
         ],
       ),
       footer: [
@@ -243,13 +255,15 @@ class _RecipeViewState extends State<RecipeView> {
               ? null
               : () => _log(food, sizes[selected]),
         ),
-        AppButton(
-          l10n.seeTheSteps,
-          variant: AppButtonVariant.outlined,
-          height: 48,
-          fontSize: 15,
-          onPressed: widget.onSeeSteps,
-        ),
+        // Only when there are steps to see.
+        if (widget.onSeeSteps != null)
+          AppButton(
+            l10n.seeTheSteps,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: widget.onSeeSteps,
+          ),
       ],
       children: [
         const AppMedia(

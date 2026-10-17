@@ -60,6 +60,7 @@ FeatureFlags shippingFlags() => FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.reassuringWaits: true,
   Feature.eat: true,
   Feature.recipes: true,
+  Feature.mealPhotos: true,
   Feature.weekPlan: true,
   Feature.progress: true,
   Feature.milestones: true,

@@ -439,6 +439,10 @@ void main() {
       );
       await tester.tap(find.byKey(const ValueKey('health-backup-toggle')));
       await tester.pumpAndSettle();
+      // Asked first: turning it off deletes the copy in her account.
+      expect(find.text('Turn off backup?'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('a03-backup-off')));
+      await tester.pumpAndSettle();
 
       expect(pref.enabled, isFalse);
       expect(

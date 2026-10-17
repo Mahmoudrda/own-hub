@@ -1,11 +1,12 @@
-/// P06 "Your muscles": her body, turned and tapped, coloured by what she
-/// trained, and what that says in plain words.
+/// P06 "Your muscles": her body from the front and the back, each muscle
+/// coloured by the sets where it did the work, and what that says in plain
+/// words.
 ///
 /// From the top: the window (7 or 30 days), the figure and its legend, the
-/// card for the part she tapped, up to three insights, and every muscle group
-/// as a list. Every colour on the figure is said again in numbers somewhere
-/// on the page, so nothing rests on colour alone. No kitten: the mascot is
-/// never on Progress.
+/// card for the muscle or group she chose, up to three insights, and every
+/// muscle group as a list. Every colour on the figure is said again in
+/// numbers somewhere on the page, so nothing rests on colour alone. No
+/// kitten: the mascot is never on Progress.
 library;
 
 import 'package:flutter/material.dart';
@@ -23,11 +24,13 @@ import '../../onboarding/domain/intake.dart'
 import '../../today/presentation/today_cards.dart'
     show openScreen, weekdayLabel;
 import '../../train/domain/exercise_library.dart';
-import '../../train/presentation/exercise_labels.dart' show sectionLabel;
+import '../../train/presentation/exercise_labels.dart'
+    show muscleLabel, sectionLabel;
 import '../domain/muscle_insights.dart';
 import '../domain/muscle_map.dart';
 import '../domain/muscle_report.dart';
 import 'muscle_figure.dart';
+import 'muscle_map_art.dart' show MuscleHeat;
 
 class MusclesView extends StatefulWidget {
   const MusclesView({
@@ -41,7 +44,6 @@ class MusclesView extends StatefulWidget {
     this.onOpenLibrary,
     this.onBack,
     this.onSelectTab,
-    this.hits,
   });
 
   /// Her training, read from her log.
@@ -64,22 +66,26 @@ class MusclesView extends StatefulWidget {
   final VoidCallback? onBack;
   final ValueChanged<String>? onSelectTab;
 
-  /// For a test that taps a part of the figure.
-  final FigureHits? hits;
-
   @override
   State<MusclesView> createState() => _MusclesViewState();
 }
 
 class _MusclesViewState extends State<MusclesView> {
   MuscleWindow _window = MuscleWindow.week;
+
+  /// A group she opened from the list, or a muscle she tapped on the
+  /// figure. Never both.
   MuscleSection? _selected;
+  Muscle? _muscle;
   final GlobalKey _figureKey = GlobalKey();
 
   MuscleReport get _report => widget.report;
 
   void _select(MuscleSection? section, {bool reveal = false}) {
-    setState(() => _selected = section);
+    setState(() {
+      _selected = section;
+      _muscle = null;
+    });
     if (!reveal || section == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final target = _figureKey.currentContext;
@@ -92,6 +98,11 @@ class _MusclesViewState extends State<MusclesView> {
     });
   }
 
+  void _selectMuscle(Muscle? muscle) => setState(() {
+    _muscle = muscle;
+    _selected = null;
+  });
+
   List<LibraryExercise> _movesFor(MuscleSection section) => movesForSection(
     screenForLifeStage(widget.library, widget.lifeStage).shown,
     section,
@@ -99,15 +110,27 @@ class _MusclesViewState extends State<MusclesView> {
     equipment: widget.equipment,
   );
 
+  List<LibraryExercise> _movesForMuscle(Muscle muscle) => movesForMuscle(
+    screenForLifeStage(widget.library, widget.lifeStage).shown,
+    muscle,
+    place: widget.place,
+    equipment: widget.equipment,
+  );
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    // The figure is coloured muscle by muscle, by the sets where each did
+    // the work: a set where a muscle only helped leaves it grey.
     final scores = {
-      for (final s in MuscleSection.values)
-        if (_report.score(_window, s) > 0) s: _report.score(_window, s),
+      for (final m in Muscle.values)
+        if (_report.muscleScore(_window, m) > 0)
+          m: _report.muscleScore(_window, m),
     };
     final ranked = _report.ranked(_window);
+    final worked = _report.rankedMuscles(_window);
     final selected = _selected;
+    final muscle = _muscle;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -137,25 +160,33 @@ class _MusclesViewState extends State<MusclesView> {
             key: _figureKey,
             child: MuscleFigure(
               scores: scores,
-              selected: selected,
-              onSelect: _select,
-              hits: widget.hits,
+              selected: {
+                ?muscle,
+                if (selected != null)
+                  for (final m in Muscle.values)
+                    if (sectionOf(m) == selected) m,
+              },
+              onSelect: _selectMuscle,
               semanticsLabel: l10n.bodyMapInSetsList(
-                [
-                  for (final v in ranked)
-                    '${sectionLabel(l10n, v.section)} ${setsLabel(v.sets)}',
-                ].join(', '),
+                worked.isEmpty
+                    ? l10n.notTrainedYet
+                    : [
+                        for (final w in worked)
+                          '${muscleLabel(l10n, w.muscle)} ${setsLabel(w.sets)}',
+                      ].join(', '),
               ),
-              frontLabel: l10n.seeTheFront,
-              backLabel: l10n.seeTheBack,
+              frontLabel: l10n.frontView,
+              backLabel: l10n.backView,
             ),
           ),
           Text(
-            l10n.dragToTurnTapAMuscleFor,
+            l10n.tapAMuscleForItsSets,
             textAlign: TextAlign.center,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
-          if (_report.hasSetsIn(_window)) _Legend(max: _report.maxIn(_window)),
+          if (_report.hasSetsIn(_window))
+            _Legend(max: _report.muscleMaxIn(_window)),
+          if (muscle != null) _muscleCard(context, l10n, muscle),
           if (selected != null) _partCard(context, l10n, selected),
           ..._insights(context, l10n),
           // Every group, with its sets: the same facts as the figure, in a
@@ -220,28 +251,14 @@ class _MusclesViewState extends State<MusclesView> {
   String _setsLine(AppL10n l10n, double sets) =>
       l10n.daysPluralOneSetsIn1Day(_window.days, setsLabel(sets));
 
-  /// The card for the part she tapped: its sets, when she last trained it,
-  /// and moves for it.
+  /// The card for the group she opened from the list: its sets, when she
+  /// last trained it, and moves for it.
   Widget _partCard(BuildContext context, AppL10n l10n, MuscleSection section) {
-    final moves = _movesFor(section);
-    return AppCard(
-      key: const ValueKey('p06-part-card'),
-      variant: AppCardVariant.selected,
-      gap: 6,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(sectionLabel(l10n, section), style: AppText.titleL),
-            ),
-            IconButton(
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              onPressed: () => _select(null),
-              icon: const Icon(Icons.close, size: 20),
-              color: AppColors.onSurfaceVariant,
-            ),
-          ],
-        ),
+    return _card(
+      context,
+      l10n,
+      title: sectionLabel(l10n, section),
+      lines: [
         Text(
           _setsLine(l10n, _report.setsIn(_window, section)),
           style: AppText.titleS,
@@ -250,6 +267,63 @@ class _MusclesViewState extends State<MusclesView> {
           lastTrainedLine(l10n, _report, section),
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
+      ],
+      moves: _movesFor(section),
+    );
+  }
+
+  /// The card for the muscle she tapped: the sets where it did the work, the
+  /// sets where it only helped, when it last did the work, and moves for it.
+  Widget _muscleCard(BuildContext context, AppL10n l10n, Muscle muscle) {
+    final helped = _report.helpedSets(_window, muscle).round();
+    return _card(
+      context,
+      l10n,
+      title: muscleLabel(l10n, muscle),
+      lines: [
+        Text(
+          _setsLine(l10n, _report.workedSets(_window, muscle)),
+          style: AppText.titleS,
+        ),
+        if (helped > 0)
+          Text(
+            l10n.countPluralOneAlsoWorked1Set(helped),
+            key: const ValueKey('p06-also-worked'),
+            style: AppText.bodyM,
+          ),
+        Text(
+          lastWorkedLine(l10n, _report, muscle),
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+      ],
+      moves: _movesForMuscle(muscle),
+    );
+  }
+
+  Widget _card(
+    BuildContext context,
+    AppL10n l10n, {
+    required String title,
+    required List<Widget> lines,
+    required List<LibraryExercise> moves,
+  }) {
+    return AppCard(
+      key: const ValueKey('p06-part-card'),
+      variant: AppCardVariant.selected,
+      gap: 6,
+      children: [
+        Row(
+          children: [
+            Expanded(child: Text(title, style: AppText.titleL)),
+            IconButton(
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => _select(null),
+              icon: const Icon(Icons.close, size: 20),
+              color: AppColors.onSurfaceVariant,
+            ),
+          ],
+        ),
+        ...lines,
         if (moves.isNotEmpty) ...[
           const SizedBox(height: 4),
           _Moves(
@@ -378,9 +452,13 @@ String lastTrainedLine(
   AppL10n l10n,
   MuscleReport report,
   MuscleSection section,
-) {
-  final days = report.daysSince(section);
-  final last = report.lastTrained(section);
+) => _lastLine(l10n, report.daysSince(section), report.lastTrained(section));
+
+/// The same for one muscle, counting only the sets where it did the work.
+String lastWorkedLine(AppL10n l10n, MuscleReport report, Muscle muscle) =>
+    _lastLine(l10n, report.daysSinceWorked(muscle), report.lastWorked(muscle));
+
+String _lastLine(AppL10n l10n, int? days, DateTime? last) {
   if (days == null || last == null) return l10n.notTrainedYet;
   final day = switch (days) {
     0 => l10n.today,

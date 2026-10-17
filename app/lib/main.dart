@@ -11,6 +11,8 @@ import 'app_state/posthog_analytics.dart';
 import 'app_state/cloud_store.dart';
 import 'app_state/crash_consent.dart';
 import 'app_state/kitten_setting.dart';
+import 'app_state/tip_anchors.dart';
+import 'features/eat/data/meal_camera.dart' show sweepCameraLeftovers;
 import 'app_state/crash_reports.dart';
 import 'app_state/eat_state.dart';
 import 'app_state/events_state.dart';
@@ -22,6 +24,7 @@ import 'ui/content_image.dart';
 import 'app_state/firebase_boot.dart';
 import 'app_state/home_widget_sync.dart';
 import 'app_state/local_persistence.dart';
+import 'app_state/snapshot_owner.dart';
 import 'app_state/onboarding_state.dart';
 import 'app_state/role_state.dart';
 import 'app_state/notification_taps.dart';
@@ -34,6 +37,7 @@ import 'domain/analytics/analytics_gateway.dart';
 import 'domain/flags/feature_flags.dart';
 import 'domain/identity/user_roles.dart';
 import 'l10n/app_l10n.dart';
+import 'features/signup/domain/auth_repository.dart';
 import 'routing/app_router.dart';
 import 'routing/app_routes.dart';
 import 'theme/app_tokens.dart';
@@ -86,6 +90,8 @@ Future<void> main() async {
   // snapshot restores nothing and the app opens exactly as it did before any
   // of this existed.
   await LocalPersistence.instance.load();
+  // Whose week that was. Read with it, so the check below has the owner.
+  await SnapshotOwner.instance.load();
   LocalPersistence.instance.start();
 
   // Her day moves on to today, and any week that ended while the app was
@@ -102,6 +108,9 @@ Future<void> main() async {
     PostHogAnalytics.instance.applyConsent(AnalyticsConsent.instance.allowed),
   );
   await KittenSetting.instance.load();
+  // The day each account on this phone first landed, so a woman signing back
+  // in does not get the getting started tips again.
+  await TipAnchors.instance.load();
   // The starting programmes, bundled. A file that cannot be read leaves the
   // placeholder catalogue, and Train is what it was.
   try {
@@ -115,6 +124,21 @@ Future<void> main() async {
   // first frame is already drawn from her own data, so a dead network costs
   // her nothing she can see. See `lib/app_state/firebase_boot.dart`.
   await FirebaseBoot.start();
+
+  // Whose phone this is, BEFORE any of her data can be drawn or synced. A
+  // different account than the one the snapshot belongs to wipes it here, and
+  // again whenever another account signs in later. This listener is added
+  // before the cloud store's, so the erase runs first on the same event.
+  // Signed out (the tour) claims nothing.
+  final signedIn = AppRouter.authRepository.current;
+  if (signedIn is AuthSignedIn) {
+    await SnapshotOwner.instance.claim(signedIn.uid);
+  }
+  AppRouter.authRepository.watch().listen((state) {
+    if (state is AuthSignedIn) {
+      unawaited(SnapshotOwner.instance.claim(state.uid));
+    }
+  });
   // Pictures from the content library, for a signed-in account only.
   ContentImage.resolver = ContentImages.url;
 
@@ -215,10 +239,18 @@ Future<void> main() async {
     } catch (_) {
       // The rules refuse health writes without the consent anyway.
     }
+    // A pledge agreed offline, or whose record failed, is sent again. Not
+    // awaited: the sync never waits on it.
+    unawaited(AppRouter.retryPledgeRecord());
     await CloudStore.instance.start();
   }());
 
   runApp(const OwnHubApp());
+
+  // Any photo file the camera left behind (a shutter that failed after it
+  // wrote, a delete that did not go through) goes now, after the first frame
+  // and without waiting on it. No photo is kept on the phone.
+  unawaited(sweepCameraLeftovers());
 
   // The once-a-day recipe library check, after the first frame so it can
   // never delay it. Offline or signed out it reads nothing and the bundled

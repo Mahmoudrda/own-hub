@@ -39,6 +39,7 @@ import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../theme/recipe_book_tokens.dart';
+import '../../../ui/app_button.dart';
 import '../../../ui/app_media.dart';
 import '../../../ui/content_image.dart';
 import '../../../ui/app_scaffold.dart';
@@ -80,11 +81,19 @@ class RahmaRecipeView extends StatefulWidget {
     required this.recipe,
     this.onBack,
     this.onShare,
+    this.onAddToWeek,
   });
 
   final Recipe recipe;
   final VoidCallback? onBack;
+
+  /// Null draws no share button: there is nothing to share with yet, and a
+  /// button that only says so is a dead end.
   final VoidCallback? onShare;
+
+  /// Puts this dinner on her week. The next step after reading a recipe; the
+  /// page had none but Back.
+  final VoidCallback? onAddToWeek;
 
   @override
   State<RahmaRecipeView> createState() => _RahmaRecipeViewState();
@@ -115,14 +124,24 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
         appBar: AppTopBar(
           onBack: widget.onBack,
           actions: [
-            IconButton(
-              onPressed: widget.onShare,
-              iconSize: 24,
-              color: BookInk.ink,
-              icon: const Icon(Icons.share),
-            ),
+            if (widget.onShare != null)
+              IconButton(
+                onPressed: widget.onShare,
+                iconSize: 24,
+                color: BookInk.ink,
+                icon: const Icon(Icons.share),
+              ),
           ],
         ),
+        footer: [
+          if (widget.onAddToWeek != null)
+            AppButton(
+              l10n.addToMyWeek,
+              key: const ValueKey('e06-add-to-my-week'),
+              icon: Icons.calendar_month,
+              onPressed: widget.onAddToWeek,
+            ),
+        ],
         children: [
           // A console recipe's photo, when one was uploaded. Her book's
           // recipes have none, and nothing is drawn for them.

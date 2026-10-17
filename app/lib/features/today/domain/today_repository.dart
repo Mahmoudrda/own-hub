@@ -310,6 +310,34 @@ class InMemoryTodayRepository implements TodayRepository {
     );
   }
 
+  /// A meal she removed from [dayId], once written. Home's plates follow
+  /// [plates]; when [dayEmpty], the day has no meal left and Home's card goes
+  /// back to "nothing logged", as if the meal had been undone. Another day
+  /// than Home's changes only the plates.
+  void mealRemoved({
+    required String dayId,
+    required bool dayEmpty,
+    required List<PlateSuggestion> plates,
+  }) {
+    final day = _day;
+    final clears = dayEmpty && dayKey(day.date) == dayId;
+    _emit(
+      TodayDay(
+        date: day.date,
+        state: day.state,
+        arc: day.arc,
+        week: day.week,
+        walkToCount: day.walkToCount,
+        walkMinutes: day.walkMinutes,
+        mealLoggedAt: clears ? null : day.mealLoggedAt,
+        showCycleCard: day.showCycleCard,
+        plates: plates,
+        programWeek: day.programWeek,
+        programTotalWeeks: day.programTotalWeeks,
+      ),
+    );
+  }
+
   /// Credits one finished session to Today's own copy of the week.
   ///
   /// Deduped by session id: Home keeps this copy so it can render offline,
@@ -326,6 +354,28 @@ class InMemoryTodayRepository implements TodayRepository {
             .started,
         week: WeekProgress(
           sessionsLogged: _day.week.sessionsLogged + 1,
+          sessionsTarget: _day.week.sessionsTarget,
+          repairedByRestWeek: _day.week.repairedByRestWeek,
+        ),
+      ),
+    );
+  }
+
+  /// Takes one credited session back off Today's copy of the week, when she
+  /// removes it. Nothing when the id was never counted here.
+  ///
+  /// The day goes back to "in progress": she logged something today, and the
+  /// session that made it done is gone.
+  void unrecordSession(String sessionId) {
+    if (!_creditedSessions.remove(sessionId)) return;
+    final logged = _day.week.sessionsLogged;
+    _emit(
+      _day.copyWith(
+        state: _day.state == DayState.done || _day.state == DayState.recalled
+            ? DayState.inProgress
+            : _day.state,
+        week: WeekProgress(
+          sessionsLogged: logged > 0 ? logged - 1 : 0,
           sessionsTarget: _day.week.sessionsTarget,
           repairedByRestWeek: _day.week.repairedByRestWeek,
         ),

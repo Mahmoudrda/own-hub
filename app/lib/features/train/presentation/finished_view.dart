@@ -71,6 +71,7 @@ class FinishedView extends StatelessWidget {
   const FinishedView({
     super.key,
     this.onBackToToday,
+    this.onRemove,
     this.onShare,
     this.session,
     this.finishedOn,
@@ -99,6 +100,9 @@ class FinishedView extends StatelessWidget {
   final bool cheer;
 
   final VoidCallback? onBackToToday;
+
+  /// Takes this session off her week, after a confirmation. Null draws nothing.
+  final VoidCallback? onRemove;
 
   /// Community. Hands over an intent only — no post is written from here.
   final VoidCallback? onShare;
@@ -188,6 +192,16 @@ class FinishedView extends StatelessWidget {
     final page = AppScaffold(
       footer: [
         AppButton(l10n.backToToday, onPressed: onBackToToday),
+        // A session logged by mistake comes off her week, after a
+        // confirmation, with Undo. Only once its credit has landed.
+        if (onRemove != null)
+          AppButton(
+            l10n.removeThisSession,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onRemove,
+          ),
         // The share link is Community's, and the first release ships without
         // it. Offering a post at the peak moment when there is nowhere to
         // post it is worse than a quiet link: it is the one screen a woman

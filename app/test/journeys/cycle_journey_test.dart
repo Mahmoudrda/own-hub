@@ -74,6 +74,8 @@ Future<void> _checkIn(
   await _tap(tester, find.text('Cramps, appetite, sleep and more'));
   await _tap(tester, find.text(cramps).first);
   await _tap(tester, find.text('Save check-in'));
+  // The undo offer's five seconds close, as they do for her.
+  await tester.pump(const Duration(seconds: 6));
 }
 
 void main() {
@@ -135,9 +137,11 @@ void main() {
         reason: 'answered; the row stops asking',
       );
 
-      // The same three choices, and the same explanation, as anyone else.
+      // The same choices, and the same explanation, as anyone else. "Use
+      // this option" is offered only with a gentle session behind it, and
+      // this library has none, so it is not drawn (it opened her full day).
       await _tap(tester, find.text('View option'));
-      expect(find.text('Use this option'), findsOneWidget);
+      expect(find.text('Use this option'), findsNothing);
       expect(find.text('Keep my workout'), findsOneWidget);
       expect(find.text('Rest today'), findsOneWidget);
 
@@ -187,7 +191,16 @@ void main() {
         find.text('This needs more than a workout change'),
         findsOneWidget,
       );
-      expect(find.text('Find care near you'), findsOneWidget);
+      // What to do, said plainly, in place of two buttons that opened
+      // nothing ("we do not have that yet").
+      expect(
+        find.text(
+          'If the pain is severe or sudden, see a doctor today. In an '
+          'emergency call 123.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Find care near you'), findsNothing);
       for (final forbidden in [
         'A gentler option today',
         'View option',

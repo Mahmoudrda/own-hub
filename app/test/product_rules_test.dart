@@ -132,6 +132,8 @@ const Set<String> kStreakCopyKeys = <String>{
   'trainingStreakDaysDays',
   'daysPluralOneTrainingStreak1Day',
   'showMyTrainingStreak',
+  // Where to turn it back on, after she turns it off (no loss, no judgement).
+  'streakHiddenTurnItBackOnIn',
 };
 
 /// Every string D37 added, whether or not it says "streak". All of them are

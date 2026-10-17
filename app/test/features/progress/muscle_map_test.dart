@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/features/admin/domain/content_schema.dart';
+import 'package:own_hub/features/admin/domain/seed_library.dart';
 import 'package:own_hub/features/progress/domain/muscle_map.dart';
 import 'package:own_hub/features/train/domain/exercise_library.dart';
 import 'package:own_hub/features/train/domain/exercise_metrics.dart';
@@ -35,6 +37,8 @@ void main() {
       // The seed day, the demo and the moves bests are measured on.
       ...bundledExerciseMetrics.keys,
       'box_squat',
+      // The content seed's moves, which an admin can import.
+      for (final row in seedRowsFor(ContentCollection.exercises)) row.id,
     };
     expect(ids.length, greaterThan(40));
     final missing = [

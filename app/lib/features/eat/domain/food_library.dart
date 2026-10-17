@@ -44,6 +44,9 @@ class FoodSize {
     required this.label,
     required this.kcal,
     required this.proteinG,
+    this.carbsG,
+    this.fatG,
+    this.fiberG,
     this.grams,
   });
 
@@ -56,6 +59,12 @@ class FoodSize {
   /// Frozen onto the item at log time, with the pack version.
   final int kcal;
   final int proteinG;
+
+  /// Null where the pack does not say. Nothing invents them: a food without
+  /// them logs without them, and its day total leaves them out.
+  final int? carbsG;
+  final int? fatG;
+  final int? fiberG;
 
   final int? grams;
 }

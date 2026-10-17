@@ -47,6 +47,7 @@ import '../features/progress/domain/progress_repository.dart';
 import '../features/progress/presentation/milestones_view.dart'
     show authoredMilestones;
 import '../features/today/domain/today_repository.dart';
+import '../features/train/domain/session_bests_bridge.dart';
 import '../features/train/domain/train_repository.dart';
 import 'app_changes.dart';
 import 'training_streak_state.dart';
@@ -63,8 +64,26 @@ class RewardsState {
   final Set<String> _awardIds = <String>{};
   DailyCapState _cap = const DailyCapState.fresh('');
 
+  /// What each award under the daily cap actually paid, by award id. A session,
+  /// a best and a food day can be taken back when she removes what earned it,
+  /// and the cap may have paid less than the table says, so what comes off is
+  /// what was paid, never the table's figure.
+  final Map<String, int> _granted = <String, int>{};
+
+  /// Milestone id to what earned it: `session:<id>` or `meal:<day>`. A
+  /// milestone is taken back only when she removes the very thing that earned
+  /// it and her count no longer reaches it.
+  final Map<String, String> _earnedBy = <String, String>{};
+
   /// The awards already made, as the snapshot keeps them.
   Set<String> get awardIds => Set<String>.unmodifiable(_awardIds);
+
+  /// What each capped award paid, as the snapshot keeps it.
+  Map<String, int> get grantedPoints => Map<String, int>.unmodifiable(_granted);
+
+  /// What earned each milestone, as the snapshot keeps it.
+  Map<String, String> get milestoneSources =>
+      Map<String, String>.unmodifiable(_earnedBy);
 
   /// Today's cap, as the snapshot keeps it.
   DailyCapState get capState => _cap;
@@ -73,17 +92,27 @@ class RewardsState {
   void restore({
     Iterable<String> awardIds = const <String>[],
     DailyCapState? cap,
+    Map<String, int> granted = const <String, int>{},
+    Map<String, String> earnedBy = const <String, String>{},
   }) {
     _awardIds
       ..clear()
       ..addAll(awardIds);
     _cap = cap ?? const DailyCapState.fresh('');
+    _granted
+      ..clear()
+      ..addAll(granted);
+    _earnedBy
+      ..clear()
+      ..addAll(earnedBy);
   }
 
   /// Account deletion, and tests.
   void reset() {
     _awardIds.clear();
     _cap = const DailyCapState.fresh('');
+    _granted.clear();
+    _earnedBy.clear();
   }
 
   /// Offers [award] to the ledger and keeps what it decided. Returns the points
@@ -101,15 +130,22 @@ class RewardsState {
     final entry = ledger.record(award, dayKey: dayKey(on));
     if (entry.refusal == LedgerRefusal.duplicate) return 0;
     _awardIds.add(award.awardId);
+    if (award.underDailyCap) _granted[award.awardId] = entry.granted;
     _cap = ledger.capState;
-    const curve = LevelCurve();
-    progress.rewards = progress.rewards.copyWith(
-      points: ledger.points,
-      level: curve.levelFor(ledger.points),
-      pointsToNextLevel: curve.pointsToNextLevel(ledger.points),
-    );
+    _setPoints(progress, ledger.points);
     _prune();
     return entry.granted;
+  }
+
+  /// Her points, and the level that follows from them. Never below zero.
+  static void _setPoints(ProgressStore progress, int points) {
+    final kept = points < 0 ? 0 : points;
+    const curve = LevelCurve();
+    progress.rewards = progress.rewards.copyWith(
+      points: kept,
+      level: curve.levelFor(kept),
+      pointsToNextLevel: curve.pointsToNextLevel(kept),
+    );
   }
 
   /// Credits one session everywhere it counts — the week, Today's copy of it,
@@ -176,6 +212,7 @@ class RewardsState {
       progress: progress,
       now: on,
       cameBack: cameBack,
+      earnedBy: 'session:$sessionId',
     );
     final milestonePoints = progress.rewards.points - beforeMilestones;
 
@@ -195,6 +232,212 @@ class RewardsState {
       milestonesEarned: milestones,
       milestonePoints: milestonePoints,
     );
+  }
+
+  /// What crediting [sessionId] would do, without doing it: the session and
+  /// week points it would pay under today's cap (milestones are decided by the
+  /// credit itself), and where her week would stand.
+  ///
+  /// For a screen that announces a session still inside its undo window. The
+  /// credit itself waits for the window to close, so Undo never has a credit
+  /// to take back.
+  ({int points, int loggedAfter, int target}) previewSession({
+    required String sessionId,
+    required SessionSource source,
+    required ProgressStore progress,
+    DateTime? now,
+  }) {
+    final on = now ?? AppClock.now();
+    final key = WeekKey.of(on);
+    final week =
+        progress.weeks[key.id] ??
+        WeekDoc(week: key, sessionsTarget: progress.goal.sessionsTarget);
+    final credit = const WeekRollup().creditSession(
+      week: week,
+      sessionId: sessionId,
+    );
+    if (credit.alreadyCredited) {
+      return (
+        points: 0,
+        loggedAfter: week.sessionsLogged,
+        target: week.sessionsTarget,
+      );
+    }
+    var points = _available(
+      const AwardTable().award(
+        SessionLogged(sessionId: sessionId, source: _asTraining(source)),
+      ),
+      on,
+    );
+    if (credit.countedNow) {
+      points += _available(
+        const AwardTable().award(WeekCounted(week: key)),
+        on,
+      );
+    }
+    return (
+      points: points,
+      loggedAfter: credit.week.sessionsLogged,
+      target: credit.week.sessionsTarget,
+    );
+  }
+
+  int _available(Award award, DateTime on) {
+    if (_awardIds.contains(award.awardId)) return 0;
+    return const DailyCap()
+        .apply(state: _cap, dayKey: dayKey(on), award: award)
+        .granted;
+  }
+
+  /// Takes one session's own credit back, when she removes the session.
+  ///
+  /// What comes back: the session from its week's count, one from her
+  /// sessions logged, the points the session itself paid, Today's copy of the
+  /// week and the streak's count for [on]'s day. With [bests], every personal
+  /// best the session set and the points they paid, and the running best on
+  /// each move goes back to what she held without it. And any milestone this
+  /// session earned that her counts no longer reach.
+  ///
+  /// What stays: a week that already counted stays counted, with its award.
+  /// `WeekRollup` never un-counts a week (G6 §4.3), and a removal is not
+  /// allowed to be the one way round that; a closed week loses the session
+  /// from its count and its bar, and keeps its verdict. Today's cap is not
+  /// given back either, so logging and removing cannot be used to farm points.
+  ///
+  /// The points come off as they were paid, from the record [_record] keeps.
+  /// [sessionPoints] and [bestPoints] are what the caller saw paid, used only
+  /// where the phone has no record (a document from an older build).
+  ///
+  /// Returns false when the session was never credited.
+  bool uncreditSession({
+    required String sessionId,
+    required SessionSource source,
+    required InMemoryTodayRepository today,
+    required ProgressStore progress,
+    int sessionPoints = 0,
+    int bestPoints = 0,
+    SessionBestsBridge? bests,
+    InMemoryTrainRepository? train,
+    DateTime? now,
+  }) {
+    final on = now ?? AppClock.now();
+    String? weekId;
+    for (final entry in progress.weeks.entries) {
+      if (entry.value.creditedSessionIds.contains(sessionId)) {
+        weekId = entry.key;
+        break;
+      }
+    }
+    if (weekId == null) return false;
+    final week = progress.weeks[weekId]!;
+    // `copyWith` cannot walk `counted` back, so a counted week stays counted.
+    progress.weeks[weekId] = week.copyWith(
+      creditedSessionIds: [
+        for (final id in week.creditedSessionIds)
+          if (id != sessionId) id,
+      ],
+    );
+    if (week.isClosed) _lowerClosedBar(progress, week.week);
+
+    final award = const AwardTable().award(
+      SessionLogged(sessionId: sessionId, source: _asTraining(source)),
+    );
+    _awardIds.remove(award.awardId);
+    final sessionPaid = _granted.remove(award.awardId) ?? sessionPoints;
+
+    // Her bests from this session, and what they paid.
+    final suffix = ':$sessionId';
+    final bestIds = [
+      for (final id in _awardIds)
+        if (id.startsWith('best:') && id.endsWith(suffix)) id,
+    ];
+    var bestPaid = 0;
+    var bestRecorded = false;
+    for (final id in bestIds) {
+      _awardIds.remove(id);
+      final paid = _granted.remove(id);
+      if (paid != null) {
+        bestPaid += paid;
+        bestRecorded = true;
+      }
+    }
+    if (!bestRecorded) bestPaid = bestPoints;
+    if (bests != null) {
+      bests.forget(
+        sessionId,
+        flushes: train?.flushes ?? const [],
+        sessionById: train?.sessionById,
+      );
+    }
+
+    final logged = progress.rewards.sessionsLogged;
+    progress.rewards = progress.rewards.copyWith(
+      sessionsLogged: logged > 0 ? logged - 1 : 0,
+      bestsCount: bests?.ledger.bestsCount,
+    );
+    _setPoints(progress, progress.rewards.points - sessionPaid - bestPaid);
+    _revokeMilestones('session:$sessionId', progress: progress, on: on);
+
+    today.unrecordSession(sessionId);
+    TrainingStreakState.instance.noteUncredit(on);
+    AppChanges.bump();
+    return true;
+  }
+
+  /// A closed week's bar on Progress, one session lower. Its verdict stays.
+  static void _lowerClosedBar(ProgressStore progress, WeekKey week) {
+    final bars = progress.goal.recent8;
+    final at = bars.indexWhere((bar) => bar.week == week);
+    if (at < 0) return;
+    final bar = bars[at];
+    progress.goal = progress.goal.copyWith(
+      recent8: [
+        for (var i = 0; i < bars.length; i++)
+          if (i == at)
+            WeekBar(
+              week: bar.week,
+              sessionsLogged: bar.sessionsLogged > 0
+                  ? bar.sessionsLogged - 1
+                  : 0,
+              sessionsTarget: bar.sessionsTarget,
+              counted: bar.counted,
+              repairedByRestWeek: bar.repairedByRestWeek,
+            )
+          else
+            bars[i],
+      ],
+    );
+  }
+
+  /// Takes back each milestone [source] earned that her counts no longer
+  /// reach, and the points it paid. "Came back" was earned by the session
+  /// itself, so it goes with it.
+  void _revokeMilestones(
+    String source, {
+    required ProgressStore progress,
+    required DateTime on,
+    MilestoneCatalogue catalogue = authoredMilestones,
+  }) {
+    final counts = milestoneCounts(progress, now: on);
+    final kept = <String, DateTime>{...progress.rewards.milestones};
+    var points = 0;
+    for (final milestone in catalogue.milestones) {
+      if (_earnedBy[milestone.id] != source) continue;
+      if (!kept.containsKey(milestone.id)) continue;
+      final stillMet =
+          milestone.measure != MilestoneMeasure.cameBack &&
+          counts.of(milestone.measure) >= milestone.target;
+      if (stillMet) continue;
+      kept.remove(milestone.id);
+      _earnedBy.remove(milestone.id);
+      final award = const AwardTable().award(
+        MilestoneReached(milestoneId: milestone.id),
+      );
+      if (_awardIds.remove(award.awardId)) points += award.points;
+    }
+    if (kept.length == progress.rewards.milestones.length) return;
+    progress.rewards = progress.rewards.copyWith(milestones: kept);
+    _setPoints(progress, progress.rewards.points - points);
   }
 
   /// Pays for bests that beat one she already had, at most three a day (the
@@ -217,7 +460,11 @@ class RewardsState {
         on: on,
       );
     }
-    awardMilestones(progress: progress, now: on);
+    awardMilestones(
+      progress: progress,
+      now: on,
+      earnedBy: 'session:$sessionId',
+    );
     return granted;
   }
 
@@ -233,9 +480,28 @@ class RewardsState {
       progress: progress,
       on: on,
     );
-    awardMilestones(progress: progress, now: on);
+    awardMilestones(progress: progress, now: on, earnedBy: 'meal:$day');
     if (granted > 0) AppChanges.bump();
     return granted;
+  }
+
+  /// Takes [day]'s food-day credit back, when she removes the last meal of
+  /// the day: the points it paid, and a milestone it earned that her count no
+  /// longer reaches. Today's cap is not given back. Returns false when the day
+  /// had not paid.
+  bool uncreditFoodDay({
+    required String day,
+    required ProgressStore progress,
+    DateTime? now,
+  }) {
+    final on = now ?? AppClock.now();
+    final award = const AwardTable().award(FoodDayLogged(dayId: day));
+    if (!_awardIds.remove(award.awardId)) return false;
+    final paid = _granted.remove(award.awardId) ?? 0;
+    _setPoints(progress, progress.rewards.points - paid);
+    _revokeMilestones('meal:$day', progress: progress, on: on);
+    AppChanges.bump();
+    return true;
   }
 
   /// What a meal logged on [day] would pay, without paying it. Zero once the
@@ -333,10 +599,14 @@ class RewardsState {
 
   /// Pays every authored milestone her counts have reached and nobody has paid
   /// yet. Returns their ids, in catalogue order.
+  ///
+  /// [earnedBy] names what was just credited (`session:<id>`, `meal:<day>`),
+  /// so removing it later can take back what it alone earned.
   List<String> awardMilestones({
     required ProgressStore progress,
     DateTime? now,
     bool cameBack = false,
+    String? earnedBy,
     MilestoneCatalogue catalogue = authoredMilestones,
   }) {
     final on = now ?? AppClock.now();
@@ -356,6 +626,7 @@ class RewardsState {
       progress.rewards = progress.rewards.copyWith(
         milestones: {...progress.rewards.milestones, milestone.id: on},
       );
+      if (earnedBy != null) _earnedBy[milestone.id] = earnedBy;
       reached.add(milestone.id);
     }
     return reached;
@@ -397,6 +668,7 @@ class RewardsState {
     // the first ones added: a Set keeps insertion order.
     for (final id in perishable.take(perishable.length - kKeptAwardIds)) {
       _awardIds.remove(id);
+      _granted.remove(id);
     }
   }
 

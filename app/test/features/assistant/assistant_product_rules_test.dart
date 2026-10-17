@@ -253,6 +253,13 @@ void main() {
       'الذكاء الاصطناعي': RegExp('الذكاء الاصطناعي'),
     };
 
+    // One message is exempt, by key: the consent shown before her first meal
+    // photo (E12). It is a disclosure, not a name for a feature: she is told
+    // that the photo goes to an AI before anything is sent, which is what the
+    // owner's wording says and what consent needs. The assistant is still
+    // never called AI anywhere.
+    const disclosures = <String>{'yourPhotoGoesToOurAiIn'};
+
     for (final locale in ['en', 'ar']) {
       test('app_$locale.arb contains no reference to it', () {
         final dictionary = jsonDecode(
@@ -262,6 +269,7 @@ void main() {
         final offenders = <String>[];
         dictionary.forEach((key, value) {
           if (key.startsWith('@') || value is! String) return;
+          if (disclosures.contains(key)) return;
           for (final entry in banned.entries) {
             if (entry.value.hasMatch(value)) {
               offenders.add('$key = "$value"  (${entry.key})');

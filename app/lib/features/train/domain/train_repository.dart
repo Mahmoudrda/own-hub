@@ -309,6 +309,27 @@ abstract class TrainRepository {
     required String activity,
     required int durationSec,
   });
+
+  /// Corrects one set she logged, after its undo window has closed.
+  ///
+  /// The set is found by its prescription's `order` within [exerciseId] in
+  /// [sessionId]; what she did replaces what was written. The prescription is
+  /// never touched: this records a different outcome, never a different plan.
+  Future<void> replaceSet({
+    required String sessionId,
+    required String exerciseId,
+    required LoggedSet set,
+  });
+
+  /// Removes a session she logged by mistake, with every set written to it.
+  /// Returns the session, or null when there was none under [sessionId].
+  ///
+  /// Reachable only when the removal's own undo window has closed. Points and
+  /// the week are the rewards group's to take back, not this interface's.
+  ///
+  /// The removal is remembered, so a copy of the session on the server is
+  /// marked removed rather than merged back.
+  Future<TrainSession?> removeSession(String sessionId);
 }
 
 /// What the server does when a flush lands.
@@ -365,6 +386,15 @@ class InMemoryTrainRepository implements TrainRepository {
   final FlushedMove? onFlushed;
 
   final Map<String, TrainSession> _sessions = <String, TrainSession>{};
+
+  /// Sessions she removed, by id, with the two facts the cloud needs to mark
+  /// them removed: the source the rules require an update to keep, and the day.
+  ///
+  /// The rules keep a session with a set in it on the server for good, and the
+  /// merge takes back any session the phone does not hold. Without this record
+  /// a removed session came back at the next sign-in, after her week and her
+  /// points had already been taken down for it.
+  final Map<String, RemovedSession> _removed = <String, RemovedSession>{};
 
   /// Every flush that reached "the server", in order. A test asserts against this
   /// to prove an undone log never arrived.
@@ -425,6 +455,7 @@ class InMemoryTrainRepository implements TrainRepository {
       sets: sets,
     );
     _sessions[session.id] = session;
+    _removed.remove(session.id);
     _liveSessionId = session.id;
     return session;
   }
@@ -499,6 +530,8 @@ class InMemoryTrainRepository implements TrainRepository {
       endedReason: EndedReason.finished,
       completed: true,
     );
+    // Logged again after she removed it: the same id is hers again.
+    _removed.remove(id);
     _sessions[id] = session;
     return session;
   }
@@ -520,8 +553,95 @@ class InMemoryTrainRepository implements TrainRepository {
       endedReason: EndedReason.finished,
       completed: true,
     );
+    // Logged again after she removed it: the same id is hers again.
+    _removed.remove(id);
     _sessions[id] = session;
     return session;
+  }
+
+  @override
+  Future<void> replaceSet({
+    required String sessionId,
+    required String exerciseId,
+    required LoggedSet set,
+  }) async {
+    final order = set.prescribed.order;
+    // Newest first: a set logged twice is corrected where it last landed.
+    for (var i = flushes.length - 1; i >= 0; i--) {
+      final flush = flushes[i];
+      if (flush.sessionId != sessionId || flush.exerciseId != exerciseId) {
+        continue;
+      }
+      final at = flush.sets.indexWhere((s) => s.prescribed.order == order);
+      if (at < 0) continue;
+      flushes[i] = (
+        sessionId: flush.sessionId,
+        exerciseId: flush.exerciseId,
+        sets: [
+          for (var j = 0; j < flush.sets.length; j++)
+            j == at ? set : flush.sets[j],
+        ],
+      );
+      return;
+    }
+    // Never written: the correction is the first record of it.
+    flushes.add((sessionId: sessionId, exerciseId: exerciseId, sets: [set]));
+  }
+
+  @override
+  Future<TrainSession?> removeSession(String sessionId) async {
+    final removed = _sessions.remove(sessionId);
+    flushes.removeWhere((f) => f.sessionId == sessionId);
+    if (_liveSessionId == sessionId) _liveSessionId = null;
+    if (removed != null) {
+      _removed[sessionId] = RemovedSession(
+        id: sessionId,
+        source: removed.source,
+        dateKey: removed.dateKey,
+      );
+    }
+    return removed;
+  }
+
+  /// The sessions she removed, as the snapshot and the cloud keep them.
+  List<RemovedSession> get removedSessions =>
+      List<RemovedSession>.unmodifiable(_removed.values);
+
+  /// Whether [sessionId] is one she removed. The merge reads it so a copy
+  /// still on the server is never taken back.
+  bool isRemoved(String sessionId) => _removed.containsKey(sessionId);
+
+  /// Puts back the sessions she had removed when the app closed.
+  ///
+  /// Separate from [restore] on purpose: the merge restores the sessions it
+  /// folds in, and a removal must not be forgotten by that.
+  void restoreRemoved(Iterable<RemovedSession> removed) {
+    _removed
+      ..clear()
+      ..addEntries(
+        removed
+            .where((r) => !_sessions.containsKey(r.id))
+            .map((r) => MapEntry(r.id, r)),
+      );
+  }
+
+  /// The sets she logged for [exerciseId] in [sessionId], one per set number,
+  /// in order. A set written twice reads as its latest outcome.
+  List<LoggedSet> loggedSetsFor({
+    required String sessionId,
+    required String exerciseId,
+  }) {
+    final byOrder = <int, LoggedSet>{};
+    for (final flush in flushes) {
+      if (flush.sessionId != sessionId || flush.exerciseId != exerciseId) {
+        continue;
+      }
+      for (final set in flush.sets) {
+        if (set.isLogged) byOrder[set.prescribed.order] = set;
+      }
+    }
+    final orders = byOrder.keys.toList()..sort();
+    return [for (final order in orders) byOrder[order]!];
   }
 
   /// Every session she has, as the snapshot keeps them.
@@ -577,11 +697,37 @@ class InMemoryTrainRepository implements TrainRepository {
   /// and are not hers to delete.
   void reset() {
     _sessions.clear();
+    _removed.clear();
     flushes.clear();
     swaps.clear();
     _liveSessionId = null;
     _counter = 0;
   }
+}
+
+/// A session she removed: enough to mark its cloud copy removed and to keep
+/// the merge from bringing it back.
+@immutable
+class RemovedSession {
+  const RemovedSession({
+    required this.id,
+    required this.source,
+    required this.dateKey,
+  });
+
+  final String id;
+  final SessionSource source;
+  final String dateKey;
+
+  @override
+  bool operator ==(Object other) =>
+      other is RemovedSession &&
+      other.id == id &&
+      other.source == source &&
+      other.dateKey == dateKey;
+
+  @override
+  int get hashCode => Object.hash(id, source, dateKey);
 }
 
 /// The video library before any of it has been produced.

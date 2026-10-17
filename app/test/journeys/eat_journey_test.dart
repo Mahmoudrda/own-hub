@@ -164,10 +164,11 @@ void main() {
 
       // E04, with the meal already on it — the row appears immediately and the
       // day total moves, before anything has been written (§4.3).
+      // And it names the food and the slot, not "Meal added".
       expect(
         find.descendant(
           of: find.byType(AppUndoBar),
-          matching: find.text('Meal added'),
+          matching: find.textContaining(' added to '),
         ),
         findsOneWidget,
         reason: 'E04 offers the undo the moment it opens, not five seconds in',
@@ -362,15 +363,9 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('See the steps'));
-      await tester.pumpAndSettle();
-      expect(
-        find.text('The steps for this dish have not been written yet.'),
-        findsOneWidget,
-      );
-
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pumpAndSettle();
+      // No steps exist for this dish, so there is no button that would only
+      // say so.
+      expect(find.text('See the steps'), findsNothing);
       await tester.tap(find.text('I cooked it and ate a bowl'));
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
@@ -492,6 +487,14 @@ void main() {
       expect(AppRouter.eatConstraints.allergies, {
         'tree_nuts',
       }, reason: 'Eat reads the profile A02 wrote, not a constant');
+      // A safety setting is never saved in silence.
+      expect(
+        find.text('Saved. Dishes with Tree nuts are hidden now.'),
+        findsOneWidget,
+      );
+      // The notice floats over the footer; let it clear.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
 
       await _home(tester);
       await _open(tester, 'E01');

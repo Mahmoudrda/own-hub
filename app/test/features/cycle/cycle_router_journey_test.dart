@@ -109,6 +109,51 @@ void main() {
       isNull,
       reason: 'nothing but the bleeding row was touched',
     );
+
+    // And she is told, with a way back.
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Check-in saved · Bleeding: Heavy'), findsOneWidget);
+    expect(find.text('Undo'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 6));
+  });
+
+  testWidgets('Undo on a check-in puts the morning back as it was', (
+    tester,
+  ) async {
+    AppRouter.todayCheckIn = const TodayCheckIn(energy: Energy.low);
+    _phone(tester);
+    await tester.pumpWidget(_app('Y04'));
+    await tester.pumpAndSettle();
+
+    await _tap(tester, find.text('High'));
+    await _tap(tester, find.text('Save check-in'));
+    expect(AppRouter.todayCheckIn.energy, Energy.high);
+
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.text('Undo'));
+    await tester.pump();
+    expect(AppRouter.todayCheckIn.energy, Energy.low);
+    await tester.pump(const Duration(seconds: 6));
+  });
+
+  testWidgets('Y03 says what she logged today, with Change', (tester) async {
+    await AppRouter.cycleRepository.completeSetup(
+      mode: CycleMode.datesAndSymptoms,
+    );
+    AppRouter.todayCheckIn = const TodayCheckIn(
+      energy: Energy.low,
+      cramps: Cramps.mild,
+    );
+    _phone(tester);
+    await tester.pumpWidget(_app('Y03'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Today: Energy: Low · Cramps: Mild'),
+      findsOneWidget,
+    );
+    await _tap(tester, find.text('Change'));
+    expect(find.text('Save check-in'), findsOneWidget);
   });
 
   testWidgets('Y03 receives it, and heavy bleeding removes the workout', (
@@ -130,7 +175,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('This needs more than a workout change'), findsOneWidget);
-    expect(find.text('Find care near you'), findsOneWidget);
+    // What to do, said plainly. "Find care near you" and "Read NHS guidance"
+    // answered "we do not have that yet", so they are not drawn.
+    expect(
+      find.text(
+        'If the pain is severe or sudden, see a doctor today. In an '
+        'emergency call 123.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Find care near you'), findsNothing);
+    expect(find.text('Read NHS guidance on period pain'), findsNothing);
     expect(find.text('Rest today'), findsOneWidget);
 
     for (final forbidden in [

@@ -46,6 +46,9 @@ import 'cycle_widgets.dart';
 import 'symptom_labels.dart';
 import '../../../ui/medical_disclaimer.dart';
 
+/// Egypt's ambulance line, named on the severe-pain card.
+const String kEgyptAmbulance = '123';
+
 class CycleHubView extends StatelessWidget {
   const CycleHubView({
     super.key,
@@ -185,6 +188,31 @@ class CycleHubView extends StatelessWidget {
         icon: Icons.mood,
         onPressed: onCheckIn,
       ),
+      // What she said today, under the button that changes it, so a saved
+      // check-in is visible here and not only in what the hub chose to show.
+      if (checkInSummary(l10n, checkIn) case final String summary
+          when summary.isNotEmpty)
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.todaySummary(summary),
+                key: const ValueKey('y03-today-check-in'),
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            AppButton(
+              l10n.change,
+              variant: AppButtonVariant.text,
+              height: 44,
+              fontSize: 15,
+              onPressed: onCheckIn,
+            ),
+          ],
+        ),
       if (snapshot.showGentlerCard &&
           suggestion is GentlerOption &&
           !gentlerDecided)
@@ -386,35 +414,38 @@ class CycleHubView extends StatelessWidget {
             l10n.severeOrUnusualPainDeservesMedicalAdvice,
             style: AppText.bodyM,
           ),
-          // The route to care. There is no maps intent: this comment claimed
-          // one was wired, and what the router actually hands `onFindCare` is
-          // `showHonestNotice(weDoNotHaveACareDirectory)`. Nothing in `lib/`
-          // opens a map.
-          //
-          // The missing piece is CONTENT, not capability. `CareDirectory
-          // .bundled` needs a clinically reviewed Egyptian list (OQ-11), and
-          // `P0-CYC-07`/`P0-CYC-08` cannot pass until one is authored. The
-          // button is drawn and says what is missing, rather than being hidden,
-          // because a woman reaching this card in severe pain should not be
-          // shown a screen that is quietly one option shorter.
-          AppButton(
-            l10n.findCareNearYou,
-            height: 48,
-            fontSize: 15,
-            onPressed: onFindCare,
+          // What to do, said plainly, where the dead ends were. "Find care
+          // near you" and "Read NHS guidance" both answered with a notice that
+          // there was nothing to open, on the one card a woman in severe pain
+          // reaches. They are drawn again only when there is something real
+          // behind them (a reviewed care directory, OQ-11; a chosen guidance
+          // source). 123 is Egypt's ambulance. There is no `tel:` launcher in
+          // this app, so it is a sentence, not a button.
+          Text(
+            l10n.ifThePainIsSevereOrSudden_rd6j0(kEgyptAmbulance),
+            key: const ValueKey('y11-see-a-doctor'),
+            style: AppText.bodyM.copyWith(fontWeight: FontWeight.w600),
           ),
+          if (onFindCare != null)
+            AppButton(
+              l10n.findCareNearYou,
+              height: 48,
+              fontSize: 15,
+              onPressed: onFindCare,
+            ),
           if (suppressed.careRoute.hasFallback)
             // Unreachable today, deliberately. Rendering an empty list here
             // would read as "there is no care", which is worse than the
             // honest absence of the fallback.
             const SizedBox.shrink(),
-          AppButton(
-            l10n.readNhsGuidanceOnPeriodPain,
-            variant: AppButtonVariant.outlined,
-            height: 44,
-            fontSize: 15,
-            onPressed: onReadGuidance,
-          ),
+          if (onReadGuidance != null)
+            AppButton(
+              l10n.readNhsGuidanceOnPeriodPain,
+              variant: AppButtonVariant.outlined,
+              height: 44,
+              fontSize: 15,
+              onPressed: onReadGuidance,
+            ),
         ],
       ),
       Text(

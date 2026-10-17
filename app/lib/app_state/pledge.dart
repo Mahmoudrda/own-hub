@@ -53,6 +53,14 @@ class PledgeState {
   /// Whether she has agreed to the rules as they stand now.
   bool get agreed => agreedVersion == kPledgeVersion;
 
+  /// Her agreement is on this phone but the server has not recorded it yet:
+  /// the call failed or there was no signal. Sent again on the next launch.
+  bool recordPending = false;
+
+  /// She has just agreed, during sign-up: Home thanks her once and says where
+  /// the rules are. Not kept on the phone; a restart simply skips the thanks.
+  bool thankOnArrival = false;
+
   void agree({DateTime? at}) {
     agreedVersion = kPledgeVersion;
     agreedAt = at ?? DateTime.now();
@@ -62,6 +70,8 @@ class PledgeState {
   void reset() {
     agreedVersion = null;
     agreedAt = null;
+    recordPending = false;
+    thankOnArrival = false;
   }
 }
 

@@ -64,8 +64,9 @@ enum MealSource { planned, search, voice }
 ///
 /// Kept off [MealSource] so the spine's declared enum is untouched. `nudge` is
 /// the lock-screen meal action (T03), which lands on the same guarded path as
-/// every other entry point.
-enum MealOrigin { plan, suggestion, recipe, search, voice, nudge }
+/// every other entry point. `photo` is a plate she photographed on E12 and
+/// checked on E13: its source stays `search`, because she chose every item.
+enum MealOrigin { plan, suggestion, recipe, search, voice, nudge, photo }
 
 /// Where a planned item came from in the plan. `{assignmentId, slot, idx}`.
 ///
@@ -107,6 +108,11 @@ class PlanRef {
 /// them, alongside `libVersion` on the day document. G5 §9 Q2: if the library
 /// later corrects a food's macros, her history does not silently change
 /// underneath her.
+///
+/// Carbs, fat and fibre are frozen the same way, and are null where nobody
+/// knows them: every item logged before they existed, and every food in the
+/// pack that does not carry them. Null counts as nothing in a total and is
+/// never shown as a zero.
 @immutable
 class MealItem {
   const MealItem({
@@ -119,6 +125,11 @@ class MealItem {
     required this.origin,
     required this.kcal,
     required this.proteinG,
+    this.carbsG,
+    this.fatG,
+    this.fiberG,
+    this.name,
+    this.grams,
     this.planRef,
     this.helpingOf,
     this.allergenOverride = const <String>[],
@@ -144,6 +155,20 @@ class MealItem {
   /// Frozen at log time. See the class note.
   final int kcal;
   final int proteinG;
+
+  /// Frozen at log time, and null when unknown. See the class note.
+  final int? carbsG;
+  final int? fatG;
+  final int? fiberG;
+
+  /// What she called it, for a food the pack does not hold: a plate she
+  /// photographed and checked, or one she typed by hand on E13. Null for a
+  /// food from the pack, which is named from the pack in her language.
+  final String? name;
+
+  /// The weight she approved, for an item logged by weight (E13). Null for a
+  /// portion from the pack, which is a size and never a gram figure.
+  final num? grams;
 
   final PlanRef? planRef;
 
@@ -180,6 +205,9 @@ class MealItem {
     num? servings,
     int? kcal,
     int? proteinG,
+    int? carbsG,
+    int? fatG,
+    int? fiberG,
     DateTime? loggedAt,
     String? helpingOf,
     List<String>? allergenOverride,
@@ -194,6 +222,11 @@ class MealItem {
       origin: origin,
       kcal: kcal ?? this.kcal,
       proteinG: proteinG ?? this.proteinG,
+      carbsG: carbsG ?? this.carbsG,
+      fatG: fatG ?? this.fatG,
+      fiberG: fiberG ?? this.fiberG,
+      name: name,
+      grams: grams,
       planRef: planRef,
       helpingOf: helpingOf ?? this.helpingOf,
       allergenOverride: allergenOverride ?? this.allergenOverride,
@@ -294,6 +327,9 @@ class MealWrite {
     required this.removed,
     required this.kcalDelta,
     required this.proteinDelta,
+    this.carbsDelta = 0,
+    this.fatDelta = 0,
+    this.fiberDelta = 0,
     required this.tz,
     required this.libVersion,
     required this.skip,
@@ -314,13 +350,22 @@ class MealWrite {
   }) {
     var kcal = 0;
     var protein = 0;
+    var carbs = 0;
+    var fat = 0;
+    var fiber = 0;
     for (final item in added) {
       kcal += item.kcal;
       protein += item.proteinG;
+      carbs += item.carbsG ?? 0;
+      fat += item.fatG ?? 0;
+      fiber += item.fiberG ?? 0;
     }
     for (final item in removed) {
       kcal -= item.kcal;
       protein -= item.proteinG;
+      carbs -= item.carbsG ?? 0;
+      fat -= item.fatG ?? 0;
+      fiber -= item.fiberG ?? 0;
     }
     return MealWrite._(
       dayId: dayId,
@@ -329,6 +374,9 @@ class MealWrite {
       removed: List<MealItem>.unmodifiable(removed),
       kcalDelta: kcal,
       proteinDelta: protein,
+      carbsDelta: carbs,
+      fatDelta: fat,
+      fiberDelta: fiber,
       tz: tz,
       libVersion: libVersion,
       skip: false,
@@ -369,6 +417,12 @@ class MealWrite {
   /// `FieldValue.increment(...)`. Signed: a correction downward is negative.
   final int kcalDelta;
   final int proteinDelta;
+
+  /// The same, for the macros an item may not carry. An unknown value moves
+  /// nothing.
+  final int carbsDelta;
+  final int fatDelta;
+  final int fiberDelta;
 
   final String tz;
   final int libVersion;

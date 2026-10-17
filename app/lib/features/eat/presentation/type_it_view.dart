@@ -43,6 +43,7 @@ import 'eat_sample_library.dart';
 import 'eat_widgets.dart';
 import 'meal_log_session.dart';
 import 'type_it_view_model.dart';
+import 'meal_labels.dart';
 
 class TypeItView extends StatefulWidget {
   const TypeItView({
@@ -57,6 +58,7 @@ class TypeItView extends StatefulWidget {
     this.history = const <ParsedItem>[],
     this.onClose,
     this.onSpeak,
+    this.onSnap,
     this.onAllFoods,
     this.onLogged,
     this.onBlocked,
@@ -85,6 +87,10 @@ class TypeItView extends StatefulWidget {
 
   final VoidCallback? onClose;
   final VoidCallback? onSpeak;
+
+  /// E12, a photo of her plate instead of typing it. Null hides the camera;
+  /// the router passes it only while E12 is on and she is verified.
+  final VoidCallback? onSnap;
   final VoidCallback? onAllFoods;
   final ValueChanged<LogHandle>? onLogged;
 
@@ -212,7 +218,11 @@ class _TypeItViewState extends State<TypeItView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
       );
       _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
@@ -226,7 +236,11 @@ class _TypeItViewState extends State<TypeItView> {
         // the defect PHASE1-FIXES §8 records on R07's button. Until a
         // parameterised key exists, the sentence that says less is the honest
         // one.
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
         commit: () => service.commit(prepared.write),
       ),
     );
@@ -268,13 +282,28 @@ class _TypeItViewState extends State<TypeItView> {
           // No microphone while saying a meal is off in this build
           // (`Feature.voiceLogging`): there is nothing to hear her with.
           hint: _voice ? l10n.sayOrTypeWhatYouAte : l10n.typeWhatYouAte,
-          trailing: _voice
-              ? IconButton(
-                  onPressed: widget.onSpeak,
-                  tooltip: l10n.weNeedTheMicrophoneToHearWhat,
-                  iconSize: 22,
-                  color: AppColors.primaryDim,
-                  icon: const Icon(Icons.mic),
+          trailing: _voice || widget.onSnap != null
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.onSnap case final snap?)
+                      IconButton(
+                        key: const ValueKey('type-it-snap-meal'),
+                        onPressed: snap,
+                        tooltip: l10n.snapYourMeal,
+                        iconSize: 22,
+                        color: AppColors.primaryDim,
+                        icon: const Icon(Icons.photo_camera_outlined),
+                      ),
+                    if (_voice)
+                      IconButton(
+                        onPressed: widget.onSpeak,
+                        tooltip: l10n.weNeedTheMicrophoneToHearWhat,
+                        iconSize: 22,
+                        color: AppColors.primaryDim,
+                        icon: const Icon(Icons.mic),
+                      ),
+                  ],
                 )
               : null,
         ),

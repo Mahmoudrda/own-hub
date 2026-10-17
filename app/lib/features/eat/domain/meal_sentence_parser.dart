@@ -52,6 +52,14 @@ class ParsedItem {
   int get kcal => size.kcal * servings;
   int get proteinG => size.proteinG * servings;
 
+  /// Null when the size does not carry the figure.
+  int? get carbsG => _times(size.carbsG);
+  int? get fatG => _times(size.fatG);
+  int? get fiberG => _times(size.fiberG);
+
+  int? _times(int? perServing) =>
+      perServing == null ? null : perServing * servings;
+
   ParsedItem withSize(FoodSize next) => ParsedItem(
     food: food,
     size: next,

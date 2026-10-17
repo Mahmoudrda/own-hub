@@ -92,7 +92,7 @@ class NotificationsView extends StatelessWidget {
     this.onPrefsChanged,
   });
 
-  /// The three switches under the reminders row, or null before the phone has
+  /// The switches under the reminders row, or null before the phone has
   /// agreed to show notifications: there is nothing to switch until then.
   final NotificationPrefs? prefs;
   final ValueChanged<NotificationPrefs>? onPrefsChanged;
@@ -184,6 +184,14 @@ class NotificationsView extends StatelessWidget {
             value: prefs!.restAlert,
             onChanged: (on) =>
                 onPrefsChanged?.call(prefs!.copyWith(restAlert: on)),
+          ),
+          // Off cancels the tips still to come.
+          _switchRow(
+            key: 'a01-tips',
+            icon: Icons.lightbulb_outline,
+            title: l10n.gettingStartedTips,
+            value: prefs!.tips,
+            onChanged: (on) => onPrefsChanged?.call(prefs!.copyWith(tips: on)),
           ),
         ],
         // The moving kitten and her streak, moved here from My profile.

@@ -54,6 +54,7 @@ class LogPeriodView extends StatefulWidget {
     this.now,
     this.onBack,
     this.onSaved,
+    this.onSavedPeriod,
     this.onDeleted,
   });
 
@@ -65,6 +66,11 @@ class LogPeriodView extends StatefulWidget {
   final DateTime? now;
   final VoidCallback? onBack;
   final VoidCallback? onSaved;
+
+  /// The same moment as [onSaved], with what was saved, so the caller can say
+  /// it back to her.
+  final ValueChanged<PeriodEntry>? onSavedPeriod;
+
   final VoidCallback? onDeleted;
 
   @override
@@ -140,6 +146,7 @@ class _LogPeriodViewState extends State<LogPeriodView> {
     if (!handMotionOff(context)) await Future<void>.delayed(HandMotion.draw);
     if (!mounted) return;
     widget.onSaved?.call();
+    widget.onSavedPeriod?.call(entry);
   }
 
   Future<void> _delete() async {
@@ -236,4 +243,21 @@ class _LogPeriodViewState extends State<LogPeriodView> {
       ],
     );
   }
+}
+
+/// "Period saved · 2026-10-01 to 2026-10-05", or "from 2026-10-01" while it is
+/// still going.
+String periodSavedLabel(AppL10n l10n, PeriodEntry entry) {
+  final end = entry.end;
+  return end == null
+      ? l10n.periodSavedFromStart(isoDay(entry.start))
+      : l10n.periodSavedStartToEnd(isoDay(entry.start), isoDay(end));
+}
+
+/// "Period removed · 2026-10-01 to 2026-10-05".
+String periodRemovedLabel(AppL10n l10n, PeriodEntry entry) {
+  final end = entry.end;
+  return end == null
+      ? l10n.periodRemovedFromStart(isoDay(entry.start))
+      : l10n.periodRemovedStartToEnd(isoDay(entry.start), isoDay(end));
 }

@@ -42,6 +42,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/honest_notice.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -77,6 +78,7 @@ class ProfileView extends StatefulWidget {
     this.onOpenPrivacy,
     this.onOpenSafetyCentre,
     this.onOpenYourData,
+    this.onSignOut,
     this.onOpenAllScreens,
     this.onOpenAdmin,
     this.onSelectTab,
@@ -134,6 +136,11 @@ class ProfileView extends StatefulWidget {
   /// rather than showing a download button that would produce nothing.
   final VoidCallback? onOpenYourData;
 
+  /// Signs her out on this phone, after she confirms. Her account and
+  /// everything in it stays; she signs in again with her number. On a shared
+  /// phone the only way out used to be deleting everything.
+  final VoidCallback? onSignOut;
+
   final ValueChanged<String>? onSelectTab;
 
   @override
@@ -163,6 +170,11 @@ class _ProfileViewState extends State<ProfileView> {
     );
     if (!mounted) return;
     setState(() => _dietary = merged);
+    // A safety setting is never changed in silence: what is hidden now.
+    showHonestNotice(
+      context,
+      allergiesSavedLabel(AppL10n.of(context), merged.allergies),
+    );
   }
 
   /// Whether this build has a community at all. Several rows here describe
@@ -345,6 +357,13 @@ class _ProfileViewState extends State<ProfileView> {
           subtitle: _community ? l10n.reportsBlockedMembersHelp : '',
           onOpen: widget.onOpenSafetyCentre,
         ),
+        if (widget.onSignOut != null)
+          _sheetRow(
+            icon: Icons.logout,
+            title: l10n.signOut,
+            subtitle: '',
+            onOpen: _confirmSignOut,
+          ),
         _sheetRow(
           icon: Icons.delete_outline,
           title: l10n.yourData,
@@ -355,6 +374,38 @@ class _ProfileViewState extends State<ProfileView> {
     );
     if (open == null || !mounted) return;
     open();
+  }
+
+  /// Asks before signing out, and says what stays. Staying is the filled
+  /// answer: nothing is lost by tapping it by mistake.
+  Future<void> _confirmSignOut() async {
+    final signOut = widget.onSignOut;
+    if (signOut == null) return;
+    final l10n = AppL10n.of(context);
+    final confirmed = await showAppSheet<bool>(
+      context: context,
+      children: [
+        Text(l10n.signOutOnThisPhone, style: AppText.titleL),
+        Text(
+          l10n.yourAccountAndEverythingInItStays,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        AppButton(
+          l10n.staySignedIn,
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        AppButton(
+          l10n.signOut,
+          key: const ValueKey('a02-sign-out'),
+          variant: AppButtonVariant.outlined,
+          height: 48,
+          fontSize: 15,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+    if (confirmed != true || !mounted) return;
+    signOut();
   }
 
   Widget _sheetRow({

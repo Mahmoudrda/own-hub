@@ -4588,5 +4588,412 @@
         "example": "7"
       }
     }
+  },
+  "snapYourMeal": "صوّري أكلك",
+  "checkYourMeal": "راجعي أكلك",
+  "beforeYourFirstPhoto": "قبل أول صورة",
+  "yourPhotoGoesToOurAiIn": "صورتك بتروح للذكاء الاصطناعي بتاعنا في الاتحاد الأوروبي (Google Cloud في فرانكفورت) عشان يقدّر إيه اللي في طبقك. إحنا مش بنحتفظ بالصورة ولا بنستخدمها في تدريب أي حاجة. وإنتِ بتراجعي كل حاجة قبل ما تتسجّل.",
+  "upTo5PhotosADayYou": "لحد 5 صور في اليوم. وتقدري دايمًا تكتبي أكلك بدل كده.",
+  "agree": "موافقة",
+  "weCouldntSaveYourAnswerCheckYour": "معرفناش نحفظ ردّك. اتأكدي من النت وجرّبي تاني.",
+  "takeItFromAboveWithTheWhole": "صوّريه من فوق، والطبق كله باين في الصورة.",
+  "useThisPhoto_6wkqn": "نستخدم الصورة دي؟",
+  "analyseMyMeal": "تحليل أكلي",
+  "thisUses1OfYour5Photos": "دي هتاخد 1 من الـ 5 صور بتوع النهارده.",
+  "readingYourPlate": "بنقرا طبقك…",
+  "thePhotoIsWipedAsSoonAs": "الصورة بتتمسح أول ما نخلّص.",
+  "youveUsedYour5ScansForToday": "استخدمتي الـ 5 صور بتوع النهارده. لسه تقدري تكتبي أكلك.",
+  "weCouldntMakeOutTheFoodTry": "معرفناش نشوف الأكل كويس. جرّبي صورة أوضح من فوق، أو اكتبيه.",
+  "scanningIsntAvailableRightNowTypeYour": "التصوير مش متاح دلوقتي. اكتبي أكلك بدل كده.",
+  "weCouldntReadThatPhotoTakeIt": "معرفناش نقرا الصورة دي. صوّريها تاني، أو اكتبي أكلك.",
+  "mealPhotosOpenOnceYourAccountIs": "تصوير الأكل بيتفتح أول ما حسابك يتأكد. تقدري تكتبي أكلك دلوقتي.",
+  "updateOwnHubFromTheStoreTo": "حدّثي Own Hub من المتجر عشان تصوّري أكلك. تقدري تكتبي أكلك دلوقتي.",
+  "signInAgainToSnapMealsYou": "سجّلي دخولك تاني عشان تصوّري أكلك. تقدري تكتبي أكلك دلوقتي.",
+  "typeItInstead": "اكتبيه بدل كده",
+  "ownHubNeedsTheCameraToPhotograph": "Own Hub محتاجة الكاميرا عشان تصوّر طبقك. شغّليها من الإعدادات، أو اكتبي أكلك.",
+  "theCameraCouldntStartYouCanType": "الكاميرا مرضيتش تشتغل. تقدري تكتبي أكلك بدل كده.",
+  "yourMealPhoto": "صورة أكلك",
+  "theseAreEstimatesCheckTheGrams": "دي تقديرات. راجعي الجرامات.",
+  "weightInGrams": "الوزن بالجرام",
+  "n10GLess": "10 جم أقل",
+  "n10GMore": "10 جم زيادة",
+  "proteinGramsG": "بروتين {grams} جم",
+  "@proteinGramsG": {
+    "description": "E01 and E13: protein in grams, for one item, a meal or the day. Whole number, Western digits.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "22"
+      }
+    }
+  },
+  "carbsGramsG": "كربوهيدرات {grams} جم",
+  "@carbsGramsG": {
+    "description": "E01 and E13: carbohydrates in grams. Shown only when known. Whole number, Western digits.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "fatGramsG": "دهون {grams} جم",
+  "@fatGramsG": {
+    "description": "E01 and E13: fat in grams. Shown only when known.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "45"
+      }
+    }
+  },
+  "fibreGramsG": "ألياف {grams} جم",
+  "@fibreGramsG": {
+    "description": "E01 and E13: dietary fibre in grams. Shown only when known.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "18"
+      }
+    }
+  },
+  "gramsG_1usqy": "{grams} جم",
+  "@gramsG_1usqy": {
+    "description": "E13: a weight in grams, for an item or one part of a dish.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "150"
+      }
+    }
+  },
+  "editNumbers": "عدّلي الأرقام",
+  "editedByYou": "إنتِ اللي عدّلتيه",
+  "energyKcal": "الطاقة (سعرة)",
+  "proteinG_xt7ig": "البروتين (جم)",
+  "carbsG_5nlte": "الكربوهيدرات (جم)",
+  "fatG_1xdz2": "الدهون (جم)",
+  "fibreG": "الألياف (جم)",
+  "weCouldntFindTheNutritionForThis": "ملقيناش القيم الغذائية للصنف ده. دخّليها أو شيليه.",
+  "estimatedFromAStandardRecipe": "متقدّر من وصفة عادية",
+  "seeWhatsInIt": "شوفي فيه إيه",
+  "hideWhatsInIt": "خبّي المكونات",
+  "removeName": "شيلي {name}",
+  "@removeName": {
+    "description": "E13: screen reader label on the button that takes one food off the plate before it is logged.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Koshary"
+      }
+    }
+  },
+  "addSomething": "ضيفي حاجة",
+  "searchTheFoodList": "دوّري في قايمة الأكل",
+  "orTypeItIn": "أو اكتبيه بنفسك",
+  "whatIsIt": "ده إيه؟",
+  "addedByYou": "إنتِ اللي ضفتيه",
+  "thisMeal": "الوجبة دي",
+  "whichMealIsIt": "دي أنهي وجبة؟",
+  "logThisMeal": "سجّلي الوجبة دي",
+  "enterTheNumbersForEachItemOr": "دخّلي الأرقام لكل صنف أو شيليه، عشان تسجّلي الوجبة.",
+  "nothingToCheckYetSnapYourMeal": "لسه مفيش حاجة تتراجع. صوّري أكلك الأول.",
+  "nothingOnThisPlateYetAddSomething": "مفيش حاجة في الطبق لسه. ضيفي حاجة أو الغي.",
+  "weFoundOnlyPartOfThisSo": "لقينا جزء بس من الصنف ده، فممكن الأرقام تكون أقل من الحقيقة. راجعيها.",
+  "koshariFulAndMolokhiaInThePortions_1am39": "كشري وفول وملوخية بالكميات اللي بتغرفيها فعلًا، أو صوّري طبقك. ومن غير لوم على السعرات.",
+  "frontView": "من قدّام",
+  "backView": "من ورا",
+  "tapAMuscleForItsSets": "دوسي على أي عضلة تشوفي مجموعاتها.",
+  "countPluralOneAlsoWorked1Set": "{count, plural, zero{اشتغلت كمان في {count} مجموعة} one{اشتغلت كمان في مجموعة واحدة} two{اشتغلت كمان في مجموعتين} few{اشتغلت كمان في {count} مجموعات} many{اشتغلت كمان في {count} مجموعة} other{اشتغلت كمان في {count} مجموعة}}",
+  "@countPluralOneAlsoWorked1Set": {
+    "description": "P06 card on one muscle: whole sets in the rolling window where this muscle helped a move without being its main muscle. These sets never colour the body map. A plural message because Arabic says مجموعة واحدة, مجموعتين, 3 مجموعات and 11 مجموعة.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "aShortFirstWorkoutYouCanDo": "أول تمرين ليكي قصير وينفع في البيت، من غير أي أدوات. تحبي تجربيه؟",
+  "everyMoveHasAShortVideoSo": "كل حركة ليها فيديو قصير، عشان تعرفي الطريقة الصح قبل ما تبدأي.",
+  "snapYourPlateAndWellEstimateThe": "صوّري طبقك وإحنا نقدّرلك البروتين، وإنتِ تراجعيه قبل ما يتحفظ.",
+  "rahmasEgyptianRecipesKosharyAndMolokhiaIncluded": "وصفات رحمة المصرية، فيها الكشري والملوخية، للأيام اللي تحتاري فيها تطبخي إيه.",
+  "firstTimeAtTheGymACalm": "أول مرة في الجيم؟ دليل هادي خطوة بخطوة، عشان تدخلي وإنتِ عارفة هتعملي إيه.",
+  "eachSessionLightsUpTheMusclesYou": "كل تمرين بينوّر العضلات اللي اشتغلتي عليها على خريطة عضلاتك. بصّي عليها.",
+  "aTrainingWeekThatFitsTheDays": "أسبوع تمارين على قد الأيام اللي عندك، وتقدري تغيريه في أي وقت.",
+  "gettingStartedTips": "نصايح البداية",
+  "aFewTipsInYourFirstWeeks": "شوية نصايح في أول أسابيعك، بس في الأيام اللي مفتحتيش فيها التطبيق.",
+  "wantAFewTipsAndYourWorkout": "تحبي شوية نصايح وتذكير بتمرينك؟",
+  "workoutRemindersOnTheDaysYouPick": "تذكير بالتمرين في الأيام اللي تختاريها، لما تحدديها.",
+  "turnAnyOfThemOffInNotifications": "تقدري تقفلي أي حاجة منهم من الإشعارات في أي وقت.",
+  "turnOnNotifications": "شغّلي الإشعارات",
+  "signOut": "اخرجي من حسابك",
+  "signOutOnThisPhone": "تخرجي من حسابك على الموبايل ده؟",
+  "yourAccountAndEverythingInItStays": "حسابك وكل اللي فيه هيفضل في أمان. ادخلي برقمك في أي وقت.",
+  "signedOut": "خرجتي من حسابك.",
+  "staySignedIn": "خليني في حسابي",
+  "removeThisSession": "شيلي التمرين ده",
+  "removeThisSession_1qh67": "تشيلي التمرين ده؟",
+  "itComesOffThisWeeksCountAnd": "هيتشال من عدد الأسبوع ده ومن نقطك.",
+  "removeIt": "شيليه",
+  "tapAMoveYouLoggedToChange": "دوسي على حركة سجلتيها عشان تغيّري مجموعة فيها.",
+  "whichSet": "أنهي مجموعة؟",
+  "addToMyWeek": "ضيفيها لأسبوعي",
+  "weekRearranged": "اتغيّر ترتيب أسبوعك",
+  "savedChangeItAnyTimeInYour": "اتحفظ. تقدري تغيّريه في أي وقت من بروفايلك.",
+  "turnOffBackup": "تقفلي النسخة الاحتياطية؟",
+  "weDeleteTheCopyInYourAccount": "هنمسح النسخة اللي في حسابك. كل حاجة هتفضل على الموبايل ده.",
+  "turnItOff": "اقفليها",
+  "keepItOn": "سيبيها شغالة",
+  "backupOffTheCopyInYourAccount": "النسخة الاحتياطية اتقفلت، والنسخة اللي في حسابك اتمسحت.",
+  "thanksForAgreeingTheRulesAreIn": "شكرًا إنك وافقتي. القواعد موجودة في مركز الأمان في أي وقت.",
+  "saveMyChanges": "احفظي التغييرات",
+  "streakHiddenTurnItBackOnIn": "السلسلة اتخبّت. رجّعيها من الإشعارات، تحت التذكيرات وحاجات تانية.",
+  "gentleMobilityTodayYourPlanPicksUp": "مرونة خفيفة النهارده. خطتك هتكمل المرة الجاية.",
+  "thisDeletesYourPeriodDatesCheckIns": "ده هيمسح مواعيد دورتك ومتابعاتك وإعدادات الدورة من الموبايل ده. ومش هينفع ترجعيهم.",
+  "yourCycleDataIsDeletedYouCan": "بيانات دورتك اتمسحت. تقدري تفعّلي دورتي تاني من بروفايلك.",
+  "ifThePainIsSevereOrSudden": "لو الألم شديد أو جه فجأة، اكشفي عند دكتور النهارده. في الطوارئ اتصلي بـ 123.",
+  "tapALoggedDayToChangeIt": "دوسي على يوم متسجل عشان تغيّريه.",
+  "unblocked": "اتفك الحظر",
+  "addedFromMemoryTitle": "اتضاف من الذاكرة · {title}",
+  "@addedFromMemoryTitle": {
+    "description": "T02 undo bar after a session logged from memory. title is the session's own name.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "Legs and glutes"
+      }
+    }
+  },
+  "takenBackYourWeekIsAtCount": "اترجع. أسبوعك دلوقتي {count} من {target}.",
+  "@takenBackYourWeekIsAtCount": {
+    "description": "T02 after Undo on a recalled session. Numbers in Western digits.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      },
+      "target": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "sessionRemovedYourWeekIsAtCount": "التمرين اتشال · أسبوعك دلوقتي {count} من {target}",
+  "@sessionRemovedYourWeekIsAtCount": {
+    "description": "R10/R12 undo bar after she removes a logged session. Numbers in Western digits.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      },
+      "target": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "foodAddedToSlot": "ضفنا {food} في {slot}",
+  "@foodAddedToSlot": {
+    "description": "Meal undo bar. food is the first food's name, slot is Breakfast, Lunch, Dinner or Snack.",
+    "placeholders": {
+      "food": {
+        "type": "String",
+        "example": "Ful"
+      },
+      "slot": {
+        "type": "String",
+        "example": "Breakfast"
+      }
+    }
+  },
+  "foodAndCountMoreAddedToSlot": "ضفنا {food} و{count} كمان في {slot}",
+  "@foodAndCountMoreAddedToSlot": {
+    "description": "Meal undo bar for a plate of several foods. count in Western digits.",
+    "placeholders": {
+      "food": {
+        "type": "String",
+        "example": "Ful"
+      },
+      "count": {
+        "type": "String",
+        "example": "2"
+      },
+      "slot": {
+        "type": "String",
+        "example": "Breakfast"
+      }
+    }
+  },
+  "foodRemovedFromSlot": "شيلنا {food} من {slot}",
+  "@foodRemovedFromSlot": {
+    "description": "E01/E04 undo bar after she removes a logged food from a slot.",
+    "placeholders": {
+      "food": {
+        "type": "String",
+        "example": "Ful"
+      },
+      "slot": {
+        "type": "String",
+        "example": "Breakfast"
+      }
+    }
+  },
+  "savedDishesWithAllergensAreHiddenNow": "اتحفظ. الأكلات اللي فيها {allergens} مش هتظهر دلوقتي.",
+  "@savedDishesWithAllergensAreHiddenNow": {
+    "description": "E10 and A02 after saving allergies. allergens is a comma-separated list of allergen names.",
+    "placeholders": {
+      "allergens": {
+        "type": "String",
+        "example": "nuts, eggs"
+      }
+    }
+  },
+  "unblockedName": "فكّيتي الحظر عن {name}",
+  "@unblockedName": {
+    "description": "A04 undo bar after unblocking a member.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "swappedToNameForToday": "النهارده هتعملي {name} بدالها",
+  "@swappedToNameForToday": {
+    "description": "R05 undo bar after a swap. name is the move she swapped to.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Glute bridge"
+      }
+    }
+  },
+  "skippedName": "عدّيتي {name}",
+  "@skippedName": {
+    "description": "R06 undo bar after skipping a move. name is the move.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Plank"
+      }
+    }
+  },
+  "finishNowCountMovesLeft": "خلّصي دلوقتي · الحركات الباقية: {count}",
+  "@finishNowCountMovesLeft": {
+    "description": "R13 Finish here, second tap to confirm. count in Western digits.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "yourWeekIsUpdatedDaysDaysMinutes": "أسبوعك اتحدّث · أيام: {days}، دقايق: {minutes}.",
+  "@yourWeekIsUpdatedDaysDaysMinutes": {
+    "description": "O05 after saving changed setup answers from the profile. Numbers in Western digits.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "checkInSavedSummary": "المتابعة اتحفظت · {summary}",
+  "@checkInSavedSummary": {
+    "description": "Y04 undo bar. summary is label: value pairs joined by a middle dot.",
+    "placeholders": {
+      "summary": {
+        "type": "String",
+        "example": "Energy: Low · Cramps: Mild"
+      }
+    }
+  },
+  "todaySummary": "النهارده: {summary}",
+  "@todaySummary": {
+    "description": "Y03 line under How are you feeling. summary is label: value pairs.",
+    "placeholders": {
+      "summary": {
+        "type": "String",
+        "example": "Energy: Low · Cramps: Mild"
+      }
+    }
+  },
+  "periodSavedStartToEnd": "الدورة اتحفظت · من {start} لحد {end}",
+  "@periodSavedStartToEnd": {
+    "description": "Y09 after saving a period. Dates as yyyy-MM-dd.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2026-10-01"
+      },
+      "end": {
+        "type": "String",
+        "example": "2026-10-05"
+      }
+    }
+  },
+  "periodSavedFromStart": "الدورة اتحفظت · من {start}",
+  "@periodSavedFromStart": {
+    "description": "Y09 after saving a period with no end date yet.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2026-10-01"
+      }
+    }
+  },
+  "periodRemovedStartToEnd": "الدورة اتشالت · من {start} لحد {end}",
+  "@periodRemovedStartToEnd": {
+    "description": "Y09 undo bar after deleting a period.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2026-10-01"
+      },
+      "end": {
+        "type": "String",
+        "example": "2026-10-05"
+      }
+    }
+  },
+  "periodRemovedFromStart": "الدورة اتشالت · من {start}",
+  "@periodRemovedFromStart": {
+    "description": "Y09 undo bar after deleting a period with no end date.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2026-10-01"
+      }
+    }
+  },
+  "nothingWasDeletedTryAgain": "ماتمسحش حاجة. جرّبي تاني.",
+  "ifThePainIsSevereOrSudden_rd6j0": "لو الألم شديد أو جه فجأة، اكشفي عند دكتور النهارده. في الطوارئ اتصلي بـ {number}.",
+  "@ifThePainIsSevereOrSudden_rd6j0": {
+    "description": "Y11, the severe-pain card. number is Egypt's ambulance line, 123, in Western digits.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "123"
+      }
+    }
+  },
+  "listItem": "{list}، {item}",
+  "@listItem": {
+    "description": "Adds one more name to a list of names, e.g. allergens. The comma is the language's own.",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "example": "Tree nuts"
+      },
+      "item": {
+        "type": "String",
+        "example": "Eggs"
+      }
+    }
   }
 }

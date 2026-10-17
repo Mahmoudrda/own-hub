@@ -54,6 +54,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/honest_notice.dart';
+
 import '../../../config/legal_links.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
@@ -172,6 +174,11 @@ class _PrivacyViewState extends State<PrivacyView> {
     if (turnOn) {
       final agreed = await _confirmHealthBackup();
       if (!agreed || !mounted) return;
+    } else {
+      // Turning it off deletes the copy in her account, so it is asked first
+      // and said after, like any other deletion.
+      final off = await _confirmBackupOff();
+      if (!off || !mounted) return;
     }
     setState(() {
       _healthBusy = true;
@@ -187,6 +194,41 @@ class _PrivacyViewState extends State<PrivacyView> {
       _healthFailed = turnOn && !ok;
       _healthWithdrawPending = !turnOn && !ok;
     });
+    if (!turnOn && ok) {
+      showHonestNotice(
+        context,
+        AppL10n.of(context).backupOffTheCopyInYourAccount,
+      );
+    }
+  }
+
+  /// Before turning the backup off: the copy in her account is deleted, and
+  /// everything stays on this phone. Keeping it on is the filled answer.
+  Future<bool> _confirmBackupOff() async {
+    final l10n = AppL10n.of(context);
+    final result = await showAppSheet<bool>(
+      context: context,
+      children: [
+        Text(l10n.turnOffBackup, style: AppText.titleL),
+        Text(
+          l10n.weDeleteTheCopyInYourAccount,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        AppButton(
+          l10n.keepItOn,
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        AppButton(
+          l10n.turnItOff,
+          key: const ValueKey('a03-backup-off'),
+          variant: AppButtonVariant.outlined,
+          height: 48,
+          fontSize: 15,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+    return result ?? false;
   }
 
   /// The health and transfer-abroad consent. A sheet, never a dialog.

@@ -58,6 +58,7 @@ import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_sheet.dart';
 import '../../../ui/screen_scope.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_undo_bar.dart';
@@ -75,6 +76,7 @@ import '../domain/meal_sentence_parser.dart';
 import 'eat_day_view_model.dart';
 import 'eat_sample_library.dart';
 import 'eat_widgets.dart';
+import 'meal_labels.dart';
 import 'meal_log_session.dart';
 
 /// A meal the plan prescribes for a slot.
@@ -119,6 +121,7 @@ class EatView extends StatefulWidget {
     this.onOpenWeekPlan,
     this.onType,
     this.onSpeak,
+    this.onSnap,
     this.onLogged,
     this.onBlocked,
     this.onSelectTab,
@@ -185,6 +188,11 @@ class EatView extends StatefulWidget {
   final VoidCallback? onOpenWeekPlan;
   final VoidCallback? onType;
   final VoidCallback? onSpeak;
+
+  /// E12, a photo of her plate. Null hides the camera: the router passes it
+  /// only while E12 is on and she is verified, because a scan is for verified
+  /// members only.
+  final VoidCallback? onSnap;
 
   /// Carries the five-second window to whatever renders the undo.
   final ValueChanged<LogHandle>? onLogged;
@@ -364,7 +372,11 @@ class _EatViewState extends State<EatView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
       );
       _offerUndo(
         handle,
@@ -391,7 +403,11 @@ class _EatViewState extends State<EatView> {
         // the exact defect PHASE1-FIXES §8 records on R07's button. Until a
         // parameterised key exists, the honest sentence is the one that states
         // less.
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
         commit: () => _service(l10n).commit(prepared.write),
       ),
     );
@@ -635,7 +651,11 @@ class _EatViewState extends State<EatView> {
     final prepared = outcome as MealLogPrepared;
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          prepared.write.slot,
+        ),
         commit: () => _service(l10n).commit(prepared.write),
       ),
     );
@@ -770,8 +790,66 @@ class _EatViewState extends State<EatView> {
           name: _slotName(l10n, slot.slot),
           value: _slotValue(l10n, slot),
           status: slot.status,
+          // A slot with something in it opens what is there, to take one
+          // out. The five seconds after a log are for Undo; this is for later.
+          onTap: widget.session != null && slot.items.isNotEmpty
+              ? () => _openSlot(slot)
+              : null,
         ),
     ];
+  }
+
+  /// What is in one slot, each with Remove. Removing goes through the session
+  /// like a log: five seconds to take it back, and the slot redraws without
+  /// it at once.
+  Future<void> _openSlot(SlotView slot) async {
+    final session = widget.session;
+    if (session == null || slot.items.isEmpty) return;
+    final l10n = AppL10n.of(context);
+    final chosen = await showAppSheet<MealItem>(
+      context: context,
+      gap: 8,
+      children: [
+        Text(_slotName(l10n, slot.slot), style: AppText.titleL),
+        for (final item in slot.items)
+          Builder(
+            builder: (sheet) => AppListItem(
+              title: _foodName(l10n, item),
+              subtitle: l10n.nGProtein(countLabel(item.proteinG)),
+              trailing: Text(
+                l10n.remove,
+                style: AppText.label.copyWith(
+                  color: AppColors.primaryDim,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onTap: () => Navigator.of(sheet).pop(item),
+            ),
+          ),
+      ],
+    );
+    if (chosen == null || !mounted) return;
+    final name = _foodName(l10n, chosen);
+    final handle = session.remove(
+      dayId: _projected.dayId,
+      slot: slot.slot,
+      items: [chosen],
+      describe: mealRemovedLabel(
+        l10n,
+        name.isEmpty ? _slotName(l10n, slot.slot) : name,
+        slot.slot,
+      ),
+    );
+    unawaited(AppHaptics.play(HapticMoment.actionDone));
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: l10n.undo,
+      onUndo: () {
+        session.settle();
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   String _slotName(AppL10n l10n, MealSlot slot) => switch (slot) {
@@ -787,15 +865,17 @@ class _EatViewState extends State<EatView> {
       return slot.status == SlotStatus.now ? l10n.now_65hr : l10n.later;
     }
     final names = slot.items
-        .map((item) => _foodName(l10n, item.foodId))
+        .map((item) => _foodName(l10n, item))
         .where((name) => name.isNotEmpty)
         .toList();
     return names.isEmpty ? l10n.later : names.join(', ');
   }
 
-  String _foodName(AppL10n l10n, String foodId) {
-    final food = _library(l10n).byId(foodId);
-    return food?.names.first ?? '';
+  /// The pack's name in her language, or, for a plate she photographed or
+  /// typed in on E13, the name she approved when she logged it.
+  String _foodName(AppL10n l10n, MealItem item) {
+    final food = _library(l10n).byId(item.foodId);
+    return food?.names.first ?? item.name ?? '';
   }
 
   String _titleOf(SuggestionView suggestion) =>
@@ -836,15 +916,30 @@ class _EatViewState extends State<EatView> {
   // The microphone is drawn only when saying a meal is on in this build. With
   // `Feature.voiceLogging` off there is no recogniser and no microphone
   // permission, so the box offers typing and says only that.
-  Widget _box(AppL10n l10n) => AppRouter.screenIsOn('E03')
-      ? SayOrTypeBox(
-          label: l10n.sayOrTypeWhatYouAte,
-          micTooltip: l10n.weNeedTheMicrophoneToHearWhat,
-          onType: () => openScreen(context, 'E02', widget.onType),
-          onSpeak: () => openScreen(context, 'E03', widget.onSpeak),
-        )
-      : SayOrTypeBox(
-          label: l10n.typeWhatYouAte,
-          onType: () => openScreen(context, 'E02', widget.onType),
-        );
+  //
+  // The camera beside it is drawn only when the router passed [onSnap]: E12
+  // on, and she verified.
+  Widget _box(AppL10n l10n) {
+    final box = AppRouter.screenIsOn('E03')
+        ? SayOrTypeBox(
+            label: l10n.sayOrTypeWhatYouAte,
+            micTooltip: l10n.weNeedTheMicrophoneToHearWhat,
+            onType: () => openScreen(context, 'E02', widget.onType),
+            onSpeak: () => openScreen(context, 'E03', widget.onSpeak),
+          )
+        : SayOrTypeBox(
+            label: l10n.typeWhatYouAte,
+            onType: () => openScreen(context, 'E02', widget.onType),
+          );
+    final snap = widget.onSnap;
+    if (snap == null) return box;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: box),
+        const SizedBox(width: 10),
+        SnapMealButton(label: l10n.snapYourMeal, onPressed: snap),
+      ],
+    );
+  }
 }

@@ -10228,4 +10228,481 @@ class AppL10nAr extends AppL10n {
     );
     return '$_temp0';
   }
+
+  @override
+  String get snapYourMeal => 'صوّري أكلك';
+
+  @override
+  String get checkYourMeal => 'راجعي أكلك';
+
+  @override
+  String get beforeYourFirstPhoto => 'قبل أول صورة';
+
+  @override
+  String get yourPhotoGoesToOurAiIn =>
+      'صورتك بتروح للذكاء الاصطناعي بتاعنا في الاتحاد الأوروبي (Google Cloud في فرانكفورت) عشان يقدّر إيه اللي في طبقك. إحنا مش بنحتفظ بالصورة ولا بنستخدمها في تدريب أي حاجة. وإنتِ بتراجعي كل حاجة قبل ما تتسجّل.';
+
+  @override
+  String get upTo5PhotosADayYou =>
+      'لحد 5 صور في اليوم. وتقدري دايمًا تكتبي أكلك بدل كده.';
+
+  @override
+  String get agree => 'موافقة';
+
+  @override
+  String get weCouldntSaveYourAnswerCheckYour =>
+      'معرفناش نحفظ ردّك. اتأكدي من النت وجرّبي تاني.';
+
+  @override
+  String get takeItFromAboveWithTheWhole =>
+      'صوّريه من فوق، والطبق كله باين في الصورة.';
+
+  @override
+  String get useThisPhoto_6wkqn => 'نستخدم الصورة دي؟';
+
+  @override
+  String get analyseMyMeal => 'تحليل أكلي';
+
+  @override
+  String get thisUses1OfYour5Photos => 'دي هتاخد 1 من الـ 5 صور بتوع النهارده.';
+
+  @override
+  String get readingYourPlate => 'بنقرا طبقك…';
+
+  @override
+  String get thePhotoIsWipedAsSoonAs => 'الصورة بتتمسح أول ما نخلّص.';
+
+  @override
+  String get youveUsedYour5ScansForToday =>
+      'استخدمتي الـ 5 صور بتوع النهارده. لسه تقدري تكتبي أكلك.';
+
+  @override
+  String get weCouldntMakeOutTheFoodTry =>
+      'معرفناش نشوف الأكل كويس. جرّبي صورة أوضح من فوق، أو اكتبيه.';
+
+  @override
+  String get scanningIsntAvailableRightNowTypeYour =>
+      'التصوير مش متاح دلوقتي. اكتبي أكلك بدل كده.';
+
+  @override
+  String get weCouldntReadThatPhotoTakeIt =>
+      'معرفناش نقرا الصورة دي. صوّريها تاني، أو اكتبي أكلك.';
+
+  @override
+  String get mealPhotosOpenOnceYourAccountIs =>
+      'تصوير الأكل بيتفتح أول ما حسابك يتأكد. تقدري تكتبي أكلك دلوقتي.';
+
+  @override
+  String get updateOwnHubFromTheStoreTo =>
+      'حدّثي Own Hub من المتجر عشان تصوّري أكلك. تقدري تكتبي أكلك دلوقتي.';
+
+  @override
+  String get signInAgainToSnapMealsYou =>
+      'سجّلي دخولك تاني عشان تصوّري أكلك. تقدري تكتبي أكلك دلوقتي.';
+
+  @override
+  String get typeItInstead => 'اكتبيه بدل كده';
+
+  @override
+  String get ownHubNeedsTheCameraToPhotograph =>
+      'Own Hub محتاجة الكاميرا عشان تصوّر طبقك. شغّليها من الإعدادات، أو اكتبي أكلك.';
+
+  @override
+  String get theCameraCouldntStartYouCanType =>
+      'الكاميرا مرضيتش تشتغل. تقدري تكتبي أكلك بدل كده.';
+
+  @override
+  String get yourMealPhoto => 'صورة أكلك';
+
+  @override
+  String get theseAreEstimatesCheckTheGrams => 'دي تقديرات. راجعي الجرامات.';
+
+  @override
+  String get weightInGrams => 'الوزن بالجرام';
+
+  @override
+  String get n10GLess => '10 جم أقل';
+
+  @override
+  String get n10GMore => '10 جم زيادة';
+
+  @override
+  String proteinGramsG(String grams) {
+    return 'بروتين $grams جم';
+  }
+
+  @override
+  String carbsGramsG(String grams) {
+    return 'كربوهيدرات $grams جم';
+  }
+
+  @override
+  String fatGramsG(String grams) {
+    return 'دهون $grams جم';
+  }
+
+  @override
+  String fibreGramsG(String grams) {
+    return 'ألياف $grams جم';
+  }
+
+  @override
+  String gramsG_1usqy(String grams) {
+    return '$grams جم';
+  }
+
+  @override
+  String get editNumbers => 'عدّلي الأرقام';
+
+  @override
+  String get editedByYou => 'إنتِ اللي عدّلتيه';
+
+  @override
+  String get energyKcal => 'الطاقة (سعرة)';
+
+  @override
+  String get proteinG_xt7ig => 'البروتين (جم)';
+
+  @override
+  String get carbsG_5nlte => 'الكربوهيدرات (جم)';
+
+  @override
+  String get fatG_1xdz2 => 'الدهون (جم)';
+
+  @override
+  String get fibreG => 'الألياف (جم)';
+
+  @override
+  String get weCouldntFindTheNutritionForThis =>
+      'ملقيناش القيم الغذائية للصنف ده. دخّليها أو شيليه.';
+
+  @override
+  String get estimatedFromAStandardRecipe => 'متقدّر من وصفة عادية';
+
+  @override
+  String get seeWhatsInIt => 'شوفي فيه إيه';
+
+  @override
+  String get hideWhatsInIt => 'خبّي المكونات';
+
+  @override
+  String removeName(String name) {
+    return 'شيلي $name';
+  }
+
+  @override
+  String get addSomething => 'ضيفي حاجة';
+
+  @override
+  String get searchTheFoodList => 'دوّري في قايمة الأكل';
+
+  @override
+  String get orTypeItIn => 'أو اكتبيه بنفسك';
+
+  @override
+  String get whatIsIt => 'ده إيه؟';
+
+  @override
+  String get addedByYou => 'إنتِ اللي ضفتيه';
+
+  @override
+  String get thisMeal => 'الوجبة دي';
+
+  @override
+  String get whichMealIsIt => 'دي أنهي وجبة؟';
+
+  @override
+  String get logThisMeal => 'سجّلي الوجبة دي';
+
+  @override
+  String get enterTheNumbersForEachItemOr =>
+      'دخّلي الأرقام لكل صنف أو شيليه، عشان تسجّلي الوجبة.';
+
+  @override
+  String get nothingToCheckYetSnapYourMeal =>
+      'لسه مفيش حاجة تتراجع. صوّري أكلك الأول.';
+
+  @override
+  String get nothingOnThisPlateYetAddSomething =>
+      'مفيش حاجة في الطبق لسه. ضيفي حاجة أو الغي.';
+
+  @override
+  String get weFoundOnlyPartOfThisSo =>
+      'لقينا جزء بس من الصنف ده، فممكن الأرقام تكون أقل من الحقيقة. راجعيها.';
+
+  @override
+  String get koshariFulAndMolokhiaInThePortions_1am39 =>
+      'كشري وفول وملوخية بالكميات اللي بتغرفيها فعلًا، أو صوّري طبقك. ومن غير لوم على السعرات.';
+
+  @override
+  String get frontView => 'من قدّام';
+
+  @override
+  String get backView => 'من ورا';
+
+  @override
+  String get tapAMuscleForItsSets => 'دوسي على أي عضلة تشوفي مجموعاتها.';
+
+  @override
+  String countPluralOneAlsoWorked1Set(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'اشتغلت كمان في $count مجموعة',
+      many: 'اشتغلت كمان في $count مجموعة',
+      few: 'اشتغلت كمان في $count مجموعات',
+      two: 'اشتغلت كمان في مجموعتين',
+      one: 'اشتغلت كمان في مجموعة واحدة',
+      zero: 'اشتغلت كمان في $count مجموعة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aShortFirstWorkoutYouCanDo =>
+      'أول تمرين ليكي قصير وينفع في البيت، من غير أي أدوات. تحبي تجربيه؟';
+
+  @override
+  String get everyMoveHasAShortVideoSo =>
+      'كل حركة ليها فيديو قصير، عشان تعرفي الطريقة الصح قبل ما تبدأي.';
+
+  @override
+  String get snapYourPlateAndWellEstimateThe =>
+      'صوّري طبقك وإحنا نقدّرلك البروتين، وإنتِ تراجعيه قبل ما يتحفظ.';
+
+  @override
+  String get rahmasEgyptianRecipesKosharyAndMolokhiaIncluded =>
+      'وصفات رحمة المصرية، فيها الكشري والملوخية، للأيام اللي تحتاري فيها تطبخي إيه.';
+
+  @override
+  String get firstTimeAtTheGymACalm =>
+      'أول مرة في الجيم؟ دليل هادي خطوة بخطوة، عشان تدخلي وإنتِ عارفة هتعملي إيه.';
+
+  @override
+  String get eachSessionLightsUpTheMusclesYou =>
+      'كل تمرين بينوّر العضلات اللي اشتغلتي عليها على خريطة عضلاتك. بصّي عليها.';
+
+  @override
+  String get aTrainingWeekThatFitsTheDays =>
+      'أسبوع تمارين على قد الأيام اللي عندك، وتقدري تغيريه في أي وقت.';
+
+  @override
+  String get gettingStartedTips => 'نصايح البداية';
+
+  @override
+  String get aFewTipsInYourFirstWeeks =>
+      'شوية نصايح في أول أسابيعك، بس في الأيام اللي مفتحتيش فيها التطبيق.';
+
+  @override
+  String get wantAFewTipsAndYourWorkout => 'تحبي شوية نصايح وتذكير بتمرينك؟';
+
+  @override
+  String get workoutRemindersOnTheDaysYouPick =>
+      'تذكير بالتمرين في الأيام اللي تختاريها، لما تحدديها.';
+
+  @override
+  String get turnAnyOfThemOffInNotifications =>
+      'تقدري تقفلي أي حاجة منهم من الإشعارات في أي وقت.';
+
+  @override
+  String get turnOnNotifications => 'شغّلي الإشعارات';
+
+  @override
+  String get signOut => 'اخرجي من حسابك';
+
+  @override
+  String get signOutOnThisPhone => 'تخرجي من حسابك على الموبايل ده؟';
+
+  @override
+  String get yourAccountAndEverythingInItStays =>
+      'حسابك وكل اللي فيه هيفضل في أمان. ادخلي برقمك في أي وقت.';
+
+  @override
+  String get signedOut => 'خرجتي من حسابك.';
+
+  @override
+  String get staySignedIn => 'خليني في حسابي';
+
+  @override
+  String get removeThisSession => 'شيلي التمرين ده';
+
+  @override
+  String get removeThisSession_1qh67 => 'تشيلي التمرين ده؟';
+
+  @override
+  String get itComesOffThisWeeksCountAnd =>
+      'هيتشال من عدد الأسبوع ده ومن نقطك.';
+
+  @override
+  String get removeIt => 'شيليه';
+
+  @override
+  String get tapAMoveYouLoggedToChange =>
+      'دوسي على حركة سجلتيها عشان تغيّري مجموعة فيها.';
+
+  @override
+  String get whichSet => 'أنهي مجموعة؟';
+
+  @override
+  String get addToMyWeek => 'ضيفيها لأسبوعي';
+
+  @override
+  String get weekRearranged => 'اتغيّر ترتيب أسبوعك';
+
+  @override
+  String get savedChangeItAnyTimeInYour =>
+      'اتحفظ. تقدري تغيّريه في أي وقت من بروفايلك.';
+
+  @override
+  String get turnOffBackup => 'تقفلي النسخة الاحتياطية؟';
+
+  @override
+  String get weDeleteTheCopyInYourAccount =>
+      'هنمسح النسخة اللي في حسابك. كل حاجة هتفضل على الموبايل ده.';
+
+  @override
+  String get turnItOff => 'اقفليها';
+
+  @override
+  String get keepItOn => 'سيبيها شغالة';
+
+  @override
+  String get backupOffTheCopyInYourAccount =>
+      'النسخة الاحتياطية اتقفلت، والنسخة اللي في حسابك اتمسحت.';
+
+  @override
+  String get thanksForAgreeingTheRulesAreIn =>
+      'شكرًا إنك وافقتي. القواعد موجودة في مركز الأمان في أي وقت.';
+
+  @override
+  String get saveMyChanges => 'احفظي التغييرات';
+
+  @override
+  String get streakHiddenTurnItBackOnIn =>
+      'السلسلة اتخبّت. رجّعيها من الإشعارات، تحت التذكيرات وحاجات تانية.';
+
+  @override
+  String get gentleMobilityTodayYourPlanPicksUp =>
+      'مرونة خفيفة النهارده. خطتك هتكمل المرة الجاية.';
+
+  @override
+  String get thisDeletesYourPeriodDatesCheckIns =>
+      'ده هيمسح مواعيد دورتك ومتابعاتك وإعدادات الدورة من الموبايل ده. ومش هينفع ترجعيهم.';
+
+  @override
+  String get yourCycleDataIsDeletedYouCan =>
+      'بيانات دورتك اتمسحت. تقدري تفعّلي دورتي تاني من بروفايلك.';
+
+  @override
+  String get ifThePainIsSevereOrSudden =>
+      'لو الألم شديد أو جه فجأة، اكشفي عند دكتور النهارده. في الطوارئ اتصلي بـ 123.';
+
+  @override
+  String get tapALoggedDayToChangeIt => 'دوسي على يوم متسجل عشان تغيّريه.';
+
+  @override
+  String get unblocked => 'اتفك الحظر';
+
+  @override
+  String addedFromMemoryTitle(String title) {
+    return 'اتضاف من الذاكرة · $title';
+  }
+
+  @override
+  String takenBackYourWeekIsAtCount(String count, String target) {
+    return 'اترجع. أسبوعك دلوقتي $count من $target.';
+  }
+
+  @override
+  String sessionRemovedYourWeekIsAtCount(String count, String target) {
+    return 'التمرين اتشال · أسبوعك دلوقتي $count من $target';
+  }
+
+  @override
+  String foodAddedToSlot(String food, String slot) {
+    return 'ضفنا $food في $slot';
+  }
+
+  @override
+  String foodAndCountMoreAddedToSlot(String food, String count, String slot) {
+    return 'ضفنا $food و$count كمان في $slot';
+  }
+
+  @override
+  String foodRemovedFromSlot(String food, String slot) {
+    return 'شيلنا $food من $slot';
+  }
+
+  @override
+  String savedDishesWithAllergensAreHiddenNow(String allergens) {
+    return 'اتحفظ. الأكلات اللي فيها $allergens مش هتظهر دلوقتي.';
+  }
+
+  @override
+  String unblockedName(String name) {
+    return 'فكّيتي الحظر عن $name';
+  }
+
+  @override
+  String swappedToNameForToday(String name) {
+    return 'النهارده هتعملي $name بدالها';
+  }
+
+  @override
+  String skippedName(String name) {
+    return 'عدّيتي $name';
+  }
+
+  @override
+  String finishNowCountMovesLeft(String count) {
+    return 'خلّصي دلوقتي · الحركات الباقية: $count';
+  }
+
+  @override
+  String yourWeekIsUpdatedDaysDaysMinutes(String days, String minutes) {
+    return 'أسبوعك اتحدّث · أيام: $days، دقايق: $minutes.';
+  }
+
+  @override
+  String checkInSavedSummary(String summary) {
+    return 'المتابعة اتحفظت · $summary';
+  }
+
+  @override
+  String todaySummary(String summary) {
+    return 'النهارده: $summary';
+  }
+
+  @override
+  String periodSavedStartToEnd(String start, String end) {
+    return 'الدورة اتحفظت · من $start لحد $end';
+  }
+
+  @override
+  String periodSavedFromStart(String start) {
+    return 'الدورة اتحفظت · من $start';
+  }
+
+  @override
+  String periodRemovedStartToEnd(String start, String end) {
+    return 'الدورة اتشالت · من $start لحد $end';
+  }
+
+  @override
+  String periodRemovedFromStart(String start) {
+    return 'الدورة اتشالت · من $start';
+  }
+
+  @override
+  String get nothingWasDeletedTryAgain => 'ماتمسحش حاجة. جرّبي تاني.';
+
+  @override
+  String ifThePainIsSevereOrSudden_rd6j0(String number) {
+    return 'لو الألم شديد أو جه فجأة، اكشفي عند دكتور النهارده. في الطوارئ اتصلي بـ $number.';
+  }
+
+  @override
+  String listItem(String list, String item) {
+    return '$list، $item';
+  }
 }

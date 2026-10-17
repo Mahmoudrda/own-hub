@@ -75,6 +75,7 @@ class StartingProgramView extends StatelessWidget {
     this.beforeSignup = false,
     this.onSaveAndJoin,
     this.onSaveMyWeek,
+    this.saveLabel,
     this.title,
     this.onBack,
     this.showSteps = false,
@@ -90,6 +91,10 @@ class StartingProgramView extends StatelessWidget {
   /// reviewer has her check. Non-null replaces the start buttons: day one is
   /// behind the gate until the check is done.
   final VoidCallback? onSaveMyWeek;
+
+  /// The label on [onSaveMyWeek]'s button. "Save my changes" when she reopened
+  /// her answers from her profile: she is changing a week, not starting one.
+  final String? saveLabel;
 
   /// The bar title, when the screen has a bar (before sign-up it does).
   final String? title;
@@ -191,7 +196,7 @@ class StartingProgramView extends StatelessWidget {
           : onSaveMyWeek != null
           ? [
               AppButton(
-                l10n.saveMyWeek,
+                saveLabel ?? l10n.saveMyWeek,
                 key: const ValueKey('o05-save-my-week'),
                 onPressed: onSaveMyWeek,
               ),

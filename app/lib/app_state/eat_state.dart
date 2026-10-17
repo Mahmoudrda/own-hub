@@ -51,6 +51,7 @@ import '../features/eat/domain/meal_sentence_parser.dart';
 import '../features/eat/domain/meal_slot_state_machine.dart';
 import '../features/eat/presentation/eat_day_view_model.dart';
 import '../features/eat/presentation/eat_sample_library.dart';
+import '../features/eat/presentation/meal_labels.dart';
 import '../features/eat/presentation/meal_log_session.dart';
 import '../features/today/domain/today_day.dart';
 import '../domain/logging/log_command_bus.dart';
@@ -61,6 +62,7 @@ import '../domain/format/day_key.dart';
 import 'app_changes.dart';
 import 'rewards_state.dart';
 import 'firebase_boot.dart';
+import 'getting_started.dart';
 import 'honest_notice.dart';
 
 /// A plate she has actually eaten, with the figure her own log carried.
@@ -108,6 +110,7 @@ class EatAppState {
   MealLogSession get session => _session ??= MealLogSession(
     repository: AppRouter.mealRepository,
     onCommitted: _committed,
+    onRemoved: _removed,
   );
 
   final Map<String, UsualPlate> _plates = <String, UsualPlate>{};
@@ -349,10 +352,15 @@ class EatAppState {
       return null;
     }
 
+    final prepared = outcome as MealLogPrepared;
     final handle = session.submit(
-      outcome as MealLogPrepared,
+      prepared,
       slot: slot,
-      describe: l10n.mealAdded,
+      describe: mealAddedLabel(
+        l10n,
+        mealFoodNames(eatSampleLibrary(l10n), prepared.items),
+        slot,
+      ),
     );
     // **No snackbar here.** This used to raise one and then hand the handle
     // back, and its only caller — Home's plate — carries that handle straight
@@ -483,24 +491,34 @@ class EatAppState {
   void _committed(PendingMeal meal) {
     if (meal.items.isEmpty) return;
 
-    final plateId = plateIdOf([
-      for (final item in meal.items) (foodId: item.foodId, size: item.size),
-    ]);
-    final existing = _plates[plateId];
-    _plates[plateId] = UsualPlate(
-      plateId: plateId,
-      items: [
-        for (final item in meal.items)
-          PlateItem(
-            foodId: item.foodId,
-            size: item.size,
-            servings: item.servings,
-          ),
-      ],
-      kcal: meal.items.fold(0, (sum, item) => sum + item.kcal),
-      timesEaten: (existing?.timesEaten ?? 0) + 1,
-      lastAt: meal.at,
+    // A plate she photographed is not one Home can name or log again in one
+    // tap, so it is not remembered as a plate. It still counts as her meal
+    // below: Home's card and the day's points do not care how she logged it.
+    final photographed = meal.items.any(
+      (item) => item.origin == MealOrigin.photo,
     );
+    // The getting started tip about photos has nothing left to say.
+    if (photographed) GettingStarted.notePhotoMeal();
+    if (!photographed) {
+      final plateId = plateIdOf([
+        for (final item in meal.items) (foodId: item.foodId, size: item.size),
+      ]);
+      final existing = _plates[plateId];
+      _plates[plateId] = UsualPlate(
+        plateId: plateId,
+        items: [
+          for (final item in meal.items)
+            PlateItem(
+              foodId: item.foodId,
+              size: item.size,
+              servings: item.servings,
+            ),
+        ],
+        kcal: meal.items.fold(0, (sum, item) => sum + item.kcal),
+        timesEaten: (existing?.timesEaten ?? 0) + 1,
+        lastAt: meal.at,
+      );
+    }
 
     // A meal is the first thing logged on many days: Home's day moves on to
     // the meal's before the meal is written into it.
@@ -512,6 +530,43 @@ class EatAppState {
       day: dayKey(meal.at),
       progress: AppRouter.progressStore,
     );
+    AppChanges.bump();
+  }
+
+  /// A removal that has been **written**, with the day as it now stands.
+  ///
+  /// The same ground an Undo would have left: the plate the removal broke
+  /// ([plateId], decided by the session) is counted once less, and when the
+  /// day has no meal left, Home's card goes back to nothing logged and the
+  /// day's food points come off.
+  void _removed(PendingMeal removal, MealDay day, String? plateId) {
+    final plate = plateId == null ? null : _plates[plateId];
+    if (plate != null) {
+      if (plate.timesEaten <= 1) {
+        _plates.remove(plate.plateId);
+      } else {
+        _plates[plate.plateId] = UsualPlate(
+          plateId: plate.plateId,
+          items: plate.items,
+          kcal: plate.kcal,
+          timesEaten: plate.timesEaten - 1,
+          lastAt: plate.lastAt,
+        );
+      }
+    }
+
+    final dayEmpty = MealSlot.values.every((slot) => day.itemsIn(slot).isEmpty);
+    AppRouter.todayRepository.mealRemoved(
+      dayId: removal.dayId,
+      dayEmpty: dayEmpty,
+      plates: homePlates,
+    );
+    if (dayEmpty) {
+      RewardsState.instance.uncreditFoodDay(
+        day: removal.dayId,
+        progress: AppRouter.progressStore,
+      );
+    }
     AppChanges.bump();
   }
 }

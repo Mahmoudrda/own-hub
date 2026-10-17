@@ -18108,6 +18108,750 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{days, plural, one{No sets logged today.} other{No sets logged in the last {days} days.}}'**
   String daysPluralOneNoSetsLoggedToday(int days);
+
+  /// No description provided for @snapYourMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Snap your meal'**
+  String get snapYourMeal;
+
+  /// No description provided for @checkYourMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your meal'**
+  String get checkYourMeal;
+
+  /// No description provided for @beforeYourFirstPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Before your first photo'**
+  String get beforeYourFirstPhoto;
+
+  /// No description provided for @yourPhotoGoesToOurAiIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Your photo goes to our AI in the EU (Google Cloud, Frankfurt) to estimate what\'s on your plate. We don\'t keep the photo or use it to train anything. You check everything before it\'s logged.'**
+  String get yourPhotoGoesToOurAiIn;
+
+  /// No description provided for @upTo5PhotosADayYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 5 photos a day. You can always type your meal instead.'**
+  String get upTo5PhotosADayYou;
+
+  /// No description provided for @agree.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree'**
+  String get agree;
+
+  /// No description provided for @weCouldntSaveYourAnswerCheckYour.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t save your answer. Check your connection and try again.'**
+  String get weCouldntSaveYourAnswerCheckYour;
+
+  /// No description provided for @takeItFromAboveWithTheWhole.
+  ///
+  /// In en, this message translates to:
+  /// **'Take it from above, with the whole plate in the photo.'**
+  String get takeItFromAboveWithTheWhole;
+
+  /// No description provided for @useThisPhoto_6wkqn.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this photo?'**
+  String get useThisPhoto_6wkqn;
+
+  /// No description provided for @analyseMyMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyse my meal'**
+  String get analyseMyMeal;
+
+  /// No description provided for @thisUses1OfYour5Photos.
+  ///
+  /// In en, this message translates to:
+  /// **'This uses 1 of your 5 photos for today.'**
+  String get thisUses1OfYour5Photos;
+
+  /// No description provided for @readingYourPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading your plate…'**
+  String get readingYourPlate;
+
+  /// No description provided for @thePhotoIsWipedAsSoonAs.
+  ///
+  /// In en, this message translates to:
+  /// **'The photo is wiped as soon as we\'re done.'**
+  String get thePhotoIsWipedAsSoonAs;
+
+  /// No description provided for @youveUsedYour5ScansForToday.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used your 5 scans for today. You can still type your meal.'**
+  String get youveUsedYour5ScansForToday;
+
+  /// No description provided for @weCouldntMakeOutTheFoodTry.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t make out the food. Try a clearer photo from above, or type it.'**
+  String get weCouldntMakeOutTheFoodTry;
+
+  /// No description provided for @scanningIsntAvailableRightNowTypeYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning isn\'t available right now. Type your meal instead.'**
+  String get scanningIsntAvailableRightNowTypeYour;
+
+  /// No description provided for @weCouldntReadThatPhotoTakeIt.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t read that photo. Take it again, or type your meal.'**
+  String get weCouldntReadThatPhotoTakeIt;
+
+  /// No description provided for @mealPhotosOpenOnceYourAccountIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal photos open once your account is checked. You can type your meal now.'**
+  String get mealPhotosOpenOnceYourAccountIs;
+
+  /// No description provided for @updateOwnHubFromTheStoreTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Own Hub from the store to snap meals. You can type your meal now.'**
+  String get updateOwnHubFromTheStoreTo;
+
+  /// No description provided for @signInAgainToSnapMealsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again to snap meals. You can type your meal now.'**
+  String get signInAgainToSnapMealsYou;
+
+  /// No description provided for @typeItInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Type it instead'**
+  String get typeItInstead;
+
+  /// No description provided for @ownHubNeedsTheCameraToPhotograph.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub needs the camera to photograph your plate. Turn it on in Settings, or type your meal.'**
+  String get ownHubNeedsTheCameraToPhotograph;
+
+  /// No description provided for @theCameraCouldntStartYouCanType.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera couldn\'t start. You can type your meal instead.'**
+  String get theCameraCouldntStartYouCanType;
+
+  /// No description provided for @yourMealPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Your meal photo'**
+  String get yourMealPhoto;
+
+  /// No description provided for @theseAreEstimatesCheckTheGrams.
+  ///
+  /// In en, this message translates to:
+  /// **'These are estimates. Check the grams.'**
+  String get theseAreEstimatesCheckTheGrams;
+
+  /// No description provided for @weightInGrams.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight in grams'**
+  String get weightInGrams;
+
+  /// No description provided for @n10GLess.
+  ///
+  /// In en, this message translates to:
+  /// **'10 g less'**
+  String get n10GLess;
+
+  /// No description provided for @n10GMore.
+  ///
+  /// In en, this message translates to:
+  /// **'10 g more'**
+  String get n10GMore;
+
+  /// E01 and E13: protein in grams, for one item, a meal or the day. Whole number, Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein {grams} g'**
+  String proteinGramsG(String grams);
+
+  /// E01 and E13: carbohydrates in grams. Shown only when known. Whole number, Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs {grams} g'**
+  String carbsGramsG(String grams);
+
+  /// E01 and E13: fat in grams. Shown only when known.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat {grams} g'**
+  String fatGramsG(String grams);
+
+  /// E01 and E13: dietary fibre in grams. Shown only when known.
+  ///
+  /// In en, this message translates to:
+  /// **'Fibre {grams} g'**
+  String fibreGramsG(String grams);
+
+  /// E13: a weight in grams, for an item or one part of a dish.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g'**
+  String gramsG_1usqy(String grams);
+
+  /// No description provided for @editNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit numbers'**
+  String get editNumbers;
+
+  /// No description provided for @editedByYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited by you'**
+  String get editedByYou;
+
+  /// No description provided for @energyKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy (kcal)'**
+  String get energyKcal;
+
+  /// No description provided for @proteinG_xt7ig.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein (g)'**
+  String get proteinG_xt7ig;
+
+  /// No description provided for @carbsG_5nlte.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs (g)'**
+  String get carbsG_5nlte;
+
+  /// No description provided for @fatG_1xdz2.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat (g)'**
+  String get fatG_1xdz2;
+
+  /// No description provided for @fibreG.
+  ///
+  /// In en, this message translates to:
+  /// **'Fibre (g)'**
+  String get fibreG;
+
+  /// No description provided for @weCouldntFindTheNutritionForThis.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find the nutrition for this. Enter it or remove it.'**
+  String get weCouldntFindTheNutritionForThis;
+
+  /// No description provided for @estimatedFromAStandardRecipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated from a standard recipe'**
+  String get estimatedFromAStandardRecipe;
+
+  /// No description provided for @seeWhatsInIt.
+  ///
+  /// In en, this message translates to:
+  /// **'See what\'s in it'**
+  String get seeWhatsInIt;
+
+  /// No description provided for @hideWhatsInIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide what\'s in it'**
+  String get hideWhatsInIt;
+
+  /// E13: screen reader label on the button that takes one food off the plate before it is logged.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}'**
+  String removeName(String name);
+
+  /// No description provided for @addSomething.
+  ///
+  /// In en, this message translates to:
+  /// **'Add something'**
+  String get addSomething;
+
+  /// No description provided for @searchTheFoodList.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the food list'**
+  String get searchTheFoodList;
+
+  /// No description provided for @orTypeItIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Or type it in'**
+  String get orTypeItIn;
+
+  /// No description provided for @whatIsIt.
+  ///
+  /// In en, this message translates to:
+  /// **'What is it?'**
+  String get whatIsIt;
+
+  /// No description provided for @addedByYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Added by you'**
+  String get addedByYou;
+
+  /// No description provided for @thisMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'This meal'**
+  String get thisMeal;
+
+  /// No description provided for @whichMealIsIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Which meal is it?'**
+  String get whichMealIsIt;
+
+  /// No description provided for @logThisMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Log this meal'**
+  String get logThisMeal;
+
+  /// No description provided for @enterTheNumbersForEachItemOr.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the numbers for each item, or remove it, to log this meal.'**
+  String get enterTheNumbersForEachItemOr;
+
+  /// No description provided for @nothingToCheckYetSnapYourMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to check yet. Snap your meal first.'**
+  String get nothingToCheckYetSnapYourMeal;
+
+  /// No description provided for @nothingOnThisPlateYetAddSomething.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing on this plate yet. Add something, or cancel.'**
+  String get nothingOnThisPlateYetAddSomething;
+
+  /// No description provided for @weFoundOnlyPartOfThisSo.
+  ///
+  /// In en, this message translates to:
+  /// **'We found only part of this, so these numbers may be low. Check them.'**
+  String get weFoundOnlyPartOfThisSo;
+
+  /// No description provided for @koshariFulAndMolokhiaInThePortions_1am39.
+  ///
+  /// In en, this message translates to:
+  /// **'Koshari, ful and molokhia in the portions you actually serve, or snap your plate. No calorie shaming.'**
+  String get koshariFulAndMolokhiaInThePortions_1am39;
+
+  /// No description provided for @frontView.
+  ///
+  /// In en, this message translates to:
+  /// **'Front view'**
+  String get frontView;
+
+  /// No description provided for @backView.
+  ///
+  /// In en, this message translates to:
+  /// **'Back view'**
+  String get backView;
+
+  /// No description provided for @tapAMuscleForItsSets.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a muscle for its sets.'**
+  String get tapAMuscleForItsSets;
+
+  /// P06 card on one muscle: whole sets in the rolling window where this muscle helped a move without being its main muscle. These sets never colour the body map. A plural message because Arabic says مجموعة واحدة, مجموعتين, 3 مجموعات and 11 مجموعة.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Also worked: 1 set} other{Also worked: {count} sets}}'**
+  String countPluralOneAlsoWorked1Set(int count);
+
+  /// No description provided for @aShortFirstWorkoutYouCanDo.
+  ///
+  /// In en, this message translates to:
+  /// **'A short first workout you can do at home, nothing needed. Want to give it a go?'**
+  String get aShortFirstWorkoutYouCanDo;
+
+  /// No description provided for @everyMoveHasAShortVideoSo.
+  ///
+  /// In en, this message translates to:
+  /// **'Every move has a short video, so you know the form before you start.'**
+  String get everyMoveHasAShortVideoSo;
+
+  /// No description provided for @snapYourPlateAndWellEstimateThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Snap your plate and we\'ll estimate the protein. You check it before it\'s saved.'**
+  String get snapYourPlateAndWellEstimateThe;
+
+  /// No description provided for @rahmasEgyptianRecipesKosharyAndMolokhiaIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Rahma\'s Egyptian recipes, koshary and molokhia included, for days you\'re not sure what to cook.'**
+  String get rahmasEgyptianRecipesKosharyAndMolokhiaIncluded;
+
+  /// No description provided for @firstTimeAtTheGymACalm.
+  ///
+  /// In en, this message translates to:
+  /// **'First time at the gym? A calm guide, step by step, so you walk in knowing what to do.'**
+  String get firstTimeAtTheGymACalm;
+
+  /// No description provided for @eachSessionLightsUpTheMusclesYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Each session lights up the muscles you worked on your own muscle map. Take a look.'**
+  String get eachSessionLightsUpTheMusclesYou;
+
+  /// No description provided for @aTrainingWeekThatFitsTheDays.
+  ///
+  /// In en, this message translates to:
+  /// **'A training week that fits the days you have. Change it any time.'**
+  String get aTrainingWeekThatFitsTheDays;
+
+  /// No description provided for @gettingStartedTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting started tips'**
+  String get gettingStartedTips;
+
+  /// No description provided for @aFewTipsInYourFirstWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'A few tips in your first weeks, only on days you haven\'t opened the app.'**
+  String get aFewTipsInYourFirstWeeks;
+
+  /// No description provided for @wantAFewTipsAndYourWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Want a few tips and your workout reminders?'**
+  String get wantAFewTipsAndYourWorkout;
+
+  /// No description provided for @workoutRemindersOnTheDaysYouPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout reminders on the days you pick, once you choose them.'**
+  String get workoutRemindersOnTheDaysYouPick;
+
+  /// No description provided for @turnAnyOfThemOffInNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn any of them off in Notifications, any time.'**
+  String get turnAnyOfThemOffInNotifications;
+
+  /// No description provided for @turnOnNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on notifications'**
+  String get turnOnNotifications;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOut;
+
+  /// No description provided for @signOutOnThisPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out on this phone?'**
+  String get signOutOnThisPhone;
+
+  /// No description provided for @yourAccountAndEverythingInItStays.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account and everything in it stays safe. Sign in with your number any time.'**
+  String get yourAccountAndEverythingInItStays;
+
+  /// No description provided for @signedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out.'**
+  String get signedOut;
+
+  /// No description provided for @staySignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay signed in'**
+  String get staySignedIn;
+
+  /// No description provided for @removeThisSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this session'**
+  String get removeThisSession;
+
+  /// No description provided for @removeThisSession_1qh67.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this session?'**
+  String get removeThisSession_1qh67;
+
+  /// No description provided for @itComesOffThisWeeksCountAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'It comes off this week\'s count and your points.'**
+  String get itComesOffThisWeeksCountAnd;
+
+  /// No description provided for @removeIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove it'**
+  String get removeIt;
+
+  /// No description provided for @tapAMoveYouLoggedToChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a move you logged to change a set.'**
+  String get tapAMoveYouLoggedToChange;
+
+  /// No description provided for @whichSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Which set?'**
+  String get whichSet;
+
+  /// No description provided for @addToMyWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to my week'**
+  String get addToMyWeek;
+
+  /// No description provided for @weekRearranged.
+  ///
+  /// In en, this message translates to:
+  /// **'Week rearranged'**
+  String get weekRearranged;
+
+  /// No description provided for @savedChangeItAnyTimeInYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. Change it any time in your profile.'**
+  String get savedChangeItAnyTimeInYour;
+
+  /// No description provided for @turnOffBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off backup?'**
+  String get turnOffBackup;
+
+  /// No description provided for @weDeleteTheCopyInYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'We delete the copy in your account. Everything stays on this phone.'**
+  String get weDeleteTheCopyInYourAccount;
+
+  /// No description provided for @turnItOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn it off'**
+  String get turnItOff;
+
+  /// No description provided for @keepItOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it on'**
+  String get keepItOn;
+
+  /// No description provided for @backupOffTheCopyInYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup off. The copy in your account is deleted.'**
+  String get backupOffTheCopyInYourAccount;
+
+  /// No description provided for @thanksForAgreeingTheRulesAreIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for agreeing. The rules are in the Safety Centre any time.'**
+  String get thanksForAgreeingTheRulesAreIn;
+
+  /// No description provided for @saveMyChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my changes'**
+  String get saveMyChanges;
+
+  /// No description provided for @streakHiddenTurnItBackOnIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak hidden. Turn it back on in Notifications, under Reminders and extras.'**
+  String get streakHiddenTurnItBackOnIn;
+
+  /// No description provided for @gentleMobilityTodayYourPlanPicksUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle mobility today. Your plan picks up next time.'**
+  String get gentleMobilityTodayYourPlanPicksUp;
+
+  /// No description provided for @thisDeletesYourPeriodDatesCheckIns.
+  ///
+  /// In en, this message translates to:
+  /// **'This deletes your period dates, check-ins and cycle settings from this phone. It cannot be undone.'**
+  String get thisDeletesYourPeriodDatesCheckIns;
+
+  /// No description provided for @yourCycleDataIsDeletedYouCan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cycle data is deleted. You can set up My cycle again from your profile.'**
+  String get yourCycleDataIsDeletedYouCan;
+
+  /// No description provided for @ifThePainIsSevereOrSudden.
+  ///
+  /// In en, this message translates to:
+  /// **'If the pain is severe or sudden, see a doctor today. In an emergency call 123.'**
+  String get ifThePainIsSevereOrSudden;
+
+  /// No description provided for @tapALoggedDayToChangeIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a logged day to change it.'**
+  String get tapALoggedDayToChangeIt;
+
+  /// No description provided for @unblocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblocked'**
+  String get unblocked;
+
+  /// T02 undo bar after a session logged from memory. title is the session's own name.
+  ///
+  /// In en, this message translates to:
+  /// **'Added from memory · {title}'**
+  String addedFromMemoryTitle(String title);
+
+  /// T02 after Undo on a recalled session. Numbers in Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken back. Your week is at {count} of {target}.'**
+  String takenBackYourWeekIsAtCount(String count, String target);
+
+  /// R10/R12 undo bar after she removes a logged session. Numbers in Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Session removed · your week is at {count} of {target}'**
+  String sessionRemovedYourWeekIsAtCount(String count, String target);
+
+  /// Meal undo bar. food is the first food's name, slot is Breakfast, Lunch, Dinner or Snack.
+  ///
+  /// In en, this message translates to:
+  /// **'{food} added to {slot}'**
+  String foodAddedToSlot(String food, String slot);
+
+  /// Meal undo bar for a plate of several foods. count in Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'{food} and {count} more added to {slot}'**
+  String foodAndCountMoreAddedToSlot(String food, String count, String slot);
+
+  /// E01/E04 undo bar after she removes a logged food from a slot.
+  ///
+  /// In en, this message translates to:
+  /// **'{food} removed from {slot}'**
+  String foodRemovedFromSlot(String food, String slot);
+
+  /// E10 and A02 after saving allergies. allergens is a comma-separated list of allergen names.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. Dishes with {allergens} are hidden now.'**
+  String savedDishesWithAllergensAreHiddenNow(String allergens);
+
+  /// A04 undo bar after unblocking a member.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblocked {name}'**
+  String unblockedName(String name);
+
+  /// R05 undo bar after a swap. name is the move she swapped to.
+  ///
+  /// In en, this message translates to:
+  /// **'Swapped to {name} for today'**
+  String swappedToNameForToday(String name);
+
+  /// R06 undo bar after skipping a move. name is the move.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped {name}'**
+  String skippedName(String name);
+
+  /// R13 Finish here, second tap to confirm. count in Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish now · {count} moves left'**
+  String finishNowCountMovesLeft(String count);
+
+  /// O05 after saving changed setup answers from the profile. Numbers in Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week is updated · {days} days, {minutes} minutes.'**
+  String yourWeekIsUpdatedDaysDaysMinutes(String days, String minutes);
+
+  /// Y04 undo bar. summary is label: value pairs joined by a middle dot.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in saved · {summary}'**
+  String checkInSavedSummary(String summary);
+
+  /// Y03 line under How are you feeling. summary is label: value pairs.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {summary}'**
+  String todaySummary(String summary);
+
+  /// Y09 after saving a period. Dates as yyyy-MM-dd.
+  ///
+  /// In en, this message translates to:
+  /// **'Period saved · {start} to {end}'**
+  String periodSavedStartToEnd(String start, String end);
+
+  /// Y09 after saving a period with no end date yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Period saved · from {start}'**
+  String periodSavedFromStart(String start);
+
+  /// Y09 undo bar after deleting a period.
+  ///
+  /// In en, this message translates to:
+  /// **'Period removed · {start} to {end}'**
+  String periodRemovedStartToEnd(String start, String end);
+
+  /// Y09 undo bar after deleting a period with no end date.
+  ///
+  /// In en, this message translates to:
+  /// **'Period removed · from {start}'**
+  String periodRemovedFromStart(String start);
+
+  /// No description provided for @nothingWasDeletedTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was deleted. Try again.'**
+  String get nothingWasDeletedTryAgain;
+
+  /// Y11, the severe-pain card. number is Egypt's ambulance line, 123, in Western digits.
+  ///
+  /// In en, this message translates to:
+  /// **'If the pain is severe or sudden, see a doctor today. In an emergency call {number}.'**
+  String ifThePainIsSevereOrSudden_rd6j0(String number);
+
+  /// Adds one more name to a list of names, e.g. allergens. The comma is the language's own.
+  ///
+  /// In en, this message translates to:
+  /// **'{list}, {item}'**
+  String listItem(String list, String item);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

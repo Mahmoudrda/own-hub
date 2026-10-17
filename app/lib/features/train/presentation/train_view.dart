@@ -330,18 +330,21 @@ class TrainView extends StatelessWidget {
                 ),
             ],
           ),
-          Text(l10n.shortOnesThatStillCount, style: AppText.titleM),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final session in shorts)
-                AppChip(
-                  '${session.duration} · ${session.constraint}',
-                  onTap: session.onTap,
-                ),
-            ],
-          ),
+          // Only tiles with a session behind them; none, no heading either.
+          if (shorts.isNotEmpty)
+            Text(l10n.shortOnesThatStillCount, style: AppText.titleM),
+          if (shorts.isNotEmpty)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final session in shorts)
+                  AppChip(
+                    '${session.duration} · ${session.constraint}',
+                    onTap: session.onTap,
+                  ),
+              ],
+            ),
           // The library is a second, quieter section of the page.
           const HandRule(seed: 41, height: 14),
           if (AppRouter.screenIsOn('R14') && onOpenExerciseLibrary != null)

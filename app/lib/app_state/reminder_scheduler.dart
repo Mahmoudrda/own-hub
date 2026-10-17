@@ -23,6 +23,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../features/train/domain/getting_started_tips.dart';
 import '../features/train/domain/notification_plan.dart';
 import 'notification_taps.dart';
 
@@ -56,6 +57,9 @@ class ReminderText {
     required this.checkInChannelDescription,
     required this.restChannelName,
     required this.restChannelDescription,
+    this.tipBodies = const <String>[],
+    this.tipChannelName = '',
+    this.tipChannelDescription = '',
   });
 
   final String title;
@@ -79,12 +83,18 @@ class ReminderText {
   final String restChannelName;
   final String restChannelDescription;
 
+  /// The getting started tips, one per [GettingStartedTip], in its order.
+  final List<String> tipBodies;
+  final String tipChannelName;
+  final String tipChannelDescription;
+
   /// Every sentence a notification can carry, for the copy policy.
   List<String> get allBodies => <String>[
     body,
     logBody,
     ...checkInBodies,
     restBody,
+    ...tipBodies,
   ];
 }
 
@@ -121,6 +131,7 @@ abstract class ReminderScheduler {
 const String kReminderChannelId = 'training_reminders';
 const String kCheckInChannelId = 'gentle_checkins';
 const String kRestChannelId = 'rest_timer';
+const String kTipChannelId = 'getting_started_tips';
 
 /// The small icon: a white silhouette, kept from resource shrinking by
 /// `res/raw/keep.xml`.
@@ -250,6 +261,12 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
         text.restChannelDescription,
         Importance.high,
       ),
+      PlanKind.tip => (
+        kTipChannelId,
+        text.tipChannelName,
+        text.tipChannelDescription,
+        Importance.defaultImportance,
+      ),
       _ => (
         kReminderChannelId,
         text.channelName,
@@ -276,12 +293,17 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
         PlanKind.checkIn =>
           text.checkInBodies[item.variant % text.checkInBodies.length],
         PlanKind.restOver => text.restBody,
+        PlanKind.tip =>
+          item.variant >= 0 && item.variant < text.tipBodies.length
+              ? text.tipBodies[item.variant]
+              : text.body,
       };
 
   /// The screen a tap opens. A screen id and nothing else.
-  String _payloadFor(PlanKind kind) => switch (kind) {
+  String _payloadFor(PlannedNotification item) => switch (item.kind) {
     PlanKind.didYouTrain => 'T02',
     PlanKind.restOver => 'R09',
+    PlanKind.tip => GettingStartedTip.of(item)?.screen ?? 'T01',
     _ => 'T01',
   };
 
@@ -304,7 +326,7 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
     matchDateTimeComponents: item.weekly
         ? DateTimeComponents.dayOfWeekAndTime
         : null,
-    payload: _payloadFor(item.kind),
+    payload: _payloadFor(item),
   );
 
   @override

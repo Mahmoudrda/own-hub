@@ -1510,9 +1510,10 @@ def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
     """One meal photo to the foods on it, with grams and macros she can edit.
 
     Request {imageJpeg: base64, locale: "en" | "ar"}. Order: App Check, auth,
-    body, consent (meal-photo-v1), the image's size and header, her daily
-    scans, the app's daily scans, then the image is decoded and re-encoded and
-    the model is called exactly once.
+    body, consent (meal-photo-v1), the image's size and header, the image
+    decoded and re-encoded, her daily scans, the app's daily scans, then the
+    model is called exactly once. A photo that cannot be re-encoded is refused
+    before either count moves, so it never costs her a scan.
 
     Response {items, totals, estimate: true}; nutrition/meal.py documents each
     item. Refusals, each the whole message:
@@ -1553,25 +1554,11 @@ def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
         raise https_fn.HttpsError(https_fn.FunctionsErrorCode.INVALID_ARGUMENT, refused)
 
     from nutrition import config as meal_config
-
-    if (
-        store.uid_daily_count_and_increment(uid, meal_config.UID_COUNTER_FIELD)
-        > meal_config.MEAL_SCANS_PER_UID_PER_DAY
-    ):
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.MEAL_SCAN_DAILY_LIMIT
-        )
-    if (
-        store.daily_count_and_increment(meal_config.GLOBAL_COUNTER_FIELD)
-        > meal_config.MEAL_SCANS_GLOBAL_PER_DAY
-    ):
-        logs.warn("meal_scans_paused", field=meal_config.GLOBAL_COUNTER_FIELD)
-        raise https_fn.HttpsError(
-            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.MEAL_SCANS_PAUSED
-        )
-
     from nutrition import meal, model, photo
 
+    # Re-encoded before anything is counted: a header can look like a photo
+    # and the body not be one, and that must not spend a scan, hers or the
+    # app's. The size checks above bound what this decode can cost.
     try:
         jpeg = photo.reencode(raw)
     except photo.PhotoRejected as rejected:
@@ -1580,6 +1567,28 @@ def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
         )
     finally:
         del raw
+
+    try:
+        if (
+            store.uid_daily_count_and_increment(uid, meal_config.UID_COUNTER_FIELD)
+            > meal_config.MEAL_SCANS_PER_UID_PER_DAY
+        ):
+            raise https_fn.HttpsError(
+                https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+                reasons.MEAL_SCAN_DAILY_LIMIT,
+            )
+        if (
+            store.daily_count_and_increment(meal_config.GLOBAL_COUNTER_FIELD)
+            > meal_config.MEAL_SCANS_GLOBAL_PER_DAY
+        ):
+            logs.warn("meal_scans_paused", field=meal_config.GLOBAL_COUNTER_FIELD)
+            raise https_fn.HttpsError(
+                https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+                reasons.MEAL_SCANS_PAUSED,
+            )
+    except BaseException:
+        del jpeg
+        raise
 
     try:
         result = model.analyse(jpeg)

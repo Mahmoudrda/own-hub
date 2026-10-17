@@ -147,8 +147,40 @@ void main() {
       await tester.tap(find.text('Unblock'));
       await tester.pumpAndSettle();
 
+      // She is told, with five seconds to keep the block.
+      expect(find.text('Unblocked Nada'), findsOneWidget);
+      expect(find.text('Undo'), findsOneWidget);
+      expect(blocks.blocks(), hasLength(1));
+
+      await tester.pump(const Duration(seconds: 6));
       expect(blocks.blocks(), isEmpty);
+
+      await tester.tap(find.text('Blocked members'));
+      await tester.pumpAndSettle();
       expect(find.text('You have not blocked anyone.'), findsOneWidget);
+    });
+
+    testWidgets('Undo keeps the block', (tester) async {
+      _phone(tester);
+      final blocks = InMemoryBlockService(selfUid: _self);
+      await blocks.block('uid-nada', BlockSource.post);
+      await tester.pumpWidget(
+        _host(
+          _screen(
+            blocks: blocks,
+            reports: InMemoryReportService(reporterUid: _self),
+            nameOf: (uid) => uid == 'uid-nada' ? 'Nada' : '',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Blocked members'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Unblock'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Undo'));
+      await tester.pump(const Duration(seconds: 6));
+      expect(blocks.blocks(), hasLength(1));
     });
 
     testWidgets('and says so plainly when she has blocked nobody', (

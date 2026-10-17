@@ -118,9 +118,12 @@ void main() {
     }
 
     // However she got here, finishing is one tap and counts once.
-    final finish = find.text('Finish here');
+    // Ending early asks for a second tap ("Finish now · n moves left").
+    final finish = find.byKey(const ValueKey('r13-finish-here'));
     if (finish.evaluate().isNotEmpty) {
       await tester.tap(finish);
+      await tester.pump();
+      if (finish.evaluate().isNotEmpty) await tester.tap(finish);
       await tester.pumpAndSettle();
     }
 
@@ -190,6 +193,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.tap(find.text('Finish here'));
+    await tester.pump();
+    // The second tap that confirms it, still inside the window.
+    await tester.tap(find.byKey(const ValueKey('r13-finish-here')));
     await tester.pumpAndSettle();
 
     // The move she logged a moment before finishing was written, and R10

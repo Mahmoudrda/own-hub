@@ -34,7 +34,11 @@ class SlotColumn extends StatelessWidget {
     required this.name,
     required this.value,
     required this.status,
+    this.onTap,
   });
+
+  /// Opens what is in the slot, to take something out. Null for an empty slot.
+  final VoidCallback? onTap;
 
   /// "Breakfast".
   final String name;
@@ -67,8 +71,7 @@ class SlotColumn extends StatelessWidget {
       ),
     };
 
-    return Expanded(
-      child: HandSurface(
+    final surface = HandSurface(
         seed: handSeed(['slot', name]),
         fill: fill,
         frame: frame,
@@ -112,7 +115,17 @@ class SlotColumn extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      );
+
+    final tap = onTap;
+    return Expanded(
+      child: tap == null
+          ? surface
+          : HandPressable(
+              onTap: tap,
+              borderRadius: BorderRadius.circular(4),
+              builder: (context, _) => surface,
+            ),
     );
   }
 }
@@ -222,11 +235,42 @@ class DayCard extends StatelessWidget {
             // the point: this bar was previously the only element on the card
             // reading her real data.
             AppProgressBar(percent: totals.proteinPercent, height: 10),
+            // Carbs, fat and fibre, once anything today carries them: a quiet
+            // line in the same grey as the protein figure, with no target and
+            // no colour that could read as a warning.
+            if (moreMacrosLine(
+                  l10n,
+                  carbsG: totals.carbsSoFar,
+                  fatG: totals.fatSoFar,
+                  fiberG: totals.fiberSoFar,
+                )
+                case final line?) ...[
+              const SizedBox(height: 8),
+              Text(
+                line,
+                key: const ValueKey('day-card-more-macros'),
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+            ],
           ],
         ),
       ],
     );
   }
+}
+
+/// "Carbs 120 g · Fat 45 g · Fibre 18 g", with only the figures that are
+/// known, or null when none is. Western digits in both languages. Never a
+/// target and never a remainder: these are what she ate, and nothing more.
+String? moreMacrosLine(AppL10n l10n, {int? carbsG, int? fatG, int? fiberG}) {
+  final parts = [
+    if (carbsG != null) l10n.carbsGramsG(countLabel(carbsG)),
+    if (fatG != null) l10n.fatGramsG(countLabel(fatG)),
+    if (fiberG != null) l10n.fibreGramsG(countLabel(fiberG)),
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
 }
 
 /// A row she can log in one tap. `mealRow()` in the prototype.
@@ -343,6 +387,43 @@ class ParsedRow extends StatelessWidget {
             onTap: onPickSize,
           ),
       ],
+    );
+  }
+}
+
+/// The camera beside "Type what you ate": E12, a photo of her plate.
+///
+/// A square the height of the box, in the pink that marks the one thing to do
+/// on a card, with the camera drawn in petrol and a name for a screen reader.
+class SnapMealButton extends StatelessWidget {
+  const SnapMealButton({super.key, required this.label, this.onPressed});
+
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: Tooltip(
+        message: label,
+        child: HandSurface(
+          key: const ValueKey('eat-snap-meal'),
+          seed: handSeed(['snap-meal', label]),
+          fill: AppColors.primaryContainer,
+          radius: 5,
+          looseCorner: 14,
+          onTap: onPressed,
+          padding: const EdgeInsets.all(14),
+          child: const Icon(
+            Icons.photo_camera_outlined,
+            size: 26,
+            color: AppColors.onPrimaryContainer,
+          ),
+        ),
+      ),
     );
   }
 }

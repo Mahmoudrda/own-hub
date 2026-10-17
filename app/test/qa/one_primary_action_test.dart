@@ -52,6 +52,8 @@ void main() {
       'O05',
       'P01',
       'P06',
+      'E12',
+      'E13',
     ]) {
       final route = appDestinations[id];
       if (route == null) continue;

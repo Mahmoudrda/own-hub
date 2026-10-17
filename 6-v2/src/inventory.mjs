@@ -110,6 +110,10 @@ export const screens = [
   // Rahma's closing letter, page 26 of her book. Her words, her sign-off, and
   // nothing else on the screen.
   { id: 'E11', flow: 'eat', title: 'A message from Rahma', noMockup: true },
+  // A photo of her plate, read by the server into foods and grams she checks
+  // before anything is logged. Designed in Flutter, after the mockup.
+  { id: 'E12', flow: 'eat', title: 'Snap your meal', noMockup: true },
+  { id: 'E13', flow: 'eat', title: 'Check your meal', noMockup: true },
   // Progress
   { id: 'P01', flow: 'progress', title: 'Your progress' },
   { id: 'P02', flow: 'progress', title: 'Milestones' },

@@ -79,6 +79,7 @@ import '../features/progress/domain/progress_repository.dart';
 import '../features/signup/domain/locale_preference.dart';
 import '../features/today/domain/today_day.dart';
 import '../features/today/domain/today_repository.dart';
+import '../features/train/domain/getting_started_tips.dart';
 import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/train_repository.dart';
 import '../features/train/domain/training_reminders.dart';
@@ -707,6 +708,17 @@ Map<String, Object?> _captureTrain() {
         <String, Object?>{'from': swap.from, 'to': swap.to},
     ],
     'counter': repository.sessionCounter,
+    // The sessions she removed, so neither a restart nor a merge with the
+    // cloud brings one back.
+    if (repository.removedSessions.isNotEmpty)
+      'removed': [
+        for (final removed in repository.removedSessions)
+          <String, Object?>{
+            'id': removed.id,
+            'source': removed.source.name,
+            'dateKey': removed.dateKey,
+          },
+      ],
   };
 }
 
@@ -751,14 +763,30 @@ void Function()? _readTrain(Object? raw) {
 
   final counter = _int(section['counter']) ?? sessions.length;
 
-  return () => AppRouter.trainRepository.restore(
-    sessions: sessions,
-    flushes: flushes,
-    swaps: swaps,
-    // The live session is carried by its own section, `liveSession`. The
-    // counter is carried here, so the next session gets an id no old one holds.
-    sessionCounter: counter,
-  );
+  final removed = <RemovedSession>[
+    for (final entry in _list(section['removed']) ?? const <Object?>[])
+      if (_map(entry) case final row?)
+        if (_str(row['id']) case final id?)
+          if (_pick(SessionSource.values, row['source']) case final source?)
+            RemovedSession(
+              id: id,
+              source: source,
+              dateKey: _str(row['dateKey']) ?? '',
+            ),
+  ];
+
+  return () {
+    AppRouter.trainRepository.restore(
+      sessions: sessions,
+      flushes: flushes,
+      swaps: swaps,
+      // The live session is carried by its own section, `liveSession`. The
+      // counter is carried here, so the next session gets an id no old one
+      // holds.
+      sessionCounter: counter,
+    );
+    AppRouter.trainRepository.restoreRemoved(removed);
+  };
 }
 
 Map<String, Object?>? _captureLiveSession() {
@@ -1126,6 +1154,14 @@ Map<String, Object?> _mealItem(MealItem item) => <String, Object?>{
   'origin': item.origin.name,
   'kcal': item.kcal,
   'proteinG': item.proteinG,
+  // Carbs, fat and fibre, her name for a food the pack does not hold, and
+  // the weight she approved: each only when it is known, so a meal logged
+  // before they existed reads back exactly as it was written.
+  'carbsG': ?item.carbsG,
+  'fatG': ?item.fatG,
+  'fiberG': ?item.fiberG,
+  'name': ?item.name,
+  'grams': ?item.grams,
   if (item.planRef case final ref?)
     'planRef': <String, Object?>{
       'assignmentId': ref.assignmentId,
@@ -1154,6 +1190,11 @@ MealItem? _readMealItem(Object? raw) {
     origin: _pick(MealOrigin.values, row['origin']) ?? MealOrigin.search,
     kcal: _int(row['kcal']) ?? 0,
     proteinG: _int(row['proteinG']) ?? 0,
+    carbsG: _macro(row['carbsG']),
+    fatG: _macro(row['fatG']),
+    fiberG: _macro(row['fiberG']),
+    name: _mealName(row['name']),
+    grams: _weight(row['grams']),
     planRef: switch (ref) {
       null => null,
       final ref => switch ((
@@ -1634,6 +1675,9 @@ Map<String, Object?> _captureIntake() {
     // "Not now" on day-one Home's "Track my cycle". A Home preference, kept
     // here because it is cleared by the same reset as the answers above.
     'cycleRowDismissed': OnboardingState.instance.cycleRowDismissed,
+    // She built this week before she had an account, and no account has
+    // claimed it yet. Read by a change of account on this phone.
+    if (OnboardingState.instance.weekBuiltSignedOut) 'builtSignedOut': true,
   };
 }
 
@@ -1670,6 +1714,7 @@ void Function()? _readIntake(Object? raw) {
   // Absent reads as not asked: a place-less line is never untrue.
   final placeAnswered = _bool(section['placeAnswered']) ?? false;
   final cycleRowDismissed = _bool(section['cycleRowDismissed']) ?? false;
+  final builtSignedOut = _bool(section['builtSignedOut']) ?? false;
 
   return () {
     AppRouter.intakeRepository.restore(
@@ -1677,7 +1722,9 @@ void Function()? _readIntake(Object? raw) {
       setupDone: setupDone,
       placeAnswered: placeAnswered,
     );
-    OnboardingState.instance.cycleRowDismissed = cycleRowDismissed;
+    OnboardingState.instance
+      ..cycleRowDismissed = cycleRowDismissed
+      ..weekBuiltSignedOut = builtSignedOut;
   };
 }
 
@@ -1702,6 +1749,7 @@ void Function()? _readLanguage(Object? raw) {
 Map<String, Object?> _capturePledge() => <String, Object?>{
   'version': PledgeState.instance.agreedVersion,
   'at': PledgeState.instance.agreedAt?.toUtc().toIso8601String(),
+  'pending': PledgeState.instance.recordPending,
 };
 
 void Function()? _readPledge(Object? raw) {
@@ -1709,10 +1757,12 @@ void Function()? _readPledge(Object? raw) {
   if (section == null) return null;
   final version = _int(section['version']);
   final at = DateTime.tryParse(_str(section['at']) ?? '');
+  final pending = section['pending'] == true;
   return () {
     PledgeState.instance
       ..agreedVersion = version
-      ..agreedAt = at;
+      ..agreedAt = at
+      ..recordPending = pending;
   };
 }
 
@@ -1730,8 +1780,16 @@ Map<String, Object?> _captureReminders() => <String, Object?>{
   'logNudge': ReminderState.instance.prefs.logNudge,
   'checkIns': ReminderState.instance.prefs.checkIns,
   'restAlert': ReminderState.instance.prefs.restAlert,
+  'tipsOn': ReminderState.instance.prefs.tips,
   'lastActiveAt': _dayOf(ReminderState.instance.lastActiveAt),
   'lastSessionAt': _dayOf(ReminderState.instance.lastSessionAt),
+  // The getting started tips. To the minute, unlike the two above: a tip's
+  // time is what tells the next open whether it was shown. It changes only
+  // in her first fortnight, and only when she opens the app.
+  'tips': ReminderState.instance.tips.toJson(),
+  'tipMarks': (ReminderState.instance.tipMarks.toList()..sort()),
+  'tipsOfferDue': ReminderState.instance.tipsOfferDue,
+  'tipsOffered': ReminderState.instance.tipsOffered,
 };
 
 void Function()? _readReminders(Object? raw) {
@@ -1745,9 +1803,19 @@ void Function()? _readReminders(Object? raw) {
     logNudge: _bool(section['logNudge']) ?? true,
     checkIns: _bool(section['checkIns']) ?? true,
     restAlert: _bool(section['restAlert']) ?? true,
+    tips: _bool(section['tipsOn']) ?? true,
   );
   final active = DateTime.tryParse(_str(section['lastActiveAt']) ?? '');
   final session = DateTime.tryParse(_str(section['lastSessionAt']) ?? '');
+  final tips = TipSeries.fromJson(section['tips']);
+  final marks = section['tipMarks'];
+  final tipMarks = <String>{
+    if (marks is List)
+      for (final mark in marks)
+        if (mark is String) mark,
+  };
+  final tipsOfferDue = _bool(section['tipsOfferDue']) ?? false;
+  final tipsOffered = _bool(section['tipsOffered']) ?? false;
   return () {
     ReminderState.instance
       ..offered = offered
@@ -1755,7 +1823,11 @@ void Function()? _readReminders(Object? raw) {
       ..permissionGranted = permission
       ..prefs = prefs
       ..lastActiveAt = active
-      ..lastSessionAt = session;
+      ..lastSessionAt = session
+      ..tips = tips
+      ..tipMarks = tipMarks
+      ..tipsOfferDue = tipsOfferDue
+      ..tipsOffered = tipsOffered;
   };
 }
 
@@ -1779,6 +1851,11 @@ Map<String, Object?> _captureAwards() {
       'points': cap.pointsToday,
       'bests': cap.bestsToday,
     },
+    // What each capped award paid and what earned each milestone, so a
+    // session or a meal she removes takes back exactly what it was given.
+    if (rewards.grantedPoints.isNotEmpty) 'granted': rewards.grantedPoints,
+    if (rewards.milestoneSources.isNotEmpty)
+      'earnedBy': rewards.milestoneSources,
   };
 }
 
@@ -1794,7 +1871,20 @@ void Function()? _readAwards(Object? raw) {
           pointsToday: _int(cap['points']) ?? 0,
           bestsToday: _int(cap['bests']) ?? 0,
         );
-  return () => RewardsState.instance.restore(awardIds: ids, cap: state);
+  final granted = <String, int>{
+    for (final entry in (_map(section['granted']) ?? const {}).entries)
+      entry.key: ?_int(entry.value),
+  };
+  final earnedBy = <String, String>{
+    for (final entry in (_map(section['earnedBy']) ?? const {}).entries)
+      entry.key: ?_str(entry.value),
+  };
+  return () => RewardsState.instance.restore(
+    awardIds: ids,
+    cap: state,
+    granted: granted,
+    earnedBy: earnedBy,
+  );
 }
 
 // Her training streak (D37): her choices and her sessions per day. The length
@@ -2004,6 +2094,26 @@ bool? _bool(Object? value) => value is bool ? value : null;
 num? _num(Object? value) => value is num ? value : null;
 
 int? _int(Object? value) => value is num ? value.toInt() : null;
+
+/// A macro in grams on a logged meal: a whole, non-negative number, or null
+/// when it is absent or not a number. A day can never read back a negative.
+int? _macro(Object? value) =>
+    value is num && value.isFinite && value >= 0 ? value.round() : null;
+
+/// Her name for a food the pack does not hold, bounded the way a typed name
+/// is on E13.
+String? _mealName(Object? value) {
+  if (value is! String) return null;
+  final name = value.trim();
+  if (name.isEmpty) return null;
+  return name.length <= 80 ? name : name.substring(0, 80);
+}
+
+/// The weight she approved on E13, in grams, when it is a sane one.
+num? _weight(Object? value) =>
+    value is num && value.isFinite && value >= 0 && value <= 3000
+    ? value
+    : null;
 
 double? _double(Object? value) => value is num ? value.toDouble() : null;
 

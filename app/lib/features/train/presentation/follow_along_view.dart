@@ -29,6 +29,7 @@ import '../../../domain/logging/log_command_bus.dart';
 import '../../../domain/training/prescribed_set.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
+import '../../../ui/app_undo_bar.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_white_button.dart';
@@ -41,6 +42,7 @@ import '../domain/train_repository.dart';
 import 'exercise_clip_frame.dart';
 import 'exercise_clip_player.dart';
 import 'set_labels.dart';
+import 'session_notice.dart';
 
 /// White at 16% — the prototype's overlay tint on the inverted surface.
 const Color _onDarkSoft = Color(0x29FFFFFF);
@@ -72,7 +74,11 @@ class FollowAlongView extends StatefulWidget {
     this.clip,
     this.media = const NoExerciseMedia(),
     this.players,
+    this.notice,
   });
+
+  /// A swap or a skip that brought her here, with its Undo, in the page.
+  final SessionNotice? notice;
 
   /// Told when she pauses. The clock stops here either way.
   final VoidCallback? onPause;
@@ -251,6 +257,16 @@ class _FollowAlongViewState extends State<FollowAlongView>
       body: SafeArea(
         child: Column(
           children: [
+            if (widget.notice case final notice?)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: AppLiveUndoBar(
+                  handle: notice.handle,
+                  message: notice.handle.describe,
+                  undoLabel: AppL10n.of(context).undo,
+                  onUndo: notice.onUndo,
+                ),
+              ),
             if (clip != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),

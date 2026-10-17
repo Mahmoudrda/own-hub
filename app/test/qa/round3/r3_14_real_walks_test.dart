@@ -101,6 +101,8 @@ void main() {
       await settle(t);
       await tapControl(t, RegExp(loc == 'en' ? 'Severe' : 'شديد'));
       await tapControl(t, RegExp(loc == 'en' ? 'Save check-in' : 'احفظي'));
+      // The check-in's five-second undo window closes.
+      await t.pump(const Duration(seconds: 6));
       print('=== R3-14 Y11 (severe branch) $loc, on ${topScreen(t)} ===');
       for (final line in paintedText(t)) {
         print('  | $line');
@@ -116,6 +118,11 @@ void main() {
             ? 'Read NHS guidance on period pain'
             : 'اقري إرشادات NHS عن ألم الدورة',
       ]) {
+        // Not drawn until there is something real behind them.
+        if (find.text(care).evaluate().isEmpty) {
+          print('  NOT DRAWN: "$care"');
+          continue;
+        }
         final before = paintedText(t).toSet();
         await tapControl(t, care);
         t.takeException();

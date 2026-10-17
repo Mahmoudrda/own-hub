@@ -90,7 +90,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // Ending early cannot be taken back, so the first tap says what is left
+    // and the second one ends it.
     await tester.tap(find.text('Finish here'));
+    await tester.pump();
+    expect(finished, 0);
+    await tester.tap(find.text('Finish now · 3 moves left'));
     await tester.pumpAndSettle();
     expect(finished, 1);
   });

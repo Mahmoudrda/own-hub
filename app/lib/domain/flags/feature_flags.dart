@@ -92,6 +92,11 @@ enum Feature {
   /// uses the microphone. A microphone drawn on Eat would be a feature the
   /// build does not have. Its parent is [eat].
   voiceLogging,
+
+  /// A photo of her plate, read by the server into foods and grams she checks
+  /// before anything is logged (`E12`, `E13`). For verified members only.
+  /// Its parent is [eat].
+  mealPhotos,
   progress,
   cycle,
   privacyCentre,
@@ -290,7 +295,7 @@ enum Feature {
     communityGroups ||
     communityStories => community,
     payments => marketplace,
-    voiceLogging || recipes => eat,
+    voiceLogging || recipes || mealPhotos => eat,
     // The plan is built from recipes, and the list from the plan.
     weekPlan => recipes,
     groceryList => weekPlan,
@@ -442,6 +447,10 @@ class FeatureFlags {
     // No recogniser, no microphone permission, and a privacy policy that says
     // the microphone is never used. She types what she ate.
     Feature.voiceLogging: false,
+
+    // A photo of her plate, checked by her before it is logged. Each scan is
+    // a paid call, capped on the server at five a day for each member.
+    Feature.mealPhotos: true,
 
     // The console is for the people who run the product, not for the women
     // using it. It is also compiled out of a release build entirely.

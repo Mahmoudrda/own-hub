@@ -10249,4 +10249,481 @@ class AppL10nEn extends AppL10n {
     );
     return '$_temp0';
   }
+
+  @override
+  String get snapYourMeal => 'Snap your meal';
+
+  @override
+  String get checkYourMeal => 'Check your meal';
+
+  @override
+  String get beforeYourFirstPhoto => 'Before your first photo';
+
+  @override
+  String get yourPhotoGoesToOurAiIn =>
+      'Your photo goes to our AI in the EU (Google Cloud, Frankfurt) to estimate what\'s on your plate. We don\'t keep the photo or use it to train anything. You check everything before it\'s logged.';
+
+  @override
+  String get upTo5PhotosADayYou =>
+      'Up to 5 photos a day. You can always type your meal instead.';
+
+  @override
+  String get agree => 'Agree';
+
+  @override
+  String get weCouldntSaveYourAnswerCheckYour =>
+      'We couldn\'t save your answer. Check your connection and try again.';
+
+  @override
+  String get takeItFromAboveWithTheWhole =>
+      'Take it from above, with the whole plate in the photo.';
+
+  @override
+  String get useThisPhoto_6wkqn => 'Use this photo?';
+
+  @override
+  String get analyseMyMeal => 'Analyse my meal';
+
+  @override
+  String get thisUses1OfYour5Photos =>
+      'This uses 1 of your 5 photos for today.';
+
+  @override
+  String get readingYourPlate => 'Reading your plate…';
+
+  @override
+  String get thePhotoIsWipedAsSoonAs =>
+      'The photo is wiped as soon as we\'re done.';
+
+  @override
+  String get youveUsedYour5ScansForToday =>
+      'You\'ve used your 5 scans for today. You can still type your meal.';
+
+  @override
+  String get weCouldntMakeOutTheFoodTry =>
+      'We couldn\'t make out the food. Try a clearer photo from above, or type it.';
+
+  @override
+  String get scanningIsntAvailableRightNowTypeYour =>
+      'Scanning isn\'t available right now. Type your meal instead.';
+
+  @override
+  String get weCouldntReadThatPhotoTakeIt =>
+      'We couldn\'t read that photo. Take it again, or type your meal.';
+
+  @override
+  String get mealPhotosOpenOnceYourAccountIs =>
+      'Meal photos open once your account is checked. You can type your meal now.';
+
+  @override
+  String get updateOwnHubFromTheStoreTo =>
+      'Update Own Hub from the store to snap meals. You can type your meal now.';
+
+  @override
+  String get signInAgainToSnapMealsYou =>
+      'Sign in again to snap meals. You can type your meal now.';
+
+  @override
+  String get typeItInstead => 'Type it instead';
+
+  @override
+  String get ownHubNeedsTheCameraToPhotograph =>
+      'Own Hub needs the camera to photograph your plate. Turn it on in Settings, or type your meal.';
+
+  @override
+  String get theCameraCouldntStartYouCanType =>
+      'The camera couldn\'t start. You can type your meal instead.';
+
+  @override
+  String get yourMealPhoto => 'Your meal photo';
+
+  @override
+  String get theseAreEstimatesCheckTheGrams =>
+      'These are estimates. Check the grams.';
+
+  @override
+  String get weightInGrams => 'Weight in grams';
+
+  @override
+  String get n10GLess => '10 g less';
+
+  @override
+  String get n10GMore => '10 g more';
+
+  @override
+  String proteinGramsG(String grams) {
+    return 'Protein $grams g';
+  }
+
+  @override
+  String carbsGramsG(String grams) {
+    return 'Carbs $grams g';
+  }
+
+  @override
+  String fatGramsG(String grams) {
+    return 'Fat $grams g';
+  }
+
+  @override
+  String fibreGramsG(String grams) {
+    return 'Fibre $grams g';
+  }
+
+  @override
+  String gramsG_1usqy(String grams) {
+    return '$grams g';
+  }
+
+  @override
+  String get editNumbers => 'Edit numbers';
+
+  @override
+  String get editedByYou => 'Edited by you';
+
+  @override
+  String get energyKcal => 'Energy (kcal)';
+
+  @override
+  String get proteinG_xt7ig => 'Protein (g)';
+
+  @override
+  String get carbsG_5nlte => 'Carbs (g)';
+
+  @override
+  String get fatG_1xdz2 => 'Fat (g)';
+
+  @override
+  String get fibreG => 'Fibre (g)';
+
+  @override
+  String get weCouldntFindTheNutritionForThis =>
+      'We couldn\'t find the nutrition for this. Enter it or remove it.';
+
+  @override
+  String get estimatedFromAStandardRecipe => 'Estimated from a standard recipe';
+
+  @override
+  String get seeWhatsInIt => 'See what\'s in it';
+
+  @override
+  String get hideWhatsInIt => 'Hide what\'s in it';
+
+  @override
+  String removeName(String name) {
+    return 'Remove $name';
+  }
+
+  @override
+  String get addSomething => 'Add something';
+
+  @override
+  String get searchTheFoodList => 'Search the food list';
+
+  @override
+  String get orTypeItIn => 'Or type it in';
+
+  @override
+  String get whatIsIt => 'What is it?';
+
+  @override
+  String get addedByYou => 'Added by you';
+
+  @override
+  String get thisMeal => 'This meal';
+
+  @override
+  String get whichMealIsIt => 'Which meal is it?';
+
+  @override
+  String get logThisMeal => 'Log this meal';
+
+  @override
+  String get enterTheNumbersForEachItemOr =>
+      'Enter the numbers for each item, or remove it, to log this meal.';
+
+  @override
+  String get nothingToCheckYetSnapYourMeal =>
+      'Nothing to check yet. Snap your meal first.';
+
+  @override
+  String get nothingOnThisPlateYetAddSomething =>
+      'Nothing on this plate yet. Add something, or cancel.';
+
+  @override
+  String get weFoundOnlyPartOfThisSo =>
+      'We found only part of this, so these numbers may be low. Check them.';
+
+  @override
+  String get koshariFulAndMolokhiaInThePortions_1am39 =>
+      'Koshari, ful and molokhia in the portions you actually serve, or snap your plate. No calorie shaming.';
+
+  @override
+  String get frontView => 'Front view';
+
+  @override
+  String get backView => 'Back view';
+
+  @override
+  String get tapAMuscleForItsSets => 'Tap a muscle for its sets.';
+
+  @override
+  String countPluralOneAlsoWorked1Set(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Also worked: $count sets',
+      one: 'Also worked: 1 set',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aShortFirstWorkoutYouCanDo =>
+      'A short first workout you can do at home, nothing needed. Want to give it a go?';
+
+  @override
+  String get everyMoveHasAShortVideoSo =>
+      'Every move has a short video, so you know the form before you start.';
+
+  @override
+  String get snapYourPlateAndWellEstimateThe =>
+      'Snap your plate and we\'ll estimate the protein. You check it before it\'s saved.';
+
+  @override
+  String get rahmasEgyptianRecipesKosharyAndMolokhiaIncluded =>
+      'Rahma\'s Egyptian recipes, koshary and molokhia included, for days you\'re not sure what to cook.';
+
+  @override
+  String get firstTimeAtTheGymACalm =>
+      'First time at the gym? A calm guide, step by step, so you walk in knowing what to do.';
+
+  @override
+  String get eachSessionLightsUpTheMusclesYou =>
+      'Each session lights up the muscles you worked on your own muscle map. Take a look.';
+
+  @override
+  String get aTrainingWeekThatFitsTheDays =>
+      'A training week that fits the days you have. Change it any time.';
+
+  @override
+  String get gettingStartedTips => 'Getting started tips';
+
+  @override
+  String get aFewTipsInYourFirstWeeks =>
+      'A few tips in your first weeks, only on days you haven\'t opened the app.';
+
+  @override
+  String get wantAFewTipsAndYourWorkout =>
+      'Want a few tips and your workout reminders?';
+
+  @override
+  String get workoutRemindersOnTheDaysYouPick =>
+      'Workout reminders on the days you pick, once you choose them.';
+
+  @override
+  String get turnAnyOfThemOffInNotifications =>
+      'Turn any of them off in Notifications, any time.';
+
+  @override
+  String get turnOnNotifications => 'Turn on notifications';
+
+  @override
+  String get signOut => 'Sign out';
+
+  @override
+  String get signOutOnThisPhone => 'Sign out on this phone?';
+
+  @override
+  String get yourAccountAndEverythingInItStays =>
+      'Your account and everything in it stays safe. Sign in with your number any time.';
+
+  @override
+  String get signedOut => 'Signed out.';
+
+  @override
+  String get staySignedIn => 'Stay signed in';
+
+  @override
+  String get removeThisSession => 'Remove this session';
+
+  @override
+  String get removeThisSession_1qh67 => 'Remove this session?';
+
+  @override
+  String get itComesOffThisWeeksCountAnd =>
+      'It comes off this week\'s count and your points.';
+
+  @override
+  String get removeIt => 'Remove it';
+
+  @override
+  String get tapAMoveYouLoggedToChange =>
+      'Tap a move you logged to change a set.';
+
+  @override
+  String get whichSet => 'Which set?';
+
+  @override
+  String get addToMyWeek => 'Add to my week';
+
+  @override
+  String get weekRearranged => 'Week rearranged';
+
+  @override
+  String get savedChangeItAnyTimeInYour =>
+      'Saved. Change it any time in your profile.';
+
+  @override
+  String get turnOffBackup => 'Turn off backup?';
+
+  @override
+  String get weDeleteTheCopyInYourAccount =>
+      'We delete the copy in your account. Everything stays on this phone.';
+
+  @override
+  String get turnItOff => 'Turn it off';
+
+  @override
+  String get keepItOn => 'Keep it on';
+
+  @override
+  String get backupOffTheCopyInYourAccount =>
+      'Backup off. The copy in your account is deleted.';
+
+  @override
+  String get thanksForAgreeingTheRulesAreIn =>
+      'Thanks for agreeing. The rules are in the Safety Centre any time.';
+
+  @override
+  String get saveMyChanges => 'Save my changes';
+
+  @override
+  String get streakHiddenTurnItBackOnIn =>
+      'Streak hidden. Turn it back on in Notifications, under Reminders and extras.';
+
+  @override
+  String get gentleMobilityTodayYourPlanPicksUp =>
+      'Gentle mobility today. Your plan picks up next time.';
+
+  @override
+  String get thisDeletesYourPeriodDatesCheckIns =>
+      'This deletes your period dates, check-ins and cycle settings from this phone. It cannot be undone.';
+
+  @override
+  String get yourCycleDataIsDeletedYouCan =>
+      'Your cycle data is deleted. You can set up My cycle again from your profile.';
+
+  @override
+  String get ifThePainIsSevereOrSudden =>
+      'If the pain is severe or sudden, see a doctor today. In an emergency call 123.';
+
+  @override
+  String get tapALoggedDayToChangeIt => 'Tap a logged day to change it.';
+
+  @override
+  String get unblocked => 'Unblocked';
+
+  @override
+  String addedFromMemoryTitle(String title) {
+    return 'Added from memory · $title';
+  }
+
+  @override
+  String takenBackYourWeekIsAtCount(String count, String target) {
+    return 'Taken back. Your week is at $count of $target.';
+  }
+
+  @override
+  String sessionRemovedYourWeekIsAtCount(String count, String target) {
+    return 'Session removed · your week is at $count of $target';
+  }
+
+  @override
+  String foodAddedToSlot(String food, String slot) {
+    return '$food added to $slot';
+  }
+
+  @override
+  String foodAndCountMoreAddedToSlot(String food, String count, String slot) {
+    return '$food and $count more added to $slot';
+  }
+
+  @override
+  String foodRemovedFromSlot(String food, String slot) {
+    return '$food removed from $slot';
+  }
+
+  @override
+  String savedDishesWithAllergensAreHiddenNow(String allergens) {
+    return 'Saved. Dishes with $allergens are hidden now.';
+  }
+
+  @override
+  String unblockedName(String name) {
+    return 'Unblocked $name';
+  }
+
+  @override
+  String swappedToNameForToday(String name) {
+    return 'Swapped to $name for today';
+  }
+
+  @override
+  String skippedName(String name) {
+    return 'Skipped $name';
+  }
+
+  @override
+  String finishNowCountMovesLeft(String count) {
+    return 'Finish now · $count moves left';
+  }
+
+  @override
+  String yourWeekIsUpdatedDaysDaysMinutes(String days, String minutes) {
+    return 'Your week is updated · $days days, $minutes minutes.';
+  }
+
+  @override
+  String checkInSavedSummary(String summary) {
+    return 'Check-in saved · $summary';
+  }
+
+  @override
+  String todaySummary(String summary) {
+    return 'Today: $summary';
+  }
+
+  @override
+  String periodSavedStartToEnd(String start, String end) {
+    return 'Period saved · $start to $end';
+  }
+
+  @override
+  String periodSavedFromStart(String start) {
+    return 'Period saved · from $start';
+  }
+
+  @override
+  String periodRemovedStartToEnd(String start, String end) {
+    return 'Period removed · $start to $end';
+  }
+
+  @override
+  String periodRemovedFromStart(String start) {
+    return 'Period removed · from $start';
+  }
+
+  @override
+  String get nothingWasDeletedTryAgain => 'Nothing was deleted. Try again.';
+
+  @override
+  String ifThePainIsSevereOrSudden_rd6j0(String number) {
+    return 'If the pain is severe or sudden, see a doctor today. In an emergency call $number.';
+  }
+
+  @override
+  String listItem(String list, String item) {
+    return '$list, $item';
+  }
 }

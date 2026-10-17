@@ -99,9 +99,12 @@ Future<void> _trainAndFinish(WidgetTester tester) async {
     await tester.pumpAndSettle();
   }
 
-  final finish = find.text('Finish here');
+  // Ending early asks for a second tap ("Finish now · n moves left").
+  final finish = find.byKey(const ValueKey('r13-finish-here'));
   if (finish.evaluate().isNotEmpty) {
     await tester.tap(finish);
+    await tester.pump();
+    if (finish.evaluate().isNotEmpty) await tester.tap(finish);
     await tester.pumpAndSettle();
   }
 }

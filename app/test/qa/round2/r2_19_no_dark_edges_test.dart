@@ -48,6 +48,7 @@ final FeatureFlags _shipping = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.reassuringWaits: true,
   Feature.eat: true,
   Feature.recipes: true,
+  Feature.mealPhotos: true,
   Feature.weekPlan: true,
   Feature.groceryList: true,
   Feature.progress: true,
@@ -225,6 +226,20 @@ const Map<String, ({String file, String guard})> _sourceGuardedEdges = {
 /// below switches each part off in turn and requires every edge into it to be
 /// listed here, and every cited guard to still exist.
 const Map<String, ({String file, String guard})> _killSwitchGuards = {
+  // The camera beside "Type what you ate" (E01, E04) and in E02's field is
+  // passed by the router only while E12 is on, and only to a verified member.
+  'E01->E12': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onSnap: screenIsOn('E12') && isVerified",
+  ),
+  'E02->E12': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onSnap: screenIsOn('E12') && isVerified",
+  ),
+  'E04->E12': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onSnap: screenIsOn('E12') && isVerified",
+  ),
   'E07->E08': (
     file: 'lib/features/eat/presentation/week_plan_view.dart',
     guard: "if (AppRouter.screenIsOn('E08'))",
@@ -368,10 +383,6 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   'Y10->Y08': (
     file: 'lib/features/cycle/presentation/cycle_widgets.dart',
     guard: "AppRouter.screenIsOn('Y08')) CycleTab.calendar",
-  ),
-  'Y09->Y08': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onSaved: () => screenIsOn('Y08')",
   ),
   'Y03->Y10': (
     file: 'lib/features/cycle/presentation/cycle_widgets.dart',

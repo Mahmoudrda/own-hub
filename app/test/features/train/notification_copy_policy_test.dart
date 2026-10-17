@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/features/train/domain/getting_started_tips.dart';
 import 'package:own_hub/features/train/domain/notification_plan.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -53,6 +54,13 @@ void main() {
         expect(text.checkInBodies.toSet(), hasLength(kCheckInVariants));
       });
 
+      test('there is a text for every getting started tip, each its own', () {
+        expect(text.tipBodies, hasLength(GettingStartedTip.values.length));
+        expect(text.tipBodies.toSet(), hasLength(kTipCount));
+        expect(text.tipChannelName, isNotEmpty);
+        expect(text.tipChannelDescription, isNotEmpty);
+      });
+
       test('what the lock screen shows has no number', () {
         for (final body in text.allBodies) {
           expect(body, isNotEmpty);
@@ -92,6 +100,8 @@ void main() {
           text.checkInChannelDescription,
           text.restChannelName,
           text.restChannelDescription,
+          text.tipChannelName,
+          text.tipChannelDescription,
         ]) {
           final lower = body.toLowerCase();
           for (final word in health) {
@@ -109,12 +119,27 @@ void main() {
           text.checkInChannelDescription,
           text.restChannelName,
           text.restChannelDescription,
+          text.tipChannelName,
+          text.tipChannelDescription,
         ]) {
           expect(body, isNot(contains('—')), reason: body);
         }
       });
     });
   }
+
+  test('every tip is written in Arabic, not carried over in English', () {
+    final en = AppRouter.reminderText(lookupAppL10n(const Locale('en')));
+    final ar = AppRouter.reminderText(lookupAppL10n(const Locale('ar')));
+    final arabic = RegExp(r'[\u0600-\u06FF]');
+    final latin = RegExp(r'[A-Za-z]');
+    for (var i = 0; i < kTipCount; i++) {
+      expect(ar.tipBodies[i], matches(arabic), reason: ar.tipBodies[i]);
+      expect(ar.tipBodies[i], isNot(matches(latin)), reason: ar.tipBodies[i]);
+      expect(ar.tipBodies[i], isNot(en.tipBodies[i]));
+    }
+    expect(ar.tipChannelName, matches(arabic));
+  });
 
   test('Arabic is the colloquial Egyptian the rest of the app speaks', () {
     final ar = AppRouter.reminderText(lookupAppL10n(const Locale('ar')));

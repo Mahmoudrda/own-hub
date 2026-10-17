@@ -14,6 +14,7 @@ library;
 
 import 'package:meta/meta.dart';
 
+import 'getting_started_tips.dart';
 import 'notification_plan.dart';
 
 /// When she asked to be reminded. [weekdays] use [DateTime.monday] (1) to
@@ -158,6 +159,21 @@ class ReminderState {
   DateTime? lastActiveAt;
   DateTime? lastSessionAt;
 
+  /// The getting started tips: when she landed, which are still to come and
+  /// when, and which are done. Kept on the phone, never sent anywhere.
+  TipSeries tips = const TipSeries();
+
+  /// Small markers for what settles a tip that nothing else records: a screen
+  /// id she opened (`R14`, `R15`, `E05`, `P06`, `R02`) or [kPhotoMealMark].
+  Set<String> tipMarks = <String>{};
+
+  /// "Want a few tips and your workout reminders?" is owed, from `C13`. Shown
+  /// there or on the first Home after it, once.
+  bool tipsOfferDue = false;
+
+  /// It has been shown, whatever she answered.
+  bool tipsOffered = false;
+
   /// `R10` shows the offer once, and not to a woman who already set them.
   bool get offerDue => !offered && schedule == null;
 
@@ -184,5 +200,12 @@ class ReminderState {
     prefs = const NotificationPrefs();
     lastActiveAt = null;
     lastSessionAt = null;
+    tips = const TipSeries();
+    tipMarks = <String>{};
+    tipsOfferDue = false;
+    tipsOffered = false;
   }
 }
+
+/// The marker for a meal she photographed and saved.
+const String kPhotoMealMark = 'photoMeal';

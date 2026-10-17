@@ -57,6 +57,7 @@ import 'eat_sample_library.dart';
 import 'eat_widgets.dart';
 import 'meal_log_session.dart';
 import 'say_it_view_model.dart';
+import 'meal_labels.dart';
 
 class SayItView extends StatefulWidget {
   const SayItView({
@@ -200,7 +201,11 @@ class _SayItViewState extends State<SayItView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
       );
       _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
@@ -209,7 +214,11 @@ class _SayItViewState extends State<SayItView> {
 
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
         commit: () => service.commit(prepared.write),
       ),
     );

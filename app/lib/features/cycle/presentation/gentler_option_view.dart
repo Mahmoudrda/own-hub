@@ -89,33 +89,40 @@ class GentlerOptionView extends StatelessWidget {
               title: l10n.plannedFullBodyStrength,
               subtitle: l10n.n35MinYourProgram,
             ),
-            AppListItem(
-              variant: AppCardVariant.selected,
-              leading: const Icon(
-                Icons.self_improvement,
-                size: 22,
-                color: AppColors.tertiary,
+            // The option, only when there is a session behind it. "Use this
+            // option" opened her planned full-body workout, the very thing it
+            // offered to replace; with no gentle session in the library it is
+            // not offered at all.
+            if (onUseOption != null)
+              AppListItem(
+                variant: AppCardVariant.selected,
+                leading: const Icon(
+                  Icons.self_improvement,
+                  size: 22,
+                  color: AppColors.tertiary,
+                ),
+                title: l10n.optionGentleMobility,
+                // No subtitle. See the library note — the only string available
+                // claims a coach approved this, and none has.
+                subtitle:
+                    provenance == SessionProvenance.appSuggestion ||
+                        !AppRouter.featureFlags.isOn(Feature.coachedLife)
+                    ? l10n.appSuggestion
+                    : l10n.fromYourCoachUnchanged,
               ),
-              title: l10n.optionGentleMobility,
-              // No subtitle. See the library note — the only string available
-              // claims a coach approved this, and none has.
-              subtitle:
-                  provenance == SessionProvenance.appSuggestion ||
-                      !AppRouter.featureFlags.isOn(Feature.coachedLife)
-                  ? l10n.appSuggestion
-                  : l10n.fromYourCoachUnchanged,
-            ),
             Row(
               children: [
-                Expanded(
-                  child: AppButton(
-                    l10n.useThisOption,
-                    height: 48,
-                    fontSize: 15,
-                    onPressed: onUseOption,
+                if (onUseOption != null) ...[
+                  Expanded(
+                    child: AppButton(
+                      l10n.useThisOption,
+                      height: 48,
+                      fontSize: 15,
+                      onPressed: onUseOption,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: AppButton(
                     l10n.keepMyWorkout,

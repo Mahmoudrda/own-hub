@@ -49,8 +49,10 @@ class Rewards {
   /// costs no extra reads.
   ///
   /// A milestone is earned because this map says so, never because a counter
-  /// happens to be high enough right now — which is what stops one un-earning
-  /// itself if a count is ever corrected downward.
+  /// happens to be high enough right now, which is what stops one un-earning
+  /// itself if a count is ever corrected downward. The one exception is
+  /// removal: when she removes the session or the meal that earned it and her
+  /// count no longer reaches it, it was never hers (`RewardsState`).
   final Map<String, DateTime> milestones;
 
   Rewards copyWith({

@@ -197,6 +197,7 @@ class WorkoutSessionState {
     _loggedSets = 0;
     _startedAt = AppClock.now();
     _swaps.clear();
+    _lastSwap = null;
     _history.clear();
     _challengeAtStart = challenge;
     repository.startSession(day).then((session) {
@@ -265,14 +266,24 @@ class WorkoutSessionState {
   /// R05: she is doing something else instead of the current move. The
   /// prescription travels with it — the alternative is a different exercise,
   /// not a different amount of work.
-  void swapCurrent(MoveAlternative alternative, TrainRepository repository) {
+  ///
+  /// [record] false leaves the repository write to the caller, which holds it
+  /// for the swap's undo window.
+  void swapCurrent(
+    MoveAlternative alternative,
+    TrainRepository repository, {
+    bool record = true,
+  }) {
     final move = currentMove;
     if (move == null) return;
-    repository.swapMove(
-      sessionId: sessionId,
-      fromExerciseId: move.exerciseId,
-      toExerciseId: alternative.exerciseId,
-    );
+    if (record) {
+      repository.swapMove(
+        sessionId: sessionId,
+        fromExerciseId: move.exerciseId,
+        toExerciseId: alternative.exerciseId,
+      );
+    }
+    _lastSwap = (key: move.exerciseId, previous: _swaps[move.exerciseId]);
     _swaps[move.exerciseId] = PlannedMove(
       exerciseId: alternative.exerciseId,
       name: alternative.name,
@@ -290,6 +301,33 @@ class WorkoutSessionState {
           ),
       ],
     );
+    AppChanges.bump();
+  }
+
+  /// The swap [swapCurrent] last made, so Undo on R05 can take it back.
+  ({String key, PlannedMove? previous})? _lastSwap;
+
+  /// Puts back the move the last swap replaced. False when there is none.
+  bool undoSwap() {
+    final last = _lastSwap;
+    if (last == null) return false;
+    _lastSwap = null;
+    final previous = last.previous;
+    if (previous == null) {
+      _swaps.remove(last.key);
+    } else {
+      _swaps[last.key] = previous;
+    }
+    AppChanges.bump();
+    return true;
+  }
+
+  /// R06's "Skip this move": on to the next move with nothing logged for this
+  /// one. Remembered like a log, so Undo puts her back on it.
+  void skipMove() {
+    if (currentMove == null) return;
+    _remember();
+    _advanceMove();
     AppChanges.bump();
   }
 
@@ -478,5 +516,6 @@ class WorkoutSessionState {
     _startedAt = null;
     _openedMove = null;
     _swaps.clear();
+    _lastSwap = null;
   }
 }

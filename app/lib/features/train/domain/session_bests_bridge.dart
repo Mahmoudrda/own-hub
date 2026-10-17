@@ -64,4 +64,39 @@ class SessionBestsBridge {
       exercises: exercises,
     );
   }
+
+  /// Takes back what [sessionId] did to her bests, once she removed it.
+  ///
+  /// The ledger drops its counted bests and puts each running best it set back
+  /// to the one it beat. Then her other sessions' moves, as [flushes] holds
+  /// them in order, are measured against that, so a later lift that beat the
+  /// older best but not the removed one becomes her best again. Nothing here
+  /// counts or pays: those were paid when they happened.
+  void forget(
+    String sessionId, {
+    Iterable<({String sessionId, String exerciseId, List<LoggedSet> sets})>
+        flushes =
+        const [],
+    TrainSession? Function(String id)? sessionById,
+  }) {
+    final changed = ledger.forgetSession(sessionId);
+    if (changed.isEmpty || sessionById == null) return;
+    for (final flush in flushes) {
+      if (flush.sessionId == sessionId) continue;
+      if (!changed.contains(flush.exerciseId)) continue;
+      final session = sessionById(flush.sessionId);
+      if (session == null) continue;
+      final found = ledger.detector.detect(
+        source: measuredSourceOf(session.source),
+        sessionId: session.id,
+        dateKey: session.dateKey,
+        measuredSets: measuredSetsFrom(flush.sets),
+        exercises: exercises,
+        current: ledger.bests,
+      );
+      for (final best in found) {
+        ledger.bests[best.exerciseId] = best;
+      }
+    }
+  }
 }

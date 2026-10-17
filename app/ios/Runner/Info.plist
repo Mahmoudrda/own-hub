@@ -27,7 +27,7 @@
 	     a flow that could take an existing picture could take a picture of
 	     someone else's card. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman. Nothing is uploaded until you tap send. The photographs are read in memory and never stored.</string>
+	<string>Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman, and, if you choose, to photograph a meal so we can estimate what is on your plate. Nothing is uploaded until you tap send or analyse. The photographs are read in memory and never stored.</string>
 	<!-- Read by sensors_plus for the gentle tilt on a few illustrations
 	     (lib/ui/hand/tilt_parallax.dart). Localised in the InfoPlist.strings
 	     files; this copy is the development-region fallback. -->

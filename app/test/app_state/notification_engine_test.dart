@@ -265,7 +265,12 @@ void main() {
 
   group('a tap on a notification', () {
     test('opens only a screen on the list', () {
-      expect(NotificationTaps.destinations, {'T01', 'T02', 'R09'});
+      expect(NotificationTaps.destinations, {
+        'T01',
+        'T02',
+        'R09',
+        ...NotificationTaps.tipDestinations,
+      });
       expect(NotificationTaps.routeFor('X99', sessionLive: true), isNull);
       expect(NotificationTaps.routeFor(null, sessionLive: true), isNull);
       expect(

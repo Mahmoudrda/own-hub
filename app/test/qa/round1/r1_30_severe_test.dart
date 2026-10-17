@@ -38,6 +38,8 @@ void main() {
     await t.tap(find.text('Severe').first);
     await settle(t);
     await tapLabel(t, 'Save check-in');
+    // The check-in's five-second undo window closes.
+    await t.pump(const Duration(seconds: 6));
     print('after severe check-in: top=${topScreen(t)}');
     print('PAINTED: ${paintedText(t).join(" | ")}');
     print('TAPPABLE: ${tappables(t).map((e) => e.label).join(" | ")}');
@@ -60,6 +62,8 @@ void main() {
     await t.tap(find.text('Severe').first);
     await settle(t);
     await tapLabel(t, 'Save check-in');
+    // The check-in's five-second undo window closes.
+    await t.pump(const Duration(seconds: 6));
     for (final label in [
       'Find care near you',
       'Read NHS guidance on period pain',

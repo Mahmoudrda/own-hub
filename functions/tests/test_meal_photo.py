@@ -326,6 +326,31 @@ def test_a_bad_image_is_refused_before_her_scan_is_counted(wired, image, code):
     assert wired["uid"] == 0 and wired["global"] == 0
 
 
+def test_a_photo_that_will_not_re_encode_costs_no_scan(wired, monkeypatch):
+    """A header that passes the size check with a body that is not a photo is
+    refused by the re-encode, and that happens before either count moves."""
+    from nutrition import photo
+
+    def rejected(raw):
+        raise photo.PhotoRejected(reasons.IMAGE_UNDECODABLE)
+
+    monkeypatch.setattr(photo, "reencode", rejected)
+    client = FakeClient(RICE_PLATE)
+    error = raises(lambda: scan(client), https_fn.FunctionsErrorCode.INVALID_ARGUMENT)
+    assert error.message == reasons.IMAGE_UNDECODABLE
+    assert wired["uid"] == 0 and wired["global"] == 0
+    assert wired["order"] == []
+    assert client.calls == []
+
+
+def test_a_good_photo_is_counted_once_and_sent_once(wired):
+    client = FakeClient(RICE_PLATE)
+    scan(client)
+    assert wired["order"] == ["per_uid", "global"]
+    assert wired["uid"] == 1 and wired["global"] == 1
+    assert len(client.calls) == 1
+
+
 def test_an_oversized_image_is_refused_on_its_base64_length(wired, monkeypatch):
     decoded = []
     monkeypatch.setattr(main.base64, "b64decode", lambda *a, **k: decoded.append(1))

@@ -357,6 +357,9 @@
           <li>The face comparison uses open-source models that run on our own
           server. Their authors trained them before Own Hub existed. They are
           not trained or adjusted with your face.</li>
+          <li>If you choose to analyse a photo of a meal, Google Cloud Vertex AI
+          (Gemini) reads it to estimate the food on the plate. Section 3.12
+          explains how.</li>
           <li>There is no AI assistant in this version of Own Hub. If we add
           one, we will ask for your separate agreement first, naming the
           provider, before anything is sent to it.</li>
@@ -416,6 +419,44 @@
           cycle or weight details.</li>
         </ul>
 
+      <h3 id="c-meal-photos">3.12 Meal photos<a class="anchor" href="#c-meal-photos" aria-label="Link to this section">#</a></h3>
+        <p>Once your account is verified, you can photograph a meal and Own Hub
+        will estimate what is on the plate. This is optional. You can always
+        type your meal instead.</p>
+        <ul>
+          <li><b>When a photo is sent.</b> Only when you tap &ldquo;Analyse my
+          meal&rdquo;, after you have seen the photo. Nothing is sent while the
+          camera is open, and nothing is sent on its own.</li>
+          <li><b>Where it goes.</b> To Google Cloud Vertex AI (Gemini) in the
+          European Union, in Frankfurt, Germany (europe-west3). The photo is
+          sent once, without its location or other details from your camera,
+          and is used only to estimate the meal.</li>
+          <li><b>Not kept.</b> Own Hub does not keep the photo, on your phone
+          or on our servers, and never puts it in your photo library. To take
+          it, the camera writes a temporary copy on your phone for a moment,
+          and the app deletes that copy right away. The photo is then held only
+          in the app&rsquo;s memory, and is deleted as soon as the estimate
+          comes back. Our server logs record only the outcome and how many
+          foods were found, never the photo or the food.</li>
+          <li><b>Not used for training.</b> Under Google Cloud&rsquo;s terms,
+          Google does not use the photo to train its models, and we never do
+          either.</li>
+          <li><b>An estimate you check.</b> The foods and their weights are a
+          guess. The energy, protein, carbohydrate, fat and fibre figures come
+          from public nutrition tables (USDA FoodData Central) and a table of
+          Egyptian dishes, never from the AI. You can change every item, its
+          weight and its figures, remove it or add another, and nothing is
+          logged until you tap &ldquo;Log this meal&rdquo;. What you log is
+          kept with your meals (section 3.5).</li>
+          <li><b>A limit.</b> Up to 5 meal photos a day for each member.</li>
+          <li><b>Your agreement.</b> Before your first meal photo, the app asks
+          for your agreement and our server records it, with the date, the
+          language and the app version. If you do not agree, the camera does
+          not open.</li>
+          <li><b>Basis:</b> your consent, given in the app before your first
+          meal photo.</li>
+        </ul>
+
       <h2 id="where">4. Who handles your data, and where<a class="anchor" href="#where" aria-label="Link to this section">#</a></h2>
         <p>We do not sell your data, and we do not share it with advertisers,
         data brokers or marketing companies. The service providers below
@@ -452,6 +493,13 @@
           <dl>
             <div><dt>Handles</dt><dd>The text on your ID card, during the check only</dd></div>
             <div><dt>Where</dt><dd>European Union</dd></div>
+          </dl>
+        </li>
+        <li>
+          <h3>Google Cloud Vertex AI (Gemini), only if you analyse a meal photo</h3>
+          <dl>
+            <div><dt>Handles</dt><dd>The meal photo, during the estimate only (section 3.12)</dd></div>
+            <div><dt>Where</dt><dd>Frankfurt, Germany (europe-west3)</dd></div>
           </dl>
         </li>
         <li>
@@ -515,7 +563,8 @@
         <p>Your data is stored and processed outside Egypt:</p>
         <ul>
           <li><b>Germany and the European Union:</b> your account, your training
-          and meals, any health backup, and your verification.</li>
+          and meals, any health backup, your verification, and any meal photo
+          you choose to analyse.</li>
           <li><b>The United States:</b> your phone number, for sign-in.</li>
           <li><b>Google data centres worldwide, which include the United
           States:</b> the device checks, ML Kit performance data, crash reports
@@ -538,6 +587,7 @@
       <dl class="kv">
         <div><dt>ID card photographs, selfie, name and date of birth from the card, your raw ID number</dt><dd>Never stored. Discarded from memory when the check ends, whatever the result.</dd></div>
         <div><dt>The single-use selfie session</dt><dd>5 minutes, then deleted automatically</dd></div>
+        <div><dt>Meal photos</dt><dd>Not kept. The camera&rsquo;s temporary copy on your phone exists only for the moment the photo is taken, and is deleted right away. The photo is deleted from memory as soon as the estimate comes back (section 3.12).</dd></div>
         <div><dt>Verification result and review case</dt><dd>180 days after the case is decided, or earlier if you delete your account. A case still waiting for review is kept until it is decided.</dd></div>
         <div><dt>The keyed code of your ID number</dt><dd>While your account exists. After you delete your account it is closed, not deleted: it is no longer linked to any account, it is kept with no end date, and the same card cannot be used to open a new account.</dd></div>
         <div><dt>Count of failed attempts per ID code, and the scrambled installation record</dt><dd>180 days after the last attempt. Not linked to your account.</dd></div>
@@ -676,6 +726,9 @@
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>17 October 2026, meal photos:</b> section 3.12. An optional
+          feature with its own agreement, asked in the app before the first
+          meal photo. Nothing changes for you unless you use it.</li>
           <li><b>12 October 2026, pre-release analytics update:</b> optional PostHog US usage milestones and one technical status log, requiring fresh analytics consent.</li>
           <li><b>3.0, update before release:</b> usage statistics with Google
           Analytics for Firebase, only with your separate consent (&ldquo;Help

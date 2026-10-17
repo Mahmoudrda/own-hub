@@ -13,20 +13,29 @@
 /// later", because the log is already hers either way.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
+import '../../../domain/training/prescribed_set.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
+import '../../../ui/app_list_item.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_sheet.dart';
 import '../../../ui/app_undo_bar.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/train_repository.dart';
+import 'set_labels.dart';
 import 'train_widgets.dart';
 
-class MoveLoggedView extends StatelessWidget {
+/// How long "Finish now" waits for the second tap before it stands down.
+const Duration kFinishHereArmed = Duration(seconds: 4);
+
+class MoveLoggedView extends StatefulWidget {
   const MoveLoggedView({
     super.key,
     this.onClose,
@@ -39,7 +48,16 @@ class MoveLoggedView extends StatelessWidget {
     this.loggedCount = 2,
     this.title,
     this.sets,
+    this.editableSets,
+    this.onEditSet,
   });
+
+  /// The sets she logged for the move at an index, read once anything still
+  /// in its undo window has been written. Null leaves the rows untappable.
+  final Future<List<LoggedSet>> Function(int moveIndex)? editableSets;
+
+  /// Opens R08 on one logged set, to change it.
+  final void Function(int moveIndex, LoggedSet set)? onEditSet;
 
   /// The session's own name. Null falls back to the bundled session's, which
   /// is the only one this screen was ever drawn for.
@@ -73,8 +91,85 @@ class MoveLoggedView extends StatelessWidget {
   final int loggedCount;
 
   @override
+  State<MoveLoggedView> createState() => _MoveLoggedViewState();
+}
+
+class _MoveLoggedViewState extends State<MoveLoggedView> {
+  /// True for [kFinishHereArmed] after the first tap on "Finish here".
+  bool _finishArmed = false;
+  Timer? _disarm;
+
+  @override
+  void dispose() {
+    _disarm?.cancel();
+    super.dispose();
+  }
+
+  /// Ending the session cannot be taken back, and the button sits under the
+  /// most-tapped one on the page. So the first tap says what it will do and
+  /// how much is left, in place, and only a second tap ends it.
+  void _finishHere(int movesLeft) {
+    final finish = widget.onFinishHere;
+    if (finish == null) return;
+    if (movesLeft <= 0 || _finishArmed) {
+      _disarm?.cancel();
+      setState(() => _finishArmed = false);
+      finish();
+      return;
+    }
+    setState(() => _finishArmed = true);
+    _disarm?.cancel();
+    _disarm = Timer(kFinishHereArmed, () {
+      if (mounted) setState(() => _finishArmed = false);
+    });
+  }
+
+  Future<void> _edit(int index) async {
+    final read = widget.editableSets;
+    final onEdit = widget.onEditSet;
+    if (read == null || onEdit == null) return;
+    final logged = await read(index);
+    if (!mounted || logged.isEmpty) return;
+    if (logged.length == 1) {
+      onEdit(index, logged.single);
+      return;
+    }
+    final l10n = AppL10n.of(context);
+    final chosen = await showAppSheet<LoggedSet>(
+      context: context,
+      gap: 8,
+      children: [
+        Text(l10n.whichSet, style: AppText.titleL),
+        for (final set in logged)
+          Builder(
+            builder: (sheet) => AppListItem(
+              title: setSavedLabel(
+                l10n,
+                setNumber: set.prescribed.order,
+                weightKg: set.outcome?.weightKg,
+                reps: set.outcome?.reps,
+                holdSeconds: set.outcome?.holdSeconds,
+              ),
+              trailing: const Icon(
+                Icons.edit_outlined,
+                size: 20,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: () => Navigator.of(sheet).pop(set),
+            ),
+          ),
+      ],
+    );
+    if (chosen == null || !mounted) return;
+    onEdit(index, chosen);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final moves = widget.moves;
+    final loggedCount = widget.loggedCount;
+    final handle = widget.handle;
 
     final list =
         moves ??
@@ -116,16 +211,19 @@ class MoveLoggedView extends StatelessWidget {
         ? list[loggedCount]
         : null;
 
+    final movesLeft = list.length - loggedCount;
+    final canEdit = widget.editableSets != null && widget.onEditSet != null;
+
     return AppScaffold(
       appBar: TrainTopBar(
-        title: title ?? l10n.legsAndGlutes,
-        onClose: onClose,
+        title: widget.title ?? l10n.legsAndGlutes,
+        onClose: widget.onClose,
         closeIcon: Icons.arrow_back,
-        sets: sets,
+        sets: widget.sets,
         actions: [
-          if (onPause != null)
+          if (widget.onPause != null)
             IconButton(
-              onPressed: onPause,
+              onPressed: widget.onPause,
               iconSize: 24,
               color: AppColors.onSurfaceVariant,
               tooltip: l10n.pause,
@@ -143,28 +241,31 @@ class MoveLoggedView extends StatelessWidget {
               ? l10n.finishWorkout
               : l10n.nextMoveMove(nextMove.name),
           icon: Icons.play_arrow,
-          onPressed: onNextMove,
+          onPressed: widget.onNextMove,
         ),
         AppButton(
-          l10n.finishHere,
+          _finishArmed
+              ? l10n.finishNowCountMovesLeft(countLabel(movesLeft))
+              : l10n.finishHere,
+          key: const ValueKey('r13-finish-here'),
           variant: AppButtonVariant.text,
           height: 44,
           fontSize: 15,
-          onPressed: onFinishHere,
+          onPressed: widget.onFinishHere == null
+              ? null
+              : () => _finishHere(movesLeft),
         ),
       ],
       children: [
-        AppUndoBar(
+        AppLiveUndoBar(
           // As on R09: the handle carries what was actually logged, and the
-          // fallback is only this screen's standalone preview.
+          // fallback is only this screen's standalone preview. Undo is drawn
+          // only while the window is open.
+          handle: handle,
           message:
               handle?.describe ?? l10n.moveSavedSetsSets(l10n.gobletSquat, 3),
           undoLabel: l10n.undo,
-          onUndo: handle == null
-              ? null
-              : () {
-                  if (handle!.undo()) onUndo?.call();
-                },
+          onUndo: widget.onUndo,
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,6 +306,14 @@ class MoveLoggedView extends StatelessWidget {
             detail: list[i].prescriptionLabel,
             done: i < loggedCount,
             current: i == loggedCount,
+            // A move she logged opens its sets to change one, whenever she
+            // likes: the five seconds are for Undo, not for corrections.
+            onTap: canEdit && i < loggedCount ? () => _edit(i) : null,
+          ),
+        if (canEdit && loggedCount > 0)
+          Text(
+            l10n.tapAMoveYouLoggedToChange,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
       ],
     );

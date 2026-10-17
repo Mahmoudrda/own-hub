@@ -120,7 +120,7 @@ ExerciseMuscles? musclesFor(String exerciseId, ExerciseLibrary library) {
   return bundledExerciseMuscles[exerciseId];
 }
 
-/// Every move her programmes and the seed day prescribe.
+/// Every move her programmes, the seed day and the content seed prescribe.
 const Map<String, ExerciseMuscles> bundledExerciseMuscles = {
   // The seed day and the demo, which the catalogue does not list.
   'goblet_squat': ExerciseMuscles(
@@ -172,6 +172,42 @@ const Map<String, ExerciseMuscles> bundledExerciseMuscles = {
   'wall_press_up': ExerciseMuscles(
     primary: [Muscle.chest],
     secondary: [Muscle.triceps, Muscle.frontDelts],
+  ),
+
+  // The content seed's moves the catalogue does not list. An admin can
+  // import them, so a session could hold them.
+  'forward_lunge': ExerciseMuscles(
+    primary: [Muscle.glutes, Muscle.quads],
+    secondary: [Muscle.hamstrings, Muscle.adductors],
+  ),
+  'hip_thrust': ExerciseMuscles(
+    primary: [Muscle.glutes],
+    secondary: [Muscle.hamstrings, Muscle.quads],
+  ),
+  'jumping_jack': ExerciseMuscles(
+    primary: [Muscle.calves],
+    secondary: [Muscle.abductors, Muscle.adductors, Muscle.sideDelts],
+  ),
+  'seated_band_row': ExerciseMuscles(
+    primary: [Muscle.upperBack, Muscle.lats],
+    secondary: [Muscle.rearDelts, Muscle.biceps],
+  ),
+  'squat_jump': ExerciseMuscles(
+    primary: [Muscle.quads, Muscle.glutes],
+    secondary: [Muscle.calves, Muscle.hamstrings],
+  ),
+  // The catalogue lists this one; its muscles are the catalogue's.
+  'shoulder_press': ExerciseMuscles(
+    primary: [Muscle.frontDelts, Muscle.sideDelts],
+    secondary: [Muscle.triceps],
+  ),
+  'step_up': ExerciseMuscles(
+    primary: [Muscle.quads, Muscle.glutes],
+    secondary: [Muscle.hamstrings, Muscle.adductors],
+  ),
+  'suitcase_carry': ExerciseMuscles(
+    primary: [Muscle.obliques, Muscle.forearms],
+    secondary: [Muscle.core, Muscle.upperBack, Muscle.abductors],
   ),
 
   // Programme moves the catalogue lists, with the catalogue's muscles.

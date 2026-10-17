@@ -83,37 +83,46 @@ class WhySuggestionView extends StatelessWidget {
         //
         // Pen-underlined like every other link in the product, and at least
         // 44 high so the source is as easy to reach as the claim is to read.
-        HandPressable(
-          onTap: onReadSource,
-          builder: (_, _) => ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.arrow_forward,
-                  size: 18,
-                  color: AppColors.primaryDim,
-                ),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: HandUnderline(
-                    level: HandLevel.crafted,
-                    width: 1.2,
-                    color: AppColors.primaryDim.withValues(alpha: 0.8),
-                    gap: 1,
-                    child: Text(
-                      l10n.nhsPeriodPain,
-                      style: AppText.label.copyWith(
-                        color: AppColors.primaryDim,
+        //
+        // With no page to open it is the citation alone, in plain text: a
+        // link that answered "not connected" was a dead end.
+        if (onReadSource == null)
+          Text(
+            l10n.nhsPeriodPain,
+            style: AppText.label.copyWith(color: AppColors.onSurfaceVariant),
+          )
+        else
+          HandPressable(
+            onTap: onReadSource,
+            builder: (_, _) => ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 44),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.arrow_forward,
+                    size: 18,
+                    color: AppColors.primaryDim,
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: HandUnderline(
+                      level: HandLevel.crafted,
+                      width: 1.2,
+                      color: AppColors.primaryDim.withValues(alpha: 0.8),
+                      gap: 1,
+                      child: Text(
+                        l10n.nhsPeriodPain,
+                        style: AppText.label.copyWith(
+                          color: AppColors.primaryDim,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
         AppSageNote(l10n.cycleDatesAreEstimatesThisFeatureIs),
       ],
     );

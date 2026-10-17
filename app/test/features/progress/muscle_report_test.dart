@@ -263,6 +263,97 @@ void main() {
     for (final w in MuscleWindow.values) {
       expect(r.hasSetsIn(w), isFalse);
       expect(r.maxIn(w), 0);
+      expect(r.muscleMaxIn(w), 0);
+      expect(r.rankedMuscles(w), isEmpty);
     }
+    expect(r.lastWorked(Muscle.glutes), isNull);
+  });
+
+  group('per muscle: only where it did the work', () {
+    test('a glute bridge works the glutes; the helpers are kept apart', () {
+      final r = _report(const [
+        (dateKey: '2026-10-16', exerciseId: 'glute_bridge', sets: 3),
+      ]);
+      const w = MuscleWindow.week;
+      expect(r.workedSets(w, Muscle.glutes), 3);
+      for (final m in Muscle.values) {
+        if (m == Muscle.glutes) continue;
+        expect(r.workedSets(w, m), 0, reason: m.name);
+        expect(r.muscleScore(w, m), 0, reason: m.name);
+      }
+      // Whole sets, not halves, where a muscle only helped.
+      expect(r.helpedSets(w, Muscle.hamstrings), 3);
+      expect(r.helpedSets(w, Muscle.core), 3);
+      expect(r.helpedSets(w, Muscle.glutes), 0);
+      expect(r.muscleScore(w, Muscle.glutes), 1);
+      expect(r.lastWorked(Muscle.glutes), DateTime.utc(2026, 10, 16));
+      expect(r.daysSinceWorked(Muscle.glutes), 1);
+      expect(r.lastWorked(Muscle.hamstrings), isNull);
+      // The groups still count the helpers at half a set.
+      expect(r.setsIn(w, MuscleSection.backOfThighs), 1.5);
+    });
+
+    test('glutes never light the hips or the inner thighs', () {
+      final r = _report(const [
+        (dateKey: '2026-10-16', exerciseId: 'glute_bridge', sets: 3),
+        (dateKey: '2026-10-16', exerciseId: 'donkey_kick', sets: 3),
+      ]);
+      const w = MuscleWindow.week;
+      expect(r.workedSets(w, Muscle.glutes), 6);
+      expect(r.workedSets(w, Muscle.abductors), 0);
+      expect(r.workedSets(w, Muscle.adductors), 0);
+      expect(r.rankedMuscles(w).map((e) => e.muscle), [Muscle.glutes]);
+    });
+
+    test('curls work the biceps, never the triceps or the forearms', () {
+      final r = buildMuscleReport(
+        log: const [(dateKey: '2026-10-16', exerciseId: 'curl', sets: 4)],
+        musclesOf: (_) => const ExerciseMuscles(
+          primary: [Muscle.biceps],
+          secondary: [Muscle.forearms],
+        ),
+        today: _today,
+      );
+      const w = MuscleWindow.week;
+      expect(r.workedSets(w, Muscle.biceps), 4);
+      expect(r.workedSets(w, Muscle.triceps), 0);
+      expect(r.workedSets(w, Muscle.forearms), 0);
+      expect(r.helpedSets(w, Muscle.forearms), 4);
+      expect(r.helpedSets(w, Muscle.triceps), 0);
+      // All three are one group, and the group still has its sets.
+      expect(r.setsIn(w, MuscleSection.arms), 4);
+    });
+
+    test('each muscle is scored against her most worked muscle', () {
+      final r = _report(const [
+        (dateKey: '2026-10-16', exerciseId: 'glute_bridge', sets: 4),
+        (dateKey: '2026-10-15', exerciseId: 'goblet_squat', sets: 2),
+        (dateKey: '2026-09-30', exerciseId: 'push_up', sets: 3),
+      ]);
+      expect(r.muscleMaxIn(MuscleWindow.week), 6);
+      expect(r.muscleScore(MuscleWindow.week, Muscle.glutes), 1);
+      expect(
+        r.muscleScore(MuscleWindow.week, Muscle.quads),
+        closeTo(1 / 3, 1e-9),
+      );
+      expect(r.workedSets(MuscleWindow.week, Muscle.chest), 0);
+      expect(r.workedSets(MuscleWindow.month, Muscle.chest), 3);
+      expect(r.helpedSets(MuscleWindow.month, Muscle.triceps), 3);
+      expect(r.rankedMuscles(MuscleWindow.month).map((e) => e.muscle), [
+        Muscle.glutes,
+        Muscle.chest,
+        Muscle.quads,
+      ]);
+    });
+
+    test('a stretch works nothing, and helps nothing', () {
+      final r = _report(const [
+        (dateKey: '2026-10-16', exerciseId: 'childs_pose', sets: 2),
+      ]);
+      for (final m in Muscle.values) {
+        expect(r.workedSets(MuscleWindow.week, m), 0, reason: m.name);
+        expect(r.helpedSets(MuscleWindow.week, m), 0, reason: m.name);
+      }
+    });
   });
 }

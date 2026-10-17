@@ -63,6 +63,7 @@ import 'crash_consent.dart';
 import 'kitten_setting.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
+import 'meal_scan_state.dart';
 import 'firebase_boot.dart';
 import 'home_widget_sync.dart';
 import 'install_id.dart';
@@ -72,7 +73,10 @@ import 'rewards_state.dart';
 import 'role_state.dart';
 import 'training_streak_state.dart';
 import 'local_persistence.dart';
+import 'snapshot_owner.dart';
+import 'getting_started.dart';
 import 'onboarding_state.dart';
+import 'tip_anchors.dart';
 import 'workout_session_state.dart';
 
 /// The five handset steps, done against the stores this build actually has.
@@ -81,7 +85,25 @@ import 'workout_session_state.dart';
 /// same as `kLocalWipeOrder` and a future Firebase implementation replaces the
 /// bodies rather than the shape.
 class ThisPhoneWipe implements LocalWipe {
-  const ThisPhoneWipe();
+  const ThisPhoneWipe({this.keepsOwner = false, this.keepsSignUp = false});
+
+  /// True when the wipe is for a different account signing in on this phone:
+  /// the new account's owner record must survive it. Deleting an account
+  /// leaves this false and forgets the owner with everything else.
+  final bool keepsOwner;
+
+  /// True when the wipe runs because a different account just signed in, so
+  /// what the woman signing in did on the way there is hers and stays: the
+  /// terms she accepted at `C06` (waiting to reach the server, read by `C07`'s
+  /// reconcile), this installation's id her check is tied to, and the week she
+  /// built before signing up. Her language is never erased. Only
+  /// [SnapshotOwner] sets it.
+  ///
+  /// Her week is kept only when [OnboardingState.weekBuiltSignedOut] says it
+  /// was built since the last sign-out. Sign-out leaves the previous woman's
+  /// answers on the phone, her life stage among them, and those are not the
+  /// next woman's to inherit.
+  final bool keepsSignUp;
 
   /// Manifest row 29, as far as it reaches here. There is no Auth record to
   /// delete, so signing out is the whole of it, and it goes first for the
@@ -103,6 +125,9 @@ class ThisPhoneWipe implements LocalWipe {
     AppRouter.lastSignupRole = null;
     RoleState.instance.reset();
     AppRouter.lastReviewerPath = null;
+    // The day she first landed, kept by account before the reminders below
+    // are reset, so signing back in does not start her tips again.
+    GettingStarted.keepAnchor();
     await AppRouter.authRepository.signOut();
     unawaited(AppRouter.pushRegistrar.forget().catchError((Object _) {}));
     ReminderState.instance.reset();
@@ -159,6 +184,7 @@ class ThisPhoneWipe implements LocalWipe {
     // that is slow, wedged or missing must still leave every store below empty
     // and the sheet still has to close and say so.
     unawaited(LocalPersistence.instance.erase());
+    if (!keepsOwner) unawaited(SnapshotOwner.instance.forget());
 
     // The widgets' copy of her week in the App Group, for the same reason:
     // left behind, her count would stay on the Home Screen after the account
@@ -188,12 +214,26 @@ class ThisPhoneWipe implements LocalWipe {
     unawaited(KittenSetting.instance.erase());
 
     // The legal acceptance waiting to reach the server, if any. It belongs to
-    // the account being deleted.
-    unawaited(PendingLegalAcceptance.erase().catchError((Object _) {}));
+    // the account being deleted. On a change of account it is the one the
+    // woman signing in gave at C06, and erasing it would race C07's reconcile
+    // and ask her to agree a second time.
+    if (!keepsSignUp) {
+      unawaited(PendingLegalAcceptance.erase().catchError((Object _) {}));
+    }
 
     // This installation's random id. A new account on this handset gets a
-    // new one, so nothing links the two.
-    unawaited(InstallId.erase().catchError((Object _) {}));
+    // new one, so nothing links the two. On a change of account it is the one
+    // her own check is running under, so it stays.
+    if (!keepsSignUp) {
+      unawaited(InstallId.erase().catchError((Object _) {}));
+    }
+
+    // The getting started tips each account has already been through, so a
+    // woman signing back in is not walked through them again. Kept on a change
+    // of account; deleting hers forgets them.
+    if (!keepsOwner) {
+      unawaited(TipAnchors.instance.erase().catchError((Object _) {}));
+    }
 
     // The recipe library her signed-in session fetched, and when it last
     // checked. Public content, but kept on this phone because of her
@@ -225,6 +265,10 @@ class ThisPhoneWipe implements LocalWipe {
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();
     AppRouter.mealRepository.store.reset();
+    // The phone's memory that she agreed to meal photos, and any scan still
+    // waiting to be checked. The record itself is on the server, under her
+    // account, and goes with it.
+    unawaited(MealScanState.instance.erase().catchError((Object _) {}));
 
     // Row 4 — her sessions, and the sets inside them.
     WorkoutSessionState.instance.reset();
@@ -259,8 +303,13 @@ class ThisPhoneWipe implements LocalWipe {
     AppRouter.notificationsRepository.reset();
 
     // Row 1 — the maps on `users/{uid}`: her setup answers, her allergies, her
-    // privacy and notification switches.
-    AppRouter.intakeRepository.reset();
+    // privacy and notification switches. The answers the woman signing in
+    // gave before signing up are hers, and stay with the weekly target they
+    // set.
+    final keepsWeek =
+        keepsSignUp && OnboardingState.instance.weekBuiltSignedOut;
+    if (!keepsWeek) AppRouter.intakeRepository.reset();
+    if (!keepsSignUp) OnboardingState.instance.weekBuiltSignedOut = false;
     OnboardingState.instance.cycleRowDismissed = false;
     // Her agreement to the community's rules. The server's copy goes with
     // users/{uid}/consents.
@@ -292,6 +341,11 @@ class ThisPhoneWipe implements LocalWipe {
     CoachedLifeState.instance.reset();
 
     _forgetWhereSheWas();
+
+    // Her weekly target follows her answers, as finishing setup made it.
+    if (keepsWeek && AppRouter.intakeRepository.setupDone) {
+      OnboardingState.instance.reapplyWeeklyTarget();
+    }
   }
 
   /// Manifest row 33. The measurements live in the progress store here and are

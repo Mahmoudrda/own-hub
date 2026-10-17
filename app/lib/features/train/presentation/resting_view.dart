@@ -361,22 +361,20 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
         ),
       ],
       children: [
-        AppUndoBar(
+        AppLiveUndoBar(
           // The handle is the truth: R07 and R08 both pass one, and it already
           // names her numbers. The fallback is the standalone-preview state of
           // this screen, so it reproduces the mockup's set rather than invent
           // a claim about a set that was never logged.
+          //
+          // Live: Undo goes when the five seconds do, so it is never a button
+          // that does nothing for the rest of the minute.
+          handle: widget.handle,
           message:
               widget.handle?.describe ??
               l10n.setSetnumberSavedWeightKgReps(2, weightLabel(12), 10),
           undoLabel: l10n.undo,
-          onUndo: widget.handle == null
-              ? null
-              : () {
-                  // False when she was a moment late. Nothing is rolled back,
-                  // because by then the write has already been made.
-                  if (widget.handle!.undo()) widget.onUndo?.call();
-                },
+          onUndo: widget.onUndo,
         ),
         const SizedBox(height: 24),
         Center(

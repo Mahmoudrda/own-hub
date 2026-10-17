@@ -4588,5 +4588,412 @@
         "example": "7"
       }
     }
+  },
+  "snapYourMeal": "Snap your meal",
+  "checkYourMeal": "Check your meal",
+  "beforeYourFirstPhoto": "Before your first photo",
+  "yourPhotoGoesToOurAiIn": "Your photo goes to our AI in the EU (Google Cloud, Frankfurt) to estimate what's on your plate. We don't keep the photo or use it to train anything. You check everything before it's logged.",
+  "upTo5PhotosADayYou": "Up to 5 photos a day. You can always type your meal instead.",
+  "agree": "Agree",
+  "weCouldntSaveYourAnswerCheckYour": "We couldn't save your answer. Check your connection and try again.",
+  "takeItFromAboveWithTheWhole": "Take it from above, with the whole plate in the photo.",
+  "useThisPhoto_6wkqn": "Use this photo?",
+  "analyseMyMeal": "Analyse my meal",
+  "thisUses1OfYour5Photos": "This uses 1 of your 5 photos for today.",
+  "readingYourPlate": "Reading your plate…",
+  "thePhotoIsWipedAsSoonAs": "The photo is wiped as soon as we're done.",
+  "youveUsedYour5ScansForToday": "You've used your 5 scans for today. You can still type your meal.",
+  "weCouldntMakeOutTheFoodTry": "We couldn't make out the food. Try a clearer photo from above, or type it.",
+  "scanningIsntAvailableRightNowTypeYour": "Scanning isn't available right now. Type your meal instead.",
+  "weCouldntReadThatPhotoTakeIt": "We couldn't read that photo. Take it again, or type your meal.",
+  "mealPhotosOpenOnceYourAccountIs": "Meal photos open once your account is checked. You can type your meal now.",
+  "updateOwnHubFromTheStoreTo": "Update Own Hub from the store to snap meals. You can type your meal now.",
+  "signInAgainToSnapMealsYou": "Sign in again to snap meals. You can type your meal now.",
+  "typeItInstead": "Type it instead",
+  "ownHubNeedsTheCameraToPhotograph": "Own Hub needs the camera to photograph your plate. Turn it on in Settings, or type your meal.",
+  "theCameraCouldntStartYouCanType": "The camera couldn't start. You can type your meal instead.",
+  "yourMealPhoto": "Your meal photo",
+  "theseAreEstimatesCheckTheGrams": "These are estimates. Check the grams.",
+  "weightInGrams": "Weight in grams",
+  "n10GLess": "10 g less",
+  "n10GMore": "10 g more",
+  "proteinGramsG": "Protein {grams} g",
+  "@proteinGramsG": {
+    "description": "E01 and E13: protein in grams, for one item, a meal or the day. Whole number, Western digits.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "22"
+      }
+    }
+  },
+  "carbsGramsG": "Carbs {grams} g",
+  "@carbsGramsG": {
+    "description": "E01 and E13: carbohydrates in grams. Shown only when known. Whole number, Western digits.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "fatGramsG": "Fat {grams} g",
+  "@fatGramsG": {
+    "description": "E01 and E13: fat in grams. Shown only when known.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "45"
+      }
+    }
+  },
+  "fibreGramsG": "Fibre {grams} g",
+  "@fibreGramsG": {
+    "description": "E01 and E13: dietary fibre in grams. Shown only when known.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "18"
+      }
+    }
+  },
+  "gramsG_1usqy": "{grams} g",
+  "@gramsG_1usqy": {
+    "description": "E13: a weight in grams, for an item or one part of a dish.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "150"
+      }
+    }
+  },
+  "editNumbers": "Edit numbers",
+  "editedByYou": "Edited by you",
+  "energyKcal": "Energy (kcal)",
+  "proteinG_xt7ig": "Protein (g)",
+  "carbsG_5nlte": "Carbs (g)",
+  "fatG_1xdz2": "Fat (g)",
+  "fibreG": "Fibre (g)",
+  "weCouldntFindTheNutritionForThis": "We couldn't find the nutrition for this. Enter it or remove it.",
+  "estimatedFromAStandardRecipe": "Estimated from a standard recipe",
+  "seeWhatsInIt": "See what's in it",
+  "hideWhatsInIt": "Hide what's in it",
+  "removeName": "Remove {name}",
+  "@removeName": {
+    "description": "E13: screen reader label on the button that takes one food off the plate before it is logged.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Koshary"
+      }
+    }
+  },
+  "addSomething": "Add something",
+  "searchTheFoodList": "Search the food list",
+  "orTypeItIn": "Or type it in",
+  "whatIsIt": "What is it?",
+  "addedByYou": "Added by you",
+  "thisMeal": "This meal",
+  "whichMealIsIt": "Which meal is it?",
+  "logThisMeal": "Log this meal",
+  "enterTheNumbersForEachItemOr": "Enter the numbers for each item, or remove it, to log this meal.",
+  "nothingToCheckYetSnapYourMeal": "Nothing to check yet. Snap your meal first.",
+  "nothingOnThisPlateYetAddSomething": "Nothing on this plate yet. Add something, or cancel.",
+  "weFoundOnlyPartOfThisSo": "We found only part of this, so these numbers may be low. Check them.",
+  "koshariFulAndMolokhiaInThePortions_1am39": "Koshari, ful and molokhia in the portions you actually serve, or snap your plate. No calorie shaming.",
+  "frontView": "Front view",
+  "backView": "Back view",
+  "tapAMuscleForItsSets": "Tap a muscle for its sets.",
+  "countPluralOneAlsoWorked1Set": "{count, plural, one{Also worked: 1 set} other{Also worked: {count} sets}}",
+  "@countPluralOneAlsoWorked1Set": {
+    "description": "P06 card on one muscle: whole sets in the rolling window where this muscle helped a move without being its main muscle. These sets never colour the body map. A plural message because Arabic says مجموعة واحدة, مجموعتين, 3 مجموعات and 11 مجموعة.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "aShortFirstWorkoutYouCanDo": "A short first workout you can do at home, nothing needed. Want to give it a go?",
+  "everyMoveHasAShortVideoSo": "Every move has a short video, so you know the form before you start.",
+  "snapYourPlateAndWellEstimateThe": "Snap your plate and we'll estimate the protein. You check it before it's saved.",
+  "rahmasEgyptianRecipesKosharyAndMolokhiaIncluded": "Rahma's Egyptian recipes, koshary and molokhia included, for days you're not sure what to cook.",
+  "firstTimeAtTheGymACalm": "First time at the gym? A calm guide, step by step, so you walk in knowing what to do.",
+  "eachSessionLightsUpTheMusclesYou": "Each session lights up the muscles you worked on your own muscle map. Take a look.",
+  "aTrainingWeekThatFitsTheDays": "A training week that fits the days you have. Change it any time.",
+  "gettingStartedTips": "Getting started tips",
+  "aFewTipsInYourFirstWeeks": "A few tips in your first weeks, only on days you haven't opened the app.",
+  "wantAFewTipsAndYourWorkout": "Want a few tips and your workout reminders?",
+  "workoutRemindersOnTheDaysYouPick": "Workout reminders on the days you pick, once you choose them.",
+  "turnAnyOfThemOffInNotifications": "Turn any of them off in Notifications, any time.",
+  "turnOnNotifications": "Turn on notifications",
+  "signOut": "Sign out",
+  "signOutOnThisPhone": "Sign out on this phone?",
+  "yourAccountAndEverythingInItStays": "Your account and everything in it stays safe. Sign in with your number any time.",
+  "signedOut": "Signed out.",
+  "staySignedIn": "Stay signed in",
+  "removeThisSession": "Remove this session",
+  "removeThisSession_1qh67": "Remove this session?",
+  "itComesOffThisWeeksCountAnd": "It comes off this week's count and your points.",
+  "removeIt": "Remove it",
+  "tapAMoveYouLoggedToChange": "Tap a move you logged to change a set.",
+  "whichSet": "Which set?",
+  "addToMyWeek": "Add to my week",
+  "weekRearranged": "Week rearranged",
+  "savedChangeItAnyTimeInYour": "Saved. Change it any time in your profile.",
+  "turnOffBackup": "Turn off backup?",
+  "weDeleteTheCopyInYourAccount": "We delete the copy in your account. Everything stays on this phone.",
+  "turnItOff": "Turn it off",
+  "keepItOn": "Keep it on",
+  "backupOffTheCopyInYourAccount": "Backup off. The copy in your account is deleted.",
+  "thanksForAgreeingTheRulesAreIn": "Thanks for agreeing. The rules are in the Safety Centre any time.",
+  "saveMyChanges": "Save my changes",
+  "streakHiddenTurnItBackOnIn": "Streak hidden. Turn it back on in Notifications, under Reminders and extras.",
+  "gentleMobilityTodayYourPlanPicksUp": "Gentle mobility today. Your plan picks up next time.",
+  "thisDeletesYourPeriodDatesCheckIns": "This deletes your period dates, check-ins and cycle settings from this phone. It cannot be undone.",
+  "yourCycleDataIsDeletedYouCan": "Your cycle data is deleted. You can set up My cycle again from your profile.",
+  "ifThePainIsSevereOrSudden": "If the pain is severe or sudden, see a doctor today. In an emergency call 123.",
+  "tapALoggedDayToChangeIt": "Tap a logged day to change it.",
+  "unblocked": "Unblocked",
+  "addedFromMemoryTitle": "Added from memory · {title}",
+  "@addedFromMemoryTitle": {
+    "description": "T02 undo bar after a session logged from memory. title is the session's own name.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "Legs and glutes"
+      }
+    }
+  },
+  "takenBackYourWeekIsAtCount": "Taken back. Your week is at {count} of {target}.",
+  "@takenBackYourWeekIsAtCount": {
+    "description": "T02 after Undo on a recalled session. Numbers in Western digits.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      },
+      "target": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "sessionRemovedYourWeekIsAtCount": "Session removed · your week is at {count} of {target}",
+  "@sessionRemovedYourWeekIsAtCount": {
+    "description": "R10/R12 undo bar after she removes a logged session. Numbers in Western digits.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      },
+      "target": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "foodAddedToSlot": "{food} added to {slot}",
+  "@foodAddedToSlot": {
+    "description": "Meal undo bar. food is the first food's name, slot is Breakfast, Lunch, Dinner or Snack.",
+    "placeholders": {
+      "food": {
+        "type": "String",
+        "example": "Ful"
+      },
+      "slot": {
+        "type": "String",
+        "example": "Breakfast"
+      }
+    }
+  },
+  "foodAndCountMoreAddedToSlot": "{food} and {count} more added to {slot}",
+  "@foodAndCountMoreAddedToSlot": {
+    "description": "Meal undo bar for a plate of several foods. count in Western digits.",
+    "placeholders": {
+      "food": {
+        "type": "String",
+        "example": "Ful"
+      },
+      "count": {
+        "type": "String",
+        "example": "2"
+      },
+      "slot": {
+        "type": "String",
+        "example": "Breakfast"
+      }
+    }
+  },
+  "foodRemovedFromSlot": "{food} removed from {slot}",
+  "@foodRemovedFromSlot": {
+    "description": "E01/E04 undo bar after she removes a logged food from a slot.",
+    "placeholders": {
+      "food": {
+        "type": "String",
+        "example": "Ful"
+      },
+      "slot": {
+        "type": "String",
+        "example": "Breakfast"
+      }
+    }
+  },
+  "savedDishesWithAllergensAreHiddenNow": "Saved. Dishes with {allergens} are hidden now.",
+  "@savedDishesWithAllergensAreHiddenNow": {
+    "description": "E10 and A02 after saving allergies. allergens is a comma-separated list of allergen names.",
+    "placeholders": {
+      "allergens": {
+        "type": "String",
+        "example": "nuts, eggs"
+      }
+    }
+  },
+  "unblockedName": "Unblocked {name}",
+  "@unblockedName": {
+    "description": "A04 undo bar after unblocking a member.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "swappedToNameForToday": "Swapped to {name} for today",
+  "@swappedToNameForToday": {
+    "description": "R05 undo bar after a swap. name is the move she swapped to.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Glute bridge"
+      }
+    }
+  },
+  "skippedName": "Skipped {name}",
+  "@skippedName": {
+    "description": "R06 undo bar after skipping a move. name is the move.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Plank"
+      }
+    }
+  },
+  "finishNowCountMovesLeft": "Finish now · {count} moves left",
+  "@finishNowCountMovesLeft": {
+    "description": "R13 Finish here, second tap to confirm. count in Western digits.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "yourWeekIsUpdatedDaysDaysMinutes": "Your week is updated · {days} days, {minutes} minutes.",
+  "@yourWeekIsUpdatedDaysDaysMinutes": {
+    "description": "O05 after saving changed setup answers from the profile. Numbers in Western digits.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "checkInSavedSummary": "Check-in saved · {summary}",
+  "@checkInSavedSummary": {
+    "description": "Y04 undo bar. summary is label: value pairs joined by a middle dot.",
+    "placeholders": {
+      "summary": {
+        "type": "String",
+        "example": "Energy: Low · Cramps: Mild"
+      }
+    }
+  },
+  "todaySummary": "Today: {summary}",
+  "@todaySummary": {
+    "description": "Y03 line under How are you feeling. summary is label: value pairs.",
+    "placeholders": {
+      "summary": {
+        "type": "String",
+        "example": "Energy: Low · Cramps: Mild"
+      }
+    }
+  },
+  "periodSavedStartToEnd": "Period saved · {start} to {end}",
+  "@periodSavedStartToEnd": {
+    "description": "Y09 after saving a period. Dates as yyyy-MM-dd.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2026-10-01"
+      },
+      "end": {
+        "type": "String",
+        "example": "2026-10-05"
+      }
+    }
+  },
+  "periodSavedFromStart": "Period saved · from {start}",
+  "@periodSavedFromStart": {
+    "description": "Y09 after saving a period with no end date yet.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2026-10-01"
+      }
+    }
+  },
+  "periodRemovedStartToEnd": "Period removed · {start} to {end}",
+  "@periodRemovedStartToEnd": {
+    "description": "Y09 undo bar after deleting a period.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2026-10-01"
+      },
+      "end": {
+        "type": "String",
+        "example": "2026-10-05"
+      }
+    }
+  },
+  "periodRemovedFromStart": "Period removed · from {start}",
+  "@periodRemovedFromStart": {
+    "description": "Y09 undo bar after deleting a period with no end date.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2026-10-01"
+      }
+    }
+  },
+  "nothingWasDeletedTryAgain": "Nothing was deleted. Try again.",
+  "ifThePainIsSevereOrSudden_rd6j0": "If the pain is severe or sudden, see a doctor today. In an emergency call {number}.",
+  "@ifThePainIsSevereOrSudden_rd6j0": {
+    "description": "Y11, the severe-pain card. number is Egypt's ambulance line, 123, in Western digits.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "123"
+      }
+    }
+  },
+  "listItem": "{list}, {item}",
+  "@listItem": {
+    "description": "Adds one more name to a list of names, e.g. allergens. The comma is the language's own.",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "example": "Tree nuts"
+      },
+      "item": {
+        "type": "String",
+        "example": "Eggs"
+      }
+    }
   }
 }

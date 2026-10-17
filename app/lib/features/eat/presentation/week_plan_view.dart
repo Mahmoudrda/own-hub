@@ -12,7 +12,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/undo_offer.dart';
 import '../../../domain/clock/app_clock.dart';
+import '../../../domain/logging/log_command_bus.dart';
 import '../../../domain/week/week_key.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -114,6 +116,9 @@ class _WeekPlanViewState extends State<WeekPlanView> {
     final days = plan.dinners.keys.toList()
       ..sort((a, b) => a.index.compareTo(b.index));
     final recipes = [for (final day in days) plan.dinners[day]!];
+    // Her arrangement as it was, so one tap puts it back. Every tap moved
+    // every dinner and the only way back was four more taps.
+    final before = {for (final day in days) day: plan.dinners[day]!};
 
     for (var i = 0; i < days.length; i++) {
       await _repo.swapDinner(
@@ -123,7 +128,26 @@ class _WeekPlanViewState extends State<WeekPlanView> {
       );
     }
     await _load();
+    if (!mounted) return;
+    offerUndo(
+      context,
+      bus: _bus,
+      describe: AppL10n.of(context).weekRearranged,
+      onUndo: () async {
+        for (final entry in before.entries) {
+          await _repo.swapDinner(
+            weekId: _weekId,
+            day: entry.key,
+            recipeId: entry.value,
+          );
+        }
+        await _load();
+      },
+    );
   }
+
+  /// The undo window for a rearranged week.
+  final LogCommandBus _bus = LogCommandBus();
 
   Future<void> _pick(PlanDay day) async {
     final pick = widget.onPickDinner;
@@ -162,6 +186,7 @@ class _WeekPlanViewState extends State<WeekPlanView> {
 
   @override
   void dispose() {
+    unawaited(_bus.flushAll());
     if (_ownsRepo) unawaited(_repo.dispose());
     super.dispose();
   }

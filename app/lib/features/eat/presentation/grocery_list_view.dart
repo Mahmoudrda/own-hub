@@ -145,7 +145,8 @@ class _GroceryListViewState extends State<GroceryListView> {
         onBack: widget.onBack,
         actions: [
           // Nothing to share while the list is empty.
-          if (!nothingToShopFor && view.itemCount > 0)
+          // Nor while there is nowhere to share it to.
+          if (!nothingToShopFor && view.itemCount > 0 && widget.onShare != null)
             IconButton(
               onPressed: widget.onShare,
               // Named. It was an icon with no tooltip, no label and no hint, so

@@ -157,10 +157,72 @@ void main() {
       await _tap(tester, find.text('Save').first);
       await _settleSnackBar(tester);
 
-      // She should never have to wonder what she just agreed to.
-      expect(find.text("Legs and glutes, today's plan"), findsWidgets);
+      // She should never have to wonder what she just agreed to: what was
+      // added, and that it was added from memory.
+      expect(
+        find.text("Added from memory · Legs and glutes, today's plan"),
+        findsOneWidget,
+      );
 
       await tester.pump(const Duration(seconds: 6));
+    });
+
+    testWidgets('the week and points are credited only when the save lands', (
+      tester,
+    ) async {
+      _phone(tester);
+      final logged = <String>[];
+      final credited = <String>[];
+      final undone = <String>[];
+      await tester.pumpWidget(
+        _host(
+          AlreadyDidItView(
+            repository: InMemoryTodayRepository(
+              day: InMemoryTodayRepository.defaultDay(date: _tuesday),
+            ),
+            onLogged: (s) => logged.add(s.id),
+            onCredit: (s) => credited.add(s.id),
+            onUndone: (s) => undone.add(s.id),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _tap(tester, find.text('Save').first);
+      await _settleSnackBar(tester);
+      expect(logged, hasLength(1));
+      expect(credited, isEmpty, reason: 'nothing is paid inside the window');
+
+      await tester.pump(const Duration(seconds: 6));
+      expect(credited, logged);
+      expect(undone, isEmpty);
+    });
+
+    testWidgets('Undo credits nothing at all', (tester) async {
+      _phone(tester);
+      final credited = <String>[];
+      final undone = <String>[];
+      await tester.pumpWidget(
+        _host(
+          AlreadyDidItView(
+            repository: InMemoryTodayRepository(
+              day: InMemoryTodayRepository.defaultDay(date: _tuesday),
+            ),
+            onLogged: (_) {},
+            onCredit: (s) => credited.add(s.id),
+            onUndone: (s) => undone.add(s.id),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _tap(tester, find.text('Save').first);
+      await _settleSnackBar(tester);
+      await tester.tap(find.text('Undo'));
+      await tester.pump(const Duration(seconds: 6));
+
+      expect(undone, hasLength(1));
+      expect(credited, isEmpty);
     });
 
     testWidgets('left alone, the session is credited to the week', (

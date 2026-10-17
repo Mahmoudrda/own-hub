@@ -448,6 +448,30 @@ Iterable<CloudDoc> _sessions() sync* {
             },
     );
   }
+
+  // A session she removed. The rules keep a session with a set in it for good
+  // (`allow delete` covers only an empty live one), so the removal is written
+  // as an update the rules allow: the same source, nothing logged, and
+  // `removed`. Nothing logged also lets a removed live session that never
+  // reached the server be created in this state, so it needs no birth
+  // document. A bool rather than a time: a pending server timestamp reads back
+  // as null, and the merge would miss it.
+  for (final removed in AppRouter.trainRepository.removedSessions) {
+    if (removed.id.isEmpty) continue;
+    yield CloudDoc(
+      collection: 'sessions',
+      id: removed.id,
+      data: <String, Object?>{
+        'source': removed.source.name,
+        'dateKey': removed.dateKey,
+        'sets': const <Object?>[],
+        'loggedSetCount': 0,
+        'removed': true,
+        'schemaV': kCloudSchema,
+        'updatedAt': kServerTime,
+      },
+    );
+  }
 }
 
 int _foldSessions(List<CloudDoc> docs) {
@@ -457,19 +481,24 @@ int _foldSessions(List<CloudDoc> docs) {
 
   for (final doc in docs) {
     if (held.contains(doc.id)) continue;
+    // Removed, on this phone or on the server: never taken back.
+    if (repository.isRemoved(doc.id)) continue;
+    if (_bool(doc.data['removed']) == true) continue;
     final session = _readSession(doc.id, doc.data);
     if (session != null) added.add(session);
   }
   if (added.isEmpty) return 0;
 
+  final sessions = <TrainSession>[...repository.sessions, ...added];
   repository.restore(
-    sessions: <TrainSession>[...repository.sessions, ...added],
+    sessions: sessions,
     flushes: repository.flushes.toList(),
     swaps: repository.swaps.toList(),
     // Deliberately not carried: a session she was midway through is over, and
     // the counter has to stay ahead of every id that now exists or the next
-    // live session reuses one.
-    sessionCounter: repository.sessionCounter,
+    // live session reuses one, which on a new phone would overwrite a session
+    // that came from the cloud.
+    sessionCounter: liveCounterAbove(sessions, repository.sessionCounter),
   );
   return added.length;
 }
@@ -544,6 +573,10 @@ Iterable<CloudDoc> _mealDays({required bool includeHealth}) sync* {
 
     var kcal = 0;
     var protein = 0;
+    int? carbs;
+    int? fat;
+    int? fiber;
+    int? add(int? sum, int? value) => value == null ? sum : (sum ?? 0) + value;
     final slots = <String, Object?>{};
     for (final slot in MealSlot.values) {
       final items = day.itemsIn(slot);
@@ -559,6 +592,9 @@ Iterable<CloudDoc> _mealDays({required bool includeHealth}) sync* {
       for (final item in kept) {
         kcal += item.kcal;
         protein += item.proteinG;
+        carbs = add(carbs, item.carbsG);
+        fat = add(fat, item.fatG);
+        fiber = add(fiber, item.fiberG);
       }
     }
 
@@ -572,6 +608,12 @@ Iterable<CloudDoc> _mealDays({required bool includeHealth}) sync* {
         'totals': <String, Object?>{
           'kcal': kcal.clamp(0, 30000),
           'protein': protein.clamp(0, 2000),
+          // Only when some item carries them. The rule bounds kcal and
+          // protein and leaves the rest of this cache alone, so these need
+          // no change to it; they are clamped the same way all the same.
+          'carbs': ?carbs?.clamp(0, 5000),
+          'fat': ?fat?.clamp(0, 5000),
+          'fiber': ?fiber?.clamp(0, 5000),
         },
         'firstLogAt': ?day.firstLogAt,
         'tz': day.tz,
@@ -649,6 +691,14 @@ Map<String, Object?> _mealItem(MealItem item, {required bool includeHealth}) =>
       'origin': item.origin.name,
       'kcal': item.kcal,
       'proteinG': item.proteinG,
+      // Carbs, fat and fibre, her name for a food the pack does not hold, and
+      // the weight she approved: each only when it is known, so a meal logged
+      // before they existed reads back exactly as it was written.
+      'carbsG': ?item.carbsG,
+      'fatG': ?item.fatG,
+      'fiberG': ?item.fiberG,
+      'name': ?item.name,
+      'grams': ?item.grams,
       if (item.planRef case final ref?)
         'planRef': <String, Object?>{
           'assignmentId': ref.assignmentId,
@@ -677,6 +727,11 @@ MealItem? _readMealItem(Object? raw) {
     origin: _pick(MealOrigin.values, row['origin']) ?? MealOrigin.search,
     kcal: _int(row['kcal']) ?? 0,
     proteinG: _int(row['proteinG']) ?? 0,
+    carbsG: _macro(row['carbsG']),
+    fatG: _macro(row['fatG']),
+    fiberG: _macro(row['fiberG']),
+    name: _mealName(row['name']),
+    grams: _weight(row['grams']),
     planRef: switch (ref) {
       null => null,
       final ref => switch ((
@@ -1311,6 +1366,26 @@ num? _num(Object? value) => value is num ? value : null;
 
 int? _int(Object? value) => value is num ? value.toInt() : null;
 
+/// A macro in grams on a logged meal: a whole, non-negative number, or null
+/// when it is absent or not a number. A day can never read back a negative.
+int? _macro(Object? value) =>
+    value is num && value.isFinite && value >= 0 ? value.round() : null;
+
+/// Her name for a food the pack does not hold, bounded the way a typed name
+/// is on E13.
+String? _mealName(Object? value) {
+  if (value is! String) return null;
+  final name = value.trim();
+  if (name.isEmpty) return null;
+  return name.length <= 80 ? name : name.substring(0, 80);
+}
+
+/// The weight she approved on E13, in grams, when it is a sane one.
+num? _weight(Object? value) =>
+    value is num && value.isFinite && value >= 0 && value <= 3000
+    ? value
+    : null;
+
 double? _double(Object? value) => value is num ? value.toDouble() : null;
 
 /// A moment, however Firestore handed it over. A `Timestamp` has already been
@@ -1386,3 +1461,16 @@ bool _isDayId(String id) => RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(id);
 // **Where she was standing** — the open post, the scrolled month, the session in
 // flight — is not here for the same reason it is not in the snapshot. Those are
 // places, not records.
+
+/// The next `live-N` counter: at least [current], and past every `live-N` id
+/// already among [sessions].
+@visibleForTesting
+int liveCounterAbove(Iterable<TrainSession> sessions, int current) {
+  var highest = current;
+  for (final session in sessions) {
+    final match = RegExp(r'^live-(\d+)$').firstMatch(session.id);
+    final n = match == null ? null : int.tryParse(match.group(1)!);
+    if (n != null && n > highest) highest = n;
+  }
+  return highest;
+}

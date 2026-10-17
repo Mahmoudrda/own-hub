@@ -42,12 +42,15 @@ import '../app_state/coaching_link_state.dart';
 import '../app_state/community_state.dart';
 import '../app_state/cycle_state.dart';
 import '../app_state/eat_state.dart';
+import '../app_state/meal_scan_state.dart';
 import '../app_state/events_state.dart';
 import '../app_state/exercise_library_state.dart';
 import '../app_state/first_gym_guide_state.dart';
+import '../app_state/getting_started.dart';
 import '../app_state/workout_library_state.dart';
 import '../app_state/demo_mode.dart';
 import '../app_state/honest_notice.dart';
+import '../app_state/undo_offer.dart';
 import '../app_state/onboarding_state.dart';
 import '../app_state/pledge.dart';
 import '../app_state/notification_sync.dart';
@@ -84,6 +87,9 @@ import '../features/eat/presentation/allergy_question_view.dart';
 import '../features/eat/presentation/eat_sample_library.dart';
 import '../features/eat/presentation/eat_view.dart';
 import '../features/eat/presentation/grocery_list_view.dart';
+import '../features/eat/presentation/meal_check_view.dart';
+import '../features/eat/presentation/meal_photo_consent.dart';
+import '../features/eat/presentation/meal_photo_view.dart';
 import '../features/eat/presentation/rahma_letter_view.dart';
 import '../features/eat/presentation/rahma_recipe_view.dart';
 import '../features/eat/presentation/recipe_view.dart';
@@ -169,6 +175,14 @@ import '../features/train/presentation/move_logged_view.dart';
 import '../features/train/presentation/first_gym_guide_view.dart';
 import '../features/train/presentation/program_view.dart';
 import '../features/train/presentation/resting_view.dart';
+import '../features/train/presentation/session_removal.dart';
+import '../features/train/presentation/session_notice.dart';
+import '../features/account/presentation/allergen_labels.dart'
+    show allergiesSavedLabel;
+import '../features/train/domain/session_match.dart';
+import '../features/cycle/presentation/symptom_labels.dart'
+    show checkInSummary;
+import '../features/train/domain/session_summary.dart' show SessionSummary;
 import '../features/train/presentation/swap_move_view.dart';
 import '../features/train/presentation/train_view.dart';
 import '../features/train/presentation/workout_day_view.dart';
@@ -218,12 +232,13 @@ import '../features/events/domain/hub_event.dart';
 import '../features/events/presentation/events_view.dart';
 import '../features/onboarding/domain/starting_program.dart'
     show StartingProgram, StartingProgrammes, selectStartingProgram;
-import '../domain/training/prescribed_set.dart' show PrescribedSet;
+import '../domain/training/prescribed_set.dart'
+    show LoggedSet, PrescribedSet;
 import '../features/train/domain/load_advice.dart';
 import '../features/train/domain/weight_label.dart' show weightLabel;
 import '../features/train/domain/programme_week.dart';
 import '../features/train/domain/workout_library.dart'
-    show AuthoredProgramme, AuthoredSession;
+    show AuthoredProgramme, AuthoredSession, libraryRowId;
 import '../features/train/presentation/authored_workout.dart';
 import '../features/coach/domain/coach_repository.dart';
 import '../features/coach/domain/enquiry.dart';
@@ -1111,6 +1126,7 @@ class AppRouter {
     reviewAsked = false;
     OnboardingState.instance
       ..beforeSignup = false
+      ..weekBuiltSignedOut = false
       ..shortSetupAfterSignup = false
       ..whileWaiting = false;
     await VerificationMemory.forget();
@@ -1947,7 +1963,9 @@ class AppRouter {
         beginIdentityCheck();
         goTo(context, 'C09b');
       },
-      onDeleteMyData: () => goTo(context, 'A02'),
+      // The deletion itself, asked and explained in its own sheet. It opened
+      // her profile, two taps short of what the button said.
+      onDeleteMyData: () => openYourData(context),
       onSelectTab: (screenId) => goToTab(context, screenId),
       // R4: a flag the automatic check raised is not her asking for a call.
       reviewAsked: reviewAsked,
@@ -1992,10 +2010,16 @@ class AppRouter {
       onSignInAgain: () => unawaited(signInAgain(context)),
     ),
     'C16': (context) => PledgeView(
+      // From the Safety Centre the rules are read again, with nothing to
+      // agree to a second time.
+      readOnly:
+          ModalRoute.of(context)?.settings.arguments == kReadTheRulesAgain,
       // Setup after sign-up ends on Home with the sign-up stack cleared, not
       // back on this pledge. See `OnboardingState.leaveSetup`.
       onAgree: () {
         recordPledge(context);
+        // Thanked once she reaches Home, where it covers nothing.
+        PledgeState.instance.thankOnArrival = true;
         OnboardingState.instance.enteredFromSignup = true;
         goTo(context, 'O01');
       },
@@ -2026,7 +2050,11 @@ class AppRouter {
     // check still wait for her. See `OnboardingState.skipSetup`.
     'O01': (context) => PopScope(
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) OnboardingState.instance.enteredFromSignup = false;
+        if (didPop) {
+          OnboardingState.instance
+            ..enteredFromSignup = false
+            ..editingFromProfile = false;
+        }
       },
       child: GoalView(
         repository: intakeRepository,
@@ -2155,6 +2183,25 @@ class AppRouter {
               // the stack: back to it by name, never to whatever is first.
               Navigator.of(context)
                   .popUntil(ModalRoute.withName(appRoutes['C14']!.name));
+            },
+          )
+        // Reopened from her profile: her changes are saved and she is back
+        // on her profile, told what her week is now. It offered "Start day 1
+        // now" to a woman mid-programme and saved silently.
+        : OnboardingState.instance.editingFromProfile
+        ? StartingProgramView(
+            showSteps: featureFlags.isOn(Feature.reassuringWaits),
+            repository: intakeRepository,
+            saveLabel: AppL10n.of(context).saveMyChanges,
+            onSaveMyWeek: () {
+              final messenger = ScaffoldMessenger.maybeOf(context);
+              final intake = intakeRepository.read();
+              final said = AppL10n.of(context).yourWeekIsUpdatedDaysDaysMinutes(
+                countLabel(intake.days),
+                countLabel(intake.minutes),
+              );
+              OnboardingState.instance.leaveSetup(context);
+              showHonestNoticeOn(messenger, said);
             },
           )
         : OnboardingState.instance.beforeSignup
@@ -2320,7 +2367,17 @@ class AppRouter {
       // planned session and a walk on one day was 2 on Home and 1 on Progress.
       // Counted weeks and tier standing come off Progress, so Home was the one
       // lying. Same id, same ledger.
+      //
+      // The credit waits for the undo window. It was paid at the tap, and
+      // Undo only cancelled Today's write, so her week and points kept a
+      // session she had taken back. R12 shows the week as it will stand
+      // meanwhile, and its points once they are real.
       onLogged: (session) {
+        pendingRecall = session;
+        lastRecallOutcome = null;
+        goTo(context, 'R12');
+      },
+      onCredit: (session) {
         unawaited(noteSessionLogged());
         lastRecallOutcome = WorkoutSessionState.creditSession(
           sessionId: session.id,
@@ -2329,7 +2386,23 @@ class AppRouter {
           progress: progressStore,
           creditToday: false,
         );
-        goTo(context, 'R12');
+        lastRecalled = session;
+        if (identical(pendingRecall, session)) pendingRecall = null;
+      },
+      // Back to the sheet she logged it from, told where her week stands.
+      onUndone: (session) {
+        if (identical(pendingRecall, session)) pendingRecall = null;
+        if (!context.mounted) return;
+        final here = ModalRoute.of(context);
+        Navigator.of(context).popUntil((route) => route == here);
+        final week = todayRepository.day.week;
+        showHonestNotice(
+          context,
+          AppL10n.of(context).takenBackYourWeekIsAtCount(
+            countLabel(week.sessionsLogged),
+            countLabel(week.sessionsTarget),
+          ),
+        );
       },
       onStartSession: () => goTo(context, 'R03'),
       onOpenMeal: () => goTo(context, 'E01'),
@@ -2347,7 +2420,14 @@ class AppRouter {
       // was the caller that never wired it — so on a fresh install T04 could
       // only report a repair it had no evidence for.
       goal: progressStore.goal,
-      onStartShortSession: () => goTo(context, 'R03'),
+      // The ten minutes it promises, or no button: it opened her full day.
+      offersShortSession: _quietWeekSession != null,
+      onStartShortSession: () {
+        final session = _quietWeekSession;
+        if (session == null) return;
+        _chooseLibrarySession(session);
+        goTo(context, 'R03');
+      },
       onOpenMeal: () => goTo(context, 'E01'),
       onOpenWeek: () => goTo(context, 'P01'),
       onSelectTab: (screenId) => goToTab(context, screenId),
@@ -2428,6 +2508,9 @@ class AppRouter {
       // hold move, with a live session to log into.
       onFollowAlong: () => goTo(context, 'R03'),
       onShortSession: () => goTo(context, 'R03'),
+      // Each tile opens the library session it names; one with no match is
+      // not drawn. They all opened her normal planned day.
+      shortSessions: _shortSessions(context),
       // Offered only once the phone holds a library to open. Asking here, on
       // the Train tab, is what brings it in for a woman verified since the
       // app launched: the check is rate-limited and returns at once when it
@@ -2546,6 +2629,7 @@ class AppRouter {
         if (gym && !FirstGymGuideState.instance.seen) {
           FirstGymGuideState.instance.seen = true;
           AppChanges.bump();
+          GettingStarted.settled();
           unawaited(
             Navigator.of(context).push<void>(
               MaterialPageRoute<void>(
@@ -2606,13 +2690,41 @@ class AppRouter {
       // The swap replaces the move she is on, carrying its prescription with
       // it. It used to be assigned to a field nothing read, so she chose an
       // alternative and then trained the move she had just replaced.
+      //
+      // R05 has written the swap; the session follows it, and she is told
+      // what she is doing instead, with a way back to the move she had.
       onSwapped: (alternative) {
         lastSwappedFor = alternative;
-        WorkoutSessionState.instance.swapCurrent(alternative, trainRepository);
+        final session = WorkoutSessionState.instance;
+        final replaced = session.currentMove;
+        final sessionId = session.sessionId;
+        session.swapCurrent(alternative, trainRepository, record: false);
+        // Drawn in the next page, above the move, so it does not cover the
+        // button she taps next.
+        final notice = SessionNotice(
+          handle: changeBus.submit(
+            UndoableLog(
+              describe: AppL10n.of(
+                context,
+              ).swappedToNameForToday(alternative.name),
+              commit: () async {},
+            ),
+          ),
+          onUndo: () {
+            if (!session.undoSwap() || replaced == null) return;
+            unawaited(
+              trainRepository.swapMove(
+                sessionId: sessionId,
+                fromExerciseId: alternative.exerciseId,
+                toExerciseId: replaced.exerciseId,
+              ),
+            );
+          },
+        );
         if (_holdIsNext()) {
-          goTo(context, 'R06');
+          _goCarryingHandle(context, 'R06', notice);
         } else {
-          goTo(context, 'R07');
+          _goCarryingHandle(context, 'R07', notice);
         }
       },
       onSelectTab: (screenId) => goToTab(context, screenId),
@@ -2623,6 +2735,8 @@ class AppRouter {
       final set = session.currentSet;
       final l10n = AppL10n.of(context);
       return FollowAlongView(
+        // A swap or a skip that brought her here, with its Undo.
+        notice: noticeFrom(context),
         // The move and the hold she is on. Without a live hold set the screen
         // only draws the design, and logs nothing.
         moveName: move == null ? null : localisedMove(l10n, move).name,
@@ -2646,8 +2760,42 @@ class AppRouter {
           _trackSetLogged('set');
           _goCarryingHandle(context, 'R09', handle);
         },
-        // Skipping logs nothing: R07 offers the same set to log by hand.
-        onSkip: () => goTo(context, 'R07'),
+        // "Skip this move" skips it: nothing is logged for it, she is on the
+        // next move, and Undo puts her back here. It opened R07 on the same
+        // move. With no live move (the preview) R07 is still where she goes.
+        onSkip: () {
+          final session = WorkoutSessionState.instance;
+          final skipped = session.currentMove;
+          if (skipped == null) {
+            goTo(context, 'R07');
+            return;
+          }
+          final here = ModalRoute.of(context);
+          final said = l10n.skippedName(localisedMove(l10n, skipped).name);
+          session.skipMove();
+          if (session.isComplete) {
+            // The last move: the workout ends here, as it would after a set,
+            // so there is nothing left to step back into.
+            showHonestNotice(context, said);
+            _finishWorkout();
+            goTo(context, 'R10');
+            return;
+          }
+          final notice = SessionNotice(
+            handle: changeBus.submit(
+              UndoableLog(describe: said, commit: () async {}),
+            ),
+            onUndo: () {
+              if (!session.undoLast() || !context.mounted) return;
+              Navigator.of(context).popUntil((route) => route == here);
+            },
+          );
+          if (_holdIsNext()) {
+            _goCarryingHandle(context, 'R06', notice);
+          } else {
+            _goCarryingHandle(context, 'R07', notice);
+          }
+        },
       );
     },
     // One tap logs the set and starts the rest timer.
@@ -2659,6 +2807,8 @@ class AppRouter {
     // wiring while every widget test stayed green, because each screen is
     // individually correct.
     'R07': (context) => MidSetView(
+      // A swap or a skip that brought her here, with its Undo, in the page.
+      notice: noticeFrom(context),
       repository: trainRepository,
       sessionId: WorkoutSessionState.instance.sessionId,
       // The move and the set she is actually on. Both were left out, so this
@@ -2713,7 +2863,8 @@ class AppRouter {
         _goCarryingHandle(context, 'R13', handle);
       },
     ),
-    'R08': (context) => ChangeSetView(
+    // Opened from R13 with a set she already logged, R08 corrects it instead.
+    'R08': (context) => _setCorrectionFrom(context) ?? ChangeSetView(
       repository: trainRepository,
       sessionId: WorkoutSessionState.instance.sessionId,
       // Which move of how many. The bar read a fixed "Move 2 of 5".
@@ -2824,6 +2975,21 @@ class AppRouter {
       onBackToToday: () =>
           Navigator.of(context)
               .pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false),
+      // Offered once the credit has landed, so there is a credit to take back.
+      onRemove: switch ((
+        WorkoutSessionState.instance.lastFinished,
+        WorkoutSessionState.instance.lastSummary,
+      )) {
+        (final TrainSession session, final SessionSummary summary) => () =>
+            _removeSession(
+              context,
+              sessionId: session.id,
+              source: session.source,
+              sessionPoints: summary.credit.sessionPoints,
+              bestPoints: summary.bestPoints,
+            ),
+        _ => null,
+      },
       onShare: () => goTo(context, 'M03'),
     ),
     // The row she taps is the session she gets.
@@ -2914,6 +3080,18 @@ class AppRouter {
       onOpenWeekPlan: () => goTo(context, 'E07'),
       onType: () => goTo(context, 'E02'),
       onSpeak: () => goTo(context, 'E03'),
+      // A photo of her plate, offered only while E12 is on and she is
+      // verified: a scan is for verified members only. The consent sheet is
+      // shown first, once. Not offered once she has told us an allergy:
+      // nobody can list what is in a photographed plate, so the guard would
+      // refuse the log after she had spent a paid scan on it.
+      onSnap: screenIsOn('E12') && isVerified && !eatConstraints.hasAllergies
+          ? () async {
+              if (await _askMealPhotoConsent(context) && context.mounted) {
+                goTo(context, 'E12');
+              }
+            }
+          : null,
       onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
       onBlocked: (refused) =>
           EatAppState.instance.explainRefusal(context, refused),
@@ -2925,6 +3103,18 @@ class AppRouter {
       session: EatAppState.instance.session,
       onClose: () => Navigator.of(context).maybePop(),
       onSpeak: () => goTo(context, 'E03'),
+      // A photo of her plate, offered only while E12 is on and she is
+      // verified: a scan is for verified members only. The consent sheet is
+      // shown first, once. Not offered once she has told us an allergy:
+      // nobody can list what is in a photographed plate, so the guard would
+      // refuse the log after she had spent a paid scan on it.
+      onSnap: screenIsOn('E12') && isVerified && !eatConstraints.hasAllergies
+          ? () async {
+              if (await _askMealPhotoConsent(context) && context.mounted) {
+                goTo(context, 'E12');
+              }
+            }
+          : null,
       onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
       onBlocked: (refused) =>
           EatAppState.instance.explainRefusal(context, refused),
@@ -2951,6 +3141,18 @@ class AppRouter {
       onOpenWeekPlan: () => goTo(context, 'E07'),
       onType: () => goTo(context, 'E02'),
       onSpeak: () => goTo(context, 'E03'),
+      // A photo of her plate, offered only while E12 is on and she is
+      // verified: a scan is for verified members only. The consent sheet is
+      // shown first, once. Not offered once she has told us an allergy:
+      // nobody can list what is in a photographed plate, so the guard would
+      // refuse the log after she had spent a paid scan on it.
+      onSnap: screenIsOn('E12') && isVerified && !eatConstraints.hasAllergies
+          ? () async {
+              if (await _askMealPhotoConsent(context) && context.mounted) {
+                goTo(context, 'E12');
+              }
+            }
+          : null,
       onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
       onBlocked: (refused) =>
           EatAppState.instance.explainRefusal(context, refused),
@@ -3017,16 +3219,10 @@ class AppRouter {
             context,
             EatAppState.instance.openFoodId,
           ),
-          // No recipe pack exists, so there are no steps to show — see
-          // `recipe_view.dart`. Said out loud rather than left as a dead button.
-          onShare: () => showHonestNotice(
-            context,
-            AppL10n.of(context).sharingIsNotConnectedInThisBuild,
-          ),
-          onSeeSteps: () => showHonestNotice(
-            context,
-            AppL10n.of(context).theStepsForThisDishHaveNot,
-          ),
+          // Nothing can share yet and no steps exist for these dishes, so
+          // neither control is drawn: each answered only "not connected".
+          onShare: null,
+          onSeeSteps: null,
           onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
           onBlocked: (refused) =>
               EatAppState.instance.explainRefusal(context, refused),
@@ -3055,11 +3251,48 @@ class AppRouter {
       // An empty allergy set here is her answer, not a default, which is the
       // one thing that turns `DietaryConstraints.none` from a fiction into a
       // statement. `save` writes both fields and nothing else.
+      //
+      // Said back to her once saved, because it changes what she is shown.
       onAnswered: (allergies, dietary) async {
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        final said = allergiesSavedLabel(AppL10n.of(context), allergies);
         await dietaryRepository.save(allergies: allergies, dietary: dietary);
         AppChanges.bump();
         if (context.mounted) Navigator.of(context).maybePop();
+        showHonestNoticeOn(messenger, said);
       },
+    ),
+    // E12, a photo of her plate. The photo stays inside the screen; only the
+    // foods and grams the server read come out, held for E13. Typing the meal
+    // instead closes the camera first, so Back never reopens it.
+    'E12': (context) => MealPhotoView(
+      state: MealScanState.instance,
+      uid: signedInUid,
+      onScanned: () => goTo(context, 'E13'),
+      onTypeInstead: () {
+        _closeMealScan(context);
+        goTo(context, 'E02');
+      },
+      onOpenSettings: () => unawaited(openAppSettings()),
+      onClose: () => _closeMealScan(context),
+    ),
+    // E13, her check. Nothing is written until "Log this meal", and that goes
+    // through the Eat tab's one five-second bus. The camera and the check
+    // both close before E04 opens, so Back from E04 can never land on a plate
+    // she has already logged and log it twice.
+    'E13': (context) => MealCheckView(
+      result: MealScanState.instance.result,
+      constraints: eatConstraints,
+      repository: mealRepository,
+      session: EatAppState.instance.session,
+      onLogged: (handle) {
+        _closeMealScan(context);
+        _goCarryingHandle(context, 'E04', handle);
+      },
+      onBlocked: (refused) =>
+          EatAppState.instance.explainRefusal(context, refused),
+      onCancel: () => _closeMealScan(context),
+      onSnap: isVerified ? () => goTo(context, 'E12') : null,
     ),
     'E11': (context) => RahmaLetterView(
       letterAr: (EatAppState.instance..ensureRecipeBook()).recipeBook.letterAr,
@@ -3074,11 +3307,8 @@ class AppRouter {
       onPlanWeek: () => goTo(context, 'E07'),
       onBack: () => Navigator.of(context).maybePop(),
       // There is no share plugin in `pubspec.yaml`, so nothing here can open an
-      // OS share sheet. G5 §9 Q8 stands; this says what the build can do.
-      onShare: () => showHonestNotice(
-        context,
-        AppL10n.of(context).sharingIsNotConnectedInThisBuild,
-      ),
+      // OS share sheet (G5 §9 Q8), and the button is not drawn until there is.
+      onShare: null,
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
 
@@ -3087,11 +3317,32 @@ class AppRouter {
       // happened, a capped third session of the day included.
       // Nothing credited, nothing claimed: zero draws no points line.
       // The session and, when it counted her week, the week too.
+      //
+      // While T02 still holds the session in its undo window nothing is
+      // credited yet: the week is shown as it will stand, and the points line
+      // waits for points that are real. R12 redraws when the credit lands.
       pointsGranted: lastRecallOutcome?.pointsGranted ?? 0,
-      sessionsThisWeek: todayRepository.day.week.sessionsLogged,
+      sessionsThisWeek:
+          todayRepository.day.week.sessionsLogged +
+          (pendingRecall != null &&
+                  !todayRepository.creditedSessions.contains(
+                    pendingRecall!.id,
+                  )
+              ? 1
+              : 0),
       sessionsPrescribed: todayRepository.day.week.sessionsTarget,
       levelProgressPercent: _levelProgressPercent,
       onBackToToday: () => goTo(context, 'T01'),
+      onRemove: switch ((pendingRecall, lastRecalled, lastRecallOutcome)) {
+        (null, final RecalledSession session, final CreditOutcome credit) =>
+          () => _removeSession(
+            context,
+            sessionId: session.id,
+            source: SessionSource.recalled,
+            sessionPoints: credit.sessionPoints,
+          ),
+        _ => null,
+      },
     ),
     // Logs a whole move and returns to the move list — the session does NOT end.
     'R13': (context) => MoveLoggedView(
@@ -3103,6 +3354,27 @@ class AppRouter {
       loggedCount: WorkoutSessionState.instance.moveIndex,
       title: WorkoutSessionState.instance.day?.title,
       sets: _setsProgress,
+      // A move she logged opens its sets on R08, to change one after the
+      // five seconds. Anything still inside its window is written first, so
+      // what she corrects is what was saved.
+      editableSets: (index) async {
+        final session = WorkoutSessionState.instance;
+        await session.bus.flushAll();
+        final moves = session.moves;
+        if (index >= moves.length) return const <LoggedSet>[];
+        return trainRepository.loggedSetsFor(
+          sessionId: session.sessionId,
+          exerciseId: moves[index].exerciseId,
+        );
+      },
+      onEditSet: (index, set) => Navigator.of(context).pushNamed(
+        appRoutes['R08']!.name,
+        arguments: SetCorrection(
+          move: WorkoutSessionState.instance.moves[index],
+          moveNumber: index + 1,
+          set: set,
+        ),
+      ),
       // Back to the set she took back, on R07 — never to R08 if the set was
       // saved from there.
       onUndo: () {
@@ -3309,7 +3581,8 @@ class AppRouter {
           ..enteredFromSignup = false
           ..shortSetupAfterSignup = false
           ..beforeSignup = false
-          ..whileWaiting = false;
+          ..whileWaiting = false
+          ..editingFromProfile = true;
         goTo(context, 'O01');
       },
       onOpenLanguage: () => goTo(context, 'C02'),
@@ -3322,6 +3595,7 @@ class AppRouter {
       // there is no screen id for deletion among the 161, and HANDOFF rule 16
       // forbids minting one for a state.
       onOpenYourData: () => openYourData(context),
+      onSignOut: () => unawaited(signOutHere(context)),
       // Every screen, one tap away, in a build that is not going to a store.
       // The owner's admin build only. A store build resolves no admin route,
       // so the row is never drawn there.
@@ -3372,6 +3646,14 @@ class AppRouter {
       onTalkToAHuman: LegalLinks.support.isEmpty
           ? null
           : () => unawaited(openExternalLink(context, LegalLinks.support)),
+      // The pledge says she can read the rules again any time; this is where.
+      // Only with the community, which is where the rules apply.
+      onReadRules: screenIsOn('C16')
+          ? () => Navigator.of(context).pushNamed(
+              appRoutes['C16']!.name,
+              arguments: kReadTheRulesAgain,
+            )
+          : null,
       // A name for a woman she blocked, from the store that has one. Empty
       // when this build has never seen her name, and the row then carries the
       // unblock action alone rather than a uid dressed up as a person.
@@ -3734,17 +4016,15 @@ class AppRouter {
       //     renders on A04. Whether it belongs on this card is a clinical
       //     question about when severe period pain is an emergency, and it is
       //     not one a fixing pass answers.
-      onFindCare: () => showHonestNotice(
-        context,
-        AppL10n.of(context).weDoNotHaveACareDirectory,
-      ),
+      //
+      // Both buttons answered "we do not have that yet" on the severe-pain
+      // card, so they are not drawn until there is something behind them; the
+      // card says to see a doctor today and gives 123 instead.
+      onFindCare: null,
       // Wired the moment there is an address, on exactly the rule A03 and A04
       // already follow for the published pages.
       onReadGuidance: CareLinks.periodPainGuidance.isEmpty
-          ? () => showHonestNotice(
-              context,
-              AppL10n.of(context).weDoNotHaveAGuidancePage,
-            )
+          ? null
           : () => unawaited(
               openExternalLink(context, CareLinks.periodPainGuidance),
             ),
@@ -3785,8 +4065,20 @@ class AppRouter {
     // `saveCheckIn` also redraws: Y03 underneath was drawn before she logged,
     // and without the signal it kept showing the morning without her answer.
     'Y04': (context) => CheckInView(
+      // Saved at once, so a severe answer reaches Y03 now, and said back to
+      // her with Undo: it used to close with no tick, no haptic and no word.
       onSaved: (checkIn) {
+        final before = CycleAppState.instance.checkInSnapshot;
         CycleAppState.instance.saveCheckIn(checkIn);
+        final summary = checkInSummary(AppL10n.of(context), checkIn);
+        offerUndo(
+          context,
+          bus: cycleBus,
+          describe: summary.isEmpty
+              ? AppL10n.of(context).saved
+              : AppL10n.of(context).checkInSavedSummary(summary),
+          onUndo: () => CycleAppState.instance.restoreCheckIn(before),
+        );
         Navigator.of(context).maybePop();
       },
       onCancel: () => Navigator.of(context).maybePop(),
@@ -3796,19 +4088,35 @@ class AppRouter {
     'Y05': (context) => WhySuggestionView(
       reason: CycleAppState.instance.todaysReason,
       onClose: () => Navigator.of(context).maybePop(),
-      onReadSource: () => showHonestNotice(
-        context,
-        AppL10n.of(context).openingWebLinksIsNotConnectedIn,
-      ),
+      // Opens the source when there is an address for it; until then the
+      // citation stands as plain text. It said web links were not connected,
+      // which was untrue: `openExternalLink` works everywhere else.
+      onReadSource: CareLinks.periodPainGuidance.isEmpty
+          ? null
+          : () => unawaited(
+              openExternalLink(context, CareLinks.periodPainGuidance),
+            ),
     ),
     'Y06': (context) => GentlerOptionView(
       reason: CycleAppState.instance.todaysReason,
       // Taking the option is an answer too, so the hub stops asking — the same
       // as "Keep my workout" and rest. Without this she came back from the
       // gentler session to a card still offering it.
-      onUseOption: () {
-        CycleAppState.instance.decideToday();
-        goTo(context, 'R03');
+      //
+      // The gentle session itself, not her planned full-body workout, which
+      // is what this opened. With no such session in the library the option
+      // is not offered.
+      onUseOption: switch (_gentleSession) {
+        final OfferedSession gentle => () {
+          CycleAppState.instance.decideToday();
+          _chooseLibrarySession(gentle);
+          showHonestNotice(
+            context,
+            AppL10n.of(context).gentleMobilityTodayYourPlanPicksUp,
+          );
+          goTo(context, 'R03');
+        },
+        null => null,
       },
       // Her planned session, unchanged — and the hub stops offering.
       onKeepWorkout: () {
@@ -3852,6 +4160,9 @@ class AppRouter {
       onBack: () => Navigator.of(context).maybePop(),
       onSettings: () => goTo(context, 'Y12'),
       onLogPeriod: () => goTo(context, 'Y09'),
+      onOpenPeriod: (period) => Navigator.of(
+        context,
+      ).pushNamed(appRoutes['Y09']!.name, arguments: period),
       onAboutPhases: () => goTo(context, 'Y13'),
       onSelectTab: (screenId) => goToTab(context, screenId),
       // One literal `goTo` per arm, deliberately.
@@ -3874,14 +4185,41 @@ class AppRouter {
         }
       },
     ),
+    // A logged day on Y08 opens its period here, to correct the dates or
+    // delete it. The builder used to pass neither, so a wrong start date,
+    // which drives every estimate, could not be fixed at all.
     'Y09': (context) => LogPeriodView(
       repository: periodRepository,
+      existing: switch (ModalRoute.of(context)?.settings.arguments) {
+        final PeriodEntry period => period,
+        _ => null,
+      },
       onBack: () => Navigator.of(context).maybePop(),
-      // To the calendar it was saved into, or back where she came from when
-      // the calendar is switched off.
-      onSaved: () => screenIsOn('Y08')
-          ? goTo(context, 'Y08')
-          : Navigator.of(context).maybePop(),
+      // Back to the calendar she came from, which redraws with it, and said
+      // in her dates. It pushed a second Y08 on top of the first.
+      onSavedPeriod: (entry) {
+        CycleAppState.instance.changed();
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        final said = periodSavedLabel(AppL10n.of(context), entry);
+        Navigator.of(context).maybePop();
+        showHonestNoticeOn(messenger, said);
+      },
+      // Removed now, with five seconds to put it back exactly as it was.
+      onDeleted: () {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is! PeriodEntry) return;
+        CycleAppState.instance.changed();
+        offerUndo(
+          context,
+          bus: cycleBus,
+          describe: periodRemovedLabel(AppL10n.of(context), args),
+          onUndo: () async {
+            await periodRepository.save(args);
+            CycleAppState.instance.changed();
+          },
+        );
+        Navigator.of(context).maybePop();
+      },
     ),
     'Y10': (context) => CyclePatternsView(
       // Y10 rendered its empty state permanently: no starts, no check-ins, so
@@ -3920,8 +4258,18 @@ class AppRouter {
       repository: cycleRepository,
       onBack: () => Navigator.of(context).maybePop(),
       onChangeMode: () => goTo(context, 'Y01'),
-      // Deleting her cycle data returns her to Home, not to an empty hub.
-      onDeleted: () => goTo(context, 'T01'),
+      // Deleting her cycle data returns her to Home, not to an empty hub, with
+      // the cycle screens cleared behind her and a plain word on what
+      // happened. Her check-ins go with the rest, as Y12 said they would.
+      onDeleted: () {
+        CycleAppState.instance.purged();
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        final said = AppL10n.of(context).yourCycleDataIsDeletedYouCan;
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false);
+        showHonestNoticeOn(messenger, said);
+      },
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     'Y13': (context) =>
@@ -5953,6 +6301,32 @@ class AppRouter {
 
   static MoveAlternative? lastSwappedFor;
 
+  /// The meal-photo consent sheet, once per account on this phone.
+  static Future<bool> _askMealPhotoConsent(BuildContext context) =>
+      ensureMealPhotoConsent(
+        context,
+        state: MealScanState.instance,
+        uid: signedInUid,
+      );
+
+  /// Leaves E12 and E13 together and drops the scan they were holding.
+  ///
+  /// Both screens close as one, whichever of them she leaves from: a camera
+  /// left under the check would reopen on Back, and a check left under E04
+  /// could log the same plate a second time.
+  static void _closeMealScan(BuildContext context) {
+    MealScanState.instance.clear();
+    final navigator = Navigator.of(context);
+    // Opened with nothing under it: Eat takes its place, rather than an
+    // empty navigator or whatever screen happens to be at the bottom.
+    if (!navigator.canPop()) {
+      unawaited(navigator.pushReplacementNamed(appRoutes['E01']!.name));
+      return;
+    }
+    final names = {appRoutes['E12']!.name, appRoutes['E13']!.name};
+    navigator.popUntil((route) => !names.contains(route.settings.name));
+  }
+
   /// Carries the undoable log to the screen that offers the undo.
   ///
   /// Passed as a route **argument**, not held in a static field. An earlier
@@ -5963,10 +6337,13 @@ class AppRouter {
   /// did nothing when tapped. QA found it; no test touched this path.
   ///
   /// A route argument cannot go stale: it belongs to that one push.
+  ///
+  /// [handle] is a [LogHandle], or a [SessionNotice] for a swap or a skip,
+  /// which R06 and R07 draw in the page.
   static void _goCarryingHandle(
     BuildContext context,
     String screenId,
-    LogHandle handle,
+    Object handle,
   ) {
     final route = appDestinations[screenId];
     if (route == null) return;
@@ -6095,6 +6472,7 @@ class AppRouter {
   /// Events that belong to a screen opening rather than to a tap: the tour
   /// beginning (`C04`) and a reviewer path (`C15`).
   static void _trackRouteOpened(String id) {
+    GettingStarted.routeOpened(id);
     switch (id) {
       case 'C04':
         _lastTourStop = 0;
@@ -6108,6 +6486,12 @@ class AppRouter {
           }),
         );
     }
+  }
+
+  /// The swap or skip the route being built was pushed with, if any.
+  static SessionNotice? noticeFrom(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    return args is SessionNotice ? args : null;
   }
 
   /// The handle for the route currently being built, if it was pushed with one.
@@ -6176,7 +6560,14 @@ class AppRouter {
       status: state.status(progress: progressStore),
       onPause: state.pause,
       onResume: state.resume,
-      onSwitch: (on) => state.setEnabled(on, progress: progressStore),
+      // Turned off, it vanishes from Home and Progress, so she is told where
+      // the switch lives: it was a way out with no sign of the way back.
+      onSwitch: (on) {
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        final said = AppL10n.of(context).streakHiddenTurnItBackOnIn;
+        state.setEnabled(on, progress: progressStore);
+        if (!on) showHonestNoticeOn(messenger, said);
+      },
     );
   }
 
@@ -6275,6 +6666,177 @@ class AppRouter {
 
   /// What T02's last credit actually did, for R12.
   static CreditOutcome? lastRecallOutcome;
+
+  /// The session T02 is holding in its undo window, for R12's preview. Null
+  /// once it has been credited or taken back.
+  static RecalledSession? pendingRecall;
+
+  /// The session [lastRecallOutcome] credited, so R12 can remove it.
+  static RecalledSession? lastRecalled;
+
+  /// Holds a removal for its five seconds, as every log is held.
+  static LogCommandBus removalBus = LogCommandBus();
+
+  /// My cycle's undo window: check-ins and period removals.
+  static LogCommandBus cycleBus = LogCommandBus();
+
+  /// The library sessions she is offered, screened for her life stage.
+  static List<OfferedSession> get _offeredSessions => WorkoutLibraryState
+      .instance
+      .sessionsFor(intakeRepository.read().lifeStage);
+
+  /// Makes [entry] the session R03 opens, exactly as choosing it on R11 does.
+  static void _chooseLibrarySession(OfferedSession entry) {
+    final library = WorkoutLibraryState.instance;
+    library.chosenRowId = libraryRowId(
+      entry.programme.programId,
+      entry.session.sessionId,
+    );
+    library.openedSlot = null;
+  }
+
+  /// R01's "Short ones that still count": each tile opens the library session
+  /// its label describes, and a tile with none behind it is not drawn. All
+  /// three opened her normal planned day.
+  static List<ShortSession> _shortSessions(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final offered = _offeredSessions;
+    ShortSession? tile(String duration, String what, OfferedSession? match) =>
+        match == null
+        ? null
+        : ShortSession(
+            duration: duration,
+            constraint: what,
+            onTap: () {
+              _chooseLibrarySession(match);
+              goTo(context, 'R03');
+            },
+          );
+    return [
+      ?tile(
+        l10n.n10Min,
+        l10n.floorOnly,
+        shortSessionFor(offered, maxMinutes: 10, floorOnly: true),
+      ),
+      ?tile(
+        l10n.n15Min,
+        l10n.quiet,
+        shortSessionFor(offered, maxMinutes: 15, quiet: true),
+      ),
+      ?tile(
+        l10n.n20Min,
+        l10n.dumbbells,
+        shortSessionFor(offered, maxMinutes: 20, withEquipment: true),
+      ),
+    ];
+  }
+
+  /// T04's ten minutes: four moves or fewer, all on the floor.
+  static OfferedSession? get _quietWeekSession => shortSessionFor(
+    _offeredSessions,
+    maxMinutes: 10,
+    floorOnly: true,
+    maxMoves: 4,
+  );
+
+  /// Y06's gentle option, when the library has a mobility session for her.
+  static OfferedSession? get _gentleSession => gentleMobilitySessionFor(
+    _offeredSessions,
+    isMobility: (id) =>
+        ExerciseLibraryState.instance.byId(id)?.pattern == 'mobility',
+  );
+
+  /// Undo windows for changes that are not logs: swaps, skips, unblocks and a
+  /// rearranged week.
+  static LogCommandBus changeBus = LogCommandBus();
+
+  /// R08 opened from R13 on a set she already logged: the save replaces that
+  /// set, the session stays where it is, and she is back on the list with
+  /// Undo. Null when R08 was opened for the set she is on.
+  static Widget? _setCorrectionFrom(BuildContext context) {
+    final correction = ModalRoute.of(context)?.settings.arguments;
+    if (correction is! SetCorrection) return null;
+    final session = WorkoutSessionState.instance;
+    final prescribed = correction.set.prescribed;
+    final lifted = correction.set.outcome?.weightKg;
+    return ChangeSetView(
+      correcting: true,
+      repository: trainRepository,
+      sessionId: session.sessionId,
+      moveNumber: correction.moveNumber,
+      moveCount: session.moveCount,
+      prescribed: prescribed,
+      moveName: correction.move.name,
+      weightOptionsKg: weightOptionsAround(
+        lifted == null
+            ? prescribed
+            : PrescribedSet(
+                exerciseId: prescribed.exerciseId,
+                order: prescribed.order,
+                weightKg: lifted,
+                reps: prescribed.reps,
+                holdSeconds: prescribed.holdSeconds,
+              ),
+      ),
+      askWeight: correction.move.needsEquipment,
+      // The session's bus, without attaching: closing this page must not
+      // commit the correction early and take its Undo away with it.
+      bus: session.bus,
+      sets: _setsProgress,
+      onClose: () => Navigator.of(context).maybePop(),
+      onSaved: (handle) {
+        showUndoSnackBar(
+          context,
+          handle: handle,
+          undoLabel: AppL10n.of(context).undo,
+        );
+        Navigator.of(context).maybePop();
+      },
+    );
+  }
+
+  /// R10 and R12: asks, then takes the session off her week with Undo, and
+  /// lands her on Home. The session and its own credit come off when the
+  /// window closes; see `RewardsState.uncreditSession` for what stays.
+  static Future<void> _removeSession(
+    BuildContext context, {
+    required String sessionId,
+    required SessionSource source,
+    required int sessionPoints,
+    int bestPoints = 0,
+  }) async {
+    final week = todayRepository.day.week;
+    final after = week.sessionsLogged > 0 ? week.sessionsLogged - 1 : 0;
+    await removeSessionWithUndo(
+      context,
+      bus: removalBus,
+      describe: AppL10n.of(context).sessionRemovedYourWeekIsAtCount(
+        countLabel(after),
+        countLabel(week.sessionsTarget),
+      ),
+      commit: () async {
+        await trainRepository.removeSession(sessionId);
+        // After the removal, so her bests are measured again without it.
+        RewardsState.instance.uncreditSession(
+          sessionId: sessionId,
+          source: source,
+          today: todayRepository,
+          progress: progressStore,
+          sessionPoints: sessionPoints,
+          bestPoints: bestPoints,
+          bests: sessionBests,
+          train: trainRepository,
+        );
+        if (lastRecalled?.id == sessionId) {
+          lastRecalled = null;
+          lastRecallOutcome = null;
+        }
+      },
+      then: () => Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false),
+    );
+  }
 
   /// Sets of today's session behind her and all of them, for the bar on the
   /// training screens. Null outside a live session.
@@ -6761,6 +7323,25 @@ class AppRouter {
     unawaited(navigator.pushNamed(appRoutes['C06']!.name));
   }
 
+  /// A02's "Sign out", once she has confirmed. The same sign-out C14's "Use
+  /// a different number" makes, then the front door, and a plain word on
+  /// what happened. Her account and everything in it stay where they are.
+  static Future<void> signOutHere(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final said = AppL10n.of(context).signedOut;
+    try {
+      await const ThisPhoneWipe().signOut();
+    } catch (_) {
+      // Signed out or not, the front door is the way forward.
+    }
+    if (!navigator.mounted) return;
+    unawaited(
+      navigator.pushNamedAndRemoveUntil(appRoutes['C01']!.name, (_) => false),
+    );
+    showHonestNoticeOn(messenger, said);
+  }
+
   /// A02's "Your data" sheet, also opened by "Delete my account instead" on
   /// the legal update sheet.
   static void openYourData(BuildContext context) {
@@ -6995,9 +7576,34 @@ class AppRouter {
   static void recordPledge(BuildContext context) {
     PledgeState.instance.agree();
     final locale = Localizations.localeOf(context).languageCode;
-    if (signedInUid != null) {
-      unawaited(pledgeStore.record(locale: locale).catchError((Object _) {}));
+    _pledgeLocale = locale;
+    if (signedInUid != null) unawaited(_sendPledge(locale));
+  }
+
+  static String _pledgeLocale = 'ar';
+
+  /// C16's route argument when it is opened from the Safety Centre.
+  static const String kReadTheRulesAgain = 'read-the-rules-again';
+
+  /// Sends the server record. A failure is not swallowed any more: the phone
+  /// remembers the record is owed and sends it again on the next launch.
+  static Future<void> _sendPledge(String locale) async {
+    PledgeState.instance.recordPending = true;
+    try {
+      await pledgeStore.record(locale: locale);
+      PledgeState.instance.recordPending = false;
+    } catch (_) {
+      // Still owed. [retryPledgeRecord] tries again when the app next opens.
     }
+    AppChanges.bump();
+  }
+
+  /// At launch: a pledge agreed on this phone whose server record never
+  /// landed is sent again. Nothing when none is owed or she is signed out.
+  static Future<void> retryPledgeRecord() async {
+    final pledge = PledgeState.instance;
+    if (!pledge.recordPending || !pledge.agreed || signedInUid == null) return;
+    await _sendPledge(localePreference.read()?.code ?? _pledgeLocale);
   }
 
   /// Schedules her training reminders on this phone. The plugin on a phone,
@@ -7027,6 +7633,18 @@ class AppRouter {
     checkInChannelDescription: l10n.aFriendlyNudgeIfYouveBeenAway,
     restChannelName: l10n.restTimer,
     restChannelDescription: l10n.tellsYouWhenYourRestBetweenSets,
+    // One per getting started tip, in the order of `GettingStartedTip`.
+    tipBodies: [
+      l10n.aShortFirstWorkoutYouCanDo,
+      l10n.everyMoveHasAShortVideoSo,
+      l10n.snapYourPlateAndWellEstimateThe,
+      l10n.rahmasEgyptianRecipesKosharyAndMolokhiaIncluded,
+      l10n.firstTimeAtTheGymACalm,
+      l10n.eachSessionLightsUpTheMusclesYou,
+      l10n.aTrainingWeekThatFitsTheDays,
+    ],
+    tipChannelName: l10n.gettingStartedTips,
+    tipChannelDescription: l10n.aFewTipsInYourFirstWeeks,
   );
 
   /// The training reminders sheet, from `R10` or `A01`.
@@ -8157,12 +8775,11 @@ class AppRouter {
     return RahmaRecipeView(
       recipe: recipe,
       onBack: () => Navigator.of(context).maybePop(),
-      // Nothing in this build can share, and saying so is the same discipline
-      // the rest of the Eat tab keeps rather than leaving a dead button.
-      onShare: () => showHonestNotice(
-        context,
-        AppL10n.of(context).sharingIsNotConnectedInThisBuild,
-      ),
+      // Nothing in this build can share, so there is no share button.
+      onShare: null,
+      // The next step after reading her recipe: it goes on the first free
+      // dinner of this week, and E07 opens on it.
+      onAddToWeek: () => unawaited(_addToWeek(context, recipe.recipeId)),
     );
   }
 

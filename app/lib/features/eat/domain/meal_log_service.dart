@@ -47,6 +47,7 @@ import '../../../domain/week/week_key.dart';
 import 'allergy_guard.dart';
 import 'food_library.dart';
 import 'item_id.dart';
+import 'meal_check.dart';
 import 'meal_repository.dart';
 import 'meal_sentence_parser.dart';
 import 'meal_slot_state_machine.dart';
@@ -162,6 +163,9 @@ class MealLogService {
       origin: MealOrigin.plan,
       kcal: entry.kcal,
       proteinG: entry.proteinG,
+      carbsG: entry.carbsG,
+      fatG: entry.fatG,
+      fiberG: entry.fiberG,
       planRef: planRef,
       allergenOverride: acknowledged.toList(),
     );
@@ -220,6 +224,11 @@ class MealLogService {
       origin: of.origin,
       kcal: of.kcal,
       proteinG: of.proteinG,
+      carbsG: of.carbsG,
+      fatG: of.fatG,
+      fiberG: of.fiberG,
+      name: of.name,
+      grams: of.grams,
       helpingOf: root,
       allergenOverride: acknowledged.toList(),
     );
@@ -274,6 +283,9 @@ class MealLogService {
           origin: origin,
           kcal: entry.kcal,
           proteinG: entry.proteinG,
+          carbsG: entry.carbsG,
+          fatG: entry.fatG,
+          fiberG: entry.fiberG,
           allergenOverride: acknowledged.toList(),
         ),
     ];
@@ -288,6 +300,92 @@ class MealLogService {
       ),
       items: items,
     );
+  }
+
+  /// The plate she checked on E13, item by item, exactly as she approved it.
+  ///
+  /// A free log like [logNew]: fresh ids, nothing removed, no [PlanRef]. What
+  /// differs is where the numbers come from. A food the pack does not hold is
+  /// logged under her name for it and the figures she approved, and it is
+  /// still put to the guard: as a dish nobody has listed the contents of,
+  /// which is exactly what a photographed plate is. So she is refused here
+  /// on the same terms as for any dish in the pack, never waved through.
+  MealLogOutcome logChecked({
+    required MealDay day,
+    required MealSlot slot,
+    required List<CheckedEntry> entries,
+    required DateTime at,
+    Set<String> acknowledged = const <String>{},
+  }) {
+    if (entries.isEmpty) {
+      return const MealLogRefused(LogRefusal(LogRefusalReason.foodNotInPack));
+    }
+
+    for (final entry in entries) {
+      final listed = entry.food;
+      // A food from the list must still be in it; one she named is assessed
+      // as a dish whose contents nobody has listed.
+      final Food? food = listed == null
+          ? Food(
+              foodId: entry.foodId,
+              names: [entry.name ?? ''],
+              sizes: const <FoodSize>[],
+            )
+          : library.byId(listed.foodId);
+      final assessment = food == null
+          ? AllergyAssessment.clear
+          : guard.assess(food, acknowledged: acknowledged);
+      final refusal = machine.refuseLog(
+        day: day,
+        food: food,
+        assessment: assessment,
+      );
+      if (refusal != null) {
+        return MealLogRefused(
+          refusal,
+          dish: entry.name ?? listed?.names.first,
+        );
+      }
+    }
+
+    final items = [
+      for (final entry in entries)
+        MealItem(
+          itemId: freshItemId(),
+          foodId: entry.foodId,
+          servings: 1,
+          size: entry.sizeId,
+          loggedAt: at,
+          source: MealSource.search,
+          origin: MealOrigin.photo,
+          kcal: entry.kcal,
+          proteinG: entry.proteinG,
+          carbsG: entry.carbsG,
+          fatG: entry.fatG,
+          fiberG: entry.fiberG,
+          name: entry.food == null ? entry.name : null,
+          grams: entry.grams == null ? null : _grams(entry.grams!),
+          allergenOverride: acknowledged.toList(),
+        ),
+    ];
+
+    return MealLogPrepared(
+      write: MealWrite.transform(
+        dayId: day.dayId,
+        slot: slot,
+        added: items,
+        tz: tz,
+        libVersion: libVersion,
+      ),
+      items: items,
+    );
+  }
+
+  /// A weight as she saw it: whole grams, or one decimal below ten.
+  static num _grams(double grams) {
+    final whole = grams.roundToDouble();
+    if ((grams - whole).abs() < 0.05 || grams >= 10) return whole.toInt();
+    return (grams * 10).round() / 10;
   }
 
   /// Marks a slot skipped. No penalty anywhere, and never final.

@@ -49,6 +49,22 @@ class ChangedSet {
   final PrescribedSet prescribed;
 }
 
+/// R13's way into R08: one set she already logged, on one move, to change.
+class SetCorrection {
+  const SetCorrection({
+    required this.move,
+    required this.moveNumber,
+    required this.set,
+  });
+
+  final PlannedMove move;
+
+  /// 1-based, for the bar at the top.
+  final int moveNumber;
+
+  final LoggedSet set;
+}
+
 class ChangeSetView extends StatefulWidget {
   const ChangeSetView({
     super.key,
@@ -75,7 +91,13 @@ class ChangeSetView extends StatefulWidget {
     this.onDetach,
     this.progressionLine,
     this.askWeight = false,
+    this.correcting = false,
   });
+
+  /// R13's "change a set she already logged": the save replaces what was
+  /// written for this set instead of logging it again, and the session does
+  /// not move on.
+  final bool correcting;
 
   final VoidCallback? onClose;
 
@@ -161,6 +183,7 @@ class _ChangeSetViewState extends State<ChangeSetView> {
   }
 
   Future<void> _openSheet() async {
+    var saved = false;
     await showAppSheet<void>(
       context: context,
       children: [
@@ -181,12 +204,17 @@ class _ChangeSetViewState extends State<ChangeSetView> {
           progressionLine: widget.progressionLine,
           onTypeANumber: widget.onTypeANumber,
           onSave: (changed) {
+            saved = true;
             Navigator.of(context).pop();
             _log(changed);
           },
         ),
       ],
     );
+    // Closed without saving: back to where she came from. This page is only
+    // the backdrop for the sheet, and left on its own it was a blank page
+    // with a move name and an X.
+    if (!saved && mounted) widget.onClose?.call();
   }
 
   /// Writes what she actually did, through the one logging path (§2 rule 9).
@@ -222,14 +250,22 @@ class _ChangeSetViewState extends State<ChangeSetView> {
           reps: reps,
           holdSeconds: hold ?? changed.prescribed.holdSeconds,
         ),
-        commit: () => _repository.flushMove(
-          sessionId: widget.sessionId,
-          exerciseId: changed.prescribed.exerciseId,
-          sets: [
-            LoggedSet(prescribed: changed.prescribed)
-                .recording(changed.outcome),
-          ],
-        ),
+        commit: widget.correcting
+            ? () => _repository.replaceSet(
+                sessionId: widget.sessionId,
+                exerciseId: changed.prescribed.exerciseId,
+                set: LoggedSet(
+                  prescribed: changed.prescribed,
+                ).recording(changed.outcome),
+              )
+            : () => _repository.flushMove(
+                sessionId: widget.sessionId,
+                exerciseId: changed.prescribed.exerciseId,
+                sets: [
+                  LoggedSet(prescribed: changed.prescribed)
+                      .recording(changed.outcome),
+                ],
+              ),
       ),
     );
     unawaited(AppHaptics.play(HapticMoment.setLogged));

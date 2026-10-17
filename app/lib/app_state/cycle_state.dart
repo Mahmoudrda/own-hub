@@ -31,6 +31,13 @@ import '../features/cycle/domain/today_check_in.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
 
+/// Today's check-in, what was saved for today, and the gentler-option answer.
+typedef CheckInSnapshot = ({
+  TodayCheckIn today,
+  TodayCheckIn? saved,
+  String? decidedOn,
+});
+
 class CycleAppState {
   CycleAppState._();
 
@@ -166,14 +173,43 @@ class CycleAppState {
     changed();
   }
 
+  /// Today's check-in as it stands, so a Y04 save can be taken back exactly.
+  CheckInSnapshot get checkInSnapshot => (
+    today: AppRouter.todayCheckIn,
+    saved: _checkIns[_today()],
+    decidedOn: _decidedOn,
+  );
+
+  /// Undo on a Y04 save: today's check-in, and the gentler-option answer it
+  /// cleared, back as they were.
+  void restoreCheckIn(CheckInSnapshot before) {
+    AppRouter.todayCheckIn = before.today;
+    final saved = before.saved;
+    if (saved == null) {
+      _checkIns.remove(_today());
+    } else {
+      _checkIns[_today()] = saved;
+    }
+    _decidedOn = before.decidedOn;
+    changed();
+  }
+
   /// "Keep mine", "Keep my workout" or "Rest today" on the gentler option.
   void decideToday() {
     _decidedOn = _today();
     changed();
   }
 
-  /// Y12 deleted her cycle data. Check-ins are Today's and stay (G9 §3.5).
+  /// Y12 deleted her cycle data: her period dates and settings are gone from
+  /// the repository, and her check-ins go with them here.
+  ///
+  /// G9 §3.5 kept the check-ins as Today's. The owner's decision (17 Oct 2026)
+  /// is that "Delete cycle data" deletes what Y12 says it deletes, check-ins
+  /// included, so nothing she logged on My cycle stays behind on the phone.
   void purged() {
+    _checkIns.clear();
+    AppRouter.todayCheckIn = TodayCheckIn.absent;
+    _decidedOn = null;
     _homeCardChosen = false;
     _monthOffset = 0;
     changed();

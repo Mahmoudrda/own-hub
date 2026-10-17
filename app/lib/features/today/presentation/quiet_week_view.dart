@@ -71,6 +71,7 @@ class QuietWeekView extends StatefulWidget {
     this.date,
     this.goal,
     this.onStartShortSession,
+    this.offersShortSession = true,
     this.onOpenMeal,
     this.onOpenWeek,
     this.onSelectTab,
@@ -90,6 +91,12 @@ class QuietWeekView extends StatefulWidget {
   final WeeklyGoal? goal;
 
   final VoidCallback? onStartShortSession;
+
+  /// Whether there is a ten-minute, floor-only session behind "Start the 10
+  /// minutes". When there is not, the block is not drawn and breakfast is the
+  /// one thing offered: the button opened her full planned day instead.
+  final bool offersShortSession;
+
   final VoidCallback? onOpenMeal;
   final VoidCallback? onOpenWeek;
   final ValueChanged<String>? onSelectTab;
@@ -222,54 +229,55 @@ class _QuietWeekViewState extends State<QuietWeekView> {
           // the one figure that makes it small — ten minutes — circled by hand.
           // That circle is this page's mark; everything under the rule is
           // Today's usual furniture.
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 6),
-              AppSplitRow(
-                start: Text(
-                  l10n.theShortestOneWeHave,
-                  style: EditorialType.section,
-                ),
-                end: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
+          if (widget.offersShortSession)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 6),
+                AppSplitRow(
+                  start: Text(
+                    l10n.theShortestOneWeHave,
+                    style: EditorialType.section,
                   ),
-                  child: HandCircled(
-                    level: HandLevel.signature,
-                    drawOn: true,
-                    delay: HandTiming.medium,
-                    child: Text(
-                      l10n.n10Min,
-                      style: AppText.label.copyWith(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
+                  end: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    child: HandCircled(
+                      level: HandLevel.signature,
+                      drawOn: true,
+                      delay: HandTiming.medium,
+                      child: Text(
+                        l10n.n10Min,
+                        style: AppText.label.copyWith(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.onSurface,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                l10n.fourMovesFloorOnlyNothingToCarry,
-                style: AppText.bodyM.copyWith(
-                  color: AppColors.onSurfaceVariant,
+                const SizedBox(height: 10),
+                Text(
+                  l10n.fourMovesFloorOnlyNothingToCarry,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 14),
-              AppButton(
-                l10n.startThe10Minutes,
-                height: 54,
-                icon: Icons.play_arrow,
-                onPressed: () =>
-                    openScreen(context, 'R07', widget.onStartShortSession),
-              ),
-            ],
-          ),
-          const HandRule(seed: 53, height: 18),
+                const SizedBox(height: 14),
+                AppButton(
+                  l10n.startThe10Minutes,
+                  height: 54,
+                  icon: Icons.play_arrow,
+                  onPressed: () =>
+                      openScreen(context, 'R07', widget.onStartShortSession),
+                ),
+              ],
+            ),
+          if (widget.offersShortSession) const HandRule(seed: 53, height: 18),
           MealCard(
             title: l10n.orJustAddBreakfast,
             loggedAt: DateTime(_date.year, _date.month, _date.day, 8, 40),

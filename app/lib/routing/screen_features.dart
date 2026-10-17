@@ -76,6 +76,8 @@ const Map<String, Feature> kScreenFeatures = {
   'E09': Feature.eat,
   'E10': Feature.eat,
   'E11': Feature.recipes,
+  'E12': Feature.mealPhotos,
+  'E13': Feature.mealPhotos,
 
   // Progress.
   'P01': Feature.progress,

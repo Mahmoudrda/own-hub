@@ -15,6 +15,11 @@
 /// same window: that section is 1, a section she did not train is 0. Nothing
 /// about recovery, and nothing compared with anybody else.
 ///
+/// **Per muscle.** The body map is coloured muscle by muscle, and only by the
+/// sets where that muscle did the work: a glute bridge lights the glutes and
+/// nothing else, and curls never light the triceps. The sets where a muscle
+/// only helped are kept apart, whole, for the card she opens on it.
+///
 /// Derived each time it is asked, never stored, so there is nothing to sync,
 /// snapshot or wipe.
 library;
@@ -68,11 +73,22 @@ class MuscleReport {
     this._regions,
     this._lastTrained,
     this._ever,
+    this._worked,
+    this._helped,
+    this._lastWorked,
   );
 
   /// A report with nothing in it.
-  factory MuscleReport.empty(DateTime today) =>
-      MuscleReport._(_dateOf(today), const {}, const {}, const {}, const {});
+  factory MuscleReport.empty(DateTime today) => MuscleReport._(
+    _dateOf(today),
+    const {},
+    const {},
+    const {},
+    const {},
+    const {},
+    const {},
+    const {},
+  );
 
   /// The day the windows end on, at midnight UTC so day arithmetic is exact.
   final DateTime today;
@@ -81,6 +97,9 @@ class MuscleReport {
   final Map<MuscleWindow, Map<BodyRegion, double>> _regions;
   final Map<MuscleSection, DateTime> _lastTrained;
   final Map<MuscleSection, double> _ever;
+  final Map<MuscleWindow, Map<Muscle, double>> _worked;
+  final Map<MuscleWindow, Map<Muscle, double>> _helped;
+  final Map<Muscle, DateTime> _lastWorked;
 
   /// True once any section has a set in it, ever.
   bool get hasAnyLog => _lastTrained.isNotEmpty;
@@ -116,6 +135,49 @@ class MuscleReport {
   int? daysSince(MuscleSection section) {
     final last = _lastTrained[section];
     return last == null ? null : today.difference(last).inDays;
+  }
+
+  /// Sets in [window] where [muscle] did the work: a primary muscle of the
+  /// move. What the body map is coloured by.
+  double workedSets(MuscleWindow window, Muscle muscle) =>
+      _worked[window]?[muscle] ?? 0;
+
+  /// Whole sets in [window] where [muscle] only helped a move.
+  double helpedSets(MuscleWindow window, Muscle muscle) =>
+      _helped[window]?[muscle] ?? 0;
+
+  /// The most sets any one muscle did the work in, in [window], or 0.
+  double muscleMaxIn(MuscleWindow window) =>
+      (_worked[window]?.values ?? const <double>[]).fold(0.0, math.max);
+
+  /// [muscle]'s worked sets over the most-worked muscle's, 0 to 1.
+  double muscleScore(MuscleWindow window, Muscle muscle) {
+    final top = muscleMaxIn(window);
+    return top <= 0 ? 0 : workedSets(window, muscle) / top;
+  }
+
+  /// The last day [muscle] did the work in a set, over everything she ever
+  /// logged.
+  DateTime? lastWorked(Muscle muscle) => _lastWorked[muscle];
+
+  /// Whole days since [muscle] last did the work in a set: 0 for today.
+  int? daysSinceWorked(Muscle muscle) {
+    final last = _lastWorked[muscle];
+    return last == null ? null : today.difference(last).inDays;
+  }
+
+  /// The muscles that did the work in [window], the most first. Ties keep the
+  /// library's order.
+  List<({Muscle muscle, double sets})> rankedMuscles(MuscleWindow window) {
+    final out = [
+      for (final m in Muscle.values)
+        if (workedSets(window, m) > 0) (muscle: m, sets: workedSets(window, m)),
+    ];
+    out.sort((a, b) {
+      final bySets = b.sets.compareTo(a.sets);
+      return bySets != 0 ? bySets : a.muscle.index - b.muscle.index;
+    });
+    return out;
   }
 
   /// Every section, the most trained first. Ties keep the library's order.
@@ -157,6 +219,13 @@ MuscleReport buildMuscleReport({
   };
   final lastTrained = <MuscleSection, DateTime>{};
   final ever = <MuscleSection, double>{};
+  final worked = <MuscleWindow, Map<Muscle, double>>{
+    for (final w in MuscleWindow.values) w: <Muscle, double>{},
+  };
+  final helped = <MuscleWindow, Map<Muscle, double>>{
+    for (final w in MuscleWindow.values) w: <Muscle, double>{},
+  };
+  final lastWorked = <Muscle, DateTime>{};
 
   for (final entry in log) {
     if (entry.sets <= 0) continue;
@@ -179,6 +248,21 @@ MuscleReport buildMuscleReport({
         volume[w]![section] = (volume[w]![section] ?? 0) + weight * entry.sets;
       }
     }
+    final primary = muscles.primary.toSet();
+    for (final muscle in primary) {
+      final had = lastWorked[muscle];
+      if (had == null || day.isAfter(had)) lastWorked[muscle] = day;
+    }
+    final helping = muscles.secondary.toSet().difference(primary);
+    for (final w in MuscleWindow.values) {
+      if (ago >= w.days) continue;
+      for (final muscle in primary) {
+        worked[w]![muscle] = (worked[w]![muscle] ?? 0) + entry.sets;
+      }
+      for (final muscle in helping) {
+        helped[w]![muscle] = (helped[w]![muscle] ?? 0) + entry.sets;
+      }
+    }
     final halves = muscles.regionWeights;
     for (final MapEntry(key: region, value: weight) in halves.entries) {
       for (final w in MuscleWindow.values) {
@@ -188,7 +272,16 @@ MuscleReport buildMuscleReport({
     }
   }
 
-  return MuscleReport._(end, volume, regions, lastTrained, ever);
+  return MuscleReport._(
+    end,
+    volume,
+    regions,
+    lastTrained,
+    ever,
+    worked,
+    helped,
+    lastWorked,
+  );
 }
 
 /// The moves she logged, read from what the phone holds of her training.
