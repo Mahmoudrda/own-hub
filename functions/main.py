@@ -991,6 +991,15 @@ def request_review(request: https_fn.CallableRequest) -> dict:
     started = time.monotonic()
     uid = _require_auth(request)
     data = _body(request)
+    # M13: a store review account on the owner's allow-list is approved here
+    # too, exactly as verify_identity approves it, so choosing the woman
+    # reviewer instead of the camera can never leave it waiting on a person.
+    if _is_store_reviewer(request, uid):
+        store.mint_claims(uid, True)
+        store.write_user_verification(uid)
+        store.FirestoreReviewStore().log_access(uid, "store-review", "reviewerBypass")
+        logs.warn("reviewer_bypass")
+        return {"state": review.STATE_APPROVED}
     result = _review_call(review.request, store.FirestoreReviewStore(), uid, data.get("path"))
     logs.decision(
         "request_review",

@@ -219,3 +219,28 @@ def test_the_phone_secret_reads_its_own_resource(monkeypatch):
     monkeypatch.setattr(store, "_reviewer_phone_cache", None)
     assert store._real_store_reviewer_phones() == frozenset({REVIEW_PHONE})
     assert asked == ["projects/own-hub/secrets/store-reviewer-phones/versions/latest"]
+
+
+def test_a_listed_number_asking_for_a_woman_reviewer_is_approved(monkeypatch, recorded):
+    # Choosing the woman reviewer instead of the camera must not leave a store
+    # review account waiting on a person.
+    monkeypatch.setattr(main.store, "store_reviewer_phones", lambda: frozenset({REVIEW_PHONE}))
+    answer = inner("request_review")(
+        request({"path": "declined"}, uid="uid-new", token=_phone(REVIEW_PHONE))
+    )
+    assert answer == {"state": "approved"}
+    assert recorded["minted"] == ["uid-new"]
+    assert recorded["verification"] == ["uid-new"]
+    assert recorded["access"] == [("uid-new", "store-review", "reviewerBypass")]
+
+
+def test_an_unlisted_number_asking_for_a_woman_reviewer_gets_a_real_review(monkeypatch, recorded):
+    monkeypatch.setattr(main.store, "store_reviewer_phones", lambda: frozenset({REVIEW_PHONE}))
+    monkeypatch.setattr(
+        main, "_review_call", lambda fn, st, uid, path: main.review.RequestResult("pending")
+    )
+    answer = inner("request_review")(
+        request({"path": "declined"}, uid="uid-2", token=_phone("+201234567890"))
+    )
+    assert answer == {"state": "pending"}
+    assert recorded["minted"] == [] and recorded["access"] == []
