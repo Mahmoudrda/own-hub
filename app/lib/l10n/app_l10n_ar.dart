@@ -9932,4 +9932,66 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get switchLanguageToEnglish => 'غيّري اللغة للإنجليزية';
+
+  @override
+  String get lookStraightAtTheCamera => 'بصّي في الكاميرا على طول';
+
+  @override
+  String get turnYourHeadALittleToYour => 'لفّي راسك شوية لشمالك';
+
+  @override
+  String get turnYourHeadALittleToYour_g5o1x => 'لفّي راسك شوية ليمينك';
+
+  @override
+  String get takePhoto => 'صوّري';
+
+  @override
+  String get checkYourPhotos => 'بصّي على صورك';
+
+  @override
+  String get isYourFaceClearInEachOne =>
+      'وشّك باين في كل واحدة؟ لو لأ، صوّريهم تاني.';
+
+  @override
+  String get useThesePhotos => 'استخدمي الصور دي';
+
+  @override
+  String get retake => 'صوّري تاني';
+
+  @override
+  String get checkYourPhoto => 'بصّي على الصورة';
+
+  @override
+  String get canYouReadEveryWordIfNot =>
+      'تقدري تقري كل كلمة؟ لو لأ، صوّريها تاني.';
+
+  @override
+  String get useThisPhoto => 'استخدمي الصورة دي';
+
+  @override
+  String get thisLooksLikeTheFrontOfThe => 'دي شكلها وش البطاقة. تصوّري تاني؟';
+
+  @override
+  String get nowTurnTheCardOver => 'دلوقتي اقلبي البطاقة';
+
+  @override
+  String get theBackHasNoPhotoOnIt =>
+      'الضهر مافيهوش صورة. دوسي جاهزة لما يبقى قدّام الكاميرا.';
+
+  @override
+  String get ready => 'جاهزة';
+
+  @override
+  String get havingTroubleAskAWomanToCheck =>
+      'في مشكلة؟ اطلبي واحدة ست تتحقق منك';
+
+  @override
+  String get timeIsUpForThisStep => 'وقت الخطوة دي خلص';
+
+  @override
+  String get forYourSafetyItStaysOpenA =>
+      'عشان أمانك، الخطوة دي بتفضل مفتوحة كام دقيقة بس. ابدئي من تاني، مش هتاخد وقت.';
+
+  @override
+  String get startAgain => 'ابدئي من تاني';
 }

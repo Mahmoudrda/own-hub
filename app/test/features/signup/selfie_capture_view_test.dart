@@ -41,15 +41,20 @@ class _LiveSession implements CaptureSession {
 
   final CaptureTarget target;
   int captures = 0;
+  CaptureState _state = const CaptureState.framing(sharp: true);
 
   @override
-  CaptureState get current => const CaptureState.framing(sharp: true);
+  CaptureState get current => _state;
 
   @override
   Stream<CaptureState> watch() => Stream<CaptureState>.value(current);
 
+  /// A one-step challenge: the first press takes the only frame.
   @override
-  Future<void> capture() async => captures++;
+  Future<void> capture() async {
+    captures++;
+    _state = const CaptureState.captured();
+  }
 
   @override
   Future<void> close() async {}
@@ -137,7 +142,7 @@ void main() {
     expect(find.text('Quick selfie'), findsOneWidget);
     expect(find.text('her face, live'), findsOneWidget);
     expect(find.text('Look straight ahead. No smile needed.'), findsOneWidget);
-    expect(find.text('Done'), findsOneWidget);
+    expect(find.text('Take photo'), findsOneWidget);
   });
 
   testWidgets('RULE 8 — the selfie proves the card is hers, and is deleted', (
@@ -180,7 +185,7 @@ void main() {
       isNull,
     );
 
-    await tester.tap(find.text('Done'));
+    await tester.tap(find.text('Take photo'));
     await tester.pumpAndSettle();
     expect(captured, 0);
   });
@@ -208,10 +213,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Done'));
+    await tester.tap(find.text('Take photo'));
     await tester.pumpAndSettle();
 
     expect(service.opened.single.captures, 1);
+    expect(captured, 0, reason: 'she checks the photos before they are used');
+
+    await tester.tap(find.text('Use these photos'));
+    await tester.pumpAndSettle();
     expect(captured, 1);
   });
 

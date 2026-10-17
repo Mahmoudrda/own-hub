@@ -22,6 +22,10 @@
 /// off gets "Open settings"; anything else gets "Try again". Both get "Check me
 /// another way", a woman reviewer with no camera. A woman who tapped "Don't
 /// allow" used to meet an empty frame and a dead button, with nothing said.
+///
+/// While the camera can run, [onAskWoman] adds a quiet link under the buttons,
+/// "Having trouble? Ask a woman to check you". A woman who is struggling with
+/// the camera should not have to fail at it first to find the other way in.
 library;
 
 import '../../../../ui/screen_art_strip.dart';
@@ -58,7 +62,31 @@ class CaptureScaffold extends StatelessWidget {
     this.onOpenSettings,
     this.onRetry,
     this.onAskReviewer,
+    this.stepLabel,
+    this.headlineGuide,
+    this.largeHeadline = false,
+    this.secondaryActionLabel,
+    this.onSecondaryAction,
+    this.onAskWoman,
   });
+
+  /// "Step 2 of 4", small, above the headline. Null outside the challenge.
+  final String? stepLabel;
+
+  /// Drawn above the headline: the kitten acting out the step she is asked
+  /// to perform.
+  final Widget? headlineGuide;
+
+  /// The headline is the instruction she is acting on right now, so it is set
+  /// bigger: a step she has to read mid-turn has to be readable mid-turn.
+  final bool largeHeadline;
+
+  /// A quieter second action under the white button, such as "Retake".
+  final String? secondaryActionLabel;
+  final VoidCallback? onSecondaryAction;
+
+  /// The quiet way to a woman reviewer while the camera works. Null hides it.
+  final VoidCallback? onAskWoman;
 
   /// Why the camera cannot run, or null while it can.
   final CaptureUnavailableReason? unavailable;
@@ -149,6 +177,36 @@ class CaptureScaffold extends StatelessWidget {
               fontSize: 15,
               onPressed: onAction,
             ),
+            if (secondaryActionLabel case final secondary?)
+              TextButton(
+                onPressed: onSecondaryAction,
+                style: TextButton.styleFrom(
+                  foregroundColor: _onDark,
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: Text(
+                  secondary,
+                  style: AppText.titleM.copyWith(color: _onDark, fontSize: 15),
+                ),
+              ),
+            if (onAskWoman != null)
+              TextButton(
+                key: const ValueKey('capture-ask-a-woman'),
+                onPressed: onAskWoman,
+                style: TextButton.styleFrom(
+                  foregroundColor: _onDarkVariant,
+                  minimumSize: const Size.fromHeight(44),
+                ),
+                child: Text(
+                  l10n.havingTroubleAskAWomanToCheck,
+                  textAlign: TextAlign.center,
+                  style: AppText.bodyM.copyWith(
+                    color: _onDarkVariant,
+                    decoration: TextDecoration.underline,
+                    decorationColor: _onDarkVariant,
+                  ),
+                ),
+              ),
           ]
         : [
             AppWhiteButton(
@@ -216,12 +274,35 @@ class CaptureScaffold extends StatelessWidget {
                           style: AppText.titleM.copyWith(color: _onDark),
                         ),
                       )
-                    else
-                      Text(
-                        headline,
-                        textAlign: TextAlign.center,
-                        style: AppText.titleM.copyWith(color: _onDark),
+                    else ...[
+                      if (stepLabel case final step?) ...[
+                        Text(
+                          step,
+                          textAlign: TextAlign.center,
+                          style: AppText.label.copyWith(color: _onDarkVariant),
+                        ),
+                        const SizedBox(height: 6),
+                      ],
+                      if (headlineGuide case final kitten?) ...[
+                        kitten,
+                        const SizedBox(height: 8),
+                      ],
+                      // Announced as it changes, like the guidance below: on
+                      // the selfie this is the step she is being asked for.
+                      Semantics(
+                        liveRegion: largeHeadline,
+                        child: Text(
+                          headline,
+                          textAlign: TextAlign.center,
+                          style: largeHeadline
+                              ? AppText.titleL.copyWith(
+                                  color: _onDark,
+                                  fontSize: 22,
+                                )
+                              : AppText.titleM.copyWith(color: _onDark),
+                        ),
                       ),
+                    ],
                     // A refused camera has a title and a body; any other stop
                     // says it in one sentence, above.
                     if (reason == null || stopTitle != null) ...[

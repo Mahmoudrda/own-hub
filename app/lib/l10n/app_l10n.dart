@@ -17784,6 +17784,120 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Switch language to English'**
   String get switchLanguageToEnglish;
+
+  /// No description provided for @lookStraightAtTheCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Look straight at the camera'**
+  String get lookStraightAtTheCamera;
+
+  /// No description provided for @turnYourHeadALittleToYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn your head a little to your left'**
+  String get turnYourHeadALittleToYour;
+
+  /// No description provided for @turnYourHeadALittleToYour_g5o1x.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn your head a little to your right'**
+  String get turnYourHeadALittleToYour_g5o1x;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get takePhoto;
+
+  /// No description provided for @checkYourPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your photos'**
+  String get checkYourPhotos;
+
+  /// No description provided for @isYourFaceClearInEachOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Is your face clear in each one? If not, take them again.'**
+  String get isYourFaceClearInEachOne;
+
+  /// No description provided for @useThesePhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Use these photos'**
+  String get useThesePhotos;
+
+  /// No description provided for @retake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get retake;
+
+  /// No description provided for @checkYourPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your photo'**
+  String get checkYourPhoto;
+
+  /// No description provided for @canYouReadEveryWordIfNot.
+  ///
+  /// In en, this message translates to:
+  /// **'Can you read every word? If not, take it again.'**
+  String get canYouReadEveryWordIfNot;
+
+  /// No description provided for @useThisPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this photo'**
+  String get useThisPhoto;
+
+  /// No description provided for @thisLooksLikeTheFrontOfThe.
+  ///
+  /// In en, this message translates to:
+  /// **'This looks like the front of the card. Retake?'**
+  String get thisLooksLikeTheFrontOfThe;
+
+  /// No description provided for @nowTurnTheCardOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Now turn the card over'**
+  String get nowTurnTheCardOver;
+
+  /// No description provided for @theBackHasNoPhotoOnIt.
+  ///
+  /// In en, this message translates to:
+  /// **'The back has no photo on it. Tap Ready when it is facing the camera.'**
+  String get theBackHasNoPhotoOnIt;
+
+  /// No description provided for @ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get ready;
+
+  /// No description provided for @havingTroubleAskAWomanToCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Having trouble? Ask a woman to check you'**
+  String get havingTroubleAskAWomanToCheck;
+
+  /// No description provided for @timeIsUpForThisStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Time is up for this step'**
+  String get timeIsUpForThisStep;
+
+  /// No description provided for @forYourSafetyItStaysOpenA.
+  ///
+  /// In en, this message translates to:
+  /// **'For your safety it stays open a few minutes only. Start again, it is quick.'**
+  String get forYourSafetyItStaysOpenA;
+
+  /// No description provided for @startAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Start again'**
+  String get startAgain;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -62,8 +62,31 @@ class VerificationEvidence {
     _cardSides[side] = jpeg;
   }
 
+  /// Wipes one side of the card, when she chose to take it again.
+  ///
+  /// Straight away rather than when the next photograph replaces it, so a
+  /// retake she then abandons does not leave the first attempt in the heap.
+  void dropCardSide(CaptureTarget side) {
+    final previous = _cardSides.remove(side);
+    if (previous != null) _wipe(previous);
+  }
+
   /// One frame of the liveness check, JPEG, from `C11`.
   void addFrame(Uint8List jpeg) => _frames.add(jpeg);
+
+  /// Wipes every liveness frame and leaves the card alone.
+  ///
+  /// Run each time a selfie session opens. Frame `n` answers step `n`, so a
+  /// run of the steps always starts from none: a retake, a fresh challenge or
+  /// a camera reopened after Settings would otherwise append four new frames
+  /// to the old ones, and the server refuses a frame count that does not
+  /// match its steps.
+  void dropFrames() {
+    for (final frame in _frames) {
+      _wipe(frame);
+    }
+    _frames.clear();
+  }
 
   /// The front of the card, or null before `C10` has run.
   Uint8List? get front => _cardSides[CaptureTarget.idFront];

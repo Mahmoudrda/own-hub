@@ -12,10 +12,21 @@
 /// than one digit nobody can check. `CaptureTarget` decides which pass this is
 /// and the copy follows it.
 ///
+/// **She checks every photograph before it is used.** Whether the card
+/// photographed itself or she pressed "Take it myself", the photograph is shown
+/// with "Use this photo" and "Retake", and nothing moves on until she says so.
+/// The back starts with "Now turn the card over" and a Ready button, and its
+/// camera opens only after Ready: going straight from the front to a live
+/// camera on the back photographed the front a second time, because the card
+/// was still the right way up in her hand.
+///
 /// **No image reaches this widget.** The session writes into
 /// `VerificationEvidence` and reports that it finished; there is no member on
 /// [CaptureSession] that returns bytes, a path or a URL, which is how rule 7
-/// is kept structurally rather than by remembering to delete something.
+/// is kept structurally rather than by remembering to delete something. The
+/// review draws through [CaptureReview], which hands back a widget, and only
+/// while this screen is the one on top: once she moves on, the decoded
+/// picture is released.
 ///
 /// **She must have consented before this screen is reachable.** The camera is
 /// the first moment her face and her national ID leave the country, and the
@@ -59,7 +70,11 @@ class IdCaptureView extends StatefulWidget {
     this.onAskReviewer,
     this.onHandOff,
     this.onUnavailable,
+    this.onAskWoman,
   });
+
+  /// "Having trouble? Ask a woman to check you", while the camera works.
+  final VoidCallback? onAskWoman;
 
   /// Told once each time the camera turns out not to be able to run, with the
   /// reason, so the router can count it. Nothing else about the session.
@@ -86,7 +101,8 @@ class IdCaptureView extends StatefulWidget {
   /// matters most.
   final CaptureTarget side;
 
-  /// Fired once the frame has been taken — on to the back, or to `C11`.
+  /// Fired once she has checked the photograph and tapped "Use this photo":
+  /// on to the back, or to `C11`.
   final VoidCallback? onCaptured;
 
   /// Closing abandons the capture. Nothing has been sent, so there is no job to
@@ -103,8 +119,8 @@ class _IdCaptureViewState extends State<IdCaptureView>
   StreamSubscription<CaptureState>? _subscription;
   CaptureState _state = const CaptureState.preparing();
 
-  /// The card photographs itself, and the stream is broadcast, so without this
-  /// a single capture could push the next route twice.
+  /// "Use this photo" has moved her on. Guards a double tap from pushing the
+  /// next screen twice, and is lifted when she comes back to this one.
   bool _reported = false;
 
   /// True between "Open settings" and her return to the app.
@@ -116,11 +132,34 @@ class _IdCaptureViewState extends State<IdCaptureView>
   /// A hand-off is in flight.
   bool _handingOff = false;
 
+  /// The back only: she has turned the card over and tapped Ready. The
+  /// camera for the back does not open before this.
+  late bool _turnedOver = widget.side != CaptureTarget.idBack;
+
+  /// A photograph is held and on screen for her to check.
+  bool _reviewing = false;
+
+  /// Her shutter is in flight.
+  bool _capturing = false;
+
+  /// Whether this screen is the one on top. The review photograph is drawn
+  /// only while it is.
+  bool _onTop = true;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _open();
+    if (_turnedOver) _open();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final onTop = ModalRoute.isCurrentOf(context) ?? true;
+    // Back on this screen after moving on: the choice is hers again.
+    if (onTop && !_onTop) _reported = false;
+    _onTop = onTop;
   }
 
   @override
@@ -159,6 +198,13 @@ class _IdCaptureViewState extends State<IdCaptureView>
     widget.onOpenSettings?.call();
   }
 
+  /// "Ready" on the back: the card is turned over, so the camera may open.
+  void _ready() {
+    if (_turnedOver) return;
+    setState(() => _turnedOver = true);
+    unawaited(_open());
+  }
+
   Future<void> _open() async {
     final session = await widget.captureService.open(widget.side);
     if (!mounted) {
@@ -175,28 +221,85 @@ class _IdCaptureViewState extends State<IdCaptureView>
       final was = _state;
       setState(() => _state = state);
       if (was is! CaptureUnavailable) _noteUnavailable(state);
-      if (state is CaptureCaptured) _report();
-    });
+      if (state is CaptureCaptured) _enterReview();
+    }, onError: _ignoreSessionError);
   }
+
+  /// A failure inside the session, a face detector that threw most likely,
+  /// changes nothing on this screen: the last state stands and her shutter
+  /// keeps working. The server judges the frames either way.
+  void _ignoreSessionError(Object error) {}
 
   /// [IdCaptureView.onUnavailable], once per session that cannot run.
   void _noteUnavailable(CaptureState state) {
     if (state is CaptureUnavailable) widget.onUnavailable?.call(state.reason);
   }
 
-  /// The single place the next screen is asked for.
-  ///
-  /// Both the auto-capture and the manual shutter arrive here through
-  /// [CaptureCaptured], so "it photographed itself" and "she pressed the
-  /// button" cannot navigate twice between them.
-  void _report() {
-    if (_reported) return;
+  /// The session as a source of the photograph she checks, when it is one.
+  CaptureReview? get _review {
+    final session = _session;
+    return session is CaptureReview ? session as CaptureReview : null;
+  }
+
+  /// Both the auto-capture and her shutter arrive here, so "it photographed
+  /// itself" and "she pressed the button" show one review between them.
+  void _enterReview() {
+    if (_reviewing || !mounted) return;
+    setState(() => _reviewing = true);
+  }
+
+  Future<void> _capture() async {
+    final session = _session;
+    // Guarded rather than trusted: with no camera behind it there is nothing to
+    // capture, and a button that succeeds anyway would be the lie this whole
+    // arrangement exists to prevent.
+    if (session == null || !_state.isLive || _capturing || _reviewing) return;
+    setState(() => _capturing = true);
+    try {
+      await session.capture();
+    } finally {
+      if (mounted) setState(() => _capturing = false);
+    }
+    if (!mounted) return;
+    // A shutter that failed on the camera leaves nothing to check. A session
+    // that cannot show its photograph is reviewed all the same: she still
+    // decides before anything moves on.
+    final review = _review;
+    if (review == null || review.takenCount > 0) _enterReview();
+  }
+
+  /// "Use this photo". The single place the next screen is asked for.
+  void _usePhoto() {
+    if (_reported || _handingOff) return;
+    final review = _review;
+    if (review != null && review.takenCount == 0) return;
     _reported = true;
+    // The lens is let go before the next screen opens its own. The
+    // photograph stays held for the check; only the camera is released.
+    unawaited(_releaseCamera());
     if (widget.onHandOff != null) {
       unawaited(_handOff());
       return;
     }
     widget.onCaptured?.call();
+  }
+
+  Future<void> _releaseCamera() async {
+    unawaited(_subscription?.cancel());
+    _subscription = null;
+    await _session?.close();
+  }
+
+  /// "Retake": the photograph is wiped now, and the camera opens again.
+  Future<void> _retake() async {
+    if (_handingOff) return;
+    _review?.discardTaken();
+    setState(() {
+      _reviewing = false;
+      _reported = false;
+      _handOffFailed = null;
+    });
+    await _reopen();
   }
 
   Future<void> _handOff() async {
@@ -214,24 +317,47 @@ class _IdCaptureViewState extends State<IdCaptureView>
     });
   }
 
-  Future<void> _capture() async {
-    final session = _session;
-    // Guarded rather than trusted: with no camera behind it there is nothing to
-    // capture, and a button that succeeds anyway would be the lie this whole
-    // arrangement exists to prevent.
-    if (session == null || !_state.isLive) return;
-    await session.capture();
-    if (!mounted) return;
-    // A manual shutter on a live session always takes a frame, so this reports
-    // directly rather than waiting for the stream. [_report] is idempotent, so
-    // the camera's own `CaptureCaptured` and this call cannot both navigate.
-    _report();
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final isBack = widget.side == CaptureTarget.idBack;
+    final title = isBack ? l10n.theBackOfYourCard : l10n.yourIdCard;
+    final placeholder = isBack ? l10n.backOfTheCard : l10n.frontOfTheCard;
+
+    Widget cardFrame(Widget child) => Container(
+      width: 300,
+      height: 300 / idCardAspectRatio,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.primaryContainer, width: 3),
+      ),
+      child: child,
+    );
+
+    // The back, before Ready. No camera is open yet, so nothing can fire.
+    if (!_turnedOver) {
+      return CaptureScaffold(
+        title: title,
+        onClose: widget.onClose,
+        frame: cardFrame(
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.flip, size: 40, color: Color(0x99FFFFFF)),
+              const SizedBox(height: 8),
+              CaptureFrameLabel(placeholder),
+            ],
+          ),
+        ),
+        headline: l10n.nowTurnTheCardOver,
+        body: l10n.theBackHasNoPhotoOnIt,
+        actionLabel: l10n.ready,
+        onAction: _ready,
+        onAskWoman: widget.onAskWoman,
+      );
+    }
+
     final live = _state;
     final session = _session;
     // Promoted through an explicit cast rather than a type test in the tree:
@@ -249,29 +375,65 @@ class _IdCaptureViewState extends State<IdCaptureView>
         : null;
     final offerReviewer =
         failed == null || failed == CaptureHandOff.offlineOfferReviewer;
+    // After a failed hand-off the photographs are kept, so "Try again" asks
+    // again rather than opening the camera.
+    final VoidCallback? retry = failed != null
+        ? (_handingOff ? null : () => unawaited(_handOff()))
+        : () => unawaited(_reopen());
+    final VoidCallback? askReviewer =
+        unavailable == null || widget.onAskReviewer == null || !offerReviewer
+        ? null
+        : () => widget.onAskReviewer!(unavailable);
+
+    if (_reviewing) {
+      final review = _review;
+      final held = review?.takenCount ?? 1;
+      final photo = _onTop && review != null && held > 0
+          ? review.buildTaken(0)
+          : null;
+      return CaptureScaffold(
+        title: title,
+        onClose: widget.onClose,
+        frame: cardFrame(
+          photo != null
+              ? ClipRRect(
+                  key: const ValueKey('capture-review-photo'),
+                  borderRadius: BorderRadius.circular(15),
+                  child: photo,
+                )
+              : CaptureFrameLabel(placeholder),
+        ),
+        headline: l10n.checkYourPhoto,
+        body: l10n.canYouReadEveryWordIfNot,
+        // Advice only. She can still use it; the server reads it either way.
+        guidance: isBack && (review?.looksLikeFront ?? false)
+            ? l10n.thisLooksLikeTheFrontOfThe
+            : null,
+        actionLabel: l10n.useThisPhoto,
+        onAction: _handingOff || held == 0 ? null : _usePhoto,
+        secondaryActionLabel: l10n.retake,
+        onSecondaryAction: _handingOff ? null : () => unawaited(_retake()),
+        unavailable: unavailable,
+        onOpenSettings: _openSettings,
+        onRetry: retry,
+        onAskReviewer: askReviewer,
+        onAskWoman: widget.onAskWoman,
+      );
+    }
 
     return CaptureScaffold(
-      title: isBack ? l10n.theBackOfYourCard : l10n.yourIdCard,
+      title: title,
       onClose: widget.onClose,
-      frame: Container(
-        width: 300,
-        height: 300 / idCardAspectRatio,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.primaryContainer, width: 3),
-        ),
-        // The live image inside the guide, or the design's own annotation when
-        // there is no camera. Clipped one pixel inside the border so the
-        // preview does not paint over the rectangle she is aiming with.
-        child: lens != null
+      // The live image inside the guide, or the design's own annotation when
+      // there is no camera. Clipped one pixel inside the border so the
+      // preview does not paint over the rectangle she is aiming with.
+      frame: cardFrame(
+        lens != null
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: lens.buildViewfinder(),
               )
-            : CaptureFrameLabel(
-                isBack ? l10n.backOfTheCard : l10n.frontOfTheCard,
-              ),
+            : CaptureFrameLabel(placeholder),
       ),
       headline: isBack
           ? l10n.turnTheCardOver
@@ -283,18 +445,13 @@ class _IdCaptureViewState extends State<IdCaptureView>
           ? captureGuidanceText(l10n, live.guidance!, isSelfie: false)
           : null,
       actionLabel: l10n.takeItMyself,
-      onAction: _state.isLive ? _capture : null,
+      // Always hers on a live camera, whatever the detector thinks.
+      onAction: _state.isLive && !_capturing ? _capture : null,
       unavailable: unavailable,
       onOpenSettings: _openSettings,
-      // After a failed hand-off the photographs are kept, so "Try again" asks
-      // again rather than opening the camera.
-      onRetry: failed != null
-          ? (_handingOff ? null : () => unawaited(_handOff()))
-          : () => unawaited(_reopen()),
-      onAskReviewer:
-          unavailable == null || widget.onAskReviewer == null || !offerReviewer
-          ? null
-          : () => widget.onAskReviewer!(unavailable),
+      onRetry: retry,
+      onAskReviewer: askReviewer,
+      onAskWoman: widget.onAskWoman,
     );
   }
 }

@@ -183,6 +183,7 @@ sealed class CaptureState {
   const factory CaptureState.framing({
     required bool sharp,
     CaptureGuidance? guidance,
+    CaptureGuidance? prompt,
     int? stepNumber,
     int? stepCount,
   }) = CaptureFraming;
@@ -209,24 +210,34 @@ class CaptureFraming extends CaptureState {
   const CaptureFraming({
     required this.sharp,
     this.guidance,
+    this.prompt,
     this.stepNumber,
     this.stepCount,
   });
 
-  /// True when a capture taken right now would be accepted.
+  /// True when the frame on screen is lit, sharp and, on the selfie, framed.
   ///
-  /// It means two different things by design, because the screens want the same
-  /// thing from it: on `C10` it is "this frame is sharp enough to read", which
-  /// is what fires auto-capture; on `C11` it is "the liveness steps are all
-  /// done", which is what lights up `Done`. Both answer the question the button
-  /// is asking, which is whether pressing it now would be worth anything.
+  /// On `C10` it is what fires auto-capture. **It never gates her shutter.**
+  /// The manual shutter works on any live frame on both screens: ML Kit can
+  /// miss a face that is plainly there, and a woman who can see herself in the
+  /// preview must never be held hostage to a detector's opinion of it. The
+  /// server judges every frame either way.
   final bool sharp;
 
-  /// The one line to show her, or null when there is nothing useful to say.
+  /// The one framing hint to show her, or null when there is nothing useful to
+  /// say. Advice, never a gate.
   ///
   /// Null is common and correct. A viewfinder that always has an instruction on
   /// it teaches her to stop reading the instruction.
   final CaptureGuidance? guidance;
+
+  /// The liveness step she is being asked to perform right now, on `C11`.
+  ///
+  /// Separate from [guidance] so the step stays on screen while a framing hint
+  /// shows beside it: "turn your head to the left" and "more light" are both
+  /// true at once, and hiding the step behind the hint left her not knowing
+  /// what she was being asked to do. Null outside a challenge.
+  final CaptureGuidance? prompt;
 
   /// Which step of the liveness challenge she is on, counting from one, and how
   /// many there are. Both null outside `C11`.
@@ -250,7 +261,9 @@ abstract class CaptureSession {
 
   CaptureState get current;
 
-  /// The manual shutter behind "Take it myself" (`C10`) and "Done" (`C11`).
+  /// The manual shutter behind "Take it myself" (`C10`) and "Take photo"
+  /// (`C11`). On the selfie each press takes the frame for the current step
+  /// and moves to the next one.
   ///
   /// Returns nothing, on purpose. See rule 7 at the top of this file.
   Future<void> capture();
@@ -282,6 +295,33 @@ abstract class CaptureService {
 /// it survives her seeing her own reflection.
 abstract class Viewfinder {
   Widget buildViewfinder();
+}
+
+/// A session whose photographs she can look at before they are used.
+///
+/// Separate from [CaptureSession] for the same reasons as [Viewfinder]. Every
+/// photograph is checked by her before it goes anywhere: "Use this photo" is
+/// the only way forward, and "Retake" throws the photograph away.
+///
+/// **Still no bytes.** What comes back is a widget that draws the photograph
+/// held in `VerificationEvidence`. It is decoded for the screen alone, outside
+/// the image cache, and released when the widget leaves the tree, so a review
+/// leaves nothing behind once she moves on.
+abstract class CaptureReview {
+  /// How many photographs this session took and still holds: one for a side
+  /// of the card, one per step for the selfie.
+  int get takenCount;
+
+  /// Photograph [index], in the order they were taken, drawn to fill its box.
+  Widget buildTaken(int index);
+
+  /// Advice only, for the back of the card: the detector saw a face in the
+  /// frame, and the back of an Egyptian card carries none. She may still use
+  /// the photograph; the server reads it either way.
+  bool get looksLikeFront;
+
+  /// Wipes what this session took, for "Retake".
+  void discardTaken();
 }
 
 /// The implementation that refuses, and says why.

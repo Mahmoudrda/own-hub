@@ -9974,4 +9974,69 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get switchLanguageToEnglish => 'Switch language to English';
+
+  @override
+  String get lookStraightAtTheCamera => 'Look straight at the camera';
+
+  @override
+  String get turnYourHeadALittleToYour =>
+      'Turn your head a little to your left';
+
+  @override
+  String get turnYourHeadALittleToYour_g5o1x =>
+      'Turn your head a little to your right';
+
+  @override
+  String get takePhoto => 'Take photo';
+
+  @override
+  String get checkYourPhotos => 'Check your photos';
+
+  @override
+  String get isYourFaceClearInEachOne =>
+      'Is your face clear in each one? If not, take them again.';
+
+  @override
+  String get useThesePhotos => 'Use these photos';
+
+  @override
+  String get retake => 'Retake';
+
+  @override
+  String get checkYourPhoto => 'Check your photo';
+
+  @override
+  String get canYouReadEveryWordIfNot =>
+      'Can you read every word? If not, take it again.';
+
+  @override
+  String get useThisPhoto => 'Use this photo';
+
+  @override
+  String get thisLooksLikeTheFrontOfThe =>
+      'This looks like the front of the card. Retake?';
+
+  @override
+  String get nowTurnTheCardOver => 'Now turn the card over';
+
+  @override
+  String get theBackHasNoPhotoOnIt =>
+      'The back has no photo on it. Tap Ready when it is facing the camera.';
+
+  @override
+  String get ready => 'Ready';
+
+  @override
+  String get havingTroubleAskAWomanToCheck =>
+      'Having trouble? Ask a woman to check you';
+
+  @override
+  String get timeIsUpForThisStep => 'Time is up for this step';
+
+  @override
+  String get forYourSafetyItStaysOpenA =>
+      'For your safety it stays open a few minutes only. Start again, it is quick.';
+
+  @override
+  String get startAgain => 'Start again';
 }

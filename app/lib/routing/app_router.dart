@@ -1584,6 +1584,13 @@ class AppRouter {
             : ReviewPath.error;
         goTo(context, 'C15');
       },
+      // "Having trouble? Ask a woman to check you". Her choice, so it travels
+      // as the path a declined camera takes, never as "the check failed".
+      onAskWoman: () {
+        identityCheck.evidence.shred();
+        pendingReviewPath = ReviewPath.declined;
+        goTo(context, 'C15');
+      },
     ),
     // The back. It prints her sex as a word, أنثى or ذكر, which is the
     // independent reading the 13th digit of the number is cross-checked
@@ -1677,7 +1684,16 @@ class AppRouter {
             : ReviewPath.error;
         goTo(context, 'C15');
       },
+      // "Having trouble? Ask a woman to check you". Her choice, so it travels
+      // as the path a declined camera takes, never as "the check failed".
+      onAskWoman: () {
+        identityCheck.evidence.shred();
+        pendingReviewPath = ReviewPath.declined;
+        goTo(context, 'C15');
+      },
     ),
+    // The selfie. She takes one photo per server step, checks them, and only
+    // "Use these photos" goes on to `C12`.
     'C11': (context) => SelfieCaptureView(
       captureService: identityCheck.capture,
       onUnavailable: _trackCameraUnavailable,
@@ -1690,6 +1706,66 @@ class AppRouter {
             ? ReviewPath.declined
             : ReviewPath.error;
         goTo(context, 'C15');
+      },
+      // "Having trouble? Ask a woman to check you". Her choice, so it travels
+      // as the path a declined camera takes, never as "the check failed".
+      onAskWoman: () {
+        identityCheck.evidence.shred();
+        pendingReviewPath = ReviewPath.declined;
+        goTo(context, 'C15');
+      },
+      expiresAt: () => identityCheck.livenessExpiresAt,
+      // The session ran out on this screen. A fresh one is minted exactly the
+      // way `C10b` mints it, and every answer is routed the way `C10b` routes
+      // it, written out here so the edges stay visible in this map. The card
+      // photographs are kept for a fresh session; the selfie frames were
+      // already wiped by the screen.
+      onStartAgain: () async {
+        final started = await identityCheck.startLiveness();
+        _trackLivenessStart(started);
+        if (!context.mounted) return false;
+        final repository = identityCheck.verificationRepository;
+        switch (started) {
+          case LivenessStart.started:
+            return true;
+          case LivenessStart.offline:
+            // A retry on the same screen, not a review.
+            return false;
+          case LivenessStart.failed:
+            identityCheck.evidence.shred();
+            pendingReviewPath = ReviewPath.error;
+            goTo(context, 'C15');
+          case LivenessStart.tryTomorrow:
+          case LivenessStart.checksUsedUp:
+          case LivenessStart.appCannotReach:
+          case LivenessStart.signInAgain:
+            identityCheck.evidence.shred();
+            _automaticSubmitted = true;
+            repository.settle(switch (started) {
+              LivenessStart.tryTomorrow =>
+                const VerificationState.tryTomorrow(),
+              LivenessStart.checksUsedUp =>
+                const VerificationState.checksUsedUp(),
+              LivenessStart.signInAgain =>
+                const VerificationState.signInAgain(),
+              _ => const VerificationState.appCannotReach(),
+            });
+            goTo(context, 'C12');
+          case LivenessStart.consentNeeded:
+            consentRecorded = false;
+            goTo(context, 'C09b');
+          case LivenessStart.reviewOpen:
+            identityCheck.evidence.shred();
+            awaitingReviewer = true;
+            goTo(context, 'C14');
+          case LivenessStart.closed:
+            identityCheck.evidence.shred();
+            serverVerification = const ServerVerification(
+              ServerVerificationState.rejected,
+            );
+            goTo(context, 'C14');
+        }
+        return false;
       },
     ),
     // The submit for the automatic path happens as this screen opens.

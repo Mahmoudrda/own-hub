@@ -97,6 +97,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // Turn it over first, and only then does a camera open.
+      expect(find.text('Now turn the card over'), findsOneWidget);
+      expect(service.opened, isEmpty);
+      await tester.tap(find.text('Ready'));
+      await tester.pumpAndSettle();
+
       expect(service.opened.single.target, CaptureTarget.idBack);
       expect(find.text('The back of your card'), findsOneWidget);
       expect(find.text('Turn the card over'), findsOneWidget);
@@ -118,6 +124,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('ضهر بطاقتك'), findsOneWidget);
+      expect(find.text('دلوقتي اقلبي البطاقة'), findsOneWidget);
+      await tester.tap(find.text('جاهزة'));
+      await tester.pumpAndSettle();
       expect(find.text('اقلبي البطاقة'), findsOneWidget);
     });
   });
@@ -219,10 +228,12 @@ void main() {
   });
 
   group('the shutter', () {
-    testWidgets('the card photographs itself and reports once', (tester) async {
+    testWidgets('the card photographs itself, she checks it, it reports once', (
+      tester,
+    ) async {
       // Auto-capture is what removes the blurry-photo retry loop. The screen
-      // has to react to the camera taking its own picture, and it must not push
-      // the next route twice when the manual and automatic paths overlap.
+      // has to react to the camera taking its own picture, show it to her, and
+      // move on once, when she says so.
       final service = _DrivenService();
       var captured = 0;
       await tester.pumpWidget(
@@ -235,18 +246,27 @@ void main() {
 
       service.opened.single.emit(const CaptureState.captured());
       await tester.pumpAndSettle();
-      expect(captured, 1);
+      expect(captured, 0, reason: 'nothing moves on before she checks it');
+      expect(find.text('Use this photo'), findsOneWidget);
 
       service.opened.single.emit(const CaptureState.captured());
+      await tester.pumpAndSettle();
+      expect(find.text('Use this photo'), findsOneWidget);
+
+      await tester.tap(find.text('Use this photo'));
+      await tester.pumpAndSettle();
+      expect(captured, 1);
+      await tester.tap(find.text('Use this photo'));
       await tester.pumpAndSettle();
       expect(captured, 1, reason: 'one capture is one navigation');
     });
 
-    testWidgets('the selfie waits until the framing is good', (tester) async {
-      // Unlike the card, where she may always override because she can see the
-      // card and we can only see a number. Here the frame itself is the thing
-      // being judged, and a still with two faces in it or none costs her a
-      // check she did nothing to earn.
+    testWidgets('the selfie shutter never waits for the detector', (
+      tester,
+    ) async {
+      // ML Kit can miss a face that is plainly there, and on a real iPhone
+      // waiting for it meant the photos were never taken. A framing hint is
+      // advice beside the button, never a lock on it.
       final service = _DrivenService();
       await tester.pumpWidget(
         _host(SelfieCaptureView(captureService: service)),
@@ -263,7 +283,7 @@ void main() {
       expect(find.text('Only one face in the frame'), findsOneWidget);
       expect(
         tester.widget<AppWhiteButton>(find.byType(AppWhiteButton)).onPressed,
-        isNull,
+        isNotNull,
       );
 
       service.opened.single.emit(const CaptureState.framing(sharp: true));
@@ -389,11 +409,11 @@ void main() {
       expect(find.text('Blink slowly'), findsNothing);
     });
 
-    testWidgets('the shutter is not hers while the server is asking', (
+    testWidgets('the shutter is hers on every step the server asks for', (
       tester,
     ) async {
-      // A button she could press between prompts would take a frame answering
-      // the wrong step, and the server matches frame n against step n.
+      // Each press takes the current step's frame. The old inert button left
+      // the frames to a dwell clock that a turning head kept resetting.
       final service = _DrivenService();
       await tester.pumpWidget(
         _host(SelfieCaptureView(captureService: service)),
@@ -412,8 +432,11 @@ void main() {
 
       expect(
         tester.widget<AppWhiteButton>(find.byType(AppWhiteButton)).onPressed,
-        isNull,
+        isNotNull,
       );
+      await tester.tap(find.text('Take photo'));
+      await tester.pumpAndSettle();
+      expect(service.opened.single.captures, 1);
     });
   });
 
@@ -613,7 +636,12 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Ready'));
+      await tester.pumpAndSettle();
       service.opened.single.emit(const CaptureState.captured());
+      await tester.pumpAndSettle();
+      expect(handOffs, 0, reason: 'she checks the photo first');
+      await tester.tap(find.text('Use this photo'));
       await tester.pumpAndSettle();
 
       expect(handOffs, 1);

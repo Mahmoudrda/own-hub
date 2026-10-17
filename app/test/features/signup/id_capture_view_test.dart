@@ -164,6 +164,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(service.opened.single.captures, 1);
+    expect(captured, 0, reason: 'she checks the photo before it is used');
+
+    await tester.tap(find.text('Use this photo'));
+    await tester.pumpAndSettle();
     expect(captured, 1);
   });
 

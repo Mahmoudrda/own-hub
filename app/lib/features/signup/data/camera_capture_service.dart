@@ -58,6 +58,7 @@ import '../domain/verification_evidence.dart';
 import 'frame_budget.dart';
 import 'cover_fit_viewfinder.dart';
 import 'frame_quality.dart';
+import 'held_photo.dart';
 
 /// How often a preview frame is actually measured.
 ///
@@ -99,16 +100,14 @@ const double _cardRegionShortAxisFraction = 0.50;
 /// the face detector's job there, so this only has to be a piece of her.
 const double _faceRegionFraction = 0.5;
 
-/// How long a liveness step is shown before its frame is taken.
-///
-/// **This is a dwell, not a detector.** The app does not check whether she
-/// blinked or turned, because the server decides that and a client that scored
-/// its own challenge could be patched to score it however it liked. What this
-/// buys is time: a woman needs a moment to read a prompt in her second script
-/// and act on it, and a frame grabbed the instant the words appear catches her
-/// still reading. Twelve hundred milliseconds is slower than it sounds on a
-/// screen and faster than it sounds in a spec.
-const Duration _stepDwell = Duration(milliseconds: 1200);
+// **The selfie has no auto-capture, and that is the fix, not an omission.**
+// An earlier version took each step's frame itself after 1.2 seconds of
+// continuously good frames. Turning her head blurs, shifts and tilts the face,
+// so the clock kept resetting and on a real iPhone the step never fired. And a
+// helper that fires on its own is worse than none during a challenge: it can
+// take step n+1's frame before she has turned, and frame n must answer step n.
+// So each step's frame is hers to take, with "Take photo", whenever the camera
+// is live. ML Kit stays for the framing hints and decides nothing.
 
 /// Opens the lens for a capture step.
 class CameraCaptureService implements CaptureService {
@@ -232,7 +231,7 @@ class CameraCaptureService implements CaptureService {
 }
 
 /// One run of one lens.
-class _LensSession implements CaptureSession, Viewfinder {
+class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
   _LensSession({
     required this.target,
     required this.controller,
@@ -257,9 +256,20 @@ class _LensSession implements CaptureSession, Viewfinder {
   /// Which step she is on, counting from zero.
   int _step = 0;
 
-  /// When the current step's prompt went up. The frame is taken [_stepDwell]
-  /// after this, and not before.
-  DateTime _stepShownAt = DateTime.now();
+  /// How many photographs this session took and still holds.
+  int _taken = 0;
+
+  /// Every frame this session needed has been taken. Nothing more is taken
+  /// after this, by either shutter, until the session is closed.
+  bool _done = false;
+
+  /// The back of the card only: whether the last measured frame had a face in
+  /// it. The back of an Egyptian card has none, so a face means she is still
+  /// showing the front. Advice for the review screen, and nothing else.
+  bool _faceInView = false;
+
+  /// [_faceInView] at the moment the back was photographed.
+  bool _takenLooksLikeFront = false;
 
   late final FaceDetector _faces = FaceDetector(
     options: FaceDetectorOptions(
@@ -289,7 +299,9 @@ class _LensSession implements CaptureSession, Viewfinder {
   int _steadyFrames = 0;
 
   Future<void> start() async {
-    _stepShownAt = DateTime.now();
+    // A run of the steps always starts from no frames. See
+    // [VerificationEvidence.dropFrames].
+    if (target == CaptureTarget.selfie) evidence.dropFrames();
     _emit(_framing(sharp: false));
     await controller.startImageStream(_onFrame);
   }
@@ -317,19 +329,63 @@ class _LensSession implements CaptureSession, Viewfinder {
     );
   }
 
+  /// Her shutter. Obeyed on any live frame, on the card and on every selfie
+  /// step alike: not gated on sharpness, on a face count or on a clock. She can
+  /// see herself and the card; we can only see a number, and the detector can
+  /// miss a face that is plainly there. The server judges the frame either way.
   @override
   Future<void> capture() async {
-    if (_closed || _taking) return;
-    // On the selfie the shutter is hers and is only offered once the framing is
-    // good, so a tap that arrives anyway is dropped rather than obeyed: a still
-    // with no face in it costs a woman a rejected check she did nothing to
-    // earn. On the card she may always override, because she can see the card
-    // and we can only see a number.
-    if (target == CaptureTarget.selfie) {
-      final live = _state;
-      if (live is! CaptureFraming || !live.sharp) return;
-    }
+    if (_closed || _taking || _done) return;
     await _take();
+  }
+
+  // ------------------------------------------------------------------ review
+
+  @override
+  int get takenCount {
+    if (target == CaptureTarget.selfie) {
+      return math.min(_taken, evidence.frames.length);
+    }
+    final side = target == CaptureTarget.idFront
+        ? evidence.front
+        : evidence.back;
+    return _taken > 0 && side != null ? 1 : 0;
+  }
+
+  @override
+  Widget buildTaken(int index) {
+    final Uint8List? jpeg;
+    if (target == CaptureTarget.selfie) {
+      final frames = evidence.frames;
+      jpeg = index >= 0 && index < takenCount ? frames[index] : null;
+    } else {
+      jpeg = index == 0 && takenCount == 1
+          ? (target == CaptureTarget.idFront ? evidence.front : evidence.back)
+          : null;
+    }
+    if (jpeg == null) return const SizedBox.expand();
+    // The selfie frames are drawn as small thumbnails, the card across the
+    // width of the screen.
+    return HeldPhoto(
+      jpeg: jpeg,
+      decodeWidth: target == CaptureTarget.selfie ? 240 : 720,
+    );
+  }
+
+  @override
+  bool get looksLikeFront => _takenLooksLikeFront;
+
+  @override
+  void discardTaken() {
+    switch (target) {
+      case CaptureTarget.idFront:
+      case CaptureTarget.idBack:
+        evidence.dropCardSide(target);
+      case CaptureTarget.selfie:
+        evidence.dropFrames();
+    }
+    _taken = 0;
+    _takenLooksLikeFront = false;
   }
 
   @override
@@ -348,7 +404,7 @@ class _LensSession implements CaptureSession, Viewfinder {
     await _states.close();
   }
 
-  /// A framing state with the challenge counter attached.
+  /// A framing state with the challenge step attached.
   CaptureFraming _framing({required bool sharp, CaptureGuidance? guidance}) {
     if (steps.isEmpty) {
       return CaptureFraming(sharp: sharp, guidance: guidance);
@@ -356,9 +412,10 @@ class _LensSession implements CaptureSession, Viewfinder {
     final index = _step.clamp(0, steps.length - 1);
     return CaptureFraming(
       sharp: sharp,
-      // A framing problem outranks the prompt: there is no point asking her to
-      // blink at a lens that cannot see her face.
-      guidance: guidance ?? _promptFor(steps[index]),
+      // The step and the framing hint travel separately, so the step stays on
+      // screen while a hint shows beside it.
+      guidance: guidance,
+      prompt: _promptFor(steps[index]),
       stepNumber: index + 1,
       stepCount: steps.length,
     );
@@ -385,32 +442,29 @@ class _LensSession implements CaptureSession, Viewfinder {
     _analysing = true;
     try {
       final advice = await _read(frame);
-      if (_closed) return;
+      // Her shutter may have fired while the detector was busy. Its result is
+      // about a frame that is no longer the one that matters.
+      if (_closed || _taking || _done) return;
 
       final good = advice == null;
       _steadyFrames = good ? _steadyFrames + 1 : 0;
 
       if (steps.isEmpty) {
         // The card. Three consecutive good frames and it photographs itself,
-        // which is what removes the blurry-photo retry loop.
+        // which is what removes the blurry-photo retry loop. She checks the
+        // result before it is used either way.
         _emit(_framing(sharp: good, guidance: advice));
         if (_steadyFrames >= _steadyFramesBeforeAutoCapture) await _take();
         return;
       }
 
-      // The challenge. `sharp` stays false throughout, so the Done button is
-      // visibly inert: during a server-chosen sequence the shutter is not hers
-      // to press, and a live button she could tap between prompts would take a
-      // frame answering the wrong step.
-      _emit(_framing(sharp: false, guidance: advice));
-      if (!good) {
-        // A framing problem pauses the step rather than failing it. The clock
-        // restarts so she gets the full dwell once the frame is usable again.
-        _stepShownAt = now;
-        return;
-      }
-      if (now.difference(_stepShownAt) < _stepDwell) return;
-      await _take();
+      // The challenge. Hints only: the frame for each step is taken when she
+      // presses "Take photo", never by this loop.
+      _emit(_framing(sharp: good, guidance: advice));
+    } catch (error) {
+      // Measuring a frame must never stop her. The shutter does not depend on
+      // anything this loop produces.
+      if (kDebugMode) debugPrint('frame analysis failed: $error');
     } finally {
       _analysing = false;
     }
@@ -440,7 +494,11 @@ class _LensSession implements CaptureSession, Viewfinder {
     final advice = target == CaptureTarget.selfie
         ? FaceFrameGate.advise(quality)
         : CardFrameGate.advise(quality);
-    if (advice != null) return _adviceToGuidance(advice);
+    if (advice != null) {
+      // Nothing was measured, so nothing is known about a face either.
+      _faceInView = false;
+      return _adviceToGuidance(advice);
+    }
 
     // Only once the pixels are good, because face detection is the expensive
     // half and there is nothing to find in a dark or blurred frame anyway.
@@ -455,17 +513,27 @@ class _LensSession implements CaptureSession, Viewfinder {
   /// catching that now saves a round trip that would come back asking for the
   /// same thing.
   Future<CaptureGuidance?> _faceGuidance(CameraImage frame) async {
-    if (target == CaptureTarget.idBack) return null;
-
     final List<Face> found;
     try {
       final input = _inputFrom(frame);
-      if (input == null) return null;
+      if (input == null) {
+        _faceInView = false;
+        return null;
+      }
       found = await _faces.processImage(input);
     } catch (error) {
       // A detector that throws must not stop her. The server does the real
       // work; this was only ever going to save it a call.
       if (kDebugMode) debugPrint('face detection failed: $error');
+      _faceInView = false;
+      return null;
+    }
+
+    if (target == CaptureTarget.idBack) {
+      // Never guidance and never a gate on the back: only remembered, so the
+      // review can ask whether this is really the back. The front prints her
+      // photograph and the back prints none.
+      _faceInView = found.isNotEmpty;
       return null;
     }
 
@@ -500,10 +568,9 @@ class _LensSession implements CaptureSession, Viewfinder {
     // earlier version nagged "hold still" when both eyes were shut, to avoid a
     // blinking still. With a server-chosen sequence that is actively harmful:
     // `blink` is one of the steps, so the correction would fire at exactly the
-    // moment she is doing what she was asked, reset the dwell clock, and make
-    // that step impossible to complete. It is also the client forming an
-    // opinion about the challenge, which is the thing this whole design
-    // refuses to do.
+    // moment she is doing what she was asked, and tell her she was wrong to.
+    // It is also the client forming an opinion about the challenge, which is
+    // the thing this whole design refuses to do.
     return null;
   }
 
@@ -678,16 +745,18 @@ class _LensSession implements CaptureSession, Viewfinder {
         case CaptureTarget.idFront:
         case CaptureTarget.idBack:
           evidence.holdCardSide(target, bytes);
+          _taken = 1;
+          _takenLooksLikeFront =
+              target == CaptureTarget.idBack && _faceInView;
         case CaptureTarget.selfie:
           evidence.addFrame(bytes);
+          _taken++;
       }
 
       if (steps.isNotEmpty && _step + 1 < steps.length) {
         // On to the next prompt. The stream is restarted because `_take`
-        // stopped it, and the dwell clock starts from the moment the new
-        // prompt goes up rather than from the moment the shutter fired.
+        // stopped it, for the framing hints.
         _step++;
-        _stepShownAt = DateTime.now();
         _steadyFrames = 0;
         _emit(_framing(sharp: false));
         if (!_closed && !controller.value.isStreamingImages) {
@@ -696,11 +765,13 @@ class _LensSession implements CaptureSession, Viewfinder {
         return;
       }
 
+      // Every frame is in. The stream stays stopped: nothing more is taken
+      // here, and the review she sees next needs no camera.
+      _done = true;
       _emit(const CaptureState.captured());
     } on CameraException catch (error) {
       if (kDebugMode) debugPrint('capture failed: ${error.code}');
       _steadyFrames = 0;
-      _stepShownAt = DateTime.now();
       _emit(_framing(sharp: false));
       if (!_closed && !controller.value.isStreamingImages) {
         await controller.startImageStream(_onFrame);

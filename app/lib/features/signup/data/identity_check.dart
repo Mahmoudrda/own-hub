@@ -101,6 +101,10 @@ class IdentityCheck {
 
   CaptureService get capture => _capture;
 
+  /// When the current liveness session stops being accepted, or null before
+  /// one is minted. `C11` reads it each time its camera opens.
+  DateTime? get livenessExpiresAt => _capture.challenge?.expiresAt;
+
   late final ProviderVerificationRepository _verification =
       ProviderVerificationRepository(
         provider: _provider,
