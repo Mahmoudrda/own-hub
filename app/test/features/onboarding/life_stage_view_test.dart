@@ -66,7 +66,7 @@ void main() {
         expect(find.text(option), findsOneWidget, reason: option);
       }
       // The last question of the walk at home.
-      expect(find.text('6 of 6'), findsOneWidget);
+      expect(find.text('5 of 5'), findsOneWidget);
     });
 
     testWidgets('it promises adaptation, and explicitly not diagnosis', (
@@ -307,7 +307,7 @@ void main() {
           findsOneWidget,
         );
       }
-      expect(find.text('6 من 6'), findsOneWidget);
+      expect(find.text('5 من 5'), findsOneWidget);
       expect(find.text('Anything we should train around?'), findsNothing);
     });
   });
@@ -354,15 +354,15 @@ void main() {
 
       expect(find.text('1 of 3 · Your week'), findsOneWidget);
       final bar = tester.widget<AppStepBar>(find.byType(AppStepBar));
-      expect((bar.step, bar.total), (3, 3));
+      expect((bar.step, bar.total), (2, 2));
       // Before she has an account the answer stays on this phone, and the
       // line says so.
       expect(
         find.text('Only you see this. It stays on this phone.'),
         findsOneWidget,
       );
-      // Everything is preselected, so there is nothing to skip, and before
-      // she has an account there is no Home to close to.
+      // No Skip here because this test passes none; the router gives the real
+      // screen one, and before she has an account there is no Home to close to.
       expect(find.text('Skip'), findsNothing);
       expect(find.byIcon(Icons.close), findsNothing);
 

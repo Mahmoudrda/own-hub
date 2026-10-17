@@ -9916,4 +9916,11 @@ class AppL10nAr extends AppL10n {
   @override
   String get remindersCantBeSetOnThisPhone =>
       'مينفعش نظبط تذكيرات على الموبايل ده.';
+
+  @override
+  String get joinAsACoach => 'انضمّي كمدرّبة';
+
+  @override
+  String get howManyDaysAndForHowLong =>
+      'كام يوم في الأسبوع، وكل تمرين قد إيه؟';
 }

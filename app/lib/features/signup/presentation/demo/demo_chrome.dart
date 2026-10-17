@@ -29,6 +29,7 @@ class DemoBadgeBar extends StatelessWidget {
     required this.joinLabel,
     this.onJoin,
     this.onLeave,
+    this.onSkip,
   });
 
   /// "Join Own Hub", or "Back to my check" for a woman already waiting on it.
@@ -37,6 +38,9 @@ class DemoBadgeBar extends StatelessWidget {
 
   /// Leaves the tour. Null draws no close button.
   final VoidCallback? onLeave;
+
+  /// Skip: straight to sign-in. Null draws no Skip.
+  final VoidCallback? onSkip;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +70,19 @@ class DemoBadgeBar extends StatelessWidget {
             ),
           ),
         ),
+        if (onSkip != null)
+          TextButton(
+            onPressed: onSkip,
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              minimumSize: const Size(48, 44),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+            ),
+            child: Text(
+              l10n.skip,
+              style: AppText.label.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
         if (onLeave != null)
           IconButton(
             tooltip: l10n.leaveTheTour,
@@ -279,10 +296,7 @@ class DemoEndCard extends StatelessWidget {
                     level: HandLevel.signature,
                     width: HandStroke.felt,
                     gap: 6,
-                    child: Text(
-                      l10n.thatsOwnHub,
-                      style: EditorialType.section,
-                    ),
+                    child: Text(l10n.thatsOwnHub, style: EditorialType.section),
                   ),
                 ),
               ),

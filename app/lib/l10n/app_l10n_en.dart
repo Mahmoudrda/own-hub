@@ -9959,4 +9959,10 @@ class AppL10nEn extends AppL10n {
   @override
   String get remindersCantBeSetOnThisPhone =>
       'Reminders can\'t be set on this phone.';
+
+  @override
+  String get joinAsACoach => 'Join as a coach';
+
+  @override
+  String get howManyDaysAndForHowLong => 'How many days, and for how long?';
 }

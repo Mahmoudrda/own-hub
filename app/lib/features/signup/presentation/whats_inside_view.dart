@@ -26,18 +26,39 @@ class WhatsInsideView extends StatelessWidget {
     this.onCreateAccount,
     this.onLookAround,
     this.onBack,
+    this.onSkip,
   });
 
   final VoidCallback? onCreateAccount;
   final VoidCallback? onLookAround;
   final VoidCallback? onBack;
 
+  /// Skip, in the top bar: straight to sign-in. Null draws no Skip.
+  final VoidCallback? onSkip;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
-      appBar: AppTopBar(onBack: onBack),
+      appBar: AppTopBar(
+        onBack: onBack,
+        actions: [
+          if (onSkip != null)
+            TextButton(
+              onPressed: onSkip,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                minimumSize: const Size(48, 44),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: Text(
+                l10n.skip,
+                style: AppText.label.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+        ],
+      ),
       footer: [
         AppButton(l10n.createMyAccount, onPressed: onCreateAccount),
         AppButton(

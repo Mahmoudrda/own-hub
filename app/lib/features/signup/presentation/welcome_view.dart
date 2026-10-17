@@ -132,14 +132,6 @@ class WelcomeView extends StatelessWidget {
             fontSize: 15,
             onPressed: () => Navigator.of(context).pop(onInviteCode),
           ),
-        if (onCoachInterest != null)
-          AppButton(
-            l10n.iCoachWomen,
-            variant: AppButtonVariant.text,
-            height: 48,
-            fontSize: 15,
-            onPressed: () => Navigator.of(context).pop(onCoachInterest),
-          ),
         if (onDeleteSaved != null)
           AppButton(
             l10n.deleteWhatISavedOnThisPhone,
@@ -243,6 +235,16 @@ class WelcomeView extends StatelessWidget {
           fontSize: 15,
           onPressed: onSignIn,
         ),
+        // A coach is a woman the app is for too, so her door is on the page and
+        // not behind More. A secondary link: the one primary action is the tour.
+        if (onCoachInterest != null)
+          AppButton(
+            l10n.joinAsACoach,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: onCoachInterest,
+          ),
         AppButton(
           l10n.more,
           variant: AppButtonVariant.text,

@@ -89,7 +89,6 @@ void main() {
       await tapLabel(t, 'Continue');
       await tapLabel(t, 'Continue');
       await tapLabel(t, 'Continue');
-      await tapLabel(t, 'Continue');
       await tapLabel(t, 'I will start tomorrow');
       runs.add(paintedText(t).join('|'));
     }

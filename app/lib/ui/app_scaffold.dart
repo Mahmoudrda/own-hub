@@ -40,6 +40,8 @@ class AppScaffold extends StatelessWidget {
     this.scrollable = true,
     this.footerScrollsWhenLarge = false,
     this.staggerGroup,
+    this.showArt = true,
+    this.gap = kStackGap,
   });
 
   /// The body. Laid out in a column with [kStackGap] between each child, exactly
@@ -78,18 +80,27 @@ class AppScaffold extends StatelessWidget {
   /// leaves the body as it is.
   final String? staggerGroup;
 
+  /// Whether this screen's illustration strip is drawn. A setup question turns
+  /// it off so the answers fit the screen without scrolling.
+  final bool showArt;
+
+  /// Vertical gap between the body's children.
+  final double gap;
+
   @override
   Widget build(BuildContext context) {
     // This screen's illustrations, from the one table that holds them all.
     // Empty outside the router, and for the screens that draw their own hero.
-    final art = ScreenArt.headerFor(ScreenScope.of(context));
+    final art = showArt
+        ? ScreenArt.headerFor(ScreenScope.of(context))
+        : const <String>[];
     final footerInBody =
         footerScrollsWhenLarge &&
         footer.isNotEmpty &&
         MediaQuery.textScalerOf(context).scale(1) > 1.3;
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: _withGaps([
+      children: _withGaps(gap, [
         if (art.isNotEmpty) const ScreenArtStrip(),
         if (staggerGroup case final group?)
           for (var i = 0; i < children.length; i++)
@@ -135,7 +146,7 @@ class AppScaffold extends StatelessWidget {
                   padding: kFooterPadding,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: _withGaps(footer),
+                    children: _withGaps(kStackGap, footer),
                   ),
                 ),
             ],
@@ -145,10 +156,10 @@ class AppScaffold extends StatelessWidget {
     );
   }
 
-  static List<Widget> _withGaps(List<Widget> items) {
+  static List<Widget> _withGaps(double gap, List<Widget> items) {
     final out = <Widget>[];
     for (var i = 0; i < items.length; i++) {
-      if (i > 0) out.add(const SizedBox(height: kStackGap));
+      if (i > 0) out.add(SizedBox(height: gap));
       out.add(items[i]);
     }
     return out;

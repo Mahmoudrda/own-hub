@@ -256,8 +256,7 @@ void main() {
         reason: 'a chip the rewards system would refuse must not be offered',
       );
       await tapLabel(t, '4');
-      await tapLabel(t, 'Continue'); // O03 -> O07
-      await tapLabel(t, 'Continue'); // O07 -> O04
+      await tapLabel(t, 'Continue'); // O03 -> O04
       await tapLabel(t, 'Continue'); // O04 -> O05
       expect(paintedText(t).any((e) => e.contains('4 days a week')), isTrue);
       await tapLabel(t, 'Start day 1 now');

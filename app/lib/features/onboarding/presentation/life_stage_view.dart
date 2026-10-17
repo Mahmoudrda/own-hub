@@ -173,18 +173,18 @@ class _LifeStageViewState extends State<LifeStageView> {
           AppCard(
             variant: AppCardVariant.sage,
             borderRadius: AppRadius.md,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             children: [
               Text(
                 l10n.weSaveYourAnswerWithTheRest,
-                style: AppText.body.copyWith(
+                style: AppText.bodyM.copyWith(
                   color: AppColors.onTertiaryContainer,
                 ),
               ),
             ],
           ),
         // The only screen that asks about a pregnancy says what the app is.
-        const MedicalDisclaimer(),
+        const MedicalDisclaimer(caption: true),
       ],
     );
   }

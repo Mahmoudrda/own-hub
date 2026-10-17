@@ -60,30 +60,21 @@ import 'rewards_state.dart';
 import 'role_state.dart';
 
 /// Every setup screen. The order she meets them in is [setupWalk].
-const List<String> kSetupScreenIds = [
-  'O01',
-  'O02',
-  'O06',
-  'O03',
-  'O07',
-  'O04',
-  'O05',
-];
+const List<String> kSetupScreenIds = ['O01', 'O02', 'O06', 'O03', 'O04', 'O05'];
 
 /// The questions she is asked, one a screen, in order.
 ///
 /// The full walk is her goal, where she trains, what she has at home (only
-/// when home is part of it), days a week, minutes a session and what to train
+/// when she trains at home), days and minutes together, and what to train
 /// around. The short "Your week" ([OnboardingState.shortSetup]) is the last
-/// three. `O05`, her week read back, follows either and is not a question.
+/// two. `O05`, her week read back, follows either and is not a question.
 List<String> setupWalk(Intake intake, {required bool short}) => short
-    ? const ['O03', 'O07', 'O04']
+    ? const ['O03', 'O04']
     : [
         'O01',
         'O02',
-        if (intake.place != TrainingPlace.ladiesGym) 'O06',
+        if (intake.place == TrainingPlace.home) 'O06',
         'O03',
-        'O07',
         'O04',
       ];
 
@@ -126,6 +117,13 @@ class OnboardingState {
   /// to `C14`: day one is behind the gate. Cleared whenever she leaves setup.
   bool whileWaiting = false;
 
+  /// True once she tapped Skip on a question before the life-stage question
+  /// (`O04`). Skip never bypasses `O04`: it keeps the preselected answers for
+  /// the questions she skipped and goes to `O04`, which has no Skip. Once she
+  /// answers it, [skipSetup] takes her where Skip would have gone. Cleared by
+  /// [finish].
+  bool skippingSetup = false;
+
   /// True once she said "Not now" to "Track my cycle" on day-one Home.
   ///
   /// Kept on the phone beside her setup answers (`app_snapshot.dart`) and
@@ -156,6 +154,30 @@ class OnboardingState {
       (!AppRouter.featureFlags.isOn(Feature.accountRequired) ||
           AppRouter.isVerified);
 
+  /// Where Skip ends once the life-stage question (`O04`) is answered: the
+  /// preselected answers stand and she goes on to where the walk would have
+  /// ended. Never past the legal acceptance or the women-only check, which sit
+  /// after sign-in.
+  void skipSetup(BuildContext context, {required VoidCallback toSignIn}) {
+    if (beforeSignup) {
+      finish();
+      toSignIn();
+      return;
+    }
+    if (whileWaiting) {
+      finish();
+      // whileWaiting is only set by C14's own button, so C14 is in the stack.
+      Navigator.of(context)
+          .popUntil(ModalRoute.withName(appRoutes['C14']!.name));
+      return;
+    }
+    if (shortSetupAfterSignup) {
+      leaveSetupToHome(context);
+      return;
+    }
+    leaveSetup(context);
+  }
+
   /// Records that the walk is over and applies what she answered.
   ///
   /// Called on every way out of setup, including the ones that answer nothing.
@@ -167,6 +189,7 @@ class OnboardingState {
   /// same walk a month later: it re-applies whatever is stored rather than
   /// doing anything a second time.
   void finish() {
+    skippingSetup = false;
     shortSetupAfterSignup = false;
     whileWaiting = false;
     AppRouter.intakeRepository.markSetupDone();

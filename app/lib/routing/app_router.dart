@@ -96,7 +96,6 @@ import '../features/onboarding/presentation/equipment_view.dart';
 import '../features/onboarding/presentation/goal_view.dart';
 import '../features/onboarding/presentation/her_answers.dart';
 import '../features/onboarding/presentation/life_stage_view.dart';
-import '../features/onboarding/presentation/minutes_view.dart';
 import '../features/onboarding/presentation/place_view.dart';
 import '../features/onboarding/presentation/schedule_view.dart';
 import '../features/onboarding/presentation/starting_program_view.dart';
@@ -664,7 +663,7 @@ class AppRouter {
   /// would have shipped in whatever language the handset happened to be in,
   /// with no way to change it.
   ///
-  /// `A01`–`A04` and `O01`–`O07` are the two flows [featureForFlow] leaves
+  /// `A01`–`A04` and `O01`–`O06` are the two flows [featureForFlow] leaves
   /// ungated, named here one by one so a new screen in either has to be
   /// placed on purpose: her settings, her data and her way out, and the
   /// setup questions between signing up and having an account. A flag flip
@@ -685,7 +684,6 @@ class AppRouter {
     'O04',
     'O05',
     'O06',
-    'O07',
   };
 
   /// The switch every gated screen answers to, beside its flow's
@@ -1288,6 +1286,11 @@ class AppRouter {
     'C02': (context) => LanguageView(
       preference: localePreference,
       onBack: () => Navigator.of(context).maybePop(),
+      // Before she has an account, Skip goes straight to sign-in, and is not
+      // drawn while sign-in is switched off.
+      onSkip: signedInUid == null && screenIsOn('C06')
+          ? () => goTo(context, 'C06')
+          : null,
       onContinue: screenIsOn('C03') && signedInUid == null
           ? () => goTo(context, 'C03')
           : () => Navigator.of(context).maybePop(),
@@ -1311,6 +1314,7 @@ class AppRouter {
         }
       },
       onLookAround: () => goTo(context, 'C04'),
+      onSkip: screenIsOn('C06') ? () => goTo(context, 'C06') : null,
       onBack: () => Navigator.of(context).maybePop(),
     ),
     // The tour: the real Home, Train, Eat, My cycle and Progress screens with
@@ -1928,8 +1932,10 @@ class AppRouter {
     // included, so a later walk from A02 does not inherit it and end on
     // Home (N15).
     //
-    // No Skip on any question. Every answer is preselected, so Skip did
-    // exactly what Continue does; the X in the corner is the way out.
+    // Skip is a text button in the top bar of every question. The answers are
+    // all preselected, so it leaves with them standing: to Home, or, before she
+    // has an account, to sign-in (C06), where the terms and the women-only
+    // check still wait for her. See `OnboardingState.skipSetup`.
     'O01': (context) => PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) OnboardingState.instance.enteredFromSignup = false;
@@ -1937,71 +1943,105 @@ class AppRouter {
       child: GoalView(
         repository: intakeRepository,
         onContinue: () => goTo(context, 'O02'),
+        onSkip: () {
+          OnboardingState.instance.skippingSetup = true;
+          goTo(context, 'O04');
+        },
         onBack: () => OnboardingState.instance.leaveSetup(context),
         onClose: () => OnboardingState.instance.leaveSetup(context),
       ),
     ),
-    // Where she trains. Home, or both, adds one question about what she has
-    // there (O06); a ladies-only gym goes straight to her days.
+    // Where she trains. Home alone adds one question about what she has there
+    // (O06); a gym, or both, goes straight to her days.
     'O02': (context) => PlaceView(
       repository: intakeRepository,
-      onContinue: () => intakeRepository.read().place == TrainingPlace.ladiesGym
-          ? goTo(context, 'O03')
-          : goTo(context, 'O06'),
+      onContinue: () => intakeRepository.read().place == TrainingPlace.home
+          ? goTo(context, 'O06')
+          : goTo(context, 'O03'),
+      onSkip: () {
+        OnboardingState.instance.skippingSetup = true;
+        goTo(context, 'O04');
+      },
       onBack: () => Navigator.of(context).maybePop(),
       onClose: () => OnboardingState.instance.leaveSetup(context),
     ),
     'O06': (context) => EquipmentView(
       repository: intakeRepository,
       onContinue: () => goTo(context, 'O03'),
+      onSkip: () {
+        OnboardingState.instance.skippingSetup = true;
+        goTo(context, 'O04');
+      },
       onBack: () => Navigator.of(context).maybePop(),
       onClose: () => OnboardingState.instance.leaveSetup(context),
     ),
-    // Days, then minutes, then what to train around: one question a screen in
-    // both walks. The full walk (O01 to O05) reaches them after her goal and
-    // her place. The short "Your week" starts here: before she has an account
-    // (from C01), or after her check when she had not built her week yet (from
-    // C13 or C14). Before sign-up the bar says "1 of 3 · Your week" and there
-    // is no X, because there is no Home to close to.
+    // Days and minutes together, then what to train around. The full walk
+    // reaches them after her goal and her place. The short "Your week" starts
+    // here: before she has an account (from C01), or after her check when she
+    // had not built her week yet (from C13 or C14). Before sign-up the bar
+    // says "1 of 3 · Your week" and there is no X, because there is no Home to
+    // close to; Skip goes to sign-in.
     'O03': (context) => OnboardingState.instance.shortSetup
         ? ScheduleView(
             repository: intakeRepository,
             titleOverride: _shortSetupTitle(context),
-            onContinue: () => goTo(context, 'O07'),
+            onContinue: () => goTo(context, 'O04'),
+            onSkip: () {
+              OnboardingState.instance.skippingSetup = true;
+              goTo(context, 'O04');
+            },
             onBack: () => Navigator.of(context).maybePop(),
           )
         : ScheduleView(
             repository: intakeRepository,
-            onContinue: () => goTo(context, 'O07'),
+            onContinue: () => goTo(context, 'O04'),
+            onSkip: () {
+              OnboardingState.instance.skippingSetup = true;
+              goTo(context, 'O04');
+            },
             onBack: () => Navigator.of(context).maybePop(),
             onClose: () => OnboardingState.instance.leaveSetup(context),
           ),
-    'O07': (context) => OnboardingState.instance.shortSetup
-        ? MinutesView(
-            repository: intakeRepository,
-            titleOverride: _shortSetupTitle(context),
-            onContinue: () => goTo(context, 'O04'),
-            onBack: () => Navigator.of(context).maybePop(),
-          )
-        : MinutesView(
-            repository: intakeRepository,
-            onContinue: () => goTo(context, 'O04'),
-            onBack: () => Navigator.of(context).maybePop(),
-            onClose: () => OnboardingState.instance.leaveSetup(context),
-          ),
+    // The life-stage question is the one Skip never bypasses, and it has no
+    // Skip of its own: "Nothing right now" is the quick answer. When she got
+    // here through a Skip, her answer here ends setup the way that Skip would
+    // have: Home, back to the wait, or sign-in before she has an account.
     'O04': (context) => OnboardingState.instance.shortSetup
         ? LifeStageView(
             repository: intakeRepository,
             titleOverride: _shortSetupTitle(context),
-            continueLabel: AppL10n.of(context).seeMyWeek,
-            onContinue: () => goTo(context, 'O05'),
+            continueLabel: OnboardingState.instance.skippingSetup
+                ? null
+                : AppL10n.of(context).seeMyWeek,
+            onContinue: () {
+              if (OnboardingState.instance.skippingSetup) {
+                OnboardingState.instance.skipSetup(
+                  context,
+                  toSignIn: () {
+                    if (screenIsOn('C06')) goTo(context, 'C06');
+                  },
+                );
+                return;
+              }
+              goTo(context, 'O05');
+            },
             onBack: () => Navigator.of(context).maybePop(),
           )
         : LifeStageView(
             repository: intakeRepository,
-            onContinue: () => goTo(context, 'O05'),
+            onContinue: () {
+              if (OnboardingState.instance.skippingSetup) {
+                OnboardingState.instance.skipSetup(
+                  context,
+                  toSignIn: () {
+                    if (screenIsOn('C06')) goTo(context, 'C06');
+                  },
+                );
+                return;
+              }
+              goTo(context, 'O05');
+            },
             onBack: () => Navigator.of(context).maybePop(),
-            onClose: () => OnboardingState.instance.leaveSetup(context),
           ),
     // The end of the walk. All three doors leave setup first, so the questions
     // are gone from the history whichever one she takes and no back gesture can
@@ -7907,6 +7947,9 @@ class AppRouter {
         toSignUp();
       },
       onSignIn: toSignIn,
+      // Skip, in the tour's bar: straight to sign-in. Not for a woman already
+      // waiting on her check.
+      onSkip: waiting ? null : toSignIn,
       onLeave: () {
         unawaited(
           analytics.track(AnalyticsEvent.tourLeft, {

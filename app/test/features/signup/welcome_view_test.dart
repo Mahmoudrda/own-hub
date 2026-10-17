@@ -142,9 +142,8 @@ void main() {
     await tester.tap(find.text('Skip the tour and join'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('More'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('I coach women'));
+    // "Join as a coach" is on the page, a secondary text button, not in More.
+    await tester.tap(find.text('Join as a coach'));
     await tester.pumpAndSettle();
 
     expect(toured, 1);

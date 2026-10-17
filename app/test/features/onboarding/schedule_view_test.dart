@@ -1,8 +1,8 @@
-// O03 — How many days a week?
+// O03 — How many days, and for how long?
 //
 // The screen that defines the rewards system: her answer becomes the weekly goal
 // that counts weeks. So the tests here are not only about chips. Minutes a
-// session are the next screen (O07, `minutes_view_test.dart`).
+// session sit on the same screen since 17 October 2026 (O07 was folded in).
 //
 // §2 rule 3 gets a guard of its own. "Days a week" is a quantity PER WEEK, and
 // the thing that would break this product is not a bug — it is a perfectly
@@ -54,13 +54,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('How many days a week?'), findsOneWidget);
+      expect(find.text('How many days, and for how long?'), findsOneWidget);
       expect(
         find.text('Be honest. This becomes your weekly goal.'),
         findsOneWidget,
       );
-      // Fourth of six at home: goal, place, what she has there, then this.
-      expect(find.text('4 of 6'), findsOneWidget);
+      // Fourth of five at home: goal, place, what she has there, then this.
+      expect(find.text('4 of 5'), findsOneWidget);
 
       // Three day chips, not four. The fifth chip was removed with
       // `Intake.allowedDays`: it offered a target `kMaxSessionsTarget` refuses,
@@ -69,9 +69,12 @@ void main() {
         expect(find.text(n), findsOneWidget, reason: n);
       }
       expect(find.text('5'), findsNothing, reason: 'five is not offered');
-      // One question a screen: minutes are asked next, not here.
-      expect(find.text('How long can a session be?'), findsNothing);
-      expect(find.text('15 min'), findsNothing);
+      // Minutes a session are asked on the same screen, each said in minutes.
+      expect(find.text('Days a week'), findsOneWidget);
+      expect(find.text('Minutes a session'), findsOneWidget);
+      for (final chip in ['10 min', '15 min', '20 min', '30 min']) {
+        expect(find.text(chip), findsOneWidget, reason: chip);
+      }
     });
 
     testWidgets('the rest-week rule is explained before she can fail it', (
@@ -98,6 +101,9 @@ void main() {
       // Was '5'. Five is no longer a chip at all, so the negative control moved
       // to the highest day chip that does exist.
       expect(_chipSelected(tester, '4'), isFalse);
+      // Fifteen minutes is preselected too.
+      expect(_chipSelected(tester, '15 min'), isTrue);
+      expect(_chipSelected(tester, '30 min'), isFalse);
     });
   });
 
@@ -137,7 +143,9 @@ void main() {
   });
 
   group('writing', () {
-    testWidgets('Continue writes days, and nothing else', (tester) async {
+    testWidgets('Continue writes days and minutes, and nothing else', (
+      tester,
+    ) async {
       final repository = InMemoryIntakeRepository();
       var continued = 0;
       await tester.pumpWidget(
@@ -151,34 +159,37 @@ void main() {
       // the number she taps is the number that is written, whichever it is.
       await tester.tap(find.text('4'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('30 min'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
       expect(repository.read().days, 4);
+      expect(repository.read().minutes, 30);
       expect(repository.writes, [
-        {'days'},
+        {'days', 'minutes'},
       ]);
       expect(continued, 1);
     });
 
-    testWidgets('Skip writes nothing and the default goal stands', (
-      tester,
-    ) async {
-      final repository = InMemoryIntakeRepository();
-      // Skip is drawn only where it leads somewhere.
-      var skipped = 0;
-      await tester.pumpWidget(
-        _host(ScheduleView(repository: repository, onSkip: () => skipped++)),
-      );
-      await tester.pumpAndSettle();
+    testWidgets(
+      'Skip, in the top bar, writes nothing and the default goal stands',
+      (tester) async {
+        final repository = InMemoryIntakeRepository();
+        var skipped = 0;
+        await tester.pumpWidget(
+          _host(ScheduleView(repository: repository, onSkip: () => skipped++)),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Skip'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Skip'));
+        await tester.pumpAndSettle();
 
-      expect(skipped, 1);
-      expect(repository.writes, isEmpty);
-      expect(repository.read().days, 3);
-    });
+        expect(skipped, 1);
+        expect(repository.writes, isEmpty);
+        expect(repository.read().days, 3);
+      },
+    );
 
     testWidgets('D3 — it opens on what is stored', (tester) async {
       await tester.pumpWidget(
@@ -193,6 +204,20 @@ void main() {
       expect(_chipSelected(tester, '2'), isTrue);
       expect(_chipSelected(tester, '3'), isFalse);
     });
+
+    testWidgets('D3 — minutes open on what is stored', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          ScheduleView(
+            repository: InMemoryIntakeRepository(const Intake(minutes: 10)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(_chipSelected(tester, '10 min'), isTrue);
+      expect(_chipSelected(tester, '15 min'), isFalse);
+    });
   });
 
   group('Arabic', () {
@@ -206,9 +231,19 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('كام يوم في الأسبوع؟'), findsOneWidget);
-      expect(find.text('4 من 6'), findsOneWidget);
-      expect(find.text('How many days a week?'), findsNothing);
+      expect(
+        find.text('كام يوم في الأسبوع، وكل تمرين قد إيه؟'),
+        findsOneWidget,
+      );
+      expect(find.text('4 من 5'), findsOneWidget);
+      expect(find.text('How many days, and for how long?'), findsNothing);
+      // The minutes chips stay in Western numerals as well (P0-A11Y-01).
+      for (final chip in ['10 دقيقة', '15 دقيقة', '20 دقيقة', '30 دقيقة']) {
+        expect(find.text(chip), findsOneWidget, reason: chip);
+      }
+      for (final eastern in ['١٠', '١٥', '٢٠', '٣٠']) {
+        expect(find.textContaining(eastern), findsNothing, reason: eastern);
+      }
 
       for (final n in ['2', '3', '4']) {
         expect(
@@ -236,12 +271,14 @@ void main() {
   });
 
   group('the short "Your week", before sign-up', () {
-    // Days, then minutes (O07), then what to train around (O04): the same
-    // three questions as the full walk's last three, one a screen.
+    // Days and minutes (O03), then what to train around (O04): the same two
+    // questions as the full walk's last two.
     setUp(() => OnboardingState.instance.beforeSignup = true);
     tearDown(() => OnboardingState.instance.beforeSignup = false);
 
-    testWidgets('the first of three: days alone, in one write', (tester) async {
+    testWidgets('the first of two: days and minutes, in one write', (
+      tester,
+    ) async {
       final repository = InMemoryIntakeRepository();
       var continued = 0;
       await tester.pumpWidget(
@@ -258,11 +295,10 @@ void main() {
 
       expect(find.text('1 of 3 · Your week'), findsOneWidget);
       final bar = tester.widget<AppStepBar>(find.byType(AppStepBar));
-      expect((bar.step, bar.total), (1, 3));
+      expect((bar.step, bar.total), (1, 2));
       expect(find.text('Anything we should train around?'), findsNothing);
-      // Everything is preselected, so there is nothing to skip, and before
-      // she has an account there is no Home to close to.
-      expect(find.text('Skip'), findsNothing);
+      // Before she has an account there is no Home to close to; Skip is the
+      // way out when the router gives it one.
       expect(find.byIcon(Icons.close), findsNothing);
 
       await tester.tap(find.text('4'));
@@ -272,7 +308,7 @@ void main() {
 
       expect(continued, 1);
       expect(repository.writes, [
-        {'days'},
+        {'days', 'minutes'},
       ]);
       expect(repository.read().days, 4);
     });

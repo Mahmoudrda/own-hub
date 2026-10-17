@@ -160,14 +160,13 @@ abstract final class ScreenArt {
     'M14': [AppArt.running],
     'M15': [AppArt.yogaMat],
     'M16': [AppArt.running],
-    'O01': [AppArt.strongArms, AppArt.running],
-    'O02': [AppArt.gymBag, AppArt.dumbbells],
-    'O03': [AppArt.trainers, AppArt.yogaMat],
+    'O01': [AppArt.strongArms],
+    'O02': [AppArt.gymBag],
+    'O03': [AppArt.trainers],
     'O04': [AppArt.meditation],
     'O05': [AppArt.squatWeights, AppArt.running],
-    // What she has at home, and how long she has.
-    'O06': [AppArt.dumbbells, AppArt.yogaMat],
-    'O07': [AppArt.trainers],
+    // What she has at home.
+    'O06': [AppArt.dumbbells],
     'P01': [AppArt.running],
     'P02': [AppArt.strongArms],
     'P03': [AppArt.overheadRaise],
@@ -266,7 +265,20 @@ abstract final class ScreenArt {
   /// page — beside the figure or the section they illustrate — instead of in a
   /// strip across the top. They still draw exactly what [forScreen] gives them,
   /// through [inlineFor].
-  static const Set<String> placesOwnArt = {'T01', 'R01', 'E01', 'K07'};
+  ///
+  /// The setup questions `O01` to `O04` and `O06` set one small drawing beside
+  /// their title, so the answers fit the screen without scrolling.
+  static const Set<String> placesOwnArt = {
+    'T01',
+    'R01',
+    'E01',
+    'K07',
+    'O01',
+    'O02',
+    'O03',
+    'O04',
+    'O06',
+  };
 
   /// The illustrations to draw at the top of [screenId], or none.
   static List<String> headerFor(String? screenId) {

@@ -4378,5 +4378,7 @@
   "aShortOneStillCountsWheneverYoure": "تمرين قصير برضه بيتحسب. وقت ما تحبي.",
   "aFriendlyNudgeIfYouveBeenAway": "تذكير بسيط لو غبتي عننا فترة.",
   "remindersNeverComeBetween10PmAnd_z63uh": "التذكيرات مش بتيجي من 10 بالليل لحد 8 الصبح. بس مؤقت راحة إنتِ شغّلتيه، أو خبر إن التحقق خلص، ممكن يوصلك.",
-  "remindersCantBeSetOnThisPhone": "مينفعش نظبط تذكيرات على الموبايل ده."
+  "remindersCantBeSetOnThisPhone": "مينفعش نظبط تذكيرات على الموبايل ده.",
+  "joinAsACoach": "انضمّي كمدرّبة",
+  "howManyDaysAndForHowLong": "كام يوم في الأسبوع، وكل تمرين قد إيه؟"
 }

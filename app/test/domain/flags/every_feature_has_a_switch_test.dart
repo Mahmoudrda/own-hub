@@ -49,7 +49,6 @@ void main() {
         'O04',
         'O05',
         'O06',
-        'O07',
       });
       for (final id in AppRouter.ungatedScreens.where((id) => id != 'C02')) {
         expect(

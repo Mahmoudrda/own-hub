@@ -55,10 +55,7 @@ void main() {
       expect(find.text('What do you want most?'), findsOneWidget);
       // The promise the whole flow rests on: her goal changes the training, not
       // the interface.
-      expect(
-        find.text('Pick one. It shapes your program.'),
-        findsOneWidget,
-      );
+      expect(find.text('Pick one. It shapes your program.'), findsOneWidget);
       for (final goal in [
         'Get stronger',
         'Feel better in my body',
@@ -92,9 +89,9 @@ void main() {
 
       // Six at home, which is where a fresh install starts: goal, place, what
       // she has at home, days, minutes and what to train around.
-      expect(find.text('1 of 6'), findsOneWidget);
+      expect(find.text('1 of 5'), findsOneWidget);
       final bar = tester.widget<AppStepBar>(find.byType(AppStepBar));
-      expect((bar.step, bar.total), (1, 6));
+      expect((bar.step, bar.total), (1, 5));
     });
 
     testWidgets('says what is about to happen, and promises no Skip', (
@@ -284,7 +281,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('1 من 6'), findsOneWidget);
+      expect(find.text('1 من 5'), findsOneWidget);
       expect(find.text('١ من ٦'), findsNothing);
     });
   });

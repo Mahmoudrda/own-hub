@@ -267,3 +267,9 @@ file keeps its original alpha. They are derivatives of the same originals, so th
 licence question above is still open exactly as documented: the recolour does
 not resolve it, and the record of the Canva account or purchase is still needed
 before the store submission.
+
+The food files (apple, bowl_salad, breakfast, bruschetta, buddha_bowl,
+fruit_basket, grapes, nuts, pasta, plate_mixed, steak, toast_egg, watermelon, at
+1x, 2x and 3x) were restored to their original colours on 17 October 2026, from
+git `d353189`. They are no longer part of the 16 October recolour; the other
+files keep the brand palette.

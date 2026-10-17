@@ -777,8 +777,8 @@ void main() {
   // ------------------------------------------------- R1-P25 and M3
 
   group('R1-P25: a coach who arrives early is heard', () {
-    testWidgets('C01 offers "I coach women" while the coach app is off, and '
-        'the invite code while it is on', (tester) async {
+    testWidgets('C01 offers "Join as a coach" on the page while the coach app '
+        'is off, and the invite code while it is on', (tester) async {
       _phone(tester);
       AppRouter.featureFlags = _coachOff;
       await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
@@ -786,9 +786,10 @@ void main() {
       expect(find.byType(WelcomeView), findsOneWidget);
       await tester.ensureVisible(find.text('More'));
       await tester.pumpAndSettle();
+      expect(find.text('Join as a coach'), findsOneWidget);
       await tester.tap(find.text('More'));
       await tester.pumpAndSettle();
-      expect(find.text('I coach women'), findsOneWidget);
+      expect(find.text('I coach women'), findsNothing, reason: 'one door');
       expect(find.text('I have a code from my coach'), findsNothing);
 
       AppRouter.featureFlags = _coachLive;
@@ -796,6 +797,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('More'));
       await tester.pumpAndSettle();
+      expect(find.text('Join as a coach'), findsNothing);
       await tester.tap(find.text('More'));
       await tester.pumpAndSettle();
       expect(find.text('I coach women'), findsNothing);

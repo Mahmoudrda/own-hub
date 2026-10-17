@@ -24,7 +24,7 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/onboarding/presentation/equipment_view.dart';
 import 'package:own_hub/features/onboarding/presentation/goal_view.dart';
-import 'package:own_hub/features/onboarding/presentation/minutes_view.dart';
+import 'package:own_hub/features/onboarding/presentation/life_stage_view.dart';
 import 'package:own_hub/features/onboarding/presentation/starting_program_view.dart';
 import 'package:own_hub/features/account/presentation/profile_view.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
@@ -112,7 +112,7 @@ void main() {
 
       // Question one, and it says what is about to happen before it asks.
       expect(find.byType(GoalView), findsOneWidget);
-      expect(find.text('1 of 6'), findsOneWidget);
+      expect(find.text('1 of 5'), findsOneWidget);
       expect(
         find.text(
           'A few short questions, one at a time. Your week is ready at the '
@@ -130,29 +130,24 @@ void main() {
       await _tap(tester, find.text('Continue'));
 
       // Two: where.
-      expect(find.text('2 of 6'), findsOneWidget);
-      await _tap(tester, find.text('Both'));
+      expect(find.text('2 of 5'), findsOneWidget);
+      await _tap(tester, find.text('At home'));
       await _tap(tester, find.text('Continue'));
 
-      // Three: with what, asked because home is part of her answer.
+      // Three: with what, asked because she trains at home.
       expect(find.byType(EquipmentView), findsOneWidget);
-      expect(find.text('3 of 6'), findsOneWidget);
+      expect(find.text('3 of 5'), findsOneWidget);
       await _tap(tester, find.text('Dumbbells'));
       await _tap(tester, find.text('Continue'));
 
-      // Four: the one that becomes her goal.
-      expect(find.text('4 of 6'), findsOneWidget);
+      // Four: days and minutes together. The days become her goal.
+      expect(find.text('4 of 5'), findsOneWidget);
       await _tap(tester, find.text('4'));
-      await _tap(tester, find.text('Continue'));
-
-      // Five: how long a session can be.
-      expect(find.byType(MinutesView), findsOneWidget);
-      expect(find.text('5 of 6'), findsOneWidget);
       await _tap(tester, find.text('30 min'));
       await _tap(tester, find.text('Continue'));
 
-      // Six: what the programme has to train around.
-      expect(find.text('6 of 6'), findsOneWidget);
+      // Five: what the programme has to train around.
+      expect(find.text('5 of 5'), findsOneWidget);
       await _tap(tester, find.text('A knee, back or shoulder'));
       await _tap(tester, find.text('Continue'));
 
@@ -160,7 +155,7 @@ void main() {
       // somebody who trains three days a week at home.
       expect(find.byType(StartingProgramView), findsOneWidget);
       expect(
-        find.text('4 days a week · 30 min a session · At home and the gym'),
+        find.text('4 days a week · 30 min a session · At home'),
         findsOneWidget,
       );
 
@@ -180,7 +175,7 @@ void main() {
       // Her answers reached the app.
       final intake = AppRouter.intakeRepository.read();
       expect(intake.goal, TrainingGoal.backIntoIt);
-      expect(intake.place, TrainingPlace.both);
+      expect(intake.place, TrainingPlace.home);
       expect(intake.equipment, {Equipment.dumbbells});
       expect(intake.days, 4);
       expect(intake.minutes, 30);
@@ -192,24 +187,22 @@ void main() {
       expect(_homeTarget, 4);
     });
 
-    testWidgets('a ladies-only gym is five questions, and never asks what '
+    testWidgets('a ladies-only gym is four questions, and never asks what '
         'she has at home', (tester) async {
       await _launch(tester);
       await _tap(tester, find.text('Continue')); // O01
 
-      expect(find.text('2 of 6'), findsOneWidget);
-      await _tap(tester, find.text('A ladies-only gym'));
       expect(find.text('2 of 5'), findsOneWidget);
+      await _tap(tester, find.text('A ladies-only gym'));
+      expect(find.text('2 of 4'), findsOneWidget);
       await _tap(tester, find.text('Continue'));
 
-      // Straight to her days: no O06.
+      // Straight to her days and minutes: no O06.
       expect(find.byType(EquipmentView), findsNothing);
-      expect(find.text('3 of 5'), findsOneWidget);
+      expect(find.text('3 of 4'), findsOneWidget);
       await _tap(tester, find.text('4'));
       await _tap(tester, find.text('Continue'));
-      expect(find.text('4 of 5'), findsOneWidget);
-      await _tap(tester, find.text('Continue')); // O07
-      expect(find.text('5 of 5'), findsOneWidget);
+      expect(find.text('4 of 4'), findsOneWidget);
       await _tap(tester, find.text('Continue')); // O04
 
       expect(find.byType(StartingProgramView), findsOneWidget);
@@ -232,7 +225,6 @@ void main() {
       await _tap(tester, find.text('Continue')); // O02
       await _tap(tester, find.text('Continue')); // O06
       await _tap(tester, find.text('Continue')); // O03
-      await _tap(tester, find.text('Continue')); // O07
       await _tap(tester, find.text('Continue')); // O04
       await _tap(
         tester,
@@ -256,8 +248,7 @@ void main() {
       await _tap(tester, find.text('Continue')); // O02
       await _tap(tester, find.text('Continue')); // O06
       await _tap(tester, find.text('4')); // O03, four days a week
-      await _tap(tester, find.text('Continue'));
-      await _tap(tester, find.text('Continue')); // O07
+      await _tap(tester, find.text('Continue')); // O03
       await _tap(tester, find.text('Continue')); // O04
       await _tap(
         tester,
@@ -284,15 +275,19 @@ void main() {
   });
 
   group('skipping', () {
-    // R1-P10: Skip is gone. Every answer is preselected, so Skip did what
-    // Continue does; going through on the defaults is the same walk.
+    // Every answer is preselected, so going through on the defaults is a real
+    // walk. Skip, in the top bar, leaves it early with the same defaults.
     testWidgets('she can go through every question on its defaults and land '
         'on an honest Home', (tester) async {
       await _launch(tester);
 
-      for (var step = 1; step <= 6; step++) {
-        expect(find.text('$step of 6'), findsOneWidget);
-        expect(find.widgetWithText(AppButton, 'Skip'), findsNothing);
+      for (var step = 1; step <= 5; step++) {
+        expect(find.text('$step of 5'), findsOneWidget);
+        // Every question has a Skip except the safety question, O04.
+        expect(
+          find.widgetWithText(TextButton, 'Skip'),
+          step < 5 ? findsOneWidget : findsNothing,
+        );
         await _tap(tester, find.widgetWithText(AppButton, 'Continue'));
       }
       await _tap(
@@ -314,16 +309,37 @@ void main() {
       expect(find.byType(TodayView), findsOneWidget);
     });
 
-    testWidgets('closing at question one leaves setup immediately', (
+    testWidgets('Skip at question one still asks the safety question, then '
+        'leaves setup with the defaults', (tester) async {
+      await _launch(tester);
+      expect(find.byType(GoalView), findsOneWidget);
+
+      await _tap(tester, find.widgetWithText(TextButton, 'Skip'));
+
+      // Skip never bypasses O04, and O04 has no Skip of its own.
+      expect(find.byType(LifeStageView), findsOneWidget);
+      expect(find.text('Skip'), findsNothing);
+      expect(AppRouter.intakeRepository.setupDone, isFalse);
+      await _tap(tester, find.text('Continue'));
+
+      expect(find.byType(TodayView), findsOneWidget);
+      expect(find.byType(GoalView, skipOffstage: false), findsNothing);
+      expect(AppRouter.intakeRepository.setupDone, isTrue);
+      expect(AppRouter.intakeRepository.read(), Intake.defaults);
+      // Only her life-stage answer was written; the skipped ones were not.
+      expect(AppRouter.intakeRepository.writes, [
+        {'lifeStage'},
+      ]);
+    });
+
+    testWidgets('leaving at question one leaves setup immediately', (
       tester,
     ) async {
       await _launch(tester);
       expect(find.byType(GoalView), findsOneWidget);
 
-      // The X in the corner. It rendered on every question and was passed
-      // no callback by anybody, so the one control promising she is not
-      // trapped in setup was the one control that could not let her out.
-      await _tap(tester, find.byTooltip('Skip setup'));
+      // Back on the first question is the way out, not a step backwards.
+      await _tap(tester, find.byTooltip('Back'));
 
       expect(find.byType(TodayView), findsOneWidget);
       expect(find.byType(GoalView, skipOffstage: false), findsNothing);
@@ -351,7 +367,6 @@ void main() {
       await _tap(tester, find.text('Continue')); // O06
       await _tap(tester, find.text('2'));
       await _tap(tester, find.text('Continue')); // O03
-      await _tap(tester, find.text('Continue')); // O07
       await _tap(tester, find.text('Continue')); // O04
       await _tap(
         tester,

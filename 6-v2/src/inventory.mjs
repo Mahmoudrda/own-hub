@@ -61,7 +61,6 @@ export const screens = [
   { id: 'O04', flow: 'onboarding', title: 'Life stage' },
   { id: 'O05', flow: 'onboarding', title: 'Your starting program' },
   { id: 'O06', flow: 'onboarding', title: 'What you have at home' },
-  { id: 'O07', flow: 'onboarding', title: 'Minutes a session' },
   // Today and logging
   { id: 'T01', flow: 'today', title: 'Today' },
   { id: 'T02', flow: 'today', title: 'I already did it' },

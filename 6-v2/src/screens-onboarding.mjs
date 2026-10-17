@@ -4,9 +4,9 @@ const { C, R, phone, statusBar, body, footer, card, row, col, h, t, m, strong, p
 const opt = (title, sub, sel = false, goId = '') => card(row(`${col(`${strong(title, 'titleM')}${sub ? m(sub) : ''}`, { gap: 3, grow: true })}${sel ? icon('check_circle', { size: 26, color: C.primary, fill: true }) : `<div style="width:26px;height:26px;border-radius:999px;border:2px solid ${C.outlineVariant};box-sizing:border-box"></div>`}`, { gap: 12 }), { v: sel ? 'selected' : 'outlined', pad: '14px 16px', go: goId });
 
 // One question a screen, and a line under the bar that fills as she goes.
-// Six steps when she trains at home or both, five at a ladies-only gym, where
-// O06 (what she has at home) is not asked.
-const step = (n, title, sub, inner, next, back, total = 6) => phone(
+// Five steps when she trains at home, four otherwise, where O06 (what she has
+// at home) is not asked. Days and minutes share one screen (O03).
+const step = (n, title, sub, inner, next, back, total = 5) => phone(
   statusBar()
   + appBar({ leadGo: back, title: `${n} of ${total}`, actions: [{ icon: 'close', go: 'T01' }] })
   + body(linear(Math.round((n / total) * 100)) + h(title, 'display') + (sub ? m(sub) : '') + `<div style="height:2px"></div>` + inner, { pad: '0 16px 0', gap: 12 })
@@ -23,16 +23,13 @@ const O02 = step(2, 'Where will you train?', 'You can change it on any day.',
 const O06 = step(3, 'What do you have at home?', 'Most women start with nothing. That is plenty.',
   chipRow([{ label: 'Nothing', sel: true }, { label: 'A mat' }, { label: 'Dumbbells' }, { label: 'Bands' }], -1, { grow: false }), 'O03', 'O02');
 
-const O03 = step(4, 'How many days a week?', 'Be honest. This becomes your weekly goal.',
-  chipRow(['2', '3', '4'], 1)
+const O03 = step(4, 'How many days, and for how long?', 'Be honest. This becomes your weekly goal.',
+  m('Days a week') + chipRow(['2', '3', '4'], 1) + m('Minutes a session') + chipRow(['10 min', '15 min', '20 min', '30 min'], 1)
   // The rule, with the number left to the chip she just tapped.
   // `schedule_view.dart` ships this sentence.
-  + sageNote('Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.'), 'O07', 'O06');
+  + sageNote('Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.'), 'O04', 'O06');
 
-const O07 = step(5, 'How long can a session be?', 'Short is fine. Fifteen minutes done beats an hour planned.',
-  chipRow(['10', '15', '20', '30'], 1), 'O04', 'O03');
-
-const O04 = step(6, 'Anything we should train around?', 'Only you and your coach ever see this.',
+const O04 = step(5, 'Anything we should train around?', 'Only you and your coach ever see this.',
   // THE THREE ROWS CARRY NO SUBTITLE, AND THAT IS THE DESIGN, NOT AN OMISSION.
   //
   // They read "Pelvic floor first, cleared from week six" and "Safe movements,
@@ -48,7 +45,7 @@ const O04 = step(6, 'Anything we should train around?', 'Only you and your coach
   // postpartum programme is authored they come back by themselves. Anything
   // written back into this mockup in the meantime is a promise again.
   opt('Nothing right now', '', true) + opt('After a birth', '') + opt('Pregnant', '') + opt('A knee, back or shoulder', '')
-  + sageNote('We save your answer with the rest of your setup. Nothing in your sessions changes from it yet.'), 'O05', 'O07');
+  + sageNote('We save your answer with the rest of your setup. Nothing in your sessions changes from it yet.'), 'O05', 'O03');
 
 const O05 = phone(
   statusBar()
@@ -63,11 +60,10 @@ const O05 = phone(
   + footer(btn('Start day 1 now', { h: 56, ic: 'play_arrow', go: 'R03' }) + row(`${btn('I will start tomorrow', { v: 'text', h: 44, size: 15, go: 'T06' })}${btn('Pick a different program', { v: 'text', h: 44, size: 15, go: 'R11' })}`, { gap: 8 })));
 
 export const screens = [
-  { id: 'O01', html: O01, metric: '1 tap', note: 'Up to six questions, one a screen, each one tap with an answer already chosen, and the app stays usable if she skips all of them. The goal changes the program, never the interface.' },
+  { id: 'O01', html: O01, metric: '1 tap', note: 'Up to five questions, one a screen, each one tap with an answer already chosen, and the app stays usable if she skips all of them. The goal changes the program, never the interface.' },
   { id: 'O02', html: O02, metric: '2 taps', note: 'Equipment is asked as chips rather than a list, because the honest answer for most women here is "nothing", and that answer must be the easy one.' },
   { id: 'O03', html: O03, metric: 'sets the weekly goal', note: 'This is the screen that defines the whole rewards system: her answer becomes the weekly goal that counts weeks, and the rest-week rule is explained here, once, before she can ever fail it.' },
   { id: 'O04', html: O04, metric: 'optional, private', note: 'Life stage is asked plainly and kept private. Postpartum and pregnancy change the program, and the copy is careful to promise adaptation, not medical advice.' },
   { id: 'O06', html: O06, metric: '1 tap', note: 'Equipment on its own screen, asked only when she trains at home. "Nothing" is already chosen, so most women just continue.' },
-  { id: 'O07', html: O07, metric: '1 tap', note: 'Minutes on their own screen, after days. One number a screen, so the week she builds is two easy taps rather than one crowded page.' },
   { id: 'O05', html: O05, metric: '1 tap into day 1', note: 'The answers come back as a named program with her days already set, so the four questions visibly paid for something. One primary button, and the alternative is a real choice rather than a dead end.' },
 ];

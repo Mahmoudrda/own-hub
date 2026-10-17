@@ -275,13 +275,13 @@ flutter:
 #
 # adaptive_icon_background was #FFFFFF while icon-foreground.png was a mark in
 # near-white paper, which on Android is a white mark on a white tile: an icon
-# nobody can see. The background is now the Pale Pink the iOS tile uses,
+# nobody can see. The background is now the rose the iOS tile has always used,
 # so both platforms show the same thing.
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/icon-1024.png"
   remove_alpha_ios: true
-  adaptive_icon_background: "#F4BEBB"
+  adaptive_icon_background: "#A24661"
   adaptive_icon_foreground: "assets/icon/icon-foreground.png"
   min_sdk_android: 24

@@ -26,8 +26,8 @@
   clearance) masked out of it. Change the mask's stroke-width to change the
   clearance; change the circle's stroke-width to change the band.
 
-  Ink box: x 110 to 890, y 4.82 to 995.18. Colour: Own Hub petrol #1A5D74.
-  To recolour, change the two "#1A5D74" values below and nothing else.
+  Ink box: x 110 to 890, y 4.82 to 995.18. Colour: Own Hub rose #A24661.
+  To recolour, change the two "#A24661" values below and nothing else.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"
      width="1000" height="1000" role="img" aria-label="Own Hub">
@@ -44,8 +44,8 @@
   <!-- The ring: stroke 125 wide on a circle of radius 327.5, so its outer
        edge lands at 390 and its inner edge at 265. -->
   <circle cx="500" cy="500" r="327.5"
-          fill="none" stroke="#1A5D74" stroke-width="125" mask="url(#blade-clearance)"/>
+          fill="none" stroke="#A24661" stroke-width="125" mask="url(#blade-clearance)"/>
 
   <!-- The blade, lower-left tip to upper-right tip. -->
-  <path d="M 153.27 995.18 Q 585.19 559.65 846.73 4.82 Q 414.81 440.35 153.27 995.18 Z" fill="#1A5D74"/>
+  <path d="M 153.27 995.18 Q 585.19 559.65 846.73 4.82 Q 414.81 440.35 153.27 995.18 Z" fill="#A24661"/>
 </svg>

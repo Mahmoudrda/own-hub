@@ -143,6 +143,18 @@ const Map<String, ({String file, String guard})> _sourceGuardedEdges = {
     file: 'lib/routing/app_router.dart',
     guard: "onContinue: screenIsOn('C03')",
   ),
+  // LanguageView's Skip, wired in AppRouter itself: drawn only while sign-in
+  // (C06) is on and she has no account, so it is never a door into a dark C06.
+  'C02->C06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onSkip: signedInUid == null && screenIsOn('C06')",
+  ),
+  // O04 ends a Skip that began before sign-up. The edge to C06 is taken only
+  // while she is building her week before sign-up, and only while C06 is on.
+  'O04->C06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "if (screenIsOn('C06')) goTo(context, 'C06');",
+  ),
   // EatView (E01, E04) and TypeItView (E02) draw the microphone only while
   // E03, saying a meal, is on (`Feature.voiceLogging`); with it off they offer
   // typing alone and `onSpeak` is never invoked.

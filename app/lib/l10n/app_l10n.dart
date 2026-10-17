@@ -17754,6 +17754,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Reminders can\'t be set on this phone.'**
   String get remindersCantBeSetOnThisPhone;
+
+  /// No description provided for @joinAsACoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Join as a coach'**
+  String get joinAsACoach;
+
+  /// No description provided for @howManyDaysAndForHowLong.
+  ///
+  /// In en, this message translates to:
+  /// **'How many days, and for how long?'**
+  String get howManyDaysAndForHowLong;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

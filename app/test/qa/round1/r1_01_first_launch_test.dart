@@ -17,8 +17,8 @@ import 'round1_harness.dart';
 
 Future<void> _skipSetup(WidgetTester t, {String loc = 'en'}) async {
   await boot(t, locale: Locale(loc));
-  // O01, O02, O06, O03, O07, O04: one question a screen.
-  for (var i = 0; i < 6; i++) {
+  // O01, O02, O06, O03, O04: one question a screen.
+  for (var i = 0; i < 5; i++) {
     await tapLabel(t, loc == 'en' ? 'Continue' : 'كمّلي');
   }
   // O05

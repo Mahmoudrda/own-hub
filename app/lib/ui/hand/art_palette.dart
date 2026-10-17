@@ -115,4 +115,13 @@ abstract final class ArtTones {
 
   /// The dark of a rind or a sole, where a shape needs a foot to stand on.
   static const shade = ArtTone(Color(0xFF4F7480), AppColors.petrolDark);
+
+  /// Food keeps its original colours, so a plate reads as food before it reads
+  /// as part of the palette. These are used only by the food marks.
+  static const foodAmber = ArtTone(Color(0xFFF1C68A), Color(0xFF8A5A17));
+  static const foodCream = ArtTone(Color(0xFFF7E7D4), Color(0xFF866A48));
+  static const foodBerry = ArtTone(Color(0xFFB98AC4), Color(0xFF5B3770));
+  static const foodEmber = ArtTone(Color(0xFFEE9A92), Color(0xFF9D4040));
+  static const foodYolk = ArtTone(Color(0xFFF6C95C), Color(0xFF936510));
+  static const foodSlate = ArtTone(Color(0xFFCDC0C4), Color(0xFF645458));
 }

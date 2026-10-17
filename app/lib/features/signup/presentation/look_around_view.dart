@@ -54,6 +54,7 @@ class LookAroundView extends StatefulWidget {
     this.onJoin,
     this.onLeave,
     this.onSignIn,
+    this.onSkip,
     this.waiting = false,
     this.setupDone = false,
     this.openJoinPrompt = false,
@@ -72,6 +73,9 @@ class LookAroundView extends StatefulWidget {
 
   /// "I already have an account", on the end card.
   final VoidCallback? onSignIn;
+
+  /// Skip, in the bar of every stop: straight to sign-in. Null draws none.
+  final VoidCallback? onSkip;
 
   /// She is already signed up and waiting on her check (`C14` opened this).
   /// The join button reads "Back to my check" and [onJoin] takes her there.
@@ -260,6 +264,7 @@ class _LookAroundViewState extends State<LookAroundView> {
                   joinLabel: _joinLabel(l10n),
                   onJoin: _joinFrom(DemoJoinSource.bar),
                   onLeave: widget.onLeave,
+                  onSkip: widget.onSkip,
                 ),
                 if (stop != null)
                   Padding(

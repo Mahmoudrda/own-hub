@@ -19,6 +19,10 @@ ROSE_FILL = "#F4BEBB"
 PAW_EDGE = "#E8A5A2"
 PAGE = "#FCF8F2"
 
+# The logo keeps its own colours: the paper mark on the deep rose tile.
+LOGO_ROSE = "#A24661"
+LOGO_PAPER = "#FFF8F9"
+
 # Three tones of the body rose, the cream of belly and muzzle, the eye dark.
 _BASE, _SHADE, _LIGHT = "#F4BEBB", "#E8A5A2", "#F9DEDC"
 _INNER = "#D98A87"
@@ -367,13 +371,13 @@ _BLADE = (
 )
 
 
-def mark_svg(colour: str = ROSE, *, tile: str | None = None, mask_id: str = "c") -> str:
+def mark_svg(colour: str = LOGO_ROSE, *, tile: str | None = None, mask_id: str = "c") -> str:
     """The Own Hub mark (app/assets/brand/ownhub-mark.svg), as a file.
 
     tile: when set, the mark sits on a rounded tile of that colour, the
     way the app shows it on its welcome screen and as its icon."""
     if tile:
-        ink, back = ROSE, (
+        ink, back = LOGO_PAPER, (
             f'<rect x="-250" y="-250" width="1500" height="1500" rx="330" fill="{tile}"/>'
         )
         view = "-250 -250 1500 1500"
@@ -394,7 +398,7 @@ def mark_svg(colour: str = ROSE, *, tile: str | None = None, mask_id: str = "c")
 
 
 def icon_svg(*, size: int = 64, full_bleed: bool = False, safe: float = 1.0) -> str:
-    """The app icon: the petrol mark on the Pale Pink tile.
+    """The app icon: the light mark on the rose tile.
 
     full_bleed: a square with no rounding, for a platform that rounds it
     itself. safe: how much of the tile the mark may fill (a maskable icon
@@ -409,10 +413,10 @@ def icon_svg(*, size: int = 64, full_bleed: bool = False, safe: float = 1.0) -> 
         f'<path d="{_BLADE}" stroke="#000" stroke-width="60" stroke-linejoin="round"/>'
         "</mask></defs>"
         f'<rect x="{-pad:.1f}" y="{-pad:.1f}" width="{1000 + 2 * pad:.1f}" '
-        f'height="{1000 + 2 * pad:.1f}" rx="{rx:.1f}" fill="{ROSE_FILL}"/>'
-        f'<circle cx="500" cy="500" r="327.5" fill="none" stroke="{ROSE}" '
+        f'height="{1000 + 2 * pad:.1f}" rx="{rx:.1f}" fill="{LOGO_ROSE}"/>'
+        f'<circle cx="500" cy="500" r="327.5" fill="none" stroke="{LOGO_PAPER}" '
         'stroke-width="125" mask="url(#c)"/>'
-        f'<path d="{_BLADE}" fill="{ROSE}"/>'
+        f'<path d="{_BLADE}" fill="{LOGO_PAPER}"/>'
         "</svg>\n"
     )
 
