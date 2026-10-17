@@ -334,7 +334,8 @@ def record_consent(request: https_fn.CallableRequest) -> dict:
     config.CONSENT_VERSION must be bumped whenever that text changes.
     """
     uid = _require_auth(request)
-    data = request.data if isinstance(request.data, dict) else {}
+    payload = _payload(request)
+    data = payload if isinstance(payload, dict) else {}
     version = data.get("consentVersion")
     if version != config.CONSENT_VERSION:
         # A client agreeing to a version we do not recognise has been shown
@@ -384,7 +385,7 @@ def record_legal_acceptance(request: https_fn.CallableRequest) -> dict:
     before the check.
     """
     uid = _require_auth(request)
-    data = request.data
+    data = _payload(request)
     if not isinstance(data, dict):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
@@ -432,7 +433,7 @@ def record_health_consent(request: https_fn.CallableRequest) -> dict:
     privacy control (Protected List 6).
     """
     uid = _require_auth(request)
-    data = request.data or {}
+    data = _payload(request) or {}
     if not isinstance(data, dict) or not isinstance(data.get("granted"), bool):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
@@ -545,7 +546,7 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
     """
     started = time.monotonic()
     uid = _require_auth(request)
-    data = request.data or {}
+    data = _payload(request) or {}
     if not isinstance(data, dict):
         # A callable body is whatever the client put in `data`. A list or a
         # string reaches here just as easily as an object and would turn every
@@ -934,8 +935,39 @@ def _review_call(fn, *args, **kwargs):
         raise https_fn.HttpsError(_REVIEW_ERROR_CODES[error.kind], error.reason)
 
 
+# iOS sends every Dart int as {"@type": "...Int64Value", "value": "3"}, because a
+# long long may not fit a JavaScript number; Android and the web send a plain 3.
+# Callables read their request only through _payload, so every version, count
+# and timestamp reaches the same checks from both platforms.
+_WRAPPED_INT_TYPES = (
+    "type.googleapis.com/google.protobuf.Int64Value",
+    "type.googleapis.com/google.protobuf.UInt64Value",
+)
+
+
+def _unwrap(value):
+    if isinstance(value, dict):
+        if (
+            set(value) == {"@type", "value"}
+            and value["@type"] in _WRAPPED_INT_TYPES
+            and isinstance(value["value"], str)
+        ):
+            try:
+                return int(value["value"])
+            except ValueError:
+                return value
+        return {k: _unwrap(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_unwrap(v) for v in value]
+    return value
+
+
+def _payload(request: https_fn.CallableRequest):
+    return _unwrap(request.data)
+
+
 def _body(request: https_fn.CallableRequest) -> dict:
-    data = request.data or {}
+    data = _payload(request) or {}
     if not isinstance(data, dict):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR

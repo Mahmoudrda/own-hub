@@ -134,3 +134,45 @@ def test_the_versions_are_ints_and_material():
     assert isinstance(config.TERMS_VERSION, int)
     assert isinstance(config.PRIVACY_VERSION, int)
     assert config.TERMS_VERSION == 3 and config.PRIVACY_VERSION == 3
+
+
+def _int64(n):
+    return {"@type": "type.googleapis.com/google.protobuf.Int64Value", "value": str(n)}
+
+
+def test_an_iphone_sends_wrapped_whole_numbers_and_is_recorded(recorded):
+    # The iOS SDK sends every Dart int as an Int64Value wrapper; Android sends
+    # a plain number. Both must reach the same checks.
+    body = _body(
+        termsVersion=_int64(config.TERMS_VERSION),
+        privacyVersion=_int64(config.PRIVACY_VERSION),
+        acceptedAtMs=_int64(1791000000000),
+        platform="ios",
+    )
+    inner("record_legal_acceptance")(request(body))
+    assert recorded["writes"] == [("uid-1", "ar", "1.0.0+12", "ios", 1791000000000)]
+
+
+def test_a_wrapped_wrong_version_is_still_refused(recorded):
+    error = raises(
+        lambda: inner("record_legal_acceptance")(
+            request(_body(termsVersion=_int64(config.TERMS_VERSION - 1)))
+        ),
+        https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+    )
+    assert error.message == reasons.CONSENT_MISSING
+    assert recorded["writes"] == []
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        {"@type": "type.googleapis.com/google.protobuf.Int64Value", "value": "x"},
+        {"@type": "type.googleapis.com/google.protobuf.DoubleValue", "value": "3"},
+        {"@type": "type.googleapis.com/google.protobuf.Int64Value", "value": 3},
+        {"@type": "type.googleapis.com/google.protobuf.Int64Value", "value": "3", "x": 1},
+    ],
+)
+def test_anything_else_shaped_like_a_wrapper_is_left_alone(value):
+    assert main._unwrap(value) == value
+    assert main._unwrap([value, {"n": _int64(4)}]) == [value, {"n": 4}]

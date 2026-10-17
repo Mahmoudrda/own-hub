@@ -596,3 +596,17 @@ def test_the_consent_record_keeps_only_well_formed_extras():
     assert store.consent_extras("ar", "1.0.0+3") == {"locale": "ar", "appVersion": "1.0.0+3"}
     assert store.consent_extras("fr", "1.0 beta") == {}
     assert store.consent_extras(None, None) == {}
+
+
+def test_an_iphone_wrapped_consent_version_is_recorded(monkeypatch, stubbed):
+    # The iOS SDK sends a Dart int as an Int64Value wrapper.
+    writes = []
+    monkeypatch.setattr(main.store, "has_consent", lambda uid: False)
+    monkeypatch.setattr(main.store, "write_consent", lambda uid, *extras: writes.append(uid))
+    wrapped = {
+        "@type": "type.googleapis.com/google.protobuf.Int64Value",
+        "value": str(config.CONSENT_VERSION),
+    }
+    answer = inner("record_consent")(request({"consentVersion": wrapped, "locale": "en"}))
+    assert answer == {"ok": True, "consentVersion": config.CONSENT_VERSION}
+    assert writes == ["uid-1"]
