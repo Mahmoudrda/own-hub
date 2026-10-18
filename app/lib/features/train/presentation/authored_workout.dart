@@ -98,7 +98,7 @@ WorkoutDay workoutDayFrom(
   );
 }
 
-/// The R11 row for a session.
+/// The Explore row for a session.
 LibraryWorkout libraryRowFrom(
   AppL10n l10n,
   String languageCode,
@@ -113,4 +113,5 @@ LibraryWorkout libraryRowFrom(
   quiet: session.quiet,
   needsEquipment: session.needsEquipment,
   minutes: session.minutes,
+  exerciseIds: [for (final move in session.moves) move.exerciseId],
 );

@@ -75,13 +75,22 @@ class AppWeekSegments extends StatelessWidget implements HandSeedName {
           Expanded(
             child: SizedBox(
               height: height,
-              child: CustomPaint(
-                painter: _SegmentPainter(
-                  done: i < filled,
-                  seed: i * 31 + total,
-                  thickness: height,
-                  color: color,
-                  textDirection: Directionality.of(context),
+              // A segment that fills inks along its length from the old state
+              // to the new, still under reduced motion.
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: i < filled ? 1 : 0),
+                duration: handMotionOff(context)
+                    ? Duration.zero
+                    : HandTiming.progress,
+                curve: HandTiming.standard,
+                builder: (context, inked, _) => CustomPaint(
+                  painter: _SegmentPainter(
+                    inked: inked,
+                    seed: i * 31 + total,
+                    thickness: height,
+                    color: color,
+                    textDirection: Directionality.of(context),
+                  ),
                 ),
               ),
             ),
@@ -204,14 +213,15 @@ class _Mark extends StatelessWidget {
 
 class _SegmentPainter extends CustomPainter {
   _SegmentPainter({
-    required this.done,
+    required this.inked,
     required this.seed,
     required this.thickness,
     required this.color,
     required this.textDirection,
   });
 
-  final bool done;
+  /// 0 for a session still to come, 1 for one logged, between while it fills.
+  final double inked;
   final int seed;
   final double thickness;
   final Color color;
@@ -221,34 +231,35 @@ class _SegmentPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final y = size.height / 2;
     final rtl = textDirection == TextDirection.rtl;
-    final inset = done ? thickness * 0.35 : 1.0;
+    final inset = inked >= 1 ? thickness * 0.35 : 1.0;
     final a = Offset(rtl ? size.width - inset : inset, y);
     final b = Offset(rtl ? inset : size.width - inset, y);
-    final pts = wobblyLine(a, b, seed: seed, wobble: 0.5, steps: 10);
-    if (done) {
-      paintInk(
-        canvas,
-        pts,
-        color: color,
-        width: thickness,
-        taper: 0.15,
-        seed: seed,
-      );
-    } else {
+    if (inked < 1) {
       // Waiting, not missed: a pencil line, the same neutral as an empty field.
       paintPencil(
         canvas,
-        pts,
+        wobblyLine(a, b, seed: seed, wobble: 0.5, steps: 10),
         color: AppColors.outline,
         width: 1.1,
         seed: seed,
       );
     }
+    if (inked <= 0) return;
+    final end = Offset.lerp(a, b, inked)!;
+    if ((end - a).distance < 1) return;
+    paintInk(
+      canvas,
+      wobblyLine(a, end, seed: seed, wobble: 0.5, steps: 10),
+      color: color,
+      width: thickness,
+      taper: 0.15,
+      seed: seed,
+    );
   }
 
   @override
   bool shouldRepaint(_SegmentPainter old) =>
-      old.done != done ||
+      old.inked != inked ||
       old.seed != seed ||
       old.thickness != thickness ||
       old.color != color ||

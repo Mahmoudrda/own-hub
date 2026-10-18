@@ -164,7 +164,7 @@ class ReminderState {
   TipSeries tips = const TipSeries();
 
   /// Small markers for what settles a tip that nothing else records: a screen
-  /// id she opened (`R14`, `R15`, `E05`, `P06`, `R02`) or [kPhotoMealMark].
+  /// id she opened (`R15`, `E05`, `P06`, `R02`) or [kPhotoMealMark].
   Set<String> tipMarks = <String>{};
 
   /// "Want a few tips and your workout reminders?" is owed, from `C13`. Shown

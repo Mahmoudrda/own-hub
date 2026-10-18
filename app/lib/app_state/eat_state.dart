@@ -40,6 +40,7 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/widgets.dart';
 
 import '../domain/clock/app_clock.dart';
+import '../features/eat/data/egyptian_food_pack.dart';
 import '../features/eat/data/firestore_recipe_source.dart';
 import '../features/eat/data/recipe_sync.dart';
 import '../features/eat/data/seeded_recipe_library.dart';
@@ -221,6 +222,46 @@ class EatAppState {
       return b.lastAt.compareTo(a.lastAt);
     });
     return plates;
+  }
+
+  /// Reads the bundled Egyptian dishes once a run, then redraws the screens
+  /// that search them. Idempotent, so every Eat builder may call it.
+  void ensureFoodPack() {
+    if (_foodPackAsked) return;
+    _foodPackAsked = true;
+    unawaited(
+      EgyptianFoodPack.ensureLoaded().then((_) {
+        if (EgyptianFoodPack.isLoaded) AppChanges.bump();
+      }),
+    );
+  }
+
+  bool _foodPackAsked = false;
+
+  /// What she has eaten before, for E02's "You've had": each food of her
+  /// plates at the size she ate it, newest plate first. Foods that have left
+  /// the pack are skipped.
+  List<ParsedItem> historyEntries(AppL10n l10n) {
+    final library = eatSampleLibrary(l10n);
+    final plates = usualPlates.toList()
+      ..sort((a, b) => b.lastAt.compareTo(a.lastAt));
+    final seen = <String>{};
+    final out = <ParsedItem>[];
+    for (final plate in plates) {
+      for (final item in plate.items) {
+        final entry = entryFor(library, item.foodId, sizeId: item.size);
+        if (entry == null || !seen.add('${item.foodId}:${item.size}')) continue;
+        out.add(
+          ParsedItem(
+            food: entry.food,
+            size: entry.size,
+            servings: item.servings.toInt(),
+            sourceText: entry.sourceText,
+          ),
+        );
+      }
+    }
+    return out;
   }
 
   /// What Home's meal card lists.
@@ -473,6 +514,7 @@ class EatAppState {
   void reset() {
     _session?.reset();
     _session = null;
+    _foodPackAsked = false;
     _plates.clear();
     _saved.clear();
     openRecipeId = null;

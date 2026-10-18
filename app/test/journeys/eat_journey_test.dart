@@ -17,6 +17,8 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
 import 'package:own_hub/features/eat/presentation/eat_sample_library.dart';
+import 'package:own_hub/features/eat/presentation/eat_widgets.dart'
+    show PlusButton, QuickAddCard;
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/domain/week/week_key.dart';
 import 'package:own_hub/main.dart';
@@ -243,7 +245,7 @@ void main() {
       expect(_written, isEmpty, reason: 'an undone meal is never written');
 
       await _open(tester, 'E01');
-      expect(find.text('No plates yet'), findsOneWidget);
+      expect(find.text('Day 1'), findsOneWidget);
 
       await _home(tester);
       expect(find.text('Koshari bowl'), findsNothing);
@@ -264,13 +266,13 @@ void main() {
 
       await _open(tester, 'E01');
       expect(
-        find.text('Koshari bowl'),
+        find.widgetWithText(QuickAddCard, 'Koshari bowl'),
         findsOneWidget,
         reason: 'log something twice and it becomes a plate — E09 says so',
       );
-      expect(find.text('18 g protein'), findsOneWidget);
+      expect(find.text('540 kcal · 18 g protein'), findsOneWidget);
 
-      await tester.tap(find.text('I ate this'));
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
       expect(find.text('54 of 95 g'), findsOneWidget);
@@ -460,8 +462,8 @@ void main() {
   });
 
   group('what she told us she avoids', () {
-    testWidgets('an allergy saved on A02 changes what Eat offers and '
-        'refuses', (tester) async {
+    testWidgets('an allergy saved on A02 changes what Eat offers, '
+        'never what she can log', (tester) async {
       _phone(tester);
       await _boot(tester);
 
@@ -496,30 +498,22 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
+      // Unknown allergen data is allowed: the dishes are still offered.
       await _home(tester);
       await _open(tester, 'E01');
       expect(
-        find.text(
-          'We cannot check these dishes for what you avoid yet, so '
-          'none are suggested.',
-        ),
+        find.widgetWithText(QuickAddCard, 'Ful and baladi'),
         findsOneWidget,
-        reason: 'no dish lists its allergens, so unknown reads as unsafe',
+        reason:
+            'only a dish known to hold tree nuts is hidden from suggestions',
       );
-      expect(find.text('Ful and baladi'), findsNothing);
 
-      // And the guard holds at the moment of the log, not only in the list.
+      // And logging is never blocked: she is recording what she ate.
       await _typeAndLog(tester, 'koshari');
       await tester.pumpAndSettle();
-      expect(
-        find.text(
-          'Nobody has listed what is in Koshari bowl yet, so we '
-          'cannot check it against what you avoid.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.byType(AppUndoBar), findsOneWidget);
       await _windowCloses(tester);
-      expect(_written, isEmpty);
+      expect(_written.map((i) => i.foodId), ['koshari_bowl']);
     });
   });
 }

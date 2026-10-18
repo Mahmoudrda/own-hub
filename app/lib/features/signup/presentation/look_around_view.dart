@@ -277,10 +277,13 @@ class _LookAroundViewState extends State<LookAroundView> {
                         maxHeight:
                             constraints.maxHeight *
                             (MediaQuery.textScalerOf(context).scale(1) > 1.3
-                                ? 0.28
+                                ? 0.34
                                 : 0.4),
                       ),
                       child: SingleChildScrollView(
+                        // Room over the kitten, so the card's float and a
+                        // larger heading never press it against the edge.
+                        padding: const EdgeInsets.only(top: 4),
                         child: DemoCoachCard(
                           number: stop.index + 1,
                           total: DemoStop.values.length,

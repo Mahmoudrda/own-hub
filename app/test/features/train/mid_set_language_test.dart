@@ -51,8 +51,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(en.gluteBridge), findsWidgets);
-    expect(find.text(ar.gluteBridge), findsNothing);
+    expect(find.text(en.donkeyKick), findsWidgets);
+    expect(find.text(ar.donkeyKick), findsNothing);
     expect(find.text(en.n312Bodyweight), findsWidgets);
   });
 }

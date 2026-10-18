@@ -55,7 +55,7 @@ class AppProgressBar extends StatelessWidget implements HandSeedName {
       // so a bar that moves is seen to move. Still under reduced motion.
       child: TweenAnimationBuilder<double>(
         tween: Tween(begin: 0, end: fraction.toDouble()),
-        duration: handMotionOff(context) ? Duration.zero : HandTiming.long,
+        duration: handMotionOff(context) ? Duration.zero : HandTiming.progress,
         curve: HandTiming.standard,
         builder: (context, shown, _) => CustomPaint(
           painter: _BarPainter(

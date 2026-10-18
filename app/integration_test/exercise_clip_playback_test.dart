@@ -1,4 +1,4 @@
-/// Plays the owner's real exercise clips inside the real app (R14, R15; D42),
+/// Plays the owner's real exercise clips inside the real app (Explore on R01, R15; D42),
 /// on a simulator or a phone, through the platform player the app ships with.
 ///
 /// Widget tests stand in a fake for the player; this is the check that the
@@ -132,12 +132,12 @@ void main() {
         theme: buildTheme(const Locale('en')),
         onGenerateRoute: AppRouter.onGenerateRoute,
         onUnknownRoute: AppRouter.onUnknownRoute,
-        initialRoute: appRoutes['R14']!.name,
+        initialRoute: appRoutes['R01']!.name,
       ),
     );
     await _wait(tester, const Duration(seconds: 2));
     // ignore: avoid_print
-    print('CLIPCHECK|screen|R14|${library.exercises.length} moves');
+    print('CLIPCHECK|screen|R01|${library.exercises.length} moves');
 
     final failures = <String>[];
     var checked = 0;
@@ -189,14 +189,18 @@ void main() {
     }
     expect(failures, isEmpty);
 
-    // And one move through the screens, the way she reaches it: R14, a tap,
+    // And one move through the screens, the way she reaches it: Explore on R01, a tap,
     // R15 with the clip playing inside the page's frame.
     final glutes = [
       for (final e in library.exercises)
         if (e.section == MuscleSection.glutes) e,
     ]..sort((a, b) => a.nameEn.compareTo(b.nameEn));
     final first = glutes.first;
-    await tester.ensureVisible(find.text(first.nameEn).first);
+    await tester.scrollUntilVisible(
+      find.text(first.nameEn).first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
     await _wait(tester, const Duration(milliseconds: 500));
     await tester.tap(find.text(first.nameEn).first);
     await _wait(tester, const Duration(seconds: 3));

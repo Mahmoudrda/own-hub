@@ -254,9 +254,8 @@ class _ChangeSetViewState extends State<ChangeSetView> {
             ? () => _repository.replaceSet(
                 sessionId: widget.sessionId,
                 exerciseId: changed.prescribed.exerciseId,
-                set: LoggedSet(
-                  prescribed: changed.prescribed,
-                ).recording(changed.outcome),
+                set: LoggedSet(prescribed: changed.prescribed)
+                    .recording(changed.outcome),
               )
             : () => _repository.flushMove(
                 sessionId: widget.sessionId,

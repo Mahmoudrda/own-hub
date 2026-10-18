@@ -75,23 +75,23 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "glute_bridge",
-       "nameEn": "Glute bridge",
-       "nameAr": "جسر المقعدة",
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 10,
        "restSeconds": 90,
        "contraindications": [
-        "supine_load"
+        "wrist_load"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "dead_bug",
-       "nameEn": "Dead bug",
-       "nameAr": "الحشرة الميتة",
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
        "sets": 3,
        "reps": 10,
        "restSeconds": 90,
@@ -143,23 +143,25 @@
      ],
      "moves": [
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 8,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
-       "floorOnly": false,
+       "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "reverse_lunge",
-       "nameEn": "Reverse lunge",
-       "nameAr": "اندفاع خلفي",
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 8,
        "restSeconds": 90,
@@ -214,17 +216,17 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
        "sets": 3,
        "reps": 8,
        "restSeconds": 90,
        "contraindications": [
-        "deep_knee_flexion"
+        "wrist_load"
        ],
        "quiet": true,
-       "floorOnly": false,
+       "floorOnly": true,
        "needsEquipment": false
       },
       {
@@ -297,9 +299,9 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 12,
        "restSeconds": 90,
@@ -311,9 +313,24 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "bicycle_crunch",
+       "nameEn": "Bicycle crunch",
+       "nameAr": "بايسكل كرانش",
+       "sets": 3,
+       "reps": 12,
+       "restSeconds": 90,
+       "contraindications": [
+        "supine_load",
+        "loaded_twisting"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 12,
        "restSeconds": 90,
@@ -322,20 +339,6 @@
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "reverse_lunge",
-       "nameEn": "Reverse lunge",
-       "nameAr": "اندفاع خلفي",
-       "sets": 3,
-       "reps": 12,
-       "restSeconds": 90,
-       "contraindications": [
-        "deep_knee_flexion"
-       ],
-       "quiet": true,
-       "floorOnly": false,
        "needsEquipment": false
       },
       {
@@ -379,32 +382,34 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 10,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 10,
-       "restSeconds": 90,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 90,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "donkey_kick",
@@ -421,14 +426,15 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -475,23 +481,25 @@
      ],
      "moves": [
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 8,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
-       "floorOnly": false,
+       "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "reverse_lunge",
-       "nameEn": "Reverse lunge",
-       "nameAr": "اندفاع خلفي",
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 8,
        "restSeconds": 90,
@@ -503,14 +511,14 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -531,9 +539,24 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "restSeconds": 90,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 8,
        "restSeconds": 90,
@@ -542,20 +565,6 @@
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
-       "sets": 3,
-       "reps": 8,
-       "restSeconds": 90,
-       "contraindications": [
-        "deep_knee_flexion"
-       ],
-       "quiet": true,
-       "floorOnly": false,
        "needsEquipment": false
       },
       {
@@ -599,37 +608,39 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 12,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 12,
-       "restSeconds": 90,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 90,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
+      },
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 12,
        "restSeconds": 90,
@@ -641,14 +652,15 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -874,14 +886,14 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "glute_bridge",
-       "nameEn": "Glute bridge",
-       "nameAr": "جسر المقعدة",
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 8,
        "restSeconds": 90,
        "contraindications": [
-        "supine_load"
+        "wrist_load"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -972,9 +984,9 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "dead_bug",
-       "nameEn": "Dead bug",
-       "nameAr": "الحشرة الميتة",
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
        "sets": 3,
        "reps": 12,
        "restSeconds": 90,
@@ -1068,32 +1080,34 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 10,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 10,
-       "restSeconds": 90,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 90,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "donkey_kick",
@@ -1192,14 +1206,14 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -1288,32 +1302,34 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 12,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 12,
-       "restSeconds": 90,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 90,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "dumbbell_sumo_squat",
@@ -1662,9 +1678,9 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "dead_bug",
-       "nameEn": "Dead bug",
-       "nameAr": "الحشرة الميتة",
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
        "sets": 3,
        "reps": 12,
        "restSeconds": 90,
@@ -1774,18 +1790,18 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
-       "reps": 10,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "donkey_kick",
@@ -1884,14 +1900,14 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -1994,18 +2010,18 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
-       "reps": 12,
        "restSeconds": 90,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "bodyweight_squat_arm_swing",
@@ -2141,23 +2157,23 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "glute_bridge",
-       "nameEn": "Glute bridge",
-       "nameAr": "جسر المقعدة",
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 12,
        "restSeconds": 60,
        "contraindications": [
-        "supine_load"
+        "wrist_load"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "dead_bug",
-       "nameEn": "Dead bug",
-       "nameAr": "الحشرة الميتة",
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
        "sets": 3,
        "reps": 12,
        "restSeconds": 60,
@@ -2209,23 +2225,25 @@
      ],
      "moves": [
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 10,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
-       "floorOnly": false,
+       "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "reverse_lunge",
-       "nameEn": "Reverse lunge",
-       "nameAr": "اندفاع خلفي",
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 10,
        "restSeconds": 60,
@@ -2280,17 +2298,17 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
        "sets": 3,
        "reps": 10,
        "restSeconds": 60,
        "contraindications": [
-        "deep_knee_flexion"
+        "wrist_load"
        ],
        "quiet": true,
-       "floorOnly": false,
+       "floorOnly": true,
        "needsEquipment": false
       },
       {
@@ -2363,9 +2381,9 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 15,
        "restSeconds": 60,
@@ -2377,9 +2395,24 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "bicycle_crunch",
+       "nameEn": "Bicycle crunch",
+       "nameAr": "بايسكل كرانش",
+       "sets": 3,
+       "reps": 15,
+       "restSeconds": 60,
+       "contraindications": [
+        "supine_load",
+        "loaded_twisting"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 15,
        "restSeconds": 60,
@@ -2388,20 +2421,6 @@
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "reverse_lunge",
-       "nameEn": "Reverse lunge",
-       "nameAr": "اندفاع خلفي",
-       "sets": 3,
-       "reps": 15,
-       "restSeconds": 60,
-       "contraindications": [
-        "deep_knee_flexion"
-       ],
-       "quiet": true,
-       "floorOnly": false,
        "needsEquipment": false
       },
       {
@@ -2445,32 +2464,34 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 12,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 12,
-       "restSeconds": 60,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 60,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 20
       },
       {
        "exerciseId": "donkey_kick",
@@ -2487,14 +2508,15 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
        "sets": 3,
        "holdSeconds": 20,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -2541,23 +2563,25 @@
      ],
      "moves": [
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 10,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
-       "floorOnly": false,
+       "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "reverse_lunge",
-       "nameEn": "Reverse lunge",
-       "nameAr": "اندفاع خلفي",
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 10,
        "restSeconds": 60,
@@ -2569,14 +2593,14 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
        "holdSeconds": 20,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -2597,9 +2621,24 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "restSeconds": 60,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 20
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 10,
        "restSeconds": 60,
@@ -2608,20 +2647,6 @@
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
-       "sets": 3,
-       "reps": 10,
-       "restSeconds": 60,
-       "contraindications": [
-        "deep_knee_flexion"
-       ],
-       "quiet": true,
-       "floorOnly": false,
        "needsEquipment": false
       },
       {
@@ -2665,37 +2690,39 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 15,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 15,
-       "restSeconds": 60,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 60,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 20
+      },
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 15,
        "restSeconds": 60,
@@ -2707,14 +2734,15 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
        "sets": 3,
        "holdSeconds": 20,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -2941,14 +2969,14 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "glute_bridge",
-       "nameEn": "Glute bridge",
-       "nameAr": "جسر المقعدة",
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 10,
        "restSeconds": 60,
        "contraindications": [
-        "supine_load"
+        "wrist_load"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -3039,9 +3067,9 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "dead_bug",
-       "nameEn": "Dead bug",
-       "nameAr": "الحشرة الميتة",
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
        "sets": 3,
        "reps": 15,
        "restSeconds": 60,
@@ -3135,32 +3163,34 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 12,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 12,
-       "restSeconds": 60,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 60,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 20
       },
       {
        "exerciseId": "donkey_kick",
@@ -3259,14 +3289,14 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
        "holdSeconds": 20,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -3355,32 +3385,34 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 15,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 15,
-       "restSeconds": 60,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 60,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 20
       },
       {
        "exerciseId": "dumbbell_sumo_squat",
@@ -3730,9 +3762,9 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "dead_bug",
-       "nameEn": "Dead bug",
-       "nameAr": "الحشرة الميتة",
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
        "sets": 3,
        "reps": 15,
        "restSeconds": 60,
@@ -3842,18 +3874,18 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
-       "reps": 12,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
+       "needsEquipment": false,
+       "holdSeconds": 20
       },
       {
        "exerciseId": "donkey_kick",
@@ -3952,14 +3984,14 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
        "holdSeconds": 20,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -4062,18 +4094,18 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
-       "reps": 15,
        "restSeconds": 60,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
+       "needsEquipment": false,
+       "holdSeconds": 20
       },
       {
        "exerciseId": "bodyweight_squat_arm_swing",
@@ -4208,23 +4240,23 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "glute_bridge",
-       "nameEn": "Glute bridge",
-       "nameAr": "جسر المقعدة",
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 12,
        "restSeconds": 45,
        "contraindications": [
-        "supine_load"
+        "wrist_load"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "dead_bug",
-       "nameEn": "Dead bug",
-       "nameAr": "الحشرة الميتة",
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
        "sets": 3,
        "reps": 12,
        "restSeconds": 45,
@@ -4276,23 +4308,25 @@
      ],
      "moves": [
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 15,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
-       "floorOnly": false,
+       "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "reverse_lunge",
-       "nameEn": "Reverse lunge",
-       "nameAr": "اندفاع خلفي",
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 15,
        "restSeconds": 45,
@@ -4347,17 +4381,17 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
+       "exerciseId": "straight_leg_glute_kickback",
+       "nameEn": "Straight-leg glute kickback",
+       "nameAr": "جلوت كيك باك والرجل مفرودة",
        "sets": 3,
        "reps": 15,
        "restSeconds": 45,
        "contraindications": [
-        "deep_knee_flexion"
+        "wrist_load"
        ],
        "quiet": true,
-       "floorOnly": false,
+       "floorOnly": true,
        "needsEquipment": false
       },
       {
@@ -4430,9 +4464,9 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 14,
        "restSeconds": 45,
@@ -4444,9 +4478,24 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "bicycle_crunch",
+       "nameEn": "Bicycle crunch",
+       "nameAr": "بايسكل كرانش",
+       "sets": 3,
+       "reps": 14,
+       "restSeconds": 45,
+       "contraindications": [
+        "supine_load",
+        "loaded_twisting"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 14,
        "restSeconds": 45,
@@ -4455,20 +4504,6 @@
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "reverse_lunge",
-       "nameEn": "Reverse lunge",
-       "nameAr": "اندفاع خلفي",
-       "sets": 3,
-       "reps": 14,
-       "restSeconds": 45,
-       "contraindications": [
-        "deep_knee_flexion"
-       ],
-       "quiet": true,
-       "floorOnly": false,
        "needsEquipment": false
       },
       {
@@ -4512,32 +4547,34 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 12,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 12,
-       "restSeconds": 45,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 45,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "donkey_kick",
@@ -4554,14 +4591,15 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -4608,23 +4646,25 @@
      ],
      "moves": [
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 15,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
-       "floorOnly": false,
+       "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "reverse_lunge",
-       "nameEn": "Reverse lunge",
-       "nameAr": "اندفاع خلفي",
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 15,
        "restSeconds": 45,
@@ -4636,14 +4676,14 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -4664,9 +4704,24 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
+       "sets": 3,
+       "restSeconds": 45,
+       "contraindications": [
+        "wrist_load",
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
+      },
+      {
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 15,
        "restSeconds": 45,
@@ -4675,20 +4730,6 @@
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
-       "sets": 3,
-       "reps": 15,
-       "restSeconds": 45,
-       "contraindications": [
-        "deep_knee_flexion"
-       ],
-       "quiet": true,
-       "floorOnly": false,
        "needsEquipment": false
       },
       {
@@ -4732,37 +4773,39 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 14,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 14,
-       "restSeconds": 45,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
       },
       {
-       "exerciseId": "bodyweight_squat",
-       "nameEn": "Bodyweight squat",
-       "nameAr": "قرفصاء بوزن الجسم",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 45,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
+      },
+      {
+       "exerciseId": "bodyweight_squat_arm_swing",
+       "nameEn": "Bodyweight squat with arm swing",
+       "nameAr": "سكوات بوزن الجسم مع مرجحة الدراعات",
        "sets": 3,
        "reps": 14,
        "restSeconds": 45,
@@ -4774,14 +4817,15 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "plank",
+       "nameEn": "High plank",
+       "nameAr": "بلانك على الإيدين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -5007,14 +5051,14 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "glute_bridge",
-       "nameEn": "Glute bridge",
-       "nameAr": "جسر المقعدة",
+       "exerciseId": "donkey_kick",
+       "nameEn": "Donkey kick",
+       "nameAr": "دونكي كيك",
        "sets": 3,
        "reps": 15,
        "restSeconds": 45,
        "contraindications": [
-        "supine_load"
+        "wrist_load"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -5105,9 +5149,9 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "dead_bug",
-       "nameEn": "Dead bug",
-       "nameAr": "الحشرة الميتة",
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
        "sets": 3,
        "reps": 14,
        "restSeconds": 45,
@@ -5201,32 +5245,34 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 12,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 12,
-       "restSeconds": 45,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 45,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "donkey_kick",
@@ -5325,14 +5371,14 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -5421,32 +5467,34 @@
        "needsEquipment": false
       },
       {
-       "exerciseId": "wall_press_up",
-       "nameEn": "Wall press-up",
-       "nameAr": "ضغط على الحائط",
+       "exerciseId": "knee_press_up",
+       "nameEn": "Kneeling push-up",
+       "nameAr": "بوش أب على الركب",
        "sets": 3,
        "reps": 14,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
-       ],
-       "quiet": true,
-       "floorOnly": false,
-       "needsEquipment": false
-      },
-      {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
-       "sets": 3,
-       "reps": 14,
-       "restSeconds": 45,
-       "contraindications": [
-        "wrist_load"
+        "wrist_load",
+        "prone_position",
+        "deep_knee_flexion"
        ],
        "quiet": true,
        "floorOnly": true,
        "needsEquipment": false
+      },
+      {
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
+       "sets": 3,
+       "restSeconds": 45,
+       "contraindications": [
+        "prone_position"
+       ],
+       "quiet": true,
+       "floorOnly": true,
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "dumbbell_sumo_squat",
@@ -5795,9 +5843,9 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "dead_bug",
-       "nameEn": "Dead bug",
-       "nameAr": "الحشرة الميتة",
+       "exerciseId": "heel_touches",
+       "nameEn": "Heel touches",
+       "nameAr": "لمس الكعب من النوم على الضهر",
        "sets": 3,
        "reps": 14,
        "restSeconds": 45,
@@ -5907,18 +5955,18 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
-       "reps": 12,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "donkey_kick",
@@ -6017,14 +6065,14 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "side_plank",
-       "nameEn": "Side plank",
-       "nameAr": "بلانك جانبي",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
        "holdSeconds": 30,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
@@ -6127,18 +6175,18 @@
        "needsEquipment": true
       },
       {
-       "exerciseId": "bird_dog",
-       "nameEn": "Bird dog",
-       "nameAr": "الطائر والكلب",
+       "exerciseId": "forearm_plank",
+       "nameEn": "Forearm plank",
+       "nameAr": "بلانك على الكوعين",
        "sets": 3,
-       "reps": 14,
        "restSeconds": 45,
        "contraindications": [
-        "wrist_load"
+        "prone_position"
        ],
        "quiet": true,
        "floorOnly": true,
-       "needsEquipment": false
+       "needsEquipment": false,
+       "holdSeconds": 30
       },
       {
        "exerciseId": "bodyweight_squat_arm_swing",

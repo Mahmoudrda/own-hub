@@ -4995,5 +4995,73 @@
         "example": "Eggs"
       }
     }
+  },
+  "donkeyKick": "دونكي كيك",
+  "straightLegGluteKickback": "جلوت كيك باك والرجل مفرودة",
+  "forearmPlank": "بلانك على الكوعين",
+  "heelTouches": "لمس الكعب من النوم على الضهر",
+  "explore": "استكشفي",
+  "searchWorkoutsAndMoves": "دوّري في التمارين والحركات",
+  "goodMorning": "صباح الخير",
+  "goodAfternoon": "نهارك سعيد",
+  "goodEvening": "مساء الخير",
+  "goodMorningName": "صباح الخير يا {name}",
+  "@goodMorningName": {
+    "description": "T01 greeting before noon, with her first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "goodAfternoonName": "نهارك سعيد يا {name}",
+  "@goodAfternoonName": {
+    "description": "T01 greeting from noon to five, with her first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "goodEveningName": "مساء الخير يا {name}",
+  "@goodEveningName": {
+    "description": "T01 greeting from five in the afternoon, with her first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "carbs": "كربوهيدرات",
+  "fat": "دهون",
+  "logAMeal": "سجّلي وجبة",
+  "searchOrTypeWhatYouAte": "ابحثي أو اكتبي أكلتك",
+  "quickAdd": "إضافة سريعة",
+  "youveHad": "أكلتيه قبل كده",
+  "popularDishes": "أكلات مشهورة",
+  "containsAllergens": "فيه {allergens}",
+  "@containsAllergens": {
+    "description": "A small note under a logged food that is known to contain something she told us she avoids. Logging is never blocked.",
+    "placeholders": {
+      "allergens": {
+        "type": "String",
+        "example": "nuts"
+      }
+    }
+  },
+  "fewerServings": "حصص أقل",
+  "moreServings": "حصص أكتر",
+  "addName": "ضيفي {name}",
+  "@addName": {
+    "description": "Screen reader label of the plus button on a food row that logs it.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Koshari"
+      }
+    }
   }
 }

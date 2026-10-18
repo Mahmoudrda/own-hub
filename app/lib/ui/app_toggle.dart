@@ -31,6 +31,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
+import 'hand/draw_on.dart' show handMotionOff;
 
 class AppToggle extends StatelessWidget {
   const AppToggle({
@@ -60,6 +61,7 @@ class AppToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onChanged != null;
+    final duration = handMotionOff(context) ? Duration.zero : AppMotion.fast;
 
     return Semantics(
       toggled: value,
@@ -70,7 +72,7 @@ class AppToggle extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: enabled ? () => onChanged!(!value) : null,
         child: AnimatedContainer(
-          duration: AppMotion.fast,
+          duration: duration,
           curve: AppMotion.emphasized,
           width: trackWidth,
           height: trackHeight,
@@ -87,14 +89,14 @@ class AppToggle extends StatelessWidget {
             ),
           ),
           child: AnimatedAlign(
-            duration: AppMotion.fast,
+            duration: duration,
             curve: AppMotion.emphasized,
             // Directional, so it mirrors in Arabic. See the note above.
             alignment: value
                 ? AlignmentDirectional.centerEnd
                 : AlignmentDirectional.centerStart,
             child: AnimatedContainer(
-              duration: AppMotion.fast,
+              duration: duration,
               curve: AppMotion.emphasized,
               margin: value
                   ? EdgeInsets.zero

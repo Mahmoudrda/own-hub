@@ -29,10 +29,15 @@ class StaggerIn extends StatefulWidget {
   /// record of which rows have arrived.
   final String group;
 
-  /// [children] with each wrapped in a [StaggerIn] by its place.
-  static List<Widget> all(List<Widget> children) => [
+  /// [children] with each wrapped in a [StaggerIn] by its place. [first] is
+  /// the place of the first one, for a list that continues one above it.
+  static List<Widget> all(
+    List<Widget> children, {
+    String group = '',
+    int first = 0,
+  }) => [
     for (var i = 0; i < children.length; i++)
-      StaggerIn(index: i, child: children[i]),
+      StaggerIn(index: first + i, group: group, child: children[i]),
   ];
 
   @override
@@ -97,4 +102,11 @@ class _StaggerInState extends State<StaggerIn>
       ),
     ),
   );
+}
+
+/// `children.staggered()` in place of wrapping each row by hand.
+extension StaggeredWidgets on List<Widget> {
+  /// Each widget arriving one step after the one before, as [StaggerIn.all].
+  List<Widget> staggered({String group = '', int first = 0}) =>
+      StaggerIn.all(this, group: group, first: first);
 }

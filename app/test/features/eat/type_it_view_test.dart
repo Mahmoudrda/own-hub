@@ -76,7 +76,6 @@ TypeItView _typeIt({
     onLogged: onLogged,
     onClose: () {},
     onSpeak: () {},
-    onAllFoods: () {},
   );
 }
 
@@ -257,7 +256,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('هنضيف'), findsOneWidget);
+      expect(find.text('إضافة سريعة'), findsNothing);
       expect(find.text('طبق كشري'), findsOneWidget);
     });
 

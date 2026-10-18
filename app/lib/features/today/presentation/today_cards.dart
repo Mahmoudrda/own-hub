@@ -15,8 +15,10 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
+import '../../eat/domain/day_totals.dart';
 import '../../eat/domain/meal_repository.dart' show MealSlot;
 import '../../eat/presentation/eat_day_view_model.dart' show EatDayViewModel;
+import '../../eat/presentation/eat_sample_library.dart' show eatSampleLibrary;
 import '../domain/today_day.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -25,6 +27,7 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_chevron.dart';
 import '../../../ui/app_pill.dart';
+import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
@@ -149,7 +152,7 @@ String plateName(AppL10n l10n, String foodId) => switch (foodId) {
   'lentil_soup_eggs' => l10n.lentilSoupAndEggs,
   'chicken_and_rice' => l10n.chickenAndRice,
   'koshari_and_salad' => l10n.koshariBowlAndSalad,
-  _ => foodId,
+  _ => eatSampleLibrary(l10n).byId(foodId)?.names.first ?? foodId,
 };
 
 /// What to head Today's meal section with.
@@ -705,5 +708,492 @@ class WeekCard extends StatelessWidget {
         AppWeekSegments(total: total, filled: filled),
       ],
     );
+  }
+}
+
+/// Hello, by the hour, then her name when Home has it.
+String homeGreeting(AppL10n l10n, DateTime now, String? firstName) {
+  final name = firstName?.trim();
+  final named = name != null && name.isNotEmpty;
+  if (now.hour < 12) {
+    return named ? l10n.goodMorningName(name) : l10n.goodMorning;
+  }
+  if (now.hour < 17) {
+    return named ? l10n.goodAfternoonName(name) : l10n.goodAfternoon;
+  }
+  return named ? l10n.goodEveningName(name) : l10n.goodEvening;
+}
+
+/// The head of Home: the weekday as the small line, the greeting under it,
+/// and the tools at the far edge.
+class HomeGreeting extends StatelessWidget {
+  const HomeGreeting({
+    super.key,
+    required this.day,
+    required this.greeting,
+    this.actions = const [],
+  });
+
+  final String day;
+  final String greeting;
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                day,
+                style: AppText.label.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                greeting,
+                key: const ValueKey('today-greeting'),
+                style: EditorialType.section,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Row(mainAxisSize: MainAxisSize.min, children: [...actions]),
+      ],
+    );
+  }
+}
+
+/// The week as seven circles, today boxed. A circle is ticked for a day she
+/// trained and is otherwise simply empty: there is no mark for a day she did
+/// not, and nothing here adds the days up.
+class HomeWeekStrip extends StatelessWidget {
+  const HomeWeekStrip({
+    super.key,
+    required this.today,
+    this.doneWeekdays = const <int>{},
+  });
+
+  final DateTime today;
+
+  /// `DateTime.weekday` numbers of the days this week she trained.
+  final Set<int> doneWeekdays;
+
+  /// Saturday first, the way the week is laid out in Egypt.
+  static const List<int> order = [6, 7, 1, 2, 3, 4, 5];
+
+  static String shortName(AppL10n l10n, int weekday) => switch (weekday) {
+    DateTime.monday => l10n.mon,
+    DateTime.tuesday => l10n.tue,
+    DateTime.wednesday => l10n.wed,
+    DateTime.thursday => l10n.thu,
+    DateTime.friday => l10n.fri,
+    DateTime.saturday => l10n.sat,
+    _ => l10n.sun,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return Row(
+      key: const ValueKey('today-week-strip'),
+      children: [
+        for (final weekday in order)
+          Expanded(
+            child: _DayCircle(
+              label: shortName(l10n, weekday),
+              done: doneWeekdays.contains(weekday),
+              isToday: weekday == today.weekday,
+              doneLabel: l10n.done_54ca1,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _DayCircle extends StatelessWidget {
+  const _DayCircle({
+    required this.label,
+    required this.done,
+    required this.isToday,
+    required this.doneLabel,
+  });
+
+  final String label;
+  final bool done;
+  final bool isToday;
+  final String doneLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final circle = Container(
+      width: 30,
+      height: 30,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: done ? AppColors.primaryContainer : Colors.transparent,
+        border: Border.all(
+          color: done ? AppColors.pinkShade : AppColors.outline,
+          width: 1.2,
+        ),
+      ),
+      child: done
+          ? const Icon(
+              Icons.check,
+              size: 18,
+              color: AppColors.onPrimaryContainer,
+            )
+          : null,
+    );
+    return Semantics(
+      label: done ? '$label, $doneLabel' : label,
+      excludeSemantics: true,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+          decoration: isToday
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  border: Border.all(color: AppColors.primary, width: 1.5),
+                )
+              : null,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: AppText.nav.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              circle,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Today's session as the page's one big card: a poster, what it is called,
+/// how long it takes, and a single Start. Once it is logged the poster turns
+/// sage and the card says so.
+class TodayHero extends StatelessWidget {
+  const TodayHero({
+    super.key,
+    this.title,
+    this.minutes,
+    this.week,
+    this.totalWeeks,
+    this.art,
+    this.onStart,
+    this.onRecall,
+    this.evening = false,
+    this.done = false,
+  });
+
+  final String? title;
+  final int? minutes;
+  final int? week;
+  final int? totalWeeks;
+
+  /// The poster drawing, set on the pink panel.
+  final Widget? art;
+
+  final VoidCallback? onStart;
+  final VoidCallback? onRecall;
+  final bool evening;
+  final bool done;
+
+  @override
+  Widget build(BuildContext context) => HandSwap(
+    child: KeyedSubtree(key: ValueKey((done, evening)), child: _body(context)),
+  );
+
+  Widget _poster({required Color color, required Widget child}) => Container(
+    height: 128,
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(AppRadius.md),
+    ),
+    alignment: Alignment.center,
+    child: child,
+  );
+
+  Widget _body(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    if (done) {
+      return AppCard(
+        key: const ValueKey('today-done'),
+        gap: 12,
+        children: [
+          _poster(
+            color: AppColors.tertiaryContainer,
+            child: const HandTick(size: 56, seed: 17),
+          ),
+          Text(
+            l10n.todaysSessionIsDone,
+            style: EditorialType.section.copyWith(fontSize: 24),
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: AppButton(
+              l10n.anotherSession,
+              variant: AppButtonVariant.text,
+              height: 48,
+              fontSize: 15,
+              onPressed: onStart,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final recall = onRecall;
+    final primary = evening && recall != null
+        ? AppButton(
+            l10n.iAlreadyDidIt,
+            height: 56,
+            icon: Icons.check,
+            onPressed: recall,
+          )
+        : AppButton(
+            l10n.startEverythingsReady,
+            height: 56,
+            icon: Icons.play_arrow,
+            onPressed: onStart,
+          );
+    final secondary = recall == null
+        ? null
+        : evening
+        ? AppButton(
+            l10n.startEverythingsReady,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: onStart,
+          )
+        : AppButton(
+            l10n.iAlreadyDidIt,
+            variant: AppButtonVariant.text,
+            height: 40,
+            onPressed: recall,
+          );
+
+    final facts = [
+      if (week != null && totalWeeks != null)
+        l10n.weekWeekOfTotal(countLabel(week!), countLabel(totalWeeks!)),
+      if (minutes != null) l10n.nMin(countLabel(minutes!)),
+    ];
+
+    return AppCard(
+      gap: 12,
+      children: [
+        _poster(
+          color: AppColors.primaryContainer,
+          child: art ?? const SizedBox.shrink(),
+        ),
+        Text(
+          title ?? l10n.todaysWorkout,
+          style: EditorialType.section.copyWith(fontSize: 26),
+        ),
+        if (facts.isNotEmpty)
+          Text(
+            facts.join(' · '),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        primary,
+        ?secondary,
+      ],
+    );
+  }
+}
+
+/// What she has eaten today, and the two plates she has most often: a ring
+/// for protein with the calories in it, carbs and fat beside it, and a "+"
+/// that logs a plate in one tap.
+class HomeEatCard extends StatelessWidget {
+  const HomeEatCard({
+    super.key,
+    this.totals = DayTotals.empty,
+    this.loggedAt,
+    this.now,
+    this.plates = const <PlateSuggestion>[],
+    this.onTap,
+    this.onPlateTap,
+    this.onPlateLog,
+  });
+
+  final DayTotals totals;
+  final DateTime? loggedAt;
+  final DateTime? now;
+  final List<PlateSuggestion> plates;
+  final VoidCallback? onTap;
+  final VoidCallback? onPlateTap;
+  final ValueChanged<PlateSuggestion>? onPlateLog;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final stacked = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+
+    final head = AppSplitRow(
+      start: Text(
+        mealHeading(
+          l10n,
+          loggedAt: loggedAt,
+          now: now,
+          hasUsual: plates.isNotEmpty,
+        ),
+        style: AppText.titleM,
+      ),
+      end: loggedAt == null
+          ? const SizedBox.shrink()
+          : Text(
+              timeLabel(context, loggedAt!),
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+    );
+
+    final ring = AppRingStat(
+      key: const ValueKey('today-eat-ring'),
+      fraction: totals.proteinPercent / 100,
+      big: countLabel(totals.kcalSoFar),
+      small: l10n.kcal,
+      size: 104,
+      thickness: 11,
+    );
+
+    final triad = [
+      (l10n.protein, totals.proteinSoFar),
+      (l10n.carbs, totals.carbsSoFar ?? 0),
+      (l10n.fat, totals.fatSoFar ?? 0),
+    ];
+    Widget macro((String, int) m) => Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            l10n.gramsG_1usqy(countLabel(m.$2)),
+            style: AppText.titleM,
+          ),
+        ),
+        Text(
+          m.$1,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+
+    final macros = stacked
+        ? Column(
+            key: const ValueKey('today-eat-macros'),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final m in triad)
+                AppSplitRow(
+                  start: Text(m.$1, style: AppText.bodyM),
+                  end: Text(
+                    l10n.gramsG_1usqy(countLabel(m.$2)),
+                    style: AppText.titleS,
+                  ),
+                ),
+            ],
+          )
+        : Row(
+            key: const ValueKey('today-eat-macros'),
+            children: [for (final m in triad) Expanded(child: macro(m))],
+          );
+
+    return AppCard(
+      gap: 10,
+      children: [
+        if (onTap == null)
+          head
+        else
+          HandPressable(onTap: onTap, builder: (_, _) => head),
+        if (stacked) ...[
+          Center(child: ring),
+          macros,
+        ] else
+          Row(
+            children: [
+              ring,
+              const SizedBox(width: 12),
+              Expanded(child: macros),
+            ],
+          ),
+        for (final plate in plates)
+          _PlateAddRow(
+            name: plateName(l10n, plate.foodId),
+            kcal: l10n.kcalKcal(countLabel(plate.kcal)),
+            onTap: onPlateLog == null ? onPlateTap : () => onPlateLog!(plate),
+          ),
+      ],
+    );
+  }
+}
+
+class _PlateAddRow extends StatelessWidget {
+  const _PlateAddRow({required this.name, required this.kcal, this.onTap});
+
+  final String name;
+  final String kcal;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final row = ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(name, style: AppText.titleM.copyWith(fontSize: 16)),
+                Text(
+                  kcal,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primaryContainer,
+              border: Border.all(color: AppColors.pinkShade, width: 1.2),
+            ),
+            child: const Icon(
+              Icons.add,
+              size: 24,
+              color: AppColors.onPrimaryContainer,
+            ),
+          ),
+        ],
+      ),
+    );
+    if (onTap == null) return row;
+    return HandPressable(onTap: onTap, builder: (_, _) => row);
   }
 }

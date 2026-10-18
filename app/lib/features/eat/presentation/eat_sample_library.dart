@@ -47,12 +47,14 @@
 library;
 
 import '../../../l10n/app_l10n.dart';
+import '../data/egyptian_food_pack.dart';
 import '../domain/food_library.dart';
 import '../domain/item_id.dart';
 import '../domain/meal_repository.dart';
 import '../domain/meal_sentence_parser.dart';
 
-/// The foods the Eat screens name, in her language.
+/// The foods the Eat screens name, in her language: the hand-written samples
+/// first, then the bundled Egyptian dishes once they have loaded.
 FoodLibrary eatSampleLibrary(AppL10n l10n) {
   return FoodLibrary([
     Food(
@@ -111,6 +113,7 @@ FoodLibrary eatSampleLibrary(AppL10n l10n) {
       popularity: 60,
       sizes: [FoodSize(id: 'M', label: l10n.medium, kcal: 600, proteinG: 21)],
     ),
+    ...EgyptianFoodPack.foods(l10n),
   ]);
 }
 

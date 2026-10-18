@@ -284,7 +284,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('No plates yet'), findsOneWidget);
+      final l10n = AppL10n.of(tester.element(find.byType(EatView)));
+      expect(find.text(l10n.quickAdd), findsOneWidget);
+      expect(find.byKey(const ValueKey('eat-quick-add')), findsOneWidget);
       expect(find.text('Looking for what you have added.'), findsNothing);
     });
 

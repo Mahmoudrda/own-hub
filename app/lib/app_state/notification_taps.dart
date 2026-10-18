@@ -43,6 +43,7 @@ class NotificationTaps {
   /// What a getting started tip may carry.
   static const Set<String> tipDestinations = {
     'R03',
+    'R01',
     'R14',
     'E12',
     'E05',
@@ -55,7 +56,9 @@ class NotificationTaps {
   /// order. The first that is on wins.
   static const Map<String, List<String>> fallbacks = {
     'R03': ['R03', 'T01'],
-    'R14': ['R14', 'R01'],
+    'R01': ['R01'],
+    // A reminder scheduled before Explore replaced the library.
+    'R14': ['R01'],
     'E12': ['E12', 'E01'],
     'E05': ['E05', 'E01'],
     kFirstGymTipPayload: ['R01'],

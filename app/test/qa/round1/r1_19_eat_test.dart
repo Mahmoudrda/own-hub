@@ -47,11 +47,8 @@ void main() {
     print(
       'BEFORE: ${paintedText(t).where((e) => e.contains("Day") || e.contains("plates")).join(" | ")}',
     );
-    // `tapControl`, not `tapLabel`: E01 draws a "Log" on every suggested plate,
-    // so `byLabel('I ate this')` matches two nodes and `semantics.tap` throws "too
-    // many elements". Three identical Logs is what the screen honestly has —
-    // the sweep wants to log ONE meal, so it takes the first.
-    final logged = await tapControl(t, 'I ate this');
+    // The first quick-add card is the most popular Egyptian dish.
+    final logged = await tapControl(t, 'Add Koshari bowl');
     expect(logged, isTrue, reason: 'E01 must offer a one-tap log');
     print('AFTER LOG top=${topScreen(t)}');
     print('AFTER LOG painted: ${paintedText(t).join(" | ")}');

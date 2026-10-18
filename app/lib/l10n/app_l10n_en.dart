@@ -10726,4 +10726,83 @@ class AppL10nEn extends AppL10n {
   String listItem(String list, String item) {
     return '$list, $item';
   }
+
+  @override
+  String get donkeyKick => 'Donkey kick';
+
+  @override
+  String get straightLegGluteKickback => 'Straight-leg glute kickback';
+
+  @override
+  String get forearmPlank => 'Forearm plank';
+
+  @override
+  String get heelTouches => 'Heel touches';
+
+  @override
+  String get explore => 'Explore';
+
+  @override
+  String get searchWorkoutsAndMoves => 'Search workouts and moves';
+
+  @override
+  String get goodMorning => 'Good morning';
+
+  @override
+  String get goodAfternoon => 'Good afternoon';
+
+  @override
+  String get goodEvening => 'Good evening';
+
+  @override
+  String goodMorningName(String name) {
+    return 'Good morning, $name';
+  }
+
+  @override
+  String goodAfternoonName(String name) {
+    return 'Good afternoon, $name';
+  }
+
+  @override
+  String goodEveningName(String name) {
+    return 'Good evening, $name';
+  }
+
+  @override
+  String get carbs => 'Carbs';
+
+  @override
+  String get fat => 'Fat';
+
+  @override
+  String get logAMeal => 'Log a meal';
+
+  @override
+  String get searchOrTypeWhatYouAte => 'Search or type what you ate';
+
+  @override
+  String get quickAdd => 'Quick add';
+
+  @override
+  String get youveHad => 'You\'ve had';
+
+  @override
+  String get popularDishes => 'Popular dishes';
+
+  @override
+  String containsAllergens(String allergens) {
+    return 'Contains $allergens';
+  }
+
+  @override
+  String get fewerServings => 'Fewer servings';
+
+  @override
+  String get moreServings => 'More servings';
+
+  @override
+  String addName(String name) {
+    return 'Add $name';
+  }
 }

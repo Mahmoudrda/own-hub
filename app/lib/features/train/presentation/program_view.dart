@@ -244,9 +244,9 @@ class ProgramView extends StatelessWidget {
             title: l10n.noProgramYet,
             body: l10n.aProgramSetsOutYourWeeksAnd,
           ),
-          // First view with no plan only: it peeks in once.
+          // First view with no plan only: it waves once.
           const Kitten(
-            pose: KittenPose.peek,
+            pose: KittenPose.wave,
             size: 56,
             moment: 'R02',
             sessionBudget: true,
@@ -263,7 +263,7 @@ class ProgramView extends StatelessWidget {
         // "Change program" with no programme to change is an instruction she
         // cannot follow. The same door, named for what is behind it: the
         // library, which is where a programme would be chosen.
-        if (AppRouter.screenIsOn('R11'))
+        if (AppRouter.screenIsOn('R01'))
           AppButton(
             hasProgram ? l10n.changeProgram : l10n.allWorkouts,
             variant: AppButtonVariant.text,

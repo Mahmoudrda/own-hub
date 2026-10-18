@@ -333,7 +333,7 @@ class _CheckingViewState extends State<CheckingView> {
               height: 132,
               alignment: Alignment.center,
               decoration: const BoxDecoration(
-                color: AppColors.primaryContainer,
+                color: AppColors.pinkSoft,
                 shape: BoxShape.circle,
               ),
               // Reading the card, then matching it, then a light cheer when it

@@ -16,6 +16,15 @@ abstract final class HandTiming {
   /// A bar filling, a reveal, a page-level change.
   static const Duration long = Duration(milliseconds: 400);
 
+  /// A press going down. The release is [pressOut].
+  static const Duration pressIn = Duration(milliseconds: 90);
+
+  /// A press coming back up.
+  static const Duration pressOut = Duration(milliseconds: 180);
+
+  /// A bar, ring or segment moving from its old value to the new one.
+  static const Duration progress = Duration(milliseconds: 600);
+
   /// One sweep of the loading shimmer.
   static const Duration shimmer = Duration(milliseconds: 1400);
 

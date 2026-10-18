@@ -68,14 +68,14 @@ void main() {
     // cannot disagree. It was the fixed '15 minutes, 5 moves'.
     expect(find.text('15 minutes, 4 moves'), findsOneWidget);
     expect(find.text('Quiet · no equipment · floor'), findsOneWidget);
-    expect(find.text('Glute bridge'), findsOneWidget);
+    expect(find.text('Donkey kick'), findsOneWidget);
     expect(find.text('3 × 12 · bodyweight'), findsOneWidget);
     // The goblet squat is gone, and with it the 12 kg dumbbell this screen
     // prescribed two lines under its own "no equipment" promise, to a woman
     // the app had never asked whether she owns one. See `sampleWorkoutDay`.
     expect(find.text('Goblet squat'), findsNothing);
     expect(find.textContaining('12 kg'), findsNothing);
-    expect(find.text('Hip thrust hold'), findsOneWidget);
+    expect(find.text('Forearm plank'), findsOneWidget);
     expect(find.text('3 × 30 seconds'), findsOneWidget);
     expect(find.text('Tap any move to watch it or swap it.'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -189,7 +189,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('الرجلين والأرداف'), findsOneWidget);
-    expect(find.text('جسر الأرداف'), findsOneWidget);
+    expect(find.text('دونكي كيك'), findsOneWidget);
     expect(find.text('ابدئي، كل حاجة جاهزة'), findsOneWidget);
     expect(find.text('I already did it'), findsNothing);
   });

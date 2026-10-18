@@ -51,9 +51,8 @@ import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
-import '../../../theme/app_art.dart';
 import '../../../theme/app_tokens.dart';
-import '../../../ui/app_empty_state.dart';
+import '../../../ui/app_card.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
@@ -66,7 +65,7 @@ import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_art_strip.dart';
 import '../../today/presentation/today_cards.dart'
-    show mealSlotName, openScreen;
+    show openScreen;
 import '../domain/allergy_guard.dart';
 import '../domain/day_totals.dart';
 import '../domain/food_library.dart';
@@ -76,6 +75,7 @@ import '../domain/meal_sentence_parser.dart';
 import 'eat_day_view_model.dart';
 import 'eat_sample_library.dart';
 import 'eat_widgets.dart';
+import 'food_portion_sheet.dart' show containsNoteFor;
 import 'meal_labels.dart';
 import 'meal_log_session.dart';
 
@@ -309,6 +309,9 @@ class _EatViewState extends State<EatView> {
 
   final Map<String, MealSlot> _pendingSlots = <String, MealSlot>{};
 
+  /// The meal she picked on the pill, or null to follow the hour.
+  MealSlot? _slotChoice;
+
   FoodLibrary _library(AppL10n l10n) =>
       widget.library ?? eatSampleLibrary(l10n);
 
@@ -504,13 +507,69 @@ class _EatViewState extends State<EatView> {
   }
 
   List<Widget> _today(BuildContext context, AppL10n l10n, EatDayView view) {
-    final justLogged = _wasUndone ? null : widget.justLogged;
+    return _page(
+      context,
+      l10n,
+      view,
+      justLogged: _wasUndone ? null : widget.justLogged,
+    );
+  }
 
-    return [
-      // E04's undo bar, and the ONLY undo this screen shows. Drawn **in the
-      // page** rather than raised as a floating snackbar, exactly as R13 does —
-      // a floating bar would sit over the slot card it is announcing, and two
-      // bars for one meal is what `_offerUndo` exists to prevent.
+  /// E01, E04 and E09 are one page: the day's ring, the box, her quick plates,
+  /// and the day's three meals. A woman with no history sees six popular
+  /// Egyptian dishes in the quick strip instead of an empty state.
+  List<Widget> _page(
+    BuildContext context,
+    AppL10n l10n,
+    EatDayView view, {
+    LogHandle? justLogged,
+  }) {
+    final slot = _slotChoice ?? view.activeSlot;
+    final plates = view.suggestions.isNotEmpty
+        ? view.suggestions
+        : view.starters;
+    final mealsDone = view.slots.where((s) => s.hasAnything).length;
+    final quickAdd = plates.isEmpty
+        ? null
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.quickAdd, style: AppText.titleM),
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                key: const ValueKey('eat-quick-add'),
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final plate in plates) ...[
+                        QuickAddCard(
+                          key: ValueKey('quick-add-${plate.key}'),
+                          title: _titleOf(plate),
+                          meta: l10n.kcalKcalProteinGProtein(
+                            countLabel(plate.kcal),
+                            countLabel(plate.proteinG),
+                          ),
+                          addLabel: l10n.addName(_titleOf(plate)),
+                          onAdd: () => _log(plate.entries, slot),
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+
+    return StaggerIn.all([
+      // E04's undo bar, and the ONLY undo this screen shows. Drawn in the page
+      // rather than raised as a floating snackbar: a floating bar would sit over
+      // the slot card it is announcing, and two bars for one meal is what
+      // `_offerUndo` exists to prevent.
       if (justLogged != null)
         AppUndoBar(
           message: justLogged.describe,
@@ -523,88 +582,155 @@ class _EatViewState extends State<EatView> {
                 }
               : null,
         ),
-      // The pill appears only for something true now: the points a log pays,
-      // or Ramadan mode while it is on.
-      if (justLogged != null && _pointsShown > 0)
-        AppSplitRow(
-          start: _masthead(l10n),
-          // Points land once a day for logging anything — never per item,
-          // so there is no reason for her to split a plate. The figure is
-          // what this log will really pay (D41); it was a fixed "+5" on every
-          // log, and nothing was ever paid.
-          end: AppPill(
-            l10n.pointsPoints(countLabel(_pointsShown)),
-            background: AppColors.tertiaryContainer,
-            foreground: AppColors.tertiary,
-          ),
-        )
-      else if (view.ramadanMode == RamadanMode.on)
-        AppSplitRow(
-          start: _masthead(l10n),
-          end: AppPill(
-            l10n.ramadanModeOn,
-            background: AppColors.surfaceContainer,
-            foreground: AppColors.onSurfaceVariant,
-          ),
-        )
-      else
-        _masthead(l10n),
-      DayCard(
-        slots: _slotColumns(l10n, view),
-        proteinTitle: l10n.protein,
-        // The card derives its own sentences from these totals now. It used to
-        // take them as fixed strings chosen by `justLogged == null` — so the
-        // numbers changed when she logged *anything* and never reflected what
-        // she ate. `proteinDelta` is omitted because nothing computes it: a
-        // LogHandle carries a description and an undo, not a delta.
-        totals: view.totals,
-      ),
-      // The one thing to do here, straight under the day: say or type what she
-      // ate. The suggestions come after it.
+      _header(l10n, slot, view, justLogged: justLogged),
+      EatHero(totals: view.totals, mealsDone: mealsDone),
       _box(l10n),
-      // Rendered only for a woman who actually has a coach — null for everyone
+      // Rendered only for a woman who actually has a coach: null for everyone
       // in the MVP.
       if (widget.plannedMeal != null) ..._plannedBlock(l10n),
-      // The slot she is actually in, and no claim about a pattern.
-      //
-      // This was "Dinner, your usual" beside "Tuesdays": the slot fixed
-      // whatever the hour, and a weekly habit asserted to a woman who had
-      // logged one meal in her life. `slotAt` is the same hour-to-slot rule
-      // Home heads its meal row with, so the two screens agree. "Your usual"
-      // is the guess form and stays, because that is what this row is: the
-      // thing she tends to eat at this hour.
-      if (justLogged != null)
-        // The meal, named plainly. It read "Lunch, your usual" the moment after
-        // she logged her first meal ever, which is one meal and not a usual.
-        // Home takes the same line once something is logged, for the same
-        // reason: the time is already printed beside it.
-        Text(
-          mealSlotName(l10n, EatDayViewModel.slotAt(AppClock.now())),
-          style: AppText.titleM,
-        ),
-      for (final suggestion in view.suggestions)
-        MealRow(
-          title: _titleOf(suggestion),
-          meta: _metaOf(l10n, suggestion),
-          logLabel: l10n.iAteThis,
-          primary: suggestion.primary,
-          onLog: () => _log(suggestion.entries, view.activeSlot),
-        ),
+      if (quickAdd != null)
+        quickAdd
+      else if (_screenedToNothing(view.starters))
+        _guardNote(l10n),
       if (widget.yesterdaysLunch != null)
         MealRow(
           title: l10n.yesterdaysLunchAgain,
-          // Yesterday's own figure, through the same [_metaOf] the rows above
-          // use. `taameyaSaladBaladi520Kcal` — "Ta'ameya, salad, baladi ·
-          // 520 kcal" — named the prototype's lunch and its calories whatever
-          // she had actually eaten yesterday, on the row whose whole promise is
-          // that it repeats HER meal.
+          // Yesterday's own figure, through the same [_metaOf] the quick plates
+          // use: the row's whole promise is that it repeats HER meal.
           meta: _metaOf(l10n, widget.yesterdaysLunch!),
           logLabel: l10n.iAteThis,
-          onLog: () => _log(widget.yesterdaysLunch!.entries, view.activeSlot),
+          onLog: () => _log(widget.yesterdaysLunch!.entries, slot),
         ),
-      if (_screenedToNothing(view.suggestions)) _guardNote(l10n),
+      AppCard(
+        key: const ValueKey('eat-day-slots'),
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final (i, column) in _slotColumns(l10n, view).indexed) ...[
+                if (i > 0) const SizedBox(width: 8),
+                column,
+              ],
+            ],
+          ),
+        ],
+      ),
+      if (view.isDayOne && AppRouter.screenIsOn('E07'))
+        AppListItem(
+          key: const ValueKey('eat-day-one-week-plan'),
+          leading: const Icon(
+            Icons.calendar_view_week,
+            size: 23,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.planThisWeeksDinners,
+          subtitle: l10n.fiveEgyptianDinnersAndOneShoppingList,
+          trailing: const Icon(
+            Icons.chevron_right,
+            size: 22,
+            color: AppColors.onSurfaceVariant,
+          ),
+          onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
+        ),
       if (AppRouter.screenIsOn('E05')) _recipesRow(l10n),
-    ];
+      if (view.isDayOne)
+        Text(
+          l10n.noCountdownNoRedNumbersProteinIs,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+    ]);
+  }
+
+  /// "Today" and the pill naming the meal she is logging into. The pill opens
+  /// a short list of the four meals; it is a picker, not a confirmation.
+  Widget _header(
+    AppL10n l10n,
+    MealSlot slot,
+    EatDayView view, {
+    LogHandle? justLogged,
+  }) {
+    final pill = SlotPill(
+      key: const ValueKey('eat-slot-pill'),
+      label: _slotName(l10n, slot),
+      changeLabel: l10n.change,
+      onTap: () => _chooseSlot(slot),
+    );
+    // The pill appears only for something true now: the points a log pays, or
+    // Ramadan mode while it is on.
+    final badge = justLogged != null && _pointsShown > 0
+        ? AppPill(
+            l10n.pointsPoints(countLabel(_pointsShown)),
+            background: AppColors.tertiaryContainer,
+            foreground: AppColors.tertiary,
+          )
+        : view.ramadanMode == RamadanMode.on
+        ? AppPill(
+            l10n.ramadanModeOn,
+            background: AppColors.surfaceContainer,
+            foreground: AppColors.onSurfaceVariant,
+          )
+        : view.isDayOne
+        ? AppPill(
+            l10n.day1_4ehtd,
+            background: AppColors.surfaceContainer,
+            foreground: AppColors.onSurfaceVariant,
+          )
+        : null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppSplitRow(
+          // The screen's one illustration sits beside the title, small, and is
+          // Flexible so text scale 2.0 or Arabic shrinks it before it overflows.
+          start: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(l10n.today, style: EditorialType.section),
+              ),
+              const SizedBox(width: 10),
+              const Flexible(child: ScreenArtInline(size: 40)),
+            ],
+          ),
+          end: pill,
+        ),
+        if (badge != null) ...[
+          const SizedBox(height: 6),
+          Align(alignment: AlignmentDirectional.centerStart, child: badge),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _chooseSlot(MealSlot current) async {
+    final l10n = AppL10n.of(context);
+    final chosen = await showAppSheet<MealSlot>(
+      context: context,
+      gap: 8,
+      children: [
+        for (final slot in MealSlot.values)
+          Builder(
+            builder: (sheet) => AppListItem(
+              key: ValueKey('eat-slot-${slot.name}'),
+              title: _slotName(l10n, slot),
+              variant: slot == current
+                  ? AppCardVariant.selected
+                  : AppCardVariant.outlined,
+              trailing: slot == current
+                  ? const Icon(
+                      Icons.check,
+                      size: 22,
+                      color: AppColors.primaryDim,
+                    )
+                  : null,
+              onTap: () => Navigator.of(sheet).pop(slot),
+            ),
+          ),
+      ],
+    );
+    if (chosen == null || !mounted) return;
+    setState(() => _slotChoice = chosen);
   }
 
   List<Widget> _plannedBlock(AppL10n l10n) {
@@ -683,65 +809,8 @@ class _EatViewState extends State<EatView> {
 
   // ---------------------------------------------------------------- E09 ----
 
-  List<Widget> _dayOne(BuildContext context, AppL10n l10n, EatDayView view) {
-    return [
-      AppSplitRow(
-        start: _masthead(l10n),
-        end: AppPill(
-          l10n.day1_4ehtd,
-          background: AppColors.surfaceContainer,
-          foreground: AppColors.onSurfaceVariant,
-        ),
-      ),
-      // Rule 17: the empty state IS the onboarding. It says what will appear
-      // here, why it is empty, and offers one action — no tour, no overlay.
-      AppEmptyState(
-        icon: Icons.restaurant,
-        art: AppArt.bowlSalad,
-        title: l10n.noPlatesYet,
-        body: l10n.addSomethingTwiceAndItBecomesA,
-      ),
-      _box(l10n),
-      // Planning her food is a reason she installed the app. On day one the
-      // tab offered starter plates and nothing else: no week plan and no
-      // recipes, so both were three screens away.
-      if (AppRouter.screenIsOn('E07'))
-        AppListItem(
-          key: const ValueKey('eat-day-one-week-plan'),
-          leading: const Icon(
-            Icons.calendar_view_week,
-            size: 23,
-            color: AppColors.primaryDim,
-          ),
-          title: l10n.planThisWeeksDinners,
-          subtitle: l10n.fiveEgyptianDinnersAndOneShoppingList,
-          trailing: const Icon(
-            Icons.chevron_right,
-            size: 22,
-            color: AppColors.onSurfaceVariant,
-          ),
-          onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
-        ),
-      if (AppRouter.screenIsOn('E05')) _recipesRow(l10n),
-      if (_screenedToNothing(view.starters))
-        _guardNote(l10n)
-      else ...[
-        Text(l10n.orStartFromOneOfThese, style: AppText.titleS),
-        for (final starter in view.starters)
-          MealRow(
-            title: _titleOf(starter),
-            meta: _starterMeta(l10n, view.activeSlot, starter),
-            logLabel: l10n.iAteThis,
-            primary: starter.primary,
-            onLog: () => _log(starter.entries, view.activeSlot),
-          ),
-      ],
-      Text(
-        l10n.noCountdownNoRedNumbersProteinIs,
-        style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-      ),
-    ];
-  }
+  List<Widget> _dayOne(BuildContext context, AppL10n l10n, EatDayView view) =>
+      _page(context, l10n, view);
 
   // -------------------------------------------------------------- shared ----
 
@@ -815,7 +884,7 @@ class _EatViewState extends State<EatView> {
           Builder(
             builder: (sheet) => AppListItem(
               title: _foodName(l10n, item),
-              subtitle: l10n.nGProtein(countLabel(item.proteinG)),
+              subtitle: _slotItemNote(l10n, item),
               trailing: Text(
                 l10n.remove,
                 style: AppText.label.copyWith(
@@ -850,6 +919,17 @@ class _EatViewState extends State<EatView> {
         if (mounted) setState(() {});
       },
     );
+  }
+
+  /// "34 g protein", with a "Contains nuts" line under it for a food known to
+  /// hold something she avoids.
+  String _slotItemNote(AppL10n l10n, MealItem item) {
+    final protein = l10n.nGProtein(countLabel(item.proteinG));
+    final food = _library(l10n).byId(item.foodId);
+    final note = food == null
+        ? null
+        : containsNoteFor(l10n, AllergyGuard(widget.constraints), food);
+    return note == null ? protein : '$protein\n$note';
   }
 
   String _slotName(AppL10n l10n, MealSlot slot) => switch (slot) {
@@ -893,14 +973,6 @@ class _EatViewState extends State<EatView> {
     return l10n.nGProtein(countLabel(protein));
   }
 
-  /// The same figure with the slot she is actually logging into — the one
-  /// tapping Log writes to — rather than a guess about when a food is usually
-  /// eaten.
-  String _starterMeta(AppL10n l10n, MealSlot slot, SuggestionView starter) {
-    final protein = starter.entries.fold<int>(0, (sum, e) => sum + e.proteinG);
-    return '${_slotName(l10n, slot)} · ${l10n.nGProtein(countLabel(protein))}';
-  }
-
   Widget _recipesRow(AppL10n l10n) => AppListItem(
     leading: const Icon(Icons.menu_book, size: 23, color: AppColors.primaryDim),
     title: l10n.recipes,
@@ -922,13 +994,17 @@ class _EatViewState extends State<EatView> {
   Widget _box(AppL10n l10n) {
     final box = AppRouter.screenIsOn('E03')
         ? SayOrTypeBox(
-            label: l10n.sayOrTypeWhatYouAte,
+            key: const ValueKey('eat-search-pill'),
+            searchIcon: true,
+            label: l10n.searchOrTypeWhatYouAte,
             micTooltip: l10n.weNeedTheMicrophoneToHearWhat,
             onType: () => openScreen(context, 'E02', widget.onType),
             onSpeak: () => openScreen(context, 'E03', widget.onSpeak),
           )
         : SayOrTypeBox(
-            label: l10n.typeWhatYouAte,
+            key: const ValueKey('eat-search-pill'),
+            searchIcon: true,
+            label: l10n.searchOrTypeWhatYouAte,
             onType: () => openScreen(context, 'E02', widget.onType),
           );
     final snap = widget.onSnap;

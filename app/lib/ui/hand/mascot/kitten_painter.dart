@@ -90,6 +90,48 @@ const int kittenBreaths = 2;
 Duration kittenRunFor(KittenPose pose) =>
     Duration(milliseconds: pose.moveMs + kittenBreathMs * kittenBreaths);
 
+/// The idle loop every kitten runs once its move is over, unless she asked for
+/// less motion: a slow breath, a float of a few pixels and a blink every few
+/// seconds. One loop of [kittenIdleMs] holds five breaths and two blinks, so a
+/// kitten blinks every 5.2 s and 6.8 s and the wrap is seamless.
+abstract final class KittenIdle {
+  /// Length of the loop, five breaths long.
+  static const int loopMs = kittenIdleMs;
+
+  /// Time of one breath in, out.
+  static const int breathMs = 2400;
+
+  /// How far it floats up at the top of a breath, in logical pixels.
+  static const double floatDp = 3;
+
+  /// How much bigger it is at the top of a breath: 1.00 to 1.025.
+  static const double scale = 0.025;
+
+  /// Where the kitten stands in its square, which the breath grows about.
+  static const double baseY = 0.96;
+
+  /// Room above the square the float and the breath need, in logical pixels.
+  static double headroomFor(double size) => floatDp + size * 0.03;
+
+  /// 0 to 1 and back along a sine, over each breath of the loop.
+  static double breath(double t) =>
+      (1 - math.cos(2 * math.pi * (loopMs / breathMs) * t)) / 2;
+
+  /// How shut the eyes are at [t]: 0 open, 1 shut, a hump 160 ms long.
+  static double blink(double t) {
+    final ms = t * loopMs;
+    return math.max(_blinkAt(ms, 1200), _blinkAt(ms, 6400));
+  }
+
+  static double _blinkAt(double ms, double start) {
+    final u = (ms - start) / 160;
+    return u <= 0 || u >= 1 ? 0 : math.sin(math.pi * u);
+  }
+}
+
+/// One idle loop, in milliseconds.
+const int kittenIdleMs = 12000;
+
 /// Where every moving part is at one instant.
 @immutable
 class KittenFrame {
@@ -474,9 +516,22 @@ class KittenPainter extends CustomPainter {
     this.tint = KittenTint.rose,
     this.prop,
     this.blinking = false,
-  }) : super(repaint: progress);
+    this.idle,
+    this.headroom = 0,
+  }) : super(
+         repaint: idle == null ? progress : Listenable.merge([progress, idle]),
+       );
 
   final Animation<double> progress;
+
+  /// The idle loop, 0 to 1 round [kittenIdleMs]: breathing, a small float and
+  /// a blink every few seconds. Null draws the pose and nothing more.
+  final Animation<double>? idle;
+
+  /// Space above the square the kitten is drawn in, in logical pixels, for the
+  /// float and the breath to rise into. The square sits at the bottom of the
+  /// canvas, so nothing painted leaves it.
+  final double headroom;
   final KittenPose pose;
   final bool rtl;
   final KittenTint tint;
@@ -563,19 +618,42 @@ class KittenPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final s = math.min(size.width, size.height);
     final run = kittenRunFor(pose).inMilliseconds;
-    final f = blinking
+    var f = blinking
         ? KittenFrame.end(pose).withEyes(1 - _hump(progress.value, 0.2, 0.6))
         : KittenFrame.at(pose, progress.value * run);
+    // The loop joins in as the move ends, so the two never double up.
+    final loop = idle;
+    final live = loop == null
+        ? 0.0
+        : blinking
+        ? 1.0
+        : _ease(progress.value, 0.85, 1);
+    final breath = loop == null ? 0.0 : KittenIdle.breath(loop.value) * live;
+    if (loop != null && live > 0) {
+      final open = 1 - KittenIdle.blink(loop.value) * live;
+      if (open < f.eyeOpen) f = f.withEyes(open);
+    }
 
     canvas.save();
     // Coming in from the edge below: nothing shows past the box.
     if (pose == KittenPose.peek) canvas.clipRect(Offset.zero & size);
-    canvas.translate((size.width - s) / 2, (size.height - s) / 2);
+    canvas.translate(
+      (size.width - s) / 2,
+      headroom > 0 ? size.height - s : (size.height - s) / 2,
+    );
     if (rtl && !pose.physical) {
       canvas.translate(s, 0);
       canvas.scale(-1, 1);
     }
     canvas.scale(s);
+    if (breath > 0) {
+      // Up by the float, and a little bigger about where it sits.
+      canvas.translate(0, -KittenIdle.floatDp * breath / s);
+      final grow = 1 + KittenIdle.scale * breath;
+      canvas.translate(0.5, KittenIdle.baseY);
+      canvas.scale(grow);
+      canvas.translate(-0.5, -KittenIdle.baseY);
+    }
     // A little room all round, so a hop or a raised paw never leaves the box.
     canvas.translate(0.5, 0.49);
     canvas.scale(_fit);
@@ -911,6 +989,8 @@ class KittenPainter extends CustomPainter {
       old.tint != tint ||
       old.prop != prop ||
       old.blinking != blinking ||
+      old.headroom != headroom ||
+      old.idle != idle ||
       old.progress != progress;
 }
 

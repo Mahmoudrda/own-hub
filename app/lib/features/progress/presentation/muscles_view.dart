@@ -60,7 +60,7 @@ class MusclesView extends StatefulWidget {
   /// without a link.
   final ValueChanged<LibraryExercise>? onOpenMove;
 
-  /// The exercise library, R14. Null while it is off or empty.
+  /// Explore on Train. Null while the library is empty.
   final VoidCallback? onOpenLibrary;
 
   final VoidCallback? onBack;

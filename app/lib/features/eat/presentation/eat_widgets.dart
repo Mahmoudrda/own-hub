@@ -18,6 +18,7 @@ import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_log_button.dart';
 import '../../../ui/app_progress.dart';
+import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/day_totals.dart';
@@ -72,50 +73,50 @@ class SlotColumn extends StatelessWidget {
     };
 
     final surface = HandSurface(
-        seed: handSeed(['slot', name]),
-        fill: fill,
-        frame: frame,
-        frameWidth: status == SlotStatus.now ? 1.5 : 1,
-        dashed: status == SlotStatus.later,
-        level: status == SlotStatus.now
-            ? HandLevel.expressive
-            : HandLevel.crafted,
-        radius: 4,
-        looseCorner: 12,
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                if (status == SlotStatus.done) ...[
-                  const Icon(Icons.check, size: 14, color: AppColors.tertiary),
-                  const SizedBox(width: 4),
-                ],
-                Flexible(
-                  child: Text(
-                    name,
-                    style: AppText.label.copyWith(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: labelColour,
-                    ),
+      seed: handSeed(['slot', name]),
+      fill: fill,
+      frame: frame,
+      frameWidth: status == SlotStatus.now ? 1.5 : 1,
+      dashed: status == SlotStatus.later,
+      level: status == SlotStatus.now
+          ? HandLevel.expressive
+          : HandLevel.crafted,
+      radius: 4,
+      looseCorner: 12,
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              if (status == SlotStatus.done) ...[
+                const Icon(Icons.check, size: 14, color: AppColors.tertiary),
+                const SizedBox(width: 4),
+              ],
+              Flexible(
+                child: Text(
+                  name,
+                  style: AppText.label.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: labelColour,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: AppText.bodyM.copyWith(
-                fontSize: 14,
-                color: AppColors.onSurface,
               ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: AppText.bodyM.copyWith(
+              fontSize: 14,
+              color: AppColors.onSurface,
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
 
     final tap = onTap;
     return Expanded(
@@ -440,9 +441,13 @@ class SayOrTypeBox extends StatelessWidget {
     this.micTooltip,
     this.onType,
     this.onSpeak,
+    this.searchIcon = false,
   });
 
   final String label;
+
+  /// A magnifier in place of the keyboard, for the box that opens search.
+  final bool searchIcon;
 
   /// The microphone's tooltip. With no [onSpeak] there is no microphone.
   final String? micTooltip;
@@ -485,10 +490,289 @@ class SayOrTypeBox extends StatelessWidget {
                 style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
               ),
             ),
-            const Icon(
-              Icons.keyboard,
+            Icon(
+              searchIcon ? Icons.search : Icons.keyboard,
               size: 22,
               color: AppColors.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The round "+" that logs or opens a food. Pink with petrol ink, 44 square.
+class PlusButton extends StatelessWidget {
+  const PlusButton({super.key, required this.label, this.onPressed});
+
+  /// What a screen reader says, "Add Koshari".
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: Tooltip(
+        message: label,
+        excludeFromSemantics: true,
+        child: HandSurface(
+          seed: handSeed(['plus', label]),
+          fill: AppColors.primaryContainer,
+          radius: 22,
+          looseCorner: 22,
+          onTap: onPressed,
+          pressable: true,
+          pressScale: 0.92,
+          child: const SizedBox(
+            width: 44,
+            height: 44,
+            child: Icon(
+              Icons.add,
+              size: 24,
+              color: AppColors.onPrimaryContainer,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A food in E02's live results: name, what a medium portion comes to, a note
+/// when it is known to hold something she avoids, and a "+".
+class FoodResultRow extends StatelessWidget {
+  const FoodResultRow({
+    super.key,
+    required this.title,
+    required this.meta,
+    required this.addLabel,
+    this.note,
+    this.onTap,
+    this.onAdd,
+  });
+
+  final String title;
+  final String meta;
+
+  /// "Contains nuts", or null.
+  final String? note;
+  final String addLabel;
+  final VoidCallback? onTap;
+
+  /// What "+" does. The row itself opens the portion sheet.
+  final VoidCallback? onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppListItem(
+      title: title,
+      subtitle: note == null ? meta : '$meta\n$note',
+      onTap: onTap,
+      trailing: PlusButton(label: addLabel, onPressed: onAdd ?? onTap),
+    );
+  }
+}
+
+/// One plate in E01's Quick add strip, with a "+" that logs it.
+class QuickAddCard extends StatelessWidget {
+  const QuickAddCard({
+    super.key,
+    required this.title,
+    required this.meta,
+    required this.addLabel,
+    this.onAdd,
+  });
+
+  final String title;
+  final String meta;
+  final String addLabel;
+  final VoidCallback? onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 156,
+      child: AppCard(
+        gap: 6,
+        padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+        children: [
+          Text(
+            title,
+            style: AppText.titleS,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            meta,
+            style: AppText.bodyM.copyWith(
+              fontSize: 13,
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: PlusButton(label: addLabel, onPressed: onAdd),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// E01's hero: kcal eaten inside a ring, and protein, carbs and fat as three
+/// small bars beside it.
+///
+/// The ring counts meals logged of the day's three, a completed share of a
+/// known total. The protein bar fills toward the one target the product keeps;
+/// carbs and fat have no target, so their bars show each one's share of the
+/// grams eaten so far and never a remainder.
+class EatHero extends StatelessWidget {
+  const EatHero({super.key, required this.totals, required this.mealsDone});
+
+  final DayTotals totals;
+
+  /// 0 to 3.
+  final int mealsDone;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final carbs = totals.carbsSoFar ?? 0;
+    final fat = totals.fatSoFar ?? 0;
+    final grams = totals.proteinSoFar + carbs + fat;
+    double share(int g) => grams == 0 ? 0 : g / grams * 100;
+
+    Widget macro(String name, String value, double percent, Color colour) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppSplitRow(
+            start: Text(name, style: AppText.titleS),
+            end: Text(
+              value,
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+          ),
+          const SizedBox(height: 4),
+          AppProgressBar(percent: percent, height: 8, colour: colour),
+        ],
+      );
+    }
+
+    return AppCard(
+      key: const ValueKey('eat-hero'),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            AppRingStat(
+              fraction: mealsDone / 3,
+              big: countLabel(totals.kcalSoFar),
+              small: '${l10n.kcal} ${l10n.eaten}',
+              size: 112,
+              thickness: 12,
+              color: AppColors.primary,
+              animateIn: true,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  macro(
+                    l10n.protein,
+                    l10n.sofarOfTargetG(
+                      countLabel(totals.proteinSoFar),
+                      countLabel(totals.proteinTargetG),
+                    ),
+                    totals.proteinPercent,
+                    AppColors.tertiarySoft,
+                  ),
+                  const SizedBox(height: 10),
+                  macro(
+                    l10n.carbs,
+                    '${countLabel(carbs)} g',
+                    share(carbs),
+                    AppColors.primary,
+                  ),
+                  const SizedBox(height: 10),
+                  macro(
+                    l10n.fat,
+                    '${countLabel(fat)} g',
+                    share(fat),
+                    AppColors.outline,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        if (totals.fiberSoFar != null)
+          Text(
+            l10n.fibreGramsG(countLabel(totals.fiberSoFar!)),
+            key: const ValueKey('day-card-more-macros'),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+      ],
+    );
+  }
+}
+
+/// "Lunch" with a chevron: the meal she is logging into, changeable.
+class SlotPill extends StatelessWidget {
+  const SlotPill({
+    super.key,
+    required this.label,
+    required this.changeLabel,
+    this.onTap,
+  });
+
+  final String label;
+
+  /// Screen reader hint, "Change".
+  final String changeLabel;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '$label, $changeLabel',
+      onTap: onTap,
+      excludeSemantics: true,
+      child: HandSurface(
+        seed: handSeed(['slot-pill', label]),
+        fill: AppColors.primaryContainer,
+        radius: 18,
+        looseCorner: 18,
+        onTap: onTap,
+        pressable: true,
+        pressScale: 0.96,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                label,
+                style: AppText.label.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.onPrimaryContainer,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.expand_more,
+              size: 20,
+              color: AppColors.onPrimaryContainer,
             ),
           ],
         ),

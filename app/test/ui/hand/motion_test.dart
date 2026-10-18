@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/kitten_setting.dart';
 import 'package:own_hub/theme/hand_theme.dart';
 import 'package:own_hub/ui/app_button.dart';
+import 'package:own_hub/ui/app_toggle.dart';
 import 'package:own_hub/ui/hand/hand.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -395,5 +396,49 @@ void main() {
         expect(find.text('one'), findsNothing);
       },
     );
+  });
+
+  group('shared motion', () {
+    test('a press is 90 ms down and 180 ms up, progress 600 ms', () {
+      expect(HandTiming.pressIn, const Duration(milliseconds: 90));
+      expect(HandTiming.pressOut, const Duration(milliseconds: 180));
+      expect(HandTiming.progress, const Duration(milliseconds: 600));
+    });
+
+    testWidgets('a list staggers with one call', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          Column(
+            children: [
+              const Text('a'),
+              const Text('b'),
+            ].staggered(group: 'test'),
+          ),
+        ),
+      );
+      expect(find.byType(StaggerIn), findsNWidgets(2));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('the switch does not animate under reduced motion', (
+      tester,
+    ) async {
+      var on = false;
+      late StateSetter set;
+      await tester.pumpWidget(
+        _host(
+          StatefulBuilder(
+            builder: (context, setState) {
+              set = setState;
+              return AppToggle(value: on, onChanged: (_) {});
+            },
+          ),
+          still: true,
+        ),
+      );
+      set(() => on = true);
+      await tester.pump();
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
   });
 }

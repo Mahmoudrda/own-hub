@@ -339,7 +339,7 @@ void main() {
         {for (final tip in GettingStartedTip.values) tip: tip.screen},
         {
           GettingStartedTip.firstWorkout: 'R03',
-          GettingStartedTip.videos: 'R14',
+          GettingStartedTip.videos: 'R01',
           GettingStartedTip.mealScan: 'E12',
           GettingStartedTip.recipes: 'E05',
           GettingStartedTip.firstGym: kFirstGymTipPayload,

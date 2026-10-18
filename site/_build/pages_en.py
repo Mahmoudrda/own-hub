@@ -70,7 +70,7 @@ DELETE_SUBJECT = "Own Hub: account deletion request"
 
 DELETE_BODY = """Hello,
 
-I am writing about the Own Hub app, bundle id com.ownhub.app.
+I am writing about the Own Hub app (iPhone com.ownhub.fitness, Android com.ownhub.app).
 
 Please delete my Own Hub account and the data you hold about me.
 
@@ -193,7 +193,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           try everything on a sample week before you join. Nothing is saved.</p>
         </div>
         <ul class="shots">
-          <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button for the set you just finished.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Tap a set when you finish it. The rest timer starts itself.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button for the set you just finished.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Every move has a short video. Tap a set when you finish it, and the rest timer starts itself.</figcaption></figure></li>
           <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card with everything you&rsquo;ve done. Share it if you like.</figcaption></figure></li>
           <li><figure>""" + shot(lang, "07-tour-dinners", "The week of dinners in the tour: five sample dinners, planned for you.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Eat.</b> A week of dinners planned for you, gentler on harder days.</figcaption></figure></li>
         </ul>
@@ -292,8 +292,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p class="meta">
           <b>Version:</b> 3.0<br>
           <b>Effective date:</b> {{policyEffectiveDate}}<br>
-          <b>Applies to:</b> Own Hub for iOS and Android, bundle id
-          <code>com.ownhub.app</code>, and this website.
+          <b>Applies to:</b> Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>,
+          and Android, package <code>com.ownhub.app</code>, and this website.
         </p>
         <p>If the English and Arabic versions of this policy differ, the Arabic
         version applies.</p>
@@ -991,8 +991,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p class="meta">
           <b>Version:</b> 3.0<br>
           <b>Effective date:</b> {{policyEffectiveDate}}<br>
-          <b>Applies to:</b> Own Hub for iOS and Android, bundle id
-          <code>com.ownhub.app</code>.
+          <b>Applies to:</b> Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>,
+          and Android, package <code>com.ownhub.app</code>.
         </p>
         <p>If the English and Arabic versions of these Terms differ, the Arabic
         version applies.</p>
@@ -1393,8 +1393,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           same way.</p>
         </div>
 """ + kv([
-            ("App", "Own Hub, iOS and Android, bundle id "
-                    "<code>com.ownhub.app</code>"),
+            ("App", "Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>, "
+                    "and Android, package <code>com.ownhub.app</code>"),
             ("Publisher and developer", "{{legalEntity}}"),
             ("Country", "{{legalAddress}}"),
             ("Where to write", "{{mailto:contactPrivacy}}"),

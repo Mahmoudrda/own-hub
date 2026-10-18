@@ -117,53 +117,65 @@ bool _sameLoad(List<PrescribedSet> a, List<PrescribedSet> b) {
 WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
   final moves = [
     PlannedMove(
-      exerciseId: 'glute_bridge',
-      name: l10n.gluteBridge,
+      exerciseId: 'donkey_kick',
+      name: l10n.donkeyKick,
       prescriptionLabel: l10n.n312Bodyweight,
       quiet: true,
       floorOnly: true,
       sets: const [
-        PrescribedSet(exerciseId: 'glute_bridge', order: 1, reps: 12),
-        PrescribedSet(exerciseId: 'glute_bridge', order: 2, reps: 12),
-        PrescribedSet(exerciseId: 'glute_bridge', order: 3, reps: 12),
+        PrescribedSet(exerciseId: 'donkey_kick', order: 1, reps: 12),
+        PrescribedSet(exerciseId: 'donkey_kick', order: 2, reps: 12),
+        PrescribedSet(exerciseId: 'donkey_kick', order: 3, reps: 12),
       ],
     ),
     PlannedMove(
-      exerciseId: 'step_back_lunge',
-      name: l10n.stepBackLunge,
+      exerciseId: 'straight_leg_glute_kickback',
+      name: l10n.straightLegGluteKickback,
       prescriptionLabel: l10n.n310EachSide,
       // Quiet: a step back has no jump and no impact. Flagged rather than
       // left at the default, because R11's "quiet" filter reads these and a
       // session offered as quiet has to be quiet move by move.
       quiet: true,
       sets: const [
-        PrescribedSet(exerciseId: 'step_back_lunge', order: 1, reps: 10),
-        PrescribedSet(exerciseId: 'step_back_lunge', order: 2, reps: 10),
-        PrescribedSet(exerciseId: 'step_back_lunge', order: 3, reps: 10),
+        PrescribedSet(
+          exerciseId: 'straight_leg_glute_kickback',
+          order: 1,
+          reps: 10,
+        ),
+        PrescribedSet(
+          exerciseId: 'straight_leg_glute_kickback',
+          order: 2,
+          reps: 10,
+        ),
+        PrescribedSet(
+          exerciseId: 'straight_leg_glute_kickback',
+          order: 3,
+          reps: 10,
+        ),
       ],
     ),
     PlannedMove(
-      exerciseId: 'hip_thrust_hold',
-      name: l10n.hipThrustHold,
+      exerciseId: 'forearm_plank',
+      name: l10n.forearmPlank,
       prescriptionLabel: l10n.n330Seconds,
       quiet: true,
       floorOnly: true,
       sets: const [
-        PrescribedSet(exerciseId: 'hip_thrust_hold', order: 1, holdSeconds: 30),
-        PrescribedSet(exerciseId: 'hip_thrust_hold', order: 2, holdSeconds: 30),
-        PrescribedSet(exerciseId: 'hip_thrust_hold', order: 3, holdSeconds: 30),
+        PrescribedSet(exerciseId: 'forearm_plank', order: 1, holdSeconds: 30),
+        PrescribedSet(exerciseId: 'forearm_plank', order: 2, holdSeconds: 30),
+        PrescribedSet(exerciseId: 'forearm_plank', order: 3, holdSeconds: 30),
       ],
     ),
     PlannedMove(
-      exerciseId: 'dead_bug',
-      name: l10n.deadBug,
+      exerciseId: 'heel_touches',
+      name: l10n.heelTouches,
       prescriptionLabel: l10n.n38EachSide,
       quiet: true,
       floorOnly: true,
       sets: const [
-        PrescribedSet(exerciseId: 'dead_bug', order: 1, reps: 8),
-        PrescribedSet(exerciseId: 'dead_bug', order: 2, reps: 8),
-        PrescribedSet(exerciseId: 'dead_bug', order: 3, reps: 8),
+        PrescribedSet(exerciseId: 'heel_touches', order: 1, reps: 8),
+        PrescribedSet(exerciseId: 'heel_touches', order: 2, reps: 8),
+        PrescribedSet(exerciseId: 'heel_touches', order: 3, reps: 8),
       ],
     ),
   ];
@@ -187,7 +199,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
 /// and by the library row that offers it, so the two cannot disagree.
 const int kSampleWorkoutMinutes = 15;
 
-/// The bundled library, as `R11` lists it.
+/// The bundled library, as Train's Explore lists it.
 ///
 /// Derived from [sampleWorkoutDay] rather than written beside it, because a
 /// library row is a promise: tap it and you get that session. R11 used to list
@@ -208,6 +220,7 @@ List<LibraryWorkout> sampleWorkoutLibrary(AppL10n l10n, {DateTime? now}) {
       quiet: day.moves.every((move) => move.quiet),
       needsEquipment: day.moves.any((move) => move.needsEquipment),
       minutes: kSampleWorkoutMinutes,
+      exerciseIds: [for (final move in day.moves) move.exerciseId],
     ),
   ];
 }

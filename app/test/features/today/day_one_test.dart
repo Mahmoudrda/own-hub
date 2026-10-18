@@ -249,4 +249,32 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('day one has one Start and one way to log a meal', (
+    tester,
+  ) async {
+    _phone(tester);
+    await tester.pumpWidget(_host(_dayOne()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Good morning'), findsOneWidget);
+    expect(find.text('Start day 1'), findsOneWidget);
+    expect(find.text('Log a meal'), findsOneWidget);
+    expect(find.byKey(const ValueKey('today-week-strip')), findsOneWidget);
+  });
+
+  for (final locale in const [Locale('en'), Locale('ar')]) {
+    testWidgets(
+      'does not overflow at text scale 2.0 in ${locale.languageCode}',
+      (tester) async {
+        _phone(tester);
+        await tester.pumpWidget(
+          _host(_dayOne(), locale: locale, textScale: 2.0),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

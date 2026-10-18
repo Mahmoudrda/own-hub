@@ -254,7 +254,11 @@ void main() {
       // three steps is done, counted off the same list T07 draws.
       expect(find.text('Your first week: 1 of 3 steps'), findsOneWidget);
 
-      await tester.tap(find.text('Your first week: 1 of 3 steps'));
+      // The line sits at the foot of the page now, below the fold.
+      final door = find.byKey(const ValueKey('today-first-week'));
+      await tester.ensureVisible(door);
+      await tester.pumpAndSettle();
+      await tester.tap(door);
       await tester.pumpAndSettle();
       expect(find.text('Finish one set'), findsOneWidget);
     });

@@ -7,6 +7,10 @@
 /// words beside it carry the meaning.
 library;
 
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:flutter/widgets.dart';
 
 import '../../../app_state/kitten_setting.dart';
@@ -22,7 +26,14 @@ bool kittenStill(BuildContext context) =>
     !TickerMode.valuesOf(context).enabled ||
     !KittenSetting.instance.moves;
 
-/// The kitten, doing [pose] once when it first appears.
+/// The kitten, doing [pose] once when it first appears and then breathing.
+///
+/// After its move it runs a slow idle loop: it breathes, floats up a few
+/// pixels and blinks every few seconds (D50). The loop is a single repeating
+/// controller, drawn by repainting alone with no rebuild per frame. It is off
+/// whenever [kittenStill] says so, which holds a still kitten too, and it
+/// pauses with the rest of the screen when its route is covered. The box
+/// leaves room above the kitten for the float, so nothing paints outside it.
 class Kitten extends StatefulWidget {
   const Kitten({
     super.key,
@@ -87,15 +98,33 @@ class Kitten extends StatefulWidget {
   @visibleForTesting
   static int get budgetUsed => _budgetUsed;
 
+  /// A widget test that pumps until nothing is scheduled would never settle
+  /// beside a loop that never ends, so under `flutter test` the loop stays
+  /// off unless a test turns it on here.
+  @visibleForTesting
+  static bool idleInTests = false;
+
+  static bool get _loopAllowed =>
+      idleInTests ||
+      kIsWeb ||
+      !Platform.environment.containsKey('FLUTTER_TEST');
+
   @override
   State<Kitten> createState() => _KittenState();
 }
 
-class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
+class _KittenState extends State<Kitten> with TickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
     duration: kittenRunFor(widget.pose),
   );
+  // Each kitten starts a different way round the loop, so a screen with
+  // two never breathes in step.
+  static int _made = 0;
+  late final AnimationController _idle = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: kittenIdleMs),
+  )..value = (_made++ * 0.618) % 1;
   bool _started = false;
   bool _blinking = false;
 
@@ -111,6 +140,19 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
   /// Turned off in Profile while it is on screen: hold still at once.
   void _settingChanged() {
     if (!KittenSetting.instance.moves && _c.isAnimating) _c.value = 1;
+    if (mounted) _syncIdle();
+  }
+
+  /// Runs the loop when she allows motion, and puts the kitten back at rest
+  /// when she does not.
+  void _syncIdle() {
+    final want = Kitten._loopAllowed && !kittenStill(context);
+    if (want && !_idle.isAnimating) {
+      _idle.repeat();
+    } else if (!want && (_idle.isAnimating || _idle.value != 0)) {
+      _idle.stop();
+      _idle.value = 0;
+    }
   }
 
   @override
@@ -127,6 +169,7 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
       // Reduce Motion switched on mid-move.
       _c.value = 1;
     }
+    _syncIdle();
   }
 
   @override
@@ -171,6 +214,7 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
   void dispose() {
     KittenSetting.instance.removeListener(_settingChanged);
     _c.dispose();
+    _idle.dispose();
     super.dispose();
   }
 
@@ -179,8 +223,9 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
     return ExcludeSemantics(
       child: RepaintBoundary(
-        child: SizedBox.square(
-          dimension: widget.size,
+        child: SizedBox(
+          width: widget.size,
+          height: widget.size + KittenIdle.headroomFor(widget.size),
           child: CustomPaint(
             painter: KittenPainter(
               progress: _c,
@@ -189,6 +234,8 @@ class _KittenState extends State<Kitten> with SingleTickerProviderStateMixin {
               tint: widget.tint,
               prop: widget.prop,
               blinking: _blinking,
+              idle: _idle,
+              headroom: KittenIdle.headroomFor(widget.size),
             ),
           ),
         ),

@@ -119,7 +119,7 @@ class EatDayView {
   /// Ranked by her own frequency, already screened.
   final List<SuggestionView> suggestions;
 
-  /// E09's three real Egyptian starters, for a woman with no history at all.
+  /// E09's six real Egyptian starters, for a woman with no history at all.
   final List<SuggestionView> starters;
 
   /// True when nothing has ever been logged today — the E09 branch.
@@ -260,7 +260,7 @@ class EatDayViewModel {
   /// something she did not ask for.
   EatPrefs _safePlates(EatPrefs prefs) {
     final allowed = guard
-        .screen(library.foods)
+        .screenSuggestions(library.foods)
         .map((food) => food.foodId)
         .toSet();
 
@@ -292,12 +292,14 @@ class EatDayViewModel {
     return entries;
   }
 
-  /// E09's starters: the most popular foods in the pack, screened.
+  /// E09's starters: the six most popular foods in the pack, screened.
   ///
   /// "An empty box asks her to invent an answer" — the design note. These exist
   /// so that a woman with no history has something real to tap.
-  List<SuggestionView> _starters({int take = 3}) {
-    final safe = guard.screen(library.mostPopular(take * 3)).take(take);
+  List<SuggestionView> _starters({int take = 6}) {
+    final safe = guard
+        .screenSuggestions(library.mostPopular(take * 3))
+        .take(take);
 
     var first = true;
     final out = <SuggestionView>[];

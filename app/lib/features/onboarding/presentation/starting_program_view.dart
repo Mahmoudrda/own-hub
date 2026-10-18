@@ -27,7 +27,7 @@
 /// Drawn only while the catalogue holds more than one programme. With one, the
 /// button offered a choice that does not exist.
 ///
-/// The design routes it to `R11` (`screens-onboarding.mjs:37`), which the screen
+/// The design routes it to the workout library (`screens-onboarding.mjs:37`, `R11`, now Explore on `R01`), which the screen
 /// inventory names **"Workout library"** — 124 videos with filters, not a
 /// programme picker. G2 §9 Q4 flags this as an open question: there is no
 /// programme-picker screen anywhere in the 161. Implemented as designed, wired
@@ -121,7 +121,7 @@ class StartingProgramView extends StatelessWidget {
   /// `T06` — Home, day one.
   final VoidCallback? onStartTomorrow;
 
-  /// `R11` — the Workout library. See the note at the top of this file.
+  /// Explore on Train (`R01`). See the note at the top of this file.
   final VoidCallback? onPickDifferentProgram;
 
   // Her answers are read back by [herAnswersLine], shared with day-one Home.
@@ -185,7 +185,7 @@ class StartingProgramView extends StatelessWidget {
         ? null
         : _copyFor(l10n, program.programId, intake);
     final offersAnotherProgram =
-        catalogue.length > 1 && AppRouter.screenIsOn('R11');
+        catalogue.length > 1 && AppRouter.screenIsOn('R01');
 
     return AppScaffold(
       appBar: title == null && onBack == null

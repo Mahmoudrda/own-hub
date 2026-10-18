@@ -9,30 +9,27 @@ import 'package:own_hub/features/eat/domain/allergy_guard.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
 import 'package:own_hub/features/eat/presentation/eat_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
-import 'package:own_hub/l10n/app_l10n_ar.dart';
 import 'package:own_hub/l10n/app_l10n_en.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
 final DateTime _lunchtime = DateTime(2026, 10, 17, 13, 12);
 const String _day = '2026-10-17';
 final AppL10n _en = AppL10nEn();
-final AppL10n _ar = AppL10nAr();
 
-MealItem _item({int? carbs, int? fat, int? fiber, String id = 'a'}) =>
-    MealItem(
-      itemId: id,
-      foodId: 'boiled_eggs',
-      servings: 1,
-      size: '2',
-      loggedAt: _lunchtime.subtract(const Duration(hours: 4)),
-      source: MealSource.search,
-      origin: MealOrigin.search,
-      kcal: 156,
-      proteinG: 13,
-      carbsG: carbs,
-      fatG: fat,
-      fiberG: fiber,
-    );
+MealItem _item({int? carbs, int? fat, int? fiber, String id = 'a'}) => MealItem(
+  itemId: id,
+  foodId: 'boiled_eggs',
+  servings: 1,
+  size: '2',
+  loggedAt: _lunchtime.subtract(const Duration(hours: 4)),
+  source: MealSource.search,
+  origin: MealOrigin.search,
+  kcal: 156,
+  proteinG: 13,
+  carbsG: carbs,
+  fatG: fat,
+  fiberG: fiber,
+);
 
 InMemoryMealRepository _repoWith(List<MealItem> items) {
   final repository = InMemoryMealRepository();
@@ -48,14 +45,13 @@ InMemoryMealRepository _repoWith(List<MealItem> items) {
   return repository;
 }
 
-Widget _host(Widget child, {Locale locale = const Locale('en')}) =>
-    MaterialApp(
-      locale: locale,
-      localizationsDelegates: AppL10n.localizationsDelegates,
-      supportedLocales: AppL10n.supportedLocales,
-      theme: buildTheme(locale),
-      home: child,
-    );
+Widget _host(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(
+  locale: locale,
+  localizationsDelegates: AppL10n.localizationsDelegates,
+  supportedLocales: AppL10n.supportedLocales,
+  theme: buildTheme(locale),
+  home: child,
+);
 
 EatView _eat(MealRepository repository, {VoidCallback? onSnap}) => EatView(
   constraints: DietaryConstraints.none,
@@ -88,10 +84,9 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(
-      find.text('Carbs 120 g · Fat 45 g · Fibre 18 g'),
-      findsOneWidget,
-    );
+    expect(find.text('120 g'), findsOneWidget);
+    expect(find.text('45 g'), findsOneWidget);
+    expect(find.text('Fibre 18 g'), findsOneWidget);
   });
 
   testWidgets('only the figures that are known, and in Arabic too', (
@@ -105,10 +100,8 @@ void main() {
       ),
     );
     await tester.pump();
-    final line = tester.widget<Text>(
-      find.byKey(const ValueKey('day-card-more-macros')),
-    );
-    expect(line.data, _ar.carbsGramsG('30'));
+    expect(find.text('30 g'), findsOneWidget);
+    expect(find.byKey(const ValueKey('day-card-more-macros')), findsNothing);
   });
 
   testWidgets('a day of meals without them shows no line at all', (
@@ -144,9 +137,7 @@ void main() {
     expect(find.text(_en.later), findsOneWidget);
   });
 
-  testWidgets('the camera is beside the box only when offered', (
-    tester,
-  ) async {
+  testWidgets('the camera is beside the box only when offered', (tester) async {
     _phone(tester);
     var snapped = 0;
     await tester.pumpWidget(

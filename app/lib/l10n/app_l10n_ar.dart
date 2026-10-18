@@ -10705,4 +10705,83 @@ class AppL10nAr extends AppL10n {
   String listItem(String list, String item) {
     return '$list، $item';
   }
+
+  @override
+  String get donkeyKick => 'دونكي كيك';
+
+  @override
+  String get straightLegGluteKickback => 'جلوت كيك باك والرجل مفرودة';
+
+  @override
+  String get forearmPlank => 'بلانك على الكوعين';
+
+  @override
+  String get heelTouches => 'لمس الكعب من النوم على الضهر';
+
+  @override
+  String get explore => 'استكشفي';
+
+  @override
+  String get searchWorkoutsAndMoves => 'دوّري في التمارين والحركات';
+
+  @override
+  String get goodMorning => 'صباح الخير';
+
+  @override
+  String get goodAfternoon => 'نهارك سعيد';
+
+  @override
+  String get goodEvening => 'مساء الخير';
+
+  @override
+  String goodMorningName(String name) {
+    return 'صباح الخير يا $name';
+  }
+
+  @override
+  String goodAfternoonName(String name) {
+    return 'نهارك سعيد يا $name';
+  }
+
+  @override
+  String goodEveningName(String name) {
+    return 'مساء الخير يا $name';
+  }
+
+  @override
+  String get carbs => 'كربوهيدرات';
+
+  @override
+  String get fat => 'دهون';
+
+  @override
+  String get logAMeal => 'سجّلي وجبة';
+
+  @override
+  String get searchOrTypeWhatYouAte => 'ابحثي أو اكتبي أكلتك';
+
+  @override
+  String get quickAdd => 'إضافة سريعة';
+
+  @override
+  String get youveHad => 'أكلتيه قبل كده';
+
+  @override
+  String get popularDishes => 'أكلات مشهورة';
+
+  @override
+  String containsAllergens(String allergens) {
+    return 'فيه $allergens';
+  }
+
+  @override
+  String get fewerServings => 'حصص أقل';
+
+  @override
+  String get moreServings => 'حصص أكتر';
+
+  @override
+  String addName(String name) {
+    return 'ضيفي $name';
+  }
 }

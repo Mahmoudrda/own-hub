@@ -20,6 +20,7 @@ class AppLogButton extends StatelessWidget {
     super.key,
     this.onPressed,
     this.primary = false,
+    this.haptic = false,
   });
 
   final String label;
@@ -27,6 +28,9 @@ class AppLogButton extends StatelessWidget {
 
   /// The likeliest answer on the screen. One per list, so the eye lands on it.
   final bool primary;
+
+  /// Off by default: screens play their own tap when an action finishes.
+  final bool haptic;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +54,7 @@ class AppLogButton extends StatelessWidget {
       pressable: true,
       semanticsButton: true,
       pressScale: 0.96,
+      haptic: haptic,
       child: Container(
         constraints: const BoxConstraints(minHeight: 44),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),

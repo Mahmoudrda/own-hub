@@ -279,6 +279,12 @@ Future<void> main() async {
   WidgetsBinding.instance.addPostFrameCallback(
     (_) => unawaited(ExerciseLibraryState.instance.refresh()),
   );
+
+  // The Egyptian dish pack, so the plates Home offers can be named and logged
+  // before she ever opens Eat.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => EatAppState.instance.ensureFoodPack(),
+  );
 }
 
 /// Every OFL face bundled in `assets/fonts/`. The licence asks that its text

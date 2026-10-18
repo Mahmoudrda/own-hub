@@ -41,6 +41,7 @@ import '../domain/meal_sentence_parser.dart';
 import 'eat_day_view_model.dart';
 import 'eat_sample_library.dart';
 import 'eat_widgets.dart';
+import 'food_portion_sheet.dart';
 import 'meal_log_session.dart';
 import 'type_it_view_model.dart';
 import 'meal_labels.dart';
@@ -59,7 +60,6 @@ class TypeItView extends StatefulWidget {
     this.onClose,
     this.onSpeak,
     this.onSnap,
-    this.onAllFoods,
     this.onLogged,
     this.onBlocked,
   });
@@ -82,7 +82,7 @@ class TypeItView extends StatefulWidget {
   /// leaves it empty, which is what a woman actually opens.
   final String? initialText;
 
-  /// "Or one you've had before".
+  /// Plates she has eaten before, listed first in the results as "You've had".
   final List<ParsedItem> history;
 
   final VoidCallback? onClose;
@@ -91,7 +91,6 @@ class TypeItView extends StatefulWidget {
   /// E12, a photo of her plate instead of typing it. Null hides the camera;
   /// the router passes it only while E12 is on and she is verified.
   final VoidCallback? onSnap;
-  final VoidCallback? onAllFoods;
   final ValueChanged<LogHandle>? onLogged;
 
   /// A log the domain refused. Unwired today — the allergen sheet's three
@@ -307,25 +306,27 @@ class _TypeItViewState extends State<TypeItView> {
                 )
               : null,
         ),
-        if (state.items.isNotEmpty)
+        if (_isSentence(state))
           Text(
             l10n.wellAdd,
             style: AppText.titleS.copyWith(color: AppColors.tertiary),
           ),
-        for (var i = 0; i < state.items.length; i++)
-          ParsedRow(
-            name: state.items[i].food.names.first,
-            meta: _metaFor(l10n, state.items[i]),
-            sizeLabels: [
-              for (final size in state.items[i].food.sizes) size.label,
-            ],
-            selectedSize: state.items[i].food.sizes.indexWhere(
-              (s) => s.id == state.items[i].size.id,
+        if (_isSentence(state))
+          for (var i = 0; i < state.items.length; i++)
+            ParsedRow(
+              name: state.items[i].food.names.first,
+              meta: _metaFor(l10n, state.items[i]),
+              sizeLabels: [
+                for (final size in state.items[i].food.sizes) size.label,
+              ],
+              selectedSize: state.items[i].food.sizes.indexWhere(
+                (s) => s.id == state.items[i].size.id,
+              ),
+              onPickSize: (index) =>
+                  _resize(i, state.items[i].food.sizes[index]),
+              onRemove: () => _remove(i),
+              removeTooltip: l10n.edit,
             ),
-            onPickSize: (index) => _resize(i, state.items[i].food.sizes[index]),
-            onRemove: () => _remove(i),
-            removeTooltip: l10n.edit,
-          ),
         // An unmatched fragment stays visible. Never dropped, never guessed.
         if (state.hasUnresolved)
           Wrap(
@@ -350,33 +351,110 @@ class _TypeItViewState extends State<TypeItView> {
                 ),
             ],
           ),
-        if (state.history.isNotEmpty) ...[
-          // What she typed above the rule, what she has eaten before below it.
-          const HandRule(seed: 17, height: 8),
-          Text(
-            l10n.orOneYouveHadBefore,
-            style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),
-          ),
-          for (final entry in state.history)
-            MealRow(
-              title: entry.food.names.first,
-              // Her plate's own figure. `yourPlate600Kcal` — "Your plate ·
-              // 600 kcal" — read 600 for every row in the list, whatever she
-              // had eaten before.
-              meta: l10n.kcalKcal(countLabel(entry.kcal)),
-              logLabel: l10n.iAteThis,
-              onLog: () => _log([entry]),
-            ),
-        ],
-        AppButton(
-          l10n.allFoods4100InTheList,
-          variant: AppButtonVariant.text,
-          height: 40,
-          fontSize: 15,
-          onPressed: widget.onAllFoods,
-        ),
+        ..._results(l10n, state),
       ],
     );
+  }
+
+  /// Opens the portion sheet for a food and logs what she picked.
+  Future<void> _pick(Food food, {FoodSize? size, int servings = 1}) async {
+    final l10n = AppL10n.of(context);
+    final item = await showFoodPortionSheet(
+      context: context,
+      food: food,
+      containsNote: containsNoteFor(
+        l10n,
+        AllergyGuard(widget.constraints),
+        food,
+      ),
+      initialSize: size,
+      initialServings: servings,
+    );
+    if (item == null || !mounted) return;
+    _log([item]);
+  }
+
+  /// A sentence naming several foods, or one with a part nothing matched, is
+  /// shown as rows with their sizes. One food is shown as a result to tap; the
+  /// footer's Add it still logs it at its usual size.
+  bool _isSentence(TypeItState state) =>
+      state.items.length > 1 || (state.items.isNotEmpty && state.hasUnresolved);
+
+  /// Live results under the box: what she has eaten before, then the pack.
+  ///
+  /// A sentence naming several foods is already rows above, so it gets no
+  /// results of its own. Foods she typed are shown whatever they hold, with a
+  /// note where an allergen is known, because logging never blocks on one.
+  List<Widget> _results(AppL10n l10n, TypeItState state) {
+    final query = _controller.text.trim();
+    if (state.items.length > 1) return const <Widget>[];
+    final listed = _isSentence(state) ? state.items : const <ParsedItem>[];
+
+    final library = _library(l10n);
+    final needle = query.toLowerCase();
+    final guard = AllergyGuard(widget.constraints);
+    final shown = <String>{for (final item in listed) item.food.foodId};
+
+    final had = <ParsedItem>[
+      for (final entry in state.history)
+        if (needle.isEmpty ||
+            entry.food.names.any((n) => n.toLowerCase().contains(needle)))
+          if (shown.add('had:${entry.food.foodId}:${entry.size.id}')) entry,
+    ].take(5).toList();
+
+    final foods = <Food>[
+      for (final food
+          in query.isEmpty
+              ? guard.screenSuggestions(library.mostPopular(24)).take(8)
+              : library.resolve(query))
+        if (!listed.any((i) => i.food.foodId == food.foodId) &&
+            !had.any((h) => h.food.foodId == food.foodId))
+          food,
+    ].take(12).toList();
+
+    return [
+      if (had.isNotEmpty) ...[
+        Text(
+          l10n.youveHad,
+          style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        for (final entry in had)
+          FoodResultRow(
+            key: ValueKey('had-${entry.food.foodId}-${entry.size.id}'),
+            title: entry.food.names.first,
+            meta: _metaFor(l10n, entry),
+            addLabel: l10n.addName(entry.food.names.first),
+            note: containsNoteFor(l10n, guard, entry.food),
+            onTap: () =>
+                _pick(entry.food, size: entry.size, servings: entry.servings),
+            onAdd: () => _log([entry]),
+          ),
+      ],
+      if (foods.isNotEmpty) ...[
+        if (query.isEmpty)
+          Text(
+            l10n.popularDishes,
+            style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        for (final food in foods)
+          FoodResultRow(
+            key: ValueKey('result-${food.foodId}'),
+            title: food.names.first,
+            meta: _metaFor(
+              l10n,
+              ParsedItem(
+                food: food,
+                size: food.defaultSize,
+                servings: 1,
+                sourceText: food.names.first,
+              ),
+            ),
+            addLabel: l10n.addName(food.names.first),
+            note: containsNoteFor(l10n, guard, food),
+            onTap: () => _pick(food),
+          ),
+      ],
+    ];
   }
 
   /// The row's macros, computed from the size and servings she has selected.

@@ -773,7 +773,7 @@ class _MealCheckViewState extends State<MealCheckView> {
     final query = _query.text.trim();
     final found = query.isEmpty
         ? const <Food>[]
-        : guard.screen(library.resolve(query)).take(5).toList();
+        : guard.screenSuggestions(library.resolve(query)).take(5).toList();
     return [
       Text(l10n.addSomething, style: AppText.titleS),
       TextField(

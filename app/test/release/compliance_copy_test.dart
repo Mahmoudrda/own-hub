@@ -248,7 +248,7 @@ void main() {
         expect(find.byIcon(Icons.mic), findsNothing);
         expect(find.text(l10n.weNeedTheMicrophoneToHearWhat), findsNothing);
         expect(find.text(l10n.sayOrTypeWhatYouAte), findsNothing);
-        expect(find.text(l10n.typeWhatYouAte), findsOneWidget);
+        expect(find.text(l10n.searchOrTypeWhatYouAte), findsOneWidget);
 
         await tester.pumpWidget(
           _host(

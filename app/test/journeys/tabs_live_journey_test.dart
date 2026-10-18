@@ -6,7 +6,7 @@
 // active and hands it no action, so Home becomes a dead control on that screen
 // — drawn, lit, and going nowhere.
 //
-// Five screens in Train and Today did that: T02, T04, T05, R05 and R11 each
+// Five screens in Train and Today did that: T02, T04, T05, R05 and the old library each
 // claimed the tab root they had been opened from. Each one now names itself,
 // which is what `AppNavBar.activeScreenId` has always documented ("the screen
 // currently shown") and what leaves all three tabs live.
@@ -83,17 +83,16 @@ void main() {
     AppRouter.featureFlags = saved;
   });
 
-  testWidgets('from R11, the Home tab reaches Home', (tester) async {
+  testWidgets('from R01, the Home tab reaches Home', (tester) async {
     tester.view.physicalSize = const Size(1170, 2532);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.reset);
 
-    await _open(tester, 'R11');
-    expect(_route(tester), appDestinations['R11']!.name);
+    await _open(tester, 'R01');
+    expect(_route(tester), appDestinations['R01']!.name);
 
-    // The bar names the screen she is on, so no tab is the one she is on.
     final bar = tester.widget<AppNavBar>(find.byType(AppNavBar).first);
-    expect(bar.activeScreenId, 'R11');
+    expect(bar.activeScreenId, 'R01');
 
     await tester.tap(find.text('Home'));
     await tester.pumpAndSettle();
@@ -121,7 +120,7 @@ void main() {
   test('no screen in Train or Today claims a tab it is not', () {
     // A sweep over the two flows this worker owns, so the next screen to grow
     // a bar cannot repeat it. Every screen file here opens its library comment
-    // with its own id ("/// R11 — Workout library."), so a file naming a tab
+    // with its own id ("/// R05 — Swap a move."), so a file naming a tab
     // root it does not own is the defect, spelled out.
     const tabRoots = {'T01', 'R01', 'M01', 'E01'};
     final offenders = <String>[];

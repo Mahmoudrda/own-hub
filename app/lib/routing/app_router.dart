@@ -152,7 +152,6 @@ import '../features/today/presentation/tier_slip_view.dart';
 import '../domain/logging/log_command_bus.dart';
 import '../features/today/presentation/streak_sheet.dart';
 import '../features/today/presentation/today_view.dart';
-import '../features/train/domain/library_recommendation.dart';
 import '../features/train/domain/own_best_challenge.dart';
 import '../features/train/domain/rest_policy.dart';
 import '../features/train/domain/session_bests_bridge.dart';
@@ -180,15 +179,13 @@ import '../features/train/presentation/session_notice.dart';
 import '../features/account/presentation/allergen_labels.dart'
     show allergiesSavedLabel;
 import '../features/train/domain/session_match.dart';
-import '../features/cycle/presentation/symptom_labels.dart'
-    show checkInSummary;
+import '../features/cycle/presentation/symptom_labels.dart' show checkInSummary;
 import '../features/train/domain/session_summary.dart' show SessionSummary;
 import '../features/train/presentation/swap_move_view.dart';
 import '../features/train/presentation/train_view.dart';
 import '../features/train/presentation/workout_day_view.dart';
 import '../features/train/presentation/exercise_demo_view.dart';
-import '../features/train/presentation/exercise_library_view.dart';
-import '../features/train/presentation/workout_library_view.dart';
+import '../features/train/presentation/train_explore.dart' show ExploreFocus;
 import '../features/account/domain/account_deletion_service.dart';
 import '../features/account/data/callable_health_consent_store.dart';
 import '../features/account/domain/dietary_profile.dart';
@@ -232,8 +229,7 @@ import '../features/events/domain/hub_event.dart';
 import '../features/events/presentation/events_view.dart';
 import '../features/onboarding/domain/starting_program.dart'
     show StartingProgram, StartingProgrammes, selectStartingProgram;
-import '../domain/training/prescribed_set.dart'
-    show LoggedSet, PrescribedSet;
+import '../domain/training/prescribed_set.dart' show LoggedSet, PrescribedSet;
 import '../features/train/domain/load_advice.dart';
 import '../features/train/domain/weight_label.dart' show weightLabel;
 import '../features/train/domain/programme_week.dart';
@@ -2239,19 +2235,19 @@ class AppRouter {
               }
               OnboardingState.instance.leaveSetup(context);
             },
-            // Goes to the workout library, not a picker — no picker exists among
+            // Goes to Explore on Train, not a picker — no picker exists among
             // the 161 screens. Recorded as F4 in PHASE1-FINDINGS.md.
             onPickDifferentProgram: () {
               if (OnboardingState.instance.enteredFromSignup) {
                 OnboardingState.instance.leaveSetupToHome(
                   context,
                   home: 'T01',
-                  then: 'R11',
+                  then: 'R01',
                 );
                 return;
               }
               OnboardingState.instance.leaveSetup(context);
-              goTo(context, 'R11');
+              goToTab(context, 'R01', arguments: const ExploreFocus());
             },
           ),
 
@@ -2285,6 +2281,8 @@ class AppRouter {
         AppChanges.bump();
       },
       trainingStreak: trainingStreakNow,
+      weekDoneWeekdays: weekDoneWeekdays(),
+      sessionMinutes: kSampleWorkoutMinutes,
       onOpenStreak: () => unawaited(openTrainingStreak(context)),
       challengeLine: challengeLineFor(
         context,
@@ -2301,7 +2299,10 @@ class AppRouter {
       // elsewhere, and the plate she tapped was never written.
       onOpenPlate: () => goTo(context, 'E04'),
       onLogPlate: (plate) {
-        final handle = EatAppState.instance.logPlate(context, plate.foodId);
+        final handle = (EatAppState.instance..ensureFoodPack()).logPlate(
+          context,
+          plate.foodId,
+        );
         if (handle == null) return;
         _goCarryingHandle(context, 'E04', handle);
       },
@@ -2488,39 +2489,116 @@ class AppRouter {
     },
 
     // Train.
-    'R01': (context) => TrainView(
-      // Her week, from the same copy Home draws, so the two cannot disagree.
-      sessionsThisWeek: todayRepository.day.week.sessionsLogged,
-      sessionsPrescribed: todayRepository.day.week.sessionsTarget,
-      onSearch: () => goTo(context, 'R11'),
-      // The design sends "Continue" to G06, the coached-client screen. In
-      // phase 1 no woman has a coach, so that would be a dead end — she goes
-      // to today's session instead. Revisit when coaching ships (G4 OQ-12).
-      onContinue: () => goTo(context, 'R03'),
-      onSeeProgram: () => goTo(context, 'R02'),
-      onOpenToday: () => goTo(context, 'T01'),
-      onGentlerOption: () => goTo(context, 'R05'),
-      showGentlerOption: canSwap(
-        WorkoutSessionState.instance.currentMove?.exerciseId,
-      ),
-      // The first "Short ones that still count" tile, as the design has it.
-      // A follow-along starts from a session: R03 opens R06 itself for a
-      // hold move, with a live session to log into.
-      onFollowAlong: () => goTo(context, 'R03'),
-      onShortSession: () => goTo(context, 'R03'),
-      // Each tile opens the library session it names; one with no match is
-      // not drawn. They all opened her normal planned day.
-      shortSessions: _shortSessions(context),
-      // Offered only once the phone holds a library to open. Asking here, on
-      // the Train tab, is what brings it in for a woman verified since the
-      // app launched: the check is rate-limited and returns at once when it
-      // is not due.
-      onOpenExerciseLibrary: _exerciseLibraryReady
-          ? () => goTo(context, 'R14')
-          : null,
-      onOpenMuscles: () => goTo(context, 'P06'),
-      onSelectTab: (screenId) => goToTab(context, screenId),
-    ),
+    'R01': (context) {
+      // Offered only once the phone holds a library. Asking here, on the
+      // Train tab, is what brings it in for a woman verified since the app
+      // launched: the check is rate-limited and returns at once when it is
+      // not due.
+      unawaited(ExerciseLibraryState.instance.refresh());
+      final l10n = AppL10n.of(context);
+      final language = Localizations.localeOf(context).languageCode;
+      final intake = intakeRepository.read();
+      final stage = intake.lifeStage;
+      final screened = ExerciseLibraryState.instance.screenedFor(stage);
+      final her = herProgramme;
+      final sessions = her == null
+          ? const <AuthoredSession>[]
+          : programmeSessionsFor(her.content, stage);
+      final done = sessionsDoneThisWeek(trainRepository.sessions);
+      final next = nextSlot(intake.days, done);
+      void openSlot(int? slot) {
+        WorkoutLibraryState.instance
+          ..chosenRowId = null
+          ..openedSlot = slot;
+        goTo(context, 'R03');
+      }
+
+      return TrainView(
+        // Her week, from the same copy Home draws, so the two cannot disagree.
+        sessionsThisWeek: todayRepository.day.week.sessionsLogged,
+        sessionsPrescribed: todayRepository.day.week.sessionsTarget,
+        week: [
+          for (final slot in weekSlots(
+            sessions,
+            days: intake.days,
+            minutes: intake.minutes,
+            done: done,
+          ))
+            ProgramDay(
+              title: slot.session.title(language),
+              detail: l10n.minutesMinutesMovesMoves(
+                countLabel(slot.session.minutes),
+                countLabel(slot.session.moves.length),
+              ),
+              done: slot.done,
+              today: slot.index == next,
+              onTap: () => openSlot(slot.index),
+            ),
+        ],
+        // The design sends "Continue" to G06, the coached-client screen. In
+        // phase 1 no woman has a coach, so that would be a dead end — she goes
+        // to today's session instead. Revisit when coaching ships (G4 OQ-12).
+        onContinue: () => goTo(context, 'R03'),
+        onSeeProgram: () => goTo(context, 'R02'),
+        onOpenToday: () => goTo(context, 'T01'),
+        onGentlerOption: () => goTo(context, 'R05'),
+        showGentlerOption: canSwap(
+          WorkoutSessionState.instance.currentMove?.exerciseId,
+        ),
+        // The first "Short ones that still count" tile, as the design has it.
+        // A follow-along starts from a session: R03 opens R06 itself for a
+        // hold move, with a live session to log into.
+        onFollowAlong: () => goTo(context, 'R03'),
+        onShortSession: () => goTo(context, 'R03'),
+        // Each tile opens the library session it names; one with no match is
+        // not drawn. They all opened her normal planned day.
+        shortSessions: _shortSessions(context),
+        onOpenMuscles: () => goTo(context, 'P06'),
+        onSelectTab: (screenId) => goToTab(context, screenId),
+        // Explore. A move is listed only with its clip; a workout only when
+        // every move in it has one. The row she taps is the session she gets:
+        // `workoutDayFor` resolves it, and R03 opens only when there is one.
+        focus: switch (ModalRoute.of(context)?.settings.arguments) {
+          final ExploreFocus focus => focus,
+          _ => null,
+        },
+        exercises: [
+          for (final e in screened.shown)
+            if (ExerciseLibraryState.instance.hasClip(e.id)) e,
+        ],
+        hiddenFor: screened.someHidden ? stage : null,
+        media: ExerciseLibraryState.instance.media,
+        workouts: [
+          ...sampleWorkoutLibrary(l10n),
+          for (final entry in WorkoutLibraryState.instance.sessionsFor(stage))
+            libraryRowFrom(l10n, language, entry.programme, entry.session),
+        ],
+        workoutIsFilmed: (workout) =>
+            ExerciseLibraryState.instance.allMovesFilmed(workout.exerciseIds),
+        onOpenWorkout: (workout) {
+          final library = WorkoutLibraryState.instance;
+          if (workout.id.startsWith('library:')) {
+            library.chosenRowId = workout.id;
+            if (library.chosenFor(stage) == null) {
+              library.chosenRowId = null;
+              return;
+            }
+            library.openedSlot = null;
+            goTo(context, 'R03');
+            return;
+          }
+          if (workoutDayFor(l10n, workout.id) == null) return;
+          library.chosenRowId = null;
+          goTo(context, 'R03');
+        },
+        onOpenExercise: screenIsOn('R15')
+            ? (exercise) {
+                ExerciseLibraryState.instance.openExerciseId = exercise.id;
+                goTo(context, 'R15');
+              }
+            : null,
+      );
+    },
     'R02': (context) {
       final l10n = AppL10n.of(context);
       final language = Localizations.localeOf(context).languageCode;
@@ -2540,7 +2618,8 @@ class AppRouter {
 
       return ProgramView(
         onBack: () => Navigator.of(context).maybePop(),
-        onChangeProgram: () => goTo(context, 'R11'),
+        onChangeProgram: () =>
+            goToTab(context, 'R01', arguments: const ExploreFocus()),
         onStart: () => open(null),
         title: her == null
             ? null
@@ -2572,7 +2651,7 @@ class AppRouter {
     },
     'R03': (context) => WorkoutDayView(
       repository: trainRepository,
-      // The session she chose on R11, when it came from the owner's library
+      // The session she chose in Explore, when it came from the owner's library
       // and still suits her life stage. Null is the bundled session, which is
       // what day one always is.
       day: chosenWorkoutDay(context),
@@ -2664,7 +2743,6 @@ class AppRouter {
         return ExerciseDemoView(
           media: ExerciseLibraryState.instance.media,
           onClose: () => Navigator.of(context).maybePop(),
-          onOpenLibrary: screenIsOn('R14') ? () => goTo(context, 'R14') : null,
         );
       }
       return ExerciseVideoView(
@@ -2704,9 +2782,8 @@ class AppRouter {
         final notice = SessionNotice(
           handle: changeBus.submit(
             UndoableLog(
-              describe: AppL10n.of(
-                context,
-              ).swappedToNameForToday(alternative.name),
+              describe: AppL10n.of(context)
+                  .swappedToNameForToday(alternative.name),
               commit: () async {},
             ),
           ),
@@ -2864,46 +2941,48 @@ class AppRouter {
       },
     ),
     // Opened from R13 with a set she already logged, R08 corrects it instead.
-    'R08': (context) => _setCorrectionFrom(context) ?? ChangeSetView(
-      repository: trainRepository,
-      sessionId: WorkoutSessionState.instance.sessionId,
-      // Which move of how many. The bar read a fixed "Move 2 of 5".
-      moveNumber: WorkoutSessionState.instance.moveIndex + 1,
-      moveCount: WorkoutSessionState.instance.moveCount,
-      // The first set of the one authored session when there is no live one.
-      // This was a hand-written goblet squat at 12 kg, so R08 opened cold
-      // offered 10/12/14 kg inside a session whose own subtitle promises no
-      // equipment at all.
-      prescribed: _setWithAdvice(
-        context,
-        WorkoutSessionState.instance.currentSet ??
-            sampleWorkoutDay(AppL10n.of(context)).moves.first.sets.first,
-      ),
-      moveName: WorkoutSessionState.instance.currentMove?.name,
-      // Her planned weight and a step either side. Nothing was passed, so a
-      // 17.5 kg set opened on the widget's own 10/12/14 with 10 chosen.
-      //
-      // A loaded move the plan gave no weight offers the weights around what
-      // she lifted last time, or a starting ladder on a first session, so the
-      // weight can be recorded at all.
-      weightOptionsKg: _weightOptionsFor(context),
-      askWeight:
-          WorkoutSessionState.instance.currentMove?.needsEquipment ?? false,
-      progressionLine: _loadAdviceLine(context),
-      bus: WorkoutSessionState.instance.bus,
-      onAttach: WorkoutSessionState.instance.attachScreen,
-      onDetach: WorkoutSessionState.instance.detachScreen,
-      sets: _setsProgress,
-      onClose: () => Navigator.of(context).maybePop(),
-      // Carries the handle, exactly as R07 does. It used to assign the
-      // change to a field nothing read, which silently discarded her
-      // override and left R09 announcing the numbers she had corrected.
-      onSaved: (handle) {
-        WorkoutSessionState.instance.setLogged();
-        _trackSetLogged('set');
-        _goCarryingHandle(context, 'R09', handle);
-      },
-    ),
+    'R08': (context) =>
+        _setCorrectionFrom(context) ??
+        ChangeSetView(
+          repository: trainRepository,
+          sessionId: WorkoutSessionState.instance.sessionId,
+          // Which move of how many. The bar read a fixed "Move 2 of 5".
+          moveNumber: WorkoutSessionState.instance.moveIndex + 1,
+          moveCount: WorkoutSessionState.instance.moveCount,
+          // The first set of the one authored session when there is no live one.
+          // This was a hand-written goblet squat at 12 kg, so R08 opened cold
+          // offered 10/12/14 kg inside a session whose own subtitle promises no
+          // equipment at all.
+          prescribed: _setWithAdvice(
+            context,
+            WorkoutSessionState.instance.currentSet ??
+                sampleWorkoutDay(AppL10n.of(context)).moves.first.sets.first,
+          ),
+          moveName: WorkoutSessionState.instance.currentMove?.name,
+          // Her planned weight and a step either side. Nothing was passed, so a
+          // 17.5 kg set opened on the widget's own 10/12/14 with 10 chosen.
+          //
+          // A loaded move the plan gave no weight offers the weights around what
+          // she lifted last time, or a starting ladder on a first session, so the
+          // weight can be recorded at all.
+          weightOptionsKg: _weightOptionsFor(context),
+          askWeight:
+              WorkoutSessionState.instance.currentMove?.needsEquipment ?? false,
+          progressionLine: _loadAdviceLine(context),
+          bus: WorkoutSessionState.instance.bus,
+          onAttach: WorkoutSessionState.instance.attachScreen,
+          onDetach: WorkoutSessionState.instance.detachScreen,
+          sets: _setsProgress,
+          onClose: () => Navigator.of(context).maybePop(),
+          // Carries the handle, exactly as R07 does. It used to assign the
+          // change to a field nothing read, which silently discarded her
+          // override and left R09 announcing the numbers she had corrected.
+          onSaved: (handle) {
+            WorkoutSessionState.instance.setLogged();
+            _trackSetLogged('set');
+            _goCarryingHandle(context, 'R09', handle);
+          },
+        ),
     'R09': (context) => RestingView(
       handle: handleFrom(context),
       // Which move of how many. The bar read a fixed "Move 2 of 5".
@@ -2980,83 +3059,17 @@ class AppRouter {
         WorkoutSessionState.instance.lastFinished,
         WorkoutSessionState.instance.lastSummary,
       )) {
-        (final TrainSession session, final SessionSummary summary) => () =>
-            _removeSession(
-              context,
-              sessionId: session.id,
-              source: session.source,
-              sessionPoints: summary.credit.sessionPoints,
-              bestPoints: summary.bestPoints,
-            ),
+        (final TrainSession session, final SessionSummary summary) =>
+          () => _removeSession(
+            context,
+            sessionId: session.id,
+            source: session.source,
+            sessionPoints: summary.credit.sessionPoints,
+            bestPoints: summary.bestPoints,
+          ),
         _ => null,
       },
       onShare: () => goTo(context, 'M03'),
-    ),
-    // The row she taps is the session she gets.
-    //
-    // This was `onOpenWorkout: (_) => goTo(context, 'R03')` under a list of
-    // three rows with three different titles, so she chose "Upper body at
-    // home" and was given "Legs and glutes". The argument is no longer thrown
-    // away: `workoutDayFor` resolves the row she tapped to the session behind
-    // it, and R03 is opened only when there is one.
-    //
-    // There is exactly one authored workout, and `sampleWorkoutLibrary` is
-    // derived from it, so today the lookup always finds it — which is the
-    // point. The day a second workout is written, this lookup is where R03
-    // starts taking an id, and `train_honesty_test.dart` fails until it does
-    // rather than quietly opening the wrong session again.
-    'R11': (context) => WorkoutLibraryView(
-      // The bundled session, then every library session that suits her life
-      // stage. Pregnant or after a birth she is offered only sessions the
-      // owner marked for that.
-      workouts: [
-        ...sampleWorkoutLibrary(AppL10n.of(context)),
-        for (final entry in WorkoutLibraryState.instance.sessionsFor(
-          intakeRepository.read().lifeStage,
-        ))
-          libraryRowFrom(
-            AppL10n.of(context),
-            Localizations.localeOf(context).languageCode,
-            entry.programme,
-            entry.session,
-          ),
-      ],
-      // One session set apart above the rest (§15): the one she chose, else
-      // the first that fits her answers.
-      recommendedId: recommendedWorkout(
-        [
-          ...sampleWorkoutLibrary(AppL10n.of(context)),
-          for (final entry in WorkoutLibraryState.instance.sessionsFor(
-            intakeRepository.read().lifeStage,
-          ))
-            libraryRowFrom(
-              AppL10n.of(context),
-              Localizations.localeOf(context).languageCode,
-              entry.programme,
-              entry.session,
-            ),
-        ],
-        intakeRepository.read(),
-        chosenRowId: WorkoutLibraryState.instance.chosenRowId,
-      )?.id,
-      onBack: () => Navigator.of(context).maybePop(),
-      onOpenWorkout: (workout) {
-        final library = WorkoutLibraryState.instance;
-        if (workout.id.startsWith('library:')) {
-          library.chosenRowId = workout.id;
-          if (library.chosenFor(intakeRepository.read().lifeStage) == null) {
-            library.chosenRowId = null;
-            return;
-          }
-          library.openedSlot = null;
-          goTo(context, 'R03');
-          return;
-        }
-        if (workoutDayFor(AppL10n.of(context), workout.id) == null) return;
-        library.chosenRowId = null;
-        goTo(context, 'R03');
-      },
-      onSelectTab: (screenId) => goToTab(context, screenId),
     ),
     // Eat. E09 is a BRANCH of E01, not a destination: `firstRunStates` keeps it
     // out of `appDestinations` and `routing_test.dart` pins that, so "Eat,
@@ -3075,17 +3088,16 @@ class AppRouter {
     'E01': (context) => EatView(
       constraints: eatConstraints,
       repository: mealRepository,
-      session: EatAppState.instance.session,
+      session: (EatAppState.instance..ensureFoodPack()).session,
       onOpenRecipes: () => goTo(context, 'E05'),
       onOpenWeekPlan: () => goTo(context, 'E07'),
       onType: () => goTo(context, 'E02'),
       onSpeak: () => goTo(context, 'E03'),
       // A photo of her plate, offered only while E12 is on and she is
       // verified: a scan is for verified members only. The consent sheet is
-      // shown first, once. Not offered once she has told us an allergy:
-      // nobody can list what is in a photographed plate, so the guard would
-      // refuse the log after she had spent a paid scan on it.
-      onSnap: screenIsOn('E12') && isVerified && !eatConstraints.hasAllergies
+      // shown first, once. An allergy does not hide it: logging records what
+      // she ate and is never refused.
+      onSnap: screenIsOn('E12') && isVerified
           ? () async {
               if (await _askMealPhotoConsent(context) && context.mounted) {
                 goTo(context, 'E12');
@@ -3100,15 +3112,15 @@ class AppRouter {
     'E02': (context) => TypeItView(
       constraints: eatConstraints,
       repository: mealRepository,
-      session: EatAppState.instance.session,
+      session: (EatAppState.instance..ensureFoodPack()).session,
+      history: EatAppState.instance.historyEntries(AppL10n.of(context)),
       onClose: () => Navigator.of(context).maybePop(),
       onSpeak: () => goTo(context, 'E03'),
       // A photo of her plate, offered only while E12 is on and she is
       // verified: a scan is for verified members only. The consent sheet is
-      // shown first, once. Not offered once she has told us an allergy:
-      // nobody can list what is in a photographed plate, so the guard would
-      // refuse the log after she had spent a paid scan on it.
-      onSnap: screenIsOn('E12') && isVerified && !eatConstraints.hasAllergies
+      // shown first, once. An allergy does not hide it: logging records what
+      // she ate and is never refused.
+      onSnap: screenIsOn('E12') && isVerified
           ? () async {
               if (await _askMealPhotoConsent(context) && context.mounted) {
                 goTo(context, 'E12');
@@ -3134,7 +3146,7 @@ class AppRouter {
     'E04': (context) => EatView(
       constraints: eatConstraints,
       repository: mealRepository,
-      session: EatAppState.instance.session,
+      session: (EatAppState.instance..ensureFoodPack()).session,
       justLogged: handleFrom(context),
       foodPointsPreview: _foodPointsPreview(handleFrom(context)),
       onOpenRecipes: () => goTo(context, 'E05'),
@@ -3143,10 +3155,9 @@ class AppRouter {
       onSpeak: () => goTo(context, 'E03'),
       // A photo of her plate, offered only while E12 is on and she is
       // verified: a scan is for verified members only. The consent sheet is
-      // shown first, once. Not offered once she has told us an allergy:
-      // nobody can list what is in a photographed plate, so the guard would
-      // refuse the log after she had spent a paid scan on it.
-      onSnap: screenIsOn('E12') && isVerified && !eatConstraints.hasAllergies
+      // shown first, once. An allergy does not hide it: logging records what
+      // she ate and is never refused.
+      onSnap: screenIsOn('E12') && isVerified
           ? () async {
               if (await _askMealPhotoConsent(context) && context.mounted) {
                 goTo(context, 'E12');
@@ -3325,9 +3336,7 @@ class AppRouter {
       sessionsThisWeek:
           todayRepository.day.week.sessionsLogged +
           (pendingRecall != null &&
-                  !todayRepository.creditedSessions.contains(
-                    pendingRecall!.id,
-                  )
+                  !todayRepository.creditedSessions.contains(pendingRecall!.id)
               ? 1
               : 0),
       sessionsPrescribed: todayRepository.day.week.sessionsTarget,
@@ -3404,24 +3413,6 @@ class AppRouter {
         goTo(context, 'R10');
       },
     ),
-    // The exercise library (D42): every move the owner filmed, by the part of
-    // the body it works, screened for her life stage before anything is drawn.
-    'R14': (context) {
-      unawaited(ExerciseLibraryState.instance.refresh());
-      final stage = intakeRepository.read().lifeStage;
-      final screened = ExerciseLibraryState.instance.screenedFor(stage);
-      return ExerciseLibraryView(
-        exercises: screened.shown,
-        hiddenFor: screened.someHidden ? stage : null,
-        media: ExerciseLibraryState.instance.media,
-        onBack: () => Navigator.of(context).maybePop(),
-        onOpenExercise: (exercise) {
-          ExerciseLibraryState.instance.openExerciseId = exercise.id;
-          goTo(context, 'R15');
-        },
-        onSelectTab: (screenId) => goToTab(context, screenId),
-      );
-    },
     // One move's clip. Re-screened here, so a move hidden for her cannot be
     // reached by an id left over from before her answers changed.
     'R15': (context) => ExerciseDemoView(
@@ -3431,7 +3422,8 @@ class AppRouter {
       media: ExerciseLibraryState.instance.media,
       players: ExerciseLibraryState.instance.players,
       onClose: () => Navigator.of(context).maybePop(),
-      onOpenLibrary: () => goTo(context, 'R14'),
+      onOpenLibrary: () =>
+          goToTab(context, 'R01', arguments: const ExploreFocus()),
     ),
 
     // ---------------------------------------------------- Progress (G6)
@@ -3500,8 +3492,8 @@ class AppRouter {
                 goTo(context, 'R15');
               }
             : null,
-        onOpenLibrary: screenIsOn('R14') && !library.isEmpty
-            ? () => goTo(context, 'R14')
+        onOpenLibrary: !library.isEmpty
+            ? () => goToTab(context, 'R01', arguments: const ExploreFocus())
             : null,
         onBack: () => Navigator.of(context).maybePop(),
         onSelectTab: (screenId) => goToTab(context, screenId),
@@ -3649,10 +3641,9 @@ class AppRouter {
       // The pledge says she can read the rules again any time; this is where.
       // Only with the community, which is where the rules apply.
       onReadRules: screenIsOn('C16')
-          ? () => Navigator.of(context).pushNamed(
-              appRoutes['C16']!.name,
-              arguments: kReadTheRulesAgain,
-            )
+          ? () => Navigator.of(
+              context,
+            ).pushNamed(appRoutes['C16']!.name, arguments: kReadTheRulesAgain)
           : null,
       // A name for a woman she blocked, from the store that has one. Empty
       // when this build has never seen her name, and the row then carries the
@@ -4160,9 +4151,9 @@ class AppRouter {
       onBack: () => Navigator.of(context).maybePop(),
       onSettings: () => goTo(context, 'Y12'),
       onLogPeriod: () => goTo(context, 'Y09'),
-      onOpenPeriod: (period) => Navigator.of(
-        context,
-      ).pushNamed(appRoutes['Y09']!.name, arguments: period),
+      onOpenPeriod: (period) =>
+          Navigator.of(context)
+              .pushNamed(appRoutes['Y09']!.name, arguments: period),
       onAboutPhases: () => goTo(context, 'Y13'),
       onSelectTab: (screenId) => goToTab(context, screenId),
       // One literal `goTo` per arm, deliberately.
@@ -4265,9 +4256,8 @@ class AppRouter {
         CycleAppState.instance.purged();
         final messenger = ScaffoldMessenger.maybeOf(context);
         final said = AppL10n.of(context).yourCycleDataIsDeletedYouCan;
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false);
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false);
         showHonestNoticeOn(messenger, said);
       },
       onSelectTab: (screenId) => goToTab(context, screenId),
@@ -6552,6 +6542,21 @@ class AppRouter {
     return status.enabled ? status : null;
   }
 
+  /// The weekdays this week, Saturday first as on Home's strip, on which she
+  /// had a credited session.
+  static Set<int> weekDoneWeekdays([DateTime? now]) {
+    final today = now ?? DateTime.now();
+    final sinceSaturday = (today.weekday - DateTime.saturday) % 7;
+    final trained = TrainingStreakState.instance.sessionsByDay;
+    return {
+      for (var back = 0; back <= sinceSaturday; back++)
+        if (trained.containsKey(
+          dayKey(DateTime(today.year, today.month, today.day - back)),
+        ))
+          DateTime(today.year, today.month, today.day - back).weekday,
+    };
+  }
+
   /// The streak sheet: the rule, the pauses, resume, and the off switch.
   static Future<void> openTrainingStreak(BuildContext context) {
     final state = TrainingStreakState.instance;
@@ -6607,15 +6612,6 @@ class AppRouter {
   static LibraryExercise? clipFor(String exerciseId) => ExerciseLibraryState
       .instance
       .clipFor(exerciseId, intakeRepository.read().lifeStage);
-
-  /// Whether R01 and R11 offer the exercise library: only once the phone
-  /// holds one. Asks for it on the way, so a woman verified since the app
-  /// launched does not wait for the next launch to get it; the check is
-  /// rate-limited and returns at once when it is not due.
-  static bool get _exerciseLibraryReady {
-    unawaited(ExerciseLibraryState.instance.refresh());
-    return !ExerciseLibraryState.instance.library.isEmpty;
-  }
 
   /// This week's challenge as Home and R03 state it, or null.
   static String? challengeLineFor(BuildContext context, WorkoutDay plan) {
@@ -6680,12 +6676,23 @@ class AppRouter {
   /// My cycle's undo window: check-ins and period removals.
   static LogCommandBus cycleBus = LogCommandBus();
 
-  /// The library sessions she is offered, screened for her life stage.
-  static List<OfferedSession> get _offeredSessions => WorkoutLibraryState
-      .instance
-      .sessionsFor(intakeRepository.read().lifeStage);
+  /// The library sessions she is offered, screened for her life stage, and,
+  /// once the exercise library is on the phone, only those whose every move
+  /// has a clip (D51).
+  static List<OfferedSession> get _offeredSessions {
+    final sessions = WorkoutLibraryState.instance.sessionsFor(
+      intakeRepository.read().lifeStage,
+    );
+    final clips = ExerciseLibraryState.instance;
+    if (clips.library.isEmpty) return sessions;
+    return [
+      for (final entry in sessions)
+        if (clips.allMovesFilmed(entry.session.moves.map((m) => m.exerciseId)))
+          entry,
+    ];
+  }
 
-  /// Makes [entry] the session R03 opens, exactly as choosing it on R11 does.
+  /// Makes [entry] the session R03 opens, exactly as choosing it in Explore does.
   static void _chooseLibrarySession(OfferedSession entry) {
     final library = WorkoutLibraryState.instance;
     library.chosenRowId = libraryRowId(
@@ -6832,9 +6839,9 @@ class AppRouter {
           lastRecallOutcome = null;
         }
       },
-      then: () => Navigator.of(
-        context,
-      ).pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false),
+      then: () =>
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false),
     );
   }
 
@@ -8430,7 +8437,7 @@ class AppRouter {
     );
   }
 
-  /// The library session she chose on R11, else today's session of her
+  /// The library session she chose in Explore, else today's session of her
   /// programme, as today's [WorkoutDay], or null for the bundled one. Null too
   /// when a library pick no longer suits her life stage.
   static WorkoutDay? chosenWorkoutDay(BuildContext context) {
@@ -9401,7 +9408,14 @@ class AppRouter {
   ///
   /// The bar never offers the tab she is on, and no screen of a workout in
   /// progress has a bar, so nothing she is in the middle of is closed.
-  static void goToTab(BuildContext context, String screenId) {
+  ///
+  /// [arguments] reach the tab's route settings: Train reads an [ExploreFocus]
+  /// from them to open on Explore with a filter on.
+  static void goToTab(
+    BuildContext context,
+    String screenId, {
+    Object? arguments,
+  }) {
     if (DemoScope.maybeOf(context) case final demo?) {
       demo.requestJoin(context);
       return;
@@ -9411,6 +9425,7 @@ class AppRouter {
     Navigator.of(context).pushNamedAndRemoveUntil(
       route.name,
       (below) => below.isFirst && below.settings.name != route.name,
+      arguments: arguments,
     );
   }
 

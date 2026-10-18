@@ -613,6 +613,11 @@ if (fs.existsSync(dictPath)) {
     "Period removed · from {start}": {"description": "Y09 undo bar after deleting a period with no end date.", "placeholders": {"start": {"type": "String", "example": "2026-10-01"}}},
     "If the pain is severe or sudden, see a doctor today. In an emergency call {number}.": {"description": "Y11, the severe-pain card. number is Egypt's ambulance line, 123, in Western digits.", "placeholders": {"number": {"type": "String", "example": "123"}}},
     "{list}, {item}": {"description": "Adds one more name to a list of names, e.g. allergens. The comma is the language's own.", "placeholders": {"list": {"type": "String", "example": "Tree nuts"}, "item": {"type": "String", "example": "Eggs"}}},
+    "Good morning, {name}": {"description": "T01 greeting before noon, with her first name.", "placeholders": {"name": {"type": "String", "example": "Mai"}}},
+    "Good afternoon, {name}": {"description": "T01 greeting from noon to five, with her first name.", "placeholders": {"name": {"type": "String", "example": "Mai"}}},
+    "Good evening, {name}": {"description": "T01 greeting from five in the afternoon, with her first name.", "placeholders": {"name": {"type": "String", "example": "Mai"}}},
+    "Contains {allergens}": {"description": "A small note under a logged food that is known to contain something she told us she avoids. Logging is never blocked.", "placeholders": {"allergens": {"type": "String", "example": "nuts"}}},
+    "Add {name}": {"description": "Screen reader label of the plus button on a food row that logs it.", "placeholders": {"name": {"type": "String", "example": "Koshari"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

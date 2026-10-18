@@ -25,7 +25,11 @@ void main() {
     final trapped = <String>[];
     final blank = <String>[];
     for (final id in shippingScreens) {
-      if (!await open(t, appDestinations[id]!.name, locale: const Locale('en'))) {
+      if (!await open(
+        t,
+        appDestinations[id]!.name,
+        locale: const Locale('en'),
+      )) {
         continue;
       }
       final before = topScreen(t);
@@ -49,7 +53,11 @@ void main() {
     phone(t);
     final uses = <String>[];
     for (final id in shippingScreens) {
-      if (!await open(t, appDestinations[id]!.name, locale: const Locale('en'))) {
+      if (!await open(
+        t,
+        appDestinations[id]!.name,
+        locale: const Locale('en'),
+      )) {
         continue;
       }
       if (find.byType(AppEmptyState).evaluate().isNotEmpty) {
@@ -76,17 +84,17 @@ void main() {
     s.dispose();
   });
 
-  testWidgets('R1-15 the workout library', (t) async {
+  testWidgets('R1-15 the workouts under Explore', (t) async {
     phone(t);
     final s = t.ensureSemantics();
-    await open(t, appDestinations['R11']!.name, locale: const Locale('en'));
+    await open(t, appDestinations['R01']!.name, locale: const Locale('en'));
     final rows = tappables(t)
         .map((e) => e.label)
         .where((l) => RegExp(r'min').hasMatch(l))
         .toList();
-    print('R11 rows (${rows.length}): ${rows.join(" | ")}');
+    print('R01 rows (${rows.length}): ${rows.join(" | ")}');
     for (final r in rows) {
-      await open(t, appDestinations['R11']!.name, locale: const Locale('en'));
+      await open(t, appDestinations['R01']!.name, locale: const Locale('en'));
       // `tapControl`, not `tapLabel`: `rows` comes off `tappables`, which
       // flattens a label's newlines to spaces. The library row is one label
       // reading "Legs and glutes\n15 min · beginner · no equipment", so a regex

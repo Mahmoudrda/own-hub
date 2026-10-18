@@ -1,6 +1,6 @@
-// The exercise library with the owner's real catalogue, in Arabic at 1.6x on
-// a small phone: R14 scrolled end to end and every move's R15, with nothing
-// overflowing. The large-text sweep only ever sees R14 empty, because the
+// Explore on Train with the owner's real catalogue, in Arabic at 1.6x on a
+// small phone: R01 scrolled end to end and every move's R15, with nothing
+// overflowing. The large-text sweep only ever sees Explore empty, because the
 // library is empty under test.
 
 import 'dart:convert';
@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/train/domain/exercise_library.dart';
 import 'package:own_hub/features/train/presentation/exercise_demo_view.dart';
-import 'package:own_hub/features/train/presentation/exercise_library_view.dart';
+import 'package:own_hub/features/train/presentation/train_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -79,13 +79,13 @@ void main() {
 
   final library = _catalogue();
 
-  testWidgets('R14 in Arabic at 1.6x, top to bottom', (tester) async {
+  testWidgets('R01 Explore in Arabic at 1.6x, top to bottom', (tester) async {
     tester.view.physicalSize = const Size(1080, 1920);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       _host(
-        ExerciseLibraryView(
+        TrainView(
           exercises: library.exercises,
           media: FakeExerciseMedia(fetchable: false),
         ),

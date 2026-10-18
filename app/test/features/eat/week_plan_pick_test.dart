@@ -212,7 +212,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('No plates yet'), findsOneWidget, reason: 'day one');
+      expect(find.text('Day 1'), findsOneWidget, reason: 'day one');
       final row = find.byKey(const ValueKey('eat-day-one-week-plan'));
       await tester.ensureVisible(row);
       await tester.tap(row);

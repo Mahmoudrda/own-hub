@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -516,8 +517,11 @@ void main() {
     expect(source, contains('guide: stop != DemoStop.cycle'));
   });
 
-  test('no loops and no timers in the kitten', () {
-    final banned = RegExp(r'\.repeat\(|\bTimer\(|\bTimer\.periodic|\bTicker\(');
+  test('a loop is allowed only in the idle controller, gated by the check', () {
+    // D50: the kitten breathes, so one repeat is allowed, and only for the
+    // idle loop behind kittenStill. No timers, no free tickers.
+    final banned = RegExp(r'\bTimer\(|\bTimer\.periodic|\bTicker\(');
+    final repeats = <String>[];
     for (final f in Directory(
       'lib/ui/hand/mascot',
     ).listSync().whereType<File>()) {
@@ -526,8 +530,17 @@ void main() {
         final line = lines[i].trimLeft();
         if (line.startsWith('//')) continue;
         expect(banned.hasMatch(line), isFalse, reason: '${f.path}:${i + 1}');
+        if (line.contains('.repeat(')) repeats.add('${f.path}:${i + 1}');
       }
     }
+    expect(repeats, hasLength(1));
+    expect(repeats.single, startsWith('lib/ui/hand/mascot/kitten.dart'));
+    final source = File('lib/ui/hand/mascot/kitten.dart').readAsStringSync();
+    final sync = RegExp(r'void _syncIdle\(\) \{[\s\S]*?\n  \}\n')
+        .firstMatch(source)!
+        .group(0)!;
+    expect(sync, contains('!kittenStill(context)'));
+    expect(sync, contains('_idle.repeat()'));
   });
 
   test('one kitten per screen: a file places at most one', () {
@@ -622,15 +635,21 @@ void main() {
       src('train/presentation/finished_view.dart'),
       contains('cheer ? KittenProp.heart : null'),
     );
-    // The peek on first-view empty states only, and nowhere else.
-    const peeks = {
-      'train/presentation/exercise_library_view.dart': 'R14',
+    // The peek comes in from a screen edge and clips itself to its box, so it
+    // has no mid-page home. First-view empty states wave instead.
+    const peeks = <String, String>{};
+    const waves = {
       'eat/presentation/week_plan_view.dart': 'E07',
       'train/presentation/program_view.dart': 'R02',
     };
     for (final e in peeks.entries) {
       final text = src(e.key);
       expect(text, contains('KittenPose.peek'), reason: e.key);
+      expect(text, contains("moment: '${e.value}'"), reason: e.key);
+    }
+    for (final e in waves.entries) {
+      final text = src(e.key);
+      expect(text, contains('KittenPose.wave'), reason: e.key);
       expect(text, contains("moment: '${e.value}'"), reason: e.key);
     }
     for (final f in Directory('lib').listSync(recursive: true)) {
@@ -688,5 +707,188 @@ void main() {
       expect(_controllerOf(tester).isAnimating, isFalse);
       await tester.pumpWidget(const SizedBox());
     }
+  });
+
+  group('idle loop', () {
+    setUp(() => Kitten.idleInTests = true);
+    tearDown(() => Kitten.idleInTests = false);
+
+    AnimationController idleOf(WidgetTester tester) {
+      final paint = tester.widget<CustomPaint>(
+        find.descendant(
+          of: find.byType(Kitten),
+          matching: find.byType(CustomPaint),
+        ),
+      );
+      return (paint.painter! as KittenPainter).idle! as AnimationController;
+    }
+
+    testWidgets('runs when motion is allowed, and keeps running', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_host(const Kitten(pose: KittenPose.rest)));
+      expect(idleOf(tester).isAnimating, isTrue);
+      await tester.pump(const Duration(seconds: 30));
+      expect(idleOf(tester).isAnimating, isTrue);
+      // Unmount: nothing is left running.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+      expect(find.byType(Kitten), findsNothing);
+    });
+
+    testWidgets('a held-still kitten still breathes', (tester) async {
+      await tester.pumpWidget(
+        _host(const Kitten(pose: KittenPose.rest, holdStill: true)),
+      );
+      expect(idleOf(tester).isAnimating, isTrue);
+    });
+
+    testWidgets('Android Remove animations: no idle ticker', (tester) async {
+      await tester.pumpWidget(
+        _host(const Kitten(pose: KittenPose.rest), disableAnimations: true),
+      );
+      expect(idleOf(tester).isAnimating, isFalse);
+      expect(idleOf(tester).value, 0);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
+    testWidgets('iOS Reduce Motion: no idle ticker', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(reduceMotion: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await tester.pumpWidget(_host(const Kitten(pose: KittenPose.rest)));
+      expect(idleOf(tester).isAnimating, isFalse);
+    });
+
+    testWidgets('her Profile switch stops the loop at once, and restarts it', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_host(const Kitten(pose: KittenPose.rest)));
+      expect(idleOf(tester).isAnimating, isTrue);
+      await KittenSetting.instance.set(false);
+      await tester.pump();
+      expect(idleOf(tester).isAnimating, isFalse);
+      await KittenSetting.instance.set(true);
+      await tester.pump();
+      expect(idleOf(tester).isAnimating, isTrue);
+    });
+
+    testWidgets('pauses while its route is covered', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          TickerMode(
+            enabled: false,
+            child: const Kitten(pose: KittenPose.rest),
+          ),
+        ),
+      );
+      expect(idleOf(tester).isAnimating, isFalse);
+    });
+
+    test(
+      'breath is 1.00 to 1.025 over 2.4 s, the float 3 dp, the blink short',
+      () {
+        expect(KittenIdle.breath(0), closeTo(0, 1e-9));
+        expect(KittenIdle.breath(1200 / KittenIdle.loopMs), closeTo(1, 1e-9));
+        expect(KittenIdle.breath(2400 / KittenIdle.loopMs), closeTo(0, 1e-9));
+        expect(KittenIdle.breath(1), closeTo(0, 1e-9));
+        expect(KittenIdle.scale, 0.025);
+        expect(KittenIdle.floatDp, 3);
+        var blinks = 0;
+        var wasShut = false;
+        final gaps = <int>[];
+        var last = 0;
+        for (var ms = 0; ms < KittenIdle.loopMs; ms++) {
+          final shut = KittenIdle.blink(ms / KittenIdle.loopMs) > 0;
+          if (shut && !wasShut) {
+            blinks++;
+            gaps.add(ms - last);
+            last = ms;
+          }
+          wasShut = shut;
+        }
+        expect(blinks, 2);
+        // Between four and seven seconds apart, round the wrap too.
+        gaps.add(KittenIdle.loopMs - last + gaps.first);
+        for (final g in gaps.skip(1)) {
+          expect(g, inInclusiveRange(4000, 7000));
+        }
+      },
+    );
+
+    testWidgets('nothing paints outside the box at the top of a breath, '
+        'at text scale 2.0', (tester) async {
+      const edge = 24.0;
+      for (final pose in KittenPose.values) {
+        for (final size in const [32.0, 48.0, 72.0]) {
+          Kitten.resetPlayed();
+          // Large text changes nothing about the box a kitten is given.
+          await tester.pumpWidget(
+            MediaQuery(
+              data: const MediaQueryData(
+                textScaler: TextScaler.linear(2),
+                disableAnimations: true,
+              ),
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: Center(
+                  child: Kitten(pose: pose, size: size),
+                ),
+              ),
+            ),
+          );
+          final box = tester.getRect(find.byType(Kitten));
+          expect(box.width, size);
+          expect(
+            box.height,
+            closeTo(size + KittenIdle.headroomFor(size), 1e-6),
+          );
+          final p = KittenPainter(
+            progress: const AlwaysStoppedAnimation<double>(1),
+            pose: pose,
+            rtl: false,
+          );
+          final peak = AlwaysStoppedAnimation<double>(1200 / KittenIdle.loopMs);
+          final peaked = KittenPainter(
+            progress: p.progress,
+            pose: pose,
+            rtl: false,
+            idle: peak,
+            headroom: KittenIdle.headroomFor(size),
+          );
+          final recorder = ui.PictureRecorder();
+          peaked.paint(
+            Canvas(recorder),
+            Size(size, size + KittenIdle.headroomFor(size)),
+          );
+          final image = await tester.runAsync(() async {
+            final pic = recorder.endRecording();
+            final side = (size + 2 * edge).ceil();
+            final rec = ui.PictureRecorder();
+            final c = Canvas(rec)..translate(edge, edge);
+            c.drawPicture(pic);
+            return rec.endRecording().toImage(side, side);
+          });
+          final bytes = (await tester.runAsync(
+            () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
+          ))!;
+          final w = image!.width;
+          final h = image.height;
+          final boxH = size + KittenIdle.headroomFor(size);
+          var outside = 0;
+          for (var y = 0; y < h; y++) {
+            for (var x = 0; x < w; x++) {
+              final inside =
+                  x >= edge && x < edge + size && y >= edge && y < edge + boxH;
+              if (inside) continue;
+              if (bytes.getUint8((y * w + x) * 4 + 3) != 0) outside++;
+            }
+          }
+          expect(outside, 0, reason: '${pose.name} at $size');
+        }
+      }
+    });
   });
 }

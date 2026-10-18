@@ -174,6 +174,36 @@ class AllergyGuard {
     }).toList();
   }
 
+  /// What she may be offered as a food suggestion: everything except a dish
+  /// known to contain an allergen she named, and any dietary conflict.
+  ///
+  /// Unknown allergen data is allowed here. The pack carries no allergen tags,
+  /// so hiding unknown would hide every food from a woman with any allergy.
+  /// Logging never blocks on allergies, so what this lets through can still be
+  /// logged, and [knownAllergens] names what a logged food is known to hold.
+  List<Food> screenSuggestions(Iterable<Food> candidates) {
+    final dietary = constraints.dietary;
+    return candidates.where((food) {
+      if (knownAllergens(food).isNotEmpty) return false;
+      if (dietary != null && dietary.isNotEmpty) {
+        final tags = food.dietTags;
+        if (tags != null && !_satisfies(tags, dietary)) return false;
+      }
+      return true;
+    }).toList();
+  }
+
+  /// The allergens she named that [food] is known to contain. Empty when the
+  /// dish has none of them, and also when its allergens are unknown.
+  Set<String> knownAllergens(Food food) {
+    final declared = constraints.allergies;
+    final tags = food.allergens;
+    if (declared == null || declared.isEmpty || tags == null) {
+      return const <String>{};
+    }
+    return tags.where(_matches(declared)).toSet();
+  }
+
   /// Whether a row carrying [allergens] may be put in front of her at all.
   ///
   /// The allergy half of [screen], lifted out so that anything drawing a list

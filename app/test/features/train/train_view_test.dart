@@ -143,17 +143,17 @@ void main() {
     expect(find.text('Strong at home'), findsOneWidget);
   });
 
-  testWidgets('short sessions sit above the library', (tester) async {
+  testWidgets('short sessions sit above Explore', (tester) async {
     // A ten-minute floor session is what gets done on a bad day, and it counts
-    // the same. If it ever falls below the library this ordering is broken.
-    await tester.pumpWidget(_host(TrainView(onOpenExerciseLibrary: () {})));
+    // the same. If it ever falls below Explore this ordering is broken.
+    await tester.pumpWidget(_host(const TrainView()));
     await tester.pumpAndSettle();
 
     final shortHeading = tester.getTopLeft(
       find.text('Short ones that still count'),
     );
-    final libraryHeading = tester.getTopLeft(find.text('Exercise library'));
-    expect(shortHeading.dy, lessThan(libraryHeading.dy));
+    final exploreHeading = tester.getTopLeft(find.text('Explore'));
+    expect(shortHeading.dy, lessThan(exploreHeading.dy));
 
     expect(find.text('10 min · Floor only'), findsOneWidget);
     expect(find.text('20 min · Dumbbells'), findsOneWidget);
@@ -203,7 +203,6 @@ void main() {
     var continued = 0;
     var programme = 0;
     var gentler = 0;
-    var searched = 0;
 
     await tester.pumpWidget(
       _host(
@@ -211,7 +210,6 @@ void main() {
           onContinue: () => continued++,
           onSeeProgram: () => programme++,
           onGentlerOption: () => gentler++,
-          onSearch: () => searched++,
         ),
       ),
     );
@@ -219,7 +217,6 @@ void main() {
 
     // Everything above the fold first: scrolling for the last row would move
     // these out from under the finger.
-    await tester.tap(find.byIcon(Icons.search));
     await tester.tap(find.text('Continue · from Sara'));
     await tester.tap(find.text('See the whole program'));
     await tester.pumpAndSettle();
@@ -234,7 +231,6 @@ void main() {
     expect(continued, 1);
     expect(programme, 1);
     expect(gentler, 1);
-    expect(searched, 1);
   });
 
   testWidgets('every string comes from the dictionary, in Arabic too', (

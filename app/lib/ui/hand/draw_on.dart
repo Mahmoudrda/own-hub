@@ -4,9 +4,12 @@
 /// simply there and a press changes colour without moving.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
+import '../../app_state/haptics.dart';
 import '../../theme/hand_tokens.dart';
 import 'motion.dart';
 
@@ -122,6 +125,7 @@ class HandPressable extends StatefulWidget {
     this.spring = false,
     this.borderRadius,
     this.focusColor,
+    this.haptic = false,
   });
 
   final Widget Function(BuildContext context, double pressed) builder;
@@ -139,6 +143,10 @@ class HandPressable extends StatefulWidget {
   final BorderRadius? borderRadius;
   final Color? focusColor;
 
+  /// A light tap under the finger when it lands, for a primary action. The
+  /// platform's own haptics setting still decides whether it is felt.
+  final bool haptic;
+
   @override
   State<HandPressable> createState() => _HandPressableState();
 }
@@ -150,9 +158,14 @@ class _HandPressableState extends State<HandPressable>
       ? AnimationController.unbounded(vsync: this)
       : AnimationController(
           vsync: this,
-          duration: HandTiming.short,
-          reverseDuration: HandTiming.short,
+          duration: HandTiming.pressIn,
+          reverseDuration: HandTiming.pressOut,
         );
+
+  void _tap() {
+    if (widget.haptic) unawaited(AppHaptics.play(HapticMoment.actionDone));
+    widget.onTap?.call();
+  }
 
   void _highlight(bool down) {
     if (widget.onTap == null && widget.onLongPress == null) return;
@@ -186,7 +199,7 @@ class _HandPressableState extends State<HandPressable>
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: widget.onTap,
+        onTap: widget.onTap == null ? null : _tap,
         onLongPress: widget.onLongPress,
         onHighlightChanged: _highlight,
         splashFactory: NoSplash.splashFactory,

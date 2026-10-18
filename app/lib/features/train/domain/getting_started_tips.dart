@@ -32,7 +32,7 @@ import 'training_reminders.dart';
 /// own.
 enum GettingStartedTip {
   firstWorkout(day: 1, screen: 'R03'),
-  videos(day: 2, screen: 'R14'),
+  videos(day: 2, screen: 'R01'),
   mealScan(day: 3, screen: 'E12'),
   recipes(day: 5, screen: 'E05'),
   firstGym(day: 7, screen: kFirstGymTipPayload),
@@ -90,7 +90,7 @@ class TipFacts {
   /// Any session she logged, trained or recalled.
   final bool loggedASession;
 
-  /// She opened the exercise library (R14) or a demo (R15).
+  /// She opened a move's demo (R15).
   final bool openedVideos;
 
   /// A meal she photographed was saved.

@@ -41,11 +41,7 @@ void main() {
 
     await tester.pumpWidget(
       _host(
-        RestingView(
-          autoStart: false,
-          handle: handle,
-          onUndo: () => undone++,
-        ),
+        RestingView(autoStart: false, handle: handle, onUndo: () => undone++),
       ),
     );
     await tester.pump();
@@ -68,11 +64,7 @@ void main() {
 
     await tester.pumpWidget(
       _host(
-        RestingView(
-          autoStart: false,
-          handle: handle,
-          onUndo: () => undone++,
-        ),
+        RestingView(autoStart: false, handle: handle, onUndo: () => undone++),
       ),
     );
     await tester.pump();

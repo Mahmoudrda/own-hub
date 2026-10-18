@@ -38,7 +38,7 @@ void main() {
   ) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     phone(t);
-    for (final id in const ['A04', 'E05', 'R14']) {
+    for (final id in const ['A04', 'E05', 'R01']) {
       expect(await open(t, appRoutes[id]!.name), isTrue, reason: id);
       await _pullBothWays(t);
       expect(

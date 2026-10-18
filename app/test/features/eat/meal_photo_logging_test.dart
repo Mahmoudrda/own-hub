@@ -18,7 +18,6 @@ import 'package:own_hub/features/eat/domain/meal_check.dart';
 import 'package:own_hub/features/eat/domain/meal_day_reader.dart';
 import 'package:own_hub/features/eat/domain/meal_log_service.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
-import 'package:own_hub/features/eat/domain/meal_slot_state_machine.dart';
 import 'package:own_hub/features/eat/presentation/meal_log_session.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -117,14 +116,12 @@ void main() {
     test('nothing reaches the repository until the bus commits it', () async {
       final repository = InMemoryMealRepository();
       final session = MealLogSession(repository: repository);
-      final prepared =
-          _service(repository).logChecked(
-                day: const MealDay(dayId: _day),
-                slot: MealSlot.lunch,
-                entries: _plate,
-                at: _at,
-              )
-              as MealLogPrepared;
+      final prepared = _service(repository).logChecked(
+        day: const MealDay(dayId: _day),
+        slot: MealSlot.lunch,
+        entries: _plate,
+        at: _at,
+      ) as MealLogPrepared;
       expect(repository.writes, isEmpty, reason: 'building is not writing');
 
       session.submit(prepared, slot: MealSlot.lunch, describe: 'Meal added');
@@ -137,28 +134,27 @@ void main() {
       expect(
         (await repository.prefs()).plates,
         isEmpty,
-        reason: 'a photographed plate is never offered back as a one-tap '
+        reason:
+            'a photographed plate is never offered back as a one-tap '
             'plate it cannot be logged from',
       );
     });
 
-    test('a woman with an allergy is refused as for any unlisted dish', () {
-      final outcome = _service(
-        InMemoryMealRepository(),
-        constraints: const DietaryConstraints(
-          allergies: {'nuts'},
-          dietary: <String>{},
-        ),
-      ).logChecked(
-        day: const MealDay(dayId: _day),
-        slot: MealSlot.lunch,
-        entries: _plate,
-        at: _at,
-      );
-      expect(outcome, isA<MealLogRefused>());
-      final refused = outcome as MealLogRefused;
-      expect(refused.reason, LogRefusalReason.allergenOutstanding);
-      expect(refused.dish, 'Koshary');
+    test('a woman with an allergy still logs a photographed plate', () {
+      final outcome =
+          _service(
+            InMemoryMealRepository(),
+            constraints: const DietaryConstraints(
+              allergies: {'nuts'},
+              dietary: <String>{},
+            ),
+          ).logChecked(
+            day: const MealDay(dayId: _day),
+            slot: MealSlot.lunch,
+            entries: _plate,
+            at: _at,
+          );
+      expect(outcome, isA<MealLogPrepared>());
     });
 
     test('an empty plate writes nothing', () {
@@ -335,14 +331,12 @@ void main() {
       EatAppState.instance.reset();
       // The committed hook is private; the session it is wired to is the
       // public way in.
-      final prepared =
-          _service(AppRouter.mealRepository).logChecked(
-                day: const MealDay(dayId: _day),
-                slot: MealSlot.lunch,
-                entries: _plate,
-                at: _at,
-              )
-              as MealLogPrepared;
+      final prepared = _service(AppRouter.mealRepository).logChecked(
+        day: const MealDay(dayId: _day),
+        slot: MealSlot.lunch,
+        entries: _plate,
+        at: _at,
+      ) as MealLogPrepared;
       EatAppState.instance.session.submit(
         prepared,
         slot: MealSlot.lunch,

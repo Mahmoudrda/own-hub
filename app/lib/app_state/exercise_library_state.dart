@@ -86,6 +86,16 @@ class ExerciseLibraryState {
   /// The library's own row for a move id, or null when it does not hold it.
   LibraryExercise? byId(String id) => library.byId(id);
 
+  /// Whether the library holds [exerciseId] with at least one filmed clip. A
+  /// move that fails this is not offered anywhere on Train.
+  bool hasClip(String exerciseId) =>
+      library.byId(exerciseId)?.clips.isNotEmpty ?? false;
+
+  /// Whether every move in [exerciseIds] has a clip, so a workout is shown
+  /// only when she can watch all of it.
+  bool allMovesFilmed(Iterable<String> exerciseIds) =>
+      exerciseIds.every(hasClip);
+
   /// The clip she may be shown for [exerciseId]: the library's row, screened
   /// for her life stage, or null.
   LibraryExercise? clipFor(String exerciseId, LifeStage? stage) {

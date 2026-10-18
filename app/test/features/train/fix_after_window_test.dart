@@ -170,9 +170,7 @@ void main() {
 
     testWidgets('closing the sheet without saving goes back', (tester) async {
       var closed = 0;
-      await tester.pumpWidget(
-        _host(ChangeSetView(onClose: () => closed++)),
-      );
+      await tester.pumpWidget(_host(ChangeSetView(onClose: () => closed++)));
       await tester.pumpAndSettle();
       expect(find.text('What did you do?'), findsOneWidget);
 

@@ -18852,6 +18852,144 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{list}, {item}'**
   String listItem(String list, String item);
+
+  /// No description provided for @donkeyKick.
+  ///
+  /// In en, this message translates to:
+  /// **'Donkey kick'**
+  String get donkeyKick;
+
+  /// No description provided for @straightLegGluteKickback.
+  ///
+  /// In en, this message translates to:
+  /// **'Straight-leg glute kickback'**
+  String get straightLegGluteKickback;
+
+  /// No description provided for @forearmPlank.
+  ///
+  /// In en, this message translates to:
+  /// **'Forearm plank'**
+  String get forearmPlank;
+
+  /// No description provided for @heelTouches.
+  ///
+  /// In en, this message translates to:
+  /// **'Heel touches'**
+  String get heelTouches;
+
+  /// No description provided for @explore.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore'**
+  String get explore;
+
+  /// No description provided for @searchWorkoutsAndMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'Search workouts and moves'**
+  String get searchWorkoutsAndMoves;
+
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get goodMorning;
+
+  /// No description provided for @goodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get goodAfternoon;
+
+  /// No description provided for @goodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get goodEvening;
+
+  /// T01 greeting before noon, with her first name.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning, {name}'**
+  String goodMorningName(String name);
+
+  /// T01 greeting from noon to five, with her first name.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon, {name}'**
+  String goodAfternoonName(String name);
+
+  /// T01 greeting from five in the afternoon, with her first name.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening, {name}'**
+  String goodEveningName(String name);
+
+  /// No description provided for @carbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs'**
+  String get carbs;
+
+  /// No description provided for @fat.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat'**
+  String get fat;
+
+  /// No description provided for @logAMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Log a meal'**
+  String get logAMeal;
+
+  /// No description provided for @searchOrTypeWhatYouAte.
+  ///
+  /// In en, this message translates to:
+  /// **'Search or type what you ate'**
+  String get searchOrTypeWhatYouAte;
+
+  /// No description provided for @quickAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick add'**
+  String get quickAdd;
+
+  /// No description provided for @youveHad.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve had'**
+  String get youveHad;
+
+  /// No description provided for @popularDishes.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular dishes'**
+  String get popularDishes;
+
+  /// A small note under a logged food that is known to contain something she told us she avoids. Logging is never blocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Contains {allergens}'**
+  String containsAllergens(String allergens);
+
+  /// No description provided for @fewerServings.
+  ///
+  /// In en, this message translates to:
+  /// **'Fewer servings'**
+  String get fewerServings;
+
+  /// No description provided for @moreServings.
+  ///
+  /// In en, this message translates to:
+  /// **'More servings'**
+  String get moreServings;
+
+  /// Screen reader label of the plus button on a food row that logs it.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {name}'**
+  String addName(String name);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

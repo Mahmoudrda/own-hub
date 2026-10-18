@@ -23,7 +23,7 @@ void main() {
     AppRouter.intakeRepository.markSetupDone();
     await open(t, appDestinations['E01']!.name, locale: const Locale('en'));
     final row = tappables(t)
-        .firstWhere((e) => e.label.startsWith('Koshari bowl'));
+        .firstWhere((e) => e.label.startsWith('Add ') && e.label.contains('Koshari'));
     t.semantics.tap(find.semantics.byPredicate((n) => n.id == row.id));
     await settle(t);
     print(

@@ -386,6 +386,7 @@ enum Feature {
     Feature.finishReveal:
         'How R10 arrives: the staged reveal and the paper '
         'confetti.',
+    Feature.workoutLibrary: 'The Workouts group in Explore on R01.',
     Feature.haptics: 'A light tap on a logged set and on R10.',
     Feature.reassuringWaits: 'The named steps on O05 and C12.',
   };

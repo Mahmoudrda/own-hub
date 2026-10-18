@@ -4995,5 +4995,73 @@
         "example": "Eggs"
       }
     }
+  },
+  "donkeyKick": "Donkey kick",
+  "straightLegGluteKickback": "Straight-leg glute kickback",
+  "forearmPlank": "Forearm plank",
+  "heelTouches": "Heel touches",
+  "explore": "Explore",
+  "searchWorkoutsAndMoves": "Search workouts and moves",
+  "goodMorning": "Good morning",
+  "goodAfternoon": "Good afternoon",
+  "goodEvening": "Good evening",
+  "goodMorningName": "Good morning, {name}",
+  "@goodMorningName": {
+    "description": "T01 greeting before noon, with her first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "goodAfternoonName": "Good afternoon, {name}",
+  "@goodAfternoonName": {
+    "description": "T01 greeting from noon to five, with her first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "goodEveningName": "Good evening, {name}",
+  "@goodEveningName": {
+    "description": "T01 greeting from five in the afternoon, with her first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "carbs": "Carbs",
+  "fat": "Fat",
+  "logAMeal": "Log a meal",
+  "searchOrTypeWhatYouAte": "Search or type what you ate",
+  "quickAdd": "Quick add",
+  "youveHad": "You've had",
+  "popularDishes": "Popular dishes",
+  "containsAllergens": "Contains {allergens}",
+  "@containsAllergens": {
+    "description": "A small note under a logged food that is known to contain something she told us she avoids. Logging is never blocked.",
+    "placeholders": {
+      "allergens": {
+        "type": "String",
+        "example": "nuts"
+      }
+    }
+  },
+  "fewerServings": "Fewer servings",
+  "moreServings": "More servings",
+  "addName": "Add {name}",
+  "@addName": {
+    "description": "Screen reader label of the plus button on a food row that logs it.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Koshari"
+      }
+    }
   }
 }

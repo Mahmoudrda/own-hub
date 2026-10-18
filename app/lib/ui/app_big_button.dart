@@ -21,6 +21,7 @@ class AppBigButton extends StatelessWidget {
     required this.subtitle,
     this.onPressed,
     this.sage = false,
+    this.haptic = false,
   });
 
   final String label;
@@ -32,6 +33,9 @@ class AppBigButton extends StatelessWidget {
 
   /// Sage rather than pink, for a restorative action.
   final bool sage;
+
+  /// Off by default: screens play their own tap when an action finishes.
+  final bool haptic;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +57,7 @@ class AppBigButton extends StatelessWidget {
       onTap: onPressed,
       pressable: true,
       semanticsButton: true,
+      haptic: haptic,
       child: Container(
         // The prototype's 84 is a floor, not a fixed height: at the largest
         // system text size two lines need more room, and a clipped primary

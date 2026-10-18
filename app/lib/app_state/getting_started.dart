@@ -29,7 +29,7 @@ import 'tip_anchors.dart';
 
 abstract final class GettingStarted {
   /// Screens whose opening settles a tip. Each is kept as a marker.
-  static const Set<String> markedScreens = {'R14', 'R15', 'E05', 'P06', 'R02'};
+  static const Set<String> markedScreens = {'R15', 'E05', 'P06', 'R02'};
 
   /// How long `C13` or Home is on screen before the offer slides up, so it
   /// does not cover the moment she lands.
@@ -64,7 +64,7 @@ abstract final class GettingStarted {
       loggedASession:
           state.lastSessionAt != null ||
           AppRouter.trainRepository.sessions.any((s) => s.completed),
-      openedVideos: marks.contains('R14') || marks.contains('R15'),
+      openedVideos: marks.contains('R15'),
       loggedAPhotoMeal: marks.contains(kPhotoMealMark),
       // Allergies, or the scan switched off: the tip would open a screen she
       // cannot use, so it never comes. Not verified is left out on purpose:

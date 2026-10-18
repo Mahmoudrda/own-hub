@@ -314,7 +314,7 @@ void main() {
       AppRouter.reminderScheduler = scheduler;
       await NotificationSync.reapply(scheduler, text, now: _landed);
       AppClock.debugNow = () => _landed;
-      GettingStarted.routeOpened('R14');
+      GettingStarted.routeOpened('R15');
       await pumpEventQueue();
       expect(
         scheduler.tips.map(GettingStartedTip.of),
@@ -378,7 +378,7 @@ void main() {
     test('every tip opens a screen on the list', () {
       final expected = {
         GettingStartedTip.firstWorkout: 'R03',
-        GettingStartedTip.videos: 'R14',
+        GettingStartedTip.videos: 'R01',
         GettingStartedTip.mealScan: 'E12',
         GettingStartedTip.recipes: 'E05',
         GettingStartedTip.firstGym: 'R01',

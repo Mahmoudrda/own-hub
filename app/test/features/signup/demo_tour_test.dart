@@ -207,7 +207,7 @@ void main() {
       tester,
     ) async {
       await _pump(tester, initialStop: 2);
-      expect(find.text('Glute bridge'), findsOneWidget);
+      expect(find.text('Donkey kick'), findsOneWidget);
       expect(find.text('Move 1 of 4'), findsOneWidget);
       // Only the set she is on is drawn; the top bar carries the progress.
       expect(find.text('1 of 3'), findsOneWidget);
@@ -433,7 +433,7 @@ void main() {
       (0, 'her profile', () => find.bySemanticsLabel('Your profile')),
       (0, 'her first week', () => find.textContaining('Your first week')),
       (1, 'start', () => find.text("Start, everything's ready")),
-      (1, 'a move', () => find.text('Glute bridge')),
+      (1, 'a move', () => find.text('Donkey kick')),
       (1, 'more', () => _onStop(find.byTooltip('More'))),
       (2, 'log a set', () => find.text('Done · 12 reps')),
       (2, 'log the move', () => find.text('I did all 3 sets')),

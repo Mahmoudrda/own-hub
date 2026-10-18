@@ -66,9 +66,9 @@ void main() {
 
     // Set 1 of the FIRST move, not a fixed example of somebody's second set.
     final state = WorkoutSessionState.instance;
-    expect(state.currentMove?.name, 'Glute bridge');
+    expect(state.currentMove?.name, 'Donkey kick');
     expect(state.setIndex, 0);
-    expect(find.text('Glute bridge'), findsWidgets);
+    expect(find.text('Donkey kick'), findsWidgets);
 
     await _logTheSet(tester);
     // Resting, with the next set waiting behind it.
@@ -77,7 +77,7 @@ void main() {
 
     await tester.tap(find.text("I'm ready, next set"));
     await tester.pumpAndSettle();
-    expect(state.currentMove?.name, 'Glute bridge');
+    expect(state.currentMove?.name, 'Donkey kick');
     expect(state.setIndex, 1);
 
     // Last set of the move rolls on to the next move.
@@ -85,9 +85,11 @@ void main() {
     await tester.tap(find.text("I'm ready, next set"));
     await tester.pumpAndSettle();
     await _logTheSet(tester);
-    // The second move of the session, which is the step-back lunge since the
-    // 12 kg goblet squat left a session that promises no equipment.
-    expect(state.currentMove?.name, 'Step-back lunge', reason: 'next move');
+    expect(
+      state.currentMove?.name,
+      'Straight-leg glute kickback',
+      reason: 'next move',
+    );
     expect(state.setIndex, 0);
   });
 

@@ -14,6 +14,8 @@ import 'package:own_hub/domain/logging/log_command_bus.dart';
 import 'package:own_hub/features/eat/domain/allergy_guard.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
 import 'package:own_hub/features/eat/presentation/eat_view.dart';
+import 'package:own_hub/features/eat/presentation/eat_widgets.dart'
+    show PlusButton, QuickAddCard;
 import 'package:own_hub/domain/format/number_label.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -129,8 +131,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Molokhia with chicken'), findsOneWidget);
-      expect(find.text('34 g protein'), findsOneWidget);
-      expect(find.text('I ate this'), findsOneWidget);
+      expect(find.text('460 kcal · 34 g protein'), findsOneWidget);
+      expect(find.byType(PlusButton), findsOneWidget);
     });
 
     testWidgets('one tap logs it, and the write waits five seconds', (
@@ -147,7 +149,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Exactly one tap.
-      await tester.tap(find.text('I ate this'));
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
       expect(handles, hasLength(1));
@@ -182,7 +184,7 @@ void main() {
       // Lunch is empty and reads "Now".
       expect(find.text('Now'), findsOneWidget);
 
-      await tester.tap(find.text('I ate this'));
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
       // §4.3: the logged row appears with its real numbers straight away, even
@@ -210,7 +212,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('I ate this'));
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump(const Duration(seconds: 2));
 
       expect(handles.single.undo(), isTrue);
@@ -308,7 +310,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('I ate this'));
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -331,12 +333,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // What will appear here, and why it is empty.
-      expect(find.text('No plates yet'), findsOneWidget);
-      expect(
-        find.textContaining('Add something twice and it becomes a one-tap'),
-        findsOneWidget,
-      );
+      // No empty state: the quick strip is already full of popular dishes.
+      expect(find.text('No plates yet'), findsNothing);
+      expect(find.text('Quick add'), findsOneWidget);
       expect(find.text('Day 1'), findsOneWidget);
     });
 
@@ -349,12 +348,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Or start from one of these'), findsOneWidget);
+      expect(find.text('Quick add'), findsOneWidget);
       expect(
-        find.text('I ate this'),
-        findsNWidgets(3),
+        find.byType(QuickAddCard, skipOffstage: false),
+        findsNWidgets(6),
         reason:
-            'three real Egyptian starters — an empty box would ask her to '
+            'six real Egyptian starters — an empty box would ask her to '
             'invent an answer',
       );
     });
@@ -393,13 +392,13 @@ void main() {
 
       await tester.pumpWidget(_host(_eat(repository: repository, bus: bus)));
       await tester.pumpAndSettle();
-      expect(find.text('No plates yet'), findsOneWidget);
+      expect(find.text('Day 1'), findsOneWidget);
 
-      await tester.tap(find.text('I ate this').first);
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
       expect(
-        find.text('No plates yet'),
+        find.text('Day 1'),
         findsNothing,
         reason: 'the day-one branch ends at her first log of any kind',
       );
@@ -512,6 +511,24 @@ void main() {
     });
   });
 
+  group('E01 at the largest text size', () {
+    for (final locale in const [Locale('en'), Locale('ar')]) {
+      testWidgets('does not overflow in ${locale.languageCode}', (tester) async {
+        _phone(tester);
+        await tester.pumpWidget(
+          _host(
+            _eat(repository: InMemoryMealRepository()),
+            locale: locale,
+            textScale: 2.0,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.byType(QuickAddCard), findsWidgets);
+      });
+    }
+  });
+
   group('P0-A11Y-01 — Arabic', () {
     testWidgets('reads in Arabic, from the dictionary', (tester) async {
       _phone(tester);
@@ -527,7 +544,7 @@ void main() {
       // the same word. Asserting one would be asserting a bug.
       expect(find.text('الأكل'), findsWidgets);
       expect(find.text('بروتين'), findsOneWidget);
-      expect(find.text('أكلت ده'), findsOneWidget);
+      expect(find.text('إضافة سريعة'), findsOneWidget);
       expect(find.text('Eat'), findsNothing);
     });
 

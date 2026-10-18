@@ -37,6 +37,7 @@ class HandSurface extends StatelessWidget {
     this.pressable = false,
     this.springPress = false,
     this.semanticsButton = false,
+    this.haptic = false,
   });
 
   final Widget child;
@@ -76,6 +77,9 @@ class HandSurface extends StatelessWidget {
 
   /// Announce this surface as a button to a screen reader.
   final bool semanticsButton;
+
+  /// A light tap when the press lands, for a primary action.
+  final bool haptic;
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +129,7 @@ class HandSurface extends StatelessWidget {
       onLongPress: onLongPress,
       scale: offsetOutline == null || springPress ? pressScale : 1,
       spring: springPress,
+      haptic: haptic,
       borderRadius: BorderRadius.circular(radius),
       builder: (_, pressed) => paint(pressed),
     );

@@ -151,7 +151,7 @@ void main() {
       await pumpAt(tester, 'T01');
       AppRouter.goToTab(top(tester), 'R01');
       await tester.pumpAndSettle();
-      AppRouter.goTo(top(tester), 'R11');
+      AppRouter.goTo(top(tester), 'R02');
       await tester.pumpAndSettle();
 
       AppRouter.goToTab(top(tester), 'T01');

@@ -114,7 +114,7 @@ class WorkoutDay {
   final String? planVersion;
 }
 
-/// A row in the bundled workout library — R11.
+/// A row in the workout library Train lists under Explore.
 @immutable
 class LibraryWorkout {
   const LibraryWorkout({
@@ -125,9 +125,14 @@ class LibraryWorkout {
     this.needsEquipment = false,
     this.minutes = 10,
     this.posterAssetId,
+    this.exerciseIds = const <String>[],
   });
 
   final String id;
+
+  /// The moves in the session, so Train can offer it only when she can watch
+  /// every one of them.
+  final List<String> exerciseIds;
 
   /// "Floor legs, no jumping".
   final String title;

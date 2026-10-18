@@ -72,30 +72,33 @@ void main() {
   group('shortSessionFor', () {
     test('finds the session each tile names', () {
       expect(
-        shortSessionFor(offered, maxMinutes: 10, floorOnly: true)
-            ?.session
-            .sessionId,
+        shortSessionFor(
+          offered,
+          maxMinutes: 10,
+          floorOnly: true,
+        )?.session.sessionId,
         'floor10',
       );
       expect(
-        shortSessionFor(offered, maxMinutes: 15, quiet: true)
-            ?.session
-            .sessionId,
+        shortSessionFor(
+          offered,
+          maxMinutes: 15,
+          quiet: true,
+        )?.session.sessionId,
         'quiet15',
       );
       expect(
-        shortSessionFor(offered, maxMinutes: 20, withEquipment: true)
-            ?.session
-            .sessionId,
+        shortSessionFor(
+          offered,
+          maxMinutes: 20,
+          withEquipment: true,
+        )?.session.sessionId,
         'kit20',
       );
     });
 
     test('never answers with a longer session', () {
-      expect(
-        shortSessionFor([long35], maxMinutes: 15, quiet: true),
-        isNull,
-      );
+      expect(shortSessionFor([long35], maxMinutes: 15, quiet: true), isNull);
     });
 
     test('T04 holds to four moves', () {
@@ -114,10 +117,11 @@ void main() {
       final stretch = _offer('stretch', 15, [_move('cat_cow', floor: true)]);
       final named = _offer('Gentle mobility', 20, [_move('x')]);
       expect(
-        gentleMobilitySessionFor(
-          [stretch, named, floor10],
-          isMobility: (id) => id == 'cat_cow',
-        )?.session.sessionId,
+        gentleMobilitySessionFor([
+          stretch,
+          named,
+          floor10,
+        ], isMobility: (id) => id == 'cat_cow')?.session.sessionId,
         'stretch',
       );
     });
@@ -140,7 +144,9 @@ void main() {
   });
 
   testWidgets('Y06 with no gentle session offers no option', (tester) async {
-    await tester.pumpWidget(_host(GentlerOptionView(reason: const [], onKeepWorkout: () {})));
+    await tester.pumpWidget(
+      _host(GentlerOptionView(reason: const [], onKeepWorkout: () {})),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Use this option'), findsNothing);
     expect(find.text('Keep my workout'), findsOneWidget);

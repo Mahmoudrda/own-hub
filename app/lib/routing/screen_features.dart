@@ -57,10 +57,12 @@ const Map<String, Feature> kScreenFeatures = {
   'R08': Feature.train,
   'R09': Feature.train,
   'R10': Feature.train,
-  'R11': Feature.workoutLibrary,
+  // R11 and R14 are no longer screens: Explore on R01 holds both libraries.
+  // They stay in the generated route table, and stay dark.
+  'R11': Feature.adminConsole,
   'R12': Feature.recordFromMemory,
   'R13': Feature.train,
-  'R14': Feature.exerciseLibrary,
+  'R14': Feature.adminConsole,
   'R15': Feature.exerciseLibrary,
 
   // Eat. `E10` stays on Eat itself: what she cannot eat is a safety

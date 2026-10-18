@@ -73,7 +73,7 @@ DELETE_SUBJECT = "Own Hub: طلب حذف حساب"
 
 DELETE_BODY = """أهلًا،
 
-بكتب لكم بخصوص تطبيق Own Hub، معرّف الحزمة com.ownhub.app.
+بكتب لكم بخصوص تطبيق Own Hub (آيفون com.ownhub.fitness، أندرويد com.ownhub.app).
 
 عايزة أحذف حسابي في Own Hub والبيانات اللي محتفظين بيها عني.
 
@@ -193,7 +193,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           على أسبوع تجريبي قبل ما تنضمّي. ومفيش حاجة بتتحفظ.</p>
         </div>
         <ul class="shots">
-          <li><figure>""" + shot(lang, "03-workout", "مشغّل التمارين: حركة واحدة، وتلات مجموعات، وزرار للمجموعة اللي لسه خلّصتيها.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التمرين.</b> اضغطي على المجموعة لما تخلّصيها. ومؤقّت الراحة بيشتغل لوحده.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "03-workout", "مشغّل التمارين: حركة واحدة، وتلات مجموعات، وزرار للمجموعة اللي لسه خلّصتيها.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التمرين.</b> كل حركة ليها فيديو قصير. اضغطي على المجموعة لما تخلّصيها، ومؤقّت الراحة بيشتغل لوحده.</figcaption></figure></li>
           <li><figure>""" + shot(lang, "06-progress", "بطاقة تقدّمك: التمارين اللي خلّصتيها والوجبات اللي ضفتيها وأحسن أرقامك، جاهزة للمشاركة. ووزنك مش بيظهر عليها إلا لو إنتِ ضفتيه.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>التقدّم.</b> بطاقة واحدة بكل اللي عملتيه، تشاركيها لو حابة.</figcaption></figure></li>
           <li><figure>""" + shot(lang, "07-tour-dinners", "أسبوع العشا في الجولة: خمس عشوات تجريبية متخطّطة ليكي.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>الأكل.</b> أسبوع من العشا متخطّط ليكي، وألطف في الأيام الأصعب.</figcaption></figure></li>
         </ul>
@@ -290,8 +290,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p class="meta">
           <b>الإصدار:</b> 3.0<br>
           <b>تاريخ السريان:</b> {{policyEffectiveDate}}<br>
-          <b>بتنطبق على:</b> تطبيق Own Hub على iOS وAndroid، معرّف الحزمة
-          <code>com.ownhub.app</code>، وعلى الموقع ده.
+          <b>بتنطبق على:</b> تطبيق Own Hub على آيفون، معرّف الحزمة <code>com.ownhub.fitness</code>،
+          وعلى أندرويد، معرّف الحزمة <code>com.ownhub.app</code>، وعلى الموقع ده.
         </p>
         <p>لو النسختين العربي والإنجليزي من السياسة دي اختلفوا، النسخة
         العربي هي المعتمدة.</p>
@@ -931,8 +931,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p class="meta">
           <b>الإصدار:</b> 3.0<br>
           <b>تاريخ السريان:</b> {{policyEffectiveDate}}<br>
-          <b>بتنطبق على:</b> تطبيق Own Hub على iOS وAndroid، معرّف الحزمة
-          <code>com.ownhub.app</code>.
+          <b>بتنطبق على:</b> تطبيق Own Hub على آيفون، معرّف الحزمة <code>com.ownhub.fitness</code>،
+          وعلى أندرويد، معرّف الحزمة <code>com.ownhub.app</code>.
         </p>
         <p>لو النسختين العربي والإنجليزي من الشروط دي اختلفوا، النسخة
         العربي هي المعتمدة.</p>
@@ -1306,8 +1306,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           لسه مستني، أو اترفض، تقدر تحذف حسابها بنفس الطريقة بالظبط.</p>
         </div>
 """ + kv([
-            ("التطبيق", "Own Hub على iOS وAndroid، معرّف الحزمة "
-                        "<code>com.ownhub.app</code>"),
+            ("التطبيق", "Own Hub على آيفون، معرّف الحزمة <code>com.ownhub.fitness</code>، "
+                        "وعلى أندرويد، معرّف الحزمة <code>com.ownhub.app</code>"),
             ("الناشر والمطوّر", "{{legalEntity}}"),
             ("الدولة", "{{legalAddress}}"),
             ("تراسلينا فين", "{{mailto:contactPrivacy}}"),

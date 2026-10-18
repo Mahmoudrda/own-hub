@@ -248,6 +248,11 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
     file: 'lib/routing/app_router.dart',
     guard: "onOpenMeals: screenIsOn('Y07')",
   ),
+  // The Moves cards in Explore open a demo only while R15 is on.
+  'R01->R15': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenExercise: screenIsOn('R15')",
+  ),
   // The set she is on is sent to R06 only for a hold, and only while R06 is
   // on (`_holdIsNext`); otherwise it is R07's.
   'R03->R06': (
@@ -304,45 +309,21 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   ),
   'R01->P06': (
     file: 'lib/features/train/presentation/train_view.dart',
-    guard: "if (AppRouter.screenIsOn('P06') && onOpenMuscles != null)",
+    guard: "if (AppRouter.screenIsOn('P06') && widget.onOpenMuscles != null)",
   ),
-  // P06 names moves for a muscle group and links them to their demo, and to
-  // the library, only while each is on.
+  // P06 names moves for a muscle group and links them to their demo only
+  // while it is on.
   'P06->R15': (
     file: 'lib/routing/app_router.dart',
     guard: "onOpenMove: screenIsOn('R15')",
-  ),
-  'P06->R14': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onOpenLibrary: screenIsOn('R14') && !library.isEmpty",
-  ),
-  'R01->R11': (
-    file: 'lib/features/train/presentation/train_view.dart',
-    guard: "if (AppRouter.screenIsOn('R11'))",
-  ),
-  'O05->R11': (
-    file: 'lib/features/onboarding/presentation/starting_program_view.dart',
-    guard: "catalogue.length > 1 && AppRouter.screenIsOn('R11')",
   ),
   'R01->R02': (
     file: 'lib/features/train/presentation/train_view.dart',
     guard: "if (AppRouter.screenIsOn('R02'))",
   ),
-  'R02->R11': (
-    file: 'lib/features/train/presentation/program_view.dart',
-    guard: "if (AppRouter.screenIsOn('R11'))",
-  ),
   'R01->R05': (
     file: 'lib/features/train/presentation/train_view.dart',
-    guard: "if (AppRouter.screenIsOn('R05') && showGentlerOption)",
-  ),
-  'R01->R14': (
-    file: 'lib/features/train/presentation/train_view.dart',
-    guard: "if (AppRouter.screenIsOn('R14') && onOpenExerciseLibrary != null)",
-  ),
-  'R04->R14': (
-    file: 'lib/routing/app_router.dart',
-    guard: "onOpenLibrary: screenIsOn('R14')",
+    guard: "if (AppRouter.screenIsOn('R05') && widget.showGentlerOption)",
   ),
   'R04->R05': (
     file: 'lib/features/train/presentation/exercise_video_view.dart',
@@ -362,15 +343,15 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   ),
   'E01->E07': (
     file: 'lib/features/eat/presentation/eat_view.dart',
-    guard: "if (AppRouter.screenIsOn('E07'))",
+    guard: "AppRouter.screenIsOn('E07')",
   ),
   'E04->E07': (
     file: 'lib/features/eat/presentation/eat_view.dart',
-    guard: "if (AppRouter.screenIsOn('E07'))",
+    guard: "AppRouter.screenIsOn('E07')",
   ),
   'T01->E07': (
     file: 'lib/features/today/presentation/today_view.dart',
-    guard: "if (AppRouter.screenIsOn('E07'))",
+    guard: "AppRouter.screenIsOn('E07')",
   ),
   'E05->E07': (
     file: 'lib/features/eat/presentation/recipes_view.dart',

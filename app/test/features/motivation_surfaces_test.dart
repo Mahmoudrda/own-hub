@@ -18,7 +18,6 @@ import 'package:own_hub/features/train/domain/library_recommendation.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/presentation/change_set_view.dart';
 import 'package:own_hub/features/train/presentation/resting_view.dart';
-import 'package:own_hub/features/train/presentation/workout_library_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -241,6 +240,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.textContaining('Your first week'), findsNothing);
+      await tester.ensureVisible(find.text('Training streak: 6 days'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Training streak: 6 days'));
       expect(opened, 1);
     });
@@ -269,7 +270,7 @@ void main() {
     });
   });
 
-  group('R11', () {
+  group('the recommended session', () {
     const rows = [
       LibraryWorkout(
         id: 'gym',
@@ -295,59 +296,6 @@ void main() {
       expect(recommendedWorkout(rows, home)!.id, 'quiet');
       expect(recommendedWorkout(rows, home, chosenRowId: 'gym')!.id, 'gym');
       expect(recommendedWorkout(const [], home), isNull);
-    });
-
-    testWidgets('leads with one session, set apart', (tester) async {
-      _phone(tester);
-      await tester.pumpWidget(
-        _host(const WorkoutLibraryView(workouts: rows, recommendedId: 'quiet')),
-      );
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('r11-for-you')), findsOneWidget);
-      expect(find.text('For you'), findsOneWidget);
-      expect(find.text('More sessions'), findsOneWidget);
-      // Two rows in all: nothing to narrow, so no search or filters.
-      expect(find.text('Search'), findsNothing);
-    });
-
-    testWidgets('search and filters come back when there is enough to narrow', (
-      tester,
-    ) async {
-      _phone(tester);
-      await tester.pumpWidget(
-        _host(
-          const WorkoutLibraryView(
-            workouts: [
-              ...rows,
-              LibraryWorkout(
-                id: 'a',
-                title: 'Upper body',
-                detail: '',
-                minutes: 20,
-              ),
-              LibraryWorkout(
-                id: 'b',
-                title: 'Core',
-                detail: '',
-                quiet: true,
-                minutes: 10,
-              ),
-              LibraryWorkout(
-                id: 'c',
-                title: 'Stretch',
-                detail: '',
-                quiet: true,
-                minutes: 10,
-              ),
-            ],
-            recommendedId: 'quiet',
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      // Four rows after the one set apart: more than three.
-      expect(find.text('Search'), findsOneWidget);
-      expect(find.text('No equipment'), findsOneWidget);
     });
   });
 

@@ -2437,14 +2437,14 @@
       "clips": [
         {
           "file": "seated_hamstring_stretch_front_8bc73655.mp4",
-          "angle": "front",
+          "angle": "otherSide",
           "seconds": 4.83,
           "source": "IMG_9911 2.MOV",
           "md5": "46d4991f7ab016cafdfbfd3f8979c84e"
         },
         {
           "file": "seated_hamstring_stretch_other_side_6f544b64.mp4",
-          "angle": "otherSide",
+          "angle": "front",
           "seconds": 1.0,
           "source": "IMG_9911.MOV",
           "md5": "a6cf979b52af938efc2509bc049c547f"

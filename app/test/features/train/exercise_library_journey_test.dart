@@ -1,6 +1,6 @@
-// The exercise library through the REAL router: Train offers it only once
-// the phone holds one, R14 opens R15 on the move she tapped, and a move her
-// life stage hides cannot be reached at all.
+// The exercise library through the REAL router: Explore on Train lists it once
+// the phone holds one, a card opens R15 on the move she tapped, R11 and R14 are
+// dark, and a move her life stage hides cannot be reached at all.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,31 +56,26 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
 
-  testWidgets('with no library on the phone, Train does not offer one', (
+  testWidgets('with no library on the phone, Explore says it is on its way', (
     tester,
   ) async {
     _phone(tester);
     await tester.pumpWidget(_app('R01'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('r01-exercise-library')), findsNothing);
+    await scrollTo(tester, find.text('The exercise library is on its way'));
+    expect(find.byKey(const ValueKey('r01-move-goblet_squat')), findsNothing);
   });
 
-  testWidgets('Train, then the library, then the move she tapped, playing', (
+  testWidgets('Train, then the move she tapped in Explore, playing', (
     tester,
   ) async {
     _phone(tester);
     state.library = sampleExerciseLibrary();
     await tester.pumpWidget(_app('R01'));
     await tester.pumpAndSettle();
-    final row = find.byKey(const ValueKey('r01-exercise-library'));
-    await scrollTo(tester, row);
-    await tester.tap(row);
-    await tester.pumpAndSettle();
-    expect(find.text('Glute bridge'), findsOneWidget);
-
-    await tester.ensureVisible(find.text('Goblet squat'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Goblet squat'));
+    final card = find.byKey(const ValueKey('r01-move-goblet_squat'));
+    await scrollTo(tester, card);
+    await tester.tap(card);
     await tester.pumpAndSettle();
     expect(state.openExerciseId, 'goblet_squat');
     expect(find.text('Front of thighs'), findsOneWidget);
@@ -88,12 +83,20 @@ void main() {
     expect(FakeClipPlayer.made.single.playing, isTrue);
   });
 
-  testWidgets('R11 keeps one door to it, from Train', (tester) async {
+  testWidgets('the two old library screens are dark, not screens', (
+    tester,
+  ) async {
     _phone(tester);
     state.library = sampleExerciseLibrary();
-    await tester.pumpWidget(_app('R11'));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('r11-exercise-library')), findsNothing);
+    AppRouter.featureFlags = FeatureFlags.allOff;
+    for (final id in ['R11', 'R14']) {
+      expect(AppRouter.screenIsOn(id), isFalse, reason: id);
+      expect(AppRouter.isBuilt(id), isFalse, reason: id);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(_app(id));
+      await tester.pumpAndSettle();
+      expect(find.byType(FeatureOff), findsOneWidget, reason: id);
+    }
   });
 
   testWidgets(
@@ -102,12 +105,18 @@ void main() {
       _phone(tester);
       await _as(LifeStage.pregnant);
       state.library = sampleExerciseLibrary();
-      await tester.pumpWidget(_app('R14'));
+      await tester.pumpWidget(_app('R01'));
       await tester.pumpAndSettle();
-      expect(find.text('Glute bridge'), findsNothing);
-      expect(
+      await scrollTo(
+        tester,
+        find.byKey(const ValueKey('r01-move-goblet_squat')),
+      );
+      expect(find.byKey(const ValueKey('r01-move-glute_bridge')), findsNothing);
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 3000));
+      await tester.pumpAndSettle();
+      await scrollTo(
+        tester,
         find.textContaining('Some moves are hidden while you are pregnant'),
-        findsOneWidget,
       );
 
       // An id left over from before her answers changed opens nothing.
