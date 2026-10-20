@@ -36,17 +36,24 @@ void main() {
     expect(OnboardingState.instance.isDue, isTrue);
   });
 
-  test(
-    'account required, not verified: not owed (C16 asks inside sign-up)',
-    () {
-      AppRouter.featureFlags = FeatureFlags.allOff.with_({
-        Feature.accountRequired: true,
-      });
-      AppRouter.intakeRepository.reset();
-      AppRouter.lastVerification = null;
-      expect(OnboardingState.instance.isDue, isFalse);
-    },
-  );
+  test('account required, no account: owed, a guest opens on the questions', () {
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.accountRequired: true,
+    });
+    AppRouter.intakeRepository.reset();
+    AppRouter.lastVerification = null;
+    expect(AppRouter.signedInUid, isNull);
+    expect(OnboardingState.instance.isDue, isTrue);
+  });
+
+  test('a guest who skipped or finished the questions is not asked again', () {
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      Feature.accountRequired: true,
+    });
+    AppRouter.intakeRepository.reset();
+    OnboardingState.instance.finish();
+    expect(OnboardingState.instance.isDue, isFalse);
+  });
 
   test('account required, verified, setup not done: owed at launch', () {
     AppRouter.featureFlags = FeatureFlags.allOff.with_({

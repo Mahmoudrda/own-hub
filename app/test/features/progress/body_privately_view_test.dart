@@ -753,9 +753,13 @@ void main() {
         // At 1.6 the card sits below the fold, and a tap that misses reports a
         // warning and changes nothing — which would read as a broken control
         // rather than an off-screen one. Scroll it into view first.
-        await tester.ensureVisible(find.byIcon(Icons.add));
+        final addChip = find.descendant(
+          of: find.byType(AppChip),
+          matching: find.byIcon(Icons.add),
+        );
+        await tester.ensureVisible(addChip);
         await tester.pumpAndSettle();
-        await tester.tap(find.byIcon(Icons.add));
+        await tester.tap(addChip);
         await tester.pumpAndSettle();
 
         expect(find.byType(TextField), findsOneWidget);

@@ -12,8 +12,8 @@
 /// than one digit nobody can check. `CaptureTarget` decides which pass this is
 /// and the copy follows it.
 ///
-/// **She checks every photograph before it is used.** Whether the card
-/// photographed itself or she pressed "Take it myself", the photograph is shown
+/// **She checks every photograph before it is used.** The shutter is hers
+/// alone ("Capture photo"); the photograph is then shown
 /// with "Use this photo" and "Retake", and nothing moves on until she says so.
 /// The back starts with "Now turn the card over" and a Ready button, and its
 /// camera opens only after Ready: going straight from the front to a live
@@ -312,8 +312,7 @@ class _IdCaptureViewState extends State<IdCaptureView>
     return session is CaptureReview ? session as CaptureReview : null;
   }
 
-  /// Both the auto-capture and her shutter arrive here, so "it photographed
-  /// itself" and "she pressed the button" show one review between them.
+  /// Her shutter arrives here and shows the review.
   void _enterReview() {
     if (_reviewing || !mounted) return;
     setState(() => _reviewing = true);
@@ -464,7 +463,6 @@ class _IdCaptureViewState extends State<IdCaptureView>
             _leaveForReviewer(() => widget.onAskReviewer!(unavailable)),
           );
 
-
     if (_reviewing) {
       final review = _review;
       final held = review?.takenCount ?? 1;
@@ -521,11 +519,11 @@ class _IdCaptureViewState extends State<IdCaptureView>
           : l10n.holdItFlatAllFourCornersInside,
       body: isBack
           ? l10n.weReadBothSidesNothingIsUploaded
-          : l10n.itPhotographsItselfWhenItIsSharp,
+          : l10n.fitTheCardInsideTheFrameThen,
       guidance: live is CaptureFraming && live.guidance != null
           ? captureGuidanceText(l10n, live.guidance!, isSelfie: false)
           : null,
-      actionLabel: l10n.takeItMyself,
+      actionLabel: l10n.capturePhoto,
       // Always hers on a live camera, whatever the detector thinks.
       onAction: _state.isLive && !_capturing ? _capture : null,
       unavailable: unavailable,

@@ -27,6 +27,16 @@ service firebase.storage {
       return request.resource.contentType.matches('video/.*');
     }
 
+    // Exercise demonstrations are public so a signed-out visitor can browse
+    // Train. Nothing else under content/ is: this is the only open path.
+    match /content/exercises/{docId}/{file} {
+      allow read: if true;
+      allow write: if isAdmin()
+                   && (isImage() || isVideo())
+                   && request.resource.size < 200 * 1024 * 1024;
+      allow delete: if isAdmin();
+    }
+
     match /content/{collection}/{docId}/{file} {
       allow read: if signedIn();
       allow write: if isAdmin()

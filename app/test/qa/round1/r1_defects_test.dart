@@ -228,10 +228,10 @@ void main() {
   //
   // As written it tapped the 5 chip and demanded a target of 5. That is one of
   // the two ways out of R1-02, and the owner took the other one: O03 no longer
-  // offers a 5 at all (`Intake.allowedDays` is 2, 3, 4) because
-  // `kMaxSessionsTarget` is a product rule — this app counts weeks rather than
-  // days and will not set a target it expects her to miss. With the chip gone,
-  // `tapLabel(t, '5')` has nothing to tap and the case could not run at all.
+  // offers a 5 at all (`Intake.allowedDays` was 2, 3, 4) because
+  // `kMaxSessionsTarget` was a product rule. The owner has since widened the
+  // goal to 1 to 7 (18 Oct 2026), so every chip O03 draws is a goal the rewards
+  // system accepts.
   //
   // The rule in the name is untouched and is still asserted at the top of the
   // range: she taps the biggest number the screen offers, O05 reads that number
@@ -251,7 +251,7 @@ void main() {
       await tapLabel(t, 'Continue'); // O06 -> O03
       expect(topScreen(t), 'O03');
       expect(
-        hasLabel(t, '5'),
+        hasLabel(t, '8'),
         isFalse,
         reason: 'a chip the rewards system would refuse must not be offered',
       );

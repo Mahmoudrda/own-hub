@@ -26,7 +26,10 @@ class _Requester implements ReviewRequester {
   final List<ReviewPath> asked = <ReviewPath>[];
 
   @override
-  Future<ReviewRequestState> request(ReviewPath path) async {
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) async {
     asked.add(path);
     final next = _answers.removeAt(0);
     if (next is ReviewRequestState) return next;

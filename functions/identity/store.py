@@ -1437,6 +1437,15 @@ class FirestoreReviewStore:
             {"mintPending": firestore.DELETE_FIELD}
         )
 
+    def clear_mint_pending_for(self, uid):
+        query = (
+            db().collection(config.COL_FLAGS)
+            .where("uid", "==", uid)
+            .where("mintPending", "==", True)
+        )
+        for snapshot in query.stream():
+            snapshot.reference.update({"mintPending": firestore.DELETE_FIELD})
+
     def mint_pending_flags(self, limit):
         """Single-field equality on mintPending (auto-indexed). APPROVED is
         checked here so a stray mark on any other flag mints nothing."""

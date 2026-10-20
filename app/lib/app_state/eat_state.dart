@@ -45,7 +45,11 @@ import '../features/eat/data/firestore_recipe_source.dart';
 import '../features/eat/data/recipe_sync.dart';
 import '../features/eat/data/seeded_recipe_library.dart';
 import '../features/eat/domain/allergy_guard.dart';
+import '../features/eat/domain/custom_food.dart';
+import '../features/eat/domain/daily_targets.dart';
+import '../features/eat/domain/day_totals.dart';
 import '../features/eat/domain/item_id.dart';
+import '../features/eat/domain/meal_day_reader.dart';
 import '../features/eat/domain/meal_log_service.dart';
 import '../features/eat/domain/meal_repository.dart';
 import '../features/eat/domain/meal_sentence_parser.dart';
@@ -54,6 +58,7 @@ import '../features/eat/presentation/eat_day_view_model.dart';
 import '../features/eat/presentation/eat_sample_library.dart';
 import '../features/eat/presentation/meal_labels.dart';
 import '../features/eat/presentation/meal_log_session.dart';
+import '../features/onboarding/domain/body_data.dart';
 import '../features/today/domain/today_day.dart';
 import '../domain/logging/log_command_bus.dart';
 import '../l10n/app_l10n.dart';
@@ -61,6 +66,7 @@ import '../routing/app_router.dart';
 import '../ui/app_undo_snackbar.dart';
 import '../domain/format/day_key.dart';
 import 'app_changes.dart';
+import 'guest_session.dart';
 import 'rewards_state.dart';
 import 'firebase_boot.dart';
 import 'getting_started.dart';
@@ -94,7 +100,10 @@ class UsualPlate {
 }
 
 class EatAppState {
-  EatAppState._();
+  EatAppState._() {
+    // A favourite a guest kept is starred once she is verified.
+    GuestSession.favouriteHandler ??= replayFavourite;
+  }
 
   static final EatAppState instance = EatAppState._();
 
@@ -124,6 +133,99 @@ class EatAppState {
   /// community ids use. Without it E06 opened on koshari whichever row she
   /// pressed, over a Log button that wrote koshari.
   String? openRecipeId;
+
+  // ------------------------------------------------------------ targets ----
+
+  /// The day's targets from her goal, her training week and her body data.
+  DailyTargets targets() {
+    final intake = AppRouter.intakeRepository.read();
+    return DailyTargets.compute(
+      body: BodyDataStore.instance.read(),
+      goal: intake.goal,
+      daysPerWeek: intake.days,
+      minutesPerSession: intake.minutes,
+    );
+  }
+
+  /// Today as it will read once every meal still inside its undo window is
+  /// written, against her protein target. Home and Eat both draw this, so a
+  /// meal she has just logged moves their rings at once.
+  DayTotals totalsWithPending(MealDay stored, {DailyTargets? against}) {
+    return const MealDayReader().totals(
+      session.project(stored),
+      proteinTargetG: (against ?? targets()).proteinG,
+    );
+  }
+
+  // ----------------------------------------- favourites and custom foods ----
+
+  /// Hands the foods she typed in to every screen that builds the library.
+  /// Called after her preferences are read from the phone.
+  void syncCustomFoods([EatPrefs? prefs]) {
+    EatCustomFoods.current =
+        (prefs ?? AppRouter.mealRepository.store.prefs).customFoods;
+    AppChanges.bump();
+  }
+
+  /// Stars or unstars [foodId] and says which it did. Newest star first.
+  Future<bool> toggleFavourite(MealRepository repository, String foodId) async {
+    final prefs = await repository.prefs();
+    return setFavourite(
+      repository,
+      foodId,
+      starred: !prefs.favourites.contains(foodId),
+    );
+  }
+
+  /// Makes [foodId] starred or not, and returns the state it is now in.
+  Future<bool> setFavourite(
+    MealRepository repository,
+    String foodId, {
+    required bool starred,
+  }) async {
+    final prefs = await repository.prefs();
+    final rest = [
+      for (final id in prefs.favourites)
+        if (id != foodId) id,
+    ];
+    final next = starred
+        ? [foodId, ...rest].take(kFavouriteCap).toList()
+        : rest;
+    await repository.savePrefs(prefs.copyWith(favourites: next));
+    AppChanges.bump();
+    return (await repository.prefs()).favourites.contains(foodId);
+  }
+
+  /// Stars the food a guest tried to star before she signed up.
+  static Future<void> replayFavourite(BuildContext context, String foodId) =>
+      instance.setFavourite(AppRouter.mealRepository, foodId, starred: true);
+
+  /// Keeps a food she typed in, and returns it so the caller can log it.
+  Future<CustomFood> addCustomFood(
+    MealRepository repository, {
+    required String name,
+    required int kcal,
+    int proteinG = 0,
+    int? carbsG,
+    int? fatG,
+    int? fiberG,
+  }) async {
+    final prefs = await repository.prefs();
+    final food = CustomFood(
+      id: '${CustomFood.idPrefix}${AppClock.now().microsecondsSinceEpoch}',
+      name: name.trim(),
+      kcal: kcal,
+      proteinG: proteinG,
+      carbsG: carbsG,
+      fatG: fatG,
+      fiberG: fiberG,
+    );
+    final next = [food, ...prefs.customFoods].take(kCustomFoodCap).toList();
+    final saved = prefs.copyWith(customFoods: next);
+    await repository.savePrefs(saved);
+    syncCustomFoods(await repository.prefs());
+    return food;
+  }
 
   // ------------------------------------------------------- Rahma's book ----
 
@@ -264,6 +366,41 @@ class EatAppState {
     return out;
   }
 
+  /// The same foods as [historyEntries], most eaten first, each at the portion
+  /// she had it in last. The Frequent tab on E02.
+  List<ParsedItem> frequentEntries(AppL10n l10n) {
+    final library = eatSampleLibrary(l10n);
+    final plates = usualPlates.toList()
+      ..sort((a, b) => b.lastAt.compareTo(a.lastAt));
+    final counts = <String, int>{};
+    final latest = <String, ParsedItem>{};
+    final order = <String>[];
+    for (final plate in plates) {
+      for (final item in plate.items) {
+        final entry = entryFor(library, item.foodId, sizeId: item.size);
+        if (entry == null) continue;
+        if (!counts.containsKey(item.foodId)) order.add(item.foodId);
+        counts[item.foodId] = (counts[item.foodId] ?? 0) + plate.timesEaten;
+        latest.putIfAbsent(
+          item.foodId,
+          () => ParsedItem(
+            food: entry.food,
+            size: entry.size,
+            servings: item.servings.toInt(),
+            sourceText: entry.sourceText,
+          ),
+        );
+      }
+    }
+    // The one eaten more recently comes first on a tie.
+    final rank = {for (final (i, id) in order.indexed) id: i};
+    order.sort((a, b) {
+      final byCount = counts[b]!.compareTo(counts[a]!);
+      return byCount != 0 ? byCount : rank[a]!.compareTo(rank[b]!);
+    });
+    return [for (final id in order) latest[id]!];
+  }
+
   /// What Home's meal card lists.
   List<PlateSuggestion> get homePlates => [
     for (final plate in usualPlates.take(kHomePlates)) plate.suggestion,
@@ -316,6 +453,13 @@ class EatAppState {
   /// Nothing is sent anywhere: there is no library to publish to and no account
   /// behind this build, so the bookmark is the icon on the page and this note.
   void toggleSaved(BuildContext context, String recipeId) {
+    if (!_saved.contains(recipeId) &&
+        !GuestSession.require(
+          context,
+          PendingAction.bookmarkRecipe(recipeId),
+        )) {
+      return;
+    }
     final l10n = AppL10n.of(context);
     final added = _saved.add(recipeId);
     if (!added) _saved.remove(recipeId);
@@ -370,6 +514,12 @@ class EatAppState {
     DateTime? at,
   }) {
     if (entries.isEmpty) return null;
+    if (!GuestSession.require(
+      context,
+      PendingAction.logMeal(entries, origin: origin),
+    )) {
+      return null;
+    }
     final l10n = AppL10n.of(context);
     final now = at ?? AppClock.now();
     final slot = EatDayViewModel.slotAt(now);
@@ -518,6 +668,7 @@ class EatAppState {
     _plates.clear();
     _saved.clear();
     openRecipeId = null;
+    EatCustomFoods.current = const <CustomFood>[];
   }
 
   // -------------------------------------------------------------- private ---

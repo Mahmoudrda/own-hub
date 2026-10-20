@@ -339,7 +339,7 @@ def test_the_call_carries_the_owners_settings():
     result = model.analyse(b"\xff\xd8\xff\xe0fake jpeg")
     assert result.items == [] and result.prompt_tokens == 1100 and result.output_tokens == 9
     (call,) = models.calls
-    assert call["model"] == "gemini-3.8-flash"
+    assert call["model"] == "gemini-3.5-flash"
     settings = call["config"]
     assert settings.temperature == 0.1
     assert settings.max_output_tokens == 600

@@ -231,7 +231,10 @@ void main() {
     test('the callable name and the body match', () {
       expect(callables.keys, contains(kRequestReviewCallable));
       expect(
-        CallableReviewRequester.payloadFor(ReviewPath.niqab),
+        CallableReviewRequester.payloadFor(
+          ReviewPath.niqab,
+          knownReviewerId: '<reviewer uid, optional>',
+        ),
         contractCall['request'],
       );
     });

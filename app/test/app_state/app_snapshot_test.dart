@@ -437,8 +437,10 @@ void main() {
 
       expect(AppSnapshot.restore(jsonEncode(whole)), greaterThan(0));
       final intake = AppRouter.intakeRepository.read();
-      expect(Intake.allowedDays, contains(intake.days));
-      expect(Intake.allowedMinutes, contains(intake.minutes));
+      expect(Intake.daysOk(intake.days), isTrue);
+      expect(intake.days, Intake.defaults.days);
+      expect(Intake.minutesOk(intake.minutes), isTrue);
+      expect(intake.minutes, Intake.defaults.minutes);
       expect(
         intake.equipment,
         isNotEmpty,

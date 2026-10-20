@@ -175,7 +175,7 @@ void main() {
         findsOneWidget,
         reason: 'E04 offers the undo the moment it opens, not five seconds in',
       );
-      expect(find.text('18 of 95 g'), findsOneWidget);
+      expect(find.text('18 of 108 g'), findsOneWidget);
       expect(
         find.text('No plates yet'),
         findsNothing,
@@ -196,7 +196,7 @@ void main() {
         ),
         findsNothing,
       );
-      expect(find.text('18 of 95 g'), findsOneWidget);
+      expect(find.text('18 of 108 g'), findsOneWidget);
     });
 
     testWidgets('E01 shows the same day, and Home shows the meal', (
@@ -208,8 +208,8 @@ void main() {
       await _windowCloses(tester);
 
       await _open(tester, 'E01');
-      expect(find.text('18 of 95 g'), findsOneWidget);
-      expect(find.text('18 of 95 g'), findsOneWidget);
+      expect(find.text('18 of 108 g'), findsOneWidget);
+      expect(find.text('18 of 108 g'), findsOneWidget);
 
       await _home(tester);
       expect(
@@ -235,7 +235,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('18 of 95 g'), findsNothing);
+      expect(find.text('18 of 108 g'), findsNothing);
       expect(
         find.byType(AppUndoBar),
         findsNothing,
@@ -275,7 +275,7 @@ void main() {
       await tester.tap(find.byType(PlusButton).first);
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
-      expect(find.text('54 of 95 g'), findsOneWidget);
+      expect(find.text('54 of 108 g'), findsOneWidget);
 
       await _windowCloses(tester);
       expect(_written.length, 3);
@@ -302,7 +302,7 @@ void main() {
       // carry the same handle to E04's bar.
       expect(find.byType(SnackBar), findsNothing);
       expect(find.text('Undo'), findsOneWidget);
-      expect(find.text('36 of 95 g'), findsOneWidget);
+      expect(find.text('36 of 108 g'), findsOneWidget);
 
       await _windowCloses(tester);
       expect(_written.length, 2);

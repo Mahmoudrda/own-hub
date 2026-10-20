@@ -217,6 +217,10 @@ REVIEW_NOT_PENDING = "review_not_pending"
 REVIEW_TIME_OUT_OF_RANGE = "review_time_out_of_range"
 """A reviewer tried to book a live review further ahead than
 config.REVIEW_BOOKING_MAX_DAYS. Reviewer-facing only."""
+REVIEW_REVOKED = "review_revoked"
+"""A reviewer took an approval back (the undo); the case is open again."""
+SLOT_UNAVAILABLE = "slot_unavailable"
+"""The slot is taken, outside the reviewer's availability, or out of range."""
 VERIFICATION_IN_PROGRESS = "verification_in_progress"
 """She asked for a woman reviewer while her automatic check was still running.
 Nothing is opened: the running check decides first, and a reviewer request

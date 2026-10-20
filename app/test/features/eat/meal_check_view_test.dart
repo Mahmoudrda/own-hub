@@ -100,12 +100,20 @@ void main() {
   late InMemoryMealRepository repository;
   late MealLogSession session;
 
+  final savedFlags = AppRouter.featureFlags;
+
   setUp(() {
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      for (final f in Feature.values) f: f != Feature.accountRequired,
+    });
     repository = InMemoryMealRepository();
     session = MealLogSession(repository: repository);
   });
 
-  tearDown(() => session.reset());
+  tearDown(() {
+    AppRouter.featureFlags = savedFlags;
+    session.reset();
+  });
 
   Future<List<LogHandle>> pumpCheck(
     WidgetTester tester, {

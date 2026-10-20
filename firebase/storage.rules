@@ -85,7 +85,19 @@ service firebase.storage {
     // ------------------------------------------------ the content library
     //
     // Exercise demonstrations, recipe photographs, programme artwork. Uploaded
-    // in bulk from Z10, read by every signed-in member.
+    // in bulk from Z10.
+    //
+    // Exercise demonstrations are public so a signed-out visitor can browse
+    // Train. Nothing else under content/ is: this is the only open path.
+    match /content/exercises/{docId}/{file} {
+      allow read: if true;
+      allow write: if isAdmin()
+                   && (isImage() || isVideo())
+                   && request.resource.size < 200 * 1024 * 1024;
+      allow delete: if isAdmin();
+    }
+
+    // Every other content path is read by every signed-in member.
     //
     // The size ceiling is a guard against an accidental upload of the wrong
     // file, not a quality setting: these are short demonstration clips, and a

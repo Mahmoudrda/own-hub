@@ -92,7 +92,11 @@ class TrainView extends StatefulWidget {
     this.media = const NoExerciseMedia(),
     this.focus,
     this.workoutIsFilmed,
+    this.tierTabs,
   });
+
+  /// The Beginner / Intermediate / Advanced tabs, above Today's card.
+  final Widget? tierTabs;
 
   /// See OQ-12 above. The router owns where this goes.
   final VoidCallback? onContinue;
@@ -275,6 +279,7 @@ class _TrainViewState extends State<TrainView> {
         done: widget.sessionsThisWeek,
         total: widget.sessionsPrescribed,
       ),
+      ?widget.tierTabs,
       _TodayCard(
         title: next?.title ?? l10n.startTodaysSession,
         detail: next?.detail ?? '',

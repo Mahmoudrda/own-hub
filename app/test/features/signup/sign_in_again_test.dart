@@ -55,7 +55,10 @@ class _Requester implements ReviewRequester {
   final Object fail;
 
   @override
-  Future<ReviewRequestState> request(ReviewPath path) async => throw fail;
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) async => throw fail;
 }
 
 class _ConsentStore implements CaptureConsentStore {

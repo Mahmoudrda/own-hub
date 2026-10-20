@@ -41,8 +41,16 @@ class FakeBackend:
             config.COL_VERIFICATION_JOBS: {"j1": {"uid": uid}, "j2": {"uid": "x"}},
             config.COL_FLAGS: {"f1": {"uid": uid}},
             config.COL_SESSIONS: {"s1": {"uid": uid}},
+            config.COL_BOOKINGS: {
+                "b1": {"uid": uid, "reviewerId": "rev"},
+                "b2": {"uid": "other", "reviewerId": uid},
+                "b3": {"uid": "other", "reviewerId": "rev"},
+            },
+            config.COL_REVIEWERS: {uid: {"listed": True}, "rev": {"listed": True}},
             config.COL_LEDGER: {uid: {"spent_micro_usd": 3000}},
+            config.COL_PREAPPROVED: {"+201001234567": {"phone": "+201001234567"}, "+201009999999": {}},
         }
+        self.phones = {uid: "+201001234567"}
         self.registry = {"h1": {"uid": uid, "state": "active", "pepper_version": 1}}
         self.reports = {
             "r1": {"reporterUid": uid, "subjectUid": "x"},
@@ -103,15 +111,21 @@ class FakeBackend:
             (b, p) for (b, p) in self.storage if not (b == bucket and p.startswith(prefix))
         }
 
-    def delete_where_uid(self, collection, uid):
+    def delete_where_uid(self, collection, uid, field="uid"):
         self._step("delete_where_uid", collection)
         docs = self.collections[collection]
-        for key in [k for k, v in docs.items() if v.get("uid") == uid]:
+        for key in [k for k, v in docs.items() if v.get(field) == uid]:
             del docs[key]
 
     def delete_doc(self, collection, doc_id):
         self._step("delete_doc", collection)
         self.collections[collection].pop(doc_id, None)
+
+    def delete_preapproved(self, uid):
+        self._step("delete_preapproved")
+        phone = self.phones.get(uid) if uid in self.auth else None
+        if phone:
+            self.collections[config.COL_PREAPPROVED].pop(phone, None)
 
     def close_registry(self, uid, may_rejoin):
         self._step("close_registry", may_rejoin)
@@ -182,6 +196,9 @@ def test_everything_uid_keyed_is_gone():
     assert fake.collections[config.COL_FLAGS] == {}
     assert fake.collections[config.COL_SESSIONS] == {}
     assert fake.collections[config.COL_LEDGER] == {}
+    assert list(fake.collections[config.COL_BOOKINGS]) == ["b3"]
+    assert list(fake.collections[config.COL_REVIEWERS]) == ["rev"]
+    assert list(fake.collections[config.COL_PREAPPROVED]) == ["+201009999999"]
 
 
 def test_the_registry_is_closed_not_deleted_by_default():
@@ -234,7 +251,7 @@ def test_a_failure_part_way_is_recorded_and_a_rerun_finishes(step):
 
 def test_every_manifest_row_has_a_server_action():
     rows = manifest.load(_JSON)
-    assert [r.number for r in rows] == list(range(1, 50))
+    assert [r.number for r in rows] == list(range(1, 53))
     assert set(manifest.ACTIONS) == {r.number for r in rows}
     manifest.check(rows)
 
@@ -251,15 +268,18 @@ def test_the_bundled_copy_is_identical_to_the_contract():
 
 def test_the_json_and_the_dart_manifest_agree():
     source = open(_DART, encoding="utf-8").read()
-    dart = {
-        (int(m.group(1)), m.group(2).replace("\\'", "'"), m.group(3))
-        for m in re.finditer(
-            r"DeletionRow\(\s*number:\s*(\d+),.*?path:\s*'((?:[^'\\]|\\.)*)',"
-            r".*?method:\s*DeletionMethod\.(\w+)",
-            source,
-            re.S,
+    literal = r"'(?:[^'\\]|\\.)*'"
+    dart = set()
+    for m in re.finditer(
+        r"DeletionRow\(\s*number:\s*(\d+),.*?path:\s*((?:" + literal + r"\s*)+),"
+        r".*?method:\s*DeletionMethod\.(\w+)",
+        source,
+        re.S,
+    ):
+        path = "".join(
+            part.replace("\\'", "'") for part in re.findall(r"'((?:[^'\\]|\\.)*)'", m.group(2))
         )
-    }
+        dart.add((int(m.group(1)), path, m.group(3)))
     json_rows = {(r.number, r.path, r.method) for r in manifest.load(_JSON)}
     assert dart <= json_rows, sorted(dart - json_rows)
     top = max(n for n, _, _ in dart)
@@ -307,3 +327,52 @@ def test_the_community_and_coach_rows_run_in_the_group_hook():
     assert rows[49].path == "coachInvites where coachUid == uid"
     assert {rows[n].method for n in range(45, 50)} == {"groupHook"}
     assert {manifest.ACTIONS[n] for n in range(45, 50)} == {manifest.GROUP_HOOK}
+
+
+def test_a_booked_slot_is_gone_after_deletion_on_the_real_backend():
+    from tests.fake_firestore import FakeFirestore
+
+    db = FakeFirestore()
+    db.docs["verificationBookings/rev_20261005T0700Z"] = {"uid": "her", "reviewerId": "rev"}
+    db.docs["verificationBookings/rev_20261005T0715Z"] = {"uid": "other", "reviewerId": "rev"}
+    db.docs["verificationBookings/her_20261005T0730Z"] = {"uid": "other", "reviewerId": "her"}
+    db.docs["verificationReviewers/her"] = {"listed": True}
+    backend = deletion.FirebaseBackend.__new__(deletion.FirebaseBackend)
+    backend.db = db
+    backend.delete_where_uid(config.COL_BOOKINGS, "her")
+    backend.delete_where_uid(config.COL_BOOKINGS, "her", field="reviewerId")
+    backend.delete_doc(config.COL_REVIEWERS, "her")
+    assert list(db.docs) == ["verificationBookings/rev_20261005T0715Z"]
+
+
+def test_row_52_is_the_preapproved_number_and_runs_in_the_group_hook():
+    rows = {r.number: r for r in manifest.load(_JSON)}
+    assert rows[52].path == "verificationPreapproved/{E.164 phone of her Auth account}"
+    assert rows[52].method == "groupHook"
+    assert manifest.ACTIONS[52] == manifest.PREAPPROVED
+
+
+def test_a_preapproved_number_is_deleted_by_her_auth_phone_on_the_real_backend(monkeypatch):
+    from firebase_admin import auth
+
+    from tests.fake_firestore import FakeFirestore
+
+    db = FakeFirestore()
+    db.docs["verificationPreapproved/+201001234567"] = {"phone": "+201001234567"}
+    db.docs["verificationPreapproved/+201009999999"] = {"phone": "+201009999999"}
+    backend = deletion.FirebaseBackend.__new__(deletion.FirebaseBackend)
+    backend.db = db
+
+    class _User:
+        phone_number = "+201001234567"
+
+    monkeypatch.setattr(auth, "get_user", lambda uid: _User())
+    backend.delete_preapproved("her")
+    assert list(db.docs) == ["verificationPreapproved/+201009999999"]
+
+    def gone(uid):
+        raise auth.UserNotFoundError("gone")
+
+    monkeypatch.setattr(auth, "get_user", gone)
+    backend.delete_preapproved("her")
+    assert list(db.docs) == ["verificationPreapproved/+201009999999"]

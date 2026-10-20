@@ -188,6 +188,11 @@ class FakeReviewStore:
     def clear_mint_pending(self, flag_id):
         self.flags[flag_id].pop("mintPending", None)
 
+    def clear_mint_pending_for(self, uid):
+        for flag in self.flags.values():
+            if flag.get("uid") == uid:
+                flag.pop("mintPending", None)
+
     def mint_pending_flags(self, limit):
         return [
             (k, v.get("uid"))

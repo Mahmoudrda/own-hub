@@ -45,7 +45,11 @@ from typing import Callable, Optional
 from tools.upload_media import REGISTRY, _clients, _require_adc, registry_id, storage_path
 
 COLLECTION = "exercises"
-CONTRACT_PATH = Path(__file__).resolve().parents[2] / "contracts" / "exercise_library_contract.json"
+_HERE = Path(__file__).resolve()
+CONTRACT_PATH = next(
+    (c for c in (_HERE.parents[1] / "exercise_library_contract.json", _HERE.parents[2] / "contracts" / "exercise_library_contract.json") if c.exists()),
+    _HERE.parents[2] / "contracts" / "exercise_library_contract.json",
+)
 CONTRACT = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
 LIMITS = CONTRACT["limits"]
 VERSION_DOC = CONTRACT["versionPath"].split("/")

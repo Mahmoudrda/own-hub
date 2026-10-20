@@ -21,6 +21,7 @@ import '../../../ui/app_progress.dart';
 import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/hand/hand.dart';
+import '../domain/daily_targets.dart';
 import '../domain/day_totals.dart';
 import 'eat_day_view_model.dart';
 
@@ -624,30 +625,37 @@ class QuickAddCard extends StatelessWidget {
   }
 }
 
-/// E01's hero: kcal eaten inside a ring, and protein, carbs and fat as three
-/// small bars beside it.
+/// E01's hero: kcal eaten inside a ring that fills toward the day's kcal
+/// target, and protein, carbs and fat as three bars against their targets.
 ///
-/// The ring counts meals logged of the day's three, a completed share of a
-/// known total. The protein bar fills toward the one target the product keeps;
-/// carbs and fat have no target, so their bars show each one's share of the
-/// grams eaten so far and never a remainder.
+/// It shows what she has eaten against a figure to aim at and nothing counts
+/// down: past a target a ring or bar is simply full. [totals] already include
+/// any meal still inside its undo window, so they move the moment she logs.
 class EatHero extends StatelessWidget {
-  const EatHero({super.key, required this.totals, required this.mealsDone});
+  const EatHero({
+    super.key,
+    required this.totals,
+    required this.targets,
+    this.onPersonalise,
+  });
 
   final DayTotals totals;
+  final DailyTargets targets;
 
-  /// 0 to 3.
-  final int mealsDone;
+  /// Opens where she adds her weight, height and age. Shown only while the
+  /// targets rest on the stated defaults.
+  final VoidCallback? onPersonalise;
+
+  static double _fraction(int eaten, int target) =>
+      target <= 0 ? 0 : (eaten / target).clamp(0.0, 1.0).toDouble();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final carbs = totals.carbsSoFar ?? 0;
     final fat = totals.fatSoFar ?? 0;
-    final grams = totals.proteinSoFar + carbs + fat;
-    double share(int g) => grams == 0 ? 0 : g / grams * 100;
 
-    Widget macro(String name, String value, double percent, Color colour) {
+    Widget macro(String name, int eaten, int target, Color colour) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -655,12 +663,16 @@ class EatHero extends StatelessWidget {
           AppSplitRow(
             start: Text(name, style: AppText.titleS),
             end: Text(
-              value,
+              l10n.sofarOfTargetG(countLabel(eaten), countLabel(target)),
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
           ),
           const SizedBox(height: 4),
-          AppProgressBar(percent: percent, height: 8, colour: colour),
+          AppProgressBar(
+            percent: _fraction(eaten, target) * 100,
+            height: 8,
+            colour: colour,
+          ),
         ],
       );
     }
@@ -671,14 +683,20 @@ class EatHero extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            AppRingStat(
-              fraction: mealsDone / 3,
-              big: countLabel(totals.kcalSoFar),
-              small: '${l10n.kcal} ${l10n.eaten}',
-              size: 112,
-              thickness: 12,
-              color: AppColors.primary,
-              animateIn: true,
+            Semantics(
+              label:
+                  '${countLabel(totals.kcalSoFar)} ${l10n.kcal} ${l10n.eaten}',
+              excludeSemantics: true,
+              child: AppRingStat(
+                key: const ValueKey('eat-kcal-ring'),
+                fraction: _fraction(totals.kcalSoFar, targets.kcal),
+                big: countLabel(totals.kcalSoFar),
+                small: l10n.ofTargetKcal(countLabel(targets.kcal)),
+                size: 112,
+                thickness: 12,
+                color: AppColors.primary,
+                animateIn: true,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -688,27 +706,14 @@ class EatHero extends StatelessWidget {
                 children: [
                   macro(
                     l10n.protein,
-                    l10n.sofarOfTargetG(
-                      countLabel(totals.proteinSoFar),
-                      countLabel(totals.proteinTargetG),
-                    ),
-                    totals.proteinPercent,
+                    totals.proteinSoFar,
+                    targets.proteinG,
                     AppColors.tertiarySoft,
                   ),
                   const SizedBox(height: 10),
-                  macro(
-                    l10n.carbs,
-                    '${countLabel(carbs)} g',
-                    share(carbs),
-                    AppColors.primary,
-                  ),
+                  macro(l10n.carbs, carbs, targets.carbsG, AppColors.primary),
                   const SizedBox(height: 10),
-                  macro(
-                    l10n.fat,
-                    '${countLabel(fat)} g',
-                    share(fat),
-                    AppColors.outline,
-                  ),
+                  macro(l10n.fat, fat, targets.fatG, AppColors.outline),
                 ],
               ),
             ),
@@ -719,6 +724,24 @@ class EatHero extends StatelessWidget {
             l10n.fibreGramsG(countLabel(totals.fiberSoFar!)),
             key: const ValueKey('day-card-more-macros'),
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        if (targets.usesDefaults && onPersonalise != null)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Tooltip(
+              message: l10n.targetsUseAStandardEstimateAddYour,
+              child: TextButton(
+                key: const ValueKey('eat-personalise'),
+                onPressed: onPersonalise,
+                child: Text(
+                  l10n.personalise,
+                  style: AppText.label.copyWith(
+                    color: AppColors.primaryDim,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ),
       ],
     );

@@ -21,6 +21,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/eat_state.dart' show EatAppState;
+import '../../../app_state/guest_session.dart';
 import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
@@ -30,7 +32,9 @@ import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_field.dart';
+import '../../../ui/app_list_item.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_segmented.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/allergy_guard.dart';
@@ -43,6 +47,7 @@ import 'eat_sample_library.dart';
 import 'eat_widgets.dart';
 import 'food_portion_sheet.dart';
 import 'meal_log_session.dart';
+import 'quick_custom_sheet.dart';
 import 'type_it_view_model.dart';
 import 'meal_labels.dart';
 
@@ -57,11 +62,13 @@ class TypeItView extends StatefulWidget {
     this.now,
     this.initialText,
     this.history = const <ParsedItem>[],
+    this.frequent = const <ParsedItem>[],
     this.onClose,
     this.onSpeak,
     this.onSnap,
     this.onLogged,
     this.onBlocked,
+    this.requireAccount,
   });
 
   /// See `EatView.constraints` — required, never defaulted.
@@ -85,6 +92,10 @@ class TypeItView extends StatefulWidget {
   /// Plates she has eaten before, listed first in the results as "You've had".
   final List<ParsedItem> history;
 
+  /// The same foods, most eaten first, for the Frequent tab. Each at the
+  /// portion she last had.
+  final List<ParsedItem> frequent;
+
   final VoidCallback? onClose;
   final VoidCallback? onSpeak;
 
@@ -96,6 +107,12 @@ class TypeItView extends StatefulWidget {
   /// A log the domain refused. Unwired today — the allergen sheet's three
   /// strings are absent from the dictionary, so there is nothing to render.
   final ValueChanged<MealLogRefused>? onBlocked;
+
+  /// Asked before a meal is logged or a food starred: false means she is a
+  /// guest and has been taken to sign in, so nothing is saved. The router
+  /// passes the guest gate; absent, everything is allowed.
+  final bool Function(BuildContext context, PendingAction action)?
+  requireAccount;
 
   @override
   State<TypeItView> createState() => _TypeItViewState();
@@ -115,6 +132,13 @@ class _TypeItViewState extends State<TypeItView> {
   /// straight back.
   TypeItState? _state;
 
+  /// Her starred foods and the foods she typed in, read when the screen opens
+  /// and again after each change.
+  EatPrefs _prefs = const EatPrefs();
+
+  /// The tab under the empty box: 0 Recent, 1 Frequent, 2 Favourites.
+  int _tab = 0;
+
   DateTime get _now => widget.now ?? AppClock.now();
 
   /// Whether saying a meal is on in this build (`E03`).
@@ -128,6 +152,12 @@ class _TypeItViewState extends State<TypeItView> {
     _repo = widget.repository ?? InMemoryMealRepository();
     _ownsBus = widget.bus == null && widget.session == null;
     _bus = widget.bus ?? widget.session?.bus ?? LogCommandBus();
+    unawaited(_loadPrefs());
+  }
+
+  Future<void> _loadPrefs() async {
+    final prefs = await _repo.prefs();
+    if (mounted) setState(() => _prefs = prefs);
   }
 
   @override
@@ -138,8 +168,10 @@ class _TypeItViewState extends State<TypeItView> {
     super.dispose();
   }
 
-  FoodLibrary _library(AppL10n l10n) =>
-      widget.library ?? eatSampleLibrary(l10n);
+  FoodLibrary _library(AppL10n l10n) => withCustomFoods(
+    widget.library ?? eatSampleLibrary(l10n),
+    _prefs.customFoods,
+  );
 
   TypeItViewModel _model(AppL10n l10n) => TypeItViewModel(
     parser: MealSentenceParser(_library(l10n)),
@@ -187,6 +219,14 @@ class _TypeItViewState extends State<TypeItView> {
   }
 
   void _log(List<ParsedItem> entries) {
+    final gate = widget.requireAccount;
+    if (gate != null &&
+        !gate(
+          context,
+          PendingAction.logMeal(entries, origin: MealOrigin.search),
+        )) {
+      return;
+    }
     final l10n = AppL10n.of(context);
     final service = MealLogService(
       repository: _repo,
@@ -369,9 +409,52 @@ class _TypeItViewState extends State<TypeItView> {
       ),
       initialSize: size,
       initialServings: servings,
+      isFavourite: _prefs.favourites.contains(food.foodId),
+      onToggleFavourite: () async {
+        final gate = widget.requireAccount;
+        if (gate != null &&
+            !gate(context, PendingAction.favourite(food.foodId))) {
+          return _prefs.favourites.contains(food.foodId);
+        }
+        final now = await EatAppState.instance.toggleFavourite(
+          _repo,
+          food.foodId,
+        );
+        await _loadPrefs();
+        return now;
+      },
     );
     if (item == null || !mounted) return;
     _log([item]);
+  }
+
+  /// Quick custom: keeps the food and logs one serving of it.
+  Future<void> _quickCustom({String name = ''}) async {
+    final entry = await showQuickCustomSheet(
+      context: context,
+      initialName: name,
+    );
+    if (entry == null || !mounted) return;
+    final food = await EatAppState.instance.addCustomFood(
+      _repo,
+      name: entry.name,
+      kcal: entry.kcal,
+      proteinG: entry.proteinG,
+      carbsG: entry.carbsG,
+      fatG: entry.fatG,
+      fiberG: entry.fiberG,
+    );
+    await _loadPrefs();
+    if (!mounted) return;
+    final served = food.toFood();
+    _log([
+      ParsedItem(
+        food: served,
+        size: served.defaultSize,
+        servings: 1,
+        sourceText: served.names.first,
+      ),
+    ]);
   }
 
   /// A sentence naming several foods, or one with a part nothing matched, is
@@ -395,12 +478,14 @@ class _TypeItViewState extends State<TypeItView> {
     final guard = AllergyGuard(widget.constraints);
     final shown = <String>{for (final item in listed) item.food.foodId};
 
-    final had = <ParsedItem>[
-      for (final entry in state.history)
-        if (needle.isEmpty ||
-            entry.food.names.any((n) => n.toLowerCase().contains(needle)))
-          if (shown.add('had:${entry.food.foodId}:${entry.size.id}')) entry,
-    ].take(5).toList();
+    final had = query.isEmpty
+        ? const <ParsedItem>[]
+        : <ParsedItem>[
+            for (final entry in state.history)
+              if (entry.food.names.any((n) => n.toLowerCase().contains(needle)))
+                if (shown.add('had:${entry.food.foodId}:${entry.size.id}'))
+                  entry,
+          ].take(5).toList();
 
     final foods = <Food>[
       for (final food
@@ -413,22 +498,13 @@ class _TypeItViewState extends State<TypeItView> {
     ].take(12).toList();
 
     return [
+      if (query.isEmpty) ..._emptyBox(l10n, state, guard, library),
       if (had.isNotEmpty) ...[
         Text(
           l10n.youveHad,
           style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),
         ),
-        for (final entry in had)
-          FoodResultRow(
-            key: ValueKey('had-${entry.food.foodId}-${entry.size.id}'),
-            title: entry.food.names.first,
-            meta: _metaFor(l10n, entry),
-            addLabel: l10n.addName(entry.food.names.first),
-            note: containsNoteFor(l10n, guard, entry.food),
-            onTap: () =>
-                _pick(entry.food, size: entry.size, servings: entry.servings),
-            onAdd: () => _log([entry]),
-          ),
+        for (final entry in had) _entryRow(l10n, guard, entry, 'had'),
       ],
       if (foods.isNotEmpty) ...[
         if (query.isEmpty)
@@ -455,6 +531,98 @@ class _TypeItViewState extends State<TypeItView> {
           ),
       ],
     ];
+  }
+
+  /// One food at a portion, with a "+" that logs exactly that portion.
+  Widget _entryRow(
+    AppL10n l10n,
+    AllergyGuard guard,
+    ParsedItem entry,
+    String keyPrefix,
+  ) {
+    return FoodResultRow(
+      key: ValueKey('$keyPrefix-${entry.food.foodId}-${entry.size.id}'),
+      title: entry.food.names.first,
+      meta: _metaFor(l10n, entry),
+      addLabel: l10n.addName(entry.food.names.first),
+      note: containsNoteFor(l10n, guard, entry.food),
+      onTap: () =>
+          _pick(entry.food, size: entry.size, servings: entry.servings),
+      onAdd: () => _log([entry]),
+    );
+  }
+
+  /// What the empty box offers: Recent, Frequent and Favourites, each row a
+  /// food at the portion she last had it, and Quick custom above them.
+  List<Widget> _emptyBox(
+    AppL10n l10n,
+    TypeItState state,
+    AllergyGuard guard,
+    FoodLibrary library,
+  ) {
+    final history = state.history;
+    final allowed = guard
+        .screenSuggestions([
+          for (final entry in widget.frequent) entry.food,
+          for (final id in _prefs.favourites) ?library.byId(id),
+        ])
+        .map((food) => food.foodId)
+        .toSet();
+
+    final rows = switch (_tab) {
+      0 => history.take(10).toList(),
+      1 => [
+        for (final entry in widget.frequent)
+          if (allowed.contains(entry.food.foodId)) entry,
+      ].take(10).toList(),
+      _ => [
+        for (final id in _prefs.favourites)
+          if (library.byId(id) case final food?)
+            if (allowed.contains(food.foodId)) _lastPortion(history, food),
+      ],
+    };
+    final prefix = const ['had', 'frequent', 'favourite'][_tab];
+
+    return [
+      AppSegmented(
+        key: const ValueKey('eat-quick-tabs'),
+        items: [l10n.recent, l10n.frequent, l10n.favourites],
+        selectedIndex: _tab,
+        onChanged: (index) => setState(() => _tab = index),
+      ),
+      AppListItem(
+        key: const ValueKey('quick-custom-row'),
+        leading: const Icon(
+          Icons.edit_note,
+          size: 23,
+          color: AppColors.primaryDim,
+        ),
+        title: l10n.quickCustom,
+        subtitle: l10n.typeANameAndTheNumbersOff,
+        onTap: _quickCustom,
+      ),
+      if (rows.isEmpty)
+        Text(
+          _tab == 2 ? l10n.tapTheStarOnAFoodTo : l10n.foodsYouLogShowUpHere,
+          key: const ValueKey('eat-quick-empty'),
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        )
+      else
+        for (final entry in rows) _entryRow(l10n, guard, entry, prefix),
+    ];
+  }
+
+  /// [food] at the portion she last logged it in, else its usual one.
+  ParsedItem _lastPortion(List<ParsedItem> history, Food food) {
+    for (final entry in history) {
+      if (entry.food.foodId == food.foodId) return entry;
+    }
+    return ParsedItem(
+      food: food,
+      size: food.defaultSize,
+      servings: 1,
+      sourceText: food.names.first,
+    );
   }
 
   /// The row's macros, computed from the size and servings she has selected.

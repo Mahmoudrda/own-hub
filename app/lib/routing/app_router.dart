@@ -49,6 +49,7 @@ import '../app_state/first_gym_guide_state.dart';
 import '../app_state/getting_started.dart';
 import '../app_state/workout_library_state.dart';
 import '../app_state/demo_mode.dart';
+import '../app_state/guest_session.dart';
 import '../app_state/honest_notice.dart';
 import '../app_state/undo_offer.dart';
 import '../app_state/onboarding_state.dart';
@@ -98,7 +99,8 @@ import '../features/eat/presentation/say_it_view.dart';
 import '../features/eat/presentation/type_it_view.dart';
 import '../features/eat/presentation/week_plan_view.dart';
 import '../features/onboarding/domain/intake_repository.dart';
-import '../features/onboarding/domain/intake.dart' show TrainingPlace;
+import '../features/onboarding/domain/intake.dart'
+    show TrainingLevel, TrainingPlace;
 import '../features/onboarding/presentation/equipment_view.dart';
 import '../features/onboarding/presentation/goal_view.dart';
 import '../features/onboarding/presentation/her_answers.dart';
@@ -124,11 +126,13 @@ import '../features/coach/domain/coach_invite.dart';
 import '../features/coach/presentation/certificate_camera_view.dart';
 import '../features/signup/presentation/being_checked_view.dart';
 import '../features/signup/presentation/coach_interest_sheet.dart';
+import '../features/signup/presentation/founder_welcome_view.dart';
 import '../features/signup/presentation/invite_code_sheet.dart';
 import '../features/signup/presentation/checking_view.dart';
 import '../features/signup/presentation/code_view.dart';
 import '../features/signup/presentation/consent_view.dart';
 import '../features/signup/presentation/demo/demo_stops.dart' show DemoStop;
+import '../features/signup/data/fast_verification_claim.dart';
 import '../features/signup/presentation/id_capture_view.dart';
 import '../features/signup/presentation/language_view.dart';
 import '../features/signup/presentation/look_around_view.dart';
@@ -173,6 +177,8 @@ import '../features/train/presentation/mid_set_view.dart';
 import '../features/train/presentation/move_logged_view.dart';
 import '../features/train/presentation/first_gym_guide_view.dart';
 import '../features/train/presentation/program_view.dart';
+import '../features/train/presentation/tier_tabs.dart';
+import '../features/train/domain/viewed_tier.dart';
 import '../features/train/presentation/resting_view.dart';
 import '../features/train/presentation/session_removal.dart';
 import '../features/train/presentation/session_notice.dart';
@@ -1139,6 +1145,7 @@ class AppRouter {
     signedIn: signedInUid != null,
     verified: isVerified,
     waitingOnAReviewer: awaitingReviewer,
+    guestBrowsing: GuestSession.isBrowsing,
   );
 
   /// The gate's decision, as a function of the four facts it turns on.
@@ -1158,10 +1165,15 @@ class AppRouter {
     required bool signedIn,
     required bool verified,
     required bool waitingOnAReviewer,
+    bool guestBrowsing = false,
   }) {
     if (!gateClosed) return null;
     if (!behindVerification(screenId)) return null;
     if (verified) return null;
+    // Guest mode: a woman with no account, or one whose check is open and who
+    // chose "Keep exploring", may open the browsing screens. Writes on them
+    // go through `GuestSession.require`, so nothing here opens a save.
+    if (guestBrowsing && GuestSession.screens.contains(screenId)) return null;
 
     // Where she goes instead. Not a wall: every one of these is a screen she
     // can act on.
@@ -1270,7 +1282,10 @@ class AppRouter {
         }
         goTo(context, 'C03');
       },
-      onSignIn: () => goTo(context, 'C06'),
+      onSignIn: () {
+        GuestSession.instance.intent = AuthIntent.signIn;
+        goTo(context, 'C06');
+      },
       // While the coach app is off a coach is not asked at C08, so she says
       // so here and the team hears from her (R1-P25). While it is on, a woman
       // her coach invited keeps the code for after her check (R1-P18).
@@ -1363,7 +1378,10 @@ class AppRouter {
       toSignUp: () => intakeRepository.setupDone
           ? goTo(context, 'O05')
           : goTo(context, 'O03'),
-      toSignIn: () => goTo(context, 'C06'),
+      toSignIn: () {
+        GuestSession.instance.intent = AuthIntent.signIn;
+        goTo(context, 'C06');
+      },
     ),
     // C05 is C04 with the join sheet raised, not a separate page. The route
     // exists so the design can be reviewed screen by screen, and shares C04's
@@ -1374,7 +1392,10 @@ class AppRouter {
       toSignUp: () => intakeRepository.setupDone
           ? goTo(context, 'O05')
           : goTo(context, 'O03'),
-      toSignIn: () => goTo(context, 'C06'),
+      toSignIn: () {
+        GuestSession.instance.intent = AuthIntent.signIn;
+        goTo(context, 'C06');
+      },
     ),
     // Her tap here is the acceptance of the Terms and the Privacy Policy
     // (M1), written to this phone before the code is sent and to the server
@@ -1386,6 +1407,7 @@ class AppRouter {
     // is counted from the next step only if she said yes.
     'C06': (context) => PhoneNumberView(
       repository: authRepository,
+      signIn: GuestSession.instance.intent == AuthIntent.signIn,
       onCodeSent: () {
         unawaited(analytics.track(AnalyticsEvent.signUpCodeSent));
         goTo(context, 'C07');
@@ -1418,6 +1440,19 @@ class AppRouter {
         // She has an account now: the short setup is no longer "before".
         OnboardingState.instance.beforeSignup = false;
         await readAfterSignIn();
+        // A number the team already knows (pre-approved, a test number or a
+        // store reviewer's) opens the app with no check. The server decides;
+        // a callable that is not there, or any error, reads as "none" and she
+        // goes on to the check as before.
+        if (!isVerified &&
+            await fastVerificationClaimer.claim() ==
+                FastVerification.approved) {
+          markApprovedByServer();
+          // Waited for, so her cloud profile can be read before the next
+          // screen is chosen (a returning woman skips setup).
+          await refreshVerificationClaim();
+          _trackYoureIn('reviewer');
+        }
         // Firebase's recommended `sign_up` for an account new to the check,
         // `login` for a woman already verified. The method is the only
         // parameter, and it is always the phone.
@@ -1440,7 +1475,11 @@ class AppRouter {
         if (!context.mounted) return;
         if (isVerified) await restoreRolesFromServer(context);
         if (!navigator.mounted || !context.mounted) return;
-        if (!isVerified && featureFlags.isOn(Feature.coachApp)) {
+        if (!isVerified && awaitingReviewer) {
+          // Already in the queue (pending, retry or rejected): the screen
+          // that says where her check stands, never the consent again.
+          goTo(context, 'C14');
+        } else if (!isVerified && featureFlags.isOn(Feature.coachApp)) {
           goTo(context, 'C08');
         } else if (!isVerified) {
           lastSignupRole = SignupRole.trainee;
@@ -1929,7 +1968,10 @@ class AppRouter {
         Navigator.of(context)
             .pushNamedAndRemoveUntil(appRoutes['C13']!.name, (_) => false);
       },
-      onLookAround: () => goTo(context, 'C04'),
+      scheduling: identityCheck.scheduling,
+      onKeepExploring: screenIsOn('T01')
+          ? () => GuestSession.keepExploring(context)
+          : null,
       // One push, "your check is done", only if she asks for it here.
       onNotifyMe: signedInUid == null
           ? null
@@ -1976,6 +2018,7 @@ class AppRouter {
     // keeps her here with an honest retry.
     'C15': (context) => WomanReviewerView(
       requester: identityCheck.reviews,
+      scheduling: identityCheck.scheduling,
       path: pendingReviewPath,
       checkStillRunning: reviewAskedWhileChecking,
       onBooked: (path) {
@@ -2210,7 +2253,12 @@ class AppRouter {
             onSaveAndJoin: () {
               OnboardingState.instance.finish();
               unawaited(analytics.track(AnalyticsEvent.intakeCompleted));
-              goTo(context, 'C06');
+              if (GuestSession.require(
+                context,
+                const PendingAction.savePlan(),
+              )) {
+                goTo(context, 'C06');
+              }
             },
           )
         : StartingProgramView(
@@ -2251,100 +2299,108 @@ class AppRouter {
             },
           ),
 
-    // Today. T06 is a state inside T01, never a route. T08 is a state inside
+    // Today, built again when she switches tier so it shows that tier's
+    // session. T06 is a state inside T01, never a route. T08 is a state inside
     // T07 too, and is built below anyway: see the note at its entry.
-    'T01': (context) => TodayView(
-      repository: todayRepository,
-      // What her plan calls today's session, or nothing. Home's cover was the
-      // fixed `l10n.legsAndGlutes` while Train, one tap away, named
-      // "Postpartum rebuild" — two names for one programme, neither of them
-      // hers. Null until a plan says otherwise, and the card then heads itself
-      // "Today's workout" rather than naming a programme she never chose.
-      //
-      // `trainRepository.day` is never set, so this was always null and the
-      // cover always read "Today's workout". It is the session R03 will open:
-      // her pick from the library, or the bundled one.
-      sessionTitle:
-          (chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)))
-              .title,
-      // D37 and D38: one line each under the week's marks, when they are on
-      // and have something true to say.
-      // Reminders on her training days, offered once as one line after a
-      // session she finished. "Not now" is an answer: the offer is not made
-      // again, and Notifications (A01) keeps the way in.
-      offerReminders:
-          featureFlags.isOn(Feature.trainingReminders) &&
-          ReminderState.instance.offerDue,
-      onChooseReminderDays: () => unawaited(openTrainingReminders(context)),
-      onDismissReminderOffer: () {
-        ReminderState.instance.offered = true;
-        AppChanges.bump();
-      },
-      trainingStreak: trainingStreakNow,
-      weekDoneWeekdays: weekDoneWeekdays(),
-      sessionMinutes: kSampleWorkoutMinutes,
-      onOpenStreak: () => unawaited(openTrainingStreak(context)),
-      challengeLine: challengeLineFor(
-        context,
-        chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
-      ),
-      onStartSession: () => goTo(context, 'R03'),
-      onRecall: () => goTo(context, 'T02'),
-      onOpenMeal: () => goTo(context, 'E01'),
-      // Her usual plate logs straight from Home and lands on the logged day.
-      // `onOpenPlate` is the way in when the card has no plate to log; the
-      // plates themselves go through `onLogPlate`, which writes the one she
-      // pressed and carries its five seconds to E04. Home's plates used to be
-      // a link and nothing more: E04 opened showing whatever she had logged
-      // elsewhere, and the plate she tapped was never written.
-      onOpenPlate: () => goTo(context, 'E04'),
-      onLogPlate: (plate) {
-        final handle = (EatAppState.instance..ensureFoodPack()).logPlate(
+    'T01': (context) => ValueListenableBuilder<TrainingLevel?>(
+      valueListenable: ViewedTier.notifier,
+      builder: (context, _, _) => TodayView(
+        repository: todayRepository,
+        onSignIn: _signInPillFor(context),
+        // What her plan calls today's session, or nothing. Home's cover was the
+        // fixed `l10n.legsAndGlutes` while Train, one tap away, named
+        // "Postpartum rebuild" — two names for one programme, neither of them
+        // hers. Null until a plan says otherwise, and the card then heads itself
+        // "Today's workout" rather than naming a programme she never chose.
+        //
+        // `trainRepository.day` is never set, so this was always null and the
+        // cover always read "Today's workout". It is the session R03 will open:
+        // her pick from the library, or the bundled one.
+        sessionTitle:
+            (chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)))
+                .title,
+        // D37 and D38: one line each under the week's marks, when they are on
+        // and have something true to say.
+        // Reminders on her training days, offered once as one line after a
+        // session she finished. "Not now" is an answer: the offer is not made
+        // again, and Notifications (A01) keeps the way in.
+        offerReminders:
+            featureFlags.isOn(Feature.trainingReminders) &&
+            ReminderState.instance.offerDue,
+        onChooseReminderDays: () => unawaited(openTrainingReminders(context)),
+        onDismissReminderOffer: () {
+          ReminderState.instance.offered = true;
+          AppChanges.bump();
+        },
+        trainingStreak: trainingStreakNow,
+        weekDoneWeekdays: weekDoneWeekdays(),
+        sessionMinutes: todaySessionMinutes(),
+        tierTabs: herProgramme == null
+            ? null
+            : TierTabs(selected: ViewedTier.of(intakeRepository.read())),
+        onOpenStreak: () => unawaited(openTrainingStreak(context)),
+        challengeLine: challengeLineFor(
           context,
-          plate.foodId,
-        );
-        if (handle == null) return;
-        _goCarryingHandle(context, 'E04', handle);
-      },
-      onOpenWeek: () => goTo(context, 'P01'),
-      onOpenCycle: () => goTo(context, 'Y03'),
-      // D11: her profile picture is the way into her profile, and — for a woman
-      // who chose both roles — the way she switches between the trainee and
-      // coach apps. `AppAvatar` was built for that and then placed on no screen,
-      // so `onOpenProfile` was passed by nobody and A02 sat three taps from Home.
-      onOpenProfile: () => goTo(context, 'A02'),
-      onAsk: () => goTo(context, 'X01'),
-      onNotifications: () => goTo(context, 'A01'),
-      // T06 — "Home, day one" — is a STATE of this same widget (rule 16), and
-      // it is the only screen the design routes to T07 from. Leaving this
-      // unwired was why T07 was built, routable, and reachable by nobody.
-      onOpenFirstWeek: () => goTo(context, 'T07'),
-      // Eat, where day one offers one-tap starter plates. It opened E02, a
-      // blank field to type into, which is the slowest way to log a meal.
-      onTellUsWhatYouEat: () => goTo(context, 'E01'),
-      onOpenBeginnersGroup: () => goTo(context, 'M01'),
-      // Day one names her week and offers the two things she came for besides
-      // training: planning dinners, and her cycle.
-      intake: intakeRepository.read(),
-      intakePlaceAnswered: intakeRepository.placeAnswered,
-      onOpenWeekPlan: () => goTo(context, 'E07'),
-      offerCycleSetup:
-          cycleRepository.current == null &&
-          !OnboardingState.instance.cycleRowDismissed,
-      onTrackCycle: () => goTo(context, 'Y01'),
-      onNotNowCycle: () {
-        OnboardingState.instance.cycleRowDismissed = true;
-        AppChanges.bump();
-      },
-      // The owner's next event, when Feature.events is on and one is planned.
-      nextEvent: EventsState.instance.upcoming.firstOrNull,
-      onOpenEvents: () => goTo(context, 'T09'),
-      // The bottom bar on the app's landing tab. Without this, TodayView's
-      // AppNavBar had nothing to call and tapping Train, Community or Eat from
-      // Home did nothing at all — on the first screen she sees after sign-up.
-      // app_nav_bar_test.dart could not catch it: it builds the bar directly
-      // and supplies its own onSelect.
-      onSelectTab: (screenId) => goToTab(context, screenId),
+          chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
+        ),
+        onStartSession: () => goTo(context, 'R03'),
+        onRecall: () => goTo(context, 'T02'),
+        onOpenMeal: () => goTo(context, 'E01'),
+        // Her usual plate logs straight from Home and lands on the logged day.
+        // `onOpenPlate` is the way in when the card has no plate to log; the
+        // plates themselves go through `onLogPlate`, which writes the one she
+        // pressed and carries its five seconds to E04. Home's plates used to be
+        // a link and nothing more: E04 opened showing whatever she had logged
+        // elsewhere, and the plate she tapped was never written.
+        onOpenPlate: () => goTo(context, 'E04'),
+        onLogPlate: (plate) {
+          final handle = (EatAppState.instance..ensureFoodPack()).logPlate(
+            context,
+            plate.foodId,
+          );
+          if (handle == null) return;
+          _goCarryingHandle(context, 'E04', handle);
+        },
+        onOpenWeek: () => goTo(context, 'P01'),
+        onOpenCycle: () => goTo(context, 'Y03'),
+        // D11: her profile picture is the way into her profile, and — for a woman
+        // who chose both roles — the way she switches between the trainee and
+        // coach apps. `AppAvatar` was built for that and then placed on no screen,
+        // so `onOpenProfile` was passed by nobody and A02 sat three taps from Home.
+        onOpenProfile: () => goTo(context, 'A02'),
+        onAsk: () => goTo(context, 'X01'),
+        onNotifications: () => goTo(context, 'A01'),
+        // T06 — "Home, day one" — is a STATE of this same widget (rule 16), and
+        // it is the only screen the design routes to T07 from. Leaving this
+        // unwired was why T07 was built, routable, and reachable by nobody.
+        onOpenFirstWeek: () => goTo(context, 'T07'),
+        // Eat, where day one offers one-tap starter plates. It opened E02, a
+        // blank field to type into, which is the slowest way to log a meal.
+        onTellUsWhatYouEat: () => goTo(context, 'E01'),
+        onOpenBeginnersGroup: () => goTo(context, 'M01'),
+        // Day one names her week and offers the two things she came for besides
+        // training: planning dinners, and her cycle.
+        intake: intakeRepository.read(),
+        intakePlaceAnswered: intakeRepository.placeAnswered,
+        onOpenWeekPlan: () => goTo(context, 'E07'),
+        offerCycleSetup:
+            cycleRepository.current == null &&
+            !OnboardingState.instance.cycleRowDismissed,
+        onTrackCycle: () => goTo(context, 'Y01'),
+        onNotNowCycle: () {
+          OnboardingState.instance.cycleRowDismissed = true;
+          AppChanges.bump();
+        },
+        // The owner's next event, when Feature.events is on and one is planned.
+        nextEvent: EventsState.instance.upcoming.firstOrNull,
+        onOpenEvents: () => goTo(context, 'T09'),
+        // The bottom bar on the app's landing tab. Without this, TodayView's
+        // AppNavBar had nothing to call and tapping Train, Community or Eat from
+        // Home did nothing at all — on the first screen she sees after sign-up.
+        // app_nav_bar_test.dart could not catch it: it builds the bar directly
+        // and supplies its own onSelect.
+        onSelectTab: (screenId) => goToTab(context, screenId),
+      ),
     ),
     'T02': (context) => AlreadyDidItView(
       repository: todayRepository,
@@ -2489,166 +2545,178 @@ class AppRouter {
     },
 
     // Train.
-    'R01': (context) {
-      // Offered only once the phone holds a library. Asking here, on the
-      // Train tab, is what brings it in for a woman verified since the app
-      // launched: the check is rate-limited and returns at once when it is
-      // not due.
-      unawaited(ExerciseLibraryState.instance.refresh());
-      final l10n = AppL10n.of(context);
-      final language = Localizations.localeOf(context).languageCode;
-      final intake = intakeRepository.read();
-      final stage = intake.lifeStage;
-      final screened = ExerciseLibraryState.instance.screenedFor(stage);
-      final her = herProgramme;
-      final sessions = her == null
-          ? const <AuthoredSession>[]
-          : programmeSessionsFor(her.content, stage);
-      final done = sessionsDoneThisWeek(trainRepository.sessions);
-      final next = nextSlot(intake.days, done);
-      void openSlot(int? slot) {
-        WorkoutLibraryState.instance
-          ..chosenRowId = null
-          ..openedSlot = slot;
-        goTo(context, 'R03');
-      }
+    'R01': (context) => ValueListenableBuilder<TrainingLevel?>(
+      valueListenable: ViewedTier.notifier,
+      builder: (context, _, _) {
+        // Offered only once the phone holds a library. Asking here, on the
+        // Train tab, is what brings it in for a woman verified since the app
+        // launched: the check is rate-limited and returns at once when it is
+        // not due.
+        unawaited(ExerciseLibraryState.instance.refresh());
+        final l10n = AppL10n.of(context);
+        final language = Localizations.localeOf(context).languageCode;
+        final intake = intakeRepository.read();
+        final stage = intake.lifeStage;
+        final screened = ExerciseLibraryState.instance.screenedFor(stage);
+        final her = herProgramme;
+        final sessions = her == null
+            ? const <AuthoredSession>[]
+            : programmeSessionsFor(her.content, stage);
+        final done = sessionsDoneThisWeek(trainRepository.sessions);
+        final next = nextSlot(intake.days, done);
+        void openSlot(int? slot) {
+          WorkoutLibraryState.instance
+            ..chosenRowId = null
+            ..openedSlot = slot;
+          goTo(context, 'R03');
+        }
 
-      return TrainView(
-        // Her week, from the same copy Home draws, so the two cannot disagree.
-        sessionsThisWeek: todayRepository.day.week.sessionsLogged,
-        sessionsPrescribed: todayRepository.day.week.sessionsTarget,
-        week: [
-          for (final slot in weekSlots(
-            sessions,
-            days: intake.days,
-            minutes: intake.minutes,
-            done: done,
-          ))
-            ProgramDay(
-              title: slot.session.title(language),
-              detail: l10n.minutesMinutesMovesMoves(
-                countLabel(slot.session.minutes),
-                countLabel(slot.session.moves.length),
+        return TrainView(
+          // Her week, from the same copy Home draws, so the two cannot disagree.
+          sessionsThisWeek: todayRepository.day.week.sessionsLogged,
+          sessionsPrescribed: todayRepository.day.week.sessionsTarget,
+          week: [
+            for (final slot in weekSlots(
+              sessions,
+              days: intake.days,
+              minutes: intake.minutes,
+              done: done,
+            ))
+              ProgramDay(
+                title: slot.session.title(language),
+                detail: l10n.minutesMinutesMovesMoves(
+                  countLabel(slot.session.minutes),
+                  countLabel(slot.session.moves.length),
+                ),
+                done: slot.done,
+                today: slot.index == next,
+                onTap: () => openSlot(slot.index),
               ),
-              done: slot.done,
-              today: slot.index == next,
-              onTap: () => openSlot(slot.index),
-            ),
-        ],
-        // The design sends "Continue" to G06, the coached-client screen. In
-        // phase 1 no woman has a coach, so that would be a dead end — she goes
-        // to today's session instead. Revisit when coaching ships (G4 OQ-12).
-        onContinue: () => goTo(context, 'R03'),
-        onSeeProgram: () => goTo(context, 'R02'),
-        onOpenToday: () => goTo(context, 'T01'),
-        onGentlerOption: () => goTo(context, 'R05'),
-        showGentlerOption: canSwap(
-          WorkoutSessionState.instance.currentMove?.exerciseId,
-        ),
-        // The first "Short ones that still count" tile, as the design has it.
-        // A follow-along starts from a session: R03 opens R06 itself for a
-        // hold move, with a live session to log into.
-        onFollowAlong: () => goTo(context, 'R03'),
-        onShortSession: () => goTo(context, 'R03'),
-        // Each tile opens the library session it names; one with no match is
-        // not drawn. They all opened her normal planned day.
-        shortSessions: _shortSessions(context),
-        onOpenMuscles: () => goTo(context, 'P06'),
-        onSelectTab: (screenId) => goToTab(context, screenId),
-        // Explore. A move is listed only with its clip; a workout only when
-        // every move in it has one. The row she taps is the session she gets:
-        // `workoutDayFor` resolves it, and R03 opens only when there is one.
-        focus: switch (ModalRoute.of(context)?.settings.arguments) {
-          final ExploreFocus focus => focus,
-          _ => null,
-        },
-        exercises: [
-          for (final e in screened.shown)
-            if (ExerciseLibraryState.instance.hasClip(e.id)) e,
-        ],
-        hiddenFor: screened.someHidden ? stage : null,
-        media: ExerciseLibraryState.instance.media,
-        workouts: [
-          ...sampleWorkoutLibrary(l10n),
-          for (final entry in WorkoutLibraryState.instance.sessionsFor(stage))
-            libraryRowFrom(l10n, language, entry.programme, entry.session),
-        ],
-        workoutIsFilmed: (workout) =>
-            ExerciseLibraryState.instance.allMovesFilmed(workout.exerciseIds),
-        onOpenWorkout: (workout) {
-          final library = WorkoutLibraryState.instance;
-          if (workout.id.startsWith('library:')) {
-            library.chosenRowId = workout.id;
-            if (library.chosenFor(stage) == null) {
-              library.chosenRowId = null;
+          ],
+          // The design sends "Continue" to G06, the coached-client screen. In
+          // phase 1 no woman has a coach, so that would be a dead end — she goes
+          // to today's session instead. Revisit when coaching ships (G4 OQ-12).
+          onContinue: () => goTo(context, 'R03'),
+          tierTabs: her == null
+              ? null
+              : TierTabs(selected: ViewedTier.of(intake)),
+          onSeeProgram: () => goTo(context, 'R02'),
+          onOpenToday: () => goTo(context, 'T01'),
+          onGentlerOption: () => goTo(context, 'R05'),
+          showGentlerOption: canSwap(
+            WorkoutSessionState.instance.currentMove?.exerciseId,
+          ),
+          // The first "Short ones that still count" tile, as the design has it.
+          // A follow-along starts from a session: R03 opens R06 itself for a
+          // hold move, with a live session to log into.
+          onFollowAlong: () => goTo(context, 'R03'),
+          onShortSession: () => goTo(context, 'R03'),
+          // Each tile opens the library session it names; one with no match is
+          // not drawn. They all opened her normal planned day.
+          shortSessions: _shortSessions(context),
+          onOpenMuscles: () => goTo(context, 'P06'),
+          onSelectTab: (screenId) => goToTab(context, screenId),
+          // Explore. A move is listed only with its clip; a workout only when
+          // every move in it has one. The row she taps is the session she gets:
+          // `workoutDayFor` resolves it, and R03 opens only when there is one.
+          focus: switch (ModalRoute.of(context)?.settings.arguments) {
+            final ExploreFocus focus => focus,
+            _ => null,
+          },
+          exercises: [
+            for (final e in screened.shown)
+              if (ExerciseLibraryState.instance.hasClip(e.id)) e,
+          ],
+          hiddenFor: screened.someHidden ? stage : null,
+          media: ExerciseLibraryState.instance.media,
+          workouts: [
+            ...sampleWorkoutLibrary(l10n),
+            for (final entry in WorkoutLibraryState.instance.sessionsFor(stage))
+              libraryRowFrom(l10n, language, entry.programme, entry.session),
+          ],
+          workoutIsFilmed: (workout) =>
+              ExerciseLibraryState.instance.allMovesFilmed(workout.exerciseIds),
+          onOpenWorkout: (workout) {
+            final library = WorkoutLibraryState.instance;
+            if (workout.id.startsWith('library:')) {
+              library.chosenRowId = workout.id;
+              if (library.chosenFor(stage) == null) {
+                library.chosenRowId = null;
+                return;
+              }
+              library.openedSlot = null;
+              goTo(context, 'R03');
               return;
             }
-            library.openedSlot = null;
+            if (workoutDayFor(l10n, workout.id) == null) return;
+            library.chosenRowId = null;
             goTo(context, 'R03');
-            return;
-          }
-          if (workoutDayFor(l10n, workout.id) == null) return;
-          library.chosenRowId = null;
+          },
+          onOpenExercise: screenIsOn('R15')
+              ? (exercise) {
+                  ExerciseLibraryState.instance.openExerciseId = exercise.id;
+                  goTo(context, 'R15');
+                }
+              : null,
+        );
+      },
+    ),
+    'R02': (context) => ValueListenableBuilder<TrainingLevel?>(
+      valueListenable: ViewedTier.notifier,
+      builder: (context, _, _) {
+        final l10n = AppL10n.of(context);
+        final language = Localizations.localeOf(context).languageCode;
+        final intake = intakeRepository.read();
+        final her = herProgramme;
+        final sessions = her == null
+            ? const <AuthoredSession>[]
+            : programmeSessionsFor(her.content, intake.lifeStage);
+        final done = sessionsDoneThisWeek(trainRepository.sessions);
+        final next = nextSlot(intake.days, done);
+        void open(int? slot) {
+          WorkoutLibraryState.instance
+            ..chosenRowId = null
+            ..openedSlot = slot;
           goTo(context, 'R03');
-        },
-        onOpenExercise: screenIsOn('R15')
-            ? (exercise) {
-                ExerciseLibraryState.instance.openExerciseId = exercise.id;
-                goTo(context, 'R15');
-              }
-            : null,
-      );
-    },
-    'R02': (context) {
-      final l10n = AppL10n.of(context);
-      final language = Localizations.localeOf(context).languageCode;
-      final intake = intakeRepository.read();
-      final her = herProgramme;
-      final sessions = her == null
-          ? const <AuthoredSession>[]
-          : programmeSessionsFor(her.content, intake.lifeStage);
-      final done = sessionsDoneThisWeek(trainRepository.sessions);
-      final next = nextSlot(intake.days, done);
-      void open(int? slot) {
-        WorkoutLibraryState.instance
-          ..chosenRowId = null
-          ..openedSlot = slot;
-        goTo(context, 'R03');
-      }
+        }
 
-      return ProgramView(
-        onBack: () => Navigator.of(context).maybePop(),
-        onChangeProgram: () =>
-            goToTab(context, 'R01', arguments: const ExploreFocus()),
-        onStart: () => open(null),
-        title: her == null
-            ? null
-            : (language == 'ar' ? her.content.titleAr : her.content.titleEn),
-        promise: her == null
-            ? null
-            : StartingProgrammes.summary(her.program.programId, language),
-        sessionsDone: sessions.isEmpty ? null : done.clamp(0, intake.days),
-        sessionsTarget: sessions.isEmpty ? null : intake.days,
-        days: [
-          for (final slot in weekSlots(
-            sessions,
-            days: intake.days,
-            minutes: intake.minutes,
-            done: done,
-          ))
-            ProgramDay(
-              title: slot.session.title(language),
-              detail: l10n.minutesMinutesMovesMoves(
-                countLabel(slot.session.minutes),
-                countLabel(slot.session.moves.length),
+        return ProgramView(
+          tierTabs: her == null
+              ? null
+              : TierTabs(selected: ViewedTier.of(intake)),
+          onBack: () => Navigator.of(context).maybePop(),
+          onChangeProgram: () =>
+              goToTab(context, 'R01', arguments: const ExploreFocus()),
+          onStart: () => open(null),
+          title: her == null
+              ? null
+              : (language == 'ar' ? her.content.titleAr : her.content.titleEn),
+          promise: her == null
+              ? null
+              : StartingProgrammes.summary(her.program.programId, language),
+          sessionsDone: sessions.isEmpty ? null : done.clamp(0, intake.days),
+          sessionsTarget: sessions.isEmpty ? null : intake.days,
+          days: [
+            for (final slot in weekSlots(
+              sessions,
+              days: intake.days,
+              minutes: intake.minutes,
+              done: done,
+            ))
+              ProgramDay(
+                title: slot.session.title(language),
+                detail: l10n.minutesMinutesMovesMoves(
+                  countLabel(slot.session.minutes),
+                  countLabel(slot.session.moves.length),
+                ),
+                done: slot.done,
+                today: slot.index == next,
+                onTap: () => open(slot.index),
               ),
-              done: slot.done,
-              today: slot.index == next,
-              onTap: () => open(slot.index),
-            ),
-        ],
-      );
-    },
+          ],
+        );
+      },
+    ),
     'R03': (context) => WorkoutDayView(
       repository: trainRepository,
       // The session she chose in Explore, when it came from the owner's library
@@ -2677,6 +2745,12 @@ class AppRouter {
       // Starts the session this screen is listing, so R07 opens on its first
       // move and its first set rather than on a fixed example.
       onStart: () {
+        if (!GuestSession.require(
+          context,
+          const PendingAction.startWorkout(),
+        )) {
+          return;
+        }
         void begin() {
           unawaited(
             analytics.track(AnalyticsEvent.sessionStarted, {
@@ -2750,7 +2824,9 @@ class AppRouter {
         clip: library,
         media: ExerciseLibraryState.instance.media,
         players: ExerciseLibraryState.instance.players,
-        canSwap: canSwap(WorkoutSessionState.instance.currentMove?.exerciseId),
+        canSwap:
+            !GuestSession.isBrowsing &&
+            canSwap(WorkoutSessionState.instance.currentMove?.exerciseId),
         onClose: () => Navigator.of(context).maybePop(),
         onBackToWorkout: () => goTo(context, 'R03'),
         onSwap: () => goTo(context, 'R05'),
@@ -3108,12 +3184,16 @@ class AppRouter {
       onBlocked: (refused) =>
           EatAppState.instance.explainRefusal(context, refused),
       onSelectTab: (screenId) => goToTab(context, screenId),
+      targets: EatAppState.instance.targets(),
+      requireAccount: GuestSession.require,
     ),
     'E02': (context) => TypeItView(
       constraints: eatConstraints,
       repository: mealRepository,
       session: (EatAppState.instance..ensureFoodPack()).session,
       history: EatAppState.instance.historyEntries(AppL10n.of(context)),
+      frequent: EatAppState.instance.frequentEntries(AppL10n.of(context)),
+      requireAccount: GuestSession.require,
       onClose: () => Navigator.of(context).maybePop(),
       onSpeak: () => goTo(context, 'E03'),
       // A photo of her plate, offered only while E12 is on and she is
@@ -3168,6 +3248,8 @@ class AppRouter {
       onBlocked: (refused) =>
           EatAppState.instance.explainRefusal(context, refused),
       onSelectTab: (screenId) => goToTab(context, screenId),
+      targets: EatAppState.instance.targets(),
+      requireAccount: GuestSession.require,
     ),
     'E05': (context) => RecipesView(
       // Kicked off here rather than in `main()`: a build that never opens Eat
@@ -3598,6 +3680,7 @@ class AppRouter {
               MaterialPageRoute<void>(builder: (_) => const AllScreensView()),
             ),
       onSelectTab: (screenId) => goToTab(context, screenId),
+      onSignIn: _signInPillFor(context),
     ),
     'A03': (context) => PrivacyView(
       service: privacyService,
@@ -7152,6 +7235,8 @@ class AppRouter {
         featureFlags.isOn(Feature.coachApp) &&
         RoleState.instance.roles?.active == AppRole.coach,
     coachSetupDone: CoachProfileState.instance.isSetupComplete,
+    waitingOnAReviewer: awaitingReviewer,
+    guestHome: !GuestSession.phoneHasOwner,
   );
 
   /// [frontDoor] as a function of the facts it turns on.
@@ -7162,12 +7247,17 @@ class AppRouter {
     required bool signedIn,
     bool coachSide = false,
     bool coachSetupDone = false,
+    bool waitingOnAReviewer = false,
+    bool guestHome = true,
   }) {
-    if (accountRequired && !verified && !signedIn) {
-      return appRoutes['C01']!.name;
+    if (accountRequired && !verified) {
+      // No account: Home as a guest, with the sign-in pill. On a phone that
+      // still holds a signed-out account's data, the welcome instead.
+      // Signed in with the check open: the check, because Home is now open
+      // to guests and would no longer send her there.
+      if (!signedIn) return appRoutes[guestHome ? 'T01' : 'C01']!.name;
+      return appRoutes[waitingOnAReviewer ? 'C14' : 'C09b']!.name;
     }
-    // Signed in and not verified yet: Home, where the gate holds her at the
-    // check whichever side she chose.
     if (coachSide && (verified || !accountRequired)) {
       return coachSetupDone ? appRoutes['K07']!.name : appRoutes['K01']!.name;
     }
@@ -8411,15 +8501,16 @@ class AppRouter {
   /// none is loaded for her answers.
   static ({StartingProgram program, AuthoredProgramme content})?
   get herProgramme {
-    final program = selectStartingProgram(intakeRepository.read());
+    final intake = intakeRepository.read();
+    final program = selectStartingProgram(intake, tier: ViewedTier.of(intake));
     if (program == null) return null;
     final content = StartingProgrammes.programme(program.programId);
     return content == null ? null : (program: program, content: content);
   }
 
   /// The session of her programme for today, or the one she opened on R02, cut
-  /// to her minutes. Null with no programme, which is the bundled session.
-  static WorkoutDay? programmeWorkoutDay(BuildContext context) {
+  /// to her minutes. Null with no programme.
+  static AuthoredSession? _programmeSession() {
     final her = herProgramme;
     if (her == null) return null;
     final intake = intakeRepository.read();
@@ -8428,13 +8519,32 @@ class AppRouter {
     final slot =
         WorkoutLibraryState.instance.openedSlot ??
         sessionsDoneThisWeek(trainRepository.sessions);
+    return scaleSession(sessions[slot % sessions.length], intake.minutes);
+  }
+
+  /// The session of her programme for today, or the one she opened on R02, cut
+  /// to her minutes. Null with no programme, which is the bundled session.
+  static WorkoutDay? programmeWorkoutDay(BuildContext context) {
+    final her = herProgramme;
+    final session = _programmeSession();
+    if (her == null || session == null) return null;
     return workoutDayFrom(
       AppL10n.of(context),
       Localizations.localeOf(context).languageCode,
       her.content,
-      scaleSession(sessions[slot % sessions.length], intake.minutes),
+      session,
       now: AppClock.now(),
     );
+  }
+
+  /// How long today's session takes: the library session she chose, else the
+  /// one from her programme, else the minutes she picked in setup.
+  static int todaySessionMinutes() {
+    final intake = intakeRepository.read();
+    final chosen = WorkoutLibraryState.instance.chosenFor(intake.lifeStage);
+    return chosen?.session.minutes ??
+        _programmeSession()?.minutes ??
+        intake.minutes;
   }
 
   /// The library session she chose in Explore, else today's session of her
@@ -9380,6 +9490,27 @@ class AppRouter {
   /// resolves to [NotBuiltYet] rather than to a screen.
   static bool isBuilt(String screenId) => _built.containsKey(screenId);
 
+  /// The doors the guest and navigation helpers outside this file use. They
+  /// live here so every literal screen id stays inside one file.
+  static void openFoodSearch(BuildContext context) => goTo(context, 'E02');
+
+  static void openSessionStart(BuildContext context) => goTo(context, 'R03');
+
+  static void openRecipeDetail(BuildContext context) => goTo(context, 'E06');
+
+  static void openLoggedDay(BuildContext context) => goTo(context, 'E04');
+
+  /// Where a guest who has an account goes to finish it: the wait while a
+  /// reviewer looks, otherwise the ID check.
+  static void openAccountCheck(BuildContext context) {
+    if (awaitingReviewer) {
+      goTo(context, 'C14');
+    } else {
+      beginIdentityCheck();
+      goTo(context, 'C09b');
+    }
+  }
+
   /// Navigates by screen id rather than by route string, so a screen never has
   /// to know another screen's path.
   ///
@@ -9396,7 +9527,74 @@ class AppRouter {
     }
     final route = appDestinations[screenId];
     if (route == null) return;
+    if (_guestMustSignIn(screenId)) {
+      // A workout she reached for is kept and replayed after sign-up.
+      if (screenId == 'R06' || screenId == 'R07') {
+        GuestSession.require(context, const PendingAction.startWorkout());
+      } else {
+        _guestDoor(context);
+      }
+      return;
+    }
     Navigator.of(context).pushNamed(route.name);
+  }
+
+  /// Whether a guest asked for a screen that needs an account. The gate
+  /// would send her to the front door; she is asked to sign in instead,
+  /// by Rahma, on the spot.
+  static bool _guestMustSignIn(String screenId) =>
+      GuestSession.isBrowsing &&
+      screenIsOn(screenId) &&
+      behindVerification(screenId) &&
+      !GuestSession.screens.contains(screenId);
+
+  /// Where a guest goes when she reaches for something that needs an
+  /// account: Rahma's welcome with no account, her check with one.
+  static void _guestDoor(BuildContext context) {
+    if (signedInUid == null) {
+      openFounderWelcome(context, intent: AuthIntent.signUp);
+    } else if (awaitingReviewer) {
+      goTo(context, 'C14');
+    } else {
+      beginIdentityCheck();
+      goTo(context, 'C09b');
+    }
+  }
+
+  /// The "Sign in or join" action for Home and her profile: null unless she
+  /// has no account. Home asks every time it draws, so this is also where a
+  /// kept guest action is replayed once she is verified, after the frame and
+  /// once (see [GuestSession.resumeAfterFrame]).
+  static VoidCallback? _signInPillFor(BuildContext context) {
+    GuestSession.instance.resumeAfterFrame(context);
+    if (!GuestSession.isGuest || signedInUid != null) return null;
+    return () => openFounderWelcome(context, intent: AuthIntent.signIn);
+  }
+
+  /// Rahma's welcome, pushed over whatever she was on. Its button goes on to
+  /// the number screen on the side she chose; its close button, or Back,
+  /// returns her to where she was and drops the action she had asked for.
+  static void openFounderWelcome(
+    BuildContext context, {
+    required AuthIntent intent,
+  }) {
+    GuestSession.instance.intent = intent;
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          fullscreenDialog: true,
+          builder: (welcome) => FounderWelcomeView(
+            signIn: intent == AuthIntent.signIn,
+            onContinue: () => unawaited(
+              Navigator.of(welcome)
+                  .pushReplacementNamed(appRoutes['C06']!.name),
+            ),
+            onClose: () => unawaited(Navigator.of(welcome).maybePop()),
+            onDismissed: GuestSession.instance.cancel,
+          ),
+        ),
+      ),
+    );
   }
 
   /// A tap on the bottom bar. A tab is a place, not a step: it opens on the
@@ -9422,6 +9620,10 @@ class AppRouter {
     }
     final route = appDestinations[screenId];
     if (route == null) return;
+    if (_guestMustSignIn(screenId)) {
+      _guestDoor(context);
+      return;
+    }
     Navigator.of(context).pushNamedAndRemoveUntil(
       route.name,
       (below) => below.isFirst && below.settings.name != route.name,

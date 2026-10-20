@@ -112,7 +112,7 @@ void main() {
       await AppRouter.readVerificationAtLaunch();
 
       expect(AppRouter.isVerified, isTrue);
-      expect(AppRouter.verificationGate('T01'), isNull);
+      expect(AppRouter.verificationGate('P01'), isNull);
       expect(AppRouter.awaitingReviewer, isFalse);
     });
 
@@ -138,7 +138,7 @@ void main() {
       await AppRouter.readVerificationAtLaunch();
 
       expect(AppRouter.isVerified, isFalse);
-      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
     });
 
     test('no evidence at all keeps the gate shut (Protected List 4)', () async {
@@ -147,7 +147,7 @@ void main() {
       await AppRouter.readVerificationAtLaunch();
 
       expect(AppRouter.isVerified, isFalse);
-      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
     });
 
     test('a failure that is not the network does not use the memory', () async {
@@ -189,14 +189,14 @@ void main() {
 
       expect(AppRouter.signedInUid, isNull);
       expect(AppRouter.isVerified, isTrue);
-      expect(AppRouter.verificationGate('T01'), isNull);
+      expect(AppRouter.verificationGate('P01'), isNull);
     });
 
     test('nobody remembered: the front door, as before', () async {
       AppRouter.verificationBackend = FakeBackend(ready: false, uid: null);
       await AppRouter.readVerificationAtLaunch();
       expect(AppRouter.isVerified, isFalse);
-      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
     });
   });
 
@@ -234,7 +234,7 @@ void main() {
 
       expect(clock.elapsed, lessThan(const Duration(milliseconds: 500)));
       expect(AppRouter.isVerified, isTrue);
-      expect(AppRouter.verificationGate('T01'), isNull);
+      expect(AppRouter.verificationGate('P01'), isNull);
     });
 
     test('the claim read right behind it still decides: a revoked claim '
@@ -254,7 +254,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 20));
 
       expect(AppRouter.isVerified, isFalse);
-      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
       expect(await VerificationMemory.verifiedUid(), isNull);
     });
 
@@ -274,7 +274,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 20));
 
       expect(AppRouter.isVerified, isFalse);
-      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
     });
 
     test('memory alone is not enough: without the cached approval the full '
@@ -356,6 +356,9 @@ void main() {
       await tester.pump();
       final l10n = AppL10n.of(tester.element(find.byType(BeingCheckedView)));
 
+      expect(opened, 0, reason: 'the kitten cheers first');
+      await tester.pump(const Duration(milliseconds: 1700));
+
       expect(find.text(l10n.yourCheckIsDone), findsOneWidget);
       expect(find.text(l10n.theAppOpensAsSoonAsYour), findsNothing);
       expect(find.text(l10n.aWomanFromOwnHubReviewsYour), findsNothing);
@@ -372,7 +375,7 @@ void main() {
       );
       expect(AppRouter.awaitingReviewer, isFalse);
       expect(AppRouter.isVerified, isTrue);
-      expect(AppRouter.verificationGate('T01'), isNull);
+      expect(AppRouter.verificationGate('P01'), isNull);
     });
   });
 }

@@ -24,13 +24,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/eat_state.dart';
 import '../../../data/pending_answers.dart';
 import '../../../domain/format/day_key.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
-import '../../eat/domain/day_totals.dart';
-import '../../eat/domain/meal_day_reader.dart';
 import '../../eat/domain/meal_repository.dart';
 import '../../events/domain/hub_event.dart';
 import '../../events/presentation/upcoming_events_card.dart';
@@ -46,6 +45,7 @@ import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/sign_in_pill.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_scope.dart';
@@ -99,6 +99,8 @@ class TodayView extends StatefulWidget {
     this.sessionMinutes,
     this.weekDoneWeekdays = const <int>{},
     this.mealRepository,
+    this.onSignIn,
+    this.tierTabs,
   });
 
   /// Her first name, for the greeting and the avatar. Null greets without it.
@@ -113,6 +115,14 @@ class TodayView extends StatefulWidget {
 
   /// Where today's meal totals are read from. Null reads the app's own.
   final MealRepository? mealRepository;
+
+  /// "Sign in or join", for a woman with no account. Supplied, a pill in the
+  /// greeting opens it; null draws nothing.
+  final VoidCallback? onSignIn;
+
+  /// The Beginner / Intermediate / Advanced tabs under the greeting. Switching
+  /// one changes the session the Today card shows. Null draws nothing.
+  final Widget? tierTabs;
 
   /// Her training streak (D37), or null when it is off — by the build or by
   /// her. Null draws nothing at all.
@@ -226,8 +236,10 @@ class _TodayViewState extends State<TodayView> {
   StreamSubscription<MealDay>? _mealSub;
   late TodayDay _day;
 
-  /// What she has eaten so far today, for the Eat card's ring and macros.
-  DayTotals _totals = DayTotals.empty;
+  /// What is stored for today. The Eat card reads it together with the meals
+  /// still inside their undo window, so a meal she has just logged shows at
+  /// once.
+  late MealDay _stored;
 
   /// The walk row updates the moment she taps, before the write is committed —
   /// the log is hers immediately, and undo puts it back.
@@ -244,6 +256,8 @@ class _TodayViewState extends State<TodayView> {
     _ownsBus = widget.bus == null;
     _bus = widget.bus ?? LogCommandBus();
     _day = _repo.day;
+    _stored = MealDay(dayId: dayKey(widget.now ?? AppClock.now()));
+    EatAppState.instance.session.addListener(_pendingMealsChanged);
     _sub = _repo.watch().listen((day) {
       if (mounted) setState(() => _day = day);
     });
@@ -254,15 +268,20 @@ class _TodayViewState extends State<TodayView> {
     final meals = widget.mealRepository ?? AppRouter.mealRepository;
     final id = dayKey(widget.now ?? AppClock.now());
     void adopt(MealDay day) {
-      if (mounted) setState(() => _totals = const MealDayReader().totals(day));
+      if (mounted) setState(() => _stored = day);
     }
 
     unawaited(meals.day(id).then(adopt, onError: (_) {}));
     _mealSub = meals.watchDay(id).listen(adopt, onError: (_) {});
   }
 
+  void _pendingMealsChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    EatAppState.instance.session.removeListener(_pendingMealsChanged);
     _sub?.cancel();
     _mealSub?.cancel();
     // A log still inside its undo window when she navigates away is committed,
@@ -351,13 +370,21 @@ class _TodayViewState extends State<TodayView> {
 
   // ---------------------------------------------------------------- T01 ----
 
+  /// "Sign in or join" for a woman with no account, on the weekday line of the
+  /// header at the trailing edge. Null for everyone else.
+  Widget? _signInPill() =>
+      widget.onSignIn == null ? null : SignInPill(onTap: widget.onSignIn!);
+
   List<Widget> _today(BuildContext context, AppL10n l10n) {
     final art = ScreenArt.inlineFor(ScreenScope.of(context));
     final now = widget.now ?? AppClock.now();
     final done = _day.state == DayState.done || _day.state == DayState.recalled;
+    final eat = EatAppState.instance;
+    final targets = eat.targets();
 
     return [
       HomeGreeting(
+        signIn: _signInPill(),
         day: weekdayLabel(l10n, _day.date),
         greeting: homeGreeting(l10n, now, widget.firstName),
         actions: [
@@ -388,6 +415,7 @@ class _TodayViewState extends State<TodayView> {
           ),
         ],
       ),
+      ?widget.tierTabs,
       HomeWeekStrip(
         today: _day.date,
         doneWeekdays: {...widget.weekDoneWeekdays, if (done) _day.date.weekday},
@@ -412,7 +440,9 @@ class _TodayViewState extends State<TodayView> {
       ),
       _weekCard(l10n),
       HomeEatCard(
-        totals: _totals,
+        totals: eat.totalsWithPending(_stored, against: targets),
+        targets: targets,
+        onLogFood: () => openScreen(context, 'E02', widget.onOpenMeal),
         loggedAt: _day.mealLoggedAt,
         // The heading follows the hour: the meal she logged, or the meal she
         // is likely to be having now.
@@ -763,6 +793,7 @@ class _TodayViewState extends State<TodayView> {
       // The same masthead as every other day, with "Day 1" where her level
       // will be.
       HomeGreeting(
+        signIn: _signInPill(),
         day: weekdayLabel(l10n, _day.date),
         greeting: homeGreeting(l10n, now, widget.firstName),
         actions: [

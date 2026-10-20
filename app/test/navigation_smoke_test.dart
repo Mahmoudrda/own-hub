@@ -19,15 +19,17 @@ void main() {
   final saved = AppRouter.featureFlags;
   tearDown(() => AppRouter.featureFlags = saved);
 
-  testWidgets('with an account required, the app boots to the welcome screen', (
-    tester,
-  ) async {
+  testWidgets('with an account required, the app boots to Home as a guest, '
+      'with the sign-in pill', (tester) async {
     AppRouter.featureFlags = FeatureFlags.allOff.with_({
       for (final f in Feature.values) f: true,
     });
+    AppRouter.intakeRepository.markSetupDone();
+    addTearDown(AppRouter.intakeRepository.reset);
     await tester.pumpWidget(const OwnHubApp());
     await tester.pumpAndSettle();
-    expect(find.textContaining('women'), findsWidgets);
+    expect(find.byType(TodayView), findsOneWidget);
+    expect(find.byKey(const ValueKey('sign-in-pill')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

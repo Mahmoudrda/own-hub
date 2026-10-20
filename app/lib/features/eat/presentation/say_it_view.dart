@@ -37,6 +37,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/guest_session.dart';
 import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
@@ -171,6 +172,12 @@ class _SayItViewState extends State<SayItView> {
   }
 
   void _log(List<ParsedItem> entries) {
+    if (!GuestSession.require(
+      context,
+      PendingAction.logMeal(entries, origin: MealOrigin.voice),
+    )) {
+      return;
+    }
     final l10n = AppL10n.of(context);
     final service = MealLogService(
       repository: _repo,

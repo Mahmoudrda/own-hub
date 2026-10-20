@@ -66,7 +66,13 @@ ReviewRequestState? reviewRequestStateFrom(Object? raw) => switch (raw) {
 abstract class ReviewRequester {
   /// Throws [VerificationCallFailure] (or anything else) when the call did not
   /// complete. Never returns a state the server did not send.
-  Future<ReviewRequestState> request(ReviewPath path);
+  ///
+  /// [knownReviewerId] is a listed reviewer she says she knows. The server
+  /// decides what that is worth; the client only passes it on.
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  });
 }
 
 /// The requester a build with no back end holds. It always fails, so the
@@ -75,8 +81,10 @@ class UnavailableReviewRequester implements ReviewRequester {
   const UnavailableReviewRequester();
 
   @override
-  Future<ReviewRequestState> request(ReviewPath path) async =>
-      throw const VerificationCallFailure('unavailable');
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) async => throw const VerificationCallFailure('unavailable');
 }
 
 /// A callable that answered with an error, in the domain's words.

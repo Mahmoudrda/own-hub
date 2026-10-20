@@ -100,6 +100,7 @@ class EgyptianFoodPack {
         size('L', l10n.large),
       ],
       popularity: 40,
+      category: dish['category'] as String?,
     );
   }
 }

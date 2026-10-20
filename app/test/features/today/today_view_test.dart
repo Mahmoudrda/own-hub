@@ -9,7 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
+import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/today/domain/today_day.dart';
+import 'package:own_hub/features/train/presentation/tier_tabs.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -66,8 +68,12 @@ TodayView _today({
   int? sessionMinutes,
   ValueChanged<PlateSuggestion>? onLogPlate,
   MealRepository? mealRepository,
+  VoidCallback? onSignIn,
+  Widget? tierTabs,
 }) {
   return TodayView(
+    onSignIn: onSignIn,
+    tierTabs: tierTabs,
     firstName: firstName,
     sessionMinutes: sessionMinutes,
     onLogPlate: onLogPlate,
@@ -671,5 +677,45 @@ void main() {
         },
       );
     }
+
+    for (final locale in const [Locale('en'), Locale('ar')]) {
+      testWidgets(
+        'a guest header with the pill and tier tabs fits at 2.0 in '
+        '${locale.languageCode}',
+        (tester) async {
+          _phone(tester);
+          var signIns = 0;
+          await tester.pumpWidget(
+            _host(
+              _today(
+                firstName: 'Mai',
+                sessionMinutes: 25,
+                onSignIn: () => signIns++,
+                tierTabs: const TierTabs(selected: TrainingLevel.beginner),
+              ),
+              locale: locale,
+              textScale: 2.0,
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          expect(find.byType(TierTabs), findsOneWidget);
+          await tester.tap(find.byKey(const ValueKey('sign-in-pill')));
+          expect(signIns, 1);
+        },
+      );
+    }
+
+    testWidgets('the Eat card has a Log food button and a kcal target', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(_today()));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const ValueKey('today-log-food')));
+      expect(find.byKey(const ValueKey('today-log-food')), findsOneWidget);
+      expect(find.textContaining('of '), findsWidgets);
+      expect(find.textContaining(' kcal'), findsWidgets);
+    });
   });
 }

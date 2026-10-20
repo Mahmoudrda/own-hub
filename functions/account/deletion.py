@@ -17,7 +17,9 @@ and the sweeper (main.resume_account_deletions) finishes it:
                        DELETE only: nothing here ever writes to Storage
     purgingGroupHooks  verificationJobs, verification_flags and
                        verificationSessions where uid == (rows 22, 39, 41),
-                       verificationLedger/{uid} (row 40), the community, coach
+                       verificationLedger/{uid} (row 40),
+                       verificationBookings and verificationReviewers (rows 50, 51), a pre-approved
+                       number matching her Auth phone (row 52), the community, coach
                        and assistant data (row 26, purge_group_hook), the
                        registry entry CLOSED not deleted (row 23), reports
                        pseudonymised (row 30)
@@ -118,8 +120,9 @@ class Backend(Protocol):
     def delete_user_tree(self, uid: str) -> None: ...
     def delete_plans_tree(self, uid: str) -> None: ...
     def delete_storage_prefix(self, bucket: str | None, prefix: str) -> None: ...
-    def delete_where_uid(self, collection: str, uid: str) -> None: ...
+    def delete_where_uid(self, collection: str, uid: str, field: str = "uid") -> None: ...
     def delete_doc(self, collection: str, doc_id: str) -> None: ...
+    def delete_preapproved(self, uid: str) -> None: ...
     def purge_group_hook(self, uid: str, deadline: Optional[float] = None) -> bool: ...
     def close_registry(self, uid: str, may_rejoin: bool) -> None: ...
     def pseudonymise_reports(self, uid: str, token: str) -> None: ...
@@ -166,6 +169,14 @@ def run(uid: str, backend: Backend, deadline: Optional[float] = None) -> dict:
         backend.delete_where_uid(config.COL_FLAGS, uid)
         backend.delete_where_uid(config.COL_SESSIONS, uid)
         backend.delete_doc(config.COL_LEDGER, uid)
+        # Rows 50 and 51: the review slots she booked, and, if she is a
+        # reviewer, her settings and the slots booked with her.
+        backend.delete_where_uid(config.COL_BOOKINGS, uid)
+        backend.delete_where_uid(config.COL_BOOKINGS, uid, field="reviewerId")
+        backend.delete_doc(config.COL_REVIEWERS, uid)
+        # Row 52: a pre-approved number is read from her Auth account, which
+        # still exists here (it is deleted last).
+        backend.delete_preapproved(uid)
         # Row 26 (N14). Unconditional: erasure must not depend on a manifest
         # row still being present.
         if backend.purge_group_hook(uid, deadline) is False:
@@ -315,12 +326,22 @@ class FirebaseBackend:
             except exceptions.NotFound:
                 pass
 
-    def delete_where_uid(self, collection, uid):
-        for snapshot in self.db.collection(collection).where("uid", "==", uid).stream():
+    def delete_where_uid(self, collection, uid, field="uid"):
+        for snapshot in self.db.collection(collection).where(field, "==", uid).stream():
             snapshot.reference.delete()
 
     def delete_doc(self, collection, doc_id):
         self.db.collection(collection).document(doc_id).delete()
+
+    def delete_preapproved(self, uid):
+        from firebase_admin import auth
+
+        try:
+            phone = auth.get_user(uid).phone_number
+        except auth.UserNotFoundError:
+            return  # a re-run after the Auth user was already deleted
+        if phone:
+            self.delete_doc(config.COL_PREAPPROVED, phone)
 
     def purge_group_hook(self, uid, deadline=None):
         """Row 26 (N14): her community, coach and assistant data.

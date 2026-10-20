@@ -62,18 +62,29 @@ void main() {
       // Fourth of five at home: goal, place, what she has there, then this.
       expect(find.text('4 of 5'), findsOneWidget);
 
-      // Three day chips, not four. The fifth chip was removed with
-      // `Intake.allowedDays`: it offered a target `kMaxSessionsTarget` refuses,
-      // so a woman who tapped it was measured against four for ever after.
-      for (final n in ['2', '3', '4']) {
+      // One to two, then three to seven: every weekly goal the rewards system
+      // accepts is one tap away, and a single day is a custom schedule.
+      for (final n in ['1-2', '3', '4', '5', '6', '7']) {
         expect(find.text(n), findsOneWidget, reason: n);
       }
-      expect(find.text('5'), findsNothing, reason: 'five is not offered');
-      // Minutes a session are asked on the same screen, each said in minutes.
+      // Minutes a session are asked on the same screen, each said in minutes,
+      // with a custom length after the presets.
       expect(find.text('Days a week'), findsOneWidget);
       expect(find.text('Minutes a session'), findsOneWidget);
-      for (final chip in ['10 min', '15 min', '20 min', '30 min']) {
+      for (final chip in [
+        '15 min',
+        '20 min',
+        '30 min',
+        '45 min',
+        '60 min',
+        '75+ min',
+        'Custom',
+      ]) {
         expect(find.text(chip), findsOneWidget, reason: chip);
+      }
+      expect(find.text('Custom schedule'), findsOneWidget);
+      for (final level in ['Beginner', 'Intermediate', 'Advanced']) {
+        expect(find.text(level), findsOneWidget, reason: level);
       }
     });
 
@@ -98,9 +109,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(_chipSelected(tester, '3'), isTrue);
-      // Was '5'. Five is no longer a chip at all, so the negative control moved
-      // to the highest day chip that does exist.
       expect(_chipSelected(tester, '4'), isFalse);
+      expect(_chipSelected(tester, 'Beginner'), isTrue);
       // Fifteen minutes is preselected too.
       expect(_chipSelected(tester, '15 min'), isTrue);
       expect(_chipSelected(tester, '30 min'), isFalse);
@@ -143,9 +153,7 @@ void main() {
   });
 
   group('writing', () {
-    testWidgets('Continue writes days and minutes, and nothing else', (
-      tester,
-    ) async {
+    testWidgets('Continue writes her week, and nothing else', (tester) async {
       final repository = InMemoryIntakeRepository();
       var continued = 0;
       await tester.pumpWidget(
@@ -155,8 +163,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Was a 5. Four is the top chip now, and the point of the case is that
-      // the number she taps is the number that is written, whichever it is.
       await tester.tap(find.text('4'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('30 min'));
@@ -167,7 +173,7 @@ void main() {
       expect(repository.read().days, 4);
       expect(repository.read().minutes, 30);
       expect(repository.writes, [
-        {'days', 'minutes'},
+        {'days', 'minutes', 'minutesCustom', 'level', 'weekdays'},
       ]);
       expect(continued, 1);
     });
@@ -201,7 +207,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(_chipSelected(tester, '2'), isTrue);
+      expect(_chipSelected(tester, '1-2'), isTrue);
       expect(_chipSelected(tester, '3'), isFalse);
     });
 
@@ -209,13 +215,13 @@ void main() {
       await tester.pumpWidget(
         _host(
           ScheduleView(
-            repository: InMemoryIntakeRepository(const Intake(minutes: 10)),
+            repository: InMemoryIntakeRepository(const Intake(minutes: 45)),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(_chipSelected(tester, '10 min'), isTrue);
+      expect(_chipSelected(tester, '45 min'), isTrue);
       expect(_chipSelected(tester, '15 min'), isFalse);
     });
   });
@@ -238,14 +244,21 @@ void main() {
       expect(find.text('4 من 5'), findsOneWidget);
       expect(find.text('How many days, and for how long?'), findsNothing);
       // The minutes chips stay in Western numerals as well (P0-A11Y-01).
-      for (final chip in ['10 دقيقة', '15 دقيقة', '20 دقيقة', '30 دقيقة']) {
+      for (final chip in [
+        '15 دقيقة',
+        '20 دقيقة',
+        '30 دقيقة',
+        '45 دقيقة',
+        '60 دقيقة',
+        '75+ دقيقة',
+      ]) {
         expect(find.text(chip), findsOneWidget, reason: chip);
       }
-      for (final eastern in ['١٠', '١٥', '٢٠', '٣٠']) {
+      for (final eastern in ['١٠', '١٥', '٢٠', '٣٠', '٤٥', '٦٠', '٧٥']) {
         expect(find.textContaining(eastern), findsNothing, reason: eastern);
       }
 
-      for (final n in ['2', '3', '4']) {
+      for (final n in ['1-2', '3', '4', '5', '6', '7']) {
         expect(
           find.text(n),
           findsOneWidget,
@@ -308,7 +321,7 @@ void main() {
 
       expect(continued, 1);
       expect(repository.writes, [
-        {'days', 'minutes'},
+        {'days', 'minutes', 'minutesCustom', 'level', 'weekdays'},
       ]);
       expect(repository.read().days, 4);
     });

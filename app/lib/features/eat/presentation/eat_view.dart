@@ -43,6 +43,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/app_changes.dart';
+import '../../../app_state/eat_state.dart' show EatAppState;
+import '../../../app_state/guest_session.dart';
 import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/flags/feature_flags.dart';
@@ -64,9 +67,9 @@ import '../../../ui/app_undo_bar.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_art_strip.dart';
-import '../../today/presentation/today_cards.dart'
-    show openScreen;
+import '../../today/presentation/today_cards.dart' show openScreen;
 import '../domain/allergy_guard.dart';
+import '../domain/daily_targets.dart';
 import '../domain/day_totals.dart';
 import '../domain/food_library.dart';
 import '../domain/meal_log_service.dart';
@@ -74,10 +77,12 @@ import '../domain/meal_repository.dart';
 import '../domain/meal_sentence_parser.dart';
 import 'eat_day_view_model.dart';
 import 'eat_sample_library.dart';
+import '../../onboarding/domain/body_data.dart';
 import 'eat_widgets.dart';
 import 'food_portion_sheet.dart' show containsNoteFor;
 import 'meal_labels.dart';
 import 'meal_log_session.dart';
+import 'personalise_sheet.dart';
 
 /// A meal the plan prescribes for a slot.
 ///
@@ -125,6 +130,8 @@ class EatView extends StatefulWidget {
     this.onLogged,
     this.onBlocked,
     this.onSelectTab,
+    this.targets,
+    this.requireAccount,
   });
 
   /// What she can and cannot eat.
@@ -203,6 +210,15 @@ class EatView extends StatefulWidget {
   final ValueChanged<MealLogRefused>? onBlocked;
 
   final ValueChanged<String>? onSelectTab;
+
+  /// The day's kcal and macro targets. Absent, the stated defaults are used.
+  final DailyTargets? targets;
+
+  /// Asked before a meal is logged: false means she is a guest and has been
+  /// taken to sign in, so nothing is logged. The router passes the guest gate;
+  /// absent, everything is allowed.
+  final bool Function(BuildContext context, PendingAction action)?
+  requireAccount;
 
   @override
   State<EatView> createState() => _EatViewState();
@@ -312,8 +328,28 @@ class _EatViewState extends State<EatView> {
   /// The meal she picked on the pill, or null to follow the hour.
   MealSlot? _slotChoice;
 
-  FoodLibrary _library(AppL10n l10n) =>
-      widget.library ?? eatSampleLibrary(l10n);
+  /// The targets as she last personalised them, else the ones handed in, else
+  /// the stated defaults.
+  DailyTargets? _personalised;
+  DailyTargets get _targets =>
+      _personalised ?? widget.targets ?? DailyTargets.compute();
+
+  /// Weight, height and age, kept on this phone. The targets follow at once.
+  Future<void> _personalise() async {
+    final body = await showPersonaliseSheet(
+      context: context,
+      current: BodyDataStore.instance.read(),
+    );
+    if (body == null || !mounted) return;
+    BodyDataStore.instance.write(body);
+    AppChanges.bump();
+    setState(() => _personalised = EatAppState.instance.targets());
+  }
+
+  FoodLibrary _library(AppL10n l10n) => withCustomFoods(
+    widget.library ?? eatSampleLibrary(l10n),
+    _prefs.customFoods,
+  );
 
   MealLogService _service(AppL10n l10n) => MealLogService(
     repository: _repo,
@@ -351,6 +387,11 @@ class _EatViewState extends State<EatView> {
     MealSlot slot, {
     MealOrigin origin = MealOrigin.suggestion,
   }) {
+    final gate = widget.requireAccount;
+    if (gate != null &&
+        !gate(context, PendingAction.logMeal(entries, origin: origin))) {
+      return;
+    }
     final l10n = AppL10n.of(context);
     final outcome = _service(l10n).logNew(
       day: _projected,
@@ -440,10 +481,17 @@ class _EatViewState extends State<EatView> {
     final l10n = AppL10n.of(context);
     final library = _library(l10n);
 
-    final view = EatDayViewModel(
-      library: library,
-      guard: AllergyGuard(widget.constraints),
-    ).build(day: _projected, prefs: _prefs, now: _now);
+    final targets = _targets;
+    final view =
+        EatDayViewModel(
+          library: library,
+          guard: AllergyGuard(widget.constraints),
+        ).build(
+          day: _projected,
+          prefs: _prefs,
+          now: _now,
+          proteinTargetG: targets.proteinG,
+        );
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -528,7 +576,6 @@ class _EatViewState extends State<EatView> {
     final plates = view.suggestions.isNotEmpty
         ? view.suggestions
         : view.starters;
-    final mealsDone = view.slots.where((s) => s.hasAnything).length;
     final quickAdd = plates.isEmpty
         ? null
         : Column(
@@ -583,7 +630,11 @@ class _EatViewState extends State<EatView> {
               : null,
         ),
       _header(l10n, slot, view, justLogged: justLogged),
-      EatHero(totals: view.totals, mealsDone: mealsDone),
+      EatHero(
+        totals: view.totals,
+        targets: _targets,
+        onPersonalise: _personalise,
+      ),
       _box(l10n),
       // Rendered only for a woman who actually has a coach: null for everyone
       // in the MVP.
@@ -686,9 +737,7 @@ class _EatViewState extends State<EatView> {
           start: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Flexible(
-                child: Text(l10n.today, style: EditorialType.section),
-              ),
+              Flexible(child: Text(l10n.today, style: EditorialType.section)),
               const SizedBox(width: 10),
               const Flexible(child: ScreenArtInline(size: 40)),
             ],

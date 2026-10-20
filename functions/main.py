@@ -83,6 +83,7 @@ import firebase_admin
 from firebase_functions import firestore_fn, https_fn, options, scheduler_fn
 
 from identity import (
+    approvals,
     config,
     decisions,
     imagesize,
@@ -91,6 +92,7 @@ from identity import (
     logs,
     reasons,
     review,
+    scheduling,
     store,
     webhook,
 )
@@ -893,7 +895,9 @@ def _require_admin(
     return uid
 
 
-def _require_woman_reviewer(request: https_fn.CallableRequest) -> str:
+def _require_woman_reviewer(
+    request: https_fn.CallableRequest, allow_admin: bool = False
+) -> str:
     """The claim that may decide a live review.
 
     A SEPARATE claim from `admin`, and the separation is the point. An admin
@@ -903,10 +907,12 @@ def _require_woman_reviewer(request: https_fn.CallableRequest) -> str:
     substitutes for.
 
     Minted out of band by staff. There is no self-service path, exactly like
-    `admin`.
+    `admin`. `allow_admin` is for the dashboard's approve and queue callables,
+    which an admin may also use.
     """
     uid = _require_auth(request, STAFF_PROVIDERS)
-    if not (request.auth.token or {}).get("womanReviewer"):
+    token = request.auth.token or {}
+    if not (token.get("womanReviewer") or (allow_admin and token.get("admin"))):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.UNAUTHENTICATED
         )
@@ -988,7 +994,9 @@ def request_review(request: https_fn.CallableRequest) -> dict:
     the call is the consent to be looked up and called (the app shows the
     wording before calling; wording PENDING COUNSEL). N3: the consent names
     that flag and covers it only. Returns {state: "pending"}, or
-    {state: "approved"} if she is already verified.
+    {state: "approved"} if she is already verified. With a `knownReviewerId`
+    whose reviewer auto-passes the people she knows, the answer is
+    {state: "approved", via: "knownContact"} and no flag is opened.
     """
     started = time.monotonic()
     uid = _require_auth(request)
@@ -996,13 +1004,21 @@ def request_review(request: https_fn.CallableRequest) -> dict:
     # M13: a store review account on the owner's allow-list is approved here
     # too, exactly as verify_identity approves it, so choosing the woman
     # reviewer instead of the camera can never leave it waiting on a person.
-    if _is_store_reviewer(request, uid):
+    if _is_store_reviewer(request, uid) and not approvals.revoked_since_approval(uid):
         store.mint_claims(uid, True)
         store.write_user_verification(uid)
         store.FirestoreReviewStore().log_access(uid, "store-review", "reviewerBypass")
         logs.warn("reviewer_bypass")
         return {"state": review.STATE_APPROVED}
+    # A reviewer she knows who auto-passes the people she knows approves her
+    # here, before any flag is opened. Otherwise the request goes on as usual.
+    known = data.get("knownReviewerId")
+    if known and _review_call(approvals.known_contact_pass, uid, known):
+        logs.decision("request_review", outcome="known_contact", state=review.STATE_APPROVED)
+        return {"state": review.STATE_APPROVED, "via": approvals.VIA_KNOWN_CONTACT}
     result = _review_call(review.request, store.FirestoreReviewStore(), uid, data.get("path"))
+    if known and result.state == review.STATE_PENDING:
+        approvals.note_known_reviewer(uid, known)
     logs.decision(
         "request_review",
         outcome=decisions.PENDING_REVIEW if result.state == review.STATE_PENDING else result.state,
@@ -1108,6 +1124,165 @@ def decide_verification_flag(request: https_fn.CallableRequest) -> dict:
     return {"ok": True, "outcome": result.outcome}
 
 
+# ------------------------------------- reviewer dashboard: one-click approval
+
+
+@https_fn.on_call()
+def approve_user(request: https_fn.CallableRequest) -> dict:
+    """{uid, reason?: "approve" | "knownPerson"} -> {state: "approved"}.
+
+    One click. No ID number, no call, no note, no confirmation: the claim is
+    minted, her state set, any open flag closed, and the ledger records who and
+    how. A reviewer cannot approve herself.
+    """
+    started = time.monotonic()
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    reason = data.get("reason", "approve")
+    if reason not in approvals.APPROVE_REASONS:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    state = _review_call(approvals.approve, reviewer_uid, data.get("uid"), reason)
+    logs.decision("approve_user", outcome=state, state=state, latencyMs=_ms(started))
+    return {"state": state}
+
+
+@https_fn.on_call()
+def approve_users(request: https_fn.CallableRequest) -> dict:
+    """{uids: [...]} -> {approved: [...], failed: [...]}; one bad row never
+    stops the rest."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    result = _review_call(approvals.approve_many, reviewer_uid, data.get("uids"))
+    logs.decision("approve_users", outcome="approved", count=len(result["approved"]))
+    return result
+
+
+@https_fn.on_call()
+def revoke_user(request: https_fn.CallableRequest) -> dict:
+    """{uid} -> {state: "pending"}: the undo. Takes the verified claim back
+    (other claims kept) and reopens her case."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    state = _review_call(approvals.revoke, reviewer_uid, data.get("uid"))
+    logs.decision("revoke_user", outcome=state, state=state)
+    return {"state": state}
+
+
+@https_fn.on_call()
+def list_review_queue(request: https_fn.CallableRequest) -> list:
+    """{status?: pending | scheduled | approved, query?} -> a list of rows. A phone
+    number appears only where she asked for the call, and each is logged."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    return _review_call(
+        approvals.list_queue, reviewer_uid, data.get("status"), data.get("query")
+    )
+
+
+@https_fn.on_call()
+def set_preapproved_phones(request: https_fn.CallableRequest) -> dict:
+    """{add?: "comma list", remove?: [...]} -> {phones: [...]}, E.164."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    phones = _review_call(
+        approvals.set_preapproved, reviewer_uid, data.get("add"), data.get("remove")
+    )
+    return {"phones": phones}
+
+
+@https_fn.on_call()
+def list_preapproved_phones(request: https_fn.CallableRequest) -> dict:
+    """{} -> {phones: [...]}."""
+    _require_woman_reviewer(request, allow_admin=True)
+    return {"phones": approvals.list_preapproved()}
+
+
+@https_fn.on_call()
+def claim_fast_verification(request: https_fn.CallableRequest) -> dict:
+    """{} -> {state: "approved" | "none", via?}.
+
+    Right after a phone sign-in. Approves her when the phone in her verified
+    ID token is pre-approved, is in TEST_BYPASS_PHONES (environment, empty
+    means nobody) or is a store review account. The request body is never
+    read: only the token decides.
+    """
+    uid = _require_auth(request)
+    token = request.auth.token or {}
+    result = _review_call(
+        approvals.claim_fast,
+        uid,
+        token.get("phone_number"),
+        _is_store_reviewer(request, uid),
+    )
+    logs.decision(
+        "claim_fast_verification",
+        outcome=f"fast_{result['via']}" if "via" in result else "none",
+        state=result["state"],
+    )
+    return result
+
+
+@https_fn.on_call()
+def get_reviewer_settings(request: https_fn.CallableRequest) -> dict:
+    reviewer_uid = _require_woman_reviewer(request)
+    return scheduling.get_settings(reviewer_uid)
+
+
+@https_fn.on_call()
+def set_reviewer_settings(request: https_fn.CallableRequest) -> dict:
+    """{firstName, listed, autoPassKnown, availability: [{weekday 1-7, start
+    "HH:MM", end "HH:MM"}], slotMinutes} in Cairo time; weekday 1 = Monday."""
+    reviewer_uid = _require_woman_reviewer(request)
+    data = _body(request)
+    return _review_call(scheduling.set_settings, reviewer_uid, data)
+
+
+@https_fn.on_call()
+def list_reviewers(request: https_fn.CallableRequest) -> list:
+    """{} -> [{reviewerId, firstName}]: only reviewers who listed themselves."""
+    _require_auth(request)
+    return scheduling.list_reviewers()
+
+
+@https_fn.on_call()
+def list_review_slots(request: https_fn.CallableRequest) -> list:
+    """{days: 7} -> [{reviewerId, start}]: free slots, start in UTC."""
+    _require_auth(request)
+    data = _body(request)
+    return scheduling.list_slots(data.get("days"))
+
+
+@https_fn.on_call()
+def book_review_slot(request: https_fn.CallableRequest) -> dict:
+    """{reviewerId, start} -> {scheduledFor}. Needs her open review (so after
+    request_review); a second booking replaces the first."""
+    uid = _require_auth(request)
+    data = _body(request)
+    return _review_call(scheduling.book, uid, data.get("reviewerId"), data.get("start"))
+
+
+@https_fn.on_call()
+def list_schedule(request: https_fn.CallableRequest) -> list:
+    """{from, to} -> [{uid, start, displayName?, phone?}]: the
+    caller's own bookings. A phone only where she asked for the call."""
+    reviewer_uid = _require_woman_reviewer(request)
+    data = _body(request)
+    return _review_call(
+        scheduling.list_schedule, reviewer_uid, data.get("from"), data.get("to")
+    )
+
+
+@https_fn.on_call()
+def reschedule_review(request: https_fn.CallableRequest) -> dict:
+    """{uid, start} -> {scheduledFor}: move a woman to a time the reviewer
+    picks, whether or not it is in her availability."""
+    reviewer_uid = _require_woman_reviewer(request)
+    data = _body(request)
+    return _review_call(scheduling.reschedule, reviewer_uid, data.get("uid"), data.get("start"))
+
+
 @scheduler_fn.on_schedule(schedule="every 1 hours", region=config.REGION)
 def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     """A flagged case undecided past the SLA becomes RETRY_REQUIRED.
@@ -1125,7 +1300,9 @@ def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     count = review.expire(review_store, dt.datetime.now(dt.timezone.utc))
     logs.decision("expire_stale_reviews", outcome=decisions.RETRY_REQUIRED, count=count)
     # An approval whose verified claim could not be minted at decide time.
-    minted = review.retry_pending_mints(review_store)
+    minted = review.retry_pending_mints(
+        review_store, skip=approvals.revoked_since_approval
+    )
     if minted:
         logs.decision("expire_stale_reviews", outcome=decisions.APPROVED, count=minted)
 
@@ -1168,6 +1345,29 @@ def admin_dashboard(request: https_fn.CallableRequest) -> dict:
         store.db(),
         dt.datetime.now(dt.timezone.utc),
         refresh=data.get("refresh") is True,
+    )
+
+
+@https_fn.on_call()
+def list_exercises(request: https_fn.CallableRequest) -> dict:
+    """The member exercise library and the contract's vocabularies, for the
+    reviewer dashboard's Exercises tab. Admin only."""
+    _require_admin(request)
+    from console import exercise_editor
+
+    return exercise_editor.list_library(store.db())
+
+
+@https_fn.on_call()
+def save_exercise(request: https_fn.CallableRequest) -> dict:
+    """Adds or edits one exercise whose clips and poster the dashboard already
+    uploaded. `{ok, version}` or `{ok: false, problems}`. Admin only."""
+    _require_admin(request)
+    from console import exercise_editor
+    from firebase_admin import storage
+
+    return exercise_editor.save(
+        store.db(), storage.bucket(exercise_editor.CONTENT_BUCKET), _body(request)
     )
 
 

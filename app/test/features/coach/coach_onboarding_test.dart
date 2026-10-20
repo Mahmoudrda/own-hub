@@ -127,6 +127,15 @@ AppButton _button(WidgetTester tester, String label) =>
       find.ancestor(of: find.text(label), matching: find.byType(AppButton)),
     );
 
+/// A fresh install opens on Home as a guest; C01 is the welcome she reaches
+/// from there, so it is pushed the same way.
+Future<void> _openWelcome(WidgetTester tester) async {
+  await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
+  await tester.pumpAndSettle();
+  AppRouter.navigatorKey!.currentState!.pushNamed(appRoutes['C01']!.name);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   final savedFlags = AppRouter.featureFlags;
 
@@ -494,10 +503,24 @@ void main() {
       expect(door(done: true), appRoutes['K07']!.name);
       expect(
         door(verified: false),
-        appRoutes['T01']!.name,
-        reason: 'not verified: Home, where the gate holds her',
+        appRoutes['C09b']!.name,
+        reason: 'signed in, check still open: the check, not Home',
       );
-      expect(door(verified: false, signedIn: false), appRoutes['C01']!.name);
+      expect(
+        door(verified: false, signedIn: false),
+        appRoutes['T01']!.name,
+        reason: 'no account: Home as a guest, coach side or not',
+      );
+      expect(
+        AppRouter.frontDoorFor(
+          accountRequired: true,
+          verified: false,
+          signedIn: false,
+          guestHome: false,
+        ),
+        appRoutes['C01']!.name,
+        reason: 'a phone that still holds a previous account: the welcome',
+      );
       expect(door(coachSide: false), appRoutes['T01']!.name);
       expect(
         door(accountRequired: false, verified: false),
@@ -781,8 +804,7 @@ void main() {
         'is off, and the invite code while it is on', (tester) async {
       _phone(tester);
       AppRouter.featureFlags = _coachOff;
-      await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
-      await tester.pumpAndSettle();
+      await _openWelcome(tester);
       expect(find.byType(WelcomeView), findsOneWidget);
       await tester.ensureVisible(find.text('More'));
       await tester.pumpAndSettle();
@@ -793,8 +815,7 @@ void main() {
       expect(find.text('I have a code from my coach'), findsNothing);
 
       AppRouter.featureFlags = _coachLive;
-      await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
-      await tester.pumpAndSettle();
+      await _openWelcome(tester);
       await tester.ensureVisible(find.text('More'));
       await tester.pumpAndSettle();
       expect(find.text('Join as a coach'), findsNothing);

@@ -22,6 +22,7 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/signup/domain/legal_acceptance.dart';
 import 'package:own_hub/features/signup/domain/verification.dart';
+import 'package:own_hub/features/signup/presentation/founder_welcome_view.dart';
 import 'package:own_hub/features/signup/presentation/checking_view.dart';
 import 'package:own_hub/features/signup/presentation/code_view.dart';
 import 'package:own_hub/features/signup/presentation/role_view.dart';
@@ -45,6 +46,13 @@ class _Stack extends NavigatorObserver {
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
       names.remove(route.settings.name ?? '?');
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    final at = names.lastIndexOf(oldRoute?.settings.name ?? '?');
+    if (at >= 0) names.removeAt(at);
+    names.add(newRoute?.settings.name ?? '?');
+  }
 }
 
 /// Every event, in order, as the gateway hands it to a sink.
@@ -214,6 +222,11 @@ void main() {
 
       await _tap(tester, 'Save my week and join');
 
+      // Saving her plan needs an account, so Rahma's welcome comes first and
+      // its button goes on to her number.
+      expect(find.byType(FounderWelcomeView), findsOneWidget);
+      await _tap(tester, 'Continue to sign up');
+
       expect(stack.names, [
         _name('C01'),
         _name('C03'),
@@ -280,6 +293,7 @@ void main() {
       await _tap(tester, 'Continue'); // O03
       await _tap(tester, 'See my week'); // O04
       await _tap(tester, 'Save my week and join');
+      await _tap(tester, 'Continue to sign up'); // Rahma's welcome
 
       final funnel = [
         for (var i = 0; i < recording.events.length; i++)

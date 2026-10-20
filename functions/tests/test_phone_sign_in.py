@@ -32,6 +32,10 @@ USER_CALLABLES = (
     "accept_coach_invite",
     "record_meal_photo_consent",
     "analyze_meal_photo",
+    "claim_fast_verification",
+    "list_reviewers",
+    "list_review_slots",
+    "book_review_slot",
 )
 STAFF_CALLABLES = (
     "list_verification_flags",

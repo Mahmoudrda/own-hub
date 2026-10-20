@@ -75,6 +75,8 @@ import 'training_streak_state.dart';
 import 'local_persistence.dart';
 import 'snapshot_owner.dart';
 import 'getting_started.dart';
+import 'guest_session.dart';
+import '../features/onboarding/domain/body_data.dart';
 import 'onboarding_state.dart';
 import 'tip_anchors.dart';
 import 'workout_session_state.dart';
@@ -122,6 +124,7 @@ class ThisPhoneWipe implements LocalWipe {
   /// call.
   Future<void> signOut() async {
     unawaited(AppRouter.forgetVerification());
+    GuestSession.instance.exploring = false;
     AppRouter.lastSignupRole = null;
     RoleState.instance.reset();
     AppRouter.lastReviewerPath = null;
@@ -308,8 +311,13 @@ class ThisPhoneWipe implements LocalWipe {
     // set.
     final keepsWeek =
         keepsSignUp && OnboardingState.instance.weekBuiltSignedOut;
-    if (!keepsWeek) AppRouter.intakeRepository.reset();
+    if (!keepsWeek) {
+      AppRouter.intakeRepository.reset();
+      BodyDataStore.instance.reset();
+    }
     if (!keepsSignUp) OnboardingState.instance.weekBuiltSignedOut = false;
+    // What she tried as a guest goes with the week it belonged to.
+    if (!keepsWeek) GuestSession.instance.reset();
     OnboardingState.instance.cycleRowDismissed = false;
     // Her agreement to the community's rules. The server's copy goes with
     // users/{uid}/consents.

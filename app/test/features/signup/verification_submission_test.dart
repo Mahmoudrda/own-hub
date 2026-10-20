@@ -59,7 +59,10 @@ class _Reviews implements ReviewRequester {
   final List<ReviewPath> asked = <ReviewPath>[];
 
   @override
-  Future<ReviewRequestState> request(ReviewPath path) async {
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) async {
     asked.add(path);
     final answers = _answers;
     if (answers == null || answers.isEmpty) return ReviewRequestState.pending;

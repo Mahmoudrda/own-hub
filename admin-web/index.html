@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Own Hub reviews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="bar">
+  <h1>Own Hub reviews</h1>
+  <button class="btn ghost" id="signout" type="button" hidden>Sign out</button>
+</header>
+<main id="main" tabindex="-1">
+  <p class="notice" id="notice" role="status" aria-live="polite" hidden></p>
+
+  <section id="login" class="card narrow" hidden>
+    <h2>Sign in</h2>
+    <form id="login-form">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button class="btn primary wide" type="submit">Sign in</button>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-queue" aria-controls="panel-queue" aria-selected="true" type="button">Requests</button>
+      <button role="tab" id="tab-calendar" aria-controls="panel-calendar" aria-selected="false" tabindex="-1" type="button">Calendar</button>
+      <button role="tab" id="tab-phones" aria-controls="panel-phones" aria-selected="false" tabindex="-1" type="button">Pre-approved numbers</button>
+      <button role="tab" id="tab-exercises" aria-controls="panel-exercises" aria-selected="false" tabindex="-1" type="button">Exercises</button>
+      <button role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" tabindex="-1" type="button">Settings</button>
+    </nav>
+
+    <section id="panel-queue" role="tabpanel" aria-labelledby="tab-queue">
+      <div class="filters">
+        <input id="search" type="search" placeholder="Search name or number" aria-label="Search name or number" autocomplete="off">
+        <div class="chips" id="chips" role="group" aria-label="Status">
+          <button class="chip" type="button" data-status="pending" aria-pressed="true">Pending <span class="count"></span></button>
+          <button class="chip" type="button" data-status="scheduled" aria-pressed="false">Scheduled <span class="count"></span></button>
+          <button class="chip" type="button" data-status="approved" aria-pressed="false">Approved <span class="count"></span></button>
+        </div>
+      </div>
+      <div class="bulk" id="bulk" hidden>
+        <label class="check"><input type="checkbox" id="select-all"> <span>Select all</span></label>
+        <button class="btn primary" id="approve-selected" type="button">Approve selected</button>
+      </div>
+      <ul class="list" id="list"></ul>
+      <p class="empty" id="empty" hidden>Nobody here right now.</p>
+    </section>
+
+    <section id="panel-calendar" role="tabpanel" aria-labelledby="tab-calendar" hidden>
+      <div class="filters">
+        <div class="chips" role="group" aria-label="View">
+          <button class="chip" type="button" data-view="day" aria-pressed="false">Day</button>
+          <button class="chip" type="button" data-view="week" aria-pressed="true">Week</button>
+        </div>
+        <div class="stepper">
+          <button class="btn ghost" id="cal-prev" type="button" aria-label="Previous">&lsaquo;</button>
+          <strong id="cal-title"></strong>
+          <button class="btn ghost" id="cal-next" type="button" aria-label="Next">&rsaquo;</button>
+          <button class="btn ghost" id="cal-today" type="button">Today</button>
+        </div>
+      </div>
+      <div id="cal-days" class="days"></div>
+      <div class="card">
+        <h2>My availability</h2>
+        <p class="muted">Times are Cairo time. Members book inside these hours.</p>
+        <div id="avail"></div>
+        <div class="row">
+          <button class="btn ghost" id="avail-add" type="button">Add hours</button>
+          <label class="inline">Slot length
+            <select id="slot-minutes">
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+            </select>
+          </label>
+          <button class="btn primary" id="avail-save" type="button">Save availability</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-phones" role="tabpanel" aria-labelledby="tab-phones" hidden>
+      <div class="card">
+        <h2>Add numbers</h2>
+        <p class="muted">Paste numbers separated by commas or new lines. Anyone signing in with one of these is approved at once.</p>
+        <label class="sr" for="phones-input">Numbers</label>
+        <textarea id="phones-input" rows="4" placeholder="+201012345678, 01012345679"></textarea>
+        <p class="muted" id="phones-preview" aria-live="polite"></p>
+        <button class="btn primary" id="phones-add" type="button">Add numbers</button>
+      </div>
+      <ul class="list" id="phones-list"></ul>
+      <p class="empty" id="phones-empty" hidden>No numbers yet.</p>
+    </section>
+
+    <section id="panel-exercises" role="tabpanel" aria-labelledby="tab-exercises" hidden>
+      <div class="card">
+        <label class="sr" for="ex-search">Search exercises</label>
+        <input type="search" id="ex-search" placeholder="Search exercises">
+        <button class="btn primary" id="ex-new" type="button">Add exercise</button>
+      </div>
+      <div id="ex-form"></div>
+      <ul class="list" id="ex-list"></ul>
+      <p class="empty" id="ex-empty" hidden>No exercises.</p>
+    </section>
+
+    <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+      <div class="card">
+        <h2>My settings</h2>
+        <label for="first-name">First name shown to members</label>
+        <input id="first-name" type="text" autocomplete="given-name" maxlength="40">
+        <label class="switch"><input type="checkbox" id="auto-pass" role="switch"><span class="track"></span><span>Auto-pass people who know me</span></label>
+        <p class="muted">Anyone who signs up can pick your name as the person they know, and they will be approved at once. Turn this on only if you are happy with that.</p>
+        <label class="switch"><input type="checkbox" id="listed" role="switch"><span class="track"></span><span>List my first name for members</span></label>
+        <button class="btn primary" id="settings-save" type="button">Save settings</button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span id="toast-text"></span>
+  <button class="btn undo" id="toast-undo" type="button">Undo</button>
+  <span class="bar-time" id="toast-bar"></span>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from identity import config, decisions, review, store
+from identity import approvals, config, decisions, review, store
 from tests import fake_firestore
 from tests.fake_review_store import FakeReviewStore
 
@@ -79,6 +79,7 @@ def test_the_hourly_job_runs_the_retry(monkeypatch):
     flag_id = _booked(fake)
     review.decide(fake, "rev", flag_id, True)
     monkeypatch.setattr(main.store, "FirestoreReviewStore", lambda: fake)
+    monkeypatch.setattr(approvals, "revoked_since_approval", lambda uid: False)
     main.expire_stale_reviews.__wrapped__(None)
     assert fake.minted == ["her"]
     assert not fake.flags[flag_id].get("mintPending")

@@ -62,7 +62,9 @@ class StartingProgram {
     this.places = const {},
     this.adapts = false,
     this.rank = 0,
-  });
+    this.tier = TrainingLevel.beginner,
+    String? family,
+  }) : family = family ?? programId;
 
   /// Matches `programs/{programId}` and the published plan version's
   /// `programId`. The presentation layer maps it to her language.
@@ -98,6 +100,13 @@ class StartingProgram {
   /// for dumbbells, which outranks one for the floor, when she can do them all.
   final int rank;
 
+  /// Which of the three versions of its plan this is.
+  final TrainingLevel tier;
+
+  /// The id of the plan the three tiers share (the beginner version's id), the
+  /// key the presentation layer maps to its copy.
+  final String family;
+
   @override
   bool operator ==(Object other) =>
       other is StartingProgram && other.programId == programId;
@@ -122,6 +131,17 @@ const StartingProgram beginnerFoundations = StartingProgram(
   quiet: true,
   equipment: {Equipment.none},
 );
+
+/// The id of the plan a programme belongs to: its id without the tier suffix
+/// the intermediate and advanced versions carry.
+String programmeFamily(String programId) {
+  for (final tier in const ['intermediate', 'advanced']) {
+    if (programId.endsWith('_$tier')) {
+      return programId.substring(0, programId.length - tier.length - 1);
+    }
+  }
+  return programId;
+}
 
 /// The programmes in the bundled file, and the content behind each.
 ///
@@ -190,6 +210,8 @@ abstract final class StartingProgrammes {
           ),
           adapts: true,
           rank: (meta['rank'] as num?)?.toInt() ?? 0,
+          tier: TrainingLevel.fromWire(meta['tier']) ?? TrainingLevel.beginner,
+          family: programmeFamily(id),
         ),
       );
       summaries[id] = (
@@ -258,14 +280,18 @@ Set<Equipment> _kitFor(Intake intake) => {
 /// nothing fits; an empty catalogue and an unsatisfiable one are both a content
 /// failure to the caller, never a woman handed training she cannot do.
 ///
-/// Among what fits, her goal comes first, then how much the programme asks of
+/// Her [tier] comes first (her own level unless the caller names another), so
+/// a catalogue with only one tier still answers. Among what fits, her goal
+/// comes next, then how much the programme asks of
 /// where she trains (the gym's over the dumbbells' over the floor's), then how
 /// close its week is to hers (programmes that adapt to her days and minutes
 /// have nothing to be close to).
 StartingProgram? selectStartingProgram(
   Intake intake, {
   List<StartingProgram>? catalogue,
+  TrainingLevel? tier,
 }) {
+  final wanted = tier ?? intake.level;
   final programmes = catalogue ?? kStartingProgramCatalogue;
   final have = _kitFor(intake);
 
@@ -279,6 +305,7 @@ StartingProgram? selectStartingProgram(
     }
     // Compared left to right; a bigger number wins at the first difference.
     final key = [
+      programme.tier == wanted ? 1 : 0,
       programme.goals.isEmpty || programme.goals.contains(intake.goal) ? 1 : 0,
       programme.rank,
       programme.adapts

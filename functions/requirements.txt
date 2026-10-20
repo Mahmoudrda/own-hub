@@ -35,3 +35,8 @@ numpy==1.26.4
 # loads it. 2.28.0 is the version the tests ran against; the SDK's own retries
 # stay off, so a scan is exactly one model call.
 google-genai==2.28.0
+
+# Reviewer availability is typed in Cairo time, which has daylight saving.
+# zoneinfo reads the system tz database; this is its fallback when the
+# runtime image has none.
+tzdata==2025.2

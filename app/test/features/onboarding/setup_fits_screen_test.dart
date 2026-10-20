@@ -1,6 +1,8 @@
-// Every setup question fits a phone without scrolling at the normal text size,
-// in English and in Egyptian Arabic, and still wraps with no overflow at a
-// large one.
+// Every one-question setup screen fits a phone without scrolling at the normal
+// text size, in English and in Egyptian Arabic, and still wraps with no overflow
+// at a large one. O03 (presets, custom schedule, level) and O04 (the optional
+// "About you" block) carry more than one screen of answers and scroll by
+// design; they are held to no overflow at either size.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,6 +60,8 @@ void main() {
         LifeStageView(repository: InMemoryIntakeRepository(), onBack: () {}),
   };
 
+  const scrolls = {'O03', 'O04'};
+
   for (final locale in const [Locale('en'), Locale('ar')]) {
     for (final entry in screens.entries) {
       testWidgets('${entry.key} fits a 360 x 720 phone without scrolling in '
@@ -72,11 +76,13 @@ void main() {
         final scrollable = tester.state<ScrollableState>(
           find.byType(Scrollable).first,
         );
-        expect(
-          scrollable.position.maxScrollExtent,
-          0,
-          reason: '${entry.key} scrolls at the normal text size',
-        );
+        if (!scrolls.contains(entry.key)) {
+          expect(
+            scrollable.position.maxScrollExtent,
+            0,
+            reason: '${entry.key} scrolls at the normal text size',
+          );
+        }
         expect(tester.takeException(), isNull);
         expect(
           find.text(

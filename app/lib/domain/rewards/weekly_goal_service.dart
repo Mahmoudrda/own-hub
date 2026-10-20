@@ -85,37 +85,20 @@ import 'weekly_goal.dart';
 
 /// The fewest sessions a weekly goal may ask for.
 ///
-/// `weekly_goal.dart`: "2–4. **Hers**, and the only counter on this object she
+/// `weekly_goal.dart`: "1–7. **Hers**, and the only counter on this object she
 /// may write."
-const int kMinSessionsTarget = 2;
+const int kMinSessionsTarget = 1;
 
-/// The most sessions a weekly goal may ask for.
+/// The most sessions a weekly goal may ask for: every day of the week.
 ///
-/// **Four, and five is not offered anywhere.** `Intake.allowedDays` is 2, 3 and
-/// 4 for the same reason, and the two numbers are one decision.
-///
-/// The defect this settles: O03's chips used to offer 2, 3, 4 and 5 under "Be
-/// honest. This becomes your weekly goal", O05 read her answer back as "Days a
-/// week: 5", and then [WeeklyGoalService.setTarget] refused the five while
-/// `OnboardingState` clamped it at the call site — so the woman who said five
-/// was measured against four for every week afterwards with nothing on any
-/// screen telling her so.
-///
-/// There were two ways out: stop offering five, or let five be a goal. Raising
-/// this constant to five was tried and reversed, because it is not a bound that
-/// happened to be low. This product counts **weeks rather than days** (§2 rule
-/// 3) and the research behind it is explicit that a target a woman misses often
-/// erodes the motivation the product exists to build. Four sessions in a
-/// seven-day week still leaves three days of slack in the worst week; five
-/// leaves two, which is a schedule rather than a goal, and it turns one
-/// unplanned day into a failed week. The screen was asking a question the
-/// rewards system was never willing to answer, so the question changed.
-///
-/// Anything above this is refused and never clamped — see
-/// [WeeklyGoalService.setTarget]. Do not
-/// raise it to add a fifth chip to O03; add the chip only if this comment's
-/// reasoning is overturned by the owner, and then change both in one commit.
-const int kMaxSessionsTarget = 4;
+/// `Intake.days` runs over the same 1 to 7, so every answer she can give on O03
+/// is a goal [WeeklyGoalService.setTarget] accepts and it reaches the goal
+/// whole. A number outside the bounds is still refused and never clamped, see
+/// [WeeklyGoalService.setTarget]. The owner raised the ceiling from four on
+/// 18 October 2026: she decides how often she
+/// trains, and the week still counts when she reaches her own goal, whatever
+/// it is.
+const int kMaxSessionsTarget = 7;
 
 /// `DECISIONS.md` D16 — planned rest days allowed in any one ISO week.
 ///

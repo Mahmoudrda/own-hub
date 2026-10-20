@@ -185,9 +185,12 @@ describe('the workout library and the media register', () => {
     await assertFails(setDoc(doc(d, 'meta/workouts'), { version: 9 }));
   });
 
-  test('an unverified account reads none of it', async () => {
+  test('the workout library is public: an unverified or signed-out account reads it', async () => {
     const d = await unverified(uid.her);
-    await assertFails(getDoc(doc(d, 'workoutLibrary/v1')));
+    await assertSucceeds(getDoc(doc(d, 'workoutLibrary/v1')));
+    await assertFails(setDoc(doc(d, 'workoutLibrary/v2'), { version: 2 }));
+    const a = await anon();
+    await assertSucceeds(getDoc(doc(a, 'workoutLibrary/v1')));
   });
 
   test('the admin publishes a new library version', async () => {

@@ -10805,4 +10805,267 @@ class AppL10nEn extends AppL10n {
   String addName(String name) {
     return 'Add $name';
   }
+
+  @override
+  String get capturePhoto => 'Capture photo';
+
+  @override
+  String get fitTheCardInsideTheFrameThen =>
+      'Fit the card inside the frame, then tap Capture photo. Nothing is uploaded until you send it.';
+
+  @override
+  String get howWouldYouLikeToBeChecked => 'How would you like to be checked?';
+
+  @override
+  String get idCardAndASelfie => 'ID card and a selfie';
+
+  @override
+  String get about2Minutes => 'About 2 minutes';
+
+  @override
+  String get talkToAWomanReviewer => 'Talk to a woman reviewer';
+
+  @override
+  String get aShortCall => 'A short call';
+
+  @override
+  String get iKnowOneOfTheReviewers => 'I know one of the reviewers';
+
+  @override
+  String get pickHerNameIfSheKnowsYou =>
+      'Pick her name. If she knows you, you may be approved right away.';
+
+  @override
+  String get pickATimeForYourCall => 'Pick a time for your call';
+
+  @override
+  String get changeTheTime => 'Change the time';
+
+  @override
+  String get keepExploring => 'Keep exploring';
+
+  @override
+  String get weCouldNotLoadTheFreeTimes =>
+      'We could not load the free times. You do not need to do anything: a woman from Own Hub will still contact you.';
+
+  @override
+  String get thereAreNoFreeTimesInThe =>
+      'There are no free times in the next 7 days. A woman from Own Hub will still contact you.';
+
+  @override
+  String get weCouldNotBookThatTimePick =>
+      'We could not book that time. Pick another one.';
+
+  @override
+  String get logFood => 'Log food';
+
+  @override
+  String get frequent => 'Frequent';
+
+  @override
+  String get favourites => 'Favourites';
+
+  @override
+  String get quickCustom => 'Quick custom';
+
+  @override
+  String get typeANameAndTheNumbersOff =>
+      'Type a name and the numbers off the packet';
+
+  @override
+  String get foodName => 'Food name';
+
+  @override
+  String get fibre => 'Fibre';
+
+  @override
+  String get saveAndLog => 'Save and log';
+
+  @override
+  String get amount => 'Amount';
+
+  @override
+  String get g => 'g';
+
+  @override
+  String get oz => 'oz';
+
+  @override
+  String get ml => 'ml';
+
+  @override
+  String get cup => 'cup';
+
+  @override
+  String get piece => 'piece';
+
+  @override
+  String get serving_1d0fq => 'Serving';
+
+  @override
+  String aboutGramsG(String grams) {
+    return 'About $grams g';
+  }
+
+  @override
+  String get addToFavourites => 'Add to favourites';
+
+  @override
+  String get removeFromFavourites => 'Remove from favourites';
+
+  @override
+  String get foodsYouLogShowUpHere => 'Foods you log show up here.';
+
+  @override
+  String get tapTheStarOnAFoodTo => 'Tap the star on a food to keep it here.';
+
+  @override
+  String get personalise => 'Personalise';
+
+  @override
+  String get targetsUseAStandardEstimateAddYour =>
+      'Targets use a standard estimate. Add your weight, height and age to make them yours.';
+
+  @override
+  String ofTargetKcal(String target) {
+    return 'of $target kcal';
+  }
+
+  @override
+  String get signInOrJoin => 'Sign in or join';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get aNoteFromRahma => 'A note from Rahma';
+
+  @override
+  String get rahmaMohsen => 'Rahma Mohsen';
+
+  @override
+  String get heySoHappyYoureHereThankYou =>
+      'Hey! So happy you\'re here 💕 Thank you for downloading the app! I built this so you can train on your own terms and fuel your body without the stress. You\'ve already seen a preview of your custom workouts and nutrition targets. Create your quick account now so we can save your plan, track your meals in one tap, and start crushing your goals together!';
+
+  @override
+  String get continueToSignUp => 'Continue to sign up';
+
+  @override
+  String get playTheVideo => 'Play the video';
+
+  @override
+  String get pauseTheVideo => 'Pause the video';
+
+  @override
+  String get turnSoundOn => 'Turn sound on';
+
+  @override
+  String get turnSoundOff => 'Turn sound off';
+
+  @override
+  String get rahmasVideoWillBeHereSoon => 'Rahma\'s video will be here soon.';
+
+  @override
+  String get newHereCreateAccount => 'New here? Create account';
+
+  @override
+  String get alreadyHaveAnAccountSignIn => 'Already have an account? Sign in';
+
+  @override
+  String get signInWithYourNumber => 'Sign in with your number';
+
+  @override
+  String get custom => 'Custom';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get suggestedFromYourWeek => 'Suggested from your week';
+
+  @override
+  String get yourTrainingDays => 'Your training days';
+
+  @override
+  String get customSchedule => 'Custom schedule';
+
+  @override
+  String get tapADayToSwitchItBetween =>
+      'Tap a day to switch it between training and recovery.';
+
+  @override
+  String get recovery => 'Recovery';
+
+  @override
+  String trainingTrainingRecoveryRecovery(String training, String recovery) {
+    return '$training training · $recovery recovery';
+  }
+
+  @override
+  String get fewerMinutes => 'Fewer minutes';
+
+  @override
+  String get moreMinutes => 'More minutes';
+
+  @override
+  String get pickAnyLengthFrom10To180 =>
+      'Pick any length from 10 to 180 minutes.';
+
+  @override
+  String get aboutYou => 'About you';
+
+  @override
+  String get optionalItStaysOnThisPhoneAnd =>
+      'Optional. It stays on this phone and is only used to work out your calorie and protein targets.';
+
+  @override
+  String get weightKg_4v662 => 'Weight (kg)';
+
+  @override
+  String get heightCm => 'Height (cm)';
+
+  @override
+  String get ageYears => 'Age (years)';
+
+  @override
+  String get between30And250Kg => 'Between 30 and 250 kg';
+
+  @override
+  String get between120And230Cm => 'Between 120 and 230 cm';
+
+  @override
+  String get between14And90Years => 'Between 14 and 90 years';
+
+  @override
+  String get skipThis => 'Skip this';
+
+  @override
+  String aboutMinutesMinutes(String minutes) {
+    return 'About $minutes minutes';
+  }
+
+  @override
+  String thereAreNoFreeTimesInThe_bzb9s(String days) {
+    return 'There are no free times in the next $days days. A woman from Own Hub will still contact you.';
+  }
+
+  @override
+  String pickAnyLengthFromMinToMax(String min, String max) {
+    return 'Pick any length from $min to $max minutes.';
+  }
+
+  @override
+  String betweenMinAndMaxKg(String min, String max) {
+    return 'Between $min and $max kg';
+  }
+
+  @override
+  String betweenMinAndMaxCm(String min, String max) {
+    return 'Between $min and $max cm';
+  }
+
+  @override
+  String betweenMinAndMaxYears(String min, String max) {
+    return 'Between $min and $max years';
+  }
 }

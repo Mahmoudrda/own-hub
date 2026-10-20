@@ -27,7 +27,9 @@ void main() {
       final s = t.ensureSemantics();
 
       await open(t, appDestinations['O03']!.name, locale: const Locale('en'));
-      await t.tapAt(t.getRect(find.text('$days').first).center);
+      // The first preset reads 1-2 and sets a goal of 2.
+      final chip = days == 2 ? '1-2' : '$days';
+      await t.tapAt(t.getRect(find.text(chip).first).center);
       await settle(t);
       await tapControl(t, RegExp('Continue'));
       OnboardingState.instance.finish();

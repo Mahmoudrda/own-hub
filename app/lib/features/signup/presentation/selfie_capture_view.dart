@@ -300,8 +300,7 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
   }
 
   /// The moment this session is treated as gone, or null when there is none.
-  DateTime? _cutOff() =>
-      widget.expiresAt?.call()?.subtract(_deadlineMargin);
+  DateTime? _cutOff() => widget.expiresAt?.call()?.subtract(_deadlineMargin);
 
   void _armDeadline() {
     _deadline?.cancel();

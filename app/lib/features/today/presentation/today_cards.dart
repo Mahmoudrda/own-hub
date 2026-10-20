@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
+import '../../eat/domain/daily_targets.dart';
 import '../../eat/domain/day_totals.dart';
 import '../../eat/domain/meal_repository.dart' show MealSlot;
 import '../../eat/presentation/eat_day_view_model.dart' show EatDayViewModel;
@@ -732,14 +733,58 @@ class HomeGreeting extends StatelessWidget {
     required this.day,
     required this.greeting,
     this.actions = const [],
+    this.signIn,
   });
 
   final String day;
   final String greeting;
   final List<Widget> actions;
 
+  /// The "Sign in or join" pill for a woman with no account. Supplied, the
+  /// weekday moves to a line of its own with the pill at the far edge, and the
+  /// greeting and the tools sit under it.
+  final Widget? signIn;
+
   @override
   Widget build(BuildContext context) {
+    final dayStyle = AppText.label.copyWith(color: AppColors.onSurfaceVariant);
+    final greetingText = Text(
+      greeting,
+      key: const ValueKey('today-greeting'),
+      style: EditorialType.section,
+    );
+    final tools = Row(mainAxisSize: MainAxisSize.min, children: [...actions]);
+    final signInPill = signIn;
+    if (signInPill != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  day,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: dayStyle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(child: signInPill),
+            ],
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(child: greetingText),
+              const SizedBox(width: 8),
+              tools,
+            ],
+          ),
+        ],
+      );
+    }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -748,23 +793,14 @@ class HomeGreeting extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                day,
-                style: AppText.label.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
+              Text(day, style: dayStyle),
               const SizedBox(height: 2),
-              Text(
-                greeting,
-                key: const ValueKey('today-greeting'),
-                style: EditorialType.section,
-              ),
+              greetingText,
             ],
           ),
         ),
         const SizedBox(width: 8),
-        Row(mainAxisSize: MainAxisSize.min, children: [...actions]),
+        tools,
       ],
     );
   }
@@ -1027,6 +1063,8 @@ class HomeEatCard extends StatelessWidget {
   const HomeEatCard({
     super.key,
     this.totals = DayTotals.empty,
+    this.targets,
+    this.onLogFood,
     this.loggedAt,
     this.now,
     this.plates = const <PlateSuggestion>[],
@@ -1036,6 +1074,14 @@ class HomeEatCard extends StatelessWidget {
   });
 
   final DayTotals totals;
+
+  /// The day's targets. The ring is calories eaten against the calorie target
+  /// and each macro reads against its own; null shows what she has eaten and
+  /// says nothing about a target.
+  final DailyTargets? targets;
+
+  /// "Log food": opens the meal search.
+  final VoidCallback? onLogFood;
   final DateTime? loggedAt;
   final DateTime? now;
   final List<PlateSuggestion> plates;
@@ -1066,29 +1112,34 @@ class HomeEatCard extends StatelessWidget {
             ),
     );
 
+    final kcalTarget = targets?.kcal;
     final ring = AppRingStat(
       key: const ValueKey('today-eat-ring'),
-      fraction: totals.proteinPercent / 100,
+      fraction: kcalTarget == null || kcalTarget == 0
+          ? 0
+          : totals.kcalSoFar / kcalTarget,
       big: countLabel(totals.kcalSoFar),
-      small: l10n.kcal,
-      size: 104,
+      small: kcalTarget == null
+          ? l10n.kcal
+          : l10n.ofTargetKcal(countLabel(kcalTarget)),
+      size: 112,
       thickness: 11,
     );
 
     final triad = [
-      (l10n.protein, totals.proteinSoFar),
-      (l10n.carbs, totals.carbsSoFar ?? 0),
-      (l10n.fat, totals.fatSoFar ?? 0),
+      (l10n.protein, totals.proteinSoFar, targets?.proteinG),
+      (l10n.carbs, totals.carbsSoFar ?? 0, targets?.carbsG),
+      (l10n.fat, totals.fatSoFar ?? 0, targets?.fatG),
     ];
-    Widget macro((String, int) m) => Column(
+    String grams((String, int, int?) m) => m.$3 == null
+        ? l10n.gramsG_1usqy(countLabel(m.$2))
+        : l10n.sofarOfTargetG(countLabel(m.$2), countLabel(m.$3!));
+    Widget macro((String, int, int?) m) => Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Text(
-            l10n.gramsG_1usqy(countLabel(m.$2)),
-            style: AppText.titleM,
-          ),
+          child: Text(grams(m), style: AppText.titleM),
         ),
         Text(
           m.$1,
@@ -1106,10 +1157,7 @@ class HomeEatCard extends StatelessWidget {
               for (final m in triad)
                 AppSplitRow(
                   start: Text(m.$1, style: AppText.bodyM),
-                  end: Text(
-                    l10n.gramsG_1usqy(countLabel(m.$2)),
-                    style: AppText.titleS,
-                  ),
+                  end: Text(grams(m), style: AppText.titleS),
                 ),
             ],
           )
@@ -1135,6 +1183,15 @@ class HomeEatCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(child: macros),
             ],
+          ),
+        if (onLogFood != null)
+          AppButton(
+            l10n.logFood,
+            key: const ValueKey('today-log-food'),
+            icon: Icons.add,
+            height: 52,
+            variant: AppButtonVariant.tonal,
+            onPressed: onLogFood,
           ),
         for (final plate in plates)
           _PlateAddRow(

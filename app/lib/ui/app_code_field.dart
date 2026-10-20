@@ -26,6 +26,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../features/signup/domain/digits.dart';
 import '../theme/app_tokens.dart';
 import 'hand/hand.dart';
 
@@ -135,7 +136,7 @@ class _AppCodeFieldState extends State<AppCodeField> {
                 maxLength: widget.length,
                 showCursor: false,
                 enableInteractiveSelection: false,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: const [AsciiDigitsFormatter()],
                 style: const TextStyle(color: Colors.transparent, fontSize: 30),
                 decoration: const InputDecoration(
                   counterText: '',
@@ -210,6 +211,34 @@ class _DigitBox extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Keeps digits only, folding Arabic-Indic and Persian digits onto `0`-`9`
+/// first. An Arabic keyboard types `٠١٢`, which `digitsOnly` throws away, so
+/// a woman typing her code in Arabic saw her digits vanish.
+class AsciiDigitsFormatter extends TextInputFormatter {
+  const AsciiDigitsFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final folded = asciiDigits(newValue.text);
+    if (folded == newValue.text) return newValue;
+    final before = newValue.selection.isValid
+        ? asciiDigits(
+            newValue.text.substring(
+              0,
+              newValue.selection.extentOffset.clamp(0, newValue.text.length),
+            ),
+          ).length
+        : folded.length;
+    return TextEditingValue(
+      text: folded,
+      selection: TextSelection.collapsed(offset: before),
     );
   }
 }

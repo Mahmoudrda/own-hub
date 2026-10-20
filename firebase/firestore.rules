@@ -397,7 +397,7 @@ service cloud.firestore {
     //
     // A claim-like or hash-like field is exactly as dangerous one level down as
     // it is at the top level, and spec §9.3 requirement 1 draws no such
-    // distinction. The ten keys below are the ten `_userDoc()` writes, so this
+    // distinction. The keys below are the `_userDoc()` writes, so this
     // is the client's own shape made enforceable rather than a new one.
     //
     // A partial write is normal here (the settings screen sends `goal` alone),
@@ -406,7 +406,8 @@ service cloud.firestore {
       return !touches(['profile']) || (
         request.resource.data.profile.keys().hasOnly([
           'goal', 'place', 'equipment', 'days', 'minutes', 'lifeStage',
-          'setupDone', 'allergies', 'dietary', 'language'
+          'setupDone', 'allergies', 'dietary', 'language',
+          'weekdays', 'level', 'minutesCustom'
         ])
       );
     }
@@ -1540,12 +1541,20 @@ service cloud.firestore {
     match /recipeIndex/{id} { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
     match /meta/{docId}     { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
 
+    // The exercise and workout content, readable before sign-in so a guest can
+    // browse Train. Only these version documents and the workout library: every
+    // other `meta/*` document (features, recipes) keeps the rule above. Rules
+    // OR across matches, so these add a read and never remove one.
+    match /meta/exerciseLibrary { allow read: if true; }
+    match /meta/exercises       { allow read: if true; }
+    match /meta/workouts        { allow read: if true; }
+
     // The owner's workouts, the same shape as the recipe library: `meta/workouts`
     // holds the version (under the rule above) and `workoutLibrary/v{N}` holds
     // every published programme in one document, so a member's phone reads one
     // small document a day and the library only when it moved. Written by the
     // console with the admin claim only.
-    match /workoutLibrary/{id} { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
+    match /workoutLibrary/{id} { allow read: if true; allow write: if isAdmin(); }
 
     // The media library's register: one line per picture or clip uploaded by
     // functions/tools/upload_media.py (owner credentials, the Admin SDK). The
@@ -1639,6 +1648,15 @@ service cloud.firestore {
     // else: a client that could write it could grant itself unlimited paid
     // provider calls, and one that could read it learns our unit economics.
     match /verificationLedger/{uid}    { allow read, write: if false; }
+
+    // The reviewer dashboard's state: vouched phone numbers, each reviewer's
+    // settings and availability, and booked review slots. All of it goes
+    // through Admin-SDK callables (approve_user, set_reviewer_settings,
+    // book_review_slot ...), so a client can neither read who is vouched for
+    // nor book itself a slot.
+    match /verificationPreapproved/{phone} { allow read, write: if false; }
+    match /verificationReviewers/{uid}     { allow read, write: if false; }
+    match /verificationBookings/{slot}     { allow read, write: if false; }
 
     // Cross-account behaviour counters backing spec §3's last two FLAG signals.
     // Keyed by hash, never by device id or ID number.

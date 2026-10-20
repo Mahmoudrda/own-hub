@@ -58,6 +58,7 @@ import '../routing/app_router.dart';
 import '../routing/app_routes.dart';
 import 'app_changes.dart';
 import 'honest_notice.dart';
+import 'guest_session.dart';
 import 'pledge.dart';
 import 'rewards_state.dart';
 import 'role_state.dart';
@@ -159,9 +160,12 @@ class OnboardingState {
   /// True while the four questions are still owed to her.
   ///
   /// With no account required, whenever setup is not done. With an account
-  /// required, only once she is verified: before that `C16` hands her to
-  /// `O01` at the end of registration. A verified woman whose setup is not
-  /// done is one who came back on a new phone with the health backup off
+  /// required, once she is verified, and also for a guest with no account, who
+  /// opens on Home with the questions on top (Skip leaves them, and marks
+  /// setup done). A woman signed in with her check open is not asked at
+  /// launch: `C16` hands her to `O01` at the end of registration.
+  ///
+  /// A verified woman whose setup is not done is one who came back on a new phone with the health backup off
   /// (N2): her life stage did not travel, so she is asked again at launch
   /// rather than given the standard programme.
   ///
@@ -172,7 +176,8 @@ class OnboardingState {
       !(AppRouter.featureFlags.isOn(Feature.coachApp) &&
           RoleState.instance.coachOnly) &&
       (!AppRouter.featureFlags.isOn(Feature.accountRequired) ||
-          AppRouter.isVerified);
+          AppRouter.isVerified ||
+          (AppRouter.signedInUid == null && !GuestSession.phoneHasOwner));
 
   /// Where Skip ends once the life-stage question (`O04`) is answered: the
   /// preselected answers stand and she goes on to where the walk would have

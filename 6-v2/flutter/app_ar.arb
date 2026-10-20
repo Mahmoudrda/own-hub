@@ -5063,5 +5063,184 @@
         "example": "Koshari"
       }
     }
+  },
+  "capturePhoto": "صوّري",
+  "fitTheCardInsideTheFrameThen": "حطّي البطاقة جوّه الإطار، وبعدين دوسي صوّري. مفيش حاجة بتترفع غير لما تبعتيها.",
+  "howWouldYouLikeToBeChecked": "تحبي نتأكد منك إزاي؟",
+  "idCardAndASelfie": "بطاقة وسيلفي",
+  "about2Minutes": "حوالي دقيقتين",
+  "talkToAWomanReviewer": "كلّمي مراجعة",
+  "aShortCall": "مكالمة قصيرة",
+  "iKnowOneOfTheReviewers": "أعرف واحدة من المراجعات",
+  "pickHerNameIfSheKnowsYou": "اختاري اسمها. لو بتعرفك ممكن توافق عليكي على طول.",
+  "pickATimeForYourCall": "اختاري ميعاد للمكالمة",
+  "changeTheTime": "غيّري الميعاد",
+  "keepExploring": "كمّلي استكشاف",
+  "weCouldNotLoadTheFreeTimes": "ماقدرناش نحمّل المواعيد الفاضية. مش مطلوب منك حاجة، وواحدة من Own Hub هتتواصل معاكي برضه.",
+  "thereAreNoFreeTimesInThe": "مفيش مواعيد فاضية في الأيام السبعة الجاية. وواحدة من Own Hub هتتواصل معاكي برضه.",
+  "weCouldNotBookThatTimePick": "ماقدرناش نحجز الميعاد ده. اختاري ميعاد تاني.",
+  "logFood": "سجّلي أكلك",
+  "frequent": "الأكتر أكلًا",
+  "favourites": "المفضّلة",
+  "quickCustom": "أكلة بالأرقام",
+  "typeANameAndTheNumbersOff": "اكتبي الاسم والأرقام اللي على العلبة",
+  "foodName": "اسم الأكلة",
+  "fibre": "ألياف",
+  "saveAndLog": "احفظي وسجّلي",
+  "amount": "الكمية",
+  "g": "جم",
+  "oz": "أونصة",
+  "ml": "مل",
+  "cup": "كوب",
+  "piece": "حتة",
+  "serving_1d0fq": "حصة",
+  "aboutGramsG": "حوالي {grams} جم",
+  "@aboutGramsG": {
+    "description": "A portion's weight in grams when the unit is an estimate.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "150"
+      }
+    }
+  },
+  "addToFavourites": "ضيفيها للمفضّلة",
+  "removeFromFavourites": "شيليها من المفضّلة",
+  "foodsYouLogShowUpHere": "الأكلات اللي بتسجّليها هتظهر هنا.",
+  "tapTheStarOnAFoodTo": "اضغطي على النجمة جنب أي أكلة علشان تفضل هنا.",
+  "personalise": "خصّصي",
+  "targetsUseAStandardEstimateAddYour": "الأهداف دي تقدير عام. ضيفي وزنك وطولك وسنّك علشان تبقى على مقاسك.",
+  "ofTargetKcal": "من {target} سعرة",
+  "@ofTargetKcal": {
+    "description": "The day's kcal target, under the kcal eaten in the ring.",
+    "placeholders": {
+      "target": {
+        "type": "String",
+        "example": "1,700"
+      }
+    }
+  },
+  "signInOrJoin": "سجّلي دخولك أو انضمي",
+  "signIn": "سجّلي دخولك",
+  "aNoteFromRahma": "رسالة من رحمة",
+  "rahmaMohsen": "رحمة محسن",
+  "heySoHappyYoureHereThankYou": "أهلًا يا حبيبتي! مبسوطة جدًا إنك هنا 💕 شكرًا إنك نزّلتي التطبيق! عملته علشان تتمرّني على طريقتك وتاكلي صح من غير توتّر. إنتي شُفتي لمحة من تمارينك وأهدافك، اعملي حسابك دلوقتي في ثواني علشان نحفظ خطتك، وتسجّلي أكلك بضغطة، ونبدأ مع بعض!",
+  "continueToSignUp": "كمّلي وسجّلي حسابك",
+  "playTheVideo": "شغّلي الفيديو",
+  "pauseTheVideo": "وقّفي الفيديو",
+  "turnSoundOn": "شغّلي الصوت",
+  "turnSoundOff": "اقفلي الصوت",
+  "rahmasVideoWillBeHereSoon": "فيديو رحمة هيبقى هنا قريب.",
+  "newHereCreateAccount": "جديدة هنا؟ اعملي حساب",
+  "alreadyHaveAnAccountSignIn": "عندك حساب؟ سجّلي دخولك",
+  "signInWithYourNumber": "ادخلي برقم موبايلك",
+  "custom": "تخصيص",
+  "advanced": "متقدمة",
+  "suggestedFromYourWeek": "مقترح حسب أسبوعك",
+  "yourTrainingDays": "أيام تمرينك",
+  "customSchedule": "جدول مخصص",
+  "tapADayToSwitchItBetween": "دوسي على اليوم عشان يبقى تمرين أو راحة.",
+  "recovery": "راحة",
+  "trainingTrainingRecoveryRecovery": "{training} تمرين · {recovery} راحة",
+  "@trainingTrainingRecoveryRecovery": {
+    "description": "O03 custom schedule summary: how many weekdays are training and how many are recovery.",
+    "placeholders": {
+      "training": {
+        "type": "String",
+        "example": "4"
+      },
+      "recovery": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "fewerMinutes": "دقايق أقل",
+  "moreMinutes": "دقايق أكتر",
+  "pickAnyLengthFrom10To180": "اختاري أي مدة من 10 لـ 180 دقيقة.",
+  "aboutYou": "عنك",
+  "optionalItStaysOnThisPhoneAnd": "اختياري. بيفضل على التليفون ده بس، وبيتستخدم بس عشان نحسب هدف السعرات والبروتين بتاعك.",
+  "weightKg_4v662": "الوزن (كجم)",
+  "heightCm": "الطول (سم)",
+  "ageYears": "السن (بالسنين)",
+  "between30And250Kg": "من 30 لـ 250 كجم",
+  "between120And230Cm": "من 120 لـ 230 سم",
+  "between14And90Years": "من 14 لـ 90 سنة",
+  "skipThis": "سيبي ده",
+  "aboutMinutesMinutes": "حوالي {minutes} دقايق",
+  "@aboutMinutesMinutes": {
+    "description": "How long the ID route takes.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "thereAreNoFreeTimesInThe_bzb9s": "مفيش مواعيد فاضية في الأيام الـ {days} الجاية. وواحدة من Own Hub هتتواصل معاكي برضه.",
+  "@thereAreNoFreeTimesInThe_bzb9s": {
+    "description": "No review call slots in the window.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "pickAnyLengthFromMinToMax": "اختاري أي مدة من {min} لـ {max} دقيقة.",
+  "@pickAnyLengthFromMinToMax": {
+    "description": "Custom session length range.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "10"
+      },
+      "max": {
+        "type": "String",
+        "example": "180"
+      }
+    }
+  },
+  "betweenMinAndMaxKg": "من {min} لـ {max} كجم",
+  "@betweenMinAndMaxKg": {
+    "description": "Weight range error.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "30"
+      },
+      "max": {
+        "type": "String",
+        "example": "250"
+      }
+    }
+  },
+  "betweenMinAndMaxCm": "من {min} لـ {max} سم",
+  "@betweenMinAndMaxCm": {
+    "description": "Height range error.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "120"
+      },
+      "max": {
+        "type": "String",
+        "example": "230"
+      }
+    }
+  },
+  "betweenMinAndMaxYears": "من {min} لـ {max} سنة",
+  "@betweenMinAndMaxYears": {
+    "description": "Age range error.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "14"
+      },
+      "max": {
+        "type": "String",
+        "example": "90"
+      }
+    }
   }
 }

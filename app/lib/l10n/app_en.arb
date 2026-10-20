@@ -5063,5 +5063,184 @@
         "example": "Koshari"
       }
     }
+  },
+  "capturePhoto": "Capture photo",
+  "fitTheCardInsideTheFrameThen": "Fit the card inside the frame, then tap Capture photo. Nothing is uploaded until you send it.",
+  "howWouldYouLikeToBeChecked": "How would you like to be checked?",
+  "idCardAndASelfie": "ID card and a selfie",
+  "about2Minutes": "About 2 minutes",
+  "talkToAWomanReviewer": "Talk to a woman reviewer",
+  "aShortCall": "A short call",
+  "iKnowOneOfTheReviewers": "I know one of the reviewers",
+  "pickHerNameIfSheKnowsYou": "Pick her name. If she knows you, you may be approved right away.",
+  "pickATimeForYourCall": "Pick a time for your call",
+  "changeTheTime": "Change the time",
+  "keepExploring": "Keep exploring",
+  "weCouldNotLoadTheFreeTimes": "We could not load the free times. You do not need to do anything: a woman from Own Hub will still contact you.",
+  "thereAreNoFreeTimesInThe": "There are no free times in the next 7 days. A woman from Own Hub will still contact you.",
+  "weCouldNotBookThatTimePick": "We could not book that time. Pick another one.",
+  "logFood": "Log food",
+  "frequent": "Frequent",
+  "favourites": "Favourites",
+  "quickCustom": "Quick custom",
+  "typeANameAndTheNumbersOff": "Type a name and the numbers off the packet",
+  "foodName": "Food name",
+  "fibre": "Fibre",
+  "saveAndLog": "Save and log",
+  "amount": "Amount",
+  "g": "g",
+  "oz": "oz",
+  "ml": "ml",
+  "cup": "cup",
+  "piece": "piece",
+  "serving_1d0fq": "Serving",
+  "aboutGramsG": "About {grams} g",
+  "@aboutGramsG": {
+    "description": "A portion's weight in grams when the unit is an estimate.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "150"
+      }
+    }
+  },
+  "addToFavourites": "Add to favourites",
+  "removeFromFavourites": "Remove from favourites",
+  "foodsYouLogShowUpHere": "Foods you log show up here.",
+  "tapTheStarOnAFoodTo": "Tap the star on a food to keep it here.",
+  "personalise": "Personalise",
+  "targetsUseAStandardEstimateAddYour": "Targets use a standard estimate. Add your weight, height and age to make them yours.",
+  "ofTargetKcal": "of {target} kcal",
+  "@ofTargetKcal": {
+    "description": "The day's kcal target, under the kcal eaten in the ring.",
+    "placeholders": {
+      "target": {
+        "type": "String",
+        "example": "1,700"
+      }
+    }
+  },
+  "signInOrJoin": "Sign in or join",
+  "signIn": "Sign in",
+  "aNoteFromRahma": "A note from Rahma",
+  "rahmaMohsen": "Rahma Mohsen",
+  "heySoHappyYoureHereThankYou": "Hey! So happy you're here 💕 Thank you for downloading the app! I built this so you can train on your own terms and fuel your body without the stress. You've already seen a preview of your custom workouts and nutrition targets. Create your quick account now so we can save your plan, track your meals in one tap, and start crushing your goals together!",
+  "continueToSignUp": "Continue to sign up",
+  "playTheVideo": "Play the video",
+  "pauseTheVideo": "Pause the video",
+  "turnSoundOn": "Turn sound on",
+  "turnSoundOff": "Turn sound off",
+  "rahmasVideoWillBeHereSoon": "Rahma's video will be here soon.",
+  "newHereCreateAccount": "New here? Create account",
+  "alreadyHaveAnAccountSignIn": "Already have an account? Sign in",
+  "signInWithYourNumber": "Sign in with your number",
+  "custom": "Custom",
+  "advanced": "Advanced",
+  "suggestedFromYourWeek": "Suggested from your week",
+  "yourTrainingDays": "Your training days",
+  "customSchedule": "Custom schedule",
+  "tapADayToSwitchItBetween": "Tap a day to switch it between training and recovery.",
+  "recovery": "Recovery",
+  "trainingTrainingRecoveryRecovery": "{training} training · {recovery} recovery",
+  "@trainingTrainingRecoveryRecovery": {
+    "description": "O03 custom schedule summary: how many weekdays are training and how many are recovery.",
+    "placeholders": {
+      "training": {
+        "type": "String",
+        "example": "4"
+      },
+      "recovery": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "fewerMinutes": "Fewer minutes",
+  "moreMinutes": "More minutes",
+  "pickAnyLengthFrom10To180": "Pick any length from 10 to 180 minutes.",
+  "aboutYou": "About you",
+  "optionalItStaysOnThisPhoneAnd": "Optional. It stays on this phone and is only used to work out your calorie and protein targets.",
+  "weightKg_4v662": "Weight (kg)",
+  "heightCm": "Height (cm)",
+  "ageYears": "Age (years)",
+  "between30And250Kg": "Between 30 and 250 kg",
+  "between120And230Cm": "Between 120 and 230 cm",
+  "between14And90Years": "Between 14 and 90 years",
+  "skipThis": "Skip this",
+  "aboutMinutesMinutes": "About {minutes} minutes",
+  "@aboutMinutesMinutes": {
+    "description": "How long the ID route takes.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "thereAreNoFreeTimesInThe_bzb9s": "There are no free times in the next {days} days. A woman from Own Hub will still contact you.",
+  "@thereAreNoFreeTimesInThe_bzb9s": {
+    "description": "No review call slots in the window.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "pickAnyLengthFromMinToMax": "Pick any length from {min} to {max} minutes.",
+  "@pickAnyLengthFromMinToMax": {
+    "description": "Custom session length range.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "10"
+      },
+      "max": {
+        "type": "String",
+        "example": "180"
+      }
+    }
+  },
+  "betweenMinAndMaxKg": "Between {min} and {max} kg",
+  "@betweenMinAndMaxKg": {
+    "description": "Weight range error.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "30"
+      },
+      "max": {
+        "type": "String",
+        "example": "250"
+      }
+    }
+  },
+  "betweenMinAndMaxCm": "Between {min} and {max} cm",
+  "@betweenMinAndMaxCm": {
+    "description": "Height range error.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "120"
+      },
+      "max": {
+        "type": "String",
+        "example": "230"
+      }
+    }
+  },
+  "betweenMinAndMaxYears": "Between {min} and {max} years",
+  "@betweenMinAndMaxYears": {
+    "description": "Age range error.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "14"
+      },
+      "max": {
+        "type": "String",
+        "example": "90"
+      }
+    }
   }
 }

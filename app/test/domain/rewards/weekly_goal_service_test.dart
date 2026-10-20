@@ -353,15 +353,15 @@ void main() {
       expect(after.tz, 'Asia/Dubai', reason: 'hers, never the handset\'s');
     });
 
-    test('a target below two is refused', () {
-      final decision = service.setTarget(_established, 1);
+    test('a target below one is refused', () {
+      final decision = service.setTarget(_established, 0);
       expect(decision.outcome, TargetOutcome.belowMinimum);
       expect(decision.accepted, isFalse);
       expect(decision.goal.sessionsTarget, 4, reason: 'the goal she had');
     });
 
-    test('a target above four is refused', () {
-      final decision = service.setTarget(_established, 5);
+    test('a target above seven is refused', () {
+      final decision = service.setTarget(_established, 8);
       expect(decision.outcome, TargetOutcome.aboveMaximum);
       expect(decision.accepted, isFalse);
       expect(decision.goal.sessionsTarget, 4);
@@ -371,7 +371,7 @@ void main() {
       // The defect this is written against: clamping 7 to 4 and 0 to 2 would
       // give her a goal she did not choose, report success, and leave nothing
       // to find it by.
-      for (final absurd in [0, 1, 5, 7, 12, -3]) {
+      for (final absurd in [0, 8, 12, -3]) {
         final decision = service.setTarget(_established, absurd);
         expect(
           decision.goal.sessionsTarget,
@@ -396,17 +396,14 @@ void main() {
       expect(decision.goal.sessionsTarget, 4);
     });
 
-    test('the bounds are 2 and 4', () {
-      // Restored. A fixing pass briefly moved the ceiling to five so that O03's
-      // fifth chip would take, which made the two tests above fail and was the
-      // wrong half of the conflict to move: the ceiling is a product rule (this
-      // app counts weeks, not days, and will not set a target it expects her to
-      // miss), and O03's chips are now 2, 3 and 4 to match it.
-      expect(kMinSessionsTarget, 2);
-      expect(kMaxSessionsTarget, 4);
-      // Negative control: a 1 or a 5 must not be inside them.
-      expect(kMinSessionsTarget, isNot(1));
-      expect(kMaxSessionsTarget, isNot(5));
+    test('the bounds are 1 and 7', () {
+      // The owner widened the goal from 2..4 to 1..7 on 18 Oct 2026, and
+      // O03's chips and `Intake.days` run over the same range.
+      expect(kMinSessionsTarget, 1);
+      expect(kMaxSessionsTarget, 7);
+      // Negative control: a 0 or an 8 must not be inside them.
+      expect(kMinSessionsTarget, isNot(0));
+      expect(kMaxSessionsTarget, isNot(8));
     });
   });
 

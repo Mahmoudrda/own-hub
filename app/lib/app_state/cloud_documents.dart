@@ -296,6 +296,9 @@ CloudDoc _userDoc({required bool includeHealth}) {
         'equipment': [for (final item in intake.equipment) item.wireName],
         'days': intake.days,
         'minutes': intake.minutes,
+        'minutesCustom': intake.minutesCustom,
+        'level': intake.level.wireName,
+        'weekdays': [...intake.weekdays]..sort(),
         if (includeHealth) 'lifeStage': intake.lifeStage.wireName,
         'setupDone': AppRouter.intakeRepository.setupDone,
         // Null is her never having been asked and an empty list is her
@@ -353,10 +356,21 @@ int _foldUser(List<CloudDoc> docs) {
     goal: _wire(TrainingGoal.values, profile['goal']) ?? defaults.goal,
     place: _wire(TrainingPlace.values, profile['place']) ?? defaults.place,
     equipment: equipment.isEmpty ? defaults.equipment : equipment,
-    days: Intake.allowedDays.contains(days) ? days : defaults.days,
-    minutes: Intake.allowedMinutes.contains(minutes)
-        ? minutes
-        : defaults.minutes,
+    days: Intake.daysOk(days) ? days : defaults.days,
+    minutes: Intake.minutesOk(minutes) ? minutes : defaults.minutes,
+    // Old profiles carry none of these three: the level then follows her
+    // answers, and she has no chosen weekdays.
+    level:
+        TrainingLevel.fromWire(profile['level']) ??
+        TrainingLevel.suggestedFor(
+          days: Intake.daysOk(days) ? days : defaults.days,
+          minutes: Intake.minutesOk(minutes) ? minutes : defaults.minutes,
+        ),
+    weekdays: Intake.cleanWeekdays([
+      for (final d in _list(profile['weekdays']) ?? const <Object?>[])
+        if (d is int) d,
+    ]),
+    minutesCustom: _bool(profile['minutesCustom']) ?? false,
     // Kept as this phone has it when the cloud has none: never replaced by
     // the default "none" from a profile that simply did not carry it.
     lifeStage:
@@ -807,6 +821,8 @@ int _foldEatPrefs(List<CloudDoc> docs) {
     ramadanMode: ramadan,
     proteinTargetGOverride: target,
     libVersion: local.libVersion,
+    favourites: local.favourites,
+    customFoods: local.customFoods,
   );
   return taken;
 }

@@ -618,6 +618,15 @@ if (fs.existsSync(dictPath)) {
     "Good evening, {name}": {"description": "T01 greeting from five in the afternoon, with her first name.", "placeholders": {"name": {"type": "String", "example": "Mai"}}},
     "Contains {allergens}": {"description": "A small note under a logged food that is known to contain something she told us she avoids. Logging is never blocked.", "placeholders": {"allergens": {"type": "String", "example": "nuts"}}},
     "Add {name}": {"description": "Screen reader label of the plus button on a food row that logs it.", "placeholders": {"name": {"type": "String", "example": "Koshari"}}},
+    "About {grams} g": {"description": "A portion's weight in grams when the unit is an estimate.", "placeholders": {"grams": {"type": "String", "example": "150"}}},
+    "of {target} kcal": {"description": "The day's kcal target, under the kcal eaten in the ring.", "placeholders": {"target": {"type": "String", "example": "1,700"}}},
+    "{training} training · {recovery} recovery": {"description": "O03 custom schedule summary: how many weekdays are training and how many are recovery.", "placeholders": {"training": {"type": "String", "example": "4"}, "recovery": {"type": "String", "example": "3"}}},
+    "About {minutes} minutes": {"description": "How long the ID route takes.", "placeholders": {"minutes": {"type": "String", "example": "2"}}},
+    "There are no free times in the next {days} days. A woman from Own Hub will still contact you.": {"description": "No review call slots in the window.", "placeholders": {"days": {"type": "String", "example": "7"}}},
+    "Pick any length from {min} to {max} minutes.": {"description": "Custom session length range.", "placeholders": {"min": {"type": "String", "example": "10"}, "max": {"type": "String", "example": "180"}}},
+    "Between {min} and {max} kg": {"description": "Weight range error.", "placeholders": {"min": {"type": "String", "example": "30"}, "max": {"type": "String", "example": "250"}}},
+    "Between {min} and {max} cm": {"description": "Height range error.", "placeholders": {"min": {"type": "String", "example": "120"}, "max": {"type": "String", "example": "230"}}},
+    "Between {min} and {max} years": {"description": "Age range error.", "placeholders": {"min": {"type": "String", "example": "14"}, "max": {"type": "String", "example": "90"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

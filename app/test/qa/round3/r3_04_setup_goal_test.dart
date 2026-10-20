@@ -24,7 +24,7 @@ void main() {
   useShippingApp();
 
   for (final loc in <String>['en', 'ar']) {
-    testWidgets('O03 offers 2, 3 and 4 and nothing else, $loc', (t) async {
+    testWidgets('O03 offers 1-2 and 3 to 7 and nothing else, $loc', (t) async {
       phone(t);
       final s = t.ensureSemantics();
       await open(t, appDestinations['O03']!.name, locale: Locale(loc));
@@ -36,24 +36,21 @@ void main() {
           .toList();
       print('=== R3-04 O03 $loc: numeric chips = ${numbers.join(", ")} ===');
       print('  all painted: ${paintedText(t).join(" | ")}');
-      expect(
-        numbers.contains('5'),
-        isFalse,
-        reason: 'O03 still offers a 5 and the goal domain refuses it',
-      );
-      for (final n in <String>['2', '3', '4']) {
+      for (final n in <String>['3', '4', '5', '6', '7']) {
         expect(
           numbers.contains(n),
           isTrue,
           reason: 'O03 no longer offers $n days a week',
         );
       }
-      expect(Intake.allowedDays, <int>[2, 3, 4]);
+      expect(paintedText(t).contains('1-2'), isTrue);
+      expect(numbers.contains('8'), isFalse);
+      expect(Intake.allowedDays, <int>[2, 3, 4, 5, 6, 7]);
       s.dispose();
     });
   }
 
-  for (final days in <int>[2, 3, 4]) {
+  for (final days in <int>[2, 3, 4, 5, 6, 7]) {
     for (final loc in <String>['en', 'ar']) {
       testWidgets('she taps $days on O03 and it reaches her week, $loc', (
         t,
@@ -63,7 +60,7 @@ void main() {
         await open(t, appDestinations['O03']!.name, locale: Locale(loc));
 
         // A real finger on the chip, at the pixel where its label is painted.
-        final chip = find.text('$days');
+        final chip = find.text(days == 2 ? '1-2' : '$days');
         expect(chip.evaluate(), isNotEmpty, reason: 'no "$days" chip painted');
         await t.tapAt(t.getRect(chip.first).center);
         await settle(t);
@@ -117,7 +114,7 @@ void main() {
     final s = t.ensureSemantics();
     await open(t, appDestinations['O03']!.name, locale: const Locale('en'));
     for (final n in <int>[4, 2, 3]) {
-      await t.tapAt(t.getRect(find.text('$n').first).center);
+      await t.tapAt(t.getRect(find.text(n == 2 ? '1-2' : '$n').first).center);
       await settle(t);
     }
     await tapControl(t, RegExp('Continue'));

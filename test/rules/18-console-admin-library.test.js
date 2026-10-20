@@ -8,8 +8,9 @@
 // permission denied on the owner's first try.
 //
 // What does not change: a member still needs `verified`, a signed-in account
-// without either claim reads nothing, and the admin claim opens no woman's own
-// documents.
+// without either claim reads none of the gated library, and the admin claim
+// opens no woman's own documents. `meta/workouts` and `workoutLibrary/v{N}`
+// are public (D54, a guest browses Train), so they are checked apart.
 
 import { test, before, after, describe } from 'node:test';
 import {
@@ -26,6 +27,9 @@ const LIBRARY = [
   'recipes/pro-only',
   'recipeIndex/all',
   'meta/recipes',
+];
+
+const PUBLIC_LIBRARY = [
   'meta/workouts',
   'workoutLibrary/v1',
 ];
@@ -54,7 +58,7 @@ after(async () => {
 });
 
 describe('an admin without the verified claim runs the console', () => {
-  for (const path of LIBRARY) {
+  for (const path of [...LIBRARY, ...PUBLIC_LIBRARY]) {
     test(`reads ${path}`, async () => {
       const d = await consoleAdmin(uid.admin);
       await assertSucceeds(getDoc(doc(d, path)));
@@ -97,6 +101,15 @@ describe('nothing else moved', () => {
     const d = await anon();
     for (const path of LIBRARY) {
       await assertFails(getDoc(doc(d, path)));
+    }
+  });
+
+  test('the workout library is public: a signed-in account without claims and a signed-out visitor read it', async () => {
+    const signedIn = await unverified(uid.her);
+    const signedOut = await anon();
+    for (const path of PUBLIC_LIBRARY) {
+      await assertSucceeds(getDoc(doc(signedIn, path)));
+      await assertSucceeds(getDoc(doc(signedOut, path)));
     }
   });
 });

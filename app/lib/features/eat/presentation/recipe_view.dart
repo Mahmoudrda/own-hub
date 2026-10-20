@@ -17,6 +17,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/guest_session.dart';
 import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
@@ -149,6 +150,19 @@ class _RecipeViewState extends State<RecipeView> {
   }
 
   void _log(Food food, FoodSize size) {
+    if (!GuestSession.require(
+      context,
+      PendingAction.logMeal([
+        ParsedItem(
+          food: food,
+          size: size,
+          servings: 1,
+          sourceText: food.names.first,
+        ),
+      ], origin: MealOrigin.recipe),
+    )) {
+      return;
+    }
     final l10n = AppL10n.of(context);
     final service = MealLogService(
       repository: _repo,

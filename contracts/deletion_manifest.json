@@ -244,6 +244,21 @@
       "number": 49,
       "path": "coachInvites where coachUid == uid",
       "method": "groupHook"
+    },
+    {
+      "number": 50,
+      "path": "verificationBookings where uid == {uid}",
+      "method": "groupHook"
+    },
+    {
+      "number": 51,
+      "path": "verificationReviewers/{uid} and verificationBookings where reviewerId == {uid}",
+      "method": "groupHook"
+    },
+    {
+      "number": 52,
+      "path": "verificationPreapproved/{E.164 phone of her Auth account}",
+      "method": "groupHook"
     }
   ]
 }

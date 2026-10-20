@@ -88,6 +88,9 @@ EXPORT_EXCLUSIONS: dict[int, str] = {
     33: "Progress photos are kept only on her phone.",
     34: "The photo key lives only on her phone.",
     41: "Single-use selfie sessions, deleted after five minutes.",
+    50: "A scheduling slot for a review call. The booked time is already in her verification record.",
+    51: "A reviewer's own availability settings and the slots booked with her; they are staff data, not a member's.",
+    52: "A phone number a reviewer pre-approved. It is removed when she signs in or deletes her account, and it is not part of her account.",
     # APL-16: the rows naming row 26's data one by one. The rules refuse every
     # write to them while community and coaching are off, so nothing exists.
     # Each moves to SECTIONS in the release that switches its feature on.

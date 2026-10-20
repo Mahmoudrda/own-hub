@@ -329,4 +329,68 @@ const Map<String, ExerciseMuscles> bundledExerciseMuscles = {
     secondary: [Muscle.frontDelts, Muscle.biceps],
     stretch: true,
   ),
+  'crunch': ExerciseMuscles(primary: [Muscle.core]),
+  'lying_bicycle_legs': ExerciseMuscles(primary: [Muscle.core]),
+  'reach_crunch': ExerciseMuscles(primary: [Muscle.core]),
+  'mountain_climbers': ExerciseMuscles(
+    primary: [Muscle.core],
+    secondary: [Muscle.frontDelts, Muscle.quads],
+  ),
+  'reach_up_crunch_pulses': ExerciseMuscles(primary: [Muscle.core]),
+  'flutter_kicks': ExerciseMuscles(primary: [Muscle.core]),
+  'russian_twist': ExerciseMuscles(primary: [Muscle.obliques, Muscle.core]),
+  'dumbbell_external_rotation': ExerciseMuscles(
+    primary: [Muscle.rearDelts],
+    secondary: [Muscle.upperBack],
+  ),
+  'dumbbell_hammer_curl': ExerciseMuscles(
+    primary: [Muscle.biceps, Muscle.forearms],
+  ),
+  'side_lying_clamshell': ExerciseMuscles(
+    primary: [Muscle.abductors, Muscle.glutes],
+  ),
+  'standing_dumbbell_biceps_curl': ExerciseMuscles(
+    primary: [Muscle.biceps],
+    secondary: [Muscle.forearms],
+  ),
+  'back_extension': ExerciseMuscles(
+    primary: [Muscle.lowerBack, Muscle.glutes],
+    secondary: [Muscle.hamstrings],
+  ),
+  'dumbbell_bench_press': ExerciseMuscles(
+    primary: [Muscle.chest],
+    secondary: [Muscle.frontDelts, Muscle.triceps],
+  ),
+  'plate_loaded_shoulder_press': ExerciseMuscles(
+    primary: [Muscle.frontDelts, Muscle.sideDelts],
+    secondary: [Muscle.triceps],
+  ),
+  'close_grip_lat_pulldown': ExerciseMuscles(
+    primary: [Muscle.lats],
+    secondary: [Muscle.biceps, Muscle.upperBack],
+  ),
+  'cable_biceps_curl': ExerciseMuscles(
+    primary: [Muscle.biceps],
+    secondary: [Muscle.forearms],
+  ),
+  'cable_face_pull': ExerciseMuscles(
+    primary: [Muscle.rearDelts, Muscle.upperBack],
+  ),
+  'incline_dumbbell_press': ExerciseMuscles(
+    primary: [Muscle.chest, Muscle.frontDelts],
+    secondary: [Muscle.triceps],
+  ),
+  'seated_dumbbell_calf_raise': ExerciseMuscles(primary: [Muscle.calves]),
+  'barbell_back_squat': ExerciseMuscles(
+    primary: [Muscle.quads, Muscle.glutes],
+    secondary: [Muscle.adductors, Muscle.core],
+  ),
+  'barbell_bench_press': ExerciseMuscles(
+    primary: [Muscle.chest],
+    secondary: [Muscle.frontDelts, Muscle.triceps],
+  ),
+  'barbell_hip_thrust': ExerciseMuscles(
+    primary: [Muscle.glutes],
+    secondary: [Muscle.hamstrings, Muscle.quads],
+  ),
 };

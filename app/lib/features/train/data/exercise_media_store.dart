@@ -11,16 +11,15 @@
 /// beside its final name as `.part` and renamed only once it is whole, so a
 /// download cut off by a tunnel never plays as a broken clip.
 ///
-/// Read through `firebase_storage` with her own sign-in (the content rules let
-/// any signed-in account read `content/`), never through a download URL: a URL
-/// is a second thing to fetch, and a key that outlives the question it
-/// answered.
+/// Read through `firebase_storage`, never through a download URL: a URL is a
+/// second thing to fetch, and a key that outlives the question it answered.
+/// The storage rules let anyone read `content/exercises/`, so a guest plays
+/// the clips with no sign-in.
 library;
 
 import 'dart:async';
 import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -126,9 +125,7 @@ class FirebaseExerciseMediaStore implements ExerciseMediaStore {
     Duration timeout,
     ValueNotifier<double?> progress,
   ) async {
-    if (!FirebaseBoot.isReady || FirebaseAuth.instance.currentUser == null) {
-      throw StateError('not signed in');
-    }
+    if (!FirebaseBoot.isReady) throw StateError('backend not ready');
     final task = FirebaseBoot.library.ref(path).writeToFile(into);
     final watching = task.snapshotEvents.listen((snapshot) {
       final total = snapshot.totalBytes;

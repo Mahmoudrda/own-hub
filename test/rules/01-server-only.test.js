@@ -35,6 +35,9 @@ const SERVER_ONLY = [
   ['verificationEvidenceAccess/entry_0001', { adminUid: uid.admin }],
   ['verificationConfig/thresholds', { faceMatch: 0.9 }],
   [`assistantQuota/${uid.her}`, { asked: 0 }],
+  ['verificationPreapproved/+201001234567', { phone: '+201001234567' }],
+  [`verificationReviewers/${uid.admin}`, { listed: true }],
+  ['verificationBookings/slot_0001', { uid: uid.her, reviewerId: uid.admin }],
 ];
 
 describe('server-only collections are closed in both directions', () => {
@@ -63,6 +66,8 @@ describe('server-only collections are closed in both directions', () => {
       'verificationJobs', 'nidRegistry', 'verification_flags',
       'verificationSessions', 'verificationLedger', 'verificationConfig',
       'verificationEvidenceAccess', 'assistantQuota',
+      'verificationPreapproved', 'verificationReviewers',
+      'verificationBookings',
     ]) {
       await assertFails(getDocs(collection(db, name)));
     }

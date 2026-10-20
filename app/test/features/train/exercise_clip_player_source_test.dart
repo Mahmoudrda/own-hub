@@ -27,7 +27,8 @@ void main() {
       if (!f.path.endsWith('.dart')) continue;
       final text = f.readAsStringSync();
       if (text.contains('package:video_player/') &&
-          !f.path.endsWith('exercise_clip_player.dart')) {
+          !f.path.endsWith('exercise_clip_player.dart') &&
+          !f.path.endsWith('founder_video_player.dart')) {
         offenders.add(f.path);
       }
       if (text.contains('VideoProgressIndicator') ||

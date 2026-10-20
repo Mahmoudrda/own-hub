@@ -254,7 +254,8 @@ void main() {
 
         expect(sent, 0);
         expect(find.text(line), findsOneWidget);
-        expect(find.text('01005550132'), findsOneWidget);
+        // Shown the way it is sent: ten digits, no trunk zero, grouped.
+        expect(find.text('100 555 0132'), findsOneWidget);
         final announced = tester.widget<Semantics>(
           find
               .ancestor(

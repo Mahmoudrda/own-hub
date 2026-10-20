@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 
 import main
-from identity import decisions, store
+from identity import approvals, decisions, store
 from tests.test_entrypoints import body, inner, request, stubbed  # noqa: F401
 
 
@@ -24,6 +24,7 @@ def recorded(monkeypatch, stubbed):
             log["access"].append((reviewer_uid, flag_id, action))
 
     monkeypatch.setattr(main.store, "FirestoreReviewStore", _Review)
+    monkeypatch.setattr(approvals, "revoked_since_approval", lambda uid: False)
     monkeypatch.setattr(main.logs, "warn", lambda event, **f: log["warn"].append(event))
     return log
 

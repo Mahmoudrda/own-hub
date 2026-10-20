@@ -236,6 +236,58 @@ void main() {
     });
   });
 
+  group('the raised Log food button', () {
+    testWidgets('sits in the middle of her bar and is not a tab', (
+      tester,
+    ) async {
+      var opened = 0;
+      await tester.pumpWidget(
+        _host(
+          AppNavBar(
+            activeScreenId: 'T01',
+            destinations: traineeTabs,
+            onLogFood: () => opened++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final button = find.byKey(const ValueKey('nav-log-food'));
+      expect(button, findsOneWidget);
+      expect(find.text('Log food'), findsOneWidget);
+      expect(traineeTabs.length, 4);
+
+      // Between the second and third tab.
+      final x = tester.getCenter(button).dx;
+      expect(x, greaterThan(tester.getCenter(find.text('Train')).dx));
+      expect(x, lessThan(tester.getCenter(find.text('Community')).dx));
+
+      await tester.tap(button);
+      expect(opened, 1);
+    });
+
+    testWidgets('a coach does not get it', (tester) async {
+      await tester.pumpWidget(
+        _host(const AppNavBar(activeScreenId: 'K07', destinations: coachTabs)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('nav-log-food')), findsNothing);
+    });
+
+    testWidgets('in Arabic at the largest text size it fits', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          const AppNavBar(activeScreenId: 'T01'),
+          locale: const Locale('ar'),
+          textScale: 1.6,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('nav-log-food')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   testWidgets('survives the largest system text size in Arabic', (
     tester,
   ) async {

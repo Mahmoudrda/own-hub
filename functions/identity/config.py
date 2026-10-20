@@ -636,6 +636,32 @@ evidence; there is no evidence any more, and the log stays anyway. A reviewer
 queue that shows reason codes and scores for a named woman is still a capability
 that needs a record of every use."""
 
+COL_PREAPPROVED = "verificationPreapproved"
+"""Phone numbers a reviewer has vouched for (E.164 document ids). Server-only:
+claim_fast_verification approves a signed-in woman whose token phone is here."""
+COL_REVIEWERS = "verificationReviewers"
+"""verificationReviewers/{reviewerUid}: her first name, whether she is listed
+for members, auto-pass for people who know her, and her weekly availability."""
+COL_BOOKINGS = "verificationBookings"
+"""One document per booked review slot, id {reviewerUid}_{UTC start}, so two
+members can never take the same slot."""
+
+TEST_BYPASS_ENV = "TEST_BYPASS_PHONES"
+"""Comma list of test phone numbers, set in functions/.env.own-hub (gitignored).
+Read from the environment, never from the request, and empty means nobody."""
+
+REVIEW_TZ = "Africa/Cairo"
+"""Reviewer availability is typed in Cairo time, which has daylight saving."""
+REVIEW_SLOT_MINUTES = (10, 15, 20, 30, 45, 60)
+REVIEW_SLOT_DEFAULT_MINUTES = 15
+REVIEW_SLOT_LEAD_MINUTES = 60
+"""A member cannot book a slot that starts sooner than this."""
+REVIEW_BOOKING_RETENTION_DAYS = 30
+APPROVE_BATCH_MAX = 50
+PREAPPROVED_ADD_MAX = 200
+QUEUE_MAX_ROWS = 100
+SCHEDULE_MAX_DAYS = 31
+
 SECRET_PEPPER = "nid-hash-pepper"
 """The Secret Manager secret id, which is what actually exists in the project.
 

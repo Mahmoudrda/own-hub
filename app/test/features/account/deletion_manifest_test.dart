@@ -49,7 +49,7 @@ Set<String> _subcollectionsInRules() {
 
 void main() {
   group('the manifest is intact', () {
-    test('49 rows, numbered 1 to 49 with no gaps and no duplicates', () {
+    test('52 rows, numbered 1 to 52 with no gaps and no duplicates', () {
       // 34 until check (e) below ran for the first time and found three
       // collections nobody had enumerated in three passes by eye.
       //
@@ -69,10 +69,10 @@ void main() {
       // 49 with the community and coach data named row by row (posts, her
       // comments, coach pages, relationships, invite codes), all run by row
       // 26's server purge.
-      expect(kDeletionManifest, hasLength(49));
+      expect(kDeletionManifest, hasLength(52));
 
       final numbers = kDeletionManifest.map((r) => r.number).toList()..sort();
-      expect(numbers, [for (var i = 1; i <= 49; i++) i]);
+      expect(numbers, [for (var i = 1; i <= 52; i++) i]);
     });
 
     test('every row names a path and an owner', () {

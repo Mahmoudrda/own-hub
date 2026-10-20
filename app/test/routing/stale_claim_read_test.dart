@@ -52,7 +52,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 20));
 
       expect(AppRouter.isVerified, isFalse);
-      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
       expect(await VerificationMemory.verifiedUid(), isNull);
     },
   );

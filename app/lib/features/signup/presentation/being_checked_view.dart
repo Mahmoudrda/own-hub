@@ -63,8 +63,10 @@ import '../../../ui/app_card.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/mascot/kitten.dart';
+import '../data/review_scheduling_repository.dart';
 import '../domain/review_request.dart';
 import '../domain/server_verification.dart';
+import 'widgets/review_slot_picker.dart';
 
 class BeingCheckedView extends StatefulWidget {
   const BeingCheckedView({
@@ -84,7 +86,19 @@ class BeingCheckedView extends StatefulWidget {
     this.onBuildWeek,
     this.onNotifyMe,
     this.onOpenSettings,
+    this.scheduling,
+    this.onKeepExploring,
+    this.cheerFor = const Duration(milliseconds: 1600),
   });
+
+  /// Free times and booking for the review call. Null: no picker.
+  final ReviewSchedulingRepository? scheduling;
+
+  /// "Keep exploring": back to browsing as a guest while she waits.
+  final VoidCallback? onKeepExploring;
+
+  /// How long the kitten cheers before [onApproved] moves her on.
+  final Duration cheerFor;
 
   /// "Tell me when I'm in": asks for notifications and registers this phone
   /// for the one push the server sends when a woman reviewer approves her.
@@ -158,6 +172,12 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
   bool _approvedSent = false;
   late bool _asked = widget.reviewAsked;
   bool _asking = false;
+  Timer? _cheerTimer;
+  bool _cheering = false;
+
+  /// A time the server just confirmed, shown before the live update arrives.
+  DateTime? _bookedNow;
+  bool _changingTime = false;
 
   /// What went wrong with the last "Ask for the call", or null.
   CallFailureKind? _askFailure;
@@ -240,12 +260,16 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
     if (!mounted || _approvedSent) return;
     if (_live?.state != ServerVerificationState.approved) return;
     _approvedSent = true;
-    widget.onApproved?.call();
+    setState(() => _cheering = true);
+    _cheerTimer = Timer(widget.cheerFor, () {
+      if (mounted) widget.onApproved?.call();
+    });
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
+    _cheerTimer?.cancel();
     super.dispose();
   }
 
@@ -261,7 +285,7 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
     final l10n = AppL10n.of(context);
     final quiet = AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant);
     final state = _live?.state ?? ServerVerificationState.pending;
-    final booked = _live?.reviewScheduledFor;
+    final booked = _live?.reviewScheduledFor ?? _bookedNow;
 
     final (String title, String body) = switch (state) {
       ServerVerificationState.rejected => (
@@ -300,6 +324,8 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
         widget.requester != null;
     final waiting = state == ServerVerificationState.pending;
     final approved = state == ServerVerificationState.approved;
+    final scheduling = widget.scheduling;
+    final canSchedule = waiting && _asked;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -317,7 +343,9 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (waiting)
+                  if (_cheering)
+                    const Kitten(pose: KittenPose.cheer, size: 56)
+                  else if (waiting)
                     // Sits and waits, settling once. Only while the check is
                     // still to come: never beside a refusal or a retry.
                     const Kitten(
@@ -404,6 +432,27 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
               onPressed: _asking ? null : _askForCall,
             ),
           ],
+          if (scheduling != null &&
+              canSchedule &&
+              booked != null &&
+              !_changingTime)
+            AppButton(
+              l10n.changeTheTime,
+              key: const ValueKey('c14-change-time'),
+              variant: AppButtonVariant.outlined,
+              onPressed: () => setState(() => _changingTime = true),
+            ),
+          if (scheduling != null &&
+              canSchedule &&
+              (booked == null || _changingTime))
+            ReviewSlotPicker(
+              key: const ValueKey('c14-slot-picker'),
+              repository: scheduling,
+              onBooked: (at) => setState(() {
+                _bookedNow = at;
+                _changingTime = false;
+              }),
+            ),
           if (approved && widget.onApproved != null)
             AppButton(
               l10n.openOwnHub,
@@ -465,6 +514,13 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
               l10n.lookAroundWhileYouWait,
               variant: AppButtonVariant.outlined,
               onPressed: widget.onLookAround,
+            ),
+          if (waiting && widget.onKeepExploring != null)
+            AppButton(
+              l10n.keepExploring,
+              key: const ValueKey('c14-keep-exploring'),
+              variant: AppButtonVariant.outlined,
+              onPressed: widget.onKeepExploring,
             ),
           // Never a dead end: whatever she is waiting on, she can leave this
           // account on this phone and sign in with another number.

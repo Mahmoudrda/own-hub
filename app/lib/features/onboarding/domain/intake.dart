@@ -10,10 +10,10 @@
 /// permanence.
 ///
 /// **§2 rule 3 — weeks, not days.** [days] is a *quantity per week*, never a run
-/// of days and never a list of weekdays. There is no counter here that could
-/// grow by one each morning, and `lib/domain/week/week_key.dart` holds the only
-/// unit of time this product counts progress in. A daily tally would have to add
-/// a type to hold it, which is a visible decision in a diff.
+/// of days. [weekdays] only says which days of the week she prefers to train on;
+/// it is a plan, not a tally. There is no counter here that could grow by one
+/// each morning, and `lib/domain/week/week_key.dart` holds the only unit of time
+/// this product counts progress in.
 ///
 /// **§2 rule 11 — nothing is ranked by weight.** `loseSteadily` is a goal, not a
 /// number. There is no target weight, no current weight, and no numeric input to
@@ -38,6 +38,29 @@ enum TrainingGoal {
   /// The string stored in `profile.goal`. Never the Dart enum name — a rename
   /// would otherwise silently rewrite everybody's profile.
   final String wireName;
+}
+
+/// How hard her training is pitched. O03, and the three tiers of every
+/// starting programme.
+enum TrainingLevel {
+  beginner('beginner'),
+  intermediate('intermediate'),
+  advanced('advanced');
+
+  const TrainingLevel(this.wireName);
+
+  final String wireName;
+
+  /// What O03 preselects from her days and minutes: Advanced from an hour a
+  /// session or five days a week, otherwise Beginner. It is only a suggestion;
+  /// she can pick any level.
+  static TrainingLevel suggestedFor({
+    required int days,
+    required int minutes,
+  }) => minutes >= 60 || days >= 5 ? advanced : beginner;
+
+  static TrainingLevel? fromWire(Object? wire) =>
+      values.where((v) => v.wireName == wire).firstOrNull;
 }
 
 /// Where she will train. O02.
@@ -107,10 +130,13 @@ class Intake {
     this.days = 3,
     this.minutes = 15,
     this.lifeStage = LifeStage.none,
-  }) : assert(days >= 2 && days <= 4, 'days a week runs 2 to 4'),
+    this.level = TrainingLevel.beginner,
+    this.weekdays = const {},
+    this.minutesCustom = false,
+  }) : assert(days >= 1 && days <= 7, 'days a week runs 1 to 7'),
        assert(
-         minutes == 10 || minutes == 15 || minutes == 20 || minutes == 30,
-         'a session is 10, 15, 20 or 30 minutes',
+         minutes >= 10 && minutes <= 180,
+         'a session is 10 to 180 minutes',
        );
 
   /// What she gets if she skips every step. The design preselects each of these.
@@ -131,38 +157,65 @@ class Intake {
   /// changes this set, which is also the only way a screen may change it.
   final Set<Equipment> equipment;
 
-  /// O03. **Sessions per week**, and the origin of her weekly goal.
+  /// O03. **Sessions per week**, and the origin of her weekly goal, 1 to 7.
   ///
-  /// Not a streak, not a run, not a set of weekdays. G6 derives
-  /// `weeklyGoal.sessionsTarget` from this; a bad week never writes back here
-  /// (G2 §9 Q7), so one quiet week cannot permanently shrink her programme.
+  /// Not a streak and not a run. G6 derives `weeklyGoal.sessionsTarget` from
+  /// this; a bad week never writes back here (G2 §9 Q7), so one quiet week
+  /// cannot permanently shrink her programme. When [weekdays] is not empty it
+  /// has the same length.
   final int days;
 
-  /// O03. Minutes per session.
+  /// O03. Minutes per session, 10 to 180.
   final int minutes;
 
   /// O04.
   final LifeStage lifeStage;
 
-  /// The days a week she may choose. Order is the design's.
-  ///
-  /// **Three chips, and five is deliberately not one of them.** This list and
-  /// `kMaxSessionsTarget` (lib/domain/rewards/weekly_goal_service.dart) are one
-  /// decision: [days] becomes `weeklyGoal.sessionsTarget` verbatim, so a chip
-  /// the rewards system will not accept is a question the product cannot
-  /// answer. It offered a 5 for a while, and the 5 was silently clamped to a 4
-  /// on the way to the goal, which is how the defect was found.
-  ///
-  /// Five is not offered because the product counts weeks rather than days and
-  /// refuses to apply pressure by design: four sessions leaves three slack days
-  /// in a seven-day week, five leaves two, and a target missed often is the one
-  /// thing the research says destroys the motivation this app is built to
-  /// create. Adding a 5 back here needs `kMaxSessionsTarget` raised in the same
-  /// commit, and needs that comment's reasoning overturned first.
-  static const List<int> allowedDays = [2, 3, 4];
+  /// O03. Which tier of the programme opens first. It follows
+  /// [TrainingLevel.suggestedFor] until she picks one.
+  final TrainingLevel level;
 
-  /// The session lengths she may choose, in minutes.
-  static const List<int> allowedMinutes = [10, 15, 20, 30];
+  /// O03 "Custom schedule". The weekdays she trains, as [DateTime.weekday]
+  /// numbers (Monday 1 to Sunday 7). Empty means she did not choose days, and
+  /// the week is any [days] sessions; every other weekday is recovery.
+  final Set<int> weekdays;
+
+  /// O03. Whether [minutes] came from the custom stepper rather than a preset.
+  final bool minutesCustom;
+
+  /// The days a week she may choose with one tap. "1 to 2" is a goal of 2; one
+  /// session a week is a custom schedule with a single weekday.
+  static const List<int> allowedDays = [2, 3, 4, 5, 6, 7];
+
+  /// Whether [d] is a weekly goal the rewards system accepts.
+  static bool daysOk(int d) => d >= 1 && d <= 7;
+
+  /// The session lengths she may choose with one tap. The last, 75, reads
+  /// "75+".
+  static const List<int> allowedMinutes = [15, 20, 30, 45, 60, 75];
+
+  static const int minCustomMinutes = 10;
+  static const int maxCustomMinutes = 180;
+
+  /// Whether [m] is a session length at all, preset or custom.
+  static bool minutesOk(int m) =>
+      m >= minCustomMinutes && m <= maxCustomMinutes;
+
+  /// Weekday numbers in the order O03 and Home draw them, Saturday first.
+  static const List<int> weekdayOrder = [6, 7, 1, 2, 3, 4, 5];
+
+  /// [count] weekdays spread evenly through the week, Saturday first, for a
+  /// woman who opens the custom schedule with a number of days already chosen.
+  static Set<int> spreadWeekdays(int count) {
+    final n = count.clamp(1, 7);
+    return {for (var i = 0; i < n; i++) weekdayOrder[(i * 7) ~/ n]};
+  }
+
+  /// Keeps only real weekday numbers.
+  static Set<int> cleanWeekdays(Iterable<int> raw) => {
+    for (final d in raw)
+      if (d >= 1 && d <= 7) d,
+  };
 
   /// Turning one piece of equipment on or off.
   ///
@@ -193,6 +246,9 @@ class Intake {
     int? days,
     int? minutes,
     LifeStage? lifeStage,
+    TrainingLevel? level,
+    Set<int>? weekdays,
+    bool? minutesCustom,
   }) {
     return Intake(
       goal: goal ?? this.goal,
@@ -201,6 +257,9 @@ class Intake {
       days: days ?? this.days,
       minutes: minutes ?? this.minutes,
       lifeStage: lifeStage ?? this.lifeStage,
+      level: level ?? this.level,
+      weekdays: weekdays ?? this.weekdays,
+      minutesCustom: minutesCustom ?? this.minutesCustom,
     );
   }
 
@@ -212,6 +271,10 @@ class Intake {
       other.days == days &&
       other.minutes == minutes &&
       other.lifeStage == lifeStage &&
+      other.level == level &&
+      other.minutesCustom == minutesCustom &&
+      other.weekdays.length == weekdays.length &&
+      other.weekdays.containsAll(weekdays) &&
       other.equipment.length == equipment.length &&
       other.equipment.containsAll(equipment);
 
@@ -222,6 +285,9 @@ class Intake {
     days,
     minutes,
     lifeStage,
+    level,
+    minutesCustom,
+    Object.hashAllUnordered(weekdays),
     Object.hashAllUnordered(equipment),
   );
 
@@ -229,5 +295,5 @@ class Intake {
   String toString() =>
       'Intake(${goal.wireName}, ${place.wireName}, '
       '${equipment.map((e) => e.wireName).join("+")}, ${days}d, ${minutes}min, '
-      '${lifeStage.wireName})';
+      '${lifeStage.wireName}, ${level.wireName})';
 }

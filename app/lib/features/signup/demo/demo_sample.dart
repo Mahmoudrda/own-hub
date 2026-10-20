@@ -185,6 +185,9 @@ class DemoMealRepository extends InMemoryMealRepository {
       refusals.refuse();
 
   @override
+  Future<void> savePrefs(EatPrefs prefs) async => refusals.refuse();
+
+  @override
   Future<void> swapDinner({
     required String weekId,
     required PlanDay day,

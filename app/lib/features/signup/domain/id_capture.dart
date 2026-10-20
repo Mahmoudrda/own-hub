@@ -177,9 +177,8 @@ sealed class CaptureState {
   /// Opening the camera. On a first run this is also the permission sheet.
   const factory CaptureState.preparing() = CapturePreparing;
 
-  /// Live. [sharp] drives the design's promise that the card "photographs
-  /// itself when it is sharp" — auto-capture, which is what removes the
-  /// blurry-photo retry loop that kills completion.
+  /// Live. [sharp] only drives the framing hint. Nothing photographs
+  /// itself: every shutter is hers.
   const factory CaptureState.framing({
     required bool sharp,
     CaptureGuidance? guidance,
@@ -217,7 +216,7 @@ class CaptureFraming extends CaptureState {
 
   /// True when the frame on screen is lit, sharp and, on the selfie, framed.
   ///
-  /// On `C10` it is what fires auto-capture. **It never gates her shutter.**
+  /// **It never gates her shutter.**
   /// The manual shutter works on any live frame on both screens: ML Kit can
   /// miss a face that is plainly there, and a woman who can see herself in the
   /// preview must never be held hostage to a detector's opinion of it. The

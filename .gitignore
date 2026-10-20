@@ -96,3 +96,12 @@ functions/venv
 !.github/review-kit/**
 .wrangler/
 .claude/launch-pass.lock
+
+# Classifier reports (owner tool output)
+functions/tools/out/
+
+# Reviewer dashboard live config (copy of config.example.js with real values)
+admin-web/config.js
+
+# Firebase CLI hosting cache
+.firebase/

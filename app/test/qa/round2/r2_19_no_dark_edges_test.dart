@@ -381,10 +381,6 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
     file: 'lib/routing/app_router.dart',
     guard: "if (!screenIsOn('C03'))",
   ),
-  'C14->C04': (
-    file: 'lib/features/signup/presentation/being_checked_view.dart',
-    guard: "AppRouter.screenIsOn('C04')",
-  ),
   'C02->C03': (
     file: 'lib/routing/app_router.dart',
     guard: "onContinue: screenIsOn('C03')",

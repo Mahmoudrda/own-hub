@@ -60,6 +60,7 @@ def test_ttl_policies_are_declared_for_the_expiring_collections():
         # The console: every read of it, a year; error counts, 90 days.
         ("adminAccessLog", "expireAt"),
         ("opsErrors", "expireAt"),
+        ("verificationBookings", "expireAt"),
     }
 
 

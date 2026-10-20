@@ -379,10 +379,19 @@ void main() {
     test('a failed download is null, and nothing thrown', () async {
       final store = FirebaseExerciseMediaStore(
         folder: () async => folder,
-        download: (_, _) async => throw StateError('not signed in'),
+        download: (_, _) async => throw StateError('connection lost'),
       );
       expect(await store.fetch(clip), isNull);
     });
+
+    test(
+      'with no backend and no sign-in, a fetch is null and nothing thrown',
+      () async {
+        final store = FirebaseExerciseMediaStore(folder: () async => folder);
+        expect(await store.fetch(clip), isNull);
+        expect(folder.listSync(), isEmpty);
+      },
+    );
 
     test('only files under content/exercises are ever asked for', () async {
       var downloads = 0;

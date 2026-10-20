@@ -140,6 +140,7 @@ class AppNavBar extends StatelessWidget {
     required this.activeScreenId,
     this.destinations,
     this.onSelect,
+    this.onLogFood,
   });
 
   /// The screen currently shown. A tab is active when it owns this screen.
@@ -154,10 +155,37 @@ class AppNavBar extends StatelessWidget {
 
   final ValueChanged<String>? onSelect;
 
+  /// What the centre "Log food" button does. Null opens E02, the food search,
+  /// whenever the bar is live (it has an [onSelect]); in a gallery or test
+  /// with neither, the button is drawn and does nothing.
+  final VoidCallback? onLogFood;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final tabs = destinations ?? tabsFor(RoleScope.rolesOf(context).active);
+    final role = RoleScope.rolesOf(context).active;
+    final tabs = destinations ?? tabsFor(role);
+    // The raised button belongs to the trainee bar. It is not a tab:
+    // `traineeTabs` stays at four.
+    final showLogFood = destinations == null
+        ? role != AppRole.coach
+        : identical(destinations, traineeTabs);
+    final logFood =
+        onLogFood ??
+        (onSelect == null ? null : () => AppRouter.openFoodSearch(context));
+    final middle = tabs.length ~/ 2;
+
+    Widget tabAt(NavDestination tab) => Expanded(
+      child: _Tab(
+        tab: tab,
+        label: tab.label(l10n),
+        active: tab.screenId == activeScreenId,
+        // The active tab is not a link to itself.
+        onTap: tab.screenId == activeScreenId || onSelect == null
+            ? null
+            : () => onSelect!(tab.screenId),
+      ),
+    );
 
     // Labels grow with the system text size only so far. The bar is a fixed
     // 60 high, and past this its names would be cut off at the bottom —
@@ -175,21 +203,83 @@ class AppNavBar extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 5, 4, 0),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    for (final tab in tabs)
-                      Expanded(
-                        child: _Tab(
-                          tab: tab,
-                          label: tab.label(l10n),
-                          active: tab.screenId == activeScreenId,
-                          // The active tab is not a link to itself.
-                          onTap:
-                              tab.screenId == activeScreenId || onSelect == null
-                              ? null
-                              : () => onSelect!(tab.screenId),
-                        ),
-                      ),
+                    for (var i = 0; i < tabs.length; i++) ...[
+                      if (showLogFood && i == middle)
+                        _LogFoodButton(label: l10n.logFood, onTap: logFood),
+                      tabAt(tabs[i]),
+                    ],
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The raised pink "+" in the middle of the bar. 56 across, with its name
+/// under it like a tab's, and a petrol outline because pink alone is not a
+/// graphic.
+class _LogFoodButton extends StatelessWidget {
+  const _LogFoodButton({required this.label, this.onTap});
+
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: Tooltip(
+        message: label,
+        excludeFromSemantics: true,
+        child: SizedBox(
+          width: 76,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              HandPressable(
+                key: const ValueKey('nav-log-food'),
+                onTap: onTap,
+                scale: 0.94,
+                borderRadius: BorderRadius.circular(28),
+                builder: (context, _) => Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.onPrimaryContainer,
+                      width: 1.5,
+                    ),
+                    boxShadow: AppShadow.raised,
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    size: 30,
+                    color: AppColors.onPrimaryContainer,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.nav.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.onPrimaryContainer,
+                  ),
                 ),
               ),
             ],

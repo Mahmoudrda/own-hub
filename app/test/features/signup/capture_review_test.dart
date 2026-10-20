@@ -394,7 +394,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await _tap(tester, 'Take it myself');
+      await _tap(tester, 'Capture photo');
       expect(find.text('Check your photo'), findsOneWidget);
       expect(find.byKey(const ValueKey('capture-review-photo')), findsOneWidget);
       expect(find.text('Retake'), findsOneWidget);
@@ -428,7 +428,7 @@ void main() {
       await _tap(tester, 'Retake');
       expect(service.opened.first.discards, 1);
       expect(service.opened, hasLength(2));
-      expect(find.text('Take it myself'), findsOneWidget);
+      expect(find.text('Capture photo'), findsOneWidget);
       expect(captured, 0);
     });
 
@@ -447,7 +447,7 @@ void main() {
 
       await _tap(tester, 'Ready');
       expect(service.opened.single.target, CaptureTarget.idBack);
-      expect(find.text('Take it myself'), findsOneWidget);
+      expect(find.text('Capture photo'), findsOneWidget);
       expect(_shutter(tester), isNotNull);
     });
 
@@ -467,7 +467,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await _tap(tester, 'Ready');
-      await _tap(tester, 'Take it myself');
+      await _tap(tester, 'Capture photo');
 
       expect(
         find.text('This looks like the front of the card. Retake?'),
@@ -487,7 +487,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await _tap(tester, 'Ready');
-      await _tap(tester, 'Take it myself');
+      await _tap(tester, 'Capture photo');
 
       expect(find.text('Check your photo'), findsOneWidget);
       expect(
@@ -502,7 +502,7 @@ void main() {
       final service = _FakeService(faceOnBack: true);
       await tester.pumpWidget(_host(IdCaptureView(captureService: service)));
       await tester.pumpAndSettle();
-      await _tap(tester, 'Take it myself');
+      await _tap(tester, 'Capture photo');
       expect(
         find.text('This looks like the front of the card. Retake?'),
         findsNothing,
@@ -618,7 +618,7 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       await _tap(tester, 'جاهزة');
-      await _tap(tester, 'هصوّرها بنفسي');
+      await _tap(tester, 'صوّري');
       expect(find.text('استخدمي الصورة دي'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -681,7 +681,7 @@ void main() {
         await tester.pumpAndSettle();
         if (screen == 'C10b') await _tap(tester, 'Ready');
         session = service.opened.single;
-        await _tap(tester, screen == 'C11' ? 'Take photo' : 'Take it myself');
+        await _tap(tester, screen == 'C11' ? 'Take photo' : 'Capture photo');
 
         await _tap(tester, 'Having trouble? Ask a woman to check you');
 
@@ -867,7 +867,7 @@ void main() {
       final service = _FakeService();
       await tester.pumpWidget(_host(IdCaptureView(captureService: service)));
       await tester.pumpAndSettle();
-      await _tap(tester, 'Take it myself');
+      await _tap(tester, 'Capture photo');
 
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       await tester.pumpAndSettle();
@@ -900,17 +900,23 @@ void main() {
       expect(body, isNot(contains('CaptureTarget.selfie')));
     });
 
-    test('the challenge never takes a frame by itself', () {
+    test('no frame is taken by the analysis loop, card or selfie', () {
       final from = session.indexOf('Future<void> _onFrame(');
       final to = session.indexOf('Future<CaptureGuidance?> _read(');
       expect(from, isNot(-1));
       expect(to, greaterThan(from));
       final body = session.substring(from, to);
-      final card = body.indexOf('if (steps.isEmpty) {');
-      expect(card, isNot(-1));
-      final afterCard = body.substring(body.indexOf('return;', card));
-      expect(afterCard, isNot(contains('_take(')));
+      expect(body, isNot(contains('_take(')));
+      expect(body, isNot(contains('takePicture')));
       expect(src, isNot(contains('_stepDwell')));
+      expect(src, isNot(contains('_steadyFrames')));
+      expect(src, isNot(contains('AutoCapture')));
+    });
+
+    test('the shutter is reached from capture() alone', () {
+      final calls = RegExp(r'\b_take\(').allMatches(session).length;
+      // The definition and the one call in capture().
+      expect(calls, 2);
     });
   });
 

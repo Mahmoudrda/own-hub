@@ -8,7 +8,6 @@ library;
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 
 import '../features/onboarding/domain/intake.dart' show Intake, LifeStage;
@@ -16,7 +15,6 @@ import '../features/train/data/exercise_library_sync.dart';
 import '../features/train/data/exercise_media_store.dart';
 import '../features/train/domain/exercise_library.dart';
 import '../features/train/presentation/exercise_clip_player.dart';
-import '../routing/app_router.dart';
 import 'app_changes.dart';
 import 'firebase_boot.dart';
 
@@ -43,8 +41,6 @@ class ExerciseLibraryState {
   static ExerciseLibraryRemoteSource? _liveSource() {
     try {
       if (!FirebaseBoot.isReady) return null;
-      if (FirebaseAuth.instance.currentUser == null) return null;
-      if (!AppRouter.isVerified) return null;
       return FirestoreExerciseLibrarySource(FirebaseFirestore.instance);
     } catch (_) {
       return null;

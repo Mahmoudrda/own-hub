@@ -10,13 +10,11 @@ library;
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 
 import '../features/onboarding/domain/intake.dart' show LifeStage;
 import '../features/train/data/workout_sync.dart';
 import '../features/train/domain/workout_library.dart';
-import '../routing/app_router.dart';
 import 'app_changes.dart';
 import 'firebase_boot.dart';
 
@@ -41,8 +39,6 @@ class WorkoutLibraryState {
   static WorkoutRemoteSource? _liveSource() {
     try {
       if (!FirebaseBoot.isReady) return null;
-      if (FirebaseAuth.instance.currentUser == null) return null;
-      if (!AppRouter.isVerified) return null;
       return FirestoreWorkoutSource(FirebaseFirestore.instance);
     } catch (_) {
       return null;

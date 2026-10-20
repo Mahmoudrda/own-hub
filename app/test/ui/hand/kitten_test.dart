@@ -544,10 +544,12 @@ void main() {
   });
 
   test('one kitten per screen: a file places at most one', () {
-    // Two files place more than one, each as exclusive arms of one choice:
-    // C11's strip shows the one guidance step she is on, and the tour shows
-    // the card for a stop or the closing card, never both.
+    // Three files place more than one, each as exclusive arms of one choice:
+    // C11's strip shows the one guidance step she is on, the tour shows the
+    // card for a stop or the closing card, never both, and C14 shows the
+    // cheer once she is approved or the wait before that.
     const exclusive = {
+      'lib/features/signup/presentation/being_checked_view.dart',
       'lib/features/signup/presentation/selfie_capture_view.dart',
       'lib/features/signup/presentation/demo/demo_chrome.dart',
     };

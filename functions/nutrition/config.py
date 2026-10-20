@@ -15,7 +15,7 @@ LOCATION = "europe-west3"
 """Frankfurt, the region the rest of her data already lives in. Vertex AI
 processes the request in this region; the privacy policy names it."""
 
-MODEL = "gemini-3.8-flash"
+MODEL = "gemini-3.5-flash"
 """Gemini Flash, the owner's choice (17 October 2026). gemini-2.5-flash
 retires on Vertex AI on 20 October 2026 and names this as its replacement;
 3.8 Flash is served in europe-west3 and supported until at least September

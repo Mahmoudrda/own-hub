@@ -24,11 +24,9 @@ Future<void> _toO03(WidgetTester t) async {
 
 void main() {
   useShippingApp();
-  // Was ['2','3','4','5']. Stale: O03 offered a fifth chip whose value the
-  // rewards system then refused, and the fix was to stop offering it rather
-  // than to raise `kMaxSessionsTarget`. `Intake.allowedDays` is the list, and
-  // this sweep walks exactly what the screen draws.
-  for (final days in ['2', '3', '4']) {
+  // `Intake.allowedDays` is the list, and this sweep walks exactly what the
+  // screen draws: the "1-2" chip stands for two days.
+  for (final days in ['3', '4', '5', '6', '7']) {
     testWidgets('she picks $days days a week', (t) async {
       phone(t);
       final s = t.ensureSemantics();

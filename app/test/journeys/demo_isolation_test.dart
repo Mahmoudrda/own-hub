@@ -20,6 +20,7 @@
 // And `AppRouter.goTo`, called from inside the tour, opens the sheet and
 // pushes nothing.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -205,7 +206,14 @@ Future<void> _settle(WidgetTester t) async {
 Future<void> _openTour(WidgetTester t, int stop) async {
   await t.pumpWidget(OwnHubApp(key: UniqueKey()));
   await _settle(t);
-  t.state<NavigatorState>(find.byType(Navigator).first).pushNamed(_name('C04'));
+  // The app now opens on Home as a guest; the welcome screen is still where
+  // the tour is offered, so the door under the tour is put back.
+  final navigator = t.state<NavigatorState>(find.byType(Navigator).first);
+  unawaited(
+    navigator.pushNamedAndRemoveUntil(_name('C01'), (_) => false),
+  );
+  await _settle(t);
+  navigator.pushNamed(_name('C04'));
   await _settle(t);
   for (var i = 0; i < stop; i++) {
     t.semantics.tap(find.semantics.byLabel('Next'));
@@ -432,6 +440,10 @@ void main() {
     final semantics = tester.ensureSemantics();
     await _openTour(tester, DemoStop.values.length);
     expect(analytics.events, [
+      // The guest Home and its questions, then the door put back under the
+      // tour (see `_openTour`).
+      ('screenViewed', 'T01'),
+      ('screenViewed', 'O01'),
       ('screenViewed', 'C01'),
       ('screenViewed', 'C04'),
     ]);
@@ -502,7 +514,7 @@ void main() {
     semantics.dispose();
   });
   group('the exits, wherever the tour was opened from', () {
-    testWidgets('as the first screen, leaving opens the front door', (
+    testWidgets('as the first screen, leaving opens the front door, Home', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1170, 2532);
@@ -518,7 +530,7 @@ void main() {
 
       await tester.tap(find.byTooltip('Leave the tour'));
       await _settle(tester);
-      expect(_routes(tester).map((r) => r.settings.name), [_name('C01')]);
+      expect(_routes(tester).map((r) => r.settings.name), [_name('T01')]);
     });
 
     testWidgets('C05, opened while she waits on her check, sends her back', (
@@ -542,7 +554,11 @@ void main() {
       expect(find.text('Join Own Hub'), findsNothing);
       await tester.tap(find.text('Back to my check').last);
       await _settle(tester);
-      expect(_routes(tester).map((r) => r.settings.name), [_name('C01')]);
+      // Back to what she was on: the guest Home with the questions over it.
+      expect(_routes(tester).map((r) => r.settings.name), [
+        _name('T01'),
+        _name('O01'),
+      ]);
       expect(OnboardingState.instance.beforeSignup, isFalse);
     });
 

@@ -80,6 +80,8 @@ class Food {
     this.dietTags,
     this.popularity = 0,
     this.verified = true,
+    this.category,
+    this.custom = false,
   });
 
   final String foodId;
@@ -107,6 +109,14 @@ class Food {
   /// totals rather than with invented ones.
   final bool verified;
 
+  /// The pack's kind of dish ("drink", "soup", "main"), where it has one. Units
+  /// read it: only drinks and soups are measured in millilitres.
+  final String? category;
+
+  /// True for a food she typed in herself ("Quick custom"). Its name travels
+  /// with every meal it is logged in, because no pack holds it.
+  final bool custom;
+
   /// What she gets if she picks nothing — the middle size, which is the one she
   /// usually serves.
   FoodSize get defaultSize => sizes[sizes.length ~/ 2];
@@ -115,7 +125,48 @@ class Food {
     for (final size in sizes) {
       if (size.id == id) return size;
     }
+    final grams = gramsOfSizeId(id);
+    return grams == null ? null : sizeForGrams(grams);
+  }
+
+  /// The size id of a portion she chose by weight: `g150` is 150 g.
+  static String sizeIdForGrams(int grams) => 'g$grams';
+
+  /// The weight in a [sizeIdForGrams] id, or null for any other id.
+  static int? gramsOfSizeId(String id) {
+    final match = RegExp(r'^g(\d{1,5})$').firstMatch(id);
+    final grams = match == null ? null : int.parse(match.group(1)!);
+    return grams == null || grams < 1 ? null : grams;
+  }
+
+  /// The size whose weight is known, which every portion by weight scales from.
+  FoodSize? get weighedSize {
+    final middle = defaultSize;
+    if (middle.grams != null && middle.grams! > 0) return middle;
+    for (final size in sizes) {
+      if (size.grams != null && size.grams! > 0) return size;
+    }
     return null;
+  }
+
+  /// A portion of [grams], worked out from the weighed size's figures. Null
+  /// when the pack gives this food no weight to scale from: nothing is
+  /// invented for it.
+  FoodSize? sizeForGrams(int grams) {
+    final base = weighedSize;
+    if (base == null || grams < 1) return null;
+    final ratio = grams / base.grams!;
+    int? scale(int? value) => value == null ? null : (value * ratio).round();
+    return FoodSize(
+      id: sizeIdForGrams(grams),
+      label: '$grams g',
+      kcal: (base.kcal * ratio).round(),
+      proteinG: (base.proteinG * ratio).round(),
+      carbsG: scale(base.carbsG),
+      fatG: scale(base.fatG),
+      fiberG: scale(base.fiberG),
+      grams: grams,
+    );
   }
 
   /// True when nobody has told us what is in this dish.

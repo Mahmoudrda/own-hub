@@ -37,6 +37,11 @@ def _no_real_firestore(monkeypatch):
     monkeypatch.setattr(store, "clear_verify_in_flight", lambda uid: None)
     monkeypatch.setattr(webhook, "_url_cache", None)
     monkeypatch.delenv("FLAG_WEBHOOK_URL", raising=False)
+    # No test phone passes unless the test sets TEST_BYPASS_PHONES itself.
+    monkeypatch.delenv("TEST_BYPASS_PHONES", raising=False)
+    from identity import approvals
+
+    approvals.reset_env_cache()
     monkeypatch.delenv("FUNCTIONS_EMULATOR", raising=False)
     # The waitlist's in-memory list of addresses over their daily limit lives
     # for the module's life; each test starts with it empty.
@@ -61,6 +66,13 @@ def _no_real_firestore(monkeypatch):
     from nutrition import model as meal_model
 
     meal_model.set_client(_NoVertex())
+
+    from google import genai
+
+    def no_real_client(*args, **kwargs):
+        raise ReachedVertex("a test tried to build a real Vertex AI client: inject a fake client")
+
+    monkeypatch.setattr(genai, "Client", no_real_client)
     yield
     meal_model.set_client(None)
 

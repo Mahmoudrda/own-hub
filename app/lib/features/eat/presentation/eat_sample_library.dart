@@ -48,14 +48,22 @@ library;
 
 import '../../../l10n/app_l10n.dart';
 import '../data/egyptian_food_pack.dart';
+import '../domain/custom_food.dart';
 import '../domain/food_library.dart';
 import '../domain/item_id.dart';
 import '../domain/meal_repository.dart';
 import '../domain/meal_sentence_parser.dart';
 
+/// The foods she typed in herself, as of the last change. Kept here so every
+/// screen that builds the library sees them without being handed the list.
+abstract final class EatCustomFoods {
+  static List<CustomFood> current = const <CustomFood>[];
+}
+
 /// The foods the Eat screens name, in her language: the hand-written samples
-/// first, then the bundled Egyptian dishes once they have loaded.
-FoodLibrary eatSampleLibrary(AppL10n l10n) {
+/// first, then the bundled Egyptian dishes once they have loaded, then the
+/// foods she typed in ([custom], or the ones last saved).
+FoodLibrary eatSampleLibrary(AppL10n l10n, {List<CustomFood>? custom}) {
   return FoodLibrary([
     Food(
       foodId: 'koshari_bowl',
@@ -114,6 +122,17 @@ FoodLibrary eatSampleLibrary(AppL10n l10n) {
       sizes: [FoodSize(id: 'M', label: l10n.medium, kcal: 600, proteinG: 21)],
     ),
     ...EgyptianFoodPack.foods(l10n),
+    for (final food in custom ?? EatCustomFoods.current) food.toFood(),
+  ]);
+}
+
+/// [base] with the foods she typed in added, skipping any it already holds.
+FoodLibrary withCustomFoods(FoodLibrary base, List<CustomFood> custom) {
+  if (custom.isEmpty) return base;
+  return FoodLibrary([
+    ...base.foods,
+    for (final food in custom)
+      if (base.byId(food.id) == null) food.toFood(),
   ]);
 }
 

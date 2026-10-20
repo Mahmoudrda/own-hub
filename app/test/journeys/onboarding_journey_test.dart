@@ -365,7 +365,7 @@ void main() {
       await _tap(tester, find.text('Continue')); // O01
       await _tap(tester, find.text('Continue')); // O02
       await _tap(tester, find.text('Continue')); // O06
-      await _tap(tester, find.text('2'));
+      await _tap(tester, find.text('1-2'));
       await _tap(tester, find.text('Continue')); // O03
       await _tap(tester, find.text('Continue')); // O04
       // From her profile O05 saves her changes rather than offering to

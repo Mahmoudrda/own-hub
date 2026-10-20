@@ -22,6 +22,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../app_state/guest_session.dart';
 import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
@@ -266,6 +267,11 @@ class _MealCheckViewState extends State<MealCheckView> {
   /// The one write, and only from her tap.
   void _log() {
     if (_logged || !_check.canLog) return;
+    // A checked photo meal is not replayed after sign-up (its figures were
+    // read from the picture); she is asked to sign in first and logs it again.
+    if (!GuestSession.require(context, const PendingAction(PendingKind.logMeal))) {
+      return;
+    }
     final l10n = AppL10n.of(context);
     final now = _now;
     final service = MealLogService(

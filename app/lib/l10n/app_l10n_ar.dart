@@ -10784,4 +10784,267 @@ class AppL10nAr extends AppL10n {
   String addName(String name) {
     return 'ضيفي $name';
   }
+
+  @override
+  String get capturePhoto => 'صوّري';
+
+  @override
+  String get fitTheCardInsideTheFrameThen =>
+      'حطّي البطاقة جوّه الإطار، وبعدين دوسي صوّري. مفيش حاجة بتترفع غير لما تبعتيها.';
+
+  @override
+  String get howWouldYouLikeToBeChecked => 'تحبي نتأكد منك إزاي؟';
+
+  @override
+  String get idCardAndASelfie => 'بطاقة وسيلفي';
+
+  @override
+  String get about2Minutes => 'حوالي دقيقتين';
+
+  @override
+  String get talkToAWomanReviewer => 'كلّمي مراجعة';
+
+  @override
+  String get aShortCall => 'مكالمة قصيرة';
+
+  @override
+  String get iKnowOneOfTheReviewers => 'أعرف واحدة من المراجعات';
+
+  @override
+  String get pickHerNameIfSheKnowsYou =>
+      'اختاري اسمها. لو بتعرفك ممكن توافق عليكي على طول.';
+
+  @override
+  String get pickATimeForYourCall => 'اختاري ميعاد للمكالمة';
+
+  @override
+  String get changeTheTime => 'غيّري الميعاد';
+
+  @override
+  String get keepExploring => 'كمّلي استكشاف';
+
+  @override
+  String get weCouldNotLoadTheFreeTimes =>
+      'ماقدرناش نحمّل المواعيد الفاضية. مش مطلوب منك حاجة، وواحدة من Own Hub هتتواصل معاكي برضه.';
+
+  @override
+  String get thereAreNoFreeTimesInThe =>
+      'مفيش مواعيد فاضية في الأيام السبعة الجاية. وواحدة من Own Hub هتتواصل معاكي برضه.';
+
+  @override
+  String get weCouldNotBookThatTimePick =>
+      'ماقدرناش نحجز الميعاد ده. اختاري ميعاد تاني.';
+
+  @override
+  String get logFood => 'سجّلي أكلك';
+
+  @override
+  String get frequent => 'الأكتر أكلًا';
+
+  @override
+  String get favourites => 'المفضّلة';
+
+  @override
+  String get quickCustom => 'أكلة بالأرقام';
+
+  @override
+  String get typeANameAndTheNumbersOff =>
+      'اكتبي الاسم والأرقام اللي على العلبة';
+
+  @override
+  String get foodName => 'اسم الأكلة';
+
+  @override
+  String get fibre => 'ألياف';
+
+  @override
+  String get saveAndLog => 'احفظي وسجّلي';
+
+  @override
+  String get amount => 'الكمية';
+
+  @override
+  String get g => 'جم';
+
+  @override
+  String get oz => 'أونصة';
+
+  @override
+  String get ml => 'مل';
+
+  @override
+  String get cup => 'كوب';
+
+  @override
+  String get piece => 'حتة';
+
+  @override
+  String get serving_1d0fq => 'حصة';
+
+  @override
+  String aboutGramsG(String grams) {
+    return 'حوالي $grams جم';
+  }
+
+  @override
+  String get addToFavourites => 'ضيفيها للمفضّلة';
+
+  @override
+  String get removeFromFavourites => 'شيليها من المفضّلة';
+
+  @override
+  String get foodsYouLogShowUpHere => 'الأكلات اللي بتسجّليها هتظهر هنا.';
+
+  @override
+  String get tapTheStarOnAFoodTo =>
+      'اضغطي على النجمة جنب أي أكلة علشان تفضل هنا.';
+
+  @override
+  String get personalise => 'خصّصي';
+
+  @override
+  String get targetsUseAStandardEstimateAddYour =>
+      'الأهداف دي تقدير عام. ضيفي وزنك وطولك وسنّك علشان تبقى على مقاسك.';
+
+  @override
+  String ofTargetKcal(String target) {
+    return 'من $target سعرة';
+  }
+
+  @override
+  String get signInOrJoin => 'سجّلي دخولك أو انضمي';
+
+  @override
+  String get signIn => 'سجّلي دخولك';
+
+  @override
+  String get aNoteFromRahma => 'رسالة من رحمة';
+
+  @override
+  String get rahmaMohsen => 'رحمة محسن';
+
+  @override
+  String get heySoHappyYoureHereThankYou =>
+      'أهلًا يا حبيبتي! مبسوطة جدًا إنك هنا 💕 شكرًا إنك نزّلتي التطبيق! عملته علشان تتمرّني على طريقتك وتاكلي صح من غير توتّر. إنتي شُفتي لمحة من تمارينك وأهدافك، اعملي حسابك دلوقتي في ثواني علشان نحفظ خطتك، وتسجّلي أكلك بضغطة، ونبدأ مع بعض!';
+
+  @override
+  String get continueToSignUp => 'كمّلي وسجّلي حسابك';
+
+  @override
+  String get playTheVideo => 'شغّلي الفيديو';
+
+  @override
+  String get pauseTheVideo => 'وقّفي الفيديو';
+
+  @override
+  String get turnSoundOn => 'شغّلي الصوت';
+
+  @override
+  String get turnSoundOff => 'اقفلي الصوت';
+
+  @override
+  String get rahmasVideoWillBeHereSoon => 'فيديو رحمة هيبقى هنا قريب.';
+
+  @override
+  String get newHereCreateAccount => 'جديدة هنا؟ اعملي حساب';
+
+  @override
+  String get alreadyHaveAnAccountSignIn => 'عندك حساب؟ سجّلي دخولك';
+
+  @override
+  String get signInWithYourNumber => 'ادخلي برقم موبايلك';
+
+  @override
+  String get custom => 'تخصيص';
+
+  @override
+  String get advanced => 'متقدمة';
+
+  @override
+  String get suggestedFromYourWeek => 'مقترح حسب أسبوعك';
+
+  @override
+  String get yourTrainingDays => 'أيام تمرينك';
+
+  @override
+  String get customSchedule => 'جدول مخصص';
+
+  @override
+  String get tapADayToSwitchItBetween =>
+      'دوسي على اليوم عشان يبقى تمرين أو راحة.';
+
+  @override
+  String get recovery => 'راحة';
+
+  @override
+  String trainingTrainingRecoveryRecovery(String training, String recovery) {
+    return '$training تمرين · $recovery راحة';
+  }
+
+  @override
+  String get fewerMinutes => 'دقايق أقل';
+
+  @override
+  String get moreMinutes => 'دقايق أكتر';
+
+  @override
+  String get pickAnyLengthFrom10To180 => 'اختاري أي مدة من 10 لـ 180 دقيقة.';
+
+  @override
+  String get aboutYou => 'عنك';
+
+  @override
+  String get optionalItStaysOnThisPhoneAnd =>
+      'اختياري. بيفضل على التليفون ده بس، وبيتستخدم بس عشان نحسب هدف السعرات والبروتين بتاعك.';
+
+  @override
+  String get weightKg_4v662 => 'الوزن (كجم)';
+
+  @override
+  String get heightCm => 'الطول (سم)';
+
+  @override
+  String get ageYears => 'السن (بالسنين)';
+
+  @override
+  String get between30And250Kg => 'من 30 لـ 250 كجم';
+
+  @override
+  String get between120And230Cm => 'من 120 لـ 230 سم';
+
+  @override
+  String get between14And90Years => 'من 14 لـ 90 سنة';
+
+  @override
+  String get skipThis => 'سيبي ده';
+
+  @override
+  String aboutMinutesMinutes(String minutes) {
+    return 'حوالي $minutes دقايق';
+  }
+
+  @override
+  String thereAreNoFreeTimesInThe_bzb9s(String days) {
+    return 'مفيش مواعيد فاضية في الأيام الـ $days الجاية. وواحدة من Own Hub هتتواصل معاكي برضه.';
+  }
+
+  @override
+  String pickAnyLengthFromMinToMax(String min, String max) {
+    return 'اختاري أي مدة من $min لـ $max دقيقة.';
+  }
+
+  @override
+  String betweenMinAndMaxKg(String min, String max) {
+    return 'من $min لـ $max كجم';
+  }
+
+  @override
+  String betweenMinAndMaxCm(String min, String max) {
+    return 'من $min لـ $max سم';
+  }
+
+  @override
+  String betweenMinAndMaxYears(String min, String max) {
+    return 'من $min لـ $max سنة';
+  }
 }

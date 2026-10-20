@@ -53,6 +53,7 @@ import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/sign_in_pill.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/dietary_profile.dart';
@@ -82,6 +83,7 @@ class ProfileView extends StatefulWidget {
     this.onOpenAllScreens,
     this.onOpenAdmin,
     this.onSelectTab,
+    this.onSignIn,
   });
 
   /// G2's port. A02 renders the row; G2 owns the field.
@@ -121,6 +123,10 @@ class ProfileView extends StatefulWidget {
   /// the admin build (`tool/admin_access.sh build`); a store build cannot
   /// resolve the console at all.
   final VoidCallback? onOpenAdmin;
+
+  /// "Sign in or join", at the top of the page for a woman with no account.
+  /// Null for everyone else.
+  final VoidCallback? onSignIn;
 
   /// Account deletion.
   ///
@@ -207,6 +213,11 @@ class _ProfileViewState extends State<ProfileView> {
       // three tabs live and none of them marked.
       footer: [AppNavBar(activeScreenId: 'A02', onSelect: widget.onSelectTab)],
       children: [
+        if (widget.onSignIn != null)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: SignInPill(onTap: widget.onSignIn!),
+          ),
         _header(l10n, view),
 
         // First, because it is the only row that changes what the app gives

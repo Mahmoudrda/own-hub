@@ -183,7 +183,7 @@ class StartingProgramView extends StatelessWidget {
     final program = selectStartingProgram(intake, catalogue: catalogue);
     final copy = program == null
         ? null
-        : _copyFor(l10n, program.programId, intake);
+        : _copyFor(l10n, program.family, intake);
     final offersAnotherProgram =
         catalogue.length > 1 && AppRouter.screenIsOn('R01');
 

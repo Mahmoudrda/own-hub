@@ -529,6 +529,29 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     method: DeletionMethod.groupHook,
     note: 'the invite codes she shared as a coach',
   ),
+  DeletionRow(
+    number: 50,
+    path: 'verificationBookings where uid == {uid}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'the review slots she booked',
+  ),
+  DeletionRow(
+    number: 51,
+    path:
+        'verificationReviewers/{uid} and verificationBookings where '
+        'reviewerId == {uid}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'her reviewer record and the bookings made with her as reviewer',
+  ),
+  DeletionRow(
+    number: 52,
+    path: 'verificationPreapproved/{E.164 phone of her Auth account}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'the pre-approval saved against her phone number',
+  ),
 ];
 
 /// The two rows A02's copy must explain, because they survive on purpose.

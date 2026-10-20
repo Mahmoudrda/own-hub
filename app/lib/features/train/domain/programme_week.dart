@@ -19,13 +19,32 @@ import 'workout_library.dart';
 
 /// What a session of [minutes] holds: how many of the strength moves, how many
 /// sets of each, and whether the closing stretch is kept.
+///
+/// These are the most it holds. A move never gets more sets than the programme
+/// wrote for it, and from 31 minutes [scaleSession] also drops moves, two at a
+/// time so supersets stay whole, until [estimatedMinutes] fits.
 ({int moves, int sets, bool stretch}) sessionShape(int minutes) =>
     switch (minutes) {
       <= 10 => (moves: 4, sets: 2, stretch: false),
       <= 15 => (moves: 4, sets: 3, stretch: false),
       <= 20 => (moves: 5, sets: 3, stretch: false),
-      _ => (moves: 6, sets: 3, stretch: true),
+      <= 30 => (moves: 6, sets: 3, stretch: true),
+      <= 45 => (moves: 8, sets: 4, stretch: true),
+      <= 60 => (moves: 12, sets: 5, stretch: true),
+      _ => (moves: 14, sets: 5, stretch: true),
     };
+
+/// A move's time in seconds when she does it: the work of each set (2.5 s a rep,
+/// or the hold), the rest between sets, and 15 s to get set up.
+double _moveSeconds(AuthoredMove m) {
+  final effort = m.holdSeconds ?? (m.reps ?? 0) * 2.5;
+  return m.sets * effort + (m.sets - 1) * m.restSeconds + 15;
+}
+
+/// How long [session] takes her, in minutes, from its sets, reps, holds and
+/// rests. The same figure `build_programme_tiers.py` was tuned against.
+double estimatedMinutes(AuthoredSession session) =>
+    session.moves.fold<double>(0, (t, m) => t + _moveSeconds(m)) / 60;
 
 /// [session] cut to [minutes]. A session with no more than a stretch and one
 /// move is returned as it is.
@@ -38,35 +57,61 @@ AuthoredSession scaleSession(AuthoredSession session, int minutes) {
   final shape = sessionShape(minutes);
   final work = session.moves.sublist(0, session.moves.length - 1);
   final stretch = session.moves.last;
-  final keep = work.take(shape.moves);
-  return AuthoredSession(
-    sessionId: session.sessionId,
-    titleEn: session.titleEn,
-    titleAr: session.titleAr,
-    minutes: minutes,
-    lifeStages: session.lifeStages,
-    moves: [
-      for (final m in keep)
-        AuthoredMove(
-          exerciseId: m.exerciseId,
-          nameEn: m.nameEn,
-          nameAr: m.nameAr,
-          sets: m.sets < shape.sets ? m.sets : shape.sets,
-          reps: m.reps,
-          holdSeconds: m.holdSeconds,
-          restSeconds: m.restSeconds,
-          notesEn: m.notesEn,
-          notesAr: m.notesAr,
-          safetyEn: m.safetyEn,
-          safetyAr: m.safetyAr,
-          contraindications: m.contraindications,
-          quiet: m.quiet,
-          floorOnly: m.floorOnly,
-          needsEquipment: m.needsEquipment,
-        ),
-      if (shape.stretch) stretch,
-    ],
+
+  AuthoredMove capped(AuthoredMove m, {int? rest}) => AuthoredMove(
+    exerciseId: m.exerciseId,
+    nameEn: m.nameEn,
+    nameAr: m.nameAr,
+    sets: m.sets < shape.sets ? m.sets : shape.sets,
+    reps: m.reps,
+    holdSeconds: m.holdSeconds,
+    restSeconds: rest ?? m.restSeconds,
+    notesEn: rest == null ? m.notesEn : '',
+    notesAr: rest == null ? m.notesAr : '',
+    safetyEn: m.safetyEn,
+    safetyAr: m.safetyAr,
+    contraindications: m.contraindications,
+    quiet: m.quiet,
+    floorOnly: m.floorOnly,
+    needsEquipment: m.needsEquipment,
   );
+
+  AuthoredSession build(int count) {
+    final kept = work.take(count).toList();
+    final longest = kept.fold<int>(
+      0,
+      (r, m) => m.restSeconds > r ? m.restSeconds : r,
+    );
+    return AuthoredSession(
+      sessionId: session.sessionId,
+      titleEn: session.titleEn,
+      titleAr: session.titleAr,
+      minutes: minutes,
+      lifeStages: session.lifeStages,
+      moves: [
+        for (var i = 0; i < kept.length; i++)
+          // A superset whose second move was cut is no longer a superset: the
+          // first gets the usual rest back and loses its note.
+          if (i == kept.length - 1 &&
+              kept.length.isOdd &&
+              kept[i].restSeconds < longest)
+            capped(kept[i], rest: longest)
+          else
+            capped(kept[i]),
+        if (shape.stretch) stretch,
+      ],
+    );
+  }
+
+  var count = work.length < shape.moves ? work.length : shape.moves;
+  var cut = build(count);
+  // Past the 30 minute session the programme was written at, a long session
+  // must still fit her time: drop moves in pairs until it does.
+  while (minutes > 30 && count > 6 && estimatedMinutes(cut) > minutes) {
+    count -= 2;
+    cut = build(count);
+  }
+  return cut;
 }
 
 /// The sessions of [programme] a woman at [stage] is offered, in the order they

@@ -4,14 +4,16 @@
 // lays out, and a missing font falls back to Roboto without any error.
 //
 // These once ran against a temporary debug shell the app opened into. The shell
-// is gone and the app opens on C01, so the same properties are now asserted
-// against the real first screen — which is stronger: it proves the product
+// is gone and a fresh install opens on Home as a guest (D54), so the same
+// properties are now asserted against the real first screen and against C01,
+// the welcome, opened the way a woman reaches it — which is stronger: it proves the product
 // renders, not that a harness did.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -27,11 +29,26 @@ void main() {
     AppRouter.featureFlags = FeatureFlags.allOff.with_({
       for (final f in Feature.values) f: true,
     });
+    // A woman who has been through setup. A first launch opens the setup
+    // questions instead, which is its own test elsewhere.
+    AppRouter.intakeRepository.markSetupDone();
   });
-  tearDown(() => AppRouter.featureFlags = saved);
+  tearDown(() {
+    AppRouter.featureFlags = saved;
+    AppRouter.intakeRepository.reset();
+  });
+
+  /// Opens the welcome (C01) the way the app does for a woman who chooses to
+  /// join: pushed onto the navigator, since a fresh install opens on Home.
+  Future<void> openWelcome(WidgetTester tester) async {
+    await tester.pumpWidget(const OwnHubApp());
+    await tester.pumpAndSettle();
+    AppRouter.navigatorKey!.currentState!.pushNamed(appRoutes['C01']!.name);
+    await tester.pumpAndSettle();
+  }
 
   group('the app opens on the front door', () {
-    testWidgets('a cold start lands on C01, not on scaffolding', (
+    testWidgets('a cold start lands on Home as a guest, not on scaffolding', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(const OwnHubApp());
@@ -40,12 +57,22 @@ void main() {
       // The regression this guards: the app spent a while opening into a debug
       // shell titled "Foundations". All 40 routes worked; nothing pointed at the
       // first screen, and only a screenshot caught it.
+      expect(find.byType(TodayView), findsOneWidget);
+      expect(find.text('Show me around'), findsNothing);
+      expect(find.text('Foundations'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the welcome (C01) is still one tap away and says what it is', (
+      WidgetTester tester,
+    ) async {
+      await openWelcome(tester);
+
       expect(
         find.text('A room full of women training like you'),
         findsOneWidget,
       );
       expect(find.text('Show me around'), findsOneWidget);
-      expect(find.text('Foundations'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
@@ -79,10 +106,11 @@ void main() {
       await tester.pumpWidget(const OwnHubApp());
       await tester.pumpAndSettle();
 
-      // A blank screen has no text at all; this is the assertion that would have
-      // caught it.
+      // A blank screen has no content at all; this is the assertion that would
+      // have caught it. One page: Back has nowhere to go from the front door.
       expect(find.byType(Scaffold), findsWidgets);
-      expect(find.text('Show me around'), findsOneWidget);
+      expect(find.byType(TodayView), findsOneWidget);
+      expect(AppRouter.navigatorKey!.currentState!.canPop(), isFalse);
     });
   });
 
@@ -91,8 +119,7 @@ void main() {
       // Rubik ships as per-script woff2 subsets of a variable font, merged into
       // one TTF per weight. If the Arabic subset were missing from that merge,
       // the entire Arabic UI would be tofu and nothing would raise an error.
-      await tester.pumpWidget(const OwnHubApp());
-      await tester.pumpAndSettle();
+      await openWelcome(tester);
 
       LocaleScope.of(tester.element(find.byType(MaterialApp)))
           .value = const Locale(
@@ -105,8 +132,7 @@ void main() {
     });
 
     testWidgets('and the layout mirrors with it', (tester) async {
-      await tester.pumpWidget(const OwnHubApp());
-      await tester.pumpAndSettle();
+      await openWelcome(tester);
 
       LocaleScope.of(tester.element(find.byType(MaterialApp)))
           .value = const Locale(

@@ -71,9 +71,12 @@ import '../features/account/domain/privacy_settings.dart';
 import '../features/cycle/domain/cycle_document.dart';
 import '../features/cycle/domain/period_entry.dart';
 import '../features/cycle/domain/today_check_in.dart';
+import '../features/eat/domain/custom_food.dart';
 import '../features/eat/domain/meal_repository.dart';
+import '../features/onboarding/domain/body_data.dart';
 import '../features/onboarding/domain/intake.dart';
 import 'pledge.dart';
+import 'guest_session.dart';
 import 'onboarding_state.dart';
 import '../features/progress/domain/progress_repository.dart';
 import '../features/signup/domain/locale_preference.dart';
@@ -145,6 +148,7 @@ abstract final class AppSnapshot {
     'invite': _captureInvite(),
     'awards': _captureAwards(),
     'trainingStreak': _captureTrainingStreak(),
+    'guest': ?_captureGuest(),
   };
 
   /// Reads [raw] and puts it back into the stores.
@@ -215,6 +219,7 @@ abstract final class AppSnapshot {
     'invite': _readInvite,
     'awards': _readAwards,
     'trainingStreak': _readTrainingStreak,
+    'guest': _readGuest,
     // After `train`: it points at a session that section restores.
     'liveSession': _readLiveSession,
   };
@@ -1099,7 +1104,10 @@ void Function()? _readMeals(Object? raw) {
     // not carry this one — clearing first would leave E07 and E08 with nothing
     // to draw the moment a week ticks over.
     store.plans.addAll(plans);
-    if (prefs != null) store.prefs = prefs;
+    if (prefs != null) {
+      store.prefs = prefs;
+      EatAppState.instance.syncCustomFoods();
+    }
   };
 }
 
@@ -1270,6 +1278,8 @@ Map<String, Object?> _eatPrefs(EatPrefs prefs) => <String, Object?>{
   'ramadanMode': prefs.ramadanMode.name,
   'proteinTargetGOverride': prefs.proteinTargetGOverride,
   'libVersion': prefs.libVersion,
+  'favourites': prefs.favourites,
+  'customFoods': [for (final food in prefs.customFoods) food.toJson()],
 };
 
 EatPrefs? _readEatPrefs(Object? raw) {
@@ -1287,6 +1297,16 @@ EatPrefs? _readEatPrefs(Object? raw) {
         _pick(RamadanMode.values, row['ramadanMode']) ?? RamadanMode.auto,
     proteinTargetGOverride: _int(row['proteinTargetGOverride']),
     libVersion: _int(row['libVersion']) ?? 0,
+    favourites: [
+      for (final id in _strings(row['favourites']))
+        if (id.isNotEmpty) id,
+    ].take(kFavouriteCap).toList(),
+    customFoods: [
+      for (final raw in (row['customFoods'] is List
+          ? row['customFoods'] as List
+          : const []))
+        ?CustomFood.fromJson(raw),
+    ].take(kCustomFoodCap).toList(),
   );
 }
 
@@ -1664,6 +1684,12 @@ Map<String, Object?> _captureIntake() {
     'days': intake.days,
     'minutes': intake.minutes,
     'lifeStage': intake.lifeStage.wireName,
+    'level': intake.level.wireName,
+    'weekdays': [...intake.weekdays]..sort(),
+    'minutesCustom': intake.minutesCustom,
+    // O04 "About you". Health data (D31): it is saved here on the phone and
+    // is not in the profile mapping, so it is never uploaded.
+    'body': _captureBody(),
     // Whether she has been through the setup walk at all. Kept beside her
     // answers rather than in a section of its own, because it is a fact about
     // the same four questions and because account deletion clears both through
@@ -1681,6 +1707,26 @@ Map<String, Object?> _captureIntake() {
   };
 }
 
+Map<String, Object?> _captureBody() {
+  final body = BodyDataStore.instance.read();
+  return <String, Object?>{
+    'weightKg': body.weightKg,
+    'heightCm': body.heightCm,
+    'ageYears': body.ageYears,
+  };
+}
+
+BodyData _readBody(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return BodyData.empty;
+  final weight = section['weightKg'];
+  return BodyData(
+    weightKg: weight is num ? weight.toDouble() : null,
+    heightCm: _int(section['heightCm']),
+    ageYears: _int(section['ageYears']),
+  ).sanitised();
+}
+
 void Function()? _readIntake(Object? raw) {
   final section = _map(raw);
   if (section == null) return null;
@@ -1692,6 +1738,11 @@ void Function()? _readIntake(Object? raw) {
   };
   final days = _int(section['days']) ?? defaults.days;
   final minutes = _int(section['minutes']) ?? defaults.minutes;
+  final weekdays = Intake.cleanWeekdays([
+    for (final d in _list(section['weekdays']) ?? const <Object?>[])
+      if (d is int) d,
+  ]);
+  final body = _readBody(section['body']);
 
   final intake = Intake(
     goal: _wire(TrainingGoal.values, section['goal']) ?? defaults.goal,
@@ -1700,12 +1751,19 @@ void Function()? _readIntake(Object? raw) {
     // absence of one, and an empty set is not a state a screen can render.
     equipment: equipment.isEmpty ? defaults.equipment : equipment,
     // Both constructor asserts, applied to the document instead of trusting it.
-    days: Intake.allowedDays.contains(days) ? days : defaults.days,
-    minutes: Intake.allowedMinutes.contains(minutes)
-        ? minutes
-        : defaults.minutes,
+    days: Intake.daysOk(days) ? days : defaults.days,
+    minutes: Intake.minutesOk(minutes) ? minutes : defaults.minutes,
     lifeStage:
         _wire(LifeStage.values, section['lifeStage']) ?? defaults.lifeStage,
+    // A document from before the tiers read as the level her answers suggest.
+    level:
+        TrainingLevel.fromWire(section['level']) ??
+        TrainingLevel.suggestedFor(
+          days: Intake.daysOk(days) ? days : defaults.days,
+          minutes: Intake.minutesOk(minutes) ? minutes : defaults.minutes,
+        ),
+    weekdays: weekdays,
+    minutesCustom: _bool(section['minutesCustom']) ?? false,
   );
 
   // Absent means a document written before the walk existed, and the honest
@@ -1722,6 +1780,7 @@ void Function()? _readIntake(Object? raw) {
       setupDone: setupDone,
       placeAnswered: placeAnswered,
     );
+    BodyDataStore.instance.restore(body);
     OnboardingState.instance
       ..cycleRowDismissed = cycleRowDismissed
       ..weekBuiltSignedOut = builtSignedOut;
@@ -2177,3 +2236,29 @@ bool _isDayId(String id) => RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(id);
 // `community` section is a reader in `_readers`, a writer in `capture`, and
 // `CommunityState.restore` beside the `reset` it already has — no change to the
 // storage layer, the lifecycle or the schema number, beyond bumping it.
+
+// Guest mode: the one action she tried before signing in, kept until she is
+// verified. Null when there is nothing to keep.
+Map<String, Object?>? _captureGuest() {
+  final guest = GuestSession.instance;
+  final action = guest.pending;
+  final at = guest.pendingAt;
+  if (action == null || at == null) return null;
+  return <String, Object?>{
+    'action': action.toJson(),
+    'at': at.toIso8601String(),
+  };
+}
+
+void Function()? _readGuest(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final action = PendingAction.fromJson(section['action']);
+  final at = _time(section['at']);
+  if (action == null || at == null) return null;
+  return () {
+    GuestSession.instance
+      ..pending = action
+      ..pendingAt = at;
+  };
+}

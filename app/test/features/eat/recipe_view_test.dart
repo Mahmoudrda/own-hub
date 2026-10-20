@@ -9,11 +9,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/logging/log_command_bus.dart';
 import 'package:own_hub/features/eat/domain/allergy_guard.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
 import 'package:own_hub/features/eat/presentation/recipe_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
 final DateTime _lunchtime = DateTime(2026, 9, 15, 13, 12);
@@ -63,6 +65,14 @@ RecipeView _recipe({
 }
 
 void main() {
+  final savedFlags = AppRouter.featureFlags;
+  setUp(() {
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      for (final f in Feature.values) f: f != Feature.accountRequired,
+    });
+  });
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   testWidgets('the page is about the dish it was opened for', (tester) async {
     _phone(tester);
     await tester.pumpWidget(_host(_recipe()));

@@ -39,11 +39,14 @@
 /// outside Egypt. A consent screen whose only button is "agree" is not consent.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
+import '../../../ui/app_card.dart';
 import '../../../ui/app_scaffold.dart';
 import '../domain/capture_consent.dart';
 import '../domain/legal_acceptance.dart';
@@ -121,6 +124,25 @@ class _ConsentViewState extends State<ConsentView> {
   /// What the last failure was, read from the server's answer.
   CallFailureKind? _failure;
 
+  final GlobalKey _agreeKey = GlobalKey();
+  final FocusNode _agreeFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _agreeFocus.dispose();
+    super.dispose();
+  }
+
+  /// The ID card route is continued by the agree button, so tapping its card
+  /// brings that button into view and focuses it. It never agrees.
+  void _showAgreeButton() {
+    final target = _agreeKey.currentContext;
+    if (target != null) {
+      unawaited(Scrollable.ensureVisible(target));
+    }
+    _agreeFocus.requestFocus();
+  }
+
   Future<void> _agree() async {
     if (_recording) return;
     setState(() {
@@ -190,10 +212,14 @@ class _ConsentViewState extends State<ConsentView> {
             variant: AppButtonVariant.outlined,
             onPressed: widget.onSignInAgain,
           ),
-        AppButton(
-          l10n.iAgreeStartTheCamera,
-          icon: Icons.photo_camera,
-          onPressed: _recording ? null : _agree,
+        Focus(
+          key: _agreeKey,
+          focusNode: _agreeFocus,
+          child: AppButton(
+            l10n.iAgreeStartTheCamera,
+            icon: Icons.photo_camera,
+            onPressed: _recording ? null : _agree,
+          ),
         ),
         if (widget.onNiqabPath != null)
           AppButton(
@@ -216,6 +242,36 @@ class _ConsentViewState extends State<ConsentView> {
         Text(
           l10n.youWillPhotographTheFrontAndBack,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        // Two routes of equal weight. The camera route is continued by the
+        // agree button below, after the disclosure; the other leaves for
+        // `C15` at once.
+        Text(l10n.howWouldYouLikeToBeChecked, style: AppText.titleM),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 12,
+            children: [
+              Expanded(
+                child: _RouteCard(
+                  key: const ValueKey('c09b-route-id'),
+                  icon: Icons.badge_outlined,
+                  title: l10n.idCardAndASelfie,
+                  subtitle: l10n.aboutMinutesMinutes('2'),
+                  onTap: _showAgreeButton,
+                ),
+              ),
+              Expanded(
+                child: _RouteCard(
+                  key: const ValueKey('c09b-route-woman'),
+                  icon: Icons.support_agent,
+                  title: l10n.talkToAWomanReviewer,
+                  subtitle: l10n.aShortCall,
+                  onTap: widget.onDeclined,
+                ),
+              ),
+            ],
+          ),
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -269,6 +325,36 @@ class _ConsentViewState extends State<ConsentView> {
             fontSize: 15,
             onPressed: widget.onOpenPrivacy,
           ),
+      ],
+    );
+  }
+}
+
+class _RouteCard extends StatelessWidget {
+  const _RouteCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      onTap: onTap,
+      children: [
+        Icon(icon, size: 26, color: AppColors.primaryDim),
+        Text(title, style: AppText.titleM),
+        Text(
+          subtitle,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
       ],
     );
   }

@@ -57,6 +57,20 @@ CALLABLES = {
     "admin_logs",
     "record_meal_photo_consent",
     "analyze_meal_photo",
+    "approve_user",
+    "approve_users",
+    "revoke_user",
+    "list_review_queue",
+    "set_preapproved_phones",
+    "list_preapproved_phones",
+    "claim_fast_verification",
+    "get_reviewer_settings",
+    "set_reviewer_settings",
+    "list_reviewers",
+    "list_review_slots",
+    "book_review_slot",
+    "list_schedule",
+    "reschedule_review",
 }
 
 

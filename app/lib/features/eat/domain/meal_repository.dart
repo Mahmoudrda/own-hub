@@ -44,6 +44,7 @@ import 'package:meta/meta.dart';
 import '../../../data/pending_answers.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/week/week_key.dart';
+import 'custom_food.dart';
 import 'plate_rollup.dart';
 
 /// The four slots, fixed forever.
@@ -569,6 +570,8 @@ class EatPrefs {
     this.ramadanMode = RamadanMode.auto,
     this.proteinTargetGOverride,
     this.libVersion = 0,
+    this.favourites = const <String>[],
+    this.customFoods = const <CustomFood>[],
   });
 
   /// At most [kPlateCap] entries. See [PlateRollup] for the eviction rule.
@@ -582,11 +585,21 @@ class EatPrefs {
 
   final int libVersion;
 
+  /// The foods she starred, newest first, at most [kFavouriteCap]. Local to
+  /// this phone: the cloud document's rules do not carry them.
+  final List<String> favourites;
+
+  /// Foods she typed in herself, at most [kCustomFoodCap]. Local like
+  /// [favourites].
+  final List<CustomFood> customFoods;
+
   EatPrefs copyWith({
     Map<String, Plate>? plates,
     RamadanMode? ramadanMode,
     int? proteinTargetGOverride,
     int? libVersion,
+    List<String>? favourites,
+    List<CustomFood>? customFoods,
   }) {
     return EatPrefs(
       plates: plates ?? this.plates,
@@ -594,9 +607,14 @@ class EatPrefs {
       proteinTargetGOverride:
           proteinTargetGOverride ?? this.proteinTargetGOverride,
       libVersion: libVersion ?? this.libVersion,
+      favourites: favourites ?? this.favourites,
+      customFoods: customFoods ?? this.customFoods,
     );
   }
 }
+
+/// The cap on starred foods.
+const int kFavouriteCap = 100;
 
 /// The hard cap on remembered plates (§1.1), asserted in the security rules too.
 const int kPlateCap = 40;
@@ -735,6 +753,10 @@ abstract class MealRepository {
   /// The suggestion rollup. One fixed document id; there is no parameter for it,
   /// because `eatPrefs/other` is a document the rules refuse anyway.
   Future<EatPrefs> prefs();
+
+  /// Replaces the preferences document, for what only the phone keeps (her
+  /// favourites and the foods she typed in).
+  Future<void> savePrefs(EatPrefs prefs);
 
   /// Folds one logging event into the rollup.
   ///
@@ -1010,6 +1032,9 @@ class InMemoryMealRepository implements MealRepository {
 
   @override
   Future<EatPrefs> prefs() async => store.prefs;
+
+  @override
+  Future<void> savePrefs(EatPrefs prefs) async => store.prefs = prefs;
 
   @override
   Future<void> recordPlate(PlateObservation observation) async {

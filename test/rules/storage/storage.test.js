@@ -178,6 +178,14 @@ test('the content library is unchanged: read when signed in, written by admin', 
   await assertFails(put(her(), 'content/recipes/r1/c.jpg', 16, 'image/jpeg'));
 });
 
+test('exercise demonstrations are public; any other content path needs a sign-in', async () => {
+  await seed('content/exercises/squat/clip.mp4', 'video/mp4');
+  await seed('content/recipes/r1/a.jpg');
+  await assertSucceeds(getBytes(ref(anon(), 'content/exercises/squat/clip.mp4')));
+  await assertFails(getBytes(ref(anon(), 'content/recipes/r1/a.jpg')));
+  await assertFails(put(anon(), 'content/exercises/squat/new.mp4', 16, 'video/mp4'));
+});
+
 // ------------------------------------------------- as the rules ship (APL-16)
 
 test('as shipped: nothing can be written to her media or to coach-docs', async () => {

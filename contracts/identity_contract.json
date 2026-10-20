@@ -1,11 +1,166 @@
 {
   "callables": {
+    "approve_user": {
+      "reasons": [
+        "approve",
+        "knownPerson"
+      ],
+      "request": {
+        "reason": "approve",
+        "uid": "<uid>"
+      },
+      "response": {
+        "state": "approved"
+      },
+      "who": "womanReviewer or admin"
+    },
+    "approve_users": {
+      "maxUids": 50,
+      "request": {
+        "uids": [
+          "<uid>"
+        ]
+      },
+      "responseKeys": [
+        "approved",
+        "failed"
+      ],
+      "who": "womanReviewer or admin"
+    },
+    "book_review_slot": {
+      "note": "needs an open review: call request_review first; a second booking replaces the first",
+      "request": {
+        "reviewerId": "<reviewer uid>",
+        "start": "2026-10-05T07:00:00Z"
+      },
+      "responseKeys": [
+        "scheduledFor"
+      ],
+      "who": "member, phone sign-in"
+    },
+    "claim_fast_verification": {
+      "note": "decided from the phone in the ID token; the body is ignored",
+      "optionalResponseKeys": [
+        "via"
+      ],
+      "requestKeys": [],
+      "responseKeys": [
+        "state"
+      ],
+      "states": [
+        "approved",
+        "none"
+      ],
+      "viaValues": [
+        "preapproved",
+        "testPhone",
+        "storeReviewer"
+      ],
+      "who": "member, phone sign-in"
+    },
     "delete_account": {
       "requestKeys": [],
       "responseKeys": [
         "journal",
         "state"
       ]
+    },
+    "get_reviewer_settings": {
+      "requestKeys": [],
+      "responseKeys": [
+        "autoPassKnown",
+        "availability",
+        "firstName",
+        "listed",
+        "slotMinutes"
+      ],
+      "who": "womanReviewer"
+    },
+    "list_preapproved_phones": {
+      "requestKeys": [],
+      "responseKeys": [
+        "phones"
+      ],
+      "who": "womanReviewer or admin"
+    },
+    "list_review_queue": {
+      "approvedViaValues": [
+        "approve",
+        "knownPerson",
+        "knownContact",
+        "preapproved",
+        "testPhone",
+        "storeReviewer"
+      ],
+      "note": "phone only where she asked for the call; knownReviewer is a reviewer uid; approvedVia and approvedBy appear on approved rows",
+      "optionalRowKeys": [
+        "approvedBy",
+        "approvedVia",
+        "displayName",
+        "flagId",
+        "knownReviewer",
+        "phone",
+        "scheduledFor"
+      ],
+      "request": {
+        "query": "<text>",
+        "status": "pending"
+      },
+      "response": "array",
+      "rowKeys": [
+        "uid",
+        "state",
+        "requestedAt"
+      ],
+      "rowStates": [
+        "pending",
+        "scheduled",
+        "approved"
+      ],
+      "statuses": [
+        "pending",
+        "scheduled",
+        "approved"
+      ],
+      "who": "womanReviewer or admin"
+    },
+    "list_review_slots": {
+      "request": {
+        "days": 7
+      },
+      "response": "array",
+      "rowKeys": [
+        "reviewerId",
+        "start"
+      ],
+      "startFormat": "YYYY-MM-DDTHH:MM:SSZ (UTC)",
+      "who": "member, phone sign-in"
+    },
+    "list_reviewers": {
+      "requestKeys": [],
+      "response": "array",
+      "rowKeys": [
+        "firstName",
+        "reviewerId"
+      ],
+      "who": "member, phone sign-in"
+    },
+    "list_schedule": {
+      "note": "the caller's own bookings; phone only where she asked for the call",
+      "optionalRowKeys": [
+        "displayName",
+        "phone"
+      ],
+      "request": {
+        "from": "2026-10-05T00:00:00Z",
+        "to": "2026-10-06T00:00:00Z"
+      },
+      "response": "array",
+      "rowKeys": [
+        "start",
+        "uid"
+      ],
+      "who": "womanReviewer"
     },
     "record_consent": {
       "request": {
@@ -55,17 +210,88 @@
       }
     },
     "request_review": {
+      "optionalResponseKeys": [
+        "via"
+      ],
       "paths": [
         "declined",
         "error",
         "niqab"
       ],
       "request": {
+        "knownReviewerId": "<reviewer uid, optional>",
         "path": "niqab"
       },
       "responseKeys": [
         "state"
+      ],
+      "viaValues": [
+        "knownContact"
       ]
+    },
+    "reschedule_review": {
+      "request": {
+        "start": "2026-10-06T10:20:00Z",
+        "uid": "<uid>"
+      },
+      "responseKeys": [
+        "scheduledFor"
+      ],
+      "who": "womanReviewer"
+    },
+    "revoke_user": {
+      "request": {
+        "uid": "<uid>"
+      },
+      "response": {
+        "state": "pending"
+      },
+      "who": "womanReviewer or admin"
+    },
+    "set_preapproved_phones": {
+      "note": "numbers are normalised to E.164",
+      "request": {
+        "add": "0100 123 4567, +201112223334",
+        "remove": [
+          "+201001234567"
+        ]
+      },
+      "responseKeys": [
+        "phones"
+      ],
+      "who": "womanReviewer or admin"
+    },
+    "set_reviewer_settings": {
+      "note": "times are Cairo time; weekday 1 is Monday, 7 is Sunday",
+      "request": {
+        "autoPassKnown": false,
+        "availability": [
+          {
+            "end": "11:00",
+            "start": "10:00",
+            "weekday": 1
+          }
+        ],
+        "firstName": "Rahma",
+        "listed": true,
+        "slotMinutes": 15
+      },
+      "responseKeys": [
+        "autoPassKnown",
+        "availability",
+        "firstName",
+        "listed",
+        "slotMinutes"
+      ],
+      "slotMinutes": [
+        10,
+        15,
+        20,
+        30,
+        45,
+        60
+      ],
+      "who": "womanReviewer"
     },
     "start_verification": {
       "requestKeys": [],
@@ -188,9 +414,11 @@
     "reviewAlreadyOpen": "review_already_open",
     "reviewConsentMissing": "review_consent_missing",
     "reviewNotPending": "review_not_pending",
+    "reviewRevoked": "review_revoked",
     "reviewTimeOutOfRange": "review_time_out_of_range",
     "reviewerIsSubject": "reviewer_is_subject",
     "sessionMissing": "session_missing",
+    "slotUnavailable": "slot_unavailable",
     "unauthenticated": "unauthenticated",
     "verificationClosed": "verification_closed",
     "verificationInProgress": "verification_in_progress"

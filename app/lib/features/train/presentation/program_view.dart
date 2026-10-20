@@ -74,7 +74,11 @@ class ProgramView extends StatelessWidget {
     this.totalWeeks,
     this.sessionsDone,
     this.sessionsTarget,
+    this.tierTabs,
   });
+
+  /// The Beginner / Intermediate / Advanced tabs, under the promise.
+  final Widget? tierTabs;
 
   final VoidCallback? onBack;
 
@@ -193,6 +197,7 @@ class ProgramView extends StatelessWidget {
         //
         // When it is known, her week is circled the way she would mark her
         // place in a printed plan, under a rule that closes the promise above.
+        ?tierTabs,
         if (week != null || sessionsDone != null) ...[
           const HandRule(seed: 17, height: 10),
           Row(

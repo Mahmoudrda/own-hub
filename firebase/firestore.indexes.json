@@ -431,6 +431,13 @@
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []
+    },
+    {
+      "_why": "TTL. A booked review slot is deleted when its time has passed (deletion manifest row 50). Never queried on.",
+      "collectionGroup": "verificationBookings",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
     }
   ]
 }

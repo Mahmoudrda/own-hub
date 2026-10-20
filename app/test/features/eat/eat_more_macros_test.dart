@@ -84,8 +84,9 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('120 g'), findsOneWidget);
-    expect(find.text('45 g'), findsOneWidget);
+    // Against the default targets: 183 g carbs and 51 g fat.
+    expect(find.text('120 of 183 g'), findsOneWidget);
+    expect(find.text('45 of 51 g'), findsOneWidget);
     expect(find.text('Fibre 18 g'), findsOneWidget);
   });
 
@@ -100,7 +101,7 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('30 g'), findsOneWidget);
+    expect(find.text('30 من 183 جم'), findsOneWidget);
     expect(find.byKey(const ValueKey('day-card-more-macros')), findsNothing);
   });
 

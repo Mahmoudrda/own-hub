@@ -124,6 +124,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Send crash reports'), findsOneWidget);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('phone-crash-reports')),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('phone-crash-reports')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(EditableText), '01001234567');

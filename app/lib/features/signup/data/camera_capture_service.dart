@@ -68,15 +68,6 @@ import 'held_photo.dart';
 /// readings a second is still faster than a hand moves.
 const Duration _analysisInterval = Duration(milliseconds: 125);
 
-/// Consecutive good frames before the card photographs itself.
-///
-/// One good frame is a coincidence: autofocus passes through a sharp moment on
-/// its way somewhere else, and firing on it produces exactly the blurred
-/// capture this whole arrangement exists to prevent. Three at
-/// [_analysisInterval] is around 375ms of steadiness, which is short enough to
-/// feel instant and long enough to mean something.
-const int _steadyFramesBeforeAutoCapture = 3;
-
 /// The centred slice of the sensor frame the card measurements read.
 ///
 /// **Deliberately a strict subset of the on-screen guide, and deliberately not
@@ -100,8 +91,8 @@ const double _cardRegionShortAxisFraction = 0.50;
 /// the face detector's job there, so this only has to be a piece of her.
 const double _faceRegionFraction = 0.5;
 
-// **The selfie has no auto-capture, and that is the fix, not an omission.**
-// An earlier version took each step's frame itself after 1.2 seconds of
+// **Nothing here takes a photo on its own, card or selfie.**
+// An earlier selfie version took each step's frame itself after 1.2 seconds of
 // continuously good frames. Turning her head blurs, shifts and tilts the face,
 // so the clock kept resetting and on a real iPhone the step never fired. And a
 // helper that fires on its own is worse than none during a challenge: it can
@@ -296,7 +287,6 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
   bool _analysing = false;
   bool _taking = false;
   bool _closed = false;
-  int _steadyFrames = 0;
 
   Future<void> start() async {
     // A run of the steps always starts from no frames. See
@@ -460,21 +450,9 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
       // about a frame that is no longer the one that matters.
       if (_closed || _taking || _done) return;
 
-      final good = advice == null;
-      _steadyFrames = good ? _steadyFrames + 1 : 0;
-
-      if (steps.isEmpty) {
-        // The card. Three consecutive good frames and it photographs itself,
-        // which is what removes the blurry-photo retry loop. She checks the
-        // result before it is used either way.
-        _emit(_framing(sharp: good, guidance: advice));
-        if (_steadyFrames >= _steadyFramesBeforeAutoCapture) await _take();
-        return;
-      }
-
-      // The challenge. Hints only: the frame for each step is taken when she
-      // presses "Take photo", never by this loop.
-      _emit(_framing(sharp: good, guidance: advice));
+      // Hints only: every frame, on the card and on the selfie, is taken when
+      // she presses the shutter, never by this loop.
+      _emit(_framing(sharp: advice == null, guidance: advice));
     } catch (error) {
       // Measuring a frame must never stop her. The shutter does not depend on
       // anything this loop produces.
@@ -750,7 +728,6 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
       if (bytes == null) {
         // The photograph could not be read. Nothing was taken for this step,
         // so the preview and its hints come back and she presses again.
-        _steadyFrames = 0;
         _emit(_framing(sharp: false));
         await _resumeStream();
         return;
@@ -768,8 +745,7 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
         case CaptureTarget.idBack:
           evidence.holdCardSide(target, bytes);
           _taken = 1;
-          _takenLooksLikeFront =
-              target == CaptureTarget.idBack && _faceInView;
+          _takenLooksLikeFront = target == CaptureTarget.idBack && _faceInView;
         case CaptureTarget.selfie:
           evidence.addFrame(bytes);
           _taken++;
@@ -779,7 +755,6 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
         // On to the next prompt. The stream is restarted because `_take`
         // stopped it, for the framing hints.
         _step++;
-        _steadyFrames = 0;
         _emit(_framing(sharp: false));
         await _resumeStream();
         return;
@@ -795,7 +770,6 @@ class _LensSession implements CaptureSession, Viewfinder, CaptureReview {
       // not a crash on the screen she is holding.
       if (kDebugMode) debugPrint('capture failed: $error');
       if (_closed) return;
-      _steadyFrames = 0;
       _emit(_framing(sharp: false));
       await _resumeStream();
     } finally {
