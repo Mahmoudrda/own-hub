@@ -191,13 +191,24 @@ def decline(reviewer_uid: str, uid: Any, reason: Any = "other") -> str:
     """The decline, as auditable as an approve: her open flag (if any) is closed
     as rejected and her state set to rejected in one transaction, the ledger
     records who, when and why (a fixed code, never free text), and the access
-    log gets a line. A reviewer cannot decline herself."""
+    log gets a line. A reviewer cannot decline herself, and an approved woman
+    cannot be declined (that is the revoke): the claim would stay on. The
+    verified claim is taken back and any mint retry left from an earlier
+    approval is cleared, so the hourly retry cannot approve her again. An
+    unknown account is refused as not found and nothing is written."""
     uid = _uid(uid)
     if uid == reviewer_uid:
         _fail(review.PRECONDITION, reasons.REVIEWER_IS_SUBJECT)
     if reason not in DECLINE_REASONS:
         _fail(review.INVALID)
     rs = store.FirestoreReviewStore()
+    if rs.verification_state(uid) == review.STATE_APPROVED:
+        _fail(review.PRECONDITION, reasons.REVIEW_NOT_PENDING)
+    try:
+        store.mint_claims(uid, False)
+    except Exception:  # noqa: BLE001 - no such account
+        _fail(review.NOT_FOUND)
+    rs.clear_mint_pending_for(uid)
     flag_id = rs.open_flag_id(uid)
     if flag_id:
         refusal = rs.close_flag(
@@ -220,6 +231,7 @@ def decline(reviewer_uid: str, uid: Any, reason: Any = "other") -> str:
         },
         merge=True,
     )
+    _forget_preapproved(uid)
     rs.log_access(reviewer_uid, flag_id or uid, "decline")
     _drop_bookings(uid)
     return review.STATE_REJECTED
@@ -234,15 +246,17 @@ def _forget_preapproved(uid: str) -> None:
 
 
 def revoked_since_approval(uid: str) -> bool:
-    """The ledger shows a revoke at or after her last approval through this
-    module. Only a reviewer's approval clears it, so a fast route refuses."""
+    """The ledger shows a revoke or a decline at or after her last approval
+    through this module. Only a reviewer's approval clears it, so a fast route
+    and the hourly mint retry refuse."""
     ledger = _ledger_ref(uid).get()
     data = (ledger.to_dict() or {}) if ledger.exists else {}
-    revoked = review._as_utc(data.get("revokedAt"))
-    if revoked is None:
+    stamps = [review._as_utc(data.get(k)) for k in ("revokedAt", "declinedAt")]
+    stamps = [t for t in stamps if t is not None]
+    if not stamps:
         return False
     approved = review._as_utc(data.get("approvedAt"))
-    return approved is None or revoked >= approved
+    return approved is None or max(stamps) >= approved
 
 
 # ------------------------------------------------------------------- queue

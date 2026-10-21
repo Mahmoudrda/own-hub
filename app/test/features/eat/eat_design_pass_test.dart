@@ -1,4 +1,4 @@
-// WP9 design pass on Eat: the result card, time-of-day picks, "Impact on
+// Design pass on Eat: the result card, time-of-day picks, "Impact on
 // today" rings, and the per-meal diary rows with their Log pill.
 
 import 'package:flutter/material.dart';

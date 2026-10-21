@@ -190,6 +190,26 @@ def test_decline_without_a_flag_still_rejects_and_records(world):
     assert world.db.docs[f"{config.COL_LEDGER}/{HER}"]["declineReason"] == "other"
 
 
+def test_declining_an_approved_woman_is_refused_and_she_stays_verified(world):
+    ask(world)
+    staff("approve_user", {"uid": HER})
+    raises(lambda: staff("decline_user", {"uid": HER}), PRECONDITION)
+    assert user(world)["verification"]["state"] == "approved"
+    assert world.claims[HER] is True
+
+
+def test_declining_an_unknown_account_is_not_found_and_writes_nothing(world):
+    raises(lambda: staff("decline_user", {"uid": "ghost"}), https_fn.FunctionsErrorCode.NOT_FOUND)
+    assert "users/ghost" not in world.db.docs
+    assert f"{config.COL_LEDGER}/ghost" not in world.db.docs
+
+
+def test_decline_takes_the_verified_claim_back(world):
+    world.claims[HER] = True
+    staff("decline_user", {"uid": HER})
+    assert world.claims[HER] is False
+
+
 def test_decline_guards(world):
     raises(lambda: staff("decline_user", {"uid": REV}), PRECONDITION)
     raises(lambda: staff("decline_user", {"uid": HER, "reason": "free text"}), INVALID)
@@ -419,6 +439,48 @@ def test_the_hourly_retry_skips_a_woman_revoked_since_her_approval(world, monkey
     main.expire_stale_reviews.__wrapped__(None)
     assert world.claims[HER] is False
     assert world.db.docs[f"verification_flags/{flag_id}"]["mintPending"] is True
+
+
+def test_a_declined_woman_with_a_leftover_mint_retry_is_not_approved_again(world, monkeypatch):
+    flag_id = _approve_with_failing_mint(world, monkeypatch)
+    # A failed mint leaves her pending, so decline accepts her.
+    world.db.docs[f"users/{HER}"]["verification"]["state"] = "pending"
+    staff("decline_user", {"uid": HER})
+    assert "mintPending" not in world.db.docs[f"verification_flags/{flag_id}"]
+    main.expire_stale_reviews.__wrapped__(None)
+    assert user(world)["verification"]["state"] == "rejected"
+    assert world.claims[HER] is False
+
+
+def test_the_hourly_retry_skips_a_woman_declined_since_her_approval(world, monkeypatch):
+    flag_id = _approve_with_failing_mint(world, monkeypatch)
+    ref = approvals._ledger_ref(HER)
+    approved = review._as_utc(ref.get().to_dict()["approvedAt"])
+    ref.set({"declinedAt": approved + dt.timedelta(seconds=1)}, merge=True)
+    main.expire_stale_reviews.__wrapped__(None)
+    assert not world.claims.get(HER)
+    assert world.db.docs[f"verification_flags/{flag_id}"]["mintPending"] is True
+
+
+def test_decline_removes_her_number_from_the_preapproved_list(world):
+    staff("set_preapproved_phones", {"add": "01001234567"})
+    world.phones[HER] = HER_PHONE
+    ask(world)
+    assert "verificationPreapproved/+201001234567" in world.db.docs
+    staff("decline_user", {"uid": HER})
+    assert "verificationPreapproved/+201001234567" not in world.db.docs
+
+
+def test_the_fast_route_refuses_a_declined_woman(world, monkeypatch):
+    monkeypatch.setenv("TEST_BYPASS_PHONES", "+201006660000")
+    approvals.reset_env_cache()
+    assert member("claim_fast_verification", phone="+201006660000")["via"] == "testPhone"
+    ref = approvals._ledger_ref(HER)
+    approved = review._as_utc(ref.get().to_dict()["approvedAt"])
+    ref.set({"declinedAt": approved + dt.timedelta(seconds=1)}, merge=True)
+    world.db.docs[f"users/{HER}"]["verification"]["state"] = "pending"
+    assert member("claim_fast_verification", phone="+201006660000") == {"state": "none"}
+    assert user(world)["verification"]["state"] == "pending"
 
 
 def test_a_revoked_store_review_account_is_not_bypassed(world, monkeypatch):

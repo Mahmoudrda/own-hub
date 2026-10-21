@@ -609,7 +609,8 @@ class _IngredientRow extends StatelessWidget {
   }
 }
 
-/// One of her steps, numbered as she numbered it.
+/// One of her steps. Her words are shown as written; the number in front is
+/// drawn here from the step's position.
 class _StepRow extends StatelessWidget {
   const _StepRow({
     required this.step,
@@ -635,10 +636,25 @@ class _StepRow extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(step.textFor(arabic: arabic), style: body),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  countLabel(step.index),
+                  style: body.copyWith(
+                    color: BookInk.inkSoft,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(step.textFor(arabic: arabic), style: body),
+                ),
+              ],
+            ),
             if (step.minutes != null || step.tempC != null)
               Padding(
-                padding: const EdgeInsets.only(top: 5),
+                padding: const EdgeInsetsDirectional.only(start: 26, top: 5),
                 child: Wrap(
                   spacing: 8,
                   children: [

@@ -355,6 +355,13 @@ void main() {
         expect(sessionsDoneThisWeek(repo.sessions, now: now), 0);
         await repo.finishSession(sessionId: session.id, durationSec: 900);
         expect(sessionsDoneThisWeek(repo.sessions, now: now), 1);
+        final empty = await repo.startSession(day);
+        await repo.finishSession(
+          sessionId: empty.id,
+          durationSec: 60,
+          reason: EndedReason.abandoned,
+        );
+        expect(sessionsDoneThisWeek(repo.sessions, now: now), 1);
       },
     );
   });

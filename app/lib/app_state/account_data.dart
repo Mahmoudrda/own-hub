@@ -84,6 +84,7 @@ import '../features/onboarding/domain/body_data.dart';
 import 'onboarding_state.dart';
 import 'tip_anchors.dart';
 import 'workout_session_state.dart';
+import 'follow_up_state.dart';
 
 /// The five handset steps, done against the stores this build actually has.
 ///
@@ -298,6 +299,8 @@ class ThisPhoneWipe implements LocalWipe {
     // with its sessions per day (D37). Both live only on this phone.
     RewardsState.instance.reset();
     TrainingStreakState.instance.reset();
+    // Her day-after answers, week reviews and follow-up settings. Phone only.
+    FollowUpState.instance.reset();
 
     // Rows 35, 36 — her cycle document and every period date. `CycleState`
     // already purges the repository; it also takes Today's cycle row down.
@@ -550,5 +553,6 @@ bool get nothingOfHersRemains {
       AppRouter.reportService.reports().isEmpty &&
       AppRouter.dietaryRepository.read() == DietaryProfile.unasked &&
       RewardsState.instance.awardIds.isEmpty &&
-      !TrainingStreakState.instance.touched;
+      !TrainingStreakState.instance.touched &&
+      !FollowUpState.instance.touched;
 }

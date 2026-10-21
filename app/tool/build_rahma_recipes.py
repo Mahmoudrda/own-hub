@@ -741,11 +741,17 @@ _METHOD_HEADING = re.compile(_MARKER_PREFIX + r"الطريقة\s*:\s*")
 _SERVED_WITH = re.compile(_MARKER_PREFIX + r"(تتقدم|يتقدم|تقدم)\s+مع\s*:")
 
 
+_LEADING_STEP_MARKER = re.compile(r"^(?:[-.]\d+|\d+-)\s+")
+
+
 def _clean_step(text):
-    """Her step without a "الطريقة:" heading, and with the line breaks the
-    printed page wrapped at joined into one line. Nothing else is touched."""
+    """Her step without a "الطريقة:" heading, without the step number she
+    typed in front of it (the app numbers the steps itself), and with the line
+    breaks the printed page wrapped at joined into one line. Nothing else is
+    touched."""
     text = _METHOD_HEADING.sub(lambda m: m.group(1) or "", text, count=1)
-    return re.sub(r"\s*\n\s*", " ", text).strip()
+    text = re.sub(r"\s*\n\s*", " ", text).strip()
+    return _LEADING_STEP_MARKER.sub("", text, count=1)
 
 
 def _is_served_with(text, refs_for):

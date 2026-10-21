@@ -679,31 +679,28 @@ void main() {
     }
 
     for (final locale in const [Locale('en'), Locale('ar')]) {
-      testWidgets(
-        'a guest header with the pill and tier tabs fits at 2.0 in '
-        '${locale.languageCode}',
-        (tester) async {
-          _phone(tester);
-          var signIns = 0;
-          await tester.pumpWidget(
-            _host(
-              _today(
-                firstName: 'Mai',
-                sessionMinutes: 25,
-                onSignIn: () => signIns++,
-                tierTabs: const TierTabs(selected: TrainingLevel.beginner),
-              ),
-              locale: locale,
-              textScale: 2.0,
+      testWidgets('a guest header with the pill and tier tabs fits at 2.0 in '
+          '${locale.languageCode}', (tester) async {
+        _phone(tester);
+        var signIns = 0;
+        await tester.pumpWidget(
+          _host(
+            _today(
+              firstName: 'Mai',
+              sessionMinutes: 25,
+              onSignIn: () => signIns++,
+              tierTabs: const TierTabs(selected: TrainingLevel.beginner),
             ),
-          );
-          await tester.pumpAndSettle();
-          expect(tester.takeException(), isNull);
-          expect(find.byType(TierTabs), findsOneWidget);
-          await tester.tap(find.byKey(const ValueKey('sign-in-pill')));
-          expect(signIns, 1);
-        },
-      );
+            locale: locale,
+            textScale: 2.0,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.byType(TierTabs), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('sign-in-pill')));
+        expect(signIns, 1);
+      });
     }
 
     testWidgets('the Eat card has a Log food button and a kcal target', (

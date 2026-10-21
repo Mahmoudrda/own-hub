@@ -1,4 +1,4 @@
-// The Android side of the notification engine (WP10a): the permissions it
+// The Android side of the notification engine: the permissions it
 // needs and the receivers that keep its alarms across a restart.
 
 import 'dart:io';

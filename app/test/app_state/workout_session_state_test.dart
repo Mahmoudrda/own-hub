@@ -89,6 +89,7 @@ void main() {
     final today = InMemoryTodayRepository();
     final progress = ProgressStore();
     // The last set is still inside its five seconds when she finishes.
+    state.setLogged();
     state.bus.submit(
       UndoableLog(
         describe: 'last set',
@@ -181,4 +182,81 @@ void main() {
       );
     },
   );
+
+  test('relabel reports a changed move name, label or cues', () async {
+    await started();
+    PlannedMove reworded(PlannedMove m, {String? name, List<String>? cues}) =>
+        PlannedMove(
+          exerciseId: m.exerciseId,
+          name: name ?? m.name,
+          prescriptionLabel: m.prescriptionLabel,
+          cues: cues ?? m.cues,
+          sets: m.sets,
+        );
+    WorkoutDay withMoves(List<PlannedMove> moves) => WorkoutDay(
+      id: day.id,
+      title: day.title,
+      summary: day.summary,
+      constraints: day.constraints,
+      moves: moves,
+    );
+
+    expect(state.relabel(withMoves(day.moves)), isFalse);
+    expect(
+      state.relabel(
+        withMoves([reworded(day.moves[0], name: 'Squat'), day.moves[1]]),
+      ),
+      isTrue,
+    );
+    expect(state.day?.moves.first.name, 'Squat');
+    expect(
+      state.relabel(
+        withMoves([
+          state.day!.moves[0],
+          reworded(day.moves[1], cues: ['Squeeze']),
+        ]),
+      ),
+      isTrue,
+    );
+  });
+
+  test(
+    'a session with no set logged is abandoned and counts nowhere',
+    () async {
+      await started();
+      final progress = ProgressStore();
+      state.skipMove();
+      state.skipMove();
+      expect(state.isComplete, isTrue);
+      final summary = await state.finish(
+        repository: repository,
+        today: InMemoryTodayRepository(),
+        progress: progress,
+      );
+      expect(summary, isNotNull);
+      expect(summary!.credit.sessionPoints, 0);
+      expect(progress.rewards.sessionsLogged, 0);
+      expect(
+        repository.sessionById('live-1')?.endedReason,
+        EndedReason.abandoned,
+      );
+    },
+  );
+
+  test('one logged set, then skipping the rest, still credits', () async {
+    await started();
+    final progress = ProgressStore();
+    state.setLogged();
+    state.skipMove();
+    state.skipMove();
+    expect(state.isComplete, isTrue);
+    final summary = await state.finish(
+      repository: repository,
+      today: InMemoryTodayRepository(),
+      progress: progress,
+    );
+    expect(summary!.credit.sessionPoints, greaterThan(0));
+    expect(progress.rewards.sessionsLogged, 1);
+    expect(repository.sessionById('live-1')?.endedReason, EndedReason.finished);
+  });
 }

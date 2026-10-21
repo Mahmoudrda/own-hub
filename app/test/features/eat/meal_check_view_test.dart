@@ -73,9 +73,8 @@ Widget _host(
   theme: buildTheme(locale),
   home: Builder(
     builder: (context) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(textScale)),
       child: child,
     ),
   ),
@@ -142,8 +141,7 @@ void main() {
     return logged;
   }
 
-  Finder figures(String key) =>
-      find.byKey(ValueKey('meal-check-figures-$key'));
+  Finder figures(String key) => find.byKey(ValueKey('meal-check-figures-$key'));
 
   String figuresText(WidgetTester tester, String key) => tester
       .widgetList<Text>(

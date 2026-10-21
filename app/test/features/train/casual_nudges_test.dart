@@ -1,4 +1,4 @@
-// The friendly nudges and the one-casual-note-a-day rule (WP7).
+// The friendly nudges and the one-casual-note-a-day rule.
 //
 // 2026-10-14 is a Wednesday.
 

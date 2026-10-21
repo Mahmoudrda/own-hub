@@ -286,7 +286,11 @@ enum Feature {
 
   /// Short named steps on O05 and C12, each one an operation that really ran
   /// (D39).
-  reassuringWaits;
+  reassuringWaits,
+
+  /// The personal follow-up card on Home: how she feels after a session, the
+  /// Friday week review, a welcome back and a protein idea. In-app only.
+  followUps;
 
   /// The feature this one lives inside, or null when it is top level.
   Feature? get parent => switch (this) {
@@ -302,7 +306,7 @@ enum Feature {
     weekPlan => recipes,
     groceryList => weekPlan,
     recipeTiering => payments,
-    firstWeek || quietWeek || tiers || lockScreenNudge => today,
+    firstWeek || quietWeek || tiers || lockScreenNudge || followUps => today,
     recordFromMemory ||
     program ||
     exerciseVideo ||
@@ -391,6 +395,8 @@ enum Feature {
     Feature.workoutLibrary: 'The Workouts group in Explore on R01.',
     Feature.haptics: 'A light tap on a logged set and on R10.',
     Feature.reassuringWaits: 'The named steps on O05 and C12.',
+    Feature.followUps:
+        'One card on T01, its week review sheet, and a switch on A01.',
   };
 }
 
@@ -524,6 +530,7 @@ class FeatureFlags {
     Feature.finishReveal: true,
     Feature.haptics: true,
     Feature.reassuringWaits: true,
+    Feature.followUps: true,
   });
 
   /// Every feature on, with no account required.

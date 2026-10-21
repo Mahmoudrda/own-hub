@@ -23,6 +23,8 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show listEquals;
+
 import '../domain/clock/app_clock.dart';
 import '../domain/logging/log_command_bus.dart';
 import '../domain/rewards/credit_outcome.dart';
@@ -229,10 +231,18 @@ class WorkoutSessionState {
         return false;
       }
     }
-    final reworded =
+    var reworded =
         day.title != fresh.title ||
         day.summary != fresh.summary ||
         day.constraints != fresh.constraints;
+    for (var i = 0; i < day.moves.length && !reworded; i++) {
+      final was = day.moves[i];
+      final now = fresh.moves[i];
+      reworded =
+          was.name != now.name ||
+          was.prescriptionLabel != now.prescriptionLabel ||
+          !listEquals(was.cues, now.cues);
+    }
     _day = fresh;
     return reworded;
   }
@@ -431,18 +441,23 @@ class WorkoutSessionState {
       for (final swapped in _swaps.values) swapped.exerciseId: swapped.name,
     };
 
+    // A session with no set logged is closed as abandoned and counts nowhere:
+    // not in her week, her points or her streak.
+    final nothingLogged = _loggedSets == 0;
     await _bus.flushAll();
     await repository.finishSession(
       sessionId: session.id,
       durationSec: seconds,
-      reason: reason,
+      reason: nothingLogged ? EndedReason.abandoned : reason,
     );
-    final credit = RewardsState.instance.creditSession(
-      sessionId: session.id,
-      source: session.source,
-      today: today,
-      progress: progress,
-    );
+    final credit = nothingLogged
+        ? const CreditOutcome()
+        : RewardsState.instance.creditSession(
+            sessionId: session.id,
+            source: session.source,
+            today: today,
+            progress: progress,
+          );
 
     final trainingStreakState = TrainingStreakState.instance;
     final summary = summarise(

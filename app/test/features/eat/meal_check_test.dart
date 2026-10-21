@@ -168,10 +168,7 @@ void main() {
     });
 
     test('stops saying so once she sets a figure herself', () {
-      final item = CheckItem.scanned(
-        'p',
-        partly,
-      ).withEdit(MacroKind.kcal, 520);
+      final item = CheckItem.scanned('p', partly).withEdit(MacroKind.kcal, 520);
       expect(item.partlyFound, isFalse);
     });
 

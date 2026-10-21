@@ -148,10 +148,7 @@ void main() {
     await tester.pumpWidget(_app('Y03'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Today: Energy: Low · Cramps: Mild'),
-      findsOneWidget,
-    );
+    expect(find.text('Today: Energy: Low · Cramps: Mild'), findsOneWidget);
     await _tap(tester, find.text('Change'));
     expect(find.text('Save check-in'), findsOneWidget);
   });

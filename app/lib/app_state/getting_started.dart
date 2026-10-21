@@ -16,6 +16,7 @@ import '../domain/flags/feature_flags.dart';
 import '../features/onboarding/domain/intake.dart';
 import '../features/signup/presentation/role_view.dart';
 import '../features/train/domain/getting_started_tips.dart';
+import '../features/train/domain/train_repository.dart';
 import '../features/train/domain/training_reminders.dart';
 import '../features/train/presentation/notification_explainer.dart';
 import '../l10n/app_l10n.dart';
@@ -63,7 +64,9 @@ abstract final class GettingStarted {
     return TipFacts(
       loggedASession:
           state.lastSessionAt != null ||
-          AppRouter.trainRepository.sessions.any((s) => s.completed),
+          AppRouter.trainRepository.sessions.any(
+            (s) => s.completed && s.endedReason != EndedReason.abandoned,
+          ),
       openedVideos: marks.contains('R15'),
       loggedAPhotoMeal: marks.contains(kPhotoMealMark),
       // Allergies, or the scan switched off: the tip would open a screen she

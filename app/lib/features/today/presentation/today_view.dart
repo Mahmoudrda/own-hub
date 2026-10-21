@@ -102,6 +102,7 @@ class TodayView extends StatefulWidget {
     this.mealRepository,
     this.onSignIn,
     this.tierTabs,
+    this.followUp,
   });
 
   /// Her first name, for the greeting and the avatar. Null greets without it.
@@ -124,6 +125,10 @@ class TodayView extends StatefulWidget {
   /// The Beginner / Intermediate / Advanced tabs under the greeting. Switching
   /// one changes the session the Today card shows. Null draws nothing.
   final Widget? tierTabs;
+
+  /// The follow-up card (how she feels after a session, her week review),
+  /// or null when there is nothing to ask.
+  final Widget? followUp;
 
   /// Her training streak (D37), or null when it is off — by the build or by
   /// her. Null draws nothing at all.
@@ -420,6 +425,7 @@ class _TodayViewState extends State<TodayView> {
         ],
       ),
       ?widget.tierTabs,
+      ?widget.followUp,
       HomeWeekStrip(
         today: _day.date,
         doneWeekdays: {...widget.weekDoneWeekdays, if (done) _day.date.weekday},

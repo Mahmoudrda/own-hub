@@ -5588,5 +5588,157 @@
   "hadDinnerAddItToYourDay": "اتعشيتي؟ ضيفيه ليومك بضغطة أو بصورة واحدة.",
   "somethingWarmTonightHaveALookAt": "نفسك في حاجة دافية الليلة؟ بصّي على أفكار العشا في الوصفات.",
   "eatingDinnerSoonLogItInOne": "هتتعشي دلوقتي؟ سجّليه بضغطة وهيتضاف ليومك.",
-  "openEventLink": "افتحي رابط الفعالية"
+  "openEventLink": "افتحي رابط الفعالية",
+  "nothingLoggedSoThisOneIsNot": "ما سجلتيش حاجة، فالجلسة دي مش هتتحسب.",
+  "dontShowThisKindAgain": "بلاش أشوف النوع ده تاني",
+  "onlyMovesScreenedForYouAndStop": "بنختار ليكي حركات مناسبة بس، وقفي لو حسّيتي بأي حاجة مش مظبوطة.",
+  "todayCanBeAGentleDay": "النهارده ممكن يبقى يوم هادي.",
+  "yourLastSession": "آخر تمرين ليكي",
+  "movesMovesSetsSets": "الحركات: {moves} · المجموعات: {sets}",
+  "@movesMovesSetsSets": {
+    "description": "Home follow-up after a session: what she logged, with a label before each figure so no noun has to agree with its number.",
+    "placeholders": {
+      "moves": {
+        "type": "String",
+        "example": "4"
+      },
+      "sets": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "upToWeightOnMove": "لحد {weight} في {move}",
+  "@upToWeightOnMove": {
+    "description": "Home follow-up: her heaviest weight in the last session. The move name stays English in both languages.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "12.5 kg"
+      },
+      "move": {
+        "type": "String",
+        "example": "Goblet squat"
+      }
+    }
+  },
+  "howDoYouFeelToday": "حاسّة بإيه النهارده؟",
+  "fresh": "نشيطة",
+  "aBitSore": "عضلاتي شادّة شوية",
+  "verySore": "عضلاتي شادّة أوي",
+  "thanksForTellingUs": "شكرًا إنك قلتيلنا.",
+  "nextTimeTheSameWeightsBuildUp": "المرة الجاية بنفس الأوزان. زوّدي تاني لما تحسّي إنك نشيطة.",
+  "aFewQuestionsAboutYourWeek": "كام سؤال عن أسبوعك.",
+  "n3QuickQuestions": "3 أسئلة سريعة",
+  "newBestsCount": "أحسن أرقامك الجديدة: {count}",
+  "@newBestsCount": {
+    "description": "Week review on Home: new personal bests this week. Labelled so the number needs no agreement.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "averageProteinGramsG": "متوسط البروتين: {grams} جم",
+  "@averageProteinGramsG": {
+    "description": "Week review on Home: her average protein on the days she logged this week.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "78"
+      }
+    }
+  },
+  "welcomeBack": "أهلًا بيكي تاني",
+  "daysPluralOneYourLastSessionWas": "{days, plural, one{آخر تمرين ليكي كان من يوم. تمرين قصير النهارده؟} two{آخر تمرين ليكي كان من يومين. تمرين قصير النهارده؟} few{آخر تمرين ليكي كان من {days} أيام. تمرين قصير النهارده؟} many{آخر تمرين ليكي كان من {days} يوم. تمرين قصير النهارده؟} other{آخر تمرين ليكي كان من {days} يوم. تمرين قصير النهارده؟}}",
+  "@daysPluralOneYourLastSessionWas": {
+    "description": "Home welcome-back card. A plural message because Arabic says من يوم, من يومين, من 7 أيام and من 11 يوم.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "9"
+      }
+    }
+  },
+  "proteinIdeas": "أفكار للبروتين",
+  "underYourTargetOnLowdaysOfYour": "البروتين كان أقل من هدفك في {lowDays} من آخر 5 أيام سجّلتيهم. من الأكلات اللي بتاكليها: {food}، والحصة فيها {grams} جم بروتين.",
+  "@underYourTargetOnLowdaysOfYour": {
+    "description": "Home protein idea: how many of her last five logged days were under target, and a food she already eats with its protein.",
+    "placeholders": {
+      "lowDays": {
+        "type": "String",
+        "example": "3"
+      },
+      "food": {
+        "type": "String",
+        "example": "Ful medames"
+      },
+      "grams": {
+        "type": "String",
+        "example": "14"
+      }
+    }
+  },
+  "howDidThisWeekFeel": "الأسبوع ده كان عامل إزاي؟",
+  "didThePlanFitYourTime": "الخطة كانت مناسبة لوقتك؟",
+  "tooMuch": "كتير",
+  "tooLittle": "قليل",
+  "nextWeeksFocus": "تركيزك الأسبوع الجاي",
+  "feelGood": "إحساس أحسن",
+  "steadyLoss": "نزول تدريجي",
+  "hereIsWhatWeSuggestNothingChanges": "ده اللي بنقترحه. مفيش حاجة بتتغير غير لما تدوسي.",
+  "daysAWeekDays": "أيام التمرين في الأسبوع: {days}",
+  "@daysAWeekDays": {
+    "description": "Week review suggestion: a new number of training days.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "sessionLengthMinutesMin": "مدة التمرين: {minutes} دقيقة",
+  "@sessionLengthMinutesMin": {
+    "description": "Week review suggestion: a new session length.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "focusGoal": "التركيز: {goal}",
+  "@focusGoal": {
+    "description": "Week review suggestion: a new goal, named as the goal screen names it.",
+    "placeholders": {
+      "goal": {
+        "type": "String",
+        "example": "Get stronger"
+      }
+    }
+  },
+  "useThis": "استخدمي ده",
+  "keepMyPlan": "خلّي خطتي زي ما هي",
+  "followUpsOnHome": "المتابعة في الرئيسية",
+  "howYouFeelAfterASessionYour": "إحساسك بعد التمرين، ومراجعة أسبوعك وأفكار. بتفضل على موبايلك بس.",
+  "currentOfTotal": "{current} من {total}",
+  "@currentOfTotal": {
+    "description": "Progress hint above each of the three week review questions.",
+    "placeholders": {
+      "current": {
+        "type": "String",
+        "example": "1"
+      },
+      "total": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "goodWeek": "أسبوع حلو",
+  "okayWeek": "أسبوع عادي",
+  "hardWeek": "أسبوع صعب",
+  "goToTrain": "روحي للتمرين",
+  "yourPlanStaysAsItIsSee": "خطتك زي ما هي. نشوفك الأسبوع الجاي."
 }

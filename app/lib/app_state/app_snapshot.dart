@@ -88,7 +88,9 @@ import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/train_repository.dart';
 import '../features/train/domain/training_reminders.dart';
 import 'chosen_programme.dart';
+import '../features/followup/domain/follow_up_plan.dart';
 import 'first_gym_guide_state.dart';
+import 'follow_up_state.dart';
 import '../routing/app_router.dart';
 import 'coach_invite_state.dart';
 import 'coach_profile_state.dart';
@@ -152,6 +154,7 @@ abstract final class AppSnapshot {
     'awards': _captureAwards(),
     'trainingStreak': _captureTrainingStreak(),
     'chosenProgramme': ?_captureChosenProgramme(),
+    'followUps': ?_captureFollowUps(),
     'customWorkouts': ?_captureCustomWorkouts(),
     'guest': ?_captureGuest(),
   };
@@ -225,6 +228,7 @@ abstract final class AppSnapshot {
     'awards': _readAwards,
     'trainingStreak': _readTrainingStreak,
     'chosenProgramme': _readChosenProgramme,
+    'followUps': _readFollowUps,
     'customWorkouts': _readCustomWorkouts,
     'guest': _readGuest,
     // After `train`: it points at a session that section restores.
@@ -2283,6 +2287,75 @@ void Function()? _readChosenProgramme(Object? raw) {
   final family = section == null ? null : _str(section['family']);
   if (family == null || family.isEmpty) return null;
   return () => ChosenProgramme.family = family;
+}
+
+// ------------------------------------------------------------- followUps ---
+
+// What she answered on the follow-ups and how she set them. Phone only: this
+// section is in the snapshot and in no cloud document.
+Map<String, Object?>? _captureFollowUps() {
+  final state = FollowUpState.instance;
+  if (!state.touched) return null;
+  return <String, Object?>{
+    'on': state.enabled,
+    'muted': [for (final kind in state.muted) kind.name],
+    'notBefore': {
+      for (final entry in state.notBefore.entries) entry.key.name: entry.value,
+    },
+    'feels': {
+      for (final entry in state.feels.entries) entry.key: entry.value.name,
+    },
+    'reviews': {
+      for (final entry in state.weekReviews.entries)
+        entry.key: <String, Object?>{
+          'felt': entry.value.felt.name,
+          'fit': entry.value.fit.name,
+          'focus': entry.value.focus.name,
+        },
+    },
+  };
+}
+
+void Function()? _readFollowUps(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  bool isDay(String? value) =>
+      value != null && RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value);
+  final muted = <FollowUpKind>{
+    for (final name in _list(section['muted']) ?? const <Object?>[])
+      ?_pick(FollowUpKind.values, name),
+  };
+  final notBefore = <FollowUpKind, String>{
+    for (final entry
+        in (_map(section['notBefore']) ?? const <String, Object?>{}).entries)
+      if (_pick(FollowUpKind.values, entry.key) case final kind?
+          when isDay(_str(entry.value)))
+        kind: entry.value as String,
+  };
+  final feels = <String, Feel>{};
+  for (final entry
+      in (_map(section['feels']) ?? const <String, Object?>{}).entries) {
+    final feel = _pick(Feel.values, entry.value);
+    if (isDay(entry.key) && feel != null) feels[entry.key] = feel;
+  }
+  final reviews = <String, WeekReviewAnswer>{
+    for (final entry
+        in (_map(section['reviews']) ?? const <String, Object?>{}).entries)
+      if (isDay(entry.key) && _map(entry.value) != null)
+        if (_pick(WeekFelt.values, _map(entry.value)!['felt']) case final felt?)
+          if (_pick(PlanFit.values, _map(entry.value)!['fit']) case final fit?)
+            if (_pick(WeekFocus.values, _map(entry.value)!['focus'])
+                case final focus?)
+              entry.key: WeekReviewAnswer(felt: felt, fit: fit, focus: focus),
+  };
+  final enabled = _bool(section['on']) ?? true;
+  return () => FollowUpState.instance.restore(
+    enabled: enabled,
+    muted: muted,
+    notBefore: notBefore,
+    feels: feels,
+    weekReviews: reviews,
+  );
 }
 
 // --------------------------------------------------------- customWorkouts ---

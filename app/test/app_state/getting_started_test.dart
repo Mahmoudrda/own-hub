@@ -21,6 +21,7 @@ import 'package:own_hub/features/signup/domain/verification.dart';
 import 'package:own_hub/features/signup/presentation/role_view.dart';
 import 'package:own_hub/features/train/domain/getting_started_tips.dart';
 import 'package:own_hub/features/train/domain/notification_plan.dart';
+import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/domain/training_reminders.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -153,6 +154,37 @@ void main() {
       expect(facts.loggedAPhotoMeal, isTrue);
       expect(facts.loggedASession, isTrue);
       expect(facts.settles(GettingStartedTip.firstGym), isFalse);
+    });
+
+    test('an abandoned session does not settle the first workout', () async {
+      final repo = AppRouter.trainRepository;
+      final session = await repo.startSession(
+        WorkoutDay(
+          id: '2026-10-14',
+          title: 't',
+          summary: 's',
+          constraints: 'c',
+          moves: const [],
+        ),
+      );
+      await repo.finishSession(
+        sessionId: session.id,
+        durationSec: 5,
+        reason: EndedReason.abandoned,
+      );
+      expect(GettingStarted.facts().loggedASession, isFalse);
+
+      final done = await repo.startSession(
+        WorkoutDay(
+          id: '2026-10-15',
+          title: 't',
+          summary: 's',
+          constraints: 'c',
+          moves: const [],
+        ),
+      );
+      await repo.finishSession(sessionId: done.id, durationSec: 600);
+      expect(GettingStarted.facts().loggedASession, isTrue);
     });
 
     test('home only, said out loud, or the guide seen settles the gym tip', () {
@@ -293,7 +325,11 @@ void main() {
       await NotificationSync.reapply(scheduler, text, now: _landed);
       expect(scheduler.tips, hasLength(kNudgesUnanswered));
       expect(scheduler.tips.first.at, _day(1, 18));
-      expect(ReminderState.instance.tips.due, hasLength(kNudgesUnanswered));
+      expect(
+        ReminderState.instance.tips.due,
+        hasLength(GettingStartedTip.values.length),
+      );
+      expect(ReminderState.instance.tips.done, isEmpty);
     });
 
     test('a phone that refused them remembers nothing', () async {

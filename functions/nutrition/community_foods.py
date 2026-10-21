@@ -203,7 +203,8 @@ def forget(db, marker: str) -> None:
 
 def _drop_if_orphaned(candidate) -> None:
     """A pending candidate nobody else confirmed still holds what she typed, so
-    it goes with her. Approved and rejected ones keep only the decision."""
+    it goes with her. Approved and rejected ones keep their full row (names,
+    items with grams, figures and the confirmation count) with no link to her."""
     current = candidate.get().to_dict() or {}
     if current.get("status") != PENDING:
         return

@@ -125,12 +125,17 @@ List<AuthoredSession> programmeSessionsFor(
 ];
 
 /// Sessions she has finished this week that count towards her programme: the
-/// ones she trained or recalled, never a walk or a class.
+/// ones she trained or recalled, never a walk or a class, and never one that
+/// ended with nothing logged.
 int sessionsDoneThisWeek(Iterable<TrainSession> history, {DateTime? now}) {
   final week = WeekKey.current(now ?? AppClock.now());
   var done = 0;
   for (final s in history) {
-    if (!s.completed || s.source == SessionSource.unplanned) continue;
+    if (!s.completed ||
+        s.source == SessionSource.unplanned ||
+        s.endedReason == EndedReason.abandoned) {
+      continue;
+    }
     final day = DateTime.tryParse(s.dateKey);
     if (day != null && WeekKey.of(day) == week) done++;
   }

@@ -209,9 +209,7 @@ Future<void> _openTour(WidgetTester t, int stop) async {
   // The app now opens on Home as a guest; the welcome screen is still where
   // the tour is offered, so the door under the tour is put back.
   final navigator = t.state<NavigatorState>(find.byType(Navigator).first);
-  unawaited(
-    navigator.pushNamedAndRemoveUntil(_name('C01'), (_) => false),
-  );
+  unawaited(navigator.pushNamedAndRemoveUntil(_name('C01'), (_) => false));
   await _settle(t);
   navigator.pushNamed(_name('C04'));
   await _settle(t);

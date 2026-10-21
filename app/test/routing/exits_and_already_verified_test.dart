@@ -39,19 +39,21 @@ void main() {
           signedIn: signedIn,
         );
 
-    test('signed in and not verified: the check, since Home is open to guests',
-        () {
-      expect(door(signedIn: true), appRoutes['C09b']!.name);
-      expect(
-        AppRouter.frontDoorFor(
-          accountRequired: true,
-          verified: false,
-          signedIn: true,
-          waitingOnAReviewer: true,
-        ),
-        appRoutes['C14']!.name,
-      );
-    });
+    test(
+      'signed in and not verified: the check, since Home is open to guests',
+      () {
+        expect(door(signedIn: true), appRoutes['C09b']!.name);
+        expect(
+          AppRouter.frontDoorFor(
+            accountRequired: true,
+            verified: false,
+            signedIn: true,
+            waitingOnAReviewer: true,
+          ),
+          appRoutes['C14']!.name,
+        );
+      },
+    );
 
     test('nobody signed in: Home as a guest', () {
       expect(door(signedIn: false), appRoutes['T01']!.name);

@@ -11627,4 +11627,166 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get openEventLink => 'Open event link';
+
+  @override
+  String get nothingLoggedSoThisOneIsNot =>
+      'Nothing logged, so this one is not counted.';
+
+  @override
+  String get dontShowThisKindAgain => 'Don\'t show this kind again';
+
+  @override
+  String get onlyMovesScreenedForYouAndStop =>
+      'Only moves screened for you, and stop if anything feels off.';
+
+  @override
+  String get todayCanBeAGentleDay => 'Today can be a gentle day.';
+
+  @override
+  String get yourLastSession => 'Your last session';
+
+  @override
+  String movesMovesSetsSets(String moves, String sets) {
+    return 'Moves: $moves · Sets: $sets';
+  }
+
+  @override
+  String upToWeightOnMove(String weight, String move) {
+    return 'Up to $weight on $move';
+  }
+
+  @override
+  String get howDoYouFeelToday => 'How do you feel today?';
+
+  @override
+  String get fresh => 'Fresh';
+
+  @override
+  String get aBitSore => 'A bit sore';
+
+  @override
+  String get verySore => 'Very sore';
+
+  @override
+  String get thanksForTellingUs => 'Thanks for telling us.';
+
+  @override
+  String get nextTimeTheSameWeightsBuildUp =>
+      'Next time, the same weights. Build up again when you feel fresh.';
+
+  @override
+  String get aFewQuestionsAboutYourWeek => 'A few questions about your week.';
+
+  @override
+  String get n3QuickQuestions => '3 quick questions';
+
+  @override
+  String newBestsCount(String count) {
+    return 'New bests: $count';
+  }
+
+  @override
+  String averageProteinGramsG(String grams) {
+    return 'Average protein: $grams g';
+  }
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String daysPluralOneYourLastSessionWas(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Your last session was $days days ago. A short one today?',
+      one: 'Your last session was 1 day ago. A short one today?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get proteinIdeas => 'Protein ideas';
+
+  @override
+  String underYourTargetOnLowdaysOfYour(
+    String lowDays,
+    String food,
+    String grams,
+  ) {
+    return 'Under your target on $lowDays of your last 5 logged days. $food is one you already have, $grams g of protein.';
+  }
+
+  @override
+  String get howDidThisWeekFeel => 'How did this week feel?';
+
+  @override
+  String get didThePlanFitYourTime => 'Did the plan fit your time?';
+
+  @override
+  String get tooMuch => 'Too much';
+
+  @override
+  String get tooLittle => 'Too little';
+
+  @override
+  String get nextWeeksFocus => 'Next week\'s focus';
+
+  @override
+  String get feelGood => 'Feel good';
+
+  @override
+  String get steadyLoss => 'Steady loss';
+
+  @override
+  String get hereIsWhatWeSuggestNothingChanges =>
+      'Here is what we suggest. Nothing changes unless you tap.';
+
+  @override
+  String daysAWeekDays(String days) {
+    return 'Days a week: $days';
+  }
+
+  @override
+  String sessionLengthMinutesMin(String minutes) {
+    return 'Session length: $minutes min';
+  }
+
+  @override
+  String focusGoal(String goal) {
+    return 'Focus: $goal';
+  }
+
+  @override
+  String get useThis => 'Use this';
+
+  @override
+  String get keepMyPlan => 'Keep my plan';
+
+  @override
+  String get followUpsOnHome => 'Follow-ups on Home';
+
+  @override
+  String get howYouFeelAfterASessionYour =>
+      'How you feel after a session, your week review and ideas. Kept on this phone.';
+
+  @override
+  String currentOfTotal(String current, String total) {
+    return '$current of $total';
+  }
+
+  @override
+  String get goodWeek => 'Good week';
+
+  @override
+  String get okayWeek => 'Okay week';
+
+  @override
+  String get hardWeek => 'Hard week';
+
+  @override
+  String get goToTrain => 'Go to Train';
+
+  @override
+  String get yourPlanStaysAsItIsSee =>
+      'Your plan stays as it is. See you next week.';
 }

@@ -485,6 +485,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         the consent, and our server&rsquo;s security rules refuse the copy
         without it. If you turn backup off, we delete the copy on our servers
         straight away. The copy on your phone stays.</p>
+        <p>How you say you feel after a session and your answers on the
+        Friday week review stay on this phone. They are never part of the
+        backup, even when health backup is on, they are never sent for
+        statistics, and <b>Delete everything</b> erases them.</p>
         <p><b>Your cycle and health information is never used for advertising
         or marketing, never sold, never sent to any analytics service, and
         never used to train AI.</b></p>
@@ -684,7 +688,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li><b>What is sent.</b> Only when the switch is on and you tap
           &ldquo;Log this meal&rdquo;: the name of the dish or dishes, what is in
           it (the names of the foods and their weights) and the energy, protein,
-          carbohydrate, fat and fibre figures. It goes to a list on our server
+          carbohydrate and fat figures. It goes to a list on our server
           that only the Own Hub team can read. It never includes your photo or
           your name.</li>
           <li><b>How we count you once.</b> To avoid counting your confirmation
@@ -827,7 +831,13 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             ("The repeat answer for a meal photo (a fingerprint of the photo and the foods and weights found; no photo, nothing that identifies you)",
              "30 days, then deleted automatically (section 3.12)"),
             ("A dish you chose to share, while it waits for review (dish names, what is in it, figures; a keyed marker instead of your identity)",
-             "Until the team decides. The marker is deleted with your account, and a dish only you had confirmed is deleted with it (section 3.13)."),
+             "While it waits. When the team decides, the dish is not deleted: see the next two rows. The marker is deleted with your account, and a dish still waiting that only you had confirmed is deleted with it (section 3.13)."),
+            ("A dish the team declined (dish names, what is in it with weights, figures; a keyed marker instead of your identity)",
+             "Kept on our server, where only the Own Hub team can read it, and no deletion period is set. When you delete your account, the marker is deleted; the dish itself stays, because nothing in it identifies you (section 3.13)."),
+            ("The review record of a dish the team approved (dish names, what is in it with weights, figures; a keyed marker instead of your identity)",
+             "Kept on our server, where only the Own Hub team can read it, and no deletion period is set. It still holds what is in the dish; the published entry below does not. When you delete your account, the marker is deleted; the record itself stays (section 3.13)."),
+            ("A count of the dishes you shared today (kept on your verification record)",
+             "Replaced the next time you share or scan on a new UTC day, and deleted with your account (section 3.13)"),
             ("A dish the team approved (names, category, allergens, figures; no link to you)",
              "Kept, and shown to verified members. Not withdrawn when you turn sharing off or delete your account, because it carries no link to you (section 3.13)."),
             ("Your seat at an event (account identifier, time reserved, status)",
@@ -994,7 +1004,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           Section 3.13 is new: an optional switch, off until you turn it on,
           that shares a dish without your name. Section 3.14 is new: event
           seats. Statements that your meals are seen by no one now name the
-          dish-sharing exception.</li>
+          dish-sharing exception. A correction the same day: section 3.13 no
+          longer lists fibre, which is not sent, and section 6 now says that a
+          dish the team has decided on is kept on our server, with a keyed
+          marker instead of your identity (deleted with your account) and no
+          deletion period for the dish, and that a count of the dishes you
+          shared is replaced the next time you share or scan on a new UTC day.
+          Section 3.6 now also says that how you feel after a session and your
+          week review answers stay on your phone only.</li>
           <li><b>17 October 2026, meal photos:</b> section 3.12. An optional
           feature with its own agreement, asked in the app before the first
           meal photo. Nothing changes for you unless you use it.</li>

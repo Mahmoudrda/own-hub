@@ -1,6 +1,6 @@
-// The adapter-side pieces of WP10a that run without a phone: the time-zone
-// follower, the sync between her state and the scheduler, tap routing, token
-// refresh, and the snapshot.
+// The adapter-side pieces of the notification engine that run without a
+// phone: the time-zone follower, the sync between her state and the
+// scheduler, tap routing, token refresh, and the snapshot.
 
 import 'dart:async';
 import 'dart:convert';
@@ -266,7 +266,7 @@ void main() {
       },
     );
 
-    test('a tip the plan left out is done, one it moved is still due', () {
+    test('a tip pushed past the end is done, one it moved is still due', () {
       final anchor = DateTime(2026, 10, 1, 10);
       final series = TipSeries(
         anchorAt: anchor,
@@ -276,20 +276,93 @@ void main() {
         },
         done: {GettingStartedTip.firstWorkout},
       );
-      final moved = NotificationSync.tipsApplied(series, [
-        PlannedNotification(
-          id: GettingStartedTip.videos.id,
-          kind: PlanKind.tip,
-          at: DateTime(2026, 10, 5, 18),
-          variant: GettingStartedTip.videos.index,
-        ),
-      ]);
+      final moved = NotificationSync.tipsApplied(
+        series,
+        [
+          PlannedNotification(
+            id: GettingStartedTip.videos.id,
+            kind: PlanKind.tip,
+            at: DateTime(2026, 10, 5, 18),
+            variant: GettingStartedTip.videos.index,
+          ),
+        ],
+        leftOut: [
+          PlannedNotification(
+            id: GettingStartedTip.mealScan.id,
+            kind: PlanKind.tip,
+            at: DateTime(2026, 10, 4, 18),
+            variant: GettingStartedTip.mealScan.index,
+          ),
+        ],
+      );
       expect(moved.due.keys, {GettingStartedTip.videos});
       expect(moved.due[GettingStartedTip.videos], DateTime(2026, 10, 5, 18));
       expect(moved.done, {
         GettingStartedTip.firstWorkout,
         GettingStartedTip.mealScan,
       });
+    });
+
+    test('a tip cut by the 3-note cap stays due, not done', () {
+      final anchor = DateTime(2026, 10, 1, 10);
+      final series = TipSeries(
+        anchorAt: anchor,
+        due: {
+          GettingStartedTip.videos: DateTime(2026, 10, 3, 18),
+          GettingStartedTip.mealScan: DateTime(2026, 10, 4, 18),
+        },
+        done: {GettingStartedTip.firstWorkout},
+      );
+      final kept = NotificationSync.tipsApplied(series, [
+        PlannedNotification(
+          id: GettingStartedTip.videos.id,
+          kind: PlanKind.tip,
+          at: DateTime(2026, 10, 3, 18),
+          variant: GettingStartedTip.videos.index,
+        ),
+      ]);
+      expect(kept.due[GettingStartedTip.mealScan], DateTime(2026, 10, 4, 18));
+      expect(kept.due[GettingStartedTip.videos], DateTime(2026, 10, 3, 18));
+      expect(kept.done, {GettingStartedTip.firstWorkout});
+    });
+
+    test('on day one the cap keeps three of seven tips and none go done', () {
+      final anchor = DateTime(2026, 10, 1, 10);
+      final tips = [
+        for (final tip in GettingStartedTip.values)
+          PlannedNotification(
+            id: tip.id,
+            kind: PlanKind.tip,
+            at: DateTime(anchor.year, anchor.month, anchor.day + tip.day, 18),
+            variant: tip.index,
+          ),
+      ];
+      final leftOut = <PlannedNotification>[];
+      final plan = NotificationPlan.build(
+        now: anchor,
+        permitted: true,
+        lastActiveAt: anchor,
+        prefs: const NotificationPrefs(nudges: false),
+        tips: tips,
+        tipsEnd: tipSeriesEnd(anchor),
+        tipsLeftOut: leftOut,
+      );
+      final planned = plan.where((n) => n.kind == PlanKind.tip).toList();
+      expect(planned.length, kNudgesUnanswered);
+      expect(leftOut, isEmpty);
+
+      final series = NotificationSync.tipsApplied(
+        TipSeries(
+          anchorAt: anchor,
+          due: {
+            for (final tip in GettingStartedTip.values) tip: tips[tip.index].at,
+          },
+        ),
+        plan,
+        leftOut: leftOut,
+      );
+      expect(series.done, isEmpty);
+      expect(series.due.keys.toSet(), GettingStartedTip.values.toSet());
     });
 
     test('opening the app twice in a day is not news; a new day is', () {

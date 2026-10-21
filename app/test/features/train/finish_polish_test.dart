@@ -1,4 +1,4 @@
-// WP9 design items on R10: the finish wipe and the count-in.
+// Design items on R10: the finish wipe and the count-in.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

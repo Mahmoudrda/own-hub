@@ -5588,5 +5588,157 @@
   "hadDinnerAddItToYourDay": "Had dinner? Add it to your day in a tap, or with one photo.",
   "somethingWarmTonightHaveALookAt": "Something warm tonight? Have a look at the dinner ideas in the recipes.",
   "eatingDinnerSoonLogItInOne": "Eating dinner soon? Log it in one tap and it joins your day.",
-  "openEventLink": "Open event link"
+  "openEventLink": "Open event link",
+  "nothingLoggedSoThisOneIsNot": "Nothing logged, so this one is not counted.",
+  "dontShowThisKindAgain": "Don't show this kind again",
+  "onlyMovesScreenedForYouAndStop": "Only moves screened for you, and stop if anything feels off.",
+  "todayCanBeAGentleDay": "Today can be a gentle day.",
+  "yourLastSession": "Your last session",
+  "movesMovesSetsSets": "Moves: {moves} · Sets: {sets}",
+  "@movesMovesSetsSets": {
+    "description": "Home follow-up after a session: what she logged, with a label before each figure so no noun has to agree with its number.",
+    "placeholders": {
+      "moves": {
+        "type": "String",
+        "example": "4"
+      },
+      "sets": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "upToWeightOnMove": "Up to {weight} on {move}",
+  "@upToWeightOnMove": {
+    "description": "Home follow-up: her heaviest weight in the last session. The move name stays English in both languages.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "12.5 kg"
+      },
+      "move": {
+        "type": "String",
+        "example": "Goblet squat"
+      }
+    }
+  },
+  "howDoYouFeelToday": "How do you feel today?",
+  "fresh": "Fresh",
+  "aBitSore": "A bit sore",
+  "verySore": "Very sore",
+  "thanksForTellingUs": "Thanks for telling us.",
+  "nextTimeTheSameWeightsBuildUp": "Next time, the same weights. Build up again when you feel fresh.",
+  "aFewQuestionsAboutYourWeek": "A few questions about your week.",
+  "n3QuickQuestions": "3 quick questions",
+  "newBestsCount": "New bests: {count}",
+  "@newBestsCount": {
+    "description": "Week review on Home: new personal bests this week. Labelled so the number needs no agreement.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "averageProteinGramsG": "Average protein: {grams} g",
+  "@averageProteinGramsG": {
+    "description": "Week review on Home: her average protein on the days she logged this week.",
+    "placeholders": {
+      "grams": {
+        "type": "String",
+        "example": "78"
+      }
+    }
+  },
+  "welcomeBack": "Welcome back",
+  "daysPluralOneYourLastSessionWas": "{days, plural, one{Your last session was 1 day ago. A short one today?} other{Your last session was {days} days ago. A short one today?}}",
+  "@daysPluralOneYourLastSessionWas": {
+    "description": "Home welcome-back card. A plural message because Arabic says من يوم, من يومين, من 7 أيام and من 11 يوم.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "9"
+      }
+    }
+  },
+  "proteinIdeas": "Protein ideas",
+  "underYourTargetOnLowdaysOfYour": "Under your target on {lowDays} of your last 5 logged days. {food} is one you already have, {grams} g of protein.",
+  "@underYourTargetOnLowdaysOfYour": {
+    "description": "Home protein idea: how many of her last five logged days were under target, and a food she already eats with its protein.",
+    "placeholders": {
+      "lowDays": {
+        "type": "String",
+        "example": "3"
+      },
+      "food": {
+        "type": "String",
+        "example": "Ful medames"
+      },
+      "grams": {
+        "type": "String",
+        "example": "14"
+      }
+    }
+  },
+  "howDidThisWeekFeel": "How did this week feel?",
+  "didThePlanFitYourTime": "Did the plan fit your time?",
+  "tooMuch": "Too much",
+  "tooLittle": "Too little",
+  "nextWeeksFocus": "Next week's focus",
+  "feelGood": "Feel good",
+  "steadyLoss": "Steady loss",
+  "hereIsWhatWeSuggestNothingChanges": "Here is what we suggest. Nothing changes unless you tap.",
+  "daysAWeekDays": "Days a week: {days}",
+  "@daysAWeekDays": {
+    "description": "Week review suggestion: a new number of training days.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "sessionLengthMinutesMin": "Session length: {minutes} min",
+  "@sessionLengthMinutesMin": {
+    "description": "Week review suggestion: a new session length.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "focusGoal": "Focus: {goal}",
+  "@focusGoal": {
+    "description": "Week review suggestion: a new goal, named as the goal screen names it.",
+    "placeholders": {
+      "goal": {
+        "type": "String",
+        "example": "Get stronger"
+      }
+    }
+  },
+  "useThis": "Use this",
+  "keepMyPlan": "Keep my plan",
+  "followUpsOnHome": "Follow-ups on Home",
+  "howYouFeelAfterASessionYour": "How you feel after a session, your week review and ideas. Kept on this phone.",
+  "currentOfTotal": "{current} of {total}",
+  "@currentOfTotal": {
+    "description": "Progress hint above each of the three week review questions.",
+    "placeholders": {
+      "current": {
+        "type": "String",
+        "example": "1"
+      },
+      "total": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "goodWeek": "Good week",
+  "okayWeek": "Okay week",
+  "hardWeek": "Hard week",
+  "goToTrain": "Go to Train",
+  "yourPlanStaysAsItIsSee": "Your plan stays as it is. See you next week."
 }

@@ -299,7 +299,10 @@ void main() {
 
       // The review gates continuation.
       expect(find.text('Check your photos'), findsOneWidget);
-      expect(find.byKey(const ValueKey('capture-review-photos')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('capture-review-photos')),
+        findsOneWidget,
+      );
       for (var i = 0; i < 4; i++) {
         expect(find.byKey(ValueKey('taken-$i')), findsOneWidget);
       }
@@ -396,7 +399,10 @@ void main() {
 
       await _tap(tester, 'Capture photo');
       expect(find.text('Check your photo'), findsOneWidget);
-      expect(find.byKey(const ValueKey('capture-review-photo')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('capture-review-photo')),
+        findsOneWidget,
+      );
       expect(find.text('Retake'), findsOneWidget);
       expect(captured, 0);
 
@@ -594,9 +600,8 @@ void main() {
           theme: buildTheme(const Locale('ar')),
           home: Builder(
             builder: (context) => MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: const TextScaler.linear(1.6)),
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: const TextScaler.linear(1.6)),
               child: view,
             ),
           ),
@@ -654,43 +659,44 @@ void main() {
 
   group('leaving for a woman reviewer leaves nothing running', () {
     for (final screen in const ['C10', 'C10b', 'C11']) {
-      testWidgets('on $screen the camera is closed and the photos wiped first', (
-        tester,
-      ) async {
-        final service = _FakeService(steps: _challenge);
-        _FakeSession? session;
-        var closedFirst = false;
-        var wipedFirst = false;
-        void ask() {
-          final open = session!;
-          closedFirst = open.closed;
-          wipedFirst = open.discards == 1;
-        }
+      testWidgets(
+        'on $screen the camera is closed and the photos wiped first',
+        (tester) async {
+          final service = _FakeService(steps: _challenge);
+          _FakeSession? session;
+          var closedFirst = false;
+          var wipedFirst = false;
+          void ask() {
+            final open = session!;
+            closedFirst = open.closed;
+            wipedFirst = open.discards == 1;
+          }
 
-        await tester.pumpWidget(
-          _host(switch (screen) {
-            'C10' => IdCaptureView(captureService: service, onAskWoman: ask),
-            'C10b' => IdCaptureView(
-              captureService: service,
-              side: CaptureTarget.idBack,
-              onAskWoman: ask,
-            ),
-            _ => SelfieCaptureView(captureService: service, onAskWoman: ask),
-          }),
-        );
-        await tester.pumpAndSettle();
-        if (screen == 'C10b') await _tap(tester, 'Ready');
-        session = service.opened.single;
-        await _tap(tester, screen == 'C11' ? 'Take photo' : 'Capture photo');
+          await tester.pumpWidget(
+            _host(switch (screen) {
+              'C10' => IdCaptureView(captureService: service, onAskWoman: ask),
+              'C10b' => IdCaptureView(
+                captureService: service,
+                side: CaptureTarget.idBack,
+                onAskWoman: ask,
+              ),
+              _ => SelfieCaptureView(captureService: service, onAskWoman: ask),
+            }),
+          );
+          await tester.pumpAndSettle();
+          if (screen == 'C10b') await _tap(tester, 'Ready');
+          session = service.opened.single;
+          await _tap(tester, screen == 'C11' ? 'Take photo' : 'Capture photo');
 
-        await _tap(tester, 'Having trouble? Ask a woman to check you');
+          await _tap(tester, 'Having trouble? Ask a woman to check you');
 
-        expect(closedFirst, isTrue, reason: 'closed before the reviewer');
-        expect(wipedFirst, isTrue, reason: 'wiped before the reviewer');
-        // Nothing left to fire under the reviewer screen.
-        expect(find.text('Use this photo'), findsNothing);
-        expect(find.text('Use these photos'), findsNothing);
-      });
+          expect(closedFirst, isTrue, reason: 'closed before the reviewer');
+          expect(wipedFirst, isTrue, reason: 'wiped before the reviewer');
+          // Nothing left to fire under the reviewer screen.
+          expect(find.text('Use this photo'), findsNothing);
+          expect(find.text('Use these photos'), findsNothing);
+        },
+      );
     }
 
     testWidgets('back from the reviewer, the selfie starts clean at step 1', (
@@ -706,9 +712,9 @@ void main() {
           home: Builder(
             builder: (context) => SelfieCaptureView(
               captureService: service,
-              onAskWoman: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const SizedBox()),
-              ),
+              onAskWoman: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute<void>(builder: (_) => const SizedBox())),
             ),
           ),
         ),
@@ -729,37 +735,38 @@ void main() {
   });
 
   group('the review gate counts the frames', () {
-    testWidgets('a set one frame short is never offered, and the steps restart', (
-      tester,
-    ) async {
-      final service = _FakeService(steps: _challenge, finishEarlyOnce: true);
-      var captured = 0;
-      await tester.pumpWidget(
-        _host(
-          SelfieCaptureView(
-            captureService: service,
-            onCaptured: () => captured++,
+    testWidgets(
+      'a set one frame short is never offered, and the steps restart',
+      (tester) async {
+        final service = _FakeService(steps: _challenge, finishEarlyOnce: true);
+        var captured = 0;
+        await tester.pumpWidget(
+          _host(
+            SelfieCaptureView(
+              captureService: service,
+              onCaptured: () => captured++,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      for (var i = 0; i < 3; i++) {
-        await _tap(tester, 'Take photo');
-      }
+        );
+        await tester.pumpAndSettle();
+        for (var i = 0; i < 3; i++) {
+          await _tap(tester, 'Take photo');
+        }
 
-      // Three frames for four steps: no review, a fresh run.
-      expect(find.text('Use these photos'), findsNothing);
-      expect(service.opened.first.discards, 1);
-      expect(service.opened, hasLength(2));
-      expect(find.text('Step 1 of 4'), findsOneWidget);
+        // Three frames for four steps: no review, a fresh run.
+        expect(find.text('Use these photos'), findsNothing);
+        expect(service.opened.first.discards, 1);
+        expect(service.opened, hasLength(2));
+        expect(find.text('Step 1 of 4'), findsOneWidget);
 
-      for (var i = 0; i < 4; i++) {
-        await _tap(tester, 'Take photo');
-      }
-      expect(_shutter(tester), isNotNull, reason: 'a whole set may be used');
-      await _tap(tester, 'Use these photos');
-      expect(captured, 1);
-    });
+        for (var i = 0; i < 4; i++) {
+          await _tap(tester, 'Take photo');
+        }
+        expect(_shutter(tester), isNotNull, reason: 'a whole set may be used');
+        await _tap(tester, 'Use these photos');
+        expect(captured, 1);
+      },
+    );
 
     testWidgets('each thumbnail is read out as Photo n of N', (tester) async {
       final handle = tester.ensureSemantics();
@@ -839,7 +846,11 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(first.closed, isTrue);
-        expect(service.opened, hasLength(1), reason: 'nothing opens while away');
+        expect(
+          service.opened,
+          hasLength(1),
+          reason: 'nothing opens while away',
+        );
         if (screen == 'C11') {
           expect(first.discards, 1, reason: 'an unfinished run is wiped');
         }
@@ -886,9 +897,8 @@ void main() {
     // service: a selfie tap dropped unless the frame was "sharp", and frames
     // left to a dwell clock. Read from the source, the idiom of
     // `product_rules_test.dart`, so putting either back fails here.
-    final src = File(
-      'lib/features/signup/data/camera_capture_service.dart',
-    ).readAsStringSync();
+    final src = File('lib/features/signup/data/camera_capture_service.dart')
+        .readAsStringSync();
     final session = src.substring(src.indexOf('class _LensSession'));
 
     test('capture() is not gated on sharpness or a face', () {

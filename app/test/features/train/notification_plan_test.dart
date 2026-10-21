@@ -1,4 +1,4 @@
-// The one place every local notification is decided (WP10a).
+// The one place every local notification is decided.
 //
 // 2026-10-14 is a Wednesday.
 

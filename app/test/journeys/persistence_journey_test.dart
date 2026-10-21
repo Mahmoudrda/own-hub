@@ -414,7 +414,7 @@ void main() {
       expect(recorder.writes, 1, reason: 'paused does not wait for the timer');
       expect(recorder.document, contains('the-one-she-just-finished'));
 
-      // A bump that changes nothing is not written again (WP3); a real change
+      // A bump that changes nothing is not written again; a real change
       // is.
       await _swipeAway(tester, 'AppLifecycleState.resumed');
       AppChanges.bump();

@@ -5,10 +5,10 @@
 /// reads a prescription for a figure and never writes one: the answer is a
 /// weight and a reason for R07 to show and for R08 to offer among its chips.
 ///
-/// She is never asked whether it hurt or was hard, so neither is assumed:
-/// pain and difficulty are not signals this app collects, and inventing them
-/// here would be a claim about her body. A break of three weeks or more is
-/// the one thing that is known.
+/// She may say how she feels the day after a session, and saying "very sore"
+/// twice running holds the load ([difficult]). Pain is still never asked, so
+/// it is never assumed: inventing it here would be a claim about her body. A
+/// break of three weeks or more is the other thing that is known.
 library;
 
 import '../../../domain/clock/app_clock.dart';
@@ -80,6 +80,7 @@ LoadAdvice? loadAdviceFor(
   PlannedMove? move, {
   String? exceptSessionId,
   bool coached = false,
+  bool difficult = false,
   DateTime? now,
 }) {
   if (move == null || !move.needsEquipment || move.sets.isEmpty) return null;
@@ -112,7 +113,7 @@ LoadAdvice? loadAdviceFor(
     targetSets: move.sets.length,
     targetReps: targetReps.reduce((a, b) => a < b ? a : b),
     availableWeightsKg: ladder,
-    difficult: false,
+    difficult: difficult,
     painReported: false,
     returningAfterBreak: away >= kBreakDays,
     coached: coached,

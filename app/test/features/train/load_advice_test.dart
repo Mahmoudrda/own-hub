@@ -83,6 +83,22 @@ void main() {
     expect(advice.startKg, 10);
   });
 
+  test(
+    'a hard stretch holds the weight even when every set was finished',
+    () async {
+      final repository = await _history([10, 10, 10], 10);
+      final advice = loadAdviceFor(
+        repository,
+        _move(),
+        difficult: true,
+        now: soon,
+      )!;
+      expect(advice.decision.action, 'hold');
+      expect(advice.startKg, 10);
+      expect(advice.optionsKg, [8, 10]);
+    },
+  );
+
   test('a history with no weight in it gives none', () async {
     final repository = await _history([10, 10, 10], null);
     expect(loadAdviceFor(repository, _move(), now: soon), isNull);

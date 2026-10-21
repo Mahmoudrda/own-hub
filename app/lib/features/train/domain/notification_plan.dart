@@ -331,8 +331,9 @@ abstract final class NotificationPlan {
   /// tip that would land on a day already taken by "Trained today?", a
   /// check-in, a day she opened the app or trained moves to the next free
   /// day at the same time. Moved past [tipsEnd] (the end of the series) it
-  /// is left out. The caller reads the tips that came back to know which ones
-  /// were really planned.
+  /// is left out and added to [tipsLeftOut] when given. A tip missing from the
+  /// result but not in [tipsLeftOut] was cut by the cap below and is still to
+  /// come.
   ///
   /// [shownTips] are the days tips already came due, so they count towards
   /// the caps with the check-ins and nudges that came and went meanwhile.
@@ -350,6 +351,7 @@ abstract final class NotificationPlan {
     List<PlannedNotification> tips = const <PlannedNotification>[],
     DateTime? tipsEnd,
     List<DateTime> shownTips = const <DateTime>[],
+    List<PlannedNotification>? tipsLeftOut,
   }) {
     if (!permitted) return const <PlannedNotification>[];
     final plan = <PlannedNotification>[];
@@ -493,7 +495,10 @@ abstract final class NotificationPlan {
     for (final tip in keptTips) {
       // A year of days is far past any series; the loop cannot run away.
       final at = place(tip.at, 400, end: tipsEnd);
-      if (at == null) continue;
+      if (at == null) {
+        tipsLeftOut?.add(tip);
+        continue;
+      }
       take(at);
       accepted.add(
         at == tip.at

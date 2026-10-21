@@ -1,4 +1,4 @@
-// Speed on a poor connection, the sign-up half (WP3): the reads after the SMS
+// Speed on a poor connection, the sign-up half: the reads after the SMS
 // code run side by side under one cap, the code screen says it is still
 // working, and the consent callables stop waiting at twenty seconds.
 

@@ -646,6 +646,16 @@ if (fs.existsSync(dictPath)) {
     "{day} {month} {year}": {"description": "A calendar date, e.g. 12 October 2026.", "placeholders": {"day": {"type": "String", "example": "12"}, "month": {"type": "String", "example": "October"}, "year": {"type": "String", "example": "2026"}}},
     "{minutes} min · your program": {"description": "Length of the session in her programme.", "placeholders": {"minutes": {"type": "String", "example": "15"}}},
     "Full-body strength, {minutes} min": {"description": "Planned session title with its length.", "placeholders": {"minutes": {"type": "String", "example": "15"}}},
+    "Moves: {moves} · Sets: {sets}": {"description": "Home follow-up after a session: what she logged, with a label before each figure so no noun has to agree with its number.", "placeholders": {"moves": {"type": "String", "example": "4"}, "sets": {"type": "String", "example": "11"}}},
+    "Up to {weight} on {move}": {"description": "Home follow-up: her heaviest weight in the last session. The move name stays English in both languages.", "placeholders": {"weight": {"type": "String", "example": "12.5 kg"}, "move": {"type": "String", "example": "Goblet squat"}}},
+    "New bests: {count}": {"description": "Week review on Home: new personal bests this week. Labelled so the number needs no agreement.", "placeholders": {"count": {"type": "String", "example": "2"}}},
+    "Average protein: {grams} g": {"description": "Week review on Home: her average protein on the days she logged this week.", "placeholders": {"grams": {"type": "String", "example": "78"}}},
+    "{days, plural, one{Your last session was 1 day ago. A short one today?} other{Your last session was {days} days ago. A short one today?}}": {"description": "Home welcome-back card. A plural message because Arabic says من يوم, من يومين, من 7 أيام and من 11 يوم.", "placeholders": {"days": {"type": "int", "example": "9"}}},
+    "Under your target on {lowDays} of your last 5 logged days. {food} is one you already have, {grams} g of protein.": {"description": "Home protein idea: how many of her last five logged days were under target, and a food she already eats with its protein.", "placeholders": {"lowDays": {"type": "String", "example": "3"}, "food": {"type": "String", "example": "Ful medames"}, "grams": {"type": "String", "example": "14"}}},
+    "Days a week: {days}": {"description": "Week review suggestion: a new number of training days.", "placeholders": {"days": {"type": "String", "example": "3"}}},
+    "Session length: {minutes} min": {"description": "Week review suggestion: a new session length.", "placeholders": {"minutes": {"type": "String", "example": "30"}}},
+    "Focus: {goal}": {"description": "Week review suggestion: a new goal, named as the goal screen names it.", "placeholders": {"goal": {"type": "String", "example": "Get stronger"}}},
+    "{current} of {total}": {"description": "Progress hint above each of the three week review questions.", "placeholders": {"current": {"type": "String", "example": "1"}, "total": {"type": "String", "example": "3"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

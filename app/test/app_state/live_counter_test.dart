@@ -15,7 +15,10 @@ TrainSession _s(String id) => TrainSession(
 
 void main() {
   test('the counter moves past every live id taken in from the cloud', () {
-    expect(liveCounterAbove([_s('live-3'), _s('live-12'), _s('recall-9')], 0), 12);
+    expect(
+      liveCounterAbove([_s('live-3'), _s('live-12'), _s('recall-9')], 0),
+      12,
+    );
   });
 
   test('a counter already ahead stays where it is', () {

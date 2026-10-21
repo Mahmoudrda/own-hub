@@ -76,12 +76,20 @@ class NotificationsView extends StatelessWidget {
     this.onOpenReminders,
     this.prefs,
     this.onPrefsChanged,
+    this.followUpsOn,
+    this.onFollowUpsChanged,
   });
 
   /// The switches under the reminders row, or null before the phone has
   /// agreed to show notifications: there is nothing to switch until then.
   final NotificationPrefs? prefs;
   final ValueChanged<NotificationPrefs>? onPrefsChanged;
+
+  /// Whether the follow-ups on Home are on, or null when this build has none.
+  /// They are in the app, not notifications, so this row does not wait for the
+  /// phone's permission.
+  final bool? followUpsOn;
+  final ValueChanged<bool>? onFollowUpsChanged;
 
   /// Whether her training reminders are set.
   final bool remindersOn;
@@ -190,6 +198,15 @@ class NotificationsView extends StatelessWidget {
             onChanged: (on) => onPrefsChanged?.call(prefs!.copyWith(tips: on)),
           ),
         ],
+        if (followUpsOn != null && onFollowUpsChanged != null)
+          _switchRow(
+            key: 'a01-follow-ups',
+            icon: Icons.chat_bubble_outline,
+            title: l10n.followUpsOnHome,
+            subtitle: l10n.howYouFeelAfterASessionYour,
+            value: followUpsOn!,
+            onChanged: onFollowUpsChanged!,
+          ),
         // The moving kitten and her streak, moved here from My profile.
         const ExtrasRows(),
         if (onOpenReminders == null && view.showsPermissionPrompt)

@@ -1,4 +1,4 @@
-// WP3: a change that leaves the document as it was writes nothing. A redraw
+// A change that leaves the document as it was writes nothing. A redraw
 // bump used to rewrite megabytes of history on a phone that is already slow.
 
 import 'package:flutter_test/flutter_test.dart';

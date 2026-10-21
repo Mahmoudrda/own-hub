@@ -51,6 +51,7 @@ abstract final class NotificationSync {
           )
         : (plan: const <PlannedNotification>[], series: state.tips);
     final anchor = tips.series.anchorAt;
+    final leftOut = <PlannedNotification>[];
     final plan = NotificationPlan.build(
       now: now,
       permitted: state.permitted,
@@ -66,30 +67,37 @@ abstract final class NotificationSync {
               for (final tip in tips.series.done)
                 DateTime(anchor.year, anchor.month, anchor.day + tip.day),
             ],
+      tipsLeftOut: leftOut,
     );
-    return (plan: plan, tips: tipsApplied(tips.series, plan, tipsOn: tipsOn));
+    return (
+      plan: plan,
+      tips: tipsApplied(tips.series, plan, tipsOn: tipsOn, leftOut: leftOut),
+    );
   }
 
   /// The series to remember once [plan] is on the phone: a tip is due where
   /// the plan really put it (a tip that gave way to another note moved to a
-  /// later day), and only a tip the plan had to leave out, pushed past the end
-  /// of the fortnight, is done. Never a tip merely dropped for a day.
+  /// later day), and only a tip in [leftOut], pushed past the end of the
+  /// fortnight, is done. A tip merely dropped for a day or cut by the cap on
+  /// unanswered notes stays due at its time, so it comes on a later open.
   @visibleForTesting
   static TipSeries tipsApplied(
     TipSeries series,
     List<PlannedNotification> plan, {
     bool tipsOn = true,
+    List<PlannedNotification> leftOut = const <PlannedNotification>[],
   }) {
     if (!tipsOn || series.anchorAt == null) return series;
+    final pastEnd = <GettingStartedTip>{
+      for (final n in leftOut) ?GettingStartedTip.of(n),
+    };
     final due = <GettingStartedTip, DateTime>{
+      for (final entry in series.due.entries)
+        if (!pastEnd.contains(entry.key)) entry.key: entry.value,
       for (final n in plan)
         if (GettingStartedTip.of(n) != null) GettingStartedTip.of(n)!: n.at,
     };
-    final done = <GettingStartedTip>{
-      ...series.done,
-      for (final tip in series.due.keys)
-        if (!due.containsKey(tip)) tip,
-    };
+    final done = <GettingStartedTip>{...series.done, ...pastEnd};
     return TipSeries(
       anchorAt: series.anchorAt,
       due: due,

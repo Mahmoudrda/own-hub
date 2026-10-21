@@ -20388,6 +20388,262 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Open event link'**
   String get openEventLink;
+
+  /// No description provided for @nothingLoggedSoThisOneIsNot.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing logged, so this one is not counted.'**
+  String get nothingLoggedSoThisOneIsNot;
+
+  /// No description provided for @dontShowThisKindAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t show this kind again'**
+  String get dontShowThisKindAgain;
+
+  /// No description provided for @onlyMovesScreenedForYouAndStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Only moves screened for you, and stop if anything feels off.'**
+  String get onlyMovesScreenedForYouAndStop;
+
+  /// No description provided for @todayCanBeAGentleDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Today can be a gentle day.'**
+  String get todayCanBeAGentleDay;
+
+  /// No description provided for @yourLastSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last session'**
+  String get yourLastSession;
+
+  /// Home follow-up after a session: what she logged, with a label before each figure so no noun has to agree with its number.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves: {moves} · Sets: {sets}'**
+  String movesMovesSetsSets(String moves, String sets);
+
+  /// Home follow-up: her heaviest weight in the last session. The move name stays English in both languages.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {weight} on {move}'**
+  String upToWeightOnMove(String weight, String move);
+
+  /// No description provided for @howDoYouFeelToday.
+  ///
+  /// In en, this message translates to:
+  /// **'How do you feel today?'**
+  String get howDoYouFeelToday;
+
+  /// No description provided for @fresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh'**
+  String get fresh;
+
+  /// No description provided for @aBitSore.
+  ///
+  /// In en, this message translates to:
+  /// **'A bit sore'**
+  String get aBitSore;
+
+  /// No description provided for @verySore.
+  ///
+  /// In en, this message translates to:
+  /// **'Very sore'**
+  String get verySore;
+
+  /// No description provided for @thanksForTellingUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for telling us.'**
+  String get thanksForTellingUs;
+
+  /// No description provided for @nextTimeTheSameWeightsBuildUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Next time, the same weights. Build up again when you feel fresh.'**
+  String get nextTimeTheSameWeightsBuildUp;
+
+  /// No description provided for @aFewQuestionsAboutYourWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'A few questions about your week.'**
+  String get aFewQuestionsAboutYourWeek;
+
+  /// No description provided for @n3QuickQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'3 quick questions'**
+  String get n3QuickQuestions;
+
+  /// Week review on Home: new personal bests this week. Labelled so the number needs no agreement.
+  ///
+  /// In en, this message translates to:
+  /// **'New bests: {count}'**
+  String newBestsCount(String count);
+
+  /// Week review on Home: her average protein on the days she logged this week.
+  ///
+  /// In en, this message translates to:
+  /// **'Average protein: {grams} g'**
+  String averageProteinGramsG(String grams);
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get welcomeBack;
+
+  /// Home welcome-back card. A plural message because Arabic says من يوم, من يومين, من 7 أيام and من 11 يوم.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{Your last session was 1 day ago. A short one today?} other{Your last session was {days} days ago. A short one today?}}'**
+  String daysPluralOneYourLastSessionWas(int days);
+
+  /// No description provided for @proteinIdeas.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein ideas'**
+  String get proteinIdeas;
+
+  /// Home protein idea: how many of her last five logged days were under target, and a food she already eats with its protein.
+  ///
+  /// In en, this message translates to:
+  /// **'Under your target on {lowDays} of your last 5 logged days. {food} is one you already have, {grams} g of protein.'**
+  String underYourTargetOnLowdaysOfYour(
+    String lowDays,
+    String food,
+    String grams,
+  );
+
+  /// No description provided for @howDidThisWeekFeel.
+  ///
+  /// In en, this message translates to:
+  /// **'How did this week feel?'**
+  String get howDidThisWeekFeel;
+
+  /// No description provided for @didThePlanFitYourTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Did the plan fit your time?'**
+  String get didThePlanFitYourTime;
+
+  /// No description provided for @tooMuch.
+  ///
+  /// In en, this message translates to:
+  /// **'Too much'**
+  String get tooMuch;
+
+  /// No description provided for @tooLittle.
+  ///
+  /// In en, this message translates to:
+  /// **'Too little'**
+  String get tooLittle;
+
+  /// No description provided for @nextWeeksFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Next week\'s focus'**
+  String get nextWeeksFocus;
+
+  /// No description provided for @feelGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Feel good'**
+  String get feelGood;
+
+  /// No description provided for @steadyLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Steady loss'**
+  String get steadyLoss;
+
+  /// No description provided for @hereIsWhatWeSuggestNothingChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Here is what we suggest. Nothing changes unless you tap.'**
+  String get hereIsWhatWeSuggestNothingChanges;
+
+  /// Week review suggestion: a new number of training days.
+  ///
+  /// In en, this message translates to:
+  /// **'Days a week: {days}'**
+  String daysAWeekDays(String days);
+
+  /// Week review suggestion: a new session length.
+  ///
+  /// In en, this message translates to:
+  /// **'Session length: {minutes} min'**
+  String sessionLengthMinutesMin(String minutes);
+
+  /// Week review suggestion: a new goal, named as the goal screen names it.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus: {goal}'**
+  String focusGoal(String goal);
+
+  /// No description provided for @useThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this'**
+  String get useThis;
+
+  /// No description provided for @keepMyPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep my plan'**
+  String get keepMyPlan;
+
+  /// No description provided for @followUpsOnHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow-ups on Home'**
+  String get followUpsOnHome;
+
+  /// No description provided for @howYouFeelAfterASessionYour.
+  ///
+  /// In en, this message translates to:
+  /// **'How you feel after a session, your week review and ideas. Kept on this phone.'**
+  String get howYouFeelAfterASessionYour;
+
+  /// Progress hint above each of the three week review questions.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total}'**
+  String currentOfTotal(String current, String total);
+
+  /// No description provided for @goodWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Good week'**
+  String get goodWeek;
+
+  /// No description provided for @okayWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Okay week'**
+  String get okayWeek;
+
+  /// No description provided for @hardWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard week'**
+  String get hardWeek;
+
+  /// No description provided for @goToTrain.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Train'**
+  String get goToTrain;
+
+  /// No description provided for @yourPlanStaysAsItIsSee.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan stays as it is. See you next week.'**
+  String get yourPlanStaysAsItIsSee;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

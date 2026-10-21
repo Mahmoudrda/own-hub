@@ -764,6 +764,7 @@ INGREDIENT_ALLERGENS = {
 DISH_ALLERGEN_EXTRAS = {
     "taameya": (("gluten", "bread or flour is added to the batter in many shops"),),
     "falafel": (("fava", "an Egyptian falafel is often fava, and mixes blend both"),
+                ("gluten", "bread or flour is added to the batter in many shops"),
                 ("sesame", "sesame is pressed into the patties")),
     "shawarma_chicken_sandwich": (("eggs", "the garlic sauce is usually mayonnaise-based"),
                                   ("milk", "the chicken is marinated in yoghurt")),

@@ -11611,4 +11611,168 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get openEventLink => 'افتحي رابط الفعالية';
+
+  @override
+  String get nothingLoggedSoThisOneIsNot =>
+      'ما سجلتيش حاجة، فالجلسة دي مش هتتحسب.';
+
+  @override
+  String get dontShowThisKindAgain => 'بلاش أشوف النوع ده تاني';
+
+  @override
+  String get onlyMovesScreenedForYouAndStop =>
+      'بنختار ليكي حركات مناسبة بس، وقفي لو حسّيتي بأي حاجة مش مظبوطة.';
+
+  @override
+  String get todayCanBeAGentleDay => 'النهارده ممكن يبقى يوم هادي.';
+
+  @override
+  String get yourLastSession => 'آخر تمرين ليكي';
+
+  @override
+  String movesMovesSetsSets(String moves, String sets) {
+    return 'الحركات: $moves · المجموعات: $sets';
+  }
+
+  @override
+  String upToWeightOnMove(String weight, String move) {
+    return 'لحد $weight في $move';
+  }
+
+  @override
+  String get howDoYouFeelToday => 'حاسّة بإيه النهارده؟';
+
+  @override
+  String get fresh => 'نشيطة';
+
+  @override
+  String get aBitSore => 'عضلاتي شادّة شوية';
+
+  @override
+  String get verySore => 'عضلاتي شادّة أوي';
+
+  @override
+  String get thanksForTellingUs => 'شكرًا إنك قلتيلنا.';
+
+  @override
+  String get nextTimeTheSameWeightsBuildUp =>
+      'المرة الجاية بنفس الأوزان. زوّدي تاني لما تحسّي إنك نشيطة.';
+
+  @override
+  String get aFewQuestionsAboutYourWeek => 'كام سؤال عن أسبوعك.';
+
+  @override
+  String get n3QuickQuestions => '3 أسئلة سريعة';
+
+  @override
+  String newBestsCount(String count) {
+    return 'أحسن أرقامك الجديدة: $count';
+  }
+
+  @override
+  String averageProteinGramsG(String grams) {
+    return 'متوسط البروتين: $grams جم';
+  }
+
+  @override
+  String get welcomeBack => 'أهلًا بيكي تاني';
+
+  @override
+  String daysPluralOneYourLastSessionWas(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'آخر تمرين ليكي كان من $days يوم. تمرين قصير النهارده؟',
+      many: 'آخر تمرين ليكي كان من $days يوم. تمرين قصير النهارده؟',
+      few: 'آخر تمرين ليكي كان من $days أيام. تمرين قصير النهارده؟',
+      two: 'آخر تمرين ليكي كان من يومين. تمرين قصير النهارده؟',
+      one: 'آخر تمرين ليكي كان من يوم. تمرين قصير النهارده؟',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get proteinIdeas => 'أفكار للبروتين';
+
+  @override
+  String underYourTargetOnLowdaysOfYour(
+    String lowDays,
+    String food,
+    String grams,
+  ) {
+    return 'البروتين كان أقل من هدفك في $lowDays من آخر 5 أيام سجّلتيهم. من الأكلات اللي بتاكليها: $food، والحصة فيها $grams جم بروتين.';
+  }
+
+  @override
+  String get howDidThisWeekFeel => 'الأسبوع ده كان عامل إزاي؟';
+
+  @override
+  String get didThePlanFitYourTime => 'الخطة كانت مناسبة لوقتك؟';
+
+  @override
+  String get tooMuch => 'كتير';
+
+  @override
+  String get tooLittle => 'قليل';
+
+  @override
+  String get nextWeeksFocus => 'تركيزك الأسبوع الجاي';
+
+  @override
+  String get feelGood => 'إحساس أحسن';
+
+  @override
+  String get steadyLoss => 'نزول تدريجي';
+
+  @override
+  String get hereIsWhatWeSuggestNothingChanges =>
+      'ده اللي بنقترحه. مفيش حاجة بتتغير غير لما تدوسي.';
+
+  @override
+  String daysAWeekDays(String days) {
+    return 'أيام التمرين في الأسبوع: $days';
+  }
+
+  @override
+  String sessionLengthMinutesMin(String minutes) {
+    return 'مدة التمرين: $minutes دقيقة';
+  }
+
+  @override
+  String focusGoal(String goal) {
+    return 'التركيز: $goal';
+  }
+
+  @override
+  String get useThis => 'استخدمي ده';
+
+  @override
+  String get keepMyPlan => 'خلّي خطتي زي ما هي';
+
+  @override
+  String get followUpsOnHome => 'المتابعة في الرئيسية';
+
+  @override
+  String get howYouFeelAfterASessionYour =>
+      'إحساسك بعد التمرين، ومراجعة أسبوعك وأفكار. بتفضل على موبايلك بس.';
+
+  @override
+  String currentOfTotal(String current, String total) {
+    return '$current من $total';
+  }
+
+  @override
+  String get goodWeek => 'أسبوع حلو';
+
+  @override
+  String get okayWeek => 'أسبوع عادي';
+
+  @override
+  String get hardWeek => 'أسبوع صعب';
+
+  @override
+  String get goToTrain => 'روحي للتمرين';
+
+  @override
+  String get yourPlanStaysAsItIsSee => 'خطتك زي ما هي. نشوفك الأسبوع الجاي.';
 }

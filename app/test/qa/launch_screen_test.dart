@@ -1,4 +1,4 @@
-// WP3: the window a phone shows before Flutter draws is the brand's, not a
+// The window a phone shows before Flutter draws is the brand's, not a
 // white flash, on both platforms.
 
 import 'dart:io';

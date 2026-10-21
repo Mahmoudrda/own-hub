@@ -48,6 +48,7 @@ import '../app_state/eat_state.dart';
 import '../app_state/meal_scan_state.dart';
 import '../app_state/events_state.dart';
 import '../app_state/exercise_library_state.dart';
+import '../app_state/follow_up_state.dart';
 import '../app_state/first_gym_guide_state.dart';
 import '../app_state/getting_started.dart';
 import '../app_state/workout_library_state.dart';
@@ -104,7 +105,7 @@ import '../features/eat/presentation/type_it_view.dart';
 import '../features/eat/presentation/week_plan_view.dart';
 import '../features/onboarding/domain/intake_repository.dart';
 import '../features/onboarding/domain/intake.dart'
-    show Intake, TrainingLevel, TrainingPlace;
+    show Intake, LifeStage, TrainingLevel, TrainingPlace;
 import '../features/onboarding/presentation/equipment_view.dart';
 import '../features/onboarding/presentation/goal_view.dart';
 import '../features/onboarding/presentation/her_answers.dart';
@@ -322,7 +323,13 @@ import '../features/community/presentation/saved_view.dart';
 import '../features/cycle/domain/cycle_repository.dart';
 import '../features/cycle/domain/meal_picks.dart';
 import '../features/cycle/domain/period_entry.dart';
+import '../features/cycle/domain/day_suggestion.dart' show GentlerOption;
+import '../features/cycle/domain/severe_symptom_gate.dart';
+import '../features/cycle/domain/symptom_suggestion_resolver.dart';
 import '../features/cycle/domain/today_check_in.dart';
+import '../features/eat/domain/meal_day_reader.dart';
+import '../features/followup/domain/follow_up_plan.dart';
+import '../features/followup/presentation/follow_up_card.dart';
 import '../features/cycle/presentation/check_in_view.dart';
 import '../features/cycle/presentation/cycle_calendar_view.dart';
 import '../features/cycle/presentation/cycle_dates_view.dart';
@@ -2377,6 +2384,7 @@ class AppRouter {
         tierTabs: herProgramme == null
             ? null
             : TierTabs(selected: ViewedTier.of(intakeRepository.read())),
+        followUp: _followUpCard(context),
         onOpenStreak: () => unawaited(openTrainingStreak(context)),
         challengeLine: challengeLineFor(
           context,
@@ -3695,6 +3703,10 @@ class AppRouter {
           ? ReminderState.instance.prefs
           : null,
       onPrefsChanged: (prefs) => unawaited(setNotificationPrefs(prefs)),
+      followUpsOn: featureFlags.isOn(Feature.followUps)
+          ? FollowUpState.instance.enabled
+          : null,
+      onFollowUpsChanged: FollowUpState.instance.setEnabled,
     ),
     'A02': (context) => ProfileView(
       dietaryRepository: dietaryRepository,
@@ -6660,14 +6672,21 @@ class AppRouter {
     final firstEver = todayRepository.day.isDayOne;
     final before = todayRepository.day.week;
     final plan = WorkoutSessionState.instance.day;
+    // A session with no set logged is closed uncredited by the session state;
+    // it is not tracked as finished and does not count as trained today.
+    final counted = WorkoutSessionState.instance.loggedSetCount > 0;
+    final done = WorkoutSessionState.instance.finish(
+      repository: trainRepository,
+      today: todayRepository,
+      progress: progressStore,
+      challengeNow: plan == null ? null : () => challengeFor(plan),
+    );
+    if (!counted) {
+      unawaited(done);
+      return;
+    }
     unawaited(
-      WorkoutSessionState.instance
-          .finish(
-            repository: trainRepository,
-            today: todayRepository,
-            progress: progressStore,
-            challengeNow: plan == null ? null : () => challengeFor(plan),
-          )
+      done
           .then((_) => _trackWorkoutFinished(firstEver, before))
           .then((_) => noteSessionLogged()),
     );
@@ -8530,6 +8549,12 @@ class AppRouter {
     trainRepository,
     move,
     exceptSessionId: WorkoutSessionState.instance.sessionId,
+    // "Very sore" twice running holds the weights where they are.
+    difficult:
+        featureFlags.isOn(Feature.followUps) &&
+        FollowUpState.instance.enabled &&
+        !FollowUpState.instance.muted.contains(FollowUpKind.afterSession) &&
+        FollowUpPlan.holdsLoad(FollowUpState.instance.feels),
   );
 
   static String _kgLabel(AppL10n l10n, double kg) =>
@@ -8649,6 +8674,193 @@ class AppRouter {
       session,
       now: AppClock.now(),
     );
+  }
+
+  // ------------------------------------------------------------ follow-ups --
+
+  /// The follow-up for Home, or the thanks for the answer she has just given,
+  /// or null. Off with [Feature.followUps].
+  static Widget? _followUpCard(BuildContext context) {
+    if (!featureFlags.isOn(Feature.followUps)) return null;
+    if (!FollowUpState.instance.enabled) return null;
+    final l10n = AppL10n.of(context);
+    final now = AppClock.now();
+    var facts = _followUpFacts(l10n, now);
+    var next = FollowUpPlan.next(facts);
+    // The food pick reads her usual plates, so it is only worked out when no
+    // other follow-up applies and the low-protein days are there.
+    final foodNotBefore = facts.notBefore[FollowUpKind.food];
+    if (next == null &&
+        !facts.severeToday &&
+        !facts.muted.contains(FollowUpKind.food) &&
+        (foodNotBefore == null || dayKey(now).compareTo(foodNotBefore) >= 0) &&
+        facts.lastLoggedDays.length >= 5 &&
+        facts.lastLoggedDays.where((d) => d.protein < d.target).length >= 3) {
+      facts = _followUpFacts(l10n, now, withPick: true);
+      next = FollowUpPlan.next(facts);
+    }
+    if (next != null) {
+      FollowUpCard.lastThanks = null;
+      return FollowUpCard(
+        followUp: next,
+        now: now,
+        intakeRepository: intakeRepository,
+        onOpenTrain: () => goToTab(context, 'R01'),
+        onOpenEat: () => goTo(context, 'E02'),
+      );
+    }
+    final thanks = FollowUpCard.lastThanks;
+    if (thanks != null &&
+        FollowUpState.instance.feels[thanks.dateKey] == thanks.feel &&
+        facts.enabled) {
+      return FollowUpThanks(feel: thanks.feel);
+    }
+    return null;
+  }
+
+  /// What the follow-ups look at, read from state already in memory: Home
+  /// calls this on every build, so nothing here waits or reads the disk.
+  static FollowUpFacts _followUpFacts(
+    AppL10n l10n,
+    DateTime now, {
+    bool withPick = false,
+  }) {
+    final state = FollowUpState.instance;
+    final intake = intakeRepository.read();
+    final today = dayKey(now);
+    final weekStart = FollowUpPlan.weekStartKeyOf(now);
+
+    // Her sessions: the latest one, and this week's counts.
+    TrainSession? latest;
+    var sessionsWeek = 0;
+    var setsWeek = 0;
+    for (final s in trainRepository.sessions) {
+      if (!s.completed ||
+          s.source == SessionSource.unplanned ||
+          s.endedReason == EndedReason.abandoned) {
+        continue;
+      }
+      // A session that ended with nothing logged is not one to ask about.
+      if (s.source == SessionSource.live && s.loggedSetCount == 0) continue;
+      if (s.dateKey.compareTo(today) > 0) continue;
+      if (s.dateKey.compareTo(weekStart) >= 0) {
+        sessionsWeek++;
+        setsWeek += s.loggedSetCount;
+      }
+      if (latest == null || s.dateKey.compareTo(latest.dateKey) > 0) {
+        latest = s;
+      }
+    }
+    SessionRecap? recap;
+    if (latest != null) {
+      final logged = latest.sets.where((x) => x.isLogged).toList();
+      String? topId;
+      double? topKg;
+      for (final set in logged) {
+        final kg = set.outcome?.weightKg;
+        if (kg != null && kg > 0 && (topKg == null || kg > topKg)) {
+          topKg = kg;
+          topId = set.prescribed.exerciseId;
+        }
+      }
+      recap = SessionRecap(
+        dateKey: latest.dateKey,
+        moves: {for (final x in logged) x.prescribed.exerciseId}.length,
+        sets: logged.length,
+        topMoveName: topId == null
+            ? null
+            : ExerciseLibraryState.instance.byId(topId)?.name('en'),
+        topKg: topId == null ? null : topKg,
+      );
+    }
+    final bestsWeek = progressStore.bests.values
+        .where((b) => b.dateKey.compareTo(weekStart) >= 0)
+        .where((b) => b.dateKey.compareTo(today) <= 0)
+        .length;
+
+    // Her protein on the days she logged food, against her target.
+    final targetG = EatAppState.instance.targets().proteinG;
+    const reader = MealDayReader();
+    final since = dayKey(DateTime(now.year, now.month, now.day - 14));
+    final logged = <String, int>{
+      for (final entry in mealRepository.store.days.entries)
+        if (!entry.value.hasNothingLogged &&
+            entry.key.compareTo(since) >= 0 &&
+            entry.key.compareTo(today) <= 0)
+          entry.key: reader
+              .totals(entry.value, proteinTargetG: targetG)
+              .proteinSoFar,
+    };
+    final weekProtein = [
+      for (final e in logged.entries)
+        if (e.key.compareTo(weekStart) >= 0 && e.key != today) e.value,
+    ];
+    final lastDays = [
+      for (final id
+          in (logged.keys.where((k) => k != today).toList()
+                ..sort((a, b) => b.compareTo(a)))
+              .take(5))
+        (protein: logged[id]!, target: targetG),
+    ];
+    final low = lastDays.where((d) => d.protein < d.target).length;
+
+    // Today's check-in: a severe day shows nothing, a hard one is gentler.
+    final checkIn = CycleAppState.instance.checkIns[today] ?? todayCheckIn;
+
+    return FollowUpFacts(
+      now: now,
+      enabled: state.enabled,
+      muted: state.muted,
+      notBefore: state.notBefore,
+      lastSession: recap,
+      feels: state.feels,
+      weekStartKey: weekStart,
+      sessionsThisWeek: sessionsWeek,
+      weekTarget: intake.days,
+      setsThisWeek: setsWeek,
+      bestsThisWeek: bestsWeek,
+      avgProteinThisWeek: weekProtein.isEmpty
+          ? null
+          : (weekProtein.reduce((a, b) => a + b) / weekProtein.length).round(),
+      weekReviews: state.weekReviews,
+      lastLoggedDays: lastDays,
+      proteinPick: withPick && lastDays.length >= 5 && low >= 3
+          ? _proteinPick(l10n)
+          : null,
+      protectedStage: intake.lifeStage != LifeStage.none,
+      severeToday: const SevereSymptomGate().evaluate(checkIn),
+      gentleToday:
+          const SymptomSuggestionResolver().resolve(checkIn) is GentlerOption,
+    );
+  }
+
+  /// A food she already eats, with the most protein in the portion she has it,
+  /// that the allergy guard lets through. Null when she has no history.
+  static ({String name, int proteinG})? _proteinPick(AppL10n l10n) {
+    final counts = <String, int>{};
+    final sizes = <String, String>{};
+    for (final plate in EatAppState.instance.usualPlates) {
+      for (final item in plate.items) {
+        counts[item.foodId] = (counts[item.foodId] ?? 0) + plate.timesEaten;
+        sizes[item.foodId] = item.size;
+      }
+    }
+    if (counts.isEmpty) return null;
+    final library = eatSampleLibrary(l10n);
+    final guard = AllergyGuard(eatConstraints);
+    final mostEaten = counts.keys.toList()
+      ..sort((a, b) => counts[b]!.compareTo(counts[a]!));
+    ({String name, int proteinG})? best;
+    for (final id in mostEaten.take(8)) {
+      final food = library.byId(id);
+      if (food == null || guard.screenSuggestions([food]).isEmpty) continue;
+      final size = food.sizeById(sizes[id]!) ?? food.defaultSize;
+      if (size.proteinG <= 0) continue;
+      if (best == null || size.proteinG > best.proteinG) {
+        best = (name: food.names.first, proteinG: size.proteinG);
+      }
+    }
+    return best;
   }
 
   /// How long today's session takes: the library session she chose, else the
@@ -8773,12 +8985,41 @@ class AppRouter {
     }
     final here = ModalRoute.of(context);
     final said = l10n.skippedName(localisedMove(l10n, skipped).name);
+    final nothingLogged = session.loggedSetCount == 0;
     session.skipMove();
     if (session.isComplete) {
       // The last move: the workout ends here, as it would after a set, so
       // there is nothing left to step back into.
-      showHonestNotice(context, said);
       _finishWorkout();
+      if (nothingLogged) {
+        // Every move skipped and no set logged: nothing to celebrate or count.
+        // She goes back to the screen the workout started from, below R03.
+        showHonestNotice(context, l10n.nothingLoggedSoThisOneIsNot);
+        final inSession = {
+          for (final id in ['R03', 'R05', 'R06', 'R07', 'R08', 'R09', 'R13'])
+            appRoutes[id]!.name,
+        };
+        final navigator = Navigator.of(context);
+        String? top() {
+          String? name;
+          navigator.popUntil((route) {
+            name = route.settings.name;
+            return true;
+          });
+          return name;
+        }
+
+        while (inSession.contains(top()) && navigator.canPop()) {
+          navigator.pop();
+        }
+        // Opened with nothing under it: Train takes its place, rather than an
+        // empty navigator or a session screen left at the bottom.
+        if (inSession.contains(top())) {
+          unawaited(navigator.pushReplacementNamed(appRoutes['R01']!.name));
+        }
+        return;
+      }
+      showHonestNotice(context, said);
       goTo(context, 'R10');
       return;
     }

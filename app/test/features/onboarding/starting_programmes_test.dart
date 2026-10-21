@@ -324,7 +324,8 @@ void main() {
   test('every tier row says its tier and carries the same six sessions', () {
     final raw = (jsonDecode(File(_assetPath).readAsStringSync()) as Map)
         .cast<String, Object?>();
-    for (final row in (raw['programmes'] as List).cast<Map<String, Object?>>()) {
+    for (final row
+        in (raw['programmes'] as List).cast<Map<String, Object?>>()) {
       final id = row['programId'] as String;
       final tier = TrainingLevel.fromWire(row['tier']);
       expect(tier, isNotNull, reason: id);

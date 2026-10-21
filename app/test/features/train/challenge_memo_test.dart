@@ -1,4 +1,4 @@
-// WP3: Home, Train and the player all ask for this week's challenge on every
+// Home, Train and the player all ask for this week's challenge on every
 // redraw. The answer is held until the week, the plan, the target or her
 // history changes, so a redraw does not walk the whole history twice.
 
