@@ -7,6 +7,8 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/app_snapshot.dart';
+import 'package:own_hub/domain/clock/app_clock.dart';
+import 'package:own_hub/features/train/domain/getting_started_tips.dart';
 import 'package:own_hub/app_state/notification_sync.dart';
 import 'package:own_hub/app_state/notification_taps.dart';
 import 'package:own_hub/app_state/push_registration.dart';
@@ -190,8 +192,12 @@ void main() {
     });
 
     test('logging a session ends today\'s "Trained today?"', () async {
+      // Nudges off: with them on, the shared casual budget can spend itself
+      // on nudges before next week's "Trained today?", which is right but not
+      // what this test is about.
       ReminderState.instance
         ..permissionGranted = true
+        ..prefs = const NotificationPrefs(nudges: false)
         ..schedule = TrainingReminders(weekdays: {DateTime.wednesday})
         ..lastActiveAt = now;
       final scheduler = _Scheduler();
@@ -212,6 +218,78 @@ void main() {
             .at,
         DateTime(2026, 10, 21, 21),
       );
+    });
+
+    test(
+      'logging a meal answers today\'s nudge and rebuilds the plan',
+      () async {
+        ReminderState.instance
+          ..permissionGranted = true
+          ..prefs = const NotificationPrefs(checkIns: false);
+        final scheduler = _Scheduler();
+        AppRouter.reminderScheduler = scheduler;
+        addTearDown(() {
+          AppRouter.reminderScheduler = null;
+          AppClock.debugNow = null;
+        });
+        // A day early enough that its nudge is still ahead.
+        DateTime? day;
+        for (var d = 0; d < 7 && day == null; d++) {
+          final at = DateTime(2026, 10, 14 + d, 6);
+          final today = NotificationSync.planFor(at).where(
+            (n) =>
+                n.kind == PlanKind.nudge &&
+                n.at.day == at.day &&
+                n.at.month == at.month,
+          );
+          if (today.isNotEmpty) day = at;
+        }
+        expect(day, isNotNull, reason: 'some day this week has a nudge');
+        await NotificationSync.reapply(scheduler, text, now: day);
+        expect(
+          scheduler.applied.last.where(
+            (n) => n.kind == PlanKind.nudge && n.at.day == day!.day,
+          ),
+          isNotEmpty,
+        );
+
+        AppClock.debugNow = () => day!;
+        await AppRouter.noteMealLogged();
+        expect(ReminderState.instance.lastActiveAt, day);
+        expect(scheduler.applied, hasLength(2));
+        expect(
+          scheduler.applied.last.where(
+            (n) => n.kind == PlanKind.nudge && n.at.day == day!.day,
+          ),
+          isEmpty,
+        );
+      },
+    );
+
+    test('a tip the plan left out is done, one it moved is still due', () {
+      final anchor = DateTime(2026, 10, 1, 10);
+      final series = TipSeries(
+        anchorAt: anchor,
+        due: {
+          GettingStartedTip.videos: DateTime(2026, 10, 3, 18),
+          GettingStartedTip.mealScan: DateTime(2026, 10, 4, 18),
+        },
+        done: {GettingStartedTip.firstWorkout},
+      );
+      final moved = NotificationSync.tipsApplied(series, [
+        PlannedNotification(
+          id: GettingStartedTip.videos.id,
+          kind: PlanKind.tip,
+          at: DateTime(2026, 10, 5, 18),
+          variant: GettingStartedTip.videos.index,
+        ),
+      ]);
+      expect(moved.due.keys, {GettingStartedTip.videos});
+      expect(moved.due[GettingStartedTip.videos], DateTime(2026, 10, 5, 18));
+      expect(moved.done, {
+        GettingStartedTip.firstWorkout,
+        GettingStartedTip.mealScan,
+      });
     });
 
     test('opening the app twice in a day is not news; a new day is', () {
@@ -239,6 +317,18 @@ void main() {
   });
 
   group('her choices survive a restart', () {
+    test('the friendly nudges switch round-trips, off and on', () {
+      for (final on in [false, true]) {
+        ReminderState.instance
+          ..permissionGranted = true
+          ..prefs = NotificationPrefs(nudges: on);
+        final saved = jsonEncode(AppSnapshot.capture());
+        ReminderState.instance.reset();
+        AppSnapshot.restore(saved);
+        expect(ReminderState.instance.prefs.nudges, on);
+      }
+    });
+
     test('the reminders section round-trips', () {
       ReminderState.instance
         ..offered = true
@@ -269,6 +359,8 @@ void main() {
         'T01',
         'T02',
         'R09',
+        'E01',
+        'P01',
         ...NotificationTaps.tipDestinations,
       });
       expect(NotificationTaps.routeFor('X99', sessionLive: true), isNull);

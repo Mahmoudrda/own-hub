@@ -216,6 +216,12 @@ void main() {
     ) async {
       await _open(tester, 'C09b');
       expect(recording.names, isNot(contains('checkConsentGiven')));
+      // The disclosure has to be read to its end before agreeing is live.
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -5000),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('I agree, start the camera'));
       await tester.pumpAndSettle();
       expect(recording.names, contains('checkConsentGiven'));
@@ -466,7 +472,7 @@ void main() {
       expect(copy.indexOf('openExternalLink('), greaterThan(track));
     });
 
-    test('thirty-one events fire for the launch, and each has a call site', () {
+    test('thirty events fire for the launch, and each has a call site', () {
       final src = [
         for (final f in Directory('lib').listSync(recursive: true))
           if (f is File &&
@@ -488,7 +494,7 @@ void main() {
         for (final e in AnalyticsEvent.values)
           if (!dark.contains(e)) e,
       ];
-      expect(live, hasLength(31));
+      expect(live, hasLength(30));
       for (final e in live) {
         expect(
           src.contains('AnalyticsEvent.${e.name}'),

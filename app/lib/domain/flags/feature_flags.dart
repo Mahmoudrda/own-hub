@@ -145,10 +145,12 @@ enum Feature {
   assistant,
 
   /// Events the owner runs: a class online, a meet-up at a ladies-only gym.
-  /// The Events screen (`T09`) and the Upcoming card on Home. **Off** until
-  /// the owner switches it on from Z14, which also writes `meta/features` so
-  /// members' apps take the same answer at their next launch. Nothing about
-  /// a woman is collected: there is no "interested" and no attendee list.
+  /// The Events screen (`T09`) and the Upcoming card on Home. **On** in the
+  /// shipped build; the owner can still switch it off from Z14, which also
+  /// writes `meta/features` so members' apps take the same answer at their
+  /// next launch. A woman's seat is her own attendee document, written only by
+  /// the server when she taps Reserve; there is no "interested" and no public
+  /// attendee list.
   events,
 
   // ------------------------------------------------- Parts of a feature
@@ -471,8 +473,8 @@ class FeatureFlags {
     Feature.payments: false,
     Feature.assistant: false,
 
-    // Nothing shows until the owner turns it on, from Z14.
-    Feature.events: false,
+    // On for launch; the owner can switch it off from Z14.
+    Feature.events: true,
 
     // The parts of what ships. Each is on, and each can be switched off on
     // its own from the server if it breaks. Two are off for launch, each

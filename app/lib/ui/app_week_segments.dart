@@ -43,6 +43,7 @@ class AppWeekSegments extends StatelessWidget implements HandSeedName {
     this.color = AppColors.tertiarySoft,
     this.style = WeekStyle.bar,
     this.lead = Duration.zero,
+    this.stagger = const Duration(milliseconds: 90),
     this.popIndex,
   });
 
@@ -59,6 +60,10 @@ class AppWeekSegments extends StatelessWidget implements HandSeedName {
   /// How long the marks wait before they are drawn, for a screen that brings
   /// the week in at a point in its own sequence.
   final Duration lead;
+
+  /// How long each tick waits after the one before it. R10 counts the week in
+  /// at [HandTiming.staggerStep].
+  final Duration stagger;
 
   /// The mark just earned, which arrives with a spring instead of simply
   /// being there. Null when nothing was earned just now.
@@ -118,6 +123,7 @@ class AppWeekSegments extends StatelessWidget implements HandSeedName {
                 index: i,
                 size: size,
                 lead: lead,
+                stagger: stagger,
                 pop: i == popIndex,
                 state: i < filled
                     ? _MarkState.done
@@ -140,6 +146,7 @@ class _Mark extends StatelessWidget {
     required this.size,
     required this.state,
     this.lead = Duration.zero,
+    this.stagger = Duration.zero,
     this.pop = false,
   });
 
@@ -148,6 +155,7 @@ class _Mark extends StatelessWidget {
   final double size;
   final _MarkState state;
   final Duration lead;
+  final Duration stagger;
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +200,7 @@ class _Mark extends StatelessWidget {
               size: size * 0.5,
               seed: index + 1,
               drawOn: true,
-              delay: lead + Duration(milliseconds: 90 * index),
+              delay: lead + stagger * index,
             )
           else
             HandFigure(

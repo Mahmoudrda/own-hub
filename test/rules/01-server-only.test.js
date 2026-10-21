@@ -37,6 +37,9 @@ const SERVER_ONLY = [
   [`assistantQuota/${uid.her}`, { asked: 0 }],
   ['verificationPreapproved/+201001234567', { phone: '+201001234567' }],
   [`verificationReviewers/${uid.admin}`, { listed: true }],
+  ['scanCache/0123abcd', { items: [], expiresAt: new Date('2030-01-01') }],
+  ['communityFoodCandidates/0123456789abcdef01234567', { nameEn: 'Koshary', confirmCount: 1 }],
+  ['communityFoodCandidates/0123456789abcdef01234567/by/marker_0001', { v: 1 }],
   ['verificationBookings/slot_0001', { uid: uid.her, reviewerId: uid.admin }],
 ];
 

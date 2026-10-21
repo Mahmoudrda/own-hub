@@ -15,6 +15,8 @@
 /// shown from one still to come.
 library;
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
 import '../features/train/domain/getting_started_tips.dart';
 import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/training_reminders.dart';
@@ -48,6 +50,7 @@ abstract final class NotificationSync {
             minute: state.schedule?.minute ?? 0,
           )
         : (plan: const <PlannedNotification>[], series: state.tips);
+    final anchor = tips.series.anchorAt;
     final plan = NotificationPlan.build(
       now: now,
       permitted: state.permitted,
@@ -56,8 +59,43 @@ abstract final class NotificationSync {
       lastActiveAt: state.lastActiveAt,
       lastSessionAt: state.lastSessionAt,
       tips: tips.plan,
+      tipsEnd: anchor == null ? null : tipSeriesEnd(anchor),
+      shownTips: anchor == null
+          ? const <DateTime>[]
+          : [
+              for (final tip in tips.series.done)
+                DateTime(anchor.year, anchor.month, anchor.day + tip.day),
+            ],
     );
-    return (plan: plan, tips: tips.series);
+    return (plan: plan, tips: tipsApplied(tips.series, plan, tipsOn: tipsOn));
+  }
+
+  /// The series to remember once [plan] is on the phone: a tip is due where
+  /// the plan really put it (a tip that gave way to another note moved to a
+  /// later day), and only a tip the plan had to leave out, pushed past the end
+  /// of the fortnight, is done. Never a tip merely dropped for a day.
+  @visibleForTesting
+  static TipSeries tipsApplied(
+    TipSeries series,
+    List<PlannedNotification> plan, {
+    bool tipsOn = true,
+  }) {
+    if (!tipsOn || series.anchorAt == null) return series;
+    final due = <GettingStartedTip, DateTime>{
+      for (final n in plan)
+        if (GettingStartedTip.of(n) != null) GettingStartedTip.of(n)!: n.at,
+    };
+    final done = <GettingStartedTip>{
+      ...series.done,
+      for (final tip in series.due.keys)
+        if (!due.containsKey(tip)) tip,
+    };
+    return TipSeries(
+      anchorAt: series.anchorAt,
+      due: due,
+      done: done,
+      ended: done.length == GettingStartedTip.values.length,
+    );
   }
 
   /// Replaces what is scheduled. Does nothing until the phone has agreed to

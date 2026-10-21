@@ -22,6 +22,7 @@ class CustomFood {
     this.carbsG,
     this.fatG,
     this.fiberG,
+    this.allergens,
   });
 
   static const String idPrefix = 'custom-';
@@ -36,11 +37,16 @@ class CustomFood {
   final int? fatG;
   final int? fiberG;
 
+  /// What the food is known to contain. Null is unknown, never none: a meal
+  /// kept from a photo is only known when every part of it was.
+  final Set<String>? allergens;
+
   /// The food as search and the log see it: one serving, her name.
   Food toFood() => Food(
     foodId: id,
     names: [name],
     custom: true,
+    allergens: allergens,
     sizes: [
       FoodSize(
         id: '1',
@@ -62,6 +68,7 @@ class CustomFood {
     'carbsG': carbsG,
     'fatG': fatG,
     'fiberG': fiberG,
+    if (allergens != null) 'allergens': allergens!.toList()..sort(),
   };
 
   /// Null for a row that is not a usable food.
@@ -81,6 +88,12 @@ class CustomFood {
       carbsG: whole(raw['carbsG']),
       fatG: whole(raw['fatG']),
       fiberG: whole(raw['fiberG']),
+      allergens: raw['allergens'] is List
+          ? {
+              for (final tag in raw['allergens'] as List)
+                if (tag is String) tag,
+            }
+          : null,
     );
   }
 }

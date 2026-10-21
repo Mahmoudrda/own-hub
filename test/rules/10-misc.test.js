@@ -83,6 +83,26 @@ describe('`allow write` silently covers delete', () => {
     await assertFails(deleteDoc(doc(other, `users/${HER}/splits/s1`)));
   });
 
+  test('splits: the exact documents the app writes for her own workouts', async () => {
+    // app/lib/app_state/cloud_documents.dart `_splits()`: ownerKind self,
+    // schemaV, name, moves and the server's clock; a deletion is a tombstone
+    // with the same guards. The Dart test pins the key set, this pins the rule.
+    const db = await verified(HER);
+    const move = { exerciseId: 'goblet_squat', sets: 4, reps: 8, weightKg: 12.5 };
+    const hold = { exerciseId: 'forearm_plank', sets: 2, holdSeconds: 40 };
+    await assertSucceeds(setDoc(doc(db, `users/${HER}/splits/wabc123`), {
+      ownerKind: 'self', schemaV: 1, name: 'Thursday legs',
+      moves: [move, hold], updatedAt: serverTimestamp(),
+    }));
+    await assertSucceeds(setDoc(doc(db, `users/${HER}/splits/wabc123`), {
+      ownerKind: 'self', schemaV: 1, deleted: true, updatedAt: serverTimestamp(),
+    }));
+    await assertFails(setDoc(doc(db, `users/${HER}/splits/wabc123`), {
+      ownerKind: 'coach', schemaV: 1, name: 'Thursday legs', moves: [move],
+      updatedAt: serverTimestamp(),
+    }));
+  });
+
   test('meals, eatPrefs: delete is explicitly false, which is intended', async () => {
     const db = await verified(HER);
     await assertSucceeds(setDoc(doc(db, `users/${HER}/meals/2026-09-25`), {

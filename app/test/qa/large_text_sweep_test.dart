@@ -98,7 +98,7 @@ void main() {
       ) as Map).cast<String, Object?>(),
     );
     EatAppState.instance.seedRecipeBook(book);
-    expect(book.recipes, hasLength(39), reason: 'the seed did not load');
+    expect(book.recipes, hasLength(50), reason: 'the seed did not load');
 
     final overflowed = <String>[];
     var drawn = 0;

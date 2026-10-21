@@ -161,4 +161,19 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('a move with no alternative offers to skip it, not a dead end', (
+    tester,
+  ) async {
+    var skipped = 0;
+    await tester.pumpWidget(
+      _host(SwapMoveView(alternatives: const [], onSkip: () => skipped++)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('No swap for this move right now'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('r05-skip-move')));
+    await tester.pumpAndSettle();
+    expect(skipped, 1);
+  });
 }

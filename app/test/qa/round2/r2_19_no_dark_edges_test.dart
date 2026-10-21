@@ -228,6 +228,11 @@ const Map<String, ({String file, String guard})> _sourceGuardedEdges = {
 const Map<String, ({String file, String guard})> _killSwitchGuards = {
   // The camera beside "Type what you ate" (E01, E04) and in E02's field is
   // passed by the router only while E12 is on, and only to a verified member.
+  // The Scan chip on Home's eat card is passed only on the same terms.
+  'T01->E12': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onScanMeal: screenIsOn('E12') && isVerified",
+  ),
   'E01->E12': (
     file: 'lib/routing/app_router.dart',
     guard: "onSnap: screenIsOn('E12') && isVerified",
@@ -331,7 +336,7 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   ),
   'R03->R04': (
     file: 'lib/features/train/presentation/workout_day_view.dart',
-    guard: "onTap: AppRouter.screenIsOn('R04')",
+    guard: "AppRouter.screenIsOn('R04') && canOpen(moves[i])",
   ),
   'E01->E05': (
     file: 'lib/features/eat/presentation/eat_view.dart',

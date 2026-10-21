@@ -574,6 +574,7 @@ class CycleHubView extends StatelessWidget {
     CycleHubSnapshot snapshot,
   ) {
     final suggestion = snapshot.suggestion;
+    final plannedMinutes = AppRouter.todaySessionMinutes();
 
     return [
       CycleTabs(
@@ -628,7 +629,9 @@ class CycleHubView extends StatelessWidget {
               size: 22,
               color: AppColors.primaryDim,
             ),
-            title: l10n.fullBodyStrength35Min_1jwg4,
+            title: plannedMinutes > 0
+                ? l10n.fullBodyStrengthMinutesMin(countLabel(plannedMinutes))
+                : l10n.fullBodyStrength,
             // The credit belongs to whoever wrote the session. With no
             // coaching in this build nobody did, so the row names the
             // session and claims nothing about its author.

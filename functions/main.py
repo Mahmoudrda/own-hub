@@ -60,6 +60,13 @@ Callables, in the order a woman meets them:
     admin_logs                admin   codes and times, a page at a time
     record_meal_photo_consent free    E12, before her first meal photo
     analyze_meal_photo        paid    E12/E13, one photo to foods, grams, macros
+    register_for_event        free    reserves her seat on a published event
+    cancel_event_registration free    gives that seat back
+    list_events_admin         admin   events with their seats, for the dashboard
+    save_event                admin   creates or edits an event
+    submit_community_food     free    offers a confirmed meal to every woman
+    list_community_foods      admin   candidates and the published foods
+    review_community_food     admin   approves or rejects one candidate
 
 Wire contract, agreed with the Flutter worker:
     `verify_identity` takes {front, back, frames, liveness:{sessionId}} and
@@ -1171,6 +1178,22 @@ def revoke_user(request: https_fn.CallableRequest) -> dict:
 
 
 @https_fn.on_call()
+def decline_user(request: https_fn.CallableRequest) -> dict:
+    """{uid, reason?: "notClear" | "notMatching" | "other"} -> {state: "rejected"}.
+
+    The decline half of the reviewer's decision, with the same guard and the
+    same audit trail as an approve: her open flag is closed as rejected, the
+    ledger records who, when and why, and the access log gets a line."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    state = _review_call(
+        approvals.decline, reviewer_uid, data.get("uid"), data.get("reason", "other")
+    )
+    logs.decision("decline_user", outcome=state, state=state)
+    return {"state": state}
+
+
+@https_fn.on_call()
 def list_review_queue(request: https_fn.CallableRequest) -> list:
     """{status?: pending | scheduled | approved, query?} -> a list of rows. A phone
     number appears only where she asked for the call, and each is logged."""
@@ -1369,6 +1392,97 @@ def save_exercise(request: https_fn.CallableRequest) -> dict:
     return exercise_editor.save(
         store.db(), storage.bucket(exercise_editor.CONTENT_BUCKET), _body(request)
     )
+
+
+@https_fn.on_call()
+def list_events_admin(request: https_fn.CallableRequest) -> dict:
+    """Every event with its seats, soonest first, for the dashboard's Events
+    tab. Admin only."""
+    _require_admin(request)
+    from events import admin as events_admin
+
+    return events_admin.list_all(store.db())
+
+
+@https_fn.on_call()
+def save_event(request: https_fn.CallableRequest) -> dict:
+    """Creates or edits one event whose pictures and clips the dashboard
+    already uploaded. `{ok, eventId}` or `{ok: false, problems}`. Never changes
+    the seats taken. Admin only."""
+    _require_admin(request)
+    from events import admin as events_admin
+
+    return events_admin.save(store.db(), _body(request))
+
+
+@https_fn.on_call()
+def list_community_foods(request: https_fn.CallableRequest) -> dict:
+    """Pending community foods by how many women confirmed them, the published
+    list and the category and allergen vocabularies, for the dashboard's Foods
+    tab. Admin only."""
+    _require_admin(request)
+    from nutrition import community_foods
+
+    return community_foods.list_all(store.db())
+
+
+@https_fn.on_call()
+def review_community_food(request: https_fn.CallableRequest) -> dict:
+    """Approves one candidate into meta/communityFoods or rejects it. Request
+    {key, action: "approve" | "reject"} and, to approve, {nameEn, nameAr,
+    category, allergens, allergensNone}. `{ok, version?}` or `{ok: false,
+    problems}`. Admin only."""
+    _require_admin(request)
+    from nutrition import community_foods
+
+    return community_foods.review(store.db(), _body(request))
+
+
+_SEAT_ERROR_CODES = {
+    "not_found": https_fn.FunctionsErrorCode.NOT_FOUND,
+    "closed": https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+    "full": https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+}
+
+
+def _seat_call(request: https_fn.CallableRequest, uid: str, action: str) -> dict:
+    if _claim(request, "verified") is not True:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.NOT_VERIFIED
+        )
+    event_id = _body(request).get("eventId")
+    from events import seats
+
+    if not isinstance(event_id, str) or not seats.ID.match(event_id):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    try:
+        return getattr(seats, action)(store.db(), uid, event_id)
+    except seats.SeatError as error:
+        raise https_fn.HttpsError(_SEAT_ERROR_CODES[error.kind], error.reason)
+
+
+@https_fn.on_call()
+def register_for_event(request: https_fn.CallableRequest) -> dict:
+    """Reserves her seat: `{eventId}` -> `{registered: true, seatsTaken, capacity}`.
+
+    Verified members only. A second call changes nothing. Refusals, each the
+    whole message:
+      event_not_found   NOT_FOUND
+      event_closed      FAILED_PRECONDITION (not published, over, or no seats set)
+      event_full        FAILED_PRECONDITION
+    """
+    uid = _require_auth(request)
+    return _seat_call(request, uid, "register")
+
+
+@https_fn.on_call()
+def cancel_event_registration(request: https_fn.CallableRequest) -> dict:
+    """Gives her seat back: `{eventId}` -> `{registered: false, seatsTaken,
+    capacity}`. Verified members only; a repeat changes nothing."""
+    uid = _require_auth(request)
+    return _seat_call(request, uid, "cancel")
 
 
 @https_fn.on_call()
@@ -1711,12 +1825,15 @@ def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
 
     Request {imageJpeg: base64, locale: "en" | "ar"}. Order: App Check, auth,
     body, consent (meal-photo-v1), the image's size and header, the image
-    decoded and re-encoded, her daily scans, the app's daily scans, then the
-    model is called exactly once. A photo that cannot be re-encoded is refused
-    before either count moves, so it never costs her a scan.
+    decoded and re-encoded, then scanCache by the SHA-256 of the re-encoded
+    bytes: a hit is answered with cached: true, no model call and no count. On
+    a miss: her daily scans, the app's daily scans, then the model is called
+    exactly once and its items are cached for 30 days. A photo that cannot be
+    re-encoded is refused before either count moves, so it never costs her a
+    scan.
 
-    Response {items, totals, estimate: true}; nutrition/meal.py documents each
-    item. Refusals, each the whole message:
+    Response {items, totals, estimate: true, cached}; nutrition/meal.py
+    documents each item. Refusals, each the whole message:
       consent_missing            FAILED_PRECONDITION
       image_undecodable,
       image_too_large            INVALID_ARGUMENT
@@ -1753,6 +1870,7 @@ def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
     if refused is not None:
         raise https_fn.HttpsError(https_fn.FunctionsErrorCode.INVALID_ARGUMENT, refused)
 
+    from nutrition import cache as scan_cache
     from nutrition import config as meal_config
     from nutrition import meal, model, photo
 
@@ -1768,6 +1886,17 @@ def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
     finally:
         del raw
 
+    # The same photo again is answered from scanCache: no model call, and
+    # neither her allowance nor the app's moves.
+    cache_key = scan_cache.key(jpeg)
+    cached = _scan_cache_get(cache_key)
+    if cached is not None:
+        del jpeg
+        answer = meal.resolve(cached)
+        answer["cached"] = True
+        _log_meal("cached", None, started, count=len(answer["items"]))
+        return answer
+
     try:
         if (
             store.uid_daily_count_and_increment(uid, meal_config.UID_COUNTER_FIELD)
@@ -1782,6 +1911,7 @@ def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
             > meal_config.MEAL_SCANS_GLOBAL_PER_DAY
         ):
             logs.warn("meal_scans_paused", field=meal_config.GLOBAL_COUNTER_FIELD)
+            _refund_meal_scan(uid, meal_config.UID_COUNTER_FIELD)
             raise https_fn.HttpsError(
                 https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
                 reasons.MEAL_SCANS_PAUSED,
@@ -1824,7 +1954,9 @@ def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
             https_fn.FunctionsErrorCode.NOT_FOUND, reasons.NO_FOOD_SEEN
         )
 
+    _scan_cache_put(cache_key, result.items)
     answer = meal.resolve(result.items)
+    answer["cached"] = False
     _log_meal(
         "estimated",
         None,
@@ -1834,6 +1966,31 @@ def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
         output_tokens=result.output_tokens,
     )
     return answer
+
+
+def _scan_cache_get(cache_key: str) -> Optional[list]:
+    """The cached items for this photo, or None. A cache that cannot be read is
+    a miss, never a failed scan."""
+    import datetime as dt
+
+    from nutrition import cache
+
+    try:
+        return cache.get(store.db(), cache_key, dt.datetime.now(dt.timezone.utc))
+    except Exception:
+        logs.warn("scan_cache_unavailable")
+        return None
+
+
+def _scan_cache_put(cache_key: str, items: list) -> None:
+    import datetime as dt
+
+    from nutrition import cache
+
+    try:
+        cache.put(store.db(), cache_key, items, dt.datetime.now(dt.timezone.utc))
+    except Exception:
+        logs.warn("scan_cache_unavailable")
 
 
 def _refund_meal_scan(uid: str, field: str) -> None:
@@ -1866,3 +2023,34 @@ def _log_meal(
     if output_tokens is not None:
         fields["outputTokens"] = output_tokens
     logs.decision("analyze_meal_photo", **fields)
+
+
+@https_fn.on_call()
+def submit_community_food(request: https_fn.CallableRequest) -> dict:
+    """E13: a meal she confirmed, offered to every woman after the owner checks
+    it. Request {nameEn?, nameAr?, items: [{name, grams}], kcal, proteinG,
+    carbsG, fatG}. Verified members only. Stored as a candidate with no uid and
+    no photo; one confirmation per woman (a hashed marker). `{ok: true}`, also
+    for a repeat. Refusals: community_food_invalid INVALID_ARGUMENT,
+    community_food_daily_limit RESOURCE_EXHAUSTED."""
+    uid = _require_auth(request)
+    if _claim(request, "verified") is not True:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.NOT_VERIFIED
+        )
+    from nutrition import community_foods, config as meal_config
+
+    row, _ = community_foods.validate_submission(_body(request))
+    if row is None:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.COMMUNITY_FOOD_INVALID
+        )
+    if (
+        store.uid_daily_count_and_increment(uid, meal_config.COMMUNITY_COUNTER_FIELD)
+        > meal_config.COMMUNITY_FOODS_PER_UID_PER_DAY
+    ):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.COMMUNITY_FOOD_DAILY_LIMIT
+        )
+    community_foods.submit(store.db(), community_foods.marker_id(uid, store.pepper()), row)
+    return {"ok": True}

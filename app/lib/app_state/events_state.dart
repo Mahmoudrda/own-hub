@@ -3,7 +3,8 @@
 /// Read only while [Feature.events] is on, only for a verified account (the
 /// rules refuse anyone else), and at most once an hour: one query of twenty
 /// small documents. Offline or refused, the list is simply empty and both
-/// places show their empty state; nothing about her is sent or kept.
+/// places show their empty state. Reading the list sends nothing about her;
+/// her seat is asked for only when she taps Reserve or Cancel.
 library;
 
 import 'dart:async';
@@ -13,7 +14,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 
 import '../domain/flags/feature_flags.dart';
+import '../features/events/data/callable_event_registrar.dart';
 import '../features/events/data/firestore_events.dart';
+import '../features/events/domain/event_registration.dart';
 import '../features/events/domain/event_repository.dart';
 import '../features/events/domain/hub_event.dart';
 import '../routing/app_router.dart';
@@ -29,6 +32,30 @@ class EventsState {
   EventReader? Function() source = _liveSource;
 
   DateTime Function() now = DateTime.now;
+
+  /// Where seats are reserved and given back. Null when no call could
+  /// succeed: no Firebase, nobody signed in, or not verified.
+  EventRegistrar? Function() registrar = _liveRegistrar;
+
+  static EventRegistrar? _liveRegistrar() {
+    try {
+      if (!FirebaseBoot.isReady) return null;
+      if (FirebaseAuth.instance.currentUser == null) return null;
+      if (!AppRouter.isVerified) return null;
+      return CallableEventRegistrar();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Keeps the list in step with a count the server just answered, so a card
+  /// opened again within the hour does not show the old number.
+  void setSeats(String eventId, int seatsTaken) {
+    _events = [
+      for (final e in _events)
+        e.id == eventId ? e.copyWith(seatsTaken: seatsTaken) : e,
+    ];
+  }
 
   static const Duration readEvery = Duration(hours: 1);
 
@@ -89,6 +116,7 @@ class EventsState {
     _readAt = null;
     _inFlight = null;
     source = _liveSource;
+    registrar = _liveRegistrar;
     now = DateTime.now;
   }
 }

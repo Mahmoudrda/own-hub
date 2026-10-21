@@ -248,6 +248,12 @@ JSON, or no entry with a name and a sensible weight."""
 MEAL_SERVICE_UNAVAILABLE = "meal_service_unavailable"
 """The model could not be reached or failed. Her scan is not counted."""
 
+COMMUNITY_FOOD_INVALID = "community_food_invalid"
+"""submit_community_food: the name, items, grams or macros are outside what a
+meal can be, or the energy does not add up from the macros."""
+COMMUNITY_FOOD_DAILY_LIMIT = "community_food_daily_limit"
+"""She has offered the most foods allowed for one UTC day."""
+
 
 # ------------------------------------------------- what crosses the wire
 #

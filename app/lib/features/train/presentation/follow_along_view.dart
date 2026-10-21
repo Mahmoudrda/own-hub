@@ -41,6 +41,7 @@ import '../domain/exercise_library.dart';
 import '../domain/train_repository.dart';
 import 'exercise_clip_frame.dart';
 import 'exercise_clip_player.dart';
+import 'exercise_labels.dart';
 import 'set_labels.dart';
 import 'session_notice.dart';
 
@@ -326,8 +327,8 @@ class _FollowAlongViewState extends State<FollowAlongView>
                               ),
                               const SizedBox(height: 2),
                             ],
-                            Text(
-                              widget.moveName ?? l10n.gluteBridge,
+                            MoveName(
+                              widget.moveName ?? englishMoveNames.gluteBridge,
                               style: AppText.titleL.copyWith(
                                 fontSize: 24,
                                 color: _onDark,

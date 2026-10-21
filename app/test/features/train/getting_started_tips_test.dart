@@ -318,18 +318,58 @@ void main() {
       );
     });
 
-    test('a check-in on a tip day gives way: one note that day', () {
-      // Away since she landed: the second check-in is day ten at 18:00, the
-      // same moment as the muscles tip.
+    test('a tip on a check-in day moves to the next day: one note a day', () {
+      // The first check-in is four days on from the open, at 18:00, the same
+      // moment as this tip. The check-in is the more useful note, and the tip
+      // is not lost: it comes a day later.
+      final plan = NotificationPlan.build(
+        now: _landed,
+        permitted: true,
+        lastActiveAt: _landed,
+        prefs: const NotificationPrefs(nudges: false),
+        tips: [
+          PlannedNotification(
+            id: GettingStartedTip.recipes.id,
+            kind: PlanKind.tip,
+            at: _day(4, 18),
+            variant: GettingStartedTip.recipes.index,
+          ),
+        ],
+        tipsEnd: tipSeriesEnd(_landed),
+      );
+      final checkIns = plan.where((n) => n.kind == PlanKind.checkIn).toList();
+      expect(checkIns.first.at, _day(4, 18));
+      final tips = plan.where((n) => n.kind == PlanKind.tip).toList();
+      expect(tips.single.at, _day(5, 18));
+    });
+
+    test('tips share the unanswered cap: three in all until she opens', () {
       final plan = NotificationPlan.build(
         now: _landed,
         permitted: true,
         lastActiveAt: _landed,
         tips: _next().plan,
+        tipsEnd: tipSeriesEnd(_landed),
       );
-      final checkIns = plan.where((n) => n.kind == PlanKind.checkIn).toList();
-      expect(checkIns.single.at, _day(4, 18));
-      expect(plan.where((n) => n.kind == PlanKind.tip), hasLength(kTipCount));
+      final casual = plan.where(
+        (n) => n.kind == PlanKind.tip || n.kind == PlanKind.checkIn,
+      );
+      expect(casual.length, lessThanOrEqualTo(kNudgesUnanswered));
+      expect(plan.where((n) => n.kind == PlanKind.tip), isNotEmpty);
+    });
+
+    test('a tip pushed past the end of the fortnight is left out', () {
+      final plan = NotificationPlan.build(
+        now: _landed,
+        permitted: true,
+        prefs: const NotificationPrefs(nudges: false),
+        tips: _next().plan,
+        tipsEnd: _day(2, 19),
+      );
+      expect(
+        plan.where((n) => n.kind == PlanKind.tip).length,
+        lessThan(kNudgesUnanswered),
+      );
     });
   });
 

@@ -16,9 +16,11 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_field.dart';
 import '../../../ui/app_list_item.dart' show HandIconRing;
+import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/allergy_guard.dart';
+import '../domain/daily_targets.dart';
 import '../domain/food_library.dart';
 import '../domain/meal_sentence_parser.dart';
 import '../domain/units.dart';
@@ -48,6 +50,7 @@ Future<ParsedItem?> showFoodPortionSheet({
   int initialServings = 1,
   bool isFavourite = false,
   Future<bool> Function()? onToggleFavourite,
+  DailyTargets? targets,
 }) {
   return showAppSheet<ParsedItem>(
     context: context,
@@ -59,6 +62,7 @@ Future<ParsedItem?> showFoodPortionSheet({
         initialServings: initialServings,
         isFavourite: isFavourite,
         onToggleFavourite: onToggleFavourite,
+        targets: targets,
       ),
     ],
   );
@@ -73,6 +77,7 @@ class FoodPortionPanel extends StatefulWidget {
     this.initialServings = 1,
     this.isFavourite = false,
     this.onToggleFavourite,
+    this.targets,
   });
 
   final Food food;
@@ -81,6 +86,10 @@ class FoodPortionPanel extends StatefulWidget {
   final int initialServings;
   final bool isFavourite;
   final Future<bool> Function()? onToggleFavourite;
+
+  /// Her day's targets. Null, or the typical-day defaults, hides the "Impact on
+  /// today" rings: a percent of a target she never set would mislead.
+  final DailyTargets? targets;
 
   @override
   State<FoodPortionPanel> createState() => _FoodPortionPanelState();
@@ -290,6 +299,12 @@ class _FoodPortionPanelState extends State<FoodPortionPanel> {
             ),
           ],
         ],
+        if (item != null &&
+            widget.targets != null &&
+            !widget.targets!.usesDefaults) ...[
+          const SizedBox(height: 14),
+          _ImpactOnToday(item: item, targets: widget.targets!),
+        ],
         const SizedBox(height: 14),
         Text(
           item == null
@@ -350,6 +365,74 @@ class _StepButton extends StatelessWidget {
           color: onPressed == null ? AppColors.outline : AppColors.primaryDim,
         ),
       ),
+    );
+  }
+}
+
+/// "Impact on today": what this portion adds, as a share of her day's calories
+/// and protein. A share of what she is aiming at, never a count of what is
+/// left, so it only ever grows with the amount.
+class _ImpactOnToday extends StatelessWidget {
+  const _ImpactOnToday({required this.item, required this.targets});
+
+  final ParsedItem item;
+  final DailyTargets targets;
+
+  static int _percent(int amount, int target) =>
+      target <= 0 ? 0 : (amount * 100 / target).round();
+
+  Widget _ring(
+    AppL10n l10n, {
+    required Key key,
+    required String name,
+    required int percent,
+    required Color colour,
+  }) {
+    return Semantics(
+      label: '$name, ${l10n.percentOfYourTargetToday(countLabel(percent))}',
+      excludeSemantics: true,
+      child: AppRingStat(
+        key: key,
+        fraction: percent / 100,
+        big: l10n.percent(countLabel(percent)),
+        small: name,
+        size: 84,
+        thickness: 9,
+        color: colour,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return Column(
+      key: const ValueKey('portion-impact'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(l10n.impactOnToday, style: AppText.titleS),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _ring(
+              l10n,
+              key: const ValueKey('portion-impact-protein'),
+              name: l10n.protein,
+              percent: _percent(item.proteinG, targets.proteinG),
+              colour: AppColors.tertiarySoft,
+            ),
+            _ring(
+              l10n,
+              key: const ValueKey('portion-impact-kcal'),
+              name: l10n.kcal,
+              percent: _percent(item.kcal, targets.kcal),
+              colour: AppColors.primary,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

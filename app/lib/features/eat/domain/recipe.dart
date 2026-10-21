@@ -6,9 +6,12 @@
 ///
 /// ## Two kinds, and the difference is visible on screen
 ///
-/// [RecipeSource.book] and [RecipeSource.authored] are **Rahma's**. Her card,
-/// her Egyptian colloquial, her name. Every one of them is written by her and
-/// cooked before it publishes.
+/// [RecipeSource.book] and [RecipeSource.authored] are **recipes with a person
+/// behind them**, and which person is on the row: [Recipe.authoredBy]. A book
+/// card is Rahma's, in her Egyptian colloquial, with her name. An authored one
+/// may be Own Hub's kitchen's ([kOwnHubKitchen]): written in the app's neutral
+/// voice, in English and Egyptian Arabic, never drawn as hers. Every one of them
+/// is cooked and allergen-checked by a person before it publishes.
 ///
 /// [RecipeSource.assembly] is **not a recipe and is not presented as one**: a
 /// named combination of verified `foods` rows with stated portions and no
@@ -44,12 +47,19 @@ library;
 
 import 'package:meta/meta.dart';
 
+import 'meal_images.dart';
+
+/// The `authoredBy` of a recipe Own Hub's kitchen wrote, and of the structured
+/// record behind every book card. Never Rahma: a card written here is not hers.
+const String kOwnHubKitchen = 'ownhub_kitchen';
+
 /// Who wrote it, and therefore how it is drawn.
 enum RecipeSource {
   /// From `Rahoma's Recipe Book.pdf`. [Recipe.sourcePage] says which page.
   book,
 
-  /// Written by Rahma afterwards, in the same voice, through the same gate.
+  /// Written afterwards through the same gate: by Rahma, in her voice, or by
+  /// Own Hub's kitchen ([kOwnHubKitchen]), in English and Egyptian Arabic.
   authored,
 
   /// A combination of verified foods. Not hers, not on her card. See the file
@@ -169,12 +179,14 @@ class RecipeIngredient {
     this.optional = false,
     this.servingSideOnly = false,
     this.brandHint,
+    this.qtyTextEn,
   });
 
   factory RecipeIngredient.fromJson(Map<String, Object?> json) =>
       RecipeIngredient(
         ingredientRef: json['ingredientRef']! as String,
         qtyTextAr: json['qtyTextAr']! as String,
+        qtyTextEn: json['qtyTextEn'] as String?,
         gramsBasis: GramsBasis.fromWire(json['gramsBasis'] as String? ?? ''),
         foodId: json['foodId'] as String?,
         grams: json['grams'] as int?,
@@ -205,6 +217,15 @@ class RecipeIngredient {
   /// and the stored string stays the verbatim slice the substring test checks.
   String get qtyLine => qtyTextAr.replaceAll('\n', ' ');
 
+  /// The same phrase in English, on a recipe Own Hub wrote. Null on a book card:
+  /// her words are never translated.
+  final String? qtyTextEn;
+
+  /// The phrase in the language she reads, falling back to [qtyLine] where
+  /// there is no English.
+  String qtyLineFor({required bool arabic}) =>
+      arabic ? qtyLine : (qtyTextEn ?? qtyLine);
+
   final int? grams;
   final GramsBasis gramsBasis;
   final String? gramsNote;
@@ -233,11 +254,13 @@ class RecipeStep {
     this.tempC,
     this.tool,
     this.isTimer = false,
+    this.textEn,
   });
 
   factory RecipeStep.fromJson(Map<String, Object?> json) => RecipeStep(
     index: json['index']! as int,
     textAr: json['textAr']! as String,
+    textEn: json['textEn'] as String?,
     usesRefs: ((json['usesRefs'] as List?) ?? const []).cast<String>(),
     minutes: json['minutes'] as int?,
     tempC: json['tempC'] as int?,
@@ -250,6 +273,13 @@ class RecipeStep {
 
   /// Her sentence. A test asserts this is a substring of [Recipe.bodyAr].
   final String textAr;
+
+  /// The same step in English, on a recipe Own Hub wrote. Null on a book card.
+  final String? textEn;
+
+  /// The step in the language she reads, falling back to [textAr].
+  String textFor({required bool arabic}) =>
+      arabic ? textAr : (textEn ?? textAr);
 
   final int? minutes;
   final int? tempC;
@@ -356,6 +386,16 @@ class RecipeSection {
   final String markKey;
 }
 
+/// Recipe id to the painted dish that truly is its main dish. Only exact
+/// matches belong here; a recipe with no such dish keeps the drawn mark.
+const Map<String, String> kRecipeDishPicture = {
+  'rahma_shakshoka': 'shakshuka',
+  'rahma_fattah': 'fattah_chicken',
+  'rahma_hwawshi': 'hawawshi',
+  'rahma_fool_wa_ta3mya': 'ful_taameya_breakfast',
+  'ownhub_light_mahshi_peppers': 'mahshi_peppers',
+};
+
 @immutable
 class Recipe {
   const Recipe({
@@ -402,6 +442,7 @@ class Recipe {
     this.cookedAt,
     this.markKey,
     this.photoPath,
+    this.reviewNotes = const [],
   });
 
   factory Recipe.fromJson(Map<String, Object?> json) => Recipe(
@@ -462,9 +503,20 @@ class Recipe {
     brandHints: ((json['brandHints'] as Map?) ?? const {})
         .cast<String, Object?>()
         .map((k, v) => MapEntry(k, v as String? ?? '')),
+    reviewNotes: ((json['reviewNotes'] as List?) ?? const []).cast<String>(),
   );
 
   final String recipeId;
+
+  /// The painted picture: the recipe's own when it has one, else the painted
+  /// picture of its main dish where [kRecipeDishPicture] names one, else null
+  /// and the screen keeps its drawn mark.
+  String? get imageAsset =>
+      MealImages.assetFor(recipeId) ??
+      switch (kRecipeDishPicture[recipeId]) {
+        final foodId? => MealImages.assetFor(foodId),
+        null => null,
+      };
   final RecipeSource source;
   final String sectionId;
   final int orderInSection;
@@ -568,6 +620,15 @@ class Recipe {
 
   /// ingredientRef, or her quantity phrase, to the brand she names.
   final Map<String, String> brandHints;
+
+  /// What a reviewer should know before signing: which amounts are ours, what
+  /// the figures leave out. English, for the dashboard; never drawn to a woman.
+  final List<String> reviewNotes;
+
+  /// Written by Own Hub's kitchen rather than taken from Rahma's book. It reads
+  /// in the app's language and is never drawn as her card.
+  bool get isOwnHub =>
+      source == RecipeSource.authored && authoredBy == kOwnHubKitchen;
 
   /// True when a person has signed what is in this dish.
   ///

@@ -186,6 +186,35 @@ test('exercise demonstrations are public; any other content path needs a sign-in
   await assertFails(put(anon(), 'content/exercises/squat/new.mp4', 16, 'video/mp4'));
 });
 
+// ---------------------------------------------------------------- events
+
+test('event pictures and clips: the admin writes them, within the limits', async () => {
+  await assertSucceeds(put(admin(), 'content/events/e1/a.webp', MB, 'image/webp'));
+  await assertSucceeds(put(admin(), 'content/events/e1/b.jpg', 1024, 'image/jpeg'));
+  await assertSucceeds(put(admin(), 'content/events/e1/c.mp4', 10 * MB, 'video/mp4'));
+  await assertFails(put(admin(), 'content/events/e1/big.webp', MB + 1, 'image/webp'));
+  await assertFails(put(admin(), 'content/events/e1/big.mp4', 10 * MB + 1, 'video/mp4'));
+  await assertFails(put(admin(), 'content/events/e1/x.png', 1024, 'image/png'));
+  await assertFails(put(admin(), 'content/events/e1/x.webm', 1024, 'video/webm'));
+  await assertFails(put(admin(), 'content/events/e1/x.pdf', 1024, 'application/pdf'));
+});
+
+test('event media: a member cannot write or delete it', async () => {
+  await seed('content/events/e1/a.webp', 'image/webp');
+  await assertFails(put(her(), 'content/events/e1/new.webp', 1024, 'image/webp'));
+  await assertFails(put(anon(), 'content/events/e1/new.webp', 1024, 'image/webp'));
+  await assertFails(deleteObject(ref(her(), 'content/events/e1/a.webp')));
+  await assertSucceeds(deleteObject(ref(admin(), 'content/events/e1/a.webp')));
+});
+
+test('event media is read by verified members and the admin, not by the rest', async () => {
+  await seed('content/events/e1/a.webp', 'image/webp');
+  await assertSucceeds(getBytes(ref(her(), 'content/events/e1/a.webp')));
+  await assertSucceeds(getBytes(ref(admin(), 'content/events/e1/a.webp')));
+  await assertFails(getBytes(ref(her({}), 'content/events/e1/a.webp')));
+  await assertFails(getBytes(ref(anon(), 'content/events/e1/a.webp')));
+});
+
 // ------------------------------------------------- as the rules ship (APL-16)
 
 test('as shipped: nothing can be written to her media or to coach-docs', async () => {

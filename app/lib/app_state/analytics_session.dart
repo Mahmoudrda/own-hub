@@ -131,20 +131,4 @@ abstract final class AnalyticsSession {
       ),
     );
   }
-
-  /// She turned the kitten's movement on or off.
-  static void kittenChanged(bool moves) {
-    final word = moves ? 'on' : 'off';
-    unawaited(
-      AppRouter.analytics.track(AnalyticsEvent.kittenToggled, {
-        AnalyticsProp.outcome: AnalyticsValue.token(word),
-      }),
-    );
-    unawaited(
-      AppRouter.analytics.setUserProperty(
-        AnalyticsUserProperty.kittenMoves,
-        word,
-      ),
-    );
-  }
 }

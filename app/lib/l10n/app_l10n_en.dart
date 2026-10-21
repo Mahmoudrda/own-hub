@@ -8561,9 +8561,6 @@ class AppL10nEn extends AppL10n {
   String get yourWeekShowsHere => 'Your week shows here';
 
   @override
-  String get movingKitten => 'Moving kitten';
-
-  @override
   String get theKittenShowsYouAroundAndMoves =>
       'The kitten shows you around and moves once when it appears.';
 
@@ -11068,4 +11065,566 @@ class AppL10nEn extends AppL10n {
   String betweenMinAndMaxYears(String min, String max) {
     return 'Between $min and $max years';
   }
+
+  @override
+  String get scanYourMealWithTheCamera => 'Scan your meal with the camera';
+
+  @override
+  String get onePhotoForCaloriesAndProtein =>
+      'One photo for calories and protein';
+
+  @override
+  String get scanWithTheCameraInstead => 'Scan with the camera instead';
+
+  @override
+  String get scan => 'Scan';
+
+  @override
+  String get yourCoachRepliedToYourReview =>
+      'Your coach replied to your review';
+
+  @override
+  String get yourGroupReachedANewMilestone =>
+      'Your group reached a new milestone';
+
+  @override
+  String get yourBestGotAFewLikes => 'Your best got a few likes';
+
+  @override
+  String get aGentleNudgeToLogYourMeal => 'A gentle nudge to log your meal';
+
+  @override
+  String get yourWeekIsWrappedUpSeeHow =>
+      'Your week is wrapped up. See how it went';
+
+  @override
+  String get yourLevelHasChanged => 'Your level has changed';
+
+  @override
+  String get thereIsAnUpdateOnYourVerification =>
+      'There is an update on your verification';
+
+  @override
+  String get egyptianDishes => 'Egyptian dishes';
+
+  @override
+  String get proteins => 'Proteins';
+
+  @override
+  String get dairyAndCheese => 'Dairy and cheese';
+
+  @override
+  String get grainsAndBreads => 'Grains and breads';
+
+  @override
+  String get vegetablesAndSalads => 'Vegetables and salads';
+
+  @override
+  String get fruitsAndNuts => 'Fruits and nuts';
+
+  @override
+  String get snacksAndDrinks => 'Snacks and drinks';
+
+  @override
+  String get foodCategories => 'Food categories';
+
+  @override
+  String get fishIsDoneWhenItTurnsOpaque =>
+      'Fish is done when it turns opaque all through and flakes easily with a fork.';
+
+  @override
+  String get fromTheOwnHubKitchen => 'From the Own Hub kitchen';
+
+  @override
+  String get theIngredientsAreGenericReadTheLabel =>
+      'The ingredients are generic. Read the label on each product yourself before use.';
+
+  @override
+  String get theBookGivesThisOneAsA =>
+      'The book gives this one as a list of what goes in, with no method.';
+
+  @override
+  String get reserveMySeat => 'Reserve my seat';
+
+  @override
+  String get cancelMyReservation => 'Cancel my reservation';
+
+  @override
+  String get yourSeatIsReserved => 'Your seat is reserved';
+
+  @override
+  String get openInMaps => 'Open in Maps';
+
+  @override
+  String get full => 'Full';
+
+  @override
+  String remainingOfCapacitySeatsLeft(String remaining, String capacity) {
+    return '$remaining of $capacity seats left';
+  }
+
+  @override
+  String get thisEventIsFull => 'This event is full.';
+
+  @override
+  String get reservationsForThisEventAreClosed =>
+      'Reservations for this event are closed.';
+
+  @override
+  String get onlyVerifiedMembersCanReserveASeat =>
+      'Only verified members can reserve a seat.';
+
+  @override
+  String get updateOwnHubToReserveASeat => 'Update Own Hub to reserve a seat.';
+
+  @override
+  String get weCouldNotUpdateYourReservationCheck =>
+      'We could not update your reservation. Check your connection and try again.';
+
+  @override
+  String get streetAddressOptional => 'Street address (optional)';
+
+  @override
+  String get googleMapsLinkOptional => 'Google Maps link (optional)';
+
+  @override
+  String get shareThePlaceFromGoogleMapsAnd =>
+      'Share the place from Google Maps and paste the link here.';
+
+  @override
+  String get theVenuesNameLikeZamalekLadiesGym =>
+      'The venue\'s name, like Zamalek ladies gym.';
+
+  @override
+  String get seatsMembersCanReserveOptional =>
+      'Seats members can reserve (optional)';
+
+  @override
+  String get reservingWorksOnlyWhenThisIsSet =>
+      'Reserving works only when this is set.';
+
+  @override
+  String get eventPictures => 'Event pictures';
+
+  @override
+  String get eventVideos => 'Event videos';
+
+  @override
+  String get noVideosInTheMediaLibraryYet =>
+      'No videos in the media library yet.';
+
+  @override
+  String get useALinkFromGoogleMaps => 'Use a link from Google Maps.';
+
+  @override
+  String get checkThisFileName => 'Check this file name.';
+
+  @override
+  String get thatPhotoIsTooDarkTryAgain =>
+      'That photo is too dark. Try again with more light.';
+
+  @override
+  String get helpOtherWomenLogThisDish => 'Help other women log this dish';
+
+  @override
+  String get recommendedForYou => 'Recommended for you';
+
+  @override
+  String get buildMyOwnWorkout => 'Build my own workout';
+
+  @override
+  String get seeAllPrograms => 'See all programs';
+
+  @override
+  String get videoAvailable => 'Video available';
+
+  @override
+  String get formCues => 'Form cues';
+
+  @override
+  String get chooseYourProgram => 'Choose your program';
+
+  @override
+  String get atALadiesOnlyGym => 'At a ladies-only gym';
+
+  @override
+  String get atHomeAndTheGym => 'At home and the gym';
+
+  @override
+  String minutesMinASession(String minutes) {
+    return '$minutes min a session';
+  }
+
+  @override
+  String get switchPlanOrPickAnySession => 'Switch plan or pick any session';
+
+  @override
+  String get saveAsMyWorkout => 'Save as my workout';
+
+  @override
+  String get myWorkouts => 'My workouts';
+
+  @override
+  String get myWorkout => 'My workout';
+
+  @override
+  String addSelectedN(String n) {
+    return 'Add selected ($n)';
+  }
+
+  @override
+  String removedName(String name) {
+    return 'Removed $name';
+  }
+
+  @override
+  String deletedName(String name) {
+    return 'Deleted $name';
+  }
+
+  @override
+  String get editThisMove => 'Edit this move';
+
+  @override
+  String get moveEarlier => 'Move earlier';
+
+  @override
+  String get moveLater => 'Move later';
+
+  @override
+  String get workoutName => 'Workout name';
+
+  @override
+  String get startNow => 'Start now';
+
+  @override
+  String get deleteThisWorkout => 'Delete this workout';
+
+  @override
+  String get addAtLeastOneMove => 'Add at least one move';
+
+  @override
+  String get savedToYourWorkouts => 'Saved to your workouts';
+
+  @override
+  String get pickYourMoves => 'Pick your moves';
+
+  @override
+  String get buildYourWorkout => 'Build your workout';
+
+  @override
+  String get editYourWorkout => 'Edit your workout';
+
+  @override
+  String get changesHereAreForTodayOnly => 'Changes here are for today only';
+
+  @override
+  String get nameYourWorkout => 'Name your workout';
+
+  @override
+  String get decrease => 'Decrease';
+
+  @override
+  String get increase => 'Increase';
+
+  @override
+  String get addingUpYourMeal => 'Adding up your meal';
+
+  @override
+  String get doesThisLookRight => 'Does this look right?';
+
+  @override
+  String get yes_6deo => 'Yes';
+
+  @override
+  String get log => 'Log';
+
+  @override
+  String get snacks => 'Snacks';
+
+  @override
+  String get nothingYet => 'Nothing yet';
+
+  @override
+  String get yourBreakfastPicks => 'Your breakfast picks';
+
+  @override
+  String get yourLunchPicks => 'Your lunch picks';
+
+  @override
+  String get yourDinnerPicks => 'Your dinner picks';
+
+  @override
+  String get yourSnackPicks => 'Your snack picks';
+
+  @override
+  String get impactOnToday => 'Impact on today';
+
+  @override
+  String logMeal(String meal) {
+    return 'Log $meal';
+  }
+
+  @override
+  String percent(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String percentOfYourTargetToday(String percent) {
+    return '$percent% of your target today';
+  }
+
+  @override
+  String get bodyweight => 'Bodyweight';
+
+  @override
+  String decreaseLabel(String label) {
+    return 'Decrease $label';
+  }
+
+  @override
+  String increaseLabel(String label) {
+    return 'Increase $label';
+  }
+
+  @override
+  String get noneOfTheseMovesSuitYouRight =>
+      'None of these moves suit you right now, so this workout was not started.';
+
+  @override
+  String get weLeftOutMovesThatDoNot =>
+      'We left out moves that do not suit you right now.';
+
+  @override
+  String get leaveWithoutSaving => 'Leave without saving?';
+
+  @override
+  String get yourChangesToThisWorkoutWillBe =>
+      'Your changes to this workout will be lost.';
+
+  @override
+  String get keepEditing => 'Keep editing';
+
+  @override
+  String get discardChanges => 'Discard changes';
+
+  @override
+  String nSeatsAreAlreadyReservedSoThe(String n) {
+    return '$n seats are already reserved, so the limit cannot be lower than that.';
+  }
+
+  @override
+  String get thatPhotoLooksBlankCheckTheLens =>
+      'That photo looks blank. Check the lens and try again.';
+
+  @override
+  String get friendlyNudges => 'Friendly nudges';
+
+  @override
+  String get aShortFriendlyNoteAtMostOnce =>
+      'A short, friendly note at most once a day, never at night.';
+
+  @override
+  String get atMostOneADayAndNever => 'At most one a day, and never at night.';
+
+  @override
+  String get nothingMatchesYetTryTakingOneFilter =>
+      'Nothing matches yet. Try taking one filter off.';
+
+  @override
+  String get takeADeepBreath => 'Take a deep breath';
+
+  @override
+  String get breatheIn => 'Breathe in';
+
+  @override
+  String get breatheOut => 'Breathe out';
+
+  @override
+  String get drawATickToPromiseYourself => 'Draw a tick to promise yourself';
+
+  @override
+  String get iPromise => 'I promise';
+
+  @override
+  String get drawItInTheBoxDownThen =>
+      'Draw it in the box: down, then up and to the right';
+
+  @override
+  String get drawingBoxForYourTick => 'Drawing box for your tick';
+
+  @override
+  String get freshWeekAheadPickADayOr =>
+      'Fresh week ahead. Pick a day or two that suit you, only if you feel like it.';
+
+  @override
+  String get aNewWeekIsComingHaveA =>
+      'A new week is coming. Have a calm look at what could fit your days.';
+
+  @override
+  String get aNewWeekStartsTomorrowPlanIt =>
+      'A new week starts tomorrow. Plan it at your pace, or leave it for later.';
+
+  @override
+  String get yourNextWeekIsWideOpenPick =>
+      'Your next week is wide open. Pick a day that suits you, no rush.';
+
+  @override
+  String get tryOnceMoreOrTapIPromise => 'Try once more, or tap I promise';
+
+  @override
+  String countPluralOneShow1ResultOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count results',
+      one: 'Show 1 result',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOneShow1MoveOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count moves',
+      one: 'Show 1 move',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youCanKeepUpToMaxWorkouts(String max) {
+    return 'You can keep up to $max workouts. Delete one to save a new one.';
+  }
+
+  @override
+  String chooseAtMostPicturesPicturesAndClips(String pictures, String clips) {
+    return 'Choose at most $pictures pictures and $clips videos.';
+  }
+
+  @override
+  String get inRahmasWordsAsWrittenInHer =>
+      'In Rahma\'s words, as written in her book';
+
+  @override
+  String get readToTheEndToAgree => 'Read to the end to agree.';
+
+  @override
+  String get january => 'January';
+
+  @override
+  String get february => 'February';
+
+  @override
+  String get march => 'March';
+
+  @override
+  String get april => 'April';
+
+  @override
+  String get may => 'May';
+
+  @override
+  String get july => 'July';
+
+  @override
+  String get august => 'August';
+
+  @override
+  String get october => 'October';
+
+  @override
+  String get november => 'November';
+
+  @override
+  String get december => 'December';
+
+  @override
+  String monthYear(String month, String year) {
+    return '$month $year';
+  }
+
+  @override
+  String dayMonthYear(String day, String month, String year) {
+    return '$day $month $year';
+  }
+
+  @override
+  String minutesMinYourProgram(String minutes) {
+    return '$minutes min · your program';
+  }
+
+  @override
+  String fullBodyStrengthMinutesMin(String minutes) {
+    return 'Full-body strength, $minutes min';
+  }
+
+  @override
+  String get onceADayQuiet10pmTo8am => 'Once a day, quiet 10pm to 8am';
+
+  @override
+  String get onlyTheDishWhatsInItAnd =>
+      'Only the dish, what\'s in it and its numbers are shared, never your photo or your name.';
+
+  @override
+  String get yourMealsWorkoutsWeightPhotosAndPhone_z6z34 =>
+      'Your meals, workouts, weight, photos and phone number are never visible to another member, except a dish you choose to share, without your name. These settings are only about what you choose to show.';
+
+  @override
+  String get weKeepAFingerprintOfThePhoto =>
+      'We keep a fingerprint of the photo and the foods found for 30 days, to answer the same photo again. Nothing in it identifies you.';
+
+  @override
+  String get goodMorningLookingForABreakfastIdea =>
+      'Good morning. Looking for a breakfast idea? There are quick ones in the recipes.';
+
+  @override
+  String get morningHadBreakfastYetLogItIn =>
+      'Morning. Had breakfast yet? Log it in a tap whenever you are ready.';
+
+  @override
+  String get teaFirstOrBreakfastAFewEasy =>
+      'Tea first, or breakfast? A few easy morning ideas are waiting in the recipes.';
+
+  @override
+  String get breakfastOnYourPlateOnePhotoOr =>
+      'Breakfast on your plate? One photo or one tap and it is logged.';
+
+  @override
+  String get busyDayTenQuietMinutesOnYour =>
+      'Busy day? Ten quiet minutes on your mat still count for your week.';
+
+  @override
+  String get notFeelingAFullSessionOneMove =>
+      'Not feeling a full session? One move on the mat is plenty today.';
+
+  @override
+  String get aShortMoveAtHomeNoKit =>
+      'A short move at home, no kit, no rush. Only if it suits your afternoon.';
+
+  @override
+  String get tenMinutesInYourLivingRoomIs =>
+      'Ten minutes in your living room is a real workout. Pick one move and begin.';
+
+  @override
+  String get wonderingWhatIsForDinnerALight =>
+      'Wondering what is for dinner? A light recipe takes about ten minutes.';
+
+  @override
+  String get hadDinnerAddItToYourDay =>
+      'Had dinner? Add it to your day in a tap, or with one photo.';
+
+  @override
+  String get somethingWarmTonightHaveALookAt =>
+      'Something warm tonight? Have a look at the dinner ideas in the recipes.';
+
+  @override
+  String get eatingDinnerSoonLogItInOne =>
+      'Eating dinner soon? Log it in one tap and it joins your day.';
+
+  @override
+  String get openEventLink => 'Open event link';
 }

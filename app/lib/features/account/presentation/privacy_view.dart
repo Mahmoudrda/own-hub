@@ -52,8 +52,11 @@
 /// a handset with no signal.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../app_state/community_foods_state.dart';
 import '../../../app_state/honest_notice.dart';
 
 import '../../../config/legal_links.dart';
@@ -91,7 +94,12 @@ class PrivacyView extends StatefulWidget {
     this.onCrashReportsChanged,
     this.analyticsAllowed = false,
     this.onAnalyticsChanged,
+    this.community,
   });
+
+  /// Her choice to offer the dishes she logs from a photo to the shared list.
+  /// Null hides the row.
+  final CommunityFoodsState? community;
 
   /// Whether she has allowed usage statistics.
   final bool analyticsAllowed;
@@ -143,6 +151,13 @@ class _PrivacyViewState extends State<PrivacyView> {
   late bool _crashReports = widget.crashReportsAllowed;
 
   late bool _analytics = widget.analyticsAllowed;
+
+  @override
+  void initState() {
+    super.initState();
+    final community = widget.community;
+    if (community != null) unawaited(community.loadSettings());
+  }
 
   Future<void> _toggleAnalytics(bool value) async {
     final change = widget.onAnalyticsChanged;
@@ -347,7 +362,7 @@ class _PrivacyViewState extends State<PrivacyView> {
         // her ID card and selfie are never stored.
         AppSageNote(
           _community
-              ? l10n.yourMealsWorkoutsWeightPhotosAndPhone
+              ? l10n.yourMealsWorkoutsWeightPhotosAndPhone_z6z34
               : l10n.yourWorkoutsMealsAndSetupAnswersAre,
         ),
 
@@ -508,6 +523,29 @@ class _PrivacyViewState extends State<PrivacyView> {
               onChanged: (value) => _toggleAnalytics(value),
             ),
             onTap: () => _toggleAnalytics(!_analytics),
+          ),
+
+        // The shared dish list: on until she turns it off, and it can be turned
+        // off here at any time, not only on the screen that first explains it.
+        if (widget.community case final CommunityFoodsState community)
+          ListenableBuilder(
+            listenable: community,
+            builder: (context, _) => AppListItem(
+              leading: const Icon(
+                Icons.restaurant_outlined,
+                size: 24,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.helpOtherWomenLogThisDish,
+              subtitle: l10n.onlyTheDishWhatsInItAnd,
+              trailing: AppToggle(
+                key: const ValueKey('share-dishes-toggle'),
+                value: community.sharing,
+                semanticLabel: l10n.helpOtherWomenLogThisDish,
+                onChanged: (on) => unawaited(community.setSharing(on)),
+              ),
+              onTap: () => unawaited(community.setSharing(!community.sharing)),
+            ),
           ),
 
         // The two public pages the stores require to be reachable from inside

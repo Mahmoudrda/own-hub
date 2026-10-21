@@ -45,6 +45,7 @@ import '../../../ui/content_image.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_segmented.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../ui/meal_image.dart';
 import '../../account/presentation/allergen_labels.dart';
 import '../domain/recipe.dart';
 import 'recipe_labels.dart';
@@ -59,6 +60,7 @@ String? donenessLine(AppL10n l10n, String? token) => switch (token) {
   'mince_cooked_through' => l10n.mincedMeatIsDoneWhenNoPink,
   'liver_cooked_through' => l10n.liverIsDoneWhenItIsFirm,
   'shrimp_opaque' => l10n.shrimpIsDoneWhenItTurnsOpaque,
+  'fish_flakes' => l10n.fishIsDoneWhenItTurnsOpaque,
   'egg_set' => l10n.eggIsDoneWhenTheWhiteIs,
   'baked_egg_set' => l10n.eggIsDoneWhenTheWhiteIs,
   // A token this build does not know is shown as nothing rather than as the
@@ -120,6 +122,9 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
     return PaperPage(
       color: BookInk.bg,
       child: AppScaffold(
+        // The recipe's own picture, or the drawn mark: never the screen's stock
+        // illustration, which would show a buddha bowl above a shakshoka.
+        showArt: false,
         backgroundColor: Colors.transparent,
         appBar: AppTopBar(
           onBack: widget.onBack,
@@ -154,7 +159,9 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
                 kind: AppMediaKind.photo,
                 showPlayButton: false,
               ),
-            ),
+            )
+          else if (recipe.imageAsset case final painted?)
+            Center(child: MealImage(asset: painted, size: 180)),
           BookCard(
             cardId: recipe.recipeId,
             markKey: recipe.markKey,
@@ -162,21 +169,55 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                BookTitle(
-                  titleEn: recipe.titleEn,
-                  style: EditorialType.section.copyWith(color: BookInk.ink),
-                ),
-                if (recipe.titleAr != null) ...[
-                  const SizedBox(height: 6),
+                if (AppL10n.of(context).localeName.startsWith('ar') &&
+                    recipe.titleAr != null) ...[
+                  // The Arabic title leads in the Arabic UI; the Latin one is
+                  // the book's spelling and comes second, smaller.
                   _Hers(
                     child: Text(
                       recipe.titleAr!,
-                      style: AppText.titleM.copyWith(color: BookInk.roseTitle),
+                      style: EditorialType.section.copyWith(
+                        color: BookInk.roseTitle,
+                      ),
                     ),
+                  ),
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: BookTitle(
+                      titleEn: recipe.titleEn,
+                      style: AppText.titleM.copyWith(color: BookInk.ink),
+                    ),
+                  ),
+                ] else ...[
+                  BookTitle(
+                    titleEn: recipe.titleEn,
+                    style: EditorialType.section.copyWith(color: BookInk.ink),
+                  ),
+                  if (recipe.titleAr != null) ...[
+                    const SizedBox(height: 6),
+                    _Hers(
+                      child: Text(
+                        recipe.titleAr!,
+                        style: AppText.titleM.copyWith(
+                          color: BookInk.roseTitle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+                // Whose recipe it is, said in the app's voice where the page
+                // would otherwise read as hers.
+                if (recipe.isOwnHub) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.fromTheOwnHubKitchen,
+                    key: const ValueKey('e06-own-hub-byline'),
+                    style: AppText.label.copyWith(color: BookInk.inkSoft),
                   ),
                 ],
                 const SizedBox(height: 12),
-                if (_tab == 0)
+                if (_tab == 0 || recipe.isOwnHub)
                   _Structured(
                     recipe: recipe,
                     cookMode: _cookMode,
@@ -212,11 +253,14 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
               ],
             ),
           ),
-          AppSegmented(
-            items: [l10n.ingredientsAndSteps, l10n.asItIsInTheBook],
-            selectedIndex: _tab,
-            onChanged: (i) => setState(() => _tab = i),
-          ),
+          // The card as printed exists only for a book card; Own Hub's own
+          // recipes have no page to show.
+          if (!recipe.isOwnHub)
+            AppSegmented(
+              items: [l10n.ingredientsAndSteps, l10n.asItIsInTheBook],
+              selectedIndex: _tab,
+              onChanged: (i) => setState(() => _tab = i),
+            ),
           // ---------------------------------------------------- the careful half
           //
           // Everything below this line is the app speaking, not Rahma. It is on
@@ -262,7 +306,9 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
               ],
               const SizedBox(height: 12),
               Text(
-                l10n.theIngredientsAreRahmasReadTheLabel,
+                recipe.isOwnHub
+                    ? l10n.theIngredientsAreGenericReadTheLabel
+                    : l10n.theIngredientsAreRahmasReadTheLabel,
                 style: AppText.bodyM.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
@@ -293,6 +339,27 @@ class _Hers extends StatelessWidget {
   );
 }
 
+/// A line of a recipe in the direction it is written in.
+///
+/// Her cards are always right to left. A recipe Own Hub wrote reads in the
+/// app's language, so its English is left to the surrounding direction.
+class _Written extends StatelessWidget {
+  const _Written({required this.arabic, required this.child});
+
+  final bool arabic;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => arabic
+      ? _Hers(child: child)
+      : SizedBox(width: double.infinity, child: child);
+}
+
+/// Whether the text of [recipe] is drawn in Arabic: always for a book card,
+/// and for Own Hub's own recipes when the app is in Arabic.
+bool _arabicText(BuildContext context, Recipe recipe) =>
+    !recipe.isOwnHub || AppL10n.of(context).localeName.startsWith('ar');
+
 /// Her ingredients and steps, lifted out of the card.
 class _Structured extends StatelessWidget {
   const _Structured({
@@ -318,6 +385,7 @@ class _Structured extends StatelessWidget {
     // `Fattah` keeps all eleven of its steps in components, so it read as
     // twenty-two; `Makrona Bashmel` eleven for six, `Kebda Meal` nine for six,
     // `Crepe` eight for five.
+    final arabic = _arabicText(context, recipe);
     final steps = recipe.steps;
     // Cook mode is the other case, and it is why `allSteps` still exists: one
     // step at a time has to walk the whole dish in the order the card prints
@@ -344,13 +412,23 @@ class _Structured extends StatelessWidget {
         // of the method and printed here — "the meat", "the oil", "the onion" —
         // under a heading that made the book look as though it had lost the
         // amounts. Saying what the page does give is honest; that list was not.
+        // Her Arabic sits in an English page: say whose words they are.
+        if (!recipe.isOwnHub && !l10n.localeName.startsWith('ar')) ...[
+          Text(
+            l10n.inRahmasWordsAsWrittenInHer,
+            key: const ValueKey('e06-in-her-words'),
+            style: AppText.label.copyWith(color: BookInk.inkSoft),
+          ),
+          const SizedBox(height: 8),
+        ],
         if (recipe.ingredientsBasis != IngredientsBasis.none) ...[
           Text(
             l10n.ingredients,
             style: AppText.titleM.copyWith(color: BookInk.ink),
           ),
           const SizedBox(height: 6),
-          for (final ingredient in main) _IngredientRow(ingredient: ingredient),
+          for (final ingredient in main)
+            _IngredientRow(ingredient: ingredient, arabic: arabic),
         ],
         if (recipe.ingredientsBasis != IngredientsBasis.measures) ...[
           const SizedBox(height: 4),
@@ -359,7 +437,8 @@ class _Structured extends StatelessWidget {
             _ => l10n.theBookNamesWhatGoesInAnd,
           }, style: AppText.bodyM.copyWith(color: BookInk.inkSoft)),
         ],
-        if (main.any((i) => i.gramsBasis == GramsBasis.estimated)) ...[
+        if (!recipe.isOwnHub &&
+            main.any((i) => i.gramsBasis == GramsBasis.estimated)) ...[
           const SizedBox(height: 4),
           Text(
             l10n.theWeightsAreEstimatesExceptWhereThe,
@@ -372,32 +451,47 @@ class _Structured extends StatelessWidget {
             l10n.servedWith,
             style: AppText.titleS.copyWith(color: BookInk.ink),
           ),
-          for (final side in sides) _IngredientRow(ingredient: side),
+          for (final side in sides)
+            _IngredientRow(ingredient: side, arabic: arabic),
         ],
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.steps,
-                style: AppText.titleM.copyWith(color: BookInk.ink),
-              ),
-            ),
-            if (cookSteps.length > 1)
-              TextButton(
-                onPressed: onToggleCookMode,
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(48, 48),
-                  foregroundColor: BookInk.roseTitle,
+        // A card the book prints as a list and nothing more has no method to
+        // head: it says so instead of showing a heading over nothing.
+        if (cookSteps.isEmpty)
+          Text(
+            l10n.theBookGivesThisOneAsA,
+            key: const ValueKey('e06-list-only'),
+            style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+          )
+        else
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.steps,
+                  style: AppText.titleM.copyWith(color: BookInk.ink),
                 ),
-                child: Text(l10n.cookMode, style: AppText.label),
               ),
-          ],
-        ),
-        if (cookMode)
-          _CookMode(steps: cookSteps, index: cookStep, onStep: onStep)
+              if (cookSteps.length > 1)
+                TextButton(
+                  onPressed: onToggleCookMode,
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                    foregroundColor: BookInk.roseTitle,
+                  ),
+                  child: Text(l10n.cookMode, style: AppText.label),
+                ),
+            ],
+          ),
+        if (cookMode && cookSteps.isNotEmpty)
+          _CookMode(
+            steps: cookSteps,
+            index: cookStep,
+            onStep: onStep,
+            arabic: arabic,
+          )
         else ...[
-          for (final step in steps) _StepRow(step: step),
+          for (final step in steps) _StepRow(step: step, arabic: arabic),
           for (final component in recipe.components) ...[
             const SizedBox(height: 14),
             _Hers(
@@ -406,7 +500,8 @@ class _Structured extends StatelessWidget {
                 style: AppText.titleS.copyWith(color: BookInk.ink),
               ),
             ),
-            for (final step in component.steps) _StepRow(step: step),
+            for (final step in component.steps)
+              _StepRow(step: step, arabic: arabic),
           ],
           for (final variant in recipe.variants) ...[
             const SizedBox(height: 14),
@@ -416,7 +511,8 @@ class _Structured extends StatelessWidget {
                 style: AppText.titleS.copyWith(color: BookInk.ink),
               ),
             ),
-            for (final step in variant.steps) _StepRow(step: step),
+            for (final step in variant.steps)
+              _StepRow(step: step, arabic: arabic),
           ],
         ],
       ],
@@ -464,9 +560,10 @@ class _Structured extends StatelessWidget {
 /// ever hidden: `علبة زبادي` is what she wrote and what a woman standing at a
 /// fridge recognises, and `105 جم` is what a scale can act on.
 class _IngredientRow extends StatelessWidget {
-  const _IngredientRow({required this.ingredient});
+  const _IngredientRow({required this.ingredient, required this.arabic});
 
   final RecipeIngredient ingredient;
+  final bool arabic;
 
   @override
   Widget build(BuildContext context) {
@@ -474,7 +571,8 @@ class _IngredientRow extends StatelessWidget {
     final app = Directionality.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
-      child: _Hers(
+      child: _Written(
+        arabic: arabic,
         child: Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           spacing: 8,
@@ -483,7 +581,7 @@ class _IngredientRow extends StatelessWidget {
             // book's line breaks, and a row that wrapped where the page wrapped
             // read as two ingredients.
             Text(
-              ingredient.qtyLine,
+              ingredient.qtyLineFor(arabic: arabic),
               style: AppText.body.copyWith(color: BookInk.ink),
             ),
             // The app's labels, in the app's direction.
@@ -513,9 +611,14 @@ class _IngredientRow extends StatelessWidget {
 
 /// One of her steps, numbered as she numbered it.
 class _StepRow extends StatelessWidget {
-  const _StepRow({required this.step, this.large = false});
+  const _StepRow({
+    required this.step,
+    required this.arabic,
+    this.large = false,
+  });
 
   final RecipeStep step;
+  final bool arabic;
   final bool large;
 
   @override
@@ -527,11 +630,12 @@ class _StepRow extends StatelessWidget {
     final app = Directionality.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: _Hers(
+      child: _Written(
+        arabic: arabic,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(step.textAr, style: body),
+            Text(step.textFor(arabic: arabic), style: body),
             if (step.minutes != null || step.tempC != null)
               Padding(
                 padding: const EdgeInsets.only(top: 5),
@@ -564,8 +668,10 @@ class _CookMode extends StatelessWidget {
     required this.steps,
     required this.index,
     required this.onStep,
+    required this.arabic,
   });
 
+  final bool arabic;
   final List<RecipeStep> steps;
   final int index;
   final void Function(int delta) onStep;
@@ -581,7 +687,7 @@ class _CookMode extends StatelessWidget {
           l10n.stepNOfTotal(countLabel(at + 1), countLabel(steps.length)),
           style: AppText.label.copyWith(color: BookInk.inkSoft),
         ),
-        _StepRow(step: steps[at], large: true),
+        _StepRow(step: steps[at], arabic: arabic, large: true),
         Row(
           children: [
             Expanded(

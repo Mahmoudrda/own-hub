@@ -354,7 +354,11 @@ class FirebaseBackend:
         or coach) with its messages and reviews, coaches/{uid} with everything
         under it (certificates included), the invite codes she shared as a
         coach, results about her on other coaches' pages, and
-        assistantQuota/{uid}. Rows 45 to 49 name these one by one.
+        assistantQuota/{uid}. Rows 45 to 49 name these one by one. Row 53 is her
+        place on each event, given back with the seat count (events/seats.py).
+        Row 54 is her marker under each community food candidate, found by
+        its HMAC of her uid (nutrition/community_foods.py); a candidate's
+        confirmation count stays, as it names no one.
 
         Her comments on ANOTHER woman's post are replaced, not removed, so that
         woman's thread does not silently lose a turn: the document is
@@ -380,6 +384,17 @@ class FirebaseBackend:
         from google.cloud import firestore
 
         db = self.db
+        # Row 53: her seat on every event, each count taken down with it.
+        from events import seats
+
+        seats.release_all(db, uid)
+        # Row 54: her confirmation markers on community food candidates.
+        from identity import store as identity_store
+        from nutrition import community_foods
+
+        community_foods.forget(
+            db, community_foods.marker_id(uid, identity_store.pepper())
+        )
         db.collection("publicProfiles").document(uid).delete()
         db.collection("assistantQuota").document(uid).delete()
 

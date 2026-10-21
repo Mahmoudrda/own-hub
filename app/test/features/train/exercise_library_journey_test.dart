@@ -49,12 +49,16 @@ void main() {
     await _as(LifeStage.none);
   });
 
-  Future<void> scrollTo(WidgetTester tester, Finder finder) =>
-      tester.scrollUntilVisible(
-        finder,
-        300,
-        scrollable: find.byType(Scrollable).first,
-      );
+  Future<void> scrollTo(WidgetTester tester, Finder finder) async {
+    await tester.scrollUntilVisible(
+      finder,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    // Clear of the tab bar under the fold.
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -200));
+    await tester.pumpAndSettle();
+  }
 
   testWidgets('with no library on the phone, Explore says it is on its way', (
     tester,

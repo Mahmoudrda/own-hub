@@ -22,6 +22,7 @@ import '../../../ui/app_chevron.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_step_bar.dart';
 import '../../../ui/hand/hand.dart';
+import 'exercise_labels.dart' show MoveName;
 
 /// A move in the day's list. `moveRow()`.
 class MoveRow extends StatelessWidget {
@@ -33,10 +34,19 @@ class MoveRow extends StatelessWidget {
     this.current = false,
     this.onTap,
     this.note,
+    this.hasClip = false,
+    this.tag,
   });
+
+  /// A short word on the row's trailing edge, such as "Completed" or "Up
+  /// next". Null draws none.
+  final String? tag;
 
   final String name;
   final String detail;
+
+  /// The move has a clip to watch: a small play mark beside the chevron.
+  final bool hasClip;
 
   /// One short line under the prescription — this week's challenge, on the
   /// move it is about (D38). Null draws nothing.
@@ -54,6 +64,7 @@ class MoveRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppListItem(
       title: name,
+      titleWidget: MoveName(name, style: AppText.titleM),
       subtitle: note == null ? detail : '$detail\n$note',
       variant: current ? AppCardVariant.selected : AppCardVariant.outlined,
       onTap: onTap,
@@ -74,7 +85,55 @@ class MoveRow extends StatelessWidget {
       // Forward, which is leftward in Arabic. [AppChevron] resolves that from
       // the ambient Directionality rather than leaving it to a flag on a
       // Material constant that no test here asserts.
-      trailing: const AppChevron(),
+      trailing: tag != null
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  key: const ValueKey('move-row-tag'),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: done
+                        ? AppColors.tertiaryContainer
+                        : AppColors.primaryContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Text(
+                    tag!,
+                    style: AppText.label.copyWith(
+                      fontSize: 13,
+                      color: done
+                          ? AppColors.onTertiaryContainer
+                          : AppColors.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const AppChevron(),
+              ],
+            )
+          : hasClip
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Semantics(
+                  label: AppL10n.of(context).videoAvailable,
+                  child: const ExcludeSemantics(
+                    child: Icon(
+                      Icons.play_circle_outline,
+                      size: 22,
+                      color: AppColors.primaryDim,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const AppChevron(),
+              ],
+            )
+          : const AppChevron(),
     );
   }
 }

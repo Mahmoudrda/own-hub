@@ -4,8 +4,11 @@
 /// Arabic, an English one the English, and the title may not be blank in
 /// either, because the rules refuse it. Times are typed in Cairo time, which is
 /// what members are shown. An online event takes an `https` link; an event in
-/// person takes a place's name and nothing more precise. Capacity is optional
-/// and only shown: there is no sign-up in v1, so nothing is counted against it.
+/// person takes a place's name, an optional street address and an optional
+/// Google Maps link. Seats are optional, but members can reserve only on an
+/// event that has them, and the count of reserved seats is the server's: this
+/// form never writes it. Pictures and clips are chosen from the media library
+/// by name, at most six and two.
 ///
 /// Cancelling asks once, inline, rather than in a dialog: the console raises
 /// no dialogs (see `admin_never_reads_user_data_test.dart`), and a cancelled
@@ -15,6 +18,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -75,11 +79,17 @@ class _EventFormViewState extends State<EventFormView> {
     EventField.endsAt: TextEditingController(text: _initial.endsAt),
     EventField.link: TextEditingController(text: _initial.link),
     EventField.placeName: TextEditingController(text: _initial.placeName),
+    EventField.locationAddress: TextEditingController(
+      text: _initial.locationAddress,
+    ),
+    EventField.locationUrl: TextEditingController(text: _initial.locationUrl),
     EventField.capacity: TextEditingController(text: _initial.capacity),
   };
 
   late EventMode _mode = _initial.mode;
   late String? _cover = _initial.coverFile;
+  late List<String> _images = [..._initial.imageFiles];
+  late List<String> _videos = [..._initial.videoFiles];
   Map<EventField, EventProblem> _problems = const {};
   bool _confirmingCancel = false;
   bool _saving = false;
@@ -104,8 +114,13 @@ class _EventFormViewState extends State<EventFormView> {
     mode: _mode,
     link: _text[EventField.link]!.text,
     placeName: _text[EventField.placeName]!.text,
+    locationAddress: _text[EventField.locationAddress]!.text,
+    locationUrl: _text[EventField.locationUrl]!.text,
     capacity: _text[EventField.capacity]!.text,
+    seatsTaken: _initial.seatsTaken,
     coverFile: _cover,
+    imageFiles: _images,
+    videoFiles: _videos,
   );
 
   Future<void> _save(EventStatus status) async {
@@ -139,7 +154,61 @@ class _EventFormViewState extends State<EventFormView> {
     EventProblem.endBeforeStart => l10n.theEndMustComeAfterTheStart,
     EventProblem.badLink => l10n.useALinkThatStartsWithHttps,
     EventProblem.badCapacity => l10n.aWholeNumberAboveZero,
+    EventProblem.capacityBelowSeats => l10n.nSeatsAreAlreadyReservedSoThe(
+      countLabel(_initial.seatsTaken),
+    ),
+    EventProblem.badMapsLink => l10n.useALinkFromGoogleMaps,
+    EventProblem.tooMany => l10n.chooseAtMostPicturesPicturesAndClips(
+      countLabel(EventMediaLimits.pictures),
+      countLabel(EventMediaLimits.clips),
+    ),
+    EventProblem.badFile => l10n.checkThisFileName,
   };
+
+  /// Picks or drops [name] in [chosen], keeping the order she picked them in.
+  List<String> _toggled(List<String> chosen, String name) =>
+      chosen.contains(name)
+      ? [
+          for (final n in chosen)
+            if (n != name) n,
+        ]
+      : [...chosen, name];
+
+  Widget _picker(
+    AppL10n l10n,
+    EventField field,
+    List<String> options,
+    List<String> chosen,
+    String empty,
+    ValueChanged<String> onToggle,
+  ) {
+    final problem = _problems[field];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (options.isEmpty)
+          Text(
+            empty,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          )
+        else
+          AppChipRow(
+            grow: false,
+            items: options,
+            selected: {
+              for (final n in chosen)
+                if (options.contains(n)) options.indexOf(n),
+            },
+            onTap: (i) => onToggle(options[i]),
+          ),
+        if (problem != null)
+          Text(
+            _message(l10n, problem),
+            style: AppText.bodyM.copyWith(color: AppColors.error),
+          ),
+      ],
+    );
+  }
 
   Widget _field(
     AppL10n l10n,
@@ -163,7 +232,15 @@ class _EventFormViewState extends State<EventFormView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final status = _status;
-    final covers = <String?>[null, ...widget.mediaNames];
+    final pictures = [
+      for (final n in widget.mediaNames)
+        if (isEventPictureName(n)) n,
+    ];
+    final clips = [
+      for (final n in widget.mediaNames)
+        if (isEventClipName(n)) n,
+    ];
+    final covers = <String?>[null, ...pictures];
 
     return AppScaffold(
       appBar: AppTopBar(
@@ -235,12 +312,24 @@ class _EventFormViewState extends State<EventFormView> {
             l10n,
             EventField.placeName,
             l10n.placeName,
-            helper: l10n.aNameIsEnoughNoStreetAddress,
+            helper: l10n.theVenuesNameLikeZamalekLadiesGym,
           ),
+        if (_mode == EventMode.place) ...[
+          _field(l10n, EventField.locationAddress, l10n.streetAddressOptional),
+          _field(
+            l10n,
+            EventField.locationUrl,
+            l10n.googleMapsLinkOptional,
+            helper: l10n.shareThePlaceFromGoogleMapsAnd,
+            direction: TextDirection.ltr,
+            keyboard: TextInputType.url,
+          ),
+        ],
         _field(
           l10n,
           EventField.capacity,
-          l10n.capacityOptional,
+          l10n.seatsMembersCanReserveOptional,
+          helper: l10n.reservingWorksOnlyWhenThisIsSet,
           direction: TextDirection.ltr,
           keyboard: TextInputType.number,
         ),
@@ -252,7 +341,7 @@ class _EventFormViewState extends State<EventFormView> {
             l10n.uploadItsPicturesUnderThisIdId(saved.id),
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
-        if (widget.mediaNames.isEmpty)
+        if (pictures.isEmpty)
           Text(
             l10n.noPicturesInTheMediaLibraryYet,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
@@ -264,6 +353,24 @@ class _EventFormViewState extends State<EventFormView> {
             selected: {covers.indexOf(_cover)},
             onTap: (i) => setState(() => _cover = covers[i]),
           ),
+        AdminSectionHead(l10n.eventPictures),
+        _picker(
+          l10n,
+          EventField.imageFiles,
+          pictures,
+          _images,
+          l10n.noPicturesInTheMediaLibraryYet,
+          (name) => setState(() => _images = _toggled(_images, name)),
+        ),
+        AdminSectionHead(l10n.eventVideos),
+        _picker(
+          l10n,
+          EventField.videoFiles,
+          clips,
+          _videos,
+          l10n.noVideosInTheMediaLibraryYet,
+          (name) => setState(() => _videos = _toggled(_videos, name)),
+        ),
         if (_confirmingCancel) ...[
           Text(l10n.membersWillNoLongerSeeIt, style: AppText.body),
           AppButton(

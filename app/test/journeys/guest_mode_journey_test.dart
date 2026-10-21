@@ -198,7 +198,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(FounderWelcomeView), findsNothing, reason: 'view only');
 
-    await tester.tap(find.byType(AppButton).first);
+    await tester.tap(
+      find.widgetWithText(AppButton, "Start, everything's ready"),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(FounderWelcomeView), findsOneWidget);
     expect(GuestSession.instance.pending?.kind, PendingKind.startWorkout);
@@ -265,7 +267,9 @@ void main() {
       expect(names.names, isNot(contains(appRoutes['C09b']!.name)));
     });
 
-    testWidgets('on a new phone, her cloud profile skips setup', (tester) async {
+    testWidgets('on a new phone, her cloud profile skips setup', (
+      tester,
+    ) async {
       // Verified by her token, nothing set up on this phone, and the pull
       // brings her profile (setupDone) down before the next screen is chosen.
       final saved = AppRouter.verificationBackend;

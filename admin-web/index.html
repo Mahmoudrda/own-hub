@@ -36,6 +36,8 @@
       <button role="tab" id="tab-calendar" aria-controls="panel-calendar" aria-selected="false" tabindex="-1" type="button">Calendar</button>
       <button role="tab" id="tab-phones" aria-controls="panel-phones" aria-selected="false" tabindex="-1" type="button">Pre-approved numbers</button>
       <button role="tab" id="tab-exercises" aria-controls="panel-exercises" aria-selected="false" tabindex="-1" type="button">Exercises</button>
+      <button role="tab" id="tab-events" aria-controls="panel-events" aria-selected="false" tabindex="-1" type="button">Events</button>
+      <button role="tab" id="tab-foods" aria-controls="panel-foods" aria-selected="false" tabindex="-1" type="button">Foods</button>
       <button role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" tabindex="-1" type="button">Settings</button>
     </nav>
 
@@ -113,6 +115,30 @@
       <div id="ex-form"></div>
       <ul class="list" id="ex-list"></ul>
       <p class="empty" id="ex-empty" hidden>No exercises.</p>
+    </section>
+
+    <section id="panel-events" role="tabpanel" aria-labelledby="tab-events" hidden>
+      <div class="card">
+        <h2>Events</h2>
+        <p class="muted">Published events show to verified women, who can reserve a seat until it is full.</p>
+        <button class="btn primary" id="ev-new" type="button">Add event</button>
+      </div>
+      <div id="ev-form"></div>
+      <ul class="list" id="ev-list"></ul>
+      <p class="empty" id="ev-empty" hidden>No events yet.</p>
+    </section>
+
+    <section id="panel-foods" role="tabpanel" aria-labelledby="tab-foods" hidden>
+      <div class="card">
+        <h2>Foods from the meal check</h2>
+        <p class="muted">Meals women confirmed and offered to everyone, most confirmed first. Approve one with names in both languages, a category and its allergens, and every member's phone picks it up within a day.</p>
+      </div>
+      <div id="fd-form"></div>
+      <ul class="list" id="fd-list"></ul>
+      <p class="empty" id="fd-empty" hidden>No foods are waiting.</p>
+      <h2 class="section-title">Published</h2>
+      <ul class="list" id="fd-published"></ul>
+      <p class="empty" id="fd-published-empty" hidden>Nothing published yet.</p>
     </section>
 
     <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>

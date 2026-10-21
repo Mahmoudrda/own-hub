@@ -124,8 +124,16 @@ void main() {
     final shipped = Directory('assets/art')
         .listSync(recursive: true)
         .whereType<File>()
+        // The meal pictures are their own set, governed by meals/index.json
+        // (see meal_images_test.dart).
+        .where((f) => !f.path.contains('assets/art/meals/'))
         .map((f) => f.uri.pathSegments.last)
-        .where((n) => n != 'LICENCE.md')
+        // Known files that are not pictures: the licence record, and the
+        // meal set's index.json and manifest.json.
+        .where(
+          (n) =>
+              !const {'LICENCE.md', 'index.json', 'manifest.json'}.contains(n),
+        )
         .map((n) => n.replaceAll('.webp', ''))
         .toSet();
     expect(shipped, AppArt.all.toSet());

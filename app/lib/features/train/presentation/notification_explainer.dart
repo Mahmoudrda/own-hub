@@ -18,6 +18,7 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/hand/mascot/kitten.dart';
+import '../../../ui/hand/spring_pop.dart';
 
 /// True when she chose to go on, false or null when she did not.
 Future<bool?> showNotificationExplainer(
@@ -67,10 +68,8 @@ class NotificationExplainerBody extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Center(
-          child: ExcludeSemantics(
-            child: Kitten(pose: KittenPose.point, size: 56, holdStill: true),
-          ),
+        Center(
+          child: SampleNotification(body: l10n.morningHadBreakfastYetLogItIn),
         ),
         const SizedBox(height: 8),
         Text(
@@ -108,6 +107,82 @@ class NotificationExplainerBody extends StatelessWidget {
           onPressed: () => onChoose(false),
         ),
       ],
+    );
+  }
+}
+
+/// A sample Own Hub notification in a large pale pink circle: what the phone
+/// will show, before the phone asks. It pops in once and sits still with
+/// motion off. Decorative, so a screen reader skips it.
+class SampleNotification extends StatelessWidget {
+  const SampleNotification({super.key, required this.body});
+
+  /// One of the nudge texts, the way it will read on the lock screen.
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    // The sample is a picture of a notification: at the largest text sizes it
+    // is scaled down inside its circle rather than overflowing it.
+    return ExcludeSemantics(
+      child: Container(
+        key: const ValueKey('notification-sample'),
+        width: 184,
+        height: 184,
+        padding: const EdgeInsets.all(14),
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          color: AppColors.secondaryContainer,
+          shape: BoxShape.circle,
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: SpringPop(
+            from: 0.7,
+            child: Container(
+              width: 152,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLowest,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: AppShadow.raised,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Kitten(
+                    pose: KittenPose.point,
+                    size: 26,
+                    holdStill: true,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Own Hub',
+                          style: AppText.titleS.copyWith(fontSize: 12),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          body,
+                          style: AppText.bodyM.copyWith(
+                            fontSize: 10.5,
+                            height: 1.25,
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -372,7 +372,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('لات بول داون مسكة واسعة'), findsOneWidget);
+    expect(find.text('Lat pulldown, wide grip'), findsOneWidget);
+    expect(find.text('لات بول داون مسكة واسعة'), findsNothing);
   });
 
   testWidgets('a clip on the way shows how far it has come, and says so '

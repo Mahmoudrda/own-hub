@@ -123,7 +123,7 @@ void main() {
       await tester.tap(find.text('Large'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Add it'));
+      await tester.tap(find.byKey(const ValueKey('meal-result-yes')));
       await tester.pump(const Duration(seconds: 6));
 
       final added = repository.writes.single.added;
@@ -158,7 +158,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Add it'));
+      await tester.tap(find.byKey(const ValueKey('meal-result-yes')));
       await tester.pump();
 
       expect(handles, hasLength(1));
@@ -217,7 +217,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Add it'));
+      await tester.tap(find.byKey(const ValueKey('meal-result-yes')));
       await tester.pump(const Duration(seconds: 6));
 
       expect(repository.writes.single.added, hasLength(1));
@@ -237,7 +237,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Add it'));
+      await tester.tap(find.byKey(const ValueKey('meal-result-yes')));
       await tester.pump();
 
       expect(find.byType(AlertDialog), findsNothing);

@@ -74,12 +74,12 @@ void main() {
     final open = _period(DateTime(2027, 3, 18));
     expect(
       periodSavedLabel(_en, closed),
-      'Period saved · 2027-03-05 to 2027-03-08',
+      'Period saved · 5 March 2027 to 8 March 2027',
     );
-    expect(periodSavedLabel(_en, open), 'Period saved · from 2027-03-18');
+    expect(periodSavedLabel(_en, open), 'Period saved · from 18 March 2027');
     expect(
       periodRemovedLabel(_en, closed),
-      'Period removed · 2027-03-05 to 2027-03-08',
+      'Period removed · 5 March 2027 to 8 March 2027',
     );
   });
 

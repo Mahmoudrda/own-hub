@@ -316,60 +316,65 @@ Map<String, String> _programme({
 //   * **Ta'ameya is coated in sesame.** The patties are pressed into sesame
 //     seeds before frying, and tahina is the usual accompaniment.
 //
-// Sources for the composite dishes are recipe aggregates, cited per row; the
-// single-ingredient staples (egg, yoghurt, dates, rice) follow ordinary
-// published composition data. None of these is a clinical figure.
+// Where a dish is also in the bundled food pack (`assets/content/foods_eg.json`),
+// its tags here are at least the pack's, which are derived from the standard
+// ingredients and over-inclusive: fava for ful and ta'ameya, celery for dishes
+// cooked in stock, coconut and sulphites in om ali.
+//
+// Every row is a food of the bundled pack, under the pack's id, with the pack's
+// medium portion and its labels. The pack's figures are computed from USDA
+// FoodData Central by `tool/build_food_pack.py` and are estimates pending
+// dietitian review, not clinical figures. A test holds the two in step.
 
 List<Map<String, String>> _foods() => [
   // كشري
   // Rice, brown lentils, macaroni, chickpeas, fried onion, tomato sauce.
   // GLUTEN from the macaroni — the point G16's own README makes: "knowing a
-  // dish is koshari does not tell the app whether it contains nuts". Published
-  // plates range ~350–570 kcal over 200–350 g; 430 is mid-range and is the
-  // figure `6-v2/content/templates/foods.csv` already ships.
+  // dish is koshari does not tell the app whether it contains nuts".
   _food(
-    id: 'koshari',
-    nameEn: 'Koshari',
+    id: 'koshary',
+    nameEn: 'Koshary',
     nameAr: '\u0643\u0634\u0631\u064A',
-    portions: 'plate|half plate',
-    kcal: 430,
-    proteinG: 13,
-    carbsG: 78,
-    fatG: 7,
+    portions: 'Medium plate|Small plate',
+    kcal: 588,
+    proteinG: 19,
+    carbsG: 91,
+    fatG: 17,
     allergens: 'gluten',
     dietTags: 'vegetarian|vegan',
   ),
 
   // فول مدمس
-  // Slow-cooked fava beans with oil, cumin and lemon. No gluten, no dairy.
-  // Aggregates put a cup at ~180–220 kcal and 10–16 g protein depending on how
-  // much oil goes in.
+  // Slow-cooked fava beans with oil, cumin and lemon. No gluten, no dairy. FAVA
+  // is tagged: favism (G6PD deficiency) is why the token exists.
   _food(
     id: 'ful_medames',
     nameEn: 'Ful medames',
     nameAr: '\u0641\u0648\u0644 \u0645\u062F\u0645\u0633',
-    portions: 'bowl|half bowl',
-    kcal: 220,
-    proteinG: 12,
-    carbsG: 30,
+    portions: 'Medium bowl|Small bowl',
+    kcal: 269,
+    proteinG: 15,
+    carbsG: 40,
     fatG: 6,
-    allergens: 'none',
+    allergens: 'fava',
     dietTags: 'vegetarian|vegan|gluten_free',
   ),
 
   // طعمية
   // Egyptian falafel: split fava beans, not chickpeas, with parsley, coriander
   // and dill. SESAME — the patties are coated in sesame seeds before frying.
+  // FAVA for favism, and GLUTEN because many shops bind the batter with bread or
+  // flour.
   _food(
     id: 'taameya',
-    nameEn: "Ta'ameya",
+    nameEn: 'Taameya (Egyptian falafel)',
     nameAr: '\u0637\u0639\u0645\u064A\u0629',
     portions: '4 pieces|2 pieces',
-    kcal: 330,
-    proteinG: 13,
-    carbsG: 30,
-    fatG: 18,
-    allergens: 'sesame',
+    kcal: 263,
+    proteinG: 9,
+    carbsG: 21,
+    fatG: 17,
+    allergens: 'fava|gluten|sesame',
     dietTags: 'vegetarian|vegan',
   ),
 
@@ -381,12 +386,12 @@ List<Map<String, String>> _foods() => [
     id: 'molokhia',
     nameEn: 'Molokhia',
     nameAr: '\u0645\u0644\u0648\u062E\u064A\u0629',
-    portions: 'bowl|half bowl',
-    kcal: 180,
-    proteinG: 9,
+    portions: 'Medium bowl|Small bowl',
+    kcal: 138,
+    proteinG: 6,
     carbsG: 14,
-    fatG: 10,
-    allergens: 'dairy',
+    fatG: 8,
+    allergens: 'celery|dairy',
     dietTags: 'none',
   ),
 
@@ -394,14 +399,14 @@ List<Map<String, String>> _foods() => [
   // Courgettes cored and stuffed with rice, parsley, dill and coriander, stewed
   // in tomato. The Egyptian version is meatless, which is why it tags vegan.
   _food(
-    id: 'mahshi_koussa',
-    nameEn: 'Mahshi koussa',
+    id: 'mahshi_zucchini',
+    nameEn: 'Stuffed zucchini (kousa)',
     nameAr: '\u0645\u062D\u0634\u064A \u0643\u0648\u0633\u0629',
-    portions: '5 pieces|3 pieces',
-    kcal: 290,
-    proteinG: 7,
-    carbsG: 48,
-    fatG: 8,
+    portions: 'Medium plate|Small plate',
+    kcal: 224,
+    proteinG: 4,
+    carbsG: 29,
+    fatG: 11,
     allergens: 'none',
     dietTags: 'vegetarian|vegan',
   ),
@@ -410,13 +415,13 @@ List<Map<String, String>> _foods() => [
   // Same stuffing, cabbage leaves.
   _food(
     id: 'mahshi_cabbage',
-    nameEn: 'Mahshi kromb',
+    nameEn: 'Stuffed cabbage',
     nameAr: '\u0645\u062D\u0634\u064A \u0643\u0631\u0646\u0628',
-    portions: '6 rolls|3 rolls',
-    kcal: 260,
-    proteinG: 6,
-    carbsG: 44,
-    fatG: 7,
+    portions: 'Medium plate|Small plate',
+    kcal: 259,
+    proteinG: 4,
+    carbsG: 37,
+    fatG: 10,
     allergens: 'none',
     dietTags: 'vegetarian|vegan',
   ),
@@ -429,12 +434,12 @@ List<Map<String, String>> _foods() => [
     id: 'om_ali',
     nameEn: 'Om Ali',
     nameAr: '\u0623\u0645 \u0639\u0644\u064A',
-    portions: 'bowl|small bowl',
-    kcal: 480,
-    proteinG: 9,
-    carbsG: 52,
-    fatG: 26,
-    allergens: 'dairy|gluten|nuts',
+    portions: 'Medium bowl|Small bowl',
+    kcal: 611,
+    proteinG: 12,
+    carbsG: 56,
+    fatG: 39,
+    allergens: 'coconut|dairy|gluten|nuts|sulphites',
     dietTags: 'vegetarian',
   ),
 
@@ -443,29 +448,28 @@ List<Map<String, String>> _foods() => [
   // fried in samna and splashed with vinegar (DAIRY). Meat, so no diet tag.
   _food(
     id: 'fattah',
-    nameEn: 'Fattah',
-    nameAr: '\u0641\u062A\u0629',
-    portions: 'plate|half plate',
-    kcal: 610,
-    proteinG: 24,
-    carbsG: 70,
-    fatG: 26,
-    allergens: 'gluten|dairy',
+    nameEn: 'Fattah with meat',
+    nameAr: '\u0641\u062A\u0629 \u0628\u0627\u0644\u0644\u062D\u0645\u0629',
+    portions: 'Medium plate|Small plate',
+    kcal: 778,
+    proteinG: 34,
+    carbsG: 74,
+    fatG: 37,
+    allergens: 'celery|dairy|gluten',
     dietTags: 'none',
   ),
 
   // عيش بلدي
-  // Wholemeal wheat. GLUTEN, unambiguously. A loaf is ~60–80 g at ~150–200
-  // kcal; larger loaves are reported near 300.
+  // Wholemeal wheat. GLUTEN, unambiguously.
   _food(
-    id: 'baladi_bread',
-    nameEn: 'Baladi bread',
+    id: 'aish_baladi',
+    nameEn: 'Aish baladi (Egyptian bread)',
     nameAr: '\u0639\u064A\u0634 \u0628\u0644\u062F\u064A',
-    portions: '1 loaf|half loaf',
-    kcal: 170,
-    proteinG: 6,
-    carbsG: 35,
-    fatG: 1,
+    portions: '1 loaf|Half a loaf',
+    kcal: 236,
+    proteinG: 9,
+    carbsG: 50,
+    fatG: 2,
     allergens: 'gluten',
     dietTags: 'vegetarian|vegan',
   ),
@@ -476,13 +480,13 @@ List<Map<String, String>> _foods() => [
   // its own row rather than being tagged onto this one.
   _food(
     id: 'roz_bel_laban',
-    nameEn: 'Roz bel laban',
-    nameAr: '\u0623\u0631\u0632 \u0628\u0627\u0644\u0644\u0628\u0646',
-    portions: 'cup|small cup',
-    kcal: 280,
+    nameEn: 'Rice pudding',
+    nameAr: '\u0631\u0632 \u0628\u0644\u0628\u0646',
+    portions: 'Medium bowl|Small bowl',
+    kcal: 290,
     proteinG: 7,
-    carbsG: 45,
-    fatG: 8,
+    carbsG: 51,
+    fatG: 6,
     allergens: 'dairy',
     dietTags: 'vegetarian|gluten_free',
   ),
@@ -493,24 +497,24 @@ List<Map<String, String>> _foods() => [
     id: 'shakshuka',
     nameEn: 'Shakshuka',
     nameAr: '\u0634\u0643\u0634\u0648\u0643\u0629',
-    portions: 'pan|half pan',
-    kcal: 240,
-    proteinG: 13,
+    portions: 'Medium plate|Small plate',
+    kcal: 295,
+    proteinG: 16,
     carbsG: 12,
-    fatG: 15,
+    fatG: 21,
     allergens: 'egg',
     dietTags: 'vegetarian|gluten_free',
   ),
 
   // صدر فراخ مشوي
   _food(
-    id: 'grilled_chicken_breast',
+    id: 'chicken_breast_grilled',
     nameEn: 'Grilled chicken breast',
     nameAr:
         '\u0635\u062F\u0631 \u0641\u0631\u0627\u062E \u0645\u0634\u0648\u064A',
-    portions: '1 piece|half piece',
-    kcal: 220,
-    proteinG: 40,
+    portions: '1 breast|Half a breast',
+    kcal: 284,
+    proteinG: 53,
     carbsG: 0,
     fatG: 6,
     allergens: 'none',
@@ -522,22 +526,22 @@ List<Map<String, String>> _foods() => [
   // carries no gluten — the bread is its own row, which is what lets a woman
   // avoiding gluten still be offered the soup.
   _food(
-    id: 'lentil_soup',
+    id: 'shorbet_ads',
     nameEn: 'Lentil soup',
     nameAr: '\u0634\u0648\u0631\u0628\u0629 \u0639\u062F\u0633',
-    portions: 'bowl|half bowl',
-    kcal: 190,
-    proteinG: 11,
-    carbsG: 30,
-    fatG: 3,
-    allergens: 'none',
+    portions: 'Medium bowl|Small bowl',
+    kcal: 298,
+    proteinG: 15,
+    carbsG: 42,
+    fatG: 9,
+    allergens: 'celery',
     dietTags: 'vegetarian|vegan|gluten_free',
   ),
 
   // بيض مسلوق
-  // EGG. A large egg is ~78 kcal and ~6 g protein, so two is ~155 kcal.
+  // EGG.
   _food(
-    id: 'boiled_eggs',
+    id: 'eggs_boiled',
     nameEn: 'Boiled eggs',
     nameAr: '\u0628\u064A\u0636 \u0645\u0633\u0644\u0648\u0642',
     portions: '2 eggs|1 egg',
@@ -552,72 +556,73 @@ List<Map<String, String>> _foods() => [
   // زبادي
   // Plain. DAIRY.
   _food(
-    id: 'yoghurt',
-    nameEn: 'Yoghurt',
-    nameAr: '\u0632\u0628\u0627\u062F\u064A',
-    portions: 'cup|small cup',
-    kcal: 100,
-    proteinG: 9,
-    carbsG: 12,
-    fatG: 2,
+    id: 'yoghurt_baladi',
+    nameEn: 'Plain baladi yoghurt',
+    nameAr: '\u0632\u0628\u0627\u062F\u064A \u0628\u0644\u062F\u064A',
+    portions: '1 tub|Half a tub',
+    kcal: 138,
+    proteinG: 8,
+    carbsG: 11,
+    fatG: 7,
     allergens: 'dairy',
     dietTags: 'vegetarian|gluten_free',
   ),
 
   // تمر
-  // Dried dates, ~66 kcal each for a medjool.
+  // Dried dates.
   _food(
     id: 'dates',
     nameEn: 'Dates',
-    nameAr: '\u062A\u0645\u0631',
-    portions: '3 dates|5 dates',
-    kcal: 200,
+    nameAr: '\u062A\u0645\u0631 \u0645\u062C\u0641\u0641',
+    portions: '3 dates|2 dates',
+    kcal: 59,
     proteinG: 1,
-    carbsG: 54,
+    carbsG: 16,
     fatG: 0,
     allergens: 'none',
     dietTags: 'vegetarian|vegan|gluten_free',
   ),
 
-  // سلطة طحينة
+  // طحينة
   // Tahina is ground sesame. SESAME.
   _food(
-    id: 'tahini_salad',
-    nameEn: 'Tahini salad',
-    nameAr: '\u0633\u0644\u0637\u0629 \u0637\u062D\u064A\u0646\u0629',
-    portions: 'small bowl',
-    kcal: 180,
+    id: 'tahina',
+    nameEn: 'Tahini sauce',
+    nameAr: '\u0637\u062D\u064A\u0646\u0629',
+    portions: '4 tablespoons|2 tablespoons',
+    kcal: 187,
     proteinG: 5,
     carbsG: 8,
-    fatG: 15,
+    fatG: 16,
     allergens: 'sesame',
     dietTags: 'vegetarian|vegan|gluten_free',
   ),
 
   // أرز أبيض
+  // The pack cooks it with butter, so DAIRY, and not vegan.
   _food(
-    id: 'white_rice',
-    nameEn: 'White rice',
-    nameAr: '\u0623\u0631\u0632 \u0623\u0628\u064A\u0636',
-    portions: 'plate|half plate',
-    kcal: 260,
+    id: 'roz_abyad',
+    nameEn: 'Plain white rice',
+    nameAr: '\u0631\u0632 \u0623\u0628\u064A\u0636',
+    portions: 'Medium plate|Small plate',
+    kcal: 256,
     proteinG: 5,
-    carbsG: 56,
-    fatG: 1,
-    allergens: 'none',
-    dietTags: 'vegetarian|vegan|gluten_free',
+    carbsG: 51,
+    fatG: 3,
+    allergens: 'dairy',
+    dietTags: 'vegetarian|gluten_free',
   ),
 
-  // سلطة خضراء
+  // سلطة بلدي
   _food(
-    id: 'green_salad',
-    nameEn: 'Green salad',
-    nameAr: '\u0633\u0644\u0637\u0629 \u062E\u0636\u0631\u0627\u0621',
-    portions: 'bowl|small bowl',
-    kcal: 60,
+    id: 'salata_baladi',
+    nameEn: 'Egyptian salad',
+    nameAr: '\u0633\u0644\u0637\u0629 \u0628\u0644\u062F\u064A',
+    portions: 'Medium bowl|Small bowl',
+    kcal: 82,
     proteinG: 2,
-    carbsG: 10,
-    fatG: 2,
+    carbsG: 9,
+    fatG: 5,
     allergens: 'none',
     dietTags: 'vegetarian|vegan|gluten_free',
   ),
@@ -625,15 +630,15 @@ List<Map<String, String>> _foods() => [
   // فطير مشلتت
   // Layered pastry built on wheat flour (GLUTEN) and samna (DAIRY).
   _food(
-    id: 'feteer_meshaltet',
+    id: 'feteer',
     nameEn: 'Feteer meshaltet',
     nameAr: '\u0641\u0637\u064A\u0631 \u0645\u0634\u0644\u062A\u062A',
-    portions: 'quarter|half',
-    kcal: 460,
-    proteinG: 9,
-    carbsG: 48,
-    fatG: 25,
-    allergens: 'gluten|dairy',
+    portions: '1 piece|Small piece',
+    kcal: 518,
+    proteinG: 7,
+    carbsG: 53,
+    fatG: 31,
+    allergens: 'dairy|egg|gluten',
     dietTags: 'vegetarian',
   ),
 ];
@@ -962,7 +967,7 @@ List<Map<String, String>> _recipes() => [
     nameAr: '\u0634\u0648\u0631\u0628\u0629 \u0639\u062F\u0633',
     minutes: 25,
     ingredients: 'red lentils|onion|carrot|cumin|lemon',
-    allergens: 'none',
+    allergens: 'celery',
     dietTags: 'vegetarian|vegan|gluten_free',
   ),
 
@@ -973,7 +978,7 @@ List<Map<String, String>> _recipes() => [
     nameAr: '\u0641\u0648\u0644 \u0628\u0627\u0644\u0632\u064A\u062A \u0648\u0627\u0644\u0643\u0645\u0648\u0646',
     minutes: 15,
     ingredients: 'fava beans|olive oil|cumin|lemon|salt',
-    allergens: 'none',
+    allergens: 'fava',
     dietTags: 'vegetarian|vegan|gluten_free',
   ),
 
@@ -997,7 +1002,7 @@ List<Map<String, String>> _recipes() => [
     minutes: 40,
     ingredients:
         'split fava beans|parsley|coriander|dill|onion|garlic|sesame seeds',
-    allergens: 'sesame',
+    allergens: 'fava|gluten|sesame',
     dietTags: 'vegetarian|vegan',
   ),
 
@@ -1008,7 +1013,7 @@ List<Map<String, String>> _recipes() => [
     nameAr: '\u0645\u0644\u0648\u062E\u064A\u0629 \u0628\u0627\u0644\u062F\u062C\u0627\u062C',
     minutes: 50,
     ingredients: 'molokhia leaves|chicken|garlic|ground coriander|ghee',
-    allergens: 'dairy',
+    allergens: 'dairy|celery',
     dietTags: 'none',
   ),
 
@@ -1053,7 +1058,7 @@ List<Map<String, String>> _recipes() => [
     minutes: 40,
     ingredients:
         'puff pastry|milk|cream|sugar|almonds|pistachios|raisins|coconut',
-    allergens: 'dairy|gluten|nuts',
+    allergens: 'dairy|gluten|nuts|coconut|sulphites',
     dietTags: 'vegetarian',
   ),
 ];

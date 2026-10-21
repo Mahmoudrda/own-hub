@@ -149,6 +149,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Exactly one tap.
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
       await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
@@ -184,6 +186,8 @@ void main() {
       // Lunch is empty and reads "Now".
       expect(find.text('Now'), findsOneWidget);
 
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
       await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
@@ -212,6 +216,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
       await tester.tap(find.byType(PlusButton).first);
       await tester.pump(const Duration(seconds: 2));
 
@@ -310,6 +316,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
       await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
@@ -394,6 +402,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Day 1'), findsOneWidget);
 
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
       await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
@@ -513,7 +523,9 @@ void main() {
 
   group('E01 at the largest text size', () {
     for (final locale in const [Locale('en'), Locale('ar')]) {
-      testWidgets('does not overflow in ${locale.languageCode}', (tester) async {
+      testWidgets('does not overflow in ${locale.languageCode}', (
+        tester,
+      ) async {
         _phone(tester);
         await tester.pumpWidget(
           _host(
@@ -544,7 +556,7 @@ void main() {
       // the same word. Asserting one would be asserting a bug.
       expect(find.text('الأكل'), findsWidgets);
       expect(find.text('بروتين'), findsOneWidget);
-      expect(find.text('إضافة سريعة'), findsOneWidget);
+      expect(find.byKey(const ValueKey('slot-picks-title')), findsOneWidget);
       expect(find.text('Eat'), findsNothing);
     });
 

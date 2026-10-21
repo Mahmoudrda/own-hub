@@ -37,9 +37,27 @@ service firebase.storage {
       allow delete: if isAdmin();
     }
 
-    match /content/{collection}/{docId}/{file} {
-      allow read: if signedIn();
+    // Event pictures and clips, written from the dashboard's Events tab and
+    // read by verified members. A picture is webp or jpeg up to 1 MiB, a clip
+    // is mp4 up to 10 MiB.
+    match /content/events/{eventId}/{file} {
+      allow read: if signedIn()
+                  && (request.auth.token.get('verified', false) == true || isAdmin());
       allow write: if isAdmin()
+                   && ((request.resource.contentType in ['image/webp', 'image/jpeg']
+                        && request.resource.size <= 1024 * 1024)
+                       || (request.resource.contentType == 'video/mp4'
+                           && request.resource.size <= 10 * 1024 * 1024));
+      allow delete: if isAdmin();
+    }
+
+    // Matches combine, so events are carved out of this block: without
+    // `!= 'events'` any signed-in account could read event media and the admin
+    // could write past the event limits.
+    match /content/{collection}/{docId}/{file} {
+      allow read: if signedIn() && collection != 'events';
+      allow write: if isAdmin()
+                   && collection != 'events'
                    && (isImage() || isVideo())
                    && request.resource.size < 200 * 1024 * 1024;
       allow delete: if isAdmin();

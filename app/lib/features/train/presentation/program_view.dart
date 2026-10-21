@@ -263,6 +263,11 @@ class ProgramView extends StatelessWidget {
               detail: day.detail,
               done: day.done,
               current: day.today,
+              tag: day.done
+                  ? l10n.completed
+                  : day.today
+                  ? l10n.upNext
+                  : null,
               onTap: day.onTap ?? () => onOpenDay?.call(day),
             ),
         // "Change program" with no programme to change is an instruction she

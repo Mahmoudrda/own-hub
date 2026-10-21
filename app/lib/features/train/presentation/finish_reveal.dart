@@ -32,6 +32,7 @@ class FinishReveal extends StatefulWidget {
     required this.child,
     this.step = HandTiming.short,
     this.enabled = true,
+    this.hold = false,
     this.onStageShown,
   });
 
@@ -43,6 +44,10 @@ class FinishReveal extends StatefulWidget {
 
   /// False draws every stage at once.
   final bool enabled;
+
+  /// True keeps the reveal from starting, for a page that is covered for a
+  /// moment first. It runs from the start when this turns false.
+  final bool hold;
 
   /// Called once for each stage as it arrives, in order — and for every stage
   /// at once when the reveal is skipped or still.
@@ -59,6 +64,7 @@ class _FinishRevealState extends State<FinishReveal>
     duration: widget.step * (widget.stages < 1 ? 1 : widget.stages),
   )..addListener(_announce);
   bool _started = false;
+  bool _waiting = false;
   int _shown = -1;
 
   @override
@@ -72,12 +78,21 @@ class _FinishRevealState extends State<FinishReveal>
       _c.value = 1;
       return;
     }
+    if (widget.hold) {
+      _waiting = true;
+      return;
+    }
     _c.forward();
   }
 
   @override
   void didUpdateWidget(FinishReveal old) {
     super.didUpdateWidget(old);
+    if (_waiting && old.hold && !widget.hold) {
+      _waiting = false;
+      _c.forward();
+      return;
+    }
     // R10 can draw before its summary lands: the first stage alone, still.
     // When the rest arrives the reveal runs on from there, rather than taking
     // the first stage away and bringing it back.
@@ -89,6 +104,10 @@ class _FinishRevealState extends State<FinishReveal>
       return;
     }
     _c.value = 1 / (widget.stages < 1 ? 1 : widget.stages);
+    if (widget.hold) {
+      _waiting = true;
+      return;
+    }
     _c.forward();
   }
 
@@ -260,7 +279,11 @@ class RevealCount extends StatelessWidget {
     required this.value,
     required this.format,
     this.style,
+    this.from = 0,
   });
+
+  /// Where the count starts.
+  final int from;
 
   final int index;
   final int value;
@@ -281,7 +304,7 @@ class RevealCount extends StatelessWidget {
         index: index,
         placeholder: Opacity(opacity: 0, child: Text(done, style: style)),
         child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: value.toDouble()),
+          tween: Tween(begin: from.toDouble(), end: value.toDouble()),
           // A skip lands the figure with everything else.
           duration: scope.animation.isCompleted
               ? Duration.zero

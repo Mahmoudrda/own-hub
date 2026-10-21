@@ -43,9 +43,7 @@ class FakeScanClient implements MealScanClient {
   Future<void> recordConsent({required String locale, String? appVersion}) {
     consents++;
     if (consentFails) {
-      return Future.error(
-        const MealScanException(MealScanFailure.unavailable),
-      );
+      return Future.error(const MealScanException(MealScanFailure.unavailable));
     }
     return Future.value();
   }
@@ -114,9 +112,8 @@ Widget _host(
   theme: buildTheme(locale),
   home: Builder(
     builder: (context) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(textScale)),
       child: child,
     ),
   ),
@@ -167,6 +164,7 @@ void main() {
       await scanned(tester);
       expect(find.text(_en.beforeYourFirstPhoto), findsOneWidget);
       expect(find.text(_en.yourPhotoGoesToOurAiIn), findsOneWidget);
+      expect(find.text(_en.weKeepAFingerprintOfThePhoto), findsOneWidget);
       expect(camera.opened, 0, reason: 'no lens before she agrees');
 
       await tester.tap(find.byKey(const ValueKey('meal-consent-agree')));
@@ -288,8 +286,11 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('meal-scan-retake')));
       await _settle(tester);
-      expect(camera.given.first.every((b) => b == 0), isTrue,
-          reason: 'a retaken photo is zeroed, not kept');
+      expect(
+        camera.given.first.every((b) => b == 0),
+        isTrue,
+        reason: 'a retaken photo is zeroed, not kept',
+      );
       expect(client.scans, 0);
 
       await tester.tap(find.byKey(const ValueKey('meal-scan-shutter')));
@@ -299,8 +300,11 @@ void main() {
       expect(client.scans, 1);
       expect(calls, 1);
       expect(state.result!.items.single.nameEn, 'Boiled egg');
-      expect(camera.given.last.every((b) => b == 0), isTrue,
-          reason: 'wiped once the scan has answered');
+      expect(
+        camera.given.last.every((b) => b == 0),
+        isTrue,
+        reason: 'wiped once the scan has answered',
+      );
     });
 
     for (final (failure, retake) in <(MealScanFailure, bool)>[
@@ -350,6 +354,47 @@ void main() {
         expect(camera.given.last.every((b) => b == 0), isTrue);
       });
     }
+
+    testWidgets('a frame with no light is refused on the phone, unsent and '
+        'wiped', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          MealPhotoView(
+            state: state,
+            uid: 'uid-1',
+            isTooDark: (_) async => true,
+            onTypeInstead: () {},
+          ),
+        ),
+      );
+      await _settle(tester);
+      await tester.tap(find.byKey(const ValueKey('meal-scan-shutter')));
+      await _settle(tester);
+      expect(find.text(_en.thatPhotoIsTooDarkTryAgain), findsOneWidget);
+      expect(find.byKey(const ValueKey('meal-scan-retake')), findsOneWidget);
+      expect(find.byKey(const ValueKey('meal-scan-analyse')), findsNothing);
+      expect(client.scans, 0);
+      expect(camera.given.last.every((b) => b == 0), isTrue);
+    });
+
+    testWidgets('a lit frame goes on to review', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          MealPhotoView(
+            state: state,
+            uid: 'uid-1',
+            isTooDark: (_) async => false,
+            onTypeInstead: () {},
+          ),
+        ),
+      );
+      await _settle(tester);
+      await tester.tap(find.byKey(const ValueKey('meal-scan-shutter')));
+      await _settle(tester);
+      expect(find.text(_en.useThisPhoto_6wkqn), findsOneWidget);
+    });
 
     test('the copy the owner asked for', () {
       expect(

@@ -5,8 +5,44 @@
 /// wire name to her.
 library;
 
+import 'package:flutter/material.dart';
+
 import '../../../l10n/app_l10n.dart';
 import '../domain/exercise_library.dart';
+
+/// The English strings, for the move names that stay English in every locale.
+final AppL10n englishMoveNames = lookupAppL10n(const Locale('en'));
+
+/// An exercise name. Names are English in every locale, so this reads left to
+/// right even inside an Arabic screen.
+class MoveName extends StatelessWidget {
+  const MoveName(
+    this.name, {
+    super.key,
+    this.style,
+    this.maxLines,
+    this.overflow,
+  });
+
+  final String name;
+  final TextStyle? style;
+  final int? maxLines;
+  final TextOverflow? overflow;
+
+  @override
+  Widget build(BuildContext context) => Directionality(
+    textDirection: TextDirection.ltr,
+    child: Text(name, style: style, maxLines: maxLines, overflow: overflow),
+  );
+}
+
+/// [name] fenced as left-to-right text, for an English exercise name that sits
+/// inside a sentence which may be right-to-left.
+///
+/// Only in Arabic, where the sentence around it reads the other way; English
+/// is left exactly as written.
+String isolateLtr(AppL10n l10n, String name) =>
+    l10n.localeName == 'ar' ? '\u2066$name\u2069' : name;
 
 String muscleLabel(AppL10n l10n, Muscle muscle) => switch (muscle) {
   Muscle.glutes => l10n.glutes,

@@ -100,10 +100,6 @@ enum AnalyticsEvent {
   /// She chose a language. [AnalyticsProp.locale] is `en` or `ar`.
   languageChanged,
 
-  /// She turned the kitten's movement on or off. [AnalyticsProp.outcome] is
-  /// `on` or `off`.
-  kittenToggled,
-
   /// She opened the app after at least a week away.
   /// [AnalyticsProp.durationBucket] is the days away as a range.
   quietWeekReturn,
@@ -168,7 +164,6 @@ const Map<AnalyticsEvent, String> analyticsEventWireNames = {
   AnalyticsEvent.cameraUnavailable: 'camera_unavailable',
   AnalyticsEvent.youreIn: 'youre_in',
   AnalyticsEvent.languageChanged: 'language_change',
-  AnalyticsEvent.kittenToggled: 'kitten_toggle',
   AnalyticsEvent.quietWeekReturn: 'quiet_week_return',
   AnalyticsEvent.workoutEndedEarly: 'workout_end_early',
   AnalyticsEvent.remindersChanged: 'reminders_set',

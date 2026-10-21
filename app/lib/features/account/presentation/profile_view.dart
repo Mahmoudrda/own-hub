@@ -271,7 +271,7 @@ class _ProfileViewState extends State<ProfileView> {
           // True only while her notification settings ARE the defaults this
           // sentence describes. Otherwise it is a statement about somebody
           // else's quiet hours.
-          subtitle: view.notifyIsDefault ? l10n.oneADayQuiet10pmTo8am : '',
+          subtitle: view.notifyIsDefault ? l10n.onceADayQuiet10pmTo8am : '',
           onTap: widget.onOpenNotifications,
         ),
         // Privacy, the Safety Centre and Your data, one row to open and a

@@ -386,6 +386,9 @@ void main() {
         ),
         findsOneWidget,
       );
+      // The sample of what will arrive sits above the button, before the OS
+      // prompt.
+      expect(find.byKey(const ValueKey('notification-sample')), findsOneWidget);
       await tester.ensureVisible(find.byKey(const ValueKey('c14-notify-me')));
       await tester.tap(find.byKey(const ValueKey('c14-notify-me')));
       await tester.pumpAndSettle();

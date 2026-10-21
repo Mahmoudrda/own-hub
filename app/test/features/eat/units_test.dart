@@ -5,10 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/eat/domain/food_library.dart';
 import 'package:own_hub/features/eat/domain/units.dart';
 
-Food _food(String? category, {int? grams = 200}) => Food(
+Food _food(String? kind, {int? grams = 200}) => Food(
   foodId: 'x',
   names: const ['X'],
-  category: category,
+  kind: kind,
   sizes: [
     FoodSize(id: 'S', label: 'S', kcal: 100, proteinG: 4, grams: grams),
     FoodSize(

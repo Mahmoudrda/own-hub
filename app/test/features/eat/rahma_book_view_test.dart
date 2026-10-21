@@ -99,7 +99,7 @@ Recipe _kebda({String? reviewedBy}) => Recipe(
   allergensRemoved: const {},
   allergensFinal: const {'milk', 'sesame'},
   advisories: const {'pregnancy_liver'},
-  dietTags: const {'high_protein'},
+  dietTags: const {'high_protein', 'no_oven'},
   doneness: 'liver_cooked_through',
   sourcePage: 18,
   authoredBy: 'rahma_mohsen',
@@ -629,20 +629,53 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a dead chip says why it is empty', (tester) async {
-      // "Cheap" selects nothing because nobody has priced a recipe, and "No
-      // nuts" selects nothing because it fails closed on `allergensReviewed`
-      // and nothing is signed. Both fell through to "Nothing matches that.",
-      // which reads as a fault in the app rather than as an absence in the
-      // content. Ramadan already had its own honest line; these two now do too.
+    testWidgets('a chip that would select nothing is not drawn', (
+      tester,
+    ) async {
+      // "Cheap" with no price anywhere, "Ramadan" with no tag anywhere and "No
+      // nuts" with nothing signed were dead ends: each fell through to an empty
+      // screen that read as a fault in the app. A chip no visible recipe
+      // satisfies is not offered, and comes back the moment one does.
+      Future<void> pump(WidgetTester tester, RecipeBook book) async {
+        await tester.pumpWidget(
+          _host(
+            RecipesView(
+              book: book,
+              asked: true,
+              constraints: DietaryConstraints.none,
+              onSelectTab: (_) {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      _phone(tester);
+      // Unsigned, with one pan step: nobody has priced it, tagged it for
+      // Ramadan, put it in the fridge or signed it.
+      await pump(tester, _book());
+      expect(find.text('Ramadan'), findsNothing);
+      expect(find.text('Ready in the fridge'), findsNothing);
+      expect(find.text('No nuts'), findsNothing);
+      // What does match stays: the prototype rows are priced, the card has no
+      // oven step.
+      expect(find.text('Cheap'), findsOneWidget);
+      expect(find.text('No oven'), findsOneWidget);
+
+      // The same card signed by somebody else is nut free, so the chip returns.
+      await pump(tester, _book(reviewedBy: 'qa_reviewer'));
+      await tester.ensureVisible(find.text('No nuts'));
+      expect(find.text('No nuts'), findsOneWidget);
+    });
+
+    testWidgets('the chip she has on stays, so she can take it off', (
+      tester,
+    ) async {
       _phone(tester);
       await tester.pumpWidget(
         _host(
           RecipesView(
-            // Unsigned, which is what the shipped book is: "No nuts" fails
-            // closed on `allergensReviewed`, so it can only ever select
-            // nothing until somebody signs a card.
-            book: _book(),
+            book: _book(reviewedBy: 'qa_reviewer'),
             asked: true,
             constraints: DietaryConstraints.none,
             onSelectTab: (_) {},
@@ -650,29 +683,15 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Cheap'));
+      await tester.ensureVisible(find.text('No nuts'));
+      await tester.tap(find.text('No nuts'));
       await tester.pumpAndSettle();
-      expect(find.text('No recipe has been priced yet.'), findsOneWidget);
-      expect(find.text('Nothing matches that.'), findsNothing);
-      await tester.tap(find.text('Cheap'));
-      await tester.pumpAndSettle();
-
-      // Scrolled to first: the book's own chips sit below the fold on a phone,
-      // and a tap on a built-but-offscreen widget is a warning rather than a
-      // failure, so the assertion after it would pass for the wrong reason.
+      expect(find.text('No nuts'), findsOneWidget);
       await tester.ensureVisible(find.text('No nuts'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('No nuts'));
       await tester.pumpAndSettle();
-      expect(
-        find.text(
-          'No recipe can be called nut free yet, because nobody has signed '
-          'off what is in them.',
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Nothing matches that.'), findsNothing);
+      expect(find.text('No nuts'), findsOneWidget);
     });
 
     testWidgets('a card draws the hands-on time, not the night in the fridge', (
@@ -693,7 +712,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('1,445'), findsNothing);
-      expect(find.text('5 min hands on'), findsWidgets);
+      expect(find.textContaining('5 min hands on'), findsWidgets);
     });
 
     testWidgets('a five-minute breakfast is in the quick filter', (
@@ -954,6 +973,8 @@ void main() {
       expect(fattah.steps, isEmpty);
 
       await tester.pumpWidget(_host(RahmaRecipeView(recipe: fattah)));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Cook mode'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cook mode'));
       await tester.pumpAndSettle();

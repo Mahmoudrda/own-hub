@@ -69,6 +69,7 @@ class TodayView extends StatefulWidget {
     this.onStartSession,
     this.onRecall,
     this.onOpenMeal,
+    this.onScanMeal,
     this.onOpenPlate,
     this.onLogPlate,
     this.onOpenWeek,
@@ -196,6 +197,9 @@ class TodayView extends StatefulWidget {
   final VoidCallback? onStartSession;
   final VoidCallback? onRecall;
   final VoidCallback? onOpenMeal;
+
+  /// Opens the meal photo screen from the eat card. No button when null.
+  final VoidCallback? onScanMeal;
   final VoidCallback? onOpenPlate;
 
   /// Logs the plate she tapped, then opens the logged day.
@@ -443,6 +447,7 @@ class _TodayViewState extends State<TodayView> {
         totals: eat.totalsWithPending(_stored, against: targets),
         targets: targets,
         onLogFood: () => openScreen(context, 'E02', widget.onOpenMeal),
+        onScanMeal: widget.onScanMeal,
         loggedAt: _day.mealLoggedAt,
         // The heading follows the hour: the meal she logged, or the meal she
         // is likely to be having now.

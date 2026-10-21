@@ -42,6 +42,8 @@ class ExerciseClipFrame extends StatefulWidget {
     this.angle = 0,
     this.tallest = 0.55,
     this.clipKey,
+    this.maxHeight,
+    this.onFailed,
   });
 
   final LibraryExercise exercise;
@@ -58,6 +60,15 @@ class ExerciseClipFrame extends StatefulWidget {
 
   /// Keys the tappable frame.
   final Key? clipKey;
+
+  /// The tallest the frame grows, in pixels, when the page gives it a fixed
+  /// band rather than a share of the screen.
+  final double? maxHeight;
+
+  /// Told once when the clip cannot be played. When given, the frame draws
+  /// nothing for the failure itself, so the page can show its own stand-in
+  /// rather than a player that will not play.
+  final VoidCallback? onFailed;
 
   /// How long the clip may be loading before the frame says the connection is
   /// slow, so a long wait is explained rather than looking frozen.
@@ -153,6 +164,7 @@ class _ExerciseClipFrameState extends State<ExerciseClipFrame> {
     if (!mounted || generation != _generation) return;
     if (file == null) {
       setState(() => _clip = _Clip.failed);
+      widget.onFailed?.call();
       return;
     }
     if (make == null) return;
@@ -165,6 +177,7 @@ class _ExerciseClipFrameState extends State<ExerciseClipFrame> {
     if (!opened) {
       unawaited(player.dispose());
       setState(() => _clip = _Clip.failed);
+      widget.onFailed?.call();
       return;
     }
     _player = player;
@@ -209,6 +222,7 @@ class _ExerciseClipFrameState extends State<ExerciseClipFrame> {
         final ratio = _player?.aspectRatio ?? 9 / 16;
         final tallest = MediaQuery.sizeOf(context).height * widget.tallest;
         var height = math.min(constraints.maxWidth / ratio, tallest);
+        if (widget.maxHeight case final cap?) height = math.min(height, cap);
         var width = height * ratio;
         if (width > constraints.maxWidth) {
           width = constraints.maxWidth;
@@ -304,7 +318,7 @@ class _ExerciseClipFrameState extends State<ExerciseClipFrame> {
       },
     );
 
-    if (_clip != _Clip.failed) return frame;
+    if (_clip != _Clip.failed || widget.onFailed != null) return frame;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

@@ -20,10 +20,13 @@ import '../../../ui/app_log_button.dart';
 import '../../../ui/app_progress.dart';
 import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_split_row.dart';
+import '../../../ui/meal_image.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/daily_targets.dart';
 import '../domain/day_totals.dart';
+import '../domain/food_library.dart';
 import 'eat_day_view_model.dart';
+import 'meal_labels.dart';
 
 /// One column of E01's three-slot card. `slot()` in the prototype.
 ///
@@ -285,9 +288,13 @@ class MealRow extends StatelessWidget {
     this.onLog,
     this.primary = false,
     this.onTap,
+    this.imageAsset,
   });
 
   final String title;
+
+  /// The painted picture of the dish, when it has one.
+  final String? imageAsset;
 
   /// "34 g protein".
   final String meta;
@@ -305,6 +312,9 @@ class MealRow extends StatelessWidget {
     return AppListItem(
       title: title,
       subtitle: meta,
+      leading: imageAsset == null
+          ? null
+          : MealImage(asset: imageAsset, size: 48, semanticLabel: null),
       variant: primary ? AppCardVariant.selected : AppCardVariant.outlined,
       onTap: onTap,
       // One tap saves and offers five seconds to undo. AppLogButton carries
@@ -329,9 +339,13 @@ class ParsedRow extends StatelessWidget {
     this.onPickSize,
     this.onRemove,
     this.removeTooltip,
+    this.imageAsset,
   });
 
   final String name;
+
+  /// The painted picture of the food, when it has one.
+  final String? imageAsset;
   final String meta;
   final List<String> sizeLabels;
   final int selectedSize;
@@ -347,6 +361,10 @@ class ParsedRow extends StatelessWidget {
       children: [
         Row(
           children: [
+            if (imageAsset != null) ...[
+              MealImage(asset: imageAsset, size: 48),
+              const SizedBox(width: 12),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,6 +427,7 @@ class SnapMealButton extends StatelessWidget {
       button: true,
       label: label,
       excludeSemantics: true,
+      onTap: onPressed,
       child: Tooltip(
         message: label,
         child: HandSurface(
@@ -424,6 +443,71 @@ class SnapMealButton extends StatelessWidget {
             size: 26,
             color: AppColors.onPrimaryContainer,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A full-width card that says plainly what the camera does: one photo of the
+/// plate for calories and protein. E12 sits behind it.
+class SnapMealCard extends StatelessWidget {
+  const SnapMealCard({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    this.onPressed,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '$title. $subtitle',
+      excludeSemantics: true,
+      onTap: onPressed,
+      child: HandSurface(
+        key: const ValueKey('eat-snap-card'),
+        seed: handSeed(['snap-card', title]),
+        fill: AppColors.primaryContainer,
+        radius: 5,
+        looseCorner: 14,
+        onTap: onPressed,
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.camera_alt_rounded,
+              size: 28,
+              color: AppColors.onPrimaryContainer,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: AppText.titleS.copyWith(
+                      color: AppColors.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppText.bodyM.copyWith(
+                      color: AppColors.onPrimaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -579,6 +663,29 @@ class FoodResultRow extends StatelessWidget {
   }
 }
 
+/// A small food picture with the drawn bowl mark behind it, for a food that has
+/// no painted picture yet.
+class FoodThumb extends StatelessWidget {
+  const FoodThumb({super.key, required this.imageAsset, this.size = 40});
+
+  final String? imageAsset;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return MealImage(
+      asset: imageAsset,
+      size: size,
+      semanticLabel: null,
+      fallback: FoodMark(
+        markKey: FoodMarks.bowl,
+        size: size,
+        ink: AppColors.primaryDim,
+      ),
+    );
+  }
+}
+
 /// One plate in E01's Quick add strip, with a "+" that logs it.
 class QuickAddCard extends StatelessWidget {
   const QuickAddCard({
@@ -586,38 +693,54 @@ class QuickAddCard extends StatelessWidget {
     required this.title,
     required this.meta,
     required this.addLabel,
+    this.imageAsset,
     this.onAdd,
   });
 
   final String title;
   final String meta;
   final String addLabel;
+
+  /// The dish's painted picture, or null where it has none yet: the card then
+  /// draws the plain bowl mark in its place.
+  final String? imageAsset;
   final VoidCallback? onAdd;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 156,
+      width: 172,
       child: AppCard(
-        gap: 6,
-        padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         children: [
-          Text(
-            title,
-            style: AppText.titleS,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            meta,
-            style: AppText.bodyM.copyWith(
-              fontSize: 13,
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: PlusButton(label: addLabel, onPressed: onAdd),
+          Row(
+            children: [
+              FoodThumb(imageAsset: imageAsset, size: 40),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppText.titleS,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      meta,
+                      style: AppText.bodyM.copyWith(
+                        fontSize: 13,
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PlusButton(label: addLabel, onPressed: onAdd),
+            ],
           ),
         ],
       ),
@@ -652,10 +775,12 @@ class EatHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final carbs = totals.carbsSoFar ?? 0;
-    final fat = totals.fatSoFar ?? 0;
+    final carbs = totals.carbsSoFar;
+    final fat = totals.fatSoFar;
 
-    Widget macro(String name, int eaten, int target, Color colour) {
+    // A figure no logged food carries shows as a dash, never as a zero she did
+    // not earn.
+    Widget macro(String name, int? eaten, int target, Color colour) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -663,13 +788,16 @@ class EatHero extends StatelessWidget {
           AppSplitRow(
             start: Text(name, style: AppText.titleS),
             end: Text(
-              l10n.sofarOfTargetG(countLabel(eaten), countLabel(target)),
+              l10n.sofarOfTargetG(
+                eaten == null ? '–' : countLabel(eaten),
+                countLabel(target),
+              ),
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
           ),
           const SizedBox(height: 4),
           AppProgressBar(
-            percent: _fraction(eaten, target) * 100,
+            percent: eaten == null ? 0 : _fraction(eaten, target) * 100,
             height: 8,
             colour: colour,
           ),
@@ -692,7 +820,9 @@ class EatHero extends StatelessWidget {
                 fraction: _fraction(totals.kcalSoFar, targets.kcal),
                 big: countLabel(totals.kcalSoFar),
                 small: l10n.ofTargetKcal(countLabel(targets.kcal)),
-                size: 112,
+                // Wide enough that the caption under the figure clears the arc
+                // at the largest text size, in both languages.
+                size: 128,
                 thickness: 12,
                 color: AppColors.primary,
                 animateIn: true,
@@ -798,6 +928,167 @@ class SlotPill extends StatelessWidget {
               color: AppColors.onPrimaryContainer,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "All" and the seven food shelves, one tap to narrow what is listed.
+///
+/// [selected] is null for All. The chips scroll sideways rather than wrapping,
+/// so the list under them stays where it is.
+class FoodCategoryChips extends StatelessWidget {
+  const FoodCategoryChips({
+    super.key,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final FoodCategory? selected;
+  final ValueChanged<FoodCategory?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    const categories = FoodCategory.values;
+    return Semantics(
+      container: true,
+      label: l10n.foodCategories,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        child: AppChipRow(
+          grow: false,
+          items: [
+            l10n.all,
+            for (final category in categories)
+              foodCategoryLabel(l10n, category),
+          ],
+          selected: {selected == null ? 0 : categories.indexOf(selected!) + 1},
+          onTap: (index) =>
+              onChanged(index == 0 ? null : categories[index - 1]),
+        ),
+      ),
+    );
+  }
+}
+
+/// One meal of E01's diary: its name, what is in it, and a "Log" pill that
+/// opens the logging flow on that meal. A row with something in it also opens
+/// what is there, to take an item out.
+class MealDiaryRow extends StatelessWidget {
+  const MealDiaryRow({
+    super.key,
+    required this.name,
+    required this.value,
+    required this.status,
+    required this.logLabel,
+    required this.logSemanticsLabel,
+    this.itemImageAssets = const <String?>[],
+    this.onLog,
+    this.onTap,
+  });
+
+  /// The painted picture of each logged item, in order (null where an item has
+  /// none). The first three show as thumbnails; an empty meal shows none.
+  final List<String?> itemImageAssets;
+
+  /// "Breakfast".
+  final String name;
+
+  /// What is in it, or "Now" / "Later".
+  final String value;
+
+  final SlotStatus status;
+
+  /// "Log".
+  final String logLabel;
+
+  /// "Log Breakfast", for a screen reader.
+  final String logSemanticsLabel;
+
+  final VoidCallback? onLog;
+
+  /// Opens what is in the meal. Null for an empty one.
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final done = status == SlotStatus.done;
+    return AppListItem(
+      title: name,
+      subtitle: value,
+      leading: itemImageAssets.isNotEmpty
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final asset in itemImageAssets.take(3))
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 4),
+                    child: FoodThumb(imageAsset: asset, size: 40),
+                  ),
+              ],
+            )
+          : done
+          ? const Icon(Icons.check, size: 23, color: AppColors.tertiary)
+          : null,
+      variant: status == SlotStatus.now
+          ? AppCardVariant.selected
+          : AppCardVariant.outlined,
+      onTap: onTap,
+      trailing: LogPill(
+        label: logLabel,
+        semanticsLabel: logSemanticsLabel,
+        onPressed: onLog,
+      ),
+    );
+  }
+}
+
+/// The small "Log" pill on a diary row. It opens the logging flow rather than
+/// saving anything, so it is not an [AppLogButton], whose tap saves. 48 tall.
+class LogPill extends StatelessWidget {
+  const LogPill({
+    super.key,
+    required this.label,
+    required this.semanticsLabel,
+    this.onPressed,
+  });
+
+  final String label;
+  final String semanticsLabel;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: semanticsLabel,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: HandSurface(
+        seed: handSeed(['log-pill', semanticsLabel]),
+        fill: AppColors.primarySoft,
+        frame: AppColors.primary.withValues(alpha: 0.35),
+        frameWidth: 1.1,
+        radius: 6,
+        looseCorner: 13,
+        onTap: onPressed,
+        pressable: true,
+        pressScale: 0.96,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: AppText.label.copyWith(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primaryDim,
+            ),
+          ),
         ),
       ),
     );

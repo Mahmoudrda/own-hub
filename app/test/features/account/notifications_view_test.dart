@@ -66,9 +66,7 @@ void main() {
       );
     });
 
-    testWidgets('a kind with no authored copy is held back, not invented', (
-      tester,
-    ) async {
+    testWidgets('every kind draws its own authored title', (tester) async {
       _phone(tester);
 
       await tester.pumpWidget(
@@ -84,14 +82,31 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      final l10n = lookupAppL10n(const Locale('en'));
+      expect(find.text(l10n.yourCoachRepliedToYourReview), findsOneWidget);
+      expect(find.text(l10n.yourGroupReachedANewMilestone), findsOneWidget);
+      expect(find.text(l10n.yourBestGotAFewLikes), findsOneWidget);
+
       // None of the prototype's four sample sentences reaches a screen: each
       // names a coach, a group or a woman who may not exist for her.
       expect(find.text('Sara replied to your review'), findsNothing);
       expect(find.text('Beginners group reached 146 sessions'), findsNothing);
       expect(find.text('Habiba and 12 others liked your best'), findsNothing);
+      expect(find.byType(AppEmptyState), findsNothing);
+    });
 
-      // So the inbox falls back to its empty state.
-      expect(find.byType(AppEmptyState), findsOneWidget);
+    test('every kind has a title in English and Arabic', () {
+      for (final code in ['en', 'ar']) {
+        final l10n = lookupAppL10n(Locale(code));
+        for (final kind in NotificationKind.values) {
+          expect(
+            NotificationCopy.titleFor(kind, l10n).trim(),
+            isNotEmpty,
+            reason: '$kind in $code',
+          );
+          expect(NotificationCopy.hasAuthoredCopy(kind, l10n), isTrue);
+        }
+      }
     });
 
     test('the gap is counted, so it is measurable rather than silent', () {

@@ -56,6 +56,8 @@ import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../today/presentation/today_cards.dart' show openScreen;
 import '../../train/domain/weight_label.dart';
+import '../../train/presentation/exercise_labels.dart'
+    show MoveName, englishMoveNames;
 
 /// One row of P03, already resolved against the dictionary.
 @immutable
@@ -85,7 +87,7 @@ PersonalBestRow? personalBestRow(AppL10n l10n, PersonalBest best) {
 
   return switch (best.exerciseId) {
     'goblet_squat' => PersonalBestRow(
-      title: l10n.gobletSquat,
+      title: englishMoveNames.gobletSquat,
       detail:
           _is(best.loadKg, 12) &&
               _is(best.reps, 10) &&
@@ -96,7 +98,7 @@ PersonalBestRow? personalBestRow(AppL10n l10n, PersonalBest best) {
       delta: delta,
     ),
     'glute_bridge' => PersonalBestRow(
-      title: l10n.gluteBridge,
+      title: englishMoveNames.gluteBridge,
       detail:
           _is(best.reps, 15) &&
               best.dateKey == '2026-09-09' &&
@@ -106,7 +108,7 @@ PersonalBestRow? personalBestRow(AppL10n l10n, PersonalBest best) {
       delta: delta,
     ),
     'plank_hold' => PersonalBestRow(
-      title: l10n.plankHold,
+      title: englishMoveNames.plankHold,
       detail:
           _is(best.holdSec, 45) &&
               best.dateKey == '2026-09-02' &&
@@ -116,7 +118,7 @@ PersonalBestRow? personalBestRow(AppL10n l10n, PersonalBest best) {
       delta: delta,
     ),
     'step_back_lunge' => PersonalBestRow(
-      title: l10n.stepBackLunge,
+      title: englishMoveNames.stepBackLunge,
       detail:
           best.metric == BestMetric.variation && best.dateKey == '2026-08-26'
           ? l10n.movedToTheHarderVersion26August
@@ -234,6 +236,7 @@ class PersonalBestsView extends StatelessWidget {
                       color: AppColors.amber,
                     ),
                     title: row.title,
+                    titleWidget: MoveName(row.title, style: AppText.titleM),
                     subtitle: row.detail ?? '',
                     trailing: row.delta == null
                         ? null

@@ -96,7 +96,7 @@ void main() {
       AppRouter.featureFlags = saved;
     });
 
-    testWidgets('seventeen dark screens do it, and this is the whole list', (
+    testWidgets('sixteen dark screens do it, and this is the whole list', (
       t,
     ) async {
       phone(t);
@@ -115,9 +115,9 @@ void main() {
       // C04 and C05 left the list when the look-around page became the tour.
       // Each stop is the real screen inside its own `ScreenScope`, so the bar
       // on the Home stop claims Home on a screen that is Home, and the tour
-      // maps its tabs to its own stops rather than to routes.
+      // maps its tabs to its own stops rather than to routes. C14 left when
+      // the waiting screen lost its bar: nothing opens until the check ends.
       expect(liars.map((l) => l.split(' ').first).toSet(), {
-        'C14',
         'G03',
         'G04',
         'G05',

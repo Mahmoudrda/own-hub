@@ -38,6 +38,7 @@ import '../../../ui/app_segmented.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/allergy_guard.dart';
+import '../domain/daily_targets.dart';
 import '../domain/food_library.dart';
 import '../domain/meal_log_service.dart';
 import '../domain/meal_repository.dart';
@@ -47,7 +48,9 @@ import 'eat_sample_library.dart';
 import 'eat_widgets.dart';
 import 'food_portion_sheet.dart';
 import 'meal_log_session.dart';
+import 'meal_result_card.dart';
 import 'quick_custom_sheet.dart';
+import 'slot_picks.dart';
 import 'type_it_view_model.dart';
 import 'meal_labels.dart';
 
@@ -61,6 +64,8 @@ class TypeItView extends StatefulWidget {
     this.library,
     this.now,
     this.initialText,
+    this.slot,
+    this.targets,
     this.history = const <ParsedItem>[],
     this.frequent = const <ParsedItem>[],
     this.onClose,
@@ -88,6 +93,14 @@ class TypeItView extends StatefulWidget {
   /// The prototype draws the box already holding "koshari and 2 eggs". Null
   /// leaves it empty, which is what a woman actually opens.
   final String? initialText;
+
+  /// The meal she is logging into. Null follows the session's preset (the Log
+  /// pill on E01), else the hour.
+  final MealSlot? slot;
+
+  /// Her day's targets, for the "Impact on today" rings on the portion sheet.
+  /// Null hides the rings.
+  final DailyTargets? targets;
 
   /// Plates she has eaten before, listed first in the results as "You've had".
   final List<ParsedItem> history;
@@ -139,7 +152,18 @@ class _TypeItViewState extends State<TypeItView> {
   /// The tab under the empty box: 0 Recent, 1 Frequent, 2 Favourites.
   int _tab = 0;
 
+  /// The shelf she narrowed the list to, or null for All. It combines with what
+  /// she has typed: the words search inside the shelf.
+  FoodCategory? _category;
+
+  late final FocusNode _fieldFocus = FocusNode();
+
+  /// The meal a Log pill on E01 named, read once when the screen opens.
+  MealSlot? _preset;
+
   DateTime get _now => widget.now ?? AppClock.now();
+
+  MealSlot get _slot => _preset ?? EatDayViewModel.slotAt(_now);
 
   /// Whether saying a meal is on in this build (`E03`).
   bool get _voice => widget.onSpeak != null && AppRouter.screenIsOn('E03');
@@ -148,10 +172,12 @@ class _TypeItViewState extends State<TypeItView> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialText ?? '');
+    _preset = widget.slot;
     _ownsRepo = widget.repository == null;
     _repo = widget.repository ?? InMemoryMealRepository();
     _ownsBus = widget.bus == null && widget.session == null;
     _bus = widget.bus ?? widget.session?.bus ?? LogCommandBus();
+    _preset ??= widget.session?.takeLogSlot();
     unawaited(_loadPrefs());
   }
 
@@ -163,6 +189,7 @@ class _TypeItViewState extends State<TypeItView> {
   @override
   void dispose() {
     _controller.dispose();
+    _fieldFocus.dispose();
     if (_ownsBus) unawaited(_bus.flushAll());
     if (_ownsRepo) unawaited(_repo.dispose());
     super.dispose();
@@ -234,7 +261,7 @@ class _TypeItViewState extends State<TypeItView> {
       guard: AllergyGuard(widget.constraints),
     );
 
-    final slot = EatDayViewModel.slotAt(_now);
+    final slot = _slot;
     final outcome = service.logNew(
       day: MealDay(dayId: _dayIdOf(_now)),
       slot: slot,
@@ -302,54 +329,63 @@ class _TypeItViewState extends State<TypeItView> {
       // going back.
       appBar: AppTopBar(onBack: widget.onClose, leadingIcon: Icons.close),
       footer: [
-        AppButton(
-          // Names the action and nothing else.
-          //
-          // This was `logBoth696Kcal` — "Log both · 696 kcal" — which is the
-          // total of the prototype's koshari-and-two-eggs sentence. It stated
-          // that total to a woman logging one apple, and it said "both" when
-          // there was one row or five. The rows above state the numbers, each
-          // from its own selected size.
-          l10n.addIt,
-          onPressed: state.canLog ? () => _log(state.items) : null,
-        ),
+        // The result card's Yes is the one save action for a sentence.
+        if (!(_isSentence(state) && state.items.isNotEmpty && state.canLog))
+          AppButton(
+            // Names the action and nothing else.
+            //
+            // This was `logBoth696Kcal` — "Log both · 696 kcal" — which is the
+            // total of the prototype's koshari-and-two-eggs sentence. It stated
+            // that total to a woman logging one apple, and it said "both" when
+            // there was one row or five. The rows above state the numbers, each
+            // from its own selected size.
+            l10n.addIt,
+            onPressed: state.canLog ? () => _log(state.items) : null,
+          ),
       ],
       children: [
         AppField(
           controller: _controller,
+          focusNode: _fieldFocus,
           onChanged: _onChanged,
           // No microphone while saying a meal is off in this build
           // (`Feature.voiceLogging`): there is nothing to hear her with.
           hint: _voice ? l10n.sayOrTypeWhatYouAte : l10n.typeWhatYouAte,
-          trailing: _voice || widget.onSnap != null
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (widget.onSnap case final snap?)
-                      IconButton(
-                        key: const ValueKey('type-it-snap-meal'),
-                        onPressed: snap,
-                        tooltip: l10n.snapYourMeal,
-                        iconSize: 22,
-                        color: AppColors.primaryDim,
-                        icon: const Icon(Icons.photo_camera_outlined),
-                      ),
-                    if (_voice)
-                      IconButton(
-                        onPressed: widget.onSpeak,
-                        tooltip: l10n.weNeedTheMicrophoneToHearWhat,
-                        iconSize: 22,
-                        color: AppColors.primaryDim,
-                        icon: const Icon(Icons.mic),
-                      ),
-                  ],
+          trailing: _voice
+              ? IconButton(
+                  onPressed: widget.onSpeak,
+                  tooltip: l10n.weNeedTheMicrophoneToHearWhat,
+                  iconSize: 22,
+                  color: AppColors.primaryDim,
+                  icon: const Icon(Icons.mic),
                 )
               : null,
+        ),
+        if (widget.onSnap case final snap?)
+          AppButton(
+            key: const ValueKey('type-it-snap-meal'),
+            l10n.scanWithTheCameraInstead,
+            onPressed: snap,
+            variant: AppButtonVariant.outlined,
+            icon: Icons.camera_alt_rounded,
+            height: 48,
+            fontSize: 16,
+          ),
+        FoodCategoryChips(
+          key: const ValueKey('type-it-categories'),
+          selected: _category,
+          onChanged: (category) => setState(() => _category = category),
         ),
         if (_isSentence(state))
           Text(
             l10n.wellAdd,
             style: AppText.titleS.copyWith(color: AppColors.tertiary),
+          ),
+        if (_isSentence(state) && state.items.isNotEmpty)
+          MealResultCard(
+            items: state.items,
+            onYes: state.canLog ? () => _log(state.items) : null,
+            onEdit: _fieldFocus.requestFocus,
           ),
         if (_isSentence(state))
           for (var i = 0; i < state.items.length; i++)
@@ -366,6 +402,7 @@ class _TypeItViewState extends State<TypeItView> {
                   _resize(i, state.items[i].food.sizes[index]),
               onRemove: () => _remove(i),
               removeTooltip: l10n.edit,
+              imageAsset: state.items[i].food.imageAsset,
             ),
         // An unmatched fragment stays visible. Never dropped, never guessed.
         if (state.hasUnresolved)
@@ -409,6 +446,7 @@ class _TypeItViewState extends State<TypeItView> {
       ),
       initialSize: size,
       initialServings: servings,
+      targets: widget.targets,
       isFavourite: _prefs.favourites.contains(food.foodId),
       onToggleFavourite: () async {
         final gate = widget.requireAccount;
@@ -478,7 +516,8 @@ class _TypeItViewState extends State<TypeItView> {
     final guard = AllergyGuard(widget.constraints);
     final shown = <String>{for (final item in listed) item.food.foodId};
 
-    final had = query.isEmpty
+    final shelf = _category;
+    final had = query.isEmpty || shelf != null
         ? const <ParsedItem>[]
         : <ParsedItem>[
             for (final entry in state.history)
@@ -487,18 +526,48 @@ class _TypeItViewState extends State<TypeItView> {
                   entry,
           ].take(5).toList();
 
+    final Iterable<Food> candidates;
+    if (shelf != null) {
+      candidates = query.isEmpty
+          ? guard.screenSuggestions([
+              for (final food in library.foods)
+                if (food.category == shelf) food,
+            ])
+          : library.resolve(query).where((food) => food.category == shelf);
+    } else {
+      candidates = query.isEmpty
+          ? guard.screenSuggestions(library.mostPopular(24)).take(8)
+          : library.resolve(query);
+    }
     final foods = <Food>[
-      for (final food
-          in query.isEmpty
-              ? guard.screenSuggestions(library.mostPopular(24)).take(8)
-              : library.resolve(query))
+      for (final food in candidates)
         if (!listed.any((i) => i.food.foodId == food.foodId) &&
             !had.any((h) => h.food.foodId == food.foodId))
           food,
-    ].take(12).toList();
+    ].take(shelf != null && query.isEmpty ? 60 : 12).toList();
+
+    // The Recent tab sits right below the picks; a food listed there is not
+    // offered twice.
+    final recentIds = _tab == 0
+        ? {for (final e in state.history.take(10)) e.food.foodId}
+        : const <String>{};
+    final picks = query.isEmpty && shelf == null
+        ? [
+            for (final pick in slotPicks(
+              prefs: _prefs,
+              library: library,
+              guard: guard,
+              slot: _slot,
+            ))
+              if (!recentIds.contains(pick.food.foodId)) pick,
+          ]
+        : const <ParsedItem>[];
 
     return [
-      if (query.isEmpty) ..._emptyBox(l10n, state, guard, library),
+      if (picks.isNotEmpty)
+        SlotPicksRow(slot: _slot, picks: picks, onAdd: (pick) => _log([pick])),
+      if (query.isEmpty && shelf == null)
+        ..._emptyBox(l10n, state, guard, library),
       if (had.isNotEmpty) ...[
         Text(
           l10n.youveHad,
@@ -507,7 +576,7 @@ class _TypeItViewState extends State<TypeItView> {
         for (final entry in had) _entryRow(l10n, guard, entry, 'had'),
       ],
       if (foods.isNotEmpty) ...[
-        if (query.isEmpty)
+        if (query.isEmpty && shelf == null)
           Text(
             l10n.popularDishes,
             style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),

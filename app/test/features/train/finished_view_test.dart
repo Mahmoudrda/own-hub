@@ -14,6 +14,7 @@ import 'package:own_hub/domain/rewards/personal_best_detector.dart';
 import 'package:own_hub/features/train/domain/session_summary.dart';
 import 'package:own_hub/ui/hand/mascot/kitten_painter.dart';
 import 'package:own_hub/ui/hand/paper_confetti.dart';
+import 'package:own_hub/ui/hand/finish_wipe.dart';
 import 'package:own_hub/ui/hand/hand.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
@@ -54,6 +55,13 @@ const _recalled = TrainSession(
   sets: [],
   completed: true,
 );
+
+/// Lets the finish wipe cross, which is when the reveal begins.
+Future<void> _pastWipe(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(finishWipeDuration);
+  await tester.pump(const Duration(milliseconds: 1));
+}
 
 void main() {
   // The share link posts to a group, so R10 is tested with Community on.
@@ -293,7 +301,7 @@ void main() {
             ),
           ),
         );
-        await tester.pump();
+        await _pastWipe(tester);
         // The order is the week (stage 2), the cheer (stage 5), then the
         // paper (stage 6): none exists before its stage starts to arrive.
         expect(find.byType(PaperConfetti), findsNothing);
@@ -334,6 +342,7 @@ void main() {
           ),
         ),
       );
+      await _pastWipe(tester);
       await tester.pump(const Duration(seconds: 3));
       expect(find.byType(Kitten), findsOneWidget);
       expect(tester.widget<Kitten>(find.byType(Kitten)).pose, KittenPose.nod);
@@ -437,7 +446,7 @@ void main() {
             ),
           ),
         );
-        await tester.pump();
+        await _pastWipe(tester);
         expect(felt, isEmpty);
         // Stage 3 is the count-up (450 ms): mid-way it is not yet the final
         // figure, and the kitten (stage 5, 750 ms) has not cheered.
@@ -461,7 +470,7 @@ void main() {
             const FinishedView(session: _live, cheer: true, summary: summary),
           ),
         );
-        await tester.pump();
+        await _pastWipe(tester);
         // The cheer's move (stage 5, 750 ms + 1200 ms) is the last thing of
         // the reveal to finish, and the paper (stage 6) is long gone.
         for (var ms = 0; ms < 1950; ms += 50) {
@@ -515,6 +524,10 @@ void main() {
       await tester.pumpWidget(
         _host(const FinishedView(session: _live, summary: summary)),
       );
+      await tester.pump(const Duration(milliseconds: 50));
+      // The first tap only skips the wipe; the next brings the stages in.
+      await tester.tapAt(const Offset(200, 300));
+      await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       await tester.tapAt(const Offset(200, 300));
       await tester.pump();

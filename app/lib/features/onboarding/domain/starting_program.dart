@@ -291,12 +291,37 @@ StartingProgram? selectStartingProgram(
   List<StartingProgram>? catalogue,
   TrainingLevel? tier,
 }) {
+  final ranked = rankStartingPrograms(intake, catalogue, tier: tier);
+  return ranked.isEmpty ? null : ranked.first;
+}
+
+/// The programmes O05 and R02 offer: the best fit of each plan, at most
+/// [count], so the same plan at another tier is never a second card.
+List<StartingProgram> topStartingPrograms(
+  Intake intake, {
+  List<StartingProgram>? catalogue,
+  TrainingLevel? tier,
+  int count = 3,
+}) {
+  final seen = <String>{};
+  return [
+    for (final programme in rankStartingPrograms(intake, catalogue, tier: tier))
+      if (seen.add(programme.family)) programme,
+  ].take(count).toList();
+}
+
+/// Every programme that fits her kit and place, best first, by the same
+/// comparison [selectStartingProgram] makes. Ties keep the catalogue's order.
+List<StartingProgram> rankStartingPrograms(
+  Intake intake,
+  List<StartingProgram>? catalogue, {
+  TrainingLevel? tier,
+}) {
   final wanted = tier ?? intake.level;
   final programmes = catalogue ?? kStartingProgramCatalogue;
   final have = _kitFor(intake);
 
-  StartingProgram? best;
-  List<int>? bestKey;
+  final keyed = <({StartingProgram programme, List<int> key})>[];
   for (final programme in programmes) {
     if (!programme.equipment.every(have.contains)) continue;
     if (programme.places.isNotEmpty &&
@@ -315,12 +340,16 @@ StartingProgram? selectStartingProgram(
       // At home quiet matters; a gym programme need not be.
       intake.place == TrainingPlace.home && programme.quiet ? 1 : 0,
     ];
-    if (bestKey == null || _later(key, bestKey)) {
-      best = programme;
-      bestKey = key;
-    }
+    keyed.add((programme: programme, key: key));
   }
-  return best;
+  // A stable insertion order, so equal keys stay in the catalogue's order.
+  final order = <int>[for (var i = 0; i < keyed.length; i++) i]
+    ..sort((a, b) {
+      if (_later(keyed[a].key, keyed[b].key)) return -1;
+      if (_later(keyed[b].key, keyed[a].key)) return 1;
+      return a.compareTo(b);
+    });
+  return [for (final i in order) keyed[i].programme];
 }
 
 bool _later(List<int> a, List<int> b) {

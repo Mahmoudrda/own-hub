@@ -33,8 +33,10 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../signup/data/held_photo.dart';
 import '../data/meal_camera.dart';
+import '../data/meal_frame_light.dart';
 import '../domain/meal_scan.dart';
 import 'meal_photo_consent.dart';
+import 'meal_result_card.dart';
 
 /// What E12 says about a refused scan, and whether "Retake" is the way on.
 @immutable
@@ -60,6 +62,14 @@ ScanAdvice scanAdviceFor(AppL10n l10n, MealScanFailure failure) =>
       ),
       MealScanFailure.photoUnreadable => ScanAdvice(
         l10n.weCouldntReadThatPhotoTakeIt,
+        retake: true,
+      ),
+      MealScanFailure.photoTooDark => ScanAdvice(
+        l10n.thatPhotoIsTooDarkTryAgain,
+        retake: true,
+      ),
+      MealScanFailure.photoBlank => ScanAdvice(
+        l10n.thatPhotoLooksBlankCheckTheLens,
         retake: true,
       ),
       MealScanFailure.notVerified => ScanAdvice(
@@ -92,6 +102,8 @@ class MealPhotoView extends StatefulWidget {
     required this.state,
     this.uid,
     this.onScanned,
+    this.isTooDark = mealFrameIsTooDark,
+    this.isBlank = mealFrameIsBlank,
     this.onTypeInstead,
     this.onOpenSettings,
     this.onClose,
@@ -105,6 +117,12 @@ class MealPhotoView extends StatefulWidget {
 
   /// The scan answered with food; [MealScanState.result] holds it.
   final VoidCallback? onScanned;
+
+  /// Whether a photo is too dark to send. Replaced in tests.
+  final Future<bool> Function(Uint8List photo) isTooDark;
+
+  /// Whether a photo is a flat frame with nothing in it. Replaced in tests.
+  final Future<bool> Function(Uint8List photo) isBlank;
 
   /// E02, typing the meal.
   final VoidCallback? onTypeInstead;
@@ -208,6 +226,23 @@ class _MealPhotoViewState extends State<MealPhotoView>
     if (bytes == null) {
       setState(() {
         _failure = MealScanFailure.photoUnreadable;
+        _step = _Step.failed;
+      });
+      await _closeCamera();
+      return;
+    }
+    final dark = await widget.isTooDark(bytes);
+    final blank = !dark && mounted && await widget.isBlank(bytes);
+    if (!mounted) {
+      bytes.fillRange(0, bytes.length, 0);
+      return;
+    }
+    if (dark || blank) {
+      bytes.fillRange(0, bytes.length, 0);
+      setState(() {
+        _failure = dark
+            ? MealScanFailure.photoTooDark
+            : MealScanFailure.photoBlank;
         _step = _Step.failed;
       });
       await _closeCamera();
@@ -353,11 +388,8 @@ class _MealPhotoViewState extends State<MealPhotoView>
               style: AppText.titleM,
             ),
           ),
-          const LinearProgressIndicator(
-            minHeight: 4,
-            color: AppColors.primary,
-            backgroundColor: AppColors.surfaceContainer,
-          ),
+          // The wait is the real analysis call; the card ends when it does.
+          const MealResultCard(adding: true),
           Text(
             l10n.thePhotoIsWipedAsSoonAs,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),

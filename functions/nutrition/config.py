@@ -16,11 +16,10 @@ LOCATION = "europe-west3"
 processes the request in this region; the privacy policy names it."""
 
 MODEL = "gemini-3.5-flash"
-"""Gemini Flash, the owner's choice (17 October 2026). gemini-2.5-flash
-retires on Vertex AI on 20 October 2026 and names this as its replacement;
-3.8 Flash is served in europe-west3 and supported until at least September
-2027. Gemini 3.5 Flash-Lite is the cheaper switch if cost ever matters more
-than accuracy: change this one line and `thinking_settings` follows."""
+"""Gemini 3.5 Flash, served in europe-west3 with the lowest thinking level (see
+`thinking_settings`). Gemini 2.5 Flash retires on 20 October 2026 and
+Flash-Lite is not served in this region. Changing this one line is enough: a
+gemini-2.x name gets a zero thinking budget instead."""
 
 TIMEOUT_MS = 20_000
 """One scan waits at most this long for the model, then she is told the
@@ -28,6 +27,10 @@ service is unavailable. The SDK's own retries stay off (no retry_options), so
 a scan is exactly one model call."""
 
 MAX_OUTPUT_TOKENS = 600
+"""The model answers with names, grams and search terms only; every number
+comes from nutrition/. The largest answer in the test fixtures is about 115
+tokens, and a plate of four dishes that each list ingredients is about 430,
+which leaves room for the low thinking level."""
 TEMPERATURE = 0.1
 
 
@@ -50,11 +53,24 @@ MEAL_SCANS_PER_UID_PER_DAY = 5
 verificationLedger/{uid}.daily.mealScans by store.uid_daily_count_and_increment,
 before the global cap, so one account cannot spend everyone's allowance."""
 
-MEAL_SCANS_GLOBAL_PER_DAY = 500
+MEAL_SCANS_GLOBAL_PER_DAY = 300
 """The cost ceiling for the whole app per UTC day, on the sharded
 verificationStats/{day}_s{n}.mealScans counter. Past it every scan is refused
 with meal_scans_paused and the meal_scans_paused warning is logged once per
-refused call, so an alert can match it."""
+refused call, so an alert can match it. Only a call to the model counts: a
+photo answered from scanCache costs neither her allowance nor this one."""
+
+SCAN_CACHE_COLLECTION = "scanCache"
+SCAN_CACHE_DAYS = 30
+"""A scan result is kept for the exact same photo this long. The collection has
+a Firestore TTL policy on `expiresAt`; the read also ignores an expired row, so
+the policy only has to tidy up."""
+
+COMMUNITY_FOODS_PER_UID_PER_DAY = 10
+"""Foods one woman may offer per UTC day (submit_community_food), counted on
+verificationLedger/{uid}.daily.communityFoods. It keeps a loop from becoming a
+write pump; nobody logs ten new dishes in a day."""
+COMMUNITY_COUNTER_FIELD = "communityFoods"
 
 UID_COUNTER_FIELD = "mealScans"
 GLOBAL_COUNTER_FIELD = "mealScans"

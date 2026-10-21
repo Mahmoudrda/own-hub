@@ -58,6 +58,20 @@ Health and fitness
       stage, allergies. Optional. Purpose: App functionality.
       Otherwise this stays on the phone and is not collected.
 
+Other user-generated content and app info (three flows to declare)
+  - Scan cache: a fingerprint (hash) of a re-encoded meal photo plus the foods
+      and grams found, kept 30 days, then deleted by TTL. No photo, no user
+      identifier. Purpose: App functionality. Not linked to her.
+  - Dish sharing (opt-in, off by default): on "Log this meal" the dish names,
+      the items (names and grams) and the macros go to a server-only list for
+      team review. A marker keyed by an HMAC of her uid dedupes her
+      confirmation and is deleted with her account. Approved dishes (names,
+      category, allergens, macros; not the items) are shown to all verified
+      members with no link to her. Shared with other users: yes, only if she
+      opts in, without her name.
+  - Event seats: her uid, time reserved and status under the event; readable
+      by her and Own Hub admins; deleted on cancel or account deletion.
+
 Photos and videos
   - Photos
       Collected and processed ephemerally: both sides of her national ID card

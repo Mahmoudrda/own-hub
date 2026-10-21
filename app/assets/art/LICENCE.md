@@ -273,3 +273,11 @@ fruit_basket, grapes, nuts, pasta, plate_mixed, steak, toast_egg, watermelon, at
 1x, 2x and 3x) were restored to their original colours on 17 October 2026, from
 git `d353189`. They are no longer part of the 16 October recolour; the other
 files keep the brand palette.
+
+## Meal pictures (assets/art/meals/)
+
+Generated with FLUX.1 [schnell] (Apache 2.0) via Cloudflare Workers AI, October
+2026, for Own Hub. Painted from the prompts in `tool/meal_image_prompts.json` and installed by
+`tool/install_meal_images.py`. The pictures are the ids listed in
+`assets/art/meals/index.json`, not every food and recipe; foods ship at 200 px only, recipes at 1x, 2x and
+3x. These files are governed by that index, not by `AppArt.all`.

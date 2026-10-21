@@ -45,12 +45,18 @@ import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_undo_bar.dart';
 import '../../../ui/hand/hand.dart';
+import '../data/exercise_media_store.dart';
+import '../domain/exercise_library.dart';
 import '../domain/train_repository.dart';
 import '../domain/weight_label.dart';
+import 'exercise_clip_frame.dart';
+import 'exercise_clip_player.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
 import 'workout_day_view.dart' show localisedMove;
 import 'session_notice.dart';
+import '../../../ui/screen_art_strip.dart';
+import 'exercise_labels.dart';
 
 class MidSetView extends StatefulWidget {
   const MidSetView({
@@ -73,7 +79,20 @@ class MidSetView extends StatefulWidget {
     this.onDetach,
     this.progressionLine,
     this.notice,
+    this.clip,
+    this.media,
+    this.players,
   });
+
+  /// The library's row for [move], when it holds one: its clip plays at the
+  /// top of the page. Null keeps the page as it was.
+  final LibraryExercise? clip;
+
+  /// Where the clip's files come from. Without it no clip is drawn.
+  final ExerciseMediaStore? media;
+
+  /// Makes the player. Null draws the poster alone, as tests do.
+  final ExerciseClipPlayerFactory? players;
 
   /// A swap or a skip that brought her here, with its Undo, drawn in the page
   /// above the move so it never covers the button she taps next.
@@ -144,6 +163,12 @@ class _MidSetViewState extends State<MidSetView> {
   /// Whether the sets other than the current one are drawn.
   bool _allSets = false;
 
+  /// Whether the move's cues are open under its clip.
+  bool _cuesOpen = false;
+
+  /// The moves whose clip would not play. Their page keeps no player at all.
+  final Set<String> _unplayable = <String>{};
+
   TrainRepository get _repository =>
       widget.repository ?? (_fallbackRepository ??= InMemoryTrainRepository());
 
@@ -153,6 +178,14 @@ class _MidSetViewState extends State<MidSetView> {
   void initState() {
     super.initState();
     widget.onAttach?.call();
+  }
+
+  @override
+  void didUpdateWidget(MidSetView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.move?.exerciseId != widget.move?.exerciseId) {
+      _cuesOpen = false;
+    }
   }
 
   @override
@@ -174,7 +207,7 @@ class _MidSetViewState extends State<MidSetView> {
   /// session. That one came from the router passing nothing.
   PlannedMove _defaultMove(AppL10n l10n) => PlannedMove(
     exerciseId: 'goblet_squat',
-    name: l10n.gobletSquat,
+    name: englishMoveNames.gobletSquat,
     prescriptionLabel: l10n.n12Kg10,
     sets: const [
       PrescribedSet(
@@ -319,7 +352,10 @@ class _MidSetViewState extends State<MidSetView> {
 
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.moveSavedSetsSets(move.name, move.sets.length),
+        describe: l10n.moveSavedSetsSets(
+          isolateLtr(l10n, move.name),
+          move.sets.length,
+        ),
         commit: () => _repository.flushMove(
           sessionId: widget.sessionId,
           exerciseId: move.exerciseId,
@@ -338,8 +374,12 @@ class _MidSetViewState extends State<MidSetView> {
     final move = localisedMove(l10n, widget.move ?? _defaultMove(l10n));
     final prescribed = _prescribedOf(move);
 
+    final hasClip = widget.clip != null && widget.media != null;
     return AppScaffold(
       footerScrollsWhenLarge: true,
+      // The clip is the picture; art stands in only when there is no clip
+      // (the header) or it cannot play (the strip below).
+      showArt: !hasClip,
       appBar: TrainTopBar(
         // Which move of how many, when the caller knows. It was the fixed
         // `move2Of5`, so the bar read "Move 2 of 5" above the first move of a
@@ -412,9 +452,37 @@ class _MidSetViewState extends State<MidSetView> {
             undoLabel: l10n.undo,
             onUndo: notice.onUndo,
           ),
+        if (widget.clip case final library?)
+          if (widget.media case final media?)
+            if (!_unplayable.contains(library.id)) ...[
+              ExerciseClipFrame(
+                key: ValueKey('r07-clip-${library.id}'),
+                clipKey: const ValueKey('r07-clip'),
+                exercise: library,
+                media: media,
+                players: widget.players,
+                maxHeight: 220,
+                onFailed: () {
+                  if (mounted) setState(() => _unplayable.add(library.id));
+                },
+              ),
+              if (move.cues.isNotEmpty)
+                _FormCues(
+                  label: l10n.formCues,
+                  cues: move.cues,
+                  open: _cuesOpen,
+                  onTap: () => setState(() => _cuesOpen = !_cuesOpen),
+                ),
+            ] else
+              const ScreenArtStrip(size: 76),
         Row(
           children: [
-            Expanded(child: Text(move.name, style: AppText.headline)),
+            Expanded(
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: MoveName(move.name, style: AppText.headline),
+              ),
+            ),
             IconButton(
               key: const ValueKey('r07-change'),
               tooltip: l10n.change,
@@ -537,7 +605,7 @@ class _ThisMoveHeading extends StatelessWidget {
         key: const ValueKey('r07-all-sets'),
         onTap: onTap,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 44),
+          constraints: const BoxConstraints(minHeight: 48),
           child: Row(
             children: [
               Expanded(
@@ -559,4 +627,61 @@ class _ThisMoveHeading extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "Form cues", which opens the move's cues under its clip when tapped.
+class _FormCues extends StatelessWidget {
+  const _FormCues({
+    required this.label,
+    required this.cues,
+    required this.open,
+    required this.onTap,
+  });
+
+  final String label;
+  final List<String> cues;
+  final bool open;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Semantics(
+        button: true,
+        expanded: open,
+        child: InkWell(
+          key: const ValueKey('r07-form-cues'),
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppText.bodyM.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                Icon(
+                  open ? Icons.expand_less : Icons.expand_more,
+                  size: 22,
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      if (open)
+        for (final cue in cues)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(bottom: 6),
+            child: Text(cue, style: AppText.bodyM),
+          ),
+    ],
+  );
 }

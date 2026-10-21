@@ -205,7 +205,9 @@ void main() {
         scheduler.tips.map(GettingStartedTip.of),
         isNot(contains(GettingStartedTip.mealScan)),
       );
-      expect(scheduler.tips, hasLength(kTipCount - 1));
+      // At most three casual notes until she opens the app; the day the
+      // removed tip frees goes to the next note in time order.
+      expect(scheduler.tips, hasLength(kNudgesUnanswered - 1));
       expect(
         ReminderState.instance.tips.done,
         contains(GettingStartedTip.mealScan),
@@ -289,9 +291,9 @@ void main() {
         'them', () async {
       final scheduler = _Scheduler();
       await NotificationSync.reapply(scheduler, text, now: _landed);
-      expect(scheduler.tips, hasLength(kTipCount));
+      expect(scheduler.tips, hasLength(kNudgesUnanswered));
       expect(scheduler.tips.first.at, _day(1, 18));
-      expect(ReminderState.instance.tips.due, hasLength(kTipCount));
+      expect(ReminderState.instance.tips.due, hasLength(kNudgesUnanswered));
     });
 
     test('a phone that refused them remembers nothing', () async {
@@ -320,7 +322,7 @@ void main() {
         scheduler.tips.map(GettingStartedTip.of),
         isNot(contains(GettingStartedTip.videos)),
       );
-      expect(scheduler.tips, hasLength(kTipCount - 1));
+      expect(scheduler.tips, hasLength(kNudgesUnanswered - 1));
     });
 
     test('the A01 switch off cancels the ones to come', () async {
@@ -340,7 +342,7 @@ void main() {
       await AppRouter.setNotificationPrefs(
         ReminderState.instance.prefs.copyWith(tips: true),
       );
-      expect(scheduler.tips, hasLength(kTipCount));
+      expect(scheduler.tips, hasLength(kNudgesUnanswered));
     });
 
     test('signing out cancels the series', () async {

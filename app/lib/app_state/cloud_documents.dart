@@ -72,11 +72,13 @@ import '../features/cycle/domain/today_check_in.dart';
 import '../features/eat/domain/meal_repository.dart';
 import '../features/onboarding/domain/intake.dart';
 import '../features/progress/domain/progress_repository.dart';
+import '../features/train/domain/custom_workout.dart';
 import '../features/signup/domain/locale_preference.dart';
 import '../features/today/domain/today_day.dart';
 import '../features/today/domain/today_repository.dart';
 import '../features/train/domain/train_repository.dart';
 import '../routing/app_router.dart';
+import 'custom_workout_state.dart';
 import 'cycle_state.dart';
 
 /// The `schemaV` every document carrying one is written with.
@@ -180,6 +182,7 @@ abstract final class CloudDocuments {
     return <CloudDoc>[
       _userDoc(includeHealth: health),
       ..._sessions(),
+      ..._splits(),
       ..._mealDays(includeHealth: health),
       _eatPrefsDoc(),
       ..._mealPlans(),
@@ -227,6 +230,7 @@ abstract final class CloudDocuments {
   static final Map<String, int Function(List<CloudDoc>)> _folds = {
     '': _foldUser,
     'sessions': _foldSessions,
+    'splits': _foldSplits,
     'meals': _foldMealDays,
     'eatPrefs': _foldEatPrefs,
     'mealPlans': _foldMealPlans,
@@ -258,6 +262,7 @@ abstract final class CloudDocuments {
 
   static const List<String> _allReadableCollections = <String>[
     'sessions',
+    'splits',
     'meals',
     'eatPrefs',
     'mealPlans',
@@ -418,6 +423,81 @@ int _foldUser(List<CloudDoc> docs) {
   }
 
   return 1;
+}
+
+// ----------------------------------------------------------------- splits ---
+
+/// The workouts she built herself, one document each under `splits`.
+///
+/// `splits` is a collection the rules also open to a coach's own splits, so the
+/// rule on CREATE and UPDATE is that `ownerKind` is `self`, no run counter is
+/// present, and `updatedAt`, when sent, is the server's own clock. Nothing else
+/// is whitelisted; this shape is fixed here so that it stays small and so a
+/// test can pin it.
+///
+/// A deletion is a document too, `deleted: true` with no name and no moves: the
+/// store only ever writes, and a delete that left the old document in place
+/// would be folded straight back in on the next sign-in.
+Iterable<CloudDoc> _splits() sync* {
+  final state = CustomWorkoutState.instance;
+  for (final workout in state.workouts) {
+    if (!isCustomWorkoutId(workout.id) || workout.moves.isEmpty) continue;
+    yield CloudDoc(
+      collection: 'splits',
+      id: workout.id,
+      data: <String, Object?>{
+        'ownerKind': 'self',
+        'schemaV': kSplitSchema,
+        'name': workout.name,
+        'moves': [for (final move in workout.moves) move.toJson()],
+        'updatedAt': kServerTime,
+      },
+    );
+  }
+  for (final id in state.deletedIds) {
+    if (!isCustomWorkoutId(id)) continue;
+    yield CloudDoc(
+      collection: 'splits',
+      id: id,
+      data: <String, Object?>{
+        'ownerKind': 'self',
+        'schemaV': kSplitSchema,
+        'deleted': true,
+        'updatedAt': kServerTime,
+      },
+    );
+  }
+}
+
+/// A cloud timestamp as the text a workout stores, or null when it is not one.
+String? _stampOf(Object? raw) {
+  if (raw is DateTime) return raw.toIso8601String();
+  if (raw is String) return raw;
+  try {
+    final date = (raw as dynamic).toDate();
+    if (date is DateTime) return date.toIso8601String();
+  } catch (_) {}
+  return null;
+}
+
+int _foldSplits(List<CloudDoc> docs) {
+  final state = CustomWorkoutState.instance;
+  var taken = 0;
+  for (final doc in docs) {
+    if (doc.data['ownerKind'] != 'self' || !isCustomWorkoutId(doc.id)) continue;
+    if (doc.data['deleted'] == true) {
+      if (state.adoptRemoteDeletion(doc.id)) taken++;
+      continue;
+    }
+    final workout = CustomWorkout.tryParse(<String, Object?>{
+      'id': doc.id,
+      'name': doc.data['name'],
+      'moves': doc.data['moves'],
+      'updatedAt': _stampOf(doc.data['updatedAt']),
+    });
+    if (workout != null && state.adoptRemote(workout)) taken++;
+  }
+  return taken;
 }
 
 // --------------------------------------------------------------- sessions ---

@@ -1,8 +1,8 @@
-// What a member sees of events, and that she sees none of it until the owner
-// switches Feature.events on.
+// What a member sees of events, and that she sees none of it while the owner
+// has Feature.events switched off.
 //
 //   * T09 lists published events in Cairo time, in her language, with an
-//     honest empty state, and asks her for nothing;
+//     honest empty state, and sends nothing about her on opening;
 //   * Home's Upcoming card is drawn only with the flag on AND an event to come;
 //   * with the flag off, T09 is FeatureOff, the card is absent and nothing is
 //     read from the server;
@@ -124,8 +124,9 @@ class _FakeSwitches implements FeatureSwitchStore {
 
 void main() {
   final shipped = AppRouter.featureFlags;
+  final off = FeatureFlags.shipped.with_({Feature.events: false});
   setUp(() {
-    AppRouter.featureFlags = FeatureFlags.shipped;
+    AppRouter.featureFlags = off;
     EventsState.instance.reset();
   });
   tearDown(() {
@@ -153,10 +154,10 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Online'), findsOneWidget);
-      expect(find.text('Zamalek ladies gym · Places: 20'), findsOneWidget);
+      expect(find.text('Zamalek ladies gym'), findsOneWidget);
       expect(find.text('Thirty quiet minutes on the floor.'), findsOneWidget);
 
-      await tester.tap(find.text('Open the link'));
+      await tester.tap(find.text('Open event link'));
       expect(opened, ['https://meet.example.com/stretch']);
     });
 
@@ -216,8 +217,8 @@ void main() {
   });
 
   group('the flag', () {
-    test('ships off', () {
-      expect(FeatureFlags.shipped.isOn(Feature.events), isFalse);
+    test('ships on', () {
+      expect(FeatureFlags.shipped.isOn(Feature.events), isTrue);
       expect(AppRouter.screenFeatures['T09'], Feature.events);
     });
 
@@ -234,9 +235,7 @@ void main() {
       tester,
     ) async {
       _phone(tester);
-      AppRouter.featureFlags = FeatureFlags.shipped.with_({
-        Feature.events: true,
-      });
+      AppRouter.featureFlags = FeatureFlags.shipped;
       var opened = 0;
       await tester.pumpWidget(
         _host(_today(next: _online(), onOpenEvents: () => opened++)),
@@ -251,9 +250,7 @@ void main() {
 
     testWidgets('on, with nothing planned: no card at all', (tester) async {
       _phone(tester);
-      AppRouter.featureFlags = FeatureFlags.shipped.with_({
-        Feature.events: true,
-      });
+      AppRouter.featureFlags = FeatureFlags.shipped;
       await tester.pumpWidget(_host(_today()));
       await tester.pumpAndSettle();
       expect(find.textContaining('Upcoming events'), findsNothing);
@@ -289,9 +286,7 @@ void main() {
     });
 
     test('on: read once, then not again within the hour', () async {
-      AppRouter.featureFlags = FeatureFlags.shipped.with_({
-        Feature.events: true,
-      });
+      AppRouter.featureFlags = FeatureFlags.shipped;
       final reader = _CountingReader([_online()]);
       var now = DateTime.utc(2026, 11, 1, 10);
       EventsState.instance.source = () => reader;
@@ -306,11 +301,9 @@ void main() {
     });
 
     test('switched off again: the list empties', () async {
-      AppRouter.featureFlags = FeatureFlags.shipped.with_({
-        Feature.events: true,
-      });
-      EventsState.instance.seed([_online()]);
       AppRouter.featureFlags = FeatureFlags.shipped;
+      EventsState.instance.seed([_online()]);
+      AppRouter.featureFlags = off;
       await EventsState.instance.refresh(force: true);
       expect(EventsState.instance.upcoming, isEmpty);
     });

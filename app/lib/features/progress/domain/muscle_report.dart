@@ -294,7 +294,10 @@ List<LoggedMove> loggedMovesFrom(TrainRepository repository) {
   final out = <LoggedMove>[];
   for (final flush in repository.flushes) {
     final session = repository.sessionById(flush.sessionId);
-    if (session == null) continue;
+    // A session still running, or abandoned, is not a finished one: it is not
+    // in her sessions count either (P05 reads the credited sessions), so its
+    // sets must not be on the map.
+    if (session == null || !session.completed) continue;
     final sets = flush.sets.where((s) => s.isLogged).length;
     if (sets == 0) continue;
     out.add((

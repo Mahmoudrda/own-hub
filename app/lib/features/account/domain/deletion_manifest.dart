@@ -552,6 +552,20 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     method: DeletionMethod.groupHook,
     note: 'the pre-approval saved against her phone number',
   ),
+  DeletionRow(
+    number: 53,
+    path: 'events/{eventId}/attendees/{uid}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'her reserved seats; each event gets the seat back',
+  ),
+  DeletionRow(
+    number: 54,
+    path: 'communityFoodCandidates/{key}/by/{HMAC of her uid}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'her confirmation marker on shared foods; the count stays',
+  ),
 ];
 
 /// The two rows A02's copy must explain, because they survive on purpose.

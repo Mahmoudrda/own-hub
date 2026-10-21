@@ -46,8 +46,9 @@ def test_only_content_documents_are_public_to_read():
 
 def test_the_other_meta_documents_still_need_sign_in():
     assert re.search(
-        r"match /meta/\{docId\}\s*\{ allow read: if isVerified\(\) \|\| isAdmin\(\); "
-        r"allow write: if isAdmin\(\); \}",
+        r"match /meta/\{docId\}\s*\{ allow read: if isVerified\(\) \|\| isAdmin\(\);\s*"
+        r"allow write: if isAdmin\(\)\s*"
+        r"&& docId != 'communityFoods'\s*&& docId != 'communityFoodsVersion'; \}",
         FIRESTORE,
     )
     assert "match /workoutLibrary/{id} { allow read: if true; allow write: if isAdmin(); }" in FIRESTORE
@@ -58,7 +59,11 @@ def test_exercise_media_is_the_only_public_storage_path():
         text = _read("firebase", name)
         public = re.findall(r"match (/[^\s]+) \{\s*allow read: if true;", text)
         assert public == ["/content/exercises/{docId}/{file}"], name
-        assert "match /content/{collection}/{docId}/{file} {\n      allow read: if signedIn();" in text
+        assert "match /content/{collection}/{docId}/{file} {\n      allow read: if signedIn() && collection != 'events';" in text
+        events = re.search(r"match /content/events/\{eventId\}/\{file\} \{(.*?)\n    \}", text, re.S)
+        assert events, name
+        assert "request.auth.token.get('verified', false) == true" in events.group(1), name
+        assert "allow read: if true" not in events.group(1), name
         assert re.search(r"match /\{allPaths=\*\*\} \{\s*allow read, write: if false;", text)
 
 

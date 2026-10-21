@@ -438,6 +438,13 @@
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []
+    },
+    {
+      "_why": "TTL. A cached meal-photo answer (foods and grams, no photo, no uid) is deleted 30 days after it was made. Never queried on.",
+      "collectionGroup": "scanCache",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
     }
   ]
 }

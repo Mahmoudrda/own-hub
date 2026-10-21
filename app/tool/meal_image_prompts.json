@@ -1,0 +1,1206 @@
+{
+  "koshary": {
+    "description": "white rice, brown lentils and small elbow macaroni topped with red tomato sauce, chickpeas and dark crispy fried onions",
+    "vessel": "bowl"
+  },
+  "ful_medames": {
+    "description": "small brown fava beans, partly mashed, with olive oil, cumin and a lemon wedge",
+    "vessel": "bowl"
+  },
+  "ful_bel_zeit": {
+    "description": "mashed brown fava beans with a shiny pool of golden olive oil and a sprinkle of cumin",
+    "vessel": "bowl"
+  },
+  "ful_bel_tahina": {
+    "description": "mashed brown fava beans drizzled with creamy pale tahini and a little olive oil",
+    "vessel": "bowl"
+  },
+  "ful_bel_beid": {
+    "description": "mashed brown fava beans topped with a fried egg with a golden yolk",
+    "vessel": "plate"
+  },
+  "ful_iskandarani": {
+    "description": "fava beans stewed with chopped tomato, green pepper, onion, parsley and olive oil",
+    "vessel": "bowl"
+  },
+  "taameya": {
+    "description": "six round flat green-brown fried falafel patties with a crisp sesame-speckled crust, one broken open to show bright green herb centre",
+    "vessel": "plate"
+  },
+  "besara": {
+    "description": "thick smooth green fava bean and herb puree topped with crispy fried onions and a swirl of olive oil",
+    "vessel": "bowl"
+  },
+  "shakshuka": {
+    "description": "two poached eggs in a bubbling red tomato and green pepper sauce with a pinch of paprika",
+    "vessel": "plate"
+  },
+  "eggs_pastirma": {
+    "description": "two sunny-side-up fried eggs with slices of dark red cured pastirma beef",
+    "vessel": "plate"
+  },
+  "eggs_fried_ghee": {
+    "description": "two golden fried eggs with crisp lacy edges and bright yolks",
+    "vessel": "plate"
+  },
+  "egga": {
+    "description": "a thick golden-green round herb omelette with parsley and leeks, cut into wedges",
+    "vessel": "plate"
+  },
+  "eggs_boiled": {
+    "description": "three boiled eggs, one peeled and halved to show the yellow yolk",
+    "vessel": "plate"
+  },
+  "mesh": {
+    "description": "a small bowl of pungent aged Egyptian mesh cheese, a soft crumbly cream-coloured paste with a little olive oil",
+    "vessel": "bowl"
+  },
+  "gebna_areesh": {
+    "description": "white soft fresh areesh cheese cut into a square block with a crumbly texture",
+    "vessel": "plate"
+  },
+  "areesh_tomato": {
+    "description": "crumbled white areesh cheese beside sliced red tomato and a drizzle of olive oil",
+    "vessel": "plate"
+  },
+  "gebna_rumi": {
+    "description": "a wedge of hard aged pale yellow rumi cheese with a rind and a few holes",
+    "vessel": "none"
+  },
+  "gebna_domiati": {
+    "description": "white salty domiati cheese cut in cubes",
+    "vessel": "plate"
+  },
+  "ful_sandwich": {
+    "description": "a round baladi bread sandwich stuffed with mashed fava beans, tomato and parsley, cut in half",
+    "vessel": "none"
+  },
+  "taameya_sandwich": {
+    "description": "a baladi bread sandwich stuffed with green falafel patties, tomato slices, salad greens and tahini, cut in half",
+    "vessel": "none"
+  },
+  "ful_taameya_breakfast": {
+    "description": "mashed fava beans with olive oil next to three golden falafel patties and a piece of baladi bread",
+    "vessel": "plate"
+  },
+  "tahina": {
+    "description": "smooth creamy pale tahini sauce with a swirl of olive oil and a pinch of parsley",
+    "vessel": "bowl"
+  },
+  "baba_ghanoug": {
+    "description": "smoky mashed roasted eggplant dip with chopped tomato, pepper, parsley and olive oil on top",
+    "vessel": "bowl"
+  },
+  "salata_baladi": {
+    "description": "chopped Egyptian salad of diced red tomato, cucumber, green pepper, onion and parsley with lemon dressing",
+    "vessel": "bowl"
+  },
+  "salata_zabadi": {
+    "description": "creamy white yogurt with diced cucumber and a little mint and garlic",
+    "vessel": "bowl"
+  },
+  "molokhia": {
+    "description": "dark green finely chopped molokhia soup with garlic and coriander, glossy and thick",
+    "vessel": "bowl"
+  },
+  "molokhia_chicken": {
+    "description": "dark green molokhia soup with a roasted chicken thigh resting on top",
+    "vessel": "bowl"
+  },
+  "molokhia_rabbit": {
+    "description": "a bowl of dark green molokhia soup, with a small plate of browned roast meat pieces beside it, no whole animal, no head",
+    "vessel": "bowl"
+  },
+  "mahshi_vine": {
+    "description": "neat small rolled green vine leaves stuffed with rice, arranged in a tight spiral with a lemon wedge",
+    "vessel": "plate"
+  },
+  "mahshi_peppers": {
+    "description": "three green bell peppers stuffed with red-tinted herbed rice, tops cut off and set back on",
+    "vessel": "plate"
+  },
+  "mahshi_zucchini": {
+    "description": "four pale green small zucchinis hollowed and stuffed with herbed rice in red tomato sauce",
+    "vessel": "plate"
+  },
+  "mahshi_eggplant": {
+    "description": "three small purple eggplants stuffed with herbed rice in red tomato sauce",
+    "vessel": "plate"
+  },
+  "mahshi_cabbage": {
+    "description": "rolled green cabbage leaves stuffed with rice, cut and stacked in tomato sauce",
+    "vessel": "plate"
+  },
+  "mahshi_mix": {
+    "description": "an assortment of stuffed vine leaves, peppers, zucchini and eggplant in red tomato sauce",
+    "vessel": "plate"
+  },
+  "fattah": {
+    "description": "layers of crisp toasted bread, white rice and tender chunks of meat topped with red garlic tomato sauce",
+    "vessel": "bowl"
+  },
+  "fattah_chicken": {
+    "description": "layers of crisp toasted bread, white rice and pieces of roast chicken topped with red garlic tomato sauce",
+    "vessel": "bowl"
+  },
+  "hawawshi": {
+    "description": "a golden crisp baladi bread loaf stuffed with spiced minced meat, cut diagonally to show the filling",
+    "vessel": "plate"
+  },
+  "feteer": {
+    "description": "a large round flaky golden feteer meshaltet pastry with many thin buttery layers",
+    "vessel": "plate"
+  },
+  "feteer_honey": {
+    "description": "a flaky golden feteer pastry drizzled with honey and dusted with powdered sugar",
+    "vessel": "plate"
+  },
+  "feteer_cheese": {
+    "description": "a square folded flaky feteer pastry with melted white cheese oozing from the edge",
+    "vessel": "plate"
+  },
+  "roz_shareya": {
+    "description": "fluffy white rice mixed with golden toasted vermicelli noodles",
+    "vessel": "bowl"
+  },
+  "roz_abyad": {
+    "description": "a mound of plain fluffy white rice",
+    "vessel": "bowl"
+  },
+  "roz_khalta": {
+    "description": "spiced rice mixed with minced liver, toasted pine nuts, almonds and raisins",
+    "vessel": "bowl"
+  },
+  "roz_meammar": {
+    "description": "creamy baked rice with milk in a small clay dish, golden brown on top",
+    "vessel": "bowl"
+  },
+  "macarona_bechamel": {
+    "description": "a square slice of baked macaroni with minced meat layer and golden browned creamy bechamel top",
+    "vessel": "plate"
+  },
+  "macarona_salsa": {
+    "description": "penne pasta in smooth red tomato sauce",
+    "vessel": "plate"
+  },
+  "kofta": {
+    "description": "three grilled elongated kofta skewers of minced meat with char marks, a grilled tomato and onion",
+    "vessel": "plate"
+  },
+  "kebab": {
+    "description": "grilled cubes of lamb on a skewer with charred edges, with a grilled tomato and onion",
+    "vessel": "plate"
+  },
+  "kebab_kofta": {
+    "description": "a mixed grill of lamb kebab cubes and kofta skewers with grilled tomato and onion",
+    "vessel": "plate"
+  },
+  "shish_tawook": {
+    "description": "grilled marinated chicken cubes on skewers, golden with char marks, with grilled pepper and a lemon wedge",
+    "vessel": "plate"
+  },
+  "kebda_iskandarani": {
+    "description": "dark sauteed liver slices with red and green peppers, chili and garlic in a glossy sauce",
+    "vessel": "plate"
+  },
+  "kebda_sandwich": {
+    "description": "a baladi bread sandwich filled with sauteed dark liver, peppers and tahini, cut in half",
+    "vessel": "none"
+  },
+  "sayadeya": {
+    "description": "golden-brown spiced rice topped with pieces of fried white fish, caramelized onions and a lemon wedge",
+    "vessel": "plate"
+  },
+  "samak_mashwi": {
+    "description": "a whole grilled tilapia fish with char marks, a lemon wedge and herbs",
+    "vessel": "plate"
+  },
+  "samak_maqli": {
+    "description": "a whole golden fried fish with crisp skin and a lemon wedge",
+    "vessel": "plate"
+  },
+  "bouri": {
+    "description": "a whole grilled grey mullet with char marks, lemon and herbs",
+    "vessel": "plate"
+  },
+  "renga": {
+    "description": "two whole smoked herring fish, silver and golden brown, with lemon and a few onion rings",
+    "vessel": "plate"
+  },
+  "gambari": {
+    "description": "grilled shrimp in garlic butter with parsley and a lemon wedge",
+    "vessel": "plate"
+  },
+  "bamya": {
+    "description": "small green okra pods stewed in rich red tomato sauce with chunks of meat",
+    "vessel": "bowl"
+  },
+  "torly": {
+    "description": "baked mixed vegetables of sliced potato, zucchini, eggplant, peppers and tomato in red tomato sauce",
+    "vessel": "bowl"
+  },
+  "fasolia": {
+    "description": "green beans stewed in red tomato sauce with small pieces of meat",
+    "vessel": "bowl"
+  },
+  "fasolia_beida": {
+    "description": "white beans in a red tomato sauce with chunks of meat",
+    "vessel": "bowl"
+  },
+  "batates_lahma": {
+    "description": "potato chunks and pieces of beef stewed in a rich red-brown tomato sauce",
+    "vessel": "bowl"
+  },
+  "bisella": {
+    "description": "green peas and orange carrot cubes with pieces of meat in light tomato sauce",
+    "vessel": "bowl"
+  },
+  "sabanekh": {
+    "description": "dark green cooked spinach stew with minced meat",
+    "vessel": "bowl"
+  },
+  "colcas": {
+    "description": "chunks of taro root in a green-brown sauce with chard leaves and meat",
+    "vessel": "bowl"
+  },
+  "mesaqaa": {
+    "description": "layers of fried eggplant slices stewed in red tomato sauce with green pepper and garlic",
+    "vessel": "plate"
+  },
+  "arnabeet_maqli": {
+    "description": "golden fried cauliflower florets with crisp brown edges",
+    "vessel": "plate"
+  },
+  "betingan_maqli": {
+    "description": "golden-brown fried eggplant slices with a glossy surface",
+    "vessel": "plate"
+  },
+  "batates_maqlia": {
+    "description": "golden fried potato fries piled high",
+    "vessel": "plate"
+  },
+  "lesan_asfour": {
+    "description": "light golden broth with tiny rice-shaped orzo pasta and a little parsley",
+    "vessel": "bowl"
+  },
+  "shorbet_ads": {
+    "description": "smooth yellow-orange red lentil soup with a drizzle of oil and a lemon wedge",
+    "vessel": "bowl"
+  },
+  "shorbet_frakh": {
+    "description": "clear golden chicken soup with small pieces of chicken, carrot and vermicelli",
+    "vessel": "bowl"
+  },
+  "shorbet_freekeh": {
+    "description": "hearty brown soup with green freekeh grains and chicken pieces",
+    "vessel": "bowl"
+  },
+  "mombar": {
+    "description": "stuffed sausage casings filled with herbed rice, sliced into golden-brown rounds",
+    "vessel": "plate"
+  },
+  "hamam_mahshi": {
+    "description": "two small whole roasted pigeons stuffed with freekeh, golden brown and glossy",
+    "vessel": "plate"
+  },
+  "frakh_mashwi": {
+    "description": "a whole golden roast chicken with crisp browned skin, with a few herbs",
+    "vessel": "plate"
+  },
+  "frakh_pane": {
+    "description": "two golden breaded fried chicken breast cutlets with a lemon wedge",
+    "vessel": "plate"
+  },
+  "frakh_batates": {
+    "description": "roast chicken pieces and golden potato wedges together on a baking tray",
+    "vessel": "plate"
+  },
+  "lahma_basal": {
+    "description": "sauteed strips of beef with soft golden onions and a rich brown glaze",
+    "vessel": "plate"
+  },
+  "sogo2": {
+    "description": "dark brown spiced beef sausage slices fried, with a few onions and peppers",
+    "vessel": "plate"
+  },
+  "sogo2_sandwich": {
+    "description": "a baladi bread sandwich stuffed with fried spiced sausage slices, tomato and pepper, cut in half",
+    "vessel": "none"
+  },
+  "kofta_sandwich": {
+    "description": "a baladi bread sandwich stuffed with grilled kofta, tomato and tahini, cut in half",
+    "vessel": "none"
+  },
+  "pane_sandwich": {
+    "description": "a bread roll sandwich filled with golden breaded chicken, lettuce and sauce, cut in half",
+    "vessel": "none"
+  },
+  "hummus_el_sham": {
+    "description": "a warm steaming cup of cloudy beige chickpea drink with a sprinkle of cumin",
+    "vessel": "cup"
+  },
+  "termes": {
+    "description": "pale yellow salted lupini beans in a small heap",
+    "vessel": "bowl"
+  },
+  "batata": {
+    "description": "a roasted sweet potato split open to show bright orange steaming flesh, with dark charred skin",
+    "vessel": "none"
+  },
+  "dora_mashwi": {
+    "description": "a grilled corn on the cob with golden yellow kernels and brown char spots",
+    "vessel": "none"
+  },
+  "aish_baladi": {
+    "description": "a round flat brown baladi bread with a puffed pocket and a dusting of bran",
+    "vessel": "none"
+  },
+  "aish_shami": {
+    "description": "a round white pita bread, soft and slightly puffed",
+    "vessel": "none"
+  },
+  "aish_fino": {
+    "description": "a long golden soft fino bread roll with a glossy top",
+    "vessel": "none"
+  },
+  "simit": {
+    "description": "a ring-shaped golden bread covered in sesame seeds",
+    "vessel": "none"
+  },
+  "basbousa": {
+    "description": "diamond-cut squares of golden semolina cake soaked in syrup, each topped with an almond",
+    "vessel": "plate"
+  },
+  "basbousa_cream": {
+    "description": "golden semolina cake squares filled with white cream and topped with an almond",
+    "vessel": "plate"
+  },
+  "kunafa": {
+    "description": "a square piece of golden crisp kunafa with a layer of white cream inside and syrup on top",
+    "vessel": "plate"
+  },
+  "kunafa_nuts": {
+    "description": "a golden crisp kunafa slice with crushed pistachio and nuts on top and syrup glaze",
+    "vessel": "plate"
+  },
+  "kunafa_nabulsi": {
+    "description": "a round golden-orange kunafa nabulsi cut to show stretchy melted white cheese, topped with ground pistachio",
+    "vessel": "plate"
+  },
+  "om_ali": {
+    "description": "a hot bubbling creamy pastry pudding with golden browned top, almonds, raisins and coconut",
+    "vessel": "bowl"
+  },
+  "roz_bel_laban": {
+    "description": "creamy white rice pudding with a sprinkle of cinnamon and a few raisins",
+    "vessel": "bowl"
+  },
+  "mahalabeya": {
+    "description": "smooth white milk pudding topped with crushed pistachio and a little syrup",
+    "vessel": "bowl"
+  },
+  "qatayef": {
+    "description": "folded half-moon qatayef pancakes stuffed with nuts, golden with syrup, topped with pistachio",
+    "vessel": "plate"
+  },
+  "qatayef_cream": {
+    "description": "folded half-moon qatayef pancakes open at the top and filled with white cream, topped with pistachio",
+    "vessel": "plate"
+  },
+  "zalabya": {
+    "description": "a pile of small golden fried dough balls dusted with powdered sugar",
+    "vessel": "plate"
+  },
+  "baklava": {
+    "description": "diamond-shaped baklava pieces with thin golden flaky layers and green pistachio filling",
+    "vessel": "plate"
+  },
+  "ghorayeba": {
+    "description": "pale round butter cookies each topped with a single almond",
+    "vessel": "plate"
+  },
+  "kahk": {
+    "description": "round kahk cookies with a decorative pattern dusted with white powdered sugar",
+    "vessel": "plate"
+  },
+  "petit_four": {
+    "description": "small butter biscuits in various shapes with a jam dot and a dipped chocolate edge",
+    "vessel": "plate"
+  },
+  "maamoul": {
+    "description": "round patterned maamoul date-filled shortbread cookies dusted with powdered sugar",
+    "vessel": "plate"
+  },
+  "balah_el_sham": {
+    "description": "golden fried ridged finger-shaped choux pastries glazed with syrup",
+    "vessel": "plate"
+  },
+  "couscous_sweet": {
+    "description": "fine steamed couscous with raisins, nuts and powdered sugar",
+    "vessel": "bowl"
+  },
+  "belila": {
+    "description": "cooked wheat grains in milk with raisins, nuts and coconut",
+    "vessel": "bowl"
+  },
+  "halawa": {
+    "description": "a slab of pale sesame halva with a fibrous texture, a slice cut off",
+    "vessel": "plate"
+  },
+  "shai_bel_laban": {
+    "description": "light brown milk tea",
+    "vessel": "glass"
+  },
+  "karkadeh": {
+    "description": "deep ruby red hibiscus drink with ice",
+    "vessel": "glass"
+  },
+  "asab": {
+    "description": "fresh pale green sugarcane juice with ice and a piece of sugarcane",
+    "vessel": "glass"
+  },
+  "sahlab": {
+    "description": "thick creamy white hot sahlab drink topped with crushed nuts, coconut and cinnamon",
+    "vessel": "cup"
+  },
+  "tamr_hindi": {
+    "description": "dark brown tamarind drink with ice",
+    "vessel": "glass"
+  },
+  "kharoub": {
+    "description": "dark brown carob drink with ice",
+    "vessel": "glass"
+  },
+  "sobia": {
+    "description": "creamy white coconut milk drink with a hint of rice",
+    "vessel": "glass"
+  },
+  "lemon_mint": {
+    "description": "pale green lemon and mint juice with ice and fresh mint leaves",
+    "vessel": "glass"
+  },
+  "ahwa_mazboot": {
+    "description": "dark Turkish coffee with a brown foam on top",
+    "vessel": "cup"
+  },
+  "coffee_milk": {
+    "description": "light beige milky coffee",
+    "vessel": "cup"
+  },
+  "mango_juice": {
+    "description": "thick golden-orange mango juice",
+    "vessel": "glass"
+  },
+  "guava_juice": {
+    "description": "thick pale pink guava juice",
+    "vessel": "glass"
+  },
+  "strawberry_juice": {
+    "description": "thick pink strawberry juice with a strawberry on the rim",
+    "vessel": "glass"
+  },
+  "hummus": {
+    "description": "smooth creamy beige hummus with a pool of olive oil, a sprinkle of paprika and a few whole chickpeas",
+    "vessel": "bowl"
+  },
+  "mutabbal": {
+    "description": "creamy smoky eggplant and tahini dip with olive oil and a sprinkle of pomegranate seeds",
+    "vessel": "bowl"
+  },
+  "tabbouleh": {
+    "description": "finely chopped bright green parsley salad with diced tomato, bulgur and lemon",
+    "vessel": "bowl"
+  },
+  "fattoush": {
+    "description": "salad of lettuce, tomato, cucumber, radish with crisp fried pita pieces and red sumac",
+    "vessel": "bowl"
+  },
+  "muhammara": {
+    "description": "deep red-orange roasted red pepper and walnut dip with olive oil and crushed walnuts",
+    "vessel": "bowl"
+  },
+  "labneh": {
+    "description": "thick white strained yogurt labneh with a swirl of olive oil and dried mint",
+    "vessel": "bowl"
+  },
+  "falafel": {
+    "description": "six round golden-brown fried falafel balls, one broken open to show the green herb centre",
+    "vessel": "plate"
+  },
+  "falafel_sandwich": {
+    "description": "a pita wrap stuffed with falafel balls, tomato, pickles and tahini, cut in half",
+    "vessel": "none"
+  },
+  "shawarma_chicken_sandwich": {
+    "description": "a rolled pita wrap stuffed with sliced golden chicken shawarma, garlic sauce and pickles, cut in half",
+    "vessel": "none"
+  },
+  "shawarma_beef_sandwich": {
+    "description": "a rolled pita wrap stuffed with dark sliced beef shawarma, tahini and pickles, cut in half",
+    "vessel": "none"
+  },
+  "shawarma_chicken_plate": {
+    "description": "sliced golden chicken shawarma with fries, garlic sauce, pickles and a pita",
+    "vessel": "plate"
+  },
+  "shawarma_beef_plate": {
+    "description": "sliced dark beef shawarma with tahini, tomato, pickles and a pita",
+    "vessel": "plate"
+  },
+  "kabsa_chicken": {
+    "description": "spiced brown rice with a roasted chicken piece, raisins and toasted almonds",
+    "vessel": "plate"
+  },
+  "kabsa_lamb": {
+    "description": "spiced brown rice with tender roasted lamb, raisins and toasted almonds",
+    "vessel": "plate"
+  },
+  "mandi_chicken": {
+    "description": "long grain golden rice with a roasted smoky chicken half on top, with a little red sauce",
+    "vessel": "plate"
+  },
+  "mandi_lamb": {
+    "description": "long grain golden rice with tender roasted lamb on top, with a little red sauce",
+    "vessel": "plate"
+  },
+  "mansaf": {
+    "description": "a large platter of flat bread covered with white rice and chunks of lamb, topped with toasted almonds and pine nuts",
+    "vessel": "plate"
+  },
+  "majboos": {
+    "description": "orange spiced rice with a piece of chicken on top, with fried onions and raisins",
+    "vessel": "plate"
+  },
+  "harees": {
+    "description": "smooth thick porridge of wheat and meat topped with a pool of melted butter",
+    "vessel": "bowl"
+  },
+  "jareesh": {
+    "description": "coarse cracked wheat porridge with a small piece of meat and fried onions",
+    "vessel": "bowl"
+  },
+  "saleeg": {
+    "description": "creamy white rice cooked in milk with a piece of chicken on top and butter",
+    "vessel": "bowl"
+  },
+  "thareed": {
+    "description": "pieces of soaked bread under meat stew with vegetables",
+    "vessel": "bowl"
+  },
+  "luqaimat": {
+    "description": "golden fried dough balls glazed with dark date syrup and sesame seeds",
+    "vessel": "plate"
+  },
+  "kibbeh": {
+    "description": "three torpedo-shaped golden-brown fried kibbeh, one cut open to show the spiced meat filling",
+    "vessel": "plate"
+  },
+  "kibbeh_baked": {
+    "description": "a baked tray of kibbeh cut into diamonds with a golden-brown top",
+    "vessel": "plate"
+  },
+  "manakish_zaatar": {
+    "description": "a round flat manakish bread topped with green zaatar herbs and olive oil, golden edge",
+    "vessel": "plate"
+  },
+  "manakish_cheese": {
+    "description": "a round flat manakish bread topped with melted white cheese, golden edge",
+    "vessel": "plate"
+  },
+  "fatayer_spinach": {
+    "description": "three triangular golden baked fatayer pies filled with spinach, one cut open to show green filling",
+    "vessel": "plate"
+  },
+  "sfiha": {
+    "description": "small open baked meat pies topped with spiced minced meat and tomato on a golden base",
+    "vessel": "plate"
+  },
+  "musakhan": {
+    "description": "a flat taboon bread topped with roasted sumac chicken pieces and caramelized onions, with pine nuts",
+    "vessel": "plate"
+  },
+  "maqluba": {
+    "description": "a molded upside-down rice dish with layers of chicken, eggplant and cauliflower, golden brown on the outside",
+    "vessel": "plate"
+  },
+  "mujaddara": {
+    "description": "rice and brown lentils topped with dark crispy fried onions",
+    "vessel": "bowl"
+  },
+  "fatteh_hummus": {
+    "description": "layers of crispy pita pieces, chickpeas and hummus topped with yogurt, toasted pine nuts and a little paprika",
+    "vessel": "bowl"
+  },
+  "arayes": {
+    "description": "two grilled pita sandwiches stuffed with spiced minced meat, cut in halves with char marks",
+    "vessel": "plate"
+  },
+  "rahma_lazy_cake": {
+    "description": "a small brown oat chocolate mug cake, soft and moist, with a slice taken out",
+    "vessel": "cup"
+  },
+  "rahma_pancakes": {
+    "description": "a stack of three small thick golden pancakes topped with sliced strawberries and a sprinkle of cinnamon",
+    "vessel": "plate"
+  },
+  "rahma_chia_pudding": {
+    "description": "creamy cocoa chia pudding in layers topped with berries and a sliced strawberry",
+    "vessel": "glass"
+  },
+  "rahma_coconut_apple_pudding": {
+    "description": "creamy white Greek yogurt pudding with small apple cubes, shredded coconut and a sprinkle of cinnamon",
+    "vessel": "glass"
+  },
+  "rahma_overnight_oats": {
+    "description": "creamy overnight oats with Greek yogurt, raisins and chopped nuts on top",
+    "vessel": "glass"
+  },
+  "rahma_simple_oat_meal": {
+    "description": "Greek yogurt with oats and fresh strawberry slices and a drizzle of honey",
+    "vessel": "bowl"
+  },
+  "rahma_club_sandwich": {
+    "description": "a triple-decker toast sandwich with turkey slices, mozzarella, lettuce, tomato and cucumber, cut into triangles",
+    "vessel": "plate"
+  },
+  "rahma_yummy_egg_sandwich": {
+    "description": "a toasted sandwich filled with folded omelette, tomato and lettuce, cut in half",
+    "vessel": "plate"
+  },
+  "rahma_cottage_freshy_salad": {
+    "description": "fresh salad with lettuce, diced tomato, cottage cheese, grapes, olives and toasted bread cubes",
+    "vessel": "bowl"
+  },
+  "rahma_lazy_ranch_fries": {
+    "description": "oven-baked golden thin potato fries with a small bowl of white herb yogurt ranch dip",
+    "vessel": "plate"
+  },
+  "rahma_creamy_cottage_cheese": {
+    "description": "creamy pink-orange whipped cottage cheese spread with red pepper and thyme, beside a toast and an omelette",
+    "vessel": "plate"
+  },
+  "rahma_egg_pizza": {
+    "description": "a round tortilla topped with omelette, melted light mozzarella, olives, tomato slices and peppers, cut into wedges",
+    "vessel": "plate"
+  },
+  "rahma_shakshoka": {
+    "description": "two eggs cooked in a red tomato and green pepper sauce, served with half a baladi bread and cucumber slices",
+    "vessel": "plate"
+  },
+  "rahma_fool_wa_ta3mya": {
+    "description": "fava beans mixed with diced tomato and green pepper, with two small falafel patties and half a baladi bread",
+    "vessel": "plate"
+  },
+  "rahma_potato_w_eggs": {
+    "description": "small golden potato cubes scrambled with eggs, onion and pepper, with paprika",
+    "vessel": "plate"
+  },
+  "rahma_pizza_toast": {
+    "description": "two toasted bread slices topped with melted white cheese, tomato slices, pepper and thyme",
+    "vessel": "plate"
+  },
+  "rahma_chicken_pizza": {
+    "description": "a round whole wheat tortilla pizza with red sauce, breaded chicken strips and melted cheese, cut into wedges",
+    "vessel": "plate"
+  },
+  "rahma_bbq_burger": {
+    "description": "a smashed beef burger in a bun with melted cheese, lettuce, tomato and glossy BBQ sauce",
+    "vessel": "plate"
+  },
+  "rahma_hwawshi": {
+    "description": "a golden toasted baladi bread loaf stuffed with spiced minced meat, parsley and peppers, cut diagonally",
+    "vessel": "plate"
+  },
+  "rahma_chicken_lemon": {
+    "description": "oven-roasted lemon chicken pieces with garlic and thyme, glossy and golden, with lemon slices",
+    "vessel": "plate"
+  },
+  "rahma_chicken_ranch_salad": {
+    "description": "green salad with lettuce and tomato topped with breaded chicken pieces, small roasted potato cubes and white ranch sauce",
+    "vessel": "bowl"
+  },
+  "rahma_tuna_wrap": {
+    "description": "a tortilla wrap filled with spiced tuna, caramelized onions and vegetables, cut in half",
+    "vessel": "plate"
+  },
+  "rahma_shrimp_white_pasta": {
+    "description": "pasta with pink shrimp in a creamy white sauce with basil leaves",
+    "vessel": "plate"
+  },
+  "rahma_steak_meal": {
+    "description": "two pan-seared brown steaks with butter, rosemary and garlic, with a side of sauteed vegetables",
+    "vessel": "plate"
+  },
+  "rahma_oven_tender_chicken": {
+    "description": "a tray of oven-roasted chicken quarters coated in a red tomato and pepper sauce, glossy and golden brown",
+    "vessel": "plate"
+  },
+  "rahma_buffalo_sweet_wings": {
+    "description": "glossy red-orange sweet buffalo chicken wings piled together",
+    "vessel": "plate"
+  },
+  "rahma_makrona_bashmel": {
+    "description": "a square slice of baked macaroni with creamy white bechamel and a golden browned top",
+    "vessel": "plate"
+  },
+  "rahma_kebda_meal": {
+    "description": "sauteed chicken liver with colourful sliced bell peppers and onions in a glossy brown sauce",
+    "vessel": "plate"
+  },
+  "rahma_fattah": {
+    "description": "layers of toasted bread cubes, rice and small pieces of seasoned chicken topped with red garlic tomato sauce",
+    "vessel": "bowl"
+  },
+  "rahma_lahma_bel_basl": {
+    "description": "sauteed beef strips with sliced onions, peppers and garlic in a light brown glaze",
+    "vessel": "plate"
+  },
+  "rahma_shorbet_3ads": {
+    "description": "smooth yellow-orange lentil soup with carrot and potato, with a lemon wedge",
+    "vessel": "bowl"
+  },
+  "rahma_btates_bel_lahma": {
+    "description": "a baked potato split open and stuffed with minced meat, with a golden skin",
+    "vessel": "plate"
+  },
+  "rahma_cookies_shay_blabn": {
+    "description": "two small chocolate banana cookies with a cup of light brown milk tea",
+    "vessel": "plate"
+  },
+  "rahma_bagel": {
+    "description": "two golden baked cottage cheese bagels with a ring shape and a glossy crust",
+    "vessel": "plate"
+  },
+  "rahma_crepe": {
+    "description": "a thin golden crepe folded in quarters with a drizzle of chocolate sauce and apple slices",
+    "vessel": "plate"
+  },
+  "rahma_banana_pudding": {
+    "description": "layered oat and chia banana yogurt pudding topped with banana slices and cocoa dusting",
+    "vessel": "glass"
+  },
+  "rahma_cheese_cake": {
+    "description": "a no-bake yogurt cheesecake slice on a biscuit base topped with strawberry sauce and a drizzle of honey",
+    "vessel": "plate"
+  },
+  "rahma_french_toast": {
+    "description": "two golden french toast slices topped with Greek yogurt and fresh berries",
+    "vessel": "plate"
+  },
+  "rahma_ice_cream": {
+    "description": "two scoops of pale frozen yogurt ice cream with small fruit pieces",
+    "vessel": "bowl"
+  },
+  "omelette": {
+    "description": "a folded golden-yellow omelette, soft and lightly browned",
+    "vessel": "plate"
+  },
+  "egg_fried_olive": {
+    "description": "one sunny-side-up fried egg with a bright yellow yolk and a glossy edge of olive oil",
+    "vessel": "plate"
+  },
+  "kesk": {
+    "description": "thick pale cream Upper Egyptian kesk, a porridge-like soup, with a swirl of golden ghee and shreds of chicken",
+    "vessel": "bowl"
+  },
+  "chicken_breast_grilled": {
+    "description": "a sliced grilled chicken breast with light golden grill marks",
+    "vessel": "plate"
+  },
+  "steak_grilled": {
+    "description": "a thick grilled beef steak with dark char marks, sliced to show a pink-brown centre",
+    "vessel": "plate"
+  },
+  "tuna_canned": {
+    "description": "flaked pale pink canned tuna, drained, in a small heap",
+    "vessel": "bowl"
+  },
+  "turkey_smoked": {
+    "description": "thin rosy-pink slices of smoked turkey breast fanned out",
+    "vessel": "plate"
+  },
+  "greek_yoghurt": {
+    "description": "thick white Greek yoghurt with a smooth swirl on top",
+    "vessel": "bowl"
+  },
+  "yoghurt_baladi": {
+    "description": "creamy plain white baladi yoghurt, soft and slightly loose",
+    "vessel": "bowl"
+  },
+  "mozzarella_light": {
+    "description": "a white ball of fresh mozzarella with a few thin slices cut from it",
+    "vessel": "plate"
+  },
+  "milk_skim": {
+    "description": "a tall glass of thin white skimmed milk",
+    "vessel": "glass"
+  },
+  "milk_full": {
+    "description": "a glass of creamy white full-cream milk",
+    "vessel": "glass"
+  },
+  "laban_rayeb": {
+    "description": "a glass of pale thick cultured laban rayeb",
+    "vessel": "glass"
+  },
+  "toast_ww": {
+    "description": "two slices of golden-brown toasted whole-wheat bread",
+    "vessel": "plate"
+  },
+  "tortilla_ww": {
+    "description": "a round brown whole-wheat tortilla folded once",
+    "vessel": "plate"
+  },
+  "oats_rolled": {
+    "description": "a small heap of dry pale rolled oat flakes",
+    "vessel": "bowl"
+  },
+  "rice_basmati": {
+    "description": "long fluffy separate grains of white basmati rice in a mound",
+    "vessel": "bowl"
+  },
+  "freekeh": {
+    "description": "cooked cracked green-brown freekeh wheat grains in a mound",
+    "vessel": "bowl"
+  },
+  "pasta_ww": {
+    "description": "cooked short brown whole-wheat pasta tubes",
+    "vessel": "bowl"
+  },
+  "potato_boiled": {
+    "description": "two whole boiled potatoes with pale golden skin, one cut open to show white fluffy flesh",
+    "vessel": "plate"
+  },
+  "cucumber": {
+    "description": "a whole green cucumber with several round slices beside it",
+    "vessel": "plate"
+  },
+  "tomato": {
+    "description": "two ripe red tomatoes, one cut into wedges",
+    "vessel": "plate"
+  },
+  "gargeer": {
+    "description": "a loose bunch of dark green rocket leaves",
+    "vessel": "plate"
+  },
+  "broccoli_steamed": {
+    "description": "bright green steamed broccoli florets",
+    "vessel": "bowl"
+  },
+  "zucchini_cooked": {
+    "description": "pale green zucchini slices cooked soft",
+    "vessel": "plate"
+  },
+  "green_beans_plain": {
+    "description": "a pile of bright green steamed green beans",
+    "vessel": "bowl"
+  },
+  "dates": {
+    "description": "five glossy dark brown dried dates, one split to show the pit",
+    "vessel": "bowl"
+  },
+  "banana": {
+    "description": "one ripe yellow banana peeled halfway",
+    "vessel": "none"
+  },
+  "apple": {
+    "description": "a shiny red apple with a few wedges cut from it",
+    "vessel": "none"
+  },
+  "orange": {
+    "description": "a round orange, half peeled, with a few segments beside it",
+    "vessel": "none"
+  },
+  "watermelon": {
+    "description": "a wedge of watermelon with bright red flesh, black seeds and a green rind",
+    "vessel": "plate"
+  },
+  "strawberries": {
+    "description": "ripe red strawberries with green leaves",
+    "vessel": "bowl"
+  },
+  "mango": {
+    "description": "a ripe orange-yellow mango with one cheek cut into cubes",
+    "vessel": "plate"
+  },
+  "grapes": {
+    "description": "a small bunch of red-purple grapes",
+    "vessel": "none"
+  },
+  "guava": {
+    "description": "a round pale-green guava, one cut open to show pink flesh and seeds",
+    "vessel": "none"
+  },
+  "almonds": {
+    "description": "a small heap of raw almonds with brown skins",
+    "vessel": "bowl"
+  },
+  "walnuts": {
+    "description": "a small heap of walnut halves with wrinkled brown shells",
+    "vessel": "bowl"
+  },
+  "peanuts": {
+    "description": "a small heap of roasted peanuts, some still in their shells",
+    "vessel": "bowl"
+  },
+  "peanut_butter": {
+    "description": "smooth natural peanut butter in a small bowl with a spoonful lifted out",
+    "vessel": "bowl"
+  },
+  "chia_seeds": {
+    "description": "tiny black and grey chia seeds in a small bowl",
+    "vessel": "bowl"
+  },
+  "popcorn_air": {
+    "description": "white fluffy plain popcorn",
+    "vessel": "bowl"
+  },
+  "rice_cakes": {
+    "description": "three round puffed beige rice cakes stacked",
+    "vessel": "plate"
+  },
+  "dark_chocolate_70": {
+    "description": "a few dark brown chocolate squares, one broken in half",
+    "vessel": "plate"
+  },
+  "karkadeh_unsweetened": {
+    "description": "deep ruby red hibiscus tea in a clear glass, no ice",
+    "vessel": "glass"
+  },
+  "turkish_coffee_sada": {
+    "description": "black Turkish coffee in a small cup with a thin brown foam on top",
+    "vessel": "cup"
+  },
+  "egg_whole": {
+    "description": "one whole brown egg and one cracked open egg showing a golden yolk",
+    "vessel": "plate"
+  },
+  "chicken_breast_raw": {
+    "description": "two raw pale pink skinless chicken breast fillets",
+    "vessel": "plate"
+  },
+  "beef_mince_lean": {
+    "description": "a loose mound of fresh red lean minced beef",
+    "vessel": "plate"
+  },
+  "beef_steak_raw": {
+    "description": "two thick raw red beef sirloin steaks with a thin edge of fat",
+    "vessel": "plate"
+  },
+  "chicken_liver_raw": {
+    "description": "a heap of raw dark red-brown chicken livers",
+    "vessel": "bowl"
+  },
+  "shrimp_raw": {
+    "description": "a small bowl of raw peeled pink-grey shrimp",
+    "vessel": "bowl"
+  },
+  "chicken_wings_raw": {
+    "description": "six raw chicken wings with pale skin",
+    "vessel": "plate"
+  },
+  "chicken_whole_raw": {
+    "description": "a raw whole chicken cut into four pieces",
+    "vessel": "plate"
+  },
+  "tilapia_raw": {
+    "description": "two raw white tilapia fillets with a lemon wedge",
+    "vessel": "plate"
+  },
+  "chickpeas_cooked": {
+    "description": "a bowl of plump boiled beige chickpeas",
+    "vessel": "bowl"
+  },
+  "lentils_dry": {
+    "description": "a bowl of small dry orange-brown lentils",
+    "vessel": "bowl"
+  },
+  "butter": {
+    "description": "a small pale yellow block of butter on a plate with a knife",
+    "vessel": "plate"
+  },
+  "milk_half_fat": {
+    "description": "a glass of white milk",
+    "vessel": "glass"
+  },
+  "olive_oil": {
+    "description": "a small glass bottle of golden-green olive oil with a drizzle",
+    "vessel": "none"
+  },
+  "honey": {
+    "description": "a small bowl of golden honey with a wooden dipper",
+    "vessel": "bowl"
+  },
+  "strawberry_jam": {
+    "description": "a small glass jar of red strawberry jam with a spoon",
+    "vessel": "bowl"
+  },
+  "cocoa_powder": {
+    "description": "a small heap of dark brown cocoa powder with a spoon",
+    "vessel": "bowl"
+  },
+  "flour_white": {
+    "description": "a small mound of fine white flour in a bowl",
+    "vessel": "bowl"
+  },
+  "pasta_dry": {
+    "description": "a bowl of dry short pasta tubes",
+    "vessel": "bowl"
+  },
+  "potato_raw": {
+    "description": "two whole raw brown potatoes",
+    "vessel": "plate"
+  },
+  "digestive_biscuit": {
+    "description": "two round wheat digestive biscuits",
+    "vessel": "plate"
+  },
+  "onion_raw": {
+    "description": "a whole brown onion and a halved onion",
+    "vessel": "plate"
+  },
+  "bell_pepper_green": {
+    "description": "a whole glossy green bell pepper and a halved one",
+    "vessel": "plate"
+  },
+  "bell_pepper_red": {
+    "description": "a whole glossy red bell pepper and a halved one",
+    "vessel": "plate"
+  },
+  "lettuce": {
+    "description": "crisp green romaine lettuce leaves",
+    "vessel": "plate"
+  },
+  "carrot_raw": {
+    "description": "two orange carrots, one sliced into rounds",
+    "vessel": "plate"
+  },
+  "zucchini_raw": {
+    "description": "two green zucchinis, one sliced into rounds",
+    "vessel": "plate"
+  },
+  "spinach_raw": {
+    "description": "a bowl of fresh dark green spinach leaves",
+    "vessel": "bowl"
+  },
+  "avocado": {
+    "description": "a halved avocado with a stone and creamy green flesh",
+    "vessel": "plate"
+  },
+  "tomato_sauce": {
+    "description": "a small bowl of smooth red tomato sauce",
+    "vessel": "bowl"
+  },
+  "olives_green": {
+    "description": "a small bowl of green olives",
+    "vessel": "bowl"
+  },
+  "veg_mix_frozen": {
+    "description": "a bowl of mixed diced carrots, peas, green beans and corn",
+    "vessel": "bowl"
+  },
+  "tahini_paste": {
+    "description": "a small bowl of thick pale sesame tahini paste",
+    "vessel": "bowl"
+  },
+  "sesame_seeds": {
+    "description": "a small bowl of cream sesame seeds",
+    "vessel": "bowl"
+  },
+  "coconut_shredded": {
+    "description": "a small mound of white shredded coconut",
+    "vessel": "bowl"
+  },
+  "raisins": {
+    "description": "a small bowl of dark raisins",
+    "vessel": "bowl"
+  },
+  "protein_crisps": {
+    "description": "a bowl of small round beige protein crisps",
+    "vessel": "bowl"
+  },
+  "stock_cube": {
+    "description": "two small golden stock cubes",
+    "vessel": "none"
+  },
+  "spices_and_seasoning": {
+    "description": "small heaps of ground spices in little bowls",
+    "vessel": "none"
+  },
+  "curry_powder": {
+    "description": "a small heap of yellow curry powder",
+    "vessel": "none"
+  },
+  "zaatar_mix": {
+    "description": "a small heap of green-brown za'atar with sesame seeds",
+    "vessel": "none"
+  },
+  "spice_blend_store": {
+    "description": "a small heap of red-brown mixed spice blend",
+    "vessel": "none"
+  },
+  "baking_powder": {
+    "description": "a small heap of white baking powder with a teaspoon",
+    "vessel": "none"
+  },
+  "salt": {
+    "description": "a small heap of fine white salt",
+    "vessel": "none"
+  },
+  "water": {
+    "description": "a glass of clear water",
+    "vessel": "glass"
+  },
+  "lemon_juice": {
+    "description": "a small glass of pale yellow lemon juice beside a halved lemon",
+    "vessel": "glass"
+  },
+  "ownhub_shish_tawook_bowl": {
+    "description": "a bowl of white rice topped with grilled golden chicken cubes, diced cucumber and tomato, and a spoon of white garlic yoghurt sauce",
+    "vessel": "bowl"
+  },
+  "ownhub_lemon_garlic_tilapia": {
+    "description": "two baked white tilapia fillets glazed with lemon and garlic, with golden potato wedges, green zucchini slices and a lemon wedge",
+    "vessel": "plate"
+  },
+  "ownhub_beef_kofta_tahini_salad": {
+    "description": "four grilled brown beef kofta fingers on a fresh salad of tomato, cucumber and lettuce with a drizzle of pale tahini sauce",
+    "vessel": "plate"
+  },
+  "ownhub_chicken_freekeh": {
+    "description": "a bowl of cooked green-brown freekeh grains with pieces of golden chicken and a little tomato",
+    "vessel": "bowl"
+  },
+  "ownhub_light_mahshi_peppers": {
+    "description": "two green bell peppers stuffed with rice and minced beef, with their caps on, in a light tomato sauce",
+    "vessel": "plate"
+  },
+  "ownhub_spinach_chickpea_chicken_stew": {
+    "description": "a bowl of dark green spinach stew with chickpeas and pieces of chicken breast in a light tomato broth",
+    "vessel": "bowl"
+  },
+  "ownhub_air_fried_taameya_rocket_bowl": {
+    "description": "a bowl of green rocket leaves with three crisp ta'ameya discs, diced tomato and cucumber, half a boiled egg and a drizzle of tahini yoghurt",
+    "vessel": "bowl"
+  },
+  "ownhub_areesh_avocado_zaatar_toast": {
+    "description": "two slices of toasted brown bread spread with white areesh cheese, mashed green avocado, tomato slices and a sprinkle of za'atar",
+    "vessel": "plate"
+  },
+  "ownhub_egg_spinach_wrap": {
+    "description": "a whole-wheat wrap cut in half showing scrambled egg, green spinach and a slice of tomato",
+    "vessel": "plate"
+  },
+  "ownhub_yoghurt_strawberry_chia_parfait": {
+    "description": "a tall glass with layers of white Greek yoghurt, red sliced strawberries and chia seeds, topped with chopped almonds",
+    "vessel": "glass"
+  },
+  "ownhub_cocoa_oat_date_bites": {
+    "description": "eight small round dark brown cocoa oat date balls rolled in chopped almonds on a plate",
+    "vessel": "plate"
+  },
+  "tuna_in_oil": {
+    "description": "flaked golden canned tuna, drained of its oil, in a small heap",
+    "vessel": "bowl"
+  }
+}

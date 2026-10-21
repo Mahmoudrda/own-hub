@@ -218,22 +218,34 @@ DISHES = [
     D("eggs_boiled", "Boiled eggs", "بيض مسلوق", "breakfast",
       ["beid masloo2", "bed masloo2", "boiled eggs", "hard boiled eggs", "بيض مسلوق بلدي"],
       [("egg_boiled", 100)]),
+    D("omelette", "Omelette", "أومليت", "breakfast",
+      ["omelette", "omelet", "plain omelette", "plain omelet", "omlet", "omelette with milk", "اومليت", "أومليت سادة", "اومليت سادة"],
+      [("egg", 110), ("milk", 15), ("olive_oil", 5)], yield_=0.9,
+      note="two eggs beaten with a splash of milk, cooked in 1 tsp olive oil"),
+    D("egg_fried_olive", "Fried egg in olive oil", "بيضة مقلية بزيت الزيتون", "breakfast",
+      ["fried egg", "fried egg in olive oil", "egg fried in olive oil", "fried egg in 1 tsp olive oil",
+       "beida ma2leya bel zeit", "بيضة مقلية", "بيضه مقليه", "بيضة عيون", "بيضه مقليه بزيت الزيتون"],
+      [("egg", 50), ("olive_oil", 5)], yield_=0.96, note="one large egg fried in 1 tsp (5 g) olive oil"),
+    D("kesk", "Kesk (fermented wheat and yoghurt)", "كشك صعيدي", "main",
+      ["kesk", "kishk", "kishk saidi", "kesk saidy", "kesk sa3idy", "upper egyptian kesk", "كشك", "كشك صعيدى", "كشك بالسمنة", "كشك بالسمنه"],
+      [("bulgur", 70), ("yogurt", 100), ("ghee", 8), ("garlic", 3), ("chicken_stewed", 40), ("water", 130)],
+      note="fermented wheat counted as bulgur, cooked in broth counted as water"),
     D("mesh", "Mesh (aged cheese)", "مش", "breakfast",
       ["mesh", "mish", "meshe", "مش صعيدي", "مش بلدي", "مش بالطماطم"],
       [("feta", 35), ("romano", 5), ("tomato", 5), ("green_pepper", 5), ("oil", 3)],
       note="aged in whey; counted as white and hard cheese"),
     D("gebna_areesh", "Areesh cheese", "جبنة قريش", "cheese",
-      ["gebna areesh", "gebna 2areesh", "areesh", "qareesh cheese", "jibna qarish", "جبنه قريش"],
+      ["gebna areesh", "gebna 2areesh", "areesh", "qareesh cheese", "jibna qarish", "cottage cheese", "جبنه قريش", "جبنة كوتيج"],
       [("cottage", 100)], note="low-fat fresh curd cheese, counted as 1% cottage cheese"),
     D("areesh_tomato", "Areesh cheese with tomato", "جبنة قريش بالطماطم", "breakfast",
       ["gebna areesh bel tamatem", "areesh with tomato", "جبنه قريش بالطماطم"],
       [("cottage", 80), ("tomato", 40), ("green_pepper", 10), ("olive_oil", 5)]),
     D("gebna_rumi", "Rumi cheese", "جبنة رومي", "cheese",
-      ["gebna romy", "gebna rumi", "rumi cheese", "roumy cheese", "romi cheese", "جبنه رومي"],
+      ["gebna romy", "gebna rumi", "gebna roumy", "rumi cheese", "roumy cheese", "romi cheese", "جبنه رومي"],
       [("romano", 30)], note="aged hard cheese, counted as romano"),
     D("gebna_domiati", "Domiati cheese", "جبنة دمياطي", "cheese",
       ["gebna domiaty", "gebna domiati", "domiati", "domiati cheese", "white cheese", "gebna beida",
-       "جبنه بيضا", "جبنة بيضاء", "جبنه دمياطي", "جبنة بيضا"],
+       "feta", "feta cheese", "gebna feta", "جبنه بيضا", "جبنة بيضاء", "جبنه دمياطي", "جبنة بيضا", "جبنة فيتا"],
       [("feta", 40)], note="white brined cheese, counted as feta"),
     D("ful_sandwich", "Ful sandwich", "سندوتش فول", "sandwich",
       ["ful sandwich", "foul sandwich", "fool sandwich", "sandwich ful", "ساندوتش فول", "سندويتش فول", "سندوتش فول بالزيت"],
@@ -268,7 +280,7 @@ DISHES = [
       ["molokhia with rabbit", "molokhia bel araneb", "molokheya w araneb", "ملوخيه بالارانب", "ملوخية بالارانب", "ملوخيه وارانب"],
       [("@molokhia", 250), ("rabbit", 150)]),
     D("mahshi_vine", "Stuffed vine leaves (warak enab)", "محشي ورق عنب", "main",
-      ["warak enab", "wara2 3enab", "warak 3enab", "mahshi wara2 3enab", "stuffed vine leaves", "stuffed grape leaves",
+      ["warak enab", "mahshi warak enab", "wara2 3enab", "warak 3enab", "mahshi wara2 3enab", "stuffed vine leaves", "stuffed grape leaves",
        "dolma", "ورق عنب", "محشى ورق عنب", "ورق عنب محشي"],
       [("grape_leaves", 40), ("rice", 100), ("tomato_sauce", 20), ("onion", 10), ("parsley", 5), ("dill", 3),
        ("mint", 2), ("oil", 12), ("lemon", 5)]),
@@ -276,7 +288,7 @@ DISHES = [
       ["mahshi felfel", "stuffed peppers", "stuffed bell peppers", "محشى فلفل", "فلفل محشي"],
       [("green_pepper", 100), ("rice", 90), ("tomato_sauce", 25), ("onion", 10), ("parsley", 5), ("dill", 3), ("oil", 10)]),
     D("mahshi_zucchini", "Stuffed zucchini (kousa)", "محشي كوسة", "main",
-      ["mahshi kousa", "mahshi kosa", "kosa mahshi", "stuffed zucchini", "stuffed courgette", "محشي كوسه", "كوسة محشية", "كوسه محشي"],
+      ["mahshi kousa", "mahshi koussa", "mahshi kossa", "mahshi kosa", "kosa mahshi", "stuffed zucchini", "stuffed courgette", "محشي كوسه", "كوسة محشية", "كوسه محشي"],
       [("zucchini", 120), ("rice", 80), ("tomato_sauce", 25), ("onion", 10), ("parsley", 5), ("dill", 3), ("oil", 10)]),
     D("mahshi_eggplant", "Stuffed eggplant", "محشي باذنجان", "main",
       ["mahshi betengan", "stuffed eggplant", "stuffed aubergine", "محشي بتنجان", "محشى باذنجان", "باذنجان محشي"],
@@ -308,7 +320,7 @@ DISHES = [
       ["feteer bel gebna", "feteer with cheese", "cheese feteer", "فطير جبنة", "فطير بالجبنه"],
       [("@feteer", 110), ("feta", 30), ("mozzarella", 20)]),
     D("roz_shareya", "Rice with vermicelli", "رز بالشعرية", "side",
-      ["roz bel shareya", "rice with vermicelli", "ruz bil sha3riya", "roz shareya", "egyptian rice",
+      ["roz bel shareya", "roz bel sha'reya", "rice with vermicelli", "ruz bil sha3riya", "roz shareya", "egyptian rice",
        "أرز بالشعرية", "رز بالشعريه", "ارز بالشعريه"],
       [("rice", 170), ("pasta", 20), ("oil", 7)]),
     D("roz_abyad", "Plain white rice", "رز أبيض", "side",
@@ -329,7 +341,7 @@ DISHES = [
       ["macarona bel salsa", "makarona salsa", "pasta with tomato sauce", "red pasta", "مكرونه بالصلصه", "مكرونة حمرا"],
       [("pasta", 200), ("tomato_sauce", 80), ("onion", 10), ("oil", 8)]),
     D("kofta", "Kofta", "كفتة", "main",
-      ["kofta", "kufta", "kofta mashwiya", "grilled kofta", "kofta kebab", "كفته", "كفتة مشوية", "كفته مشويه"],
+      ["kofta", "beef kofta", "kufta", "kofta mashwiya", "grilled kofta", "kofta kebab", "كفته", "كفتة مشوية", "كفته مشويه"],
       [("beef_kofta", 120), ("onion", 15), ("parsley", 5)]),
     D("kebab", "Lamb kebab", "كباب", "main",
       ["kebab", "kabab", "lamb kebab", "kabab daani", "كباب ضاني", "كباب مشوي"],
@@ -351,7 +363,7 @@ DISHES = [
       ["sayadeya", "sayadiyah", "sayadieh", "fish sayadeya", "sayadeya rice", "صياديه", "صيادية سمك", "رز صيادية"],
       [("rice", 150), ("tilapia", 120), ("onion", 30), ("oil", 15), ("tomato_paste", 5), ("cumin", 1)]),
     D("samak_mashwi", "Grilled fish", "سمك مشوي", "main",
-      ["samak mashwi", "grilled fish", "grilled tilapia", "bolti mashwi", "سمك مشوى", "بلطي مشوي"],
+      ["samak mashwi", "grilled fish", "grilled tilapia", "grilled tilapia (bolti)", "grilled bolti", "bolti mashwi", "سمك مشوى", "بلطي مشوي"],
       [("tilapia", 200), ("olive_oil", 5), ("lemon", 5), ("garlic", 3), ("cumin", 1)]),
     D("samak_maqli", "Fried fish", "سمك مقلي", "main",
       ["samak ma2li", "fried fish", "fried tilapia", "bolti ma2li", "سمك مقلى", "بلطي مقلي"],
@@ -714,6 +726,100 @@ DISHES = [
 ]
 
 
+# The sixteen tokens the app screens against: AllergenTag.wireName in
+# app/lib/features/account/domain/dietary_profile.dart.
+ALLERGEN_TOKENS = (
+    "gluten", "crustaceans", "eggs", "fish", "peanuts", "soy", "milk", "tree_nuts",
+    "celery", "mustard", "sesame", "sulphites", "lupin", "molluscs", "fava", "coconut",
+)
+
+# What each ingredient brings to a dish. Ingredients not listed bring nothing.
+# Deliberately over-inclusive where the shop-bought or usual form commonly
+# carries the allergen: a missing tag costs a reaction, an extra one costs her
+# a suggestion. Ghee and butter are milk: they are milk fat.
+INGREDIENT_ALLERGENS = {
+    "pasta": ("gluten",),
+    "fava": ("fava",), "fava_dry": ("fava",),
+    "pita_ww": ("gluten",), "pita": ("gluten",),
+    "roll": ("gluten", "milk", "soy"), "bread_white": ("gluten", "milk", "soy"),
+    "bulgur": ("gluten",), "couscous": ("gluten",), "semolina": ("gluten",),
+    "flour": ("gluten",), "phyllo": ("gluten",), "puff_pastry": ("gluten", "milk"),
+    "grape_leaves": ("sulphites",),
+    "sausage": ("gluten", "soy"),
+    "egg": ("eggs",), "egg_boiled": ("eggs",), "egg_fried": ("eggs",),
+    "milk": ("milk",), "feta": ("milk",), "cottage": ("milk",), "romano": ("milk",),
+    "mozzarella": ("milk",), "yogurt": ("milk",), "greek_yogurt": ("milk",),
+    "butter": ("milk",), "ghee": ("milk",), "cream": ("milk",),
+    "tahini": ("sesame",), "sesame": ("sesame",),
+    "coconut": ("coconut",),
+    "almonds": ("tree_nuts",), "pistachio": ("tree_nuts",), "walnuts": ("tree_nuts",),
+    "raisins": ("sulphites",),
+    "shrimp": ("crustaceans",),
+    "tilapia": ("fish",), "mullet": ("fish",), "herring": ("fish",),
+    "lupins": ("lupin",),
+}
+
+# What the recipe table cannot show: an ingredient a usual version of the dish
+# has that the standard recipe above leaves out. Each line says why.
+DISH_ALLERGEN_EXTRAS = {
+    "taameya": (("gluten", "bread or flour is added to the batter in many shops"),),
+    "falafel": (("fava", "an Egyptian falafel is often fava, and mixes blend both"),
+                ("sesame", "sesame is pressed into the patties")),
+    "shawarma_chicken_sandwich": (("eggs", "the garlic sauce is usually mayonnaise-based"),
+                                  ("milk", "the chicken is marinated in yoghurt")),
+    "shawarma_chicken_plate": (("eggs", "the garlic sauce is usually mayonnaise-based"),
+                               ("milk", "the chicken is marinated in yoghurt")),
+    "kofta": (("gluten", "bread or rusk is mixed into the meat as a binder in most kitchens"),),
+    "maqluba": (("tree_nuts", "toasted almonds or pine nuts are scattered over it"),),
+    "petit_four": (("tree_nuts", "an almond or a nut sits on top of many pieces"),),
+    "feteer": (("eggs", "many doughs are enriched with egg"),),
+    "macarona_bechamel": (("eggs", "the bechamel is often enriched with egg"),),
+    "basbousa": (("eggs", "many batters carry an egg"),),
+    "zalabya": (("milk", "the batter is often made with milk"), ("eggs", "many batters carry an egg")),
+    "luqaimat": (("milk", "the batter is often made with milk or yoghurt"),),
+    "ghorayeba": (("tree_nuts", "a pistachio or almond is pressed on top"),),
+    "kahk": (("tree_nuts", "stuffed with nuts in many homes"),),
+    "maamoul": (("tree_nuts", "walnut and pistachio fillings are as common as dates"),),
+    "halawa": (("tree_nuts", "pistachio halawa is the usual variety"),),
+    "hamam_mahshi": (("gluten", "stuffed with freekeh, which is green wheat"),),
+}
+
+# A dish cooked in stock carries celery: the stock cube in Egyptian kitchens is
+# the same decision allergen_tripwire.py makes for a method that says shorba.
+STOCK_DISHES = ("fattah", "fattah_chicken", "thareed", "harees", "saleeg")
+
+
+def _stock_based(dish: dict) -> bool:
+    return (
+        dish["category"] == "soup"
+        or "broth" in (dish["yield_note"] or "")
+        or dish["key"] in STOCK_DISHES
+    )
+
+
+def _allergens(dish: dict, by_key: dict, memo: dict) -> list:
+    """The tags a dish carries, from its ingredients, the dishes it contains and
+    the extras above. Never empty by omission: a dish with none returns []."""
+    key = dish["key"]
+    if key in memo:
+        return memo[key]
+    found = set()
+    for ref, _grams in dish["recipe"]:
+        if ref.startswith("@"):
+            found.update(_allergens(by_key[ref[1:]], by_key, memo))
+        else:
+            found.update(INGREDIENT_ALLERGENS.get(ref, ()))
+    for tag, _why in DISH_ALLERGEN_EXTRAS.get(key, ()):
+        found.add(tag)
+    if _stock_based(dish):
+        found.add("celery")
+    unknown = found - set(ALLERGEN_TOKENS)
+    if unknown:
+        raise SystemExit(f"{key}: {sorted(unknown)} are not allergen tokens")
+    memo[key] = sorted(found)
+    return memo[key]
+
+
 def _usda() -> dict:
     with open(USDA_PATH, encoding="utf-8") as handle:
         return {f["fdcId"]: f for f in json.load(handle)["foods"]}
@@ -769,6 +875,7 @@ def build() -> dict:
             raise SystemExit(f"{dish['key']}: no Arabic name")
         by_key[dish["key"]] = dish
     out = []
+    allergen_memo: dict = {}
     for dish in DISHES:
         # Grams are rounded to 0.1 g first and everything is computed from the
         # rounded figures, so the file's recipe adds up to the file's values.
@@ -792,6 +899,7 @@ def build() -> dict:
             "typical_serving_g": serving,
             "recipe": recipe,
             "per100g": per100g,
+            "allergens": _allergens(dish, by_key, allergen_memo),
             "review": REVIEW,
         }
         if dish["yield"] != 1.0:

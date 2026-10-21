@@ -37,6 +37,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
+import '../../../domain/format/date_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -199,7 +200,7 @@ class _LogPeriodViewState extends State<LogPeriodView> {
         Text(l10n.noteAPeriod, style: AppText.titleL),
         AppField(
           label: l10n.startDate,
-          hint: isoDay(_start),
+          hint: dayMonthYearLabel(l10n, _start),
           // One message covers both refusals; the dictionary carries it as a
           // single sentence naming both rules.
           errorText: _problems.contains(PeriodProblem.startInFuture)
@@ -219,7 +220,9 @@ class _LogPeriodViewState extends State<LogPeriodView> {
           label: l10n.endDate,
           // "Still bleeding" is what null means, and it is derived from the
           // absence of an end date rather than stored beside it.
-          hint: _end == null ? l10n.stillBleeding : isoDay(_end!),
+          hint: _end == null
+              ? l10n.stillBleeding
+              : dayMonthYearLabel(l10n, _end!),
           errorText:
               _problems.contains(PeriodProblem.endBeforeStart) ||
                   _problems.contains(PeriodProblem.endInFuture)
@@ -250,14 +253,20 @@ class _LogPeriodViewState extends State<LogPeriodView> {
 String periodSavedLabel(AppL10n l10n, PeriodEntry entry) {
   final end = entry.end;
   return end == null
-      ? l10n.periodSavedFromStart(isoDay(entry.start))
-      : l10n.periodSavedStartToEnd(isoDay(entry.start), isoDay(end));
+      ? l10n.periodSavedFromStart(dayMonthYearLabel(l10n, entry.start))
+      : l10n.periodSavedStartToEnd(
+          dayMonthYearLabel(l10n, entry.start),
+          dayMonthYearLabel(l10n, end),
+        );
 }
 
 /// "Period removed · 2026-10-01 to 2026-10-05".
 String periodRemovedLabel(AppL10n l10n, PeriodEntry entry) {
   final end = entry.end;
   return end == null
-      ? l10n.periodRemovedFromStart(isoDay(entry.start))
-      : l10n.periodRemovedStartToEnd(isoDay(entry.start), isoDay(end));
+      ? l10n.periodRemovedFromStart(dayMonthYearLabel(l10n, entry.start))
+      : l10n.periodRemovedStartToEnd(
+          dayMonthYearLabel(l10n, entry.start),
+          dayMonthYearLabel(l10n, end),
+        );
 }

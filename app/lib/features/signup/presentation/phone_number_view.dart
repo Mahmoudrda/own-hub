@@ -344,6 +344,8 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
             ),
             onTap: () => setState(() => _analytics = !_analytics),
           ),
+        // Room under the last line, so it clears the pinned button.
+        const SizedBox(height: 24),
       ],
     );
   }

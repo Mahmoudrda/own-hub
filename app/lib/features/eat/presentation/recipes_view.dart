@@ -28,6 +28,7 @@
 /// at all. `E10` is the question; this screen is what waits for it.
 library;
 
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
@@ -42,9 +43,11 @@ import '../../../ui/app_media.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../ui/meal_image.dart';
 import '../../today/presentation/today_cards.dart' show openScreen;
 import '../data/seeded_recipe_library.dart';
 import '../domain/allergy_guard.dart';
+import '../domain/meal_images.dart';
 import '../domain/recipe.dart';
 import 'recipe_labels.dart';
 
@@ -166,9 +169,9 @@ bool recipeMatchesFilter(
   RecipeFilter.cheap =>
     recipe.egpPerServing != null && recipe.egpPerServing! <= kCheapEgp,
   RecipeFilter.ramadan => recipe.dietTags.contains('ramadan'),
-  RecipeFilter.noOven => !recipe.allSteps.any(
-    (s) => s.tool == 'oven' || s.tool == 'air_fryer',
-  ),
+  // The authored tag, not a scan of the steps: most steps carry no tool, so a
+  // scan let oven and air-fryer dishes through.
+  RecipeFilter.noOven => recipe.dietTags.contains('no_oven'),
   RecipeFilter.readyInTheFridge => recipe.allSteps.any(
     (s) => s.tool == 'fridge' || s.tool == 'freezer',
   ),
@@ -244,7 +247,12 @@ class RecipesView extends StatefulWidget {
     this.onSelectTab,
     this.pickLabel,
     this.onPick,
+    this.showSamples = !kReleaseMode,
   });
+
+  /// The four prototype rows, with prices nobody set. Drawn in debug and test
+  /// builds only: a shipped build lists Rahma's and Own Hub's recipes alone.
+  final bool showSamples;
 
   /// Pick mode, opened from a day on `E07`: the line that says which day
   /// ("Pick a dinner for Monday"). Null is the ordinary library.
@@ -312,10 +320,38 @@ class _RecipesViewState extends State<RecipesView> {
   /// section.
   RecipeFilter? _bookFilter;
 
+  /// The chips above the app's own rows, in the order they are drawn.
+  static const _topFilters = [
+    RecipeFilter.highProtein,
+    RecipeFilter.underTwentyMinutes,
+    RecipeFilter.cheap,
+    RecipeFilter.ramadan,
+  ];
+
+  /// The chips under her heading, in the order they are drawn.
+  static const _bookFilters = [
+    RecipeFilter.noOven,
+    RecipeFilter.readyInTheFridge,
+    RecipeFilter.noNuts,
+  ];
+
+  static String _filterLabel(AppL10n l10n, RecipeFilter filter) =>
+      switch (filter) {
+        RecipeFilter.highProtein => l10n.highProtein,
+        RecipeFilter.underTwentyMinutes => l10n.under20Min,
+        RecipeFilter.cheap => l10n.cheap,
+        RecipeFilter.ramadan => l10n.ramadan,
+        RecipeFilter.noOven => l10n.noOven,
+        RecipeFilter.readyInTheFridge => l10n.readyInTheFridge,
+        RecipeFilter.noNuts => l10n.noNuts,
+      };
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final all = widget.recipes ?? sampleRecipes(l10n);
+    final all =
+        widget.recipes ??
+        (widget.showSamples ? sampleRecipes(l10n) : const <RecipeRow>[]);
     final filter = _filter;
 
     // The guard runs on the app's own rows too, and it runs **before** any
@@ -335,6 +371,20 @@ class _RecipesViewState extends State<RecipesView> {
         if (guard.allowsAllergens(recipe.allergens)) recipe,
     ];
     final hiddenUnchecked = all.length - safe.length;
+
+    // What a chip is tested against: the rows she can see and the book's recipes
+    // the guard lets through. Counted before any chip is applied.
+    final book = widget.book;
+    final shown = [
+      if (book != null && widget.asked) ...guard.screenRecipes(book.recipes),
+    ];
+    final topFilters = [
+      for (final f in _topFilters)
+        if (f == filter ||
+            safe.any((row) => matchesFilter(row, f)) ||
+            shown.any((r) => recipeMatchesFilter(r, f)))
+          f,
+    ];
 
     final recipes = [
       for (final recipe in safe)
@@ -408,24 +458,25 @@ class _RecipesViewState extends State<RecipesView> {
           // that only Rahma's recipes can answer live with her book further
           // down, because `grow: false` wraps and seven chips take two lines,
           // which pushed the app's own rows under the bottom bar.
-          AppChipRow(
-            grow: false,
-            items: [
-              l10n.highProtein,
-              l10n.under20Min,
-              l10n.cheap,
-              l10n.ramadan,
-            ],
-            selected: {if (filter != null) filter.index},
-            onTap: (index) => setState(() {
-              final tapped = RecipeFilter.values[index];
-              _filter = _filter == tapped ? null : tapped;
-            }),
-          ),
+          //
+          // A chip that would select nothing is not drawn: "Cheap" with no
+          // price anywhere and "Ramadan" with no tag anywhere were two dead ends
+          // on every visit. The chip she has selected stays, so she can always
+          // take it off.
+          if (topFilters.isNotEmpty)
+            AppChipRow(
+              grow: false,
+              items: [for (final f in topFilters) _filterLabel(l10n, f)],
+              selected: {if (filter != null) topFilters.indexOf(filter)},
+              onTap: (index) => setState(() {
+                final tapped = topFilters[index];
+                _filter = _filter == tapped ? null : tapped;
+              }),
+            ),
           // An empty list has to name its own cause, and the causes are not one
           // sentence. The guard's reason comes first because the guard ran
           // first: a chip cannot be blamed for rows that were already gone.
-          if (recipes.isEmpty)
+          if (recipes.isEmpty && all.isNotEmpty)
             Text(
               _topEmptyLine(l10n, hiddenUnchecked, filter),
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
@@ -434,12 +485,16 @@ class _RecipesViewState extends State<RecipesView> {
             AppListItem(
               // The 64×64 thumbnail. No photography exists, so this is the
               // placeholder rather than a broken image.
-              leading: const AppMedia(
-                width: 64,
-                height: 64,
-                kind: AppMediaKind.photo,
-                showPlayButton: false,
-                borderRadius: AppRadius.sm,
+              leading: MealImage(
+                asset: MealImages.assetFor(recipe.recipeId),
+                size: 64,
+                fallback: const AppMedia(
+                  width: 64,
+                  height: 64,
+                  kind: AppMediaKind.photo,
+                  showPlayButton: false,
+                  borderRadius: AppRadius.sm,
+                ),
               ),
               title: recipe.title,
               subtitle: recipe.detail,
@@ -523,9 +578,6 @@ class _RecipesViewState extends State<RecipesView> {
     if (_bookFilter == RecipeFilter.noNuts) {
       return l10n.noneOfTheseDishesHasBeenChecked_9ic16;
     }
-    if (filter == RecipeFilter.ramadan) {
-      return l10n.noRecipeCarriesARamadanTagYet;
-    }
     return l10n.nothingMatchesThat;
   }
 
@@ -548,14 +600,12 @@ class _RecipesViewState extends State<RecipesView> {
   /// had one: a chip that falls through to "Nothing matches that" reads as a
   /// fault in the app rather than as an absence in the content.
   String _emptyLine(AppL10n l10n, HiddenRecipes hidden, RecipeFilter? filter) {
-    if (hidden.unsigned > 0) return l10n.noDishHereHasBeenCheckedYet;
+    final anySigned = widget.book?.recipes.any((r) => r.allergensReviewed);
+    if (hidden.unsigned > 0 && anySigned != true) {
+      return l10n.noDishHereHasBeenCheckedYet;
+    }
     if (hidden.namedAllergen > 0) {
       return l10n.everythingHereContainsSomethingYouToldUs;
-    }
-    // Nobody has priced a recipe in the book, so "Cheap" selects none of them.
-    if (filter == RecipeFilter.cheap) return l10n.noRecipeHasBeenPricedYet;
-    if (filter == RecipeFilter.ramadan) {
-      return l10n.noRecipeCarriesARamadanTagYet;
     }
     // "No nuts" fails closed on `allergensReviewed`, and nothing is signed, so
     // it correctly selects none. Saying which of those two facts is doing the
@@ -616,6 +666,15 @@ class _RecipesViewState extends State<RecipesView> {
       ];
     }
     final anyShown = bySection.values.any((rows) => rows.isNotEmpty);
+    // The same test as the top row: a chip no visible recipe satisfies is not
+    // offered, unless it is the one she has on.
+    final visibleToHer = guard.screenRecipes(book.recipes);
+    final bookFilters = [
+      for (final f in _bookFilters)
+        if (f == _bookFilter ||
+            visibleToHer.any((r) => recipeMatchesFilter(r, f)))
+          f,
+    ];
 
     // Said once, at the head of the book, instead of three lines on each of
     // thirty-nine cards. It is also the only place the **consequence** is
@@ -626,8 +685,11 @@ class _RecipesViewState extends State<RecipesView> {
     // Only while there is something to caveat. When the book is empty the empty
     // state below already says this and says it in the past tense, and two
     // sentences about the same fact read as the screen repeating itself.
+    //
+    // And only while none of them has: once some are signed, an unsigned card
+    // carries its own "not checked yet", and this sentence would be false.
     final anyUnsigned =
-        anyShown && book.recipes.any((r) => !r.allergensReviewed);
+        anyShown && book.recipes.every((r) => !r.allergensReviewed);
 
     return [
       _BookHeading(title: l10n.rahmasRecipes),
@@ -636,24 +698,40 @@ class _RecipesViewState extends State<RecipesView> {
           l10n.nothingInTheBookHasBeenChecked,
           style: AppText.bodyM.copyWith(color: HandInk.print),
         ),
-      AppChipRow(
-        grow: false,
-        items: [l10n.noOven, l10n.readyInTheFridge, l10n.noNuts],
-        selected: {
-          if (_bookFilter != null)
-            _bookFilter!.index - RecipeFilter.noOven.index,
-        },
-        onTap: (index) => setState(() {
-          final tapped = RecipeFilter.values[RecipeFilter.noOven.index + index];
-          _bookFilter = _bookFilter == tapped ? null : tapped;
-        }),
-      ),
+      if (bookFilters.isNotEmpty)
+        AppChipRow(
+          grow: false,
+          items: [for (final f in bookFilters) _filterLabel(l10n, f)],
+          selected: {
+            if (_bookFilter != null) bookFilters.indexOf(_bookFilter!),
+          },
+          onTap: (index) => setState(() {
+            final tapped = bookFilters[index];
+            _bookFilter = _bookFilter == tapped ? null : tapped;
+          }),
+        ),
       for (final section in book.sections)
-        if (bySection[section.sectionId]!.isNotEmpty) ...[
+        if (bySection[section.sectionId]!.any((r) => !r.isOwnHub)) ...[
           _SectionDivider(section: section),
           for (final recipe in bySection[section.sectionId]!)
-            _RahmaCard(recipe: recipe, onTap: () => _choose(recipe.recipeId)),
+            if (!recipe.isOwnHub)
+              _RahmaCard(recipe: recipe, onTap: () => _choose(recipe.recipeId)),
         ],
+      // Recipes the Own Hub kitchen wrote sit apart from hers, under their own
+      // heading, so none of them reads as something Rahma wrote.
+      if (bySection.values.any((rows) => rows.any((r) => r.isOwnHub))) ...[
+        _BookHeading(title: l10n.fromTheOwnHubKitchen),
+        for (final section in book.sections)
+          if (bySection[section.sectionId]!.any((r) => r.isOwnHub)) ...[
+            _SectionDivider(section: section),
+            for (final recipe in bySection[section.sectionId]!)
+              if (recipe.isOwnHub)
+                _RahmaCard(
+                  recipe: recipe,
+                  onTap: () => _choose(recipe.recipeId),
+                ),
+          ],
+      ],
       // The empty state has to name the reason it is empty, and the two reasons
       // are not the same sentence.
       //
@@ -870,6 +948,8 @@ class _RahmaCard extends StatelessWidget {
       child: BookCard(
         cardId: recipe.recipeId,
         markKey: recipe.markKey,
+        imageAsset: recipe.imageAsset,
+        markSize: 64,
         onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -890,6 +970,13 @@ class _RahmaCard extends StatelessWidget {
               Text(
                 facts.join(' · '),
                 style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+              ),
+            ],
+            if (recipe.isOwnHub) ...[
+              const SizedBox(height: 6),
+              Text(
+                l10n.fromTheOwnHubKitchen,
+                style: AppText.label.copyWith(color: BookInk.inkSoft),
               ),
             ],
             // Three words, not three lines. The full sentence — "Nobody has

@@ -105,3 +105,6 @@ admin-web/config.js
 
 # Firebase CLI hosting cache
 .firebase/
+
+# Tool venv for the meal image generator
+app/tool/.venv/

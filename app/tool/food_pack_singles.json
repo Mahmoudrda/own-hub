@@ -1,0 +1,7372 @@
+{
+ "note": "Single foods and household portions for the food pack. Figures come from USDA FoodData Central (usda_foods.json) by fdcId at build time. Allergens are by identity of the food, over-inclusive where the usual shop-bought form carries one. Read by tool/build_food_pack.py.",
+ "foods": [
+  {
+   "id": "chicken_breast_grilled",
+   "nameEn": "Grilled chicken breast",
+   "nameAr": "صدر فراخ مشوي",
+   "aliases": [
+    "grilled chicken breast",
+    "chicken breast",
+    "skinless grilled chicken breast",
+    "sadr frakh mashwi",
+    "sodour frakh mashwiya",
+    "صدور فراخ مشوية",
+    "صدر دجاج مشوي",
+    "صدر فراخ",
+    "صدر فراخ مشوى",
+    "صدور فراخ"
+   ],
+   "category": "proteins",
+   "kind": "main",
+   "fdcId": 171477,
+   "usdaName": "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
+   "servingG": 150,
+   "allergens": []
+  },
+  {
+   "id": "steak_grilled",
+   "nameEn": "Grilled steak",
+   "nameAr": "ستيك مشوي",
+   "aliases": [
+    "grilled steak",
+    "steak",
+    "beef steak",
+    "sirloin steak",
+    "steak mashwi",
+    "stayk",
+    "ستيك",
+    "ستيك لحم",
+    "استيك مشوي",
+    "ستيك مشوى"
+   ],
+   "category": "proteins",
+   "kind": "main",
+   "fdcId": 168633,
+   "usdaName": "Beef, top sirloin, steak, separable lean and fat, trimmed to 0\" fat, select, cooked, broiled",
+   "servingG": 150,
+   "allergens": [],
+   "note": "top sirloin, lean and fat, broiled"
+  },
+  {
+   "id": "tuna_canned",
+   "nameEn": "Canned tuna in water, drained",
+   "nameAr": "تونة معلبة بالماء",
+   "aliases": [
+    "tuna",
+    "canned tuna",
+    "canned tuna in water",
+    "tuna in water",
+    "tuna drained",
+    "tuna drained from water",
+    "toona",
+    "tona",
+    "تونة",
+    "تونه",
+    "تونة معلبة",
+    "تونه معلبه",
+    "تونة بالماء",
+    "تونه بالمياه"
+   ],
+   "category": "proteins",
+   "kind": "main",
+   "fdcId": 173709,
+   "usdaName": "Fish, tuna, light, canned in water, drained solids",
+   "servingG": 107,
+   "allergens": [
+    "fish"
+   ],
+   "portions": [
+    {
+     "en": "Half a can",
+     "ar": "نص علبة",
+     "grams": 55
+    },
+    {
+     "en": "1 can",
+     "ar": "علبة",
+     "grams": 107
+    },
+    {
+     "en": "1.5 cans",
+     "ar": "علبة ونص",
+     "grams": 160
+    }
+   ]
+  },
+  {
+   "id": "tuna_in_oil",
+   "nameEn": "Canned tuna in oil, drained",
+   "nameAr": "تونة معلبة بالزيت مصفّاة",
+   "aliases": [
+    "tuna in oil",
+    "canned tuna in oil",
+    "tuna drained from oil",
+    "tuna oil drained",
+    "toona bel zeit",
+    "تونة بالزيت",
+    "تونه بالزيت",
+    "تونة مصفاة من الزيت",
+    "تونه مصفيه من الزيت"
+   ],
+   "category": "proteins",
+   "kind": "main",
+   "fdcId": 173708,
+   "usdaName": "Fish, tuna, light, canned in oil, drained solids",
+   "servingG": 107,
+   "allergens": [
+    "fish"
+   ],
+   "portions": [
+    {
+     "en": "Half a can",
+     "ar": "نص علبة",
+     "grams": 55
+    },
+    {
+     "en": "1 can",
+     "ar": "علبة",
+     "grams": 107
+    },
+    {
+     "en": "1.5 cans",
+     "ar": "علبة ونص",
+     "grams": 160
+    }
+   ]
+  },
+  {
+   "id": "turkey_smoked",
+   "nameEn": "Smoked turkey breast",
+   "nameAr": "صدر رومي مدخن",
+   "aliases": [
+    "smoked turkey",
+    "smoked turkey breast",
+    "turkey breast",
+    "turkey slices",
+    "sadr roomi modakhan",
+    "sadr romy modakhan",
+    "صدر رومي",
+    "صدر رومي مدخن",
+    "ديك رومي مدخن",
+    "شرائح رومي مدخن",
+    "رومي مدخن"
+   ],
+   "category": "proteins",
+   "kind": "main",
+   "fdcId": 174612,
+   "usdaName": "Turkey, breast, smoked, lemon pepper flavor, 97% fat-free",
+   "servingG": 84,
+   "allergens": [
+    "gluten",
+    "soy"
+   ],
+   "portions": [
+    {
+     "en": "1 slice",
+     "ar": "شريحة",
+     "grams": 28
+    },
+    {
+     "en": "3 slices",
+     "ar": "3 شرائح",
+     "grams": 84
+    },
+    {
+     "en": "5 slices",
+     "ar": "5 شرائح",
+     "grams": 140
+    }
+   ],
+   "note": "deli turkey carries rusk or starch and soy protein in Egypt, as allergen_tripwire.py already assumes"
+  },
+  {
+   "id": "greek_yoghurt",
+   "nameEn": "Greek yoghurt",
+   "nameAr": "زبادي يوناني",
+   "aliases": [
+    "greek yoghurt",
+    "greek yogurt",
+    "plain greek yoghurt",
+    "strained yoghurt",
+    "zabadi yunani",
+    "zabady yonani",
+    "زبادي يوناني",
+    "زبادى يونانى",
+    "زبادي يوناني سادة"
+   ],
+   "category": "dairyAndCheese",
+   "kind": "breakfast",
+   "fdcId": 170903,
+   "usdaName": "Yogurt, Greek, plain, lowfat",
+   "servingG": 170,
+   "allergens": [
+    "milk"
+   ],
+   "note": "plain low-fat Greek yoghurt"
+  },
+  {
+   "id": "yoghurt_baladi",
+   "nameEn": "Plain baladi yoghurt",
+   "nameAr": "زبادي بلدي",
+   "aliases": [
+    "plain yoghurt",
+    "plain yogurt",
+    "baladi yoghurt",
+    "baladi yogurt",
+    "yoghurt",
+    "yogurt",
+    "zabadi baladi",
+    "zabadi sada",
+    "zabady",
+    "زبادي",
+    "زبادى",
+    "زبادي سادة",
+    "زبادي بلدي",
+    "زبادى بلدى"
+   ],
+   "category": "dairyAndCheese",
+   "kind": "breakfast",
+   "fdcId": 171284,
+   "usdaName": "Yogurt, plain, whole milk",
+   "servingG": 170,
+   "allergens": [
+    "milk"
+   ]
+  },
+  {
+   "id": "mozzarella_light",
+   "nameEn": "Light mozzarella",
+   "nameAr": "موتزاريلا لايت",
+   "aliases": [
+    "light mozzarella",
+    "mozzarella",
+    "mozzarella cheese",
+    "part skim mozzarella",
+    "low fat mozzarella",
+    "mozzarella light",
+    "motzarella",
+    "موتزاريلا",
+    "موزاريلا",
+    "موتزاريلا لايت",
+    "جبنة موتزاريلا",
+    "جبنه موتزاريلا"
+   ],
+   "category": "dairyAndCheese",
+   "kind": "cheese",
+   "fdcId": 170847,
+   "usdaName": "Cheese, mozzarella, part skim milk",
+   "servingG": 30,
+   "allergens": [
+    "milk"
+   ]
+  },
+  {
+   "id": "milk_skim",
+   "nameEn": "Skim milk",
+   "nameAr": "لبن خالي الدسم",
+   "aliases": [
+    "skim milk",
+    "skimmed milk",
+    "fat free milk",
+    "nonfat milk",
+    "low fat milk",
+    "laban khali el dasam",
+    "halib skim",
+    "لبن خالي الدسم",
+    "حليب خالي الدسم",
+    "لبن سكيم",
+    "حليب سكيم"
+   ],
+   "category": "dairyAndCheese",
+   "kind": "drink",
+   "fdcId": 173432,
+   "usdaName": "Milk, nonfat, fluid, without added vitamin A and vitamin D",
+   "servingG": 240,
+   "allergens": [
+    "milk"
+   ],
+   "portions": [
+    {
+     "en": "Half a glass",
+     "ar": "نص كوباية",
+     "grams": 120
+    },
+    {
+     "en": "1 glass",
+     "ar": "كوباية",
+     "grams": 240
+    },
+    {
+     "en": "1.5 glasses",
+     "ar": "كوباية ونص",
+     "grams": 360
+    }
+   ]
+  },
+  {
+   "id": "milk_full",
+   "nameEn": "Full-cream milk",
+   "nameAr": "لبن كامل الدسم",
+   "aliases": [
+    "milk",
+    "full cream milk",
+    "full-cream milk",
+    "whole milk",
+    "cow milk",
+    "halib",
+    "laban kamel el dasam",
+    "حليب",
+    "حليب كامل الدسم",
+    "لبن كامل الدسم",
+    "لبن بقري"
+   ],
+   "category": "dairyAndCheese",
+   "kind": "drink",
+   "fdcId": 171265,
+   "usdaName": "Milk, whole, 3.25% milkfat",
+   "servingG": 240,
+   "allergens": [
+    "milk"
+   ],
+   "portions": [
+    {
+     "en": "Half a glass",
+     "ar": "نص كوباية",
+     "grams": 120
+    },
+    {
+     "en": "1 glass",
+     "ar": "كوباية",
+     "grams": 240
+    },
+    {
+     "en": "1.5 glasses",
+     "ar": "كوباية ونص",
+     "grams": 360
+    }
+   ]
+  },
+  {
+   "id": "laban_rayeb",
+   "nameEn": "Laban rayeb",
+   "nameAr": "لبن رايب",
+   "aliases": [
+    "laban rayeb",
+    "laban rayib",
+    "laban zabadi",
+    "rayeb",
+    "fermented milk",
+    "cultured milk",
+    "لبن رايب",
+    "لبن رائب",
+    "لبن زبادي",
+    "لبن رايب سادة"
+   ],
+   "category": "dairyAndCheese",
+   "kind": "drink",
+   "fdcId": 170874,
+   "usdaName": "Milk, buttermilk, fluid, cultured, lowfat",
+   "servingG": 240,
+   "allergens": [
+    "milk"
+   ],
+   "portions": [
+    {
+     "en": "Half a glass",
+     "ar": "نص كوباية",
+     "grams": 120
+    },
+    {
+     "en": "1 glass",
+     "ar": "كوباية",
+     "grams": 240
+    },
+    {
+     "en": "1.5 glasses",
+     "ar": "كوباية ونص",
+     "grams": 360
+    }
+   ],
+   "note": "cultured buttermilk counted as laban rayeb: USDA has no entry for it"
+  },
+  {
+   "id": "toast_ww",
+   "nameEn": "Whole-wheat toast",
+   "nameAr": "توست أسمر",
+   "aliases": [
+    "whole wheat toast",
+    "whole-wheat toast",
+    "wholemeal toast",
+    "brown toast",
+    "brown bread toast",
+    "toast",
+    "toast asmar",
+    "توست",
+    "توست أسمر",
+    "توست اسمر",
+    "توست بر",
+    "توست قمح كامل"
+   ],
+   "category": "grainsAndBreads",
+   "kind": null,
+   "fdcId": 172689,
+   "usdaName": "Bread, whole-wheat, commercially prepared, toasted",
+   "servingG": 50,
+   "allergens": [
+    "gluten",
+    "milk",
+    "soy"
+   ],
+   "portions": [
+    {
+     "en": "1 slice",
+     "ar": "شريحة",
+     "grams": 25
+    },
+    {
+     "en": "2 slices",
+     "ar": "شريحتين",
+     "grams": 50
+    },
+    {
+     "en": "3 slices",
+     "ar": "3 شرائح",
+     "grams": 75
+    }
+   ],
+   "note": "shop-bought sliced bread commonly carries milk and soy"
+  },
+  {
+   "id": "tortilla_ww",
+   "nameEn": "Whole-wheat tortilla",
+   "nameAr": "تورتيلا قمح كامل",
+   "aliases": [
+    "whole wheat tortilla",
+    "whole-wheat tortilla",
+    "wholemeal tortilla",
+    "whole wheat wrap",
+    "wrap",
+    "tortilla",
+    "تورتيلا",
+    "تورتيلا قمح",
+    "تورتيلا بر",
+    "تورتيلا اسمر",
+    "تورتيلا قمح كامل"
+   ],
+   "category": "grainsAndBreads",
+   "kind": null,
+   "fdcId": 174081,
+   "usdaName": "Tortillas, ready-to-bake or -fry, whole wheat",
+   "servingG": 41,
+   "allergens": [
+    "gluten",
+    "soy"
+   ],
+   "portions": [
+    {
+     "en": "Half a tortilla",
+     "ar": "نص تورتيلا",
+     "grams": 20
+    },
+    {
+     "en": "1 tortilla",
+     "ar": "تورتيلا",
+     "grams": 41
+    },
+    {
+     "en": "2 tortillas",
+     "ar": "تورتيلتين",
+     "grams": 82
+    }
+   ]
+  },
+  {
+   "id": "oats_rolled",
+   "nameEn": "Rolled oats",
+   "nameAr": "شوفان",
+   "aliases": [
+    "oats",
+    "rolled oats",
+    "oatmeal",
+    "porridge oats",
+    "dry oats",
+    "shofan",
+    "shoufan",
+    "شوفان",
+    "شوفان ناشف",
+    "الشوفان"
+   ],
+   "category": "grainsAndBreads",
+   "kind": null,
+   "fdcId": 169705,
+   "usdaName": "Oats",
+   "servingG": 40,
+   "allergens": [
+    "gluten"
+   ],
+   "portions": [
+    {
+     "en": "Small, dry",
+     "ar": "صغيرة ناشفة",
+     "grams": 25
+    },
+    {
+     "en": "Medium, dry",
+     "ar": "وسط ناشفة",
+     "grams": 40
+    },
+    {
+     "en": "Large, dry",
+     "ar": "كبيرة ناشفة",
+     "grams": 60
+    }
+   ],
+   "note": "dry weight before cooking; oats carry gluten by cross-contact"
+  },
+  {
+   "id": "rice_basmati",
+   "nameEn": "Basmati rice",
+   "nameAr": "رز بسمتي",
+   "aliases": [
+    "basmati rice",
+    "basmati",
+    "cooked basmati",
+    "roz basmati",
+    "ruz basmati",
+    "رز بسمتي",
+    "أرز بسمتي",
+    "ارز بسمتى",
+    "رز بسمتى",
+    "رز بسمتي مسلوق"
+   ],
+   "category": "grainsAndBreads",
+   "kind": "side",
+   "fdcId": 168878,
+   "usdaName": "Rice, white, long-grain, regular, enriched, cooked",
+   "servingG": 160,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Small bowl",
+     "ar": "طبق صغير",
+     "grams": 100
+    },
+    {
+     "en": "Medium bowl",
+     "ar": "طبق وسط",
+     "grams": 160
+    },
+    {
+     "en": "Large bowl",
+     "ar": "طبق كبير",
+     "grams": 240
+    }
+   ],
+   "note": "counted as cooked long-grain white rice: USDA SR Legacy and Foundation hold no basmati"
+  },
+  {
+   "id": "freekeh",
+   "nameEn": "Freekeh",
+   "nameAr": "فريك",
+   "aliases": [
+    "freekeh",
+    "frik",
+    "freek",
+    "cooked freekeh",
+    "green wheat",
+    "فريك",
+    "فريك مطبوخ",
+    "فريك سادة"
+   ],
+   "category": "grainsAndBreads",
+   "kind": "side",
+   "fdcId": 170287,
+   "usdaName": "Bulgur, cooked",
+   "servingG": 180,
+   "allergens": [
+    "gluten"
+   ],
+   "portions": [
+    {
+     "en": "Small bowl",
+     "ar": "طبق صغير",
+     "grams": 110
+    },
+    {
+     "en": "Medium bowl",
+     "ar": "طبق وسط",
+     "grams": 180
+    },
+    {
+     "en": "Large bowl",
+     "ar": "طبق كبير",
+     "grams": 270
+    }
+   ],
+   "note": "green wheat counted as cooked bulgur, as the dish table does: USDA has no freekeh"
+  },
+  {
+   "id": "pasta_ww",
+   "nameEn": "Whole-wheat pasta",
+   "nameAr": "مكرونة قمح كامل",
+   "aliases": [
+    "whole wheat pasta",
+    "whole-wheat pasta",
+    "wholemeal pasta",
+    "brown pasta",
+    "macarona asmar",
+    "makarona bor",
+    "مكرونة قمح كامل",
+    "مكرونه قمح كامل",
+    "مكرونة بر",
+    "مكرونة سمرا",
+    "مكرونه اسمر"
+   ],
+   "category": "grainsAndBreads",
+   "kind": "side",
+   "fdcId": 168910,
+   "usdaName": "Pasta, whole-wheat, cooked",
+   "servingG": 180,
+   "allergens": [
+    "gluten"
+   ],
+   "portions": [
+    {
+     "en": "Small bowl",
+     "ar": "طبق صغير",
+     "grams": 110
+    },
+    {
+     "en": "Medium bowl",
+     "ar": "طبق وسط",
+     "grams": 180
+    },
+    {
+     "en": "Large bowl",
+     "ar": "طبق كبير",
+     "grams": 270
+    }
+   ]
+  },
+  {
+   "id": "potato_boiled",
+   "nameEn": "Boiled or baked potato",
+   "nameAr": "بطاطس مسلوقة أو بالفرن",
+   "aliases": [
+    "boiled potato",
+    "baked potato",
+    "boiled potatoes",
+    "baked potatoes",
+    "potato",
+    "plain potato",
+    "batates masloo2a",
+    "batates bel forn",
+    "بطاطس مسلوقة",
+    "بطاطس مسلوقه",
+    "بطاطس بالفرن",
+    "بطاطس سادة"
+   ],
+   "category": "grainsAndBreads",
+   "kind": "side",
+   "fdcId": 170440,
+   "usdaName": "Potatoes, boiled, cooked without skin, flesh, without salt",
+   "servingG": 170,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "1 small",
+     "ar": "حبة صغيرة",
+     "grams": 100
+    },
+    {
+     "en": "1 medium",
+     "ar": "حبة وسط",
+     "grams": 170
+    },
+    {
+     "en": "1 large",
+     "ar": "حبة كبيرة",
+     "grams": 300
+    }
+   ],
+   "note": "boiled figure; a baked potato is about 8 percent higher in energy"
+  },
+  {
+   "id": "cucumber",
+   "nameEn": "Cucumber",
+   "nameAr": "خيار",
+   "aliases": [
+    "cucumber",
+    "cucumbers",
+    "khiar",
+    "khyar",
+    "خيار",
+    "خيارة",
+    "خيار طازج"
+   ],
+   "category": "vegetablesAndSalads",
+   "kind": "salad",
+   "fdcId": 168409,
+   "usdaName": "Cucumber, with peel, raw",
+   "servingG": 120,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Half",
+     "ar": "نص خيارة",
+     "grams": 60
+    },
+    {
+     "en": "1 cucumber",
+     "ar": "خيارة",
+     "grams": 120
+    },
+    {
+     "en": "2 cucumbers",
+     "ar": "خيارتين",
+     "grams": 240
+    }
+   ]
+  },
+  {
+   "id": "tomato",
+   "nameEn": "Tomato",
+   "nameAr": "طماطم",
+   "aliases": [
+    "tomato",
+    "tomatoes",
+    "tamatem",
+    "tomatom",
+    "طماطم",
+    "طماطمة",
+    "بندورة",
+    "طماطم طازجة"
+   ],
+   "category": "vegetablesAndSalads",
+   "kind": "salad",
+   "fdcId": 170457,
+   "usdaName": "Tomatoes, red, ripe, raw",
+   "servingG": 120,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Half",
+     "ar": "نص طماطمة",
+     "grams": 60
+    },
+    {
+     "en": "1 tomato",
+     "ar": "طماطمة",
+     "grams": 120
+    },
+    {
+     "en": "2 tomatoes",
+     "ar": "طماطمتين",
+     "grams": 240
+    }
+   ]
+  },
+  {
+   "id": "gargeer",
+   "nameEn": "Rocket (gargeer)",
+   "nameAr": "جرجير",
+   "aliases": [
+    "gargeer",
+    "gargir",
+    "jarjeer",
+    "jirjir",
+    "rocket",
+    "arugula",
+    "rocket leaves",
+    "جرجير",
+    "جرجير أخضر",
+    "جرجير اخضر"
+   ],
+   "category": "vegetablesAndSalads",
+   "kind": "salad",
+   "fdcId": 169387,
+   "usdaName": "Arugula, raw",
+   "servingG": 40,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Small handful",
+     "ar": "حفنة صغيرة",
+     "grams": 20
+    },
+    {
+     "en": "Handful",
+     "ar": "حفنة",
+     "grams": 40
+    },
+    {
+     "en": "Two handfuls",
+     "ar": "حفنتين",
+     "grams": 80
+    }
+   ]
+  },
+  {
+   "id": "broccoli_steamed",
+   "nameEn": "Steamed broccoli",
+   "nameAr": "بروكلي مسلوق",
+   "aliases": [
+    "steamed broccoli",
+    "boiled broccoli",
+    "broccoli",
+    "brokoli",
+    "broccoly",
+    "بروكلي",
+    "بروكلى",
+    "بروكلي مسلوق",
+    "بروكلي على البخار"
+   ],
+   "category": "vegetablesAndSalads",
+   "kind": "side",
+   "fdcId": 169967,
+   "usdaName": "Broccoli, cooked, boiled, drained, without salt",
+   "servingG": 150,
+   "allergens": [],
+   "note": "boiled figure, used for steamed"
+  },
+  {
+   "id": "zucchini_cooked",
+   "nameEn": "Zucchini",
+   "nameAr": "كوسة",
+   "aliases": [
+    "zucchini",
+    "cooked zucchini",
+    "boiled zucchini",
+    "courgette",
+    "kousa",
+    "koosa",
+    "kosa",
+    "كوسة",
+    "كوسه",
+    "كوسة مسلوقة"
+   ],
+   "category": "vegetablesAndSalads",
+   "kind": "side",
+   "fdcId": 169292,
+   "usdaName": "Squash, summer, zucchini, includes skin, cooked, boiled, drained, without salt",
+   "servingG": 150,
+   "allergens": []
+  },
+  {
+   "id": "green_beans_plain",
+   "nameEn": "Green beans, steamed",
+   "nameAr": "فاصوليا خضراء مسلوقة",
+   "aliases": [
+    "steamed green beans",
+    "boiled green beans",
+    "plain green beans",
+    "green beans",
+    "string beans",
+    "fasolya sada",
+    "fasolia sada",
+    "فاصوليا سادة",
+    "فاصوليا خضراء سادة",
+    "فاصوليا مسلوقة",
+    "فاصوليا خضراء مسلوقه"
+   ],
+   "category": "vegetablesAndSalads",
+   "kind": "side",
+   "fdcId": 169141,
+   "usdaName": "Beans, snap, green, cooked, boiled, drained, without salt",
+   "servingG": 125,
+   "allergens": [],
+   "note": "boiled figure, used for steamed; the stewed dish is fasolia"
+  },
+  {
+   "id": "dates",
+   "nameEn": "Dates",
+   "nameAr": "تمر مجفف",
+   "aliases": [
+    "dates",
+    "date",
+    "dried dates",
+    "dried date",
+    "tamr gaff",
+    "tamr mogaffaf",
+    "تمرة"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 171726,
+   "usdaName": "Dates, deglet noor",
+   "servingG": 21,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "2 dates",
+     "ar": "تمرتين",
+     "grams": 14
+    },
+    {
+     "en": "3 dates",
+     "ar": "3 تمرات",
+     "grams": 21
+    },
+    {
+     "en": "5 dates",
+     "ar": "5 تمرات",
+     "grams": 35
+    }
+   ]
+  },
+  {
+   "id": "banana",
+   "nameEn": "Banana",
+   "nameAr": "موز",
+   "aliases": [
+    "banana",
+    "bananas",
+    "moz",
+    "mowz",
+    "موز",
+    "موزة"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 173944,
+   "usdaName": "Bananas, raw",
+   "servingG": 118,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Half a banana",
+     "ar": "نص موزة",
+     "grams": 60
+    },
+    {
+     "en": "1 banana",
+     "ar": "موزة",
+     "grams": 118
+    },
+    {
+     "en": "2 bananas",
+     "ar": "موزتين",
+     "grams": 236
+    }
+   ]
+  },
+  {
+   "id": "apple",
+   "nameEn": "Apple",
+   "nameAr": "تفاح",
+   "aliases": [
+    "apple",
+    "apples",
+    "tuffah",
+    "toffah",
+    "teffah",
+    "تفاح",
+    "تفاحة"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 171688,
+   "usdaName": "Apples, raw, with skin",
+   "servingG": 180,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Half an apple",
+     "ar": "نص تفاحة",
+     "grams": 90
+    },
+    {
+     "en": "1 apple",
+     "ar": "تفاحة",
+     "grams": 180
+    },
+    {
+     "en": "2 apples",
+     "ar": "تفاحتين",
+     "grams": 360
+    }
+   ]
+  },
+  {
+   "id": "orange",
+   "nameEn": "Orange",
+   "nameAr": "برتقال",
+   "aliases": [
+    "orange",
+    "oranges",
+    "bortoal",
+    "bortokal",
+    "bortoan",
+    "برتقال",
+    "برتقالة",
+    "برتقان"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 169097,
+   "usdaName": "Oranges, raw, all commercial varieties",
+   "servingG": 130,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Half an orange",
+     "ar": "نص برتقالة",
+     "grams": 65
+    },
+    {
+     "en": "1 orange",
+     "ar": "برتقالة",
+     "grams": 130
+    },
+    {
+     "en": "2 oranges",
+     "ar": "برتقالتين",
+     "grams": 260
+    }
+   ]
+  },
+  {
+   "id": "watermelon",
+   "nameEn": "Watermelon",
+   "nameAr": "بطيخ",
+   "aliases": [
+    "watermelon",
+    "batteekh",
+    "battikh",
+    "batikh",
+    "بطيخ",
+    "حتة بطيخ"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 167765,
+   "usdaName": "Watermelon, raw",
+   "servingG": 300,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Small slice",
+     "ar": "حتة صغيرة",
+     "grams": 150
+    },
+    {
+     "en": "1 slice",
+     "ar": "حتة بطيخ",
+     "grams": 300
+    },
+    {
+     "en": "Large slice",
+     "ar": "حتة كبيرة",
+     "grams": 400
+    }
+   ]
+  },
+  {
+   "id": "strawberries",
+   "nameEn": "Strawberries",
+   "nameAr": "فراولة",
+   "aliases": [
+    "strawberries",
+    "strawberry",
+    "farawla",
+    "frawla",
+    "فراولة",
+    "فراوله"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 167762,
+   "usdaName": "Strawberries, raw",
+   "servingG": 150,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Half a cup",
+     "ar": "نص كوباية",
+     "grams": 75
+    },
+    {
+     "en": "1 cup",
+     "ar": "كوباية",
+     "grams": 150
+    },
+    {
+     "en": "2 cups",
+     "ar": "كوبايتين",
+     "grams": 300
+    }
+   ]
+  },
+  {
+   "id": "mango",
+   "nameEn": "Mango",
+   "nameAr": "مانجو",
+   "aliases": [
+    "mango",
+    "mangoes",
+    "manga",
+    "mangah",
+    "مانجو",
+    "مانجا",
+    "مانجة",
+    "منجة"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 169910,
+   "usdaName": "Mangos, raw",
+   "servingG": 165,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Half a cup",
+     "ar": "نص كوباية",
+     "grams": 80
+    },
+    {
+     "en": "1 cup",
+     "ar": "كوباية",
+     "grams": 165
+    },
+    {
+     "en": "1 whole mango",
+     "ar": "مانجة كاملة",
+     "grams": 336
+    }
+   ]
+  },
+  {
+   "id": "grapes",
+   "nameEn": "Grapes",
+   "nameAr": "عنب",
+   "aliases": [
+    "grapes",
+    "grape",
+    "red grapes",
+    "green grapes",
+    "enab",
+    "عنب",
+    "عنب أحمر",
+    "عنب اخضر"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 174683,
+   "usdaName": "Grapes, red or green (European type, such as Thompson seedless), raw",
+   "servingG": 150,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Small bunch",
+     "ar": "عنقود صغير",
+     "grams": 75
+    },
+    {
+     "en": "1 cup",
+     "ar": "كوباية",
+     "grams": 150
+    },
+    {
+     "en": "2 cups",
+     "ar": "كوبايتين",
+     "grams": 300
+    }
+   ]
+  },
+  {
+   "id": "guava",
+   "nameEn": "Guava",
+   "nameAr": "جوافة",
+   "aliases": [
+    "guava",
+    "guavas",
+    "gawafa",
+    "gawafah",
+    "guafa",
+    "جوافة",
+    "جوافه"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 173044,
+   "usdaName": "Guavas, common, raw",
+   "servingG": 140,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Half a guava",
+     "ar": "نص جوافة",
+     "grams": 70
+    },
+    {
+     "en": "1 guava",
+     "ar": "جوافة",
+     "grams": 140
+    },
+    {
+     "en": "2 guavas",
+     "ar": "جوافتين",
+     "grams": 280
+    }
+   ]
+  },
+  {
+   "id": "almonds",
+   "nameEn": "Almonds",
+   "nameAr": "لوز",
+   "aliases": [
+    "almonds",
+    "almond",
+    "raw almonds",
+    "looz",
+    "loz",
+    "لوز",
+    "لوز نيئ",
+    "لوز ني"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 170567,
+   "usdaName": "Nuts, almonds",
+   "servingG": 28,
+   "allergens": [
+    "tree_nuts"
+   ],
+   "portions": [
+    {
+     "en": "Small handful",
+     "ar": "حفنة صغيرة",
+     "grams": 14
+    },
+    {
+     "en": "Handful",
+     "ar": "حفنة",
+     "grams": 28
+    },
+    {
+     "en": "Two handfuls",
+     "ar": "حفنتين",
+     "grams": 56
+    }
+   ]
+  },
+  {
+   "id": "walnuts",
+   "nameEn": "Walnuts",
+   "nameAr": "عين جمل",
+   "aliases": [
+    "walnuts",
+    "walnut",
+    "3ein gamal",
+    "ein gamal",
+    "ain gamal",
+    "عين جمل",
+    "جوز عين جمل"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 170187,
+   "usdaName": "Nuts, walnuts, english",
+   "servingG": 28,
+   "allergens": [
+    "tree_nuts"
+   ],
+   "portions": [
+    {
+     "en": "Small handful",
+     "ar": "حفنة صغيرة",
+     "grams": 14
+    },
+    {
+     "en": "Handful",
+     "ar": "حفنة",
+     "grams": 28
+    },
+    {
+     "en": "Two handfuls",
+     "ar": "حفنتين",
+     "grams": 56
+    }
+   ]
+  },
+  {
+   "id": "peanuts",
+   "nameEn": "Peanuts",
+   "nameAr": "فول سوداني",
+   "aliases": [
+    "peanuts",
+    "peanut",
+    "roasted peanuts",
+    "soudani",
+    "sudani",
+    "foul sudani",
+    "fool sodani",
+    "فول سوداني",
+    "سوداني",
+    "سوداني محمص",
+    "فول سوداني محمص"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 173806,
+   "usdaName": "Peanuts, all types, dry-roasted, without salt",
+   "servingG": 28,
+   "allergens": [
+    "peanuts"
+   ],
+   "portions": [
+    {
+     "en": "Small handful",
+     "ar": "حفنة صغيرة",
+     "grams": 14
+    },
+    {
+     "en": "Handful",
+     "ar": "حفنة",
+     "grams": 28
+    },
+    {
+     "en": "Two handfuls",
+     "ar": "حفنتين",
+     "grams": 56
+    }
+   ]
+  },
+  {
+   "id": "peanut_butter",
+   "nameEn": "Natural peanut butter",
+   "nameAr": "زبدة فول سوداني طبيعية",
+   "aliases": [
+    "peanut butter",
+    "natural peanut butter",
+    "pb",
+    "zebdet foul sudani",
+    "zebda soudani",
+    "زبدة فول سوداني",
+    "زبده فول سوداني طبيعيه"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 172470,
+   "usdaName": "Peanut butter, smooth style, without salt",
+   "servingG": 32,
+   "allergens": [
+    "peanuts"
+   ],
+   "portions": [
+    {
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 16
+    },
+    {
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 32
+    },
+    {
+     "en": "3 tablespoons",
+     "ar": "3 معالق كبار",
+     "grams": 48
+    }
+   ]
+  },
+  {
+   "id": "chia_seeds",
+   "nameEn": "Chia seeds",
+   "nameAr": "بذور الشيا",
+   "aliases": [
+    "chia seeds",
+    "chia seed",
+    "chia",
+    "hab el chia",
+    "شيا",
+    "بذور الشيا",
+    "بذور شيا",
+    "حبوب الشيا",
+    "شيا سيدز"
+   ],
+   "category": "fruitsAndNuts",
+   "kind": null,
+   "fdcId": 170554,
+   "usdaName": "Seeds, chia seeds, dried",
+   "servingG": 12,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 6
+    },
+    {
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 12
+    },
+    {
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 24
+    }
+   ]
+  },
+  {
+   "id": "popcorn_air",
+   "nameEn": "Air-popped popcorn",
+   "nameAr": "فشار",
+   "aliases": [
+    "popcorn",
+    "air popped popcorn",
+    "air-popped popcorn",
+    "plain popcorn",
+    "fushar",
+    "fishar",
+    "فشار",
+    "فشار بدون زيت",
+    "فشار هواء"
+   ],
+   "category": "snacksAndDrinks",
+   "kind": null,
+   "fdcId": 167959,
+   "usdaName": "Snacks, popcorn, air-popped",
+   "servingG": 24,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "1 cup",
+     "ar": "كوباية",
+     "grams": 8
+    },
+    {
+     "en": "3 cups",
+     "ar": "3 كوبايات",
+     "grams": 24
+    },
+    {
+     "en": "6 cups",
+     "ar": "6 كوبايات",
+     "grams": 48
+    }
+   ]
+  },
+  {
+   "id": "rice_cakes",
+   "nameEn": "Rice cakes",
+   "nameAr": "رايس كيك",
+   "aliases": [
+    "rice cakes",
+    "rice cake",
+    "puffed rice cakes",
+    "brown rice cakes",
+    "rice cakes plain",
+    "رايس كيك",
+    "رايس كيكس",
+    "أقراص الأرز",
+    "اقراص رز"
+   ],
+   "category": "snacksAndDrinks",
+   "kind": null,
+   "fdcId": 170250,
+   "usdaName": "Snacks, rice cakes, brown rice, plain, unsalted",
+   "servingG": 18,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "1 cake",
+     "ar": "قرص",
+     "grams": 9
+    },
+    {
+     "en": "2 cakes",
+     "ar": "قرصين",
+     "grams": 18
+    },
+    {
+     "en": "3 cakes",
+     "ar": "3 أقراص",
+     "grams": 27
+    }
+   ]
+  },
+  {
+   "id": "dark_chocolate_70",
+   "nameEn": "Dark chocolate 70%",
+   "nameAr": "شوكولاتة داكنة 70%",
+   "aliases": [
+    "dark chocolate",
+    "dark chocolate 70",
+    "70 percent dark chocolate",
+    "dark choc",
+    "bitter chocolate",
+    "shokolata dark",
+    "shikolata dark",
+    "شوكولاتة داكنة",
+    "شوكولاته داكنه",
+    "شيكولاتة دارك",
+    "شوكولاتة دارك",
+    "شوكولاتة داكنة 70%"
+   ],
+   "category": "snacksAndDrinks",
+   "kind": null,
+   "fdcId": 170273,
+   "usdaName": "Chocolate, dark, 70-85% cacao solids",
+   "servingG": 20,
+   "allergens": [
+    "milk",
+    "soy"
+   ],
+   "portions": [
+    {
+     "en": "1 square",
+     "ar": "مربع",
+     "grams": 10
+    },
+    {
+     "en": "2 squares",
+     "ar": "مربعين",
+     "grams": 20
+    },
+    {
+     "en": "4 squares",
+     "ar": "4 مربعات",
+     "grams": 40
+    }
+   ],
+   "note": "soy lecithin and traces of milk are on most dark chocolate labels"
+  },
+  {
+   "id": "karkadeh_unsweetened",
+   "nameEn": "Unsweetened karkadeh",
+   "nameAr": "كركديه سادة",
+   "aliases": [
+    "unsweetened karkadeh",
+    "karkadeh without sugar",
+    "karkadeh sada",
+    "karkade sada",
+    "hibiscus tea",
+    "unsweetened hibiscus",
+    "كركديه سادة",
+    "كركديه بدون سكر",
+    "كركدية سادة",
+    "كركدية بدون سكر"
+   ],
+   "category": "snacksAndDrinks",
+   "kind": "drink",
+   "fdcId": 171946,
+   "usdaName": "Beverages, tea, hibiscus, brewed",
+   "servingG": 240,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "grams": 150
+    },
+    {
+     "en": "1 glass",
+     "ar": "كوباية",
+     "grams": 240
+    },
+    {
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "grams": 360
+    }
+   ],
+   "note": "USDA records brewed hibiscus at 0 kcal"
+  },
+  {
+   "id": "turkish_coffee_sada",
+   "nameEn": "Turkish coffee, no sugar",
+   "nameAr": "قهوة تركي سادة",
+   "aliases": [
+    "turkish coffee no sugar",
+    "turkish coffee sada",
+    "turkish coffee unsweetened",
+    "plain turkish coffee",
+    "ahwa sada",
+    "2ahwa sada",
+    "قهوة سادة",
+    "قهوه سادة",
+    "قهوة تركي سادة",
+    "قهوة تركية سادة",
+    "قهوة بدون سكر"
+   ],
+   "category": "snacksAndDrinks",
+   "kind": "drink",
+   "fdcId": 171891,
+   "usdaName": "Beverages, coffee, brewed, espresso, restaurant-prepared",
+   "servingG": 60,
+   "allergens": [],
+   "portions": [
+    {
+     "en": "Half a cup",
+     "ar": "نص فنجان",
+     "grams": 30
+    },
+    {
+     "en": "1 cup",
+     "ar": "فنجان",
+     "grams": 60
+    },
+    {
+     "en": "2 cups",
+     "ar": "فنجانين",
+     "grams": 120
+    }
+   ],
+   "note": "espresso is the closest USDA entry to a strong Turkish brew"
+  },
+  {
+   "id": "egg_whole",
+   "nameEn": "Whole egg, raw",
+   "nameAr": "بيضة",
+   "aliases": [
+    "egg",
+    "eggs raw",
+    "raw egg",
+    "whole egg",
+    "beid",
+    "bayda",
+    "بيض",
+    "بيضه"
+   ],
+   "category": "proteins",
+   "fdcId": 171287,
+   "usdaName": "Egg, whole, raw, fresh",
+   "servingG": 50,
+   "allergens": [
+    "eggs"
+   ],
+   "note": "as it goes into a recipe, one large egg is 50 g"
+  },
+  {
+   "id": "chicken_breast_raw",
+   "nameEn": "Chicken breast, raw",
+   "nameAr": "صدر فراخ نيّ",
+   "aliases": [
+    "raw chicken breast",
+    "chicken breast raw",
+    "sadr frakh nei",
+    "صدر فراخ نيء",
+    "صدور فراخ نية"
+   ],
+   "category": "proteins",
+   "fdcId": 171077,
+   "usdaName": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+   "servingG": 150,
+   "allergens": [],
+   "note": "raw weight, before cooking"
+  },
+  {
+   "id": "beef_mince_lean",
+   "nameEn": "Lean minced beef, raw",
+   "nameAr": "لحمة مفرومة قليلة الدهن",
+   "aliases": [
+    "lean mince",
+    "minced beef",
+    "ground beef 90",
+    "lahma mafrouma",
+    "لحمة مفرومة",
+    "لحمه مفرومه",
+    "كفتة نية"
+   ],
+   "category": "proteins",
+   "fdcId": 174030,
+   "usdaName": "Beef, ground, 90% lean meat / 10% fat, raw",
+   "servingG": 120,
+   "allergens": [],
+   "note": "raw weight, 10 percent fat"
+  },
+  {
+   "id": "beef_steak_raw",
+   "nameEn": "Beef steak, raw",
+   "nameAr": "ستيك لحمة نيّ",
+   "aliases": [
+    "raw steak",
+    "raw sirloin",
+    "beef steak raw",
+    "ستيك نيء",
+    "لحمة ستيك"
+   ],
+   "category": "proteins",
+   "fdcId": 169551,
+   "usdaName": "Beef, top sirloin, steak, separable lean and fat, trimmed to 1/8\" fat, select, raw",
+   "servingG": 150,
+   "allergens": [],
+   "note": "top sirloin, lean and fat, raw weight"
+  },
+  {
+   "id": "chicken_liver_raw",
+   "nameEn": "Chicken liver, raw",
+   "nameAr": "كبدة فراخ نيّة",
+   "aliases": [
+    "raw chicken liver",
+    "chicken livers",
+    "kebda frakh",
+    "كبدة فراخ",
+    "كبده فراخ"
+   ],
+   "category": "proteins",
+   "fdcId": 171060,
+   "usdaName": "Chicken, liver, all classes, raw",
+   "servingG": 125,
+   "allergens": [],
+   "note": "raw weight; very high in vitamin A"
+  },
+  {
+   "id": "shrimp_raw",
+   "nameEn": "Shrimp, raw",
+   "nameAr": "جمبري نيّ",
+   "aliases": [
+    "raw shrimp",
+    "prawns raw",
+    "gambari nei",
+    "جمبري نيء"
+   ],
+   "category": "proteins",
+   "fdcId": 174210,
+   "usdaName": "Crustaceans, shrimp, mixed species, raw",
+   "servingG": 150,
+   "allergens": [
+    "crustaceans"
+   ],
+   "note": "raw peeled weight"
+  },
+  {
+   "id": "chicken_wings_raw",
+   "nameEn": "Chicken wings, raw",
+   "nameAr": "أجنحة فراخ",
+   "aliases": [
+    "chicken wings",
+    "raw wings",
+    "agnehet frakh",
+    "اجنحة فراخ",
+    "أجنحة دجاج"
+   ],
+   "category": "proteins",
+   "fdcId": 172390,
+   "usdaName": "Chicken, broilers or fryers, wing, meat and skin, raw",
+   "servingG": 150,
+   "allergens": [],
+   "note": "edible meat and skin, raw; a kilo with bone is about 600 g edible"
+  },
+  {
+   "id": "chicken_whole_raw",
+   "nameEn": "Chicken, meat and skin, raw",
+   "nameAr": "فرخة بالجلد نيّة",
+   "aliases": [
+    "whole chicken raw",
+    "chicken with skin raw",
+    "frakha",
+    "فرخة",
+    "فراخ بالجلد"
+   ],
+   "category": "proteins",
+   "fdcId": 171447,
+   "usdaName": "Chicken, broilers or fryers, meat and skin, raw",
+   "servingG": 200,
+   "allergens": [],
+   "note": "edible meat and skin, raw; the bones of a whole bird are not counted"
+  },
+  {
+   "id": "tilapia_raw",
+   "nameEn": "Tilapia fillet, raw",
+   "nameAr": "فيليه بلطي نيّ",
+   "aliases": [
+    "tilapia",
+    "tilapia fillet",
+    "raw tilapia",
+    "belty fillet",
+    "فيليه بلطي",
+    "بلطي فيليه"
+   ],
+   "category": "proteins",
+   "fdcId": 175176,
+   "usdaName": "Fish, tilapia, raw",
+   "servingG": 150,
+   "allergens": [
+    "fish"
+   ],
+   "note": "raw fillet weight"
+  },
+  {
+   "id": "chickpeas_cooked",
+   "nameEn": "Chickpeas, boiled",
+   "nameAr": "حمص مسلوق",
+   "aliases": [
+    "boiled chickpeas",
+    "cooked chickpeas",
+    "hummus habb",
+    "حمص حب",
+    "حمص مسلوق"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 173757,
+   "usdaName": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+   "servingG": 120,
+   "allergens": [],
+   "note": "drained, boiled weight"
+  },
+  {
+   "id": "lentils_dry",
+   "nameEn": "Lentils, dry",
+   "nameAr": "عدس ناشف",
+   "aliases": [
+    "dry lentils",
+    "lentils raw",
+    "brown lentils",
+    "ads",
+    "عدس"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 172420,
+   "usdaName": "Lentils, raw",
+   "servingG": 60,
+   "allergens": [],
+   "note": "dry weight before cooking"
+  },
+  {
+   "id": "butter",
+   "nameEn": "Butter",
+   "nameAr": "زبدة",
+   "aliases": [
+    "butter",
+    "salted butter",
+    "zebda",
+    "زبده",
+    "زبدة"
+   ],
+   "category": "dairyAndCheese",
+   "fdcId": 173410,
+   "usdaName": "Butter, salted",
+   "servingG": 10,
+   "allergens": [
+    "milk"
+   ],
+   "note": "salted butter; a smear is about 5 g"
+  },
+  {
+   "id": "milk_half_fat",
+   "nameEn": "Half-fat milk",
+   "nameAr": "لبن نص دسم",
+   "aliases": [
+    "half fat milk",
+    "semi skimmed milk",
+    "2 percent milk",
+    "laban nos dasam",
+    "لبن نصف دسم",
+    "حليب نص دسم"
+   ],
+   "category": "dairyAndCheese",
+   "fdcId": 170870,
+   "usdaName": "Milk, reduced fat, fluid, 2% milkfat, with added nonfat milk solids",
+   "servingG": 240,
+   "allergens": [
+    "milk"
+   ],
+   "note": "2 percent milk"
+  },
+  {
+   "id": "olive_oil",
+   "nameEn": "Olive oil",
+   "nameAr": "زيت زيتون",
+   "aliases": [
+    "olive oil",
+    "extra virgin olive oil",
+    "zeit zeitoun",
+    "زيت زيتون"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 171413,
+   "usdaName": "Oil, olive, salad or cooking",
+   "servingG": 14,
+   "allergens": [],
+   "note": "one tablespoon is about 14 g"
+  },
+  {
+   "id": "honey",
+   "nameEn": "Honey",
+   "nameAr": "عسل نحل",
+   "aliases": [
+    "honey",
+    "bee honey",
+    "asal nahl",
+    "asal",
+    "عسل",
+    "عسل أبيض"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 169640,
+   "usdaName": "Honey",
+   "servingG": 21,
+   "allergens": [],
+   "note": "one tablespoon is about 21 g"
+  },
+  {
+   "id": "strawberry_jam",
+   "nameEn": "Strawberry jam",
+   "nameAr": "مربى فراولة",
+   "aliases": [
+    "strawberry jam",
+    "strawberry spread",
+    "morabba farawla",
+    "مربى فراولة",
+    "مربى فراوله"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 169641,
+   "usdaName": "Jams and preserves",
+   "servingG": 20,
+   "allergens": [],
+   "note": "regular sweetened jam; one tablespoon is about 20 g"
+  },
+  {
+   "id": "cocoa_powder",
+   "nameEn": "Cocoa powder, unsweetened",
+   "nameAr": "كاكاو خام",
+   "aliases": [
+    "cocoa",
+    "raw cocoa",
+    "unsweetened cocoa",
+    "cocoa powder",
+    "kakao",
+    "كاكاو",
+    "كاكاو بودر"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 169593,
+   "usdaName": "Cocoa, dry powder, unsweetened",
+   "servingG": 5,
+   "allergens": [],
+   "note": "one tablespoon is about 5 g"
+  },
+  {
+   "id": "flour_white",
+   "nameEn": "White flour",
+   "nameAr": "دقيق أبيض",
+   "aliases": [
+    "white flour",
+    "plain flour",
+    "all purpose flour",
+    "daee abyad",
+    "دقيق",
+    "دقيق أبيض"
+   ],
+   "category": "grainsAndBreads",
+   "fdcId": 168894,
+   "usdaName": "Wheat flour, white, all-purpose, enriched, bleached",
+   "servingG": 30,
+   "allergens": [
+    "gluten"
+   ],
+   "note": "a cup is about 125 g"
+  },
+  {
+   "id": "pasta_dry",
+   "nameEn": "Pasta, dry",
+   "nameAr": "مكرونة ناشفة",
+   "aliases": [
+    "dry pasta",
+    "uncooked pasta",
+    "raw pasta",
+    "makarona nashfa",
+    "مكرونة قبل السلق",
+    "مكرونه ناشفه"
+   ],
+   "category": "grainsAndBreads",
+   "fdcId": 169736,
+   "usdaName": "Pasta, dry, enriched",
+   "servingG": 60,
+   "allergens": [
+    "gluten"
+   ],
+   "note": "dry weight before boiling; it roughly doubles when cooked"
+  },
+  {
+   "id": "potato_raw",
+   "nameEn": "Potato, raw",
+   "nameAr": "بطاطس نيّة",
+   "aliases": [
+    "raw potato",
+    "potatoes raw",
+    "batates nei",
+    "بطاطس",
+    "بطاطس نيئة"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 170026,
+   "usdaName": "Potatoes, flesh and skin, raw",
+   "servingG": 170,
+   "allergens": [],
+   "note": "raw weight, one medium potato is about 170 g"
+  },
+  {
+   "id": "digestive_biscuit",
+   "nameEn": "Digestive biscuit",
+   "nameAr": "بسكوت دايجستف",
+   "aliases": [
+    "digestive biscuit",
+    "digestive",
+    "graham cracker",
+    "biscuit digestive",
+    "بسكوت دايجستف",
+    "بسكوت دايجيستيف"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 174957,
+   "usdaName": "Cookies, graham crackers, plain or honey",
+   "servingG": 15,
+   "allergens": [
+    "gluten",
+    "milk"
+   ],
+   "note": "nearest USDA entry (graham cracker); one biscuit is about 15 g"
+  },
+  {
+   "id": "onion_raw",
+   "nameEn": "Onion",
+   "nameAr": "بصل",
+   "aliases": [
+    "onion",
+    "onions",
+    "yellow onion",
+    "basal",
+    "بصل",
+    "بصلة"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 170000,
+   "usdaName": "Onions, raw",
+   "servingG": 110,
+   "allergens": [],
+   "note": "one medium onion is about 110 g"
+  },
+  {
+   "id": "bell_pepper_green",
+   "nameEn": "Green pepper",
+   "nameAr": "فلفل أخضر",
+   "aliases": [
+    "green pepper",
+    "green bell pepper",
+    "felfel akhdar",
+    "فلفل أخضر",
+    "فلفل رومي أخضر"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 170427,
+   "usdaName": "Peppers, sweet, green, raw",
+   "servingG": 120,
+   "allergens": [],
+   "note": "one medium pepper is about 120 g"
+  },
+  {
+   "id": "bell_pepper_red",
+   "nameEn": "Red pepper",
+   "nameAr": "فلفل أحمر",
+   "aliases": [
+    "red pepper",
+    "red bell pepper",
+    "felfel ahmar",
+    "فلفل أحمر",
+    "فلفل رومي أحمر"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 170108,
+   "usdaName": "Peppers, sweet, red, raw",
+   "servingG": 120,
+   "allergens": [],
+   "note": "one medium pepper is about 120 g"
+  },
+  {
+   "id": "lettuce",
+   "nameEn": "Lettuce",
+   "nameAr": "خس",
+   "aliases": [
+    "lettuce",
+    "romaine lettuce",
+    "cos lettuce",
+    "khass",
+    "خس",
+    "خس رومين"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 169247,
+   "usdaName": "Lettuce, cos or romaine, raw",
+   "servingG": 50,
+   "allergens": [],
+   "note": "two or three leaves are about 50 g"
+  },
+  {
+   "id": "carrot_raw",
+   "nameEn": "Carrot, raw",
+   "nameAr": "جزر",
+   "aliases": [
+    "carrot",
+    "carrots",
+    "raw carrot",
+    "gazar",
+    "جزر",
+    "جزر نيء"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 170393,
+   "usdaName": "Carrots, raw",
+   "servingG": 80,
+   "allergens": [],
+   "note": "one medium carrot is about 60 g"
+  },
+  {
+   "id": "zucchini_raw",
+   "nameEn": "Zucchini, raw",
+   "nameAr": "كوسة نيّة",
+   "aliases": [
+    "raw zucchini"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 169291,
+   "usdaName": "Squash, summer, zucchini, includes skin, raw",
+   "servingG": 120,
+   "allergens": [],
+   "note": "one small zucchini is about 120 g"
+  },
+  {
+   "id": "spinach_raw",
+   "nameEn": "Spinach, raw",
+   "nameAr": "سبانخ طازجة",
+   "aliases": [
+    "spinach",
+    "fresh spinach",
+    "raw spinach",
+    "sabanekh tazga",
+    "سبانخ طازة"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 168462,
+   "usdaName": "Spinach, raw",
+   "servingG": 60,
+   "allergens": [],
+   "note": "fresh leaves, raw weight"
+  },
+  {
+   "id": "avocado",
+   "nameEn": "Avocado",
+   "nameAr": "أفوكادو",
+   "aliases": [
+    "avocado",
+    "avocados",
+    "afokado",
+    "افوكادو",
+    "أفوكادو"
+   ],
+   "category": "fruitsAndNuts",
+   "fdcId": 171705,
+   "usdaName": "Avocados, raw, all commercial varieties",
+   "servingG": 70,
+   "allergens": [],
+   "note": "half a medium avocado is about 70 g flesh"
+  },
+  {
+   "id": "tomato_sauce",
+   "nameEn": "Tomato sauce",
+   "nameAr": "صلصة طماطم",
+   "aliases": [
+    "tomato sauce",
+    "tomato puree",
+    "tomato salsa",
+    "salsa",
+    "salsit tamatem",
+    "صلصة طماطم",
+    "صلصه طماطم"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 170054,
+   "usdaName": "Tomato products, canned, sauce",
+   "servingG": 30,
+   "allergens": [],
+   "note": "canned; one tablespoon is about 16 g"
+  },
+  {
+   "id": "olives_green",
+   "nameEn": "Green olives",
+   "nameAr": "زيتون أخضر",
+   "aliases": [
+    "green olives",
+    "olives",
+    "pickled olives",
+    "zaytoun akhdar",
+    "زيتون",
+    "زيتون أخضر"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 169096,
+   "usdaName": "Olives, pickled, canned or bottled, green",
+   "servingG": 30,
+   "allergens": [],
+   "note": "pickled; about 8 olives are 30 g"
+  },
+  {
+   "id": "veg_mix_frozen",
+   "nameEn": "Mixed vegetables",
+   "nameAr": "خضار مشكلة",
+   "aliases": [
+    "mixed vegetables",
+    "vegetable mix",
+    "frozen mixed vegetables",
+    "khodar mashakel",
+    "خضار مشكلة"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 170471,
+   "usdaName": "Vegetables, mixed, frozen, unprepared",
+   "servingG": 150,
+   "allergens": [],
+   "note": "stands for a tray of mixed roasting vegetables; raw weight"
+  },
+  {
+   "id": "tahini_paste",
+   "nameEn": "Tahini paste",
+   "nameAr": "طحينة خام",
+   "aliases": [
+    "tahini paste",
+    "raw tahini",
+    "sesame paste",
+    "tehina paste",
+    "طحينة خام",
+    "معجون سمسم"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 170189,
+   "usdaName": "Seeds, sesame butter, tahini, from roasted and toasted kernels",
+   "servingG": 15,
+   "allergens": [
+    "sesame"
+   ],
+   "note": "one tablespoon is about 15 g"
+  },
+  {
+   "id": "sesame_seeds",
+   "nameEn": "Sesame seeds",
+   "nameAr": "سمسم",
+   "aliases": [
+    "sesame",
+    "sesame seeds",
+    "simsim",
+    "سمسم",
+    "سمسم محمص"
+   ],
+   "category": "fruitsAndNuts",
+   "fdcId": 170150,
+   "usdaName": "Seeds, sesame seeds, whole, dried",
+   "servingG": 5,
+   "allergens": [
+    "sesame"
+   ],
+   "note": "a teaspoon is about 3 g"
+  },
+  {
+   "id": "coconut_shredded",
+   "nameEn": "Shredded coconut",
+   "nameAr": "جوز هند مبشور",
+   "aliases": [
+    "shredded coconut",
+    "desiccated coconut",
+    "coconut flakes",
+    "gouz hend",
+    "جوز هند",
+    "جوز الهند مبشور"
+   ],
+   "category": "fruitsAndNuts",
+   "fdcId": 170170,
+   "usdaName": "Nuts, coconut meat, dried (desiccated), not sweetened",
+   "servingG": 10,
+   "allergens": [
+    "coconut"
+   ],
+   "note": "unsweetened; a teaspoon is about 2 g"
+  },
+  {
+   "id": "raisins",
+   "nameEn": "Raisins",
+   "nameAr": "زبيب",
+   "aliases": [
+    "raisins",
+    "dried grapes",
+    "zebib",
+    "زبيب",
+    "زبيب بلدي"
+   ],
+   "category": "fruitsAndNuts",
+   "fdcId": 168165,
+   "usdaName": "Raisins, dark, seedless",
+   "servingG": 20,
+   "allergens": [
+    "sulphites"
+   ],
+   "note": "dried fruit is usually sulphited in Egypt"
+  },
+  {
+   "id": "protein_crisps",
+   "nameEn": "Protein crisps",
+   "nameAr": "بروتين بافس",
+   "aliases": [
+    "protein puffs",
+    "protein crisps",
+    "whey crisps",
+    "protein pufs",
+    "بروتين بافس",
+    "بروتين كريسبس"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 173167,
+   "usdaName": "Beverages, ABBOTT, EAS whey protein powder",
+   "servingG": 20,
+   "allergens": [
+    "milk",
+    "soy"
+   ],
+   "note": "stands in for a branded whey crisp; the nearest USDA entry is whey protein powder"
+  },
+  {
+   "id": "stock_cube",
+   "nameEn": "Stock cube",
+   "nameAr": "مكعب مرقة",
+   "aliases": [
+    "stock cube",
+    "bouillon cube",
+    "chicken stock cube",
+    "knorr cube",
+    "مكعب مرقة",
+    "مرقة كنور"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 171562,
+   "usdaName": "Soup, chicken broth or bouillon, dry",
+   "servingG": 10,
+   "allergens": [
+    "celery",
+    "gluten"
+   ],
+   "note": "one cube or sachet is about 10 g"
+  },
+  {
+   "id": "spices_and_seasoning",
+   "nameEn": "Salt, pepper and dry spices",
+   "nameAr": "ملح وتوابل",
+   "aliases": [
+    "salt and spices",
+    "spices",
+    "pinch of spices",
+    "seasoning",
+    "cumin paprika pepper",
+    "ملح وفلفل وتوابل",
+    "توابل"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 170931,
+   "usdaName": "Spices, pepper, black",
+   "servingG": 2,
+   "allergens": [],
+   "note": "stands for a pinch of salt, pepper, cumin, paprika, cinnamon, herbs, vanilla, stevia, lemon or garlic: each is a gram or two, under 20 kcal a serving in every recipe"
+  },
+  {
+   "id": "curry_powder",
+   "nameEn": "Curry powder",
+   "nameAr": "كاري",
+   "aliases": [
+    "curry powder",
+    "curry",
+    "kari",
+    "كاري",
+    "كاري بودر"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 170924,
+   "usdaName": "Spices, curry powder",
+   "servingG": 3,
+   "allergens": [
+    "celery",
+    "mustard"
+   ],
+   "note": "commercial blends carry celery and mustard"
+  },
+  {
+   "id": "zaatar_mix",
+   "nameEn": "Za'atar",
+   "nameAr": "زعتر",
+   "aliases": [
+    "zaatar",
+    "za'atar",
+    "zatar",
+    "thyme sesame mix",
+    "زعتر",
+    "زعتر مخلوط"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 170938,
+   "usdaName": "Spices, thyme, dried",
+   "servingG": 3,
+   "allergens": [
+    "sesame"
+   ],
+   "note": "the Egyptian blend is thyme with sesame"
+  },
+  {
+   "id": "spice_blend_store",
+   "nameEn": "Shop-bought spice blend",
+   "nameAr": "بهارات جاهزة",
+   "aliases": [
+    "spice blend",
+    "shop spice mix",
+    "meat spice mix",
+    "potato spice mix",
+    "بهارات جاهزة",
+    "بهارات اللحمة"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 171329,
+   "usdaName": "Spices, paprika",
+   "servingG": 3,
+   "allergens": [
+    "celery",
+    "gluten",
+    "mustard"
+   ],
+   "note": "Egyptian packet blends are cut with wheat and often carry celery and mustard"
+  },
+  {
+   "id": "baking_powder",
+   "nameEn": "Baking powder",
+   "nameAr": "بيكنج باودر",
+   "aliases": [
+    "baking powder",
+    "baking soda powder",
+    "bekeng bawder",
+    "بيكنج باودر",
+    "بيكينج باودر"
+   ],
+   "category": "grainsAndBreads",
+   "fdcId": 172803,
+   "usdaName": "Leavening agents, baking powder, double-acting, sodium aluminum sulfate",
+   "servingG": 3,
+   "allergens": [
+    "gluten"
+   ],
+   "note": "the starch in it can be wheat, so gluten is listed"
+  },
+  {
+   "id": "salt",
+   "nameEn": "Table salt",
+   "nameAr": "ملح",
+   "aliases": [
+    "salt",
+    "table salt",
+    "milh",
+    "ملح",
+    "ملح طعام"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 173468,
+   "usdaName": "Salt, table",
+   "servingG": 6,
+   "allergens": [],
+   "note": "no energy; a teaspoon is about 6 g"
+  },
+  {
+   "id": "water",
+   "nameEn": "Water",
+   "nameAr": "مياه",
+   "aliases": [
+    "water",
+    "drinking water",
+    "tap water",
+    "mayya",
+    "مياه",
+    "ماء",
+    "مية"
+   ],
+   "category": "snacksAndDrinks",
+   "fdcId": 173647,
+   "usdaName": "Beverages, water, tap, drinking",
+   "servingG": 240,
+   "allergens": [],
+   "kind": "drink",
+   "note": "no energy"
+  },
+  {
+   "id": "lemon_juice",
+   "nameEn": "Lemon juice",
+   "nameAr": "عصير ليمون طازج",
+   "aliases": [
+    "lemon juice",
+    "fresh lemon juice",
+    "asir laymoon",
+    "عصير لمون",
+    "ليمون معصور"
+   ],
+   "category": "fruitsAndNuts",
+   "fdcId": 167747,
+   "usdaName": "Lemon juice, raw",
+   "servingG": 30,
+   "allergens": [],
+   "kind": "drink",
+   "note": "juice of one lemon is about 45 g"
+  }
+ ],
+ "households": {
+  "chicken_breast_grilled": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a breast",
+     "ar": "نص صدرة",
+     "grams": 86
+    },
+    {
+     "id": "M",
+     "en": "1 breast",
+     "ar": "صدرة",
+     "grams": 172
+    },
+    {
+     "id": "L",
+     "en": "1.5 breasts",
+     "ar": "صدرة ونص",
+     "grams": 258
+    }
+   ]
+  },
+  "steak_grilled": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small piece",
+     "ar": "حتة صغيرة",
+     "grams": 85
+    },
+    {
+     "id": "M",
+     "en": "Medium piece",
+     "ar": "حتة وسط",
+     "grams": 170
+    },
+    {
+     "id": "L",
+     "en": "Large piece",
+     "ar": "حتة كبيرة",
+     "grams": 255
+    }
+   ]
+  },
+  "greek_yoghurt": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a pot",
+     "ar": "نص علبة",
+     "grams": 100
+    },
+    {
+     "id": "M",
+     "en": "1 pot",
+     "ar": "علبة",
+     "grams": 200
+    },
+    {
+     "id": "L",
+     "en": "1.5 pots",
+     "ar": "علبة ونص",
+     "grams": 300
+    }
+   ]
+  },
+  "yoghurt_baladi": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a tub",
+     "ar": "نص علبة",
+     "grams": 113
+    },
+    {
+     "id": "M",
+     "en": "1 tub",
+     "ar": "علبة",
+     "grams": 227
+    },
+    {
+     "id": "L",
+     "en": "1.5 tubs",
+     "ar": "علبة ونص",
+     "grams": 340
+    }
+   ]
+  },
+  "mozzarella_light": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 slice",
+     "ar": "شريحة",
+     "grams": 28
+    },
+    {
+     "id": "M",
+     "en": "2 slices",
+     "ar": "شريحتين",
+     "grams": 57
+    },
+    {
+     "id": "L",
+     "en": "3 slices",
+     "ar": "3 شرايح",
+     "grams": 85
+    }
+   ]
+  },
+  "broccoli_steamed": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a cup",
+     "ar": "نص كوب",
+     "grams": 78
+    },
+    {
+     "id": "M",
+     "en": "1 cup",
+     "ar": "كوب",
+     "grams": 156
+    },
+    {
+     "id": "L",
+     "en": "2 cups",
+     "ar": "كوبين",
+     "grams": 312
+    }
+   ]
+  },
+  "zucchini_cooked": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a cup",
+     "ar": "نص كوب",
+     "grams": 90
+    },
+    {
+     "id": "M",
+     "en": "1 cup",
+     "ar": "كوب",
+     "grams": 180
+    },
+    {
+     "id": "L",
+     "en": "2 cups",
+     "ar": "كوبين",
+     "grams": 360
+    }
+   ]
+  },
+  "green_beans_plain": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a cup",
+     "ar": "نص كوب",
+     "grams": 63
+    },
+    {
+     "id": "M",
+     "en": "1 cup",
+     "ar": "كوب",
+     "grams": 125
+    },
+    {
+     "id": "L",
+     "en": "1.5 cups",
+     "ar": "كوب ونص",
+     "grams": 188
+    }
+   ]
+  },
+  "egg_whole": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 egg",
+     "ar": "بيضة",
+     "grams": 50
+    },
+    {
+     "id": "M",
+     "en": "2 eggs",
+     "ar": "بيضتين",
+     "grams": 100
+    },
+    {
+     "id": "L",
+     "en": "3 eggs",
+     "ar": "3 بيضات",
+     "grams": 150
+    }
+   ]
+  },
+  "chicken_breast_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a breast",
+     "ar": "نص صدرة",
+     "grams": 136
+    },
+    {
+     "id": "M",
+     "en": "1 breast",
+     "ar": "صدرة",
+     "grams": 272
+    },
+    {
+     "id": "L",
+     "en": "1.5 breasts",
+     "ar": "صدرة ونص",
+     "grams": 408
+    }
+   ]
+  },
+  "beef_mince_lean": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a patty",
+     "ar": "نص قرص كفتة",
+     "grams": 57
+    },
+    {
+     "id": "M",
+     "en": "1 patty",
+     "ar": "قرص كفتة",
+     "grams": 113
+    },
+    {
+     "id": "L",
+     "en": "2 patties",
+     "ar": "قرصين كفتة",
+     "grams": 226
+    }
+   ]
+  },
+  "beef_steak_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small piece",
+     "ar": "حتة صغيرة",
+     "grams": 113
+    },
+    {
+     "id": "M",
+     "en": "Medium piece",
+     "ar": "حتة وسط",
+     "grams": 170
+    },
+    {
+     "id": "L",
+     "en": "Large piece",
+     "ar": "حتة كبيرة",
+     "grams": 226
+    }
+   ]
+  },
+  "chicken_liver_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 livers",
+     "ar": "حتتين كبدة",
+     "grams": 88
+    },
+    {
+     "id": "M",
+     "en": "3 livers",
+     "ar": "3 حتت كبدة",
+     "grams": 132
+    },
+    {
+     "id": "L",
+     "en": "4 livers",
+     "ar": "4 حتت كبدة",
+     "grams": 176
+    }
+   ]
+  },
+  "shrimp_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "8 shrimp",
+     "ar": "8 جمبري",
+     "grams": 56
+    },
+    {
+     "id": "M",
+     "en": "16 shrimp",
+     "ar": "16 جمبري",
+     "grams": 112
+    },
+    {
+     "id": "L",
+     "en": "24 shrimp",
+     "ar": "24 جمبري",
+     "grams": 168
+    }
+   ]
+  },
+  "chicken_wings_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 wing",
+     "ar": "جناح",
+     "grams": 107
+    },
+    {
+     "id": "M",
+     "en": "2 wings",
+     "ar": "جناحين",
+     "grams": 214
+    },
+    {
+     "id": "L",
+     "en": "3 wings",
+     "ar": "3 أجنحة",
+     "grams": 321
+    }
+   ]
+  },
+  "chicken_whole_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Quarter chicken",
+     "ar": "ربع فرخة",
+     "grams": 230
+    },
+    {
+     "id": "M",
+     "en": "Half a chicken",
+     "ar": "نص فرخة",
+     "grams": 460
+    },
+    {
+     "id": "L",
+     "en": "Three quarters of a chicken",
+     "ar": "تلات أرباع فرخة",
+     "grams": 690
+    }
+   ]
+  },
+  "tilapia_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a fillet",
+     "ar": "نص فيليه",
+     "grams": 58
+    },
+    {
+     "id": "M",
+     "en": "1 fillet",
+     "ar": "فيليه",
+     "grams": 116
+    },
+    {
+     "id": "L",
+     "en": "2 fillets",
+     "ar": "فيليهين",
+     "grams": 232
+    }
+   ]
+  },
+  "chickpeas_cooked": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a cup",
+     "ar": "نص كوب",
+     "grams": 82
+    },
+    {
+     "id": "M",
+     "en": "1 cup",
+     "ar": "كوب",
+     "grams": 164
+    },
+    {
+     "id": "L",
+     "en": "1.5 cups",
+     "ar": "كوب ونص",
+     "grams": 246
+    }
+   ]
+  },
+  "lentils_dry": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 24
+    },
+    {
+     "id": "M",
+     "en": "Quarter cup",
+     "ar": "ربع كوب",
+     "grams": 48
+    },
+    {
+     "id": "L",
+     "en": "Half a cup",
+     "ar": "نص كوب",
+     "grams": 96
+    }
+   ]
+  },
+  "butter": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 pat",
+     "ar": "قطعة صغيرة",
+     "grams": 5
+    },
+    {
+     "id": "M",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 14
+    },
+    {
+     "id": "L",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 28
+    }
+   ]
+  },
+  "milk_half_fat": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a glass",
+     "ar": "نص كوباية",
+     "grams": 123
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "grams": 245
+    },
+    {
+     "id": "L",
+     "en": "1.5 glasses",
+     "ar": "كوباية ونص",
+     "grams": 368
+    }
+   ]
+  },
+  "olive_oil": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 5
+    },
+    {
+     "id": "M",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 14
+    },
+    {
+     "id": "L",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 27
+    }
+   ]
+  },
+  "honey": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 7
+    },
+    {
+     "id": "M",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 21
+    },
+    {
+     "id": "L",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 42
+    }
+   ]
+  },
+  "strawberry_jam": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 7
+    },
+    {
+     "id": "M",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 20
+    },
+    {
+     "id": "L",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 40
+    }
+   ]
+  },
+  "cocoa_powder": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 2
+    },
+    {
+     "id": "M",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 5
+    },
+    {
+     "id": "L",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 11
+    }
+   ]
+  },
+  "flour_white": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 16
+    },
+    {
+     "id": "M",
+     "en": "Quarter cup",
+     "ar": "ربع كوب",
+     "grams": 31
+    },
+    {
+     "id": "L",
+     "en": "Half a cup",
+     "ar": "نص كوب",
+     "grams": 63
+    }
+   ]
+  },
+  "pasta_dry": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Quarter cup",
+     "ar": "ربع كوب",
+     "grams": 31
+    },
+    {
+     "id": "M",
+     "en": "Half a cup",
+     "ar": "نص كوب",
+     "grams": 61
+    },
+    {
+     "id": "L",
+     "en": "Three quarters of a cup",
+     "ar": "تلات أرباع كوب",
+     "grams": 92
+    }
+   ]
+  },
+  "potato_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 small",
+     "ar": "حبة صغيرة",
+     "grams": 170
+    },
+    {
+     "id": "M",
+     "en": "1 medium",
+     "ar": "حبة وسط",
+     "grams": 213
+    },
+    {
+     "id": "L",
+     "en": "1 large",
+     "ar": "حبة كبيرة",
+     "grams": 369
+    }
+   ]
+  },
+  "digestive_biscuit": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 biscuit",
+     "ar": "بسكوتة",
+     "grams": 15
+    },
+    {
+     "id": "M",
+     "en": "2 biscuits",
+     "ar": "بسكوتتين",
+     "grams": 30
+    },
+    {
+     "id": "L",
+     "en": "4 biscuits",
+     "ar": "4 بسكوت",
+     "grams": 60
+    }
+   ]
+  },
+  "onion_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half an onion",
+     "ar": "نص بصلة",
+     "grams": 55
+    },
+    {
+     "id": "M",
+     "en": "1 medium onion",
+     "ar": "بصلة وسط",
+     "grams": 110
+    },
+    {
+     "id": "L",
+     "en": "1 large onion",
+     "ar": "بصلة كبيرة",
+     "grams": 150
+    }
+   ]
+  },
+  "bell_pepper_green": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a pepper",
+     "ar": "نص فلفلة",
+     "grams": 60
+    },
+    {
+     "id": "M",
+     "en": "1 medium",
+     "ar": "فلفلة وسط",
+     "grams": 119
+    },
+    {
+     "id": "L",
+     "en": "1 large",
+     "ar": "فلفلة كبيرة",
+     "grams": 164
+    }
+   ]
+  },
+  "bell_pepper_red": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a pepper",
+     "ar": "نص فلفلة",
+     "grams": 60
+    },
+    {
+     "id": "M",
+     "en": "1 medium",
+     "ar": "فلفلة وسط",
+     "grams": 119
+    },
+    {
+     "id": "L",
+     "en": "1 large",
+     "ar": "فلفلة كبيرة",
+     "grams": 164
+    }
+   ]
+  },
+  "lettuce": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 leaf",
+     "ar": "ورقة",
+     "grams": 28
+    },
+    {
+     "id": "M",
+     "en": "1 cup shredded",
+     "ar": "كوب",
+     "grams": 47
+    },
+    {
+     "id": "L",
+     "en": "2 cups shredded",
+     "ar": "كوبين",
+     "grams": 94
+    }
+   ]
+  },
+  "carrot_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a carrot",
+     "ar": "نص جزرة",
+     "grams": 30
+    },
+    {
+     "id": "M",
+     "en": "1 medium",
+     "ar": "جزرة وسط",
+     "grams": 61
+    },
+    {
+     "id": "L",
+     "en": "2 medium",
+     "ar": "جزرتين",
+     "grams": 122
+    }
+   ]
+  },
+  "zucchini_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 small",
+     "ar": "كوسة صغيرة",
+     "grams": 118
+    },
+    {
+     "id": "M",
+     "en": "1 medium",
+     "ar": "كوسة وسط",
+     "grams": 196
+    },
+    {
+     "id": "L",
+     "en": "1 large",
+     "ar": "كوسة كبيرة",
+     "grams": 323
+    }
+   ]
+  },
+  "spinach_raw": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 cup",
+     "ar": "كوب",
+     "grams": 30
+    },
+    {
+     "id": "M",
+     "en": "2 cups",
+     "ar": "كوبين",
+     "grams": 60
+    },
+    {
+     "id": "L",
+     "en": "4 cups",
+     "ar": "4 أكواب",
+     "grams": 120
+    }
+   ]
+  },
+  "avocado": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Quarter of an avocado",
+     "ar": "ربع أفوكادو",
+     "grams": 50
+    },
+    {
+     "id": "M",
+     "en": "Half an avocado",
+     "ar": "نص أفوكادو",
+     "grams": 100
+    },
+    {
+     "id": "L",
+     "en": "1 avocado",
+     "ar": "أفوكادو",
+     "grams": 201
+    }
+   ]
+  },
+  "tomato_sauce": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 31
+    },
+    {
+     "id": "M",
+     "en": "Quarter cup",
+     "ar": "ربع كوب",
+     "grams": 61
+    },
+    {
+     "id": "L",
+     "en": "Half a cup",
+     "ar": "نص كوب",
+     "grams": 123
+    }
+   ]
+  },
+  "olives_green": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "5 olives",
+     "ar": "5 حبات زيتون",
+     "grams": 14
+    },
+    {
+     "id": "M",
+     "en": "10 olives",
+     "ar": "10 حبات زيتون",
+     "grams": 27
+    },
+    {
+     "id": "L",
+     "en": "15 olives",
+     "ar": "15 حبة زيتون",
+     "grams": 41
+    }
+   ]
+  },
+  "veg_mix_frozen": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "A third of a pack",
+     "ar": "تلت كيس",
+     "grams": 95
+    },
+    {
+     "id": "M",
+     "en": "Half a pack",
+     "ar": "نص كيس",
+     "grams": 142
+    },
+    {
+     "id": "L",
+     "en": "Two thirds of a pack",
+     "ar": "تلتين كيس",
+     "grams": 189
+    }
+   ]
+  },
+  "tahini_paste": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 5
+    },
+    {
+     "id": "M",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 15
+    },
+    {
+     "id": "L",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 30
+    }
+   ]
+  },
+  "sesame_seeds": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 3
+    },
+    {
+     "id": "M",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 9
+    },
+    {
+     "id": "L",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 18
+    }
+   ]
+  },
+  "coconut_shredded": {
+   "source": "estimated: shredded coconut packs about 5 g to the tablespoon (USDA lists only 1 oz)",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 5
+    },
+    {
+     "id": "M",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "grams": 10
+    },
+    {
+     "id": "L",
+     "en": "Quarter cup",
+     "ar": "ربع كوب",
+     "grams": 20
+    }
+   ]
+  },
+  "raisins": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 mini box",
+     "ar": "علبة صغيرة",
+     "grams": 14
+    },
+    {
+     "id": "M",
+     "en": "Handful",
+     "ar": "حفنة",
+     "grams": 28
+    },
+    {
+     "id": "L",
+     "en": "1 small box",
+     "ar": "علبة وسط",
+     "grams": 43
+    }
+   ]
+  },
+  "protein_crisps": {
+   "source": "estimated: a handful of crisps is about 20 g (USDA lists only a scoop)",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small handful",
+     "ar": "حفنة صغيرة",
+     "grams": 10
+    },
+    {
+     "id": "M",
+     "en": "Handful",
+     "ar": "حفنة",
+     "grams": 20
+    },
+    {
+     "id": "L",
+     "en": "Two handfuls",
+     "ar": "حفنتين",
+     "grams": 40
+    }
+   ]
+  },
+  "stock_cube": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a cube",
+     "ar": "نص مكعب",
+     "grams": 2
+    },
+    {
+     "id": "M",
+     "en": "1 cube",
+     "ar": "مكعب",
+     "grams": 4
+    },
+    {
+     "id": "L",
+     "en": "2 cubes",
+     "ar": "مكعبين",
+     "grams": 8
+    }
+   ]
+  },
+  "spices_and_seasoning": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a teaspoon",
+     "ar": "نص معلقة صغيرة",
+     "grams": 1
+    },
+    {
+     "id": "M",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 2
+    },
+    {
+     "id": "L",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 7
+    }
+   ]
+  },
+  "curry_powder": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a teaspoon",
+     "ar": "نص معلقة صغيرة",
+     "grams": 1
+    },
+    {
+     "id": "M",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 2
+    },
+    {
+     "id": "L",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 6
+    }
+   ]
+  },
+  "zaatar_mix": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 1
+    },
+    {
+     "id": "M",
+     "en": "2 teaspoons",
+     "ar": "معلقتين صغار",
+     "grams": 3
+    },
+    {
+     "id": "L",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 4
+    }
+   ]
+  },
+  "spice_blend_store": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a teaspoon",
+     "ar": "نص معلقة صغيرة",
+     "grams": 1
+    },
+    {
+     "id": "M",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 2
+    },
+    {
+     "id": "L",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 7
+    }
+   ]
+  },
+  "baking_powder": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a teaspoon",
+     "ar": "نص معلقة صغيرة",
+     "grams": 2
+    },
+    {
+     "id": "M",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 5
+    },
+    {
+     "id": "L",
+     "en": "2 teaspoons",
+     "ar": "معلقتين صغار",
+     "grams": 9
+    }
+   ]
+  },
+  "salt": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a teaspoon",
+     "ar": "نص معلقة صغيرة",
+     "grams": 3
+    },
+    {
+     "id": "M",
+     "en": "1 teaspoon",
+     "ar": "معلقة صغيرة",
+     "grams": 6
+    },
+    {
+     "id": "L",
+     "en": "1 tablespoon",
+     "ar": "معلقة كبيرة",
+     "grams": 18
+    }
+   ]
+  },
+  "water": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a glass",
+     "ar": "نص كوباية",
+     "grams": 118
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "grams": 237
+    },
+    {
+     "id": "L",
+     "en": "2 glasses",
+     "ar": "كوبايتين",
+     "grams": 474
+    }
+   ]
+  },
+  "lemon_juice": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 wedge",
+     "ar": "شريحة ليمون",
+     "grams": 6
+    },
+    {
+     "id": "M",
+     "en": "Half a lemon",
+     "ar": "نص ليمونة",
+     "grams": 24
+    },
+    {
+     "id": "L",
+     "en": "1 lemon",
+     "ar": "ليمونة",
+     "grams": 48
+    }
+   ]
+  },
+  "ful_medames": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "ful_bel_zeit": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "ful_bel_tahina": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "ful_bel_beid": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "ful_iskandarani": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "besara": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "kesk": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "molokhia": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "molokhia_chicken": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "molokhia_rabbit": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "bamya": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "torly": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "fasolia": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "fasolia_beida": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "bisella": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "sabanekh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "colcas": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "lesan_asfour": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "shorbet_ads": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "shorbet_frakh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "shorbet_freekeh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "harees": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "jareesh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "saleeg": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "belila": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "roz_bel_laban": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "mahalabeya": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "om_ali": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "couscous_sweet": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "hummus": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "mutabbal": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "baba_ghanoug": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "muhammara": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "salata_zabadi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "salata_baladi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "tabbouleh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "fattoush": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "labneh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "gebna_areesh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "areesh_tomato": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "termes": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small bowl",
+     "ar": "سلطانية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium bowl",
+     "ar": "سلطانية وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large bowl",
+     "ar": "سلطانية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "koshary": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "shakshuka": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "egga": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "eggs_pastirma": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mahshi_peppers": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mahshi_zucchini": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mahshi_eggplant": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mahshi_cabbage": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mahshi_mix": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "fattah": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "fattah_chicken": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "macarona_bechamel": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "macarona_salsa": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "roz_shareya": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "roz_abyad": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "roz_khalta": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "roz_meammar": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "kebab_kofta": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "kebda_iskandarani": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "sayadeya": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "samak_mashwi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "samak_maqli": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "gambari": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "batates_lahma": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "lahma_basal": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mombar": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "arnabeet_maqli": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "betingan_maqli": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "batates_maqlia": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "shawarma_chicken_plate": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "shawarma_beef_plate": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "kabsa_chicken": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "kabsa_lamb": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mandi_chicken": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mandi_lamb": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mansaf": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "majboos": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "thareed": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "musakhan": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "maqluba": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mujaddara": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "fatteh_hummus": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "mesaqaa": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "frakh_batates": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "ful_taameya_breakfast": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small plate",
+     "ar": "طبق صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Medium plate",
+     "ar": "طبق وسط",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large plate",
+     "ar": "طبق كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "shai_bel_laban": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "karkadeh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "asab": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "tamr_hindi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "kharoub": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "sobia": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "lemon_mint": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "mango_juice": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "guava_juice": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "strawberry_juice": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "coffee_milk": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small glass",
+     "ar": "كوباية صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 glass",
+     "ar": "كوباية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large glass",
+     "ar": "كوباية كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "hummus_el_sham": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small cup",
+     "ar": "كوب صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 cup",
+     "ar": "كوب",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large cup",
+     "ar": "كوب كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "sahlab": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small cup",
+     "ar": "كوب صغير",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 cup",
+     "ar": "كوب",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large cup",
+     "ar": "كوب كبير",
+     "x": 1.5
+    }
+   ]
+  },
+  "feteer": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small piece",
+     "ar": "حتة صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large piece",
+     "ar": "حتة كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "feteer_honey": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small piece",
+     "ar": "حتة صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large piece",
+     "ar": "حتة كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "feteer_cheese": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small piece",
+     "ar": "حتة صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large piece",
+     "ar": "حتة كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "kibbeh_baked": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small piece",
+     "ar": "حتة صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Large piece",
+     "ar": "حتة كبيرة",
+     "x": 1.5
+    }
+   ]
+  },
+  "ful_sandwich": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "taameya_sandwich": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "kebda_sandwich": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "sogo2_sandwich": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "kofta_sandwich": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "pane_sandwich": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "falafel_sandwich": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "shawarma_chicken_sandwich": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "shawarma_beef_sandwich": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "hawawshi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "arayes": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a sandwich",
+     "ar": "نص ساندوتش",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 sandwich",
+     "ar": "ساندوتش",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 sandwiches",
+     "ar": "ساندوتشين",
+     "x": 2
+    }
+   ]
+  },
+  "egg_fried_olive": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 egg",
+     "ar": "بيضة",
+     "x": 1
+    },
+    {
+     "id": "M",
+     "en": "2 eggs",
+     "ar": "بيضتين",
+     "x": 2
+    },
+    {
+     "id": "L",
+     "en": "3 eggs",
+     "ar": "3 بيضات",
+     "x": 3
+    }
+   ]
+  },
+  "omelette": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1-egg omelette",
+     "ar": "أومليت بيضة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2-egg omelette",
+     "ar": "أومليت بيضتين",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3-egg omelette",
+     "ar": "أومليت 3 بيضات",
+     "x": 1.5
+    }
+   ]
+  },
+  "sogo2": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 links",
+     "ar": "2 سجق",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "4 links",
+     "ar": "4 سجق",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "6 links",
+     "ar": "6 سجق",
+     "x": 1.5
+    }
+   ]
+  },
+  "aish_fino": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a roll",
+     "ar": "نص رغيف فينو",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 roll",
+     "ar": "رغيف فينو",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 rolls",
+     "ar": "رغيفين فينو",
+     "x": 2
+    }
+   ]
+  },
+  "simit": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a ring",
+     "ar": "نص حلقة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 ring",
+     "ar": "حلقة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 rings",
+     "ar": "حلقتين",
+     "x": 2
+    }
+   ]
+  },
+  "manakish_zaatar": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a piece",
+     "ar": "نص منقوشة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "منقوشة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 pieces",
+     "ar": "منقوشتين",
+     "x": 2
+    }
+   ]
+  },
+  "manakish_cheese": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a piece",
+     "ar": "نص منقوشة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "منقوشة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 pieces",
+     "ar": "منقوشتين",
+     "x": 2
+    }
+   ]
+  },
+  "fatayer_spinach": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 piece",
+     "ar": "فطيرة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2 pieces",
+     "ar": "فطيرتين",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3 pieces",
+     "ar": "3 فطاير",
+     "x": 1.5
+    }
+   ]
+  },
+  "sfiha": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 pieces",
+     "ar": "2 صفيحة",
+     "x": 0.667
+    },
+    {
+     "id": "M",
+     "en": "3 pieces",
+     "ar": "3 صفايح",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "4 pieces",
+     "ar": "4 صفايح",
+     "x": 1.333
+    }
+   ]
+  },
+  "taameya": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 pieces",
+     "ar": "2 قرص طعمية",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "4 pieces",
+     "ar": "4 أقراص طعمية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "6 pieces",
+     "ar": "6 أقراص طعمية",
+     "x": 1.5
+    }
+   ]
+  },
+  "falafel": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 pieces",
+     "ar": "2 قرص فلافل",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "4 pieces",
+     "ar": "4 أقراص فلافل",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "6 pieces",
+     "ar": "6 أقراص فلافل",
+     "x": 1.5
+    }
+   ]
+  },
+  "kibbeh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 piece",
+     "ar": "كبة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2 pieces",
+     "ar": "كبتين",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3 pieces",
+     "ar": "3 كبب",
+     "x": 1.5
+    }
+   ]
+  },
+  "basbousa": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a piece",
+     "ar": "نص حتة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 pieces",
+     "ar": "حتتين",
+     "x": 2
+    }
+   ]
+  },
+  "basbousa_cream": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a piece",
+     "ar": "نص حتة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 pieces",
+     "ar": "حتتين",
+     "x": 2
+    }
+   ]
+  },
+  "kunafa": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a piece",
+     "ar": "نص حتة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 pieces",
+     "ar": "حتتين",
+     "x": 2
+    }
+   ]
+  },
+  "kunafa_nuts": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a piece",
+     "ar": "نص حتة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 pieces",
+     "ar": "حتتين",
+     "x": 2
+    }
+   ]
+  },
+  "kunafa_nabulsi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a piece",
+     "ar": "نص حتة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 pieces",
+     "ar": "حتتين",
+     "x": 2
+    }
+   ]
+  },
+  "baklava": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 piece",
+     "ar": "قطعة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2 pieces",
+     "ar": "قطعتين",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3 pieces",
+     "ar": "3 قطع",
+     "x": 1.5
+    }
+   ]
+  },
+  "qatayef": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 pieces",
+     "ar": "2 قطايف",
+     "x": 0.667
+    },
+    {
+     "id": "M",
+     "en": "3 pieces",
+     "ar": "3 قطايف",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "4 pieces",
+     "ar": "4 قطايف",
+     "x": 1.333
+    }
+   ]
+  },
+  "qatayef_cream": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 pieces",
+     "ar": "2 قطايف",
+     "x": 0.667
+    },
+    {
+     "id": "M",
+     "en": "3 pieces",
+     "ar": "3 قطايف",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "4 pieces",
+     "ar": "4 قطايف",
+     "x": 1.333
+    }
+   ]
+  },
+  "zalabya": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 pieces",
+     "ar": "2 زلابية",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "4 pieces",
+     "ar": "4 زلابية",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "6 pieces",
+     "ar": "6 زلابية",
+     "x": 1.5
+    }
+   ]
+  },
+  "ghorayeba": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 pieces",
+     "ar": "2 غريبة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "4 pieces",
+     "ar": "4 غريبة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "6 pieces",
+     "ar": "6 غريبة",
+     "x": 1.5
+    }
+   ]
+  },
+  "kahk": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 piece",
+     "ar": "كحكة",
+     "x": 0.333
+    },
+    {
+     "id": "M",
+     "en": "3 pieces",
+     "ar": "3 كحكات",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "5 pieces",
+     "ar": "5 كحكات",
+     "x": 1.667
+    }
+   ]
+  },
+  "petit_four": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "3 pieces",
+     "ar": "3 بيتيفور",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "6 pieces",
+     "ar": "6 بيتيفور",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "9 pieces",
+     "ar": "9 بيتيفور",
+     "x": 1.5
+    }
+   ]
+  },
+  "maamoul": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 piece",
+     "ar": "معمولة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2 pieces",
+     "ar": "معمولتين",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3 pieces",
+     "ar": "3 معمول",
+     "x": 1.5
+    }
+   ]
+  },
+  "balah_el_sham": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 piece",
+     "ar": "بلحة",
+     "x": 0.333
+    },
+    {
+     "id": "M",
+     "en": "3 pieces",
+     "ar": "3 بلح",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "4 pieces",
+     "ar": "4 بلح",
+     "x": 1.333
+    }
+   ]
+  },
+  "luqaimat": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "3 pieces",
+     "ar": "3 لقيمات",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "6 pieces",
+     "ar": "6 لقيمات",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "9 pieces",
+     "ar": "9 لقيمات",
+     "x": 1.5
+    }
+   ]
+  },
+  "halawa": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 slice",
+     "ar": "شريحة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2 slices",
+     "ar": "شريحتين",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3 slices",
+     "ar": "3 شرايح",
+     "x": 1.5
+    }
+   ]
+  },
+  "hamam_mahshi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a pigeon",
+     "ar": "نص حمامة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 pigeon",
+     "ar": "حمامة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "1.5 pigeons",
+     "ar": "حمامة ونص",
+     "x": 1.5
+    }
+   ]
+  },
+  "frakh_mashwi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small piece",
+     "ar": "حتة صغيرة",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "Quarter chicken",
+     "ar": "ربع فرخة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "Half a chicken",
+     "ar": "نص فرخة",
+     "x": 2
+    }
+   ]
+  },
+  "frakh_pane": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2 pieces",
+     "ar": "حتتين",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3 pieces",
+     "ar": "3 حتت",
+     "x": 1.5
+    }
+   ]
+  },
+  "kofta": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 finger",
+     "ar": "صباع كفتة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2 fingers",
+     "ar": "صباعين كفتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3 fingers",
+     "ar": "3 صوابع كفتة",
+     "x": 1.5
+    }
+   ]
+  },
+  "kebab": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 skewer",
+     "ar": "سيخ",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2 skewers",
+     "ar": "سيخين",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3 skewers",
+     "ar": "3 أسياخ",
+     "x": 1.5
+    }
+   ]
+  },
+  "shish_tawook": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "1 skewer",
+     "ar": "سيخ",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "2 skewers",
+     "ar": "سيخين",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "3 skewers",
+     "ar": "3 أسياخ",
+     "x": 1.5
+    }
+   ]
+  },
+  "renga": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a fish",
+     "ar": "نص سمكة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 fish",
+     "ar": "سمكة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 fish",
+     "ar": "سمكتين",
+     "x": 2
+    }
+   ]
+  },
+  "bouri": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a fish",
+     "ar": "نص سمكة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 fish",
+     "ar": "سمكة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "1.5 fish",
+     "ar": "سمكة ونص",
+     "x": 1.5
+    }
+   ]
+  },
+  "mahshi_vine": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "6 pieces",
+     "ar": "6 حبات",
+     "x": 0.6
+    },
+    {
+     "id": "M",
+     "en": "10 pieces",
+     "ar": "10 حبات",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "15 pieces",
+     "ar": "15 حبة",
+     "x": 1.5
+    }
+   ]
+  },
+  "dora_mashwi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a cob",
+     "ar": "نص ذرة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 cob",
+     "ar": "ذرة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 cobs",
+     "ar": "ذرتين",
+     "x": 2
+    }
+   ]
+  },
+  "tahina": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "4 tablespoons",
+     "ar": "4 معالق كبار",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "6 tablespoons",
+     "ar": "6 معالق كبار",
+     "x": 1.5
+    }
+   ]
+  },
+  "mesh": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "2 tablespoons",
+     "ar": "معلقتين كبار",
+     "x": 0.667
+    },
+    {
+     "id": "M",
+     "en": "3 tablespoons",
+     "ar": "3 معالق كبار",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "5 tablespoons",
+     "ar": "5 معالق كبار",
+     "x": 1.667
+    }
+   ]
+  },
+  "gebna_rumi": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small slice",
+     "ar": "شريحة صغيرة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 slice",
+     "ar": "شريحة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 slices",
+     "ar": "شريحتين",
+     "x": 2
+    }
+   ]
+  },
+  "gebna_domiati": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Small piece",
+     "ar": "حتة صغيرة",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 piece",
+     "ar": "حتة",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 pieces",
+     "ar": "حتتين",
+     "x": 2
+    }
+   ]
+  },
+  "ahwa_mazboot": {
+   "source": "dish portion: multiples of the standard recipe's typical serving; unit counts are standard reference weights, estimated",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Half a cup",
+     "ar": "نص فنجان",
+     "x": 0.5
+    },
+    {
+     "id": "M",
+     "en": "1 cup",
+     "ar": "فنجان",
+     "x": 1
+    },
+    {
+     "id": "L",
+     "en": "2 cups",
+     "ar": "فنجانين",
+     "x": 2
+    }
+   ]
+  }
+ }
+}

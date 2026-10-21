@@ -219,6 +219,7 @@ void main() {
           _set('glute_bridge', skipped: true),
         ],
       );
+      await repo.finishSession(sessionId: live.id, durationSec: 600);
       // A flush under an id no session was started with: attributed to no
       // day, so it counts nowhere.
       await repo.flushMove(

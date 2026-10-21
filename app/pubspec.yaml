@@ -209,6 +209,11 @@ flutter:
     - assets/art/
     - assets/art/2.0x/
     - assets/art/3.0x/
+    # Painted meal pictures, installed by `tool/install_meal_images.py`; the
+    # ids that exist are listed in assets/art/meals/index.json.
+    - assets/art/meals/
+    - assets/art/meals/2.0x/
+    - assets/art/meals/3.0x/
     # The logo on C01: the app tile, rendered from assets/brand/ownhub-mark.svg
     # at 88 px and its 2x and 3x by `tool/render_brand_icons.py --logo`.
     - assets/brand/logo/ownhub-tile.png

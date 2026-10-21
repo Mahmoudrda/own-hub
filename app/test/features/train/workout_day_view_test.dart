@@ -34,30 +34,34 @@ const _day = WorkoutDay(
   title: 'Legs and glutes',
   summary: '15 minutes, 5 moves',
   constraints: 'Quiet · no equipment · floor',
-  moves: [
-    PlannedMove(
-      exerciseId: 'goblet_squat',
-      name: 'Goblet squat',
-      prescriptionLabel: '3 × 10 · 12 kg suggested',
-      sets: [
-        PrescribedSet(
-          exerciseId: 'goblet_squat',
-          order: 1,
-          weightKg: 12,
-          reps: 10,
-        ),
-        PrescribedSet(
-          exerciseId: 'goblet_squat',
-          order: 2,
-          weightKg: 12,
-          reps: 10,
-        ),
-      ],
-    ),
-  ],
+  moves: _moves,
 );
 
+const _moves = [
+  PlannedMove(
+    exerciseId: 'goblet_squat',
+    name: 'Goblet squat',
+    prescriptionLabel: '3 × 10 · 12 kg suggested',
+    sets: [
+      PrescribedSet(
+        exerciseId: 'goblet_squat',
+        order: 1,
+        weightKg: 12,
+        reps: 10,
+      ),
+      PrescribedSet(
+        exerciseId: 'goblet_squat',
+        order: 2,
+        weightKg: 12,
+        reps: 10,
+      ),
+    ],
+  ),
+];
+
 void main() {
+  _videoBadgeTests();
+
   testWidgets('the day is a list of moves with their prescriptions', (
     tester,
   ) async {
@@ -189,7 +193,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('الرجلين والأرداف'), findsOneWidget);
-    expect(find.text('دونكي كيك'), findsOneWidget);
+    expect(find.text('Donkey kick'), findsOneWidget);
+    expect(find.text('دونكي كيك'), findsNothing);
     expect(find.text('ابدئي، كل حاجة جاهزة'), findsOneWidget);
     expect(find.text('I already did it'), findsNothing);
   });
@@ -219,4 +224,51 @@ void main() {
     expect(started, 1);
     expect(repository.liveSessionId, isNull, reason: 'one session, the caller');
   });
+}
+
+void _videoBadgeTests() {
+  testWidgets(
+    'a move with a clip carries the video mark, a move without none',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      const twoMoves = WorkoutDay(
+        id: '2026-09-15',
+        title: 'Legs and glutes',
+        summary: '15 minutes, 2 moves',
+        constraints: 'Quiet · no equipment · floor',
+        moves: [
+          ..._moves,
+          PlannedMove(
+            exerciseId: 'dead_bug',
+            name: 'Dead bug',
+            prescriptionLabel: '3 × 8',
+            sets: [],
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        _host(
+          WorkoutDayView(
+            day: twoMoves,
+            canOpenMove: (move) => move.exerciseId == 'goblet_squat',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.play_circle_outline), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('Video available')), findsOneWidget);
+      semantics.dispose();
+    },
+  );
+
+  testWidgets(
+    'with no way of knowing which moves have a clip, none is marked',
+    (tester) async {
+      await tester.pumpWidget(_host(const WorkoutDayView(day: _day)));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.play_circle_outline), findsNothing);
+    },
+  );
 }

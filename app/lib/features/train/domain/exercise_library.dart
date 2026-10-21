@@ -300,7 +300,9 @@ class LibraryExercise {
     floorOnly: floorOnly,
   );
 
-  String name(String languageCode) => languageCode == 'ar' ? nameAr : nameEn;
+  /// English in every locale; [languageCode] is kept for the call sites.
+  String name(String languageCode) =>
+      nameEn.trim().isNotEmpty ? nameEn : nameAr;
 
   String? setup(String languageCode) =>
       languageCode == 'ar' ? setupAr : setupEn;
@@ -553,6 +555,26 @@ safety.LifeStage safetyStageFor(LifeStage? stage) => switch (stage) {
       if (e.screenable.tagsKnown && !e.screenable.blocks(avoid)) e,
   ];
   return (shown: shown, someHidden: shown.length != all.length);
+}
+
+/// The ids among [moveIds] that a woman at [stage] may not be given: every
+/// move the stage's screening holds back, and, while the stage restricts
+/// anything, every move the library does not know (its tags cannot be read, so
+/// it cannot be called safe). Empty when the stage restricts nothing.
+Set<String> blockedMoveIds(
+  Iterable<String> moveIds,
+  List<LibraryExercise> all,
+  LifeStage? stage,
+) {
+  final avoid = safety.LifeStageSafetyPolicy.derivedAvoid(
+    safetyStageFor(stage),
+  );
+  if (avoid.isEmpty) return const <String>{};
+  final shown = {for (final e in screenForLifeStage(all, stage).shown) e.id};
+  return {
+    for (final id in moveIds)
+      if (!shown.contains(id)) id,
+  };
 }
 
 /// What she can do a move with, in the library's own words.

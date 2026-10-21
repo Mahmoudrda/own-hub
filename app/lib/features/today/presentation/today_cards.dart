@@ -17,6 +17,7 @@ import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../eat/domain/daily_targets.dart';
 import '../../eat/domain/day_totals.dart';
+import '../../eat/domain/meal_images.dart';
 import '../../eat/domain/meal_repository.dart' show MealSlot;
 import '../../eat/presentation/eat_day_view_model.dart' show EatDayViewModel;
 import '../../eat/presentation/eat_sample_library.dart' show eatSampleLibrary;
@@ -32,6 +33,7 @@ import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../ui/meal_image.dart';
 
 /// Opens another screen by id.
 ///
@@ -1065,6 +1067,7 @@ class HomeEatCard extends StatelessWidget {
     this.totals = DayTotals.empty,
     this.targets,
     this.onLogFood,
+    this.onScanMeal,
     this.loggedAt,
     this.now,
     this.plates = const <PlateSuggestion>[],
@@ -1082,6 +1085,9 @@ class HomeEatCard extends StatelessWidget {
 
   /// "Log food": opens the meal search.
   final VoidCallback? onLogFood;
+
+  /// "Scan": a photo of the plate. No chip when null.
+  final VoidCallback? onScanMeal;
   final DateTime? loggedAt;
   final DateTime? now;
   final List<PlateSuggestion> plates;
@@ -1128,13 +1134,18 @@ class HomeEatCard extends StatelessWidget {
 
     final triad = [
       (l10n.protein, totals.proteinSoFar, targets?.proteinG),
-      (l10n.carbs, totals.carbsSoFar ?? 0, targets?.carbsG),
-      (l10n.fat, totals.fatSoFar ?? 0, targets?.fatG),
+      (l10n.carbs, totals.carbsSoFar, targets?.carbsG),
+      (l10n.fat, totals.fatSoFar, targets?.fatG),
     ];
-    String grams((String, int, int?) m) => m.$3 == null
-        ? l10n.gramsG_1usqy(countLabel(m.$2))
-        : l10n.sofarOfTargetG(countLabel(m.$2), countLabel(m.$3!));
-    Widget macro((String, int, int?) m) => Column(
+    // A figure no logged food carries is a dash, not a zero.
+    String grams((String, int?, int?) m) {
+      final eaten = m.$2 == null ? '–' : countLabel(m.$2!);
+      return m.$3 == null
+          ? l10n.gramsG_1usqy(eaten)
+          : l10n.sofarOfTargetG(eaten, countLabel(m.$3!));
+    }
+
+    Widget macro((String, int?, int?) m) => Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         FittedBox(
@@ -1184,18 +1195,39 @@ class HomeEatCard extends StatelessWidget {
               Expanded(child: macros),
             ],
           ),
-        if (onLogFood != null)
-          AppButton(
-            l10n.logFood,
-            key: const ValueKey('today-log-food'),
-            icon: Icons.add,
-            height: 52,
-            variant: AppButtonVariant.tonal,
-            onPressed: onLogFood,
+        if (onLogFood != null || onScanMeal != null)
+          Row(
+            children: [
+              if (onLogFood != null)
+                Expanded(
+                  child: AppButton(
+                    l10n.logFood,
+                    key: const ValueKey('today-log-food'),
+                    icon: Icons.add,
+                    height: 52,
+                    variant: AppButtonVariant.tonal,
+                    onPressed: onLogFood,
+                  ),
+                ),
+              if (onLogFood != null && onScanMeal != null)
+                const SizedBox(width: 10),
+              if (onScanMeal != null)
+                Expanded(
+                  child: AppButton(
+                    l10n.scan,
+                    key: const ValueKey('today-scan-meal'),
+                    icon: Icons.camera_alt_rounded,
+                    height: 52,
+                    variant: AppButtonVariant.tonal,
+                    onPressed: onScanMeal,
+                  ),
+                ),
+            ],
           ),
         for (final plate in plates)
           _PlateAddRow(
             name: plateName(l10n, plate.foodId),
+            imageAsset: MealImages.assetFor(plate.foodId),
             kcal: l10n.kcalKcal(countLabel(plate.kcal)),
             onTap: onPlateLog == null ? onPlateTap : () => onPlateLog!(plate),
           ),
@@ -1205,9 +1237,15 @@ class HomeEatCard extends StatelessWidget {
 }
 
 class _PlateAddRow extends StatelessWidget {
-  const _PlateAddRow({required this.name, required this.kcal, this.onTap});
+  const _PlateAddRow({
+    required this.name,
+    required this.kcal,
+    this.imageAsset,
+    this.onTap,
+  });
 
   final String name;
+  final String? imageAsset;
   final String kcal;
   final VoidCallback? onTap;
 
@@ -1217,6 +1255,10 @@ class _PlateAddRow extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 48),
       child: Row(
         children: [
+          if (imageAsset != null) ...[
+            MealImage(asset: imageAsset, size: 40),
+            const SizedBox(width: 10),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

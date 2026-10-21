@@ -6,11 +6,14 @@
 /// no detector, and keeps only the two rules that matter for any photograph
 /// this app takes:
 ///
-///  * **The size is chosen at the lens.** `captureResolution` is the same
-///    preset the ID photos use: 1280 pixels on the long edge, which is what
-///    the meal server needs and less (it re-encodes to 768). There is no JPEG
-///    encoder in the app to shrink a bigger one, and `frame_budget.dart`
-///    explains why one is not added.
+///  * **The size is chosen at the lens, and it is small.** The meal server
+///    re-encodes every photo to 768 pixels on the long edge, so anything
+///    bigger is upload for nothing on Egyptian mobile data. [kMealCaptureResolution]
+///    is `medium`: 720 by 480 at most, a long edge of [kMealCaptureLongEdge].
+///    The ID photos keep their own, larger preset (`captureResolution`, which
+///    a card number needs); this does not touch it. There is no JPEG encoder
+///    in the app to shrink a bigger one, and `frame_budget.dart` explains why
+///    one is not added.
 ///  * **The file the plugin writes is read and deleted in one `finally`.**
 ///    `package:camera` has no in-memory shutter, so for a few milliseconds the
 ///    photo is a file in the app's temporary folder. Then it is bytes in
@@ -39,6 +42,13 @@ import 'package:flutter/widgets.dart';
 
 import '../../signup/data/cover_fit_viewfinder.dart';
 import '../../signup/data/frame_budget.dart';
+
+/// What the meal camera asks the lens for. See the library note.
+const ResolutionPreset kMealCaptureResolution = ResolutionPreset.medium;
+
+/// The longest edge `medium` can give on either platform, in pixels. The
+/// server's own limit is 768.
+const int kMealCaptureLongEdge = 720;
 
 /// Why the camera cannot be shown.
 enum MealCameraProblem {
@@ -75,10 +85,15 @@ abstract class MealCameraSession {
 
 /// The real camera, over `package:camera`.
 class PluginMealCamera implements MealCamera {
-  PluginMealCamera({Future<List<CameraDescription>> Function()? lenses})
-    : _lenses = lenses ?? availableCameras;
+  PluginMealCamera({
+    Future<List<CameraDescription>> Function()? lenses,
+    this.resolution = kMealCaptureResolution,
+  }) : _lenses = lenses ?? availableCameras;
 
   final Future<List<CameraDescription>> Function() _lenses;
+
+  /// The preset the lens opens at.
+  final ResolutionPreset resolution;
 
   @override
   Future<MealCameraSession> open() async {
@@ -98,11 +113,7 @@ class PluginMealCamera implements MealCamera {
         .firstOrNull;
     if (lens == null) return const _ClosedSession(MealCameraProblem.noCamera);
 
-    final controller = CameraController(
-      lens,
-      captureResolution,
-      enableAudio: false,
-    );
+    final controller = CameraController(lens, resolution, enableAudio: false);
     try {
       await controller.initialize();
       await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
@@ -167,7 +178,7 @@ class _LensSession implements MealCameraSession {
       if (bytes == null) return null;
       // Not a JPEG (a phone set to HEIC): refused here, not sent.
       if (jpegSize(bytes) == null) return null;
-      if (kDebugMode && !frameIsWithinBudget(bytes)) {
+      if (kDebugMode && bytes.length > frameByteCeiling) {
         debugPrint('meal photo out of budget: ${bytes.length} bytes');
       }
       return bytes;

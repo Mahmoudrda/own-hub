@@ -251,7 +251,7 @@ def test_a_failure_part_way_is_recorded_and_a_rerun_finishes(step):
 
 def test_every_manifest_row_has_a_server_action():
     rows = manifest.load(_JSON)
-    assert [r.number for r in rows] == list(range(1, 53))
+    assert [r.number for r in rows] == list(range(1, 55))
     assert set(manifest.ACTIONS) == {r.number for r in rows}
     manifest.check(rows)
 

@@ -105,7 +105,13 @@ _FakeSource _remote({int version = 2}) {
     'allergensExtra': <String>[],
     'allergensRemoved': <String, Object?>{},
     'allergensFinal': <String>[],
+    // Nobody has cooked or checked the new dish, so it is a review row: copied
+    // from a published recipe it would claim a signature it does not have.
+    'status': 'review',
     'allergenReviewedBy': null,
+    'allergenReviewedAt': null,
+    'cookedBy': null,
+    'cookedAt': null,
   });
   for (final r in all) {
     source.recipes[r['recipeId']! as String] = r;
@@ -183,7 +189,7 @@ void main() {
       final cache = _MemoryStorage()..value = '{not json';
       final book = await _sync(cache: cache).load();
       expect(book.contentVersion, 1);
-      expect(book.recipes, hasLength(39));
+      expect(book.recipes, hasLength(50));
     });
   });
 
@@ -197,7 +203,7 @@ void main() {
       expect(result.outcome, RecipeRefreshOutcome.updated);
       final book = result.book!;
       expect(book.contentVersion, 2);
-      expect(book.recipes, hasLength(40));
+      expect(book.recipes, hasLength(51));
       expect(book.byId('rahma_lazy_cake')!.titleEn, 'Lazy Cake, second print');
       // Her letter is not in the remote set and stays.
       expect(book.letterAr, RecipeBook.fromJson(_raw).letterAr);
@@ -287,7 +293,9 @@ void main() {
 
     test('a signature by the author herself', () async {
       final source = _remote();
-      source.recipes['rahma_new_dish']!['allergenReviewedBy'] = 'rahma_mohsen';
+      final dish = source.recipes['rahma_new_dish']!;
+      dish['authoredBy'] = 'rahma_mohsen';
+      dish['allergenReviewedBy'] = 'rahma_mohsen';
       await expectRejected(source);
     });
 

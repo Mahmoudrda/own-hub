@@ -60,12 +60,13 @@ import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
-import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/mascot/kitten.dart';
 import '../data/review_scheduling_repository.dart';
 import '../domain/review_request.dart';
 import '../domain/server_verification.dart';
+import '../../train/presentation/notification_explainer.dart'
+    show SampleNotification;
 import 'widgets/review_slot_picker.dart';
 
 class BeingCheckedView extends StatefulWidget {
@@ -77,7 +78,6 @@ class BeingCheckedView extends StatefulWidget {
     this.onLookAround,
     this.onTryAgain,
     this.onDeleteMyData,
-    this.onSelectTab,
     this.reviewAsked = true,
     this.requester,
     this.onAskedForCall,
@@ -155,12 +155,6 @@ class BeingCheckedView extends StatefulWidget {
 
   /// Rejected: where she deletes her data.
   final VoidCallback? onDeleteMyData;
-
-  /// The bottom bar. It is drawn because the design draws it and because a
-  /// screen with no bar reads as a modal she is trapped in, and every tab it
-  /// offers lands back here while the check is running, which is the gate
-  /// saying the same thing twice rather than a dead control.
-  final ValueChanged<String>? onSelectTab;
 
   @override
   State<BeingCheckedView> createState() => _BeingCheckedViewState();
@@ -329,10 +323,8 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: AppNavBar(
-        activeScreenId: 'T01',
-        onSelect: widget.onSelectTab,
-      ),
+      // No tab bar: the app opens after the check, and a bar here would
+      // offer doors that are closed and cover the last button.
       body: AppScaffold(
         // No lead: there is nowhere to step back to, and nothing to undo.
         appBar: AppTopBar(title: l10n.beingChecked),
@@ -472,6 +464,7 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
           // and only if she asks for it here.
           if (waiting && widget.onNotifyMe != null) ...[
             if (_push == null) ...[
+              Center(child: SampleNotification(body: l10n.yourCheckIsDone)),
               Text(l10n.turnOnNotificationsSoWeCanTell, style: quiet),
               AppButton(
                 l10n.tellMeWhenImIn,

@@ -60,6 +60,7 @@ CALLABLES = {
     "approve_user",
     "approve_users",
     "revoke_user",
+    "decline_user",
     "list_review_queue",
     "set_preapproved_phones",
     "list_preapproved_phones",
@@ -71,6 +72,8 @@ CALLABLES = {
     "book_review_slot",
     "list_schedule",
     "reschedule_review",
+    "register_for_event",
+    "cancel_event_registration",
 }
 
 

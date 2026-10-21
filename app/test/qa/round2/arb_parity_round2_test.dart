@@ -22,8 +22,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// The fifteen keys R2-07 says are genuinely non-translatable: unit/format
-/// codes, a CSV literal, an Arabic endonym that must not be "translated" into
+/// The keys R2-07 says are genuinely non-translatable: unit/format codes
+/// (including `percent`, a bare `{percent}%` that keeps the Western sign the
+/// app uses everywhere), a CSV literal, an Arabic endonym that must not be "translated" into
 /// itself a second time, and short mockup ids. Kept as a literal list (not
 /// computed) so a new addition to this set has to be argued for here, in
 /// writing, exactly like `i18n_guard_test.dart`'s Arabic allowlist.
@@ -43,6 +44,10 @@ const Set<String> _knownNonTranslatable = {
   'n84',
   'n92',
   'nasmCpt',
+  'percent',
+  // Date patterns: only placeholders and spaces, the same in both languages.
+  'monthYear',
+  'dayMonthYear',
 };
 
 Map<String, dynamic> _load(String path) =>

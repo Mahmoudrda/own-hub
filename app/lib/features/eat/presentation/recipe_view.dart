@@ -32,8 +32,10 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../ui/meal_image.dart';
 import '../domain/allergy_guard.dart';
 import '../domain/food_library.dart';
+import '../domain/meal_images.dart';
 import '../domain/meal_log_service.dart';
 import '../domain/meal_repository.dart';
 import '../domain/meal_sentence_parser.dart';
@@ -235,7 +237,8 @@ class _RecipeViewState extends State<RecipeView> {
     final food = library.byId(widget.foodId);
 
     final sizes = food?.sizes ?? const <FoodSize>[];
-    final selected = _sizeIndex ?? (sizes.isEmpty ? 0 : sizes.length ~/ 2);
+    final selected =
+        _sizeIndex ?? (food == null ? 0 : sizes.indexOf(food.defaultSize));
 
     return AppScaffold(
       appBar: AppTopBar(
@@ -280,11 +283,16 @@ class _RecipeViewState extends State<RecipeView> {
           ),
       ],
       children: [
-        const AppMedia(
-          height: 160,
-          kind: AppMediaKind.photo,
-          showPlayButton: false,
-        ),
+        if (MealImages.assetFor(widget.foodId) case final painted?)
+          Center(
+            child: MealImage(
+              asset: painted,
+              size: 180,
+              fallback: const _HeroPlaceholder(),
+            ),
+          )
+        else
+          const _HeroPlaceholder(),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -375,4 +383,15 @@ class _RecipeViewState extends State<RecipeView> {
       ],
     );
   }
+}
+
+class _HeroPlaceholder extends StatelessWidget {
+  const _HeroPlaceholder();
+
+  @override
+  Widget build(BuildContext context) => const AppMedia(
+    height: 160,
+    kind: AppMediaKind.photo,
+    showPlayButton: false,
+  );
 }

@@ -12,6 +12,7 @@
 // days and no day-level language reaches it.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/app_state/onboarding_state.dart';
@@ -342,5 +343,46 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });
+  });
+
+  group('chips never break a word', () {
+    const widths = [375.0, 390.0];
+    const scales = [1.0, 1.6, 2.0];
+    for (final locale in [const Locale('en'), const Locale('ar')]) {
+      for (final width in widths) {
+        for (final scale in scales) {
+          testWidgets('${locale.languageCode} at $width px, text x$scale', (
+            tester,
+          ) async {
+            tester.view.physicalSize = Size(width * 3, 844 * 3);
+            tester.view.devicePixelRatio = 3;
+            addTearDown(tester.view.reset);
+            await tester.pumpWidget(
+              _host(
+                ScheduleView(repository: InMemoryIntakeRepository()),
+                locale: locale,
+                textScale: scale,
+              ),
+            );
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull);
+            final chips = find.descendant(
+              of: find.byType(AppChip),
+              matching: find.byType(RichText),
+            );
+            expect(chips, findsWidgets);
+            for (final element in chips.evaluate()) {
+              final paragraph = element.renderObject! as RenderParagraph;
+              // At most two lines: 15px label, generous line height.
+              expect(
+                paragraph.size.height,
+                lessThanOrEqualTo(15 * scale * 1.9 * 2),
+                reason: paragraph.text.toPlainText(),
+              );
+            }
+          });
+        }
+      }
+    }
   });
 }

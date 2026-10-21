@@ -8,7 +8,7 @@
 ///   * 1 oz is 28.35 g.
 ///   * Millilitres equal grams for drinks and soups (density 1).
 ///   * A cup is 240 ml for drinks and soups, and a typical weight for the
-///     dish's category otherwise. That one is approximate, and says so.
+///     dish's kind otherwise. That one is approximate, and says so.
 ///   * A piece and a serving are the medium size. A piece is approximate.
 library;
 
@@ -25,9 +25,9 @@ class FoodUnits {
   static const double gramsPerOunce = 28.35;
   static const double millilitresPerCup = 240;
 
-  /// What a cup of a solid dish weighs, by the pack's category. A category not
-  /// listed (bread, sandwiches) has no cup.
-  static const Map<String, int> cupGramsByCategory = {
+  /// What a cup of a solid dish weighs, by the pack's kind. A kind not listed
+  /// (bread, sandwiches) has no cup.
+  static const Map<String, int> cupGramsByKind = {
     'main': 200,
     'breakfast': 180,
     'side': 150,
@@ -37,7 +37,7 @@ class FoodUnits {
   };
 
   static bool isLiquid(Food food) =>
-      food.category == 'drink' || food.category == 'soup';
+      food.kind == 'drink' || food.kind == 'soup';
 
   /// The units this food can be measured in, in the order the picker shows
   /// them. Empty when its weight is unknown.
@@ -47,8 +47,7 @@ class FoodUnits {
       FoodUnit.g,
       FoodUnit.oz,
       if (isLiquid(food)) FoodUnit.ml,
-      if (isLiquid(food) || cupGramsByCategory.containsKey(food.category))
-        FoodUnit.cup,
+      if (isLiquid(food) || cupGramsByKind.containsKey(food.kind)) FoodUnit.cup,
       FoodUnit.piece,
       FoodUnit.serving,
     ];
@@ -68,7 +67,7 @@ class FoodUnits {
         return isLiquid(food) ? 1 : null;
       case FoodUnit.cup:
         if (isLiquid(food)) return millilitresPerCup;
-        return cupGramsByCategory[food.category]?.toDouble();
+        return cupGramsByKind[food.kind]?.toDouble();
       case FoodUnit.piece:
       case FoodUnit.serving:
         return base.toDouble();

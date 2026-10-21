@@ -76,6 +76,14 @@ Matcher get _signInAgain => isA<VerificationCallFailure>().having(
   CallFailureKind.signInAgain,
 );
 
+Future<void> _readConsentToEnd(WidgetTester tester) async {
+  await tester.drag(
+    find.byType(SingleChildScrollView).first,
+    const Offset(0, -5000),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   final functions = _RefusingFunctions();
 
@@ -274,6 +282,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _readConsentToEnd(tester);
     await tester.tap(find.text('I agree, start the camera'));
     await tester.pumpAndSettle();
     final l10n = AppL10n.of(tester.element(find.byType(ConsentView)));

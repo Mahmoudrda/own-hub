@@ -97,6 +97,20 @@ class MealLogSession extends ChangeNotifier {
   int _attached = 0;
   bool _disposed = false;
 
+  MealSlot? _nextLogSlot;
+
+  /// The meal the next logging screen should open on, set by a "Log" pill on
+  /// the diary. Screens are opened by name, which carries no argument, so the
+  /// choice rides on the session they share. Read once by [takeLogSlot].
+  void presetLogSlot(MealSlot slot) => _nextLogSlot = slot;
+
+  /// The meal [presetLogSlot] named, if any, and forgets it.
+  MealSlot? takeLogSlot() {
+    final slot = _nextLogSlot;
+    _nextLogSlot = null;
+    return slot;
+  }
+
   /// Her remembered plates as of the last write this session made.
   EatPrefs get prefs => _prefs;
 

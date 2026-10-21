@@ -124,6 +124,28 @@ class _ConsentViewState extends State<ConsentView> {
   /// What the last failure was, read from the server's answer.
   CallFailureKind? _failure;
 
+  /// True once the whole disclosure has been scrolled into view (or it fits
+  /// without scrolling). The agree button stays inert until then, so she
+  /// cannot agree to a sentence she has not been shown.
+  bool _readToEnd = false;
+
+  bool _onScroll(Notification n) {
+    final ScrollMetrics? metrics = switch (n) {
+      ScrollNotification() when n.depth == 0 => n.metrics,
+      ScrollMetricsNotification() when n.depth == 0 => n.metrics,
+      _ => null,
+    };
+    if (metrics == null || metrics.axis != Axis.vertical) return false;
+    final atEnd = metrics.extentAfter <= 24;
+    if (atEnd && !_readToEnd) {
+      // Notifications can fire during layout; defer the rebuild.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _readToEnd = true);
+      });
+    }
+    return false;
+  }
+
   final GlobalKey _agreeKey = GlobalKey();
   final FocusNode _agreeFocus = FocusNode();
 
@@ -186,146 +208,158 @@ class _ConsentViewState extends State<ConsentView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
-    return AppScaffold(
-      appBar: AppTopBar(title: widget.title ?? '', onBack: widget.onBack),
-      footer: [
-        if (_failed)
-          Semantics(
-            liveRegion: true,
-            child: Text(
-              switch (_failure) {
-                CallFailureKind.appCannotReach =>
-                  l10n.thisCopyOfTheAppCannotReach_1dlg6,
-                CallFailureKind.signInAgain =>
-                  l10n.yourSignInIsNoLongerValid_1cfl5,
-                _ => l10n.weCouldNotSaveYourAgreementSo,
-              },
-              key: const ValueKey('consent-error'),
-              style: AppText.bodyM.copyWith(color: AppColors.error),
+    final canAgree = _readToEnd && !_recording;
+    return NotificationListener<Notification>(
+      onNotification: _onScroll,
+      child: AppScaffold(
+        appBar: AppTopBar(title: widget.title ?? '', onBack: widget.onBack),
+        footerScrollsWhenLarge: true,
+        footer: [
+          if (_failed)
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                switch (_failure) {
+                  CallFailureKind.appCannotReach =>
+                    l10n.thisCopyOfTheAppCannotReach_1dlg6,
+                  CallFailureKind.signInAgain =>
+                    l10n.yourSignInIsNoLongerValid_1cfl5,
+                  _ => l10n.weCouldNotSaveYourAgreementSo,
+                },
+                key: const ValueKey('consent-error'),
+                style: AppText.bodyM.copyWith(color: AppColors.error),
+              ),
+            ),
+          if (_failed &&
+              _failure == CallFailureKind.signInAgain &&
+              widget.onSignInAgain != null)
+            AppButton(
+              l10n.signInAgain,
+              variant: AppButtonVariant.outlined,
+              onPressed: widget.onSignInAgain,
+            ),
+          if (!_readToEnd)
+            Text(
+              l10n.readToTheEndToAgree,
+              key: const ValueKey('consent-read-hint'),
+              textAlign: TextAlign.center,
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+          Focus(
+            key: _agreeKey,
+            focusNode: _agreeFocus,
+            child: AppButton(
+              l10n.iAgreeStartTheCamera,
+              icon: Icons.photo_camera,
+              onPressed: canAgree ? _agree : null,
             ),
           ),
-        if (_failed &&
-            _failure == CallFailureKind.signInAgain &&
-            widget.onSignInAgain != null)
           AppButton(
-            l10n.signInAgain,
-            variant: AppButtonVariant.outlined,
-            onPressed: widget.onSignInAgain,
-          ),
-        Focus(
-          key: _agreeKey,
-          focusNode: _agreeFocus,
-          child: AppButton(
-            l10n.iAgreeStartTheCamera,
-            icon: Icons.photo_camera,
-            onPressed: _recording ? null : _agree,
-          ),
-        ),
-        if (widget.onNiqabPath != null)
-          AppButton(
-            l10n.iWearNiqabCheckMeAnotherWay,
+            l10n.iWouldRatherNot,
             variant: AppButtonVariant.text,
             height: 48,
             fontSize: 15,
-            onPressed: widget.onNiqabPath,
+            onPressed: widget.onDeclined,
           ),
-        AppButton(
-          l10n.iWouldRatherNot,
-          variant: AppButtonVariant.text,
-          height: 48,
-          fontSize: 15,
-          onPressed: widget.onDeclined,
-        ),
-      ],
-      children: [
-        Text(l10n.beforeTheCameraOpens, style: AppText.display),
-        Text(
-          l10n.youWillPhotographTheFrontAndBack,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
-        // Two routes of equal weight. The camera route is continued by the
-        // agree button below, after the disclosure; the other leaves for
-        // `C15` at once.
-        Text(l10n.howWouldYouLikeToBeChecked, style: AppText.titleM),
-        IntrinsicHeight(
-          child: Row(
+        ],
+        children: [
+          Text(l10n.beforeTheCameraOpens, style: AppText.display),
+          Text(
+            l10n.youWillPhotographTheFrontAndBack,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          // Two routes of equal weight. The camera route is continued by the
+          // agree button below, after the disclosure; the other leaves for
+          // `C15` at once.
+          Text(l10n.howWouldYouLikeToBeChecked, style: AppText.titleM),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: 12,
+              children: [
+                Expanded(
+                  child: _RouteCard(
+                    key: const ValueKey('c09b-route-id'),
+                    icon: Icons.badge_outlined,
+                    title: l10n.idCardAndASelfie,
+                    subtitle: l10n.aboutMinutesMinutes('2'),
+                    onTap: _showAgreeButton,
+                  ),
+                ),
+                Expanded(
+                  child: _RouteCard(
+                    key: const ValueKey('c09b-route-woman'),
+                    icon: Icons.support_agent,
+                    title: l10n.talkToAWomanReviewer,
+                    subtitle: l10n.aShortCall,
+                    onTap: widget.onDeclined,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 12,
+            spacing: 14,
             children: [
-              Expanded(
-                child: _RouteCard(
-                  key: const ValueKey('c09b-route-id'),
-                  icon: Icons.badge_outlined,
-                  title: l10n.idCardAndASelfie,
-                  subtitle: l10n.aboutMinutesMinutes('2'),
-                  onTap: _showAgreeButton,
-                ),
+              // Named, not implied. "Processed securely" is what a privacy page
+              // says when it does not want to say Frankfurt. Google Cloud alone:
+              // a consent screen naming a processor we do not use is consent to
+              // something that is not happening.
+              VerificationBullet(
+                icon: Icons.cloud_outlined,
+                text: l10n.yourPhotosGoToOurServerIn,
               ),
-              Expanded(
-                child: _RouteCard(
-                  key: const ValueKey('c09b-route-woman'),
-                  icon: Icons.support_agent,
-                  title: l10n.talkToAWomanReviewer,
-                  subtitle: l10n.aShortCall,
-                  onTap: widget.onDeclined,
-                ),
+              // The face match runs on our own server with open models. No
+              // outside face recognition service is called.
+              VerificationBullet(
+                icon: Icons.face_retouching_natural,
+                text: l10n.yourFaceIsMatchedOnOurOwn,
+              ),
+              // Nothing is kept, for anybody, ever: the photographs are deleted
+              // outright whatever the outcome.
+              VerificationBullet(
+                icon: Icons.delete_outline,
+                text: l10n.noPhotoIsEverStoredBothSides,
+              ),
+              // What IS kept, and for how long: the result for 180 days, and
+              // the keyed code that stops one card opening two accounts.
+              VerificationBullet(
+                icon: Icons.lock_outline,
+                text: l10n.weKeepTheResultAndItsReasons,
+              ),
+              // Which is why review is a person and not a queue of photographs.
+              VerificationBullet(
+                icon: Icons.support_agent,
+                text: l10n.ifTheCheckCannotDecideYouCan,
+              ),
+              // Said out loud because it is a restriction people expect to be a
+              // bug. She cannot upload an old picture, and neither can anybody
+              // holding a picture of her.
+              VerificationBullet(
+                icon: Icons.photo_camera_outlined,
+                text: l10n.theCameraIsTheOnlyWayIn,
               ),
             ],
           ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: 14,
-          children: [
-            // Named, not implied. "Processed securely" is what a privacy page
-            // says when it does not want to say Frankfurt. Google Cloud alone:
-            // a consent screen naming a processor we do not use is consent to
-            // something that is not happening.
-            VerificationBullet(
-              icon: Icons.cloud_outlined,
-              text: l10n.yourPhotosGoToOurServerIn,
+          if (widget.onOpenPrivacy != null)
+            AppButton(
+              l10n.readThePrivacyPolicy,
+              variant: AppButtonVariant.text,
+              height: 44,
+              fontSize: 15,
+              onPressed: widget.onOpenPrivacy,
             ),
-            // The face match runs on our own server with open models. No
-            // outside face recognition service is called.
-            VerificationBullet(
-              icon: Icons.face_retouching_natural,
-              text: l10n.yourFaceIsMatchedOnOurOwn,
+          if (widget.onNiqabPath != null)
+            AppButton(
+              l10n.iWearNiqabCheckMeAnotherWay,
+              variant: AppButtonVariant.text,
+              height: 48,
+              fontSize: 15,
+              onPressed: widget.onNiqabPath,
             ),
-            // Nothing is kept, for anybody, ever: the photographs are deleted
-            // outright whatever the outcome.
-            VerificationBullet(
-              icon: Icons.delete_outline,
-              text: l10n.noPhotoIsEverStoredBothSides,
-            ),
-            // What IS kept, and for how long: the result for 180 days, and
-            // the keyed code that stops one card opening two accounts.
-            VerificationBullet(
-              icon: Icons.lock_outline,
-              text: l10n.weKeepTheResultAndItsReasons,
-            ),
-            // Which is why review is a person and not a queue of photographs.
-            VerificationBullet(
-              icon: Icons.support_agent,
-              text: l10n.ifTheCheckCannotDecideYouCan,
-            ),
-            // Said out loud because it is a restriction people expect to be a
-            // bug. She cannot upload an old picture, and neither can anybody
-            // holding a picture of her.
-            VerificationBullet(
-              icon: Icons.photo_camera_outlined,
-              text: l10n.theCameraIsTheOnlyWayIn,
-            ),
-          ],
-        ),
-        if (widget.onOpenPrivacy != null)
-          AppButton(
-            l10n.readThePrivacyPolicy,
-            variant: AppButtonVariant.text,
-            height: 44,
-            fontSize: 15,
-            onPressed: widget.onOpenPrivacy,
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

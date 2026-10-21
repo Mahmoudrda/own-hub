@@ -27,6 +27,7 @@ VIA_TEST_PHONE = "testPhone"
 VIA_STORE_REVIEWER = "storeReviewer"
 VIA_KNOWN_CONTACT = "knownContact"
 APPROVE_REASONS = ("approve", "knownPerson")
+DECLINE_REASONS = ("notClear", "notMatching", "other")
 
 _EASTERN_DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹", "01234567890123456789")
 
@@ -184,6 +185,44 @@ def revoke(reviewer_uid: str, uid: Any) -> str:
     _forget_preapproved(uid)
     rs.log_access(reviewer_uid, flag_id, "revoke")
     return review.STATE_PENDING
+
+
+def decline(reviewer_uid: str, uid: Any, reason: Any = "other") -> str:
+    """The decline, as auditable as an approve: her open flag (if any) is closed
+    as rejected and her state set to rejected in one transaction, the ledger
+    records who, when and why (a fixed code, never free text), and the access
+    log gets a line. A reviewer cannot decline herself."""
+    uid = _uid(uid)
+    if uid == reviewer_uid:
+        _fail(review.PRECONDITION, reasons.REVIEWER_IS_SUBJECT)
+    if reason not in DECLINE_REASONS:
+        _fail(review.INVALID)
+    rs = store.FirestoreReviewStore()
+    flag_id = rs.open_flag_id(uid)
+    if flag_id:
+        refusal = rs.close_flag(
+            flag_id,
+            uid=uid,
+            state=decisions.REJECTED_FAILED,
+            reviewer_uid=reviewer_uid,
+            reviewer_reason=reasons.REVIEWER_REJECTED,
+            user_state=review.STATE_REJECTED,
+        )
+        if refusal:
+            _fail(review.PRECONDITION, refusal)
+    else:
+        rs.set_verification_state(uid, review.STATE_REJECTED, decided=True)
+    _ledger_ref(uid).set(
+        {
+            "declinedBy": reviewer_uid,
+            "declinedAt": firestore.SERVER_TIMESTAMP,
+            "declineReason": reason,
+        },
+        merge=True,
+    )
+    rs.log_access(reviewer_uid, flag_id or uid, "decline")
+    _drop_bookings(uid)
+    return review.STATE_REJECTED
 
 
 def _forget_preapproved(uid: str) -> None:

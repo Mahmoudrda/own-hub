@@ -82,14 +82,17 @@ import '../features/progress/domain/progress_repository.dart';
 import '../features/signup/domain/locale_preference.dart';
 import '../features/today/domain/today_day.dart';
 import '../features/today/domain/today_repository.dart';
+import '../features/train/domain/custom_workout.dart';
 import '../features/train/domain/getting_started_tips.dart';
 import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/train_repository.dart';
 import '../features/train/domain/training_reminders.dart';
+import 'chosen_programme.dart';
 import 'first_gym_guide_state.dart';
 import '../routing/app_router.dart';
 import 'coach_invite_state.dart';
 import 'coach_profile_state.dart';
+import 'custom_workout_state.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
 import 'rewards_state.dart';
@@ -148,6 +151,8 @@ abstract final class AppSnapshot {
     'invite': _captureInvite(),
     'awards': _captureAwards(),
     'trainingStreak': _captureTrainingStreak(),
+    'chosenProgramme': ?_captureChosenProgramme(),
+    'customWorkouts': ?_captureCustomWorkouts(),
     'guest': ?_captureGuest(),
   };
 
@@ -219,6 +224,8 @@ abstract final class AppSnapshot {
     'invite': _readInvite,
     'awards': _readAwards,
     'trainingStreak': _readTrainingStreak,
+    'chosenProgramme': _readChosenProgramme,
+    'customWorkouts': _readCustomWorkouts,
     'guest': _readGuest,
     // After `train`: it points at a session that section restores.
     'liveSession': _readLiveSession,
@@ -1302,9 +1309,10 @@ EatPrefs? _readEatPrefs(Object? raw) {
         if (id.isNotEmpty) id,
     ].take(kFavouriteCap).toList(),
     customFoods: [
-      for (final raw in (row['customFoods'] is List
-          ? row['customFoods'] as List
-          : const []))
+      for (final raw
+          in (row['customFoods'] is List
+              ? row['customFoods'] as List
+              : const []))
         ?CustomFood.fromJson(raw),
     ].take(kCustomFoodCap).toList(),
   );
@@ -1840,6 +1848,7 @@ Map<String, Object?> _captureReminders() => <String, Object?>{
   'checkIns': ReminderState.instance.prefs.checkIns,
   'restAlert': ReminderState.instance.prefs.restAlert,
   'tipsOn': ReminderState.instance.prefs.tips,
+  'nudgesOn': ReminderState.instance.prefs.nudges,
   'lastActiveAt': _dayOf(ReminderState.instance.lastActiveAt),
   'lastSessionAt': _dayOf(ReminderState.instance.lastSessionAt),
   // The getting started tips. To the minute, unlike the two above: a tip's
@@ -1863,6 +1872,7 @@ void Function()? _readReminders(Object? raw) {
     checkIns: _bool(section['checkIns']) ?? true,
     restAlert: _bool(section['restAlert']) ?? true,
     tips: _bool(section['tipsOn']) ?? true,
+    nudges: _bool(section['nudgesOn']) ?? true,
   );
   final active = DateTime.tryParse(_str(section['lastActiveAt']) ?? '');
   final session = DateTime.tryParse(_str(section['lastSessionAt']) ?? '');
@@ -2261,4 +2271,42 @@ void Function()? _readGuest(Object? raw) {
       ..pending = action
       ..pendingAt = at;
   };
+}
+
+Map<String, Object?>? _captureChosenProgramme() {
+  final family = ChosenProgramme.family;
+  return family == null ? null : <String, Object?>{'family': family};
+}
+
+void Function()? _readChosenProgramme(Object? raw) {
+  final section = _map(raw);
+  final family = section == null ? null : _str(section['family']);
+  if (family == null || family.isEmpty) return null;
+  return () => ChosenProgramme.family = family;
+}
+
+// --------------------------------------------------------- customWorkouts ---
+
+Map<String, Object?>? _captureCustomWorkouts() {
+  final state = CustomWorkoutState.instance;
+  if (state.workouts.isEmpty && state.deletedIds.isEmpty) return null;
+  return <String, Object?>{
+    'saved': [for (final workout in state.workouts) workout.toJson()],
+    'deleted': state.deletedIds,
+  };
+}
+
+void Function()? _readCustomWorkouts(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final saved = <CustomWorkout>[
+    for (final entry in _list(section['saved']) ?? const <Object?>[])
+      ?CustomWorkout.tryParse(entry),
+  ];
+  final deleted = <String>[
+    for (final id in _strings(section['deleted']))
+      if (isCustomWorkoutId(id)) id,
+  ];
+  return () =>
+      CustomWorkoutState.instance.restoreSaved(saved: saved, deleted: deleted);
 }

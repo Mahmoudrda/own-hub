@@ -53,6 +53,7 @@ import '../../../ui/app_card.dart';
 import '../../../ui/app_progress.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_week_segments.dart';
+import '../../../ui/hand/finish_wipe.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/hand/paper_confetti.dart';
 import '../domain/own_best_challenge.dart';
@@ -331,10 +332,11 @@ class FinishedView extends StatelessWidget {
                 // Built here so it can read the reveal it is inside.
                 Builder(
                   builder: (context) => AppWeekSegments(
+                    style: WeekStyle.marks,
                     total: weekTarget,
                     filled: weekDone,
-                    style: WeekStyle.marks,
                     lead: revealLead(context, 2),
+                    stagger: HandTiming.staggerStep,
                     popIndex: credited && weekDone > 0 ? weekDone - 1 : null,
                   ),
                 ),
@@ -442,11 +444,13 @@ class FinishedView extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (_showsStreak(streakStatus))
-                        Text(
-                          l10n.daysPluralOneTrainingStreak1Day(
-                            streakStatus!.days,
-                          ),
+                        // Counts up from one to her days, once.
+                        RevealCount(
                           key: const ValueKey('r10TrainingStreak'),
+                          index: _cheerStage,
+                          from: 1,
+                          value: streakStatus!.days,
+                          format: l10n.daysPluralOneTrainingStreak1Day,
                           style: AppText.bodyM.copyWith(
                             color: AppColors.onSurface,
                           ),
@@ -516,15 +520,22 @@ class FinishedView extends StatelessWidget {
       ],
     );
 
-    return FinishReveal(
+    FinishReveal reveal({required bool hold}) => FinishReveal(
       // One reveal for the page: it plays once, not again when the page
       // redraws, and runs on from the first stage when the summary lands.
       key: const ValueKey('r10-reveal'),
       stages: 7,
       enabled: revealOn && summary != null,
+      hold: hold,
       onStageShown: summary == null ? null : stageShown,
       child: page,
     );
+    // After a measured live session a pale-pink ribbon wipes across once and
+    // uncovers the page, and the reveal begins when it has gone. Not a second
+    // celebration: the confetti stays the peak. Nothing is drawn under Reduce
+    // Motion or for a recalled session.
+    if (!revealOn || !measured) return reveal(hold: false);
+    return _WipedReveal(builder: reveal);
   }
 
   /// The points this session actually earned, as a quiet line with the level
@@ -607,4 +618,35 @@ class FinishedView extends StatelessWidget {
         ? l10n.youBeatLastWeekOnMoveAmount(name, amount)
         : l10n.youMatchedLastWeekOnMoveAmount(name, amount);
   }
+}
+
+/// The page under the finish wipe: the reveal waits until the ribbon has
+/// crossed, so no stage plays under the cover.
+class _WipedReveal extends StatefulWidget {
+  const _WipedReveal({required this.builder});
+
+  final Widget Function({required bool hold}) builder;
+
+  @override
+  State<_WipedReveal> createState() => _WipedRevealState();
+}
+
+class _WipedRevealState extends State<_WipedReveal> {
+  bool _covered = true;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    fit: StackFit.passthrough,
+    children: [
+      widget.builder(hold: _covered),
+      Positioned.fill(
+        child: FinishWipe(
+          key: const ValueKey('r10-wipe'),
+          onDone: () {
+            if (mounted) setState(() => _covered = false);
+          },
+        ),
+      ),
+    ],
+  );
 }

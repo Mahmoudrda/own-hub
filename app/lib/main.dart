@@ -10,13 +10,17 @@ import 'app_state/analytics_session.dart';
 import 'app_state/posthog_analytics.dart';
 import 'app_state/cloud_store.dart';
 import 'app_state/crash_consent.dart';
-import 'app_state/kitten_setting.dart';
+import 'app_state/first_run_moments.dart';
 import 'app_state/tip_anchors.dart';
 import 'features/eat/data/meal_camera.dart' show sweepCameraLeftovers;
+import 'features/onboarding/presentation/deep_breath_view.dart';
+import 'ui/hand/launch_splash.dart';
+import 'features/eat/domain/meal_images.dart';
 import 'app_state/crash_reports.dart';
 import 'app_state/eat_state.dart';
 import 'app_state/events_state.dart';
 import 'app_state/remote_features.dart';
+import 'app_state/community_foods_state.dart';
 import 'app_state/exercise_library_state.dart';
 import 'app_state/workout_library_state.dart';
 import 'app_state/content_images.dart';
@@ -107,16 +111,23 @@ Future<void> main() async {
   unawaited(
     PostHogAnalytics.instance.applyConsent(AnalyticsConsent.instance.allowed),
   );
-  await KittenSetting.instance.load();
   // The day each account on this phone first landed, so a woman signing back
   // in does not get the getting started tips again.
   await TipAnchors.instance.load();
+  // Whether the first-launch breath and the plan tick have been shown.
+  await FirstRunMoments.instance.load();
   // The starting programmes, bundled. A file that cannot be read leaves the
   // placeholder catalogue, and Train is what it was.
   try {
     StartingProgrammes.adopt(
       await rootBundle.loadString(StartingProgrammes.assetPath),
     );
+  } catch (_) {}
+
+  // Which painted meal pictures are bundled. Unreadable means none, and every
+  // screen keeps its drawn mark.
+  try {
+    MealImages.adopt(await rootBundle.loadString(MealImages.indexPath));
   } catch (_) {}
 
   // The back end, brought up AFTER her local week and unable to fail the
@@ -245,6 +256,8 @@ Future<void> main() async {
     await CloudStore.instance.start();
   }());
 
+  // Only a cold start draws the logo on; a resume never builds the app again.
+  LaunchSplash.enabled = true;
   runApp(const OwnHubApp());
 
   // Any photo file the camera left behind (a shutter that failed after it
@@ -278,6 +291,12 @@ Future<void> main() async {
   // she opens a move.
   WidgetsBinding.instance.addPostFrameCallback(
     (_) => unawaited(ExerciseLibraryState.instance.refresh()),
+  );
+
+  // The foods other women shared and the owner approved: the cache at once,
+  // the server at most once a day.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(CommunityFoodsState.instance.refresh()),
   );
 
   // The Egyptian dish pack, so the plates Home offers can be named and logged
@@ -339,6 +358,9 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
   /// update sheet. Owned here so every app gets its own.
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
+  /// Read once: the logo draws on at a cold start only.
+  final bool _coldStart = LaunchSplash.takeColdStart();
+
   @override
   void initState() {
     super.initState();
@@ -367,7 +389,6 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // a return after a quiet week, after the first frame and again whenever
     // she allows statistics. Nothing leaves the phone unless she allowed it.
     AnalyticsConsent.onGranted = _describeForStatistics;
-    KittenSetting.instance.addListener(_reportKitten);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _describeForStatistics();
       unawaited(AnalyticsSession.noteOpened(DateTime.now()));
@@ -388,9 +409,6 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
 
   void _reportLanguage() =>
       AnalyticsSession.languageChanged(_locale.value.languageCode);
-
-  void _reportKitten() =>
-      AnalyticsSession.kittenChanged(KittenSetting.instance.moves);
 
   void _describeForStatistics() => unawaited(
     AnalyticsSession.describe(languageCode: _locale.value.languageCode),
@@ -417,6 +435,7 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
       // A library published while she was away, or one an offline launch
       // could not fetch. Rate-limited inside; usually a no-op.
       unawaited(ExerciseLibraryState.instance.refresh());
+      unawaited(CommunityFoodsState.instance.refresh());
       unawaited(CrashReports.trail(CrashTrail.resumed));
       unawaited(AnalyticsSession.noteOpened(DateTime.now()));
       _noteOpened();
@@ -475,7 +494,6 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     _locale.removeListener(_reapplyReminders);
     _locale.removeListener(_relabelWidgets);
     _locale.removeListener(_reportLanguage);
-    KittenSetting.instance.removeListener(_reportKitten);
     if (AnalyticsConsent.onGranted == _describeForStatistics) {
       AnalyticsConsent.onGranted = null;
     }
@@ -595,7 +613,19 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     final setup = AppRouter.onGenerateRoute(
       RouteSettings(name: appRoutes['O01']!.name),
     );
-    return setup == null ? [front] : [front, setup];
+    if (setup == null) return [front];
+    // The very first launch of a phone with nobody signed in: one deep breath
+    // on top of the questions, shown once. Never for a returning member.
+    if (FirstRunMoments.instance.breathDue &&
+        AppRouter.signedInUid == null &&
+        !OnboardingState.instance.beforeSignup) {
+      return [
+        front,
+        setup,
+        MaterialPageRoute<void>(builder: (_) => const DeepBreathView()),
+      ];
+    }
+    return [front, setup];
   }
 
   @override
@@ -637,6 +667,10 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
             onGenerateInitialRoutes: _firstRunStack,
             onGenerateRoute: AppRouter.onGenerateRoute,
             onUnknownRoute: AppRouter.onUnknownRoute,
+            builder: (context, child) => LaunchSplash(
+              show: _coldStart,
+              child: child ?? const SizedBox(),
+            ),
             scrollBehavior: const _CalmScrollBehavior(),
           ),
         ),

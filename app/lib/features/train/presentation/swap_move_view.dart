@@ -27,6 +27,7 @@ import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
 import '../domain/train_repository.dart';
+import 'exercise_labels.dart' show MoveName;
 import 'train_widgets.dart';
 import 'workout_day_view.dart' show sampleWorkoutDay;
 
@@ -35,6 +36,7 @@ class SwapMoveView extends StatefulWidget {
     super.key,
     this.onBack,
     this.onSwapped,
+    this.onSkip,
     this.onSelectTab,
     this.alternatives,
     this.moves,
@@ -49,6 +51,10 @@ class SwapMoveView extends StatefulWidget {
 
   /// Called once the swap has been recorded.
   final ValueChanged<MoveAlternative>? onSwapped;
+
+  /// Offered when the move has no alternative, so the sheet is never a dead
+  /// end: she can leave this move out of today. Null offers only Close.
+  final VoidCallback? onSkip;
 
   final ValueChanged<String>? onSelectTab;
 
@@ -226,7 +232,7 @@ class _SwapMoveViewState extends State<SwapMoveView> {
                   child: AppSheet(
                     children: [
                       Text(l10n.swapThisMove, style: AppText.titleL),
-                      _SwapChoices(
+                      SwapChoices(
                         candidates:
                             widget.alternatives ??
                             _found ??
@@ -235,6 +241,12 @@ class _SwapMoveViewState extends State<SwapMoveView> {
                                 : const <MoveAlternative>[]),
                         onConfirm: _confirm,
                         onClose: _dismiss,
+                        onSkip: widget.onSkip == null
+                            ? null
+                            : () {
+                                _dismiss();
+                                widget.onSkip!();
+                              },
                       ),
                     ],
                   ),
@@ -252,22 +264,27 @@ class _SwapMoveViewState extends State<SwapMoveView> {
 ///
 /// Stateful so the selection is visible before she confirms — picking and
 /// confirming are two different taps, and she should see what she picked.
-class _SwapChoices extends StatefulWidget {
-  const _SwapChoices({
+class SwapChoices extends StatefulWidget {
+  const SwapChoices({
+    super.key,
     required this.candidates,
     required this.onConfirm,
     required this.onClose,
+    this.onSkip,
   });
 
   final List<MoveAlternative> candidates;
   final ValueChanged<MoveAlternative> onConfirm;
   final VoidCallback onClose;
 
+  /// The next step when there is nothing to swap to.
+  final VoidCallback? onSkip;
+
   @override
-  State<_SwapChoices> createState() => _SwapChoicesState();
+  State<SwapChoices> createState() => _SwapChoicesState();
 }
 
-class _SwapChoicesState extends State<_SwapChoices> {
+class _SwapChoicesState extends State<SwapChoices> {
   int _chosen = 0;
 
   @override
@@ -284,6 +301,14 @@ class _SwapChoicesState extends State<_SwapChoices> {
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
           const SizedBox(height: kStackGap),
+          if (widget.onSkip != null) ...[
+            AppButton(
+              l10n.skipThisMove,
+              key: const ValueKey('r05-skip-move'),
+              onPressed: widget.onSkip,
+            ),
+            const SizedBox(height: kStackGap),
+          ],
           AppButton(
             l10n.close,
             variant: AppButtonVariant.text,
@@ -301,6 +326,10 @@ class _SwapChoicesState extends State<_SwapChoices> {
           if (i > 0) const SizedBox(height: kStackGap),
           AppListItem(
             title: widget.candidates[i].name,
+            titleWidget: MoveName(
+              widget.candidates[i].name,
+              style: AppText.titleM,
+            ),
             subtitle: widget.candidates[i].reason,
             variant: i == _chosen
                 ? AppCardVariant.selected

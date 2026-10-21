@@ -20,6 +20,9 @@ import 'package:flutter/services.dart'
 import '../app_state/account_data.dart';
 import '../app_state/admin_backends.dart';
 import '../app_state/app_changes.dart';
+import '../app_state/chosen_programme.dart';
+import '../app_state/community_foods_state.dart';
+import '../app_state/custom_workout_state.dart';
 import '../app_state/blocking.dart';
 import '../app_state/cloud_store.dart';
 import '../app_state/analytics_consent.dart';
@@ -73,6 +76,7 @@ import '../domain/analytics/analytics_gateway.dart';
 import '../domain/flags/feature_flags.dart';
 import '../domain/format/day_key.dart';
 import '../domain/format/number_label.dart' show countLabel;
+import '../ui/app_nav_bar.dart' show tabsFor;
 import '../ui/app_step_progress.dart';
 import '../ui/app_undo_snackbar.dart';
 import '../ui/language_switch.dart';
@@ -100,13 +104,14 @@ import '../features/eat/presentation/type_it_view.dart';
 import '../features/eat/presentation/week_plan_view.dart';
 import '../features/onboarding/domain/intake_repository.dart';
 import '../features/onboarding/domain/intake.dart'
-    show TrainingLevel, TrainingPlace;
+    show Intake, TrainingLevel, TrainingPlace;
 import '../features/onboarding/presentation/equipment_view.dart';
 import '../features/onboarding/presentation/goal_view.dart';
 import '../features/onboarding/presentation/her_answers.dart';
 import '../features/onboarding/presentation/life_stage_view.dart';
 import '../features/onboarding/presentation/place_view.dart';
 import '../features/onboarding/presentation/schedule_view.dart';
+import '../features/onboarding/presentation/programme_cards.dart';
 import '../features/onboarding/presentation/starting_program_view.dart';
 import '../features/signup/data/callable_capture_consent_store.dart';
 import '../features/signup/data/callable_legal_acceptance_store.dart';
@@ -160,11 +165,14 @@ import '../features/train/domain/own_best_challenge.dart';
 import '../features/train/domain/rest_policy.dart';
 import '../features/train/domain/session_bests_bridge.dart';
 import '../features/train/domain/set_history.dart';
-import '../features/train/domain/exercise_library.dart' show LibraryExercise;
+import '../features/train/domain/exercise_library.dart'
+    show LibraryEquipment, LibraryExercise, blockedMoveIds;
 import '../features/train/domain/train_repository.dart';
 import '../features/train/presentation/exercise_labels.dart' show equipmentLine;
 import '../features/train/presentation/change_set_view.dart';
 import '../features/train/presentation/set_labels.dart' show moveTitle;
+import '../features/train/presentation/exercise_clip_player.dart'
+    show VideoPlayerClipPlayer;
 import '../features/train/presentation/exercise_video_view.dart';
 import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/training_reminders.dart';
@@ -234,7 +242,11 @@ import '../features/events/domain/event_repository.dart';
 import '../features/events/domain/hub_event.dart';
 import '../features/events/presentation/events_view.dart';
 import '../features/onboarding/domain/starting_program.dart'
-    show StartingProgram, StartingProgrammes, selectStartingProgram;
+    show
+        StartingProgram,
+        StartingProgrammes,
+        rankStartingPrograms,
+        topStartingPrograms;
 import '../domain/training/prescribed_set.dart' show LoggedSet, PrescribedSet;
 import '../features/train/domain/load_advice.dart';
 import '../features/train/domain/weight_label.dart' show weightLabel;
@@ -242,6 +254,10 @@ import '../features/train/domain/programme_week.dart';
 import '../features/train/domain/workout_library.dart'
     show AuthoredProgramme, AuthoredSession, libraryRowId;
 import '../features/train/presentation/authored_workout.dart';
+import '../features/train/domain/custom_workout.dart';
+import '../features/train/presentation/custom_workout_builder_view.dart';
+import '../features/train/presentation/move_picker_view.dart';
+import '../features/train/presentation/name_workout_sheet.dart';
 import '../features/coach/domain/coach_repository.dart';
 import '../features/coach/domain/enquiry.dart';
 import '../features/coach/presentation/coach_basics_view.dart';
@@ -2004,7 +2020,6 @@ class AppRouter {
       // The deletion itself, asked and explained in its own sheet. It opened
       // her profile, two taps short of what the button said.
       onDeleteMyData: () => openYourData(context),
-      onSelectTab: (screenId) => goToTab(context, screenId),
       // R4: a flag the automatic check raised is not her asking for a call.
       reviewAsked: reviewAsked,
       requester: identityCheck.reviews,
@@ -2214,6 +2229,7 @@ class AppRouter {
         ? StartingProgramView(
             showSteps: featureFlags.isOn(Feature.reassuringWaits),
             repository: intakeRepository,
+            onChoose: ChosenProgramme.choose,
             onBack: () => Navigator.of(context).maybePop(),
             title: '',
             onSaveMyWeek: () {
@@ -2231,6 +2247,7 @@ class AppRouter {
         ? StartingProgramView(
             showSteps: featureFlags.isOn(Feature.reassuringWaits),
             repository: intakeRepository,
+            onChoose: ChosenProgramme.choose,
             saveLabel: AppL10n.of(context).saveMyChanges,
             onSaveMyWeek: () {
               final messenger = ScaffoldMessenger.maybeOf(context);
@@ -2247,8 +2264,15 @@ class AppRouter {
         ? StartingProgramView(
             showSteps: featureFlags.isOn(Feature.reassuringWaits),
             repository: intakeRepository,
+            onChoose: ChosenProgramme.choose,
             beforeSignup: true,
             title: signupPhaseLabel(AppL10n.of(context), SignupPhase.week),
+            promiseFirst: true,
+            onBuildOwn: () {
+              CustomWorkoutState.instance.builderRequested = true;
+              OnboardingState.instance.leaveSetup(context);
+              goToTab(context, 'R01');
+            },
             onBack: () => Navigator.of(context).maybePop(),
             onSaveAndJoin: () {
               OnboardingState.instance.finish();
@@ -2264,6 +2288,21 @@ class AppRouter {
         : StartingProgramView(
             showSteps: featureFlags.isOn(Feature.reassuringWaits),
             repository: intakeRepository,
+            onChoose: ChosenProgramme.choose,
+            promiseFirst: true,
+            onBuildOwn: () {
+              CustomWorkoutState.instance.builderRequested = true;
+              if (OnboardingState.instance.enteredFromSignup) {
+                OnboardingState.instance.leaveSetupToHome(
+                  context,
+                  home: 'T01',
+                  then: 'R01',
+                );
+                return;
+              }
+              OnboardingState.instance.leaveSetup(context);
+              goToTab(context, 'R01');
+            },
             onStartNow: () {
               if (OnboardingState.instance.enteredFromSignup) {
                 OnboardingState.instance.leaveSetupToHome(
@@ -2346,6 +2385,13 @@ class AppRouter {
         onStartSession: () => goTo(context, 'R03'),
         onRecall: () => goTo(context, 'T02'),
         onOpenMeal: () => goTo(context, 'E01'),
+        onScanMeal: screenIsOn('E12') && isVerified
+            ? () async {
+                if (await _askMealPhotoConsent(context) && context.mounted) {
+                  goTo(context, 'E12');
+                }
+              }
+            : null,
         // Her usual plate logs straight from Home and lands on the logged day.
         // `onOpenPlate` is the way in when the card has no plate to log; the
         // plates themselves go through `onLogPlate`, which writes the one she
@@ -2393,7 +2439,17 @@ class AppRouter {
         },
         // The owner's next event, when Feature.events is on and one is planned.
         nextEvent: EventsState.instance.upcoming.firstOrNull,
-        onOpenEvents: () => goTo(context, 'T09'),
+        onOpenEvents: () {
+          // Events can be the community's tab: then it is a tab root, not a
+          // screen pushed over Home with a back arrow that has nowhere to go.
+          final isTab = tabsFor(RoleScope.rolesOf(context).active)
+              .any((t) => t.screenId == 'T09');
+          if (isTab) {
+            goToTab(context, 'T09');
+          } else {
+            goTo(context, 'T09');
+          }
+        },
         // The bottom bar on the app's landing tab. Without this, TodayView's
         // AppNavBar had nothing to call and tapping Train, Community or Eat from
         // Home did nothing at all — on the first screen she sees after sign-up.
@@ -2537,10 +2593,18 @@ class AppRouter {
     // Feature.events. Read again when she opens it, at most once an hour.
     'T09': (context) {
       unawaited(EventsState.instance.refresh());
+      // Events takes the community's tab while the community is dark: then
+      // it carries the bar and no back arrow, as every tab root does.
+      final isTab = tabsFor(RoleScope.rolesOf(context).active)
+          .any((t) => t.screenId == 'T09');
       return EventsView(
         events: EventsState.instance.upcoming,
-        onBack: () => Navigator.of(context).maybePop(),
+        registrar: EventsState.instance.registrar(),
+        onSeatsChanged: EventsState.instance.setSeats,
+        onBack: isTab ? null : () => Navigator.of(context).maybePop(),
+        onSelectTab: isTab ? (screenId) => goToTab(context, screenId) : null,
         onOpenLink: (url) => openExternalLink(context, url),
+        players: VideoPlayerClipPlayer.new,
       );
     },
 
@@ -2565,10 +2629,17 @@ class AppRouter {
         final done = sessionsDoneThisWeek(trainRepository.sessions);
         final next = nextSlot(intake.days, done);
         void openSlot(int? slot) {
+          CustomWorkoutState.instance.clearDraft();
           WorkoutLibraryState.instance
             ..chosenRowId = null
             ..openedSlot = slot;
           goTo(context, 'R03');
+        }
+
+        if (CustomWorkoutState.instance.takeBuilderRequest()) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) _openBuilder(context);
+          });
         }
 
         return TrainView(
@@ -2601,6 +2672,12 @@ class AppRouter {
               ? null
               : TierTabs(selected: ViewedTier.of(intake)),
           onSeeProgram: () => goTo(context, 'R02'),
+          myWorkouts: CustomWorkoutState.instance.workouts,
+          onBuildOwn: () => _openBuilder(context),
+          onSwitchPlan: () => _changeProgramme(context, intake, her),
+          onStartMine: (mine) => startMyWorkout(context, mine),
+          onEditMine: (mine) => _openBuilder(context, editing: mine),
+          onDeleteMine: (mine) => deleteMyWorkout(context, mine),
           onOpenToday: () => goTo(context, 'T01'),
           onGentlerOption: () => goTo(context, 'R05'),
           showGentlerOption: canSwap(
@@ -2638,6 +2715,7 @@ class AppRouter {
               ExerciseLibraryState.instance.allMovesFilmed(workout.exerciseIds),
           onOpenWorkout: (workout) {
             final library = WorkoutLibraryState.instance;
+            CustomWorkoutState.instance.clearDraft();
             if (workout.id.startsWith('library:')) {
               library.chosenRowId = workout.id;
               if (library.chosenFor(stage) == null) {
@@ -2674,6 +2752,7 @@ class AppRouter {
         final done = sessionsDoneThisWeek(trainRepository.sessions);
         final next = nextSlot(intake.days, done);
         void open(int? slot) {
+          CustomWorkoutState.instance.clearDraft();
           WorkoutLibraryState.instance
             ..chosenRowId = null
             ..openedSlot = slot;
@@ -2685,8 +2764,7 @@ class AppRouter {
               ? null
               : TierTabs(selected: ViewedTier.of(intake)),
           onBack: () => Navigator.of(context).maybePop(),
-          onChangeProgram: () =>
-              goToTab(context, 'R01', arguments: const ExploreFocus()),
+          onChangeProgram: () => _changeProgramme(context, intake, her),
           onStart: () => open(null),
           title: her == null
               ? null
@@ -2717,97 +2795,107 @@ class AppRouter {
         );
       },
     ),
-    'R03': (context) => WorkoutDayView(
-      repository: trainRepository,
-      // The session she chose in Explore, when it came from the owner's library
-      // and still suits her life stage. Null is the bundled session, which is
-      // what day one always is.
-      day: chosenWorkoutDay(context),
-      // Only a library pick is written for her stage. The starting plans are
-      // drafts until Rahma signs them off, so they never claim it.
-      writtenForHerStage:
-          WorkoutLibraryState.instance.chosenFor(
-            intakeRepository.read().lifeStage,
-          ) !=
-          null,
-      // Pregnant or after a birth: day one was not written for her, and the
-      // screen says so before she starts.
-      lifeStage: intakeRepository.read().lifeStage,
-      // This week's challenge, marked on the move it is about (D38).
-      challengeExerciseId: challengeFor(
-        chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
-      )?.challenge.exerciseId,
-      challengeNote: challengeLineFor(
-        context,
-        chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
-      ),
-      onBack: () => Navigator.of(context).maybePop(),
-      // Starts the session this screen is listing, so R07 opens on its first
-      // move and its first set rather than on a fixed example.
-      onStart: () {
-        if (!GuestSession.require(
+    'R03': (context) {
+      _relabelLiveSession(context);
+      return WorkoutDayView(
+        repository: trainRepository,
+        // The session she chose in Explore, when it came from the owner's library
+        // and still suits her life stage. Null is the bundled session, which is
+        // what day one always is.
+        day: chosenWorkoutDay(context),
+        onMovesChanged: (moves) => _editToday(context, moves),
+        canSwapMove: canSwap,
+        needsEquipmentFor: _needsKit,
+        editedToday: CustomWorkoutState.instance.draft?.baseKey != null,
+        onPickMoves: () => _pickPlannedMoves(context),
+        onSaveAsMine: (moves) => _saveTodayAsMine(context, moves),
+        // Only a library pick is written for her stage. The starting plans are
+        // drafts until Rahma signs them off, so they never claim it.
+        writtenForHerStage:
+            WorkoutLibraryState.instance.chosenFor(
+              intakeRepository.read().lifeStage,
+            ) !=
+            null,
+        // Pregnant or after a birth: day one was not written for her, and the
+        // screen says so before she starts.
+        lifeStage: intakeRepository.read().lifeStage,
+        // This week's challenge, marked on the move it is about (D38).
+        challengeExerciseId: challengeFor(
+          chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
+        )?.challenge.exerciseId,
+        challengeNote: challengeLineFor(
           context,
-          const PendingAction.startWorkout(),
-        )) {
-          return;
-        }
-        void begin() {
-          unawaited(
-            analytics.track(AnalyticsEvent.sessionStarted, {
-              AnalyticsProp.isFirstTime: AnalyticsValue.flag(
-                todayRepository.day.isDayOne,
-              ),
-            }),
-          );
-          final plan =
-              chosenWorkoutDay(context) ??
-              sampleWorkoutDay(AppL10n.of(context));
-          WorkoutSessionState.instance.start(
-            plan,
-            trainRepository,
-            challenge: challengeFor(plan),
-          );
-          WorkoutLibraryState.instance.openedSlot = null;
-          if (_holdIsNext()) {
-            goTo(context, 'R06');
-          } else {
-            goTo(context, 'R07');
+          chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context)),
+        ),
+        onBack: () => Navigator.of(context).maybePop(),
+        // Starts the session this screen is listing, so R07 opens on its first
+        // move and its first set rather than on a fixed example.
+        onStart: () {
+          if (!GuestSession.require(
+            context,
+            const PendingAction.startWorkout(),
+          )) {
+            return;
           }
-        }
+          void begin() {
+            unawaited(
+              analytics.track(AnalyticsEvent.sessionStarted, {
+                AnalyticsProp.isFirstTime: AnalyticsValue.flag(
+                  todayRepository.day.isDayOne,
+                ),
+              }),
+            );
+            final plan =
+                chosenWorkoutDay(context) ??
+                sampleWorkoutDay(AppL10n.of(context));
+            WorkoutSessionState.instance.start(
+              plan,
+              trainRepository,
+              challenge: challengeFor(plan),
+            );
+            WorkoutLibraryState.instance.openedSlot = null;
+            CustomWorkoutState.instance.clearDraft();
+            if (_holdIsNext()) {
+              goTo(context, 'R06');
+            } else {
+              goTo(context, 'R07');
+            }
+          }
 
-        // "First time at the gym?", once, before her first session there. She
-        // may read it or skip it; either way it is not offered again, and her
-        // session starts from the guide's own button or from here.
-        final gym = intakeRepository.read().place != TrainingPlace.home;
-        if (gym && !FirstGymGuideState.instance.seen) {
-          FirstGymGuideState.instance.seen = true;
-          AppChanges.bump();
-          GettingStarted.settled();
-          unawaited(
-            Navigator.of(context).push<void>(
-              MaterialPageRoute<void>(
-                builder: (guide) => FirstGymGuideView(
-                  onStartWorkout: () {
-                    Navigator.of(guide).pop();
-                    begin();
-                  },
-                  onClose: () => Navigator.of(guide).pop(),
+          // "First time at the gym?", once, before her first session there. She
+          // may read it or skip it; either way it is not offered again, and her
+          // session starts from the guide's own button or from here.
+          final gym = intakeRepository.read().place != TrainingPlace.home;
+          if (gym && !FirstGymGuideState.instance.seen) {
+            FirstGymGuideState.instance.seen = true;
+            AppChanges.bump();
+            GettingStarted.settled();
+            unawaited(
+              Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (guide) => FirstGymGuideView(
+                    onStartWorkout: () {
+                      Navigator.of(guide).pop();
+                      begin();
+                    },
+                    onClose: () => Navigator.of(guide).pop(),
+                  ),
                 ),
               ),
-            ),
-          );
-          return;
-        }
-        begin();
-      },
-      // The move she tapped, carried through. It was discarded, so tapping
-      // "Dead bug" opened a demo of a goblet squat.
-      canOpenMove: (move) => clipFor(move.exerciseId) != null,
-      onOpenMove: (move) {
-        WorkoutSessionState.instance.openMove(move);
-        goTo(context, 'R04');
-      },
-    ),
+            );
+            return;
+          }
+          begin();
+        },
+        // The move she tapped, carried through. It was discarded, so tapping
+        // "Dead bug" opened a demo of a goblet squat.
+        canOpenMove: (move) => clipFor(move.exerciseId) != null,
+        onOpenMove: (move) {
+          WorkoutSessionState.instance.openMove(move);
+          goTo(context, 'R04');
+        },
+      );
+    },
     'R04': (context) {
       final opened = WorkoutSessionState.instance.openedMove;
       final library = opened == null ? null : clipFor(opened.exerciseId);
@@ -2841,6 +2929,7 @@ class AppRouter {
       moves: WorkoutSessionState.instance.moves,
       title: WorkoutSessionState.instance.day?.title,
       onBack: () => Navigator.of(context).maybePop(),
+      onSkip: () => _skipCurrentMove(context),
       // The swap replaces the move she is on, carrying its prescription with
       // it. It used to be assigned to a field nothing read, so she chose an
       // alternative and then trained the move she had just replaced.
@@ -2916,39 +3005,7 @@ class AppRouter {
         // "Skip this move" skips it: nothing is logged for it, she is on the
         // next move, and Undo puts her back here. It opened R07 on the same
         // move. With no live move (the preview) R07 is still where she goes.
-        onSkip: () {
-          final session = WorkoutSessionState.instance;
-          final skipped = session.currentMove;
-          if (skipped == null) {
-            goTo(context, 'R07');
-            return;
-          }
-          final here = ModalRoute.of(context);
-          final said = l10n.skippedName(localisedMove(l10n, skipped).name);
-          session.skipMove();
-          if (session.isComplete) {
-            // The last move: the workout ends here, as it would after a set,
-            // so there is nothing left to step back into.
-            showHonestNotice(context, said);
-            _finishWorkout();
-            goTo(context, 'R10');
-            return;
-          }
-          final notice = SessionNotice(
-            handle: changeBus.submit(
-              UndoableLog(describe: said, commit: () async {}),
-            ),
-            onUndo: () {
-              if (!session.undoLast() || !context.mounted) return;
-              Navigator.of(context).popUntil((route) => route == here);
-            },
-          );
-          if (_holdIsNext()) {
-            _goCarryingHandle(context, 'R06', notice);
-          } else {
-            _goCarryingHandle(context, 'R07', notice);
-          }
-        },
+        onSkip: () => _skipCurrentMove(context),
       );
     },
     // One tap logs the set and starts the rest timer.
@@ -2959,63 +3016,72 @@ class AppRouter {
     // canned message and no way to take the log back — rule 9 broken by the
     // wiring while every widget test stayed green, because each screen is
     // individually correct.
-    'R07': (context) => MidSetView(
-      // A swap or a skip that brought her here, with its Undo, in the page.
-      notice: noticeFrom(context),
-      repository: trainRepository,
-      sessionId: WorkoutSessionState.instance.sessionId,
-      // The move and the set she is actually on. Both were left out, so this
-      // screen asked every woman for the second set of a goblet squat for as
-      // long as she kept tapping.
-      //
-      // The fallback is the first move of the one authored session, not the
-      // widget's own fixture. R07 opened without a live session — from the
-      // all-screens index, or a deep link — fell through to that fixture and
-      // prescribed 12 kg inside a session whose own subtitle on R03 reads
-      // "Quiet · no equipment · floor". Every move the app actually has is
-      // bodyweight.
-      move: loadFor(
-        context,
-        WorkoutSessionState.instance.currentMove ??
-            sampleWorkoutDay(AppL10n.of(context)).moves.first,
-      ).move,
-      progressionLine: loadFor(
-        context,
-        WorkoutSessionState.instance.currentMove ??
-            sampleWorkoutDay(AppL10n.of(context)).moves.first,
-      ).line,
-      setIndex: WorkoutSessionState.instance.setIndex,
-      // Which move of how many. The bar read a fixed "Move 2 of 5".
-      moveNumber: WorkoutSessionState.instance.moveIndex + 1,
-      moveCount: WorkoutSessionState.instance.moveCount,
-      // What she actually lifted for this move last time, read from her own
-      // logged sets and excluding the session she is in. Null on a first
-      // session, which is the case the sage note used to get wrong: it stated
-      // "Last Tuesday: 10 kg × 10" to a woman who had never trained.
-      lastLogged: lastLoggedOutcome(
-        trainRepository,
-        WorkoutSessionState.instance.currentMove?.exerciseId,
-        exceptSessionId: WorkoutSessionState.instance.sessionId,
-      ),
-      // The session's one bus, so a set inside its five seconds is committed
-      // when she leaves rather than dropped with this screen (D41, G02).
-      bus: WorkoutSessionState.instance.bus,
-      onAttach: WorkoutSessionState.instance.attachScreen,
-      onDetach: WorkoutSessionState.instance.detachScreen,
-      sets: _setsProgress,
-      onClose: () => Navigator.of(context).maybePop(),
-      onChange: () => goTo(context, 'R08'),
-      onSetLogged: (handle) {
-        WorkoutSessionState.instance.setLogged();
-        _trackSetLogged('set');
-        _goCarryingHandle(context, 'R09', handle);
-      },
-      onMoveLogged: (handle) {
-        WorkoutSessionState.instance.moveLogged();
-        _trackSetLogged('move');
-        _goCarryingHandle(context, 'R13', handle);
-      },
-    ),
+    'R07': (context) {
+      _relabelLiveSession(context);
+      return MidSetView(
+        // A swap or a skip that brought her here, with its Undo, in the page.
+        notice: noticeFrom(context),
+        repository: trainRepository,
+        sessionId: WorkoutSessionState.instance.sessionId,
+        // The move and the set she is actually on. Both were left out, so this
+        // screen asked every woman for the second set of a goblet squat for as
+        // long as she kept tapping.
+        //
+        // The fallback is the first move of the one authored session, not the
+        // widget's own fixture. R07 opened without a live session — from the
+        // all-screens index, or a deep link — fell through to that fixture and
+        // prescribed 12 kg inside a session whose own subtitle on R03 reads
+        // "Quiet · no equipment · floor". Every move the app actually has is
+        // bodyweight.
+        move: loadFor(
+          context,
+          WorkoutSessionState.instance.currentMove ??
+              sampleWorkoutDay(AppL10n.of(context)).moves.first,
+        ).move,
+        progressionLine: loadFor(
+          context,
+          WorkoutSessionState.instance.currentMove ??
+              sampleWorkoutDay(AppL10n.of(context)).moves.first,
+        ).line,
+        setIndex: WorkoutSessionState.instance.setIndex,
+        // The move's clip, when the library holds one.
+        clip: WorkoutSessionState.instance.currentMove == null
+            ? null
+            : clipFor(WorkoutSessionState.instance.currentMove!.exerciseId),
+        media: ExerciseLibraryState.instance.media,
+        players: ExerciseLibraryState.instance.players,
+        // Which move of how many. The bar read a fixed "Move 2 of 5".
+        moveNumber: WorkoutSessionState.instance.moveIndex + 1,
+        moveCount: WorkoutSessionState.instance.moveCount,
+        // What she actually lifted for this move last time, read from her own
+        // logged sets and excluding the session she is in. Null on a first
+        // session, which is the case the sage note used to get wrong: it stated
+        // "Last Tuesday: 10 kg × 10" to a woman who had never trained.
+        lastLogged: lastLoggedOutcome(
+          trainRepository,
+          WorkoutSessionState.instance.currentMove?.exerciseId,
+          exceptSessionId: WorkoutSessionState.instance.sessionId,
+        ),
+        // The session's one bus, so a set inside its five seconds is committed
+        // when she leaves rather than dropped with this screen (D41, G02).
+        bus: WorkoutSessionState.instance.bus,
+        onAttach: WorkoutSessionState.instance.attachScreen,
+        onDetach: WorkoutSessionState.instance.detachScreen,
+        sets: _setsProgress,
+        onClose: () => Navigator.of(context).maybePop(),
+        onChange: () => goTo(context, 'R08'),
+        onSetLogged: (handle) {
+          WorkoutSessionState.instance.setLogged();
+          _trackSetLogged('set');
+          _goCarryingHandle(context, 'R09', handle);
+        },
+        onMoveLogged: (handle) {
+          WorkoutSessionState.instance.moveLogged();
+          _trackSetLogged('move');
+          _goCarryingHandle(context, 'R13', handle);
+        },
+      );
+    },
     // Opened from R13 with a set she already logged, R08 corrects it instead.
     'R08': (context) =>
         _setCorrectionFrom(context) ??
@@ -3190,9 +3256,11 @@ class AppRouter {
     'E02': (context) => TypeItView(
       constraints: eatConstraints,
       repository: mealRepository,
+      initialText: _takeTypedSentence(),
       session: (EatAppState.instance..ensureFoodPack()).session,
       history: EatAppState.instance.historyEntries(AppL10n.of(context)),
       frequent: EatAppState.instance.frequentEntries(AppL10n.of(context)),
+      targets: EatAppState.instance.targets(),
       requireAccount: GuestSession.require,
       onClose: () => Navigator.of(context).maybePop(),
       onSpeak: () => goTo(context, 'E03'),
@@ -3219,6 +3287,11 @@ class AppRouter {
       // `refused` and `failed` route to the keyboard with an explanation,
       // never to a spinner (§3.3).
       onTypeInstead: () => goTo(context, 'E02'),
+      // Edit on the result card: what she said opens in the keyboard.
+      onEditSentence: (text) {
+        _typedSentence = text;
+        goTo(context, 'E02');
+      },
       onLogged: (handle) => _goCarryingHandle(context, 'E04', handle),
       onBlocked: (refused) =>
           EatAppState.instance.explainRefusal(context, refused),
@@ -3699,6 +3772,7 @@ class AppRouter {
       onCrashReportsChanged: CrashConsent.instance.set,
       analyticsAllowed: AnalyticsConsent.instance.allowed,
       onAnalyticsChanged: AnalyticsConsent.instance.set,
+      community: CommunityFoodsState.instance,
     ),
     // Four of A04's five rows drew a chevron and had no callback at all, which
     // on the safety screen is the worst place in the product for a control
@@ -7742,6 +7816,27 @@ class AppRouter {
     ],
     tipChannelName: l10n.gettingStartedTips,
     tipChannelDescription: l10n.aFewTipsInYourFirstWeeks,
+    // [kNudgeVariants] per context, in the order of `NudgeContext`.
+    nudgeBodies: [
+      l10n.goodMorningLookingForABreakfastIdea,
+      l10n.morningHadBreakfastYetLogItIn,
+      l10n.teaFirstOrBreakfastAFewEasy,
+      l10n.breakfastOnYourPlateOnePhotoOr,
+      l10n.busyDayTenQuietMinutesOnYour,
+      l10n.notFeelingAFullSessionOneMove,
+      l10n.aShortMoveAtHomeNoKit,
+      l10n.tenMinutesInYourLivingRoomIs,
+      l10n.wonderingWhatIsForDinnerALight,
+      l10n.hadDinnerAddItToYourDay,
+      l10n.somethingWarmTonightHaveALookAt,
+      l10n.eatingDinnerSoonLogItInOne,
+      l10n.freshWeekAheadPickADayOr,
+      l10n.aNewWeekIsComingHaveA,
+      l10n.aNewWeekStartsTomorrowPlanIt,
+      l10n.yourNextWeekIsWideOpenPick,
+    ],
+    nudgeChannelName: l10n.friendlyNudges,
+    nudgeChannelDescription: l10n.aShortFriendlyNoteAtMostOnce,
   );
 
   /// The training reminders sheet, from `R10` or `A01`.
@@ -7840,6 +7935,23 @@ class AppRouter {
       ..lastSessionAt = now
       ..lastActiveAt = now;
     // The session's own write carries these with it.
+    return NotificationSync.reapplyLast(reminderScheduler, now: now);
+  }
+
+  /// She logged a meal: today's friendly nudge is answered and goes away when
+  /// the plan is rebuilt. The meal log's commit calls this.
+  /// The sentence E03 hands to E02 when she taps Edit, read once.
+  static String? _typedSentence;
+
+  static String? _takeTypedSentence() {
+    final text = _typedSentence;
+    _typedSentence = null;
+    return text;
+  }
+
+  static Future<void> noteMealLogged() {
+    final now = AppClock.now();
+    ReminderState.instance.lastActiveAt = now;
     return NotificationSync.reapplyLast(reminderScheduler, now: now);
   }
 
@@ -8502,7 +8614,9 @@ class AppRouter {
   static ({StartingProgram program, AuthoredProgramme content})?
   get herProgramme {
     final intake = intakeRepository.read();
-    final program = selectStartingProgram(intake, tier: ViewedTier.of(intake));
+    final program = ChosenProgramme.among(
+      rankStartingPrograms(intake, null, tier: ViewedTier.of(intake)),
+    );
     if (program == null) return null;
     final content = StartingProgrammes.programme(program.programId);
     return content == null ? null : (program: program, content: content);
@@ -8547,10 +8661,421 @@ class AppRouter {
         intake.minutes;
   }
 
+  // ------------------------------------------------------- her own workouts --
+
+  static final LogCommandBus _mineBus = LogCommandBus();
+
+  /// R02's "Change program" and R01's "Switch plan or pick any session": the
+  /// programme chooser, with every session of the library beneath it.
+  static void _changeProgramme(
+    BuildContext context,
+    Intake intake,
+    ({StartingProgram program, AuthoredProgramme content})? her,
+  ) {
+    void seeAll() => goToTab(context, 'R01', arguments: const ExploreFocus());
+    final fits = topStartingPrograms(intake, tier: ViewedTier.of(intake));
+    if (her == null || fits.isEmpty) {
+      seeAll();
+      return;
+    }
+    unawaited(
+      showProgrammeChooser(
+        context,
+        programs: fits,
+        intake: intake,
+        current: her.program,
+        placeAnswered: intakeRepository.placeAnswered,
+        onChoose: ChosenProgramme.choose,
+        onSeeAll: seeAll,
+      ),
+    );
+  }
+
+  /// A move of the catalogue as she adds it to a session: sets and reps to
+  /// start from, the English name, the clip's setup cue.
+  static PlannedMove _plannedFromExercise(
+    BuildContext context,
+    LibraryExercise exercise,
+  ) => plannedMoveFromCustom(
+    AppL10n.of(context),
+    Localizations.localeOf(context).languageCode,
+    CustomMove.starter(exercise),
+    exercise: exercise,
+  );
+
+  /// Opens the catalogue picker and answers the moves she ticked. A move is
+  /// offered only with its clip and only if it suits her life stage.
+  static Future<List<PlannedMove>?> _pickPlannedMoves(
+    BuildContext context,
+  ) async {
+    final screened = ExerciseLibraryState.instance.screenedFor(
+      intakeRepository.read().lifeStage,
+    );
+    final picked = await pickMoves(
+      context,
+      exercises: [
+        for (final e in screened.shown)
+          if (ExerciseLibraryState.instance.hasClip(e.id)) e,
+      ],
+      media: ExerciseLibraryState.instance.media,
+    );
+    if (picked == null || !context.mounted) return null;
+    return [for (final e in picked) _plannedFromExercise(context, e)];
+  }
+
+  /// Whether a move of the catalogue needs kit, read the way a move of her own
+  /// is drawn.
+  static bool _needsKit(String exerciseId) {
+    final exercise = ExerciseLibraryState.instance.byId(exerciseId);
+    if (exercise == null) return false;
+    return !(exercise.needsNothing ||
+        exercise.equipment.every(
+          (e) => e == LibraryEquipment.none || e == LibraryEquipment.mat,
+        ));
+  }
+
+  /// The ids among [ids] her life stage does not allow, held back from every
+  /// workout she built, saved or edited as they are from the catalogue.
+  static Set<String> _blockedIds(Iterable<String> ids) => blockedMoveIds(
+    ids,
+    ExerciseLibraryState.instance.library.exercises,
+    intakeRepository.read().lifeStage,
+  );
+
+  static List<CustomMove> _customMovesOf(List<PlannedMove> moves) => [
+    for (final move in moves) customMoveOf(move),
+  ];
+
+  /// A live session started in one language keeps its set lines in that
+  /// language until the day is swapped for the same day read in the language on
+  /// screen now. Done after the frame, never while building; the screens
+  /// repaint only when the wording really changed.
+  static void _relabelLiveSession(BuildContext context) {
+    if (!WorkoutSessionState.instance.isLive) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
+      final fresh =
+          chosenWorkoutDay(context) ?? sampleWorkoutDay(AppL10n.of(context));
+      if (WorkoutSessionState.instance.relabel(fresh)) AppChanges.bump();
+    });
+  }
+
+  /// "Skip this move" on R05 and R06: nothing is logged for it, she is on the
+  /// next move, and Undo puts her back on the screen she skipped from. With no
+  /// live move (the preview) R07 is still where she goes.
+  static void _skipCurrentMove(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final session = WorkoutSessionState.instance;
+    final skipped = session.currentMove;
+    if (skipped == null) {
+      goTo(context, 'R07');
+      return;
+    }
+    final here = ModalRoute.of(context);
+    final said = l10n.skippedName(localisedMove(l10n, skipped).name);
+    session.skipMove();
+    if (session.isComplete) {
+      // The last move: the workout ends here, as it would after a set, so
+      // there is nothing left to step back into.
+      showHonestNotice(context, said);
+      _finishWorkout();
+      goTo(context, 'R10');
+      return;
+    }
+    final notice = SessionNotice(
+      handle: changeBus.submit(
+        UndoableLog(describe: said, commit: () async {}),
+      ),
+      onUndo: () {
+        if (!session.undoLast() || !context.mounted) return;
+        Navigator.of(context).popUntil((route) => route == here);
+      },
+    );
+    if (_holdIsNext()) {
+      _goCarryingHandle(context, 'R06', notice);
+    } else {
+      _goCarryingHandle(context, 'R07', notice);
+    }
+  }
+
+  /// R03: her edits to today's session. They stay with today and with the
+  /// session they were made on.
+  static void _editToday(BuildContext context, List<PlannedMove> moves) {
+    final l10n = AppL10n.of(context);
+    final planned = _plannedWorkoutDay(context);
+    final base = planned ?? sampleWorkoutDay(l10n);
+    final current = chosenWorkoutDay(context) ?? base;
+    CustomWorkoutState.instance.setDraft(
+      customWorkoutDay(
+        l10n,
+        name: current.title,
+        moves: moves,
+        now: AppClock.now(),
+        constraints: current.constraints,
+        planVersion: current.planVersion,
+      ),
+      baseKey: CustomWorkoutState.keyOf(base),
+    );
+  }
+
+  /// R03's "Save as my workout".
+  static Future<void> _saveTodayAsMine(
+    BuildContext context,
+    List<PlannedMove> moves,
+  ) async {
+    final state = CustomWorkoutState.instance;
+    final l10n = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final base = _plannedWorkoutDay(context) ?? sampleWorkoutDay(l10n);
+    final current = chosenWorkoutDay(context) ?? base;
+    final linked = state.draft?.customId;
+    final asked = await askWorkoutName(
+      context,
+      initial: linked == null ? '' : (state.byId(linked)?.name ?? ''),
+    );
+    if (asked == null) return;
+    final id = linked != null && state.byId(linked) != null
+        ? linked
+        : state.newId();
+    final kept = state.save(
+      CustomWorkout(
+        id: id,
+        name: cleanWorkoutName(asked),
+        moves: _customMovesOf(moves),
+      ),
+    );
+    if (!kept) {
+      showHonestNoticeOn(
+        messenger,
+        l10n.youCanKeepUpToMaxWorkouts(countLabel(kMaxCustomWorkouts)),
+      );
+      return;
+    }
+    // The edits are today's too, so the day she is looking at does not change
+    // under her.
+    state.setDraft(
+      customWorkoutDay(
+        l10n,
+        name: current.title,
+        moves: moves,
+        now: AppClock.now(),
+        constraints: current.constraints,
+        planVersion: current.planVersion,
+      ),
+      baseKey: CustomWorkoutState.keyOf(base),
+    );
+    state.linkDraft(id);
+    showHonestNoticeOn(messenger, l10n.savedToYourWorkouts);
+  }
+
+  /// A workout she just saved is today's session: today's edits or pin become
+  /// its new moves, so the day she is looking at agrees with what she kept.
+  static void _refreshTodayFrom(
+    AppL10n l10n,
+    String id,
+    String name,
+    List<PlannedMove> moves,
+  ) {
+    final state = CustomWorkoutState.instance;
+    final current = state.draft;
+    if (current == null || current.customId != id) return;
+    final day = customWorkoutDay(
+      l10n,
+      name: name,
+      moves: moves,
+      now: AppClock.now(),
+      constraints: current.day.constraints,
+      planVersion: current.day.planVersion,
+    );
+    if (current.baseKey == null) {
+      state.pin(day, customId: id);
+    } else {
+      state.setDraft(day, baseKey: current.baseKey!);
+      state.linkDraft(id);
+    }
+  }
+
+  /// The builder, new or for [editing]. Start now makes the moves today's
+  /// session and opens R03; Save keeps them under "My workouts".
+  static void _openBuilder(BuildContext context, {CustomWorkout? editing}) {
+    final l10n = AppL10n.of(context);
+    final language = Localizations.localeOf(context).languageCode;
+    final state = CustomWorkoutState.instance;
+    final blocked = editing == null
+        ? const <String>{}
+        : _blockedIds([for (final m in editing.moves) m.exerciseId]);
+    if (blocked.isNotEmpty) {
+      showHonestNoticeOn(
+        ScaffoldMessenger.maybeOf(context),
+        l10n.weLeftOutMovesThatDoNot,
+      );
+    }
+    final initial = <PlannedMove>[
+      if (editing != null)
+        for (final move in editing.moves)
+          if (!blocked.contains(move.exerciseId))
+            plannedMoveFromCustom(
+              l10n,
+              language,
+              move,
+              exercise: ExerciseLibraryState.instance.byId(move.exerciseId),
+            ),
+    ];
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (builder) => CustomWorkoutBuilderView(
+            editing: editing != null,
+            initialName: editing?.name ?? '',
+            initialMoves: initial,
+            onPickMoves: () => _pickPlannedMoves(builder),
+            onSave: (name, moves) {
+              final id = editing?.id ?? state.newId();
+              final kept = state.save(
+                CustomWorkout(
+                  id: id,
+                  name: cleanWorkoutName(name),
+                  moves: _customMovesOf(moves),
+                ),
+              );
+              if (!kept) {
+                showHonestNoticeOn(
+                  ScaffoldMessenger.maybeOf(builder),
+                  l10n.youCanKeepUpToMaxWorkouts(
+                    countLabel(kMaxCustomWorkouts),
+                  ),
+                );
+                return false;
+              }
+              _refreshTodayFrom(l10n, id, cleanWorkoutName(name), moves);
+              Navigator.of(builder).pop();
+              return true;
+            },
+            onStartNow: (name, moves) {
+              state.pin(
+                customWorkoutDay(
+                  l10n,
+                  name: cleanWorkoutName(name),
+                  moves: moves,
+                  now: AppClock.now(),
+                ),
+                customId: editing?.id,
+              );
+              WorkoutLibraryState.instance
+                ..chosenRowId = null
+                ..openedSlot = null;
+              Navigator.of(builder).pop();
+              goTo(context, 'R03');
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "My workouts": start one. It stands in for the plan's session today.
+  /// Moves her life stage does not allow are left out; a workout with nothing
+  /// left is not started.
+  @visibleForTesting
+  static void startMyWorkout(BuildContext context, CustomWorkout mine) {
+    final l10n = AppL10n.of(context);
+    final language = Localizations.localeOf(context).languageCode;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final blocked = _blockedIds([for (final m in mine.moves) m.exerciseId]);
+    final moves = [
+      for (final move in mine.moves)
+        if (!blocked.contains(move.exerciseId)) move,
+    ];
+    if (moves.isEmpty) {
+      showHonestNoticeOn(messenger, l10n.noneOfTheseMovesSuitYouRight);
+      return;
+    }
+    if (blocked.isNotEmpty) {
+      showHonestNoticeOn(messenger, l10n.weLeftOutMovesThatDoNot);
+    }
+    CustomWorkoutState.instance.pin(
+      customWorkoutDay(
+        l10n,
+        name: mine.name,
+        moves: [
+          for (final move in moves)
+            plannedMoveFromCustom(
+              l10n,
+              language,
+              move,
+              exercise: ExerciseLibraryState.instance.byId(move.exerciseId),
+            ),
+        ],
+        now: AppClock.now(),
+      ),
+      customId: mine.id,
+    );
+    WorkoutLibraryState.instance
+      ..chosenRowId = null
+      ..openedSlot = null;
+    goTo(context, 'R03');
+  }
+
+  /// "My workouts": delete one, with five seconds to take it back.
+  @visibleForTesting
+  static void deleteMyWorkout(BuildContext context, CustomWorkout mine) {
+    final l10n = AppL10n.of(context);
+    final state = CustomWorkoutState.instance;
+    final todays = state.draft?.customId == mine.id ? state.draft : null;
+    final removed = state.remove(mine.id);
+    if (removed == null) return;
+    final handle = _mineBus.submit(
+      UndoableLog(
+        describe: l10n.deletedName(
+          mine.name.isEmpty ? l10n.myWorkout : mine.name,
+        ),
+        commit: () async {},
+      ),
+    );
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: l10n.undo,
+      onUndo: () {
+        state.restore(removed.workout, removed.index);
+        if (todays != null) state.restoreDraft(todays);
+      },
+    );
+  }
+
   /// The library session she chose in Explore, else today's session of her
   /// programme, as today's [WorkoutDay], or null for the bundled one. Null too
   /// when a library pick no longer suits her life stage.
   static WorkoutDay? chosenWorkoutDay(BuildContext context) {
+    final planned = _plannedWorkoutDay(context);
+    final base = planned ?? sampleWorkoutDay(AppL10n.of(context));
+    final draft = CustomWorkoutState.instance.draftFor(
+      CustomWorkoutState.keyOf(base),
+    );
+    if (draft == null) return planned;
+    // Her own, pinned or edited, goes through the same life-stage screening as
+    // the catalogue: a move her stage no longer allows is dropped, and a day
+    // left with nothing is not offered.
+    final blocked = _blockedIds([for (final m in draft.moves) m.exerciseId]);
+    if (blocked.isEmpty) return draft;
+    final kept = [
+      for (final m in draft.moves)
+        if (!blocked.contains(m.exerciseId)) m,
+    ];
+    if (kept.isEmpty) return planned;
+    final l10n = AppL10n.of(context);
+    return customWorkoutDay(
+      l10n,
+      name: draft.title,
+      moves: kept,
+      now: AppClock.now(),
+      constraints: draft.constraints,
+      planVersion: draft.planVersion,
+    );
+  }
+
+  /// [chosenWorkoutDay] before any edits of hers on R03.
+  static WorkoutDay? _plannedWorkoutDay(BuildContext context) {
     final entry = WorkoutLibraryState.instance.chosenFor(
       intakeRepository.read().lifeStage,
     );

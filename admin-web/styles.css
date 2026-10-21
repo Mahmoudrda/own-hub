@@ -49,7 +49,7 @@ main { max-width: 860px; margin: 0 auto; padding: 8px 16px 120px; outline: none;
 .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin: 16px 0; }
 .card.narrow { max-width: 420px; margin: 32px auto; }
 label { display: block; font-weight: 500; margin: 12px 0 4px; }
-input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="time"], input[type="datetime-local"], textarea, select {
+input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="time"], input[type="datetime-local"], input[type="url"], input[type="number"], textarea, select {
   width: 100%; font: inherit; color: var(--ink); background: #fff; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; min-height: 48px;
 }
 input:focus-visible, textarea:focus-visible, select:focus-visible { border-color: var(--petrol); }
@@ -119,6 +119,14 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--petrol);
 .inline { display: inline-flex; flex-direction: column; margin: 0; }
 .avail-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 8px; align-items: center; margin: 8px 0; }
 
+.allergens { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0 12px; margin: 4px 0 8px; }
+.section-title { margin: 24px 0 8px; }
+.media-list { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 8px; }
+.media { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.media .name { flex: 1 1 140px; min-width: 0; overflow-wrap: anywhere; }
+.thumb { width: 96px; height: 72px; object-fit: cover; border-radius: 12px; background: var(--line); flex: none; }
+video.thumb { width: 160px; height: auto; max-height: 120px; }
+
 .empty { text-align: center; color: var(--muted); padding: 32px 0; }
 
 .toast {
@@ -141,3 +149,4 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--petrol);
   .btn:active, .chip:active { transform: none; }
 }
 .via { color: var(--muted); }
+.btn.danger { background: var(--ink); color: var(--linen, #fff); border-color: var(--ink); }

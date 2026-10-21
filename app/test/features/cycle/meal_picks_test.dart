@@ -42,7 +42,7 @@ void main() {
     );
     expect(picks, hasLength(3));
     expect(picks.first.tags, MealTags.comfyAndProtein);
-    expect(picks.first.recipe.recipeId, 'rahma_bagel');
+    expect(picks.first.recipe.recipeId, 'rahma_french_toast');
     expect(picks[1].tags, MealTags.comfy);
     for (final pick in picks) {
       expect(pick.signal, MealSignal.lowEnergy);

@@ -42,13 +42,7 @@ enum MealScanSource {
 /// The five numbers, per 100 g or for an amount. Any of them can be unknown.
 @immutable
 class Macros {
-  const Macros({
-    this.kcal,
-    this.proteinG,
-    this.carbsG,
-    this.fatG,
-    this.fiberG,
-  });
+  const Macros({this.kcal, this.proteinG, this.carbsG, this.fatG, this.fiberG});
 
   static const Macros none = Macros();
 
@@ -239,6 +233,7 @@ class MealScanResult {
     required this.items,
     this.totals = Macros.none,
     this.estimate = true,
+    this.cached = false,
   });
 
   final List<ScannedItem> items;
@@ -246,6 +241,11 @@ class MealScanResult {
 
   /// Always true from this server. Carried so the screen never has to assume.
   final bool estimate;
+
+  /// True when the server had already read this exact photo and answered from
+  /// its cache: instant, and it used none of her scans. The screen shows
+  /// nothing different.
+  final bool cached;
 
   /// The callable's data, or null when it is not an answer at all. An item
   /// that cannot be read is left out rather than guessed at.
@@ -257,6 +257,7 @@ class MealScanResult {
       items: [for (final item in items) ?ScannedItem.fromWire(item)],
       totals: Macros.fromWire(raw['totals']) ?? Macros.none,
       estimate: raw['estimate'] != false,
+      cached: raw['cached'] == true,
     );
   }
 }
@@ -286,6 +287,12 @@ enum MealScanFailure {
 
   /// `image_undecodable` or `image_too_large`: the photo itself. Retake.
   photoUnreadable,
+
+  /// Refused on the phone before upload: the frame has no light in it.
+  photoTooDark,
+
+  /// Refused on the phone before upload: the frame is flat, with nothing in it.
+  photoBlank,
 
   /// `app_check_missing`: this copy of the app cannot reach Own Hub.
   appOutdated,

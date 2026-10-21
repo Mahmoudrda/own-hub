@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:own_hub/app_state/community_foods_state.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/account/domain/health_backup.dart';
@@ -114,6 +115,70 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('crash-reports-toggle')), findsNothing);
+    });
+  });
+
+  group('the shared dish list', () {
+    testWidgets('starts off, can be turned on here, and the choice is kept', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final community = CommunityFoodsState.instance..reset();
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+            community: community,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final toggle = find.byKey(const ValueKey('share-dishes-toggle'));
+      await tester.ensureVisible(toggle);
+      expect(find.text('Help other women log this dish'), findsOneWidget);
+      expect(
+        find.text(
+          "Only the dish, what's in it and its numbers are shared, never your "
+          'photo or your name.',
+        ),
+        findsOneWidget,
+      );
+      expect(tester.widget<AppToggle>(toggle).value, isFalse);
+      expect(community.sharing, isFalse);
+
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(tester.widget<AppToggle>(toggle).value, isTrue);
+      expect(community.sharing, isTrue);
+      expect(
+        (await SharedPreferences.getInstance()).getBool(kShareDishesKey),
+        isTrue,
+      );
+
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(tester.widget<AppToggle>(toggle).value, isFalse);
+      expect(community.sharing, isFalse);
+      expect(
+        (await SharedPreferences.getInstance()).getBool(kShareDishesKey),
+        isFalse,
+      );
+      community.reset();
+    });
+
+    testWidgets('no row without the state to hold the choice', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('share-dishes-toggle')), findsNothing);
     });
   });
 

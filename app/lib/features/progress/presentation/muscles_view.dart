@@ -554,10 +554,13 @@ class _Moves extends StatelessWidget {
           runSpacing: 8,
           children: [
             for (final move in moves)
-              AppChip(
-                move.name(language),
-                icon: open == null ? null : Icons.play_arrow,
-                onTap: open == null ? null : () => open(move),
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: AppChip(
+                  move.name(language),
+                  icon: open == null ? null : Icons.play_arrow,
+                  onTap: open == null ? null : () => open(move),
+                ),
               ),
           ],
         ),

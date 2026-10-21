@@ -126,6 +126,17 @@ def test_the_dish_file_is_what_the_build_script_writes():
         assert handle.read() == build_dishes.render(build_dishes.build())
 
 
+def test_dishes_whose_usual_recipe_carries_an_allergen_declare_it():
+    by_key = {d["key"]: set(d["allergens"]) for d in _table()}
+    assert "gluten" in by_key["kofta"]
+    assert "gluten" in by_key["kebab_kofta"]
+    assert "gluten" in by_key["kofta_sandwich"]
+    assert "milk" in by_key["shawarma_chicken_sandwich"]
+    assert "milk" in by_key["shawarma_chicken_plate"]
+    assert "tree_nuts" in by_key["maqluba"]
+    assert "tree_nuts" in by_key["petit_four"]
+
+
 def test_there_are_at_least_150_dishes_and_every_one_named_is_there():
     keys = {d["key"] for d in _table()}
     assert len(keys) >= 150
@@ -345,14 +356,36 @@ def test_the_call_carries_the_owners_settings():
     assert settings.max_output_tokens == 600
     assert settings.response_mime_type == "application/json"
     assert settings.response_schema == model.RESPONSE_SCHEMA
-    # Gemini 3 takes a thinking level, not a budget; LOW is the cheapest
-    # level every 3.x Flash accepts.
+    # Gemini 3 takes a thinking level instead of a budget.
+    assert settings.thinking_config.thinking_level == "LOW"
     assert settings.thinking_config.thinking_budget is None
-    assert str(settings.thinking_config.thinking_level).upper().endswith("LOW")
     assert settings.system_instruction == model.SYSTEM_PROMPT
     image, prompt = call["contents"]
     assert image.inline_data.mime_type == "image/jpeg"
     assert prompt == model.USER_PROMPT
+
+
+def test_the_largest_fixture_answer_fits_the_output_cap():
+    ingredients = [
+        {"name_en": "grilled chicken", "grams": 120, "usda_terms": ["chicken, breast, grilled"]},
+        {"name_en": "lettuce", "grams": 50, "usda_terms": ["lettuce, raw"]},
+        {"name_en": "olive oil", "grams": 10, "usda_terms": ["oil, olive"]},
+    ]
+    dish = {
+        "name_en": "Chicken salad bowl", "name_ar": "سلطة بالفراخ", "grams": 180,
+        "confidence": 0.9, "usda_terms": ["salad, chicken"], "ingredients": ingredients,
+    }
+    text = json.dumps({"items": [dish, dish]}, ensure_ascii=False, separators=(",", ":"))
+    arabic = sum(1 for ch in text if "\u0600" <= ch <= "\u06ff")
+    # A pessimistic count: 3 characters a token for Latin text, 1.8 for Arabic.
+    assert (len(text) - arabic) / 3 + arabic / 1.8 < config.MAX_OUTPUT_TOKENS
+
+
+def test_the_schema_asks_for_names_and_grams_not_numbers():
+    fields = set(model.RESPONSE_SCHEMA["properties"]["items"]["items"]["properties"])
+    assert fields == {
+        "name_en", "name_ar", "dish_guess", "grams", "confidence", "usda_terms", "ingredients",
+    }
 
 
 def test_the_schema_is_one_the_sdk_accepts():

@@ -72,6 +72,7 @@ SECTIONS: dict[int, str] = {
     8: "devices",
     20: "plans",
     21: "plans",
+    53: "events",
 }
 
 # Manifest row -> why it is not in the copy.
@@ -90,6 +91,7 @@ EXPORT_EXCLUSIONS: dict[int, str] = {
     41: "Single-use selfie sessions, deleted after five minutes.",
     50: "A scheduling slot for a review call. The booked time is already in her verification record.",
     51: "A reviewer's own availability settings and the slots booked with her; they are staff data, not a member's.",
+    54: "A keyed hash of your account id stored under the shared food you confirmed. It holds nothing you wrote and is removed when you delete your account.",
     52: "A phone number a reviewer pre-approved. It is removed when she signs in or deletes her account, and it is not part of her account.",
     # APL-16: the rows naming row 26's data one by one. The rules refuse every
     # write to them while community and coaching are off, so nothing exists.
@@ -132,6 +134,10 @@ RETENTION = {
     "safety": {"en": "Until you delete your account.", "ar": "حتى تحذفي حسابكِ."},
     "devices": {"en": "Until you delete your account.", "ar": "حتى تحذفي حسابكِ."},
     "plans": {"en": "Until you delete your account.", "ar": "حتى تحذفي حسابكِ."},
+    "events": {
+        "en": "Until you cancel the seat or delete your account.",
+        "ar": "لحد ما تلغي الحجز أو تحذفي حسابكِ.",
+    },
 }
 
 LABELS = {
@@ -150,6 +156,7 @@ LABELS = {
     "safety": ("Blocks and reports", "الحظر والبلاغات"),
     "devices": ("Your devices", "أجهزتكِ"),
     "plans": ("Plans from a coach", "خطط من مدرّبة"),
+    "events": ("Events you reserved a seat for", "الفعاليات اللي حجزتي فيها مكان"),
     "phoneOnly": ("On your phone only", "على هاتفكِ فقط"),
 }
 
@@ -199,6 +206,7 @@ class Reader(Protocol):
     def doc(self, collection: str, doc_id: str) -> Optional[dict]: ...
     def plans(self, uid: str, name: str) -> dict: ...
     def access_for_flags(self, flag_ids: list) -> list: ...
+    def event_seats(self, uid: str) -> dict: ...
 
 
 def _plain(value: Any) -> Any:
@@ -323,6 +331,8 @@ def build_export(uid: str, reader: Reader, language: str = "en", now: Optional[d
         }
     )
 
+    section("events").update({k: _clean(v) for k, v in reader.event_seats(uid).items()})
+
     return {
         "schema": SCHEMA,
         "generatedAt": now.isoformat(),
@@ -403,6 +413,14 @@ class FirestoreReader:
     def plans(self, uid, name):
         ref = self.db.collection("plans").document(uid).collection(name)
         return {s.id: s.to_dict() or {} for s in ref.stream()}
+
+    def event_seats(self, uid):
+        out = {}
+        for event in self.db.collection("events").select([]).stream():
+            seat = event.reference.collection("attendees").document(uid).get()
+            if seat.exists:
+                out[event.id] = seat.to_dict() or {}
+        return out
 
     def access_for_flags(self, flag_ids):
         out = []

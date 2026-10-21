@@ -47,6 +47,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/chosen_programme.dart';
+import '../../../app_state/first_run_moments.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
@@ -59,12 +61,10 @@ import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
 import '../domain/starting_program.dart';
 import 'her_answers.dart';
+import 'tick_promise_view.dart';
+import 'programme_cards.dart';
 
-/// The copy for one programme. Held together so a programme can never render a
-/// title from one entry and a description from another.
-typedef _ProgramCopy = ({String title, String detail, String firstWeek});
-
-class StartingProgramView extends StatelessWidget {
+class StartingProgramView extends StatefulWidget {
   const StartingProgramView({
     super.key,
     required this.repository,
@@ -79,7 +79,22 @@ class StartingProgramView extends StatelessWidget {
     this.title,
     this.onBack,
     this.showSteps = false,
+    this.onChoose,
+    this.onBuildOwn,
+    this.promiseFirst = false,
   });
+
+  /// Draw the promise tick after the primary button and before moving on.
+  /// Set only on the first walk, never on a profile edit or a plan change.
+  final bool promiseFirst;
+
+  /// Told which programme she is going with, just before any button that
+  /// moves her on. Not told when she only looks.
+  final ValueChanged<StartingProgram>? onChoose;
+
+  /// "Build my own workout": on to building one instead of following a
+  /// programme. Null draws no link.
+  final VoidCallback? onBuildOwn;
 
   /// The end of the short "Your week", before she has an account.
   final bool beforeSignup;
@@ -126,86 +141,86 @@ class StartingProgramView extends StatelessWidget {
 
   // Her answers are read back by [herAnswersLine], shared with day-one Home.
 
-  /// Dictionary copy for a programme id, or null when none has been written.
-  ///
-  /// A programme with no copy renders no card, which is visibly incomplete: the
-  /// deliberate alternative to showing her an English id or an invented name.
-  /// Every programme in the bundled file has an entry, and a test holds that.
-  _ProgramCopy? _copyFor(AppL10n l10n, String programId, Intake intake) {
-    // The plan's name and its first week, then where it is done: the file's ids
-    // are `<plan>_<variant>`.
-    _ProgramCopy plan(String title, String firstWeek, String detail) =>
-        (title: title, detail: detail, firstWeek: firstWeek);
-    final stronger = l10n.eachSessionIsAFullBodyWith;
-    final feelGood = l10n.eachSessionIsAGentleFullBody;
-    final steady = l10n.eachSessionIsASteadyCircuitWith;
-    final atHome = l10n.atHomeQuietNothingToBuy;
-    final withDumbbells = l10n.atHomeQuietWithYourDumbbells;
-    final atGym = l10n.atTheGymWeightsAndMachines;
-    switch (programId) {
-      case 'stronger_home':
-        return plan(l10n.getStronger, stronger, atHome);
-      case 'stronger_weights':
-        return plan(l10n.getStronger, stronger, withDumbbells);
-      case 'stronger_gym':
-        return plan(l10n.getStronger, stronger, atGym);
-      case 'feel_better_home':
-        return plan(l10n.feelGoodAndMove, feelGood, atHome);
-      case 'feel_better_weights':
-        return plan(l10n.feelGoodAndMove, feelGood, withDumbbells);
-      case 'feel_better_gym':
-        return plan(l10n.feelGoodAndMove, feelGood, atGym);
-      case 'lose_steadily_home':
-        return plan(l10n.loseSteadily, steady, atHome);
-      case 'lose_steadily_weights':
-        return plan(l10n.loseSteadily, steady, withDumbbells);
-      case 'lose_steadily_gym':
-        return plan(l10n.loseSteadily, steady, atGym);
-      case 'beginner_foundations':
-        return (
-          title: l10n.beginnerFoundations,
-          // "Quiet, no equipment" is a promise about training at home. A
-          // woman who said she trains at a gym is not told it.
-          detail: intake.place == TrainingPlace.home
-              ? l10n.n8WeeksQuietNoEquipment
-              : l10n.n8WeeksForBeginners,
-          firstWeek: l10n.week1StartsWithFourMovesOn_9iwwr,
-        );
+  @override
+  State<StartingProgramView> createState() => _StartingProgramViewState();
+}
+
+class _StartingProgramViewState extends State<StartingProgramView> {
+  /// The programme she tapped, until she taps another. Null is the best fit.
+  StartingProgram? _picked;
+
+  /// Records the programme she is going with, then does what the button does.
+  void _go(StartingProgram? chosen, VoidCallback? then) {
+    if (chosen != null) widget.onChoose?.call(chosen);
+    then?.call();
+  }
+
+  /// The primary button: the tick she draws to promise herself the plan, once,
+  /// then on.
+  void _goPromised(StartingProgram? chosen, VoidCallback? then) {
+    if (chosen != null) widget.onChoose?.call(chosen);
+    if (!widget.promiseFirst || !FirstRunMoments.instance.tickDue) {
+      then?.call();
+      return;
     }
-    return null;
+    FirstRunMoments.instance.markTickSeen();
+    final navigator = Navigator.of(context);
+    late final Route<void> route;
+    route = MaterialPageRoute<void>(
+      builder: (_) => TickPromiseView(
+        onDone: () {
+          if (route.isCurrent) {
+            navigator.pop();
+          } else if (route.isActive) {
+            navigator.removeRoute(route);
+          }
+          then?.call();
+        },
+      ),
+    );
+    navigator.push(route);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final Intake intake = repository.read();
-    final catalogue = this.catalogue ?? kStartingProgramCatalogue;
-    final program = selectStartingProgram(intake, catalogue: catalogue);
-    final copy = program == null
-        ? null
-        : _copyFor(l10n, program.family, intake);
+    final view = widget;
+    final Intake intake = view.repository.read();
+    final catalogue = view.catalogue ?? kStartingProgramCatalogue;
+    final programs = [
+      for (final program in topStartingPrograms(intake, catalogue: catalogue))
+        if (programCopyFor(l10n, program.programId, intake) != null) program,
+    ];
+    final selected = programs.contains(_picked)
+        ? _picked!
+        : ChosenProgramme.among(programs);
     final offersAnotherProgram =
         catalogue.length > 1 && AppRouter.screenIsOn('R01');
 
     return AppScaffold(
-      appBar: title == null && onBack == null
+      appBar: view.title == null && view.onBack == null
           ? null
-          : AppTopBar(title: title ?? '', onBack: onBack),
-      footer: beforeSignup
-          ? [AppButton(l10n.saveMyWeekAndJoin, onPressed: onSaveAndJoin)]
-          : onSaveMyWeek != null
+          : AppTopBar(title: view.title ?? '', onBack: view.onBack),
+      footer: view.beforeSignup
           ? [
               AppButton(
-                saveLabel ?? l10n.saveMyWeek,
+                l10n.saveMyWeekAndJoin,
+                onPressed: () => _goPromised(selected, view.onSaveAndJoin),
+              ),
+            ]
+          : view.onSaveMyWeek != null
+          ? [
+              AppButton(
+                view.saveLabel ?? l10n.saveMyWeek,
                 key: const ValueKey('o05-save-my-week'),
-                onPressed: onSaveMyWeek,
+                onPressed: () => _go(selected, view.onSaveMyWeek),
               ),
             ]
           : [
               AppButton(
                 l10n.startDay1Now,
                 icon: Icons.play_arrow,
-                onPressed: onStartNow,
+                onPressed: () => _goPromised(selected, view.onStartNow),
               ),
               Row(
                 children: [
@@ -215,7 +230,8 @@ class StartingProgramView extends StatelessWidget {
                       variant: AppButtonVariant.text,
                       height: 44,
                       fontSize: 15,
-                      onPressed: onStartTomorrow,
+                      onPressed: () =>
+                          _goPromised(selected, view.onStartTomorrow),
                     ),
                   ),
                   if (offersAnotherProgram) ...[
@@ -226,7 +242,7 @@ class StartingProgramView extends StatelessWidget {
                         variant: AppButtonVariant.text,
                         height: 44,
                         fontSize: 15,
-                        onPressed: onPickDifferentProgram,
+                        onPressed: view.onPickDifferentProgram,
                       ),
                     ),
                   ],
@@ -241,7 +257,7 @@ class StartingProgramView extends StatelessWidget {
             // "Your answers", never a count: the walk is five questions or
             // six, or three in the short "Your week".
             // While the one tick is on its way in, it says the same words.
-            if (!(showSteps &&
+            if (!(view.showSteps &&
                 !_stepsShownFor.contains(_answersKey(intake)))) ...[
               Text(
                 l10n.builtFromYourAnswers,
@@ -256,7 +272,7 @@ class StartingProgramView extends StatelessWidget {
               herAnswersLine(
                 l10n,
                 intake,
-                placeAnswered: repository.placeAnswered,
+                placeAnswered: view.repository.placeAnswered,
               ),
               style: EditorialType.section.copyWith(
                 color: AppColors.onPrimaryContainer,
@@ -264,66 +280,40 @@ class StartingProgramView extends StatelessWidget {
             ),
           ],
         ),
-        if (copy != null)
+        if (selected != null)
           _StepsThenCard(
-            show: showSteps,
+            show: view.showSteps,
             answers: _answersKey(intake),
             steps: [l10n.builtFromYourAnswers],
-            card: AppCard(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // The programme is the page's one object, so its
-                          // name is the one thing marked.
-                          MarkerHighlight(
-                            drawOn: true,
-                            delay: HandTiming.medium,
-                            child: Text(
-                              copy.title,
-                              textWidthBasis: TextWidthBasis.longestLine,
-                              style: AppText.titleL,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            copy.detail,
-                            style: AppText.bodyM.copyWith(
-                              color: AppColors.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(
-                      Icons.workspace_premium,
-                      size: 28,
-                      color: AppColors.primaryDim,
-                    ),
-                  ],
-                ),
-                // The prototype had a still here, labelled "coach demo still" in
-                // a monospace face: a designer's annotation marking what goes in
-                // the slot, like "logotype" on C01. There is no still to put in
-                // it, and an empty media block with a play button on the last
-                // screen of setup is a control that plays nothing, on the screen
-                // that hands her into the app. It comes back with the asset.
-                Text(
-                  copy.firstWeek,
-                  style: AppText.bodyM.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-              ],
+            // The prototype had a still on the programme, labelled "coach demo
+            // still": a designer's annotation marking what goes in the slot.
+            // There is no still to put in it, and an empty media block with a
+            // play button on the last screen of setup is a control that plays
+            // nothing. It comes back with the asset.
+            card: ProgrammeChoiceList(
+              programs: programs,
+              intake: intake,
+              selected: selected,
+              placeAnswered: view.repository.placeAnswered,
+              onSelect: (program) => setState(() => _picked = program),
+            ),
+          ),
+        if (selected != null &&
+            view.onBuildOwn != null &&
+            view.onSaveMyWeek == null)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: AppButton(
+              l10n.buildMyOwnWorkout,
+              key: const ValueKey('o05-build-own'),
+              variant: AppButtonVariant.text,
+              height: 48,
+              fontSize: 15,
+              onPressed: view.onBuildOwn,
             ),
           ),
         // What happens next, before she taps: one check, then day one.
-        if (beforeSignup)
+        if (view.beforeSignup)
           AppCard(
             variant: AppCardVariant.sage,
             borderRadius: AppRadius.md,
@@ -348,6 +338,9 @@ class StartingProgramView extends StatelessWidget {
               ),
             ],
           ),
+        // Room under the last card and link, so they scroll clear of the
+        // pinned button.
+        const SizedBox(height: 24),
       ],
     );
   }

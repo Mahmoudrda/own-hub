@@ -54,10 +54,11 @@ void main() {
       phone(t);
       final s = t.ensureSemantics();
       final rows = <String>[];
+      final book = _book();
 
       for (final tag in AllergenTag.values) {
         wipe();
-        EatAppState.instance.seedRecipeBook(_book());
+        EatAppState.instance.seedRecipeBook(book);
         await AppRouter.dietaryRepository.save(allergies: <AllergenTag>{tag});
         final ok = await open(
           t,
@@ -78,12 +79,23 @@ void main() {
           'nutDishPainted=${nut.length}  '
           'paintedLines=${painted.length}  taps=${taps.length}',
         );
+        // The one dish a woman who named an allergen may be offered is a recipe
+        // a person has signed whose contents do not hold it. The prototype rows
+        // are unchecked and are never among them.
+        final safeTitles = {
+          for (final r in book.recipes)
+            if (r.allergensReviewed && !r.allergensFinal.contains(tag.wireName))
+              r.titleEn,
+        };
+        final offered = dishes
+            .where((d) => !safeTitles.any(d.contains))
+            .toList();
         expect(
-          dishes,
+          offered,
           isEmpty,
           reason:
               'E05 offered a dish to a woman who declared ${tag.name} '
-              'and nothing in this build has been checked for it',
+              'that is unchecked, or contains it',
         );
         expect(ok, isTrue, reason: 'E05 threw with ${tag.name} declared');
       }

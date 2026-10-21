@@ -43,6 +43,7 @@ import '../../../ui/screen_art_strip.dart';
 import '../../../ui/screen_scope.dart';
 import '../../onboarding/domain/intake.dart' show LifeStage;
 import '../data/exercise_media_store.dart';
+import '../domain/custom_workout.dart';
 import '../domain/exercise_library.dart';
 import '../domain/train_repository.dart';
 import 'program_view.dart' show ProgramDay;
@@ -93,7 +94,26 @@ class TrainView extends StatefulWidget {
     this.focus,
     this.workoutIsFilmed,
     this.tierTabs,
+    this.myWorkouts = const <CustomWorkout>[],
+    this.onBuildOwn,
+    this.onSwitchPlan,
+    this.onStartMine,
+    this.onEditMine,
+    this.onDeleteMine,
   });
+
+  /// The workouts she built herself, newest first.
+  final List<CustomWorkout> myWorkouts;
+
+  /// "Build my own workout": opens the builder.
+  final VoidCallback? onBuildOwn;
+
+  /// "Switch plan or pick any session": the programme chooser, then Explore.
+  final VoidCallback? onSwitchPlan;
+
+  final ValueChanged<CustomWorkout>? onStartMine;
+  final ValueChanged<CustomWorkout>? onEditMine;
+  final ValueChanged<CustomWorkout>? onDeleteMine;
 
   /// The Beginner / Intermediate / Advanced tabs, above Today's card.
   final Widget? tierTabs;
@@ -202,6 +222,17 @@ class _TrainViewState extends State<TrainView> {
 
   void _changed() => setState(() {});
 
+  List<LibraryExercise> _shownMoves() =>
+      widget.exercises.where(_filter.keepMove).toList();
+
+  List<LibraryWorkout> _shownWorkouts() => [
+    for (final w in widget.workouts)
+      if (AppRouter.featureFlags.isOn(Feature.workoutLibrary) &&
+          (widget.workoutIsFilmed?.call(w) ?? true) &&
+          _filter.keepWorkout(w))
+        w,
+  ];
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -229,14 +260,8 @@ class _TrainViewState extends State<TrainView> {
           ),
         ];
 
-    final moves = widget.exercises.where(_filter.keepMove).toList();
-    final workouts = [
-      for (final w in widget.workouts)
-        if (AppRouter.featureFlags.isOn(Feature.workoutLibrary) &&
-            (widget.workoutIsFilmed?.call(w) ?? true) &&
-            _filter.keepWorkout(w))
-          w,
-    ];
+    final moves = _shownMoves();
+    final workouts = _shownWorkouts();
 
     final next =
         widget.week.where((d) => d.today).firstOrNull ??
@@ -311,6 +336,69 @@ class _TrainViewState extends State<TrainView> {
           fontSize: 15,
           onPressed: widget.onSeeProgram,
         ),
+      if (widget.onBuildOwn != null)
+        AppButton(
+          l10n.buildMyOwnWorkout,
+          key: const ValueKey('r01-build-own'),
+          icon: Icons.add,
+          variant: AppButtonVariant.outlined,
+          height: 48,
+          fontSize: 15,
+          onPressed: widget.onBuildOwn,
+        ),
+      if (widget.onSwitchPlan != null)
+        AppButton(
+          l10n.switchPlanOrPickAnySession,
+          key: const ValueKey('r01-switch-plan'),
+          variant: AppButtonVariant.text,
+          height: 44,
+          fontSize: 15,
+          onPressed: widget.onSwitchPlan,
+        ),
+      if (widget.myWorkouts.isNotEmpty)
+        Column(
+          key: const ValueKey('r01-my-workouts'),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 6,
+          children: [
+            Semantics(
+              header: true,
+              child: Text(l10n.myWorkouts, style: AppText.titleM),
+            ),
+            for (final mine in widget.myWorkouts)
+              AppListItem(
+                key: ValueKey('r01-mine-${mine.id}'),
+                title: mine.name.isEmpty ? l10n.myWorkout : mine.name,
+                subtitle: l10n.minutesMinutesMovesMoves(
+                  countLabel(estimateMinutesOf(mine.moves)),
+                  countLabel(mine.moves.length),
+                ),
+                leading: const Icon(
+                  Icons.fitness_center,
+                  size: 24,
+                  color: AppColors.primaryDim,
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      key: ValueKey('r01-mine-edit-${mine.id}'),
+                      tooltip: l10n.edit,
+                      onPressed: () => widget.onEditMine?.call(mine),
+                      icon: const Icon(Icons.edit_outlined),
+                    ),
+                    IconButton(
+                      key: ValueKey('r01-mine-delete-${mine.id}'),
+                      tooltip: l10n.deleteThisWorkout,
+                      onPressed: () => widget.onDeleteMine?.call(mine),
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+                  ],
+                ),
+                onTap: () => widget.onStartMine?.call(mine),
+              ),
+          ],
+        ),
       if (shorts.isNotEmpty)
         Text(l10n.shortOnesThatStillCount, style: AppText.titleM),
       if (shorts.isNotEmpty)
@@ -377,6 +465,8 @@ class _TrainViewState extends State<TrainView> {
           filter: _filter,
           exercises: widget.exercises,
           onChanged: _changed,
+          workouts: widget.workouts,
+          matchCount: () => _shownMoves().length + _shownWorkouts().length,
         ),
       ),
       if (widget.hiddenFor != null)

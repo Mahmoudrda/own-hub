@@ -12,6 +12,7 @@ import 'package:own_hub/features/train/presentation/train_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_button.dart';
 
 import '../../helpers/exercise_library_fixture.dart';
 import '../../helpers/primary_actions.dart';
@@ -146,11 +147,96 @@ void main() {
     await _tap(tester, find.byKey(const ValueKey('r01-filters')));
     await tester.tap(find.text('Gym only'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Done'));
+    await tester.tap(find.byKey(const ValueKey('r01-filters-apply')));
     await tester.pumpAndSettle();
     await _scrollTo(tester, find.text('Moves'));
     expect(find.text('Lat pulldown, wide grip'), findsOneWidget);
     expect(find.byKey(const ValueKey('r01-move-glute_bridge')), findsNothing);
+  });
+
+  testWidgets('the apply button shows the live count and handles none', (
+    tester,
+  ) async {
+    _phone(tester);
+    await tester.pumpWidget(_host(train()));
+    await tester.pumpAndSettle();
+    final apply = find.byKey(const ValueKey('r01-filters-apply'));
+    String label() => tester
+        .widget<Text>(find.descendant(of: apply, matching: find.byType(Text)))
+        .data!;
+    await _tap(tester, find.byKey(const ValueKey('r01-filters')));
+    // R01 counts workouts and moves together.
+    int results(ExploreFilter f) =>
+        const [_workout, _gear].where(f.keepWorkout).length +
+        all.where(f.keepMove).length;
+    final everything = results(ExploreFilter());
+    expect(label(), 'Show $everything results');
+    expect(find.byKey(const ValueKey('r01-filters-empty')), findsNothing);
+
+    await tester.tap(find.text('Gym only'));
+    await tester.pumpAndSettle();
+    final gym = results(ExploreFilter()..place = ExercisePlace.gym);
+    expect(label(), 'Show $gym results');
+    expect(gym, lessThan(everything));
+  });
+
+  testWidgets('the count leaves out a workout that is not filmed', (
+    tester,
+  ) async {
+    _phone(tester);
+    await tester.pumpWidget(
+      _host(train(workoutIsFilmed: (w) => w.id == 'legs')),
+    );
+    await tester.pumpAndSettle();
+    await _tap(tester, find.byKey(const ValueKey('r01-filters')));
+    final apply = find.byKey(const ValueKey('r01-filters-apply'));
+    final text = tester
+        .widget<Text>(find.descendant(of: apply, matching: find.byType(Text)))
+        .data!;
+    // One workout of the two is filmed, so it is the only one counted.
+    expect(text, 'Show ${all.length + 1} results');
+  });
+
+  testWidgets('with nothing left the button is unavailable and kind', (
+    tester,
+  ) async {
+    _phone(tester);
+    final kills = ExploreFilter()
+      ..place = ExercisePlace.gym
+      ..kit = ExploreKit.nothing;
+    final survivors = [
+      for (final e in all)
+        if (!kills.keepMove(e)) e,
+    ];
+    // The home workout passes the filters but is not filmed, so it is not
+    // listed and must not be counted either.
+    await tester.pumpWidget(
+      _host(
+        train(
+          exercises: survivors,
+          workouts: const [_workout, _gear],
+          workoutIsFilmed: (w) => w.id == 'upper',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _tap(tester, find.byKey(const ValueKey('r01-filters')));
+    final apply = find.byKey(const ValueKey('r01-filters-apply'));
+    await tester.tap(find.text('Gym only'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No equipment'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.descendant(of: apply, matching: find.byType(Text)))
+          .data,
+      'Show 0 results',
+    );
+    expect(tester.widget<AppButton>(apply).onPressed, isNull);
+    expect(find.byKey(const ValueKey('r01-filters-empty')), findsOneWidget);
+    await tester.tap(find.text('No equipment'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('r01-filters-empty')), findsNothing);
   });
 
   testWidgets('a chip that would find nothing is not offered', (tester) async {

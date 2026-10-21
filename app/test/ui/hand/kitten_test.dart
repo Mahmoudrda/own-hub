@@ -1,13 +1,12 @@
-import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:own_hub/app_state/kitten_setting.dart';
 import 'package:own_hub/features/signup/presentation/demo/demo_chrome.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/app_state/kitten_setting.dart';
 import 'package:own_hub/ui/hand/mascot/kitten.dart';
 import 'package:own_hub/ui/hand/mascot/kitten_painter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,10 +49,13 @@ AnimationController _controllerOf(WidgetTester tester) {
 }
 
 void main() {
+  test('the kitten always moves; only Reduce Motion holds it still', () {
+    expect(KittenSetting.instance.moves, isTrue);
+  });
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     Kitten.resetPlayed();
-    KittenSetting.instance.resetForTest();
   });
 
   testWidgets('moves once, then settles with nothing left scheduled', (
@@ -95,26 +97,6 @@ void main() {
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     await tester.pumpWidget(_host(const Kitten(pose: KittenPose.cheer)));
     expect(_controllerOf(tester).value, 1);
-    expect(tester.binding.hasScheduledFrame, isFalse);
-  });
-
-  testWidgets('her Profile switch off: still', (tester) async {
-    KittenSetting.instance.resetForTest(moves: false);
-    await tester.pumpWidget(_host(const Kitten(pose: KittenPose.wave)));
-    expect(_controllerOf(tester).value, 1);
-    expect(tester.binding.hasScheduledFrame, isFalse);
-  });
-
-  testWidgets('turning it off in Profile holds it still at once', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_host(const Kitten(pose: KittenPose.wave)));
-    await tester.pump(const Duration(milliseconds: 200));
-    expect(_controllerOf(tester).isAnimating, isTrue);
-    unawaited(KittenSetting.instance.set(false));
-    expect(_controllerOf(tester).isAnimating, isFalse);
-    expect(_controllerOf(tester).value, 1);
-    await tester.pump();
     expect(tester.binding.hasScheduledFrame, isFalse);
   });
 
@@ -762,19 +744,6 @@ void main() {
       );
       await tester.pumpWidget(_host(const Kitten(pose: KittenPose.rest)));
       expect(idleOf(tester).isAnimating, isFalse);
-    });
-
-    testWidgets('her Profile switch stops the loop at once, and restarts it', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_host(const Kitten(pose: KittenPose.rest)));
-      expect(idleOf(tester).isAnimating, isTrue);
-      await KittenSetting.instance.set(false);
-      await tester.pump();
-      expect(idleOf(tester).isAnimating, isFalse);
-      await KittenSetting.instance.set(true);
-      await tester.pump();
-      expect(idleOf(tester).isAnimating, isTrue);
     });
 
     testWidgets('pauses while its route is covered', (tester) async {

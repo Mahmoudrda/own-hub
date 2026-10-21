@@ -22,6 +22,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../app_state/community_foods_state.dart';
+import '../../../app_state/eat_state.dart';
 import '../../../app_state/guest_session.dart';
 import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
@@ -32,8 +34,10 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_chip_row.dart';
+import '../../../ui/app_field.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_toggle.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../domain/allergy_guard.dart';
 import '../domain/food_library.dart';
@@ -61,6 +65,7 @@ class MealCheckView extends StatefulWidget {
     this.onBlocked,
     this.onCancel,
     this.onSnap,
+    this.community,
   });
 
   /// What the scan found. Null when E13 is opened with nothing to check.
@@ -89,6 +94,9 @@ class MealCheckView extends StatefulWidget {
   /// E12, offered only when there is nothing to check.
   final VoidCallback? onSnap;
 
+  /// The shared foods and her choice to share. Defaults to the app's own.
+  final CommunityFoodsState? community;
+
   @override
   State<MealCheckView> createState() => _MealCheckViewState();
 }
@@ -112,6 +120,10 @@ class _MealCheckViewState extends State<MealCheckView> {
 
   bool _adding = false;
   bool _logged = false;
+
+  /// Whether the "Help other women" switch is on this screen: until she has
+  /// seen it once. Decided when her preferences have been read.
+  bool _showShare = false;
   int _added = 0;
   final TextEditingController _query = TextEditingController();
   final TextEditingController _ownName = TextEditingController();
@@ -121,6 +133,9 @@ class _MealCheckViewState extends State<MealCheckView> {
   };
 
   DateTime get _now => widget.now ?? AppClock.now();
+
+  CommunityFoodsState get _community =>
+      widget.community ?? CommunityFoodsState.instance;
 
   @override
   void initState() {
@@ -132,6 +147,13 @@ class _MealCheckViewState extends State<MealCheckView> {
     _repo = widget.repository ?? InMemoryMealRepository();
     _ownsBus = widget.bus == null && widget.session == null;
     _bus = widget.bus ?? widget.session?.bus ?? LogCommandBus();
+    if (result != null) unawaited(_readShareChoice());
+  }
+
+  Future<void> _readShareChoice() async {
+    await _community.loadSettings();
+    if (!mounted) return;
+    setState(() => _showShare = !_community.noticeSeen);
   }
 
   @override
@@ -269,7 +291,10 @@ class _MealCheckViewState extends State<MealCheckView> {
     if (_logged || !_check.canLog) return;
     // A checked photo meal is not replayed after sign-up (its figures were
     // read from the picture); she is asked to sign in first and logs it again.
-    if (!GuestSession.require(context, const PendingAction(PendingKind.logMeal))) {
+    if (!GuestSession.require(
+      context,
+      const PendingAction(PendingKind.logMeal),
+    )) {
       return;
     }
     final l10n = AppL10n.of(context);
@@ -291,6 +316,8 @@ class _MealCheckViewState extends State<MealCheckView> {
     }
     final prepared = outcome as MealLogPrepared;
     _logged = true;
+    final keepAndShare = _keepAndShare();
+    var written = false;
     unawaited(AppHaptics.play(HapticMoment.actionDone));
 
     final session = widget.session;
@@ -313,10 +340,22 @@ class _MealCheckViewState extends State<MealCheckView> {
             mealFoodNames(_library(l10n), prepared.items),
             _slot,
           ),
-          commit: () => service.commit(prepared.write),
+          commit: () {
+            written = true;
+            return service.commit(prepared.write);
+          },
         ),
       );
     }
+    // Only a meal that stayed logged is kept and offered: the window shuts
+    // before the write starts, so the check waits one microtask to see which
+    // way it went.
+    handle.whenClosed(
+      () => scheduleMicrotask(() {
+        final stayed = session != null ? session.isCommitted(handle) : written;
+        if (stayed) keepAndShare();
+      }),
+    );
     final onLogged = widget.onLogged;
     if (onLogged != null) {
       onLogged(handle);
@@ -328,6 +367,41 @@ class _MealCheckViewState extends State<MealCheckView> {
         onUndo: session?.settle,
       );
     }
+  }
+
+  /// After her tap, beside the log and never part of it: the meal becomes
+  /// one of her own foods, and, unless she turned sharing off, its dish name
+  /// and numbers are offered to the shared list. Neither can fail the log.
+  /// Everything is read now and the returned call is made later, once the undo
+  /// window has closed without an undo.
+  VoidCallback _keepAndShare() {
+    final language = _language;
+    final totals = _check.totals;
+    final name = _check.nameFor(language);
+    final repo = _repo;
+    final allergens = _check.allergens;
+    final community = _community;
+    final dish = _check.communityDish(language);
+    return () {
+      if (name.isNotEmpty) {
+        unawaited(
+          EatAppState.instance
+              .rememberMealAsFood(
+                repo,
+                name: name,
+                kcal: totals.kcal,
+                proteinG: totals.proteinG,
+                carbsG: totals.carbsG,
+                fatG: totals.fatG,
+                fiberG: totals.fiberG,
+                allergens: allergens,
+              )
+              .then<void>((_) {}, onError: (Object _) {}),
+        );
+      }
+      unawaited(community.offer(dish));
+      unawaited(community.markNoticeSeen());
+    };
   }
 
   static String _dayIdOf(DateTime at) =>
@@ -412,11 +486,23 @@ class _MealCheckViewState extends State<MealCheckView> {
     if (_check.isEmpty)
       Text(l10n.nothingOnThisPlateYetAddSomething, style: AppText.body),
     ..._addSection(l10n),
+    if (_showShare)
+      ListenableBuilder(
+        listenable: _community,
+        builder: (context, _) => AppListItem(
+          key: const ValueKey('meal-check-share'),
+          title: l10n.helpOtherWomenLogThisDish,
+          subtitle: l10n.onlyTheDishWhatsInItAnd,
+          trailing: AppToggle(
+            value: _community.sharing,
+            semanticLabel: l10n.helpOtherWomenLogThisDish,
+            onChanged: (on) => unawaited(_community.setSharing(on)),
+          ),
+        ),
+      ),
     Text(l10n.whichMealIsIt, style: AppText.titleS),
     AppChipRow(
-      items: [
-        for (final slot in MealSlot.values) _slotName(l10n, slot),
-      ],
+      items: [for (final slot in MealSlot.values) _slotName(l10n, slot)],
       selected: {MealSlot.values.indexOf(_slot)},
       onTap: (index) => setState(() => _slot = MealSlot.values[index]),
     ),
@@ -653,19 +739,17 @@ class _MealCheckViewState extends State<MealCheckView> {
         ),
         SizedBox(
           width: 150,
-          child: TextField(
+          child: AppField(
             key: ValueKey('meal-check-grams-${item.key}'),
             controller: field,
             onChanged: (text) => _typedGrams(item, text),
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
             inputFormatters: [wholeNumberFormatter],
-            style: AppText.titleM,
-            decoration: InputDecoration(
-              isDense: true,
-              labelText: l10n.weightInGrams,
-              suffixText: l10n.gramsG_1usqy('').trim(),
-              border: const OutlineInputBorder(),
+            label: l10n.weightInGrams,
+            trailing: Text(
+              l10n.gramsG_1usqy('').trim(),
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
           ),
         ),
@@ -741,17 +825,13 @@ class _MealCheckViewState extends State<MealCheckView> {
         for (final macro in MacroKind.values)
           SizedBox(
             width: 140,
-            child: TextField(
+            child: AppField(
               key: ValueKey('meal-check-figure-${item.key}-${macro.name}'),
               controller: _figureField(item, macro),
               onChanged: (text) => _typedFigure(item, macro, text),
               keyboardType: TextInputType.number,
               inputFormatters: [wholeNumberFormatter],
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: labelOf(macro),
-                border: const OutlineInputBorder(),
-              ),
+              label: labelOf(macro),
             ),
           ),
       ],
@@ -782,16 +862,12 @@ class _MealCheckViewState extends State<MealCheckView> {
         : guard.screenSuggestions(library.resolve(query)).take(5).toList();
     return [
       Text(l10n.addSomething, style: AppText.titleS),
-      TextField(
+      AppField(
         key: const ValueKey('meal-check-search'),
         controller: _query,
         onChanged: (_) => setState(() {}),
-        decoration: InputDecoration(
-          isDense: true,
-          labelText: l10n.searchTheFoodList,
-          prefixIcon: const Icon(Icons.search),
-          border: const OutlineInputBorder(),
-        ),
+        label: l10n.searchTheFoodList,
+        trailing: const Icon(Icons.search, color: AppColors.onSurfaceVariant),
       ),
       for (final food in found)
         AppListItem(
@@ -805,17 +881,12 @@ class _MealCheckViewState extends State<MealCheckView> {
           onTap: () => _addFood(food),
         ),
       Text(l10n.orTypeItIn, style: AppText.titleS),
-      TextField(
+      AppField(
         key: const ValueKey('meal-check-own-name'),
         controller: _ownName,
         onChanged: (_) => setState(() {}),
-        maxLength: 80,
-        decoration: InputDecoration(
-          isDense: true,
-          labelText: l10n.whatIsIt,
-          counterText: '',
-          border: const OutlineInputBorder(),
-        ),
+        inputFormatters: [LengthLimitingTextInputFormatter(80)],
+        label: l10n.whatIsIt,
       ),
       Wrap(
         spacing: 10,
@@ -864,25 +935,18 @@ class _MealCheckViewState extends State<MealCheckView> {
     ];
   }
 
-  Widget _ownField(
-    Key key,
-    TextEditingController controller,
-    String label,
-  ) => SizedBox(
-    width: 140,
-    child: TextField(
-      key: key,
-      controller: controller,
-      onChanged: (_) => setState(() {}),
-      keyboardType: TextInputType.number,
-      inputFormatters: [wholeNumberFormatter],
-      decoration: InputDecoration(
-        isDense: true,
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-    ),
-  );
+  Widget _ownField(Key key, TextEditingController controller, String label) =>
+      SizedBox(
+        width: 140,
+        child: AppField(
+          key: key,
+          controller: controller,
+          onChanged: (_) => setState(() {}),
+          keyboardType: TextInputType.number,
+          inputFormatters: [wholeNumberFormatter],
+          label: label,
+        ),
+      );
 
   static String _slotName(AppL10n l10n, MealSlot slot) => switch (slot) {
     MealSlot.breakfast => l10n.breakfast,

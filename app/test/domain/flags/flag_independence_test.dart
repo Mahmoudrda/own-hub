@@ -47,6 +47,11 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
       '"ships off" records that Feature.events is off in the shipped set, '
       'which is the owner\'s promise that nothing about events shows until '
       'she switches it on. Every other case there sets its own flags.',
+  'test/features/events/event_seats_test.dart':
+      'Its last case, "the flag ships on", records that Feature.events is on '
+      'in the shipped set, the owner\'s decision that events are live at '
+      'launch. Every other case there, the nav bar ones included, builds its '
+      'own world from FeatureFlags.allOff.',
   'test/release/compliance_copy_test.dart':
       'Its microphone group proves a privacy-policy claim about the build that '
       'goes to the stores: voice logging is off in the shipped set, so E03 and '

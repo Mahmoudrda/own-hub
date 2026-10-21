@@ -85,6 +85,14 @@ String _builderBlock(String id) {
       .join('\n');
 }
 
+Future<void> _readConsentToEnd(WidgetTester tester) async {
+  await tester.drag(
+    find.byType(SingleChildScrollView).first,
+    const Offset(0, -5000),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   final saved = AppRouter.featureFlags;
 
@@ -170,6 +178,7 @@ void main() {
       final store = AppRouter.identityCheck.consent;
       expect(await store.current('me'), isNull);
 
+      await _readConsentToEnd(tester);
       await tester.tap(find.text('I agree, start the camera'));
       await tester.pumpAndSettle();
 

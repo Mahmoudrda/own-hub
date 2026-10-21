@@ -35,6 +35,7 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
 import '../domain/train_repository.dart';
 import '../domain/weight_label.dart';
+import 'exercise_labels.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
 
@@ -285,7 +286,10 @@ class _ChangeSetViewState extends State<ChangeSetView> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.moveName ?? l10n.gobletSquat, style: AppText.headline),
+            MoveName(
+              widget.moveName ?? englishMoveNames.gobletSquat,
+              style: AppText.headline,
+            ),
             // "Set 2 of 3" is not said here.
             //
             // R08 is raised over ONE set and is given that set alone —
@@ -451,13 +455,13 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
       children: [
         Text(l10n.whatDidYouDo, style: AppText.titleL),
         const SizedBox(height: 2),
-        Text(
+        MoveName(
           // The move she is correcting. `set2GobletSquat` — "Set 2 · Goblet
           // squat" — named the prototype's set AND the prototype's move, so it
           // stayed "Set 2 · Goblet squat" for the fourth set of a hip thrust.
           // The move name is hers; the set number has no parameterised form, so
           // it is not stated rather than stated wrongly.
-          widget.moveName ?? l10n.gobletSquat,
+          widget.moveName ?? englishMoveNames.gobletSquat,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         if (loaded) ...[

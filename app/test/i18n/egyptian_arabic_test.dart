@@ -9,7 +9,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/features/train/presentation/mid_set_view.dart';
+import 'package:own_hub/features/train/presentation/workout_day_view.dart';
+import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/theme/app_tokens.dart';
 
 /// Formal-Arabic words that have an Egyptian replacement in this app's voice.
 /// Written without vowel marks; the scan drops them from the text too.
@@ -113,6 +118,31 @@ void main() {
       expect(markersIn('عايزة تعملي إيه دلوقتي؟ تقدري تقفلي'), isEmpty);
       // "هل" and "لن" appear inside longer words; only whole words count.
       expect(markersIn('الأهل بيحبوا اللبن'), isEmpty);
+    });
+  });
+
+  group('exercise names stay English', () {
+    testWidgets('in Arabic the title is English, the cues and buttons Arabic', (
+      tester,
+    ) async {
+      final en = lookupAppL10n(const Locale('en'));
+      final ar = lookupAppL10n(const Locale('ar'));
+      final move = sampleWorkoutDay(ar).moves.first;
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('ar'),
+          localizationsDelegates: AppL10n.localizationsDelegates,
+          supportedLocales: AppL10n.supportedLocales,
+          theme: buildTheme(const Locale('ar')),
+          home: MidSetView(move: move),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(move.name, en.donkeyKick);
+      expect(find.text(en.donkeyKick), findsWidgets);
+      expect(find.text(ar.donkeyKick), findsNothing);
+      expect(find.byTooltip(ar.change), findsWidgets);
     });
   });
 }

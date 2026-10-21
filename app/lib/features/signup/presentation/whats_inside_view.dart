@@ -136,6 +136,8 @@ class WhatsInsideView extends StatelessWidget {
             body: l10n.verifiedWomenCoachesPaidMonthlyInEgyptian,
           ),
         ],
+        // Room under the last promise, so it clears the pinned button.
+        const SizedBox(height: 24),
       ],
     );
   }

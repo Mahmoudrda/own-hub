@@ -31,6 +31,7 @@ import '../../../ui/hand/hand.dart';
 import '../domain/train_repository.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
+import 'exercise_labels.dart';
 
 /// How long "Finish now" waits for the second tap before it stands down.
 const Duration kFinishHereArmed = Duration(seconds: 4);
@@ -176,31 +177,31 @@ class _MoveLoggedViewState extends State<MoveLoggedView> {
         [
           PlannedMove(
             exerciseId: 'glute_bridge',
-            name: l10n.gluteBridge,
+            name: englishMoveNames.gluteBridge,
             prescriptionLabel: l10n.n312Bodyweight,
             sets: const [],
           ),
           PlannedMove(
             exerciseId: 'goblet_squat',
-            name: l10n.gobletSquat,
+            name: englishMoveNames.gobletSquat,
             prescriptionLabel: l10n.n31212Kg,
             sets: const [],
           ),
           PlannedMove(
             exerciseId: 'step_back_lunge',
-            name: l10n.stepBackLunge,
+            name: englishMoveNames.stepBackLunge,
             prescriptionLabel: l10n.n310EachSide,
             sets: const [],
           ),
           PlannedMove(
             exerciseId: 'hip_thrust_hold',
-            name: l10n.hipThrustHold,
+            name: englishMoveNames.hipThrustHold,
             prescriptionLabel: l10n.n330Seconds,
             sets: const [],
           ),
           PlannedMove(
             exerciseId: 'dead_bug',
-            name: l10n.deadBug,
+            name: englishMoveNames.deadBug,
             prescriptionLabel: l10n.n38EachSide,
             sets: const [],
           ),
@@ -263,7 +264,11 @@ class _MoveLoggedViewState extends State<MoveLoggedView> {
           // only while the window is open.
           handle: handle,
           message:
-              handle?.describe ?? l10n.moveSavedSetsSets(l10n.gobletSquat, 3),
+              handle?.describe ??
+              l10n.moveSavedSetsSets(
+                isolateLtr(l10n, englishMoveNames.gobletSquat),
+                3,
+              ),
           undoLabel: l10n.undo,
           onUndo: widget.onUndo,
         ),

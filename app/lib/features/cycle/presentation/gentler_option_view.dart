@@ -25,6 +25,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../domain/flags/feature_flags.dart';
+import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
@@ -46,6 +47,7 @@ class GentlerOptionView extends StatelessWidget {
     this.onRest,
     this.onWhy,
     this.onClose,
+    this.plannedMinutes,
   });
 
   final List<LoggedSymptom> reason;
@@ -57,10 +59,14 @@ class GentlerOptionView extends StatelessWidget {
   final VoidCallback? onWhy;
   final VoidCallback? onClose;
 
+  /// Length of her planned session; defaults to today's programme session.
+  final int? plannedMinutes;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final logged = loggedSymptomsSentence(l10n, reason);
+    final minutes = plannedMinutes ?? AppRouter.todaySessionMinutes();
 
     return AppScaffold(
       appBar: AppTopBar(
@@ -87,7 +93,9 @@ class GentlerOptionView extends StatelessWidget {
                 color: AppColors.onSurfaceVariant,
               ),
               title: l10n.plannedFullBodyStrength,
-              subtitle: l10n.n35MinYourProgram,
+              subtitle: minutes > 0
+                  ? l10n.minutesMinYourProgram(countLabel(minutes))
+                  : '',
             ),
             // The option, only when there is a session behind it. "Use this
             // option" opened her planned full-body workout, the very thing it

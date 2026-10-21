@@ -150,4 +150,35 @@ void main() {
       expect(commits, 3);
     });
   });
+
+  test(
+    'relabel puts the same live day in another language, in place',
+    () async {
+      state.start(day, repository);
+      await started();
+      final arabic = WorkoutDay(
+        id: day.id,
+        title: 'ساقين',
+        summary: '',
+        constraints: '',
+        moves: day.moves,
+      );
+      state.relabel(arabic);
+      expect(state.day?.title, 'ساقين');
+
+      final other = WorkoutDay(
+        id: day.id,
+        title: 'Other',
+        summary: '',
+        constraints: '',
+        moves: [move('squat', 3)],
+      );
+      state.relabel(other);
+      expect(
+        state.day?.title,
+        'ساقين',
+        reason: 'a different plan is not a label',
+      );
+    },
+  );
 }

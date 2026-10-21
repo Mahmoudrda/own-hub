@@ -12,7 +12,10 @@ List<PlannedNotification> _plan({
   DateTime? now,
   bool permitted = true,
   TrainingReminders? reminders,
-  NotificationPrefs prefs = const NotificationPrefs(),
+  // These tests are about "Trained today?" and the check-ins, so the friendly
+  // nudges, which share their budget, are off unless a test asks for them
+  // (casual_nudges_test.dart covers the shared budget).
+  NotificationPrefs prefs = const NotificationPrefs(nudges: false),
   DateTime? lastActiveAt,
   DateTime? lastSessionAt,
 }) => NotificationPlan.build(
@@ -272,7 +275,7 @@ void main() {
     test('at her reminder time when she has one', () {
       final plan = _plan(
         reminders: TrainingReminders(
-          weekdays: {DateTime.sunday},
+          weekdays: {DateTime.tuesday},
           hour: 9,
           minute: 15,
         ),
@@ -282,6 +285,21 @@ void main() {
         _of(plan, PlanKind.checkIn).first.at,
         DateTime(2026, 10, 18, 9, 15),
       );
+    });
+
+    test('a check-in due on a reminder day moves on to the next day', () {
+      final plan = _plan(
+        reminders: TrainingReminders(
+          weekdays: {DateTime.sunday},
+          hour: 9,
+          minute: 15,
+        ),
+        lastActiveAt: _wed10,
+      );
+      expect(_of(plan, PlanKind.checkIn).map((n) => n.at), [
+        DateTime(2026, 10, 19, 9, 15),
+        DateTime(2026, 10, 24, 9, 15),
+      ]);
     });
 
     test('with nothing recorded, they count from now', () {

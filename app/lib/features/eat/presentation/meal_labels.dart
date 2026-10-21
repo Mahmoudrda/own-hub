@@ -17,8 +17,7 @@ import '../domain/meal_repository.dart';
 List<String> mealFoodNames(FoodLibrary library, Iterable<MealItem> items) => [
   for (final item in items)
     if ((library.byId(item.foodId)?.names.first ?? item.name ?? '')
-        case final String name
-        when name.trim().isNotEmpty)
+        case final String name when name.trim().isNotEmpty)
       name.trim(),
 ];
 
@@ -38,3 +37,15 @@ String mealAddedLabel(AppL10n l10n, List<String> foods, MealSlot slot) {
 /// "Ful removed from Breakfast".
 String mealRemovedLabel(AppL10n l10n, String food, MealSlot slot) =>
     l10n.foodRemovedFromSlot(food, mealSlotName(l10n, slot));
+
+/// A food shelf's name in her language.
+String foodCategoryLabel(AppL10n l10n, FoodCategory category) =>
+    switch (category) {
+      FoodCategory.egyptianDishes => l10n.egyptianDishes,
+      FoodCategory.proteins => l10n.proteins,
+      FoodCategory.dairyAndCheese => l10n.dairyAndCheese,
+      FoodCategory.grainsAndBreads => l10n.grainsAndBreads,
+      FoodCategory.vegetablesAndSalads => l10n.vegetablesAndSalads,
+      FoodCategory.fruitsAndNuts => l10n.fruitsAndNuts,
+      FoodCategory.snacksAndDrinks => l10n.snacksAndDrinks,
+    };

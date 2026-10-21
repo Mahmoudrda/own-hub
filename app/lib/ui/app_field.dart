@@ -13,6 +13,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_tokens.dart';
 import 'hand/hand.dart';
@@ -40,6 +41,8 @@ class AppField extends StatefulWidget implements HandSeedName {
     this.onSubmitted,
     this.trailing,
     this.maxLines = 1,
+    this.inputFormatters,
+    this.textAlign = TextAlign.start,
   });
 
   final TextEditingController? controller;
@@ -76,6 +79,11 @@ class AppField extends StatefulWidget implements HandSeedName {
   /// such as an event's description or a recipe's method; null grows with
   /// the text.
   final int? maxLines;
+
+  /// Limits what can be typed, such as whole numbers only.
+  final List<TextInputFormatter>? inputFormatters;
+
+  final TextAlign textAlign;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -197,6 +205,8 @@ class _AppFieldState extends State<AppField> {
                                   // Z05 needs the same for an English name beside an
                                   // Arabic one.
                                   textDirection: widget.textDirection,
+                                  textAlign: widget.textAlign,
+                                  inputFormatters: widget.inputFormatters,
                                   textInputAction: widget.textInputAction,
                                   autofillHints: widget.autofillHints,
                                   onChanged: widget.onChanged,

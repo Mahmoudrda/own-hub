@@ -37,6 +37,10 @@ class NotificationTaps {
     'T01',
     'T02',
     'R09',
+    // The friendly nudges: a meal note opens the food diary, the end of the
+    // week her progress.
+    'E01',
+    'P01',
     ...tipDestinations,
   };
 
@@ -55,6 +59,8 @@ class NotificationTaps {
   /// Where a tip goes when its own screen is switched off or not for her, in
   /// order. The first that is on wins.
   static const Map<String, List<String>> fallbacks = {
+    'E01': ['E01', 'T01'],
+    'P01': ['P01', 'T01'],
     'R03': ['R03', 'T01'],
     'R01': ['R01'],
     // A reminder scheduled before Explore replaced the library.

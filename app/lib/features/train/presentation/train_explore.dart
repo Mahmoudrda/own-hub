@@ -182,6 +182,8 @@ Future<void> showExploreFilters(
   required ExploreFilter filter,
   required List<LibraryExercise> exercises,
   required VoidCallback onChanged,
+  int Function()? matchCount,
+  List<LibraryWorkout>? workouts,
 }) {
   final l10n = AppL10n.of(context);
   final kits = [
@@ -251,9 +253,46 @@ Future<void> showExploreFilters(
               ),
             ],
             const SizedBox(height: 16),
-            AppButton(
-              l10n.done_54ca1,
-              onPressed: () => Navigator.of(sheet).pop(),
+            // The button says how many results the filters leave, and the
+            // number moves as she taps. With none, it is drawn as unavailable
+            // and says so kindly rather than leading to an empty page.
+            Builder(
+              builder: (_) {
+                final n =
+                    matchCount?.call() ??
+                    exercises.where(filter.keepMove).length +
+                        (workouts?.where(filter.keepWorkout).length ?? 0);
+                final label = workouts != null
+                    ? l10n.countPluralOneShow1ResultOther(n)
+                    : l10n.countPluralOneShow1MoveOther(n);
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Semantics(
+                      liveRegion: true,
+                      child: AppButton(
+                        label,
+                        key: const ValueKey('r01-filters-apply'),
+                        onPressed: n == 0
+                            ? null
+                            : () => Navigator.of(sheet).pop(),
+                      ),
+                    ),
+                    if (n == 0) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.nothingMatchesYetTryTakingOneFilter,
+                        key: const ValueKey('r01-filters-empty'),
+                        textAlign: TextAlign.center,
+                        style: AppText.bodyM.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 8),
           ],
@@ -434,7 +473,7 @@ class MovePosterCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
+          MoveName(
             name,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

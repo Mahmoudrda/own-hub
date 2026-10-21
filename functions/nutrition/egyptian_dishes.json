@@ -88,6 +88,9 @@
     "fat_g": 3.82,
     "fiber_g": 2.57
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "crispy onions counted as raw onion plus the oil they take up"
   },
@@ -143,6 +146,9 @@
     "fat_g": 2.86,
     "fiber_g": 5.18
    },
+   "allergens": [
+    "fava"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -205,6 +211,9 @@
     "fat_g": 6.41,
     "fiber_g": 4.51
    },
+   "allergens": [
+    "fava"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -265,6 +274,10 @@
     "fat_g": 7.21,
     "fiber_g": 5.5
    },
+   "allergens": [
+    "fava",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -315,6 +328,10 @@
     "fat_g": 5.81,
     "fiber_g": 4.03
    },
+   "allergens": [
+    "eggs",
+    "fava"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -381,6 +398,9 @@
     "fat_g": 4.74,
     "fiber_g": 4.0
    },
+   "allergens": [
+    "fava"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -469,6 +489,11 @@
     "fat_g": 17.33,
     "fiber_g": 8.85
    },
+   "allergens": [
+    "fava",
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.95,
    "yield_note": "dried fava soaked in water, includes the oil a fried food absorbs"
@@ -555,6 +580,9 @@
     "fat_g": 5.09,
     "fiber_g": 3.27
    },
+   "allergens": [
+    "fava"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -617,6 +645,9 @@
     "fat_g": 6.96,
     "fiber_g": 0.96
    },
+   "allergens": [
+    "eggs"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.9
   },
@@ -664,6 +695,10 @@
     "fat_g": 13.82,
     "fiber_g": 0.0
    },
+   "allergens": [
+    "eggs",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.95
   },
@@ -703,6 +738,10 @@
     "fat_g": 18.1,
     "fiber_g": 0.0
    },
+   "allergens": [
+    "eggs",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -759,6 +798,10 @@
     "fat_g": 14.77,
     "fiber_g": 0.58
    },
+   "allergens": [
+    "eggs",
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.9
   },
@@ -790,7 +833,178 @@
     "fat_g": 10.61,
     "fiber_g": 0.0
    },
+   "allergens": [
+    "eggs"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
+  },
+  {
+   "key": "omelette",
+   "name_en": "Omelette",
+   "name_ar": "أومليت",
+   "aliases": [
+    "omelette",
+    "omelet",
+    "plain omelette",
+    "plain omelet",
+    "omlet",
+    "omelette with milk",
+    "اومليت",
+    "أومليت سادة",
+    "اومليت سادة"
+   ],
+   "category": "breakfast",
+   "typical_serving_g": 117.0,
+   "recipe": [
+    {
+     "fdcId": 171287,
+     "grams": 110.0,
+     "label": "egg",
+     "usdaName": "Egg, whole, raw, fresh"
+    },
+    {
+     "fdcId": 171265,
+     "grams": 15.0,
+     "label": "whole milk",
+     "usdaName": "Milk, whole, 3.25% milkfat, with added vitamin D"
+    },
+    {
+     "fdcId": 171413,
+     "grams": 5.0,
+     "label": "olive oil",
+     "usdaName": "Oil, olive, salad or cooking"
+    }
+   ],
+   "per100g": {
+    "kcal": 180.04,
+    "protein_g": 12.21,
+    "carbs_g": 1.29,
+    "fat_g": 13.63,
+    "fiber_g": 0.0
+   },
+   "allergens": [
+    "eggs",
+    "milk"
+   ],
+   "review": "estimated from a standard recipe, pending dietitian review",
+   "yield": 0.9,
+   "yield_note": "two eggs beaten with a splash of milk, cooked in 1 tsp olive oil"
+  },
+  {
+   "key": "egg_fried_olive",
+   "name_en": "Fried egg in olive oil",
+   "name_ar": "بيضة مقلية بزيت الزيتون",
+   "aliases": [
+    "fried egg",
+    "fried egg in olive oil",
+    "egg fried in olive oil",
+    "fried egg in 1 tsp olive oil",
+    "beida ma2leya bel zeit",
+    "بيضة مقلية",
+    "بيضه مقليه",
+    "بيضة عيون",
+    "بيضه مقليه بزيت الزيتون"
+   ],
+   "category": "breakfast",
+   "typical_serving_g": 52.8,
+   "recipe": [
+    {
+     "fdcId": 171287,
+     "grams": 50.0,
+     "label": "egg",
+     "usdaName": "Egg, whole, raw, fresh"
+    },
+    {
+     "fdcId": 171413,
+     "grams": 5.0,
+     "label": "olive oil",
+     "usdaName": "Oil, olive, salad or cooking"
+    }
+   ],
+   "per100g": {
+    "kcal": 219.13,
+    "protein_g": 11.89,
+    "carbs_g": 0.68,
+    "fat_g": 18.48,
+    "fiber_g": 0.0
+   },
+   "allergens": [
+    "eggs"
+   ],
+   "review": "estimated from a standard recipe, pending dietitian review",
+   "yield": 0.96,
+   "yield_note": "one large egg fried in 1 tsp (5 g) olive oil"
+  },
+  {
+   "key": "kesk",
+   "name_en": "Kesk (fermented wheat and yoghurt)",
+   "name_ar": "كشك صعيدي",
+   "aliases": [
+    "kesk",
+    "kishk",
+    "kishk saidi",
+    "kesk saidy",
+    "kesk sa3idy",
+    "upper egyptian kesk",
+    "كشك",
+    "كشك صعيدى",
+    "كشك بالسمنة",
+    "كشك بالسمنه"
+   ],
+   "category": "main",
+   "typical_serving_g": 351.0,
+   "recipe": [
+    {
+     "fdcId": 170287,
+     "grams": 70.0,
+     "label": "bulgur wheat, cooked",
+     "usdaName": "Bulgur, cooked"
+    },
+    {
+     "fdcId": 171284,
+     "grams": 100.0,
+     "label": "yogurt",
+     "usdaName": "Yogurt, plain, whole milk"
+    },
+    {
+     "fdcId": 173412,
+     "grams": 8.0,
+     "label": "ghee",
+     "usdaName": "Butter oil, anhydrous"
+    },
+    {
+     "fdcId": 169230,
+     "grams": 3.0,
+     "label": "garlic",
+     "usdaName": "Garlic, raw"
+    },
+    {
+     "fdcId": 171451,
+     "grams": 40.0,
+     "label": "chicken, boiled",
+     "usdaName": "Chicken, broilers or fryers, meat only, cooked, stewed"
+    },
+    {
+     "fdcId": 173647,
+     "grams": 130.0,
+     "label": "water",
+     "usdaName": "Beverages, water, tap, drinking"
+    }
+   ],
+   "per100g": {
+    "kcal": 75.34,
+    "protein_g": 4.77,
+    "carbs_g": 5.32,
+    "fat_g": 4.01,
+    "fiber_g": 0.92
+   },
+   "allergens": [
+    "celery",
+    "gluten",
+    "milk"
+   ],
+   "review": "estimated from a standard recipe, pending dietitian review",
+   "yield_note": "fermented wheat counted as bulgur, cooked in broth counted as water"
   },
   {
    "key": "mesh",
@@ -845,6 +1059,9 @@
     "fat_g": 22.43,
     "fiber_g": 0.27
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "aged in whey; counted as white and hard cheese"
   },
@@ -858,7 +1075,9 @@
     "areesh",
     "qareesh cheese",
     "jibna qarish",
-    "جبنه قريش"
+    "cottage cheese",
+    "جبنه قريش",
+    "جبنة كوتيج"
    ],
    "category": "cheese",
    "typical_serving_g": 100.0,
@@ -877,6 +1096,9 @@
     "fat_g": 1.02,
     "fiber_g": 0.0
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "low-fat fresh curd cheese, counted as 1% cottage cheese"
   },
@@ -924,6 +1146,9 @@
     "fat_g": 4.38,
     "fiber_g": 0.48
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -933,6 +1158,7 @@
    "aliases": [
     "gebna romy",
     "gebna rumi",
+    "gebna roumy",
     "rumi cheese",
     "roumy cheese",
     "romi cheese",
@@ -955,6 +1181,9 @@
     "fat_g": 26.94,
     "fiber_g": 0.0
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "aged hard cheese, counted as romano"
   },
@@ -969,10 +1198,14 @@
     "domiati cheese",
     "white cheese",
     "gebna beida",
+    "feta",
+    "feta cheese",
+    "gebna feta",
     "جبنه بيضا",
     "جبنة بيضاء",
     "جبنه دمياطي",
-    "جبنة بيضا"
+    "جبنة بيضا",
+    "جبنة فيتا"
    ],
    "category": "cheese",
    "typical_serving_g": 40.0,
@@ -991,6 +1224,9 @@
     "fat_g": 21.49,
     "fiber_g": 0.0
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "white brined cheese, counted as feta"
   },
@@ -1078,6 +1314,11 @@
     "fat_g": 5.96,
     "fiber_g": 5.01
    },
+   "allergens": [
+    "fava",
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1193,6 +1434,11 @@
     "fat_g": 10.42,
     "fiber_g": 6.26
    },
+   "allergens": [
+    "fava",
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1320,6 +1566,11 @@
     "fat_g": 7.83,
     "fiber_g": 5.16
    },
+   "allergens": [
+    "fava",
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1377,6 +1628,9 @@
     "fat_g": 24.82,
     "fiber_g": 4.49
    },
+   "allergens": [
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1431,6 +1685,9 @@
     "fat_g": 8.86,
     "fiber_g": 2.97
    },
+   "allergens": [
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1502,6 +1759,7 @@
     "fat_g": 2.7,
     "fiber_g": 1.01
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1552,6 +1810,9 @@
     "fat_g": 2.32,
     "fiber_g": 0.22
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1610,6 +1871,10 @@
     "fat_g": 3.09,
     "fiber_g": 1.21
    },
+   "allergens": [
+    "celery",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "cooked in broth, counted as water, with the garlic and ghee tasha"
   },
@@ -1672,6 +1937,10 @@
     "fat_g": 7.02,
     "fiber_g": 0.76
    },
+   "allergens": [
+    "celery",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1733,6 +2002,10 @@
     "fat_g": 5.08,
     "fiber_g": 0.76
    },
+   "allergens": [
+    "celery",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1741,6 +2014,7 @@
    "name_ar": "محشي ورق عنب",
    "aliases": [
     "warak enab",
+    "mahshi warak enab",
     "wara2 3enab",
     "warak 3enab",
     "mahshi wara2 3enab",
@@ -1816,6 +2090,9 @@
     "fat_g": 6.72,
     "fiber_g": 2.64
    },
+   "allergens": [
+    "sulphites"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1882,6 +2159,7 @@
     "fat_g": 4.35,
     "fiber_g": 1.17
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -1890,6 +2168,8 @@
    "name_ar": "محشي كوسة",
    "aliases": [
     "mahshi kousa",
+    "mahshi koussa",
+    "mahshi kossa",
     "mahshi kosa",
     "kosa mahshi",
     "stuffed zucchini",
@@ -1951,6 +2231,7 @@
     "fat_g": 4.27,
     "fiber_g": 0.91
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2018,6 +2299,7 @@
     "fat_g": 4.38,
     "fiber_g": 1.58
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2087,6 +2369,7 @@
     "fat_g": 4.88,
     "fiber_g": 1.17
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2178,6 +2461,9 @@
     "fat_g": 5.13,
     "fiber_g": 1.57
    },
+   "allergens": [
+    "sulphites"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2254,6 +2540,11 @@
     "fat_g": 8.72,
     "fiber_g": 0.6
    },
+   "allergens": [
+    "celery",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "bread soaked in broth, counted as water"
   },
@@ -2326,6 +2617,11 @@
     "fat_g": 6.66,
     "fiber_g": 0.58
    },
+   "allergens": [
+    "celery",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2393,6 +2689,9 @@
     "fat_g": 10.75,
     "fiber_g": 2.55
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2438,6 +2737,11 @@
     "fat_g": 28.27,
     "fiber_g": 1.75
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.8,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -2488,6 +2792,11 @@
     "fat_g": 19.16,
     "fiber_g": 1.22
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2542,6 +2851,11 @@
     "fat_g": 22.41,
     "fiber_g": 1.03
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2550,6 +2864,7 @@
    "name_ar": "رز بالشعرية",
    "aliases": [
     "roz bel shareya",
+    "roz bel sha'reya",
     "rice with vermicelli",
     "ruz bil sha3riya",
     "roz shareya",
@@ -2587,6 +2902,9 @@
     "fat_g": 3.89,
     "fiber_g": 0.53
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2625,6 +2943,9 @@
     "fat_g": 1.61,
     "fiber_g": 0.39
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2685,6 +3006,11 @@
     "fat_g": 8.06,
     "fiber_g": 0.75
    },
+   "allergens": [
+    "milk",
+    "sulphites",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2734,6 +3060,9 @@
     "fat_g": 13.04,
     "fiber_g": 0.36
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -2805,6 +3134,11 @@
     "fat_g": 7.65,
     "fiber_g": 1.1
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.9,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -2856,6 +3190,9 @@
     "fat_g": 3.39,
     "fiber_g": 1.67
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2864,6 +3201,7 @@
    "name_ar": "كفتة",
    "aliases": [
     "kofta",
+    "beef kofta",
     "kufta",
     "kofta mashwiya",
     "grilled kofta",
@@ -2901,6 +3239,9 @@
     "fat_g": 13.25,
     "fiber_g": 0.3
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -2938,6 +3279,7 @@
     "fat_g": 19.64,
     "fiber_g": 0.11
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3047,6 +3389,10 @@
     "fat_g": 12.83,
     "fiber_g": 1.3
    },
+   "allergens": [
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3109,6 +3455,9 @@
     "fat_g": 7.47,
     "fiber_g": 0.15
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3173,6 +3522,7 @@
     "fat_g": 9.31,
     "fiber_g": 0.43
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3258,6 +3608,12 @@
     "fat_g": 7.93,
     "fiber_g": 1.24
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "sesame",
+    "soy"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3321,6 +3677,9 @@
     "fat_g": 5.88,
     "fiber_g": 0.44
    },
+   "allergens": [
+    "fish"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3331,6 +3690,8 @@
     "samak mashwi",
     "grilled fish",
     "grilled tilapia",
+    "grilled tilapia (bolti)",
+    "grilled bolti",
     "bolti mashwi",
     "سمك مشوى",
     "بلطي مشوي"
@@ -3376,6 +3737,9 @@
     "fat_g": 4.93,
     "fiber_g": 0.09
    },
+   "allergens": [
+    "fish"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3419,6 +3783,10 @@
     "fat_g": 9.48,
     "fiber_g": 0.19
    },
+   "allergens": [
+    "fish",
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "includes the oil a fried food absorbs"
   },
@@ -3463,6 +3831,9 @@
     "fat_g": 7.02,
     "fiber_g": 0.01
    },
+   "allergens": [
+    "fish"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3511,6 +3882,9 @@
     "fat_g": 13.92,
     "fiber_g": 0.22
    },
+   "allergens": [
+    "fish"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3560,6 +3934,10 @@
     "fat_g": 6.29,
     "fiber_g": 0.07
    },
+   "allergens": [
+    "crustaceans",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3623,6 +4001,9 @@
     "fat_g": 4.33,
     "fiber_g": 1.62
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3703,6 +4084,7 @@
     "fat_g": 3.98,
     "fiber_g": 1.81
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3767,6 +4149,9 @@
     "fat_g": 4.28,
     "fiber_g": 2.03
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3821,6 +4206,7 @@
     "fat_g": 4.19,
     "fiber_g": 3.88
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3878,6 +4264,7 @@
     "fat_g": 4.59,
     "fiber_g": 1.27
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -3941,6 +4328,9 @@
     "fat_g": 4.05,
     "fiber_g": 2.54
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4001,6 +4391,9 @@
     "fat_g": 6.07,
     "fiber_g": 1.89
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4062,6 +4455,10 @@
     "fat_g": 2.79,
     "fiber_g": 3.05
    },
+   "allergens": [
+    "celery",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "cooked with chard, counted as spinach, in broth counted as water"
   },
@@ -4132,6 +4529,7 @@
     "fat_g": 10.08,
     "fiber_g": 1.69
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "eggplant fried before baking; includes the oil a fried food absorbs"
   },
@@ -4180,6 +4578,10 @@
     "fat_g": 11.17,
     "fiber_g": 1.6
    },
+   "allergens": [
+    "eggs",
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "includes the oil a fried food absorbs"
   },
@@ -4230,6 +4632,7 @@
     "fat_g": 17.27,
     "fiber_g": 3.12
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.8,
    "yield_note": "includes the oil a fried food absorbs"
@@ -4262,6 +4665,7 @@
     "fat_g": 14.73,
     "fiber_g": 3.8
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4317,6 +4721,11 @@
     "fat_g": 1.73,
     "fiber_g": 0.33
    },
+   "allergens": [
+    "celery",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "broth counted as water plus a little chicken"
   },
@@ -4392,6 +4801,9 @@
     "fat_g": 2.9,
     "fiber_g": 4.5
    },
+   "allergens": [
+    "celery"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4452,6 +4864,11 @@
     "fat_g": 1.89,
     "fiber_g": 0.3
    },
+   "allergens": [
+    "celery",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4505,6 +4922,11 @@
     "fat_g": 2.28,
     "fiber_g": 1.37
    },
+   "allergens": [
+    "celery",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "green wheat counted as bulgur"
   },
@@ -4565,6 +4987,7 @@
     "fat_g": 9.97,
     "fiber_g": 0.56
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "casing counted as tripe; includes the oil a fried food absorbs"
   },
@@ -4616,6 +5039,10 @@
     "fat_g": 11.87,
     "fiber_g": 0.2
    },
+   "allergens": [
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4665,6 +5092,7 @@
     "fat_g": 14.45,
     "fiber_g": 0.07
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4722,6 +5150,12 @@
     "fat_g": 12.0,
     "fiber_g": 0.45
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk",
+    "soy"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "includes the oil a fried food absorbs"
   },
@@ -4777,6 +5211,7 @@
     "fat_g": 8.73,
     "fiber_g": 0.88
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4819,6 +5254,9 @@
     "fat_g": 8.44,
     "fiber_g": 0.57
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4875,6 +5313,10 @@
     "fat_g": 19.35,
     "fiber_g": 0.56
    },
+   "allergens": [
+    "gluten",
+    "soy"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -4965,6 +5407,12 @@
     "fat_g": 13.16,
     "fiber_g": 1.21
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "sesame",
+    "soy"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -5048,6 +5496,12 @@
     "fat_g": 10.1,
     "fiber_g": 1.28
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "sesame",
+    "soy"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -5120,6 +5574,12 @@
     "fat_g": 7.52,
     "fiber_g": 1.11
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk",
+    "soy"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -5173,6 +5633,7 @@
     "fat_g": 0.95,
     "fiber_g": 2.57
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -5203,6 +5664,9 @@
     "fat_g": 2.92,
     "fiber_g": 2.8
    },
+   "allergens": [
+    "lupin"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -5234,6 +5698,7 @@
     "fat_g": 0.15,
     "fiber_g": 3.3
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -5264,6 +5729,7 @@
     "fat_g": 1.5,
     "fiber_g": 2.4
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -5299,6 +5765,9 @@
     "fat_g": 1.71,
     "fiber_g": 6.1
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "one loaf; bran bread counted as whole-wheat pita"
   },
@@ -5334,6 +5803,9 @@
     "fat_g": 1.2,
     "fiber_g": 2.2
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -5366,6 +5838,11 @@
     "fat_g": 3.91,
     "fiber_g": 1.8
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "soy"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "soft white roll"
   },
@@ -5420,6 +5897,10 @@
     "fat_g": 8.4,
     "fiber_g": 3.1
    },
+   "allergens": [
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -5490,6 +5971,13 @@
     "fat_g": 17.17,
     "fiber_g": 2.5
    },
+   "allergens": [
+    "coconut",
+    "eggs",
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "weight after baking, which drives off part of the water; includes the sugar syrup poured over it"
@@ -5562,6 +6050,13 @@
     "fat_g": 17.73,
     "fiber_g": 1.82
    },
+   "allergens": [
+    "coconut",
+    "eggs",
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -5637,6 +6132,11 @@
     "fat_g": 17.58,
     "fiber_g": 0.83
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "shredded dough counted as phyllo; includes the sugar syrup poured over it"
@@ -5697,6 +6197,11 @@
     "fat_g": 30.06,
     "fiber_g": 2.33
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "shredded dough counted as phyllo; includes the sugar syrup poured over it"
@@ -5760,6 +6265,11 @@
     "fat_g": 21.02,
     "fiber_g": 0.77
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.9,
    "yield_note": "akkawi counted as mozzarella; includes the sugar syrup poured over it"
@@ -5835,6 +6345,13 @@
     "fat_g": 17.95,
     "fiber_g": 1.4
    },
+   "allergens": [
+    "coconut",
+    "gluten",
+    "milk",
+    "sulphites",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -5887,6 +6404,9 @@
     "fat_g": 3.1,
     "fiber_g": 0.18
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "weight after simmering, which drives off part of the milk's water"
@@ -5945,6 +6465,11 @@
     "fat_g": 4.02,
     "fiber_g": 0.38
    },
+   "allergens": [
+    "coconut",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.95
   },
@@ -6019,6 +6544,13 @@
     "fat_g": 21.72,
     "fiber_g": 2.6
    },
+   "allergens": [
+    "coconut",
+    "gluten",
+    "milk",
+    "sulphites",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.8,
    "yield_note": "includes the oil a fried food absorbs; includes the sugar syrup poured over it"
@@ -6080,6 +6612,10 @@
     "fat_g": 7.42,
     "fiber_g": 0.75
    },
+   "allergens": [
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "includes the sugar syrup poured over it"
@@ -6133,6 +6669,11 @@
     "fat_g": 15.39,
     "fiber_g": 1.08
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.8,
    "yield_note": "includes the oil a fried food absorbs; includes the sugar syrup poured over it"
@@ -6199,6 +6740,11 @@
     "fat_g": 28.93,
     "fiber_g": 2.33
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.9,
    "yield_note": "includes the sugar syrup poured over it"
@@ -6243,6 +6789,11 @@
     "fat_g": 27.54,
     "fiber_g": 1.47
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.97,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -6307,6 +6858,12 @@
     "fat_g": 25.61,
     "fiber_g": 2.0
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "sesame",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.95,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -6363,6 +6920,12 @@
     "fat_g": 23.5,
     "fiber_g": 1.41
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.95,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -6419,6 +6982,11 @@
     "fat_g": 17.32,
     "fiber_g": 4.39
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.95,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -6480,6 +7048,11 @@
     "fat_g": 20.76,
     "fiber_g": 0.81
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.77,
    "yield_note": "includes the oil a fried food absorbs; includes the sugar syrup poured over it"
@@ -6542,6 +7115,13 @@
     "fat_g": 7.98,
     "fiber_g": 2.03
    },
+   "allergens": [
+    "coconut",
+    "gluten",
+    "milk",
+    "sulphites",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -6602,6 +7182,13 @@
     "fat_g": 3.75,
     "fiber_g": 2.2
    },
+   "allergens": [
+    "coconut",
+    "gluten",
+    "milk",
+    "sulphites",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "boiled whole wheat counted as bulgur"
   },
@@ -6642,6 +7229,10 @@
     "fat_g": 26.88,
     "fiber_g": 4.65
    },
+   "allergens": [
+    "sesame",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -6687,6 +7278,9 @@
     "fat_g": 2.22,
     "fiber_g": 0.0
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -6725,6 +7319,7 @@
     "fat_g": 0.0,
     "fiber_g": 0.0
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "sweetened the usual Egyptian way"
   },
@@ -6764,6 +7359,7 @@
     "fat_g": 0.0,
     "fiber_g": 0.0
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "USDA has no sugarcane juice: counted as its usual sugar content in water"
   },
@@ -6830,6 +7426,12 @@
     "fat_g": 5.07,
     "fiber_g": 0.62
    },
+   "allergens": [
+    "coconut",
+    "milk",
+    "sulphites",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "thickened with starch, counted as cornstarch"
   },
@@ -6875,6 +7477,7 @@
     "fat_g": 0.07,
     "fiber_g": 0.59
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -6917,6 +7520,7 @@
     "fat_g": 0.05,
     "fiber_g": 3.18
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -6969,6 +7573,10 @@
     "fat_g": 3.99,
     "fiber_g": 0.72
    },
+   "allergens": [
+    "coconut",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7019,6 +7627,7 @@
     "fat_g": 0.05,
     "fiber_g": 0.13
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7057,6 +7666,7 @@
     "fat_g": 0.02,
     "fiber_g": 0.0
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7100,6 +7710,9 @@
     "fat_g": 2.06,
     "fiber_g": 0.0
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7142,6 +7755,7 @@
     "fat_g": 0.23,
     "fiber_g": 0.96
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7182,6 +7796,7 @@
     "fat_g": 0.52,
     "fiber_g": 2.95
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7222,6 +7837,7 @@
     "fat_g": 0.18,
     "fiber_g": 1.2
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7284,6 +7900,9 @@
     "fat_g": 15.99,
     "fiber_g": 6.15
    },
+   "allergens": [
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7344,6 +7963,10 @@
     "fat_g": 9.5,
     "fiber_g": 2.81
    },
+   "allergens": [
+    "milk",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7410,6 +8033,9 @@
     "fat_g": 9.23,
     "fiber_g": 2.44
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7499,6 +8125,9 @@
     "fat_g": 8.54,
     "fiber_g": 1.41
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "fried bread; includes the oil a fried food absorbs"
   },
@@ -7553,6 +8182,12 @@
     "fat_g": 27.68,
     "fiber_g": 2.8
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "soy",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7590,6 +8225,9 @@
     "fat_g": 13.64,
     "fiber_g": 0.0
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "strained yogurt counted as Greek yogurt"
   },
@@ -7663,6 +8301,10 @@
     "fat_g": 18.8,
     "fiber_g": 4.8
    },
+   "allergens": [
+    "fava",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.95,
    "yield_note": "dried chickpeas soaked in water, includes the oil a fried food absorbs"
@@ -7774,6 +8416,11 @@
     "fat_g": 9.56,
     "fiber_g": 3.17
    },
+   "allergens": [
+    "fava",
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -7845,6 +8492,11 @@
     "fat_g": 10.76,
     "fiber_g": 1.13
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "garlic sauce counted as oil, garlic and lemon"
   },
@@ -7946,6 +8598,10 @@
     "fat_g": 8.43,
     "fiber_g": 1.34
    },
+   "allergens": [
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -8025,6 +8681,11 @@
     "fat_g": 11.49,
     "fiber_g": 1.16
    },
+   "allergens": [
+    "eggs",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "garlic sauce counted as oil, garlic and lemon"
   },
@@ -8124,6 +8785,10 @@
     "fat_g": 11.09,
     "fiber_g": 1.45
    },
+   "allergens": [
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -8204,6 +8869,11 @@
     "fat_g": 8.7,
     "fiber_g": 0.74
    },
+   "allergens": [
+    "milk",
+    "sulphites",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -8276,6 +8946,11 @@
     "fat_g": 11.39,
     "fiber_g": 0.75
    },
+   "allergens": [
+    "milk",
+    "sulphites",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -8325,6 +9000,9 @@
     "fat_g": 8.71,
     "fiber_g": 0.26
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -8373,6 +9051,9 @@
     "fat_g": 12.6,
     "fiber_g": 0.27
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -8438,6 +9119,11 @@
     "fat_g": 11.98,
     "fiber_g": 0.46
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "jameed sauce counted as strained and plain yogurt"
   },
@@ -8506,6 +9192,9 @@
     "fat_g": 7.85,
     "fiber_g": 0.47
    },
+   "allergens": [
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -8553,6 +9242,11 @@
     "fat_g": 6.05,
     "fiber_g": 2.31
    },
+   "allergens": [
+    "celery",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "whole wheat counted as bulgur"
   },
@@ -8607,6 +9301,10 @@
     "fat_g": 5.05,
     "fiber_g": 2.93
    },
+   "allergens": [
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "crushed wheat counted as bulgur"
   },
@@ -8660,6 +9358,10 @@
     "fat_g": 5.8,
     "fiber_g": 0.21
    },
+   "allergens": [
+    "celery",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "rice simmered in milk and broth"
@@ -8732,6 +9434,11 @@
     "fat_g": 7.86,
     "fiber_g": 1.03
    },
+   "allergens": [
+    "celery",
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -8779,6 +9486,10 @@
     "fat_g": 15.19,
     "fiber_g": 1.37
    },
+   "allergens": [
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.8,
    "yield_note": "includes the oil a fried food absorbs; includes the sugar syrup poured over it"
@@ -8839,6 +9550,10 @@
     "fat_g": 17.61,
     "fiber_g": 2.52
    },
+   "allergens": [
+    "gluten",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "includes the oil a fried food absorbs"
   },
@@ -8894,6 +9609,11 @@
     "fat_g": 14.02,
     "fiber_g": 2.46
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -8951,6 +9671,10 @@
     "fat_g": 15.72,
     "fiber_g": 4.07
    },
+   "allergens": [
+    "gluten",
+    "sesame"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "weight after baking, which drives off part of the water; zaatar counted as dried thyme and sesame"
@@ -9009,6 +9733,10 @@
     "fat_g": 12.29,
     "fiber_g": 1.31
    },
+   "allergens": [
+    "gluten",
+    "milk"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -9071,6 +9799,9 @@
     "fat_g": 8.35,
     "fiber_g": 2.15
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -9135,6 +9866,9 @@
     "fat_g": 9.48,
     "fiber_g": 1.4
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield": 0.85,
    "yield_note": "weight after baking, which drives off part of the water"
@@ -9190,6 +9924,10 @@
     "fat_g": 14.78,
     "fiber_g": 1.12
    },
+   "allergens": [
+    "gluten",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -9250,6 +9988,9 @@
     "fat_g": 7.74,
     "fiber_g": 0.91
    },
+   "allergens": [
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review",
    "yield_note": "eggplant fried; includes the oil a fried food absorbs"
   },
@@ -9300,6 +10041,7 @@
     "fat_g": 7.4,
     "fiber_g": 3.33
    },
+   "allergens": [],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -9373,6 +10115,12 @@
     "fat_g": 12.37,
     "fiber_g": 3.49
    },
+   "allergens": [
+    "gluten",
+    "milk",
+    "sesame",
+    "tree_nuts"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   },
   {
@@ -9427,6 +10175,9 @@
     "fat_g": 11.41,
     "fiber_g": 1.14
    },
+   "allergens": [
+    "gluten"
+   ],
    "review": "estimated from a standard recipe, pending dietitian review"
   }
  ]

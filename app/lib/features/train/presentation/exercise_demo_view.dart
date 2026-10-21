@@ -101,6 +101,9 @@ class _ExerciseDemoViewState extends State<ExerciseDemoView> {
     );
 
     return AppScaffold(
+      // The clip is the picture on this page; header art above it would be a
+      // second one.
+      showArt: false,
       appBar: TrainTopBar(onClose: widget.onClose, closeIcon: Icons.arrow_back),
       children: [
         ExerciseClipFrame(
@@ -113,7 +116,7 @@ class _ExerciseDemoViewState extends State<ExerciseDemoView> {
         Align(
           alignment: AlignmentDirectional.centerStart,
           child: MarkerHighlight(
-            child: Text(exercise.name(language), style: AppText.titleL),
+            child: MoveName(exercise.name(language), style: AppText.titleL),
           ),
         ),
         if (exercise.clips.length > 1)
@@ -130,7 +133,8 @@ class _ExerciseDemoViewState extends State<ExerciseDemoView> {
         fact(l10n.musclesWorked, musclesLine(l10n, exercise.primaryMuscles)),
         if (exercise.secondaryMuscles.isNotEmpty)
           fact(l10n.alsoWorks, musclesLine(l10n, exercise.secondaryMuscles)),
-        fact(l10n.equipment, equipmentLine(l10n, exercise.equipment)),
+        if (equipmentLine(l10n, exercise.equipment).trim().isNotEmpty)
+          fact(l10n.equipment, equipmentLine(l10n, exercise.equipment)),
         Wrap(
           spacing: 8,
           runSpacing: 8,

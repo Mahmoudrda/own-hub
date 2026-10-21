@@ -37,6 +37,7 @@ import '../domain/train_repository.dart';
 import 'exercise_clip_frame.dart';
 import 'exercise_clip_player.dart';
 import 'train_widgets.dart';
+import 'exercise_labels.dart';
 
 class ExerciseVideoView extends StatelessWidget {
   const ExerciseVideoView({
@@ -91,7 +92,7 @@ class ExerciseVideoView extends StatelessWidget {
         move ??
         PlannedMove(
           exerciseId: 'goblet_squat',
-          name: l10n.gobletSquat,
+          name: englishMoveNames.gobletSquat,
           prescriptionLabel: l10n.n31012KgSuggested,
           cues: [
             l10n.heelsFlatKneesOutOverYourToes,
@@ -105,6 +106,8 @@ class ExerciseVideoView extends StatelessWidget {
     final source = assetId == null ? null : videos.urlFor(assetId);
 
     return AppScaffold(
+      // A clip is the picture; the header art only stands in without one.
+      showArt: clip == null,
       // Closes rather than goes back: this sits over the day, so the cross
       // returns her to the move list she opened it from.
       appBar: TrainTopBar(onClose: onClose),
@@ -128,6 +131,7 @@ class ExerciseVideoView extends StatelessWidget {
             media: media,
             players: players,
             tallest: 0.4,
+            maxHeight: 240,
           )
         else if (source != null)
           AppMedia(
@@ -136,7 +140,7 @@ class ExerciseVideoView extends StatelessWidget {
             child: _SourceClip(source: source, players: players),
           )
         else
-          const AppMedia(height: 200),
+          const AppMedia(height: 200, showPlayButton: false),
         Row(
           children: [
             // The move's name is the page's subject, so it takes the one
@@ -145,7 +149,7 @@ class ExerciseVideoView extends StatelessWidget {
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: MarkerHighlight(
-                  child: Text(shown.name, style: AppText.titleL),
+                  child: MoveName(shown.name, style: AppText.titleL),
                 ),
               ),
             ),

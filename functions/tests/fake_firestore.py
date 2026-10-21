@@ -92,6 +92,9 @@ class FakeFirestore:
     def transaction(self):
         return Transaction(self)
 
+    def batch(self):
+        return Transaction(self)
+
     def document(self, path):
         return DocumentRef(self, path)
 

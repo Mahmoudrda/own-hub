@@ -43,38 +43,24 @@ import '../domain/notifications.dart';
 import 'account_view_models.dart';
 import 'extras_rows.dart';
 
-/// Kind → the sentence A01 draws for it, or null when none is authored.
-///
-/// Each kind below names the string it is waiting for. Returning null is not a
-/// gap in this file — it is the dictionary gap, made visible and countable.
+/// Kind → the sentence A01 draws for it.
 class NotificationCopy {
   const NotificationCopy._();
 
-  static String? titleFor(NotificationKind kind, AppL10n l10n) {
+  static String titleFor(NotificationKind kind, AppL10n l10n) {
     return switch (kind) {
-      // Awaiting `{coach} replied to your review` — the shipped string names
-      // Sara, who is one woman's coach and nobody else's.
-      NotificationKind.coachReply => null,
-      // Awaiting `{group} reached {count} sessions`.
-      NotificationKind.groupMilestone => null,
-      // Awaiting `{name} and {count} others liked your best`.
-      NotificationKind.reaction => null,
-      // The four slot strings now exist — `mealNudgeHeading` in
-      // `today_cards.dart` picks one from the hour, which is what T03 draws.
-      // What this switch cannot do is reach them: it is handed a [kind] and no
-      // notification, so it has no `createdAt` to read the slot from, and a
-      // meal nudge listed under the wrong meal is the defect T03 just had.
-      // Closing this means giving `titleFor` the row rather than its kind.
-      NotificationKind.mealNudge => null,
-      // Awaiting G7 Q11's MVP event set and its copy.
-      NotificationKind.weekClosed => null,
-      NotificationKind.tierChanged => null,
-      NotificationKind.verificationDecided => null,
+      NotificationKind.coachReply => l10n.yourCoachRepliedToYourReview,
+      NotificationKind.groupMilestone => l10n.yourGroupReachedANewMilestone,
+      NotificationKind.reaction => l10n.yourBestGotAFewLikes,
+      NotificationKind.mealNudge => l10n.aGentleNudgeToLogYourMeal,
+      NotificationKind.weekClosed => l10n.yourWeekIsWrappedUpSeeHow,
+      NotificationKind.tierChanged => l10n.yourLevelHasChanged,
+      NotificationKind.verificationDecided =>
+        l10n.thereIsAnUpdateOnYourVerification,
     };
   }
 
-  static bool hasAuthoredCopy(NotificationKind kind, AppL10n l10n) =>
-      titleFor(kind, l10n) != null;
+  static bool hasAuthoredCopy(NotificationKind kind, AppL10n l10n) => true;
 }
 
 class NotificationsView extends StatelessWidget {
@@ -185,6 +171,16 @@ class NotificationsView extends StatelessWidget {
             onChanged: (on) =>
                 onPrefsChanged?.call(prefs!.copyWith(restAlert: on)),
           ),
+          // Off cancels the nudges still to come.
+          _switchRow(
+            key: 'a01-nudges',
+            icon: Icons.wb_twilight_outlined,
+            title: l10n.friendlyNudges,
+            subtitle: l10n.atMostOneADayAndNever,
+            value: prefs!.nudges,
+            onChanged: (on) =>
+                onPrefsChanged?.call(prefs!.copyWith(nudges: on)),
+          ),
           // Off cancels the tips still to come.
           _switchRow(
             key: 'a01-tips',
@@ -244,7 +240,7 @@ class NotificationsView extends StatelessWidget {
                 size: 24,
                 color: AppColors.primaryDim,
               ),
-              title: NotificationCopy.titleFor(row.kind, l10n)!,
+              title: NotificationCopy.titleFor(row.kind, l10n),
             ),
           // The rule about them stopping is stated where she would go to turn
           // them off.
@@ -262,10 +258,12 @@ Widget _switchRow({
   required String title,
   required bool value,
   required ValueChanged<bool> onChanged,
+  String subtitle = '',
 }) => AppListItem(
   key: ValueKey(key),
   leading: Icon(icon, size: 24, color: AppColors.primaryDim),
   title: title,
+  subtitle: subtitle,
   trailing: AppToggle(value: value, semanticLabel: title, onChanged: onChanged),
   onTap: () => onChanged(!value),
 );

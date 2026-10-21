@@ -171,6 +171,31 @@ def test_revoke_takes_the_claim_back_and_reopens_the_case(world):
     assert approvals.store.verification_gate(HER).open_flag_id
 
 
+def test_decline_closes_the_flag_and_leaves_an_audit_trail(world):
+    ask(world)
+    assert staff("decline_user", {"uid": HER, "reason": "notClear"}) == {"state": "rejected"}
+    assert user(world)["verification"]["state"] == "rejected"
+    assert world.claims.get(HER) is not True
+    assert not approvals.store.verification_gate(HER).open_flag_id
+    ledger = world.db.docs[f"{config.COL_LEDGER}/{HER}"]
+    assert ledger["declinedBy"] == REV and ledger["declineReason"] == "notClear"
+    assert ledger["declinedAt"] is not None
+    logged = [d for k, d in world.db.docs.items() if d.get("action") == "decline"]
+    assert logged and logged[0].get("reviewerUid", REV) == REV
+
+
+def test_decline_without_a_flag_still_rejects_and_records(world):
+    assert staff("decline_user", {"uid": HER}) == {"state": "rejected"}
+    assert user(world)["verification"]["state"] == "rejected"
+    assert world.db.docs[f"{config.COL_LEDGER}/{HER}"]["declineReason"] == "other"
+
+
+def test_decline_guards(world):
+    raises(lambda: staff("decline_user", {"uid": REV}), PRECONDITION)
+    raises(lambda: staff("decline_user", {"uid": HER, "reason": "free text"}), INVALID)
+    raises(lambda: staff("decline_user", {"uid": HER}, uid="x", foo=True), DENIED)
+
+
 def test_revoking_an_unknown_account_is_not_found(world):
     raises(lambda: staff("revoke_user", {"uid": "ghost"}), https_fn.FunctionsErrorCode.NOT_FOUND)
 

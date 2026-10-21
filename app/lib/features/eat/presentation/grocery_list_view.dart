@@ -90,21 +90,30 @@ class _GroceryListViewState extends State<GroceryListView> {
   DateTime get _now => widget.now ?? AppClock.now();
   String get _weekId => WeekKey.of(_now).id;
 
+  bool _started = false;
+
   @override
   void initState() {
     super.initState();
     _ownsRepo = widget.repository == null;
     _repo = widget.repository ?? InMemoryMealRepository();
-    unawaited(_load());
   }
 
-  Future<void> _load() async {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    unawaited(_load(AppL10n.of(context).localeName.startsWith('ar')));
+  }
+
+  Future<void> _load(bool arabic) async {
     var plan = await _repo.mealPlan(_weekId);
     final recipeOf = widget.recipeOf;
     if (plan != null && recipeOf != null) {
       await _repo.syncGroceries(
         weekId: _weekId,
-        lines: groceryLinesFor(plan, recipeOf),
+        lines: groceryLinesFor(plan, recipeOf, arabic: arabic),
       );
       plan = await _repo.mealPlan(_weekId);
     }

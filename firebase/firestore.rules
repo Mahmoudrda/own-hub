@@ -1539,7 +1539,16 @@ service cloud.firestore {
     // each. Both are server-written: a client that could write the index could
     // change what every other woman is offered.
     match /recipeIndex/{id} { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
-    match /meta/{docId}     { allow read: if isVerified() || isAdmin(); allow write: if isAdmin(); }
+    match /meta/{docId}     { allow read: if isVerified() || isAdmin();
+                              allow write: if isAdmin()
+                                           && docId != 'communityFoods'
+                                           && docId != 'communityFoodsVersion'; }
+
+    // The foods the owner approved from what women confirmed in the meal check:
+    // `meta/communityFoods` holds the list and `meta/communityFoodsVersion` the
+    // number phones check once a day. Verified members read them under the
+    // rule above; only functions/nutrition/community_foods.py writes them, so
+    // the two are carved out of the admin write above.
 
     // The exercise and workout content, readable before sign-in so a guest can
     // browse Train. Only these version documents and the workout library: every
@@ -1569,11 +1578,17 @@ service cloud.firestore {
     // ---------------------------------------------------------------- events
     //
     // Feature.events. The owner creates, publishes and cancels an event from
-    // the console; a verified woman reads it once it is published, and never
+    // the dashboard; a verified woman reads it once it is published, and never
     // before. A draft is the owner's working copy and a cancelled event is
-    // simply gone from the member's list. Nothing here holds anything about a
-    // woman: there is no attendee list, no "interested" and no RSVP in v1, so
-    // the only writer is staff and the only data is the event itself.
+    // simply gone from the member's list.
+    //
+    // Seats. `seatsTaken` and events/{id}/attendees/{uid} are written by the
+    // register_for_event and cancel_event_registration callables in one
+    // transaction, never by a client: not by a member, and not by the admin
+    // either, so the count cannot drift from the list. An admin write may
+    // create an event with no seats taken or edit one with `seatsTaken`
+    // unchanged. A woman reads only her own attendee record; the admin reads
+    // them all. There is no "interested" and no public attendee list.
     //
     // The member's query has to say `status == 'published'` or it is refused
     // as a whole, which is what keeps a draft from ever reaching her phone.
@@ -1582,12 +1597,36 @@ service cloud.firestore {
         return !(key in d) || d[key] == null
                || (d[key] is string && d[key].size() <= max);
       }
+      // The Nth name of a file list, if there is one, is a file name of the
+      // right kind. Rules have no loop, so the longest allowed list is spelled
+      // out: six pictures, two clips.
+      function nameAt(names, i, pattern) {
+        return names.size() <= i
+               || (names[i] is string && names[i].matches(pattern));
+      }
+      function pictureNames(names) {
+        return names is list && names.size() <= 6
+          && nameAt(names, 0, '^[a-z0-9][a-z0-9_-]{0,80}[.](webp|jpg|jpeg)$')
+          && nameAt(names, 1, '^[a-z0-9][a-z0-9_-]{0,80}[.](webp|jpg|jpeg)$')
+          && nameAt(names, 2, '^[a-z0-9][a-z0-9_-]{0,80}[.](webp|jpg|jpeg)$')
+          && nameAt(names, 3, '^[a-z0-9][a-z0-9_-]{0,80}[.](webp|jpg|jpeg)$')
+          && nameAt(names, 4, '^[a-z0-9][a-z0-9_-]{0,80}[.](webp|jpg|jpeg)$')
+          && nameAt(names, 5, '^[a-z0-9][a-z0-9_-]{0,80}[.](webp|jpg|jpeg)$');
+      }
+      function clipNames(names) {
+        return names is list && names.size() <= 2
+          && nameAt(names, 0, '^[a-z0-9][a-z0-9_-]{0,80}[.]mp4$')
+          && nameAt(names, 1, '^[a-z0-9][a-z0-9_-]{0,80}[.]mp4$');
+      }
       function validEvent(d) {
         return d.keys().hasOnly(['titleEn', 'titleAr', 'descriptionEn',
                                  'descriptionAr', 'startsAt', 'endsAt',
                                  'timeZone', 'mode', 'link', 'placeName',
                                  'audience', 'capacity', 'coverFile',
-                                 'status', 'createdAt', 'updatedAt'])
+                                 'status', 'createdAt', 'updatedAt',
+                                 'imageFiles', 'videoFiles',
+                                 'locationAddress', 'locationUrl',
+                                 'seatsTaken'])
           && d.keys().hasAll(['titleEn', 'titleAr', 'startsAt', 'endsAt',
                               'mode', 'audience', 'status'])
           && d.titleEn is string && d.titleEn.size() > 0 && d.titleEn.size() <= 120
@@ -1601,20 +1640,44 @@ service cloud.firestore {
           && d.audience == 'all'
           && d.mode in ['online', 'place']
           && (d.mode != 'online'
-              || (d.link is string && d.link.matches('^https://[^ ]{3,500}$')))
+              || (d.link is string && d.link.matches('^https://[^[:space:]]{3,500}$')))
           && (d.mode != 'place'
               || (d.placeName is string && d.placeName.size() > 0
                   && d.placeName.size() <= 120))
           && optionalText(d, 'link', 510)
           && optionalText(d, 'placeName', 120)
+          && optionalText(d, 'locationAddress', 300)
+          && (!('locationUrl' in d) || d.locationUrl == null
+              || (d.locationUrl is string && d.locationUrl.size() <= 500
+                  && d.locationUrl.matches('^https://((maps[.]google[.]com|maps[.]app[.]goo[.]gl)([/?#][^[:space:]]*)?|goo[.]gl/maps([/?#][^[:space:]]*)?|www[.]google[.]com/maps([/?#][^[:space:]]*)?)$')))
           && (!('capacity' in d) || d.capacity == null
               || (d.capacity is int && d.capacity > 0 && d.capacity <= 100000))
-          && optionalText(d, 'coverFile', 200);
+          && optionalText(d, 'coverFile', 200)
+          && (!('imageFiles' in d) || pictureNames(d.imageFiles))
+          && (!('videoFiles' in d) || clipNames(d.videoFiles))
+          && (!('seatsTaken' in d)
+              || (d.seatsTaken is int && d.seatsTaken >= 0
+                  && (d.seatsTaken == 0
+                      || (d.get('capacity', null) != null
+                          && d.seatsTaken <= d.capacity))));
       }
       allow read: if isAdmin()
                   || (isVerified() && resource.data.status == 'published');
-      allow create, update: if isAdmin() && validEvent(request.resource.data);
-      allow delete: if isAdmin();
+      allow create: if isAdmin() && validEvent(request.resource.data)
+                    && request.resource.data.get('seatsTaken', 0) == 0;
+      allow update: if isAdmin() && validEvent(request.resource.data)
+                    && request.resource.data.get('seatsTaken', 0)
+                       == resource.data.get('seatsTaken', 0);
+      // Cancelling is the way to retire an event. Deleting one would leave
+      // its attendee records behind, out of reach of export and deletion.
+      allow delete: if false;
+
+      // Her place on the event. Server-written only (see above).
+      match /attendees/{attendeeUid} {
+        allow read: if isAdmin()
+                    || (signedIn() && request.auth.uid == attendeeUid);
+        allow write: if false;
+      }
     }
 
     // --------------------------------------------------------- server only
@@ -1712,6 +1775,20 @@ service cloud.firestore {
     // owner task.
 
     // --------------------------------------------------- deny by default
+    // The exact-photo cache for meal scans (functions/nutrition/cache.py): the
+    // model's items for one photo, keyed by its hash, with no uid and no image.
+    // Server-only; a Firestore TTL policy on `expiresAt` removes old rows.
+    match /scanCache/{hash} { allow read, write: if false; }
+
+    // Foods women offered from the meal check, and the markers that stop one
+    // woman confirming twice (an HMAC of her uid, never the uid). Server-only:
+    // not even an admin reads them from a client; the dashboard uses the
+    // list_community_foods callable.
+    match /communityFoodCandidates/{key} {
+      allow read, write: if false;
+      match /by/{marker} { allow read, write: if false; }
+    }
+
     // Anything not named above is denied. Stated explicitly so the posture is
     // visible rather than implied.
     match /{document=**} {

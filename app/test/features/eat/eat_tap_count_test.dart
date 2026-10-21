@@ -16,6 +16,8 @@ int _taps = 0;
 
 Future<void> _tap(WidgetTester tester, Finder finder) async {
   _taps++;
+  await tester.ensureVisible(finder);
+  await tester.pump();
   await tester.tap(finder);
   await tester.pumpAndSettle();
 }

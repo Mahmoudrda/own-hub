@@ -49,6 +49,8 @@ import 'first_gym_guide_state.dart';
 import '../features/signup/domain/legal_acceptance.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
+import 'chosen_programme.dart';
+import 'community_foods_state.dart';
 import 'exercise_library_state.dart';
 import 'workout_library_state.dart';
 import 'cloud_store.dart';
@@ -60,7 +62,9 @@ import 'coaching_link_state.dart';
 import 'community_state.dart';
 import 'analytics_consent.dart';
 import 'crash_consent.dart';
+import 'first_run_moments.dart';
 import 'kitten_setting.dart';
+import 'custom_workout_state.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
 import 'meal_scan_state.dart';
@@ -236,6 +240,9 @@ class ThisPhoneWipe implements LocalWipe {
     // of account; deleting hers forgets them.
     if (!keepsOwner) {
       unawaited(TipAnchors.instance.erase().catchError((Object _) {}));
+      // The deep breath and the promise tick are first-time moments of a
+      // phone's owner; a deleted account leaves neither flag behind.
+      unawaited(FirstRunMoments.instance.erase().catchError((Object _) {}));
     }
 
     // The recipe library her signed-in session fetched, and when it last
@@ -253,6 +260,10 @@ class ThisPhoneWipe implements LocalWipe {
       );
     }
     WorkoutLibraryState.instance.chosenRowId = null;
+    ChosenProgramme.reset();
+    // Her own workouts, the ones she deleted and today's edits. The server
+    // copies are the `splits` rows of the deletion manifest.
+    CustomWorkoutState.instance.reset();
     // The exercise library: its cached catalogue, the clips kept on the phone
     // and the move she last opened. None of it is hers, and all of it goes.
     for (final key in kExerciseLibraryCacheKeys) {
@@ -264,6 +275,8 @@ class ThisPhoneWipe implements LocalWipe {
       ExerciseLibraryState.instance.media.eraseAll().catchError((Object _) {}),
     );
     ExerciseLibraryState.instance.openExerciseId = null;
+    // The shared foods cached on this phone and her choice to share hers.
+    unawaited(CommunityFoodsState.instance.erase().catchError((Object _) {}));
 
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();

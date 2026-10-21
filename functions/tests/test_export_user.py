@@ -51,6 +51,9 @@ class FakeReader:
     def plans(self, uid, name):
         return {}
 
+    def event_seats(self, uid):
+        return {"event-1": {"uid": uid, "joinedAt": NOW, "status": "registered"}}
+
     def access_for_flags(self, flag_ids):
         assert flag_ids == ["flag-1"]
         return [{"flagId": "flag-1", "reviewerUid": "reviewer-9", "action": "contact", "at": NOW}]
@@ -96,6 +99,7 @@ def test_it_holds_her_data_and_names_no_reviewer_and_no_code():
     assert sections["healthCloud"]["data"]["profile"]["lifeStage"] == "pregnant"
     assert "lifeStage" not in sections["settings"]["data"]["user"]["profile"]
     assert OTHER not in text
+    assert sections["events"]["data"]["event-1"]["status"] == "registered"
 
 
 def test_the_summary_is_readable_and_runs_nothing():

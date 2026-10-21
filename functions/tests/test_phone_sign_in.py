@@ -36,6 +36,8 @@ USER_CALLABLES = (
     "list_reviewers",
     "list_review_slots",
     "book_review_slot",
+    "register_for_event",
+    "cancel_event_registration",
 )
 STAFF_CALLABLES = (
     "list_verification_flags",

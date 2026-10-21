@@ -317,7 +317,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             turn on health backup yourself.</li>
             <li>Once you are verified, your workouts and meals are copied to
             Google Cloud in Frankfurt, so a new phone does not mean starting
-            again. No other member can see them.</li>
+            again. No other member can see them, unless you choose to share a
+            dish (section 3.13), which is shared without your name.</li>
             <li>To send your sign-in code, your phone number goes to Google
             Firebase in the United States.</li>
             <li>We do not sell your data. There are no adverts and no tracking.
@@ -457,7 +458,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         copy is also kept in Google Cloud Firestore in Frankfurt, Germany, so
         that it survives a lost or replaced phone. Server security rules let
         only your own verified account read it. No other member can see
-        it.</p>
+        it, unless you choose to share a dish (section 3.13), which is shared
+        without your name.</p>
         <p>Your Ramadan setting stays on your phone only.</p>
         <p>If you add an Own Hub widget to your Home Screen or Lock Screen, it
         shows how many sessions you have done this week, whether today&rsquo;s
@@ -645,7 +647,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           and the app deletes that copy right away. The photo is then held only
           in the app&rsquo;s memory, and is deleted as soon as the estimate
           comes back. Our server logs record only the outcome and how many
-          foods were found, never the photo or the food.</li>
+          foods were found, never the photo or the food. Separately from the
+          logs, see the next point.</li>
+          <li><b>A repeat answer, kept 30 days.</b> To answer the same photo
+          again without asking Google again, our server keeps a fingerprint of
+          the photo (a one-way code made from the photo, from which the photo
+          cannot be rebuilt) and the foods and weights found in it, for 30 days,
+          then deletes them automatically. It holds no photo, and nothing that
+          identifies you: no account identifier, name or phone number. It is
+          used only when the exact same photo is analysed again.</li>
           <li><b>Not used for training.</b> Under Google Cloud&rsquo;s terms,
           Google does not use the photo to train its models, and we never do
           either.</li>
@@ -663,6 +673,47 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           not open.</li>
           <li><b>Basis:</b> your consent, given in the app before your first
           meal photo.</li>
+        </ul>
+
+""" + h3("c-dish-sharing", "3.13 Sharing a dish with other members (optional)") + """
+        <p>Under the meal check, and in Profile, then Privacy, there is a switch
+        that lets you help other members find Egyptian dishes. It is <b>off</b>
+        until you turn it on, and it is separate from the meal photo
+        agreement.</p>
+        <ul>
+          <li><b>What is sent.</b> Only when the switch is on and you tap
+          &ldquo;Log this meal&rdquo;: the name of the dish or dishes, what is in
+          it (the names of the foods and their weights) and the energy, protein,
+          carbohydrate, fat and fibre figures. It goes to a list on our server
+          that only the Own Hub team can read. It never includes your photo or
+          your name.</li>
+          <li><b>How we count you once.</b> To avoid counting your confirmation
+          twice, the server keeps a marker made from your account identifier
+          with a secret key that only the server holds, so the marker cannot be
+          turned back into you by anyone without that key. The marker is deleted
+          when you delete your account. A dish waiting for review that only you
+          had confirmed is deleted with it.</li>
+          <li><b>Review.</b> The Own Hub team reviews each dish before anyone
+          sees it.</li>
+          <li><b>What other members see.</b> A dish the team approves is shown to
+          all verified members, with its name, category, allergens and figures.
+          It does not show what is in it, your photo or your name, and it carries
+          no link to you.</li>
+          <li><b>Turning it off.</b> Turning the switch off stops any future
+          sharing. It does not withdraw dishes that have already been approved,
+          because they carry no link to you and we cannot tell which are
+          yours.</li>
+          <li><b>Basis:</b> your consent, given by turning the switch on.</li>
+        </ul>
+
+""" + h3("c-events", "3.14 Event seats") + """
+        <p>If you reserve a seat at an Own Hub event, our server records your
+        place: your account identifier, when you reserved and the status of the
+        seat, under that event. Only you and the Own Hub team can read it. The
+        team uses it to count seats and run the event. Cancelling your seat
+        deletes it, and so does deleting your account.</p>
+        <ul>
+          <li><b>Basis:</b> performing our agreement with you.</li>
         </ul>
 
 """ + h2("where", "4. Who handles your data, and where") + """
@@ -742,8 +793,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p>Your data is stored and processed outside Egypt:</p>
         <ul>
           <li><b>Germany and the European Union:</b> your account, your training
-          and meals, any health backup, your verification, and any meal photo
-          you choose to analyse.</li>
+          and meals, any health backup, your verification, any meal photo you
+          choose to analyse (and the 30-day repeat answer from it), any dish you
+          choose to share, and your event seats.</li>
           <li><b>The United States:</b> your phone number, for sign-in.</li>
           <li><b>Google data centres worldwide, which include the United
           States:</b> the device checks, ML Kit performance data, crash reports
@@ -772,6 +824,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
              "only for the moment the photo is taken, and is deleted right "
              "away. The photo is deleted from memory as soon as the estimate "
              "comes back (section 3.12)."),
+            ("The repeat answer for a meal photo (a fingerprint of the photo and the foods and weights found; no photo, nothing that identifies you)",
+             "30 days, then deleted automatically (section 3.12)"),
+            ("A dish you chose to share, while it waits for review (dish names, what is in it, figures; a keyed marker instead of your identity)",
+             "Until the team decides. The marker is deleted with your account, and a dish only you had confirmed is deleted with it (section 3.13)."),
+            ("A dish the team approved (names, category, allergens, figures; no link to you)",
+             "Kept, and shown to verified members. Not withdrawn when you turn sharing off or delete your account, because it carries no link to you (section 3.13)."),
+            ("Your seat at an event (account identifier, time reserved, status)",
+             "Until you cancel the seat or delete your account (section 3.14)"),
             ("Verification result and review case",
              "180 days after the case is decided, or earlier if you delete your "
              "account. A case still waiting for review is kept until it is decided."),
@@ -827,6 +887,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           180 days end, linked to no account;</li>
           <li>reviewer access log entries for your case, until their year
           ends;</li>
+          <li>any dish the team approved after you shared it, which carries no
+          link to you (section 3.13);</li>
           <li>the record that the deletion was carried out.</li>
         </ul>
         <p>Crash reports, usage statistics and ML Kit data are never linked to
@@ -926,6 +988,13 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>21 October 2026, repeat answers, dish sharing and event
+          seats:</b> section 3.12 now says a fingerprint of the photo and the
+          foods found are kept for 30 days to answer the same photo again.
+          Section 3.13 is new: an optional switch, off until you turn it on,
+          that shares a dish without your name. Section 3.14 is new: event
+          seats. Statements that your meals are seen by no one now name the
+          dish-sharing exception.</li>
           <li><b>17 October 2026, meal photos:</b> section 3.12. An optional
           feature with its own agreement, asked in the app before the first
           meal photo. Nothing changes for you unless you use it.</li>
@@ -1025,7 +1094,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li><b>It is free.</b> There are no adverts, no in-app purchases, no
           subscriptions and no payments of any kind.</li>
           <li><b>What is not in this version:</b> no community, no coaching and
-          no AI assistant. Nothing in the app connects you to another person.
+          no AI assistant. Nothing in the app connects you to another person; a dish
+          you choose to share is shown to verified members without your name.
           If any of these arrives, it will come in a later version, with
           updated Terms that you will be asked to accept.</li>
         </ul>
@@ -1325,7 +1395,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           and no assistant in this version: nothing in the app connects you to
           another member, and nothing in it can be bought. If you were expecting
           one of those, you were reading about a later version that is not
-          out.</p>
+          out. The one thing you can choose to share is a dish, without your name.</p>
 
 """ + h3("q-language", "How do I switch between Arabic and English?") + """
           <p>Profile, then Language. Pick the one you want and the whole app
@@ -1339,7 +1409,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           that one card cannot open two accounts. We never keep the photographs
           of your card or your face, and we never keep the ID number itself.
           Once you are verified, your training and meals, kept in Frankfurt,
-          Germany, where no other member can see them. Your cycle, check-ins,
+          Germany, where no other member can see them (unless you choose to
+          share a dish, which is shared without your name). Your cycle, check-ins,
           measurements, life stage, allergies and weight only if you turn on
           health backup yourself.</p>
           <p>If you allow crash reports, Firebase Crashlytics receives a report

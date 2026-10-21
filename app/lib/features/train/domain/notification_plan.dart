@@ -14,6 +14,16 @@
 /// - **No streak, no count, no guilt.** Nothing here reads a run of days. The
 ///   check-ins count days since she last opened the app or trained, and say
 ///   so to nobody.
+/// - **Casual means one a day, four a week, three unanswered.** The
+///   check-ins, the getting started tips, "Trained today?" and the friendly
+///   nudges are casual; her chosen training days and the rest alert are not.
+///   Together they land on at most one calendar day in each, at most
+///   [kNudgesPerWeek] in a Saturday to Friday week, and at most
+///   [kNudgesUnanswered] after she last opened the app or trained, the most
+///   useful first: "Trained today?", then a check-in, then a tip, then a
+///   nudge. None lands on a day she chose to train (a reminder that quiet
+///   hours moved to the next day claims that day), except "Trained today?",
+///   which is that day's own evening question.
 /// - **Local.** Nothing is sent to a server and no health data is in any
 ///   text.
 library;
@@ -39,6 +49,66 @@ enum PlanKind {
   /// One of the getting started tips, in her first fortnight, only while she
   /// is not opening the app. [PlannedNotification.variant] is which one.
   tip,
+
+  /// A friendly nudge. [PlannedNotification.variant] is
+  /// [nudgeVariantCode]: which context and which of its texts.
+  nudge,
+}
+
+/// When in the day a friendly nudge is about, and so what it says.
+enum NudgeContext {
+  /// 09:30 to 11:00: a breakfast idea, or log breakfast in a tap.
+  morning(9 * 60 + 30, 11 * 60),
+
+  /// 13:30 to 16:00: a short movement at home.
+  midday(13 * 60 + 30, 16 * 60),
+
+  /// 18:30 to 20:30: a dinner recipe idea, or log dinner in a tap.
+  evening(18 * 60 + 30, 20 * 60 + 30),
+
+  /// The last day of her week, Friday (her week runs Saturday to Friday, as
+  /// on Home's strip): a calm, forward-looking note about the week to come. It
+  /// rides the evening window.
+  weekEnd(18 * 60 + 30, 20 * 60 + 30);
+
+  const NudgeContext(this.fromMinute, this.toMinute);
+
+  /// The window, in minutes past midnight. A deterministic minute inside it
+  /// is picked per day.
+  final int fromMinute;
+  final int toMinute;
+}
+
+/// How many different texts each [NudgeContext] has.
+const int kNudgeVariants = 4;
+
+/// The code a nudge carries in [PlannedNotification.variant]: the context's
+/// block of [kNudgeVariants] texts, then which text in it.
+int nudgeVariantCode(NudgeContext context, int variant) =>
+    context.index * kNudgeVariants + variant % kNudgeVariants;
+
+/// The context and text a [nudgeVariantCode] stands for.
+({NudgeContext context, int variant}) nudgeFromCode(int code) {
+  final safe = code.abs() % (NudgeContext.values.length * kNudgeVariants);
+  return (
+    context: NudgeContext.values[safe ~/ kNudgeVariants],
+    variant: safe % kNudgeVariants,
+  );
+}
+
+/// The screen a tap on the nudge carrying [code] opens: the recipes (E05) for
+/// a breakfast or dinner idea, the food diary (E01) for a meal to log, Today
+/// for a short movement, and her progress (where her week lives) for the end
+/// of the week. In the morning and evening blocks texts 0 and 2 are the
+/// recipe ideas and 1 and 3 the meal to log.
+String nudgeScreen(int code) {
+  final nudge = nudgeFromCode(code);
+  return switch (nudge.context) {
+    NudgeContext.morning ||
+    NudgeContext.evening => nudge.variant.isOdd ? 'E01' : 'E05',
+    NudgeContext.midday => 'T01',
+    NudgeContext.weekEnd => 'P01',
+  };
 }
 
 /// The switches on A01 beyond the training days themselves. On by default
@@ -50,6 +120,7 @@ class NotificationPrefs {
     this.checkIns = true,
     this.restAlert = true,
     this.tips = true,
+    this.nudges = true,
   });
 
   /// "Remind me to add a session I did".
@@ -64,16 +135,22 @@ class NotificationPrefs {
   /// "Getting started tips". Turning it off cancels the ones still to come.
   final bool tips;
 
+  /// "Friendly nudges": at most one a day, never at night. Turning it off
+  /// cancels the ones still to come.
+  final bool nudges;
+
   NotificationPrefs copyWith({
     bool? logNudge,
     bool? checkIns,
     bool? restAlert,
     bool? tips,
+    bool? nudges,
   }) => NotificationPrefs(
     logNudge: logNudge ?? this.logNudge,
     checkIns: checkIns ?? this.checkIns,
     restAlert: restAlert ?? this.restAlert,
     tips: tips ?? this.tips,
+    nudges: nudges ?? this.nudges,
   );
 
   @override
@@ -82,10 +159,11 @@ class NotificationPrefs {
       other.logNudge == logNudge &&
       other.checkIns == checkIns &&
       other.restAlert == restAlert &&
-      other.tips == tips;
+      other.tips == tips &&
+      other.nudges == nudges;
 
   @override
-  int get hashCode => Object.hash(logNudge, checkIns, restAlert, tips);
+  int get hashCode => Object.hash(logNudge, checkIns, restAlert, tips, nudges);
 }
 
 /// One notification to schedule.
@@ -136,6 +214,19 @@ const int kCheckInFirstId = 7131;
 const int kCheckInSecondId = 7132;
 const int kRestOverId = 7141;
 
+/// How many days ahead the friendly nudges are planned.
+const int kNudgeHorizonDays = 7;
+
+/// The most friendly nudges in one of her weeks, Saturday to Friday.
+const int kNudgesPerWeek = 4;
+
+/// The most friendly nudges planned after she last opened the app.
+const int kNudgesUnanswered = 3;
+
+/// The id of the nudge on [weekday], 7161 to 7167. A fixed block: the horizon
+/// is seven days, so no two nudges share a weekday.
+int nudgeNotificationId(int weekday) => 7160 + weekday;
+
 /// How many getting started tips there are.
 const int kTipCount = 7;
 
@@ -151,6 +242,8 @@ final List<int> kPlannedIds = <int>[
   kCheckInFirstId,
   kCheckInSecondId,
   for (var index = 0; index < kTipCount; index++) tipNotificationId(index),
+  for (var weekday = DateTime.monday; weekday <= DateTime.sunday; weekday++)
+    nudgeNotificationId(weekday),
 ];
 
 /// Quiet from 22:00 up to, not including, 08:00.
@@ -197,6 +290,24 @@ DateTime afterQuietHours(DateTime at) {
   );
 }
 
+DateTime _dayOf(DateTime at) => DateTime(at.year, at.month, at.day);
+
+/// The Saturday that starts the week [day] is in.
+DateTime _weekStart(DateTime day) => DateTime(
+  day.year,
+  day.month,
+  day.day - (day.weekday - DateTime.saturday) % DateTime.daysPerWeek,
+);
+
+DateTime? _latest(DateTime? a, DateTime? b) {
+  if (a == null) return b;
+  if (b == null) return a;
+  return a.isAfter(b) ? a : b;
+}
+
+/// A fixed shuffle of a day, the same on every phone and every rebuild.
+int _scatter(DateTime day) => (_dayNumber(day) * 2654435761) % 65521;
+
 bool _sameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
@@ -216,8 +327,19 @@ abstract final class NotificationPlan {
   ///
   /// [tips] are the getting started tips already worked out by `TipPlan`
   /// (`getting_started_tips.dart`). They are kept only while
-  /// [NotificationPrefs.tips] is on, and a check-in that would land on the
-  /// same day as one of them is dropped: one note that day is enough.
+  /// [NotificationPrefs.tips] is on. One casual note a day is enough, so a
+  /// tip that would land on a day already taken by "Trained today?", a
+  /// check-in, a day she opened the app or trained moves to the next free
+  /// day at the same time. Moved past [tipsEnd] (the end of the series) it
+  /// is left out. The caller reads the tips that came back to know which ones
+  /// were really planned.
+  ///
+  /// [shownTips] are the days tips already came due, so they count towards
+  /// the caps with the check-ins and nudges that came and went meanwhile.
+  ///
+  /// All casual notes share the caps in the library comment, counting those
+  /// that came and went since she last opened the app or trained, so a long
+  /// absence plans none.
   static List<PlannedNotification> build({
     required DateTime now,
     required bool permitted,
@@ -226,6 +348,8 @@ abstract final class NotificationPlan {
     DateTime? lastActiveAt,
     DateTime? lastSessionAt,
     List<PlannedNotification> tips = const <PlannedNotification>[],
+    DateTime? tipsEnd,
+    List<DateTime> shownTips = const <DateTime>[],
   }) {
     if (!permitted) return const <PlannedNotification>[];
     final plan = <PlannedNotification>[];
@@ -247,33 +371,259 @@ abstract final class NotificationPlan {
           ),
         );
       }
-      if (prefs.logNudge) {
-        final at = _nextDidYouTrain(now, reminders, lastSessionAt);
-        if (at != null) {
-          plan.add(
-            PlannedNotification(
-              id: kDidYouTrainId,
-              kind: PlanKind.didYouTrain,
-              at: at,
-            ),
-          );
-        }
-      }
     }
 
-    final kept = prefs.tips ? tips : const <PlannedNotification>[];
-    if (prefs.checkIns) {
-      plan.addAll(
-        _checkIns(
-          now,
-          reminders,
-          lastActiveAt,
-          lastSessionAt,
-        ).where((checkIn) => !kept.any((tip) => _sameDay(tip.at, checkIn.at))),
+    // Casual notes share one budget: a day each, [kNudgesPerWeek] a week,
+    // [kNudgesUnanswered] since she last opened the app or trained. Highest
+    // first: "Trained today?", then a check-in, then a tip, then a nudge.
+    // Whatever does not fit is dropped or moved on.
+    final keptTips = prefs.tips ? tips : const <PlannedNotification>[];
+    final lastSeen = _latest(lastActiveAt, lastSessionAt);
+    final seenDay = lastSeen == null ? null : _dayOf(lastSeen);
+    final training = _trainingWeekdays(reminders);
+
+    // A day she has already opened the app or trained on gets no casual note
+    // beyond "Trained today?", which has its own rule: it only skips a day she
+    // already logged. Opening the app, logging a meal and finishing a session
+    // all set the times below and rebuild the plan, so today's note goes
+    // away on its own.
+    bool activeOn(DateTime at) =>
+        (lastActiveAt != null && _sameDay(at, lastActiveAt)) ||
+        (lastSessionAt != null && _sameDay(at, lastSessionAt));
+
+    // Casual notes that have already come due, so the caps hold however often
+    // the plan is rebuilt. Days only: no count is stored anywhere.
+    final past = <DateTime>{};
+    final allCheckIns = prefs.checkIns
+        ? _checkIns(now, reminders, lastActiveAt, lastSessionAt)
+        : const <PlannedNotification>[];
+    for (final checkIn in allCheckIns) {
+      if (!checkIn.at.isAfter(now)) past.add(_dayOf(checkIn.at));
+    }
+    final nudges = prefs.nudges
+        ? _nudges(now, training, lastSeen)
+        : (items: const <PlannedNotification>[], past: const <DateTime>[]);
+    past.addAll(nudges.past);
+    if (prefs.tips) {
+      for (final day in shownTips) {
+        if (!day.isAfter(now)) past.add(_dayOf(day));
+      }
+    }
+    if (prefs.logNudge && reminders != null && seenDay != null) {
+      // "Trained today?" asked on her reminder days since she was last seen.
+      for (
+        var day = DateTime(seenDay.year, seenDay.month, seenDay.day + 1);
+        !day.isAfter(_dayOf(now));
+        day = DateTime(day.year, day.month, day.day + 1)
+      ) {
+        if (!reminders.weekdays.contains(day.weekday)) continue;
+        final asked = _didYouTrainAt(day, reminders);
+        if (asked != null && !asked.isAfter(now)) past.add(day);
+      }
+    }
+    final allowance =
+        kNudgesUnanswered -
+        (seenDay == null ? 0 : past.where((d) => d.isAfter(seenDay)).length);
+
+    final accepted = <PlannedNotification>[];
+    final claimed = <DateTime>{};
+    final weekCount = <DateTime, int>{};
+    for (final day in past) {
+      weekCount.update(_weekStart(day), (c) => c + 1, ifAbsent: () => 1);
+    }
+    bool canTake(DateTime at, {bool onTrainingDay = false}) {
+      final day = _dayOf(at);
+      return !claimed.contains(day) &&
+          (onTrainingDay || !training.contains(day.weekday)) &&
+          (weekCount[_weekStart(day)] ?? 0) < kNudgesPerWeek;
+    }
+
+    void take(DateTime at) {
+      final day = _dayOf(at);
+      claimed.add(day);
+      weekCount.update(_weekStart(day), (c) => c + 1, ifAbsent: () => 1);
+    }
+
+    // The first free day from [at] on, moving a day at a time, or null.
+    DateTime? place(DateTime at, int maxMoves, {DateTime? end}) {
+      var candidate = at;
+      for (var moved = 0; moved <= maxMoves; moved++) {
+        if (end != null && !candidate.isBefore(end)) return null;
+        if (!activeOn(candidate) && canTake(candidate)) return candidate;
+        candidate = DateTime(
+          candidate.year,
+          candidate.month,
+          candidate.day + 1,
+          candidate.hour,
+          candidate.minute,
+        );
+      }
+      return null;
+    }
+
+    if (prefs.logNudge && reminders != null) {
+      final at = _nextDidYouTrain(now, reminders, lastSessionAt);
+      if (at != null && canTake(at, onTrainingDay: true)) {
+        take(at);
+        accepted.add(
+          PlannedNotification(
+            id: kDidYouTrainId,
+            kind: PlanKind.didYouTrain,
+            at: at,
+          ),
+        );
+      }
+    }
+    for (final checkIn in allCheckIns) {
+      if (!checkIn.at.isAfter(now)) continue;
+      final at = place(checkIn.at, DateTime.daysPerWeek - 1);
+      if (at == null) continue;
+      take(at);
+      accepted.add(
+        at == checkIn.at
+            ? checkIn
+            : PlannedNotification(
+                id: checkIn.id,
+                kind: checkIn.kind,
+                at: at,
+                variant: checkIn.variant,
+              ),
       );
     }
-    plan.addAll(kept);
+    for (final tip in keptTips) {
+      // A year of days is far past any series; the loop cannot run away.
+      final at = place(tip.at, 400, end: tipsEnd);
+      if (at == null) continue;
+      take(at);
+      accepted.add(
+        at == tip.at
+            ? tip
+            : PlannedNotification(
+                id: tip.id,
+                kind: tip.kind,
+                at: at,
+                variant: tip.variant,
+              ),
+      );
+    }
+    for (final nudge in nudges.items) {
+      if (activeOn(nudge.at) || !canTake(nudge.at)) continue;
+      take(nudge.at);
+      accepted.add(nudge);
+    }
+    // Days and weeks are settled by priority; the unanswered cap is spent in
+    // time order, so the soonest notes come and the ones after them wait for
+    // her next open.
+    accepted.sort((a, b) => a.at.compareTo(b.at));
+    plan.addAll(accepted.take(allowance < 0 ? 0 : allowance));
     return plan;
+  }
+
+  /// The weekdays she chose to train on, and the ones quiet hours moved a
+  /// reminder to.
+  static Set<int> _trainingWeekdays(TrainingReminders? reminders) {
+    final training = <int>{};
+    if (reminders != null) {
+      for (final weekday in reminders.weekdays) {
+        training
+          ..add(weekday)
+          ..add(
+            quietWeeklySlot(weekday, reminders.hour, reminders.minute).weekday,
+          );
+      }
+    }
+    return training;
+  }
+
+  /// The friendly nudges worth having from [now] on, before the shared caps
+  /// sort them against the other casual notes, and the days of those that
+  /// have already come due.
+  ///
+  /// Her week runs Saturday to Friday, as on Home's strip. Which days of a
+  /// week carry a nudge is decided by the week alone, not by when the plan is
+  /// rebuilt, so an open on Wednesday does not hand Thursday's week a fifth.
+  /// A week holds at most [kNudgesPerWeek], never on a day she chose to train
+  /// ([training], which holds a reminder that quiet hours moved to the next
+  /// day as that next day, and her chosen day stays free too), and the last
+  /// day of the week, Friday, is the forward-looking note when it is free.
+  static ({List<PlannedNotification> items, List<DateTime> past}) _nudges(
+    DateTime now,
+    Set<int> training,
+    DateTime? lastSeen,
+  ) {
+    final today = _dayOf(now);
+    final horizonEnd = DateTime(
+      today.year,
+      today.month,
+      today.day + kNudgeHorizonDays - 1,
+    );
+    // Far enough back to see three come and go, never further than a month.
+    var scanFrom = today;
+    if (lastSeen != null && lastSeen.isBefore(now)) {
+      scanFrom = _dayOf(lastSeen);
+      final limit = DateTime(today.year, today.month, today.day - 28);
+      if (scanFrom.isBefore(limit)) scanFrom = limit;
+    }
+
+    final slots = <PlannedNotification>[];
+    final past = <DateTime>[];
+    var weekStart = _weekStart(scanFrom);
+    while (!weekStart.isAfter(horizonEnd)) {
+      final friday = DateTime(
+        weekStart.year,
+        weekStart.month,
+        weekStart.day + 6,
+      );
+      final eligible = <DateTime>[
+        for (var i = 0; i < DateTime.daysPerWeek; i++)
+          if (!training.contains(
+            DateTime(
+              weekStart.year,
+              weekStart.month,
+              weekStart.day + i,
+            ).weekday,
+          ))
+            DateTime(weekStart.year, weekStart.month, weekStart.day + i),
+      ];
+      final chosen = <DateTime>[];
+      if (eligible.any((day) => day == friday)) chosen.add(friday);
+      final rest = eligible.where((day) => day != friday).toList()
+        ..sort((a, b) => _scatter(a).compareTo(_scatter(b)));
+      chosen.addAll(rest.take(kNudgesPerWeek - chosen.length));
+      chosen.sort();
+      for (final day in chosen) {
+        if (day.isAfter(horizonEnd)) continue;
+        final seed = _dayNumber(day);
+        final context = day == friday
+            ? NudgeContext.weekEnd
+            : NudgeContext.values[seed % 3];
+        final span = context.toMinute - context.fromMinute;
+        final minute = context.fromMinute + _scatter(day) % span;
+        final at = afterQuietHours(
+          DateTime(day.year, day.month, day.day, minute ~/ 60, minute % 60),
+        );
+        if (!at.isAfter(now)) {
+          past.add(day);
+          continue;
+        }
+        if (day.isBefore(scanFrom)) continue;
+        slots.add(
+          PlannedNotification(
+            id: nudgeNotificationId(day.weekday),
+            kind: PlanKind.nudge,
+            at: at,
+            variant: nudgeVariantCode(context, (seed ~/ 3) % kNudgeVariants),
+          ),
+        );
+      }
+      weekStart = DateTime(
+        weekStart.year,
+        weekStart.month,
+        weekStart.day + DateTime.daysPerWeek,
+      );
+    }
+    slots.sort((a, b) => a.at.compareTo(b.at));
+    return (items: slots, past: past);
   }
 
   /// The first reminder day's 21:00 still ahead, skipping a day she has
@@ -287,21 +637,30 @@ abstract final class NotificationPlan {
       final day = DateTime(now.year, now.month, now.day + ahead);
       if (!reminders.weekdays.contains(day.weekday)) continue;
       if (lastSessionAt != null && _sameDay(day, lastSessionAt)) continue;
-      final at = DateTime(day.year, day.month, day.day, kDidYouTrainHour);
-      final reminderAt = DateTime(
-        day.year,
-        day.month,
-        day.day,
-        reminders.hour,
-        reminders.minute,
-      );
-      if (at.isBefore(reminderAt.add(kDidYouTrainGap))) continue;
-      if (at.hour >= kQuietFromHour) continue;
-      if (at.isAfter(now)) return at;
+      final at = _didYouTrainAt(day, reminders);
+      if (at != null && at.isAfter(now)) return at;
     }
     return null;
   }
 
+  /// When "Trained today?" is asked on the reminder day [day], or null when
+  /// the day's reminder is too late in the evening for it.
+  static DateTime? _didYouTrainAt(DateTime day, TrainingReminders reminders) {
+    final at = DateTime(day.year, day.month, day.day, kDidYouTrainHour);
+    final reminderAt = DateTime(
+      day.year,
+      day.month,
+      day.day,
+      reminders.hour,
+      reminders.minute,
+    );
+    if (at.isBefore(reminderAt.add(kDidYouTrainGap))) return null;
+    if (at.hour >= kQuietFromHour) return null;
+    return at;
+  }
+
+  /// Both check-ins, those already due included: the caller counts those and
+  /// schedules only the ones still ahead, so nothing is sent late.
   static List<PlannedNotification> _checkIns(
     DateTime now,
     TrainingReminders? reminders,
@@ -328,9 +687,6 @@ abstract final class NotificationPlan {
       final at = afterQuietHours(
         DateTime(base.year, base.month, base.day + days, hour, minute),
       );
-      // Behind her: delivered already, or she was away through it with the
-      // phone off. Nothing is sent late.
-      if (!at.isAfter(now)) continue;
       out.add(
         PlannedNotification(
           id: id,

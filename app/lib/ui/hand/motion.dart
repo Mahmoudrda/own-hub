@@ -31,6 +31,12 @@ abstract final class HandTiming {
   /// One burst of paper confetti.
   static const Duration confetti = Duration(milliseconds: 900);
 
+  /// The logo drawing on at a cold start, from the first frame to gone.
+  static const Duration splash = Duration(milliseconds: 700);
+
+  /// One breath on the first-launch screen, in and out.
+  static const Duration breath = Duration(seconds: 4);
+
   /// Gap between one list row starting to arrive and the next.
   static const Duration staggerStep = Duration(milliseconds: 40);
 

@@ -435,7 +435,7 @@ void main() {
         now: DateTime(2026, 10, 7),
       );
       expect(arabic.title, 'quwwa');
-      expect(arabic.moves.first.name, 'jisr');
+      expect(arabic.moves.first.name, 'Glute bridge');
 
       final row = libraryRowFrom(
         l10n,

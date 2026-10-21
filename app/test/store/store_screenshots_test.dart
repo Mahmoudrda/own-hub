@@ -411,15 +411,19 @@ Future<void> _render(
       // Store pages are seen before sign-in, so the shot opens on her second
       // section: the first one's PS line names the period outright.
       final sections = EatAppState.instance.recipeBook.sections;
-      final savoury = find.text(
-        sectionTitle(
-          l10n,
-          sections.firstWhere(
-            (s) => s.sectionId == 'salty_fulling_breakfast',
-            orElse: () => sections[1],
-          ),
-        ),
-      );
+      // The title is on E05 twice by design: under Rahma's book and again
+      // under "From the Own Hub kitchen". The shot wants hers, the first.
+      final savoury = find
+          .text(
+            sectionTitle(
+              l10n,
+              sections.firstWhere(
+                (s) => s.sectionId == 'salty_fulling_breakfast',
+                orElse: () => sections[1],
+              ),
+            ),
+          )
+          .first;
       await tester.scrollUntilVisible(
         savoury,
         300,

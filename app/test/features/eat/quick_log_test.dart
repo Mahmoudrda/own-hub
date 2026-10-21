@@ -28,6 +28,8 @@ Future<void> _open(WidgetTester tester, String id) async {
 }
 
 Future<void> _tap(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.pump();
   await tester.tap(finder);
   await tester.pumpAndSettle();
 }

@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app-check.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getStorage, ref as storageRef, uploadBytes } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+import { getStorage, ref as storageRef, uploadBytes, getBytes } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-functions.js";
 import { firebaseConfig, recaptchaSiteKey, functionsRegion } from "./config.js";
 import * as L from "./logic.js";
@@ -23,6 +23,7 @@ const state = {
   settings: { firstName: "", listed: false, autoPassKnown: false, availability: [], slotMinutes: 15 },
   phones: [],
   reschedule: null,
+  declineArmed: null,
 };
 
 let functions = null;
@@ -161,6 +162,17 @@ function card(row, i) {
     }
     actions.append(h("button", { class: "btn ghost", type: "button", "aria-expanded": String(state.reschedule === row.uid), onclick: () => { state.reschedule = state.reschedule === row.uid ? null : row.uid; renderQueue(); } }, "Reschedule"));
     el.append(actions);
+    const armed = state.declineArmed === row.uid;
+    const reasonSel = h("select", { "aria-label": "Reason for declining", disabled: busy },
+      ...L.DECLINE_REASONS.map((r) => h("option", { value: r.value, text: r.label })));
+    const declineBtn = h("button", { class: `btn ${armed ? "danger" : "ghost"}`, type: "button", disabled: busy, "data-decline": row.uid,
+      onclick: () => onDecline(row.uid, reasonSel.value) }, armed ? "Tap again to decline" : "Decline");
+    actions.append(declineBtn);
+    if (armed) {
+      el.append(h("div", { class: "resched", role: "group" }, reasonSel,
+        h("span", { class: "muted", text: "She will be told her check was not passed. This is recorded." }),
+        h("button", { class: "btn ghost", type: "button", onclick: () => { state.declineArmed = null; renderQueue(); } }, "Keep waiting")));
+    }
     if (state.reschedule === row.uid) {
       const input = h("input", { type: "datetime-local", "aria-label": "New call time (Cairo time)" });
       el.append(h("div", { class: "resched" }, input,
@@ -223,6 +235,32 @@ async function onApproveSelected() {
     notice(friendly(e));
   } finally {
     uids.forEach((u) => state.busy.delete(u));
+    await loadQueue();
+  }
+}
+
+async function declineOne(uid, reason) {
+  return call("decline_user", { uid, reason });
+}
+
+async function onDecline(uid, reason) {
+  const step = L.rejectStep(state.declineArmed, uid);
+  state.declineArmed = step.armed;
+  if (!step.send) {
+    renderQueue();
+    document.querySelector(`[data-decline="${CSS.escape(uid)}"]`)?.focus();
+    return;
+  }
+  state.busy.add(uid);
+  renderQueue();
+  try {
+    await declineOne(uid, L.declineReason(reason));
+    notice("Declined. It is recorded with your name.", true);
+  } catch (e) {
+    notice(friendly(e));
+  } finally {
+    state.busy.delete(uid);
+    state.declineArmed = null;
     await loadQueue();
   }
 }
@@ -485,14 +523,14 @@ function field(label, control) {
   return h("label", { class: "field" }, h("span", { class: "muted", text: label }), control);
 }
 
-function textInput(key, type = "text") {
-  return h("input", { type, value: ex.form[key] ?? "", oninput: (ev) => { ex.form[key] = ev.target.value; } });
+function textInput(key, type = "text", form = ex.form) {
+  return h("input", { type, value: form[key] ?? "", oninput: (ev) => { form[key] = ev.target.value; } });
 }
 
-function selectInput(key, options) {
-  const el = h("select", { onchange: (ev) => { ex.form[key] = ev.target.value; } },
-    options.map((o) => h("option", { value: o, text: LABEL(o) })));
-  el.value = ex.form[key];
+function selectInput(key, options, form = ex.form, label = LABEL) {
+  const el = h("select", { onchange: (ev) => { form[key] = ev.target.value; } },
+    options.map((o) => h("option", { value: o, text: label(o) })));
+  el.value = form[key];
   return el;
 }
 
@@ -606,9 +644,347 @@ async function saveExercise() {
   }
 }
 
+/* events */
+
+const evs = { rows: [], form: null, previews: new Map() };
+const EVENT_STATUS_LABEL = { draft: "Draft", published: "Published", cancelled: "Cancelled" };
+const EVENT_MODE_LABEL = { place: "In person", online: "Online" };
+
+async function loadEvents() {
+  try {
+    const data = await call("list_events_admin", {});
+    evs.rows = data.events ?? [];
+    notice("");
+  } catch (e) {
+    notice(friendly(e));
+  }
+  renderEvents();
+}
+
+function renderEvents() {
+  $("ev-list").replaceChildren(...evs.rows.map((r, i) => h("li", { class: "item", vars: { "--i": Math.min(i, 8) } },
+    h("div", { class: "item-head" },
+      h("div", { class: "who" },
+        h("div", { class: "name", text: r.titleEn || r.titleAr || r.eventId }),
+        h("div", { class: "muted", text: `${r.startsAt ? whenText(r.startsAt) : "No date"} · ${EVENT_MODE_LABEL[r.mode] ?? ""}` }),
+        h("div", { class: "muted", text: L.seatsText(r) })),
+      h("span", { class: `badge${r.status === "published" ? " sage" : ""}`, text: EVENT_STATUS_LABEL[r.status] ?? r.status }),
+      h("button", { class: "btn ghost", type: "button", onclick: () => openEventForm(r) }, "Edit")))));
+  $("ev-empty").hidden = evs.rows.length > 0;
+}
+
+function dropPreviews() {
+  for (const url of evs.previews.values()) if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+  evs.previews = new Map();
+}
+
+function openEventForm(row) {
+  dropPreviews();
+  evs.form = row ? L.eventToForm(row) : L.blankEvent(L.newEventId(hex4() + hex4()));
+  renderEventForm();
+  $("ev-form").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (row) loadStoredPictures(evs.form);
+}
+
+function areaInput(key, form, max) {
+  return h("textarea", { rows: 3, maxlength: max, oninput: (ev) => { form[key] = ev.target.value; } }, form[key] ?? "");
+}
+
+function mediaItem(f, kind, name) {
+  const url = evs.previews.get(name);
+  const preview = kind === "image"
+    ? (url ? h("img", { class: "thumb", src: url, alt: "" }) : h("span", { class: "thumb empty", "aria-hidden": "true" }))
+    : (url ? h("video", { class: "thumb", src: url, controls: true, muted: true, preload: "metadata" })
+           : h("button", { class: "btn ghost", type: "button", onclick: () => loadStoredVideo(f, name) }, "Load preview"));
+  const key = kind === "image" ? "imageFiles" : "videoFiles";
+  return h("li", { class: "media" }, preview,
+    h("span", { class: "muted name", text: name }),
+    h("button", { class: "btn ghost", type: "button", "aria-label": `Remove ${name}`, onclick: () => {
+      f[key] = f[key].filter((n) => n !== name);
+      evs.previews.delete(name);
+      renderEventForm();
+    } }, "Remove"));
+}
+
+function renderEventForm(focusMode = false) {
+  const f = evs.form;
+  if (!f) { $("ev-form").replaceChildren(); return; }
+  const place = f.mode === "place";
+  const seatsInput = textInput("capacity", "number", f);
+  seatsInput.min = String(Math.max(1, f.seatsTaken || 1));
+  seatsInput.max = String(L.EVENT_LIMITS.seats);
+  seatsInput.step = "1";
+  const modeSelect = selectInput("mode", L.EVENT_MODES, f, (o) => EVENT_MODE_LABEL[o]);
+  modeSelect.addEventListener("change", () => renderEventForm(true));
+  $("ev-form").replaceChildren(h("div", { class: "card" },
+    h("h2", { text: f.isNew ? "Add event" : `Edit ${f.titleEn || "event"}` }),
+    field("Title (English)", textInput("titleEn", "text", f)),
+    field("Title (Egyptian Arabic)", textInput("titleAr", "text", f)),
+    field("Description (English)", areaInput("descriptionEn", f, L.EVENT_LIMITS.description)),
+    field("Description (Egyptian Arabic)", areaInput("descriptionAr", f, L.EVENT_LIMITS.description)),
+    field("Starts (Cairo time)", textInput("startsLocal", "datetime-local", f)),
+    field("Ends (Cairo time)", textInput("endsLocal", "datetime-local", f)),
+    field("Where", modeSelect),
+    place ? [
+      field("Venue name", textInput("placeName", "text", f)),
+      field("Address", textInput("locationAddress", "text", f)),
+      field("Google Maps link", textInput("locationUrl", "url", f)),
+    ] : field("Event link (https)", textInput("link", "url", f)),
+    field(f.seatsTaken ? `Seats (${f.seatsTaken} already booked)` : "Seats", seatsInput),
+    field("Status", selectInput("status", L.EVENT_STATUSES, f, (o) => EVENT_STATUS_LABEL[o])),
+    h("h3", { text: "Pictures" }),
+    h("p", { class: "muted", text: `Up to ${L.EVENT_LIMITS.images}. Each is shrunk to a webp under 1 MB. The first one is the cover.` }),
+    h("ul", { class: "media-list" }, f.imageFiles.map((n) => mediaItem(f, "image", n))),
+    h("input", { type: "file", accept: "image/*", multiple: true, id: "ev-images", "aria-label": "Add pictures", onchange: onEventImages }),
+    h("h3", { text: "Videos" }),
+    h("p", { class: "muted", text: `Up to ${L.EVENT_LIMITS.videos} mp4 files, each under 10 MB.` }),
+    h("ul", { class: "media-list" }, f.videoFiles.map((n) => mediaItem(f, "video", n))),
+    h("input", { type: "file", accept: "video/mp4", multiple: true, id: "ev-videos", "aria-label": "Add videos", onchange: onEventVideos }),
+    h("div", { class: "actions" },
+      h("button", { class: "btn primary", id: "ev-save", type: "button", onclick: saveEvent }, "Save"),
+      h("button", { class: "btn ghost", type: "button", onclick: () => { dropPreviews(); evs.form = null; renderEventForm(); } }, "Cancel"))));
+  if (focusMode) modeSelect.focus();
+}
+
+function readAsDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function loadStoredPictures(f) {
+  for (const name of f.imageFiles) {
+    try {
+      const bytes = await getBytes(storageRef(storage, `content/events/${f.eventId}/${name}`), L.EVENT_LIMITS.imageBytes);
+      evs.previews.set(name, await readAsDataUrl(new Blob([bytes], { type: name.endsWith(".webp") ? "image/webp" : "image/jpeg" })));
+    } catch (e) {
+      continue;
+    }
+    if (evs.form !== f) return;
+    renderEventForm();
+  }
+}
+
+async function loadStoredVideo(f, name) {
+  try {
+    notice("Loading the video...");
+    const bytes = await getBytes(storageRef(storage, `content/events/${f.eventId}/${name}`), L.EVENT_LIMITS.videoBytes);
+    evs.previews.set(name, URL.createObjectURL(new Blob([bytes], { type: "video/mp4" })));
+    notice("");
+    if (evs.form === f) renderEventForm();
+  } catch (e) {
+    notice("The video could not be loaded.");
+  }
+}
+
+async function shrinkImage(file) {
+  const bitmap = await createImageBitmap(file);
+  try {
+    for (const step of L.shrinkSteps(bitmap.width, bitmap.height)) {
+      const canvas = document.createElement("canvas");
+      canvas.width = step.width; canvas.height = step.height;
+      canvas.getContext("2d").drawImage(bitmap, 0, 0, step.width, step.height);
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", step.quality));
+      if (blob && blob.type === "image/webp" && L.fileFits(blob.size, "image")) return blob;
+    }
+  } finally {
+    bitmap.close();
+  }
+  return null;
+}
+
+async function onEventImages(ev) {
+  const f = evs.form;
+  const files = [...ev.target.files];
+  ev.target.value = "";
+  if (!files.length) return;
+  if (!L.canAddFiles(f.imageFiles.length, files.length, "image")) { notice(`An event holds at most ${L.EVENT_LIMITS.images} pictures.`); return; }
+  const base = `content/events/${f.eventId}/`;
+  let added = 0;
+  try {
+    for (const file of files) {
+      notice(`Preparing picture ${added + 1} of ${files.length}...`);
+      const blob = await shrinkImage(file);
+      if (!blob) { notice(`${file.name} is too large even after shrinking. Pick a smaller picture.`); break; }
+      const name = L.eventFileName(f.eventId, hex4(), "webp");
+      await uploadBytes(storageRef(storage, base + name), blob, { contentType: "image/webp", cacheControl: "public, max-age=31536000" });
+      f.imageFiles = [...f.imageFiles, name];
+      evs.previews.set(name, await readAsDataUrl(blob));
+      added += 1;
+    }
+    if (added) notice(`${added} picture${added === 1 ? "" : "s"} uploaded. Press Save to publish the changes.`, true);
+  } catch (e) {
+    notice("The upload failed. Check your connection and try again.");
+  }
+  renderEventForm();
+}
+
+async function onEventVideos(ev) {
+  const f = evs.form;
+  const files = [...ev.target.files];
+  ev.target.value = "";
+  if (!files.length) return;
+  if (!L.canAddFiles(f.videoFiles.length, files.length, "video")) { notice(`An event holds at most ${L.EVENT_LIMITS.videos} videos.`); return; }
+  if (files.some((file) => file.type !== "video/mp4" || !L.fileFits(file.size, "video"))) {
+    notice("Each video must be an mp4 under 10 MB.");
+    return;
+  }
+  const base = `content/events/${f.eventId}/`;
+  try {
+    for (const file of files) {
+      notice("Uploading the video...");
+      const name = L.eventFileName(f.eventId, hex4(), "mp4");
+      await uploadBytes(storageRef(storage, base + name), file, { contentType: "video/mp4", cacheControl: "public, max-age=31536000" });
+      f.videoFiles = [...f.videoFiles, name];
+      evs.previews.set(name, URL.createObjectURL(file));
+    }
+    notice("Video uploaded. Press Save to publish the changes.", true);
+  } catch (e) {
+    notice("The upload failed. Check your connection and try again.");
+  }
+  renderEventForm();
+}
+
+async function saveEvent() {
+  const f = evs.form;
+  const problems = L.eventProblems(f);
+  if (problems.length) { notice(problems.join(" | ")); return; }
+  $("ev-save").disabled = true;
+  try {
+    const out = await call("save_event", L.eventPayload(f));
+    if (!out.ok) { notice(out.problems.join(" | ")); return; }
+    notice(f.status === "published" ? "Saved. Verified women can see it now." : "Saved.", true);
+    dropPreviews();
+    evs.form = null;
+    renderEventForm();
+    await loadEvents();
+  } catch (e) {
+    notice(friendly(e));
+  } finally {
+    const btn = $("ev-save");
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* community foods */
+
+const fd = { candidates: [], published: [], vocab: { categories: [], allergens: [] }, form: null, rejectArmed: null };
+
+async function loadFoods() {
+  try {
+    const data = await call("list_community_foods", {});
+    fd.candidates = data.candidates ?? [];
+    fd.published = data.published ?? [];
+    fd.vocab = data.vocab ?? fd.vocab;
+    notice("");
+  } catch (e) {
+    notice(friendly(e));
+  }
+  renderFoods();
+}
+
+function renderFoods() {
+  $("fd-list").replaceChildren(...fd.candidates.map((c, i) => h("li", { class: "item", vars: { "--i": Math.min(i, 8) } },
+    h("div", { class: "item-head" },
+      h("div", { class: "who" },
+        h("div", { class: "name", text: c.nameEn || c.nameAr || c.key }),
+        h("div", { class: "muted", text: L.itemsText(c.items) }),
+        h("div", { class: "muted", text: L.macrosText(c) })),
+      h("span", { class: "badge", text: L.confirmText(c.confirmCount) }),
+      h("button", { class: "btn ghost", type: "button", onclick: () => openFoodForm(c) }, "Approve"),
+      fd.rejectArmed === c.key
+        ? [
+          h("button", { class: "btn ghost", type: "button", "data-reject-armed": "", onclick: () => rejectFood(c) }, "Reject for good"),
+          h("button", { class: "btn ghost", type: "button", onclick: () => { fd.rejectArmed = null; renderFoods(); } }, "Keep"),
+        ]
+        : h("button", { class: "btn ghost", type: "button", onclick: () => rejectFood(c) }, "Reject")))));
+  $("fd-empty").hidden = fd.candidates.length > 0;
+  $("fd-published").replaceChildren(...fd.published.map((f) => h("li", { class: "item" },
+    h("div", { class: "item-head" },
+      h("div", { class: "who" },
+        h("div", { class: "name", text: `${f.nameEn} · ${f.nameAr}` }),
+        h("div", { class: "muted", text: `${LABEL(f.category)} · ${L.macrosText(f)}` }),
+        h("div", { class: "muted", text: f.allergens.length ? `Allergens: ${f.allergens.map(L.allergenLabel).join(", ")}` : "No allergens" }))))));
+  $("fd-published-empty").hidden = fd.published.length > 0;
+}
+
+function openFoodForm(candidate) {
+  fd.form = L.foodToForm(candidate);
+  renderFoodForm(candidate);
+  $("fd-form").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderFoodForm(candidate) {
+  const f = fd.form;
+  if (!f) { $("fd-form").replaceChildren(); return; }
+  const category = h("select", { onchange: (ev) => { f.category = ev.target.value; } },
+    h("option", { value: "", text: "Pick a category" }),
+    fd.vocab.categories.map((o) => h("option", { value: o, text: LABEL(o) })));
+  category.value = f.category;
+  const boxes = fd.vocab.allergens.map((token) => h("label", { class: "check" },
+    h("input", { type: "checkbox", checked: f.allergens.includes(token), onchange: (ev) => { fd.form = L.toggleAllergen(fd.form, token, ev.target.checked); renderFoodForm(candidate); } }),
+    h("span", { text: L.allergenLabel(token) })));
+  $("fd-form").replaceChildren(h("div", { class: "card" },
+    h("h2", { text: `Approve ${candidate.nameEn || candidate.nameAr || "food"}` }),
+    h("p", { class: "muted", text: `${L.itemsText(candidate.items)}. ${L.macrosText(candidate)}.` }),
+    field("Name (English)", textInput("nameEn", "text", f)),
+    field("Name (Egyptian Arabic)", textInput("nameAr", "text", f)),
+    field("Category", category),
+    h("h3", { text: "Allergens" }),
+    h("p", { class: "muted", text: "Tick every allergen this meal can contain, or confirm it has none." }),
+    h("div", { class: "allergens" }, boxes),
+    h("label", { class: "check" },
+      h("input", { type: "checkbox", checked: f.allergensNone, onchange: (ev) => { fd.form = L.setNoAllergens(fd.form, ev.target.checked); renderFoodForm(candidate); } }),
+      h("span", { text: "I checked: none of these allergens" })),
+    h("div", { class: "actions" },
+      h("button", { class: "btn primary", id: "fd-save", type: "button", onclick: approveFood }, "Approve and publish"),
+      h("button", { class: "btn ghost", type: "button", onclick: () => { fd.form = null; renderFoodForm(); } }, "Cancel"))));
+}
+
+async function approveFood() {
+  const problems = L.foodProblems(fd.form, fd.vocab);
+  if (problems.length) { notice(problems.join(" | ")); return; }
+  $("fd-save").disabled = true;
+  try {
+    const out = await call("review_community_food", L.foodPayload(fd.form, "approve"));
+    if (!out.ok) { notice(out.problems.join(" | ")); return; }
+    notice("Published. Phones pick it up within a day.", true);
+    fd.form = null;
+    renderFoodForm();
+    await loadFoods();
+  } catch (e) {
+    notice(friendly(e));
+  } finally {
+    const btn = $("fd-save");
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function rejectFood(candidate) {
+  const step = L.rejectStep(fd.rejectArmed, candidate.key);
+  fd.rejectArmed = step.armed;
+  if (!step.send) {
+    renderFoods();
+    document.querySelector("[data-reject-armed]")?.focus();
+    return;
+  }
+  try {
+    const out = await call("review_community_food", L.foodPayload(L.foodToForm(candidate), "reject"));
+    if (!out.ok) { notice(out.problems.join(" | ")); return; }
+    notice("Rejected. It will not show again.", true);
+    if (fd.form?.key === candidate.key) { fd.form = null; renderFoodForm(); }
+    await loadFoods();
+  } catch (e) {
+    notice(friendly(e));
+  }
+}
+
 /* tabs and wiring */
 
-const TABS = ["queue", "calendar", "phones", "exercises", "settings"];
+const TABS = ["queue", "calendar", "phones", "exercises", "events", "foods", "settings"];
 
 function showTab(name) {
   state.tab = name;
@@ -624,6 +1000,8 @@ function showTab(name) {
   if (name === "calendar") { loadSettings().then(loadCalendar); }
   if (name === "phones") loadPhones();
   if (name === "exercises") loadExercises();
+  if (name === "events") loadEvents();
+  if (name === "foods") loadFoods();
   if (name === "settings") loadSettings();
 }
 
@@ -651,6 +1029,7 @@ function wire() {
   $("toast-undo").addEventListener("click", onUndo);
   $("ex-search").addEventListener("input", renderExercises);
   $("ex-new").addEventListener("click", () => openForm(null));
+  $("ev-new").addEventListener("click", () => openEventForm(null));
 
   for (const chip of document.querySelectorAll("[data-view]")) {
     chip.addEventListener("click", () => { state.calView = chip.dataset.view; loadCalendar(); });

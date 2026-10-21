@@ -103,7 +103,8 @@
             turn on health backup yourself.</li>
             <li>Once you are verified, your workouts and meals are copied to
             Google Cloud in Frankfurt, so a new phone does not mean starting
-            again. No other member can see them.</li>
+            again. No other member can see them, unless you choose to share a
+            dish (section 3.13), which is shared without your name.</li>
             <li>To send your sign-in code, your phone number goes to Google
             Firebase in the United States.</li>
             <li>We do not sell your data. There are no adverts and no tracking.
@@ -249,7 +250,8 @@
         copy is also kept in Google Cloud Firestore in Frankfurt, Germany, so
         that it survives a lost or replaced phone. Server security rules let
         only your own verified account read it. No other member can see
-        it.</p>
+        it, unless you choose to share a dish (section 3.13), which is shared
+        without your name.</p>
         <p>Your Ramadan setting stays on your phone only.</p>
         <p>If you add an Own Hub widget to your Home Screen or Lock Screen, it
         shows how many sessions you have done this week, whether today&rsquo;s
@@ -437,7 +439,15 @@
           and the app deletes that copy right away. The photo is then held only
           in the app&rsquo;s memory, and is deleted as soon as the estimate
           comes back. Our server logs record only the outcome and how many
-          foods were found, never the photo or the food.</li>
+          foods were found, never the photo or the food. Separately from the
+          logs, see the next point.</li>
+          <li><b>A repeat answer, kept 30 days.</b> To answer the same photo
+          again without asking Google again, our server keeps a fingerprint of
+          the photo (a one-way code made from the photo, from which the photo
+          cannot be rebuilt) and the foods and weights found in it, for 30 days,
+          then deletes them automatically. It holds no photo, and nothing that
+          identifies you: no account identifier, name or phone number. It is
+          used only when the exact same photo is analysed again.</li>
           <li><b>Not used for training.</b> Under Google Cloud&rsquo;s terms,
           Google does not use the photo to train its models, and we never do
           either.</li>
@@ -455,6 +465,47 @@
           not open.</li>
           <li><b>Basis:</b> your consent, given in the app before your first
           meal photo.</li>
+        </ul>
+
+      <h3 id="c-dish-sharing">3.13 Sharing a dish with other members (optional)<a class="anchor" href="#c-dish-sharing" aria-label="Link to this section">#</a></h3>
+        <p>Under the meal check, and in Profile, then Privacy, there is a switch
+        that lets you help other members find Egyptian dishes. It is <b>off</b>
+        until you turn it on, and it is separate from the meal photo
+        agreement.</p>
+        <ul>
+          <li><b>What is sent.</b> Only when the switch is on and you tap
+          &ldquo;Log this meal&rdquo;: the name of the dish or dishes, what is in
+          it (the names of the foods and their weights) and the energy, protein,
+          carbohydrate, fat and fibre figures. It goes to a list on our server
+          that only the Own Hub team can read. It never includes your photo or
+          your name.</li>
+          <li><b>How we count you once.</b> To avoid counting your confirmation
+          twice, the server keeps a marker made from your account identifier
+          with a secret key that only the server holds, so the marker cannot be
+          turned back into you by anyone without that key. The marker is deleted
+          when you delete your account. A dish waiting for review that only you
+          had confirmed is deleted with it.</li>
+          <li><b>Review.</b> The Own Hub team reviews each dish before anyone
+          sees it.</li>
+          <li><b>What other members see.</b> A dish the team approves is shown to
+          all verified members, with its name, category, allergens and figures.
+          It does not show what is in it, your photo or your name, and it carries
+          no link to you.</li>
+          <li><b>Turning it off.</b> Turning the switch off stops any future
+          sharing. It does not withdraw dishes that have already been approved,
+          because they carry no link to you and we cannot tell which are
+          yours.</li>
+          <li><b>Basis:</b> your consent, given by turning the switch on.</li>
+        </ul>
+
+      <h3 id="c-events">3.14 Event seats<a class="anchor" href="#c-events" aria-label="Link to this section">#</a></h3>
+        <p>If you reserve a seat at an Own Hub event, our server records your
+        place: your account identifier, when you reserved and the status of the
+        seat, under that event. Only you and the Own Hub team can read it. The
+        team uses it to count seats and run the event. Cancelling your seat
+        deletes it, and so does deleting your account.</p>
+        <ul>
+          <li><b>Basis:</b> performing our agreement with you.</li>
         </ul>
 
       <h2 id="where">4. Who handles your data, and where<a class="anchor" href="#where" aria-label="Link to this section">#</a></h2>
@@ -563,8 +614,9 @@
         <p>Your data is stored and processed outside Egypt:</p>
         <ul>
           <li><b>Germany and the European Union:</b> your account, your training
-          and meals, any health backup, your verification, and any meal photo
-          you choose to analyse.</li>
+          and meals, any health backup, your verification, any meal photo you
+          choose to analyse (and the 30-day repeat answer from it), any dish you
+          choose to share, and your event seats.</li>
           <li><b>The United States:</b> your phone number, for sign-in.</li>
           <li><b>Google data centres worldwide, which include the United
           States:</b> the device checks, ML Kit performance data, crash reports
@@ -588,6 +640,10 @@
         <div><dt>ID card photographs, selfie, name and date of birth from the card, your raw ID number</dt><dd>Never stored. Discarded from memory when the check ends, whatever the result.</dd></div>
         <div><dt>The single-use selfie session</dt><dd>5 minutes, then deleted automatically</dd></div>
         <div><dt>Meal photos</dt><dd>Not kept. The camera&rsquo;s temporary copy on your phone exists only for the moment the photo is taken, and is deleted right away. The photo is deleted from memory as soon as the estimate comes back (section 3.12).</dd></div>
+        <div><dt>The repeat answer for a meal photo (a fingerprint of the photo and the foods and weights found; no photo, nothing that identifies you)</dt><dd>30 days, then deleted automatically (section 3.12)</dd></div>
+        <div><dt>A dish you chose to share, while it waits for review (dish names, what is in it, figures; a keyed marker instead of your identity)</dt><dd>Until the team decides. The marker is deleted with your account, and a dish only you had confirmed is deleted with it (section 3.13).</dd></div>
+        <div><dt>A dish the team approved (names, category, allergens, figures; no link to you)</dt><dd>Kept, and shown to verified members. Not withdrawn when you turn sharing off or delete your account, because it carries no link to you (section 3.13).</dd></div>
+        <div><dt>Your seat at an event (account identifier, time reserved, status)</dt><dd>Until you cancel the seat or delete your account (section 3.14)</dd></div>
         <div><dt>Verification result and review case</dt><dd>180 days after the case is decided, or earlier if you delete your account. A case still waiting for review is kept until it is decided.</dd></div>
         <div><dt>The keyed code of your ID number</dt><dd>While your account exists. After you delete your account it is closed, not deleted: it is no longer linked to any account, it is kept with no end date, and the same card cannot be used to open a new account.</dd></div>
         <div><dt>Count of failed attempts per ID code, and the scrambled installation record</dt><dd>180 days after the last attempt. Not linked to your account.</dd></div>
@@ -627,6 +683,8 @@
           180 days end, linked to no account;</li>
           <li>reviewer access log entries for your case, until their year
           ends;</li>
+          <li>any dish the team approved after you shared it, which carries no
+          link to you (section 3.13);</li>
           <li>the record that the deletion was carried out.</li>
         </ul>
         <p>Crash reports, usage statistics and ML Kit data are never linked to
@@ -726,6 +784,13 @@
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>21 October 2026, repeat answers, dish sharing and event
+          seats:</b> section 3.12 now says a fingerprint of the photo and the
+          foods found are kept for 30 days to answer the same photo again.
+          Section 3.13 is new: an optional switch, off until you turn it on,
+          that shares a dish without your name. Section 3.14 is new: event
+          seats. Statements that your meals are seen by no one now name the
+          dish-sharing exception.</li>
           <li><b>17 October 2026, meal photos:</b> section 3.12. An optional
           feature with its own agreement, asked in the app before the first
           meal photo. Nothing changes for you unless you use it.</li>

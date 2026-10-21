@@ -83,6 +83,14 @@ class _HealthStore implements HealthConsentStore {
   Future<HealthConsentState?> current(String uid) async => null;
 }
 
+Future<void> _readConsentToEnd(WidgetTester tester) async {
+  await tester.drag(
+    find.byType(SingleChildScrollView).first,
+    const Offset(0, -5000),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   test('both refusals classify as sign in again', () {
     expect(classifyCallFailure(_rejected), CallFailureKind.signInAgain);
@@ -129,6 +137,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        await _readConsentToEnd(tester);
         await tester.tap(find.text('I agree, start the camera'));
         await tester.pumpAndSettle();
         final l10n = AppL10n.of(tester.element(find.byType(ConsentView)));

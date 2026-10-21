@@ -19,10 +19,14 @@ String recipeGroceryKey(String recipeId, String ingredientRef) =>
 
 /// The lines [plan]'s dinners need, in the order the week runs, each recipe
 /// once however many days it is on.
+///
+/// [arabic] picks the language of a recipe Own Hub wrote, which carries both;
+/// her book cards are Arabic whatever it is.
 List<GroceryLine> groceryLinesFor(
   MealPlan plan,
-  Recipe? Function(String recipeId) recipeOf,
-) {
+  Recipe? Function(String recipeId) recipeOf, {
+  bool arabic = true,
+}) {
   final days = plan.dinners.keys.toList()
     ..sort((a, b) => a.index.compareTo(b.index));
   final seen = <String>{};
@@ -37,7 +41,7 @@ List<GroceryLine> groceryLinesFor(
       // What is only on the plate beside the dish is not something to buy for
       // the dish.
       if (ingredient.servingSideOnly) continue;
-      final text = ingredient.qtyLine.trim();
+      final text = ingredient.qtyLineFor(arabic: arabic).trim();
       if (text.isEmpty) continue;
       lines.add(
         GroceryLine(

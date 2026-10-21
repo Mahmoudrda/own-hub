@@ -35,6 +35,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../domain/clock/app_clock.dart';
+import '../../../domain/format/date_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -244,7 +245,7 @@ class CycleCalendarView extends StatelessWidget {
   /// The month name where the dictionary has one, numerals otherwise.
   String _monthTitle(AppL10n l10n) {
     if (year == 2026 && month == DateTime.september) return l10n.september2026;
-    return '$year-${month.toString().padLeft(2, '0')}';
+    return monthYearLabel(l10n, year, month);
   }
 }
 

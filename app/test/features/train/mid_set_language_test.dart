@@ -25,9 +25,8 @@ void main() {
   final ar = lookupAppL10n(const Locale('ar'));
 
   for (final index in [0, 1, 2, 3]) {
-    testWidgets('a move started in English reads in Arabic, move $index', (
-      tester,
-    ) async {
+    testWidgets('a move started in English keeps its English name in Arabic, '
+        'move $index', (tester) async {
       final startedInEnglish = sampleWorkoutDay(en).moves[index];
       final inArabic = sampleWorkoutDay(ar).moves[index];
 
@@ -36,8 +35,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(inArabic.name), findsWidgets);
-      expect(find.text(startedInEnglish.name), findsNothing);
+      expect(inArabic.name, startedInEnglish.name);
+      expect(find.text(startedInEnglish.name), findsWidgets);
       expect(find.text(inArabic.prescriptionLabel), findsWidgets);
       expect(find.text(startedInEnglish.prescriptionLabel), findsNothing);
       expect(tester.takeException(), isNull);
@@ -52,7 +51,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(en.donkeyKick), findsWidgets);
-    expect(find.text(ar.donkeyKick), findsNothing);
     expect(find.text(en.n312Bodyweight), findsWidgets);
+  });
+
+  testWidgets('the title is English and left to right in an Arabic screen', (
+    tester,
+  ) async {
+    final move = sampleWorkoutDay(en).moves.first;
+    await tester.pumpWidget(_host(MidSetView(move: move), const Locale('ar')));
+    await tester.pumpAndSettle();
+
+    final title = find.text(move.name);
+    expect(title, findsWidgets);
+    expect(Directionality.of(tester.element(title.first)), TextDirection.ltr);
+    expect(find.byTooltip(ar.change), findsWidgets);
   });
 }

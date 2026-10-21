@@ -55,7 +55,6 @@ import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
-import '../../../ui/app_card.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
@@ -72,9 +71,12 @@ import '../domain/allergy_guard.dart';
 import '../domain/daily_targets.dart';
 import '../domain/day_totals.dart';
 import '../domain/food_library.dart';
+import '../domain/meal_images.dart';
 import '../domain/meal_log_service.dart';
+import '../domain/meal_day_reader.dart';
 import '../domain/meal_repository.dart';
 import '../domain/meal_sentence_parser.dart';
+import '../domain/meal_slot_state_machine.dart';
 import 'eat_day_view_model.dart';
 import 'eat_sample_library.dart';
 import '../../onboarding/domain/body_data.dart';
@@ -83,6 +85,7 @@ import 'food_portion_sheet.dart' show containsNoteFor;
 import 'meal_labels.dart';
 import 'meal_log_session.dart';
 import 'personalise_sheet.dart';
+import 'slot_picks.dart';
 
 /// A meal the plan prescribes for a slot.
 ///
@@ -327,6 +330,9 @@ class _EatViewState extends State<EatView> {
 
   /// The meal she picked on the pill, or null to follow the hour.
   MealSlot? _slotChoice;
+
+  /// The shelf whose foods the quick strip lists, or null for her usual plates.
+  FoodCategory? _category;
 
   /// The targets as she last personalised them, else the ones handed in, else
   /// the stated defaults.
@@ -573,16 +579,108 @@ class _EatViewState extends State<EatView> {
     LogHandle? justLogged,
   }) {
     final slot = _slotChoice ?? view.activeSlot;
-    final plates = view.suggestions.isNotEmpty
-        ? view.suggestions
-        : view.starters;
-    final quickAdd = plates.isEmpty
+    final shelf = _category;
+    final picks = shelf == null
+        ? slotPicks(
+            prefs: _prefs,
+            library: _library(l10n),
+            guard: AllergyGuard(widget.constraints),
+            slot: slot,
+          )
+        : const <ParsedItem>[];
+    // Only plates she has had at this meal; with none, starters that suit it.
+    final eatenHere = {
+      for (final entry in _prefs.plates.entries)
+        if ((entry.value.slotCounts[slot] ?? 0) > 0) entry.key,
+    };
+    final history = [
+      for (final plate in view.suggestions)
+        if (eatenHere.contains(plate.plateId)) plate,
+    ];
+    final plates = history.isNotEmpty
+        ? history
+        : _startersFor(view.starters, slot);
+    // Picks not already inside a plate card join the same strip, so one meal
+    // never shows two rows of the same foods.
+    final extraPicks = [
+      for (final pick in picks)
+        if (history.isEmpty ||
+            !history.any(
+              (plate) =>
+                  plate.entries.any((e) => e.food.foodId == pick.food.foodId),
+            ))
+          pick,
+    ];
+    final shelfFoods = shelf == null
+        ? const <Food>[]
+        : AllergyGuard(widget.constraints)
+              .screenSuggestions([
+                for (final food in _library(l10n).foods)
+                  if (food.category == shelf) food,
+              ])
+              .take(24)
+              .toList();
+    final cards = <Widget>[
+      if (shelf == null)
+        for (final plate in plates)
+          QuickAddCard(
+            key: ValueKey('quick-add-${plate.key}'),
+            title: _titleOf(plate),
+            meta: l10n.kcalKcalProteinGProtein(
+              countLabel(plate.kcal),
+              countLabel(plate.proteinG),
+            ),
+            addLabel: l10n.addName(_titleOf(plate)),
+            imageAsset: plate.entries.isEmpty
+                ? null
+                : plate.entries.first.food.imageAsset,
+            onAdd: () => _log(plate.entries, slot),
+          )
+      else
+        for (final food in shelfFoods)
+          QuickAddCard(
+            key: ValueKey('quick-add-${food.foodId}'),
+            title: food.names.first,
+            meta: l10n.kcalKcalProteinGProtein(
+              countLabel(food.defaultSize.kcal),
+              countLabel(food.defaultSize.proteinG),
+            ),
+            addLabel: l10n.addName(food.names.first),
+            imageAsset: food.imageAsset,
+            onAdd: () => _log([
+              ParsedItem(
+                food: food,
+                size: food.defaultSize,
+                servings: 1,
+                sourceText: food.names.first,
+              ),
+            ], slot),
+          ),
+      if (shelf == null)
+        for (final pick in extraPicks)
+          QuickAddCard(
+            key: ValueKey('pick-${pick.food.foodId}'),
+            title: pick.food.names.first,
+            meta: l10n.kcalKcalProteinGProtein(
+              countLabel(pick.kcal),
+              countLabel(pick.proteinG),
+            ),
+            addLabel: l10n.addName(pick.food.names.first),
+            imageAsset: pick.food.imageAsset,
+            onAdd: () => _log([pick], slot),
+          ),
+    ];
+    final quickAdd = cards.isEmpty
         ? null
         : Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(l10n.quickAdd, style: AppText.titleM),
+              Text(
+                picks.isEmpty ? l10n.quickAdd : slotPicksTitle(l10n, slot),
+                key: const ValueKey('slot-picks-title'),
+                style: AppText.titleM,
+              ),
               const SizedBox(height: 10),
               SingleChildScrollView(
                 key: const ValueKey('eat-quick-add'),
@@ -590,19 +688,10 @@ class _EatViewState extends State<EatView> {
                 clipBehavior: Clip.none,
                 child: IntrinsicHeight(
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      for (final plate in plates) ...[
-                        QuickAddCard(
-                          key: ValueKey('quick-add-${plate.key}'),
-                          title: _titleOf(plate),
-                          meta: l10n.kcalKcalProteinGProtein(
-                            countLabel(plate.kcal),
-                            countLabel(plate.proteinG),
-                          ),
-                          addLabel: l10n.addName(_titleOf(plate)),
-                          onAdd: () => _log(plate.entries, slot),
-                        ),
+                      for (final card in cards) ...[
+                        card,
                         const SizedBox(width: 10),
                       ],
                     ],
@@ -635,13 +724,35 @@ class _EatViewState extends State<EatView> {
         targets: _targets,
         onPersonalise: _personalise,
       ),
+      Column(
+        key: const ValueKey('eat-day-slots'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final (i, row) in _diaryRows(l10n, view).indexed) ...[
+            if (i > 0) const SizedBox(height: 8),
+            row,
+          ],
+        ],
+      ),
+      if (widget.onSnap != null)
+        SnapMealCard(
+          title: l10n.scanYourMealWithTheCamera,
+          subtitle: l10n.onePhotoForCaloriesAndProtein,
+          onPressed: widget.onSnap,
+        ),
       _box(l10n),
+      FoodCategoryChips(
+        key: const ValueKey('eat-categories'),
+        selected: _category,
+        onChanged: (category) => setState(() => _category = category),
+      ),
       // Rendered only for a woman who actually has a coach: null for everyone
       // in the MVP.
       if (widget.plannedMeal != null) ..._plannedBlock(l10n),
       if (quickAdd != null)
         quickAdd
-      else if (_screenedToNothing(view.starters))
+      else if (shelf == null && _screenedToNothing(view.starters))
         _guardNote(l10n),
       if (widget.yesterdaysLunch != null)
         MealRow(
@@ -650,22 +761,11 @@ class _EatViewState extends State<EatView> {
           // use: the row's whole promise is that it repeats HER meal.
           meta: _metaOf(l10n, widget.yesterdaysLunch!),
           logLabel: l10n.iAteThis,
+          imageAsset: widget.yesterdaysLunch!.entries.length == 1
+              ? widget.yesterdaysLunch!.entries.first.food.imageAsset
+              : null,
           onLog: () => _log(widget.yesterdaysLunch!.entries, slot),
         ),
-      AppCard(
-        key: const ValueKey('eat-day-slots'),
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final (i, column) in _slotColumns(l10n, view).indexed) ...[
-                if (i > 0) const SizedBox(width: 8),
-                column,
-              ],
-            ],
-          ),
-        ],
-      ),
       if (view.isDayOne && AppRouter.screenIsOn('E07'))
         AppListItem(
           key: const ValueKey('eat-day-one-week-plan'),
@@ -689,7 +789,44 @@ class _EatViewState extends State<EatView> {
           l10n.noCountdownNoRedNumbersProteinIs,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
+      // The last row never rests against the tab bar: the nav bar's height and
+      // the bottom safe area are left clear under it.
+      SizedBox(height: 60 + MediaQuery.viewPaddingOf(context).bottom),
     ]);
+  }
+
+  /// Starters that suit [slot]: a breakfast list does not lead with a main
+  /// course and a lunch list does not lead with ful. Falls back to all of them
+  /// rather than showing nothing.
+  List<SuggestionView> _startersFor(
+    List<SuggestionView> starters,
+    MealSlot slot,
+  ) {
+    const mains = {
+      'koshari_bowl',
+      'koshari_and_salad',
+      'molokhia_chicken',
+      'chicken_and_rice',
+    };
+    bool fits(Food food) {
+      final kind = food.kind;
+      if (slot == MealSlot.breakfast) {
+        return kind != 'main' && !mains.contains(food.foodId);
+      }
+      return kind != 'breakfast' && food.foodId != 'boiled_eggs';
+    }
+
+    final suited = [
+      for (final s in starters)
+        if (s.entries.every((e) => fits(e.food))) s,
+    ];
+    // The ones that suit the meal lead; the rest follow, so the strip keeps its
+    // length.
+    return [
+      ...suited,
+      for (final s in starters)
+        if (!suited.contains(s)) s,
+    ];
   }
 
   /// "Today" and the pill naming the meal she is logging into. The pill opens
@@ -802,6 +939,7 @@ class _EatViewState extends State<EatView> {
         meta: planned.meta,
         logLabel: l10n.iAteThis,
         primary: true,
+        imageAsset: planned.entry.food.imageAsset,
         // A planned meal CORRECTS on a re-log — a different method entirely
         // from the free log above. HANDOFF rule 3.
         onLog: () => _logPlanned(planned),
@@ -901,20 +1039,54 @@ class _EatViewState extends State<EatView> {
     ],
   );
 
-  List<SlotColumn> _slotColumns(AppL10n l10n, EatDayView view) {
+  /// The day as four meals, each with a "Log" pill that opens the logging flow
+  /// on that meal. Snacks are the fourth row: the hour never makes them the
+  /// meal she is "in" during the day (after 22:00 the hour does read as snack),
+  /// so they read "Nothing yet" rather than "Later".
+  List<Widget> _diaryRows(AppL10n l10n, EatDayView view) {
+    final day = _projected;
+    final snack = SlotView(
+      slot: MealSlot.snack,
+      state: const MealSlotStateMachine().resolve(
+        day: day,
+        slot: MealSlot.snack,
+      ),
+      items: const MealDayReader().itemsIn(day, MealSlot.snack),
+      status: day.itemsIn(MealSlot.snack).isNotEmpty
+          ? SlotStatus.done
+          : view.activeSlot == MealSlot.snack
+          ? SlotStatus.now
+          : SlotStatus.later,
+    );
     return [
-      for (final slot in view.slots)
-        SlotColumn(
-          name: _slotName(l10n, slot.slot),
+      for (final slot in [...view.slots, snack])
+        MealDiaryRow(
+          key: ValueKey('eat-diary-${slot.slot.name}'),
+          name: slot.slot == MealSlot.snack
+              ? l10n.snacks
+              : _slotName(l10n, slot.slot),
           value: _slotValue(l10n, slot),
           status: slot.status,
+          logLabel: l10n.log,
+          logSemanticsLabel: l10n.logMeal(_slotName(l10n, slot.slot)),
+          itemImageAssets: [
+            for (final item in slot.items) MealImages.assetFor(item.foodId),
+          ],
           // A slot with something in it opens what is there, to take one
           // out. The five seconds after a log are for Undo; this is for later.
           onTap: widget.session != null && slot.items.isNotEmpty
               ? () => _openSlot(slot)
               : null,
+          onLog: () => _logInto(slot.slot),
         ),
     ];
+  }
+
+  /// Opens the logging flow on [slot]. Screens are opened by name, which
+  /// carries no argument, so the choice rides on the shared session.
+  void _logInto(MealSlot slot) {
+    widget.session?.presetLogSlot(slot);
+    openScreen(context, 'E02', widget.onType);
   }
 
   /// What is in one slot, each with Remove. Removing goes through the session
@@ -991,7 +1163,8 @@ class _EatViewState extends State<EatView> {
   /// What is in the slot, or where it sits in the day.
   String _slotValue(AppL10n l10n, SlotView slot) {
     if (slot.items.isEmpty) {
-      return slot.status == SlotStatus.now ? l10n.now_65hr : l10n.later;
+      if (slot.status == SlotStatus.now) return l10n.now_65hr;
+      return slot.slot == MealSlot.snack ? l10n.nothingYet : l10n.later;
     }
     final names = slot.items
         .map((item) => _foodName(l10n, item))

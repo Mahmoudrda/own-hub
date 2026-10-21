@@ -62,6 +62,9 @@ List<MealPick> mealsForToday(TodayCheckIn checkIn, Iterable<Recipe> recipes) {
 
   final picks = <MealPick>[];
   for (final recipe in recipes) {
+    // These are her picks from her book. Own Hub's recipes sit in the same
+    // sections and are not hers, so they are not offered as hers here.
+    if (recipe.isOwnHub) continue;
     final comfy = recipe.sectionId == kComfyDinnerSection;
     final protein = recipe.dietTags.contains(kHighProteinTag);
     if (!comfy && !protein) continue;

@@ -207,6 +207,36 @@ class WorkoutSessionState {
     AppChanges.bump();
   }
 
+  /// Puts [fresh], the same day read in the language on screen now, in place of
+  /// the one the session began with, so a woman who switches language
+  /// mid-session sees the title and every set line in her language.
+  ///
+  /// Only when it is the same day with the same moves in the same order, which
+  /// is what a language change produces; her position and swaps stay as they
+  /// are. Does not notify: the caller bumps [AppChanges] when this returns
+  /// true, which it does only when the wording actually changed.
+  bool relabel(WorkoutDay fresh) {
+    final day = _day;
+    if (day == null || !isLive) return false;
+    if (day.id != fresh.id ||
+        day.planVersion != fresh.planVersion ||
+        day.moves.length != fresh.moves.length) {
+      return false;
+    }
+    for (var i = 0; i < day.moves.length; i++) {
+      if (day.moves[i].exerciseId != fresh.moves[i].exerciseId ||
+          day.moves[i].sets.length != fresh.moves[i].sets.length) {
+        return false;
+      }
+    }
+    final reworded =
+        day.title != fresh.title ||
+        day.summary != fresh.summary ||
+        day.constraints != fresh.constraints;
+    _day = fresh;
+    return reworded;
+  }
+
   /// One set logged: the next set of this move, or the next move.
   void setLogged() {
     final move = currentMove;

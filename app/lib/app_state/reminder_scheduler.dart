@@ -60,6 +60,9 @@ class ReminderText {
     this.tipBodies = const <String>[],
     this.tipChannelName = '',
     this.tipChannelDescription = '',
+    this.nudgeBodies = const <String>[],
+    this.nudgeChannelName = '',
+    this.nudgeChannelDescription = '',
   });
 
   final String title;
@@ -88,6 +91,12 @@ class ReminderText {
   final String tipChannelName;
   final String tipChannelDescription;
 
+  /// The friendly nudges: [kNudgeVariants] texts for each [NudgeContext], in
+  /// its order (morning, midday, evening, week end).
+  final List<String> nudgeBodies;
+  final String nudgeChannelName;
+  final String nudgeChannelDescription;
+
   /// Every sentence a notification can carry, for the copy policy.
   List<String> get allBodies => <String>[
     body,
@@ -95,6 +104,7 @@ class ReminderText {
     ...checkInBodies,
     restBody,
     ...tipBodies,
+    ...nudgeBodies,
   ];
 }
 
@@ -132,6 +142,7 @@ const String kReminderChannelId = 'training_reminders';
 const String kCheckInChannelId = 'gentle_checkins';
 const String kRestChannelId = 'rest_timer';
 const String kTipChannelId = 'getting_started_tips';
+const String kNudgeChannelId = 'friendly_nudges';
 
 /// The small icon: a white silhouette, kept from resource shrinking by
 /// `res/raw/keep.xml`.
@@ -267,6 +278,12 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
         text.tipChannelDescription,
         Importance.defaultImportance,
       ),
+      PlanKind.nudge => (
+        kNudgeChannelId,
+        text.nudgeChannelName,
+        text.nudgeChannelDescription,
+        Importance.defaultImportance,
+      ),
       _ => (
         kReminderChannelId,
         text.channelName,
@@ -297,6 +314,10 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
           item.variant >= 0 && item.variant < text.tipBodies.length
               ? text.tipBodies[item.variant]
               : text.body,
+        PlanKind.nudge =>
+          item.variant >= 0 && item.variant < text.nudgeBodies.length
+              ? text.nudgeBodies[item.variant]
+              : text.body,
       };
 
   /// The screen a tap opens. A screen id and nothing else.
@@ -304,6 +325,7 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
     PlanKind.didYouTrain => 'T02',
     PlanKind.restOver => 'R09',
     PlanKind.tip => GettingStartedTip.of(item)?.screen ?? 'T01',
+    PlanKind.nudge => nudgeScreen(item.variant),
     _ => 'T01',
   };
 

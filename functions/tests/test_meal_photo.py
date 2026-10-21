@@ -8,6 +8,7 @@ tests/conftest.py fails any test that reaches the real one."""
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 from types import SimpleNamespace
 
@@ -17,7 +18,7 @@ from firebase_functions import https_fn
 import main
 from identity import config, faces, logs, reasons, store
 from nutrition import config as meal_config
-from nutrition import dishes, model, usda
+from nutrition import dishes, model, photo, usda
 from tests import fake_firestore
 from tests.test_entrypoints import inner, raises
 from tests.test_entrypoints import request as _base_request
@@ -108,7 +109,10 @@ def item(name_en, grams, terms, *, name_ar="", confidence=0.9, dish_guess=None, 
 @pytest.fixture
 def wired(monkeypatch):
     """Consent on file, counters in memory, refunds counted."""
-    state = {"consent": True, "uid": 0, "global": 0, "refunds": 0, "order": []}
+    state = {
+        "consent": True, "uid": 0, "global": 0, "refunds": 0, "order": [],
+        "cache": False, "cached": {}, "puts": 0,
+    }
 
     def per_uid(uid, field):
         state["order"].append("per_uid")
@@ -129,6 +133,17 @@ def wired(monkeypatch):
     monkeypatch.setattr(main.store, "uid_daily_count_and_increment", per_uid)
     monkeypatch.setattr(main.store, "daily_count_and_increment", global_count)
     monkeypatch.setattr(main.store, "uid_daily_refund", refund)
+
+    def cache_get(key):
+        return state["cached"].get(key) if state["cache"] else None
+
+    def cache_put(key, items):
+        state["puts"] += 1
+        if state["cache"]:
+            state["cached"][key] = items
+
+    monkeypatch.setattr(main, "_scan_cache_get", cache_get)
+    monkeypatch.setattr(main, "_scan_cache_put", cache_put)
     return state
 
 
@@ -267,6 +282,7 @@ def test_the_global_cap_pauses_scans_for_everyone(wired, capsys):
     assert client.calls == []
     assert wired["global_field"] == "mealScans"
     assert wired["order"] == ["per_uid", "global"]
+    assert wired["refunds"] == 1, "the app's pause must not cost her a scan"
     out = capsys.readouterr()
     assert '"event": "meal_scans_paused"' in out.out + out.err
 
@@ -464,6 +480,119 @@ def test_a_small_photo_is_not_enlarged(wired):
     sent = client.calls[0]["contents"][0].inline_data.data
     decoded = cv2.imdecode(np.frombuffer(sent, dtype=np.uint8), cv2.IMREAD_COLOR)
     assert decoded.shape[:2] == (240, 320)
+
+
+# ------------------------------------------------------------ the photo cache
+
+
+def test_the_same_photo_twice_is_one_model_call_and_one_count(wired):
+    wired["cache"] = True
+    client = FakeClient(RICE_PLATE)
+    first = scan(client)
+    second = scan(client)
+    assert first["cached"] is False and second["cached"] is True
+    assert second["items"] == first["items"] and second["totals"] == first["totals"]
+    assert len(client.calls) == 1
+    assert wired["uid"] == 1 and wired["global"] == 1
+
+
+def test_a_cache_hit_is_free_even_when_her_scans_and_the_app_cap_are_used_up(wired):
+    wired["cache"] = True
+    client = FakeClient(RICE_PLATE)
+    scan(client)
+    wired["uid"] = meal_config.MEAL_SCANS_PER_UID_PER_DAY
+    wired["global"] = meal_config.MEAL_SCANS_GLOBAL_PER_DAY
+    assert scan(client)["cached"] is True
+    assert len(client.calls) == 1
+    assert wired["uid"] == meal_config.MEAL_SCANS_PER_UID_PER_DAY
+    assert wired["global"] == meal_config.MEAL_SCANS_GLOBAL_PER_DAY
+
+
+def test_a_different_photo_is_a_miss(wired):
+    wired["cache"] = True
+    client = FakeClient(RICE_PLATE)
+    scan(client, image=photo_bytes(width=800, height=600))
+    scan(client, image=photo_bytes(width=801, height=600))
+    assert len(client.calls) == 2 and wired["uid"] == 2
+
+
+def test_a_refused_or_failed_scan_is_not_cached(wired):
+    wired["cache"] = True
+    with pytest.raises(https_fn.HttpsError):
+        scan(FakeClient({"items": []}))
+    with pytest.raises(https_fn.HttpsError):
+        scan(FakeClient(RICE_PLATE, error=RuntimeError("down")))
+    assert wired["puts"] == 0 and wired["cached"] == {}
+
+
+def test_the_cache_keys_on_the_re_encoded_bytes_and_a_cache_hit_logs_cached(wired, capsys):
+    wired["cache"] = True
+    client = FakeClient(RICE_PLATE)
+    raw = photo_bytes()
+    scan(client, image=raw)
+    (key,) = wired["cached"]
+    assert len(key) == 64 and int(key, 16) >= 0
+    assert key == hashlib.sha256(photo.reencode(raw)).hexdigest()
+    assert key != hashlib.sha256(raw).hexdigest()
+    capsys.readouterr()
+    scan(client)
+    entries, _ = _lines(capsys)
+    (line,) = [e for e in entries if e.get("event") == "verification_decision"]
+    assert line["outcome"] == "cached" and "promptTokens" not in line
+
+
+def test_the_stored_row_holds_items_and_dates_and_no_uid(monkeypatch):
+    import datetime as dt
+
+    from nutrition import cache
+
+    fs = fake_firestore.FakeFirestore()
+    now = dt.datetime(2026, 10, 20, 9, tzinfo=dt.timezone.utc)
+    items = model.parse(
+        json.dumps(
+            {"items": [item("Koshary", 400, ["pasta, cooked"], name_ar="كشري", dish_guess="koshary",
+                            ingredients=[{"name_en": "rice", "grams": 200, "usda_terms": ["rice, white"]}])]},
+            ensure_ascii=False,
+        )
+    )
+    cache.put(fs, "abc", items, now)
+    (path,) = fs.docs
+    assert path == "scanCache/abc"
+    row = fs.docs[path]
+    assert set(row) == {"items", "createdAt", "expiresAt"}
+    assert row["expiresAt"] == now + dt.timedelta(days=30)
+    assert "uid-1" not in json.dumps(row, default=str) and "uid" not in row
+    assert cache.get(fs, "abc", now + dt.timedelta(days=29)) == items
+
+
+def test_an_expired_or_malformed_row_is_a_miss():
+    import datetime as dt
+
+    from nutrition import cache
+
+    fs = fake_firestore.FakeFirestore()
+    now = dt.datetime(2026, 10, 20, 9, tzinfo=dt.timezone.utc)
+    items = model.parse(json.dumps({"items": [item("Rice", 200, ["rice"], name_ar="رز")]}))
+    cache.put(fs, "abc", items, now)
+    assert cache.get(fs, "abc", now + dt.timedelta(days=30)) is None
+    assert cache.get(fs, "abc", now + dt.timedelta(days=31)) is None
+    assert cache.get(fs, "missing", now) is None
+    fs.docs["scanCache/bad"] = {"items": [{"nope": 1}], "expiresAt": now + dt.timedelta(days=1)}
+    assert cache.get(fs, "bad", now) is None
+
+
+def test_a_cache_that_cannot_be_read_or_written_never_fails_a_scan(wired, monkeypatch, capsys):
+    monkeypatch.undo()
+    monkeypatch.setattr(main.store, "has_meal_photo_consent", lambda uid: True)
+    monkeypatch.setattr(main.store, "uid_daily_count_and_increment", lambda uid, field: 1)
+    monkeypatch.setattr(main.store, "daily_count_and_increment", lambda field="sessions": 1)
+
+    def broken():
+        raise RuntimeError("firestore down")
+
+    monkeypatch.setattr(main.store, "db", broken)
+    answer = scan(FakeClient(RICE_PLATE))
+    assert answer["cached"] is False and answer["items"]
 
 
 # --------------------------------------------------------------- the log line

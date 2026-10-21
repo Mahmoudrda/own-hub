@@ -2,8 +2,9 @@
 ///
 /// Asked once per account on this phone, as a sheet over the screen she is
 /// on, before the camera opens. It says where the photo goes, that it is not
-/// kept or used for training, and that she checks everything before it is
-/// logged. "Agree" records it on the server (`record_meal_photo_consent`,
+/// kept or used for training, that a fingerprint of it and the foods found
+/// are kept for 30 days to answer the same photo again, and that she checks
+/// everything before it is logged. "Agree" records it on the server (`record_meal_photo_consent`,
 /// version [kMealPhotoConsentVersion]); only once the server has answered is
 /// it remembered here. "Not now" closes it and nothing is sent.
 ///
@@ -124,6 +125,12 @@ class _MealPhotoConsentBodyState extends State<MealPhotoConsentBody> {
         const SizedBox(height: 10),
         Text(
           l10n.upTo5PhotosADayYou,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          l10n.weKeepAFingerprintOfThePhoto,
+          key: const ValueKey('meal-consent-cache-line'),
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         if (_failed) ...[

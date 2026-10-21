@@ -97,15 +97,34 @@ service firebase.storage {
       allow delete: if isAdmin();
     }
 
+    // Event pictures and clips, written from the dashboard's Events tab and
+    // read by verified members (events are a verified-only surface). A picture
+    // is webp or jpeg up to 1 MiB, a clip is mp4 up to 10 MiB.
+    match /content/events/{eventId}/{file} {
+      allow read: if signedIn()
+                  && (request.auth.token.get('verified', false) == true || isAdmin());
+      allow write: if isAdmin()
+                   && ((request.resource.contentType in ['image/webp', 'image/jpeg']
+                        && request.resource.size <= 1024 * 1024)
+                       || (request.resource.contentType == 'video/mp4'
+                           && request.resource.size <= 10 * 1024 * 1024));
+      allow delete: if isAdmin();
+    }
+
     // Every other content path is read by every signed-in member.
     //
     // The size ceiling is a guard against an accidental upload of the wrong
     // file, not a quality setting: these are short demonstration clips, and a
     // 200 MB video would be unwatchable on Egyptian mobile data long before it
     // was a storage problem.
+    //
+    // Events are carved out: matches combine, so without `!= 'events'` this
+    // block would let any signed-in account read event media and let the
+    // admin write past the event limits.
     match /content/{collection}/{docId}/{file} {
-      allow read: if signedIn();
+      allow read: if signedIn() && collection != 'events';
       allow write: if isAdmin()
+                   && collection != 'events'
                    && (isImage() || isVideo())
                    && request.resource.size < 200 * 1024 * 1024;
       allow delete: if isAdmin();

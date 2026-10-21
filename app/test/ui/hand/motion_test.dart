@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:own_hub/app_state/kitten_setting.dart';
 import 'package:own_hub/theme/hand_theme.dart';
 import 'package:own_hub/ui/app_button.dart';
 import 'package:own_hub/ui/app_toggle.dart';
@@ -97,21 +96,13 @@ void main() {
       expect(shiftOf(tester), Offset.zero);
     });
 
-    testWidgets('lets go when the kitten switch is off, and when disposed', (
-      tester,
-    ) async {
+    testWidgets('lets go when disposed', (tester) async {
       await tester.pumpWidget(
         _host(const TiltParallax(child: SizedBox(width: 50, height: 50))),
       );
       expect(listeners, 1);
-      await KittenSetting.instance.set(false);
-      await tester.pump();
-      expect(cancels, 1);
-      await KittenSetting.instance.set(true);
-      await tester.pump();
-      expect(listeners, 2);
       await tester.pumpWidget(_host(const SizedBox()));
-      expect(cancels, 2);
+      expect(cancels, 1);
     });
 
     testWidgets('listens only while its route is the current one', (

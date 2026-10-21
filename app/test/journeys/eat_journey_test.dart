@@ -272,6 +272,8 @@ void main() {
       );
       expect(find.text('540 kcal · 18 g protein'), findsOneWidget);
 
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pumpAndSettle();
       await tester.tap(find.byType(PlusButton).first);
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
@@ -326,11 +328,10 @@ void main() {
         reason: '18 g is not high protein',
       );
 
-      await tester.tap(find.text('Ramadan'));
-      await tester.pumpAndSettle();
-      expect(find.text('No recipe carries a Ramadan tag yet.'), findsOneWidget);
-
-      await tester.tap(find.text('Ramadan'));
+      // No recipe carries a Ramadan tag, so that chip would select nothing and
+      // is not drawn; the one she has on stays, and takes the filter off.
+      expect(find.text('Ramadan'), findsNothing);
+      await tester.tap(find.text('High protein'));
       await tester.pumpAndSettle();
       expect(find.text('Koshari, portioned'), findsOneWidget);
 

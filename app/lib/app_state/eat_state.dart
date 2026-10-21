@@ -46,6 +46,7 @@ import '../features/eat/data/recipe_sync.dart';
 import '../features/eat/data/seeded_recipe_library.dart';
 import '../features/eat/domain/allergy_guard.dart';
 import '../features/eat/domain/custom_food.dart';
+import '../features/eat/domain/food_library.dart';
 import '../features/eat/domain/daily_targets.dart';
 import '../features/eat/domain/day_totals.dart';
 import '../features/eat/domain/item_id.dart';
@@ -223,6 +224,51 @@ class EatAppState {
     final next = [food, ...prefs.customFoods].take(kCustomFoodCap).toList();
     final saved = prefs.copyWith(customFoods: next);
     await repository.savePrefs(saved);
+    syncCustomFoods(await repository.prefs());
+    return food;
+  }
+
+  /// Keeps a meal she confirmed on E13 as one of her foods, so the next time
+  /// it is one tap. A meal with the same name (spelled the way search reads
+  /// it) is not added twice: her latest confirmed figures replace the old
+  /// ones and the food keeps its id, so a star on it stays.
+  Future<CustomFood> rememberMealAsFood(
+    MealRepository repository, {
+    required String name,
+    required int kcal,
+    required int proteinG,
+    int? carbsG,
+    int? fatG,
+    int? fiberG,
+    Set<String>? allergens,
+  }) async {
+    final prefs = await repository.prefs();
+    final key = FoodLibrary.normalise(name);
+    CustomFood? same;
+    for (final food in prefs.customFoods) {
+      if (FoodLibrary.normalise(food.name) == key) {
+        same = food;
+        break;
+      }
+    }
+    final food = CustomFood(
+      id:
+          same?.id ??
+          '${CustomFood.idPrefix}${AppClock.now().microsecondsSinceEpoch}',
+      name: name.trim(),
+      kcal: kcal,
+      proteinG: proteinG,
+      carbsG: carbsG,
+      fatG: fatG,
+      fiberG: fiberG,
+      allergens: allergens,
+    );
+    final next = [
+      food,
+      for (final other in prefs.customFoods)
+        if (other.id != food.id) other,
+    ].take(kCustomFoodCap).toList();
+    await repository.savePrefs(prefs.copyWith(customFoods: next));
     syncCustomFoods(await repository.prefs());
     return food;
   }
@@ -692,6 +738,8 @@ class EatAppState {
     );
     // The getting started tip about photos has nothing left to say.
     if (photographed) GettingStarted.notePhotoMeal();
+    // A logged meal is a day she was here: today's nudge has nothing to add.
+    unawaited(AppRouter.noteMealLogged());
     if (!photographed) {
       final plateId = plateIdOf([
         for (final item in meal.items) (foodId: item.foodId, size: item.size),

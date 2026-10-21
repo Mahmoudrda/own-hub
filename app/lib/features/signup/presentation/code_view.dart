@@ -330,12 +330,17 @@ class _CodeViewState extends State<CodeView> {
             ],
           ),
         const SizedBox(height: 4),
-        AppCodeField(
-          // Six, from the auth layer. Never a literal on a screen.
-          length: kVerificationCodeLength,
-          controller: _controller,
-          enabled: !_checking,
-          onCompleted: _confirm,
+        // Digits are typed and read left to right in Arabic too, so the
+        // boxes fill from the left, in the order she types them.
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: AppCodeField(
+            // Six, from the auth layer. Never a literal on a screen.
+            length: kVerificationCodeLength,
+            controller: _controller,
+            enabled: !_checking,
+            onCompleted: _confirm,
+          ),
         ),
         if (failure != null)
           Semantics(

@@ -158,7 +158,8 @@ void main() {
 
     test('names in both languages, and search over both', () {
       final e = sampleExerciseLibrary().byId('glute_bridge')!;
-      expect(e.name('ar'), 'جلوت بريدج');
+      expect(e.name('ar'), 'Glute bridge');
+      expect(e.name('en'), 'Glute bridge');
       expect(e.matches('bridge'), isTrue);
       expect(e.matches('جلوت'), isTrue);
       expect(e.matches('squat'), isFalse);

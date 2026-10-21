@@ -209,6 +209,34 @@ void main() {
     expect(find.textContaining('Moves: 1'), findsOneWidget);
   });
 
+  testWidgets('R10 counts the session it is reporting: 1 of 3, next is 2', (
+    tester,
+  ) async {
+    // Other walks in this file credit the shared week first, so the figure
+    // is "one more than it was", which is 1 of 3 on a fresh week.
+    final before = _weekOnHome;
+    await _open(tester, 'R03');
+    await tester.tap(find.textContaining('Start'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('I did').first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.text('Finish here'));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('r13-finish-here')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('This week'), findsOneWidget, reason: 'on R10');
+    expect(find.text('${before + 1} of 3'), findsOneWidget);
+    expect(find.text('$before of 3'), findsNothing);
+    if (before + 1 < 3) {
+      expect(
+        find.textContaining('Next: session ${before + 2}'),
+        findsOneWidget,
+      );
+    }
+  });
+
   testWidgets('G10: undo on R09 puts her back on the set, on R07', (
     tester,
   ) async {

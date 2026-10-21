@@ -27,6 +27,12 @@ import 'package:meta/meta.dart';
 import 'food_library.dart';
 import 'meal_scan.dart';
 
+/// The longest name the shared list and her own foods keep for a meal.
+const int kMealNameMaxChars = 60;
+
+/// The most parts of a meal the shared list takes.
+const int kMealPartsMax = 12;
+
 /// The figures she can see and change on one item.
 enum MacroKind { kcal, protein, carbs, fat, fiber }
 
@@ -80,7 +86,12 @@ class CheckItem {
 
   /// A food from the list, at [size].
   factory CheckItem.library(String key, Food food, FoodSize size) =>
-      CheckItem._(key: key, kind: CheckItemKind.library, food: food, size: size);
+      CheckItem._(
+        key: key,
+        kind: CheckItemKind.library,
+        food: food,
+        size: size,
+      );
 
   /// One she typed. Her numbers are for [grams]; when the weight is above
   /// zero they become per 100 g, so changing the weight scales them as it
@@ -364,8 +375,7 @@ class MealCheck {
     int? carbs;
     int? fat;
     int? fiber;
-    int? add(int? sum, int? value) =>
-        value == null ? sum : (sum ?? 0) + value;
+    int? add(int? sum, int? value) => value == null ? sum : (sum ?? 0) + value;
     for (final item in items) {
       if (!item.isComplete) continue;
       kcal += item.value(MacroKind.kcal)!;
@@ -383,6 +393,20 @@ class MealCheck {
     );
   }
 
+  /// Every allergen the plate is known to hold: the union of its parts'. Null
+  /// when any part is unknown (a photo read, or her own entry), because a
+  /// plate is only as known as its least known part.
+  Set<String>? get allergens {
+    if (items.isEmpty) return null;
+    final union = <String>{};
+    for (final item in items) {
+      final known = item.food?.allergens;
+      if (known == null) return null;
+      union.addAll(known);
+    }
+    return union;
+  }
+
   /// Items still waiting for her numbers.
   int get incomplete => items.where((item) => !item.isComplete).length;
 
@@ -395,6 +419,69 @@ class MealCheck {
   MealCheck removeAt(int index) => MealCheck([...items]..removeAt(index));
 
   MealCheck add(CheckItem item) => MealCheck([...items, item]);
+
+  /// What the whole plate is called in [languageCode]: its parts, in order,
+  /// joined with " + ", cut to [kMealNameMaxChars].
+  String nameFor(String languageCode) {
+    final joined = items
+        .map((item) => item.nameFor(languageCode).trim())
+        .where((name) => name.isNotEmpty)
+        .join(' + ');
+    return joined.length <= kMealNameMaxChars
+        ? joined
+        : joined.substring(0, kMealNameMaxChars).trim();
+  }
+
+  /// The plate as `submit_community_food` takes it, or null when it cannot be
+  /// shared: nothing to log, no carbs or fat on any part, a part with no
+  /// weight, or figures that do not add up (4 protein + 4 carbs + 9 fat
+  /// against the energy, the server's own tolerance). Only names, weights and
+  /// totals: never the photo, never anything of hers.
+  Map<String, Object?>? communityDish(String languageCode) {
+    if (!canLog) return null;
+    final total = totals;
+    final carbs = total.carbsG;
+    final fat = total.fatG;
+    if (total.kcal <= 0 || carbs == null || fat == null) return null;
+    final atwater = 4 * total.proteinG + 4 * carbs + 9 * fat;
+    final slack = total.kcal * 0.15 > 20 ? total.kcal * 0.15 : 20;
+    if ((atwater - total.kcal).abs() > slack) return null;
+
+    final parts = <Map<String, Object?>>[];
+    for (final item in items) {
+      final grams = item.hasGrams ? item.grams : item.size?.grams;
+      final name = item.nameFor(languageCode).trim();
+      if (grams == null || grams <= 0 || name.isEmpty) continue;
+      parts.add(<String, Object?>{
+        'name': name.length <= kMealNameMaxChars
+            ? name
+            : name.substring(0, kMealNameMaxChars).trim(),
+        'grams': grams.round(),
+      });
+    }
+    if (parts.isEmpty || parts.length > kMealPartsMax) return null;
+
+    final arabic = languageCode == 'ar';
+    final both = items.every(
+      (item) =>
+          item.kind == CheckItemKind.scanned &&
+          item.scanned!.nameEn.isNotEmpty &&
+          item.scanned!.nameAr.isNotEmpty,
+    );
+    final primary = nameFor(arabic ? 'ar' : 'en');
+    if (primary.isEmpty) return null;
+    final other = both ? nameFor(arabic ? 'en' : 'ar') : '';
+    return <String, Object?>{
+      if (arabic) 'nameAr': primary else 'nameEn': primary,
+      if (other.isNotEmpty)
+        if (arabic) 'nameEn': other else 'nameAr': other,
+      'items': parts,
+      'kcal': total.kcal,
+      'proteinG': total.proteinG,
+      'carbsG': carbs,
+      'fatG': fat,
+    };
+  }
 
   /// The entries to log, each named in [languageCode]. Empty unless [canLog].
   List<CheckedEntry> entries(String languageCode) {

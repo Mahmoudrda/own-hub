@@ -460,7 +460,9 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
                     // name, and it wraps rather than running off the edge.
                     Flexible(
                       child: Text(
-                        widget.upNextPrescription!,
+                        l10n.localeName == 'ar'
+                            ? '\u2068${widget.upNextPrescription!}\u2069'
+                            : widget.upNextPrescription!,
                         textAlign: TextAlign.end,
                         style: AppText.titleM,
                       ),

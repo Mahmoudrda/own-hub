@@ -3498,7 +3498,6 @@
   "openOwnHubForToday": "Open Own Hub for today",
   "openOwnHubToStart": "Open Own Hub to start",
   "yourWeekShowsHere": "Your week shows here",
-  "movingKitten": "Moving kitten",
   "theKittenShowsYouAroundAndMoves": "The kitten shows you around and moves once when it appears.",
   "theKittenStaysStill": "The kitten stays still.",
   "helpImproveOwnHub": "Help improve Own Hub",
@@ -5242,5 +5241,352 @@
         "example": "90"
       }
     }
-  }
+  },
+  "scanYourMealWithTheCamera": "Scan your meal with the camera",
+  "onePhotoForCaloriesAndProtein": "One photo for calories and protein",
+  "scanWithTheCameraInstead": "Scan with the camera instead",
+  "scan": "Scan",
+  "yourCoachRepliedToYourReview": "Your coach replied to your review",
+  "yourGroupReachedANewMilestone": "Your group reached a new milestone",
+  "yourBestGotAFewLikes": "Your best got a few likes",
+  "aGentleNudgeToLogYourMeal": "A gentle nudge to log your meal",
+  "yourWeekIsWrappedUpSeeHow": "Your week is wrapped up. See how it went",
+  "yourLevelHasChanged": "Your level has changed",
+  "thereIsAnUpdateOnYourVerification": "There is an update on your verification",
+  "egyptianDishes": "Egyptian dishes",
+  "proteins": "Proteins",
+  "dairyAndCheese": "Dairy and cheese",
+  "grainsAndBreads": "Grains and breads",
+  "vegetablesAndSalads": "Vegetables and salads",
+  "fruitsAndNuts": "Fruits and nuts",
+  "snacksAndDrinks": "Snacks and drinks",
+  "foodCategories": "Food categories",
+  "fishIsDoneWhenItTurnsOpaque": "Fish is done when it turns opaque all through and flakes easily with a fork.",
+  "fromTheOwnHubKitchen": "From the Own Hub kitchen",
+  "theIngredientsAreGenericReadTheLabel": "The ingredients are generic. Read the label on each product yourself before use.",
+  "theBookGivesThisOneAsA": "The book gives this one as a list of what goes in, with no method.",
+  "reserveMySeat": "Reserve my seat",
+  "cancelMyReservation": "Cancel my reservation",
+  "yourSeatIsReserved": "Your seat is reserved",
+  "openInMaps": "Open in Maps",
+  "full": "Full",
+  "remainingOfCapacitySeatsLeft": "{remaining} of {capacity} seats left",
+  "@remainingOfCapacitySeatsLeft": {
+    "description": "How many seats are left on an event with a limit. Western digits.",
+    "placeholders": {
+      "remaining": {
+        "type": "String",
+        "example": "4"
+      },
+      "capacity": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "thisEventIsFull": "This event is full.",
+  "reservationsForThisEventAreClosed": "Reservations for this event are closed.",
+  "onlyVerifiedMembersCanReserveASeat": "Only verified members can reserve a seat.",
+  "updateOwnHubToReserveASeat": "Update Own Hub to reserve a seat.",
+  "weCouldNotUpdateYourReservationCheck": "We could not update your reservation. Check your connection and try again.",
+  "streetAddressOptional": "Street address (optional)",
+  "googleMapsLinkOptional": "Google Maps link (optional)",
+  "shareThePlaceFromGoogleMapsAnd": "Share the place from Google Maps and paste the link here.",
+  "theVenuesNameLikeZamalekLadiesGym": "The venue's name, like Zamalek ladies gym.",
+  "seatsMembersCanReserveOptional": "Seats members can reserve (optional)",
+  "reservingWorksOnlyWhenThisIsSet": "Reserving works only when this is set.",
+  "eventPictures": "Event pictures",
+  "eventVideos": "Event videos",
+  "noVideosInTheMediaLibraryYet": "No videos in the media library yet.",
+  "useALinkFromGoogleMaps": "Use a link from Google Maps.",
+  "checkThisFileName": "Check this file name.",
+  "thatPhotoIsTooDarkTryAgain": "That photo is too dark. Try again with more light.",
+  "helpOtherWomenLogThisDish": "Help other women log this dish",
+  "recommendedForYou": "Recommended for you",
+  "buildMyOwnWorkout": "Build my own workout",
+  "seeAllPrograms": "See all programs",
+  "videoAvailable": "Video available",
+  "formCues": "Form cues",
+  "chooseYourProgram": "Choose your program",
+  "atALadiesOnlyGym": "At a ladies-only gym",
+  "atHomeAndTheGym": "At home and the gym",
+  "minutesMinASession": "{minutes} min a session",
+  "@minutesMinASession": {
+    "description": "A chip on a programme card: how long each session lasts.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "switchPlanOrPickAnySession": "Switch plan or pick any session",
+  "saveAsMyWorkout": "Save as my workout",
+  "myWorkouts": "My workouts",
+  "myWorkout": "My workout",
+  "addSelectedN": "Add selected ({n})",
+  "@addSelectedN": {
+    "description": "The button that adds the moves she ticked to her workout.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "removedName": "Removed {name}",
+  "@removedName": {
+    "description": "The undo bar after she takes a move out of today's workout.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Glute bridge"
+      }
+    }
+  },
+  "deletedName": "Deleted {name}",
+  "@deletedName": {
+    "description": "The undo bar after she deletes one of her saved workouts.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "My workout"
+      }
+    }
+  },
+  "editThisMove": "Edit this move",
+  "moveEarlier": "Move earlier",
+  "moveLater": "Move later",
+  "workoutName": "Workout name",
+  "startNow": "Start now",
+  "deleteThisWorkout": "Delete this workout",
+  "addAtLeastOneMove": "Add at least one move",
+  "savedToYourWorkouts": "Saved to your workouts",
+  "pickYourMoves": "Pick your moves",
+  "buildYourWorkout": "Build your workout",
+  "editYourWorkout": "Edit your workout",
+  "changesHereAreForTodayOnly": "Changes here are for today only",
+  "nameYourWorkout": "Name your workout",
+  "decrease": "Decrease",
+  "increase": "Increase",
+  "addingUpYourMeal": "Adding up your meal",
+  "doesThisLookRight": "Does this look right?",
+  "yes_6deo": "Yes",
+  "log": "Log",
+  "snacks": "Snacks",
+  "nothingYet": "Nothing yet",
+  "yourBreakfastPicks": "Your breakfast picks",
+  "yourLunchPicks": "Your lunch picks",
+  "yourDinnerPicks": "Your dinner picks",
+  "yourSnackPicks": "Your snack picks",
+  "impactOnToday": "Impact on today",
+  "logMeal": "Log {meal}",
+  "@logMeal": {
+    "description": "Screen-reader name of the Log pill on a meal row in the Eat diary.",
+    "placeholders": {
+      "meal": {
+        "type": "String",
+        "example": "Lunch"
+      }
+    }
+  },
+  "percent": "{percent}%",
+  "@percent": {
+    "description": "A share of a daily target, as a whole-number percentage.",
+    "placeholders": {
+      "percent": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "percentOfYourTargetToday": "{percent}% of your target today",
+  "@percentOfYourTargetToday": {
+    "description": "Screen-reader reading of an Impact on today ring, after the nutrient name.",
+    "placeholders": {
+      "percent": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "bodyweight": "Bodyweight",
+  "decreaseLabel": "Decrease {label}",
+  "@decreaseLabel": {
+    "description": "Tooltip of a minus button on a stepper; label names what it changes, such as Sets.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Sets"
+      }
+    }
+  },
+  "increaseLabel": "Increase {label}",
+  "@increaseLabel": {
+    "description": "Tooltip of a plus button on a stepper; label names what it changes, such as Sets.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Sets"
+      }
+    }
+  },
+  "noneOfTheseMovesSuitYouRight": "None of these moves suit you right now, so this workout was not started.",
+  "weLeftOutMovesThatDoNot": "We left out moves that do not suit you right now.",
+  "leaveWithoutSaving": "Leave without saving?",
+  "yourChangesToThisWorkoutWillBe": "Your changes to this workout will be lost.",
+  "keepEditing": "Keep editing",
+  "discardChanges": "Discard changes",
+  "nSeatsAreAlreadyReservedSoThe": "{n} seats are already reserved, so the limit cannot be lower than that.",
+  "@nSeatsAreAlreadyReservedSoThe": {
+    "description": "Z18 capacity error when the owner sets a limit under the seats already reserved.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "thatPhotoLooksBlankCheckTheLens": "That photo looks blank. Check the lens and try again.",
+  "friendlyNudges": "Friendly nudges",
+  "aShortFriendlyNoteAtMostOnce": "A short, friendly note at most once a day, never at night.",
+  "atMostOneADayAndNever": "At most one a day, and never at night.",
+  "nothingMatchesYetTryTakingOneFilter": "Nothing matches yet. Try taking one filter off.",
+  "takeADeepBreath": "Take a deep breath",
+  "breatheIn": "Breathe in",
+  "breatheOut": "Breathe out",
+  "drawATickToPromiseYourself": "Draw a tick to promise yourself",
+  "iPromise": "I promise",
+  "drawItInTheBoxDownThen": "Draw it in the box: down, then up and to the right",
+  "drawingBoxForYourTick": "Drawing box for your tick",
+  "freshWeekAheadPickADayOr": "Fresh week ahead. Pick a day or two that suit you, only if you feel like it.",
+  "aNewWeekIsComingHaveA": "A new week is coming. Have a calm look at what could fit your days.",
+  "aNewWeekStartsTomorrowPlanIt": "A new week starts tomorrow. Plan it at your pace, or leave it for later.",
+  "yourNextWeekIsWideOpenPick": "Your next week is wide open. Pick a day that suits you, no rush.",
+  "tryOnceMoreOrTapIPromise": "Try once more, or tap I promise",
+  "countPluralOneShow1ResultOther": "{count, plural, one{Show 1 result} other{Show {count} results}}",
+  "@countPluralOneShow1ResultOther": {
+    "description": "The apply button of the Explore filters. A plural message because Arabic says نتيجة واحدة, نتيجتين, 3 نتايج and 11 نتيجة. The figure is how many workouts and moves match what she has picked.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "countPluralOneShow1MoveOther": "{count, plural, one{Show 1 move} other{Show {count} moves}}",
+  "@countPluralOneShow1MoveOther": {
+    "description": "The apply button of the move filters. A plural message because Arabic says حركة واحدة, حركتين, 3 حركات and 11 حركة. The figure is how many moves match what she has picked.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "youCanKeepUpToMaxWorkouts": "You can keep up to {max} workouts. Delete one to save a new one.",
+  "@youCanKeepUpToMaxWorkouts": {
+    "description": "Shown when she tries to save past the cap on her own workouts. max is the real cap, in Western digits.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "chooseAtMostPicturesPicturesAndClips": "Choose at most {pictures} pictures and {clips} videos.",
+  "@chooseAtMostPicturesPicturesAndClips": {
+    "description": "Z18 file-count error. pictures and clips are the real limits of an event, in Western digits.",
+    "placeholders": {
+      "pictures": {
+        "type": "String",
+        "example": "6"
+      },
+      "clips": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "inRahmasWordsAsWrittenInHer": "In Rahma's words, as written in her book",
+  "readToTheEndToAgree": "Read to the end to agree.",
+  "january": "January",
+  "february": "February",
+  "march": "March",
+  "april": "April",
+  "may": "May",
+  "july": "July",
+  "august": "August",
+  "october": "October",
+  "november": "November",
+  "december": "December",
+  "monthYear": "{month} {year}",
+  "@monthYear": {
+    "description": "Month and year title, e.g. October 2026.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "October"
+      },
+      "year": {
+        "type": "String",
+        "example": "2026"
+      }
+    }
+  },
+  "dayMonthYear": "{day} {month} {year}",
+  "@dayMonthYear": {
+    "description": "A calendar date, e.g. 12 October 2026.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "12"
+      },
+      "month": {
+        "type": "String",
+        "example": "October"
+      },
+      "year": {
+        "type": "String",
+        "example": "2026"
+      }
+    }
+  },
+  "minutesMinYourProgram": "{minutes} min · your program",
+  "@minutesMinYourProgram": {
+    "description": "Length of the session in her programme.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "fullBodyStrengthMinutesMin": "Full-body strength, {minutes} min",
+  "@fullBodyStrengthMinutesMin": {
+    "description": "Planned session title with its length.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "onceADayQuiet10pmTo8am": "Once a day, quiet 10pm to 8am",
+  "onlyTheDishWhatsInItAnd": "Only the dish, what's in it and its numbers are shared, never your photo or your name.",
+  "yourMealsWorkoutsWeightPhotosAndPhone_z6z34": "Your meals, workouts, weight, photos and phone number are never visible to another member, except a dish you choose to share, without your name. These settings are only about what you choose to show.",
+  "weKeepAFingerprintOfThePhoto": "We keep a fingerprint of the photo and the foods found for 30 days, to answer the same photo again. Nothing in it identifies you.",
+  "goodMorningLookingForABreakfastIdea": "Good morning. Looking for a breakfast idea? There are quick ones in the recipes.",
+  "morningHadBreakfastYetLogItIn": "Morning. Had breakfast yet? Log it in a tap whenever you are ready.",
+  "teaFirstOrBreakfastAFewEasy": "Tea first, or breakfast? A few easy morning ideas are waiting in the recipes.",
+  "breakfastOnYourPlateOnePhotoOr": "Breakfast on your plate? One photo or one tap and it is logged.",
+  "busyDayTenQuietMinutesOnYour": "Busy day? Ten quiet minutes on your mat still count for your week.",
+  "notFeelingAFullSessionOneMove": "Not feeling a full session? One move on the mat is plenty today.",
+  "aShortMoveAtHomeNoKit": "A short move at home, no kit, no rush. Only if it suits your afternoon.",
+  "tenMinutesInYourLivingRoomIs": "Ten minutes in your living room is a real workout. Pick one move and begin.",
+  "wonderingWhatIsForDinnerALight": "Wondering what is for dinner? A light recipe takes about ten minutes.",
+  "hadDinnerAddItToYourDay": "Had dinner? Add it to your day in a tap, or with one photo.",
+  "somethingWarmTonightHaveALookAt": "Something warm tonight? Have a look at the dinner ideas in the recipes.",
+  "eatingDinnerSoonLogItInOne": "Eating dinner soon? Log it in one tap and it joins your day.",
+  "openEventLink": "Open event link"
 }

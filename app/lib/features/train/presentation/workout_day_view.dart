@@ -13,6 +13,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../domain/clock/app_clock.dart';
+import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
@@ -21,11 +22,18 @@ import '../../../domain/format/number_label.dart';
 import '../../../domain/training/prescribed_set.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
+import '../../../ui/app_sheet.dart';
+import '../../../ui/app_undo_snackbar.dart';
 import '../../onboarding/domain/intake.dart' show LifeStage;
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
+import '../domain/custom_workout.dart';
 import '../domain/train_repository.dart';
+import 'authored_workout.dart';
+import 'move_editor.dart';
+import 'swap_move_view.dart' show SwapChoices;
 import 'train_widgets.dart';
+import 'exercise_labels.dart';
 
 /// [move] with its name and prescription read in the language on screen now.
 ///
@@ -118,7 +126,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
   final moves = [
     PlannedMove(
       exerciseId: 'donkey_kick',
-      name: l10n.donkeyKick,
+      name: englishMoveNames.donkeyKick,
       prescriptionLabel: l10n.n312Bodyweight,
       quiet: true,
       floorOnly: true,
@@ -130,7 +138,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
     ),
     PlannedMove(
       exerciseId: 'straight_leg_glute_kickback',
-      name: l10n.straightLegGluteKickback,
+      name: englishMoveNames.straightLegGluteKickback,
       prescriptionLabel: l10n.n310EachSide,
       // Quiet: a step back has no jump and no impact. Flagged rather than
       // left at the default, because R11's "quiet" filter reads these and a
@@ -156,7 +164,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
     ),
     PlannedMove(
       exerciseId: 'forearm_plank',
-      name: l10n.forearmPlank,
+      name: englishMoveNames.forearmPlank,
       prescriptionLabel: l10n.n330Seconds,
       quiet: true,
       floorOnly: true,
@@ -168,7 +176,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
     ),
     PlannedMove(
       exerciseId: 'heel_touches',
-      name: l10n.heelTouches,
+      name: englishMoveNames.heelTouches,
       prescriptionLabel: l10n.n38EachSide,
       quiet: true,
       floorOnly: true,
@@ -251,9 +259,48 @@ class WorkoutDayView extends StatefulWidget {
     this.onNotToday,
     this.challengeExerciseId,
     this.challengeNote,
+    this.onMovesChanged,
+    this.onPickMoves,
+    this.onSaveAsMine,
+    this.alternativesFor,
+    this.canSwapMove,
+    this.needsEquipmentFor,
+    this.editedToday = false,
+    this.undoBus,
   });
 
   final VoidCallback? onBack;
+
+  /// Called with the moves as they stand after every edit. Giving it is what
+  /// turns the edit controls on: add, remove, swap and the inline sets, reps
+  /// (or seconds) and target weight. The edits are today's session only; the
+  /// caller keeps them until she starts, and nothing here touches the plan.
+  final ValueChanged<List<PlannedMove>>? onMovesChanged;
+
+  /// Opens the catalogue and answers the moves she added, already prescribed.
+  final Future<List<PlannedMove>?> Function()? onPickMoves;
+
+  /// "Save as my workout": keeps today's moves as a workout of her own.
+  final ValueChanged<List<PlannedMove>>? onSaveAsMine;
+
+  /// What a move can be swapped for. Defaults to the repository's answer.
+  final Future<List<MoveAlternative>> Function(String exerciseId)?
+  alternativesFor;
+
+  /// Where a removal or a swap offers its five seconds of Undo.
+  final LogCommandBus? undoBus;
+
+  /// Whether a move has anything to swap to. Null offers Swap on every move;
+  /// a move with no alternatives otherwise opens an empty sheet.
+  final bool Function(String exerciseId)? canSwapMove;
+
+  /// Whether a move needs kit, so a swapped-in move is drawn with a weight row
+  /// only when it does. Null keeps what the replaced move had.
+  final bool Function(String exerciseId)? needsEquipmentFor;
+
+  /// Today's session already carries edits of hers, made earlier in this visit
+  /// or before it, so the note that they are for today only is shown.
+  final bool editedToday;
 
   /// What she said the programme has to train around (`O03`/`O04`).
   ///
@@ -299,6 +346,143 @@ class WorkoutDayView extends StatefulWidget {
 class _WorkoutDayViewState extends State<WorkoutDayView> {
   TrainRepository? _fallbackRepository;
 
+  /// The moves as edited here, or null until she edits. When a caller keeps the
+  /// edits it hands them back in [WorkoutDayView.day], and this lets go.
+  List<PlannedMove>? _moves;
+
+  /// The move whose editor is open.
+  int? _open;
+
+  bool _changed = false;
+
+  final LogCommandBus _ownBus = LogCommandBus();
+
+  LogCommandBus get _bus => widget.undoBus ?? _ownBus;
+
+  bool get _editable => widget.onMovesChanged != null;
+
+  @override
+  void didUpdateWidget(WorkoutDayView old) {
+    super.didUpdateWidget(old);
+    if (_editable) _moves = null;
+  }
+
+  List<PlannedMove> _list(BuildContext context) =>
+      _moves ?? (widget.day ?? sampleWorkoutDay(AppL10n.of(context))).moves;
+
+  void _commit(List<PlannedMove> next) {
+    setState(() {
+      _moves = next;
+      _changed = true;
+    });
+    widget.onMovesChanged?.call(next);
+  }
+
+  String get _language => Localizations.localeOf(context).languageCode;
+
+  void _editMove(int i, CustomMove next) {
+    final list = [..._list(context)];
+    list[i] = plannedMoveFromCustom(
+      AppL10n.of(context),
+      _language,
+      next,
+      like: list[i],
+    );
+    _commit(list);
+  }
+
+  void _offerUndo(String describe, VoidCallback onUndo) {
+    final l10n = AppL10n.of(context);
+    final handle = _bus.submit(
+      UndoableLog(describe: describe, commit: () async {}),
+    );
+    showUndoSnackBar(
+      context,
+      handle: handle,
+      undoLabel: l10n.undo,
+      onUndo: () {
+        if (mounted && (ModalRoute.of(context)?.isCurrent ?? true)) onUndo();
+      },
+    );
+  }
+
+  void _removeMove(int i) {
+    final list = [..._list(context)];
+    if (list.length <= 1) return;
+    final removed = list.removeAt(i);
+    setState(() => _open = null);
+    _commit(list);
+    _offerUndo(AppL10n.of(context).removedName(removed.name), () {
+      final back = [..._list(context)];
+      back.insert(i.clamp(0, back.length), removed);
+      _commit(back);
+    });
+  }
+
+  Future<void> _swapMove(int i) async {
+    final l10n = AppL10n.of(context);
+    final old = _list(context)[i];
+    final finder =
+        widget.alternativesFor ??
+        widget.repository?.alternativesFor ??
+        (String _) async => const <MoveAlternative>[];
+    final found = await finder(old.exerciseId);
+    if (!mounted) return;
+    await showAppSheet<void>(
+      context: context,
+      children: [
+        Text(l10n.swapThisMove, style: AppText.titleL),
+        SwapChoices(
+          candidates: found,
+          onClose: () => Navigator.of(context).pop(),
+          onConfirm: (alternative) {
+            Navigator.of(context).pop();
+            final list = [..._list(context)];
+            if (i >= list.length || list[i].exerciseId != old.exerciseId) {
+              return;
+            }
+            list[i] = PlannedMove(
+              exerciseId: alternative.exerciseId,
+              name: alternative.name,
+              prescriptionLabel: old.prescriptionLabel,
+              quiet: old.quiet,
+              floorOnly: old.floorOnly,
+              needsEquipment:
+                  widget.needsEquipmentFor?.call(alternative.exerciseId) ??
+                  old.needsEquipment,
+              sets: [
+                for (final set in old.sets)
+                  PrescribedSet(
+                    exerciseId: alternative.exerciseId,
+                    order: set.order,
+                    weightKg: set.weightKg,
+                    reps: set.reps,
+                    holdSeconds: set.holdSeconds,
+                  ),
+              ],
+            );
+            _commit(list);
+            _offerUndo(l10n.swappedToNameForToday(alternative.name), () {
+              final back = [..._list(context)];
+              if (i < back.length) back[i] = old;
+              _commit(back);
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Future<void> _addMoves() async {
+    final pick = widget.onPickMoves;
+    if (pick == null) return;
+    final added = await pick();
+    if (!mounted || added == null || added.isEmpty) return;
+    final list = [..._list(context), ...added].take(kMaxCustomMoves).toList();
+    setState(() => _open = list.length - 1);
+    _commit(list);
+  }
+
   /// Starts [day]: through the caller when there is one, here only when this
   /// screen is shown on its own.
   ///
@@ -309,19 +493,41 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
   Future<void> _start(WorkoutDay day) async {
     final onStart = widget.onStart;
     if (onStart != null) {
+      // An undo offered for an edit must not outlive the screen it edits: once
+      // she starts, the edits are the session.
+      ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
       onStart();
       return;
     }
     final repository =
         widget.repository ??
         (_fallbackRepository ??= InMemoryTrainRepository());
-    await repository.startSession(day);
+    final moves = _moves;
+    await repository.startSession(
+      moves == null
+          ? day
+          : WorkoutDay(
+              id: day.id,
+              title: day.title,
+              summary: day.summary,
+              constraints: day.constraints,
+              moves: moves,
+              planVersion: day.planVersion,
+            ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final day = widget.day ?? sampleWorkoutDay(l10n);
+    final moves = _moves ?? day.moves;
+    final summary = _moves == null
+        ? day.summary
+        : l10n.minutesMinutesMovesMoves(
+            countLabel(estimateMinutes(moves)),
+            countLabel(moves.length),
+          );
     final canOpen = widget.canOpenMove ?? (_) => true;
     final caution = switch ((widget.lifeStage, widget.writtenForHerStage)) {
       (LifeStage.pregnant, true) => l10n.writtenForPregnancyCheckWithYourDoctor,
@@ -355,7 +561,7 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
               ? l10n.startEverythingsReady
               : l10n.iHaveMyDoctorsOkStart,
           icon: Icons.play_arrow,
-          onPressed: () => _start(day),
+          onPressed: moves.isEmpty ? null : () => _start(day),
         ),
         if (caution != null)
           AppButton(
@@ -389,7 +595,7 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
               level: HandLevel.crafted,
               color: AppColors.primaryDim,
               gap: 3,
-              child: Text(day.summary, style: AppText.titleL),
+              child: Text(summary, style: AppText.titleL),
             ),
             const SizedBox(height: 4),
             Text(
@@ -410,39 +616,119 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
             blinkOnRevisit: true,
           ),
         ),
-        // One block, so a different day (or a swapped move) eases in rather
-        // than the list jumping. Keyed by what is in it.
+        // One block, so a different day eases in rather than the list jumping.
+        // Keyed by which moves are in it, not by their labels: an edit changes
+        // a label on every tap and must not replay the swap.
         HandSwap(
           child: Column(
-            key: ValueKey(
-              day.moves.map((m) => '${m.name}|${m.prescriptionLabel}').join(),
-            ),
+            key: ValueKey(moves.map((m) => m.exerciseId).join('|')),
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             spacing: kStackGap,
             children: [
-              for (var i = 0; i < day.moves.length; i++)
-                MoveRow(
-                  name: day.moves[i].name,
-                  detail: day.moves[i].prescriptionLabel,
-                  // The first move is the one she is on. The design marked the
-                  // second, which is a claim that she is already one move into a
-                  // session she has not started: R03 is the screen with "Start,
-                  // everything's ready" on it.
-                  current: i == 0,
-                  // This week's challenge, on the move it is about (D38).
-                  note: day.moves[i].exerciseId == widget.challengeExerciseId
-                      ? widget.challengeNote
-                      : null,
-                  // Not tappable while the move videos are switched off.
-                  onTap: AppRouter.screenIsOn('R04') && canOpen(day.moves[i])
-                      ? () => widget.onOpenMove?.call(day.moves[i])
-                      : null,
+              for (var i = 0; i < moves.length; i++)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 6,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: MoveRow(
+                            name: moves[i].name,
+                            detail: moves[i].prescriptionLabel,
+                            // The first move is the one she is on. The design
+                            // marked the second, which is a claim that she is
+                            // already one move into a session she has not
+                            // started: R03 is the screen with "Start,
+                            // everything's ready" on it.
+                            current: i == 0,
+                            // This week's challenge, on the move it is about
+                            // (D38).
+                            note:
+                                moves[i].exerciseId ==
+                                    widget.challengeExerciseId
+                                ? widget.challengeNote
+                                : null,
+                            hasClip:
+                                widget.canOpenMove != null &&
+                                AppRouter.screenIsOn('R04') &&
+                                canOpen(moves[i]),
+                            // Not tappable while the move videos are switched
+                            // off.
+                            onTap:
+                                AppRouter.screenIsOn('R04') && canOpen(moves[i])
+                                ? () => widget.onOpenMove?.call(moves[i])
+                                : null,
+                          ),
+                        ),
+                        if (_editable)
+                          IconButton(
+                            key: ValueKey('r03-edit-$i'),
+                            tooltip: l10n.editThisMove,
+                            onPressed: () =>
+                                setState(() => _open = _open == i ? null : i),
+                            icon: Icon(
+                              _open == i ? Icons.expand_less : Icons.tune,
+                              color: AppColors.primaryDim,
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (_editable && _open == i)
+                      MoveEditor(
+                        key: ValueKey('r03-editor-$i'),
+                        move: customMoveOf(moves[i]),
+                        showWeight:
+                            moves[i].needsEquipment ||
+                            moves[i].sets.any((s) => s.weightKg != null),
+                        onChanged: (next) => _editMove(i, next),
+                        onSwap:
+                            widget.canSwapMove?.call(moves[i].exerciseId) ==
+                                false
+                            ? null
+                            : () => _swapMove(i),
+                        onRemove: moves.length > 1
+                            ? () => _removeMove(i)
+                            : null,
+                      ),
+                  ],
                 ),
             ],
           ),
         ),
-        if (AppRouter.screenIsOn('R04') && day.moves.any(canOpen))
+        if (_editable) ...[
+          AppButton(
+            l10n.addAMove,
+            key: const ValueKey('r03-add'),
+            icon: Icons.add,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed:
+                widget.onPickMoves == null || moves.length >= kMaxCustomMoves
+                ? null
+                : _addMoves,
+          ),
+          if (widget.onSaveAsMine != null)
+            AppButton(
+              l10n.saveAsMyWorkout,
+              key: const ValueKey('r03-save-mine'),
+              variant: AppButtonVariant.text,
+              height: 44,
+              fontSize: 15,
+              onPressed: moves.isEmpty
+                  ? null
+                  : () => widget.onSaveAsMine?.call(moves),
+            ),
+          if (_changed || widget.editedToday)
+            Text(
+              l10n.changesHereAreForTodayOnly,
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+        ],
+        if (AppRouter.screenIsOn('R04') && moves.any(canOpen))
           Text(
             l10n.tapAnyMoveToWatchItOr,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),

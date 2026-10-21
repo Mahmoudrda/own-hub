@@ -8515,9 +8515,6 @@ class AppL10nAr extends AppL10n {
   String get yourWeekShowsHere => 'أسبوعك هيظهر هنا';
 
   @override
-  String get movingKitten => 'قطة بتتحرك';
-
-  @override
   String get theKittenShowsYouAroundAndMoves =>
       'القطة بتعرّفك على التطبيق وبتتحرك مرة واحدة لما تظهر.';
 
@@ -11047,4 +11044,571 @@ class AppL10nAr extends AppL10n {
   String betweenMinAndMaxYears(String min, String max) {
     return 'من $min لـ $max سنة';
   }
+
+  @override
+  String get scanYourMealWithTheCamera => 'صوّري وجبتك بالكاميرا';
+
+  @override
+  String get onePhotoForCaloriesAndProtein =>
+      'صورة واحدة تحسبلك السعرات والبروتين';
+
+  @override
+  String get scanWithTheCameraInstead => 'صوّري الوجبة بالكاميرا';
+
+  @override
+  String get scan => 'صوّري';
+
+  @override
+  String get yourCoachRepliedToYourReview => 'كوتشك ردّت على مراجعتك';
+
+  @override
+  String get yourGroupReachedANewMilestone => 'جروبك وصل لإنجاز جديد';
+
+  @override
+  String get yourBestGotAFewLikes => 'أفضل أداء ليكي جاله لايكات';
+
+  @override
+  String get aGentleNudgeToLogYourMeal => 'تذكير لطيف تسجّلي وجبتك';
+
+  @override
+  String get yourWeekIsWrappedUpSeeHow => 'أسبوعك خلص. شوفي عدّى إزاي';
+
+  @override
+  String get yourLevelHasChanged => 'مستواكي اتغيّر';
+
+  @override
+  String get thereIsAnUpdateOnYourVerification => 'فيه جديد في التحقق من حسابك';
+
+  @override
+  String get egyptianDishes => 'أكلات مصرية';
+
+  @override
+  String get proteins => 'بروتينات';
+
+  @override
+  String get dairyAndCheese => 'ألبان وجبن';
+
+  @override
+  String get grainsAndBreads => 'نشويات وعيش';
+
+  @override
+  String get vegetablesAndSalads => 'خضار وسلطات';
+
+  @override
+  String get fruitsAndNuts => 'فاكهة ومكسرات';
+
+  @override
+  String get snacksAndDrinks => 'سناكس ومشروبات';
+
+  @override
+  String get foodCategories => 'أنواع الأكل';
+
+  @override
+  String get fishIsDoneWhenItTurnsOpaque =>
+      'السمك بيستوي لما يبقى معتم كله ويتفتفت بسهولة بالشوكة.';
+
+  @override
+  String get fromTheOwnHubKitchen => 'من مطبخ Own Hub';
+
+  @override
+  String get theIngredientsAreGenericReadTheLabel =>
+      'المكوّنات دي عامة. راجعي الملصق اللي على كل منتج بنفسك قبل ما تستخدميه.';
+
+  @override
+  String get theBookGivesThisOneAsA =>
+      'الكتاب بيدّي الأكلة دي كقايمة بالمكوّنات من غير طريقة.';
+
+  @override
+  String get reserveMySeat => 'احجزي مكانك';
+
+  @override
+  String get cancelMyReservation => 'إلغاء الحجز';
+
+  @override
+  String get yourSeatIsReserved => 'مكانك محجوز';
+
+  @override
+  String get openInMaps => 'افتحي على الخريطة';
+
+  @override
+  String get full => 'العدد اكتمل';
+
+  @override
+  String remainingOfCapacitySeatsLeft(String remaining, String capacity) {
+    return 'فاضل $remaining مكان من $capacity';
+  }
+
+  @override
+  String get thisEventIsFull => 'العدد اكتمل في الفعالية دي.';
+
+  @override
+  String get reservationsForThisEventAreClosed => 'الحجز للفعالية دي اتقفل.';
+
+  @override
+  String get onlyVerifiedMembersCanReserveASeat =>
+      'الحجز متاح للعضوات اللي اتأكد حسابهم بس.';
+
+  @override
+  String get updateOwnHubToReserveASeat => 'حدّثي أون هاب عشان تحجزي مكانك.';
+
+  @override
+  String get weCouldNotUpdateYourReservationCheck =>
+      'معرفناش نحدّث حجزك. اتأكدي من الإنترنت وجرّبي تاني.';
+
+  @override
+  String get streetAddressOptional => 'العنوان بالتفصيل (اختياري)';
+
+  @override
+  String get googleMapsLinkOptional => 'لينك خرائط جوجل (اختياري)';
+
+  @override
+  String get shareThePlaceFromGoogleMapsAnd =>
+      'شاركي المكان من خرائط جوجل والصقي اللينك هنا.';
+
+  @override
+  String get theVenuesNameLikeZamalekLadiesGym =>
+      'اسم المكان، زي جيم الستات في الزمالك.';
+
+  @override
+  String get seatsMembersCanReserveOptional =>
+      'عدد الأماكن اللي تتحجز (اختياري)';
+
+  @override
+  String get reservingWorksOnlyWhenThisIsSet =>
+      'الحجز بيشتغل بس لما تحدّدي العدد ده.';
+
+  @override
+  String get eventPictures => 'صور الفعالية';
+
+  @override
+  String get eventVideos => 'فيديوهات الفعالية';
+
+  @override
+  String get noVideosInTheMediaLibraryYet =>
+      'مفيش فيديوهات في مكتبة الوسائط لسه.';
+
+  @override
+  String get useALinkFromGoogleMaps => 'استخدمي لينك من خرائط جوجل.';
+
+  @override
+  String get checkThisFileName => 'راجعي اسم الملف ده.';
+
+  @override
+  String get thatPhotoIsTooDarkTryAgain =>
+      'الصورة مظلمة قوي. جربي تاني في إضاءة أحسن.';
+
+  @override
+  String get helpOtherWomenLogThisDish => 'ساعدي غيرك تسجل الأكلة دي';
+
+  @override
+  String get recommendedForYou => 'الأنسب لاختياراتك';
+
+  @override
+  String get buildMyOwnWorkout => 'اعملي تمرينتك بنفسك';
+
+  @override
+  String get seeAllPrograms => 'شوفي كل البرامج';
+
+  @override
+  String get videoAvailable => 'الفيديو متاح';
+
+  @override
+  String get formCues => 'نقط الأداء الصح';
+
+  @override
+  String get chooseYourProgram => 'اختاري برنامجك';
+
+  @override
+  String get atALadiesOnlyGym => 'في جيم للستات بس';
+
+  @override
+  String get atHomeAndTheGym => 'في البيت والجيم';
+
+  @override
+  String minutesMinASession(String minutes) {
+    return '$minutes دقيقة في التمرين';
+  }
+
+  @override
+  String get switchPlanOrPickAnySession => 'غيّري النظام أو اختاري أي تمرينة';
+
+  @override
+  String get saveAsMyWorkout => 'احفظيها كتمرينة ليا';
+
+  @override
+  String get myWorkouts => 'تمريناتي';
+
+  @override
+  String get myWorkout => 'تمرينتي';
+
+  @override
+  String addSelectedN(String n) {
+    return 'ضيفي المختار ($n)';
+  }
+
+  @override
+  String removedName(String name) {
+    return 'شيلنا $name';
+  }
+
+  @override
+  String deletedName(String name) {
+    return 'مسحنا $name';
+  }
+
+  @override
+  String get editThisMove => 'عدّلي الحركة دي';
+
+  @override
+  String get moveEarlier => 'قدّميها';
+
+  @override
+  String get moveLater => 'أخّريها';
+
+  @override
+  String get workoutName => 'اسم التمرينة';
+
+  @override
+  String get startNow => 'ابدئي دلوقتي';
+
+  @override
+  String get deleteThisWorkout => 'امسحي التمرينة دي';
+
+  @override
+  String get addAtLeastOneMove => 'ضيفي حركة واحدة على الأقل';
+
+  @override
+  String get savedToYourWorkouts => 'اتحفظت في تمريناتك';
+
+  @override
+  String get pickYourMoves => 'اختاري حركاتك';
+
+  @override
+  String get buildYourWorkout => 'اعملي تمرينتك';
+
+  @override
+  String get editYourWorkout => 'عدّلي تمرينتك';
+
+  @override
+  String get changesHereAreForTodayOnly => 'التعديلات هنا لليوم ده بس';
+
+  @override
+  String get nameYourWorkout => 'سمّي تمرينتك';
+
+  @override
+  String get decrease => 'قلّلي';
+
+  @override
+  String get increase => 'زوّدي';
+
+  @override
+  String get addingUpYourMeal => 'بنجمّع وجبتك';
+
+  @override
+  String get doesThisLookRight => 'الوجبة دي مظبوطة؟';
+
+  @override
+  String get yes_6deo => 'أيوه';
+
+  @override
+  String get log => 'سجّلي';
+
+  @override
+  String get snacks => 'السناكس';
+
+  @override
+  String get nothingYet => 'لسه مفيش حاجة';
+
+  @override
+  String get yourBreakfastPicks => 'اختياراتك للفطار';
+
+  @override
+  String get yourLunchPicks => 'اختياراتك للغدا';
+
+  @override
+  String get yourDinnerPicks => 'اختياراتك للعشا';
+
+  @override
+  String get yourSnackPicks => 'اختياراتك للسناك';
+
+  @override
+  String get impactOnToday => 'تأثيرها على يومك';
+
+  @override
+  String logMeal(String meal) {
+    return 'سجّلي $meal';
+  }
+
+  @override
+  String percent(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String percentOfYourTargetToday(String percent) {
+    return '$percent% من هدفك النهارده';
+  }
+
+  @override
+  String get bodyweight => 'وزن الجسم';
+
+  @override
+  String decreaseLabel(String label) {
+    return 'قلّلي $label';
+  }
+
+  @override
+  String increaseLabel(String label) {
+    return 'زوّدي $label';
+  }
+
+  @override
+  String get noneOfTheseMovesSuitYouRight =>
+      'مفيش حركة من دول مناسبة ليكي دلوقتي، فمبدأناش التمرين.';
+
+  @override
+  String get weLeftOutMovesThatDoNot =>
+      'شلنا الحركات اللي مش مناسبة ليكي دلوقتي.';
+
+  @override
+  String get leaveWithoutSaving => 'هتخرجي من غير ما تحفظي؟';
+
+  @override
+  String get yourChangesToThisWorkoutWillBe =>
+      'التعديلات اللي عملتيها على التمرين هتضيع.';
+
+  @override
+  String get keepEditing => 'كملي تعديل';
+
+  @override
+  String get discardChanges => 'امسحي التعديلات';
+
+  @override
+  String nSeatsAreAlreadyReservedSoThe(String n) {
+    return '$n مقعد محجوزين بالفعل، فالحد الأقصى مينفعش يبقى أقل من كده.';
+  }
+
+  @override
+  String get thatPhotoLooksBlankCheckTheLens =>
+      'الصورة باينة فاضية. اتأكدي من العدسة وجربي تاني.';
+
+  @override
+  String get friendlyNudges => 'رسايل لطيفة';
+
+  @override
+  String get aShortFriendlyNoteAtMostOnce =>
+      'رسالة قصيرة ولطيفة مرة في اليوم على الأكتر، ومش بالليل.';
+
+  @override
+  String get atMostOneADayAndNever =>
+      'رسالة واحدة في اليوم على الأكتر، ومش بالليل.';
+
+  @override
+  String get nothingMatchesYetTryTakingOneFilter =>
+      'مفيش حاجة مطابقة لسه. جرّبي تشيلي فلتر.';
+
+  @override
+  String get takeADeepBreath => 'خدي نفس عميق';
+
+  @override
+  String get breatheIn => 'خدي نفس';
+
+  @override
+  String get breatheOut => 'طلّعي النفس';
+
+  @override
+  String get drawATickToPromiseYourself => 'ارسمي علامة صح عشان توعدي نفسك';
+
+  @override
+  String get iPromise => 'أوعد نفسي';
+
+  @override
+  String get drawItInTheBoxDownThen =>
+      'ارسميها في المربع: لتحت وبعدين لفوق ناحية اليمين';
+
+  @override
+  String get drawingBoxForYourTick => 'مربع رسم علامة الصح';
+
+  @override
+  String get freshWeekAheadPickADayOr =>
+      'أسبوع جديد قدامك. اختاري يوم أو اتنين يريّحوكي، لو مزاجك يسمح.';
+
+  @override
+  String get aNewWeekIsComingHaveA =>
+      'أسبوع جديد جاي. بصّي براحتك على اللي ممكن يناسب أيامك.';
+
+  @override
+  String get aNewWeekStartsTomorrowPlanIt =>
+      'أسبوع جديد بيبدأ بكرة. خططيه على مهلك، أو سيبيه لوقت تاني.';
+
+  @override
+  String get yourNextWeekIsWideOpenPick =>
+      'أسبوعك الجاي فاضي ومفتوح. اختاري يوم يناسبك من غير استعجال.';
+
+  @override
+  String get tryOnceMoreOrTapIPromise => 'جرّبي مرة تانية، أو دوسي «أوعد نفسي»';
+
+  @override
+  String countPluralOneShow1ResultOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'اعرضي $count نتيجة',
+      many: 'اعرضي $count نتيجة',
+      few: 'اعرضي $count نتايج',
+      two: 'اعرضي نتيجتين',
+      one: 'اعرضي نتيجة واحدة',
+      zero: 'اعرضي $count نتيجة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOneShow1MoveOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'اعرضي $count حركة',
+      many: 'اعرضي $count حركة',
+      few: 'اعرضي $count حركات',
+      two: 'اعرضي حركتين',
+      one: 'اعرضي حركة واحدة',
+      zero: 'اعرضي $count حركة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youCanKeepUpToMaxWorkouts(String max) {
+    return 'تقدري تحتفظي بـ $max تمرين كحد أقصى. امسحي تمرين عشان تحفظي تمرين جديد.';
+  }
+
+  @override
+  String chooseAtMostPicturesPicturesAndClips(String pictures, String clips) {
+    return 'الحد الأقصى $pictures صور و$clips فيديو.';
+  }
+
+  @override
+  String get inRahmasWordsAsWrittenInHer =>
+      'بكلام رحمة، زي ما هو مكتوب في كتابها';
+
+  @override
+  String get readToTheEndToAgree => 'اقري للآخر عشان تقدري توافقي.';
+
+  @override
+  String get january => 'يناير';
+
+  @override
+  String get february => 'فبراير';
+
+  @override
+  String get march => 'مارس';
+
+  @override
+  String get april => 'أبريل';
+
+  @override
+  String get may => 'مايو';
+
+  @override
+  String get july => 'يوليو';
+
+  @override
+  String get august => 'أغسطس';
+
+  @override
+  String get october => 'أكتوبر';
+
+  @override
+  String get november => 'نوفمبر';
+
+  @override
+  String get december => 'ديسمبر';
+
+  @override
+  String monthYear(String month, String year) {
+    return '$month $year';
+  }
+
+  @override
+  String dayMonthYear(String day, String month, String year) {
+    return '$day $month $year';
+  }
+
+  @override
+  String minutesMinYourProgram(String minutes) {
+    return '$minutes دقيقة · برنامجك';
+  }
+
+  @override
+  String fullBodyStrengthMinutesMin(String minutes) {
+    return 'قوة لكل الجسم، $minutes دقيقة';
+  }
+
+  @override
+  String get onceADayQuiet10pmTo8am =>
+      'مرة في اليوم، وهدوء من 10 بالليل لـ 8 الصبح';
+
+  @override
+  String get onlyTheDishWhatsInItAnd =>
+      'بنشارك الأكلة واللي فيها وأرقامها بس، مش صورتك ولا اسمك.';
+
+  @override
+  String get yourMealsWorkoutsWeightPhotosAndPhone_z6z34 =>
+      'وجباتك وتمارينك ووزنك وصورك ورقم موبايلك عمرها ما بتظهر لأي عضوة تانية، إلا طبق تختاري تشاركيه من غير اسمك. الإعدادات دي بس عن اللي تختاري تعرضيه.';
+
+  @override
+  String get weKeepAFingerprintOfThePhoto =>
+      'بنحتفظ ببصمة الصورة والأصناف اللي اتلقت فيها 30 يومًا، عشان نرد على نفس الصورة تاني. ومفيش فيها أي حاجة بتدلّ عليكي.';
+
+  @override
+  String get goodMorningLookingForABreakfastIdea =>
+      'صباح الخير. محتارة تفطري إيه؟ فيه أفكار سريعة في الوصفات.';
+
+  @override
+  String get morningHadBreakfastYetLogItIn =>
+      'صباح الخير. فطرتي؟ سجّليه بضغطة وقت ما تحبي.';
+
+  @override
+  String get teaFirstOrBreakfastAFewEasy =>
+      'الشاي الأول ولا الفطار؟ فيه أفكار فطار سهلة مستنياكي في الوصفات.';
+
+  @override
+  String get breakfastOnYourPlateOnePhotoOr =>
+      'الفطار قدامك؟ صورة واحدة أو ضغطة وخلاص اتسجّل.';
+
+  @override
+  String get busyDayTenQuietMinutesOnYour =>
+      'يومك زحمة؟ عشر دقايق هادية على المرتبة تفرق في أسبوعك.';
+
+  @override
+  String get notFeelingAFullSessionOneMove =>
+      'مش قادرة على تمرينة كاملة؟ حركة واحدة على المرتبة كفاية النهاردة.';
+
+  @override
+  String get aShortMoveAtHomeNoKit =>
+      'حركة خفيفة في البيت من غير أدوات ولا استعجال، لو الوقت يسمح.';
+
+  @override
+  String get tenMinutesInYourLivingRoomIs =>
+      'عشر دقايق في الصالة تمرينة حقيقية. اختاري حركة وابدأي.';
+
+  @override
+  String get wonderingWhatIsForDinnerALight =>
+      'محتارة تتعشي إيه؟ فيه وصفة عشا خفيفة بتخلص في حوالي عشر دقايق.';
+
+  @override
+  String get hadDinnerAddItToYourDay =>
+      'اتعشيتي؟ ضيفيه ليومك بضغطة أو بصورة واحدة.';
+
+  @override
+  String get somethingWarmTonightHaveALookAt =>
+      'نفسك في حاجة دافية الليلة؟ بصّي على أفكار العشا في الوصفات.';
+
+  @override
+  String get eatingDinnerSoonLogItInOne =>
+      'هتتعشي دلوقتي؟ سجّليه بضغطة وهيتضاف ليومك.';
+
+  @override
+  String get openEventLink => 'افتحي رابط الفعالية';
 }

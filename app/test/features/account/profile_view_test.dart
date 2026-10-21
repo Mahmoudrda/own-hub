@@ -316,4 +316,16 @@ void main() {
     expect(TrainingStreakState.instance.settings().enabled, isFalse);
     TrainingStreakState.instance.reset();
   });
+
+  testWidgets('the profile has no kitten-motion row', (tester) async {
+    _phone(tester);
+
+    await tester.pumpWidget(
+      _host(ProfileView(dietaryRepository: InMemoryDietaryProfileRepository())),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('kitten', findRichText: true), findsNothing);
+    expect(find.textContaining('Kitten', findRichText: true), findsNothing);
+  });
 }

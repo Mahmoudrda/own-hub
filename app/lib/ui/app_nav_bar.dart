@@ -80,6 +80,14 @@ const List<NavDestination> traineeTabs = [
   ),
 ];
 
+/// Events, in the community's slot while the community is switched off.
+const NavDestination eventsTab = NavDestination(
+  screenId: 'T09',
+  icon: Icons.event_outlined,
+  activeIcon: Icons.event,
+  label: _eventsLabel,
+);
+
 /// A coach's tabs: Today, Clients, Chats, Earnings.
 const List<NavDestination> coachTabs = [
   NavDestination(
@@ -113,6 +121,7 @@ String _homeLabel(AppL10n l) => l.home;
 String _trainLabel(AppL10n l) => l.train;
 String _communityLabel(AppL10n l) => l.community;
 String _eatLabel(AppL10n l) => l.eat;
+String _eventsLabel(AppL10n l) => l.events;
 String _todayLabel(AppL10n l) => l.today;
 String _clientsLabel(AppL10n l) => l.clients;
 String _chatsLabel(AppL10n l) => l.chats;
@@ -124,11 +133,20 @@ String _earningsLabel(AppL10n l) => l.earnings;
 /// quarter of the bar, and lands on the "not in this build" panel: a door
 /// drawn on a wall. The first release ships without the community, so this is
 /// the difference between four tabs and three.
+///
+/// While the community is dark, its slot goes to Events when Events is on, so
+/// a member's bar stays at four and the owner's events have a door of their
+/// own. With the community on, the community keeps the slot.
 List<NavDestination> tabsFor(AppRole role) {
   final all = role == AppRole.coach ? coachTabs : traineeTabs;
   return [
     for (final tab in all)
-      if (_isOn(tab)) tab,
+      if (_isOn(tab))
+        tab
+      else if (role != AppRole.coach &&
+          tab.screenId == 'M01' &&
+          AppRouter.screenIsOn(eventsTab.screenId))
+        eventsTab,
   ];
 }
 

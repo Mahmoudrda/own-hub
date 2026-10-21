@@ -1,10 +1,11 @@
-/// The 159 Egyptian dishes bundled with the app, for search that works offline.
+/// The Egyptian foods bundled with the app, for search that works offline.
 ///
-/// `assets/content/foods_eg.json` is built from `functions/nutrition` by
-/// `tool/build_food_pack.py`. Its figures are estimates from standard recipes
-/// of USDA FoodData Central foods (CC0), pending dietitian review. It carries
-/// no allergen data, so every dish here has `allergens: null`, which the guard
-/// reads as unknown.
+/// `assets/content/foods_eg.json` is built from `functions/nutrition` and
+/// `tool/food_pack_singles.json` by `tool/build_food_pack.py`. Its figures are
+/// estimates from standard recipes of USDA FoodData Central foods (CC0),
+/// pending dietitian review. Every food carries an `allergens` list derived from
+/// its standard ingredients, over-inclusive and not lab tested; the build
+/// refuses a food without one.
 library;
 
 import 'dart:convert';
@@ -19,7 +20,7 @@ class EgyptianFoodPack {
 
   static const String assetPath = 'assets/content/foods_eg.json';
 
-  /// Dishes the 8 hand-written foods already cover, left out so one plate is
+  /// Foods the hand-written samples already cover, left out so one plate is
   /// not offered twice under two names.
   static const Set<String> _covered = {
     'koshary',
@@ -73,11 +74,16 @@ class EgyptianFoodPack {
     final en = dish['nameEn'] as String;
     final ar = dish['nameAr'] as String;
     final sizes = (dish['sizes'] as Map).cast<String, Object?>();
-    FoodSize size(String id, String label) {
-      final s = (sizes[id] as Map).cast<String, Object?>();
+    FoodSize size(String id, Map<String, Object?> s) {
+      final named = s['label'] as Map?;
+      final generic = switch (id) {
+        'S' => l10n.small,
+        'L' => l10n.large,
+        _ => l10n.medium,
+      };
       return FoodSize(
         id: id,
-        label: label,
+        label: named == null ? generic : named[arabic ? 'ar' : 'en'] as String,
         kcal: (s['kcal'] as num).toInt(),
         proteinG: (s['proteinG'] as num).toInt(),
         carbsG: (s['carbsG'] as num).toInt(),
@@ -87,20 +93,29 @@ class EgyptianFoodPack {
       );
     }
 
-    return Food(
-      foodId: dish['id'] as String,
-      names: [
+    // The pack lists several spellings of one name (with and without hamza,
+    // ta marbuta and ya). The matcher folds them together, so one is enough.
+    final seen = <String>{};
+    final names = <String>[
+      for (final name in [
         arabic ? ar : en,
         arabic ? en : ar,
         for (final alias in (dish['aliases'] as List)) alias as String,
-      ],
+      ])
+        if (seen.add(FoodLibrary.normalise(name))) name,
+    ];
+
+    return Food(
+      foodId: dish['id'] as String,
+      names: names,
       sizes: [
-        size('S', l10n.small),
-        size('M', l10n.medium),
-        size('L', l10n.large),
+        for (final entry in sizes.entries)
+          size(entry.key, (entry.value as Map).cast<String, Object?>()),
       ],
+      allergens: {for (final tag in dish['allergens'] as List) tag as String},
       popularity: 40,
-      category: dish['category'] as String?,
+      category: FoodCategory.fromWire(dish['category'] as String?),
+      kind: dish['kind'] as String?,
     );
   }
 }

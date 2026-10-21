@@ -259,6 +259,16 @@
       "number": 52,
       "path": "verificationPreapproved/{E.164 phone of her Auth account}",
       "method": "groupHook"
+    },
+    {
+      "number": 53,
+      "path": "events/{eventId}/attendees/{uid}",
+      "method": "groupHook"
+    },
+    {
+      "number": 54,
+      "path": "communityFoodCandidates/{key}/by/{HMAC of her uid}",
+      "method": "groupHook"
     }
   ]
 }
