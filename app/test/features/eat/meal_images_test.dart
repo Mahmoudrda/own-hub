@@ -94,8 +94,18 @@ void main() {
     final oats = byId('rahma_overnight_oats');
     MealImages.clear();
     expect(shakshoka.imageAsset, isNull);
-    MealImages.adopt(File('$_dir/index.json').readAsStringSync());
+    // The index as it was before her own picture was painted: only the dish
+    // it falls back to.
+    final withoutHers = [
+      for (final e in _index())
+        if (e['id'] != 'rahma_shakshoka') e,
+    ];
+    MealImages.adopt(jsonEncode(withoutHers));
     expect(shakshoka.imageAsset, '$_dir/shakshuka.webp');
+    // Once her own picture is listed, hers wins.
+    MealImages.adopt(File('$_dir/index.json').readAsStringSync());
+    expect(shakshoka.imageAsset, '$_dir/rahma_shakshoka.webp');
+    MealImages.clear();
     expect(oats.imageAsset, isNull);
     // Every mapped dish is a real painted picture.
     final ids = _index().map((e) => e['id']).toSet();
