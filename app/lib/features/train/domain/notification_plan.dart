@@ -109,7 +109,16 @@ enum NudgeContext {
   /// The last day of her week, Friday (her week runs Saturday to Friday, as
   /// on Home's strip): a calm, forward-looking note about the week to come. It
   /// rides the evening window.
-  weekEnd(18 * 60 + 30, 20 * 60 + 30);
+  weekEnd(18 * 60 + 30, 20 * 60 + 30),
+
+  /// 13:30 to 16:00, the day after a day she chose to train on went by with
+  /// nothing logged: a kind nudge to start again. It has no fixed text of its
+  /// own; it is sent only when a line from the voice bank fits.
+  freshStart(13 * 60 + 30, 16 * 60),
+
+  /// 09:30 to 11:00, the morning after a session that beat one of her bests.
+  /// Like [freshStart], it is sent only with a line from the voice bank.
+  newBest(9 * 60 + 30, 11 * 60);
 
   const NudgeContext(this.fromMinute, this.toMinute);
 
@@ -146,7 +155,9 @@ String nudgeScreen(int code) {
   return switch (nudge.context) {
     NudgeContext.morning ||
     NudgeContext.evening => nudge.variant.isOdd ? 'E01' : 'E05',
-    NudgeContext.midday => 'T01',
+    NudgeContext.midday ||
+    NudgeContext.freshStart ||
+    NudgeContext.newBest => 'T01',
     NudgeContext.weekEnd => 'P01',
   };
 }
@@ -224,6 +235,7 @@ class PlannedNotification {
     required this.at,
     this.weekly = false,
     this.variant = 0,
+    this.body,
   });
 
   final int id;
@@ -238,6 +250,19 @@ class PlannedNotification {
   /// Which of the rotating texts a check-in carries, or which tip a tip is.
   final int variant;
 
+  /// The words, when they were chosen from the voice bank. Null means the
+  /// scheduler uses the fixed text of the kind. The plan itself never sets it.
+  final String? body;
+
+  PlannedNotification withBody(String text) => PlannedNotification(
+    id: id,
+    kind: kind,
+    at: at,
+    weekly: weekly,
+    variant: variant,
+    body: text,
+  );
+
   @override
   bool operator ==(Object other) =>
       other is PlannedNotification &&
@@ -245,10 +270,11 @@ class PlannedNotification {
       other.kind == kind &&
       other.at == at &&
       other.weekly == weekly &&
-      other.variant == variant;
+      other.variant == variant &&
+      other.body == body;
 
   @override
-  int get hashCode => Object.hash(id, kind, at, weekly, variant);
+  int get hashCode => Object.hash(id, kind, at, weekly, variant, body);
 
   @override
   String toString() => 'PlannedNotification($kind #$id at $at)';
@@ -418,6 +444,13 @@ abstract final class NotificationPlan {
   /// `EventReminderPlan`. They are added as they are while
   /// [NotificationPrefs.events] is on and take no part in the casual caps.
   ///
+  /// [freshStart] plans a [NudgeContext.freshStart] for the day after one of
+  /// her chosen days (yesterday or today) that has no session logged since,
+  /// when that next day is not a chosen day itself. [lastBestAt] is the day of
+  /// her last session that beat a best: the morning after it gets a
+  /// [NudgeContext.newBest]. [severeToday] drops today's midday and fresh
+  /// start notes. All three come from the caller and are off by default.
+  ///
   /// All casual notes share the caps in the library comment, counting those
   /// that came and went since she last opened the app or trained, so a long
   /// absence plans none.
@@ -433,6 +466,9 @@ abstract final class NotificationPlan {
     List<DateTime> shownTips = const <DateTime>[],
     List<PlannedNotification>? tipsLeftOut,
     List<PlannedNotification> events = const <PlannedNotification>[],
+    bool freshStart = false,
+    DateTime? lastBestAt,
+    bool severeToday = false,
   }) {
     if (!permitted) return const <PlannedNotification>[];
     final plan = <PlannedNotification>[];
@@ -484,7 +520,20 @@ abstract final class NotificationPlan {
       if (!checkIn.at.isAfter(now)) past.add(_dayOf(checkIn.at));
     }
     final nudges = prefs.nudges
-        ? _nudges(now, training, lastSeen)
+        ? _nudges(
+            now,
+            training,
+            lastSeen,
+            specials: _specialNudgeDays(
+              now,
+              reminders,
+              training,
+              lastSessionAt,
+              freshStart,
+              lastBestAt,
+            ),
+            severeToday: severeToday,
+          )
         : (items: const <PlannedNotification>[], past: const <DateTime>[]);
     past.addAll(nudges.past);
     if (prefs.tips) {
@@ -638,8 +687,10 @@ abstract final class NotificationPlan {
   static ({List<PlannedNotification> items, List<DateTime> past}) _nudges(
     DateTime now,
     Set<int> training,
-    DateTime? lastSeen,
-  ) {
+    DateTime? lastSeen, {
+    Map<DateTime, NudgeContext> specials = const <DateTime, NudgeContext>{},
+    bool severeToday = false,
+  }) {
     final today = _dayOf(now);
     final horizonEnd = DateTime(
       today.year,
@@ -674,18 +725,26 @@ abstract final class NotificationPlan {
           ))
             DateTime(weekStart.year, weekStart.month, weekStart.day + i),
       ];
-      final chosen = <DateTime>[];
-      if (eligible.any((day) => day == friday)) chosen.add(friday);
-      final rest = eligible.where((day) => day != friday).toList()
+      // Days with a reason of their own come first, then the Friday note.
+      final chosen = <DateTime>[
+        for (final day in eligible)
+          if (specials.containsKey(day)) day,
+      ];
+      if (eligible.contains(friday) && !chosen.contains(friday)) {
+        chosen.add(friday);
+      }
+      final rest = eligible.where((day) => !chosen.contains(day)).toList()
         ..sort((a, b) => _scatter(a).compareTo(_scatter(b)));
       chosen.addAll(rest.take(kNudgesPerWeek - chosen.length));
       chosen.sort();
       for (final day in chosen) {
         if (day.isAfter(horizonEnd)) continue;
         final seed = _dayNumber(day);
-        final context = day == friday
-            ? NudgeContext.weekEnd
-            : NudgeContext.values[seed % 3];
+        final context =
+            specials[day] ??
+            (day == friday
+                ? NudgeContext.weekEnd
+                : NudgeContext.values[seed % 3]);
         final span = context.toMinute - context.fromMinute;
         final minute = context.fromMinute + _scatter(day) % span;
         final at = afterQuietHours(
@@ -696,6 +755,12 @@ abstract final class NotificationPlan {
           continue;
         }
         if (day.isBefore(scanFrom)) continue;
+        if (severeToday &&
+            day == today &&
+            (context == NudgeContext.midday ||
+                context == NudgeContext.freshStart)) {
+          continue;
+        }
         slots.add(
           PlannedNotification(
             id: nudgeNotificationId(day.weekday),
@@ -713,6 +778,43 @@ abstract final class NotificationPlan {
     }
     slots.sort((a, b) => a.at.compareTo(b.at));
     return (items: slots, past: past);
+  }
+
+  /// The days that carry a [NudgeContext.freshStart] or a
+  /// [NudgeContext.newBest], whatever the week's usual pick: the day after a
+  /// chosen day that went by without a session (today and yesterday are the
+  /// ones that can still be waiting), and the day after her last best.
+  /// Neither lands on a chosen training day.
+  static Map<DateTime, NudgeContext> _specialNudgeDays(
+    DateTime now,
+    TrainingReminders? reminders,
+    Set<int> training,
+    DateTime? lastSessionAt,
+    bool freshStart,
+    DateTime? lastBestAt,
+  ) {
+    final today = _dayOf(now);
+    final days = <DateTime, NudgeContext>{};
+    if (freshStart && reminders != null) {
+      final trained = lastSessionAt == null ? null : _dayOf(lastSessionAt);
+      for (var back = 1; back >= 0; back--) {
+        final chosen = DateTime(today.year, today.month, today.day - back);
+        if (!reminders.weekdays.contains(chosen.weekday)) continue;
+        if (trained != null && !trained.isBefore(chosen)) continue;
+        final next = DateTime(chosen.year, chosen.month, chosen.day + 1);
+        if (!training.contains(next.weekday)) {
+          days[next] = NudgeContext.freshStart;
+        }
+      }
+    }
+    if (lastBestAt != null) {
+      final best = _dayOf(lastBestAt);
+      final next = DateTime(best.year, best.month, best.day + 1);
+      if (!next.isBefore(today) && !training.contains(next.weekday)) {
+        days[next] = NudgeContext.newBest;
+      }
+    }
+    return days;
   }
 
   /// The first reminder day's 21:00 still ahead, skipping a day she has

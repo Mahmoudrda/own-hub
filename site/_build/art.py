@@ -13,6 +13,7 @@ It is decorative everywhere it appears, so every copy is aria-hidden.
 from __future__ import annotations
 
 import math
+import os
 
 ROSE = "#1A5D74"
 ROSE_FILL = "#F4BEBB"
@@ -419,6 +420,23 @@ def icon_svg(*, size: int = 64, full_bleed: bool = False, safe: float = 1.0) -> 
         f'<path d="{_BLADE}" fill="{LOGO_PAPER}"/>'
         "</svg>\n"
     )
+
+
+# --------------------------------------------------------- line drawings ---
+
+_HAIRLINE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hairline")
+
+
+def hairline_svg(name: str, cls: str = "") -> str:
+    """A Hairline figure (MIT, Lucas Marques) as inline SVG, at rest.
+
+    The drawings are made once by capture_hairline.py and committed under
+    _build/hairline/. data-hairline is the hook the library's own stylesheet,
+    merged into site.css, keys on. Decoration only: the svg is aria-hidden."""
+    with open(os.path.join(_HAIRLINE, f"{name}.svg"), encoding="utf-8") as fh:
+        svg = fh.read().strip()
+    klass = f"hl hl-{name} {cls}".strip()
+    return f'<span class="{klass}" data-hairline="{name}">{svg}</span>'
 
 
 # ------------------------------------------------------------- hand marks ---

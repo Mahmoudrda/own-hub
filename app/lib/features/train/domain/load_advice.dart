@@ -13,6 +13,7 @@ library;
 
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/training/prescribed_set.dart';
+import 'exercise_library.dart' show LibraryEquipment;
 import 'progression_policy.dart';
 import 'set_history.dart';
 import 'train_repository.dart';
@@ -42,7 +43,72 @@ const List<double> kLoadStepsKg = [
   50,
   55,
   60,
+  65,
+  70,
+  75,
+  80,
+  85,
+  90,
+  95,
+  100,
 ];
+
+/// The kind of kit a loaded move uses, which decides the steps the weight
+/// moves in: a plate goes on in 2.5 kg, a stack pin in 5, a dumbbell by what
+/// the rack holds.
+enum LoadKit { barbell, machine, dumbbell, unknown }
+
+/// The kit for a move's equipment. A bar wins over a stack, and a stack over a
+/// dumbbell, so a bench press (bench and barbell) is a barbell move.
+LoadKit loadKitFor(Iterable<LibraryEquipment>? equipment) {
+  if (equipment == null) return LoadKit.unknown;
+  final set = equipment.toSet();
+  if (set.contains(LibraryEquipment.barbell) ||
+      set.contains(LibraryEquipment.smithMachine)) {
+    return LoadKit.barbell;
+  }
+  if (set.contains(LibraryEquipment.machine) ||
+      set.contains(LibraryEquipment.cable)) {
+    return LoadKit.machine;
+  }
+  if (set.contains(LibraryEquipment.dumbbells) ||
+      set.contains(LibraryEquipment.kettlebell)) {
+    return LoadKit.dumbbell;
+  }
+  return LoadKit.unknown;
+}
+
+List<double> _range(double from, double to, double step) => [
+  for (var kg = from; kg <= to + 1e-9; kg += step) kg,
+];
+
+final List<double> _barbellLadder = List.unmodifiable(_range(20, 150, 2.5));
+final List<double> _machineLadder = List.unmodifiable([
+  ..._range(2.5, 20, 2.5),
+  ..._range(25, 150, 5),
+]);
+final List<double> _dumbbellLadder = List.unmodifiable([
+  ..._range(1, 10, 1),
+  ..._range(12.5, 50, 2.5),
+]);
+
+/// The weights she may pick from for a move on [equipment], in kg. Unknown
+/// equipment keeps the shared [kLoadStepsKg] ladder.
+List<double> loadLadderFor(Iterable<LibraryEquipment>? equipment) =>
+    switch (loadKitFor(equipment)) {
+      LoadKit.barbell => _barbellLadder,
+      LoadKit.machine => _machineLadder,
+      LoadKit.dumbbell => _dumbbellLadder,
+      LoadKit.unknown => kLoadStepsKg,
+    };
+
+/// What R08 offers for a loaded move on [equipment] that she has no history on.
+List<double> starterWeightsFor(Iterable<LibraryEquipment>? equipment) =>
+    switch (loadKitFor(equipment)) {
+      LoadKit.barbell => const [20, 25, 30, 35, 40],
+      LoadKit.machine => const [10, 15, 20, 25, 30, 40],
+      LoadKit.dumbbell || LoadKit.unknown => kStarterWeightsKg,
+    };
 
 /// What R08 offers for a loaded move she has no history on, so the first
 /// session can still record a weight.
@@ -82,6 +148,7 @@ LoadAdvice? loadAdviceFor(
   bool coached = false,
   bool difficult = false,
   DateTime? now,
+  Iterable<LibraryEquipment>? equipment,
 }) {
   if (move == null || !move.needsEquipment || move.sets.isEmpty) return null;
   final targetReps = [
@@ -106,7 +173,7 @@ LoadAdvice? loadAdviceFor(
   final day = DateTime.tryParse(history.dateKey ?? '');
   final away = day == null ? 0 : (now ?? AppClock.now()).difference(day).inDays;
 
-  final ladder = {...kLoadStepsKg, previous}.toList()..sort();
+  final ladder = {...loadLadderFor(equipment), previous}.toList()..sort();
   final decision = suggestProgression(
     previousWeightKg: previous,
     completedReps: [for (final s in history.sets) s.reps ?? 0],

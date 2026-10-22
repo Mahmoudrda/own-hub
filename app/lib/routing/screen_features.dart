@@ -162,7 +162,8 @@ const Map<String, Feature> kScreenFeatures = {
   'K02': Feature.coachApp,
   'K03': Feature.coachApp,
   'K04': Feature.coachApp,
-  'K05': Feature.coachApp,
+  // Getting paid waits for payments, as her earnings do.
+  'K05': Feature.payments,
   'K06': Feature.coachApp,
   'K08': Feature.coachApp,
   'K10': Feature.coachApp,
@@ -196,16 +197,16 @@ const Map<String, Feature> kScreenFeatures = {
 
   // Planning. The two drafts are written by the assistant, so they open only
   // when the planner and the assistant are both on.
-  'W01': Feature.coachPlanning,
-  'W02': Feature.coachPlanning,
-  'W03': Feature.coachPlanning,
+  'W01': Feature.coachApp,
+  'W02': Feature.coachApp,
+  'W03': Feature.coachApp,
   'W04': Feature.coachPlanning,
   'W05': Feature.coachPlanning,
-  'W06': Feature.coachPlanning,
+  'W06': Feature.coachApp,
   'W07': Feature.coachPlanning,
   'W08': Feature.coachPlanning,
   'W09': Feature.coachPlanning,
-  'W10': Feature.coachPlanning,
+  'W10': Feature.coachApp,
   'W11': Feature.coachPlanning,
   'K19': Feature.coachPlanning,
   'K20': Feature.coachPlanning,

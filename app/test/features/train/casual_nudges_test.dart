@@ -502,9 +502,11 @@ void main() {
       final text = AppRouter.reminderText(lookupAppL10n(Locale(code)));
 
       test('sixteen, each its own, with a channel', () {
+        // The fresh start and the new best have no fixed text: their words
+        // come only from the voice bank.
         expect(
           text.nudgeBodies,
-          hasLength(NudgeContext.values.length * kNudgeVariants),
+          hasLength((NudgeContext.freshStart.index) * kNudgeVariants),
         );
         expect(text.nudgeBodies.toSet(), hasLength(16));
         expect(text.nudgeChannelName, isNotEmpty);

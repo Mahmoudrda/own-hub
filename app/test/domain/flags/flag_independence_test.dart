@@ -96,6 +96,12 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
       'Its subject is the shipped set itself: that it decides every feature by '
       'name, that no part ships on under a parent that ships off, and that '
       'the launch carries no paid surface and no assistant.',
+  'test/nav_reachability_test.dart':
+      'It measures the screens that ship, so the shipped set is its subject: '
+      'a screen the release keeps dark is not counted against the graph.',
+  'test/routing/coaching_router_test.dart':
+      'It proves the coaching entry points as the release has them: the coach '
+      'app and the marketplace on, payments off, behind a verified account.',
   'test/store/store_screenshots_test.dart':
       'The store screenshots must show the product as it ships, so the '
       'shipped flags are its subject. It overrides only `accountRequired`, '

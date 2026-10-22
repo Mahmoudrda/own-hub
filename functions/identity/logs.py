@@ -32,6 +32,7 @@ ALLOWED_KEYS = frozenset(
         "field",
         "promptTokens",
         "outputTokens",
+        "modelError",
     }
 )
 

@@ -31,15 +31,29 @@ class FirestoreEventReader implements EventReader {
   final FirebaseFirestore _db;
 
   @override
-  Future<List<HubEvent>> upcoming(DateTime now, {int limit = 20}) async {
-    final snapshot = await _db
+  Future<List<HubEvent>> upcoming(
+    DateTime now, {
+    int limit = 20,
+    bool cacheFirst = false,
+  }) async {
+    final query = _db
         .collection(kEventsCollection)
         .where('status', isEqualTo: EventStatus.published.name)
         .where('endsAt', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
         .orderBy('endsAt')
-        .limit(limit)
-        .get()
-        .timeout(const Duration(seconds: 10));
+        .limit(limit);
+    QuerySnapshot<Map<String, dynamic>>? snapshot;
+    if (cacheFirst) {
+      try {
+        final cached = await query
+            .get(const GetOptions(source: Source.cache))
+            .timeout(const Duration(seconds: 5));
+        if (cached.docs.isNotEmpty) snapshot = cached;
+      } catch (_) {
+        // Nothing usable on the phone: the server answers below.
+      }
+    }
+    snapshot ??= await query.get().timeout(const Duration(seconds: 10));
     return upcomingOf([
       for (final doc in snapshot.docs) ?eventFromSnapshot(doc),
     ], now);

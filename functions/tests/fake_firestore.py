@@ -231,7 +231,12 @@ class CollectionRef:
         return _Aggregation()
 
     def start_after(self, fields):
-        """Only the `__name__` cursor the deletion scan uses: a DocumentRef."""
+        """The `__name__` cursor the deletion scan uses (a DocumentRef), or a
+        document snapshot taken from this same query's order, as the real SDK
+        accepts: the page starts after that document, equal values included."""
+        if isinstance(fields, Snapshot):
+            assert self._order and self._order != "__name__", "a snapshot cursor needs order_by(field)"
+            return self._copy(after=(str(fields.get(self._order)), fields.reference.path))
         assert self._order == "__name__", "a cursor needs order_by('__name__')"
         return self._copy(after=fields["__name__"].path)
 
@@ -270,15 +275,18 @@ class CollectionRef:
         return path.startswith(self.path + "/") and path.count("/") == depth
 
     def stream(self, transaction=None):
+        by_name = isinstance(self._after, str)
         rows = []
         for path, data in sorted(self.db.docs.items()):
             if self._contains(path):
-                if self._after is not None and path <= self._after:
+                if by_name and path <= self._after:
                     continue
                 if self._matches(data):
                     rows.append(Snapshot(DocumentRef(self.db, path), data))
         if self._order and self._order != "__name__":
             rows.sort(key=lambda s: str(s.get(self._order)), reverse=self._descending)
+        if isinstance(self._after, tuple):
+            rows = [r for r in rows if (str(r.get(self._order)), r.reference.path) > self._after]
         if self._limit is not None:
             rows = rows[: self._limit]
         return iter(rows)

@@ -392,8 +392,13 @@ void main() {
       expect(r07.indexOf("_trackSetLogged('move')"), greaterThan(move));
       final set = r07.indexOf('onSetLogged: (handle) {');
       expect(r07.indexOf("_trackSetLogged('set')"), greaterThan(set));
-      final r08 = _builderBlock('R08');
-      expect(r08, contains("_trackSetLogged('set')"));
+      // R08 builds its set screen in `_changeCurrentSet`.
+      expect(_builderBlock('R08'), contains('_changeCurrentSet(context)'));
+      final src = File('lib/routing/app_router.dart').readAsStringSync();
+      final from = src.indexOf('static Widget _changeCurrentSet(');
+      expect(from, greaterThan(-1));
+      final next = src.indexOf('\n  static ', from + 1);
+      expect(src.substring(from, next), contains("_trackSetLogged('set')"));
     });
 
     test('finishing early is counted only with moves left, before the '

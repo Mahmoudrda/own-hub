@@ -454,6 +454,21 @@ def test_an_outage_is_unavailable_and_gives_her_scan_back(wired):
     assert len(client.calls) == 1, "no retry: one call per scan"
 
 
+def test_a_refused_model_call_logs_its_code_not_its_message(wired, capsys):
+    class Refused(Exception):
+        code = 403
+        status = "PERMISSION_DENIED"
+
+    client = FakeClient(RICE_PLATE, error=Refused("rejected, quoting the plate"))
+    capsys.readouterr()
+    raises(lambda: scan(client), https_fn.FunctionsErrorCode.UNAVAILABLE)
+    entries, raw = _lines(capsys)
+    (line,) = [e for e in entries if e.get("event") == "verification_decision"]
+    assert line["outcome"] == "unavailable"
+    assert line["modelError"] == "403 PERMISSION_DENIED"
+    assert "quoting" not in raw and "plate" not in raw
+
+
 # ------------------------------------------------------- the image the model sees
 
 

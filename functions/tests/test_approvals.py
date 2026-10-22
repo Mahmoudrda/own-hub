@@ -512,30 +512,30 @@ def test_a_revoked_woman_has_no_approval_trail_in_the_queue(world):
 # ------------------------------------------------------ known contact pass
 
 
-def _settings(auto, listed=True, name="Rahma", uid=REV):
+def _settings(_old, listed=True, name="Rahma", uid=REV):
     return staff(
         "set_reviewer_settings",
-        {"firstName": name, "listed": listed, "autoPassKnown": auto, "availability": MONDAY_10,
+        {"firstName": name, "listed": listed, "availability": MONDAY_10,
          "slotMinutes": 15},
         uid=uid,
     )
 
 
-def test_a_known_contact_with_auto_pass_is_approved_at_once(world):
-    _settings(True)
+def test_a_known_contact_with_old_auto_pass_setting_is_not_approved(world):
+    _settings(False)
+    world.db.docs[f"verificationReviewers/{REV}"]["autoPassKnown"] = True
     answer = member("request_review", {"path": "niqab", "knownReviewerId": REV})
-    assert answer == {"state": "approved", "via": "knownContact"}
-    assert world.claims[HER] is True
-    ledger = world.db.docs[f"verificationLedger/{HER}"]
-    assert ledger["approvedVia"] == "knownContact" and ledger["approvedBy"] == REV
-    assert not any(p.startswith("verification_flags/") for p in world.db.docs)
+    assert answer == {"state": "pending"}
+    assert HER not in world.claims
+    assert user(world)["verification"]["state"] == "pending"
+    assert user(world)["verification"]["knownReviewerId"] == REV
+    assert "approvedVia" not in world.db.docs.get(f"verificationLedger/{HER}", {})
 
 
 def test_a_known_contact_records_who_she_knows(world):
     _settings(True)
     member("request_review", {"path": "niqab", "knownReviewerId": REV})
     assert user(world)["verification"]["knownReviewerId"] == REV
-    assert world.db.docs[f"verificationLedger/{HER}"]["knownReviewerId"] == REV
 
 
 def test_a_revoked_known_contact_stays_pending(world):
@@ -600,7 +600,7 @@ def test_without_a_known_reviewer_the_request_is_unchanged(world):
 
 def test_settings_default_then_round_trip(world):
     assert staff("get_reviewer_settings") == {
-        "firstName": "", "listed": False, "autoPassKnown": False,
+        "firstName": "", "listed": False,
         "availability": [], "slotMinutes": 15,
     }
     saved = _settings(True)
@@ -623,7 +623,7 @@ def test_settings_default_then_round_trip(world):
     ],
 )
 def test_bad_settings_are_refused(world, patch):
-    data = {"firstName": "Rahma", "listed": True, "autoPassKnown": False,
+    data = {"firstName": "Rahma", "listed": True,
             "availability": MONDAY_10, "slotMinutes": 15, **patch}
     raises(lambda: staff("set_reviewer_settings", data), INVALID)
     assert f"verificationReviewers/{REV}" not in world.db.docs
@@ -858,3 +858,33 @@ def test_member_callables_stay_phone_only(world, name, provider):
 
 def test_an_admin_may_use_the_dashboard_callables(world):
     assert _as("list_preapproved_phones", {"admin": True}, "password") == {"phones": []}
+
+
+def test_revoking_a_coach_takes_her_page_down_and_suspends_her_record(world):
+    world.db.docs[f"coaches/{HER}"] = {"published": True, "acceptingClients": True, "displayName": "Her"}
+    world.db.docs[f"coachPrivate/{HER}"] = {"payoutState": "confirmed", "suspended": False}
+    staff("approve_user", {"uid": HER})
+    staff("revoke_user", {"uid": HER})
+    coach = world.db.docs[f"coaches/{HER}"]
+    assert coach["published"] is False and coach["acceptingClients"] is False
+    private = world.db.docs[f"coachPrivate/{HER}"]
+    assert private["suspended"] is True and private["suspendReason"] == "verification_revoked"
+    assert private["suspendedAt"] is not None and private["payoutState"] == "confirmed"
+
+
+def test_revoking_someone_who_is_not_a_coach_writes_no_coach_document(world):
+    staff("approve_user", {"uid": HER})
+    staff("revoke_user", {"uid": HER})
+    assert f"coaches/{HER}" not in world.db.docs and f"coachPrivate/{HER}" not in world.db.docs
+
+
+def test_a_failure_taking_the_page_down_never_fails_the_revoke(world, monkeypatch):
+    from coaching import claims
+
+    def broken(db, uid, now):
+        raise RuntimeError("firestore down")
+
+    monkeypatch.setattr(claims, "on_verification_revoked", broken)
+    staff("approve_user", {"uid": HER})
+    assert staff("revoke_user", {"uid": HER}) == {"state": "pending"}
+    assert world.claims[HER] is False

@@ -17,8 +17,14 @@ import 'dart:async';
 import 'hub_event.dart';
 
 abstract class EventReader {
-  /// Published, not over at [now], soonest first. At most [limit].
-  Future<List<HubEvent>> upcoming(DateTime now, {int limit = 20});
+  /// Published, not over at [now], soonest first. At most [limit]. With
+  /// [cacheFirst], a copy already on the phone is used when there is one and
+  /// the server is asked only when there is not.
+  Future<List<HubEvent>> upcoming(
+    DateTime now, {
+    int limit = 20,
+    bool cacheFirst = false,
+  });
 }
 
 abstract class EventAdminStore {
@@ -49,8 +55,11 @@ class InMemoryEvents implements EventReader, EventAdminStore {
   int _next = 0;
 
   @override
-  Future<List<HubEvent>> upcoming(DateTime now, {int limit = 20}) async =>
-      upcomingOf(events.values, now).take(limit).toList();
+  Future<List<HubEvent>> upcoming(
+    DateTime now, {
+    int limit = 20,
+    bool cacheFirst = false,
+  }) async => upcomingOf(events.values, now).take(limit).toList();
 
   @override
   Future<List<HubEvent>> all() async =>

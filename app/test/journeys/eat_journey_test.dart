@@ -477,6 +477,10 @@ void main() {
       await _home(tester);
 
       await _open(tester, 'A02');
+      await tester.ensureVisible(
+        find.text('Allergies and dietary preferences'),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Allergies and dietary preferences'));
       await tester.pumpAndSettle();
       // "No nuts" until `AllergenTag` grew from four members to sixteen for

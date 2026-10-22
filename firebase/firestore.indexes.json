@@ -34,59 +34,6 @@
       ]
     },
     {
-      "_why": "G12 coach roster, paginated 20 per page. The only hot-path composite in the coach app.",
-      "collectionGroup": "relationships",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "coachUid",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "lastActivityAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "_why": "G11 the coach's enquiry queue. Declared openly rather than claimed away.",
-      "collectionGroup": "relationships",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "coachUid",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "_why": "G10 a woman's own posts, newest first, for her profile grid.",
-      "collectionGroup": "posts",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "authorUid",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
       "_why": "S13. expire_stale_reviews: verification_flags where state == PENDING_REVIEW and slaExpiresAt < now. Equality plus a range on a second field needs a composite; without it the hourly SLA job fails on every run and no stale review ever becomes RETRY_REQUIRED.",
       "collectionGroup": "verification_flags",
       "queryScope": "COLLECTION",
@@ -157,6 +104,149 @@
         },
         {
           "fieldPath": "endsAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The nightly job that ends coaching: status equals active with an endsAt in the past, and the reminder three days before.",
+      "collectionGroup": "subscriptions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endsAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The nightly job that expires unpaid requests: status equals awaiting_payment with a payBy in the past.",
+      "collectionGroup": "subscriptions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "payBy",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "One coach and one member at a time: is there an open request or active coaching between the two of them.",
+      "collectionGroup": "subscriptions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "clientUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "coachUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The staff queue of payment screenshots waiting for a decision, oldest first.",
+      "collectionGroup": "paymentProofs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The payout run: every coach ledger line whose status is pending and whose eligibleAt has passed, across all coaches.",
+      "collectionGroup": "ledger",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "eligibleAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The moderation queue for coaching reports: one subject kind, one state, oldest first.",
+      "collectionGroup": "reports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "subjectKind",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The hourly job that declines requests nobody answered: status equals requested with a statusAt more than 72 hours old.",
+      "collectionGroup": "subscriptions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "statusAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The staff queue of coach applications by status, oldest first, paged with a cursor.",
+      "collectionGroup": "coachApplications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "submittedAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_why": "The reviewer queue of portfolio photos by status, oldest first, paged with a cursor.",
+      "collectionGroup": "media",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
           "order": "ASCENDING"
         }
       ]
@@ -356,6 +446,54 @@
       "indexes": []
     },
     {
+      "_why": "COST. A chat line's text is read with its thread and never queried on; indexing every line's text is a write nobody uses.",
+      "collectionGroup": "messages",
+      "fieldPath": "text",
+      "indexes": []
+    },
+    {
+      "_why": "COST. A shared plan's body is a large map read with the plan and never queried into.",
+      "collectionGroup": "coachPlans",
+      "fieldPath": "body",
+      "indexes": []
+    },
+    {
+      "_why": "COST. A cached meal-photo answer is looked up by its document id; its list of foods is never queried on.",
+      "collectionGroup": "scanCache",
+      "fieldPath": "items",
+      "indexes": []
+    },
+    {
+      "_why": "COST. The exercise library version document holds the whole catalogue as one array, read as a unit.",
+      "collectionGroup": "meta",
+      "fieldPath": "exercises",
+      "indexes": []
+    },
+    {
+      "_why": "COST. The food library version document holds the whole catalogue as one array, read as a unit.",
+      "collectionGroup": "meta",
+      "fieldPath": "foods",
+      "indexes": []
+    },
+    {
+      "_why": "COST. The newest line copied for the chat list; read with the relationship, never queried on.",
+      "collectionGroup": "relationships",
+      "fieldPath": "lastMessage",
+      "indexes": []
+    },
+    {
+      "_why": "COST. Unread counts by uid; read with the relationship, never queried on.",
+      "collectionGroup": "relationships",
+      "fieldPath": "unreadFor",
+      "indexes": []
+    },
+    {
+      "_why": "COST. When each party was last notified; written by the server and never queried on.",
+      "collectionGroup": "relationships",
+      "fieldPath": "lastPushAt",
+      "indexes": []
+    },
+    {
       "_why": "S16 TTL. A liveness session is single use and dead after CHALLENGE_TTL_SEC; Firestore TTL deletes it from expiresAt. Never queried on, so automatic indexing is off as well.",
       "collectionGroup": "verificationSessions",
       "fieldPath": "expiresAt",
@@ -445,6 +583,25 @@
       "fieldPath": "expiresAt",
       "ttl": true,
       "indexes": []
+    },
+    {
+      "_why": "The payout run reads every coach's ledger lines with status eligible across all coaches (functions/coaching/payouts.py). A collection group query needs this single-field index at collection group scope; it is the one override that turns an index ON, and the field holds no body or ranking data. An override replaces the automatic indexes for the field, so the two collection-scope ones are listed again for her own earnings view.",
+      "collectionGroup": "ledger",
+      "fieldPath": "status",
+      "indexes": [
+        {
+          "queryScope": "COLLECTION",
+          "order": "ASCENDING"
+        },
+        {
+          "queryScope": "COLLECTION",
+          "order": "DESCENDING"
+        },
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ]
 }

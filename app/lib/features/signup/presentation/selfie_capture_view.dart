@@ -44,6 +44,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/secure_screen.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/hand/mascot/kitten.dart';
@@ -420,7 +421,9 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => SecureScreen(child: _content(context));
+
+  Widget _content(BuildContext context) {
     final l10n = AppL10n.of(context);
     final askWoman = widget.onAskWoman;
     final VoidCallback? onAskWoman = askWoman == null

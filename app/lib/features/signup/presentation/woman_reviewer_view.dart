@@ -216,7 +216,7 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
         if (_reviewers.isNotEmpty) ...[
           Text(l10n.iKnowOneOfTheReviewers, style: AppText.titleM),
           Text(
-            l10n.pickHerNameIfSheKnowsYou,
+            l10n.pickHerNameIfSheKnowsYou_akwt2,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
           Wrap(

@@ -21,6 +21,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show MissingPluginException;
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/app_state/private_coaching_state.dart';
+
+import '../private_coaching/support/fake_coaching_repository.dart';
+
 import 'package:own_hub/app_state/app_snapshot.dart';
 import 'package:own_hub/app_state/coach_invite_state.dart';
 import 'package:own_hub/app_state/coach_profile_state.dart';
@@ -36,9 +40,7 @@ import 'package:own_hub/features/coach/domain/coach_invite.dart';
 import 'package:own_hub/features/coach/domain/coach_profile.dart';
 import 'package:own_hub/features/coach/domain/coach_verification.dart';
 import 'package:own_hub/features/coach/presentation/certificate_camera_view.dart';
-import 'package:own_hub/features/coach/presentation/coach_photo_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_rules_view.dart';
-import 'package:own_hub/features/coach/presentation/coach_certificates_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_payout_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_today_view.dart';
 import 'package:own_hub/features/coach/presentation/coach_view_models.dart';
@@ -373,33 +375,6 @@ void main() {
       expect(find.text('Build your first plan'), findsNothing);
     });
 
-    testWidgets('K02 opens the camera for a real photo, and says so when it '
-        'cannot start', (tester) async {
-      _phone(tester);
-      _asVerifiedWoman();
-      AppRouter.intakeRepository.markSetupDone();
-      await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
-      await tester.pumpAndSettle();
-      tester
-          .state<NavigatorState>(find.byType(Navigator).first)
-          .pushNamed(appDestinations['K02']!.name);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(CoachCertificatesView), findsOneWidget);
-      await tester.tap(find.text('NASM CPT'));
-      // Not pumpAndSettle: the well spins while the lens is asked for.
-      for (var i = 0; i < 10; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-
-      expect(find.byType(CertificateCameraView), findsOneWidget);
-      // Closed without a photo: back on K02, and nothing was recorded.
-      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
-      await tester.pumpAndSettle();
-      expect(find.byType(CoachCertificatesView), findsOneWidget);
-      expect(CoachProfileState.instance.setup.certificates, isEmpty);
-    });
-
     testWidgets('the camera says why it did not open, and never crashes', (
       tester,
     ) async {
@@ -499,7 +474,8 @@ void main() {
         coachSetupDone: done,
       );
 
-      expect(door(), appRoutes['K01']!.name);
+      // An applicant lands on her status page; an approved coach on her desk.
+      expect(door(), appRoutes['K06']!.name);
       expect(door(done: true), appRoutes['K07']!.name);
       expect(
         door(verified: false),
@@ -524,18 +500,20 @@ void main() {
       expect(door(coachSide: false), appRoutes['T01']!.name);
       expect(
         door(accountRequired: false, verified: false),
-        appRoutes['K01']!.name,
+        appRoutes['K06']!.name,
       );
     });
 
     test('the front door reads her kept role and her application', () {
       _asVerifiedWoman();
       RoleState.instance.roles = UserRoles.coach;
-      expect(AppRouter.frontDoor, appRoutes['K01']!.name);
+      expect(AppRouter.frontDoor, appRoutes['K06']!.name);
 
-      CoachProfileState.instance.repository.applyServerProfileChange(
-        const CoachProfile(verification: CoachVerificationState.submitted),
+      PrivateCoachingState.instance.start(
+        FakeCoachingRepository(),
+        isCoach: true,
       );
+      addTearDown(PrivateCoachingState.instance.stop);
       expect(AppRouter.frontDoor, appRoutes['K07']!.name);
 
       RoleState.instance.roles = UserRoles.both;
@@ -902,52 +880,6 @@ void main() {
       expect(
         find.text('We could not open a message on this phone.'),
         findsOneWidget,
-      );
-    });
-  });
-
-  group('M3: Back through her setup goes back, it does not push', () {
-    testWidgets('every step, last to first, in that order', (tester) async {
-      _phone(tester);
-      _asVerifiedWoman();
-      AppRouter.intakeRepository.markSetupDone();
-      await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
-      await tester.pumpAndSettle();
-      final navigator = tester.state<NavigatorState>(
-        find.byType(Navigator).first,
-      );
-      // Every step she meets up to getting paid, in her order.
-      final walk = [
-        for (final step in coachSetupWalk())
-          if (step != CoachSetupStep.beingChecked) step.screenId,
-      ];
-      expect(walk.first, 'K01');
-      expect(walk.last, 'K05');
-      for (final id in walk) {
-        navigator.pushNamed(appDestinations[id]!.name);
-        await tester.pumpAndSettle();
-      }
-      expect(find.byType(CoachPayoutView), findsOneWidget);
-
-      Future<void> back() async {
-        await tester.tap(find.byTooltip('Back').last);
-        await tester.pumpAndSettle();
-      }
-
-      // Each Back lands on the step before it, and nothing is pushed.
-      for (var i = walk.length - 2; i >= 0; i--) {
-        await back();
-        expect(
-          find.text('${i + 1} of ${CoachSetupStep.total}', skipOffstage: true),
-          findsOneWidget,
-          reason: 'Back from ${walk[i + 1]} lands on ${walk[i]}',
-        );
-      }
-      expect(find.byType(CoachPhotoView), findsOneWidget);
-      expect(
-        find.byType(CoachPayoutView),
-        findsNothing,
-        reason: 'a push would have left K05 underneath',
       );
     });
   });

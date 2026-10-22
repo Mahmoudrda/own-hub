@@ -26,6 +26,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../features/train/domain/getting_started_tips.dart';
 import '../l10n/app_l10n.dart';
 import '../features/train/domain/notification_plan.dart';
+import '../features/train/domain/notification_voice.dart';
 import 'notification_taps.dart';
 
 export '../features/train/domain/notification_plan.dart'
@@ -68,6 +69,7 @@ class ReminderText {
     this.bookedEventBodies = const <String>[],
     this.eventChannelName = '',
     this.eventChannelDescription = '',
+    this.facts,
   });
 
   final String title;
@@ -110,6 +112,11 @@ class ReminderText {
   final String eventChannelName;
   final String eventChannelDescription;
 
+  /// What the phone knows that a reminder may name or hold back for, read
+  /// fresh each time notifications are set. Null means nothing, and every
+  /// note keeps its fixed text.
+  final NotificationFacts Function()? facts;
+
   /// This text with the event reminder words in [l10n]'s language.
   ReminderText withEventCopy(AppL10n l10n) => ReminderText(
     title: title,
@@ -136,6 +143,7 @@ class ReminderText {
     ],
     eventChannelName: l10n.eventReminders,
     eventChannelDescription: l10n.aNoteBeforeEventsYouCanJoin,
+    facts: facts,
   );
 
   /// Every sentence a notification can carry, for the copy policy.
@@ -300,6 +308,7 @@ String? eventReminderBody(PlannedNotification item, ReminderText text) {
 /// The words a note carries.
 @visibleForTesting
 String reminderBodyFor(PlannedNotification item, ReminderText text) =>
+    item.body ??
     switch (item.kind) {
       PlanKind.training => text.body,
       PlanKind.didYouTrain => text.logBody,
@@ -352,12 +361,15 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
         ),
       ),
       onDidReceiveNotificationResponse: (response) =>
-          NotificationTaps.received(response.payload),
+          NotificationTaps.received(response.payload, id: response.id),
     );
     try {
       final launch = await _plugin.getNotificationAppLaunchDetails();
       if (launch?.didNotificationLaunchApp ?? false) {
-        NotificationTaps.received(launch?.notificationResponse?.payload);
+        NotificationTaps.received(
+          launch?.notificationResponse?.payload,
+          id: launch?.notificationResponse?.id,
+        );
       }
     } catch (_) {}
   }();
@@ -435,6 +447,13 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
       // is left out.
       if (item.kind == PlanKind.eventReminder &&
           eventReminderBody(item, text) == null) {
+        continue;
+      }
+      // These two have no fixed text: without a bank line they are not sent.
+      if (item.kind == PlanKind.nudge &&
+          item.body == null &&
+          nudgeFromCode(item.variant).context.index >=
+              NudgeContext.freshStart.index) {
         continue;
       }
       // Inexact: a few minutes either way, and nothing to ask her for.

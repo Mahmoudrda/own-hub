@@ -609,6 +609,53 @@ class EatAppState {
     return handle;
   }
 
+  /// A meal from her coach's plan. Unlike a free log, a planned row is put to
+  /// the allergy guard, and logging the same row again corrects it instead of
+  /// adding a second helping. Returns the handle for the undo, or null when it
+  /// was refused (the reason has been said out loud).
+  LogHandle? logPlanned(
+    BuildContext context, {
+    required MealSlot slot,
+    required int index,
+    required ParsedItem entry,
+    DateTime? at,
+  }) {
+    if (!GuestSession.require(
+      context,
+      PendingAction.logMeal([entry], origin: MealOrigin.plan),
+    )) {
+      return null;
+    }
+    final l10n = AppL10n.of(context);
+    final now = at ?? AppClock.now();
+    final day = dayIdOf(now);
+    final outcome =
+        MealLogService(
+          repository: AppRouter.mealRepository,
+          library: eatSampleLibrary(l10n),
+          guard: AllergyGuard(AppRouter.eatConstraints),
+        ).correctPlannedLog(
+          day: MealDay(dayId: day),
+          planRef: PlanRef(assignmentId: day, slot: slot, idx: index),
+          entry: entry,
+          at: now,
+        );
+    if (outcome is MealLogRefused) {
+      explainRefusal(context, outcome);
+      return null;
+    }
+    final prepared = outcome as MealLogPrepared;
+    return session.submit(
+      prepared,
+      slot: slot,
+      describe: mealAddedLabel(
+        l10n,
+        mealFoodNames(eatSampleLibrary(l10n), prepared.items),
+        slot,
+      ),
+    );
+  }
+
   /// The five-second offer for a caller that does not carry the handle onward,
   /// wired so every screen showing the meal drops it the moment she takes it
   /// back. A caller that navigates to E04 must not also call this.

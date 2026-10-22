@@ -45,6 +45,7 @@ class ExerciseVideoView extends StatelessWidget {
     this.onClose,
     this.onBackToWorkout,
     this.onSwap,
+    this.onOpenHistory,
     this.move,
     this.duration = const Duration(seconds: 24),
     this.videos = const UnreleasedVideoRepository(),
@@ -57,6 +58,9 @@ class ExerciseVideoView extends StatelessWidget {
   final VoidCallback? onClose;
   final VoidCallback? onBackToWorkout;
   final VoidCallback? onSwap;
+
+  /// Opens the history of this move. Null draws no button.
+  final VoidCallback? onOpenHistory;
 
   /// The move being demonstrated. Injectable; defaults to the design's.
   final PlannedMove? move;
@@ -120,6 +124,15 @@ class ExerciseVideoView extends StatelessWidget {
             height: 48,
             fontSize: 15,
             onPressed: onSwap,
+          ),
+        if (onOpenHistory != null)
+          AppButton(
+            l10n.history,
+            key: const ValueKey('r04-history'),
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: onOpenHistory,
           ),
       ],
       children: [

@@ -171,9 +171,10 @@ void main() {
       addTearDown(() => AppRouter.featureFlags = saved);
       // The planner's drafts are the assistant's: planner on, assistant off.
       AppRouter.featureFlags = FeatureFlags.allOff.with_({
+        Feature.coachApp: true,
         Feature.coachPlanning: true,
       });
-      expect(AppRouter.screenIsOn('W03'), isTrue);
+      expect(AppRouter.screenIsOn('W04'), isTrue);
       expect(AppRouter.screenIsOn('K26'), isFalse);
       expect(AppRouter.screenIsOn('K27'), isFalse);
       // "I already did it" opens from Home but is Train's.

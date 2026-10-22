@@ -91,6 +91,11 @@ const _skip = {
   'ارجعي',
 };
 
+/// Rows on the old demo coach screens that open a screen coaching no longer
+/// routes (K05 getting paid, K04 offers). Both screens are dark in this
+/// release (payments, the portfolio flag), so no woman can tap them.
+const _retiredDoors = {'K17', 'B06'};
+
 void main() {
   final saved = AppRouter.featureFlags;
   tearDown(() => AppRouter.featureFlags = saved);
@@ -183,7 +188,8 @@ void main() {
           await tester.pump(const Duration(seconds: 6));
           tester.takeException();
           if (outcome.startsWith('EXCEPTION') ||
-              outcome.startsWith('NOT-BUILT')) {
+              (outcome.startsWith('NOT-BUILT') &&
+                  !_retiredDoors.contains(id))) {
             hard.add('$id [$label] $outcome');
           }
           log.writeln('$id\t$i\t$outcome\t$label');

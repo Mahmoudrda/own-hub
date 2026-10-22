@@ -20,7 +20,10 @@ and the sweeper (main.resume_account_deletions) finishes it:
                        verificationLedger/{uid} (row 40),
                        verificationBookings and verificationReviewers (rows 50, 51), a pre-approved
                        number matching her Auth phone (row 52), the community, coach
-                       and assistant data (row 26, purge_group_hook), the
+                       and assistant data (rows 26, 45-49, purge_group_hook), her
+                       coaching (rows 55-59, same hook: open coachings ended,
+                       then subscriptions, application, coachPrivate deleted
+                       and receipts and proofs pseudonymised), the
                        registry entry CLOSED not deleted (row 23), reports
                        pseudonymised (row 30)
     purgingThirdParty  nothing to call: no analytics SDK ships, and crash
@@ -72,13 +75,22 @@ JOURNAL = [
 FAILED_RETRYABLE = "failedRetryable"
 UNFINISHED_STATES = [s for s in JOURNAL if s != "done"] + [FAILED_RETRYABLE]
 
-STORAGE_PREFIXES = ("user-media/{uid}/", "user-exports/{uid}/", "coach-docs/{uid}/")
+STORAGE_PREFIXES = (
+    "user-media/{uid}/",
+    "user-exports/{uid}/",
+    "coach-docs/{uid}/",
+    "coach-public/{uid}/",
+    "payment-proofs/{uid}/",
+)
 """Every Storage place that holds her files (B1).
 
 user-media/{uid}/ is the one prefix the community and coach-media groups own
 (G7 §1.3): post media, profile photos, coach portfolio media, message
 attachments and voice notes. user-exports/{uid}/ is her data export.
-coach-docs/{uid}/ holds a coach's certificate scans (G12 §6). ID and selfie
+coach-docs/{uid}/ holds a coach's application files (certificates, education,
+feedback, transformations, photo). coach-public/{uid}/ is her published photo.
+payment-proofs/{uid}/ is a transfer screenshot waiting for staff (deleted at
+the decision anyway, D61). ID and selfie
 images and progress photos have no Storage path at all. A new uid-keyed path
 in storage.rules or the app fails tests/test_deletion_storage.py until it is
 added here."""
@@ -414,12 +426,25 @@ class FirebaseBackend:
         for group in db.collection("groups").select([]).stream():
             group.reference.collection("members").document(uid).delete()
 
+        # Rows 55 to 59: coaching. Any open coaching is ended first, so the
+        # other coach's place and ledger line are given back, then the
+        # subscriptions go with their terms and sessions, and the receipts and
+        # proofs that name her lose the name.
+        self._end_open_coachings(uid)
+        self._pseudonymise_coaching_money(uid, pseudonym())
+        subscriptions = db.collection("subscriptions")
+        for field in ("clientUid", "coachUid"):
+            for snapshot in subscriptions.where(field, "==", uid).stream():
+                db.recursive_delete(snapshot.reference)
+
         relationships = db.collection("relationships")
         for field in ("clientUid", "coachUid"):
             for snapshot in relationships.where(field, "==", uid).stream():
                 db.recursive_delete(snapshot.reference)
 
         db.recursive_delete(db.collection("coaches").document(uid))
+        db.recursive_delete(db.collection("coachPrivate").document(uid))
+        db.collection("coachApplications").document(uid).delete()
 
         # Row 49: the invite codes she shared as a coach. Nothing about the
         # women she invited is on them.
@@ -429,6 +454,66 @@ class FirebaseBackend:
         # What is left is on other women's posts, follow lists and coach
         # pages. The counter triggers (C1) take each post's counts down.
         return self._scan_phases(uid, deadline)
+
+    def _end_open_coachings(self, uid):
+        """Ends every open coaching she is part of, in one transaction each:
+        the subscription ends early, the chat closes and, when she was the
+        client, the coach's place is freed and her pending ledger line is
+        reversed (the coaching module's own helpers). No push goes out and no
+        chat line is written: the thread is deleted straight after."""
+        from coaching import common, subscriptions
+
+        db = self.db
+        now = dt.datetime.now(dt.timezone.utc)
+        for field, reason in (("clientUid", "client_left"), ("coachUid", "coach_left")):
+            for snapshot in db.collection("subscriptions").where(field, "==", uid).stream():
+                if (snapshot.to_dict() or {}).get("status") not in subscriptions.OPEN:
+                    continue
+                sub_ref = snapshot.reference
+
+                def body(transaction, sub_ref=sub_ref, field=field, reason=reason):
+                    sub = common.read(sub_ref, transaction)
+                    if sub is None or sub.get("status") not in subscriptions.OPEN:
+                        return
+                    coach_ref = db.collection("coaches").document(sub["coachUid"])
+                    rel_ref = db.collection("relationships").document(sub["relId"]) if sub.get("relId") else None
+                    ledger = (
+                        db.collection("coachPrivate").document(sub["coachUid"]).collection("ledger").document(sub_ref.id)
+                    )
+                    active = sub["status"] == "active" and field == "clientUid"
+                    coach = coach_ref.get(transaction=transaction) if active else None
+                    entry = ledger.get(transaction=transaction) if active else None
+                    rel = rel_ref.get(transaction=transaction) if rel_ref is not None else None
+                    transaction.update(
+                        sub_ref, {"status": "ended_early", "endReason": reason, "statusAt": now}
+                    )
+                    if rel is not None and rel.exists:
+                        subscriptions.close_relationship(transaction, db, rel_ref.id)
+                    if coach is not None and coach.exists:
+                        subscriptions.release_slot(transaction, coach_ref, coach.to_dict() or {})
+                    if entry is not None and entry.exists:
+                        subscriptions.settle_ledger(transaction, db, sub["coachUid"], sub_ref.id, entry.to_dict() or {})
+
+                common.run(db, body)
+
+    def _pseudonymise_coaching_money(self, uid, token):
+        """Row 59: receipts and payment proofs are the money record, so they
+        stay with her uid replaced by a token, as reports do (row 30). The names
+        she typed or carries (a proof's sender name, a receipt's coach name)
+        are emptied. Nothing here exists while payments are off."""
+        db = self.db
+        for snapshot in db.collection("receipts").where("clientUid", "==", uid).stream():
+            snapshot.reference.update({"clientUid": token})
+        for snapshot in db.collection("paymentProofs").where("clientUid", "==", uid).stream():
+            snapshot.reference.update({"clientUid": token, "senderName": ""})
+        for snapshot in db.collection("paymentProofs").where("coachUid", "==", uid).stream():
+            snapshot.reference.update({"coachUid": token})
+        # A receipt carries the coach's name but not her uid: found through
+        # the subscriptions she coached.
+        for sub in db.collection("subscriptions").where("coachUid", "==", uid).stream():
+            receipt = db.collection("receipts").document(sub.id)
+            if receipt.get().exists:
+                receipt.update({"coachName": ""})
 
     def _purge_found(self, phase, snapshot, uid):
         if phase == "following":

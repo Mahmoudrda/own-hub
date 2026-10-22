@@ -31,9 +31,13 @@ optional, and purposes as noted.
 
 Personal info
   - Name
-      Collected, processed ephemerally: read from the ID card in memory to
-      cross-check the ID number, never stored. Required.
-      Purpose: Fraud prevention, security and compliance.
+      Two cases. (1) Every member: read from the ID card in memory to
+      cross-check the ID number, never stored (ephemeral).
+      Purpose: Fraud prevention, security and compliance. (2) Coach
+      applicants only: the full name she types into the coach application,
+      kept with it for the review and never shown to members. Collected, not
+      ephemeral, required for an applicant, linked.
+      Purpose: App functionality, Fraud prevention, security and compliance.
   - Phone number
       Collected. Not ephemeral. Required.
       Purpose: Account management, App functionality, Fraud prevention.
@@ -58,6 +62,37 @@ Health and fitness
       stage, allergies. Optional. Purpose: App functionality.
       Otherwise this stays on the phone and is not collected.
 
+Messages
+  - Emails or text messages (in-app messages)
+      Collected: chat messages between a member and the coach she joined,
+      stored in Firestore (Frankfurt) while both accounts exist, readable by
+      the two of them; Own Hub staff read a thread only after one of them
+      reports it. Optional (only if she joins a coach). Linked. Not shared.
+      Purpose: App functionality. Deleted with either account.
+
+Coaching (applications, portfolios, joining a coach; no payments yet)
+  - Coach application: full name (see Name), display name, governorate,
+      languages, headline, education, certificates, specialties, years,
+      qualifications, client feedback, before and after client photos with
+      their written consent, how she coaches, coach terms version. Stored,
+      optional (only if she applies), linked, App functionality. Kept while
+      she is a coach or until she deletes her account; a rejected application
+      has no automatic deletion date.
+  - Public coach portfolio: display name, a copy of her photo, headline,
+      approach, specialties, languages, years, reply time, checked
+      certificate titles, feedback text and packages with prices, plus the
+      approved feedback screenshots, before and after photos of clients (each
+      with that client's written consent, which the coach confirms) and photos
+      of the coach or her work. Shared with other users (verified members)
+      only for an approved coach. The full name is never shown.
+  - Intake form a member sends a coach she asks to join: goal, level, days,
+      place, allergies she keeps, life stage, seven health answers (these fall
+      under Health info, already declared), doctor tick, a note. Visible to
+      that coach only while the coaching lasts. Optional. Linked.
+  - Plans a coach shares are stored under the member's account.
+  - No payments exist in this version: no payment info, purchase history or
+      financial info is collected.
+
 Other user-generated content and app info (three flows to declare)
   - Scan cache: a fingerprint (hash) of a re-encoded meal photo plus the foods
       and grams found, kept 30 days, then deleted by TTL. No photo, no user
@@ -78,6 +113,16 @@ Photos and videos
       and the selfie frames, for the women-only check. Never stored.
       Required, with a woman-reviewer alternative.
       Purpose: Fraud prevention, security and compliance; App functionality.
+      Also, for coach applicants only, and STORED (not ephemeral): the
+      pictures she picks for the application (profile photo, education and
+      certificate documents, feedback screenshots, before and after photos of
+      clients). Also optional photos of herself or her work. Optional,
+      linked, App functionality. Own Hub's woman reviewer checks each one;
+      on approval Own Hub keeps a re-encoded copy with no location or other
+      metadata, deletes the original, and verified members see the approved
+      items on the portfolio. The coach can remove an item; all are deleted
+      with her account. Before approval a picture is readable only by her
+      and the reviewer.
 
 App activity
   - App interactions
@@ -133,7 +178,9 @@ photo-library permission and cannot read the gallery. The one place she can
 pick an existing picture is her own profile photo, through the system photo
 picker, which hands the app only the single picture she chooses; the profile
 photo stays on the phone, is never uploaded and is removed by Delete
-everything, so it is not collected.
+everything, so it is not collected. The exception is a coach applicant: the
+pictures she picks (or takes) for her application are uploaded and declared
+above under Photos.
 There is no video review. A woman from Own Hub who reviews a case contacts
 her by phone, outside the app; nothing from that contact is collected by the
 app.
@@ -163,7 +210,10 @@ under 18.
 
 Content rating
 --------------
-No user-generated content and no chat in this version.
+No community. The user-written content other members can see is an approved
+coach's public portfolio (reviewed before it is shown, reportable by members)
+and a dish a member opts to share without her name. A member and the coach she
+joined can chat in text; no images or voice. Reports reach the Own Hub team.
 
 App access
 ----------

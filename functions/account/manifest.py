@@ -86,6 +86,9 @@ ACTIONS: dict[int, str] = {
     52: PREAPPROVED,
     53: GROUP_HOOK,  # events/{eventId}/attendees/{uid}, run inside purge_group_hook
     54: GROUP_HOOK,  # communityFoodCandidates/{key}/by/{hash}, run inside purge_group_hook
+    # Private coaching, all run inside purge_group_hook.
+    55: GROUP_HOOK, 56: GROUP_HOOK, 57: GROUP_HOOK, 58: GROUP_HOOK,
+    59: GROUP_HOOK,  # receipts, paymentProofs: pseudonymised inside purge_group_hook
 }
 
 

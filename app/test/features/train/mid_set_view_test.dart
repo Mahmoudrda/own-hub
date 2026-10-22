@@ -436,4 +436,35 @@ void main() {
       reason: 'the button she taps between breaths must never be clipped',
     );
   });
+
+  for (final locale in const [Locale('en'), Locale('ar')]) {
+    testWidgets('the move note row and its sheet fit at text scale 2.0 in '
+        '${locale.languageCode}', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _host(const MidSetView(), locale: locale, textScale: 2),
+      );
+      await tester.pumpAndSettle();
+      final row = find.byKey(const ValueKey('r07-note'));
+      expect(row, findsOneWidget);
+      expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
+      expect(
+        tester.getSemantics(row),
+        matchesSemantics(
+          isButton: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+          isFocusable: true,
+          label: AppL10n.of(tester.element(row)).addNote,
+        ),
+      );
+
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('r07-note-field')), findsOneWidget);
+      expect(find.byKey(const ValueKey('r07-note-save')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      semantics.dispose();
+    });
+  }
 }

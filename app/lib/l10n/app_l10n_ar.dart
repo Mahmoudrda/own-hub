@@ -12435,4 +12435,2395 @@ class AppL10nAr extends AppL10n {
   String foodLastDaysDays(String days) {
     return 'الأكل في آخر $days أيام';
   }
+
+  @override
+  String get noSessionsOfThisMoveYet => 'لسه مفيش جلسات للحركة دي';
+
+  @override
+  String get yourLastSessionsOfThisMove => 'آخر جلساتك للحركة دي';
+
+  @override
+  String secondsS(String seconds) {
+    return '$seconds ث';
+  }
+
+  @override
+  String bestSetOnDateSet(String date, String set) {
+    return 'أحسن مجموعة في $date: $set';
+  }
+
+  @override
+  String get recentSessions => 'آخر الجلسات';
+
+  @override
+  String get fixingATypoUpdatesYourBestsPoints =>
+      'لو صححتي رقم غلط، أرقامك القياسية بتتحدّث. النقاط بتفضل زي ما هي.';
+
+  @override
+  String get noFinishedSessionsYet => 'لسه مفيش جلسات خلصتيها';
+
+  @override
+  String get sessionsYouFinishShowUpHereAnd =>
+      'الجلسات اللي بتخلصيها هتظهر هنا، وتقدري تصححي أي مجموعة.';
+
+  @override
+  String get workout => 'تمرين';
+
+  @override
+  String get fixThisSet => 'صححي المجموعة دي';
+
+  @override
+  String setN(String n) {
+    return 'المجموعة $n';
+  }
+
+  @override
+  String setNIsNowSet(String n, String set) {
+    return 'المجموعة $n بقت $set';
+  }
+
+  @override
+  String get addNote => 'أضيفي ملاحظة';
+
+  @override
+  String get editNote => 'عدّلي الملاحظة';
+
+  @override
+  String get noteForThisMove => 'ملاحظة للتمرين ده';
+
+  @override
+  String get keptOnThisPhoneOnly => 'بتتحفظ على موبايلك بس.';
+
+  @override
+  String get history => 'السجل';
+
+  @override
+  String get whichBarDoYouUse => 'بتستخدمي أنهي بار؟';
+
+  @override
+  String get changeBar => 'غيّري البار';
+
+  @override
+  String kgKgBar(String kg) {
+    return 'بار $kg كجم';
+  }
+
+  @override
+  String barKgBarSideKgEachSide(String bar, String side) {
+    return 'بار $bar كجم + $side كجم على كل جنب';
+  }
+
+  @override
+  String justTheBarKgBar(String bar) {
+    return 'البار بس، $bar كجم';
+  }
+
+  @override
+  String closestYouCanLoadTotalKgBar(String total, String bar, String side) {
+    return 'أقرب وزن تقدري تحمّليه: $total كجم. بار $bar كجم + $side كجم على كل جنب.';
+  }
+
+  @override
+  String platesOnOneSidePlatesKg(String plates) {
+    return 'الأوزان على جنب واحد: $plates كجم';
+  }
+
+  @override
+  String get logTheTotalBarIncluded => 'سجّلي الوزن الكلي مع البار.';
+
+  @override
+  String nextTimeWeightOnName(String weight, String name) {
+    return 'المرة الجاية: $weight على $name';
+  }
+
+  @override
+  String sameWeightOnNameNextTimeUntil(String name) {
+    return 'نفس الوزن على $name المرة الجاية، لحد ما تحسّيه ثابت';
+  }
+
+  @override
+  String weightMustBe0ToMaxKg(String max) {
+    return 'الوزن من 0 لـ $max كجم';
+  }
+
+  @override
+  String repsMustBe0ToMax(String max) {
+    return 'التكرارات من 0 لـ $max';
+  }
+
+  @override
+  String secondsMustBe0ToMax(String max) {
+    return 'الثواني من 0 لـ $max';
+  }
+
+  @override
+  String get seatAndPinNumbers => 'أرقام الكرسي والدبوس';
+
+  @override
+  String get findACoach => 'دوّري على مدرّبة';
+
+  @override
+  String get threeQuickQuestionsThenTheCoachesWho =>
+      'تلات أسئلة سريعة، وبعدها المدرّبات الأنسب ليكي.';
+
+  @override
+  String get whereDoYouTrain => 'بتتمرني فين؟';
+
+  @override
+  String get atTheGym => 'في الجيم';
+
+  @override
+  String get yourBudgetForAMonth => 'ميزانيتك للشهر';
+
+  @override
+  String get yourBestMatches => 'أنسب مدرّبات ليكي';
+
+  @override
+  String get matchedOnYourThreeAnswersOnlyThen =>
+      'على حسب إجاباتك التلاتة بس، وبعدها بالترتيب الأبجدي.';
+
+  @override
+  String get noCloseMatchYetBrowseAllThe =>
+      'مفيش مدرّبة مطابقة قوي لسه. اتفرّجي على كل المدرّبات تحت.';
+
+  @override
+  String get allCoachesAToZ => 'كل المدرّبات بالترتيب الأبجدي';
+
+  @override
+  String get coachesAreJoiningCheckBackSoon =>
+      'المدرّبات بينضمّوا لينا. ارجعي بعد شوية.';
+
+  @override
+  String get weCouldNotLoadTheCoachesCheck =>
+      'ما قدرناش نحمّل المدرّبات. اتأكدي من النت وحاولي تاني.';
+
+  @override
+  String get loadingCoaches => 'بنحمّل المدرّبات';
+
+  @override
+  String fromEgpPriceAMonth(String price) {
+    return 'من $price جنيه في الشهر';
+  }
+
+  @override
+  String openTheProfileOfName(String name) {
+    return 'افتحي صفحة $name';
+  }
+
+  @override
+  String get verifiedCoach => 'مدرّبة موثّقة';
+
+  @override
+  String get yearsCoaching => 'سنين الخبرة';
+
+  @override
+  String get fatLoss => 'حرق دهون';
+
+  @override
+  String get muscleGain => 'بناء عضلات';
+
+  @override
+  String get homeTraining => 'تمرين في البيت';
+
+  @override
+  String get gymTraining => 'تمرين في الجيم';
+
+  @override
+  String get mobility => 'مرونة وحركة';
+
+  @override
+  String get postnatalReturn => 'الرجوع بعد الولادة';
+
+  @override
+  String get healthyEating => 'أكل صحي';
+
+  @override
+  String get endurance => 'تحمّل';
+
+  @override
+  String get coachProfile => 'صفحة المدرّبة';
+
+  @override
+  String get thisIsHowMembersSeeYou => 'كده الأعضاء بيشوفوكي';
+
+  @override
+  String yearsCoachingN(int n) {
+    return 'سنين التدريب: $n';
+  }
+
+  @override
+  String languagesList(String list) {
+    return 'اللغات: $list';
+  }
+
+  @override
+  String usuallyRepliesWithinNHours(int n) {
+    return 'بترد عادةً في خلال $n ساعة';
+  }
+
+  @override
+  String get noPackagesYet => 'لسه مفيش باقات';
+
+  @override
+  String get whatIsIncluded => 'اللي في الباقة';
+
+  @override
+  String durationNDays(int n) {
+    return 'المدة: $n يوم';
+  }
+
+  @override
+  String liveSessionsAMonthN(int n) {
+    return 'جلسات مباشرة في الشهر: $n';
+  }
+
+  @override
+  String egpPrice(String price) {
+    return '$price جنيه';
+  }
+
+  @override
+  String get finalPriceTaxesAndFeesIncluded =>
+      'السعر النهائي، شامل الضرايب والرسوم';
+
+  @override
+  String get youWillBeAbleToBookA =>
+      'هتقدري تحجزي باقة من هنا أول ما الحجز يفتح.';
+
+  @override
+  String get approach => 'طريقة التدريب';
+
+  @override
+  String get whatMembersSay => 'كلام الأعضاء';
+
+  @override
+  String get checkedCertificates => 'شهادات اتراجعت';
+
+  @override
+  String get reportThisProfile => 'بلّغي عن الصفحة دي';
+
+  @override
+  String get whyAreYouReportingThisProfile => 'ليه بتبلّغي عن الصفحة دي؟';
+
+  @override
+  String get thisLooksLikeAMansAccount => 'الحساب ده شكله حساب راجل';
+
+  @override
+  String get nudityOrSexualContent => 'عُري أو محتوى جنسي';
+
+  @override
+  String get spamOrAdvertising => 'سبام أو إعلانات';
+
+  @override
+  String get selfHarmOrDanger => 'إيذاء النفس أو خطر';
+
+  @override
+  String get askingForPaymentOutsideOwnHub => 'بتطلب الدفع برّه Own Hub';
+
+  @override
+  String get unsafeTrainingOrFoodAdvice => 'نصايح تمرين أو أكل مش آمنة';
+
+  @override
+  String get addANoteOptional => 'ضيفي ملاحظة (اختياري)';
+
+  @override
+  String get thankYouWeWillLookAtThis => 'شكرًا ليكي. هنراجع ده.';
+
+  @override
+  String get yourReportIsPrivateTheCoachIs => 'بلاغك سرّي. المدرّبة مش هتعرف.';
+
+  @override
+  String get weCouldNotSendYourReportTry =>
+      'ما قدرناش نبعت البلاغ. جرّبي تاني.';
+
+  @override
+  String photoOfName(String name) {
+    return 'صورة $name';
+  }
+
+  @override
+  String get myCoachSpace => 'مساحتي كمدرّبة';
+
+  @override
+  String get yourPortfolioIsLive => 'ملفك التعريفي ظاهر للأعضاء';
+
+  @override
+  String get yourPortfolioIsNotLiveYet => 'ملفك التعريفي لسه مش ظاهر';
+
+  @override
+  String get turnOnOnePackageAndMembersCan =>
+      'فعّلي باقة واحدة وهيظهر ملفك للأعضاء.';
+
+  @override
+  String get acceptingNewClients => 'بستقبل عميلات جداد';
+
+  @override
+  String get photoHeadlineAndHowYouCoach => 'الصورة والعنوان وطريقة تدريبك';
+
+  @override
+  String get myPackages => 'باقاتي';
+
+  @override
+  String get upTo6PackagesEachWithYour => 'لحد 6 باقات، وكل واحدة بسعرك إنتي';
+
+  @override
+  String countOf6Packages(String count) {
+    return '$count من 6 باقات';
+  }
+
+  @override
+  String get previewMyPortfolio => 'معاينة ملفي التعريفي';
+
+  @override
+  String get seeItTheWayMembersDo => 'شوفيه زي ما الأعضاء بيشوفوه';
+
+  @override
+  String get myApplication => 'طلبي';
+
+  @override
+  String get whatWasApproved => 'اللي اتوافق عليه';
+
+  @override
+  String get yourCoachSpaceIsPaused => 'مساحتك كمدرّبة موقوفة دلوقتي';
+
+  @override
+  String get pleaseContactOwnHubNothingCanBe =>
+      'اتواصلي مع Own Hub. مفيش حاجة تتعدّل وهي موقوفة.';
+
+  @override
+  String get yourCoachSpaceIsNotReadyYet => 'مساحتك كمدرّبة لسه مش جاهزة';
+
+  @override
+  String get itOpensHereOnceYourApplicationIs =>
+      'هتفتح هنا أول ما طلبك يتوافق عليه.';
+
+  @override
+  String get loadingYourCoachSpace => 'بنحمّل مساحتك';
+
+  @override
+  String get weCouldNotReachOwnHubCheck =>
+      'ما قدرناش نوصل لـ Own Hub. اتأكدي من النت وجرّبي تاني.';
+
+  @override
+  String get somethingWentWrongPleaseTryAgain => 'حصلت مشكلة. جرّبي تاني.';
+
+  @override
+  String get coachingIsNotOpenRightNowPlease =>
+      'التدريب مش مفتوح دلوقتي. جرّبي بعدين.';
+
+  @override
+  String get yourAccountNeedsToBeVerifiedFirst => 'لازم حسابك يتوثّق الأول.';
+
+  @override
+  String get thisAccountIsNotAnApprovedCoach => 'الحساب ده مش مدرّبة معتمدة.';
+
+  @override
+  String get somethingInThisFormNeedsAnotherLook =>
+      'في حاجة في النموذج محتاجة مراجعة.';
+
+  @override
+  String pickAPriceBetweenEgpLowAnd(String low, String high) {
+    return 'اختاري سعر بين $low و$high جنيه.';
+  }
+
+  @override
+  String get weCouldNotFindThatPackageGo =>
+      'ملقيناش الباقة دي. ارجعي وافتحيها تاني.';
+
+  @override
+  String get thatPictureCouldNotBeUsedTry =>
+      'الصورة دي ما ينفعش نستخدمها. جرّبي واحدة تانية.';
+
+  @override
+  String get pleaseSignInAgain_3jocz => 'سجّلي دخولك تاني.';
+
+  @override
+  String get oneLineMembersReadFirst => 'سطر واحد بيقراه الأعضاء الأول';
+
+  @override
+  String get tellMembersHowYouWorkWithA =>
+      'قولي للأعضاء بتشتغلي مع العميلة إزاي.';
+
+  @override
+  String useLowToHighCharacters(String low, String high) {
+    return 'استخدمي من $low لـ $high حرف.';
+  }
+
+  @override
+  String get acceptRequestsAutomatically => 'قبول الطلبات تلقائيًا';
+
+  @override
+  String get mostClientsAtOnce => 'أقصى عدد عميلات في نفس الوقت';
+
+  @override
+  String get yourPhotoIsSaved => 'الصورة اتحفظت.';
+
+  @override
+  String get theCameraIsTurnedOffForOwn =>
+      'الكاميرا مقفولة لـ Own Hub. تقدري تفتحيها من الإعدادات.';
+
+  @override
+  String get saveChanges => 'احفظي التغييرات';
+
+  @override
+  String get yourPortfolioIsSaved => 'ملفك التعريفي اتحفظ.';
+
+  @override
+  String get whatMembersSee => 'اللي الأعضاء بيشوفوه';
+
+  @override
+  String get startFromATemplateThenSetYour =>
+      'ابدئي من نموذج جاهز وبعدين حطي سعرك.';
+
+  @override
+  String get addAPackage => 'ضيفي باقة';
+
+  @override
+  String get turnOnAtLeastOnePackageTo =>
+      'فعّلي باقة واحدة على الأقل عشان يظهر ملفك للأعضاء.';
+
+  @override
+  String get onForMembers => 'ظاهرة للأعضاء';
+
+  @override
+  String get off => 'مقفولة';
+
+  @override
+  String countDays(String count) {
+    return '$count يوم';
+  }
+
+  @override
+  String countLiveVideoSessionsAMonth(String count) {
+    return '$count جلسة فيديو مباشرة في الشهر';
+  }
+
+  @override
+  String countMin(String count) {
+    return '$count دقيقة';
+  }
+
+  @override
+  String get newPackage => 'باقة جديدة';
+
+  @override
+  String get editPackage => 'تعديل الباقة';
+
+  @override
+  String get startFromATemplate => 'ابدئي من نموذج';
+
+  @override
+  String get blankPackage => 'باقة فاضية';
+
+  @override
+  String get fourWeeksBuiltAroundYouAPlan =>
+      '4 أسابيع متفصّلة عليكي: خطة مخصوصة ليكي وجلسات فيديو مباشرة ومتابعة أسبوعية لتقدّمك.';
+
+  @override
+  String get eightWeeksToBuildARoutineThat =>
+      '8 أسابيع نبني فيهم روتين يكمّل معاكي، بخطة مخصوصة ليكي وجلسات فيديو مباشرة ومتابعة أسبوعية لتقدّمك.';
+
+  @override
+  String get twelveWeeksForARealChangeWith =>
+      '12 أسبوع لتغيير حقيقي، بخطة مخصوصة ليكي وجلسات فيديو مباشرة ومتابعة أسبوعية لتقدّمك.';
+
+  @override
+  String get aWorkoutPlanMadeForYou => 'خطة تمارين مخصوصة ليكي';
+
+  @override
+  String get liveVideoSessionsWithMe => 'جلسات فيديو مباشرة معايا';
+
+  @override
+  String get aWeeklyLookAtYourProgress => 'متابعة أسبوعية لتقدّمك';
+
+  @override
+  String get aPlanThatChangesAsYouDo => 'خطة بتتغيّر معاكي';
+
+  @override
+  String get packageName => 'اسم الباقة';
+
+  @override
+  String get description => 'الوصف';
+
+  @override
+  String get length => 'المدة';
+
+  @override
+  String get removeThisLine => 'امسحي السطر ده';
+
+  @override
+  String get liveSessionsAMonth => 'جلسات الفيديو المباشرة في الشهر';
+
+  @override
+  String get progressReviewsAWeek => 'مراجعات التقدّم في الأسبوع';
+
+  @override
+  String get yourPriceEgp => 'سعرك (بالجنيه)';
+
+  @override
+  String wholePoundsFromLowToHigh(String low, String high) {
+    return 'جنيهات صحيحة، من $low لـ $high.';
+  }
+
+  @override
+  String get showThisPackageToMembers => 'اعرضي الباقة دي للأعضاء';
+
+  @override
+  String get positionInYourList => 'ترتيبها في القايمة';
+
+  @override
+  String get savePackage => 'احفظي الباقة';
+
+  @override
+  String savedYouReceiveEgpAmount(String amount) {
+    return 'اتحفظت. هتستلمي $amount جنيه.';
+  }
+
+  @override
+  String get howMembersSeeIt => 'الأعضاء هيشوفوها كده';
+
+  @override
+  String add1ToMaxLinesEachLow(String max, String low, String high) {
+    return 'ضيفي من 1 لـ $max سطور، كل سطر من $low لـ $high حرف.';
+  }
+
+  @override
+  String get less => 'أقل';
+
+  @override
+  String get yourApplication => 'طلبك';
+
+  @override
+  String get specialties => 'التخصّصات';
+
+  @override
+  String get clientFeedback => 'آراء العميلات';
+
+  @override
+  String get beforeAndAfterStories => 'قصص قبل وبعد';
+
+  @override
+  String get returnAfterBirth => 'الرجوع بعد الولادة';
+
+  @override
+  String get membersCanAskToJoinYourPackages =>
+      'الأعضاء يقدروا يطلبوا ينضمّوا لباقاتك. التدريب مجاني لحد ما Own Hub تفتح الدفع.';
+
+  @override
+  String get whenThisIsOnARequestGoes =>
+      'لما تكون شغّالة، الطلب بيتقبل لوحده طول ما عندك مكان. ولما تكون مقفولة، بتردّي إنتي على كل طلب.';
+
+  @override
+  String newRequestsWaitOnceYouReachCount(String count) {
+    return 'الطلبات الجديدة بتستنى لما توصلي $count عميلة في نفس الوقت.';
+  }
+
+  @override
+  String get fewer => 'أقل';
+
+  @override
+  String membersSeeEgpPrice(String price) {
+    return 'الأعضاء بيشوفوا $price جنيه';
+  }
+
+  @override
+  String get askToJoin => 'اطلبي الانضمام';
+
+  @override
+  String get requestsChatsAndClientsInOnePlace =>
+      'الطلبات والرسايل والعميلات في مكان واحد';
+
+  @override
+  String countNewRequests(String count) {
+    return '$count طلبات جديدة';
+  }
+
+  @override
+  String countUnreadChats(String count) {
+    return '$count محادثات لسه ما اتقرتش';
+  }
+
+  @override
+  String countClients(String count) {
+    return '$count عميلات';
+  }
+
+  @override
+  String get freeWhileOwnHubOpensCoaching => 'ببلاش وإحنا بنفتح التدريب';
+
+  @override
+  String tellNameAboutYou(String name) {
+    return 'عرّفي $name بنفسك';
+  }
+
+  @override
+  String get yourLevel => 'مستواكي';
+
+  @override
+  String get daysAWeekYouCanTrain => 'كام يوم في الأسبوع تقدري تتمرني';
+
+  @override
+  String get allergiesFromYourProfile => 'الحساسية من ملفك';
+
+  @override
+  String get tapOneToTakeItOffThe => 'دوسي على واحدة عشان تشيليها من القايمة.';
+
+  @override
+  String get aFewQuestionsAboutYourHealth => 'كام سؤال عن صحتك';
+
+  @override
+  String get answerEachOneWithYesOrNo => 'جاوبي على كل سؤال بنعم أو لا.';
+
+  @override
+  String get no => 'لا';
+
+  @override
+  String get hasADoctorEverSaidYouHave =>
+      'دكتور قالك قبل كده إن عندك مشكلة في القلب؟';
+
+  @override
+  String get doYouFeelPainInYourChest => 'بتحسي بوجع في صدرك وانتي بتتمرني؟';
+
+  @override
+  String get doYouFeelDizzyOrFaintWhen => 'بتحسي بدوخة أو إغماء وانتي بتتمرني؟';
+
+  @override
+  String get doYouHaveALongTermCondition => 'عندك مرض مزمن، زي السكر أو الضغط؟';
+
+  @override
+  String get doYouTakeMedicationEveryDay => 'بتاخدي أدوية كل يوم؟';
+
+  @override
+  String get doYouHaveABoneOrJoint =>
+      'عندك مشكلة في العضم أو المفاصل ممكن التمرين يزوّدها؟';
+
+  @override
+  String get hasADoctorToldYouToExercise => 'دكتور قالك تتمرني تحت إشراف بس؟';
+
+  @override
+  String get iWillCheckWithMyDoctorBefore => 'هسأل دكتوري قبل ما أبدأ';
+
+  @override
+  String get yourCoachWillReadYourAnswersBefore =>
+      'المدرّبة هتقرا إجاباتك قبل ما تقبل.';
+
+  @override
+  String get aNoteForTheCoachOptional => 'ملاحظة للمدرّبة (اختياري)';
+
+  @override
+  String iShareTheseAnswersWithNameMy(String name) {
+    return 'أنا بشارك الإجابات دي مع $name، مدرّبتي.';
+  }
+
+  @override
+  String get iUnderstandMyAnswersAreStoredIn =>
+      'فاهمة إن إجاباتي محفوظة بأمان على سيرفرات Own Hub في ألمانيا.';
+
+  @override
+  String get sendRequest => 'ابعتي الطلب';
+
+  @override
+  String get answerEveryQuestionAndTickTheBoxes =>
+      'جاوبي على كل الأسئلة وعلّمي على الخانات اللي في الآخر.';
+
+  @override
+  String get requestSent => 'الطلب اتبعت';
+
+  @override
+  String nameUsuallyRepliesWithinHoursHours(String name, int hours) {
+    return '$name بترد عادةً في خلال $hours ساعة';
+  }
+
+  @override
+  String nameWillGetBackToYouSoon(String name) {
+    return '$name هترد عليكي قريب.';
+  }
+
+  @override
+  String get youAlreadyAskedToJoinThisCoach =>
+      'إنتي طلبتي الانضمام للمدرّبة دي قبل كده.';
+
+  @override
+  String get thisCoachIsNotTakingNewClients =>
+      'المدرّبة دي مش بتقبل عميلات جديدة دلوقتي.';
+
+  @override
+  String get weCouldNotSendYourRequestTry =>
+      'ما قدرناش نبعت الطلب. جرّبي تاني.';
+
+  @override
+  String get coachWomenOnOwnHub => 'درّبي ستات على Own Hub';
+
+  @override
+  String get applyToJoinAsACoachOwn =>
+      'قدّمي كمدرّبة. مراجِعة Own Hub بتقرا كل طلب، والمدرّبات المقبولات بيبقى ليهم صفحة الأعضاء تلاقيها.';
+
+  @override
+  String get whatYouWillNeed => 'هتحتاجي إيه';
+
+  @override
+  String get aClearPhotoOfYou => 'صورة واضحة ليكي';
+
+  @override
+  String get photosOfYourDegreeAndCertificates => 'صور شهادتك ودوراتك';
+
+  @override
+  String get twoMessagesFromWomenYouTrained => 'رسالتين من ستات اتدرّبوا معاكي';
+
+  @override
+  String get aClientTransformationWithHerWrittenConsent =>
+      'تحوّل لعميلة، بموافقتها المكتوبة';
+
+  @override
+  String get ownHubIsForWomenOnlyOnly =>
+      'Own Hub للستات بس. بس الستات المتحقَّق منهم يقدروا يقدّموا، وكل العميلات ستات.';
+
+  @override
+  String get continueMyApplication => 'كمّلي طلبك';
+
+  @override
+  String get verifyThatYouAreAWomanFirst => 'اتحققي الأول إنك ست';
+
+  @override
+  String get applyingNeedsAVerifiedAccountVerificationTakes =>
+      'التقديم محتاج حساب متحقَّق منه. التحقق بياخد كام دقيقة.';
+
+  @override
+  String get verifyMyAccount => 'اتحققي من حسابك';
+
+  @override
+  String get saveAndContinue => 'احفظي وكمّلي';
+
+  @override
+  String get yourAnswersAreSavedOnThisPhone =>
+      'إجاباتك بتتحفظ على موبايلك بعد كل خطوة.';
+
+  @override
+  String get thisIsNeeded => 'ده مطلوب';
+
+  @override
+  String useAtLeastMinCharacters(String min) {
+    return 'استخدمي $min حرف على الأقل';
+  }
+
+  @override
+  String useAtMostMaxCharacters(String max) {
+    return 'استخدمي $max حرف على الأكتر';
+  }
+
+  @override
+  String minToMaxCharacters(String min, String max) {
+    return 'من $min لـ $max حرف';
+  }
+
+  @override
+  String enterAYearFromFromToTo(String from, String to) {
+    return 'اكتبي سنة من $from لـ $to';
+  }
+
+  @override
+  String enterAWholeNumberFromMinTo(String min, String max) {
+    return 'اكتبي رقم صحيح من $min لـ $max';
+  }
+
+  @override
+  String addAtLeastMin(String min) {
+    return 'ضيفي $min على الأقل';
+  }
+
+  @override
+  String chooseBetweenMinAndMax(String min, String max) {
+    return 'اختاري من $min لـ $max';
+  }
+
+  @override
+  String get tickThisToContinue => 'علّمي هنا عشان تكمّلي';
+
+  @override
+  String get chooseADifferentOne => 'اختاري حاجة تانية';
+
+  @override
+  String get membersSeeYourDisplayNameHeadlineAnd =>
+      'الأعضاء بيشوفوا اسم العرض والعنوان والصورة. اسمك الكامل للمراجعة بس ومش بيظهر لحد.';
+
+  @override
+  String get fullName => 'الاسم الكامل';
+
+  @override
+  String get forTheReviewOnlyNeverShownPublicly => 'للمراجعة بس. مش بيظهر لحد.';
+
+  @override
+  String get displayName => 'اسم العرض';
+
+  @override
+  String get governorate => 'المحافظة';
+
+  @override
+  String get languagesYouCoachIn => 'اللغات اللي بتدرّبي بيها';
+
+  @override
+  String get arabicLanguage => 'العربي';
+
+  @override
+  String get englishLanguage => 'الإنجليزي';
+
+  @override
+  String get photoAdded => 'الصورة اتضافت';
+
+  @override
+  String get theCameraIsBlockedAllowItIn =>
+      'الكاميرا مقفولة. اسمحي بيها من الإعدادات أو اختاري صورة.';
+
+  @override
+  String get yourEducation => 'دراستك';
+
+  @override
+  String get degreeOrCourse => 'الدرجة أو الدراسة';
+
+  @override
+  String get institution => 'الجهة';
+
+  @override
+  String get year => 'السنة';
+
+  @override
+  String get addEducation => 'ضيفي دراسة';
+
+  @override
+  String educationN(String n) {
+    return 'الدراسة $n';
+  }
+
+  @override
+  String get proofPhotoOptional => 'صورة إثبات، اختيارية';
+
+  @override
+  String get yourCertificates => 'شهاداتك';
+
+  @override
+  String get certificateTitle => 'اسم الشهادة';
+
+  @override
+  String get issuedBy => 'الجهة اللي أصدرتها';
+
+  @override
+  String get addACertificate => 'ضيفي شهادة';
+
+  @override
+  String certificateN(String n) {
+    return 'الشهادة $n';
+  }
+
+  @override
+  String get certificatePhoto => 'صورة الشهادة';
+
+  @override
+  String get yourSpecialties => 'تخصصاتك';
+
+  @override
+  String get yearsOfExperience => 'سنين الخبرة';
+
+  @override
+  String get yourQualifications => 'مؤهلاتك';
+
+  @override
+  String get whatYouStudiedAndTrainedIn => 'اللي دارستيه واتدرّبتي عليه.';
+
+  @override
+  String get feedbackFromClients => 'آراء العميلات';
+
+  @override
+  String get screenshotsAreSeenOnlyByOwnHubs =>
+      'اللقطات بتتشاف من مراجِعة Own Hub بس.';
+
+  @override
+  String get whatSheSaid => 'اللي قالته';
+
+  @override
+  String get herFirstName => 'اسمها الأول';
+
+  @override
+  String get whereItCameFrom => 'جت منين';
+
+  @override
+  String get whatsapp => 'واتساب';
+
+  @override
+  String get instagram => 'إنستجرام';
+
+  @override
+  String get somewhereElse => 'مكان تاني';
+
+  @override
+  String get screenshotOptional => 'لقطة شاشة، اختيارية';
+
+  @override
+  String get addFeedback => 'ضيفي رأي';
+
+  @override
+  String feedbackN(String n) {
+    return 'الرأي $n';
+  }
+
+  @override
+  String get clientTransformations => 'تحوّلات العميلات';
+
+  @override
+  String get beforePhoto => 'صورة قبل';
+
+  @override
+  String get afterPhoto => 'صورة بعد';
+
+  @override
+  String get weeksItTook => 'الأسابيع اللي اتاخدت';
+
+  @override
+  String get noteOptional => 'ملاحظة، اختيارية';
+
+  @override
+  String get myClientAgreedInWritingThatOwn =>
+      'عميلتي وافقت كتابةً إن مراجِعة Own Hub تشوف الصور دي';
+
+  @override
+  String get addATransformation => 'ضيفي تحوّل';
+
+  @override
+  String transformationN(String n) {
+    return 'التحوّل $n';
+  }
+
+  @override
+  String get yourApproach => 'أسلوبك';
+
+  @override
+  String get followUpsWithEachClientPerWeek =>
+      'المتابعات مع كل عميلة في الأسبوع';
+
+  @override
+  String get howFastYouReply => 'بترُدّي بسرعة قد إيه';
+
+  @override
+  String withinHoursHours(String hours) {
+    return 'خلال $hours ساعة';
+  }
+
+  @override
+  String get whereYouTrainClients => 'بتدرّبي العميلات فين';
+
+  @override
+  String get inAGym => 'في جيم';
+
+  @override
+  String get coachTerms => 'شروط المدرّبات';
+
+  @override
+  String get readThesePointsThenTickTheThree =>
+      'اقري النقط دي، وبعدين علّمي على القواعد التلاتة.';
+
+  @override
+  String get ownHubReviewsEveryCoachBeforeShe =>
+      'Own Hub بتراجع كل مدرّبة قبل ما تتعرض.';
+
+  @override
+  String get everythingYouTellUsMustBeAccurate =>
+      'كل اللي بتقوليه لنا لازم يكون صح.';
+
+  @override
+  String get photosOfClientsAreSharedOnlyWith =>
+      'صور العميلات بتتشارك بموافقتهم المكتوبة بس.';
+
+  @override
+  String get clientsPayThroughOwnHubOnlyNever =>
+      'العميلات بيدفعوا من خلال Own Hub بس، مش برّاها.';
+
+  @override
+  String get youCanWithdrawYourApplicationAtAny =>
+      'تقدري تسحبي طلبك في أي وقت.';
+
+  @override
+  String get readTheFullCoachTerms => 'اقري شروط المدرّبات كاملة';
+
+  @override
+  String get everythingIWroteIsAccurate => 'كل اللي كتبته صح';
+
+  @override
+  String get iShareClientPhotosOnlyWithTheir =>
+      'بشارك صور عميلاتي بموافقتهم المكتوبة بس';
+
+  @override
+  String get iWillNotTakePaymentFromClients =>
+      'مش هاخد فلوس من العميلات برّا Own Hub';
+
+  @override
+  String get reviewYourApplication => 'راجعي طلبك';
+
+  @override
+  String get lookOverEachPartYouCanEdit =>
+      'بصّي على كل جزء. تقدري تعدّلي أي حاجة قبل ما تبعتي.';
+
+  @override
+  String get stillNeeded => 'لسه ناقص';
+
+  @override
+  String get complete => 'كامل';
+
+  @override
+  String get sendMyApplication => 'ابعتي طلبي';
+
+  @override
+  String get sendingYourApplication => 'بنبعت طلبك';
+
+  @override
+  String uploadingPhotoDoneOfTotal(String done, String total) {
+    return 'بنرفع الصورة $done من $total';
+  }
+
+  @override
+  String get applicationSent => 'الطلب اتبعت';
+
+  @override
+  String get onlyVerifiedWomenCanApplyVerifyYour =>
+      'الستات المتحقَّق منهم بس يقدروا يقدّموا. اتحققي من حسابك الأول.';
+
+  @override
+  String get youAlreadyHaveAnApplicationWaitingFor =>
+      'عندك طلب مستني المراجعة بالفعل.';
+
+  @override
+  String get somethingIsStillMissingLookAtThe =>
+      'لسه فيه حاجة ناقصة. بصّي على الأجزاء المعلّمة تحت.';
+
+  @override
+  String get aPhotoDidNotReachUsTry => 'صورة ما وصلتناش. جرّبي تبعتي تاني.';
+
+  @override
+  String get youAreAlreadyACoachOnOwn => 'إنتي مدرّبة على Own Hub بالفعل.';
+
+  @override
+  String get coachApplicationsAreClosedForNowTry =>
+      'التقديم للمدرّبات مقفول دلوقتي. جرّبي بعدين.';
+
+  @override
+  String get yourCoachAccountIsPausedContactSupport =>
+      'حسابك كمدرّبة موقوف. كلّمي الدعم.';
+
+  @override
+  String get someOfYourAnswersWereNotAccepted =>
+      'بعض إجاباتك ما اتقبلتش. راجعي كل جزء وجرّبي تاني.';
+
+  @override
+  String get noConnectionYourAnswersAreSavedSo =>
+      'مفيش اتصال. إجاباتك محفوظة، فجرّبي تاني لما تكوني أونلاين.';
+
+  @override
+  String get signInToSendYourApplication => 'سجّلي دخولك عشان تبعتي طلبك.';
+
+  @override
+  String get somethingWentWrongYourAnswersAreSaved =>
+      'حصلت مشكلة. إجاباتك محفوظة. جرّبي تاني.';
+
+  @override
+  String get weHaveYourApplication => 'طلبك وصلنا';
+
+  @override
+  String get whatHappensNext => 'إيه اللي هيحصل بعد كده';
+
+  @override
+  String get aWomanReviewerReadsEachPart => 'مراجِعة بتقرا كل جزء.';
+
+  @override
+  String get sheMayAskYouToChangeSomething => 'ممكن تطلب منك تغيّري حاجة.';
+
+  @override
+  String get whenYouAreApprovedYourCoachSpace =>
+      'لما تتقبلي، مساحة المدرّبة بتتفتح.';
+
+  @override
+  String get aFewChangesPlease => 'محتاجين كام تعديل';
+
+  @override
+  String get theReviewerAskedYouToUpdateThese =>
+      'المراجِعة طلبت تحدّثي الأجزاء دي. باقي إجاباتك زي ما هي.';
+
+  @override
+  String get reviewersNote => 'ملاحظة المراجِعة';
+
+  @override
+  String get sendAgain => 'ابعتي تاني';
+
+  @override
+  String get somethingIsMissingHere => 'فيه حاجة ناقصة هنا.';
+
+  @override
+  String get thisPartIsNotClearEnough => 'الجزء ده مش واضح كفاية.';
+
+  @override
+  String get weCouldNotVerifyThis => 'ما قدرناش نتحقق من ده.';
+
+  @override
+  String get thisIsNotAllowedOnOwnHub => 'ده مش مسموح على Own Hub.';
+
+  @override
+  String get pleaseLookAtThisPartAgain => 'بصّي على الجزء ده تاني لو سمحتي.';
+
+  @override
+  String get notApprovedThisTime => 'ما اتقبلتيش المرة دي';
+
+  @override
+  String get theReviewerCouldNotApproveThisApplication =>
+      'المراجِعة ما قدرتش توافق على الطلب ده.';
+
+  @override
+  String youCanApplyAgainOnDate(String date) {
+    return 'تقدري تقدّمي تاني يوم $date.';
+  }
+
+  @override
+  String get youAreApproved => 'اتقبلتي';
+
+  @override
+  String get welcomeToOwnHubsCoachesYourCoach =>
+      'أهلًا بيكي وسط مدرّبات Own Hub. مساحتك جاهزة.';
+
+  @override
+  String get openMyCoachSpace => 'افتحي مساحتك كمدرّبة';
+
+  @override
+  String get noApplicationYet => 'لسه مفيش طلب';
+
+  @override
+  String get startMyApplication => 'ابدأي طلبك';
+
+  @override
+  String get cairo => 'القاهرة';
+
+  @override
+  String get alexandria => 'الإسكندرية';
+
+  @override
+  String get qalyubia => 'القليوبية';
+
+  @override
+  String get sharqia => 'الشرقية';
+
+  @override
+  String get dakahlia => 'الدقهلية';
+
+  @override
+  String get gharbia => 'الغربية';
+
+  @override
+  String get monufia => 'المنوفية';
+
+  @override
+  String get beheira => 'البحيرة';
+
+  @override
+  String get kafrElSheikh => 'كفر الشيخ';
+
+  @override
+  String get damietta => 'دمياط';
+
+  @override
+  String get portSaid => 'بورسعيد';
+
+  @override
+  String get ismailia => 'الإسماعيلية';
+
+  @override
+  String get suez => 'السويس';
+
+  @override
+  String get northSinai => 'شمال سيناء';
+
+  @override
+  String get southSinai => 'جنوب سيناء';
+
+  @override
+  String get redSea => 'البحر الأحمر';
+
+  @override
+  String get matrouh => 'مطروح';
+
+  @override
+  String get faiyum => 'الفيوم';
+
+  @override
+  String get beniSuef => 'بني سويف';
+
+  @override
+  String get minya => 'المنيا';
+
+  @override
+  String get asyut => 'أسيوط';
+
+  @override
+  String get sohag => 'سوهاج';
+
+  @override
+  String get qena => 'قنا';
+
+  @override
+  String get luxor => 'الأقصر';
+
+  @override
+  String get aswan => 'أسوان';
+
+  @override
+  String get newValley => 'الوادي الجديد';
+
+  @override
+  String get messages => 'الرسائل';
+
+  @override
+  String get searchChats => 'دوّري في الشاتات';
+
+  @override
+  String get noChatsYet => 'مفيش شاتات لسه';
+
+  @override
+  String get yourChatsWithYourCoachOrYour =>
+      'شاتاتك مع مدرّبتك أو مع عميلاتك هتظهر هنا.';
+
+  @override
+  String get noChatsMatchYourSearch => 'مفيش شات بالاسم ده.';
+
+  @override
+  String youText(String text) {
+    return 'إنتِ: $text';
+  }
+
+  @override
+  String get recipe => 'وصفة';
+
+  @override
+  String get workoutPlan => 'خطة تمرين';
+
+  @override
+  String get mealPlan => 'خطة أكل';
+
+  @override
+  String get liveSession => 'جلسة لايف';
+
+  @override
+  String get messageHidden => 'الرسالة اتخفت';
+
+  @override
+  String countUnread(String count) {
+    return '$count جديدة';
+  }
+
+  @override
+  String get yourCoach => 'مدرّبتك';
+
+  @override
+  String get yourClient => 'عميلتك';
+
+  @override
+  String packageDaysDaysLeft(String package, String days) {
+    return '$package · فاضل $days يوم';
+  }
+
+  @override
+  String packageEndsToday(String package) {
+    return '$package · بتخلص النهارده';
+  }
+
+  @override
+  String get shareSomething => 'شاركي حاجة';
+
+  @override
+  String get shareARecipe => 'شاركي وصفة';
+
+  @override
+  String get shareAWorkoutPlan => 'شاركي خطة تمرين';
+
+  @override
+  String get shareAMealPlan => 'شاركي خطة أكل';
+
+  @override
+  String get scheduleALiveSession => 'حدّدي جلسة لايف';
+
+  @override
+  String get phoneNumbersCantBeSentInThe =>
+      'مينفعش نبعت أرقام تليفون في الشات. رسالتك لسه مكتوبة لو عايزة تغيّريها.';
+
+  @override
+  String get paymentDetailsCantBeSharedInThe =>
+      'مينفعش نشارك بيانات دفع في الشات. رسالتك لسه مكتوبة لو عايزة تغيّريها.';
+
+  @override
+  String get linksCantBeSentInTheChat =>
+      'مينفعش نبعت لينكات في الشات. رسالتك لسه مكتوبة لو عايزة تغيّريها.';
+
+  @override
+  String get someWordsInThisMessageArentAllowed =>
+      'فيه كلمات في الرسالة دي مش مسموحة هنا. رسالتك لسه مكتوبة لو عايزة تغيّريها.';
+
+  @override
+  String get yourMessageCouldNotBeSentTry =>
+      'الرسالة ما اتبعتتش. جرّبي كمان شوية.';
+
+  @override
+  String get newMessages => 'رسائل جديدة';
+
+  @override
+  String get thisCoachingHasEndedYouCanRead =>
+      'التدريب ده خلص. تقدري تقري الشات بس مش هتقدري تكتبي فيه.';
+
+  @override
+  String get report => 'إبلاغ';
+
+  @override
+  String get block => 'حظر';
+
+  @override
+  String get moreOptions => 'خيارات تانية';
+
+  @override
+  String blockName(String name) {
+    return 'تحظري $name؟';
+  }
+
+  @override
+  String nameCannotWriteToYouAfterThis(String name) {
+    return '$name مش هتقدر تكتبلك بعد كده، ومش هتشوفي رسايلها. تقدري ترجّعي ده بعدين.';
+  }
+
+  @override
+  String nameIsBlocked(String name) {
+    return '$name اتحظرت.';
+  }
+
+  @override
+  String get yourReportIsPrivate => 'بلاغك سري.';
+
+  @override
+  String get reportThisMessage => 'بلّغي عن الرسالة دي';
+
+  @override
+  String get copy => 'نسخ';
+
+  @override
+  String get copied => 'اتنسخت';
+
+  @override
+  String get thereIsNoMessageFromHerTo => 'مفيش رسالة منها تبلّغي عنها لسه.';
+
+  @override
+  String get sending => 'بتتبعت';
+
+  @override
+  String get sent => 'اتبعتت';
+
+  @override
+  String get seen => 'اتشافت';
+
+  @override
+  String minutesMin(String minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String dayAtTime(String day, String time) {
+    return '$day الساعة $time';
+  }
+
+  @override
+  String get joinTheCall => 'ادخلي المكالمة';
+
+  @override
+  String get confirm => 'أكّدي';
+
+  @override
+  String get waitingForConfirmation => 'مستنية التأكيد';
+
+  @override
+  String get confirmed => 'اتأكدت';
+
+  @override
+  String get declined => 'اترفضت';
+
+  @override
+  String get coachingStarted => 'التدريب بدأ';
+
+  @override
+  String get coachingEnded => 'التدريب خلص';
+
+  @override
+  String get coachingEndsSoon => 'التدريب قرّب يخلص';
+
+  @override
+  String get aPlanWasUpdated => 'الخطة اتحدّثت';
+
+  @override
+  String get liveSessionConfirmed => 'جلسة اللايف اتأكدت';
+
+  @override
+  String get liveSessionFinished => 'جلسة اللايف خلصت';
+
+  @override
+  String get thisMessageWasHiddenBecauseItHad =>
+      'الرسالة دي اتخفت لأن فيها بيانات تواصل أو دفع';
+
+  @override
+  String get weCouldNotLoadThisChatCheck =>
+      'معرفناش نفتح الشات. اتأكدي من النت.';
+
+  @override
+  String get noMessagesYetSayHello => 'مفيش رسايل لسه. ابدأي بسلام.';
+
+  @override
+  String get loadingOlderMessages => 'بنحمّل رسائل أقدم';
+
+  @override
+  String get coachDesk => 'مكتب المدرّبة';
+
+  @override
+  String get newRequests => 'طلبات جديدة';
+
+  @override
+  String get unreadChats => 'رسايل لسه ما اتقرتش';
+
+  @override
+  String get toFollowUp => 'محتاجة متابعة';
+
+  @override
+  String get activeClients => 'عميلات حاليًا';
+
+  @override
+  String get followUp_n22yh => 'متابعة';
+
+  @override
+  String showAllCount(String count) {
+    return 'اعرضي الكل ($count)';
+  }
+
+  @override
+  String get accept => 'اقبلي';
+
+  @override
+  String get decline => 'اعتذري';
+
+  @override
+  String get whyAreYouDeclining => 'ليه هتعتذري؟';
+
+  @override
+  String get myPlacesAreFull => 'أماكني اتملت';
+
+  @override
+  String get notTheRightFit => 'مش مناسبة لأسلوبي';
+
+  @override
+  String get sheShouldSeeHerDoctorFirst => 'تسأل دكتورها الأول';
+
+  @override
+  String get requestAccepted => 'اتقبل الطلب';
+
+  @override
+  String get requestDeclined => 'اتعتذر عن الطلب';
+
+  @override
+  String nameAskedToJoin(String name) {
+    return '$name طلبت تنضمّ ليكي';
+  }
+
+  @override
+  String get healthAnswersToReadFirst => 'فيه إجابات صحية اقريها الأول';
+
+  @override
+  String goalLevelDaysDaysAWeekPlace(
+    String goal,
+    String level,
+    String days,
+    String place,
+  ) {
+    return '$goal · $level · $days أيام في الأسبوع · $place';
+  }
+
+  @override
+  String clientTag(String tag) {
+    return 'عميلة $tag';
+  }
+
+  @override
+  String liveSessionTodayAtTime(String time) {
+    return 'جلسة لايف النهارده الساعة $time';
+  }
+
+  @override
+  String noMessageForDaysDays(String days) {
+    return 'مفيش رسايل بقالها $days يوم';
+  }
+
+  @override
+  String get endsToday => 'بتخلص النهارده';
+
+  @override
+  String daysDaysLeft(String days) {
+    return 'فاضل $days يوم';
+  }
+
+  @override
+  String get noMessagesYet => 'لسه مفيش رسايل';
+
+  @override
+  String get shareYourPortfolioLinkSoMembersCan =>
+      'ابعتي لينك البورتفوليو بتاعك عشان الأعضاء يطلبوا ينضموا ليكي.';
+
+  @override
+  String get youAreAllCaughtUp => 'خلّصتي كل حاجة';
+
+  @override
+  String get nothingToAnswerOrFollowUpRight =>
+      'مفيش رسايل ولا طلبات ولا متابعات دلوقتي.';
+
+  @override
+  String get searchClients => 'دوّري على عميلة';
+
+  @override
+  String get nobodyMatchesThatSearch => 'مفيش حد بالاسم ده.';
+
+  @override
+  String get noUnreadChatsRightNow => 'مفيش رسايل جديدة دلوقتي.';
+
+  @override
+  String get nobodyNeedsAFollowUpRightNow => 'مفيش حد محتاج متابعة دلوقتي.';
+
+  @override
+  String get nobodyIsEndingSoon => 'مفيش حد قرّب يخلص.';
+
+  @override
+  String get endingSoon => 'قربت تخلص';
+
+  @override
+  String openTheDetailsOfName(String name) {
+    return 'افتحي بيانات $name';
+  }
+
+  @override
+  String openTheChatWithName(String name) {
+    return 'افتحي المحادثة مع $name';
+  }
+
+  @override
+  String get clientDetails => 'بيانات العميلة';
+
+  @override
+  String get started => 'بدأت';
+
+  @override
+  String get daysLeft => 'الأيام المتبقية';
+
+  @override
+  String get liveSessionsHeld => 'جلسات اللايف اللي اتعملت';
+
+  @override
+  String usedOfIncluded(String used, String included) {
+    return '$used من $included';
+  }
+
+  @override
+  String get herAnswers => 'إجاباتها';
+
+  @override
+  String get sharedWithYouWhileYouCoachHer => 'بتتشارك معاكي طول ما بتدرّبيها';
+
+  @override
+  String get place => 'المكان';
+
+  @override
+  String get allergies => 'الحساسية';
+
+  @override
+  String get lifeStage => 'مرحلتها الحياتية';
+
+  @override
+  String get healthQuestions => 'الأسئلة الصحية';
+
+  @override
+  String get sheTickedThatSheWillCheckWith => 'علّمت إنها هتسأل دكتورها';
+
+  @override
+  String get noHealthFlagsInHerAnswers => 'مفيش مشاكل صحية في إجاباتها';
+
+  @override
+  String get yourPrivateNote => 'ملاحظتك الخاصة';
+
+  @override
+  String get staysOnThisPhoneOnlySheNever =>
+      'بتفضل على الموبايل ده بس. هي ما بتشوفهاش وما بتتزامنش.';
+
+  @override
+  String get writeWhatYouWantToRemember => 'اكتبي اللي عايزة تفتكريه';
+
+  @override
+  String get saveNote => 'احفظي الملاحظة';
+
+  @override
+  String get noteSaved => 'اتحفظت الملاحظة';
+
+  @override
+  String get plansYouShared => 'الخطط اللي شاركتيها';
+
+  @override
+  String get nothingSharedYetShareAWorkoutOr =>
+      'لسه ما شاركتيش حاجة. شاركي تمرين أو خطة أكل من تحت.';
+
+  @override
+  String get shareAWorkout => 'شاركي تمرين';
+
+  @override
+  String get liveSessions => 'جلسات اللايف';
+
+  @override
+  String get waitingForAnAnswer => 'مستنية رد';
+
+  @override
+  String get closed => 'خلصت';
+
+  @override
+  String withYouSinceStartEndsEnd(String start, String end) {
+    return 'معاكي من $start · وبتخلص $end';
+  }
+
+  @override
+  String get weCouldNotFindThisClient => 'مش لاقيين العميلة دي.';
+
+  @override
+  String planForName(String name) {
+    return 'خطة ل$name';
+  }
+
+  @override
+  String get startFrom => 'ابدأي من';
+
+  @override
+  String get oneOfTheThreeSplits => 'واحد من التقسيمات التلاتة';
+
+  @override
+  String get yourTemplates => 'قوالبك';
+
+  @override
+  String get blankPlan => 'خطة فاضية';
+
+  @override
+  String get planName => 'اسم الخطة';
+
+  @override
+  String get editDaysAndMoves => 'عدّلي الأيام والتمارين';
+
+  @override
+  String publishToName(String name) {
+    return 'انشري ل$name';
+  }
+
+  @override
+  String get publishAsANewVersion => 'انشريها كنسخة جديدة';
+
+  @override
+  String get saveAsATemplate => 'احفظيها كقالب';
+
+  @override
+  String get templateSaved => 'القالب اتحفظ.';
+
+  @override
+  String publishedNameCanSeeItNow(String name) {
+    return 'اتنشرت. $name تقدر تشوفها دلوقتي.';
+  }
+
+  @override
+  String get giveThePlanANameFirst => 'سمّي الخطة الأول.';
+
+  @override
+  String get addAtLeastOneDayFirst => 'ضيفي يوم واحد على الأقل الأول.';
+
+  @override
+  String get thisPlanIsTooBigToSend =>
+      'الخطة كبيرة أوي على الإرسال. شيلي يوم أو كام تمرين.';
+
+  @override
+  String get aMoveInThisPlanIsNot =>
+      'فيه تمرين في الخطة مش موجود في مكتبة التمارين دلوقتي.';
+
+  @override
+  String versionN(String n) {
+    return 'النسخة $n';
+  }
+
+  @override
+  String get dayName => 'اسم اليوم';
+
+  @override
+  String get addMoves => 'ضيفي تمارين';
+
+  @override
+  String get holdInSeconds => 'الثبات بالثواني';
+
+  @override
+  String get watchTheClip => 'شوفي الفيديو';
+
+  @override
+  String get howManyDays => 'كام يوم';
+
+  @override
+  String addToSlot(String slot) {
+    return 'ضيفي على $slot';
+  }
+
+  @override
+  String get aShortLineLikeFruitOfHer => 'سطر قصير، زي فاكهة من اختيارها';
+
+  @override
+  String get grams => 'الجرامات';
+
+  @override
+  String get noteForHerIfYouLike => 'ملاحظة ليها لو عايزة';
+
+  @override
+  String nameAvoidsList(String name, String list) {
+    return '$name بتتجنب: $list';
+  }
+
+  @override
+  String get noAllergiesOnHerIntake => 'مفيش حساسية مكتوبة في بياناتها.';
+
+  @override
+  String containsAllergensWhichSheAvoids(String allergens) {
+    return 'فيه $allergens، وهي بتتجنبه.';
+  }
+
+  @override
+  String get allergensNotCheckedForThisOne => 'الحساسية مش متراجعة للصنف ده.';
+
+  @override
+  String get checkTheMarkedItemsBeforeYouPublish =>
+      'راجعي الأصناف المعلّمة قبل ما تنشري.';
+
+  @override
+  String aboutKcalKcalProteinGProtein(String kcal, String protein) {
+    return 'حوالي $kcal سعرة حرارية، $protein جم بروتين';
+  }
+
+  @override
+  String get figuresComeFromOwnHubsFoodTables =>
+      'الأرقام من جداول الأكل بتاعة Own Hub.';
+
+  @override
+  String get someItemsHaveNoFigures => 'بعض الأصناف ملهاش أرقام.';
+
+  @override
+  String get nothingPlannedYet => 'لسه مفيش حاجة';
+
+  @override
+  String get addAtLeastOneItemFirst => 'ضيفي صنف واحد على الأقل الأول.';
+
+  @override
+  String get noRecipesToPickFromYet => 'مفيش وصفات تختاري منها لسه.';
+
+  @override
+  String servingsN(String n) {
+    return 'الحصص: $n';
+  }
+
+  @override
+  String get scheduleASession => 'حدّدي جلسة';
+
+  @override
+  String get meetingLink => 'رابط الاجتماع';
+
+  @override
+  String get aGoogleMeetOrZoomLinkThat =>
+      'رابط Google Meet أو Zoom بيبدأ بـ https';
+
+  @override
+  String get thatLinkIsNotAllowedUseGoogle =>
+      'الرابط ده مش مسموح. استخدمي Google Meet أو Zoom أو Teams.';
+
+  @override
+  String get thatTimeIsAfterHerCoachingEnds =>
+      'الوقت ده بعد ما التدريب بينتهي.';
+
+  @override
+  String sessionsUsedUsedOfIncluded(String used, String included) {
+    return 'الجلسات المستخدمة: $used من $included';
+  }
+
+  @override
+  String get noSessionsLeftInThisPackage => 'مفيش جلسات فاضلة في الباقة دي.';
+
+  @override
+  String sendToName(String name) {
+    return 'ابعتي ل$name';
+  }
+
+  @override
+  String sessionSentNameCanConfirmIt(String name) {
+    return 'الجلسة اتبعتت. $name تقدر تأكدها.';
+  }
+
+  @override
+  String yourCoachingWithCoachHasEndedYour(String coach) {
+    return 'التدريب مع $coach خلص. خططك فاضلة هنا تقرأيها.';
+  }
+
+  @override
+  String daysLeftN(String n) {
+    return 'الأيام الباقية: $n';
+  }
+
+  @override
+  String get lastDay => 'آخر يوم';
+
+  @override
+  String get plansFromYourCoach => 'خطط من مدربتك';
+
+  @override
+  String get yourCoachHasNotSharedAPlan => 'مدربتك لسه ما شاركتش خطة.';
+
+  @override
+  String get upcomingSession => 'الجلسة الجاية';
+
+  @override
+  String get markDone => 'علّمي إنها خلصت';
+
+  @override
+  String get waitingForTheOtherSideToMark =>
+      'مستنيين الطرف التاني يعلّم إنها خلصت.';
+
+  @override
+  String get countedInYourSessions => 'اتحسبت من جلساتك.';
+
+  @override
+  String get blockThisCoach => 'تحجبي المدربة دي؟';
+
+  @override
+  String get sheWillNotBeAbleToMessage =>
+      'مش هتقدر تبعتلك رسايل. هتفضلي تقدري تقرأي خططك.';
+
+  @override
+  String get newMessagesFromYourCoach => 'رسايل جديدة من مدربتك';
+
+  @override
+  String get fromYourCoach => 'من مدربتك';
+
+  @override
+  String todaysWorkoutName(String name) {
+    return 'تمرين النهارده: $name';
+  }
+
+  @override
+  String nextSessionWhen(String when) {
+    return 'الجلسة الجاية: $when';
+  }
+
+  @override
+  String get startThisWorkout => 'ابدئي التمرين ده';
+
+  @override
+  String get heldBackForHowYouAreTraining =>
+      'اتشال عشان وضعك دلوقتي. اسألي مدربتك أو دكتورك الأول.';
+
+  @override
+  String containsAllergensWhichYouAvoid(String allergens) {
+    return 'فيه $allergens، وإنتي بتتجنبيه.';
+  }
+
+  @override
+  String get notCheckedAgainstYourAllergies => 'مش متراجع مع الحساسية بتاعتك.';
+
+  @override
+  String get todaysMealsFromYourCoach => 'أكل النهارده من مدربتك';
+
+  @override
+  String get ifYouHaveAHealthConditionCheck =>
+      'لو عندك حالة صحية، استشيري دكتورك قبل ما تمشي على خطة.';
+
+  @override
+  String get youHaveNoCoachRightNow => 'مفيش مدربة معاكي دلوقتي.';
+
+  @override
+  String minutesMinSession(String minutes) {
+    return 'جلسة $minutes دقيقة';
+  }
+
+  @override
+  String get yourCoachHasNotSetAPlan => 'مدربتك ما حددتش خطة لليوم.';
+
+  @override
+  String get openMyCoach => 'افتحي مدربتي';
+
+  @override
+  String get moveUp => 'اطلعي لفوق';
+
+  @override
+  String get moveDown => 'انزلي لتحت';
+
+  @override
+  String get logThis => 'سجّلي ده';
+
+  @override
+  String get photosAndResults => 'الصور والنتايج';
+
+  @override
+  String get whatMembersSeeAfterOwnHubChecks =>
+      'اللي الأعضاء بيشوفوه بعد ما Own Hub تراجعه';
+
+  @override
+  String get waitingForOwnHubsCheck => 'مستنية مراجعة Own Hub';
+
+  @override
+  String get shownOnYourPortfolio => 'ظاهرة في ملفك التعريفي';
+
+  @override
+  String get notApproved => 'ما اتوافقش عليها';
+
+  @override
+  String get needsYourClientsConsent => 'محتاجة موافقة عميلتك';
+
+  @override
+  String get addAPhotoOfYouOrYour => 'ضيفي صورة ليكي أو لشغلك';
+
+  @override
+  String get nothingHereYetAddYourFirstResult =>
+      'لسه مفيش حاجة هنا. ضيفي أول نتيجة.';
+
+  @override
+  String countOf30Items(String count) {
+    return '$count من 30';
+  }
+
+  @override
+  String transformationWeeksWeeks(String weeks) {
+    return 'تحوّل خلال $weeks أسابيع';
+  }
+
+  @override
+  String feedbackFromName(String name) {
+    return 'رأي من $name';
+  }
+
+  @override
+  String get keep => 'سيبيها';
+
+  @override
+  String get removeThisFromYourPortfolio => 'تمسحي ده من ملفك التعريفي؟';
+
+  @override
+  String get confirmMyClientAgreed => 'أكّدي إن عميلتك وافقت';
+
+  @override
+  String get chooseAPhoto => 'اختاري صورة';
+
+  @override
+  String get replacePhoto => 'غيّري الصورة دي';
+
+  @override
+  String get noteOptional_1l0x9 => 'ملاحظة (اختياري)';
+
+  @override
+  String get myClientAgreedInWritingThatOwn_c2wgd =>
+      'عميلتي وافقت كتابةً إن أعضاء Own Hub يشوفوا الصور دي';
+
+  @override
+  String get sendForOwnHubsCheck => 'ابعتي لمراجعة Own Hub';
+
+  @override
+  String get sentOwnHubChecksEveryPhotoBefore =>
+      'اتبعتت. Own Hub بتراجع كل صورة قبل ما الأعضاء يشوفوها.';
+
+  @override
+  String get whatYourClientSaid => 'اللي قالته عميلتك';
+
+  @override
+  String get from => 'من';
+
+  @override
+  String get screenshotOptional_x0klp => 'لقطة شاشة (اختياري)';
+
+  @override
+  String get captionOptional => 'تعليق (اختياري)';
+
+  @override
+  String get addThePhotoFirst => 'ضيفي الصورة الأول.';
+
+  @override
+  String get addBothPhotos => 'ضيفي الصورتين.';
+
+  @override
+  String get tickTheBoxToSayYourClient => 'علّمي على المربع إن عميلتك وافقت.';
+
+  @override
+  String writeLowToHighCharacters(String low, String high) {
+    return 'اكتبي من $low لـ $high حرف.';
+  }
+
+  @override
+  String get writeWhoItIsFrom => 'اكتبي الرأي ده من مين.';
+
+  @override
+  String get yourClientConfirmed => 'تأكدنا إن عميلتك وافقت.';
+
+  @override
+  String get results => 'النتائج';
+
+  @override
+  String overNWeeks(int n) {
+    return 'على مدى $n أسبوع';
+  }
+
+  @override
+  String get sharedWithHerClientsWrittenConsent =>
+      'اتنشرت بموافقة كتابية من العميلة';
+
+  @override
+  String get nothingApprovedYetPhotosAndResultsShow =>
+      'لسه مفيش حاجة اتوافق عليها. الصور والنتايج بتظهر هنا بعد ما Own Hub تراجعها.';
+
+  @override
+  String get screenshotOfAMessageFromAClient => 'لقطة شاشة لرسالة من عميلة';
+
+  @override
+  String get thePhotoWasNotClearEnough => 'الصورة مكانتش واضحة كفاية.';
+
+  @override
+  String get itDoesNotFollowTheRulesFor => 'مش ماشية مع قواعد الصور.';
+
+  @override
+  String get weNeedYourClientsWrittenAgreement =>
+      'محتاجين موافقة عميلتك مكتوبة.';
+
+  @override
+  String get ownHubCouldNotApproveIt => 'Own Hub ما قدرتش توافق عليها.';
+
+  @override
+  String get newActivityInTheChat => 'نشاط جديد في الشات';
+
+  @override
+  String get thatItemIsNoLongerTherePull =>
+      'العنصر ده مبقاش موجود. اسحبي لتحت عشان تحدّثي القايمة.';
+
+  @override
+  String daysPluralOne1DayLeftOther(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'فاضل $days يوم',
+      many: 'فاضل $days يوم',
+      few: 'فاضل $days أيام',
+      two: 'فاضل يومين',
+      one: 'فاضل يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1WeekOtherCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count أسبوع',
+      many: '$count أسبوع',
+      few: '$count أسابيع',
+      two: 'أسبوعين',
+      one: 'أسبوع واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1LiveSessionA(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count جلسة مباشرة في الشهر',
+      many: '$count جلسة مباشرة في الشهر',
+      few: '$count جلسات مباشرة في الشهر',
+      two: 'جلستين مباشرتين في الشهر',
+      one: 'جلسة مباشرة في الشهر',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeksSessions(String weeks, String sessions) {
+    return '$weeks، $sessions';
+  }
+
+  @override
+  String weeksOfCoachingWithMe(String weeks) {
+    return '$weeks تدريب معايا';
+  }
+
+  @override
+  String youAlreadyHaveCountPackagesEditOne(String count) {
+    return 'عندك $count باقات بالفعل. عدّلي واحدة منهم.';
+  }
+
+  @override
+  String youHaveAllCountPackages(String count) {
+    return 'وصلتي لـ $count باقات.';
+  }
+
+  @override
+  String youHaveCountItemsRemoveOneTo(String count) {
+    return 'عندك $count عنصر. امسحي واحد عشان تضيفي غيره.';
+  }
+
+  @override
+  String reviewTakesUpToDaysWorkingDays(String days) {
+    return 'المراجعة بتاخد لحد $days أيام عمل.';
+  }
+
+  @override
+  String ownHubsReviewerIsReadingItThis(String days) {
+    return 'مراجِعة Own Hub بتقراه. ده بياخد لحد $days أيام عمل، وهنقولك هنا.';
+  }
+
+  @override
+  String youCanApplyAgainDaysDaysAfter(String days) {
+    return 'تقدري تقدّمي تاني بعد $days يوم من القرار.';
+  }
+
+  @override
+  String thatPhotoCouldNotBeUsedChoose(String mb) {
+    return 'الصورة دي ما ينفعش تتستخدم. اختاري JPEG أو PNG أقل من $mb ميجا.';
+  }
+
+  @override
+  String addMinToMaxAPhotoOf(String min, String max) {
+    return 'ضيفي من $min لـ $max. صورة الشهادة اختيارية.';
+  }
+
+  @override
+  String addMinToMaxEachOneNeeds(String min, String max) {
+    return 'ضيفي من $min لـ $max. كل واحدة محتاجة صورة.';
+  }
+
+  @override
+  String chooseMinToMaxThenTellUs(String min, String max) {
+    return 'اختاري من $min لـ $max، وبعدين احكيلنا عن خبرتك.';
+  }
+
+  @override
+  String addMinToMaxMessagesFromWomen(String min, String max) {
+    return 'ضيفي من $min لـ $max رسائل من ستات اتدرّبوا معاكي.';
+  }
+
+  @override
+  String addMinToMaxThePhotosAre(String min, String max) {
+    return 'ضيفي من $min لـ $max. الصور بتتشاف من مراجِعة Own Hub بس.';
+  }
+
+  @override
+  String youAddedTooManyCertificatesTheMost(String max) {
+    return 'ضفتي شهادات كتير. الحد الأقصى $max.';
+  }
+
+  @override
+  String pickATimeAtLeastMinutesMinutes(String minutes) {
+    return 'اختاري وقت بعد $minutes دقيقة على الأقل من دلوقتي.';
+  }
+
+  @override
+  String typeTheDateAndTimeLikeExample(String example) {
+    return 'اكتبي التاريخ والوقت زي $example.';
+  }
+
+  @override
+  String underEgpN(String n) {
+    return 'أقل من $n جنيه';
+  }
+
+  @override
+  String overEgpN(String n) {
+    return 'أكتر من $n جنيه';
+  }
+
+  @override
+  String egpLowToHigh(String low, String high) {
+    return 'من $low لـ $high جنيه';
+  }
+
+  @override
+  String get endCoaching => 'إنهاء التدريب';
+
+  @override
+  String get endThisCoaching => 'عايزة تنهي التدريب ده؟';
+
+  @override
+  String theChatBecomesReadOnlyYourPlans(String coach) {
+    return 'الشات هيبقى للقراءة بس. خططك هتفضل معاكي. $coach مش هتشوف إجاباتك تاني.';
+  }
+
+  @override
+  String get theChatBecomesReadOnlyHerPlans =>
+      'الشات هيبقى للقراءة بس. خططها هتفضل معاها. مش هتشوفي إجاباتها تاني.';
+
+  @override
+  String get keepCoaching => 'كمّلي التدريب';
+
+  @override
+  String waitingForCoachSAnswer(String coach) {
+    return 'مستنية رد $coach';
+  }
+
+  @override
+  String get cancelRequest => 'إلغاء الطلب';
+
+  @override
+  String coachCouldNotTakeYouThisTime(String coach) {
+    return '$coach مش هتقدر تاخدك المرة دي';
+  }
+
+  @override
+  String get noAnswerInTime => 'الطلب خلص من غير رد';
+
+  @override
+  String get findAnotherCoach => 'دوري على مدربة تانية';
+
+  @override
+  String get waitingForYourReply => 'مستنية ردك';
+
+  @override
+  String noMessageFromYouInDaysDays(String days) {
+    return 'مفيش رسالة منك بقالها $days يوم';
+  }
+
+  @override
+  String get youCanSeeItUnderMyCoach => 'هتلاقيه في «مدرّبتي».';
+
+  @override
+  String get freeForNow => 'ببلاش دلوقتي';
+
+  @override
+  String egpPriceWhenPaymentsOpen(String price) {
+    return '$price جنيه لما الدفع يشتغل';
+  }
+
+  @override
+  String get freeForMembersUntilPaymentsOpen =>
+      'ببلاش للعضوات لحد ما الدفع يشتغل';
+
+  @override
+  String get notVisibleYetAddAPackage => 'لسه مش ظاهرة للعضوات: ضيفي باقة';
+
+  @override
+  String get backToProfile => 'ارجعي للبروفايل';
+
+  @override
+  String get contactOwnHub => 'كلّمي Own Hub';
+
+  @override
+  String get chooseADateAndTime => 'اختاري التاريخ والوقت';
+
+  @override
+  String get cantMakeIt => 'مش هقدر';
+
+  @override
+  String countPluralOne1ClientOtherCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count عميلة',
+      many: '$count عميلة',
+      few: '$count عميلات',
+      two: 'عميلتين',
+      one: 'عميلة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1NewRequestOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طلب جديد',
+      many: '$count طلب جديد',
+      few: '$count طلبات جديدة',
+      two: 'طلبين جداد',
+      one: 'طلب جديد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1UnreadChatOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count محادثة لسه ما اتقرتش',
+      many: '$count محادثة لسه ما اتقرتش',
+      few: '$count محادثات لسه ما اتقرتش',
+      two: 'محادثتين لسه ما اتقرتوش',
+      one: 'محادثة واحدة لسه ما اتقرتش',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationDaysPluralOne1DayOther(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days يوم',
+      many: '$days يوم',
+      few: '$days أيام',
+      two: 'يومين',
+      one: 'يوم واحد',
+    );
+    return 'المدة: $_temp0';
+  }
+
+  @override
+  String overWeeksPluralOne1WeekOther(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: '$weeks أسبوع',
+      many: '$weeks أسبوع',
+      few: '$weeks أسابيع',
+      two: 'أسبوعين',
+      one: 'أسبوع',
+    );
+    return 'على مدى $_temp0';
+  }
+
+  @override
+  String transformationWeeksPluralOne1WeekOther(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: '$weeks أسبوع',
+      many: '$weeks أسبوع',
+      few: '$weeks أسابيع',
+      two: 'أسبوعين',
+      one: 'أسبوع',
+    );
+    return 'تحوّل خلال $_temp0';
+  }
+
+  @override
+  String get faceToFace => 'وجهًا لوجه';
+
+  @override
+  String get seeItFirst => 'شوفيها الأول';
+
+  @override
+  String get am => 'ص';
+
+  @override
+  String get pm => 'م';
+
+  @override
+  String get pickHerNameIfSheKnowsYou_akwt2 =>
+      'اختاري اسمها لو بتعرفك. طلبك هيروحلها هي.';
+
+  @override
+  String get nameYourCoachSees => 'الاسم اللي المدرّبة هتشوفه';
+
+  @override
+  String get yourFirstNameIsOptionalYourCoach =>
+      'اسمك الأول اختياري. المدرّبة بتشوفه جنب إجاباتك.';
 }

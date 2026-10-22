@@ -89,6 +89,7 @@ import '../features/train/domain/getting_started_tips.dart';
 import '../features/train/domain/my_plan.dart';
 import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/train_repository.dart';
+import '../features/train/domain/notification_voice.dart';
 import '../features/train/domain/training_reminders.dart';
 import 'chosen_programme.dart';
 import '../features/followup/domain/follow_up_plan.dart';
@@ -99,6 +100,10 @@ import 'coach_invite_state.dart';
 import 'coach_profile_state.dart';
 import 'custom_workout_state.dart';
 import 'my_plan_state.dart';
+import 'bar_preference.dart';
+import 'coach_application_draft.dart';
+import 'coach_client_notes.dart';
+import 'move_notes.dart';
 import 'rest_timer_prefs.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
@@ -160,9 +165,14 @@ abstract final class AppSnapshot {
     'trainingStreak': _captureTrainingStreak(),
     'chosenProgramme': ?_captureChosenProgramme(),
     'followUps': ?_captureFollowUps(),
+    'notificationVoice': ?_captureNotificationVoice(),
     'customWorkouts': ?_captureCustomWorkouts(),
     'myPlan': ?_captureMyPlan(),
     'restTimer': ?_captureRestTimer(),
+    'moveNotes': ?_captureMoveNotes(),
+    'coachApplicationDraft': ?_captureCoachApplicationDraft(),
+    'coachClientNotes': ?_captureCoachClientNotes(),
+    'barKg': ?_captureBarKg(),
     'guest': ?_captureGuest(),
   };
 
@@ -236,9 +246,14 @@ abstract final class AppSnapshot {
     'trainingStreak': _readTrainingStreak,
     'chosenProgramme': _readChosenProgramme,
     'followUps': _readFollowUps,
+    'notificationVoice': _readNotificationVoice,
     'customWorkouts': _readCustomWorkouts,
     'myPlan': _readMyPlan,
     'restTimer': _readRestTimer,
+    'moveNotes': _readMoveNotes,
+    'coachApplicationDraft': _readCoachApplicationDraft,
+    'coachClientNotes': _readCoachClientNotes,
+    'barKg': _readBarKg,
     'guest': _readGuest,
     // After `train`: it points at a session that section restores.
     'liveSession': _readLiveSession,
@@ -2410,6 +2425,52 @@ void Function()? _readFollowUps(Object? raw) {
   );
 }
 
+// ------------------------------------------------------ notificationVoice ---
+
+// Which words each reminder carries, so a line is not repeated and her tone is
+// learned. Phone only: this section is in the snapshot and in no cloud
+// document.
+Map<String, Object?>? _captureNotificationVoice() {
+  final history = VoiceHistory.instance;
+  return history.touched ? history.toJson() : null;
+}
+
+void Function()? _readNotificationVoice(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final sent = <String, String>{
+    for (final entry
+        in (_map(section['sent']) ?? const <String, Object?>{}).entries)
+      entry.key: ?_str(entry.value),
+  };
+  final tones = <String, ToneStat>{};
+  for (final tone in const [kToneCalm, kTonePlayful]) {
+    final stat = _map((_map(section['toneStats']) ?? const {})[tone]);
+    if (stat == null) continue;
+    final sentCount = _int(stat['sent']) ?? 0;
+    final taps = _int(stat['taps']) ?? 0;
+    if (sentCount < 0 || taps < 0) continue;
+    tones[tone] = ToneStat(sent: sentCount, taps: taps);
+  }
+  final scheduled = <int, ScheduledLine>{};
+  for (final entry
+      in (_map(section['scheduled']) ?? const <String, Object?>{}).entries) {
+    final id = int.tryParse(entry.key);
+    final line = _map(entry.value);
+    final lineId = line == null ? null : _str(line['lineId']);
+    final tone = line == null ? null : _str(line['tone']);
+    final at = line == null ? null : _time(line['at']);
+    if (id == null || lineId == null || at == null) continue;
+    if (tone != kToneCalm && tone != kTonePlayful) continue;
+    scheduled[id] = ScheduledLine(lineId: lineId, tone: tone!, at: at);
+  }
+  return () => VoiceHistory.instance.restore(
+    sent: sent,
+    toneStats: tones,
+    scheduled: scheduled,
+  );
+}
+
 // --------------------------------------------------------- customWorkouts ---
 
 Map<String, Object?>? _captureCustomWorkouts() {
@@ -2473,4 +2534,80 @@ void Function()? _readRestTimer(Object? raw) {
   };
   if (saved.isEmpty) return null;
   return () => RestTimerPrefs.instance.restore(saved);
+}
+
+// ------------------------------------------------------------- moveNotes ---
+
+// The note she keeps for each move. Phone only: this section is in the
+// snapshot and in no cloud document. Written only once she has a note.
+Map<String, Object?>? _captureMoveNotes() {
+  final saved = MoveNotes.instance.toJson();
+  if (saved.isEmpty) return null;
+  return <String, Object?>{'moves': saved};
+}
+
+void Function()? _readMoveNotes(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final moves = _map(section['moves']);
+  if (moves == null) return null;
+  final saved = <String, String>{
+    for (final entry in moves.entries)
+      if (entry.key.isNotEmpty && entry.value is String && entry.value != '')
+        entry.key: entry.value as String,
+  };
+  if (saved.isEmpty) return null;
+  return () => MoveNotes.instance.restore(saved);
+}
+
+// ------------------------------------------------- coachApplicationDraft ---
+
+// The coach application she is writing. Phone only: this section is in the
+// snapshot and in no cloud document. Written only once she has started.
+Map<String, Object?>? _captureCoachApplicationDraft() =>
+    CoachApplicationDraft.instance.touched
+    ? CoachApplicationDraft.instance.toJson()
+    : null;
+
+void Function()? _readCoachApplicationDraft(Object? raw) {
+  final section = _map(raw);
+  if (section == null || _map(section['application']) == null) return null;
+  final saved = Map<String, Object?>.of(section);
+  return () => CoachApplicationDraft.instance.restore(saved);
+}
+
+// ------------------------------------------------------ coachClientNotes ---
+
+// The private note a coach keeps about each client. Phone only: this section is
+// in the snapshot and in no cloud document. Written only once she has a note.
+Map<String, Object?>? _captureCoachClientNotes() {
+  final saved = CoachClientNotes.instance.toJson();
+  if (saved.isEmpty) return null;
+  return <String, Object?>{'clients': saved};
+}
+
+void Function()? _readCoachClientNotes(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final clients = _map(section['clients']);
+  if (clients == null) return null;
+  final saved = <String, String>{
+    for (final entry in clients.entries)
+      if (entry.key.isNotEmpty && entry.value is String && entry.value != '')
+        entry.key: entry.value as String,
+  };
+  if (saved.isEmpty) return null;
+  return () => CoachClientNotes.instance.restore(saved);
+}
+
+// ----------------------------------------------------------------- barKg ---
+
+// The bar she loads, chosen once on R07. Phone only.
+Object? _captureBarKg() =>
+    BarPreference.instance.touched ? BarPreference.instance.kg : null;
+
+void Function()? _readBarKg(Object? raw) {
+  if (raw is! num) return null;
+  final kg = raw.toDouble();
+  return () => BarPreference.instance.restore(kg);
 }

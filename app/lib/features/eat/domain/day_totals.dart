@@ -105,8 +105,7 @@ class DayTotals {
     int? carbs;
     int? fat;
     int? fiber;
-    int? add(int? sum, int? value) =>
-        value == null ? sum : (sum ?? 0) + value;
+    int? add(int? sum, int? value) => value == null ? sum : (sum ?? 0) + value;
     for (final item in items) {
       kcal += item.kcal;
       protein += item.proteinG;

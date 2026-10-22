@@ -80,8 +80,10 @@ void main() {
     }
     expect(missing, isEmpty, reason: missing.join('\n'));
     // Most screens must open as themselves; a long skipped list would mean
-    // the crawl is not looking at them.
-    expect(skipped.length, lessThan(12), reason: 'skipped: $skipped');
+    // the crawl is not looking at them. The old coach screens that coaching
+    // no longer routes (K03, K04, K09 to K13, K25) and the ones that wait for
+    // payments (K05, H04) are in the list on purpose.
+    expect(skipped.length, lessThan(16), reason: 'skipped: $skipped');
   });
 
   testWidgets('the no-chrome screens show neither', (tester) async {

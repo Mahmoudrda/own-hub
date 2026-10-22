@@ -5,6 +5,8 @@ import { getStorage, ref as storageRef, uploadBytesResumable, getBytes } from "h
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-functions.js";
 import { firebaseConfig, recaptchaSiteKey, functionsRegion } from "./config.js";
 import * as L from "./logic.js";
+import { mountCoaching } from "./coaching.js";
+import { mountArt, unmountArt } from "./art.js";
 
 const $ = (id) => document.getElementById(id);
 const PLACEHOLDER = /REPLACE_WITH/;
@@ -23,7 +25,7 @@ const state = {
   tab: "queue",
   calView: "week",
   calDay: L.cairoDayKey(new Date().toISOString()),
-  settings: { firstName: "", listed: false, autoPassKnown: false, availability: [], slotMinutes: 15 },
+  settings: { firstName: "", listed: false, availability: [], slotMinutes: 15 },
   phones: [],
   phonesLoaded: false,
   reschedule: null,
@@ -32,6 +34,9 @@ const state = {
 
 let functions = null;
 let storage = null;
+let personalStorage = null;
+let claims = {};
+let coaching = null;
 let undoTimer = null;
 let noticeTimer = null;
 
@@ -98,13 +103,19 @@ function askDialog({ title, body, actions }) {
   });
 }
 
-function setEmpty(el, { title, hint, action = null }) {
+// `art` names the line drawing above the title; the same one is kept across re-renders.
+function setEmpty(el, { title, hint, action = null, art = null }) {
+  let pic = el.querySelector(":scope > .art");
+  if (pic && !art) { unmountArt(pic); pic = null; }
+  if (art) pic ??= h("div", { class: "art" });
   el.replaceChildren(...[
+    pic,
     h("strong", { text: title }),
     hint ? h("p", { class: "muted", text: hint }) : null,
     action ? h("button", { class: "btn", type: "button", onclick: action.onclick }, action.label) : null,
   ].filter(Boolean));
   el.hidden = false;
+  if (art) mountArt(pic, art);
 }
 
 function skeletons(n = 4) {
@@ -116,7 +127,7 @@ function setBusy(list, on) {
   list.setAttribute("aria-busy", String(on));
 }
 
-const TAB_NAMES = { queue: "Requests", calendar: "Calendar", phones: "Pre-approved", exercises: "Exercises", events: "Events", foods: "Foods", settings: "Settings" };
+const TAB_NAMES = { queue: "Verification", calendar: "Calendar", phones: "Pre-approved phones", exercises: "Exercises", events: "Events", foods: "Foods", coaches: "Coaches", payments: "Payments", refunds: "Refunds", payouts: "Payouts", reports: "Reports", settings: "Settings" };
 
 function setBadge(tab, n, noun) {
   const el = $(`badge-${tab}`);
@@ -188,9 +199,9 @@ function renderQueue() {
   if (rows.length) {
     $("empty").hidden = true;
   } else if (state.query.trim()) {
-    setEmpty($("empty"), { title: `No one matches "${state.query.trim()}" here.`, hint: "Check the spelling, or look under another heading.", action: { label: "Clear search", onclick: () => { state.query = ""; $("search").value = ""; renderQueue(); $("search").focus(); } } });
+    setEmpty($("empty"), { title: `No one matches "${state.query.trim()}" here.`, hint: "Check the spelling, or look under another heading.", art: "query", action: { label: "Clear search", onclick: () => { state.query = ""; $("search").value = ""; renderQueue(); $("search").focus(); } } });
   } else {
-    setEmpty($("empty"), { title: QUEUE_EMPTY[state.status][0], hint: QUEUE_EMPTY[state.status][1] });
+    setEmpty($("empty"), { title: QUEUE_EMPTY[state.status][0], hint: QUEUE_EMPTY[state.status][1], art: "loupe" });
   }
   const selectable = L.selectableUids(rows);
   $("bulk").hidden = selectable.length === 0;
@@ -490,7 +501,6 @@ async function loadSettings() {
     state.settings = {
       firstName: s.firstName ?? "",
       listed: !!s.listed,
-      autoPassKnown: !!s.autoPassKnown,
       availability: (s.availability ?? []).map((r) => ({ ...r })),
       slotMinutes: s.slotMinutes ?? 15,
     };
@@ -498,7 +508,6 @@ async function loadSettings() {
     notice(friendly(e));
   }
   $("first-name").value = state.settings.firstName;
-  $("auto-pass").checked = state.settings.autoPassKnown;
   $("listed").checked = state.settings.listed;
   renderAvailability();
 }
@@ -507,7 +516,6 @@ async function saveSettings(message) {
   const next = {
     ...state.settings,
     firstName: $("first-name").value.trim(),
-    autoPassKnown: $("auto-pass").checked,
     listed: $("listed").checked,
     slotMinutes: Number($("slot-minutes").value),
   };
@@ -548,7 +556,7 @@ function renderPhones() {
       h("div", { class: "who" }, h("div", { class: "name phone", text: p })),
       h("button", { class: "btn", type: "button", "aria-label": `Remove ${p}`, onclick: () => removePhone(p) }, "Remove")))));
   if (state.phones.length) $("phones-empty").hidden = true;
-  else setEmpty($("phones-empty"), { title: "No numbers yet.", hint: "Paste the numbers above and press Add numbers. Anyone who signs in with one of them is approved at once." });
+  else setEmpty($("phones-empty"), { title: "No numbers yet.", hint: "Paste the numbers above and press Add numbers. Anyone who signs in with one of them is approved at once.", art: "drawer" });
   setBadge("phones", state.phones.length, "numbers");
 }
 
@@ -1056,7 +1064,7 @@ function renderExercises() {
     ex.io?.disconnect();
     list.replaceChildren(...(ex.loadFailed ? [] : skeletons(4)));
     setBusy(list, !ex.loadFailed);
-    if (ex.loadFailed) setEmpty($("ex-empty"), { title: "The exercises could not be loaded.", hint: "Check your internet connection and try again.", action: { label: "Try again", onclick: () => loadExercises() } });
+    if (ex.loadFailed) setEmpty($("ex-empty"), { title: "The exercises could not be loaded.", hint: "Check your internet connection and try again.", art: "plug", action: { label: "Try again", onclick: () => loadExercises() } });
     else $("ex-empty").hidden = true;
     return;
   }
@@ -1091,10 +1099,10 @@ function renderExercises() {
   if (rows.length) {
     $("ex-empty").hidden = true;
   } else if (ex.query.trim()) {
-    setEmpty($("ex-empty"), { title: `No exercise matches "${ex.query.trim()}".`, hint: "Try part of the name, or a muscle such as glutes.", action: { label: "Clear search", onclick: () => { ex.query = ""; $("ex-search").value = ""; renderExercises(); renderOverview(); $("ex-search").focus(); } } });
+    setEmpty($("ex-empty"), { title: `No exercise matches "${ex.query.trim()}".`, hint: "Try part of the name, or a muscle such as glutes.", art: "query", action: { label: "Clear search", onclick: () => { ex.query = ""; $("ex-search").value = ""; renderExercises(); renderOverview(); $("ex-search").focus(); } } });
   } else {
     const [title, hint] = ex.rows.length ? EX_EMPTY[ex.filter] : EX_EMPTY.all;
-    setEmpty($("ex-empty"), { title, hint });
+    setEmpty($("ex-empty"), { title, hint, art: "plot" });
   }
 }
 
@@ -1715,7 +1723,7 @@ function renderEvents() {
   if (!evs.loaded) {
     list.replaceChildren(...(evs.loadFailed ? [] : skeletons(3)));
     setBusy(list, !evs.loadFailed);
-    if (evs.loadFailed) setEmpty($("ev-empty"), { title: "The events could not be loaded.", hint: "Check your internet connection and try again.", action: { label: "Try again", onclick: () => loadEvents() } });
+    if (evs.loadFailed) setEmpty($("ev-empty"), { title: "The events could not be loaded.", hint: "Check your internet connection and try again.", art: "plug", action: { label: "Try again", onclick: () => loadEvents() } });
     else $("ev-empty").hidden = true;
     return;
   }
@@ -1730,8 +1738,8 @@ function renderEvents() {
         h("div", { class: "muted", text: L.seatsText(r) })),
       h("button", { class: "btn", type: "button", "aria-label": `Edit ${r.titleEn || r.titleAr || "event"}`, onclick: () => openEventForm(r) }, "Edit")))));
   if (rows.length) $("ev-empty").hidden = true;
-  else if (evs.query.trim()) setEmpty($("ev-empty"), { title: `No event matches "${evs.query.trim()}".`, hint: "Try part of the title or the venue.", action: { label: "Clear search", onclick: () => { evs.query = ""; $("ev-search").value = ""; renderEvents(); } } });
-  else setEmpty($("ev-empty"), { title: EVENT_EMPTY[evs.filter][0], hint: EVENT_EMPTY[evs.filter][1] });
+  else if (evs.query.trim()) setEmpty($("ev-empty"), { title: `No event matches "${evs.query.trim()}".`, hint: "Try part of the title or the venue.", art: "query", action: { label: "Clear search", onclick: () => { evs.query = ""; $("ev-search").value = ""; renderEvents(); } } });
+  else setEmpty($("ev-empty"), { title: EVENT_EMPTY[evs.filter][0], hint: EVENT_EMPTY[evs.filter][1], art: "hub" });
 }
 
 function dropPreviews() {
@@ -1970,7 +1978,7 @@ function renderFoods() {
   if (!fd.loaded) {
     list.replaceChildren(...(fd.loadFailed ? [] : skeletons(3)));
     setBusy(list, !fd.loadFailed);
-    if (fd.loadFailed) setEmpty($("fd-empty"), { title: "The foods could not be loaded.", hint: "Check your internet connection and try again.", action: { label: "Try again", onclick: () => loadFoods() } });
+    if (fd.loadFailed) setEmpty($("fd-empty"), { title: "The foods could not be loaded.", hint: "Check your internet connection and try again.", art: "plug", action: { label: "Try again", onclick: () => loadFoods() } });
     else $("fd-empty").hidden = true;
     return;
   }
@@ -1985,9 +1993,9 @@ function renderFoods() {
         h("div", { class: "muted", text: `${LABEL(f.category)} · ${L.macrosText(f)}` }),
         h("div", { class: "muted", text: f.allergens.length ? `Allergens: ${f.allergens.map(L.allergenLabel).join(", ")}` : "No allergens" })))))));
   if (rows.length) $("fd-empty").hidden = true;
-  else if (fd.query.trim()) setEmpty($("fd-empty"), { title: `No food matches "${fd.query.trim()}".`, hint: "Try part of the name or an ingredient.", action: { label: "Clear search", onclick: () => { fd.query = ""; $("fd-search").value = ""; renderFoods(); } } });
-  else if (waiting) setEmpty($("fd-empty"), { title: "No foods are waiting.", hint: "When women confirm a meal and offer it to everyone, it appears here for you to approve with names, a category and allergens." });
-  else setEmpty($("fd-empty"), { title: "Nothing is published yet.", hint: "Foods you approve appear here, and every member's phone picks them up within a day." });
+  else if (fd.query.trim()) setEmpty($("fd-empty"), { title: `No food matches "${fd.query.trim()}".`, hint: "Try part of the name or an ingredient.", art: "query", action: { label: "Clear search", onclick: () => { fd.query = ""; $("fd-search").value = ""; renderFoods(); } } });
+  else if (waiting) setEmpty($("fd-empty"), { title: "No foods are waiting.", hint: "When women confirm a meal and offer it to everyone, it appears here for you to approve with names, a category and allergens.", art: "basket" });
+  else setEmpty($("fd-empty"), { title: "Nothing is published yet.", hint: "Foods you approve appear here, and every member's phone picks them up within a day.", art: "basket" });
 }
 
 function foodCandidate(c, i) {
@@ -2084,7 +2092,45 @@ async function rejectFood(candidate) {
 
 /* tabs and wiring */
 
-const TABS = ["queue", "calendar", "phones", "exercises", "events", "foods", "settings"];
+const TABS = ["queue", "calendar", "phones", "exercises", "events", "foods", "coaches", "payments", "refunds", "payouts", "reports", "settings"];
+
+// The coaching tabs a signed-in account may use; the server refuses the rest anyway.
+const allowedTabs = () => TABS.filter((t) => !L.COACHING_TABS.includes(t) || L.coachingTabsFor(claims).includes(t));
+
+function applyClaims() {
+  const allowed = new Set(allowedTabs());
+  for (const t of L.COACHING_TABS) $(`tab-${t}`).hidden = !allowed.has(t);
+  tabHints();
+}
+
+// The strip scrolls sideways on narrow screens: a chevron and a fade show on each side that has more tabs.
+function tabHints() {
+  const strip = $("tabs"), prev = $("tabs-prev"), next = $("tabs-next");
+  const left = !strip.hidden && strip.scrollLeft > 1;
+  const right = !strip.hidden && strip.scrollLeft < strip.scrollWidth - strip.clientWidth - 1;
+  const had = document.activeElement;
+  prev.hidden = !left;
+  next.hidden = !right;
+  // A chevron that hides under the keyboard hands focus on instead of dropping it.
+  if ((had === prev && !left) || (had === next && !right)) {
+    (left ? prev : right ? next : strip.querySelector('[aria-selected="true"]'))?.focus({ preventScroll: true });
+  }
+  strip.classList.toggle("more-left", left);
+  strip.classList.toggle("more-right", right);
+}
+
+function scrollTabs(dir) {
+  const strip = $("tabs");
+  strip.scrollBy({ left: dir * strip.clientWidth * 0.7, behavior: calmScroll() });
+}
+
+function ensureCoaching() {
+  coaching ??= mountCoaching({
+    h, $, call, notice, askDialog, setEmpty, skeletons, setBadge,
+    getState: () => ({ tab: state.tab, claims, personalStorage }),
+  });
+  return coaching;
+}
 
 function openTab(name) {
   const tab = $(`tab-${name}`);
@@ -2096,10 +2142,11 @@ function primeBadges() {
   if (state.tab !== "queue") loadQueue({ quiet: true });
   if (state.tab !== "events") loadEvents({ quiet: true });
   if (state.tab !== "foods") loadFoods({ quiet: true });
+  for (const t of L.coachingTabsFor(claims)) if (state.tab !== t) ensureCoaching().load(t, { quiet: true });
 }
 
 async function requestTab(name) {
-  if (name === state.tab) return;
+  if (name === state.tab || !allowedTabs().includes(name)) return;
   if (state.tab === "exercises" && ex.form && !(await leaveReview())) return;
   showTab(name);
 }
@@ -2127,17 +2174,26 @@ function showTab(name) {
   if (name === "exercises") loadExercises();
   if (name === "events") loadEvents();
   if (name === "foods") loadFoods();
-  if (name === "settings") loadSettings();
+  if (L.COACHING_TABS.includes(name)) ensureCoaching().load(name);
+  else coaching?.release();
+  if (name === "settings") { loadSettings(); if (L.isAdmin(claims)) ensureCoaching().loadSettings(); }
 }
 
 function wire() {
-  TABS.forEach((t, i) => {
+  $("tabs").addEventListener("scroll", tabHints, { passive: true });
+  new ResizeObserver(tabHints).observe($("tabs"));
+  document.fonts?.ready.then(tabHints);
+  $("tabs-prev").addEventListener("click", () => scrollTabs(-1));
+  $("tabs-next").addEventListener("click", () => scrollTabs(1));
+  TABS.forEach((t) => {
     $(`tab-${t}`).addEventListener("click", () => requestTab(t));
     $(`tab-${t}`).addEventListener("keydown", (ev) => {
       const step = ev.key === "ArrowRight" ? 1 : ev.key === "ArrowLeft" ? -1 : ev.key === "Home" ? "first" : ev.key === "End" ? "last" : 0;
       if (!step) return;
       ev.preventDefault();
-      const next = step === "first" ? TABS[0] : step === "last" ? TABS[TABS.length - 1] : TABS[(i + step + TABS.length) % TABS.length];
+      const shown = allowedTabs();
+      const at = shown.indexOf(t);
+      const next = step === "first" ? shown[0] : step === "last" ? shown[shown.length - 1] : shown[(at + step + shown.length) % shown.length];
       requestTab(next).then(() => $(`tab-${next}`).focus());
     });
   });
@@ -2196,7 +2252,6 @@ function wire() {
   $("avail-add").addEventListener("click", () => { state.settings.availability.push({ weekday: 1, start: "09:00", end: "12:00" }); renderAvailability(); });
   $("avail-save").addEventListener("click", () => saveSettings("Availability saved."));
   $("settings-save").addEventListener("click", () => saveSettings("Settings saved."));
-  $("auto-pass").addEventListener("change", () => saveSettings("Saved."));
   $("listed").addEventListener("change", () => saveSettings("Saved."));
 
   $("phones-input").addEventListener("input", (ev) => {
@@ -2206,9 +2261,17 @@ function wire() {
   $("phones-add").addEventListener("click", addPhones);
 }
 
+// Shown until the first answer about the sign-in arrives.
+function doneBooting() {
+  $("booting").hidden = true;
+  unmountArt($("booting-art"));
+}
+
 function boot() {
   wire();
+  mountArt($("booting-art"), "relay", { play: true });
   if (PLACEHOLDER.test(JSON.stringify(firebaseConfig)) || PLACEHOLDER.test(recaptchaSiteKey)) {
+    doneBooting();
     notice("Setup needed: fill in admin-web/config.js with the Firebase web app config and the reCAPTCHA Enterprise site key.");
     return;
   }
@@ -2217,6 +2280,7 @@ function boot() {
   initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(recaptchaSiteKey), isTokenAutoRefreshEnabled: true });
   functions = getFunctions(app, functionsRegion);
   storage = getStorage(app, "gs://own-hub.firebasestorage.app");
+  personalStorage = getStorage(app, "gs://own-hub-personal");
   const auth = getAuth(app);
 
   $("login-form").addEventListener("submit", async (ev) => {
@@ -2240,15 +2304,22 @@ function boot() {
     if (ex.form && !(await leaveReview())) return;
     signOut(auth);
   });
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
+    doneBooting();
+    if (user) unmountArt($("login-art"));
+    else mountArt($("login-art"), "padlock", { play: true });
     $("login").hidden = !!user;
     $("app").hidden = !user;
     $("tabs").hidden = !user;
     $("signout").hidden = !user;
     if (user) {
-      showTab(state.tab);
+      try { claims = (await user.getIdTokenResult()).claims ?? {}; } catch (e) { claims = {}; }
+      applyClaims();
+      showTab(allowedTabs().includes(state.tab) ? state.tab : "queue");
       primeBadges();
     } else {
+      claims = {};
+      coaching?.release();
       hideToast();
       $("email").focus?.();
     }

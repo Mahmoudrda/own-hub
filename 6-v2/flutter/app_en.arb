@@ -6221,5 +6221,1979 @@
         "example": "7"
       }
     }
-  }
+  },
+  "noSessionsOfThisMoveYet": "No sessions of this move yet",
+  "yourLastSessionsOfThisMove": "Your last sessions of this move",
+  "secondsS": "{seconds} s",
+  "@secondsS": {
+    "description": "A hold in seconds.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "45"
+      }
+    }
+  },
+  "bestSetOnDateSet": "Best set on {date}: {set}",
+  "@bestSetOnDateSet": {
+    "description": "Screen reader label for one bar of a move's history.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "12 October 2026"
+      },
+      "set": {
+        "type": "String",
+        "example": "40 kg × 10"
+      }
+    }
+  },
+  "recentSessions": "Recent sessions",
+  "fixingATypoUpdatesYourBestsPoints": "Fixing a typo updates your bests. Points stay as they are.",
+  "noFinishedSessionsYet": "No finished sessions yet",
+  "sessionsYouFinishShowUpHereAnd": "Sessions you finish show up here, and you can fix a set.",
+  "workout": "Workout",
+  "fixThisSet": "Fix this set",
+  "setN": "Set {n}",
+  "@setN": {
+    "description": "A set number in a finished session.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "setNIsNowSet": "Set {n} is now {set}",
+  "@setNIsNowSet": {
+    "description": "Undo bar after fixing a set.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      },
+      "set": {
+        "type": "String",
+        "example": "40 kg × 10"
+      }
+    }
+  },
+  "addNote": "Add note",
+  "editNote": "Edit note",
+  "noteForThisMove": "Note for this move",
+  "keptOnThisPhoneOnly": "Kept on this phone only.",
+  "history": "History",
+  "whichBarDoYouUse": "Which bar do you use?",
+  "changeBar": "Change bar",
+  "kgKgBar": "{kg} kg bar",
+  "@kgKgBar": {
+    "description": "A bar weight choice.",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "barKgBarSideKgEachSide": "{bar} kg bar + {side} kg each side",
+  "@barKgBarSideKgEachSide": {
+    "description": "How to load a barbell.",
+    "placeholders": {
+      "bar": {
+        "type": "String",
+        "example": "20"
+      },
+      "side": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "justTheBarKgBar": "Just the {bar} kg bar",
+  "@justTheBarKgBar": {
+    "description": "Empty bar.",
+    "placeholders": {
+      "bar": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "closestYouCanLoadTotalKgBar": "Closest you can load: {total} kg. {bar} kg bar + {side} kg each side.",
+  "@closestYouCanLoadTotalKgBar": {
+    "description": "Total not loadable exactly.",
+    "placeholders": {
+      "total": {
+        "type": "String",
+        "example": "41.5"
+      },
+      "bar": {
+        "type": "String",
+        "example": "20"
+      },
+      "side": {
+        "type": "String",
+        "example": "10.5"
+      }
+    }
+  },
+  "platesOnOneSidePlatesKg": "Plates on one side: {plates} kg",
+  "@platesOnOneSidePlatesKg": {
+    "description": "Screen reader label of the plate diagram.",
+    "placeholders": {
+      "plates": {
+        "type": "String",
+        "example": "20, 10"
+      }
+    }
+  },
+  "logTheTotalBarIncluded": "Log the total, bar included.",
+  "nextTimeWeightOnName": "Next time: {weight} on {name}",
+  "@nextTimeWeightOnName": {
+    "description": "R10 next-step line for a loaded move that goes up a step next time.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "22.5 kg"
+      },
+      "name": {
+        "type": "String",
+        "example": "Hip thrust"
+      }
+    }
+  },
+  "sameWeightOnNameNextTimeUntil": "Same weight on {name} next time, until it feels steady",
+  "@sameWeightOnNameNextTimeUntil": {
+    "description": "R10 next-step line for a loaded move that stays at the same weight next time.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Hip thrust"
+      }
+    }
+  },
+  "weightMustBe0ToMaxKg": "Weight must be 0 to {max} kg",
+  "@weightMustBe0ToMaxKg": {
+    "description": "Range error on the set editor's weight field.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "300"
+      }
+    }
+  },
+  "repsMustBe0ToMax": "Reps must be 0 to {max}",
+  "@repsMustBe0ToMax": {
+    "description": "Range error on the set editor's reps field.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "100"
+      }
+    }
+  },
+  "secondsMustBe0ToMax": "Seconds must be 0 to {max}",
+  "@secondsMustBe0ToMax": {
+    "description": "Range error on the set editor's seconds field.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "600"
+      }
+    }
+  },
+  "seatAndPinNumbers": "Seat and pin numbers",
+  "findACoach": "Find a coach",
+  "threeQuickQuestionsThenTheCoachesWho": "Three quick questions, then the coaches who fit you best.",
+  "whereDoYouTrain": "Where do you train?",
+  "atTheGym": "At the gym",
+  "yourBudgetForAMonth": "Your budget for a month",
+  "yourBestMatches": "Your best matches",
+  "matchedOnYourThreeAnswersOnlyThen": "Matched on your three answers only, then by name A to Z.",
+  "noCloseMatchYetBrowseAllThe": "No close match yet. Browse all the coaches below.",
+  "allCoachesAToZ": "All coaches A to Z",
+  "coachesAreJoiningCheckBackSoon": "Coaches are joining. Check back soon.",
+  "weCouldNotLoadTheCoachesCheck": "We could not load the coaches. Check your connection and try again.",
+  "loadingCoaches": "Loading coaches",
+  "fromEgpPriceAMonth": "From EGP {price} a month",
+  "@fromEgpPriceAMonth": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "1,800"
+      }
+    }
+  },
+  "openTheProfileOfName": "Open the profile of {name}",
+  "@openTheProfileOfName": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "verifiedCoach": "Verified coach",
+  "yearsCoaching": "Years coaching",
+  "fatLoss": "Fat loss",
+  "muscleGain": "Muscle gain",
+  "homeTraining": "Home training",
+  "gymTraining": "Gym training",
+  "mobility": "Mobility",
+  "postnatalReturn": "Postnatal return",
+  "healthyEating": "Healthy eating",
+  "endurance": "Endurance",
+  "coachProfile": "Coach profile",
+  "thisIsHowMembersSeeYou": "This is how members see you",
+  "yearsCoachingN": "Years coaching: {n}",
+  "@yearsCoachingN": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "languagesList": "Languages: {list}",
+  "@languagesList": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "example": "Arabic, English"
+      }
+    }
+  },
+  "usuallyRepliesWithinNHours": "Usually replies within {n} hours",
+  "@usuallyRepliesWithinNHours": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "noPackagesYet": "No packages yet",
+  "whatIsIncluded": "What is included",
+  "durationNDays": "Duration: {n} days",
+  "@durationNDays": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "28"
+      }
+    }
+  },
+  "liveSessionsAMonthN": "Live sessions a month: {n}",
+  "@liveSessionsAMonthN": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "egpPrice": "EGP {price}",
+  "@egpPrice": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "1,800"
+      }
+    }
+  },
+  "finalPriceTaxesAndFeesIncluded": "Final price, taxes and fees included",
+  "youWillBeAbleToBookA": "You will be able to book a package here once booking opens.",
+  "approach": "Approach",
+  "whatMembersSay": "What members say",
+  "checkedCertificates": "Checked certificates",
+  "reportThisProfile": "Report this profile",
+  "whyAreYouReportingThisProfile": "Why are you reporting this profile?",
+  "thisLooksLikeAMansAccount": "This looks like a man's account",
+  "nudityOrSexualContent": "Nudity or sexual content",
+  "spamOrAdvertising": "Spam or advertising",
+  "selfHarmOrDanger": "Self-harm or danger",
+  "askingForPaymentOutsideOwnHub": "Asking for payment outside Own Hub",
+  "unsafeTrainingOrFoodAdvice": "Unsafe training or food advice",
+  "addANoteOptional": "Add a note (optional)",
+  "thankYouWeWillLookAtThis": "Thank you. We will look at this.",
+  "yourReportIsPrivateTheCoachIs": "Your report is private. The coach is not told.",
+  "weCouldNotSendYourReportTry": "We could not send your report. Try again.",
+  "photoOfName": "Photo of {name}",
+  "@photoOfName": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "myCoachSpace": "My coach space",
+  "yourPortfolioIsLive": "Your portfolio is live",
+  "yourPortfolioIsNotLiveYet": "Your portfolio is not live yet",
+  "turnOnOnePackageAndMembersCan": "Turn on one package and members can see your portfolio.",
+  "acceptingNewClients": "Accepting new clients",
+  "photoHeadlineAndHowYouCoach": "Photo, headline and how you coach",
+  "myPackages": "My packages",
+  "upTo6PackagesEachWithYour": "Up to 6 packages, each with your own price",
+  "countOf6Packages": "{count} of 6 packages",
+  "@countOf6Packages": {
+    "description": "How many packages the coach has made, out of the 6 she may make.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "previewMyPortfolio": "Preview my portfolio",
+  "seeItTheWayMembersDo": "See it the way members do",
+  "myApplication": "My application",
+  "whatWasApproved": "What was approved",
+  "yourCoachSpaceIsPaused": "Your coach space is paused",
+  "pleaseContactOwnHubNothingCanBe": "Please contact Own Hub. Nothing can be changed while it is paused.",
+  "yourCoachSpaceIsNotReadyYet": "Your coach space is not ready yet",
+  "itOpensHereOnceYourApplicationIs": "It opens here once your application is approved.",
+  "loadingYourCoachSpace": "Loading your coach space",
+  "weCouldNotReachOwnHubCheck": "We could not reach Own Hub. Check your connection and try again.",
+  "somethingWentWrongPleaseTryAgain": "Something went wrong. Please try again.",
+  "coachingIsNotOpenRightNowPlease": "Coaching is not open right now. Please try again later.",
+  "yourAccountNeedsToBeVerifiedFirst": "Your account needs to be verified first.",
+  "thisAccountIsNotAnApprovedCoach": "This account is not an approved coach.",
+  "somethingInThisFormNeedsAnotherLook": "Something in this form needs another look.",
+  "pickAPriceBetweenEgpLowAnd": "Pick a price between EGP {low} and EGP {high}.",
+  "@pickAPriceBetweenEgpLowAnd": {
+    "description": "The range a coach may price a package in.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "200"
+      },
+      "high": {
+        "type": "String",
+        "example": "30,000"
+      }
+    }
+  },
+  "weCouldNotFindThatPackageGo": "We could not find that package. Go back and open it again.",
+  "thatPictureCouldNotBeUsedTry": "That picture could not be used. Try a different one.",
+  "pleaseSignInAgain_3jocz": "Please sign in again.",
+  "oneLineMembersReadFirst": "One line members read first",
+  "tellMembersHowYouWorkWithA": "Tell members how you work with a client.",
+  "useLowToHighCharacters": "Use {low} to {high} characters.",
+  "@useLowToHighCharacters": {
+    "description": "The length a text field accepts.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "10"
+      },
+      "high": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "acceptRequestsAutomatically": "Accept requests automatically",
+  "mostClientsAtOnce": "Most clients at once",
+  "yourPhotoIsSaved": "Your photo is saved.",
+  "theCameraIsTurnedOffForOwn": "The camera is turned off for Own Hub. You can turn it on in Settings.",
+  "saveChanges": "Save changes",
+  "yourPortfolioIsSaved": "Your portfolio is saved.",
+  "whatMembersSee": "What members see",
+  "startFromATemplateThenSetYour": "Start from a template, then set your own price.",
+  "addAPackage": "Add a package",
+  "turnOnAtLeastOnePackageTo": "Turn on at least one package to show your portfolio to members.",
+  "onForMembers": "On for members",
+  "off": "Off",
+  "countDays": "{count} days",
+  "@countDays": {
+    "description": "A length of time in days.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "28"
+      }
+    }
+  },
+  "countLiveVideoSessionsAMonth": "{count} live video sessions a month",
+  "@countLiveVideoSessionsAMonth": {
+    "description": "How many live video sessions a package includes each month.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "countMin": "{count} min",
+  "@countMin": {
+    "description": "A length in minutes.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "newPackage": "New package",
+  "editPackage": "Edit package",
+  "startFromATemplate": "Start from a template",
+  "blankPackage": "Blank package",
+  "fourWeeksBuiltAroundYouAPlan": "Four weeks built around you: a plan made for you, live video sessions and a weekly look at your progress.",
+  "eightWeeksToBuildARoutineThat": "Eight weeks to build a routine that lasts, with a plan made for you, live video sessions and a weekly look at your progress.",
+  "twelveWeeksForARealChangeWith": "Twelve weeks for a real change, with a plan made for you, live video sessions and a weekly look at your progress.",
+  "aWorkoutPlanMadeForYou": "A workout plan made for you",
+  "liveVideoSessionsWithMe": "Live video sessions with me",
+  "aWeeklyLookAtYourProgress": "A weekly look at your progress",
+  "aPlanThatChangesAsYouDo": "A plan that changes as you do",
+  "packageName": "Package name",
+  "description": "Description",
+  "length": "Length",
+  "removeThisLine": "Remove this line",
+  "liveSessionsAMonth": "Live sessions a month",
+  "progressReviewsAWeek": "Progress reviews a week",
+  "yourPriceEgp": "Your price (EGP)",
+  "wholePoundsFromLowToHigh": "Whole pounds, from {low} to {high}.",
+  "@wholePoundsFromLowToHigh": {
+    "description": "Hint under the price field.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "200"
+      },
+      "high": {
+        "type": "String",
+        "example": "30,000"
+      }
+    }
+  },
+  "showThisPackageToMembers": "Show this package to members",
+  "positionInYourList": "Position in your list",
+  "savePackage": "Save package",
+  "savedYouReceiveEgpAmount": "Saved. You receive EGP {amount}.",
+  "@savedYouReceiveEgpAmount": {
+    "description": "Shown after a package is saved: what the coach receives, in whole pounds.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "200"
+      }
+    }
+  },
+  "howMembersSeeIt": "How members see it",
+  "add1ToMaxLinesEachLow": "Add 1 to {max} lines, each {low} to {high} characters.",
+  "@add1ToMaxLinesEachLow": {
+    "description": "Rule for the list of what a package includes.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "8"
+      },
+      "low": {
+        "type": "String",
+        "example": "2"
+      },
+      "high": {
+        "type": "String",
+        "example": "80"
+      }
+    }
+  },
+  "less": "Less",
+  "yourApplication": "Your application",
+  "specialties": "Specialties",
+  "clientFeedback": "Client feedback",
+  "beforeAndAfterStories": "Before and after stories",
+  "returnAfterBirth": "Return after birth",
+  "membersCanAskToJoinYourPackages": "Members can ask to join your packages. Coaching is free until Own Hub opens payments.",
+  "whenThisIsOnARequestGoes": "When this is on, a request goes straight through while you have room. When it is off, you answer each request yourself.",
+  "newRequestsWaitOnceYouReachCount": "New requests wait once you reach {count} clients at once.",
+  "@newRequestsWaitOnceYouReachCount": {
+    "description": "Explains the most-clients setting.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "fewer": "Fewer",
+  "membersSeeEgpPrice": "Members see EGP {price}",
+  "@membersSeeEgpPrice": {
+    "description": "The price a member pays for a package, in whole Egyptian pounds.",
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "230"
+      }
+    }
+  },
+  "askToJoin": "Ask to join",
+  "requestsChatsAndClientsInOnePlace": "Requests, chats and clients in one place",
+  "countNewRequests": "{count} new requests",
+  "@countNewRequests": {
+    "description": "Requests from members waiting for the coach.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "countUnreadChats": "{count} unread chats",
+  "@countUnreadChats": {
+    "description": "Chats with something the coach has not read.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "countClients": "{count} clients",
+  "@countClients": {
+    "description": "Clients being coached now.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "freeWhileOwnHubOpensCoaching": "Free while Own Hub opens coaching",
+  "tellNameAboutYou": "Tell {name} about you",
+  "@tellNameAboutYou": {
+    "description": "Joining a coach.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "yourLevel": "Your level",
+  "daysAWeekYouCanTrain": "Days a week you can train",
+  "allergiesFromYourProfile": "Allergies from your profile",
+  "tapOneToTakeItOffThe": "Tap one to take it off the list.",
+  "aFewQuestionsAboutYourHealth": "A few questions about your health",
+  "answerEachOneWithYesOrNo": "Answer each one with yes or no.",
+  "no": "No",
+  "hasADoctorEverSaidYouHave": "Has a doctor ever said you have a heart condition?",
+  "doYouFeelPainInYourChest": "Do you feel pain in your chest when you exercise?",
+  "doYouFeelDizzyOrFaintWhen": "Do you feel dizzy or faint when you exercise?",
+  "doYouHaveALongTermCondition": "Do you have a long-term condition, such as diabetes or high blood pressure?",
+  "doYouTakeMedicationEveryDay": "Do you take medication every day?",
+  "doYouHaveABoneOrJoint": "Do you have a bone or joint problem that exercise could make worse?",
+  "hasADoctorToldYouToExercise": "Has a doctor told you to exercise only under supervision?",
+  "iWillCheckWithMyDoctorBefore": "I will check with my doctor before I start",
+  "yourCoachWillReadYourAnswersBefore": "Your coach will read your answers before she accepts.",
+  "aNoteForTheCoachOptional": "A note for the coach (optional)",
+  "iShareTheseAnswersWithNameMy": "I share these answers with {name}, my coach.",
+  "@iShareTheseAnswersWithNameMy": {
+    "description": "Joining a coach.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "iUnderstandMyAnswersAreStoredIn": "I understand my answers are stored in Frankfurt, Germany.",
+  "sendRequest": "Send request",
+  "answerEveryQuestionAndTickTheBoxes": "Answer every question and tick the boxes at the end.",
+  "requestSent": "Request sent",
+  "nameUsuallyRepliesWithinHoursHours": "{name} usually replies within {hours} hours",
+  "@nameUsuallyRepliesWithinHoursHours": {
+    "description": "Joining a coach.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      },
+      "hours": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "nameWillGetBackToYouSoon": "{name} will get back to you soon.",
+  "@nameWillGetBackToYouSoon": {
+    "description": "Joining a coach.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "youAlreadyAskedToJoinThisCoach": "You already asked to join this coach.",
+  "thisCoachIsNotTakingNewClients": "This coach is not taking new clients right now.",
+  "weCouldNotSendYourRequestTry": "We could not send your request. Try again.",
+  "coachWomenOnOwnHub": "Coach women on Own Hub",
+  "applyToJoinAsACoachOwn": "Apply to join as a coach. Own Hub's reviewer reads every application, and approved coaches get a page that members can find.",
+  "whatYouWillNeed": "What you will need",
+  "aClearPhotoOfYou": "A clear photo of you",
+  "photosOfYourDegreeAndCertificates": "Photos of your degree and certificates",
+  "twoMessagesFromWomenYouTrained": "Two messages from women you trained",
+  "aClientTransformationWithHerWrittenConsent": "A client transformation, with her written consent",
+  "ownHubIsForWomenOnlyOnly": "Own Hub is for women only. Only verified women can apply, and every client is a woman.",
+  "continueMyApplication": "Continue my application",
+  "verifyThatYouAreAWomanFirst": "Verify that you are a woman first",
+  "applyingNeedsAVerifiedAccountVerificationTakes": "Applying needs a verified account. Verification takes a few minutes.",
+  "verifyMyAccount": "Verify my account",
+  "saveAndContinue": "Save and continue",
+  "yourAnswersAreSavedOnThisPhone": "Your answers are saved on this phone after every step.",
+  "thisIsNeeded": "This is needed",
+  "useAtLeastMinCharacters": "Use at least {min} characters",
+  "@useAtLeastMinCharacters": {
+    "description": "A text field is too short.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "useAtMostMaxCharacters": "Use at most {max} characters",
+  "@useAtMostMaxCharacters": {
+    "description": "A text field is too long.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "minToMaxCharacters": "{min} to {max} characters",
+  "@minToMaxCharacters": {
+    "description": "Helper under a text field.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "10"
+      },
+      "max": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "enterAYearFromFromToTo": "Enter a year from {from} to {to}",
+  "@enterAYearFromFromToTo": {
+    "description": "Year field out of range.",
+    "placeholders": {
+      "from": {
+        "type": "String",
+        "example": "1960"
+      },
+      "to": {
+        "type": "String",
+        "example": "2026"
+      }
+    }
+  },
+  "enterAWholeNumberFromMinTo": "Enter a whole number from {min} to {max}",
+  "@enterAWholeNumberFromMinTo": {
+    "description": "Number field out of range.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "0"
+      },
+      "max": {
+        "type": "String",
+        "example": "50"
+      }
+    }
+  },
+  "addAtLeastMin": "Add at least {min}",
+  "@addAtLeastMin": {
+    "description": "A list needs more rows.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "chooseBetweenMinAndMax": "Choose between {min} and {max}",
+  "@chooseBetweenMinAndMax": {
+    "description": "A chip group needs a count in range.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "tickThisToContinue": "Tick this to continue",
+  "chooseADifferentOne": "Choose a different one",
+  "membersSeeYourDisplayNameHeadlineAnd": "Members see your display name, headline and photo. Your full name is for the review only and is never shown.",
+  "fullName": "Full name",
+  "forTheReviewOnlyNeverShownPublicly": "For the review only. Never shown publicly.",
+  "displayName": "Display name",
+  "governorate": "Governorate",
+  "languagesYouCoachIn": "Languages you coach in",
+  "arabicLanguage": "Arabic language",
+  "englishLanguage": "English language",
+  "photoAdded": "Photo added",
+  "theCameraIsBlockedAllowItIn": "The camera is blocked. Allow it in Settings or choose a photo.",
+  "yourEducation": "Your education",
+  "degreeOrCourse": "Degree or course",
+  "institution": "Institution",
+  "year": "Year",
+  "addEducation": "Add education",
+  "educationN": "Education {n}",
+  "@educationN": {
+    "description": "Row title.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "proofPhotoOptional": "Proof photo, optional",
+  "yourCertificates": "Your certificates",
+  "certificateTitle": "Certificate title",
+  "issuedBy": "Issued by",
+  "addACertificate": "Add a certificate",
+  "certificateN": "Certificate {n}",
+  "@certificateN": {
+    "description": "Row title.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "certificatePhoto": "Certificate photo",
+  "yourSpecialties": "Your specialties",
+  "yearsOfExperience": "Years of experience",
+  "yourQualifications": "Your qualifications",
+  "whatYouStudiedAndTrainedIn": "What you studied and trained in.",
+  "feedbackFromClients": "Feedback from clients",
+  "screenshotsAreSeenOnlyByOwnHubs": "Screenshots are seen only by Own Hub's woman reviewer.",
+  "whatSheSaid": "What she said",
+  "herFirstName": "Her first name",
+  "whereItCameFrom": "Where it came from",
+  "whatsapp": "WhatsApp",
+  "instagram": "Instagram",
+  "somewhereElse": "Somewhere else",
+  "screenshotOptional": "Screenshot, optional",
+  "addFeedback": "Add feedback",
+  "feedbackN": "Feedback {n}",
+  "@feedbackN": {
+    "description": "Row title.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "clientTransformations": "Client transformations",
+  "beforePhoto": "Before photo",
+  "afterPhoto": "After photo",
+  "weeksItTook": "Weeks it took",
+  "noteOptional": "Note, optional",
+  "myClientAgreedInWritingThatOwn": "My client agreed in writing that Own Hub's reviewer may see these photos",
+  "addATransformation": "Add a transformation",
+  "transformationN": "Transformation {n}",
+  "@transformationN": {
+    "description": "Row title.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "yourApproach": "Your approach",
+  "followUpsWithEachClientPerWeek": "Follow-ups with each client per week",
+  "howFastYouReply": "How fast you reply",
+  "withinHoursHours": "Within {hours} hours",
+  "@withinHoursHours": {
+    "description": "Reply time chip.",
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "whereYouTrainClients": "Where you train clients",
+  "inAGym": "In a gym",
+  "coachTerms": "Coach terms",
+  "readThesePointsThenTickTheThree": "Read these points, then tick the three rules.",
+  "ownHubReviewsEveryCoachBeforeShe": "Own Hub reviews every coach before she is listed.",
+  "everythingYouTellUsMustBeAccurate": "Everything you tell us must be accurate.",
+  "photosOfClientsAreSharedOnlyWith": "Photos of clients are shared only with their written consent.",
+  "clientsPayThroughOwnHubOnlyNever": "Clients pay through Own Hub only, never outside it.",
+  "youCanWithdrawYourApplicationAtAny": "You can withdraw your application at any time.",
+  "readTheFullCoachTerms": "Read the full coach terms",
+  "everythingIWroteIsAccurate": "Everything I wrote is accurate",
+  "iShareClientPhotosOnlyWithTheir": "I share client photos only with their written consent",
+  "iWillNotTakePaymentFromClients": "I will not take payment from clients outside Own Hub",
+  "reviewYourApplication": "Review your application",
+  "lookOverEachPartYouCanEdit": "Look over each part. You can edit any of it before you send.",
+  "stillNeeded": "Still needed",
+  "complete": "Complete",
+  "sendMyApplication": "Send my application",
+  "sendingYourApplication": "Sending your application",
+  "uploadingPhotoDoneOfTotal": "Uploading photo {done} of {total}",
+  "@uploadingPhotoDoneOfTotal": {
+    "description": "Send progress.",
+    "placeholders": {
+      "done": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "applicationSent": "Application sent",
+  "onlyVerifiedWomenCanApplyVerifyYour": "Only verified women can apply. Verify your account first.",
+  "youAlreadyHaveAnApplicationWaitingFor": "You already have an application waiting for review.",
+  "somethingIsStillMissingLookAtThe": "Something is still missing. Look at the parts marked below.",
+  "aPhotoDidNotReachUsTry": "A photo did not reach us. Try sending again.",
+  "youAreAlreadyACoachOnOwn": "You are already a coach on Own Hub.",
+  "coachApplicationsAreClosedForNowTry": "Coach applications are closed for now. Try again later.",
+  "yourCoachAccountIsPausedContactSupport": "Your coach account is paused. Contact support.",
+  "someOfYourAnswersWereNotAccepted": "Some of your answers were not accepted. Check each part and try again.",
+  "noConnectionYourAnswersAreSavedSo": "No connection. Your answers are saved, so try again when you are online.",
+  "signInToSendYourApplication": "Sign in to send your application.",
+  "somethingWentWrongYourAnswersAreSaved": "Something went wrong. Your answers are saved. Try again.",
+  "weHaveYourApplication": "We have your application",
+  "whatHappensNext": "What happens next",
+  "aWomanReviewerReadsEachPart": "A woman reviewer reads each part.",
+  "sheMayAskYouToChangeSomething": "She may ask you to change something.",
+  "whenYouAreApprovedYourCoachSpace": "When you are approved, your coach space opens.",
+  "aFewChangesPlease": "A few changes, please",
+  "theReviewerAskedYouToUpdateThese": "The reviewer asked you to update these parts. Your other answers stay as they are.",
+  "reviewersNote": "Reviewer's note",
+  "sendAgain": "Send again",
+  "somethingIsMissingHere": "Something is missing here.",
+  "thisPartIsNotClearEnough": "This part is not clear enough.",
+  "weCouldNotVerifyThis": "We could not verify this.",
+  "thisIsNotAllowedOnOwnHub": "This is not allowed on Own Hub.",
+  "pleaseLookAtThisPartAgain": "Please look at this part again.",
+  "notApprovedThisTime": "Not approved this time",
+  "theReviewerCouldNotApproveThisApplication": "The reviewer could not approve this application.",
+  "youCanApplyAgainOnDate": "You can apply again on {date}.",
+  "@youCanApplyAgainOnDate": {
+    "description": "Rejected application, date already formatted.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "20 Nov 2026"
+      }
+    }
+  },
+  "youAreApproved": "You are approved",
+  "welcomeToOwnHubsCoachesYourCoach": "Welcome to Own Hub's coaches. Your coach space is ready.",
+  "openMyCoachSpace": "Open my coach space",
+  "noApplicationYet": "No application yet",
+  "startMyApplication": "Start my application",
+  "cairo": "Cairo",
+  "alexandria": "Alexandria",
+  "qalyubia": "Qalyubia",
+  "sharqia": "Sharqia",
+  "dakahlia": "Dakahlia",
+  "gharbia": "Gharbia",
+  "monufia": "Monufia",
+  "beheira": "Beheira",
+  "kafrElSheikh": "Kafr El Sheikh",
+  "damietta": "Damietta",
+  "portSaid": "Port Said",
+  "ismailia": "Ismailia",
+  "suez": "Suez",
+  "northSinai": "North Sinai",
+  "southSinai": "South Sinai",
+  "redSea": "Red Sea",
+  "matrouh": "Matrouh",
+  "faiyum": "Faiyum",
+  "beniSuef": "Beni Suef",
+  "minya": "Minya",
+  "asyut": "Asyut",
+  "sohag": "Sohag",
+  "qena": "Qena",
+  "luxor": "Luxor",
+  "aswan": "Aswan",
+  "newValley": "New Valley",
+  "messages": "Messages",
+  "searchChats": "Search chats",
+  "noChatsYet": "No chats yet",
+  "yourChatsWithYourCoachOrYour": "Your chats with your coach or your clients show up here.",
+  "noChatsMatchYourSearch": "No chats match your search.",
+  "youText": "You: {text}",
+  "@youText": {
+    "description": "Chat list preview: the last line was written by her. text is the start of that line.",
+    "placeholders": {
+      "text": {
+        "type": "String",
+        "example": "See you at 6"
+      }
+    }
+  },
+  "recipe": "Recipe",
+  "workoutPlan": "Workout plan",
+  "mealPlan": "Meal plan",
+  "liveSession": "Live session",
+  "messageHidden": "Message hidden",
+  "countUnread": "{count} unread",
+  "@countUnread": {
+    "description": "Spoken label of the unread badge on a chat row. count is a number.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "yourCoach": "Your coach",
+  "yourClient": "Your client",
+  "packageDaysDaysLeft": "{package} · {days} days left",
+  "@packageDaysDaysLeft": {
+    "description": "Chat header line under the other person's name. package is the package name, days a whole number above zero.",
+    "placeholders": {
+      "package": {
+        "type": "String",
+        "example": "Monthly coaching"
+      },
+      "days": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "packageEndsToday": "{package} · ends today",
+  "@packageEndsToday": {
+    "description": "Chat header line on the last day of the coaching. package is the package name.",
+    "placeholders": {
+      "package": {
+        "type": "String",
+        "example": "Monthly coaching"
+      }
+    }
+  },
+  "shareSomething": "Share something",
+  "shareARecipe": "Share a recipe",
+  "shareAWorkoutPlan": "Share a workout plan",
+  "shareAMealPlan": "Share a meal plan",
+  "scheduleALiveSession": "Schedule a live session",
+  "phoneNumbersCantBeSentInThe": "Phone numbers can't be sent in the chat. Your message is still here if you want to change it.",
+  "paymentDetailsCantBeSharedInThe": "Payment details can't be shared in the chat. Your message is still here if you want to change it.",
+  "linksCantBeSentInTheChat": "Links can't be sent in the chat. Your message is still here if you want to change it.",
+  "someWordsInThisMessageArentAllowed": "Some words in this message aren't allowed here. Your message is still here if you want to change it.",
+  "yourMessageCouldNotBeSentTry": "Your message could not be sent. Try again in a moment.",
+  "newMessages": "New messages",
+  "thisCoachingHasEndedYouCanRead": "This coaching has ended. You can read the chat but not write in it.",
+  "report": "Report",
+  "block": "Block",
+  "moreOptions": "More options",
+  "blockName": "Block {name}?",
+  "@blockName": {
+    "description": "Title of the sheet that asks her to confirm blocking the other person in a chat.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "nameCannotWriteToYouAfterThis": "{name} cannot write to you after this, and you will not see her messages. You can undo it later.",
+  "@nameCannotWriteToYouAfterThis": {
+    "description": "Body of the block confirmation in a chat. name is the other person.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "nameIsBlocked": "{name} is blocked.",
+  "@nameIsBlocked": {
+    "description": "Shown once the other person in a chat is blocked.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "yourReportIsPrivate": "Your report is private.",
+  "reportThisMessage": "Report this message",
+  "copy": "Copy",
+  "copied": "Copied",
+  "thereIsNoMessageFromHerTo": "There is no message from her to report yet.",
+  "sending": "Sending",
+  "sent": "Sent",
+  "seen": "Seen",
+  "minutesMin": "{minutes} min",
+  "@minutesMin": {
+    "description": "Length of a live session card in a chat.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "45"
+      }
+    }
+  },
+  "dayAtTime": "{day} at {time}",
+  "@dayAtTime": {
+    "description": "When a live session starts. day is Today, Tomorrow-style or a date; time is hh:mm.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "Friday"
+      },
+      "time": {
+        "type": "String",
+        "example": "18:30"
+      }
+    }
+  },
+  "joinTheCall": "Join the call",
+  "confirm": "Confirm",
+  "waitingForConfirmation": "Waiting for confirmation",
+  "confirmed": "Confirmed",
+  "declined": "Declined",
+  "coachingStarted": "Coaching started",
+  "coachingEnded": "Coaching ended",
+  "coachingEndsSoon": "Coaching ends soon",
+  "aPlanWasUpdated": "A plan was updated",
+  "liveSessionConfirmed": "Live session confirmed",
+  "liveSessionFinished": "Live session finished",
+  "thisMessageWasHiddenBecauseItHad": "This message was hidden because it had contact or payment details",
+  "weCouldNotLoadThisChatCheck": "We could not load this chat. Check your connection.",
+  "noMessagesYetSayHello": "No messages yet. Say hello.",
+  "loadingOlderMessages": "Loading older messages",
+  "coachDesk": "Coach desk",
+  "newRequests": "New requests",
+  "unreadChats": "Unread chats",
+  "toFollowUp": "To follow up",
+  "activeClients": "Active clients",
+  "followUp_n22yh": "Follow up",
+  "showAllCount": "Show all {count}",
+  "@showAllCount": {
+    "description": "Coach desk",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "accept": "Accept",
+  "decline": "Decline",
+  "whyAreYouDeclining": "Why are you declining?",
+  "myPlacesAreFull": "My places are full",
+  "notTheRightFit": "Not the right fit",
+  "sheShouldSeeHerDoctorFirst": "She should see her doctor first",
+  "requestAccepted": "Request accepted",
+  "requestDeclined": "Request declined",
+  "nameAskedToJoin": "{name} asked to join",
+  "@nameAskedToJoin": {
+    "description": "Coach desk",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "healthAnswersToReadFirst": "Health answers to read first",
+  "goalLevelDaysDaysAWeekPlace": "{goal} · {level} · {days} days a week · {place}",
+  "@goalLevelDaysDaysAWeekPlace": {
+    "description": "Coach desk",
+    "placeholders": {
+      "goal": {
+        "type": "String",
+        "example": "Get stronger"
+      },
+      "level": {
+        "type": "String",
+        "example": "Beginner"
+      },
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "place": {
+        "type": "String",
+        "example": "At home"
+      }
+    }
+  },
+  "clientTag": "Client {tag}",
+  "@clientTag": {
+    "description": "Coach desk",
+    "placeholders": {
+      "tag": {
+        "type": "String",
+        "example": "#a1b2"
+      }
+    }
+  },
+  "liveSessionTodayAtTime": "Live session today at {time}",
+  "@liveSessionTodayAtTime": {
+    "description": "Coach desk",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "18:30"
+      }
+    }
+  },
+  "noMessageForDaysDays": "No message for {days} days",
+  "@noMessageForDaysDays": {
+    "description": "Coach desk",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "8"
+      }
+    }
+  },
+  "endsToday": "Ends today",
+  "daysDaysLeft": "{days} days left",
+  "@daysDaysLeft": {
+    "description": "Coach desk",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "noMessagesYet": "No messages yet",
+  "shareYourPortfolioLinkSoMembersCan": "Share your portfolio link so members can ask to join.",
+  "youAreAllCaughtUp": "You are all caught up",
+  "nothingToAnswerOrFollowUpRight": "Nothing to answer or follow up right now.",
+  "searchClients": "Search clients",
+  "nobodyMatchesThatSearch": "Nobody matches that search.",
+  "noUnreadChatsRightNow": "No unread chats right now.",
+  "nobodyNeedsAFollowUpRightNow": "Nobody needs a follow up right now.",
+  "nobodyIsEndingSoon": "Nobody is ending soon.",
+  "endingSoon": "Ending soon",
+  "openTheDetailsOfName": "Open the details of {name}",
+  "@openTheDetailsOfName": {
+    "description": "Coach desk",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "openTheChatWithName": "Open the chat with {name}",
+  "@openTheChatWithName": {
+    "description": "Coach desk",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "clientDetails": "Client details",
+  "started": "Started",
+  "daysLeft": "Days left",
+  "liveSessionsHeld": "Live sessions held",
+  "usedOfIncluded": "{used} of {included}",
+  "@usedOfIncluded": {
+    "description": "Coach desk",
+    "placeholders": {
+      "used": {
+        "type": "String",
+        "example": "2"
+      },
+      "included": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "herAnswers": "Her answers",
+  "sharedWithYouWhileYouCoachHer": "Shared with you while you coach her",
+  "place": "Place",
+  "allergies": "Allergies",
+  "lifeStage": "Life stage",
+  "healthQuestions": "Health questions",
+  "sheTickedThatSheWillCheckWith": "She ticked that she will check with her doctor",
+  "noHealthFlagsInHerAnswers": "No health flags in her answers",
+  "yourPrivateNote": "Your private note",
+  "staysOnThisPhoneOnlySheNever": "Stays on this phone only. She never sees it and it is never synced.",
+  "writeWhatYouWantToRemember": "Write what you want to remember",
+  "saveNote": "Save note",
+  "noteSaved": "Note saved",
+  "plansYouShared": "Plans you shared",
+  "nothingSharedYetShareAWorkoutOr": "Nothing shared yet. Share a workout or a meal plan below.",
+  "shareAWorkout": "Share a workout",
+  "liveSessions": "Live sessions",
+  "waitingForAnAnswer": "Waiting for an answer",
+  "closed": "Closed",
+  "withYouSinceStartEndsEnd": "With you since {start} · ends {end}",
+  "@withYouSinceStartEndsEnd": {
+    "description": "Coach desk",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2/10/2026"
+      },
+      "end": {
+        "type": "String",
+        "example": "30/10/2026"
+      }
+    }
+  },
+  "weCouldNotFindThisClient": "We could not find this client.",
+  "planForName": "Plan for {name}",
+  "@planForName": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "startFrom": "Start from",
+  "oneOfTheThreeSplits": "One of the three splits",
+  "yourTemplates": "Your templates",
+  "blankPlan": "Blank plan",
+  "planName": "Plan name",
+  "editDaysAndMoves": "Edit days and moves",
+  "publishToName": "Publish to {name}",
+  "@publishToName": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "publishAsANewVersion": "Publish as a new version",
+  "saveAsATemplate": "Save as a template",
+  "templateSaved": "Template saved.",
+  "publishedNameCanSeeItNow": "Published. {name} can see it now.",
+  "@publishedNameCanSeeItNow": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "giveThePlanANameFirst": "Give the plan a name first.",
+  "addAtLeastOneDayFirst": "Add at least one day first.",
+  "thisPlanIsTooBigToSend": "This plan is too big to send. Take out a day or some moves.",
+  "aMoveInThisPlanIsNot": "A move in this plan is not in the exercise library any more.",
+  "versionN": "Version {n}",
+  "@versionN": {
+    "description": "A plan's revision number.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "dayName": "Day name",
+  "addMoves": "Add moves",
+  "holdInSeconds": "Hold, in seconds",
+  "watchTheClip": "Watch the clip",
+  "howManyDays": "How many days",
+  "addToSlot": "Add to {slot}",
+  "@addToSlot": {
+    "description": "A meal slot: breakfast, lunch, dinner or snack.",
+    "placeholders": {
+      "slot": {
+        "type": "String",
+        "example": "Lunch"
+      }
+    }
+  },
+  "aShortLineLikeFruitOfHer": "A short line, like fruit of her choice",
+  "grams": "Grams",
+  "noteForHerIfYouLike": "Note for her, if you like",
+  "nameAvoidsList": "{name} avoids: {list}",
+  "@nameAvoidsList": {
+    "description": "The client's name, then the allergies she declared.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      },
+      "list": {
+        "type": "String",
+        "example": "sesame, nuts"
+      }
+    }
+  },
+  "noAllergiesOnHerIntake": "No allergies on her intake.",
+  "containsAllergensWhichSheAvoids": "Contains {allergens}, which she avoids.",
+  "@containsAllergensWhichSheAvoids": {
+    "description": "Allergens in a meal item.",
+    "placeholders": {
+      "allergens": {
+        "type": "String",
+        "example": "sesame"
+      }
+    }
+  },
+  "allergensNotCheckedForThisOne": "Allergens not checked for this one.",
+  "checkTheMarkedItemsBeforeYouPublish": "Check the marked items before you publish.",
+  "aboutKcalKcalProteinGProtein": "About {kcal} kcal, {protein} g protein",
+  "@aboutKcalKcalProteinGProtein": {
+    "description": "A day's nutrition worked out from the food tables.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1,850"
+      },
+      "protein": {
+        "type": "String",
+        "example": "92"
+      }
+    }
+  },
+  "figuresComeFromOwnHubsFoodTables": "Figures come from Own Hub's food tables.",
+  "someItemsHaveNoFigures": "Some items have no figures.",
+  "nothingPlannedYet": "Nothing planned yet",
+  "addAtLeastOneItemFirst": "Add at least one item first.",
+  "noRecipesToPickFromYet": "No recipes to pick from yet.",
+  "servingsN": "Servings: {n}",
+  "@servingsN": {
+    "description": "Servings of a recipe.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1.5"
+      }
+    }
+  },
+  "scheduleASession": "Schedule a session",
+  "meetingLink": "Meeting link",
+  "aGoogleMeetOrZoomLinkThat": "A Google Meet or Zoom link that starts with https",
+  "thatLinkIsNotAllowedUseGoogle": "That link is not allowed. Use Google Meet, Zoom or Teams.",
+  "thatTimeIsAfterHerCoachingEnds": "That time is after her coaching ends.",
+  "sessionsUsedUsedOfIncluded": "Sessions used: {used} of {included}",
+  "@sessionsUsedUsedOfIncluded": {
+    "description": "Live sessions used out of the package's.",
+    "placeholders": {
+      "used": {
+        "type": "String",
+        "example": "1"
+      },
+      "included": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "noSessionsLeftInThisPackage": "No sessions left in this package.",
+  "sendToName": "Send to {name}",
+  "@sendToName": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "sessionSentNameCanConfirmIt": "Session sent. {name} can confirm it.",
+  "@sessionSentNameCanConfirmIt": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "yourCoachingWithCoachHasEndedYour": "Your coaching with {coach} has ended. Your plans stay here to read.",
+  "@yourCoachingWithCoachHasEndedYour": {
+    "description": "The coach's name.",
+    "placeholders": {
+      "coach": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "daysLeftN": "Days left: {n}",
+  "@daysLeftN": {
+    "description": "Days left in a coaching package.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "lastDay": "Last day",
+  "plansFromYourCoach": "Plans from your coach",
+  "yourCoachHasNotSharedAPlan": "Your coach has not shared a plan yet.",
+  "upcomingSession": "Upcoming session",
+  "markDone": "Mark done",
+  "waitingForTheOtherSideToMark": "Waiting for the other side to mark it done.",
+  "countedInYourSessions": "Counted in your sessions.",
+  "blockThisCoach": "Block this coach?",
+  "sheWillNotBeAbleToMessage": "She will not be able to message you. You can still read your plans.",
+  "newMessagesFromYourCoach": "New messages from your coach",
+  "fromYourCoach": "From your coach",
+  "todaysWorkoutName": "Today's workout: {name}",
+  "@todaysWorkoutName": {
+    "description": "The name of the coach's workout for today.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Lower body"
+      }
+    }
+  },
+  "nextSessionWhen": "Next session: {when}",
+  "@nextSessionWhen": {
+    "description": "Day and time of the next live session.",
+    "placeholders": {
+      "when": {
+        "type": "String",
+        "example": "Sat 24 Oct, 18:30"
+      }
+    }
+  },
+  "startThisWorkout": "Start this workout",
+  "heldBackForHowYouAreTraining": "Held back for how you are training now. Ask your coach or your doctor first.",
+  "containsAllergensWhichYouAvoid": "Contains {allergens}, which you avoid.",
+  "@containsAllergensWhichYouAvoid": {
+    "description": "Allergens in a meal item, for the client.",
+    "placeholders": {
+      "allergens": {
+        "type": "String",
+        "example": "sesame"
+      }
+    }
+  },
+  "notCheckedAgainstYourAllergies": "Not checked against your allergies.",
+  "todaysMealsFromYourCoach": "Today's meals from your coach",
+  "ifYouHaveAHealthConditionCheck": "If you have a health condition, check with your doctor before you follow a plan.",
+  "youHaveNoCoachRightNow": "You have no coach right now.",
+  "minutesMinSession": "{minutes} min session",
+  "@minutesMinSession": {
+    "description": "Length of a live session in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "45"
+      }
+    }
+  },
+  "yourCoachHasNotSetAPlan": "Your coach has not set a plan for today.",
+  "openMyCoach": "Open my coach",
+  "moveUp": "Move up",
+  "moveDown": "Move down",
+  "logThis": "Log this",
+  "photosAndResults": "Photos and results",
+  "whatMembersSeeAfterOwnHubChecks": "What members see after Own Hub checks it",
+  "waitingForOwnHubsCheck": "Waiting for Own Hub's check",
+  "shownOnYourPortfolio": "Shown on your portfolio",
+  "notApproved": "Not approved",
+  "needsYourClientsConsent": "Needs your client's consent",
+  "addAPhotoOfYouOrYour": "Add a photo of you or your work",
+  "nothingHereYetAddYourFirstResult": "Nothing here yet. Add your first result.",
+  "countOf30Items": "{count} of 30 items",
+  "@countOf30Items": {
+    "description": "How many photos and results she has added, out of the 30 allowed.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "transformationWeeksWeeks": "Transformation, {weeks} weeks",
+  "@transformationWeeksWeeks": {
+    "description": "Title of a before and after item.",
+    "placeholders": {
+      "weeks": {
+        "type": "String",
+        "example": "8"
+      }
+    }
+  },
+  "feedbackFromName": "Feedback from {name}",
+  "@feedbackFromName": {
+    "description": "Title of a client feedback item.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "keep": "Keep",
+  "removeThisFromYourPortfolio": "Remove this from your portfolio?",
+  "confirmMyClientAgreed": "Confirm my client agreed",
+  "chooseAPhoto": "Choose a photo",
+  "replacePhoto": "Replace photo",
+  "noteOptional_1l0x9": "Note (optional)",
+  "myClientAgreedInWritingThatOwn_c2wgd": "My client agreed in writing that Own Hub members may see these photos",
+  "sendForOwnHubsCheck": "Send for Own Hub's check",
+  "sentOwnHubChecksEveryPhotoBefore": "Sent. Own Hub checks every photo before members see it.",
+  "whatYourClientSaid": "What your client said",
+  "from": "From",
+  "screenshotOptional_x0klp": "Screenshot (optional)",
+  "captionOptional": "Caption (optional)",
+  "addThePhotoFirst": "Add the photo first.",
+  "addBothPhotos": "Add both photos.",
+  "tickTheBoxToSayYourClient": "Tick the box to say your client agreed.",
+  "writeLowToHighCharacters": "Write {low} to {high} characters.",
+  "@writeLowToHighCharacters": {
+    "description": "Length rule for a text.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "10"
+      },
+      "high": {
+        "type": "String",
+        "example": "600"
+      }
+    }
+  },
+  "writeWhoItIsFrom": "Write who it is from.",
+  "yourClientConfirmed": "Your client confirmed.",
+  "results": "Results",
+  "overNWeeks": "Over {n} weeks",
+  "@overNWeeks": {
+    "description": "Weeks a transformation took.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "sharedWithHerClientsWrittenConsent": "Shared with her client's written consent",
+  "nothingApprovedYetPhotosAndResultsShow": "Nothing approved yet. Photos and results show here after Own Hub checks them.",
+  "screenshotOfAMessageFromAClient": "Screenshot of a message from a client",
+  "thePhotoWasNotClearEnough": "The photo was not clear enough.",
+  "itDoesNotFollowTheRulesFor": "It does not follow the rules for photos.",
+  "weNeedYourClientsWrittenAgreement": "We need your client's written agreement.",
+  "ownHubCouldNotApproveIt": "Own Hub could not approve it.",
+  "newActivityInTheChat": "New activity in the chat",
+  "thatItemIsNoLongerTherePull": "That item is no longer there. Pull down to refresh your list.",
+  "daysPluralOne1DayLeftOther": "{days, plural, one{1 day left} other{{days} days left}}",
+  "@daysPluralOne1DayLeftOther": {
+    "description": "A coaching package's countdown. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "countPluralOne1WeekOtherCount": "{count, plural, one{1 week} other{{count} weeks}}",
+  "@countPluralOne1WeekOtherCount": {
+    "description": "A package length in weeks, taken from the template's own duration.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "countPluralOne1LiveSessionA": "{count, plural, one{1 live session a month} other{{count} live sessions a month}}",
+  "@countPluralOne1LiveSessionA": {
+    "description": "Live sessions a month, taken from the template's own number.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "weeksSessions": "{weeks}, {sessions}",
+  "@weeksSessions": {
+    "description": "The package template picker label: length, then live sessions a month, both already worded.",
+    "placeholders": {
+      "weeks": {
+        "type": "String",
+        "example": "4 weeks"
+      },
+      "sessions": {
+        "type": "String",
+        "example": "2 live sessions a month"
+      }
+    }
+  },
+  "weeksOfCoachingWithMe": "{weeks} of coaching with me",
+  "@weeksOfCoachingWithMe": {
+    "description": "A package template's title. weeks is already worded, e.g. 4 weeks.",
+    "placeholders": {
+      "weeks": {
+        "type": "String",
+        "example": "4 weeks"
+      }
+    }
+  },
+  "youAlreadyHaveCountPackagesEditOne": "You already have {count} packages. Edit one of them instead.",
+  "@youAlreadyHaveCountPackagesEditOne": {
+    "description": "Refusal when she is at the package limit.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "youHaveAllCountPackages": "You have all {count} packages.",
+  "@youHaveAllCountPackages": {
+    "description": "Shown instead of the add button at the package limit.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "youHaveCountItemsRemoveOneTo": "You have {count} items. Remove one to add another.",
+  "@youHaveCountItemsRemoveOneTo": {
+    "description": "Portfolio media at its limit.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "reviewTakesUpToDaysWorkingDays": "Review takes up to {days} working days.",
+  "@reviewTakesUpToDaysWorkingDays": {
+    "description": "Coach application review time.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "ownHubsReviewerIsReadingItThis": "Own Hub's reviewer is reading it. This takes up to {days} working days, and we will tell you here.",
+  "@ownHubsReviewerIsReadingItThis": {
+    "description": "Coach application status while it is in review.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "youCanApplyAgainDaysDaysAfter": "You can apply again {days} days after the decision.",
+  "@youCanApplyAgainDaysDaysAfter": {
+    "description": "Coach re-apply wait, from the contract's own number.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "thatPhotoCouldNotBeUsedChoose": "That photo could not be used. Choose a JPEG or PNG under {mb} MB.",
+  "@thatPhotoCouldNotBeUsedChoose": {
+    "description": "Application photo refused; mb is the upload limit.",
+    "placeholders": {
+      "mb": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "addMinToMaxAPhotoOf": "Add {min} to {max}. A photo of the degree is optional.",
+  "@addMinToMaxAPhotoOf": {
+    "description": "Application step 2, education.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "addMinToMaxEachOneNeeds": "Add {min} to {max}. Each one needs a photo.",
+  "@addMinToMaxEachOneNeeds": {
+    "description": "Application step 3, certificates.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "chooseMinToMaxThenTellUs": "Choose {min} to {max}, then tell us about your experience.",
+  "@chooseMinToMaxThenTellUs": {
+    "description": "Application step 4, specialties.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "addMinToMaxMessagesFromWomen": "Add {min} to {max} messages from women you trained.",
+  "@addMinToMaxMessagesFromWomen": {
+    "description": "Application step 5, testimonials.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "2"
+      },
+      "max": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "addMinToMaxThePhotosAre": "Add {min} to {max}. The photos are seen only by Own Hub's woman reviewer.",
+  "@addMinToMaxThePhotosAre": {
+    "description": "Application step 6, transformations.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "youAddedTooManyCertificatesTheMost": "You added too many certificates. The most is {max}.",
+  "@youAddedTooManyCertificatesTheMost": {
+    "description": "Refusal for too many certificates.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "pickATimeAtLeastMinutesMinutes": "Pick a time at least {minutes} minutes from now.",
+  "@pickATimeAtLeastMinutesMinutes": {
+    "description": "Session scheduling lead time.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "typeTheDateAndTimeLikeExample": "Type the date and time like {example}.",
+  "@typeTheDateAndTimeLikeExample": {
+    "description": "Session date field hint; example is a format sample.",
+    "placeholders": {
+      "example": {
+        "type": "String",
+        "example": "2026-11-05 18:30"
+      }
+    }
+  },
+  "underEgpN": "Under EGP {n}",
+  "@underEgpN": {
+    "description": "The lowest budget band for a coach search; n is the band's own upper bound.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1,500"
+      }
+    }
+  },
+  "overEgpN": "Over EGP {n}",
+  "@overEgpN": {
+    "description": "The highest budget band for a coach search; n is the band's own lower bound.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "3,000"
+      }
+    }
+  },
+  "egpLowToHigh": "EGP {low} to {high}",
+  "@egpLowToHigh": {
+    "description": "The middle budget band for a coach search, from the band's own bounds.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "1,500"
+      },
+      "high": {
+        "type": "String",
+        "example": "3,000"
+      }
+    }
+  },
+  "endCoaching": "End coaching",
+  "endThisCoaching": "End this coaching?",
+  "theChatBecomesReadOnlyYourPlans": "The chat becomes read only. Your plans stay with you. {coach} will no longer see your answers.",
+  "@theChatBecomesReadOnlyYourPlans": {
+    "description": "Shown when a member confirms ending her coaching. coach is the coach's name.",
+    "placeholders": {
+      "coach": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "theChatBecomesReadOnlyHerPlans": "The chat becomes read only. Her plans stay with her. You will no longer see her answers.",
+  "keepCoaching": "Keep coaching",
+  "waitingForCoachSAnswer": "Waiting for {coach}'s answer",
+  "@waitingForCoachSAnswer": {
+    "description": "A member's coaching request that the coach has not answered yet. coach is the coach's name.",
+    "placeholders": {
+      "coach": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "cancelRequest": "Cancel request",
+  "coachCouldNotTakeYouThisTime": "{coach} could not take you this time",
+  "@coachCouldNotTakeYouThisTime": {
+    "description": "A member's request was declined. coach is the coach's name.",
+    "placeholders": {
+      "coach": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "noAnswerInTime": "No answer in time",
+  "findAnotherCoach": "Find another coach",
+  "waitingForYourReply": "Waiting for your reply",
+  "noMessageFromYouInDaysDays": "No message from you in {days} days",
+  "@noMessageFromYouInDaysDays": {
+    "description": "Why a client is on the coach's follow up list. days is a number.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "youCanSeeItUnderMyCoach": "You can see it under My coach.",
+  "freeForNow": "Free for now",
+  "egpPriceWhenPaymentsOpen": "EGP {price} when payments open",
+  "@egpPriceWhenPaymentsOpen": {
+    "description": "Coach browsing while payments are off: the package price as it will be.",
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "2,000"
+      }
+    }
+  },
+  "freeForMembersUntilPaymentsOpen": "Free for members until payments open",
+  "notVisibleYetAddAPackage": "Not visible yet: add a package",
+  "backToProfile": "Back to profile",
+  "contactOwnHub": "Contact Own Hub",
+  "chooseADateAndTime": "Choose a date and time",
+  "cantMakeIt": "Can't make it",
+  "countPluralOne1ClientOtherCount": "{count, plural, one{1 client} other{{count} clients}}",
+  "@countPluralOne1ClientOtherCount": {
+    "description": "Coach space pill. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "countPluralOne1NewRequestOther": "{count, plural, one{1 new request} other{{count} new requests}}",
+  "@countPluralOne1NewRequestOther": {
+    "description": "Coach space pill. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "countPluralOne1UnreadChatOther": "{count, plural, one{1 unread chat} other{{count} unread chats}}",
+  "@countPluralOne1UnreadChatOther": {
+    "description": "Coach space pill. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "durationDaysPluralOne1DayOther": "Duration: {days, plural, one{1 day} other{{days} days}}",
+  "@durationDaysPluralOne1DayOther": {
+    "description": "A package length on a coach's page. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "28"
+      }
+    }
+  },
+  "overWeeksPluralOne1WeekOther": "Over {weeks, plural, one{1 week} other{{weeks} weeks}}",
+  "@overWeeksPluralOne1WeekOther": {
+    "description": "A transformation's length on a coach's page. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "transformationWeeksPluralOne1WeekOther": "Transformation, {weeks, plural, one{1 week} other{{weeks} weeks}}",
+  "@transformationWeeksPluralOne1WeekOther": {
+    "description": "A transformation's title in the coach's list. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "faceToFace": "Face to face",
+  "seeItFirst": "See it first",
+  "am": "AM",
+  "pm": "PM",
+  "pickHerNameIfSheKnowsYou_akwt2": "Pick her name if she knows you. Your request goes to her.",
+  "nameYourCoachSees": "Name your coach sees",
+  "yourFirstNameIsOptionalYourCoach": "Your first name is optional. Your coach sees it next to your answers."
 }

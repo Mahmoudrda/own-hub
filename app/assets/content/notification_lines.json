@@ -1,0 +1,1585 @@
+{
+  "version": 1,
+  "situations": {
+    "trainingDay": {
+      "calm": [
+        {
+          "id": "trainingDay-c-01",
+          "en": "Your session for today is ready, whenever suits you.",
+          "ar": "تمرينك النهارده جاهز، في الوقت اللي يناسبك.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-02",
+          "en": "It's a training day. Short or long, whatever fits your day is good.",
+          "ar": "النهارده يوم تمرين. قصير أو طويل، اللي يناسب يومك هو الصح.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-03",
+          "en": "Your session's ready for you today. Go at your own pace.",
+          "ar": "تمرين النهارده مستنيكي. خدي وقتك ومن غير استعجال.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-04",
+          "en": "Training day today. Pick a time that feels easy and start there.",
+          "ar": "النهارده يوم تمرين. اختاري وقت مريح وابدئي منه.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-05",
+          "en": "Today's the day you picked to train. Your plan's waiting, no rush.",
+          "ar": "ده اليوم اللي اخترتيه للتمرين. خطتك مستنياكي، من غير استعجال.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-06",
+          "en": "A training day. Even a short session today counts.",
+          "ar": "يوم تمرين. حتى تمرين قصير النهارده بيفرق.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-07",
+          "en": "Your workout's ready whenever you are. Enjoy it.",
+          "ar": "تمرينك جاهز وقت ما تكوني جاهزة. استمتعي بيه.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-08",
+          "en": "It's one of your days. Open your plan when you've got a moment.",
+          "ar": "النهارده من أيامك. افتحي خطتك لما يبقى عندك دقيقة.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-09",
+          "en": "Training today? Your session's all set up for you.",
+          "ar": "هتتمرني النهارده؟ تمرينك متظبط ومستنيكي.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-10",
+          "en": "Today's set aside for you. Your session will be right here.",
+          "ar": "النهارده يومك إنتي. تمرينك هنا وقت ما تحبي.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-11",
+          "en": "A quiet reminder: today's a training day. Any time works.",
+          "ar": "تذكير صغير: النهارده يوم تمرين. أي وقت ينفع.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-c-12",
+          "en": "Your plan has a session for today. Start whenever you like.",
+          "ar": "خطتك فيها تمرين النهارده. ابدئي وقت ما تحبي.",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "trainingDay-p-01",
+          "en": "Guess what today is? Training day. Your session's waiting.",
+          "ar": "خمني النهارده إيه؟ يوم تمرين. تمرينك مستنيكي.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-02",
+          "en": "Training day! Get your songs ready, your session already is.",
+          "ar": "يوم تمرين! حضّري الأغاني، التمرين جاهز.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-03",
+          "en": "Today's plan: you, a bit of movement, and a cold glass of water after.",
+          "ar": "خطة النهارده: إنتي وشوية حركة وكوباية مية ساقعة بعدها.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-04",
+          "en": "Training day. Your session's warming up, just waiting for you.",
+          "ar": "يوم تمرين. التمرين بيسخّن ومستنيكي.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-05",
+          "en": "Sneakers on? Today's a training day.",
+          "ar": "لبستي الكوتشي؟ النهارده يوم تمرين.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-06",
+          "en": "Knock knock. It's your training day!",
+          "ar": "مين بيخبط؟ ده يوم تمرينك!",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-07",
+          "en": "Training day mood: on. Whenever you're ready, so are we.",
+          "ar": "مود يوم التمرين: شغّال. وقت ما تجهزي، إحنا جاهزين.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-08",
+          "en": "Training day today. Grab your water bottle and your best playlist.",
+          "ar": "النهارده يوم تمرين. هاتي إزازة المية وأحلى أغانيكي.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-09",
+          "en": "Plot twist: it's a training day, and it's going to be a good one.",
+          "ar": "مفاجأة: النهارده يوم تمرين، وهيبقى يوم حلو.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-10",
+          "en": "Your plan's been asking about you. Today's a training day ✨",
+          "ar": "خطتك بتسأل عليكي. النهارده يوم تمرين ✨",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-11",
+          "en": "Training day, the best kind of day. This session's all yours.",
+          "ar": "يوم تمرين، يعني يوم حلو. والتمرين ده بتاعك إنتي.",
+          "needs": []
+        },
+        {
+          "id": "trainingDay-p-12",
+          "en": "Coffee then training, or training then coffee? Your call today.",
+          "ar": "قهوة وبعدين تمرين؟ ولا تمرين وبعدين قهوة؟ إنتي اللي تقرري.",
+          "needs": []
+        }
+      ]
+    },
+    "didYouTrain": {
+      "calm": [
+        {
+          "id": "didYouTrain-c-01",
+          "en": "Trained today? Add it in a tap so it shows up in your week.",
+          "ar": "اتمرنتي النهارده؟ سجّليه بضغطة عشان يبان في أسبوعك.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-c-02",
+          "en": "Did you get a session in today? Log it whenever you like.",
+          "ar": "لحقتي تتمرني النهارده؟ سجّليه وقت ما تحبي.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-c-03",
+          "en": "If you moved today, add it here. One tap does it.",
+          "ar": "لو اتحركتي النهارده، ضيفي تمرينك هنا. ضغطة واحدة كفاية.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-c-04",
+          "en": "Trained somewhere else today? You can still add it to your plan.",
+          "ar": "اتمرنتي في حتة تانية النهارده؟ لسه تقدري تضيفيه لخطتك.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-c-05",
+          "en": "{workout} today? If it happened, add it in a tap.",
+          "ar": "عملتي تمرين {workout} النهارده؟ لو آه، سجّليه بضغطة.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "didYouTrain-c-06",
+          "en": "How did today go? If you trained, log it in a tap.",
+          "ar": "يومك عدّى إزاي؟ لو اتمرنتي، سجّليه بضغطة.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-c-07",
+          "en": "Quick check: did you train today? Add it if you did.",
+          "ar": "سؤال سريع: اتمرنتي النهارده؟ لو آه ضيفيه.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-c-08",
+          "en": "Done today's session? Log it in a tap and you're all set.",
+          "ar": "خلّصتي تمرينك النهارده؟ سجّليه بضغطة وكده تمام.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-c-09",
+          "en": "Got some movement in today? It belongs in your week, add it here.",
+          "ar": "اتحركتي شوية النهارده؟ مكانها في أسبوعك، ضيفيها هنا.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-c-10",
+          "en": "{workout} is still on today's page. Did it happen? Add it in a tap.",
+          "ar": "تمرين {workout} لسه في صفحة النهارده. عملتيه؟ سجّليه بضغطة.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "didYouTrain-c-11",
+          "en": "Trained today? Logging takes a tap and keeps your plan in step with you.",
+          "ar": "اتمرنتي النهارده؟ التسجيل بضغطة، وخطتك تفضل ماشية معاكي.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-c-12",
+          "en": "End of day check: anything to add from today? Even a short one counts.",
+          "ar": "سؤال آخر اليوم: فيه حاجة تضيفيها من النهارده؟ حتى التمرين القصير بيتحسب.",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "didYouTrain-p-01",
+          "en": "Did today include a workout? Tell us, we love good news.",
+          "ar": "النهارده كان فيه تمرين؟ قوليلنا، بنحب الأخبار الحلوة.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-p-02",
+          "en": "Trained today? Add it in a tap and give yourself a high five.",
+          "ar": "اتمرنتي النهارده؟ سجّليه بضغطة وهاتي هاي فايف.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-p-03",
+          "en": "Between us: if you trained today, your plan would love to know.",
+          "ar": "بيني وبينك: لو اتمرنتي النهارده، خطتك نفسها تعرف.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-p-04",
+          "en": "{workout} done? Tap to add it and enjoy that little tick.",
+          "ar": "خلّصتي {workout}؟ دوسي وضيفيه واستمتعي بعلامة الصح.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "didYouTrain-p-05",
+          "en": "Workout done today? That deserves a tap 🙌",
+          "ar": "خلّصتي تمرين النهارده؟ ده يستاهل ضغطة 🙌",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-p-06",
+          "en": "Post-workout selfie optional. Logging it takes a tap.",
+          "ar": "السيلفي بعد التمرين اختياري، بس تسجيله بضغطة.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-p-07",
+          "en": "Trained today? Your plan's sitting by the phone, waiting to hear.",
+          "ar": "اتمرنتي النهارده؟ خطتك قاعدة جنب التليفون مستنية تعرف.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-p-08",
+          "en": "Squeezed a workout into today? Log it in a tap.",
+          "ar": "زنقتي تمرين في يومك النهارده؟ سجّليه بضغطة.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-p-09",
+          "en": "Your week wants to hear about today. Trained? Add it.",
+          "ar": "أسبوعك مستني يسمع عن النهارده. اتمرنتي؟ ضيفيه.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-p-10",
+          "en": "Did {workout} happen today? Spill, then tap to add it.",
+          "ar": "عملتي تمرين {workout} النهارده؟ احكيلنا، ودوسي وضيفيه.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "didYouTrain-p-11",
+          "en": "Workout today? One tap and it's in. Easy.",
+          "ar": "اتمرنتي النهارده؟ ضغطة ويتسجل. سهلة.",
+          "needs": []
+        },
+        {
+          "id": "didYouTrain-p-12",
+          "en": "If today had a workout in it, it deserves a spot. Add it now.",
+          "ar": "لو النهارده كان فيه تمرين، يستاهل يتسجل. ضيفيه دلوقتي.",
+          "needs": []
+        }
+      ]
+    },
+    "freshStart": {
+      "calm": [
+        {
+          "id": "freshStart-c-01",
+          "en": "New day, fresh start. Your plan's ready whenever you are.",
+          "ar": "يوم جديد وبداية جديدة. خطتك جاهزة وقت ما تحبي.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-c-02",
+          "en": "Today's a fresh page. A short session or a calm walk, whatever feels right.",
+          "ar": "النهارده صفحة جديدة. تمرين قصير أو تمشية هادية، اللي يريحك.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-c-03",
+          "en": "{workout} is right where you left it. Pick it up any time.",
+          "ar": "تمرين {workout} مكانه زي ما هو. كمّليه وقت ما تحبي.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "freshStart-c-04",
+          "en": "A gentle nudge: today's a nice day for a little movement.",
+          "ar": "تذكير لطيف: النهارده يوم حلو لشوية حركة.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-c-05",
+          "en": "Fresh start today. Even a few minutes of movement make a difference.",
+          "ar": "بداية جديدة النهارده. حتى كام دقيقة حركة بيفرقوا.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-c-06",
+          "en": "Your plan doesn't keep score. Open it whenever suits you.",
+          "ar": "خطتك مش بتحاسبك على حاجة. افتحيها وقت ما يناسبك.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-c-07",
+          "en": "Today's yours. If you feel like moving, your session's ready.",
+          "ar": "النهارده بتاعك. لو مزاجك للحركة، تمرينك جاهز.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-c-08",
+          "en": "Next up: {workout}. Whenever you're ready, it's here.",
+          "ar": "اللي جاي في خطتك: {workout}. وقت ما تجهزي، دوسي وابدئي.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "freshStart-c-09",
+          "en": "A new day to do something kind for yourself. A short session counts.",
+          "ar": "يوم جديد تعملي فيه حاجة حلوة لنفسك. تمرين قصير بيتحسب.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-c-10",
+          "en": "No pressure, just a hello. Your plan's here when you want it.",
+          "ar": "مفيش ضغط، بس بنسلّم عليكي. خطتك هنا وقت ما تحبي.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-c-11",
+          "en": "Fresh start, same you. Your next session is waiting quietly.",
+          "ar": "بداية جديدة وإنتي زي ما إنتي. تمرينك الجاي مستنيكي بهدوء.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-c-12",
+          "en": "Today's a clean slate. Start small, start whenever.",
+          "ar": "النهارده صفحة بيضا. ابدئي بحاجة صغيرة، في الوقت اللي يريحك.",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "freshStart-p-01",
+          "en": "New day, who's this? Oh, it's you, ready for a fresh start.",
+          "ar": "يوم جديد، مين دي؟ آه، إنتي، وجاهزة لبداية جديدة.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-02",
+          "en": "Today's mood: fresh start, comfy clothes, a little movement.",
+          "ar": "مود النهارده: بداية جديدة، لبس مريح، وشوية حركة.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-03",
+          "en": "Hit refresh. Your plan's all set for today ✨",
+          "ar": "اعملي ريفريش. خطتك جاهزة للنهارده ✨",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-04",
+          "en": "{workout} says hi, and it's free whenever you are.",
+          "ar": "تمرين {workout} بيسلّم عليكي، وفاضي وقت ما تفضي.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "freshStart-p-05",
+          "en": "A fresh start is on its way. Your plan's waiting for your signal.",
+          "ar": "بداية جديدة جاية في السكة. خطتك مستنية إشارتك.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-06",
+          "en": "Good news: today's brand new, and your plan's ready to roll.",
+          "ar": "خبر حلو: النهارده يوم جديد خالص، وخطتك جاهزة.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-07",
+          "en": "Your plan isn't counting anything. It just wants to say hi.",
+          "ar": "خطتك مش بتعد حاجة. هي بس عايزة تسلّم عليكي.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-08",
+          "en": "Today's playlist: anything that makes you want to move.",
+          "ar": "قايمة أغاني النهارده: أي حاجة تخليكي عايزة تتحركي.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-09",
+          "en": "New day, new mood. A short session might be just the thing.",
+          "ar": "يوم جديد ومود جديد. يمكن تمرين قصير يبقى هو المطلوب.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-10",
+          "en": "Start fresh today? Your session's not going anywhere.",
+          "ar": "نبدأ على نضيف النهارده؟ تمرينك مش رايح في حتة.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-11",
+          "en": "Fresh start, no fuss. Tap in whenever you like.",
+          "ar": "بداية جديدة من غير دوشة. ادخلي وقت ما تحبي.",
+          "needs": []
+        },
+        {
+          "id": "freshStart-p-12",
+          "en": "Today could be a stretch-and-smile kind of day. Up to you.",
+          "ar": "النهارده ممكن يبقى يوم إطالات وابتسامة. براحتك.",
+          "needs": []
+        }
+      ]
+    },
+    "comeBack": {
+      "calm": [
+        {
+          "id": "comeBack-c-01",
+          "en": "Just saying hi. Your plan's right where you left it.",
+          "ar": "بنسلّم عليكي بس. خطتك زي ما سيبتيها.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-c-02",
+          "en": "Whenever you feel like it, a short session is ready for you.",
+          "ar": "وقت ما مزاجك يسمح، فيه تمرين قصير جاهز ليكي.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-c-03",
+          "en": "{workout} is waiting, no rush at all.",
+          "ar": "تمرين {workout} مستنيكي، ومن غير أي استعجال.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "comeBack-c-04",
+          "en": "Thinking of you. Pick up your plan any time it suits you.",
+          "ar": "جيتي على بالنا. كمّلي خطتك في أي وقت يناسبك.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-c-05",
+          "en": "Life gets busy. Your plan will be here when you're ready.",
+          "ar": "الدنيا بتاخدنا. خطتك هتفضل هنا لحد ما تجهزي.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-c-06",
+          "en": "A short one counts. Open your plan whenever you like.",
+          "ar": "التمرين القصير بيتحسب. افتحي خطتك وقت ما تحبي.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-c-07",
+          "en": "Nothing to catch up on. Just start from today.",
+          "ar": "مفيش حاجة تعوّضيها. ابدئي من النهارده وخلاص.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-c-08",
+          "en": "Your next session is ready. Go easy and enjoy it.",
+          "ar": "تمرينك الجاي جاهز. خديه بالراحة واستمتعي.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-c-09",
+          "en": "Next up in your plan: {workout}. Whenever suits you.",
+          "ar": "اللي جاي في خطتك: {workout}. وقت ما يناسبك.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "comeBack-c-10",
+          "en": "Just a little hello. Some movement today could feel nice.",
+          "ar": "حبينا نقولك هاي. شوية حركة النهارده ممكن تبقى لطيفة.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-c-11",
+          "en": "Your plan doesn't mind when. Today works, tomorrow works too.",
+          "ar": "خطتك مش فارق معاها إمتى. النهارده ينفع، وبكره ينفع برضه.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-c-12",
+          "en": "Come back whenever you like. Your plan's kept your place.",
+          "ar": "ارجعي وقت ما تحبي. خطتك حافظة مكانك.",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "comeBack-p-01",
+          "en": "Hey you. Your plan's here, and it brought snacks.",
+          "ar": "إزيك؟ خطتك هنا، وجايبة معاها سناكس.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-p-02",
+          "en": "Your sneakers asked about you. We said you'd be back soon.",
+          "ar": "الكوتشي بتاعك سأل عليكي. قلناله إنك راجعة قريب.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-p-03",
+          "en": "Your plan just did a little stretch. It's ready when you are.",
+          "ar": "خطتك لسه عاملة إطالة صغيرة، وجاهزة وقت ما تحبي.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-p-04",
+          "en": "{workout} is free if you are. Just saying.",
+          "ar": "تمرين {workout} فاضي لو إنتي فاضية. بنقولك بس.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "comeBack-p-05",
+          "en": "Fancy a comeback moment today? Your plan's all ready.",
+          "ar": "نفسك في رجعة حلوة النهارده؟ خطتك جاهزة.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-p-06",
+          "en": "Your plan saved your seat. Front row, of course.",
+          "ar": "خطتك حاجزالك مكانك، في الصف الأول طبعًا.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-p-07",
+          "en": "Little secret: today's a great day for a short session.",
+          "ar": "سر صغير: النهارده يوم حلو لتمرين قصير.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-p-08",
+          "en": "A short session and a good song. Sounds like a plan?",
+          "ar": "تمرين قصير وأغنية حلوة. إيه رأيك؟",
+          "needs": []
+        },
+        {
+          "id": "comeBack-p-09",
+          "en": "Your plan says hi, and no, it's not keeping score.",
+          "ar": "خطتك بتسلّم عليكي، ومش بتحاسبك على حاجة خالص.",
+          "needs": []
+        },
+        {
+          "id": "comeBack-p-10",
+          "en": "Popping in to say hi. Your plan's ready whenever you are 👋",
+          "ar": "بنعدّي نسلّم عليكي. خطتك جاهزة وقت ما تحبي 👋",
+          "needs": []
+        },
+        {
+          "id": "comeBack-p-11",
+          "en": "Next up: {workout}. Bring your favourite playlist.",
+          "ar": "اللي عليه الدور: {workout}. هاتي البلاي ليست اللي بتحبيها.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "comeBack-p-12",
+          "en": "Comfy clothes, a water bottle, a short session. That's the whole plan.",
+          "ar": "لبس مريح، إزازة مية، وتمرين قصير. دي كل الخطة.",
+          "needs": []
+        }
+      ]
+    },
+    "comeBackLong": {
+      "calm": [
+        {
+          "id": "comeBackLong-c-01",
+          "en": "Welcome back whenever you're ready. Start small, it all counts.",
+          "ar": "أهلًا بيكي وقت ما تحبي. ابدئي بحاجة صغيرة، كله بيتحسب.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-c-02",
+          "en": "Your plan's still here, just as you left it. No catching up needed.",
+          "ar": "خطتك لسه هنا زي ما سيبتيها. مش محتاجة تعوّضي حاجة.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-c-03",
+          "en": "A gentle start is still a start. A short session's ready for you.",
+          "ar": "البداية الهادية برضه بداية. فيه تمرين قصير جاهز ليكي.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-c-04",
+          "en": "We're thinking of you. Whenever you want to move, we're here.",
+          "ar": "إنتي على بالنا. وقت ما تحبي تتحركي، إحنا هنا.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-c-05",
+          "en": "Pick any session that feels doable today. That's enough.",
+          "ar": "اختاري أي تمرين حاسة إنه سهل عليكي النهارده، وده كفاية.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-c-06",
+          "en": "{workout} is ready for you. Go as easy as you like.",
+          "ar": "تمرين {workout} جاهز ليكي. خديه بالراحة زي ما تحبي.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "comeBackLong-c-07",
+          "en": "Your place in your plan is saved. Come back on your own terms.",
+          "ar": "مكانك في خطتك محفوظ. ارجعي على مزاجك.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-c-08",
+          "en": "Life happens. Your plan's patient and happy to see you.",
+          "ar": "الدنيا بتلهينا. خطتك صبورة وهتفرح لما ترجعي.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-c-09",
+          "en": "No pressure at all. When you're ready, a short session is waiting.",
+          "ar": "من غير أي ضغط. لما تجهزي، فيه تمرين قصير مستنيكي.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-c-10",
+          "en": "Coming back can start tiny. Open your plan and see what fits.",
+          "ar": "الرجوع ممكن يبقى بخطوة صغيرة. افتحي خطتك وشوفي اللي يناسبك.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-c-11",
+          "en": "Next up when you're ready: {workout}. Take it at your pace.",
+          "ar": "اللي جاي لما تجهزي: {workout}. على سرعتك إنتي.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "comeBackLong-c-12",
+          "en": "Hello again. Your plan's here, calm and ready.",
+          "ar": "أهلًا من تاني. خطتك هنا، هادية وجاهزة.",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "comeBackLong-p-01",
+          "en": "Guess who's on our mind? You. Your plan saved you the comfiest spot.",
+          "ar": "خمني مين على بالنا؟ إنتي. خطتك محضّرالك أريح مكان.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-p-02",
+          "en": "Your plan's been keeping your spot warm. Ready when you are.",
+          "ar": "خطتك شايلالك مكانك ومستنياكي.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-p-03",
+          "en": "Fun fact: coming back can be a short session and a big smile.",
+          "ar": "معلومة حلوة: الرجوع ممكن يبقى تمرين قصير وابتسامة كبيرة.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-p-04",
+          "en": "Your favourite workout clothes are ready for an outing. Maybe today?",
+          "ar": "لبس التمرين اللي بتحبيه جاهز. يمكن النهارده؟",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-p-05",
+          "en": "Fresh start, warm welcome. Your plan's ready.",
+          "ar": "بداية جديدة وأهلًا بيكي من القلب. خطتك جاهزة.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-p-06",
+          "en": "{workout} has the tea on for you. Drop by whenever.",
+          "ar": "تمرين {workout} حاططلك الشاي على النار. تعالي في أي وقت.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "comeBackLong-p-07",
+          "en": "Who's still here and in a great mood? Your plan, obviously.",
+          "ar": "مين لسه هنا ومزاجها حلو؟ خطتك طبعًا.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-p-08",
+          "en": "Your playlist wants a workout to go with it. Today, maybe?",
+          "ar": "الأغاني بتاعتك نفسها في تمرين معاها. نعملها النهارده؟",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-p-09",
+          "en": "Coming back is the fun part. A short session's all set ✨",
+          "ar": "الرجوع هو الجزء الحلو. فيه تمرين قصير جاهز ✨",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-p-10",
+          "en": "Hi, lovely. Your plan's ready, and so is a warm welcome.",
+          "ar": "أهلًا يا قمر. خطتك جاهزة، ومعاها ترحيب دافي.",
+          "needs": []
+        },
+        {
+          "id": "comeBackLong-p-11",
+          "en": "Up next: {workout}. Slow, steady, totally your pace.",
+          "ar": "دور {workout} جه. بالراحة وعلى سرعتك خالص.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "comeBackLong-p-12",
+          "en": "Your plan called. It just wants to hang out, no pressure.",
+          "ar": "خطتك اتصلت. عايزة تقعد معاكي شوية بس، من غير ضغط.",
+          "needs": []
+        }
+      ]
+    },
+    "newBest": {
+      "calm": [
+        {
+          "id": "newBest-c-01",
+          "en": "A new best on {move}. That was all you.",
+          "ar": "رقم جديد في {move}. ده كله مجهودك إنتي.",
+          "needs": [
+            "move"
+          ]
+        },
+        {
+          "id": "newBest-c-02",
+          "en": "Yesterday's session had a new best in it. Nicely done.",
+          "ar": "تمرين امبارح كان فيه رقم جديد ليكي. برافو عليكي.",
+          "needs": []
+        },
+        {
+          "id": "newBest-c-03",
+          "en": "{move} went up a notch. Lovely work.",
+          "ar": "في {move} طلعتي لمستوى أعلى. شغل حلو.",
+          "needs": [
+            "move"
+          ]
+        },
+        {
+          "id": "newBest-c-04",
+          "en": "A new personal best. Take a moment to enjoy it.",
+          "ar": "رقم شخصي جديد. خدي لحظة واستمتعي بيه.",
+          "needs": []
+        },
+        {
+          "id": "newBest-c-05",
+          "en": "Your new best on {move} is saved in your progress.",
+          "ar": "رقمك الجديد في {move} اتسجل في صفحة تقدمك.",
+          "needs": [
+            "move"
+          ]
+        },
+        {
+          "id": "newBest-c-06",
+          "en": "Something to smile about this morning: a new best.",
+          "ar": "حاجة تفرحك الصبح: رقم جديد ليكي.",
+          "needs": []
+        },
+        {
+          "id": "newBest-c-07",
+          "en": "A new best, quietly earned. It's on your progress page.",
+          "ar": "رقم جديد، بمجهودك وبهدوء. هتلاقيه في صفحة تقدمك.",
+          "needs": []
+        },
+        {
+          "id": "newBest-c-08",
+          "en": "You're getting stronger at {move}. A new best, well done.",
+          "ar": "إنتي بتقوي في {move}. رقم جديد، برافو.",
+          "needs": [
+            "move"
+          ]
+        },
+        {
+          "id": "newBest-c-09",
+          "en": "You set a new best. Worth a proud little moment.",
+          "ar": "عملتي رقم جديد. يستاهل لحظة فخر صغيرة.",
+          "needs": []
+        },
+        {
+          "id": "newBest-c-10",
+          "en": "A new best on {move}. Steady work shows.",
+          "ar": "رقم جديد في {move}. الشغل بهدوء بيبان.",
+          "needs": [
+            "move"
+          ]
+        },
+        {
+          "id": "newBest-c-11",
+          "en": "Good morning. You hit a new best, and it's in your progress now.",
+          "ar": "صباح الخير. عملتي رقم جديد، وهو دلوقتي في تقدمك.",
+          "needs": []
+        },
+        {
+          "id": "newBest-c-12",
+          "en": "A new best to start your day. You earned it.",
+          "ar": "رقم جديد تبدئي بيه يومك. إنتي تستاهليه.",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "newBest-p-01",
+          "en": "New best on {move}? Okay, we see you 👀",
+          "ar": "رقم جديد في {move}؟ لا بجد، شايفينك 👀",
+          "needs": [
+            "move"
+          ]
+        },
+        {
+          "id": "newBest-p-02",
+          "en": "Breaking news: you set a new best. Details on your progress page.",
+          "ar": "خبر عاجل: عملتي رقم جديد. التفاصيل في صفحة تقدمك.",
+          "needs": []
+        },
+        {
+          "id": "newBest-p-03",
+          "en": "A message from {move}: you were brilliant.",
+          "ar": "رسالة من {move}: كنتي جامدة أوي.",
+          "needs": [
+            "move"
+          ]
+        },
+        {
+          "id": "newBest-p-04",
+          "en": "Who set a new best? You did. Victory dance optional.",
+          "ar": "مين عمل رقم جديد؟ إنتي طبعًا. رقصة الفوز اختيارية.",
+          "needs": []
+        },
+        {
+          "id": "newBest-p-05",
+          "en": "Plot twist: you're stronger than last time. New best saved.",
+          "ar": "مفاجأة: إنتي أقوى من المرة اللي فاتت. رقم جديد اتسجل.",
+          "needs": []
+        },
+        {
+          "id": "newBest-p-06",
+          "en": "New best on {move}. Tell your playlist it helped too.",
+          "ar": "رقم جديد في {move}. قولي للأغاني إنها ساعدت برضه.",
+          "needs": [
+            "move"
+          ]
+        },
+        {
+          "id": "newBest-p-07",
+          "en": "A new best before breakfast? Well, yesterday. Still counts.",
+          "ar": "رقم جديد قبل الفطار؟ هو امبارح بصراحة، بس برضه بيتحسب.",
+          "needs": []
+        },
+        {
+          "id": "newBest-p-08",
+          "en": "Your progress page just got a new favourite moment ✨",
+          "ar": "صفحة تقدمك عندها لحظة مفضلة جديدة ✨",
+          "needs": []
+        },
+        {
+          "id": "newBest-p-09",
+          "en": "{move} has a new record holder. Hint: it's you.",
+          "ar": "فيه رقم قياسي جديد في {move}. تلميح: إنتي.",
+          "needs": [
+            "move"
+          ]
+        },
+        {
+          "id": "newBest-p-10",
+          "en": "Guess who had a strong session? New best, all yours.",
+          "ar": "خمني مين كان تمرينها جامد؟ رقم جديد، بتاعك إنتي.",
+          "needs": []
+        },
+        {
+          "id": "newBest-p-11",
+          "en": "New best, new bragging rights. Use them well.",
+          "ar": "رقم جديد، يعني من حقك تتمنظري شوية.",
+          "needs": []
+        },
+        {
+          "id": "newBest-p-12",
+          "en": "{move}: new best. You: amazing. That's the whole message.",
+          "ar": "الرسالة كلها: رقم جديد في {move}، وإنتي جامدة.",
+          "needs": [
+            "move"
+          ]
+        }
+      ]
+    },
+    "morningMeal": {
+      "calm": [
+        {
+          "id": "morningMeal-c-01",
+          "en": "Good morning. Looking for a breakfast idea? The recipes have quick ones.",
+          "ar": "صباح الخير. عايزة فكرة للفطار؟ الوصفات فيها حاجات سريعة.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-c-02",
+          "en": "Had breakfast yet? Log it in a tap whenever you like.",
+          "ar": "فطرتي؟ سجّلي فطارك بضغطة وقت ما تحبي.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-c-03",
+          "en": "{food} for breakfast today? Log it in a tap if so.",
+          "ar": "{food} على الفطار النهارده؟ لو آه، سجّلي فطارك بضغطة.",
+          "needs": [
+            "food"
+          ]
+        },
+        {
+          "id": "morningMeal-c-04",
+          "en": "Tea first or breakfast first? Either way, the recipes have ideas.",
+          "ar": "الشاي الأول ولا الفطار؟ في الحالتين، الوصفات فيها أفكار.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-c-05",
+          "en": "A calm morning and a good breakfast. Find an idea in the recipes.",
+          "ar": "صبح رايق وفطار حلو. دوّري على فكرة في الوصفات.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-c-06",
+          "en": "Morning. Breakfast in front of you? A photo is enough to log it.",
+          "ar": "صباح الخير. الفطار قدامك؟ صورة كفاية عشان تسجّليه.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-c-07",
+          "en": "Good morning. {food} as usual? Log your breakfast in a tap.",
+          "ar": "صباح الخير. {food} زي العادة؟ سجّلي فطارك بضغطة.",
+          "needs": [
+            "food"
+          ]
+        },
+        {
+          "id": "morningMeal-c-08",
+          "en": "Breakfast ideas are waiting in the recipes, whenever you're hungry.",
+          "ar": "أفكار الفطار مستنياكي في الوصفات، وقت ما تجوعي.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-c-09",
+          "en": "Start your morning your way. Logging breakfast takes a tap.",
+          "ar": "ابدئي صباحك على طريقتك. تسجيل الفطار بضغطة.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-c-10",
+          "en": "Morning. Something light or something filling? The recipes have both.",
+          "ar": "صباح الخير. حاجة خفيفة ولا حاجة تقيلة؟ الوصفات فيها من ده وده.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-c-11",
+          "en": "Had breakfast already? Add it now so your day is all in one place.",
+          "ar": "فطرتي خلاص؟ ضيفيه دلوقتي عشان يومك كله يبقى في مكان واحد.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-c-12",
+          "en": "A slow breakfast sounds nice today. Need an idea?",
+          "ar": "فطار على رواقة النهارده شكله حلو. محتاجة فكرة؟",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "morningMeal-p-01",
+          "en": "Rise and shine. What's on the breakfast menu today?",
+          "ar": "صباح الفل. إيه منيو الفطار النهارده؟",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-p-02",
+          "en": "{food} again? Great taste. Log it in a tap.",
+          "ar": "{food} تاني؟ ذوقك حلو. سجّلي الفطار بضغطة.",
+          "needs": [
+            "food"
+          ]
+        },
+        {
+          "id": "morningMeal-p-03",
+          "en": "Tea's on, breakfast next? The recipes have ideas ☕",
+          "ar": "الشاي اتعمل، والفطار بعده؟ الوصفات فيها أفكار ☕",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-p-04",
+          "en": "Breakfast deserves a good idea. Peek at the recipes.",
+          "ar": "الفطار يستاهل فكرة حلوة. بصّي على الوصفات.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-p-05",
+          "en": "Morning! Your breakfast would love a spot in your log.",
+          "ar": "صباح الخير! الفطار نفسه يتسجل عندك.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-p-06",
+          "en": "Foul, eggs, or something new today? The recipes have opinions.",
+          "ar": "فول ولا بيض ولا حاجة جديدة النهارده؟ الوصفات عندها رأي.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-p-07",
+          "en": "Breakfast is calling. Will you pick up? 🍳",
+          "ar": "الفطار بيرن عليكي. هتردي؟ 🍳",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-p-08",
+          "en": "Good morning, chef. {food} or something new today?",
+          "ar": "صباح الخير يا شيف. {food} ولا حاجة جديدة النهارده؟",
+          "needs": [
+            "food"
+          ]
+        },
+        {
+          "id": "morningMeal-p-09",
+          "en": "Snap your breakfast and leave the rest to us. One photo, done.",
+          "ar": "صوّري فطارك وسيبي الباقي علينا. صورة وخلاص.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-p-10",
+          "en": "Morning secret: breakfast can be quick and lovely. The recipes have lots.",
+          "ar": "سر الصبح: الفطار ممكن يبقى سريع وحلو. الوصفات فيها كتير.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-p-11",
+          "en": "Morning plan: something tasty, a tap to log it, then your day.",
+          "ar": "خطة الصبح: حاجة حلوة تتاكل، ضغطة تسجّليها، وبعدين يومك.",
+          "needs": []
+        },
+        {
+          "id": "morningMeal-p-12",
+          "en": "Is it a {food} kind of morning? Log it if it is.",
+          "ar": "الصبح ده بتاع {food}؟ لو آه، سجّلي فطارك.",
+          "needs": [
+            "food"
+          ]
+        }
+      ]
+    },
+    "middayMove": {
+      "calm": [
+        {
+          "id": "middayMove-c-01",
+          "en": "A short move at home, no kit needed. Only if your afternoon allows.",
+          "ar": "حركة خفيفة في البيت من غير أدوات، لو العصرية تسمح.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-02",
+          "en": "A little stretch between things? The library has gentle ones.",
+          "ar": "إطالة صغيرة بين مشاويرك؟ المكتبة فيها حركات هادية.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-03",
+          "en": "Busy day? A few quiet minutes on your mat still feel good.",
+          "ar": "يومك زحمة؟ كام دقيقة هادية على المرتبة بتفرق.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-04",
+          "en": "Stand up, roll your shoulders, take a deep breath. That's a start.",
+          "ar": "قومي، لفّي كتافك، وخدي نفس عميق. دي بداية حلوة.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-05",
+          "en": "One move in your living room is plenty for today.",
+          "ar": "حركة واحدة في الصالة كفاية النهارده.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-06",
+          "en": "A midday pause to move a little. No rush, no kit.",
+          "ar": "وقفة في نص اليوم عشان تتحركي شوية. من غير استعجال ولا أدوات.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-07",
+          "en": "Been sitting a while? A short stretch could feel nice.",
+          "ar": "لو قاعدة بقالك شوية، إطالة صغيرة ممكن تبقى لطيفة.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-08",
+          "en": "A short session at home? Your plan has easy ones ready.",
+          "ar": "تمرين قصير في البيت؟ خطتك فيها حاجات سهلة جاهزة.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-09",
+          "en": "Some gentle movement this afternoon? Only if you feel like it.",
+          "ar": "شوية حركة هادية العصر؟ بس لو مزاجك.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-10",
+          "en": "A few calm moves, right where you are. Have a look in the library.",
+          "ar": "كام حركة هادية وإنتي في مكانك. بصّي على المكتبة.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-11",
+          "en": "A little break for your legs and back? Easy moves are waiting.",
+          "ar": "استراحة صغيرة لرجليكي وضهرك؟ فيه حركات سهلة مستنياكي.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-c-12",
+          "en": "Halfway through the day. A little movement now could wake you up.",
+          "ar": "نص اليوم عدّى. شوية حركة دلوقتي تفوّقك.",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "middayMove-p-01",
+          "en": "Quick break! Your shoulders would like a little roll.",
+          "ar": "بريك صغير! كتافك عايزة تتحرك شوية.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-02",
+          "en": "Living room, a good song, a few moves. Afternoon sorted.",
+          "ar": "الصالة، أغنية حلوة، وكام حركة. العصرية هتتعدل.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-03",
+          "en": "Quick dance break? It totally counts as moving 💃",
+          "ar": "بريك رقص سريع؟ ده برضه حركة 💃",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-04",
+          "en": "Your mat would love a quick hello this afternoon.",
+          "ar": "المرتبة نفسها تسلّمي عليها العصرية دي.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-05",
+          "en": "While the tea brews, a few squats? Why not.",
+          "ar": "على ما الشاي يغلي، كام سكوات؟ وليه لأ.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-06",
+          "en": "Stretch time. Arms up, big stretch, that's it.",
+          "ar": "وقت الإطالة. ارفعي إيديكي واتمطّعي، كده تمام.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-07",
+          "en": "There's a song on your playlist that deserves a little movement. You know the one.",
+          "ar": "فيه أغنية في البلاي ليست تستاهل شوية حركة. إنتي عارفاها.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-08",
+          "en": "Midday dare: one move, any move. Your pick.",
+          "ar": "تحدي نص اليوم: حركة واحدة، أي حركة. إنتي تختاري.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-09",
+          "en": "Snack break or move break? Why not a bit of both.",
+          "ar": "بريك أكل ولا بريك حركة؟ ما تعملي الاتنين.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-10",
+          "en": "Couch to quick stretch in record time? We believe in you ✨",
+          "ar": "من الكنبة لإطالة سريعة في ثانية؟ واثقين فيكي ✨",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-11",
+          "en": "A little wiggle counts. Shake it out for a minute.",
+          "ar": "هزة صغيرة بتتحسب. اتحركي شوية وفوّقي.",
+          "needs": []
+        },
+        {
+          "id": "middayMove-p-12",
+          "en": "Your legs called. They'd like a little walk around the house.",
+          "ar": "رجليكي بيقولوا عايزين لفة صغيرة في البيت.",
+          "needs": []
+        }
+      ]
+    },
+    "eveningMeal": {
+      "calm": [
+        {
+          "id": "eveningMeal-c-01",
+          "en": "Wondering what's for dinner? A light recipe could be ready soon.",
+          "ar": "محتارة تتعشي إيه؟ فيه وصفة خفيفة ممكن تجهز بسرعة.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-c-02",
+          "en": "Had dinner? Add it to your day in a tap.",
+          "ar": "اتعشيتي؟ ضيفي العشا ليومك بضغطة.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-c-03",
+          "en": "{food} tonight? Log it in a tap if so.",
+          "ar": "{food} على العشا الليلة؟ لو آه، سجّلي عشاكي بضغطة.",
+          "needs": [
+            "food"
+          ]
+        },
+        {
+          "id": "eveningMeal-c-04",
+          "en": "Something warm tonight? Have a look at the dinner ideas.",
+          "ar": "نفسك في حاجة دافية الليلة؟ بصّي على أفكار العشا.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-c-05",
+          "en": "Eating soon? A photo of your plate is enough to log it.",
+          "ar": "هتاكلي قريب؟ صورة لطبقك كفاية عشان تسجّليه.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-c-06",
+          "en": "A calm dinner and a quiet evening. Need a recipe idea?",
+          "ar": "عشا هادي وليلة رايقة. محتاجة فكرة وصفة؟",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-c-07",
+          "en": "{food} on the table tonight? Your log's ready for it.",
+          "ar": "{food} على السفرة الليلة؟ ضيفي عشاكي لسجلك.",
+          "needs": [
+            "food"
+          ]
+        },
+        {
+          "id": "eveningMeal-c-08",
+          "en": "Dinner ideas are waiting in the recipes, whenever you're hungry.",
+          "ar": "أفكار العشا مستنياكي في الوصفات، وقت ما تجوعي.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-c-09",
+          "en": "Evening. Add dinner once you've eaten and your day's all there.",
+          "ar": "مساء الخير. ضيفي العشا لما تاكلي، ويومك يبقى كامل.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-c-10",
+          "en": "Something easy tonight? The recipes have quick ones.",
+          "ar": "حاجة سهلة الليلة؟ الوصفات فيها حاجات سريعة.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-c-11",
+          "en": "{food} as usual, or something new tonight?",
+          "ar": "{food} زي العادة، ولا حاجة جديدة الليلة؟",
+          "needs": [
+            "food"
+          ]
+        },
+        {
+          "id": "eveningMeal-c-12",
+          "en": "Good evening. Logging dinner takes a tap, whenever you're ready.",
+          "ar": "مساء الخير. تسجيل العشا بضغطة، وقت ما تحبي.",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "eveningMeal-p-01",
+          "en": "Dinner plans? The recipes have a few that'll make you happy.",
+          "ar": "خطة العشا إيه؟ الوصفات فيها حاجات هتبسطك.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-p-02",
+          "en": "{food} tonight? Good choice. Log it in a tap.",
+          "ar": "{food} الليلة؟ اختيار حلو. سجّلي عشاكي بضغطة.",
+          "needs": [
+            "food"
+          ]
+        },
+        {
+          "id": "eveningMeal-p-03",
+          "en": "Chef mode: on. Or delivery mode? Either way, log it after 😄",
+          "ar": "مود الشيف: شغّال. ولا مود الدليفري؟ في الحالتين سجّليه بعدين 😄",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-p-04",
+          "en": "Dinner's ready? One photo and it's logged. Easy.",
+          "ar": "العشا جاهز؟ صورة واحدة ويتسجل. سهلة.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-p-05",
+          "en": "The fridge is asking what's for dinner. The recipes have answers.",
+          "ar": "التلاجة بتسأل: العشا إيه؟ الوصفات عندها الإجابة.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-p-06",
+          "en": "Evening snack or proper dinner? Either way, there's room in your log.",
+          "ar": "سناك بالليل ولا عشا بجد؟ أي حاجة فيهم ليها مكان في سجلك.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-p-07",
+          "en": "Quick dinner that's still delicious? The recipes will prove it.",
+          "ar": "عشا سريع وبرضه يجنن؟ الوصفات هتثبتلك.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-p-08",
+          "en": "Good evening, chef. {food} or something new?",
+          "ar": "مساء الخير يا شيف. {food} ولا حاجة جديدة؟",
+          "needs": [
+            "food"
+          ]
+        },
+        {
+          "id": "eveningMeal-p-09",
+          "en": "Your plate deserves a photo. Snap it and it's logged 📸",
+          "ar": "طبقك يستاهل صورة. صوّريه ويتسجل 📸",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-p-10",
+          "en": "Tonight's menu: something tasty. Need ideas? The recipes are open.",
+          "ar": "منيو الليلة: حاجة حلوة. محتاجة أفكار؟ الوصفات مفتوحة.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-p-11",
+          "en": "Dinner done? Tap to add it, then feet up.",
+          "ar": "اتعشيتي؟ دوسي وضيفيه، وبعدين ريّحي رجليكي.",
+          "needs": []
+        },
+        {
+          "id": "eveningMeal-p-12",
+          "en": "Is tonight a {food} kind of night? Log it if it is.",
+          "ar": "الليلة دي بتاعة {food}؟ لو آه، سجّلي عشاكي.",
+          "needs": [
+            "food"
+          ]
+        }
+      ]
+    },
+    "weekEnd": {
+      "calm": [
+        {
+          "id": "weekEnd-c-01",
+          "en": "Your week wraps up today. A new one starts tomorrow, ready when you are.",
+          "ar": "أسبوعك بيخلص النهارده، وبكره أسبوع جديد جاهز وقت ما تحبي.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-c-02",
+          "en": "Fresh week tomorrow. Pick the days that suit you, if you like.",
+          "ar": "أسبوع جديد من بكره. اختاري الأيام اللي تريّحك، لو حابة.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-c-03",
+          "en": "Next week opens with {workout}. No rush, just a heads-up.",
+          "ar": "الأسبوع الجاي هيبدأ بتمرين {workout}. من غير استعجال، بس بنعرّفك.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "weekEnd-c-04",
+          "en": "A calm end to the week. Tomorrow's a clean start.",
+          "ar": "نهاية هادية للأسبوع، وبكره بداية جديدة.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-c-05",
+          "en": "Have a lovely evening. Your plan for the new week is ready.",
+          "ar": "سهرة حلوة. خطتك للأسبوع الجديد جاهزة.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-c-06",
+          "en": "New week tomorrow. Fancy a glance at your plan tonight?",
+          "ar": "أسبوع جديد بكره. تحبي تبصي على خطتك الليلة؟",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-c-07",
+          "en": "First up next week: {workout}. Whenever you're ready.",
+          "ar": "أول حاجة في الأسبوع الجاي: {workout}. وقت ما تحبي.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "weekEnd-c-08",
+          "en": "This week's done. Tomorrow brings a fresh one, and your plan's ready.",
+          "ar": "الأسبوع ده عدّى، وبكره أسبوع جديد، وخطتك جاهزة.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-c-09",
+          "en": "A quiet evening to close the week. The next one's wide open.",
+          "ar": "ليلة هادية تقفلي بيها الأسبوع. والجاي مفتوح قدامك.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-c-10",
+          "en": "Tomorrow's a new week. Even a short session would be a lovely start.",
+          "ar": "بكره أسبوع جديد. حتى تمرين قصير هيبقى بداية حلوة.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-c-11",
+          "en": "Rest well tonight. A new week and a ready plan are waiting.",
+          "ar": "ارتاحي كويس الليلة. أسبوع جديد وخطة جاهزة مستنيينكي.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-c-12",
+          "en": "End of the week, start of something new. See you tomorrow.",
+          "ar": "آخر الأسبوع وبداية حاجة جديدة. نشوفك بكره.",
+          "needs": []
+        }
+      ],
+      "playful": [
+        {
+          "id": "weekEnd-p-01",
+          "en": "That's a week. Tomorrow a brand new one turns up.",
+          "ar": "أسبوع وعدّى. وبكره واحد جديد خالص.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-p-02",
+          "en": "Tonight's plan: something cosy and a peek at next week's plan.",
+          "ar": "خطة الليلة: حاجة رايقة، وبصّة على خطة الأسبوع الجاي.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-p-03",
+          "en": "New week on its way. Your plan's already doing its warm-up.",
+          "ar": "الأسبوع الجديد جاي في السكة، وخطتك بتسخّن من دلوقتي.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-p-04",
+          "en": "Next week's opening act: {workout}. Front row seat's yours.",
+          "ar": "افتتاحية الأسبوع الجاي: {workout}. والصف الأول محجوزلك.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "weekEnd-p-05",
+          "en": "A new week tomorrow, a new chapter for you ✨",
+          "ar": "بكره أسبوع جديد، وفصل جديد ليكي ✨",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-p-06",
+          "en": "Week's wrapping up. Enjoy tonight, the rest can wait for tomorrow.",
+          "ar": "الأسبوع بيقفل. فرفشي الليلة، والباقي بكره.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-p-07",
+          "en": "Your plan's packing for a new week. Want a sneak peek?",
+          "ar": "خطتك بتجهز شنطتها لأسبوع جديد. تحبي تبصي بصّة؟",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-p-08",
+          "en": "Heads up: next week starts tomorrow, and your plan's ready.",
+          "ar": "تنبيه صغير: الأسبوع الجاي بيبدأ بكره، وخطتك جاهزة.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-p-09",
+          "en": "Weekend mode tonight, new week mode tomorrow.",
+          "ar": "الليلة مود إجازة، وبكره مود أسبوع جديد.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-p-10",
+          "en": "A new week's coming. Pick your days and make it yours.",
+          "ar": "أسبوع جديد جاي. اختاري أيامك وخليه على مزاجك.",
+          "needs": []
+        },
+        {
+          "id": "weekEnd-p-11",
+          "en": "Coming up first in the new week: {workout}. Totally your pace.",
+          "ar": "أول حاجة مستنياكي الأسبوع الجديد: {workout}. على مزاجك.",
+          "needs": [
+            "workout"
+          ]
+        },
+        {
+          "id": "weekEnd-p-12",
+          "en": "Cosy evening, fresh week ahead. Not bad at all 🌙",
+          "ar": "ليلة رايقة وأسبوع جديد قدامك. حلو أوي كده 🌙",
+          "needs": []
+        }
+      ]
+    }
+  }
+}

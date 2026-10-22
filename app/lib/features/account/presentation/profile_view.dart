@@ -77,6 +77,8 @@ class ProfileView extends StatefulWidget {
     this.onBack,
     this.onOpenCycle,
     this.onOpenCoach,
+    this.onBecomeCoach,
+    this.onOpenCoachSpace,
     this.onOpenTraining,
     this.onOpenLanguage,
     this.onOpenNotifications,
@@ -103,6 +105,12 @@ class ProfileView extends StatefulWidget {
   final VoidCallback? onBack;
   final VoidCallback? onOpenCycle;
   final VoidCallback? onOpenCoach;
+
+  /// "Coach women on Own Hub": the application. Null hides the row.
+  final VoidCallback? onBecomeCoach;
+
+  /// "My coach space", only for a woman who holds the coach claim.
+  final VoidCallback? onOpenCoachSpace;
 
   /// The four setup questions, reopened — `O01` to `O05`.
   ///
@@ -341,6 +349,18 @@ class _ProfileViewState extends State<ProfileView> {
             icon: Icons.sports_outlined,
             title: l10n.myCoach,
             onTap: widget.onOpenCoach,
+          ),
+        if (widget.onOpenCoachSpace != null)
+          _row(
+            icon: Icons.badge_outlined,
+            title: l10n.myCoachSpace,
+            onTap: widget.onOpenCoachSpace,
+          )
+        else if (widget.onBecomeCoach != null)
+          _row(
+            icon: Icons.volunteer_activism_outlined,
+            title: l10n.coachWomenOnOwnHub,
+            onTap: widget.onBecomeCoach,
           ),
 
         // D3's row. The one the Eat safety guard has been waiting for.

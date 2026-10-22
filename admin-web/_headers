@@ -1,0 +1,13 @@
+# Response headers for the staff dashboard, served by Cloudflare Pages
+# (https://developers.cloudflare.com/pages/configuration/headers/). The same
+# headers as the admin target in firebase.json, which headers.test.mjs checks,
+# plus HSTS and a Permissions-Policy. The dashboard keeps pictures as data:
+# URLs and videos as blob: URLs because of this policy.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.gstatic.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.run.app https://www.google.com; frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com https://*.firebaseapp.com https://*.web.app; img-src 'self' data:; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()

@@ -662,6 +662,24 @@ class InMemoryTrainRepository implements TrainRepository {
   List<TrainSession> get sessions =>
       List<TrainSession>.unmodifiable(_sessions.values);
 
+  /// Her finished sessions that counted, newest day first (ties: the one saved
+  /// last first). Abandoned sessions and sessions still under way are left out.
+  List<TrainSession> completedSessions({int limit = 20}) {
+    final all = _sessions.values.toList();
+    final order = <String, int>{
+      for (var i = 0; i < all.length; i++) all[i].id: i,
+    };
+    final done =
+        [
+          for (final s in all)
+            if (s.completed && s.endedReason != EndedReason.abandoned) s,
+        ]..sort((a, b) {
+          final byDay = b.dateKey.compareTo(a.dateKey);
+          return byDay != 0 ? byDay : order[b.id]!.compareTo(order[a.id]!);
+        });
+    return done.take(limit).toList();
+  }
+
   /// The counter behind `live-1`, `live-2`, so a session started after a
   /// restart does not reuse an id an earlier one already holds.
   int get sessionCounter => _counter;

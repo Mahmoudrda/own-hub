@@ -37,10 +37,24 @@
 	      she turns on "Back up my health data" (off by default, own consent).
 	    - SensitiveInfo: pregnancy or postpartum stage (with backup on), and
 	      the biometric face match during the check.
+	    - Name: only for a woman who applies to coach: her full name, kept
+	      with the application for the review (never public). The name read
+	      from the ID card is still processed in memory and not kept.
+	    - EmailsorTextMessages: chat messages between a member and her
+	      coach, kept on our servers (Frankfurt) while both accounts exist,
+	      readable by the two of them; staff read a thread only after a report.
 	    - PhotosorVideos: both sides of her national ID card and the selfie
-	      frames, processed in memory and never stored. Declared anyway.
+	      frames, processed in memory and never stored. Declared anyway. Also,
+	      for a woman who applies to coach only: the pictures she picks for
+	      the application (profile photo, documents, feedback screenshots,
+	      client photos, photos of herself or her work), which ARE stored.
+	      The woman reviewer checks each one; on approval a re-encoded copy
+	      with no location or other metadata is kept, the original is
+	      deleted, and verified members see the approved items.
 	    - OtherDataTypes: the verification result, the keyed code of her ID
-	      number, and her consent records.
+	      number, and her consent records. Also the coach application text,
+	      the public coach portfolio, and the intake form a member sends a
+	      coach (health answers in it fall under Health, already declared).
 	  NOT LINKED, not tracking, purpose AppFunctionality:
 	    - CrashData: Firebase Crashlytics, release builds, and only once she
 	      has allowed crash reports: fatal crashes, and non-fatal reports of a
@@ -59,7 +73,6 @@
 	    - CoarseLocation: Google Analytics derives an approximate location
 	      (country, and city unless granular location is off in the GA
 	      property) from the masked IP address. The app reads no location.
-	  Name is not declared: it is read from the card in memory and not kept.
 	  Training reminders (flutter_local_notifications) are scheduled on the
 	  phone and collect nothing: the days and time she picks stay in the
 	  app's local snapshot, and no token or schedule leaves the device.
@@ -97,6 +110,18 @@
 	<array/>
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeName</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypePhoneNumber</string>
@@ -173,6 +198,18 @@
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypePhotosorVideos</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeEmailsorTextMessages</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>

@@ -40,6 +40,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/secure_screen.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../data/cover_fit_viewfinder.dart' show idCardAspectRatio;
@@ -390,7 +391,9 @@ class _IdCaptureViewState extends State<IdCaptureView>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => SecureScreen(child: _content(context));
+
+  Widget _content(BuildContext context) {
     final l10n = AppL10n.of(context);
     final isBack = widget.side == CaptureTarget.idBack;
     final title = isBack ? l10n.theBackOfYourCard : l10n.yourIdCard;

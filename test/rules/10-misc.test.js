@@ -115,11 +115,14 @@ describe('`allow write` silently covers delete', () => {
     await assertFails(deleteDoc(doc(db, `users/${HER}/eatPrefs/current`)));
   });
 
-  test('coaches subcollections: the isCoach guard does cover delete', async () => {
+  test('coaches subcollections: the old paths are closed to writes, delete included', async () => {
     const db = await (await import('./harness.js')).verifiedCoach(uid.coach);
-    await assertSucceeds(setDoc(doc(db, `coaches/${uid.coach}`), { name: 'c' }));
-    await assertSucceeds(setDoc(doc(db, `coaches/${uid.coach}/offers/o1`), { price: 1 }));
-    await assertSucceeds(deleteDoc(doc(db, `coaches/${uid.coach}/offers/o1`)));
+    await assertFails(setDoc(doc(db, `coaches/${uid.coach}`), { name: 'c' }));
+    await assertFails(setDoc(doc(db, `coaches/${uid.coach}/offers/o1`), { price: 1 }));
+    await seed(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), `coaches/${uid.coach}/offers/o1`), { price: 1 });
+    });
+    await assertFails(deleteDoc(doc(db, `coaches/${uid.coach}/offers/o1`)));
   });
 });
 

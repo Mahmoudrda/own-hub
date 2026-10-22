@@ -73,15 +73,23 @@ SECTIONS: dict[int, str] = {
     20: "plans",
     21: "plans",
     53: "events",
+    47: "coaching",
+    48: "coaching",
+    49: "coaching",
+    55: "coaching",
+    56: "coaching",
+    57: "coaching",
+    58: "coaching",
+    59: "coaching",
 }
 
 # Manifest row -> why it is not in the copy.
 EXPORT_EXCLUSIONS: dict[int, str] = {
     9: "The sync queue exists only on her phone. Nothing is held on the server.",
     17: "Records in other women's accounts. They are about the other women.",
-    24: "No photos or coach documents are stored in this release.",
+    24: "Images and documents are not in the copy. The coaching section lists the file names an application or portfolio refers to.",
     25: "Earlier copies of her data. They are the export itself.",
-    26: "Community, coaching and the assistant are off in this release; nothing exists.",
+    26: "The community and the assistant are off in this release, and the coaching rows below are listed one by one; nothing is left to export under this row.",
     27: "No analytics service is used, so nothing is held there.",
     28: "Crash reports are never linked to her account, so they cannot be found for her.",
     30: "Reports are pseudonymised and are about safety cases, not her account.",
@@ -94,13 +102,10 @@ EXPORT_EXCLUSIONS: dict[int, str] = {
     54: "A keyed hash of your account id stored under the shared food you confirmed. It holds nothing you wrote and is removed when you delete your account.",
     52: "A phone number a reviewer pre-approved. It is removed when she signs in or deletes her account, and it is not part of her account.",
     # APL-16: the rows naming row 26's data one by one. The rules refuse every
-    # write to them while community and coaching are off, so nothing exists.
+    # write to them while the community is off, so nothing exists.
     # Each moves to SECTIONS in the release that switches its feature on.
     45: "The community is off in this release; there are no posts.",
     46: "The community is off in this release; there are no comments.",
-    47: "Coaching is off in this release; there is no coach page or certificate.",
-    48: "Coaching is off in this release; there is no coaching relationship.",
-    49: "Coaching is off in this release; there are no invite codes.",
 }
 
 RETENTION = {
@@ -134,6 +139,10 @@ RETENTION = {
     "safety": {"en": "Until you delete your account.", "ar": "حتى تحذفي حسابكِ."},
     "devices": {"en": "Until you delete your account.", "ar": "حتى تحذفي حسابكِ."},
     "plans": {"en": "Until you delete your account.", "ar": "حتى تحذفي حسابكِ."},
+    "coaching": {
+        "en": "Until you delete your account. A coaching and its chat are also deleted when the other woman deletes hers.",
+        "ar": "لحد ما تحذفي حسابكِ. والتدريب وشاته بيتحذفوا كمان لو التانية حذفت حسابها.",
+    },
     "events": {
         "en": "Until you cancel the seat or delete your account.",
         "ar": "لحد ما تلغي الحجز أو تحذفي حسابكِ.",
@@ -156,6 +165,7 @@ LABELS = {
     "safety": ("Blocks and reports", "الحظر والبلاغات"),
     "devices": ("Your devices", "أجهزتكِ"),
     "plans": ("Plans from a coach", "خطط من مدرّبة"),
+    "coaching": ("Your coaching", "التدريب بتاعكِ"),
     "events": ("Events you reserved a seat for", "الفعاليات اللي حجزتي فيها مكان"),
     "phoneOnly": ("On your phone only", "على هاتفكِ فقط"),
 }
@@ -207,6 +217,7 @@ class Reader(Protocol):
     def plans(self, uid: str, name: str) -> dict: ...
     def access_for_flags(self, flag_ids: list) -> list: ...
     def event_seats(self, uid: str) -> dict: ...
+    def coaching(self, uid: str) -> dict: ...
 
 
 def _plain(value: Any) -> Any:
@@ -333,6 +344,24 @@ def build_export(uid: str, reader: Reader, language: str = "en", now: Optional[d
 
     section("events").update({k: _clean(v) for k, v in reader.event_seats(uid).items()})
 
+    coaching = reader.coaching(uid)
+    section("coaching").update(
+        {
+            "application": _clean(coaching.get("application")),
+            "coach": _clean(coaching.get("coach")),
+            "packages": {k: _clean(v) for k, v in (coaching.get("packages") or {}).items()},
+            "drafts": {k: _clean(v) for k, v in (coaching.get("drafts") or {}).items()},
+            "media": {k: _clean(v) for k, v in (coaching.get("media") or {}).items()},
+            "inviteCodes": {k: _clean(v) for k, v in (coaching.get("invites") or {}).items()},
+            "asClient": {k: _clean(v) for k, v in (coaching.get("asClient") or {}).items()},
+            "asCoach": {k: _clean(v) for k, v in (coaching.get("asCoach") or {}).items()},
+            "messages": {k: _clean(v) for k, v in (coaching.get("messages") or {}).items()},
+            "coachPrivate": {k: _clean(v) for k, v in (coaching.get("private") or {}).items()},
+            "receipts": {k: _clean(v) for k, v in (coaching.get("receipts") or {}).items()},
+            "plansFromCoach": {k: _clean(v) for k, v in reader.plans(uid, "coachPlans").items()},
+        }
+    )
+
     return {
         "schema": SCHEMA,
         "generatedAt": now.isoformat(),
@@ -421,6 +450,61 @@ class FirestoreReader:
             if seat.exists:
                 out[event.id] = seat.to_dict() or {}
         return out
+
+    def coaching(self, uid):
+        """Her application, coach page, packages, drafts and invite codes; the
+        coachings she joined, with her own intake form; the coachings she gave,
+        without the client's intake, health answers or id (they are the
+        client's, not hers); the messages she wrote; her own private coach record
+        (prices, ledger, payouts); and receipts issued to her."""
+
+        def rows(ref):
+            return {s.id: s.to_dict() or {} for s in ref.stream()}
+
+        db = self.db
+        coach = db.collection("coaches").document(uid)
+        application = db.collection("coachApplications").document(uid).get()
+        coach_page = coach.get()
+        as_client, as_coach, messages = {}, {}, {}
+        for snap in db.collection("subscriptions").where("clientUid", "==", uid).stream():
+            as_client[snap.id] = snap.to_dict() or {}
+        for snap in db.collection("subscriptions").where("coachUid", "==", uid).stream():
+            body = dict(snap.to_dict() or {})
+            for private in ("intake", "clientUid", "relId"):
+                body.pop(private, None)
+            as_coach[snap.id] = body
+        for field in ("clientUid", "coachUid"):
+            for rel in db.collection("relationships").where(field, "==", uid).stream():
+                for message in rel.reference.collection("messages").stream():
+                    row = message.to_dict() or {}
+                    if row.get("senderUid") == uid:
+                        messages[f"{rel.id}/{message.id}"] = row
+        private = db.collection("coachPrivate").document(uid)
+        private_rows = {}
+        if private.get().exists:
+            private_rows["account"] = private.get().to_dict() or {}
+        for name in ("prices", "ledger", "payouts"):
+            for key, value in rows(private.collection(name)).items():
+                private_rows[f"{name}/{key}"] = value
+        return {
+            "private": private_rows,
+            "receipts": {
+                s.id: s.to_dict() or {}
+                for s in db.collection("receipts").where("clientUid", "==", uid).stream()
+            },
+            "application": application.to_dict() if application.exists else None,
+            "coach": coach_page.to_dict() if coach_page.exists else None,
+            "packages": rows(coach.collection("packages")),
+            "media": rows(coach.collection("media")),
+            "drafts": rows(coach.collection("drafts")),
+            "invites": {
+                s.id: s.to_dict() or {}
+                for s in db.collection("coachInvites").where("coachUid", "==", uid).stream()
+            },
+            "asClient": as_client,
+            "asCoach": as_coach,
+            "messages": messages,
+        }
 
     def access_for_flags(self, flag_ids):
         out = []

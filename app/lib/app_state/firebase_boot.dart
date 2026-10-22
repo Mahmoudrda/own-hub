@@ -52,6 +52,18 @@ const String _kAppCheckDebugToken = String.fromEnvironment(
 /// talks to production.
 const String _kEmulatorHost = String.fromEnvironment('OWNHUB_EMULATOR_HOST');
 
+/// Ports of the local emulators, the same as `firebase.e2e.json`.
+const int kEmulatorAuthPort = 9299;
+const int kEmulatorFirestorePort = 8288;
+const int kEmulatorFunctionsPort = 5101;
+const int kEmulatorStoragePort = 9399;
+
+/// Whether this build talks to the local emulators: a debug build started
+/// with `OWNHUB_EMULATOR_HOST`, and never a profile or release build.
+@visibleForTesting
+bool emulatorsWanted({required bool debug, required String host}) =>
+    debug && host.isNotEmpty;
+
 /// `--dart-define=OWNHUB_ANALYTICS_DEBUG=true` lets a debug or profile build
 /// send usage statistics, so the event set can be checked in DebugView. Her
 /// consent is still required. A release build ignores it: release always
@@ -266,12 +278,17 @@ abstract final class FirebaseBoot {
     // no build reaches sign-up's back end at all. Its own try, because a
     // failure here must not fail the launch either: the app still opens on
     // local data, and the callable that is refused says so honestly.
+    // A debug build on the local emulators skips it: the debug provider's
+    // placeholder token is refused there, and the emulated functions accept
+    // calls without one.
     try {
-      final choice = appCheckChoiceFor(release: kReleaseMode);
-      await FirebaseAppCheck.instance.activate(
-        providerAndroid: choice.android,
-        providerApple: choice.apple,
-      );
+      if (!emulatorsWanted(debug: kDebugMode, host: _kEmulatorHost)) {
+        final choice = appCheckChoiceFor(release: kReleaseMode);
+        await FirebaseAppCheck.instance.activate(
+          providerAndroid: choice.android,
+          providerApple: choice.apple,
+        );
+      }
     } catch (error, stack) {
       _appCheckFailure = error;
       if (kDebugMode) {
@@ -324,10 +341,24 @@ abstract final class FirebaseBoot {
       if (kDebugMode) debugPrint('Analytics not configured: $error');
     }
 
-    if (kDebugMode && _kEmulatorHost.isNotEmpty) {
+    if (emulatorsWanted(debug: kDebugMode, host: _kEmulatorHost)) {
       try {
-        await FirebaseAuth.instance.useAuthEmulator(_kEmulatorHost, 9299);
-        FirebaseFirestore.instance.useFirestoreEmulator(_kEmulatorHost, 8288);
+        await FirebaseAuth.instance.useAuthEmulator(
+          _kEmulatorHost,
+          kEmulatorAuthPort,
+        );
+        FirebaseFirestore.instance.useFirestoreEmulator(
+          _kEmulatorHost,
+          kEmulatorFirestorePort,
+        );
+        await FirebaseStorage.instance.useStorageEmulator(
+          _kEmulatorHost,
+          kEmulatorStoragePort,
+        );
+        await personalMedia.useStorageEmulator(
+          _kEmulatorHost,
+          kEmulatorStoragePort,
+        );
       } catch (error) {
         debugPrint('Emulators not wired: $error');
       }
@@ -369,8 +400,8 @@ abstract final class FirebaseBoot {
     final existing = _functions;
     if (existing != null) return existing;
     final created = FirebaseFunctions.instanceFor(region: kFunctionsRegion);
-    if (kDebugMode && _kEmulatorHost.isNotEmpty) {
-      created.useFunctionsEmulator(_kEmulatorHost, 5101);
+    if (emulatorsWanted(debug: kDebugMode, host: _kEmulatorHost)) {
+      created.useFunctionsEmulator(_kEmulatorHost, kEmulatorFunctionsPort);
     }
     return _functions = created;
   }

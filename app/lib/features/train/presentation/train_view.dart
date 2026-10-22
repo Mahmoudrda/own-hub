@@ -98,6 +98,7 @@ class TrainView extends StatefulWidget {
     this.myWorkouts = const <CustomWorkout>[],
     this.onBuildOwn,
     this.onSwitchPlan,
+    this.onFindCoach,
     this.onStartMine,
     this.onEditMine,
     this.onDeleteMine,
@@ -125,6 +126,9 @@ class TrainView extends StatefulWidget {
 
   /// "Switch plan or pick any session": the programme chooser, then Explore.
   final VoidCallback? onSwitchPlan;
+
+  /// "Find a coach". Null hides the row.
+  final VoidCallback? onFindCoach;
 
   final ValueChanged<CustomWorkout>? onStartMine;
   final ValueChanged<CustomWorkout>? onEditMine;
@@ -474,6 +478,18 @@ class _TrainViewState extends State<TrainView> {
           ),
           trailing: const AppChevron(),
           onTap: widget.onOpenMuscles,
+        ),
+      if (widget.onFindCoach != null)
+        AppListItem(
+          key: const ValueKey('r01-find-coach'),
+          title: l10n.findACoach,
+          leading: const Icon(
+            Icons.sports_outlined,
+            size: 24,
+            color: AppColors.primaryDim,
+          ),
+          trailing: const AppChevron(),
+          onTap: widget.onFindCoach,
         ),
       if (AppRouter.screenIsOn('R05') && widget.showGentlerOption)
         AppListItem(

@@ -59,6 +59,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/haptics.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
@@ -259,6 +260,9 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
         // in front of her. Behind another route, the rest simply ends.
         if (!_isOnTop || _ended) return;
         _ended = true;
+        // One light buzz as the rest ends with the phone in her hand. Not
+        // when she comes back late: the notification already told her.
+        unawaited(AppHaptics.play(HapticMoment.actionDone));
         widget.onReady?.call();
         return;
       }

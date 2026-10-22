@@ -29,8 +29,10 @@ class PhotoRejected(ValueError):
         self.code = code
 
 
-def reencode(raw: bytes) -> bytes:
-    """Any phone photo to a JPEG at most IMAGE_LONG_SIDE on its long edge."""
+def reencode(raw: bytes, *, long_side: int | None = None) -> bytes:
+    """Any phone photo to a JPEG at most `long_side` (default IMAGE_LONG_SIDE)
+    on its long edge."""
+    limit = config.IMAGE_LONG_SIDE if long_side is None else long_side
     cv2 = faces.cv2
     try:
         image = faces.decode(raw)
@@ -40,8 +42,8 @@ def reencode(raw: bytes) -> bytes:
         raise PhotoRejected(reasons.IMAGE_UNDECODABLE)
     height, width = image.shape[:2]
     longest = max(height, width)
-    if longest > config.IMAGE_LONG_SIDE:
-        scale = config.IMAGE_LONG_SIDE / longest
+    if longest > limit:
+        scale = limit / longest
         image = cv2.resize(
             image,
             (max(1, round(width * scale)), max(1, round(height * scale))),

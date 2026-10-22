@@ -9,36 +9,35 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   String read(String path) => File(path).readAsStringSync();
 
-  test(
-    'the camera text keeps the ID promise and says the photo is not uploaded',
-    () {
-      for (final path in [
-        'ios/Runner/Info.plist',
-        'ios/Runner/en.lproj/InfoPlist.strings',
-      ]) {
-        final text = read(path);
-        expect(
-          text,
-          contains('ID card, selfie and meal photographs are read in memory'),
-          reason: path,
-        );
-        expect(text, contains('never stored'), reason: path);
-        expect(
-          text,
-          contains(
-            'A profile photo you take is kept on this phone and Own Hub never '
-            'uploads it.',
-          ),
-          reason: path,
-        );
-        expect(text, isNot(contains('Your profile photo stays on this phone')));
-        expect(text, isNot(contains('is never uploaded')), reason: path);
-      }
-      final arabic = read('ios/Runner/ar.lproj/InfoPlist.strings');
-      expect(arabic, contains('ومش بتتخزّن أبدًا'));
-      expect(arabic, contains('بتتحفظ على موبايلك. Own Hub مابترفعهاش أبدًا'));
-    },
-  );
+  test('the camera text keeps the ID promise and says the photo is not uploaded', () {
+    for (final path in [
+      'ios/Runner/Info.plist',
+      'ios/Runner/en.lproj/InfoPlist.strings',
+    ]) {
+      final text = read(path);
+      expect(
+        text,
+        contains('ID card, selfie and meal photographs are read in memory'),
+        reason: path,
+      );
+      expect(text, contains('never stored'), reason: path);
+      expect(
+        text,
+        contains(
+          'A profile photo you take stays on this phone. Photos you add as a '
+          'coach (your photo, certificates, feedback and results) are uploaded '
+          'for Own Hub to check',
+        ),
+        reason: path,
+      );
+      expect(text, isNot(contains('Your profile photo stays on this phone')));
+      expect(text, isNot(contains('is never uploaded')), reason: path);
+    }
+    final arabic = read('ios/Runner/ar.lproj/InfoPlist.strings');
+    expect(arabic, contains('ومش بتتخزّن أبدًا'));
+    expect(arabic, contains('بتفضل على موبايلك'));
+    expect(arabic, contains('بتترفع، وOwn Hub بتراجعها'));
+  });
 
   test('the profile screen says kept, not that no copy exists anywhere', () {
     final view = read('lib/features/account/presentation/profile_view.dart');

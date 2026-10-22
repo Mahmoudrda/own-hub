@@ -22,8 +22,89 @@ import '../../../domain/rewards/credit_outcome.dart';
 import '../../../domain/rewards/personal_best_detector.dart';
 import '../../../domain/rewards/training_streak.dart';
 import '../../../domain/training/energy_estimate.dart';
+import 'exercise_traits.dart';
+import 'load_advice.dart';
 import 'own_best_challenge.dart';
 import 'train_repository.dart';
+
+/// One loaded move R10 looks ahead to: what to put on the bar next time.
+///
+/// [kg] is a step up when [rises], otherwise the weight she just used. It is
+/// never lower than what she lifted: a hard week holds the weight, it does
+/// not take it away.
+@immutable
+class NextTimeMove {
+  const NextTimeMove({
+    required this.name,
+    required this.kg,
+    required this.rises,
+  });
+
+  final String name;
+  final double kg;
+  final bool rises;
+
+  @override
+  bool operator ==(Object other) =>
+      other is NextTimeMove &&
+      other.name == name &&
+      other.kg == kg &&
+      other.rises == rises;
+
+  @override
+  int get hashCode => Object.hash(name, kg, rises);
+}
+
+/// Up to [limit] of [moves] that she logged with a weight in [sessionId], each
+/// with what to lift next time, from [loadAdviceFor] read after the session
+/// was put away. Bodyweight moves and moves with no weight logged are left
+/// out.
+List<NextTimeMove> nextTimeFor({
+  required TrainRepository? repository,
+  required Iterable<PlannedMove> moves,
+  required Iterable<FlushRecord> flushes,
+  required String sessionId,
+  bool difficult = false,
+  int limit = 3,
+}) {
+  final weighed = <String>{};
+  for (final flush in flushes) {
+    if (flush.sessionId != sessionId) continue;
+    for (final set in flush.sets) {
+      final kg = set.outcome?.weightKg;
+      if (set.isLogged && kg != null && kg > 0) weighed.add(flush.exerciseId);
+    }
+  }
+  final out = <NextTimeMove>[];
+  final seen = <String>{};
+  for (final move in moves) {
+    if (out.length >= limit) break;
+    if (!weighed.contains(move.exerciseId) || !seen.add(move.exerciseId)) {
+      continue;
+    }
+    final traits = ExerciseTraits.of(move.exerciseId);
+    final advice = loadAdviceFor(
+      repository,
+      move,
+      difficult: difficult,
+      equipment: traits?.equipment,
+    );
+    if (advice == null) continue;
+    final up = advice.decision.suggestedWeightKg;
+    final rises =
+        advice.decision.action == 'increase' &&
+        up != null &&
+        up > advice.lastWeightKg;
+    out.add(
+      NextTimeMove(
+        name: traits?.nameEn ?? move.name,
+        kg: rises ? up : advice.lastWeightKg,
+        rises: rises,
+      ),
+    );
+  }
+  return List<NextTimeMove>.unmodifiable(out);
+}
 
 @immutable
 class SessionSummary {
@@ -46,7 +127,12 @@ class SessionSummary {
     this.totalReps = 0,
     this.repSets = 0,
     this.weightedSets = 0,
+    this.nextTime = const <NextTimeMove>[],
   });
+
+  /// Up to three loaded moves and what to lift next time. Empty for a session
+  /// that was discarded or had no weighed move.
+  final List<NextTimeMove> nextTime;
 
   /// How long the session took, in seconds as measured.
   final int durationSec;
@@ -150,6 +236,7 @@ SessionSummary summarise({
   StreakStatus? trainingStreak,
   Map<String, String> moveNames = const <String, String>{},
   int bestPoints = 0,
+  List<NextTimeMove> nextTime = const <NextTimeMove>[],
 }) {
   final movesLogged = <String>{};
   var sets = 0;
@@ -218,5 +305,6 @@ SessionSummary summarise({
     totalReps: totalReps,
     repSets: repSets,
     weightedSets: weightedSets,
+    nextTime: nextTime,
   );
 }

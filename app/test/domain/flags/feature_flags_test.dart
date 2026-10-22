@@ -43,17 +43,19 @@ void main() {
       // accountRequired, signUp and verification left this list on
       // 2026-10-02: their back end (functions/) exists and the owner ships
       // them at launch. The test above asserts they are on.
+      // The coach app and the marketplace ship with the first coaching
+      // release: applications, portfolios, joining without payment, chat.
+      expect(FeatureFlags.shipped.isOn(Feature.coachApp), isTrue);
+      expect(FeatureFlags.shipped.isOn(Feature.marketplace), isTrue);
       for (final f in [
         Feature.community,
         Feature.communityPosts,
         Feature.communityVideo,
         Feature.communityVoiceNotes,
         Feature.communityFollowerCounts,
-        Feature.coachApp,
         Feature.coachPlanning,
         Feature.coachPortfolio,
         Feature.coachedLife,
-        Feature.marketplace,
         Feature.payments,
         Feature.assistant,
       ]) {

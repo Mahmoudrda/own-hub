@@ -107,6 +107,7 @@ class TodayView extends StatefulWidget {
     this.trainingLine,
     this.planLinks,
     this.followUp,
+    this.coachCard,
   });
 
   /// Her first name, for the greeting and the avatar. Null greets without it.
@@ -148,6 +149,9 @@ class TodayView extends StatefulWidget {
   /// The follow-up card (how she feels after a session, her week review),
   /// or null when there is nothing to ask.
   final Widget? followUp;
+
+  /// Her coach's card, above her plan, while she is coached.
+  final Widget? coachCard;
 
   /// Her training streak (D37), or null when it is off — by the build or by
   /// her. Null draws nothing at all.
@@ -447,6 +451,7 @@ class _TodayViewState extends State<TodayView> {
           trailing: const AppChevron(),
           onTap: change,
         ),
+      ?widget.coachCard,
       ?widget.planLinks,
       ?widget.followUp,
       HomeWeekStrip(
@@ -832,6 +837,7 @@ class _TodayViewState extends State<TodayView> {
         ],
       ),
       HomeWeekStrip(today: _day.date),
+      ?widget.coachCard,
       // The card says what the app is for, and the button in it is the one
       // obvious thing to do. It names no programme and promises no session:
       // she has answered no questions and has no plan. What is true of every

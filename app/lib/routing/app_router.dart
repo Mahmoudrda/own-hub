@@ -166,6 +166,7 @@ import '../features/today/presentation/today_view.dart';
 import '../features/train/domain/my_plan.dart';
 import '../features/train/domain/own_best_challenge.dart';
 import '../features/train/domain/session_bests_bridge.dart';
+import '../features/train/domain/exercise_traits.dart';
 import '../features/train/domain/set_history.dart';
 import '../features/train/domain/exercise_library.dart'
     show LibraryEquipment, LibraryExercise, blockedMoveIds;
@@ -185,6 +186,8 @@ import '../features/train/presentation/reminder_sheet.dart';
 import '../features/train/presentation/follow_along_view.dart';
 import '../features/train/presentation/logged_from_memory_view.dart';
 import '../features/train/presentation/mid_set_view.dart';
+import '../features/train/presentation/move_history_sheet.dart';
+import '../features/train/presentation/recent_sessions_view.dart';
 import '../features/train/presentation/move_logged_view.dart';
 import '../features/train/presentation/my_plan_day.dart';
 import '../features/train/presentation/plan_editor_view.dart';
@@ -269,22 +272,7 @@ import '../features/train/domain/tier_facts.dart';
 import '../features/train/presentation/training_quick_sheet.dart';
 import '../features/coach/domain/coach_repository.dart';
 import '../features/coach/domain/enquiry.dart';
-import '../features/coach/presentation/coach_basics_view.dart';
-import '../features/coach/presentation/coach_how_you_coach_view.dart';
-import '../features/coach/presentation/coach_photo_view.dart';
-import '../features/coach/presentation/coach_results_step_view.dart';
-import '../features/coach/presentation/coach_reviews_step_view.dart';
-import '../features/coach/presentation/coach_rules_view.dart';
-import '../features/coach/presentation/coach_being_checked_view.dart';
-import '../features/coach/presentation/coach_certificates_view.dart';
-import '../features/coach/presentation/coach_chat_view.dart';
 import '../features/coach/presentation/coach_earnings_view.dart';
-import '../features/coach/presentation/coach_enquiry_view.dart';
-import '../features/coach/presentation/coach_first_week_view.dart';
-import '../features/coach/presentation/coach_packages_view.dart';
-import '../features/coach/presentation/coach_payout_view.dart';
-import '../features/coach/presentation/coach_specialties_view.dart';
-import '../features/coach/presentation/coach_today_view.dart';
 import '../features/coach/presentation/coach_view_models.dart';
 import '../features/coachbrand/presentation/portfolio_home_view.dart';
 import '../features/coached/presentation/assigned_workout_view.dart';
@@ -371,7 +359,6 @@ import '../features/assistant/presentation/boundaries_view.dart';
 import '../features/assistant/presentation/draft_view_model.dart';
 import '../features/assistant/presentation/meal_draft_view.dart';
 import '../features/assistant/presentation/plan_draft_view.dart';
-import '../features/coach/presentation/coach_public_profile_view.dart';
 import '../features/coachbrand/domain/portfolio_block.dart';
 import '../features/coachbrand/domain/portfolio_publisher.dart';
 import '../features/coachbrand/presentation/ad_designer_view.dart';
@@ -386,14 +373,8 @@ import '../features/coachbrand/presentation/offers_block_view.dart';
 import '../features/coachbrand/presentation/preview_view.dart';
 import '../features/coachbrand/presentation/publish_view.dart';
 import '../features/coachbrand/presentation/results_view.dart';
-import '../features/coaching/domain/coaching_repository.dart';
 import '../features/coaching/domain/marketplace_stage.dart';
-import '../features/coaching/presentation/coach_profile_view.dart';
 import '../features/coaching/presentation/coaching_view_models.dart';
-import '../features/coaching/presentation/enquiry_view.dart';
-import '../features/coaching/presentation/find_a_coach_view.dart';
-import '../features/coaching/presentation/my_coach_view.dart';
-import '../features/coaching/presentation/packages_view.dart';
 import '../features/coachplan/domain/assessment/assessment_form.dart';
 import '../features/coachplan/domain/clients/coach_client.dart';
 import '../features/coachplan/domain/plan/plan_draft.dart';
@@ -403,12 +384,8 @@ import '../features/coachplan/domain/review/review_feedback_service.dart';
 // split a builder means — a coach's week shape, never a curve.
 import '../features/coachplan/domain/split/split.dart' as coachplan;
 import '../features/coachplan/presentation/assessment_health_view.dart';
-import '../features/coachplan/presentation/client_overview_view.dart';
-import '../features/coachplan/presentation/clients_view.dart';
-import '../features/coachplan/presentation/coach_inbox_view.dart';
 import '../features/coachplan/presentation/copy_week_view.dart';
 import '../features/coachplan/presentation/create_meal_view.dart';
-import '../features/coachplan/presentation/meal_planner_view.dart';
 import '../features/coachplan/presentation/coachplan_labels.dart'
     show mealSlotLabel;
 import '../features/coachplan/presentation/movement_screening_view.dart';
@@ -422,12 +399,39 @@ import '../features/coachplan/presentation/review_view.dart';
 import '../features/coachplan/presentation/session_editor_view.dart';
 import '../features/coachplan/presentation/split_builder_view.dart';
 import '../features/coachplan/presentation/splits_view.dart';
-import '../features/coachplan/presentation/workout_planner_view.dart';
 import '../features/community/presentation/record_view.dart';
 import '../features/community/presentation/reels_view.dart';
 import '../features/community/presentation/story_viewer_view.dart';
 import '../l10n/app_l10n.dart';
 import '../theme/app_tokens.dart';
+import '../app_state/coach_application_draft.dart';
+import '../app_state/private_coaching_state.dart';
+import '../features/private_coaching/data/coaching_repository.dart' as private;
+import '../features/private_coaching/presentation/apply/application_status_view.dart';
+import '../features/private_coaching/presentation/apply/apply_flow_view.dart';
+import '../features/private_coaching/presentation/apply/apply_intro_view.dart';
+import '../features/private_coaching/presentation/apply/apply_review_view.dart';
+import '../features/private_coaching/presentation/apply/apply_widgets.dart'
+    show ApplyTools;
+import '../features/private_coaching/presentation/chat/chat_sheets.dart'
+    show ShareChoices;
+import '../features/private_coaching/presentation/client/my_coach_view.dart';
+import '../features/private_coaching/presentation/coach/coach_space_view.dart';
+import '../features/private_coaching/presentation/desk/client_detail_view.dart';
+import '../features/private_coaching/presentation/desk/clients_view.dart';
+import '../features/private_coaching/presentation/desk/coach_desk_view.dart';
+import '../features/private_coaching/presentation/desk/desk_model.dart'
+    show DeskFilter;
+import '../features/private_coaching/presentation/member/coach_portfolio_view.dart';
+import '../features/private_coaching/presentation/member/find_coach_view.dart';
+import 'coaching_wiring.dart';
+import '../features/private_coaching/domain/coach_plan.dart' show CoachPlan;
+import '../features/private_coaching/domain/coaching_contract.dart'
+    as contract
+    show PlanKind;
+import '../features/private_coaching/domain/subscription.dart' show LiveSession;
+import '../features/private_coaching/presentation/client/coach_home_card.dart';
+import '../features/private_coaching/presentation/client/from_your_coach_section.dart';
 import 'app_routes.dart';
 import 'screen_features.dart';
 import 'session_over_redirect.dart';
@@ -705,7 +709,11 @@ class AppRouter {
     // who can fill in her certificates but cannot open her desk is a
     // half-open door.
     'coach-setup' => Feature.coachApp,
-    'coachplan' => Feature.coachPlanning,
+    // The flow holds the old planner and the screens of the coach desk that
+    // reuse its ids (`W01`, `W02`, `W03`, `W06`, `W10`). The flow itself
+    // answers to the coach app; every old planner screen keeps its own
+    // `coachPlanning` switch in `kScreenFeatures`, so they stay dark.
+    'coachplan' => Feature.coachApp,
     'coachbrand' => Feature.coachPortfolio,
     'coached' => Feature.coachedLife,
     'coaching' => Feature.marketplace,
@@ -1146,11 +1154,87 @@ class AppRouter {
     }
   }
 
+  // ------------------------------------------------ Private coaching state
+
+  /// Where the coaching repository comes from. Replaced in tests.
+  @visibleForTesting
+  static private.CoachingRepository? Function() coachingRepositoryFactory =
+      defaultCoachingRepository;
+
+  /// Where the `coachV` claim is read. Replaced in tests.
+  @visibleForTesting
+  static Future<bool> Function({bool refresh}) coachClaimReader =
+      readCoachClaim;
+
+  static String? _coachingUid;
+
+  /// Keeps [PrivateCoachingState] running for exactly the signed-in, verified
+  /// woman: started when she is, stopped when she is not. Called once from
+  /// `main()`; it follows every change the app announces.
+  static void watchPrivateCoaching() {
+    AppChanges.instance.addListener(
+      () => scheduleMicrotask(() => unawaited(syncPrivateCoaching())),
+    );
+    unawaited(syncPrivateCoaching());
+  }
+
+  /// One idempotent pass of the rule above.
+  static Future<void> syncPrivateCoaching() async {
+    final state = PrivateCoachingState.instance;
+    final uid = verificationBackend.currentUid;
+    final wanted =
+        uid != null &&
+        isVerified &&
+        (featureFlags.isOn(Feature.coachApp) ||
+            featureFlags.isOn(Feature.marketplace));
+    if (!wanted) {
+      if (_coachingUid != null) {
+        _coachingUid = null;
+        state.stop();
+      }
+      return;
+    }
+    if (_coachingUid == uid) return;
+    final repository = coachingRepositoryFactory();
+    if (repository == null) return;
+    _coachingUid = uid;
+    final isCoach =
+        featureFlags.isOn(Feature.coachApp) && await coachClaimReader();
+    if (_coachingUid != uid) return;
+    state.start(repository, isCoach: isCoach);
+  }
+
+  /// A coaching screen's page once the repository is up, else a quiet frame
+  /// with a way back.
+  static Widget _whenCoaching(
+    BuildContext context,
+    Widget Function(private.CoachingRepository repository) build,
+  ) {
+    final repository = PrivateCoachingState.instance.repository;
+    if (repository == null) {
+      return quietCoachingFrame(
+        () => Navigator.of(context).maybePop(),
+        loading: true,
+      );
+    }
+    return build(repository);
+  }
+
+  /// The string a coaching route was pushed with, or empty.
+  static String _routeString(BuildContext context) {
+    final arg = ModalRoute.of(context)?.settings.arguments;
+    return arg is String ? arg : '';
+  }
+
   /// Every source of "she is verified" back to nothing (R2): the claim, the
   /// session result, the server state, the phone's memory and the review
   /// flags. Called on sign-out and on account deletion.
   static Future<void> forgetVerification() async {
     _claimGeneration++;
+    if (_coachingUid != null) {
+      _coachingUid = null;
+      PrivateCoachingState.instance.stop();
+    }
     _verifiedClaim = false;
     _verifiedOnThisPhone = false;
     _freshClaimRead = false;
@@ -2410,6 +2494,7 @@ class AppRouter {
           ),
         ),
         followUp: _followUpCard(context),
+        coachCard: _coachHomeCard(context),
         onOpenStreak: () => unawaited(openTrainingStreak(context)),
         challengeLine: challengeLineFor(
           context,
@@ -2683,15 +2768,16 @@ class AppRouter {
           sessionsThisWeek: todayRepository.day.week.sessionsLogged,
           sessionsPrescribed: todayRepository.day.week.sessionsTarget,
           week: [
-            for (final slot in her == null
-                ? const <WeekSlot>[]
-                : weekSlotsFor(
-                    her.content,
-                    sessions,
-                    days: weekDays,
-                    minutes: intake.minutes,
-                    done: done,
-                  ))
+            for (final slot
+                in her == null
+                    ? const <WeekSlot>[]
+                    : weekSlotsFor(
+                        her.content,
+                        sessions,
+                        days: weekDays,
+                        minutes: intake.minutes,
+                        done: done,
+                      ))
               ProgramDay(
                 title: slot.session.title(language),
                 detail: l10n.minutesMinutesMovesMoves(
@@ -2717,6 +2803,7 @@ class AppRouter {
           myWorkouts: CustomWorkoutState.instance.workouts,
           onBuildOwn: () => _openBuilder(context),
           onSwitchPlan: () => _changeProgramme(context, intake, her),
+          onFindCoach: screenIsOn('H01') ? () => goTo(context, 'H01') : null,
           hasMyPlan: MyPlanState.instance.hasPlan,
           onCustomizePlan: () => _customizePlan(context),
           onStartPlanFromScratch: () => _startPlanFromScratch(context),
@@ -2819,6 +2906,9 @@ class AppRouter {
           onChangeProgram: () => _changeProgramme(context, intake, her),
           hasMyPlan: MyPlanState.instance.hasPlan,
           onCustomizePlan: () => _customizePlan(context),
+          onOpenRecentSessions: featureFlags.isOn(Feature.trainHistory)
+              ? () => openRecentSessions(context)
+              : null,
           onStart: () => open(null),
           title: her == null
               ? null
@@ -2833,15 +2923,16 @@ class AppRouter {
           sessionsDone: sessions.isEmpty ? null : done.clamp(0, weekDays),
           sessionsTarget: sessions.isEmpty ? null : weekDays,
           days: [
-            for (final slot in her == null
-                ? const <WeekSlot>[]
-                : weekSlotsFor(
-                    her.content,
-                    sessions,
-                    days: weekDays,
-                    minutes: intake.minutes,
-                    done: done,
-                  ))
+            for (final slot
+                in her == null
+                    ? const <WeekSlot>[]
+                    : weekSlotsFor(
+                        her.content,
+                        sessions,
+                        days: weekDays,
+                        minutes: intake.minutes,
+                        done: done,
+                      ))
               ProgramDay(
                 title: slot.session.title(language),
                 detail: l10n.minutesMinutesMovesMoves(
@@ -2998,6 +3089,9 @@ class AppRouter {
         onClose: () => Navigator.of(context).maybePop(),
         onBackToWorkout: () => goTo(context, 'R03'),
         onSwap: () => goTo(context, 'R05'),
+        onOpenHistory: opened == null
+            ? null
+            : _historyOpener(context, opened.exerciseId),
       );
     },
     'R05': (context) => SessionEndFrame(
@@ -3115,6 +3209,11 @@ class AppRouter {
       }
       _relabelLiveSession(context);
       final end = _sessionEnd(context);
+      final current = WorkoutSessionState.instance.currentMove;
+      final shown =
+          current ?? sampleWorkoutDay(AppL10n.of(context)).moves.first;
+      final equipment = _equipmentOf(shown);
+      final loaded = _loadFor(AppL10n.of(context), shown, equipment);
       return SessionEndFrame(
         end: end,
         child: MidSetView(
@@ -3133,16 +3232,8 @@ class AppRouter {
           // prescribed 12 kg inside a session whose own subtitle on R03 reads
           // "Quiet · no equipment · floor". Every move the app actually has is
           // bodyweight.
-          move: loadFor(
-            context,
-            WorkoutSessionState.instance.currentMove ??
-                sampleWorkoutDay(AppL10n.of(context)).moves.first,
-          ).move,
-          progressionLine: loadFor(
-            context,
-            WorkoutSessionState.instance.currentMove ??
-                sampleWorkoutDay(AppL10n.of(context)).moves.first,
-          ).line,
+          move: loaded.move,
+          progressionLine: loaded.line,
           setIndex: WorkoutSessionState.instance.setIndex,
           // The move's clip, when the library holds one.
           clip: WorkoutSessionState.instance.currentMove == null
@@ -3170,6 +3261,14 @@ class AppRouter {
           sets: _setsProgress,
           onClose: () => Navigator.of(context).maybePop(),
           onChange: () => goTo(context, 'R08'),
+          equipment: current == null ? null : equipment,
+          gymHelpers: featureFlags.isOn(Feature.gymHelpers),
+          onOpenHistory: WorkoutSessionState.instance.currentMove == null
+              ? null
+              : _historyOpener(
+                  context,
+                  WorkoutSessionState.instance.currentMove!.exerciseId,
+                ),
           onSetLogged: (handle) {
             WorkoutSessionState.instance.setLogged();
             _trackSetLogged('set');
@@ -3196,49 +3295,7 @@ class AppRouter {
       end: _sessionEnd(context),
       overlay: true,
       guardPop: false,
-      child:
-          _setCorrectionFrom(context) ??
-          ChangeSetView(
-            repository: trainRepository,
-            sessionId: WorkoutSessionState.instance.sessionId,
-            // Which move of how many. The bar read a fixed "Move 2 of 5".
-            moveNumber: WorkoutSessionState.instance.moveIndex + 1,
-            moveCount: WorkoutSessionState.instance.moveCount,
-            // The first set of the one authored session when there is no live one.
-            // This was a hand-written goblet squat at 12 kg, so R08 opened cold
-            // offered 10/12/14 kg inside a session whose own subtitle promises no
-            // equipment at all.
-            prescribed: _setWithAdvice(
-              context,
-              WorkoutSessionState.instance.currentSet ??
-                  sampleWorkoutDay(AppL10n.of(context)).moves.first.sets.first,
-            ),
-            moveName: WorkoutSessionState.instance.currentMove?.name,
-            // Her planned weight and a step either side. Nothing was passed, so a
-            // 17.5 kg set opened on the widget's own 10/12/14 with 10 chosen.
-            //
-            // A loaded move the plan gave no weight offers the weights around what
-            // she lifted last time, or a starting ladder on a first session, so the
-            // weight can be recorded at all.
-            weightOptionsKg: _weightOptionsFor(context),
-            askWeight:
-                WorkoutSessionState.instance.currentMove?.needsEquipment ??
-                false,
-            progressionLine: _loadAdviceLine(context),
-            bus: WorkoutSessionState.instance.bus,
-            onAttach: WorkoutSessionState.instance.attachScreen,
-            onDetach: WorkoutSessionState.instance.detachScreen,
-            sets: _setsProgress,
-            onClose: () => Navigator.of(context).maybePop(),
-            // Carries the handle, exactly as R07 does. It used to assign the
-            // change to a field nothing read, which silently discarded her
-            // override and left R09 announcing the numbers she had corrected.
-            onSaved: (handle) {
-              WorkoutSessionState.instance.setLogged();
-              _trackSetLogged('set');
-              _goCarryingHandle(context, 'R09', handle);
-            },
-          ),
+      child: _setCorrectionFrom(context) ?? _changeCurrentSet(context),
     ),
     'R09': (context) {
       final end = _sessionEnd(context);
@@ -3681,6 +3738,9 @@ class AppRouter {
       onOpenCycle: () => goTo(context, 'Y10'),
       onOpenMilestones: () => goTo(context, 'P02'),
       onOpenBests: () => goTo(context, 'P03'),
+      onOpenRecentSessions: featureFlags.isOn(Feature.trainHistory)
+          ? () => openRecentSessions(context)
+          : null,
       onOpenBody: () => goTo(context, 'P04'),
       onOpenShare: () => goTo(context, 'P05'),
       onOpenMuscles: () => goTo(context, 'P06'),
@@ -3757,6 +3817,9 @@ class AppRouter {
     ),
     'P03': (context) => PersonalBestsView(
       bests: progressStore.bests.values.toList(),
+      onOpenHistory: featureFlags.isOn(Feature.trainHistory)
+          ? (exerciseId) => unawaited(_openMoveHistory(context, exerciseId))
+          : null,
       onBack: () => Navigator.of(context).maybePop(),
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
@@ -3801,7 +3864,14 @@ class AppRouter {
       // woman is `browsing`. When one exists this should read her stage and
       // send a coached woman to H05 instead; `MarketplaceStage` already draws
       // that distinction.
-      onOpenCoach: () => goTo(context, 'H01'),
+      // My coach: her coach, or the way to find one.
+      onOpenCoach: () => goTo(context, 'H05'),
+      onOpenCoachSpace: PrivateCoachingState.instance.isCoach
+          ? () => goTo(context, 'K18')
+          : null,
+      onBecomeCoach: featureFlags.isOn(Feature.coachApp)
+          ? () => goTo(context, 'K06')
+          : null,
       // D3's other half — "ask early, editable forever". The four setup
       // questions had no door outside the switched-off sign-up flow, so
       // "forever" was false in the shipped build and a woman who skipped setup,
@@ -4886,286 +4956,346 @@ class AppRouter {
       onSelectTab: (screenId) => goToTab(context, screenId),
     ),
 
-    // ------------------------------------------ The coach's app (G12, K)
+    // ------------------------------------------ Coaching, no payments (K, W, H)
     //
-    // `K07` (Today) and `K17` (Earnings) are two of her four tabs; `W01` and
-    // `W10` are the other two and belong to the planning group, which has
-    // shipped — so all four tabs on her bar are live.
-    //
-    // **K24 is deliberately absent.** "Today, day one" is the empty-roster
-    // branch of this same `CoachTodayView` — `CoachToday.resolve` reads her
-    // capacity, and accepting a first client flips the branch with no
-    // navigation at all. `firstRunStates` keeps it out of `appDestinations`.
-    //
-    // **K18, her public profile, now has a door**, and it is not the one the
-    // prototype drew. That was a row on `K17`, and `coach_earnings_view.dart`
-    // deliberately points it at `K05` instead, because a payout method has
-    // nothing to do with a public profile — a decision that stands. The way in
-    // is an action on `K07`, her desk, labelled with the same dictionary string
-    // the screen titles itself with.
-    //
-    // **Every step saves.** The form was one object already; what was missing
-    // is that nothing ever wrote it to `coachRepository`, which is the profile
-    // `K06`, `K07`, `K18` and the directory all read. `saveSetup` is that
-    // write, and it goes through `CoachProfileEditor` — the same field-scoped,
-    // rule-enforcing path a server would use — so four specialties or a
-    // capacity of ninety is refused here too.
-    // One thing a screen, in her order: photo, name and city, what she
-    // coaches, how she coaches, prices and plans, results, what clients say,
-    // certificates, the three rules, getting paid, the check. A step whose
-    // screen is switched off (results and reviews live under her portfolio)
-    // is skipped, written out arm by arm so the navigation graph sees each
-    // edge.
-    'K01': (context) => CoachPhotoView(
-      model: coachSetupModel,
-      onTakePhoto: () => photographHerself(context),
-      onContinue: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K08');
-      },
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    'K08': (context) => CoachBasicsView(
-      model: coachSetupModel,
-      onContinue: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K03');
-      },
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    'K02': (context) => CoachCertificatesView(
-      model: coachSetupModel,
-      now: DateTime.now(),
-      // A photo of the certificate, taken live and sent for a woman reviewer
-      // (R1-P15). In a build with testing aids a certificate is recorded
-      // without one, and `K02` draws the row as a test nobody has reviewed.
-      onAddCertificate: CoachProfileState.isTestMode
-          ? (credentialId) =>
-                CoachProfileState.instance.addTestCertificate(credentialId)
-          : (credentialId) =>
-                unawaited(addCertificatePhoto(context, credentialId)),
-      onContinue: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K13');
-      },
-      // Back is back: the step before is already under this screen (M3).
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    'K03': (context) => CoachSpecialtiesView(
-      model: coachSetupModel,
-      onContinue: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K10');
-      },
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    'K10': (context) => CoachHowYouCoachView(
-      model: coachSetupModel,
-      onContinue: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K04');
-      },
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    'K04': (context) => CoachPackagesView(
-      model: coachSetupModel,
-      flags: featureFlags,
-      // The single write path for offers in this application. `K18` and `B06`
-      // are handed a reader and physically cannot write one.
-      editor: CoachProfileState.instance.packagesEditor,
-      onOffersChanged: CoachProfileState.instance.publishOffersIfAllowed,
-      onContinue: () {
-        CoachProfileState.instance.saveSetup();
-        if (screenIsOn('K11')) {
-          goTo(context, 'K11');
-        } else if (screenIsOn('K12')) {
-          goTo(context, 'K12');
-        } else {
-          goTo(context, 'K02');
-        }
-      },
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    'K11': (context) => CoachResultsStepView(
-      onContinue: () =>
-          screenIsOn('K12') ? goTo(context, 'K12') : goTo(context, 'K02'),
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    'K12': (context) => CoachReviewsStepView(
-      onContinue: () => goTo(context, 'K02'),
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    // The community's three rules, agreed here rather than on C16: a coach
-    // goes from C13 into her own setup (R1-P16). A woman who has already
-    // agreed finds the box ticked.
-    'K13': (context) => CoachRulesView(
-      model: coachSetupModel
-        ..rulesAgreed =
-            coachSetupModel.rulesAgreed || PledgeState.instance.agreed,
-      onContinue: () {
-        if (!PledgeState.instance.agreed) recordPledge(context);
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K05');
-      },
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    'K05': (context) => CoachPayoutView(
-      model: coachSetupModel,
-      flags: featureFlags,
-      // The test rail, and only while no account is required. It records where
-      // she would be paid and pays nobody; `K05` and `K17` say so in words.
-      onSetPayout: CoachProfileState.isTestMode
-          ? CoachProfileState.instance.setTestPayout
-          : null,
-      // Completing setup is what submits her for the check — and, in test
-      // mode, what makes her a test coach so the rest can be walked.
-      onContinue: () {
-        CoachProfileState.instance.completeSetup();
-        goTo(context, 'K06');
-      },
-      // "Add payout later": the application goes in without a payout method,
-      // which she adds before she can be paid (R1-P15).
-      onPayoutLater: () {
-        CoachProfileState.instance.completeSetup(payoutLater: true);
-        goTo(context, 'K06');
-      },
-      onBack: () => Navigator.of(context).maybePop(),
-      onSaveAndClose: () {
-        CoachProfileState.instance.saveSetup();
-        goTo(context, 'K07');
-      },
-    ),
-    'K06': (context) => CoachBeingCheckedView(
-      verification: coachRepository.profileUnbilled.verification,
-      // The tick above says her certificates are cleared. Nobody looked at
-      // them: while sign-up is off she counts as checked so the coach side can
-      // be walked, and the screen has to say that rather than let the tick
-      // claim a reviewer.
-      note: CoachProfileState.instance.isTestCoach
-          ? AppL10n.of(context).whileSignUpIsSwitchedOffYou
-          : null,
-      onReplaceCertificate: () => goTo(context, 'K02'),
-      onBuildFirstPlan: () => goTo(context, 'K20'),
-      onSeeToday: () => goTo(context, 'K07'),
-    ),
-    'K07': (context) => CoachTodayView(
-      model: coachTodayModel,
-      now: DateTime.now(),
-      onNotifications: () => goTo(context, 'A01'),
-      onStartReviews: () {
-        coachPlanOpenClient = coachDesk.longestWaiting;
-        goTo(context, 'W09');
-      },
-      onOpenClients: () => goTo(context, 'W01'),
-      onOpenPortfolio: () => goTo(context, 'B01'),
-      onOpenPublicProfile: () => goTo(context, 'K18'),
-      onOpenFirstWeek: () => goTo(context, 'K25'),
-      // K06's promise kept on her desk: she builds while she is checked.
-      onBuildFirstPlan: () => goTo(context, 'K20'),
-      // Her code for a woman she already coaches. Only once she may accept
-      // a client: the server mints no code before then (R1-P18).
-      onInviteClient:
-          coachRepository.profileUnbilled.verification.mayAcceptClients
-          ? () => unawaited(shareCoachInvite(context))
-          : null,
-      // A row on her desk leads somewhere different depending on why it is
-      // waiting, and the row only hands back its relationship id — so the
-      // reason is looked up here and each arm carries its own literal. A
-      // `deskReasonDestination(...)` call would compile, work, and hide K09
-      // and K16 from the reachability parser.
-      onOpenRow: (relId) {
-        coachOpenRelId = relId;
-        // The row carries a relationship; the planning screens are about a
-        // client. Opening her here is what lets K16's thread and W09's week
-        // be about the woman whose row she just tapped.
-        coachPlanOpenClient = coachDesk.clientFor(coachDesk.clientUidOf(relId));
-        switch (coachDeskReason(relId)) {
-          case DeskReason.newEnquiry:
-            goTo(context, 'K09');
-          case DeskReason.message:
-            goTo(context, 'K16');
-          case DeskReason.reviewDue:
-          case DeskReason.checkIn:
-            goTo(context, 'W09');
-        }
-      },
-      onSelectTab: (screenId) => goToTab(context, screenId),
-    ),
-    // Her real enquiry, read back from the repository the marketplace mirrored
-    // it onto — her words, her situation, her status. The fabricated empty one
-    // is only what a row opened before anybody enquired resolves to.
-    'K09': (context) => CoachEnquiryView(
-      enquiry: coachDesk.enquiryAt(coachOpenRelId) ?? coachOpenEnquiry,
-      verification: coachRepository.profileUnbilled.verification,
-      hasRoom: coachRepository.profileUnbilled.capacity.hasRoom,
-      // Accepting takes one of her places and moves the marketplace stage, the
-      // enquiry status and the desk queue together — which is what stops a
-      // coach being oversold. Null when there is nothing waiting on her.
-      onAccept: coachDesk.enquiryAt(coachOpenRelId) == null
+    // The coach's application, her space, her desk, her clients and her chats,
+    // and the member's side: finding a coach, My coach, the chat and the plans
+    // a coach shares. The ids are the first design's, so the route table, the
+    // switches and the bottom bar did not move: K01 intro, K08 the steps, K02
+    // the review, K06 the status page; K18 her coach space; K07, W01, W10 her
+    // three tabs (today, clients, chats); W02 one client; W03 and W06 share a
+    // workout or a meal plan; K16 a conversation from her side and H06 from her
+    // client's; H01 find a coach, H02 a portfolio, H03 a plan her coach shared,
+    // H05 My coach. Nothing here takes money: H04, K05 and K17 answer to
+    // `payments`, which stays off, and the old in-memory coach screens and
+    // their payment rail are not routed from here.
+    'K01': (context) => ApplyIntroView(
+      isVerifiedWoman: isVerified,
+      onVerify: !screenIsOn('C09b')
           ? null
           : () {
-              coachDesk.acceptEnquiry(coachOpenRelId);
-              goTo(context, 'W01');
+              beginIdentityCheck();
+              goTo(context, 'C09b');
             },
-      onDecline: coachDesk.enquiryAt(coachOpenRelId) == null
-          ? null
-          : () {
-              coachDesk.declineEnquiry(coachOpenRelId);
-              goTo(context, 'K07');
-            },
-      onBack: () => goTo(context, 'K07'),
+      onStart: () => goTo(context, 'K08'),
+      onBack: () => Navigator.of(context).maybePop(),
     ),
-    // One thread, two screens. `G14` writes into the same list from the other
-    // side, because the relationship id is derived from both women.
-    'K16': (context) => CoachChatView(
-      messages: coachDesk.threadFor(coachThreadRelId),
-      clientName: coachPlanClient.displayName,
-      onBack: () => goTo(context, 'W10'),
-      onOpenClient: () => goTo(context, 'W02'),
-      onSendText: coachThreadRelId.isEmpty
-          ? null
-          : (text) => coachDesk.sendMessage(
-              relId: coachThreadRelId,
-              body: text,
-              fromCoach: true,
+    // Opens on the step the draft was on; the review and the status page open
+    // one step to change it (an int argument) and come back after one save.
+    'K08': (context) {
+      final arg = ModalRoute.of(context)?.settings.arguments;
+      final editStep = arg is int ? arg : null;
+      return ApplyFlowView(
+        draft: CoachApplicationDraft.instance,
+        tools: ApplyTools(store: CoachApplicationDraft.instance.store),
+        initialStep: editStep,
+        returnToReview: editStep != null,
+        onReview: () {
+          if (editStep != null) {
+            Navigator.of(context).pop();
+          } else {
+            unawaited(
+              Navigator.of(context)
+                  .pushReplacementNamed(appRoutes['K02']!.name),
+            );
+          }
+        },
+        // pop, not maybePop: the flow's own back handler calls this, and
+        // maybePop would hand the pop straight back to it, forever.
+        onExit: () => Navigator.of(context).pop(),
+        onOpenTerms: () => unawaited(
+          openExternalLink(
+            context,
+            LegalLinks.localised(
+              LegalLinks.coachTerms,
+              Localizations.localeOf(context).languageCode,
             ),
+          ),
+        ),
+      );
+    },
+    'K02': (context) => _whenCoaching(
+      context,
+      (repository) => ApplyReviewView(
+        draft: CoachApplicationDraft.instance,
+        repository: repository,
+        onEditStep: (step) => unawaited(
+          Navigator.of(context)
+              .pushNamed(appRoutes['K08']!.name, arguments: step),
+        ),
+        onSent: () => unawaited(
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            appRoutes['K06']!.name,
+            ModalRoute.withName(frontDoor),
+          ),
+        ),
+        onBack: () => Navigator.of(context).maybePop(),
+      ),
     ),
+    'K06': (context) => _whenCoaching(
+      context,
+      (repository) => ApplicationStatusScreen(
+        repository: repository,
+        draft: CoachApplicationDraft.instance,
+        onEditStep: (step) => unawaited(
+          Navigator.of(context)
+              .pushNamed(appRoutes['K08']!.name, arguments: step),
+        ),
+        onSendAgain: () => goTo(context, 'K02'),
+        // Approval puts the claim on her token; ask for it now rather than at
+        // the next hourly refresh, so her coach space opens as a coach's.
+        onOpenCoachSpace: () => unawaited(
+          coachClaimReader(refresh: true).then((isCoach) {
+            PrivateCoachingState.instance.setCoach(isCoach);
+            if (context.mounted) goTo(context, 'K18');
+          }),
+        ),
+        onStart: () => goTo(context, 'K01'),
+        onBack: () => Navigator.of(context).maybePop(),
+      ),
+    ),
+    'K18': (context) => _whenCoaching(
+      context,
+      (repository) => CoachSpaceView(
+        repository: repository,
+        onPreviewPortfolio: (coachUid) => unawaited(
+          Navigator.of(context).pushNamed(
+            appRoutes['H02']!.name,
+            arguments: CoachPortfolioArgs(coachUid, preview: true),
+          ),
+        ),
+        onOpenDashboard: () => goToTab(context, 'K07'),
+        onOpenChats: () => goToTab(context, 'W10'),
+        onBack: () => Navigator.of(context).maybePop(),
+      ),
+    ),
+    'K07': (context) => CoachTabFrame(
+      activeScreenId: 'K07',
+      onSelectTab: (screenId) => goToTab(context, screenId),
+      child: CoachDeskView(
+        onOpenChat: (relId) => unawaited(
+          Navigator.of(context)
+              .pushNamed(appRoutes['K16']!.name, arguments: relId),
+        ),
+        onOpenClient: (subId) => unawaited(
+          Navigator.of(context)
+              .pushNamed(appRoutes['W02']!.name, arguments: subId),
+        ),
+        onOpenClients: (filter) => goToTab(context, 'W01', arguments: filter),
+      ),
+    ),
+    'W01': (context) {
+      final arg = ModalRoute.of(context)?.settings.arguments;
+      return CoachTabFrame(
+        activeScreenId: 'W01',
+        onSelectTab: (screenId) => goToTab(context, screenId),
+        child: ClientsView(
+          initialFilter: arg is DeskFilter ? arg : DeskFilter.all,
+          onOpenChat: (relId) => unawaited(
+            Navigator.of(context)
+                .pushNamed(appRoutes['K16']!.name, arguments: relId),
+          ),
+          onOpenClient: (subId) => unawaited(
+            Navigator.of(context)
+                .pushNamed(appRoutes['W02']!.name, arguments: subId),
+          ),
+        ),
+      );
+    },
+    'W02': (context) => ClientDetailView(
+      subId: _routeString(context),
+      onBack: () => Navigator.of(context).maybePop(),
+      onOpenChat: (relId) => unawaited(
+        Navigator.of(context)
+            .pushNamed(appRoutes['K16']!.name, arguments: relId),
+      ),
+      onShareWorkout: (subId) => unawaited(
+        Navigator.of(context)
+            .pushNamed(appRoutes['W03']!.name, arguments: subId),
+      ),
+      onShareMeal: (subId) => unawaited(
+        Navigator.of(context)
+            .pushNamed(appRoutes['W06']!.name, arguments: subId),
+      ),
+      onScheduleSession: (subId) =>
+          unawaited(openScheduleSession(context, subId)),
+    ),
+    'W03': (context) => ShareWorkoutScreen(
+      subId: _routeString(context),
+      onBack: () => Navigator.of(context).maybePop(),
+    ),
+    'W06': (context) => ShareMealScreen(
+      subId: _routeString(context),
+      onBack: () => Navigator.of(context).maybePop(),
+    ),
+    'W10': (context) => CoachTabFrame(
+      activeScreenId: 'W10',
+      onSelectTab: (screenId) => goToTab(context, screenId),
+      child: CoachingChatListScreen(
+        onOpen: (relationship) {
+          // Her clients' chats are K16; a chat with a coach of her own is H06.
+          if (relationship.coachUid == signedInUid) {
+            unawaited(
+              Navigator.of(
+                context,
+              ).pushNamed(appRoutes['K16']!.name, arguments: relationship.id),
+            );
+          } else {
+            unawaited(
+              Navigator.of(
+                context,
+              ).pushNamed(appRoutes['H06']!.name, arguments: relationship.id),
+            );
+          }
+        },
+      ),
+    ),
+    'K16': (context) => CoachingThreadScreen(
+      relId: _routeString(context),
+      blocks: blockService,
+      shareOf: (relationship) {
+        final subId = relationship.activeSubId;
+        return ShareChoices(
+          onRecipe: () => unawaited(pickRecipeToSend(context, relationship.id)),
+          onWorkoutPlan: subId == null
+              ? null
+              : () => unawaited(
+                  Navigator.of(context)
+                      .pushNamed(appRoutes['W03']!.name, arguments: subId),
+                ),
+          onMealPlan: subId == null
+              ? null
+              : () => unawaited(
+                  Navigator.of(context)
+                      .pushNamed(appRoutes['W06']!.name, arguments: subId),
+                ),
+          onSession: subId == null
+              ? null
+              : () => unawaited(openScheduleSession(context, subId)),
+        );
+      },
+      recipeTitleOf: (id) => EatAppState.instance.recipeBook.byId(id)?.titleEn,
+      onOpenRecipe: !screenIsOn('E06')
+          ? null
+          : (id) {
+              EatAppState.instance.openRecipeId = id;
+              goTo(context, 'E06');
+            },
+      onOpenPlan: (message) => unawaited(
+        Navigator.of(context)
+            .pushNamed(appRoutes['H03']!.name, arguments: message.planId ?? ''),
+      ),
+      onBack: () => Navigator.of(context).maybePop(),
+    ),
+    'H06': (context) => CoachingThreadScreen(
+      relId: _routeString(context),
+      blocks: blockService,
+      recipeTitleOf: (id) => EatAppState.instance.recipeBook.byId(id)?.titleEn,
+      onOpenRecipe: !screenIsOn('E06')
+          ? null
+          : (id) {
+              EatAppState.instance.openRecipeId = id;
+              goTo(context, 'E06');
+            },
+      onOpenPlan: (message) => unawaited(
+        Navigator.of(context)
+            .pushNamed(appRoutes['H03']!.name, arguments: message.planId ?? ''),
+      ),
+      onBack: () => Navigator.of(context).maybePop(),
+    ),
+    'H01': (context) => _whenCoaching(
+      context,
+      (repository) => FindCoachView(
+        repository: repository,
+        onOpenCoach: (coachUid) => unawaited(
+          Navigator.of(context)
+              .pushNamed(appRoutes['H02']!.name, arguments: coachUid),
+        ),
+        onBack: () => Navigator.of(context).maybePop(),
+      ),
+    ),
+    'H02': (context) {
+      final arg = ModalRoute.of(context)?.settings.arguments;
+      final args = arg is CoachPortfolioArgs
+          ? arg
+          : CoachPortfolioArgs(arg is String ? arg : '');
+      return _whenCoaching(
+        context,
+        (repository) => LiveCoachPortfolioView(
+          coachUid: args.uid,
+          repository: repository,
+          preview: args.preview,
+          declaredAllergies: <String>[
+            if (dietaryRepository.read().allergies case final allergies?)
+              for (final a in allergies) a.wireName,
+          ],
+          onBack: () => Navigator.of(context).maybePop(),
+        ),
+      );
+    },
+    'H03': (context) => CoachPlanScreen(
+      planId: _routeString(context),
+      lifeStage: intakeRepository.read().lifeStage,
+      constraints: eatConstraints,
+      onStartWorkout: (plan, dayIndex) {
+        if (startCoachWorkout(
+          plan,
+          dayIndex,
+          intakeRepository.read().lifeStage,
+        )) {
+          goTo(context, 'R03');
+        }
+      },
+      onOpenRecipe: !screenIsOn('E06')
+          ? null
+          : (id) {
+              EatAppState.instance.openRecipeId = id;
+              goTo(context, 'E06');
+            },
+      onLog: (plan, item, slot) => logCoachMeal(
+        context,
+        plan: plan,
+        item: item,
+        slot: slot,
+        openRecipe: (id) {
+          EatAppState.instance.openRecipeId = id;
+          goTo(context, 'E06');
+        },
+      ),
+      onBack: () => Navigator.of(context).maybePop(),
+    ),
+    'H05': (context) => _whenCoaching(context, (repository) {
+      final coaching = PrivateCoachingState.instance;
+      final sub = currentCoachingAsClient();
+      if (sub == null) {
+        return NoCoachView(
+          onFind: () => goTo(context, 'H01'),
+          onBack: () => Navigator.of(context).maybePop(),
+        );
+      }
+      return MyCoachView(
+        onFind: () => goTo(context, 'H01'),
+        repository: repository,
+        subscription: sub,
+        plans: coaching.coachPlans,
+        hasUnread: coaching.hasUnread(sub.relId),
+        onMessage: sub.relId.isEmpty
+            ? null
+            : () => unawaited(
+                Navigator.of(context)
+                    .pushNamed(appRoutes['H06']!.name, arguments: sub.relId),
+              ),
+        onOpenPlan: (plan) => unawaited(
+          Navigator.of(context)
+              .pushNamed(appRoutes['H03']!.name, arguments: plan.id),
+        ),
+        onBlock: () {
+          unawaited(blockService.block(sub.coachUid, BlockSource.profile));
+          Navigator.of(context).maybePop();
+        },
+        onBack: () => Navigator.of(context).maybePop(),
+      );
+    }),
     // Her month, from the payments the test rail actually settled — and
     // unavailable rather than zero until one has been.
     'K17': (context) => CoachEarningsView(
@@ -5176,15 +5306,6 @@ class AppRouter {
       ),
       onOpenPayoutMethod: () => goTo(context, 'K05'),
       onSelectTab: (screenId) => goToTab(context, screenId),
-    ),
-    'K25': (context) => CoachFirstWeekView(
-      firstWeek: coachRepository.deskUnbilled.firstWeek,
-      onClose: () => goTo(context, 'K07'),
-      onBackToToday: () => goTo(context, 'K07'),
-      onSetUpAssessment: () => goTo(context, 'K21'),
-      // Each step already carries the screen it leads to, so this passes it
-      // on rather than restating four ids the view owns.
-      onOpenStep: (screenId) => goTo(context, screenId),
     ),
 
     // --------------------------------------- Her portfolio (G13, B-flow)
@@ -5527,156 +5648,8 @@ class AppRouter {
       // opens the enquiry and not the checkout: a coach accepts before a pound
       // moves, on a renewal exactly as on a first hire. This pointed at H03,
       // which was the old "straight to packages" path.
-      onWorkAgain: () => goTo(context, 'H04'),
+      onWorkAgain: isBuilt('H04') ? () => goTo(context, 'H04') : null,
       onSelectTab: (screenId) => goToTab(context, screenId),
-    ),
-    // -------------------------------------------- The marketplace (G11, H)
-    //
-    // **Enquiry-first.** Buy-direct was removed, so the order a woman actually
-    // moves through is H01 → H02 → **H04** (message her before she decides) →
-    // **H03** (her packages, and the checkout, once the coach has accepted) →
-    // `G01`. The prototype had it the other way round: `H03` was a price list
-    // whose "Continue" led to `H04`, the payment form, and `H04`'s "Pay" was
-    // the only door into the intake. **The pay button moved to H03**, so the
-    // edge the design draws as "H04 → G01" is written on H03 below. The
-    // exemption in `nav_reachability_test` naming H04 as `G01`'s blocker was
-    // naming the *pay* screen, and the pay screen changed id.
-    //
-    // **Nothing is seeded.** There is no coaching repository in this build, so
-    // the directory is `DirectorySnapshot.unavailable()`: H01 says it could not
-    // load rather than "no coaches found", which would be a claim about the
-    // product instead of about the read. Every model below is built from the
-    // same absence — no coach, no page, no offers, no relationship — and the
-    // gates refuse accordingly, which is the truthful rendering of this build.
-    //
-    // **H06 is not wired**, and it is the one screen here that could not be.
-    // `coaching_ended_view.dart` repurposed it: the prototype's H06 was the
-    // chat thread, the thread belongs to `G14`, and what the marketplace owns
-    // at the end of a relationship is "what stays readable". Nothing in the
-    // built product opens that. `H05` is its parent — the view's own back edge
-    // says so — and `MyCoachView` has no callback for it, and the design's only
-    // other doors into H06 were the assistant's "Ask Sara", which goes to the
-    // thread itself now. Wiring it would put a finished screen in this map that
-    // no woman can reach, which is the exact thing this map exists to make
-    // visible.
-    'H01': (context) => FindACoachView(
-      // The pack, and it holds whoever has published a page. Empty is
-      // `nothingMatched` — a real answer — where `unavailable()` was the
-      // network having failed, which is a different sentence.
-      model: FindACoachViewModel(snapshot: coaching.snapshot),
-      // The promise under the title is the product's and it holds the day a
-      // reviewer exists. Nobody has checked anything here, so the screen says
-      // that instead of making a promise about the rows underneath it.
-      note: CoachingLinkState.isTestMode
-          ? AppL10n.of(context).testModeCoachesSetUpOnThis
-          : null,
-      onBack: () => Navigator.of(context).maybePop(),
-      // The row carries the coach it is about, recorded inline at the tap for
-      // the same reason `communityOpenPostId` is.
-      onOpenCoach: (coachUid) {
-        marketplaceOpenCoachUid = coachUid;
-        marketplaceSelectedOfferId = null;
-        goTo(context, 'H02');
-      },
-    ),
-    'H02': (context) => CoachProfileView(
-      model: CoachProfileViewModel(
-        // Her published page, or null. Null renders "nothing has been written
-        // yet"; her name over an empty page would suggest she had written one.
-        page: coaching.pageFor(marketplaceOpenCoachUid),
-        offers: coaching.offersFor(marketplaceOpenCoachUid),
-        stage: coaching.stageWith(marketplaceOpenCoachUid),
-        flags: featureFlags,
-        verified: marketplaceVerified,
-      ),
-      onBack: () => goTo(context, 'H01'),
-      onSeePackages: () => goTo(context, 'H03'),
-      onMessageFirst: () => goTo(context, 'H04'),
-    ),
-    'H03': (context) => PackagesView(
-      model: packagesModel,
-      onBack: () => goTo(context, 'H02'),
-      // The selection decides which price the gate clears, so it is recorded
-      // and the screen redrawn from the answer rather than from the tap.
-      onSelectOffer: (offerId) {
-        marketplaceSelectedOfferId = offerId;
-        AppChanges.bump();
-      },
-      // What the rail is. Drawn above the button that spends money.
-      testNote: CoachingLinkState.isTestMode
-          ? AppL10n.of(context).testPaymentNoMoneyMoves
-          : null,
-      // `CheckoutGate` opens a checkout from one stage: the coach accepted.
-      // That is not relaxed. One woman holds both roles here, so on her OWN
-      // coach page the accept she is waiting for is offered to her, labelled
-      // as the coach's act. Null on anybody else's page.
-      onTestAccept: coaching.mayTestAccept(marketplaceOpenCoachUid)
-          ? () => coaching.acceptEnquiry(
-              coaching.relIdOrNull(marketplaceOpenCoachUid) ?? '',
-            )
-          : null,
-      testAcceptNote: AppL10n.of(context).testModeThisIsYourOwnCoach,
-      // Paying is what opens the intake: three questions her coach needs
-      // answered before she can write a plan. The rail settles through the
-      // ledger, and only a record the ledger calls paid gets here.
-      onPay: (offer, rail) {
-        coaching
-            .pay(coachUid: marketplaceOpenCoachUid, offer: offer, rail: rail)
-            .then((record) {
-              if (!context.mounted) return;
-              if (record == null || !record.state.unlocksCoaching) return;
-              goTo(context, 'G01');
-            });
-      },
-    ),
-    'H04': (context) => EnquiryView(
-      model: enquiryModel,
-      onBack: () => goTo(context, 'H02'),
-      // The one write the marketplace has. It moves no money and takes no
-      // place; it is stored under the relationship id both parties derive, so
-      // a second send collapses onto the first rather than forking the thread.
-      onSend: (text) => coaching.send(
-        EnquiryDraft(
-          coachUid: marketplaceOpenCoachUid,
-          clientUid: _selfUid,
-          herWords: text,
-        ),
-      ),
-      onOpenCoaching: () => goTo(context, 'H05'),
-    ),
-    'H05': (context) => MyCoachView(
-      // Her coaching, once she has some. Null until then, and the empty state
-      // IS the onboarding.
-      model: MyCoachViewModel(snapshot: coaching.myCoachSnapshot),
-      onFindACoach: () => goTo(context, 'H01'),
-      onOpenChat: () => goTo(context, 'H06'),
-      onOpenPlan: () => goTo(context, 'G04'),
-      onOpenReview: () => goTo(context, 'G12'),
-      onOpenLastReview: () => goTo(context, 'G13'),
-    ),
-    // The same conversation as `G14`, read from the same thread and written
-    // back to it. Two doors, one room: the coaching tab opens it from H05 and
-    // the plan opens it from G04, and a message sent through either is the
-    // message the other shows.
-    'H06': (context) => CoachedChatView(
-      coachName: coachedLife.coachName.isEmpty ? null : coachedLife.coachName,
-      entries: <ThreadEntry>[
-        for (final message in coachDesk.threadFor(coachedLife.relId ?? ''))
-          ThreadEntry.message(
-            mine: message.senderUid == CoachingLinkState.clientUid,
-            text: message.body,
-          ),
-      ],
-      composerEnabled: coachedLife.relId != null,
-      onSendText: coachedLife.relId == null
-          ? null
-          : (text) => coachDesk.sendMessage(
-              relId: coachedLife.relId!,
-              body: text,
-              fromCoach: false,
-            ),
-      onBack: () => goTo(context, 'H05'),
-      onVoice: () => goTo(context, 'G15'),
     ),
 
     // ------------------------------------------------ The assistant (G15, X)
@@ -5746,117 +5719,6 @@ class AppRouter {
       onDiscard: () => goTo(context, 'W06'),
     ),
 
-    // ------------------------------------ Her planning desk (G14, W and K19+)
-    //
-    // `W01` and `W10` are the other two tabs on her bar, so her bottom bar is
-    // live on all four at last. Both take their select callback as `onTab`
-    // rather than `onSelectTab` — the same bar, this feature's name for it.
-    //
-    // **W11 is deliberately absent**, for the same reason M17, K24 and B14 are:
-    // "Clients, none yet" is the `isFirstRun` branch of this same `ClientsView`,
-    // chosen from an empty roster, and `firstRunStates` keeps it out of
-    // `appDestinations`. It is what W01 renders today, because the roster is
-    // genuinely empty.
-    //
-    // **W08 and K22 are built now**, and the two reasons they could not be have
-    // both gone: `K21`/`K23` record a real `AssessmentRecord`, so a publish
-    // context carries the life stage a woman was actually screened at, and a
-    // re-assessment has a parent to hang off. With nothing recorded, `W08`
-    // still says so — `hasAssessment: false` draws the "no assessment on file"
-    // card, which is the screen's own designed answer — and nothing here makes
-    // the gate more permissive than the domain does.
-    //
-    // Every document these screens write lives in `coachDesk`: one month per
-    // client, one assessment per client, one thread per relationship. That is
-    // what makes `W03` keep what she planned — it used to be handed a **new**
-    // empty `PlanDraft` on every build.
-    'W01': (context) => ClientsView(
-      // Her roster, and **loaded**: `hasLoaded` is the difference between
-      // "nobody yet" and "we have not looked". Empty until she accepts
-      // somebody, and that empty is `W11`.
-      clients: coachPlanClients,
-      hasLoaded: true,
-      now: DateTime.now(),
-      onOpenClient: (client) {
-        coachPlanOpenClient = client;
-        goTo(context, 'W02');
-      },
-      // The "Start" on the longest-waiting row, the same destination K07's
-      // waiting card uses.
-      onStartWaiting: () {
-        coachPlanOpenClient = coachDesk.longestWaiting;
-        goTo(context, 'W09');
-      },
-      onBuildAPlan: () => goTo(context, 'W03'),
-      onOpenSplits: () => goTo(context, 'K19'),
-      onOpenAssessment: () {
-        coachDesk.openAssessment(coachPlanClient.clientUid);
-        goTo(context, 'K21');
-      },
-      onOpenPortfolio: () => goTo(context, 'B01'),
-      onTab: (screenId) => goToTab(context, screenId),
-    ),
-    'W02': (context) => ClientOverviewView(
-      client: coachPlanClient,
-      // From her assessment when one has been recorded, and **unresolved**
-      // when none has — a different state from "nothing to avoid", and the one
-      // W04 renders a line about instead of showing an unrestricted list.
-      constraints: coachDesk.constraintsFor(coachPlanClient.clientUid),
-      assessment: coachDesk.assessments[coachPlanClient.clientUid],
-      now: DateTime.now(),
-      onBack: () => goTo(context, 'W01'),
-      onOpenChat: () => goTo(context, 'K16'),
-      // The first assessment and a re-assessment are different screens, and
-      // which one this row opens is decided by whether anything is on file.
-      onOpenAssessment: () {
-        coachDesk.openAssessment(coachPlanClient.clientUid);
-        if (coachDesk.hasAssessment(coachPlanClient.clientUid)) {
-          goTo(context, 'K22');
-        } else {
-          goTo(context, 'K21');
-        }
-      },
-      onOpenPlan: () => goTo(context, 'W03'),
-      onOpenMeals: () => goTo(context, 'W06'),
-      onOpenReview: () => goTo(context, 'W09'),
-      onTab: (screenId) => goToTab(context, screenId),
-    ),
-    // Day one first: a month belongs to one woman, and a coach with nobody on
-    // her roster has no month to write. The planner says so and points at
-    // where a client comes from, instead of offering chips that cannot save.
-    'W03': (context) => coachPlanClients.isEmpty
-        ? NoClientYetView(
-            title: AppL10n.of(context).plan,
-            onOpenClients: () => goTo(context, 'W01'),
-            onBack: () => Navigator.of(context).maybePop(),
-          )
-        : WorkoutPlannerView(
-            draft: coachPlanDraft,
-            clientName: coachPlanClient.displayName,
-            weekIndex: coachPlanWeekIndex,
-            onSelectWeek: (index) {
-              coachPlanWeekIndex = index;
-              AppChanges.bump();
-            },
-            onOpenDay: (dayKey) {
-              coachPlanOpenDayKey = dayKey;
-              goTo(context, 'W04');
-            },
-            onApplySplit: () => goTo(context, 'K19'),
-            onAddWorkout: () {
-              coachPlanOpenDayKey = null;
-              goTo(context, 'W04');
-            },
-            onCopyWeek: () => goTo(context, 'W05'),
-            onSaveAsSplit: () {
-              coachDesk.openSplitForEditing(null);
-              goTo(context, 'K20');
-            },
-            // The draft is the assistant's. With it off there is no button.
-            onDraftForMe: screenIsOn('K26') ? () => goTo(context, 'K26') : null,
-            onPublish: () => goTo(context, 'W08'),
-            onBack: () => goTo(context, 'W02'),
-          ),
     // Every field writes the day as she types it — the same one document W03
     // reads back. **`onAddMove` is still unwired**, and deliberately: §2.10
     // says a planner selects and never generates, `AssistantPack` is empty in
@@ -5921,50 +5783,6 @@ class AppRouter {
       onCancel: () => goTo(context, 'W03'),
       onBack: () => goTo(context, 'W03'),
     ),
-    // The pack is resolved from the dictionary on the way through, exactly as
-    // `TypeItView` and `RecipeView` resolve theirs, because G5's stand-in
-    // library is built from `AppL10n` and a state holder has none.
-    'W06': (context) {
-      final desk = coachDesk..useFoods(eatSampleLibrary(AppL10n.of(context)));
-      final uid = coachPlanClient.clientUid;
-      final day = coachPlanOpenDayKey ?? dayId(DateTime.now());
-      if (coachPlanClients.isEmpty) {
-        return NoClientYetView(
-          title: AppL10n.of(context).meals,
-          onOpenClients: () => goTo(context, 'W01'),
-          onBack: () => Navigator.of(context).maybePop(),
-        );
-      }
-      return MealPlannerView(
-        draft: coachPlanDraft,
-        constraints: desk.constraintsFor(uid),
-        dayKey: day,
-        clientName: coachPlanClient.displayName,
-        coachMealNames: <String, String>{
-          for (final meal in desk.meals.values) meal.mealId: meal.name,
-        },
-        // Named, with the allergen on the card. A coach may not prescribe
-        // around a woman's allergy, so the slot is refused rather than filled.
-        blockedSlots: desk.blockedSlots(uid),
-        onSelectDay: (selected) {
-          coachPlanOpenDayKey = selected;
-          AppChanges.bump();
-        },
-        // One tap cycles the slot through the answers that exist — nothing,
-        // *her choice*, then each dish she has written. There is no picker
-        // screen in this feature and none was invented.
-        onOpenSlot: (slot) => desk.cycleSlot(uid, day, slot),
-        onSelectAppMeal: () =>
-            desk.assignAppMeal(uid, day, desk.openSlot ?? PlanMealSlot.lunch),
-        onCreateMeal: () {
-          desk.startNewMeal();
-          goTo(context, 'W07');
-        },
-        onDraftAWeek: screenIsOn('K27') ? () => goTo(context, 'K27') : null,
-        onPublish: () => goTo(context, 'W08'),
-        onBack: () => goTo(context, 'W02'),
-      );
-    },
     // Her own dish. Its nutrition is **derived** — one ingredient the pack
     // does not know and the whole meal carries no figures, which is what
     // `CoachMeal.compose` refuses to do any other way.
@@ -6034,14 +5852,6 @@ class AppRouter {
       onAdjustWorkouts: () => goTo(context, 'W03'),
       onAdjustMeals: () => goTo(context, 'W06'),
       onBack: () => goTo(context, 'K07'),
-    ),
-    'W10': (context) => CoachInboxView(
-      clients: coachPlanClients,
-      onOpenThread: (client) {
-        coachPlanOpenClient = client;
-        goTo(context, 'K16');
-      },
-      onTab: (screenId) => goToTab(context, screenId),
     ),
     'K19': (context) => SplitsView(
       splits: coachPlanSplits,
@@ -6445,42 +6255,6 @@ class AppRouter {
       ),
     ),
 
-    // ------------------------------------------- Her public profile (K18)
-    //
-    // It was built, tested, and opened by nothing: the prototype's only door
-    // was a row on `K17`, and `coach_earnings_view.dart` deliberately points
-    // that row at `K05` instead, because a payout method has nothing to do with
-    // a public profile. That decision stands. The door added instead is on
-    // `K07`, her desk, beside the notifications bell and on both of its
-    // branches — labelled `yourPublicProfile`, which is the same dictionary
-    // string the screen titles itself with.
-    'K18': (context) => CoachPublicProfileView(
-      model: CoachPublicProfileViewModel.from(
-        profile: coachRepository.profileUnbilled,
-        // Read-only by type: `K04` is the single writer of an offer and this
-        // screen is handed an `OfferReader`, so it has no method that could
-        // change one.
-        offers: coachRepository,
-        // The certificates she actually entered on `K02`.
-        // `CoachRepository.certificates()` is a `Future` and a route builder is
-        // synchronous; the setup model holds the same list synchronously, for
-        // the same reason `periodRepository.store` is read directly.
-        certificates: coachSetupModel.certificates,
-        now: DateTime.now(),
-      ),
-      // No badge is drawn above, because `CertificateStanding` holds nothing
-      // cleared. This says why: she counts as checked while sign-up is off,
-      // and nobody has read her certificates.
-      note: CoachProfileState.instance.isTestCoach
-          ? AppL10n.of(context).whileSignUpIsSwitchedOffYou
-          : null,
-      onBack: () => goTo(context, 'K07'),
-      onPreviewAsClient: () => goTo(context, 'B10'),
-      onEditBasics: () => goTo(context, 'K01'),
-      onDesignPage: () => goTo(context, 'B02'),
-      onOpenPackages: () => goTo(context, 'K04'),
-    ),
-
     // ------------------------------------------ The switchboard (D25, Z14)
     //
     // The only place in the product where a feature is switched on or off.
@@ -6635,9 +6409,9 @@ class AppRouter {
       },
       onAnswerAllergies: () => goTo(context, 'E10'),
       onOpenLetter: () => goTo(context, 'E11'),
-      onPickDinner: (day) => Navigator.of(
-        context,
-      ).pushNamed(appRoutes['E05']!.name, arguments: day),
+      onPickDinner: (day) =>
+          Navigator.of(context)
+              .pushNamed(appRoutes['E05']!.name, arguments: day),
       fillFrom: rahmaDinners(),
       recipeTitle: (recipeId) => eat.recipeBook.byId(recipeId)?.titleEn,
       recipeOf: rahmaRecipe,
@@ -6662,6 +6436,7 @@ class AppRouter {
           ),
         }),
       ),
+      coachSection: _coachMealSection(context),
       onSelectTab: (screenId) => goToTab(context, screenId),
     );
   }
@@ -6825,6 +6600,7 @@ class AppRouter {
       today: todayRepository,
       progress: progressStore,
       challengeNow: plan == null ? null : () => challengeFor(plan),
+      difficult: _holdsLoad(),
     );
     if (!counted) {
       unawaited(done);
@@ -7087,6 +6863,7 @@ class AppRouter {
     final session = WorkoutSessionState.instance;
     final prescribed = correction.set.prescribed;
     final lifted = correction.set.outcome?.weightKg;
+    final equipment = _equipmentOf(correction.move);
     return ChangeSetView(
       correcting: true,
       repository: trainRepository,
@@ -7105,7 +6882,10 @@ class AppRouter {
                 reps: prescribed.reps,
                 holdSeconds: prescribed.holdSeconds,
               ),
+        equipment: equipment,
       ),
+      equipment: equipment,
+      plateHelper: featureFlags.isOn(Feature.gymHelpers),
       askWeight: correction.move.needsEquipment,
       // The session's bus, without attaching: closing this page must not
       // commit the correction early and take its Undo away with it.
@@ -7484,7 +7264,7 @@ class AppRouter {
     coachSide:
         featureFlags.isOn(Feature.coachApp) &&
         RoleState.instance.roles?.active == AppRole.coach,
-    coachSetupDone: CoachProfileState.instance.isSetupComplete,
+    coachSetupDone: PrivateCoachingState.instance.isCoach,
     waitingOnAReviewer: awaitingReviewer,
     guestHome: !GuestSession.phoneHasOwner,
   );
@@ -7509,7 +7289,7 @@ class AppRouter {
       return appRoutes[waitingOnAReviewer ? 'C14' : 'C09b']!.name;
     }
     if (coachSide && (verified || !accountRequired)) {
-      return coachSetupDone ? appRoutes['K07']!.name : appRoutes['K01']!.name;
+      return coachSetupDone ? appRoutes['K07']!.name : appRoutes['K06']!.name;
     }
     return appRoutes['T01']!.name;
   }
@@ -7539,7 +7319,8 @@ class AppRouter {
     }
     final scope = RoleScope.maybeOf(context);
     final kept = await roleRecordStore.read(uid);
-    if (kept == null) return;
+    // She may have signed out while it was read.
+    if (kept == null || signedInUid != uid) return;
     RoleState.instance.keep(kept);
     scope?.value = kept;
   }
@@ -8016,6 +7797,7 @@ class AppRouter {
     ],
     nudgeChannelName: l10n.friendlyNudges,
     nudgeChannelDescription: l10n.aShortFriendlyNoteAtMostOnce,
+    facts: () => NotificationSync.factsFor(l10n),
   ).withEventCopy(l10n);
 
   /// The training reminders sheet, from `R10` or `A01`.
@@ -8719,17 +8501,67 @@ class AppRouter {
   }
 
   /// Advice for the move she is on, from her own history, or null.
-  static LoadAdvice? _adviceFor(PlannedMove? move) => loadAdviceFor(
+  static LoadAdvice? _adviceFor(
+    PlannedMove? move,
+    List<LibraryEquipment>? equipment,
+  ) => loadAdviceFor(
     trainRepository,
     move,
     exceptSessionId: WorkoutSessionState.instance.sessionId,
     // "Very sore" twice running holds the weights where they are.
-    difficult:
-        featureFlags.isOn(Feature.followUps) &&
-        FollowUpState.instance.enabled &&
-        !FollowUpState.instance.muted.contains(FollowUpKind.afterSession) &&
-        FollowUpPlan.holdsLoad(FollowUpState.instance.feels),
+    difficult: _holdsLoad(),
+    equipment: equipment,
   );
+
+  /// Whether "very sore" twice running holds the weights where they are.
+  static bool _holdsLoad() =>
+      featureFlags.isOn(Feature.followUps) &&
+      FollowUpState.instance.enabled &&
+      !FollowUpState.instance.muted.contains(FollowUpKind.afterSession) &&
+      FollowUpPlan.holdsLoad(FollowUpState.instance.feels);
+
+  /// The kit [move] is done on, from the move traits. Null when the table
+  /// does not know the move, which keeps the shared ladder.
+  static List<LibraryEquipment>? _equipmentOf(PlannedMove? move) =>
+      move == null ? null : ExerciseTraits.equipmentOf(move.exerciseId);
+
+  /// The way into a move's history, or null while the history is switched off.
+  static VoidCallback? _historyOpener(
+    BuildContext context,
+    String exerciseId,
+  ) => featureFlags.isOn(Feature.trainHistory)
+      ? () => unawaited(_openMoveHistory(context, exerciseId))
+      : null;
+
+  /// Opens the last few sessions of one move over [context].
+  static Future<void> _openMoveHistory(
+    BuildContext context,
+    String exerciseId,
+  ) {
+    return showMoveHistorySheet(
+      context,
+      moveName: ExerciseTraits.nameOf(exerciseId),
+      history: moveHistory(trainRepository, exerciseId),
+    );
+  }
+
+  /// Her last finished sessions, where she can fix a set. Pushed, like the
+  /// plan editor: it is not one of the numbered screens.
+  static void openRecentSessions(BuildContext context) {
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (recent) => RecentSessionsView(
+            repository: trainRepository,
+            nameFor: ExerciseTraits.nameOf,
+            onSessionEdited: (id) =>
+                sessionBests.reworkSession(id, repository: trainRepository),
+            onBack: () => Navigator.of(recent).maybePop(),
+          ),
+        ),
+      ),
+    );
+  }
 
   static String _kgLabel(AppL10n l10n, double kg) =>
       '${weightLabel(kg)} ${l10n.kg}';
@@ -8758,9 +8590,14 @@ class AppRouter {
   static ({PlannedMove move, String? line}) loadFor(
     BuildContext context,
     PlannedMove move,
+  ) => _loadFor(AppL10n.of(context), move, _equipmentOf(move));
+
+  static ({PlannedMove move, String? line}) _loadFor(
+    AppL10n l10n,
+    PlannedMove move,
+    List<LibraryEquipment>? equipment,
   ) {
-    final l10n = AppL10n.of(context);
-    final advice = _adviceFor(move);
+    final advice = _adviceFor(move, equipment);
     return (
       move: advice == null
           ? move
@@ -8773,39 +8610,66 @@ class AppRouter {
     );
   }
 
-  static String? _loadAdviceLine(BuildContext context) {
-    final move = WorkoutSessionState.instance.currentMove;
-    return move == null
-        ? null
-        : _lineFor(AppL10n.of(context), move, _adviceFor(move));
-  }
-
-  /// [set] with the weight R08 opens on, when her history has one.
-  static PrescribedSet _setWithAdvice(BuildContext context, PrescribedSet set) {
-    final advice = _adviceFor(WorkoutSessionState.instance.currentMove);
-    if (advice == null || set.weightKg != null) return set;
-    return PrescribedSet(
-      exerciseId: set.exerciseId,
-      order: set.order,
-      weightKg: advice.startKg,
-      reps: set.reps,
-      holdSeconds: set.holdSeconds,
-    );
-  }
-
-  static List<double> _weightOptionsFor(BuildContext context) {
-    final move = WorkoutSessionState.instance.currentMove;
-    final set = _setWithAdvice(
-      context,
-      WorkoutSessionState.instance.currentSet ??
-          sampleWorkoutDay(AppL10n.of(context)).moves.first.sets.first,
-    );
-    final advice = _adviceFor(move);
-    if (advice != null) return advice.optionsKg;
-    if (set.weightKg == null && (move?.needsEquipment ?? false)) {
-      return kStarterWeightsKg;
+  /// R08 for the set she is on, with the advice and the kit worked out once.
+  static Widget _changeCurrentSet(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final session = WorkoutSessionState.instance;
+    final move = session.currentMove;
+    final equipment = _equipmentOf(move);
+    final advice = _adviceFor(move, equipment);
+    // The first set of the one authored session when there is no live one.
+    // This was a hand-written goblet squat at 12 kg, so R08 opened cold
+    // offered 10/12/14 kg inside a session whose own subtitle promises no
+    // equipment at all.
+    var set =
+        session.currentSet ?? sampleWorkoutDay(l10n).moves.first.sets.first;
+    if (advice != null && set.weightKg == null) {
+      set = PrescribedSet(
+        exerciseId: set.exerciseId,
+        order: set.order,
+        weightKg: advice.startKg,
+        reps: set.reps,
+        holdSeconds: set.holdSeconds,
+      );
     }
-    return weightOptionsAround(set);
+    // Her planned weight and a step either side. Nothing was passed, so a
+    // 17.5 kg set opened on the widget's own 10/12/14 with 10 chosen.
+    //
+    // A loaded move the plan gave no weight offers the weights around what
+    // she lifted last time, or a starting ladder on a first session, so the
+    // weight can be recorded at all.
+    final options =
+        advice?.optionsKg ??
+        (set.weightKg == null && (move?.needsEquipment ?? false)
+            ? starterWeightsFor(equipment)
+            : weightOptionsAround(set, equipment: equipment));
+    return ChangeSetView(
+      repository: trainRepository,
+      sessionId: session.sessionId,
+      // Which move of how many. The bar read a fixed "Move 2 of 5".
+      moveNumber: session.moveIndex + 1,
+      moveCount: session.moveCount,
+      prescribed: set,
+      moveName: move?.name,
+      weightOptionsKg: options,
+      equipment: equipment,
+      askWeight: move?.needsEquipment ?? false,
+      progressionLine: move == null ? null : _lineFor(l10n, move, advice),
+      plateHelper: featureFlags.isOn(Feature.gymHelpers),
+      bus: session.bus,
+      onAttach: session.attachScreen,
+      onDetach: session.detachScreen,
+      sets: _setsProgress,
+      onClose: () => Navigator.of(context).maybePop(),
+      // Carries the handle, exactly as R07 does. It used to assign the
+      // change to a field nothing read, which silently discarded her
+      // override and left R09 announcing the numbers she had corrected.
+      onSaved: (handle) {
+        session.setLogged();
+        _trackSetLogged('set');
+        _goCarryingHandle(context, 'R09', handle);
+      },
+    );
   }
 
   /// What the tier she is looking at holds, and how that differs from the level
@@ -8854,13 +8718,20 @@ class AppRouter {
   get herProgramme {
     final template = templateProgramme;
     if (template == null) return null;
+    final stage = intakeRepository.read().lifeStage;
+    // While a coach's plan is running it is what she trains: Start on a day of
+    // it has to open that day, whatever plan of her own she also keeps.
+    final coach = activeCoachWorkoutPlan();
     return (
       program: template.program,
-      content: resolveProgramme(
-        template.content,
-        MyPlanState.instance.plan,
-        intakeRepository.read().lifeStage,
-      ),
+      content:
+          coachPlanProgramme(
+            coach?.workout,
+            name: coach?.name ?? '',
+            revision: coach?.revision ?? 1,
+            stage: stage,
+          ) ??
+          resolveProgramme(template.content, MyPlanState.instance.plan, stage),
     );
   }
 
@@ -8917,6 +8788,77 @@ class AppRouter {
   }
 
   // ------------------------------------------------------------ follow-ups --
+
+  /// Home's card for a woman whose coach is running: today's workout and meals
+  /// from the plans, the next live session, and an unread dot. Null otherwise.
+  static Widget? _coachHomeCard(BuildContext context) {
+    final coaching = PrivateCoachingState.instance;
+    final repository = coaching.repository;
+    final sub = coaching.activeAsClient;
+    if (repository == null || sub == null) return null;
+    final stage = intakeRepository.read().lifeStage;
+    final workout = activeCoachWorkoutPlan();
+    return StreamBuilder<List<LiveSession>>(
+      stream: repository.watchSessions(sub.id),
+      builder: (context, snap) {
+        final next = upcomingSessions(snap.data ?? const <LiveSession>[]);
+        return CoachHomeCard(
+          workout: workout,
+          nextSession: next.isEmpty ? null : next.first,
+          hasUnread: coaching.hasUnread(sub.relId),
+          doneThisWeek: sessionsDoneThisWeek(trainRepository.sessions),
+          lifeStage: stage,
+          onOpen: () => goTo(context, 'H05'),
+          onStartWorkout: (plan, day) {
+            if (startCoachWorkout(plan, day, stage)) goTo(context, 'R03');
+          },
+        );
+      },
+    );
+  }
+
+  /// Eat's "From your coach": the newest meal plan her active coach shared.
+  static Widget? _coachMealSection(BuildContext context) {
+    final coaching = PrivateCoachingState.instance;
+    final sub = coaching.activeAsClient;
+    if (sub == null) return null;
+    CoachPlan? plan;
+    for (final p in coaching.coachPlansOf(contract.PlanKind.meal)) {
+      if (p.meal == null || p.coachUid != sub.coachUid) continue;
+      final at = p.publishedAt;
+      if (plan == null ||
+          (at != null &&
+              (plan.publishedAt == null || at.isAfter(plan.publishedAt!)))) {
+        plan = p;
+      }
+    }
+    if (plan == null) return null;
+    final shown = plan;
+    return FromYourCoachSection(
+      plan: shown,
+      now: AppClock.now(),
+      constraints: eatConstraints,
+      catalog: coachMealCatalog(AppL10n.of(context)),
+      onLog: (item, slot) => logCoachMeal(
+        context,
+        plan: shown,
+        item: item,
+        slot: slot,
+        openRecipe: (id) {
+          EatAppState.instance.openRecipeId = id;
+          goTo(context, 'E06');
+        },
+      ),
+      onOpenRecipe: (id) {
+        EatAppState.instance.openRecipeId = id;
+        goTo(context, 'E06');
+      },
+      onOpenPlan: () => unawaited(
+        Navigator.of(context)
+            .pushNamed(appRoutes['H03']!.name, arguments: shown.id),
+      ),
+    );
+  }
 
   /// The follow-up for Home, or the thanks for the answer she has just given,
   /// or null. Off with [Feature.followUps].

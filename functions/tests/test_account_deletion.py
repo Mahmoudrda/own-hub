@@ -251,7 +251,7 @@ def test_a_failure_part_way_is_recorded_and_a_rerun_finishes(step):
 
 def test_every_manifest_row_has_a_server_action():
     rows = manifest.load(_JSON)
-    assert [r.number for r in rows] == list(range(1, 55))
+    assert [r.number for r in rows] == list(range(1, 60))
     assert set(manifest.ACTIONS) == {r.number for r in rows}
     manifest.check(rows)
 
@@ -376,3 +376,16 @@ def test_a_preapproved_number_is_deleted_by_her_auth_phone_on_the_real_backend(m
     monkeypatch.setattr(auth, "get_user", gone)
     backend.delete_preapproved("her")
     assert list(db.docs) == ["verificationPreapproved/+201009999999"]
+
+
+def test_the_coaching_rows_are_named_and_run_in_the_group_hook():
+    rows = {r.number: r for r in manifest.load(_JSON)}
+    assert rows[55].path == "coachApplications/{uid}"
+    assert rows[56].path.startswith("coachPrivate/{uid}/**")
+    assert rows[57].path == "coaches/{uid}/packages/**, coaches/{uid}/drafts/** and coaches/{uid}/media/**"
+    assert rows[58].path.startswith("subscriptions where clientUid or coachUid == uid")
+    assert {rows[n].method for n in (55, 56, 57, 58)} == {"groupHook"}
+    assert {manifest.ACTIONS[n] for n in (55, 56, 57, 58)} == {manifest.GROUP_HOOK}
+    # Payment records survive on purpose, with her uid replaced.
+    assert rows[59].method == "pseudonymised"
+    assert manifest.ACTIONS[59] == manifest.GROUP_HOOK

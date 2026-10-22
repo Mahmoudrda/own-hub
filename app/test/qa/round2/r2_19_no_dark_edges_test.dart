@@ -62,6 +62,10 @@ final FeatureFlags _shipping = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.cyclePatterns: true,
   Feature.cycleMeals: true,
   Feature.privacyCentre: true,
+  // Coaching without money: applying, finding a coach, My coach, chat and
+  // shared plans. Payments, its child, stays dark.
+  Feature.coachApp: true,
+  Feature.marketplace: true,
 });
 
 /// Every `'XX': (context) => ...` entry in `AppRouter._built`, and every
@@ -145,11 +149,10 @@ final FeatureFlags _shipping = FeatureFlags.allOff.with_(<Feature, bool>{
 /// is later deleted turns back into a real failure here instead of staying
 /// silently exempted.
 const Map<String, ({String file, String guard})> _sourceGuardedEdges = {
-  // ProfileView (A02) wraps the "her coach" row so it is not drawn at all
-  // while H01 is dark; `onOpenCoach` is therefore never invoked.
-  'A02->H01': (
-    file: 'lib/features/account/presentation/profile_view.dart',
-    guard: "if (AppRouter.screenIsOn('H01'))",
+  // The coach intro offers the identity check only while sign-up is on.
+  'K01->C09b': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onVerify: !screenIsOn('C09b')",
   ),
   // LanguageView's own "Continue" callback, wired in AppRouter itself: it
   // calls goTo('C03') only when C03 is on, and pops otherwise.
@@ -269,6 +272,19 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   'R01->R15': (
     file: 'lib/routing/app_router.dart',
     guard: "onOpenExercise: screenIsOn('R15')",
+  ),
+  // A recipe in a coach's plan or chat opens E06 only while it is on.
+  'H03->E06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenRecipe: !screenIsOn('E06')",
+  ),
+  'H06->E06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenRecipe: !screenIsOn('E06')",
+  ),
+  'K16->E06': (
+    file: 'lib/routing/app_router.dart',
+    guard: "onOpenRecipe: !screenIsOn('E06')",
   ),
   // The set she is on is sent to R06 only for a hold, and only while R06 is
   // on (`_holdIsNext`); otherwise it is R07's.

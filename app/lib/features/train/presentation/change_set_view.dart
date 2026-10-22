@@ -33,9 +33,12 @@ import '../../../ui/app_field.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
+import '../domain/exercise_library.dart' show LibraryEquipment;
+import '../domain/load_advice.dart';
 import '../domain/train_repository.dart';
 import '../domain/weight_label.dart';
 import 'exercise_labels.dart';
+import 'plate_diagram.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
 
@@ -93,7 +96,15 @@ class ChangeSetView extends StatefulWidget {
     this.progressionLine,
     this.askWeight = false,
     this.correcting = false,
+    this.equipment,
+    this.plateHelper = true,
   });
+
+  /// The kit this move uses. A barbell or Smith move shows the plate line.
+  final Iterable<LibraryEquipment>? equipment;
+
+  /// Whether a barbell move shows the plate line.
+  final bool plateHelper;
 
   /// R13's "change a set she already logged": the save replaces what was
   /// written for this set instead of logging it again, and the session does
@@ -203,6 +214,8 @@ class _ChangeSetViewState extends State<ChangeSetView> {
           hold: _isHold(widget.prescribed),
           askWeight: widget.askWeight,
           progressionLine: widget.progressionLine,
+          equipment: widget.equipment,
+          plateHelper: widget.plateHelper,
           onTypeANumber: widget.onTypeANumber,
           onSave: (changed) {
             saved = true;
@@ -323,11 +336,23 @@ bool _isHold(PrescribedSet set) =>
 /// The router passed nothing, so every loaded set was offered the widget's own
 /// 10, 12 and 14 kg — and a plan asking for 17.5 kg opened with 10 selected,
 /// because the planned weight was not among the chips at all.
-List<double> weightOptionsAround(PrescribedSet set, {double step = 2}) {
+///
+/// With [equipment] the chips are the steps that kit comes in (a plate, a pin,
+/// a dumbbell), not a fixed 2 kg; the planned weight is always among them.
+List<double> weightOptionsAround(
+  PrescribedSet set, {
+  Iterable<LibraryEquipment>? equipment,
+}) {
   final planned = set.weightKg;
   if (planned == null || planned <= 0) return const <double>[];
+  if (loadKitFor(equipment) != LoadKit.unknown) {
+    final ladder = loadLadderFor(equipment);
+    final below = ladder.where((kg) => kg < planned).lastOrNull;
+    final above = ladder.where((kg) => kg > planned).firstOrNull;
+    return [?below, planned, ?above];
+  }
   return {
-    for (final kg in [planned - step, planned, planned + step])
+    for (final kg in [planned - 2, planned, planned + 2])
       if (kg > 0) kg,
   }.toList()..sort();
 }
@@ -362,8 +387,12 @@ class _ChangeSetSheet extends StatefulWidget {
     this.hold = false,
     this.askWeight = false,
     this.progressionLine,
+    this.equipment,
+    this.plateHelper = true,
   });
 
+  final Iterable<LibraryEquipment>? equipment;
+  final bool plateHelper;
   final bool askWeight;
   final String? progressionLine;
 
@@ -476,6 +505,10 @@ class _ChangeSetSheetState extends State<_ChangeSetSheet> {
             selected: {_weightIndex},
             onTap: (i) => setState(() => _weightIndex = i),
           ),
+          if (widget.plateHelper &&
+              loadKitFor(widget.equipment) == LoadKit.barbell &&
+              widget.weightOptionsKg.isNotEmpty)
+            PlateHelper(totalKg: widget.weightOptionsKg[_weightIndex]),
         ],
         const SizedBox(height: 14),
         Text(

@@ -140,6 +140,12 @@ class _FirstGymGuideViewState extends State<FirstGymGuideView> {
             const SizedBox(height: 8),
             Text(body, style: AppText.bodyM),
             if (_step == 2) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.logTheTotalBarIncluded,
+                key: const ValueKey('gym-guide-total-line'),
+                style: AppText.bodyM,
+              ),
               const SizedBox(height: 16),
               if (!_practiced)
                 AppButton(

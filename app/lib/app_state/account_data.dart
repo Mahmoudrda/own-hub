@@ -44,6 +44,7 @@ import '../features/train/data/exercise_library_sync.dart'
     show kExerciseLibraryCacheKeys;
 import '../features/train/data/workout_sync.dart' show kWorkoutCacheKeys;
 import '../features/eat/data/recipe_sync.dart';
+import '../features/train/domain/notification_voice.dart';
 import '../features/train/domain/training_reminders.dart';
 import 'first_gym_guide_state.dart';
 import '../features/signup/domain/legal_acceptance.dart';
@@ -66,6 +67,10 @@ import 'first_run_moments.dart';
 import 'kitten_setting.dart';
 import 'custom_workout_state.dart';
 import 'my_plan_state.dart';
+import 'bar_preference.dart';
+import 'coach_application_draft.dart';
+import 'coach_client_notes.dart';
+import 'move_notes.dart';
 import 'rest_timer_prefs.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
@@ -280,6 +285,13 @@ class ThisPhoneWipe implements LocalWipe {
     MyPlanState.instance.reset();
     // The rest she set for each move, kept on this phone only.
     RestTimerPrefs.instance.reset();
+    // Her notes on moves and the bar she loads, kept on this phone only.
+    MoveNotes.instance.reset();
+    // The coach application she was writing and its photo copies.
+    CoachApplicationDraft.instance.reset();
+    // The private notes a coach keeps about her clients, on this phone only.
+    CoachClientNotes.instance.reset();
+    BarPreference.instance.reset();
     // The exercise library: its cached catalogue, the clips kept on the phone
     // and the move she last opened. None of it is hers, and all of it goes.
     for (final key in kExerciseLibraryCacheKeys) {
@@ -316,6 +328,8 @@ class ThisPhoneWipe implements LocalWipe {
     TrainingStreakState.instance.reset();
     // Her day-after answers, week reviews and follow-up settings. Phone only.
     FollowUpState.instance.reset();
+    // The words her reminders carried and which tone she opens. Phone only.
+    VoiceHistory.instance.reset();
 
     // Rows 35, 36 — her cycle document and every period date. `CycleState`
     // already purges the repository; it also takes Today's cycle row down.
@@ -573,6 +587,11 @@ bool get nothingOfHersRemains {
       !ProfilePhotoState.instance.hasPhoto &&
       !TrainingStreakState.instance.touched &&
       !FollowUpState.instance.touched &&
+      !VoiceHistory.instance.touched &&
       !MyPlanState.instance.hasPlan &&
-      !RestTimerPrefs.instance.touched;
+      !RestTimerPrefs.instance.touched &&
+      !MoveNotes.instance.touched &&
+      !CoachApplicationDraft.instance.touched &&
+      !CoachClientNotes.instance.touched &&
+      !BarPreference.instance.touched;
 }

@@ -137,7 +137,12 @@ void main() {
 
     test('every exemption actually disables indexing', () {
       // A fieldOverride with a non-empty indexes array exempts nothing.
+      // The one exception is the payout run's collection-group index on
+      // ledger.status, which switches an index ON for a query.
       for (final o in overrides) {
+        if (o['collectionGroup'] == 'ledger' && o['fieldPath'] == 'status') {
+          continue;
+        }
         expect(
           (o['indexes'] as List),
           isEmpty,

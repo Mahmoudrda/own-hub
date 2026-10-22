@@ -77,7 +77,11 @@ class ProgramView extends StatelessWidget {
     this.tierTabs,
     this.onCustomizePlan,
     this.hasMyPlan = false,
+    this.onOpenRecentSessions,
   });
+
+  /// Opens her last finished sessions, to fix a set. Null draws no button.
+  final VoidCallback? onOpenRecentSessions;
 
   /// "Customize this plan": copies the plan into hers and opens the editor.
   /// With a plan of her own it reads "Edit my plan". Null draws no button.
@@ -286,6 +290,16 @@ class ProgramView extends StatelessWidget {
             height: 52,
             fontSize: 16,
             onPressed: onCustomizePlan,
+          ),
+        if (onOpenRecentSessions != null)
+          AppButton(
+            l10n.recentSessions,
+            key: const ValueKey('r02-recent-sessions'),
+            icon: Icons.history,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: onOpenRecentSessions,
           ),
         // "Change program" with no programme to change is an instruction she
         // cannot follow. The same door, named for what is behind it: the

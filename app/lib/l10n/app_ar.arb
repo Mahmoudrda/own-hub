@@ -6221,5 +6221,1979 @@
         "example": "7"
       }
     }
-  }
+  },
+  "noSessionsOfThisMoveYet": "لسه مفيش جلسات للحركة دي",
+  "yourLastSessionsOfThisMove": "آخر جلساتك للحركة دي",
+  "secondsS": "{seconds} ث",
+  "@secondsS": {
+    "description": "A hold in seconds.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "45"
+      }
+    }
+  },
+  "bestSetOnDateSet": "أحسن مجموعة في {date}: {set}",
+  "@bestSetOnDateSet": {
+    "description": "Screen reader label for one bar of a move's history.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "12 October 2026"
+      },
+      "set": {
+        "type": "String",
+        "example": "40 kg × 10"
+      }
+    }
+  },
+  "recentSessions": "آخر الجلسات",
+  "fixingATypoUpdatesYourBestsPoints": "لو صححتي رقم غلط، أرقامك القياسية بتتحدّث. النقاط بتفضل زي ما هي.",
+  "noFinishedSessionsYet": "لسه مفيش جلسات خلصتيها",
+  "sessionsYouFinishShowUpHereAnd": "الجلسات اللي بتخلصيها هتظهر هنا، وتقدري تصححي أي مجموعة.",
+  "workout": "تمرين",
+  "fixThisSet": "صححي المجموعة دي",
+  "setN": "المجموعة {n}",
+  "@setN": {
+    "description": "A set number in a finished session.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "setNIsNowSet": "المجموعة {n} بقت {set}",
+  "@setNIsNowSet": {
+    "description": "Undo bar after fixing a set.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      },
+      "set": {
+        "type": "String",
+        "example": "40 kg × 10"
+      }
+    }
+  },
+  "addNote": "أضيفي ملاحظة",
+  "editNote": "عدّلي الملاحظة",
+  "noteForThisMove": "ملاحظة للتمرين ده",
+  "keptOnThisPhoneOnly": "بتتحفظ على موبايلك بس.",
+  "history": "السجل",
+  "whichBarDoYouUse": "بتستخدمي أنهي بار؟",
+  "changeBar": "غيّري البار",
+  "kgKgBar": "بار {kg} كجم",
+  "@kgKgBar": {
+    "description": "A bar weight choice.",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "barKgBarSideKgEachSide": "بار {bar} كجم + {side} كجم على كل جنب",
+  "@barKgBarSideKgEachSide": {
+    "description": "How to load a barbell.",
+    "placeholders": {
+      "bar": {
+        "type": "String",
+        "example": "20"
+      },
+      "side": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "justTheBarKgBar": "البار بس، {bar} كجم",
+  "@justTheBarKgBar": {
+    "description": "Empty bar.",
+    "placeholders": {
+      "bar": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "closestYouCanLoadTotalKgBar": "أقرب وزن تقدري تحمّليه: {total} كجم. بار {bar} كجم + {side} كجم على كل جنب.",
+  "@closestYouCanLoadTotalKgBar": {
+    "description": "Total not loadable exactly.",
+    "placeholders": {
+      "total": {
+        "type": "String",
+        "example": "41.5"
+      },
+      "bar": {
+        "type": "String",
+        "example": "20"
+      },
+      "side": {
+        "type": "String",
+        "example": "10.5"
+      }
+    }
+  },
+  "platesOnOneSidePlatesKg": "الأوزان على جنب واحد: {plates} كجم",
+  "@platesOnOneSidePlatesKg": {
+    "description": "Screen reader label of the plate diagram.",
+    "placeholders": {
+      "plates": {
+        "type": "String",
+        "example": "20, 10"
+      }
+    }
+  },
+  "logTheTotalBarIncluded": "سجّلي الوزن الكلي مع البار.",
+  "nextTimeWeightOnName": "المرة الجاية: {weight} على {name}",
+  "@nextTimeWeightOnName": {
+    "description": "R10 next-step line for a loaded move that goes up a step next time.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "22.5 kg"
+      },
+      "name": {
+        "type": "String",
+        "example": "Hip thrust"
+      }
+    }
+  },
+  "sameWeightOnNameNextTimeUntil": "نفس الوزن على {name} المرة الجاية، لحد ما تحسّيه ثابت",
+  "@sameWeightOnNameNextTimeUntil": {
+    "description": "R10 next-step line for a loaded move that stays at the same weight next time.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Hip thrust"
+      }
+    }
+  },
+  "weightMustBe0ToMaxKg": "الوزن من 0 لـ {max} كجم",
+  "@weightMustBe0ToMaxKg": {
+    "description": "Range error on the set editor's weight field.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "300"
+      }
+    }
+  },
+  "repsMustBe0ToMax": "التكرارات من 0 لـ {max}",
+  "@repsMustBe0ToMax": {
+    "description": "Range error on the set editor's reps field.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "100"
+      }
+    }
+  },
+  "secondsMustBe0ToMax": "الثواني من 0 لـ {max}",
+  "@secondsMustBe0ToMax": {
+    "description": "Range error on the set editor's seconds field.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "600"
+      }
+    }
+  },
+  "seatAndPinNumbers": "أرقام الكرسي والدبوس",
+  "findACoach": "دوّري على مدرّبة",
+  "threeQuickQuestionsThenTheCoachesWho": "تلات أسئلة سريعة، وبعدها المدرّبات الأنسب ليكي.",
+  "whereDoYouTrain": "بتتمرني فين؟",
+  "atTheGym": "في الجيم",
+  "yourBudgetForAMonth": "ميزانيتك للشهر",
+  "yourBestMatches": "أنسب مدرّبات ليكي",
+  "matchedOnYourThreeAnswersOnlyThen": "على حسب إجاباتك التلاتة بس، وبعدها بالترتيب الأبجدي.",
+  "noCloseMatchYetBrowseAllThe": "مفيش مدرّبة مطابقة قوي لسه. اتفرّجي على كل المدرّبات تحت.",
+  "allCoachesAToZ": "كل المدرّبات بالترتيب الأبجدي",
+  "coachesAreJoiningCheckBackSoon": "المدرّبات بينضمّوا لينا. ارجعي بعد شوية.",
+  "weCouldNotLoadTheCoachesCheck": "ما قدرناش نحمّل المدرّبات. اتأكدي من النت وحاولي تاني.",
+  "loadingCoaches": "بنحمّل المدرّبات",
+  "fromEgpPriceAMonth": "من {price} جنيه في الشهر",
+  "@fromEgpPriceAMonth": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "1,800"
+      }
+    }
+  },
+  "openTheProfileOfName": "افتحي صفحة {name}",
+  "@openTheProfileOfName": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "verifiedCoach": "مدرّبة موثّقة",
+  "yearsCoaching": "سنين الخبرة",
+  "fatLoss": "حرق دهون",
+  "muscleGain": "بناء عضلات",
+  "homeTraining": "تمرين في البيت",
+  "gymTraining": "تمرين في الجيم",
+  "mobility": "مرونة وحركة",
+  "postnatalReturn": "الرجوع بعد الولادة",
+  "healthyEating": "أكل صحي",
+  "endurance": "تحمّل",
+  "coachProfile": "صفحة المدرّبة",
+  "thisIsHowMembersSeeYou": "كده الأعضاء بيشوفوكي",
+  "yearsCoachingN": "سنين التدريب: {n}",
+  "@yearsCoachingN": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "languagesList": "اللغات: {list}",
+  "@languagesList": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "example": "Arabic, English"
+      }
+    }
+  },
+  "usuallyRepliesWithinNHours": "بترد عادةً في خلال {n} ساعة",
+  "@usuallyRepliesWithinNHours": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "noPackagesYet": "لسه مفيش باقات",
+  "whatIsIncluded": "اللي في الباقة",
+  "durationNDays": "المدة: {n} يوم",
+  "@durationNDays": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "28"
+      }
+    }
+  },
+  "liveSessionsAMonthN": "جلسات مباشرة في الشهر: {n}",
+  "@liveSessionsAMonthN": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "egpPrice": "{price} جنيه",
+  "@egpPrice": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "1,800"
+      }
+    }
+  },
+  "finalPriceTaxesAndFeesIncluded": "السعر النهائي، شامل الضرايب والرسوم",
+  "youWillBeAbleToBookA": "هتقدري تحجزي باقة من هنا أول ما الحجز يفتح.",
+  "approach": "طريقة التدريب",
+  "whatMembersSay": "كلام الأعضاء",
+  "checkedCertificates": "شهادات اتراجعت",
+  "reportThisProfile": "بلّغي عن الصفحة دي",
+  "whyAreYouReportingThisProfile": "ليه بتبلّغي عن الصفحة دي؟",
+  "thisLooksLikeAMansAccount": "الحساب ده شكله حساب راجل",
+  "nudityOrSexualContent": "عُري أو محتوى جنسي",
+  "spamOrAdvertising": "سبام أو إعلانات",
+  "selfHarmOrDanger": "إيذاء النفس أو خطر",
+  "askingForPaymentOutsideOwnHub": "بتطلب الدفع برّه Own Hub",
+  "unsafeTrainingOrFoodAdvice": "نصايح تمرين أو أكل مش آمنة",
+  "addANoteOptional": "ضيفي ملاحظة (اختياري)",
+  "thankYouWeWillLookAtThis": "شكرًا ليكي. هنراجع ده.",
+  "yourReportIsPrivateTheCoachIs": "بلاغك سرّي. المدرّبة مش هتعرف.",
+  "weCouldNotSendYourReportTry": "ما قدرناش نبعت البلاغ. جرّبي تاني.",
+  "photoOfName": "صورة {name}",
+  "@photoOfName": {
+    "description": "Coach browsing.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "myCoachSpace": "مساحتي كمدرّبة",
+  "yourPortfolioIsLive": "ملفك التعريفي ظاهر للأعضاء",
+  "yourPortfolioIsNotLiveYet": "ملفك التعريفي لسه مش ظاهر",
+  "turnOnOnePackageAndMembersCan": "فعّلي باقة واحدة وهيظهر ملفك للأعضاء.",
+  "acceptingNewClients": "بستقبل عميلات جداد",
+  "photoHeadlineAndHowYouCoach": "الصورة والعنوان وطريقة تدريبك",
+  "myPackages": "باقاتي",
+  "upTo6PackagesEachWithYour": "لحد 6 باقات، وكل واحدة بسعرك إنتي",
+  "countOf6Packages": "{count} من 6 باقات",
+  "@countOf6Packages": {
+    "description": "How many packages the coach has made, out of the 6 she may make.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "previewMyPortfolio": "معاينة ملفي التعريفي",
+  "seeItTheWayMembersDo": "شوفيه زي ما الأعضاء بيشوفوه",
+  "myApplication": "طلبي",
+  "whatWasApproved": "اللي اتوافق عليه",
+  "yourCoachSpaceIsPaused": "مساحتك كمدرّبة موقوفة دلوقتي",
+  "pleaseContactOwnHubNothingCanBe": "اتواصلي مع Own Hub. مفيش حاجة تتعدّل وهي موقوفة.",
+  "yourCoachSpaceIsNotReadyYet": "مساحتك كمدرّبة لسه مش جاهزة",
+  "itOpensHereOnceYourApplicationIs": "هتفتح هنا أول ما طلبك يتوافق عليه.",
+  "loadingYourCoachSpace": "بنحمّل مساحتك",
+  "weCouldNotReachOwnHubCheck": "ما قدرناش نوصل لـ Own Hub. اتأكدي من النت وجرّبي تاني.",
+  "somethingWentWrongPleaseTryAgain": "حصلت مشكلة. جرّبي تاني.",
+  "coachingIsNotOpenRightNowPlease": "التدريب مش مفتوح دلوقتي. جرّبي بعدين.",
+  "yourAccountNeedsToBeVerifiedFirst": "لازم حسابك يتوثّق الأول.",
+  "thisAccountIsNotAnApprovedCoach": "الحساب ده مش مدرّبة معتمدة.",
+  "somethingInThisFormNeedsAnotherLook": "في حاجة في النموذج محتاجة مراجعة.",
+  "pickAPriceBetweenEgpLowAnd": "اختاري سعر بين {low} و{high} جنيه.",
+  "@pickAPriceBetweenEgpLowAnd": {
+    "description": "The range a coach may price a package in.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "200"
+      },
+      "high": {
+        "type": "String",
+        "example": "30,000"
+      }
+    }
+  },
+  "weCouldNotFindThatPackageGo": "ملقيناش الباقة دي. ارجعي وافتحيها تاني.",
+  "thatPictureCouldNotBeUsedTry": "الصورة دي ما ينفعش نستخدمها. جرّبي واحدة تانية.",
+  "pleaseSignInAgain_3jocz": "سجّلي دخولك تاني.",
+  "oneLineMembersReadFirst": "سطر واحد بيقراه الأعضاء الأول",
+  "tellMembersHowYouWorkWithA": "قولي للأعضاء بتشتغلي مع العميلة إزاي.",
+  "useLowToHighCharacters": "استخدمي من {low} لـ {high} حرف.",
+  "@useLowToHighCharacters": {
+    "description": "The length a text field accepts.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "10"
+      },
+      "high": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "acceptRequestsAutomatically": "قبول الطلبات تلقائيًا",
+  "mostClientsAtOnce": "أقصى عدد عميلات في نفس الوقت",
+  "yourPhotoIsSaved": "الصورة اتحفظت.",
+  "theCameraIsTurnedOffForOwn": "الكاميرا مقفولة لـ Own Hub. تقدري تفتحيها من الإعدادات.",
+  "saveChanges": "احفظي التغييرات",
+  "yourPortfolioIsSaved": "ملفك التعريفي اتحفظ.",
+  "whatMembersSee": "اللي الأعضاء بيشوفوه",
+  "startFromATemplateThenSetYour": "ابدئي من نموذج جاهز وبعدين حطي سعرك.",
+  "addAPackage": "ضيفي باقة",
+  "turnOnAtLeastOnePackageTo": "فعّلي باقة واحدة على الأقل عشان يظهر ملفك للأعضاء.",
+  "onForMembers": "ظاهرة للأعضاء",
+  "off": "مقفولة",
+  "countDays": "{count} يوم",
+  "@countDays": {
+    "description": "A length of time in days.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "28"
+      }
+    }
+  },
+  "countLiveVideoSessionsAMonth": "{count} جلسة فيديو مباشرة في الشهر",
+  "@countLiveVideoSessionsAMonth": {
+    "description": "How many live video sessions a package includes each month.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "countMin": "{count} دقيقة",
+  "@countMin": {
+    "description": "A length in minutes.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "newPackage": "باقة جديدة",
+  "editPackage": "تعديل الباقة",
+  "startFromATemplate": "ابدئي من نموذج",
+  "blankPackage": "باقة فاضية",
+  "fourWeeksBuiltAroundYouAPlan": "4 أسابيع متفصّلة عليكي: خطة مخصوصة ليكي وجلسات فيديو مباشرة ومتابعة أسبوعية لتقدّمك.",
+  "eightWeeksToBuildARoutineThat": "8 أسابيع نبني فيهم روتين يكمّل معاكي، بخطة مخصوصة ليكي وجلسات فيديو مباشرة ومتابعة أسبوعية لتقدّمك.",
+  "twelveWeeksForARealChangeWith": "12 أسبوع لتغيير حقيقي، بخطة مخصوصة ليكي وجلسات فيديو مباشرة ومتابعة أسبوعية لتقدّمك.",
+  "aWorkoutPlanMadeForYou": "خطة تمارين مخصوصة ليكي",
+  "liveVideoSessionsWithMe": "جلسات فيديو مباشرة معايا",
+  "aWeeklyLookAtYourProgress": "متابعة أسبوعية لتقدّمك",
+  "aPlanThatChangesAsYouDo": "خطة بتتغيّر معاكي",
+  "packageName": "اسم الباقة",
+  "description": "الوصف",
+  "length": "المدة",
+  "removeThisLine": "امسحي السطر ده",
+  "liveSessionsAMonth": "جلسات الفيديو المباشرة في الشهر",
+  "progressReviewsAWeek": "مراجعات التقدّم في الأسبوع",
+  "yourPriceEgp": "سعرك (بالجنيه)",
+  "wholePoundsFromLowToHigh": "جنيهات صحيحة، من {low} لـ {high}.",
+  "@wholePoundsFromLowToHigh": {
+    "description": "Hint under the price field.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "200"
+      },
+      "high": {
+        "type": "String",
+        "example": "30,000"
+      }
+    }
+  },
+  "showThisPackageToMembers": "اعرضي الباقة دي للأعضاء",
+  "positionInYourList": "ترتيبها في القايمة",
+  "savePackage": "احفظي الباقة",
+  "savedYouReceiveEgpAmount": "اتحفظت. هتستلمي {amount} جنيه.",
+  "@savedYouReceiveEgpAmount": {
+    "description": "Shown after a package is saved: what the coach receives, in whole pounds.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "200"
+      }
+    }
+  },
+  "howMembersSeeIt": "الأعضاء هيشوفوها كده",
+  "add1ToMaxLinesEachLow": "ضيفي من 1 لـ {max} سطور، كل سطر من {low} لـ {high} حرف.",
+  "@add1ToMaxLinesEachLow": {
+    "description": "Rule for the list of what a package includes.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "8"
+      },
+      "low": {
+        "type": "String",
+        "example": "2"
+      },
+      "high": {
+        "type": "String",
+        "example": "80"
+      }
+    }
+  },
+  "less": "أقل",
+  "yourApplication": "طلبك",
+  "specialties": "التخصّصات",
+  "clientFeedback": "آراء العميلات",
+  "beforeAndAfterStories": "قصص قبل وبعد",
+  "returnAfterBirth": "الرجوع بعد الولادة",
+  "membersCanAskToJoinYourPackages": "الأعضاء يقدروا يطلبوا ينضمّوا لباقاتك. التدريب مجاني لحد ما Own Hub تفتح الدفع.",
+  "whenThisIsOnARequestGoes": "لما تكون شغّالة، الطلب بيتقبل لوحده طول ما عندك مكان. ولما تكون مقفولة، بتردّي إنتي على كل طلب.",
+  "newRequestsWaitOnceYouReachCount": "الطلبات الجديدة بتستنى لما توصلي {count} عميلة في نفس الوقت.",
+  "@newRequestsWaitOnceYouReachCount": {
+    "description": "Explains the most-clients setting.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "fewer": "أقل",
+  "membersSeeEgpPrice": "الأعضاء بيشوفوا {price} جنيه",
+  "@membersSeeEgpPrice": {
+    "description": "The price a member pays for a package, in whole Egyptian pounds.",
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "230"
+      }
+    }
+  },
+  "askToJoin": "اطلبي الانضمام",
+  "requestsChatsAndClientsInOnePlace": "الطلبات والرسايل والعميلات في مكان واحد",
+  "countNewRequests": "{count} طلبات جديدة",
+  "@countNewRequests": {
+    "description": "Requests from members waiting for the coach.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "countUnreadChats": "{count} محادثات لسه ما اتقرتش",
+  "@countUnreadChats": {
+    "description": "Chats with something the coach has not read.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "countClients": "{count} عميلات",
+  "@countClients": {
+    "description": "Clients being coached now.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "freeWhileOwnHubOpensCoaching": "ببلاش وإحنا بنفتح التدريب",
+  "tellNameAboutYou": "عرّفي {name} بنفسك",
+  "@tellNameAboutYou": {
+    "description": "Joining a coach.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "yourLevel": "مستواكي",
+  "daysAWeekYouCanTrain": "كام يوم في الأسبوع تقدري تتمرني",
+  "allergiesFromYourProfile": "الحساسية من ملفك",
+  "tapOneToTakeItOffThe": "دوسي على واحدة عشان تشيليها من القايمة.",
+  "aFewQuestionsAboutYourHealth": "كام سؤال عن صحتك",
+  "answerEachOneWithYesOrNo": "جاوبي على كل سؤال بنعم أو لا.",
+  "no": "لا",
+  "hasADoctorEverSaidYouHave": "دكتور قالك قبل كده إن عندك مشكلة في القلب؟",
+  "doYouFeelPainInYourChest": "بتحسي بوجع في صدرك وانتي بتتمرني؟",
+  "doYouFeelDizzyOrFaintWhen": "بتحسي بدوخة أو إغماء وانتي بتتمرني؟",
+  "doYouHaveALongTermCondition": "عندك مرض مزمن، زي السكر أو الضغط؟",
+  "doYouTakeMedicationEveryDay": "بتاخدي أدوية كل يوم؟",
+  "doYouHaveABoneOrJoint": "عندك مشكلة في العضم أو المفاصل ممكن التمرين يزوّدها؟",
+  "hasADoctorToldYouToExercise": "دكتور قالك تتمرني تحت إشراف بس؟",
+  "iWillCheckWithMyDoctorBefore": "هسأل دكتوري قبل ما أبدأ",
+  "yourCoachWillReadYourAnswersBefore": "المدرّبة هتقرا إجاباتك قبل ما تقبل.",
+  "aNoteForTheCoachOptional": "ملاحظة للمدرّبة (اختياري)",
+  "iShareTheseAnswersWithNameMy": "أنا بشارك الإجابات دي مع {name}، مدرّبتي.",
+  "@iShareTheseAnswersWithNameMy": {
+    "description": "Joining a coach.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "iUnderstandMyAnswersAreStoredIn": "فاهمة إن إجاباتي محفوظة بأمان على سيرفرات Own Hub في ألمانيا.",
+  "sendRequest": "ابعتي الطلب",
+  "answerEveryQuestionAndTickTheBoxes": "جاوبي على كل الأسئلة وعلّمي على الخانات اللي في الآخر.",
+  "requestSent": "الطلب اتبعت",
+  "nameUsuallyRepliesWithinHoursHours": "{name} بترد عادةً في خلال {hours} ساعة",
+  "@nameUsuallyRepliesWithinHoursHours": {
+    "description": "Joining a coach.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      },
+      "hours": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "nameWillGetBackToYouSoon": "{name} هترد عليكي قريب.",
+  "@nameWillGetBackToYouSoon": {
+    "description": "Joining a coach.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "youAlreadyAskedToJoinThisCoach": "إنتي طلبتي الانضمام للمدرّبة دي قبل كده.",
+  "thisCoachIsNotTakingNewClients": "المدرّبة دي مش بتقبل عميلات جديدة دلوقتي.",
+  "weCouldNotSendYourRequestTry": "ما قدرناش نبعت الطلب. جرّبي تاني.",
+  "coachWomenOnOwnHub": "درّبي ستات على Own Hub",
+  "applyToJoinAsACoachOwn": "قدّمي كمدرّبة. مراجِعة Own Hub بتقرا كل طلب، والمدرّبات المقبولات بيبقى ليهم صفحة الأعضاء تلاقيها.",
+  "whatYouWillNeed": "هتحتاجي إيه",
+  "aClearPhotoOfYou": "صورة واضحة ليكي",
+  "photosOfYourDegreeAndCertificates": "صور شهادتك ودوراتك",
+  "twoMessagesFromWomenYouTrained": "رسالتين من ستات اتدرّبوا معاكي",
+  "aClientTransformationWithHerWrittenConsent": "تحوّل لعميلة، بموافقتها المكتوبة",
+  "ownHubIsForWomenOnlyOnly": "Own Hub للستات بس. بس الستات المتحقَّق منهم يقدروا يقدّموا، وكل العميلات ستات.",
+  "continueMyApplication": "كمّلي طلبك",
+  "verifyThatYouAreAWomanFirst": "اتحققي الأول إنك ست",
+  "applyingNeedsAVerifiedAccountVerificationTakes": "التقديم محتاج حساب متحقَّق منه. التحقق بياخد كام دقيقة.",
+  "verifyMyAccount": "اتحققي من حسابك",
+  "saveAndContinue": "احفظي وكمّلي",
+  "yourAnswersAreSavedOnThisPhone": "إجاباتك بتتحفظ على موبايلك بعد كل خطوة.",
+  "thisIsNeeded": "ده مطلوب",
+  "useAtLeastMinCharacters": "استخدمي {min} حرف على الأقل",
+  "@useAtLeastMinCharacters": {
+    "description": "A text field is too short.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "useAtMostMaxCharacters": "استخدمي {max} حرف على الأكتر",
+  "@useAtMostMaxCharacters": {
+    "description": "A text field is too long.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "minToMaxCharacters": "من {min} لـ {max} حرف",
+  "@minToMaxCharacters": {
+    "description": "Helper under a text field.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "10"
+      },
+      "max": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "enterAYearFromFromToTo": "اكتبي سنة من {from} لـ {to}",
+  "@enterAYearFromFromToTo": {
+    "description": "Year field out of range.",
+    "placeholders": {
+      "from": {
+        "type": "String",
+        "example": "1960"
+      },
+      "to": {
+        "type": "String",
+        "example": "2026"
+      }
+    }
+  },
+  "enterAWholeNumberFromMinTo": "اكتبي رقم صحيح من {min} لـ {max}",
+  "@enterAWholeNumberFromMinTo": {
+    "description": "Number field out of range.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "0"
+      },
+      "max": {
+        "type": "String",
+        "example": "50"
+      }
+    }
+  },
+  "addAtLeastMin": "ضيفي {min} على الأقل",
+  "@addAtLeastMin": {
+    "description": "A list needs more rows.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "chooseBetweenMinAndMax": "اختاري من {min} لـ {max}",
+  "@chooseBetweenMinAndMax": {
+    "description": "A chip group needs a count in range.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "tickThisToContinue": "علّمي هنا عشان تكمّلي",
+  "chooseADifferentOne": "اختاري حاجة تانية",
+  "membersSeeYourDisplayNameHeadlineAnd": "الأعضاء بيشوفوا اسم العرض والعنوان والصورة. اسمك الكامل للمراجعة بس ومش بيظهر لحد.",
+  "fullName": "الاسم الكامل",
+  "forTheReviewOnlyNeverShownPublicly": "للمراجعة بس. مش بيظهر لحد.",
+  "displayName": "اسم العرض",
+  "governorate": "المحافظة",
+  "languagesYouCoachIn": "اللغات اللي بتدرّبي بيها",
+  "arabicLanguage": "العربي",
+  "englishLanguage": "الإنجليزي",
+  "photoAdded": "الصورة اتضافت",
+  "theCameraIsBlockedAllowItIn": "الكاميرا مقفولة. اسمحي بيها من الإعدادات أو اختاري صورة.",
+  "yourEducation": "دراستك",
+  "degreeOrCourse": "الدرجة أو الدراسة",
+  "institution": "الجهة",
+  "year": "السنة",
+  "addEducation": "ضيفي دراسة",
+  "educationN": "الدراسة {n}",
+  "@educationN": {
+    "description": "Row title.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "proofPhotoOptional": "صورة إثبات، اختيارية",
+  "yourCertificates": "شهاداتك",
+  "certificateTitle": "اسم الشهادة",
+  "issuedBy": "الجهة اللي أصدرتها",
+  "addACertificate": "ضيفي شهادة",
+  "certificateN": "الشهادة {n}",
+  "@certificateN": {
+    "description": "Row title.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "certificatePhoto": "صورة الشهادة",
+  "yourSpecialties": "تخصصاتك",
+  "yearsOfExperience": "سنين الخبرة",
+  "yourQualifications": "مؤهلاتك",
+  "whatYouStudiedAndTrainedIn": "اللي دارستيه واتدرّبتي عليه.",
+  "feedbackFromClients": "آراء العميلات",
+  "screenshotsAreSeenOnlyByOwnHubs": "اللقطات بتتشاف من مراجِعة Own Hub بس.",
+  "whatSheSaid": "اللي قالته",
+  "herFirstName": "اسمها الأول",
+  "whereItCameFrom": "جت منين",
+  "whatsapp": "واتساب",
+  "instagram": "إنستجرام",
+  "somewhereElse": "مكان تاني",
+  "screenshotOptional": "لقطة شاشة، اختيارية",
+  "addFeedback": "ضيفي رأي",
+  "feedbackN": "الرأي {n}",
+  "@feedbackN": {
+    "description": "Row title.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "clientTransformations": "تحوّلات العميلات",
+  "beforePhoto": "صورة قبل",
+  "afterPhoto": "صورة بعد",
+  "weeksItTook": "الأسابيع اللي اتاخدت",
+  "noteOptional": "ملاحظة، اختيارية",
+  "myClientAgreedInWritingThatOwn": "عميلتي وافقت كتابةً إن مراجِعة Own Hub تشوف الصور دي",
+  "addATransformation": "ضيفي تحوّل",
+  "transformationN": "التحوّل {n}",
+  "@transformationN": {
+    "description": "Row title.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "yourApproach": "أسلوبك",
+  "followUpsWithEachClientPerWeek": "المتابعات مع كل عميلة في الأسبوع",
+  "howFastYouReply": "بترُدّي بسرعة قد إيه",
+  "withinHoursHours": "خلال {hours} ساعة",
+  "@withinHoursHours": {
+    "description": "Reply time chip.",
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "whereYouTrainClients": "بتدرّبي العميلات فين",
+  "inAGym": "في جيم",
+  "coachTerms": "شروط المدرّبات",
+  "readThesePointsThenTickTheThree": "اقري النقط دي، وبعدين علّمي على القواعد التلاتة.",
+  "ownHubReviewsEveryCoachBeforeShe": "Own Hub بتراجع كل مدرّبة قبل ما تتعرض.",
+  "everythingYouTellUsMustBeAccurate": "كل اللي بتقوليه لنا لازم يكون صح.",
+  "photosOfClientsAreSharedOnlyWith": "صور العميلات بتتشارك بموافقتهم المكتوبة بس.",
+  "clientsPayThroughOwnHubOnlyNever": "العميلات بيدفعوا من خلال Own Hub بس، مش برّاها.",
+  "youCanWithdrawYourApplicationAtAny": "تقدري تسحبي طلبك في أي وقت.",
+  "readTheFullCoachTerms": "اقري شروط المدرّبات كاملة",
+  "everythingIWroteIsAccurate": "كل اللي كتبته صح",
+  "iShareClientPhotosOnlyWithTheir": "بشارك صور عميلاتي بموافقتهم المكتوبة بس",
+  "iWillNotTakePaymentFromClients": "مش هاخد فلوس من العميلات برّا Own Hub",
+  "reviewYourApplication": "راجعي طلبك",
+  "lookOverEachPartYouCanEdit": "بصّي على كل جزء. تقدري تعدّلي أي حاجة قبل ما تبعتي.",
+  "stillNeeded": "لسه ناقص",
+  "complete": "كامل",
+  "sendMyApplication": "ابعتي طلبي",
+  "sendingYourApplication": "بنبعت طلبك",
+  "uploadingPhotoDoneOfTotal": "بنرفع الصورة {done} من {total}",
+  "@uploadingPhotoDoneOfTotal": {
+    "description": "Send progress.",
+    "placeholders": {
+      "done": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "applicationSent": "الطلب اتبعت",
+  "onlyVerifiedWomenCanApplyVerifyYour": "الستات المتحقَّق منهم بس يقدروا يقدّموا. اتحققي من حسابك الأول.",
+  "youAlreadyHaveAnApplicationWaitingFor": "عندك طلب مستني المراجعة بالفعل.",
+  "somethingIsStillMissingLookAtThe": "لسه فيه حاجة ناقصة. بصّي على الأجزاء المعلّمة تحت.",
+  "aPhotoDidNotReachUsTry": "صورة ما وصلتناش. جرّبي تبعتي تاني.",
+  "youAreAlreadyACoachOnOwn": "إنتي مدرّبة على Own Hub بالفعل.",
+  "coachApplicationsAreClosedForNowTry": "التقديم للمدرّبات مقفول دلوقتي. جرّبي بعدين.",
+  "yourCoachAccountIsPausedContactSupport": "حسابك كمدرّبة موقوف. كلّمي الدعم.",
+  "someOfYourAnswersWereNotAccepted": "بعض إجاباتك ما اتقبلتش. راجعي كل جزء وجرّبي تاني.",
+  "noConnectionYourAnswersAreSavedSo": "مفيش اتصال. إجاباتك محفوظة، فجرّبي تاني لما تكوني أونلاين.",
+  "signInToSendYourApplication": "سجّلي دخولك عشان تبعتي طلبك.",
+  "somethingWentWrongYourAnswersAreSaved": "حصلت مشكلة. إجاباتك محفوظة. جرّبي تاني.",
+  "weHaveYourApplication": "طلبك وصلنا",
+  "whatHappensNext": "إيه اللي هيحصل بعد كده",
+  "aWomanReviewerReadsEachPart": "مراجِعة بتقرا كل جزء.",
+  "sheMayAskYouToChangeSomething": "ممكن تطلب منك تغيّري حاجة.",
+  "whenYouAreApprovedYourCoachSpace": "لما تتقبلي، مساحة المدرّبة بتتفتح.",
+  "aFewChangesPlease": "محتاجين كام تعديل",
+  "theReviewerAskedYouToUpdateThese": "المراجِعة طلبت تحدّثي الأجزاء دي. باقي إجاباتك زي ما هي.",
+  "reviewersNote": "ملاحظة المراجِعة",
+  "sendAgain": "ابعتي تاني",
+  "somethingIsMissingHere": "فيه حاجة ناقصة هنا.",
+  "thisPartIsNotClearEnough": "الجزء ده مش واضح كفاية.",
+  "weCouldNotVerifyThis": "ما قدرناش نتحقق من ده.",
+  "thisIsNotAllowedOnOwnHub": "ده مش مسموح على Own Hub.",
+  "pleaseLookAtThisPartAgain": "بصّي على الجزء ده تاني لو سمحتي.",
+  "notApprovedThisTime": "ما اتقبلتيش المرة دي",
+  "theReviewerCouldNotApproveThisApplication": "المراجِعة ما قدرتش توافق على الطلب ده.",
+  "youCanApplyAgainOnDate": "تقدري تقدّمي تاني يوم {date}.",
+  "@youCanApplyAgainOnDate": {
+    "description": "Rejected application, date already formatted.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "20 Nov 2026"
+      }
+    }
+  },
+  "youAreApproved": "اتقبلتي",
+  "welcomeToOwnHubsCoachesYourCoach": "أهلًا بيكي وسط مدرّبات Own Hub. مساحتك جاهزة.",
+  "openMyCoachSpace": "افتحي مساحتك كمدرّبة",
+  "noApplicationYet": "لسه مفيش طلب",
+  "startMyApplication": "ابدأي طلبك",
+  "cairo": "القاهرة",
+  "alexandria": "الإسكندرية",
+  "qalyubia": "القليوبية",
+  "sharqia": "الشرقية",
+  "dakahlia": "الدقهلية",
+  "gharbia": "الغربية",
+  "monufia": "المنوفية",
+  "beheira": "البحيرة",
+  "kafrElSheikh": "كفر الشيخ",
+  "damietta": "دمياط",
+  "portSaid": "بورسعيد",
+  "ismailia": "الإسماعيلية",
+  "suez": "السويس",
+  "northSinai": "شمال سيناء",
+  "southSinai": "جنوب سيناء",
+  "redSea": "البحر الأحمر",
+  "matrouh": "مطروح",
+  "faiyum": "الفيوم",
+  "beniSuef": "بني سويف",
+  "minya": "المنيا",
+  "asyut": "أسيوط",
+  "sohag": "سوهاج",
+  "qena": "قنا",
+  "luxor": "الأقصر",
+  "aswan": "أسوان",
+  "newValley": "الوادي الجديد",
+  "messages": "الرسائل",
+  "searchChats": "دوّري في الشاتات",
+  "noChatsYet": "مفيش شاتات لسه",
+  "yourChatsWithYourCoachOrYour": "شاتاتك مع مدرّبتك أو مع عميلاتك هتظهر هنا.",
+  "noChatsMatchYourSearch": "مفيش شات بالاسم ده.",
+  "youText": "إنتِ: {text}",
+  "@youText": {
+    "description": "Chat list preview: the last line was written by her. text is the start of that line.",
+    "placeholders": {
+      "text": {
+        "type": "String",
+        "example": "See you at 6"
+      }
+    }
+  },
+  "recipe": "وصفة",
+  "workoutPlan": "خطة تمرين",
+  "mealPlan": "خطة أكل",
+  "liveSession": "جلسة لايف",
+  "messageHidden": "الرسالة اتخفت",
+  "countUnread": "{count} جديدة",
+  "@countUnread": {
+    "description": "Spoken label of the unread badge on a chat row. count is a number.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "yourCoach": "مدرّبتك",
+  "yourClient": "عميلتك",
+  "packageDaysDaysLeft": "{package} · فاضل {days} يوم",
+  "@packageDaysDaysLeft": {
+    "description": "Chat header line under the other person's name. package is the package name, days a whole number above zero.",
+    "placeholders": {
+      "package": {
+        "type": "String",
+        "example": "Monthly coaching"
+      },
+      "days": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "packageEndsToday": "{package} · بتخلص النهارده",
+  "@packageEndsToday": {
+    "description": "Chat header line on the last day of the coaching. package is the package name.",
+    "placeholders": {
+      "package": {
+        "type": "String",
+        "example": "Monthly coaching"
+      }
+    }
+  },
+  "shareSomething": "شاركي حاجة",
+  "shareARecipe": "شاركي وصفة",
+  "shareAWorkoutPlan": "شاركي خطة تمرين",
+  "shareAMealPlan": "شاركي خطة أكل",
+  "scheduleALiveSession": "حدّدي جلسة لايف",
+  "phoneNumbersCantBeSentInThe": "مينفعش نبعت أرقام تليفون في الشات. رسالتك لسه مكتوبة لو عايزة تغيّريها.",
+  "paymentDetailsCantBeSharedInThe": "مينفعش نشارك بيانات دفع في الشات. رسالتك لسه مكتوبة لو عايزة تغيّريها.",
+  "linksCantBeSentInTheChat": "مينفعش نبعت لينكات في الشات. رسالتك لسه مكتوبة لو عايزة تغيّريها.",
+  "someWordsInThisMessageArentAllowed": "فيه كلمات في الرسالة دي مش مسموحة هنا. رسالتك لسه مكتوبة لو عايزة تغيّريها.",
+  "yourMessageCouldNotBeSentTry": "الرسالة ما اتبعتتش. جرّبي كمان شوية.",
+  "newMessages": "رسائل جديدة",
+  "thisCoachingHasEndedYouCanRead": "التدريب ده خلص. تقدري تقري الشات بس مش هتقدري تكتبي فيه.",
+  "report": "إبلاغ",
+  "block": "حظر",
+  "moreOptions": "خيارات تانية",
+  "blockName": "تحظري {name}؟",
+  "@blockName": {
+    "description": "Title of the sheet that asks her to confirm blocking the other person in a chat.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "nameCannotWriteToYouAfterThis": "{name} مش هتقدر تكتبلك بعد كده، ومش هتشوفي رسايلها. تقدري ترجّعي ده بعدين.",
+  "@nameCannotWriteToYouAfterThis": {
+    "description": "Body of the block confirmation in a chat. name is the other person.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "nameIsBlocked": "{name} اتحظرت.",
+  "@nameIsBlocked": {
+    "description": "Shown once the other person in a chat is blocked.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "yourReportIsPrivate": "بلاغك سري.",
+  "reportThisMessage": "بلّغي عن الرسالة دي",
+  "copy": "نسخ",
+  "copied": "اتنسخت",
+  "thereIsNoMessageFromHerTo": "مفيش رسالة منها تبلّغي عنها لسه.",
+  "sending": "بتتبعت",
+  "sent": "اتبعتت",
+  "seen": "اتشافت",
+  "minutesMin": "{minutes} دقيقة",
+  "@minutesMin": {
+    "description": "Length of a live session card in a chat.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "45"
+      }
+    }
+  },
+  "dayAtTime": "{day} الساعة {time}",
+  "@dayAtTime": {
+    "description": "When a live session starts. day is Today, Tomorrow-style or a date; time is hh:mm.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "Friday"
+      },
+      "time": {
+        "type": "String",
+        "example": "18:30"
+      }
+    }
+  },
+  "joinTheCall": "ادخلي المكالمة",
+  "confirm": "أكّدي",
+  "waitingForConfirmation": "مستنية التأكيد",
+  "confirmed": "اتأكدت",
+  "declined": "اترفضت",
+  "coachingStarted": "التدريب بدأ",
+  "coachingEnded": "التدريب خلص",
+  "coachingEndsSoon": "التدريب قرّب يخلص",
+  "aPlanWasUpdated": "الخطة اتحدّثت",
+  "liveSessionConfirmed": "جلسة اللايف اتأكدت",
+  "liveSessionFinished": "جلسة اللايف خلصت",
+  "thisMessageWasHiddenBecauseItHad": "الرسالة دي اتخفت لأن فيها بيانات تواصل أو دفع",
+  "weCouldNotLoadThisChatCheck": "معرفناش نفتح الشات. اتأكدي من النت.",
+  "noMessagesYetSayHello": "مفيش رسايل لسه. ابدأي بسلام.",
+  "loadingOlderMessages": "بنحمّل رسائل أقدم",
+  "coachDesk": "مكتب المدرّبة",
+  "newRequests": "طلبات جديدة",
+  "unreadChats": "رسايل لسه ما اتقرتش",
+  "toFollowUp": "محتاجة متابعة",
+  "activeClients": "عميلات حاليًا",
+  "followUp_n22yh": "متابعة",
+  "showAllCount": "اعرضي الكل ({count})",
+  "@showAllCount": {
+    "description": "Coach desk",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "accept": "اقبلي",
+  "decline": "اعتذري",
+  "whyAreYouDeclining": "ليه هتعتذري؟",
+  "myPlacesAreFull": "أماكني اتملت",
+  "notTheRightFit": "مش مناسبة لأسلوبي",
+  "sheShouldSeeHerDoctorFirst": "تسأل دكتورها الأول",
+  "requestAccepted": "اتقبل الطلب",
+  "requestDeclined": "اتعتذر عن الطلب",
+  "nameAskedToJoin": "{name} طلبت تنضمّ ليكي",
+  "@nameAskedToJoin": {
+    "description": "Coach desk",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "healthAnswersToReadFirst": "فيه إجابات صحية اقريها الأول",
+  "goalLevelDaysDaysAWeekPlace": "{goal} · {level} · {days} أيام في الأسبوع · {place}",
+  "@goalLevelDaysDaysAWeekPlace": {
+    "description": "Coach desk",
+    "placeholders": {
+      "goal": {
+        "type": "String",
+        "example": "Get stronger"
+      },
+      "level": {
+        "type": "String",
+        "example": "Beginner"
+      },
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "place": {
+        "type": "String",
+        "example": "At home"
+      }
+    }
+  },
+  "clientTag": "عميلة {tag}",
+  "@clientTag": {
+    "description": "Coach desk",
+    "placeholders": {
+      "tag": {
+        "type": "String",
+        "example": "#a1b2"
+      }
+    }
+  },
+  "liveSessionTodayAtTime": "جلسة لايف النهارده الساعة {time}",
+  "@liveSessionTodayAtTime": {
+    "description": "Coach desk",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "18:30"
+      }
+    }
+  },
+  "noMessageForDaysDays": "مفيش رسايل بقالها {days} يوم",
+  "@noMessageForDaysDays": {
+    "description": "Coach desk",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "8"
+      }
+    }
+  },
+  "endsToday": "بتخلص النهارده",
+  "daysDaysLeft": "فاضل {days} يوم",
+  "@daysDaysLeft": {
+    "description": "Coach desk",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "noMessagesYet": "لسه مفيش رسايل",
+  "shareYourPortfolioLinkSoMembersCan": "ابعتي لينك البورتفوليو بتاعك عشان الأعضاء يطلبوا ينضموا ليكي.",
+  "youAreAllCaughtUp": "خلّصتي كل حاجة",
+  "nothingToAnswerOrFollowUpRight": "مفيش رسايل ولا طلبات ولا متابعات دلوقتي.",
+  "searchClients": "دوّري على عميلة",
+  "nobodyMatchesThatSearch": "مفيش حد بالاسم ده.",
+  "noUnreadChatsRightNow": "مفيش رسايل جديدة دلوقتي.",
+  "nobodyNeedsAFollowUpRightNow": "مفيش حد محتاج متابعة دلوقتي.",
+  "nobodyIsEndingSoon": "مفيش حد قرّب يخلص.",
+  "endingSoon": "قربت تخلص",
+  "openTheDetailsOfName": "افتحي بيانات {name}",
+  "@openTheDetailsOfName": {
+    "description": "Coach desk",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "openTheChatWithName": "افتحي المحادثة مع {name}",
+  "@openTheChatWithName": {
+    "description": "Coach desk",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "clientDetails": "بيانات العميلة",
+  "started": "بدأت",
+  "daysLeft": "الأيام المتبقية",
+  "liveSessionsHeld": "جلسات اللايف اللي اتعملت",
+  "usedOfIncluded": "{used} من {included}",
+  "@usedOfIncluded": {
+    "description": "Coach desk",
+    "placeholders": {
+      "used": {
+        "type": "String",
+        "example": "2"
+      },
+      "included": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "herAnswers": "إجاباتها",
+  "sharedWithYouWhileYouCoachHer": "بتتشارك معاكي طول ما بتدرّبيها",
+  "place": "المكان",
+  "allergies": "الحساسية",
+  "lifeStage": "مرحلتها الحياتية",
+  "healthQuestions": "الأسئلة الصحية",
+  "sheTickedThatSheWillCheckWith": "علّمت إنها هتسأل دكتورها",
+  "noHealthFlagsInHerAnswers": "مفيش مشاكل صحية في إجاباتها",
+  "yourPrivateNote": "ملاحظتك الخاصة",
+  "staysOnThisPhoneOnlySheNever": "بتفضل على الموبايل ده بس. هي ما بتشوفهاش وما بتتزامنش.",
+  "writeWhatYouWantToRemember": "اكتبي اللي عايزة تفتكريه",
+  "saveNote": "احفظي الملاحظة",
+  "noteSaved": "اتحفظت الملاحظة",
+  "plansYouShared": "الخطط اللي شاركتيها",
+  "nothingSharedYetShareAWorkoutOr": "لسه ما شاركتيش حاجة. شاركي تمرين أو خطة أكل من تحت.",
+  "shareAWorkout": "شاركي تمرين",
+  "liveSessions": "جلسات اللايف",
+  "waitingForAnAnswer": "مستنية رد",
+  "closed": "خلصت",
+  "withYouSinceStartEndsEnd": "معاكي من {start} · وبتخلص {end}",
+  "@withYouSinceStartEndsEnd": {
+    "description": "Coach desk",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "2/10/2026"
+      },
+      "end": {
+        "type": "String",
+        "example": "30/10/2026"
+      }
+    }
+  },
+  "weCouldNotFindThisClient": "مش لاقيين العميلة دي.",
+  "planForName": "خطة ل{name}",
+  "@planForName": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "startFrom": "ابدأي من",
+  "oneOfTheThreeSplits": "واحد من التقسيمات التلاتة",
+  "yourTemplates": "قوالبك",
+  "blankPlan": "خطة فاضية",
+  "planName": "اسم الخطة",
+  "editDaysAndMoves": "عدّلي الأيام والتمارين",
+  "publishToName": "انشري ل{name}",
+  "@publishToName": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "publishAsANewVersion": "انشريها كنسخة جديدة",
+  "saveAsATemplate": "احفظيها كقالب",
+  "templateSaved": "القالب اتحفظ.",
+  "publishedNameCanSeeItNow": "اتنشرت. {name} تقدر تشوفها دلوقتي.",
+  "@publishedNameCanSeeItNow": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "giveThePlanANameFirst": "سمّي الخطة الأول.",
+  "addAtLeastOneDayFirst": "ضيفي يوم واحد على الأقل الأول.",
+  "thisPlanIsTooBigToSend": "الخطة كبيرة أوي على الإرسال. شيلي يوم أو كام تمرين.",
+  "aMoveInThisPlanIsNot": "فيه تمرين في الخطة مش موجود في مكتبة التمارين دلوقتي.",
+  "versionN": "النسخة {n}",
+  "@versionN": {
+    "description": "A plan's revision number.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "dayName": "اسم اليوم",
+  "addMoves": "ضيفي تمارين",
+  "holdInSeconds": "الثبات بالثواني",
+  "watchTheClip": "شوفي الفيديو",
+  "howManyDays": "كام يوم",
+  "addToSlot": "ضيفي على {slot}",
+  "@addToSlot": {
+    "description": "A meal slot: breakfast, lunch, dinner or snack.",
+    "placeholders": {
+      "slot": {
+        "type": "String",
+        "example": "Lunch"
+      }
+    }
+  },
+  "aShortLineLikeFruitOfHer": "سطر قصير، زي فاكهة من اختيارها",
+  "grams": "الجرامات",
+  "noteForHerIfYouLike": "ملاحظة ليها لو عايزة",
+  "nameAvoidsList": "{name} بتتجنب: {list}",
+  "@nameAvoidsList": {
+    "description": "The client's name, then the allergies she declared.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      },
+      "list": {
+        "type": "String",
+        "example": "sesame, nuts"
+      }
+    }
+  },
+  "noAllergiesOnHerIntake": "مفيش حساسية مكتوبة في بياناتها.",
+  "containsAllergensWhichSheAvoids": "فيه {allergens}، وهي بتتجنبه.",
+  "@containsAllergensWhichSheAvoids": {
+    "description": "Allergens in a meal item.",
+    "placeholders": {
+      "allergens": {
+        "type": "String",
+        "example": "sesame"
+      }
+    }
+  },
+  "allergensNotCheckedForThisOne": "الحساسية مش متراجعة للصنف ده.",
+  "checkTheMarkedItemsBeforeYouPublish": "راجعي الأصناف المعلّمة قبل ما تنشري.",
+  "aboutKcalKcalProteinGProtein": "حوالي {kcal} سعرة حرارية، {protein} جم بروتين",
+  "@aboutKcalKcalProteinGProtein": {
+    "description": "A day's nutrition worked out from the food tables.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1,850"
+      },
+      "protein": {
+        "type": "String",
+        "example": "92"
+      }
+    }
+  },
+  "figuresComeFromOwnHubsFoodTables": "الأرقام من جداول الأكل بتاعة Own Hub.",
+  "someItemsHaveNoFigures": "بعض الأصناف ملهاش أرقام.",
+  "nothingPlannedYet": "لسه مفيش حاجة",
+  "addAtLeastOneItemFirst": "ضيفي صنف واحد على الأقل الأول.",
+  "noRecipesToPickFromYet": "مفيش وصفات تختاري منها لسه.",
+  "servingsN": "الحصص: {n}",
+  "@servingsN": {
+    "description": "Servings of a recipe.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1.5"
+      }
+    }
+  },
+  "scheduleASession": "حدّدي جلسة",
+  "meetingLink": "رابط الاجتماع",
+  "aGoogleMeetOrZoomLinkThat": "رابط Google Meet أو Zoom بيبدأ بـ https",
+  "thatLinkIsNotAllowedUseGoogle": "الرابط ده مش مسموح. استخدمي Google Meet أو Zoom أو Teams.",
+  "thatTimeIsAfterHerCoachingEnds": "الوقت ده بعد ما التدريب بينتهي.",
+  "sessionsUsedUsedOfIncluded": "الجلسات المستخدمة: {used} من {included}",
+  "@sessionsUsedUsedOfIncluded": {
+    "description": "Live sessions used out of the package's.",
+    "placeholders": {
+      "used": {
+        "type": "String",
+        "example": "1"
+      },
+      "included": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "noSessionsLeftInThisPackage": "مفيش جلسات فاضلة في الباقة دي.",
+  "sendToName": "ابعتي ل{name}",
+  "@sendToName": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "sessionSentNameCanConfirmIt": "الجلسة اتبعتت. {name} تقدر تأكدها.",
+  "@sessionSentNameCanConfirmIt": {
+    "description": "The client's first name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mai"
+      }
+    }
+  },
+  "yourCoachingWithCoachHasEndedYour": "التدريب مع {coach} خلص. خططك فاضلة هنا تقرأيها.",
+  "@yourCoachingWithCoachHasEndedYour": {
+    "description": "The coach's name.",
+    "placeholders": {
+      "coach": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "daysLeftN": "الأيام الباقية: {n}",
+  "@daysLeftN": {
+    "description": "Days left in a coaching package.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "lastDay": "آخر يوم",
+  "plansFromYourCoach": "خطط من مدربتك",
+  "yourCoachHasNotSharedAPlan": "مدربتك لسه ما شاركتش خطة.",
+  "upcomingSession": "الجلسة الجاية",
+  "markDone": "علّمي إنها خلصت",
+  "waitingForTheOtherSideToMark": "مستنيين الطرف التاني يعلّم إنها خلصت.",
+  "countedInYourSessions": "اتحسبت من جلساتك.",
+  "blockThisCoach": "تحجبي المدربة دي؟",
+  "sheWillNotBeAbleToMessage": "مش هتقدر تبعتلك رسايل. هتفضلي تقدري تقرأي خططك.",
+  "newMessagesFromYourCoach": "رسايل جديدة من مدربتك",
+  "fromYourCoach": "من مدربتك",
+  "todaysWorkoutName": "تمرين النهارده: {name}",
+  "@todaysWorkoutName": {
+    "description": "The name of the coach's workout for today.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Lower body"
+      }
+    }
+  },
+  "nextSessionWhen": "الجلسة الجاية: {when}",
+  "@nextSessionWhen": {
+    "description": "Day and time of the next live session.",
+    "placeholders": {
+      "when": {
+        "type": "String",
+        "example": "Sat 24 Oct, 18:30"
+      }
+    }
+  },
+  "startThisWorkout": "ابدئي التمرين ده",
+  "heldBackForHowYouAreTraining": "اتشال عشان وضعك دلوقتي. اسألي مدربتك أو دكتورك الأول.",
+  "containsAllergensWhichYouAvoid": "فيه {allergens}، وإنتي بتتجنبيه.",
+  "@containsAllergensWhichYouAvoid": {
+    "description": "Allergens in a meal item, for the client.",
+    "placeholders": {
+      "allergens": {
+        "type": "String",
+        "example": "sesame"
+      }
+    }
+  },
+  "notCheckedAgainstYourAllergies": "مش متراجع مع الحساسية بتاعتك.",
+  "todaysMealsFromYourCoach": "أكل النهارده من مدربتك",
+  "ifYouHaveAHealthConditionCheck": "لو عندك حالة صحية، استشيري دكتورك قبل ما تمشي على خطة.",
+  "youHaveNoCoachRightNow": "مفيش مدربة معاكي دلوقتي.",
+  "minutesMinSession": "جلسة {minutes} دقيقة",
+  "@minutesMinSession": {
+    "description": "Length of a live session in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "45"
+      }
+    }
+  },
+  "yourCoachHasNotSetAPlan": "مدربتك ما حددتش خطة لليوم.",
+  "openMyCoach": "افتحي مدربتي",
+  "moveUp": "اطلعي لفوق",
+  "moveDown": "انزلي لتحت",
+  "logThis": "سجّلي ده",
+  "photosAndResults": "الصور والنتايج",
+  "whatMembersSeeAfterOwnHubChecks": "اللي الأعضاء بيشوفوه بعد ما Own Hub تراجعه",
+  "waitingForOwnHubsCheck": "مستنية مراجعة Own Hub",
+  "shownOnYourPortfolio": "ظاهرة في ملفك التعريفي",
+  "notApproved": "ما اتوافقش عليها",
+  "needsYourClientsConsent": "محتاجة موافقة عميلتك",
+  "addAPhotoOfYouOrYour": "ضيفي صورة ليكي أو لشغلك",
+  "nothingHereYetAddYourFirstResult": "لسه مفيش حاجة هنا. ضيفي أول نتيجة.",
+  "countOf30Items": "{count} من 30",
+  "@countOf30Items": {
+    "description": "How many photos and results she has added, out of the 30 allowed.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "transformationWeeksWeeks": "تحوّل خلال {weeks} أسابيع",
+  "@transformationWeeksWeeks": {
+    "description": "Title of a before and after item.",
+    "placeholders": {
+      "weeks": {
+        "type": "String",
+        "example": "8"
+      }
+    }
+  },
+  "feedbackFromName": "رأي من {name}",
+  "@feedbackFromName": {
+    "description": "Title of a client feedback item.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Mona"
+      }
+    }
+  },
+  "keep": "سيبيها",
+  "removeThisFromYourPortfolio": "تمسحي ده من ملفك التعريفي؟",
+  "confirmMyClientAgreed": "أكّدي إن عميلتك وافقت",
+  "chooseAPhoto": "اختاري صورة",
+  "replacePhoto": "غيّري الصورة دي",
+  "noteOptional_1l0x9": "ملاحظة (اختياري)",
+  "myClientAgreedInWritingThatOwn_c2wgd": "عميلتي وافقت كتابةً إن أعضاء Own Hub يشوفوا الصور دي",
+  "sendForOwnHubsCheck": "ابعتي لمراجعة Own Hub",
+  "sentOwnHubChecksEveryPhotoBefore": "اتبعتت. Own Hub بتراجع كل صورة قبل ما الأعضاء يشوفوها.",
+  "whatYourClientSaid": "اللي قالته عميلتك",
+  "from": "من",
+  "screenshotOptional_x0klp": "لقطة شاشة (اختياري)",
+  "captionOptional": "تعليق (اختياري)",
+  "addThePhotoFirst": "ضيفي الصورة الأول.",
+  "addBothPhotos": "ضيفي الصورتين.",
+  "tickTheBoxToSayYourClient": "علّمي على المربع إن عميلتك وافقت.",
+  "writeLowToHighCharacters": "اكتبي من {low} لـ {high} حرف.",
+  "@writeLowToHighCharacters": {
+    "description": "Length rule for a text.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "10"
+      },
+      "high": {
+        "type": "String",
+        "example": "600"
+      }
+    }
+  },
+  "writeWhoItIsFrom": "اكتبي الرأي ده من مين.",
+  "yourClientConfirmed": "تأكدنا إن عميلتك وافقت.",
+  "results": "النتائج",
+  "overNWeeks": "على مدى {n} أسبوع",
+  "@overNWeeks": {
+    "description": "Weeks a transformation took.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "sharedWithHerClientsWrittenConsent": "اتنشرت بموافقة كتابية من العميلة",
+  "nothingApprovedYetPhotosAndResultsShow": "لسه مفيش حاجة اتوافق عليها. الصور والنتايج بتظهر هنا بعد ما Own Hub تراجعها.",
+  "screenshotOfAMessageFromAClient": "لقطة شاشة لرسالة من عميلة",
+  "thePhotoWasNotClearEnough": "الصورة مكانتش واضحة كفاية.",
+  "itDoesNotFollowTheRulesFor": "مش ماشية مع قواعد الصور.",
+  "weNeedYourClientsWrittenAgreement": "محتاجين موافقة عميلتك مكتوبة.",
+  "ownHubCouldNotApproveIt": "Own Hub ما قدرتش توافق عليها.",
+  "newActivityInTheChat": "نشاط جديد في الشات",
+  "thatItemIsNoLongerTherePull": "العنصر ده مبقاش موجود. اسحبي لتحت عشان تحدّثي القايمة.",
+  "daysPluralOne1DayLeftOther": "{days, plural, one{فاضل يوم واحد} two{فاضل يومين} few{فاضل {days} أيام} many{فاضل {days} يوم} other{فاضل {days} يوم}}",
+  "@daysPluralOne1DayLeftOther": {
+    "description": "A coaching package's countdown. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "countPluralOne1WeekOtherCount": "{count, plural, one{أسبوع واحد} two{أسبوعين} few{{count} أسابيع} many{{count} أسبوع} other{{count} أسبوع}}",
+  "@countPluralOne1WeekOtherCount": {
+    "description": "A package length in weeks, taken from the template's own duration.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "countPluralOne1LiveSessionA": "{count, plural, one{جلسة مباشرة في الشهر} two{جلستين مباشرتين في الشهر} few{{count} جلسات مباشرة في الشهر} many{{count} جلسة مباشرة في الشهر} other{{count} جلسة مباشرة في الشهر}}",
+  "@countPluralOne1LiveSessionA": {
+    "description": "Live sessions a month, taken from the template's own number.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "weeksSessions": "{weeks}، {sessions}",
+  "@weeksSessions": {
+    "description": "The package template picker label: length, then live sessions a month, both already worded.",
+    "placeholders": {
+      "weeks": {
+        "type": "String",
+        "example": "4 weeks"
+      },
+      "sessions": {
+        "type": "String",
+        "example": "2 live sessions a month"
+      }
+    }
+  },
+  "weeksOfCoachingWithMe": "{weeks} تدريب معايا",
+  "@weeksOfCoachingWithMe": {
+    "description": "A package template's title. weeks is already worded, e.g. 4 weeks.",
+    "placeholders": {
+      "weeks": {
+        "type": "String",
+        "example": "4 weeks"
+      }
+    }
+  },
+  "youAlreadyHaveCountPackagesEditOne": "عندك {count} باقات بالفعل. عدّلي واحدة منهم.",
+  "@youAlreadyHaveCountPackagesEditOne": {
+    "description": "Refusal when she is at the package limit.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "youHaveAllCountPackages": "وصلتي لـ {count} باقات.",
+  "@youHaveAllCountPackages": {
+    "description": "Shown instead of the add button at the package limit.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "youHaveCountItemsRemoveOneTo": "عندك {count} عنصر. امسحي واحد عشان تضيفي غيره.",
+  "@youHaveCountItemsRemoveOneTo": {
+    "description": "Portfolio media at its limit.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "reviewTakesUpToDaysWorkingDays": "المراجعة بتاخد لحد {days} أيام عمل.",
+  "@reviewTakesUpToDaysWorkingDays": {
+    "description": "Coach application review time.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "ownHubsReviewerIsReadingItThis": "مراجِعة Own Hub بتقراه. ده بياخد لحد {days} أيام عمل، وهنقولك هنا.",
+  "@ownHubsReviewerIsReadingItThis": {
+    "description": "Coach application status while it is in review.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "youCanApplyAgainDaysDaysAfter": "تقدري تقدّمي تاني بعد {days} يوم من القرار.",
+  "@youCanApplyAgainDaysDaysAfter": {
+    "description": "Coach re-apply wait, from the contract's own number.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "thatPhotoCouldNotBeUsedChoose": "الصورة دي ما ينفعش تتستخدم. اختاري JPEG أو PNG أقل من {mb} ميجا.",
+  "@thatPhotoCouldNotBeUsedChoose": {
+    "description": "Application photo refused; mb is the upload limit.",
+    "placeholders": {
+      "mb": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "addMinToMaxAPhotoOf": "ضيفي من {min} لـ {max}. صورة الشهادة اختيارية.",
+  "@addMinToMaxAPhotoOf": {
+    "description": "Application step 2, education.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "addMinToMaxEachOneNeeds": "ضيفي من {min} لـ {max}. كل واحدة محتاجة صورة.",
+  "@addMinToMaxEachOneNeeds": {
+    "description": "Application step 3, certificates.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "chooseMinToMaxThenTellUs": "اختاري من {min} لـ {max}، وبعدين احكيلنا عن خبرتك.",
+  "@chooseMinToMaxThenTellUs": {
+    "description": "Application step 4, specialties.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "addMinToMaxMessagesFromWomen": "ضيفي من {min} لـ {max} رسائل من ستات اتدرّبوا معاكي.",
+  "@addMinToMaxMessagesFromWomen": {
+    "description": "Application step 5, testimonials.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "2"
+      },
+      "max": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "addMinToMaxThePhotosAre": "ضيفي من {min} لـ {max}. الصور بتتشاف من مراجِعة Own Hub بس.",
+  "@addMinToMaxThePhotosAre": {
+    "description": "Application step 6, transformations.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "1"
+      },
+      "max": {
+        "type": "String",
+        "example": "6"
+      }
+    }
+  },
+  "youAddedTooManyCertificatesTheMost": "ضفتي شهادات كتير. الحد الأقصى {max}.",
+  "@youAddedTooManyCertificatesTheMost": {
+    "description": "Refusal for too many certificates.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "pickATimeAtLeastMinutesMinutes": "اختاري وقت بعد {minutes} دقيقة على الأقل من دلوقتي.",
+  "@pickATimeAtLeastMinutesMinutes": {
+    "description": "Session scheduling lead time.",
+    "placeholders": {
+      "minutes": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "typeTheDateAndTimeLikeExample": "اكتبي التاريخ والوقت زي {example}.",
+  "@typeTheDateAndTimeLikeExample": {
+    "description": "Session date field hint; example is a format sample.",
+    "placeholders": {
+      "example": {
+        "type": "String",
+        "example": "2026-11-05 18:30"
+      }
+    }
+  },
+  "underEgpN": "أقل من {n} جنيه",
+  "@underEgpN": {
+    "description": "The lowest budget band for a coach search; n is the band's own upper bound.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "1,500"
+      }
+    }
+  },
+  "overEgpN": "أكتر من {n} جنيه",
+  "@overEgpN": {
+    "description": "The highest budget band for a coach search; n is the band's own lower bound.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "3,000"
+      }
+    }
+  },
+  "egpLowToHigh": "من {low} لـ {high} جنيه",
+  "@egpLowToHigh": {
+    "description": "The middle budget band for a coach search, from the band's own bounds.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "1,500"
+      },
+      "high": {
+        "type": "String",
+        "example": "3,000"
+      }
+    }
+  },
+  "endCoaching": "إنهاء التدريب",
+  "endThisCoaching": "عايزة تنهي التدريب ده؟",
+  "theChatBecomesReadOnlyYourPlans": "الشات هيبقى للقراءة بس. خططك هتفضل معاكي. {coach} مش هتشوف إجاباتك تاني.",
+  "@theChatBecomesReadOnlyYourPlans": {
+    "description": "Shown when a member confirms ending her coaching. coach is the coach's name.",
+    "placeholders": {
+      "coach": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "theChatBecomesReadOnlyHerPlans": "الشات هيبقى للقراءة بس. خططها هتفضل معاها. مش هتشوفي إجاباتها تاني.",
+  "keepCoaching": "كمّلي التدريب",
+  "waitingForCoachSAnswer": "مستنية رد {coach}",
+  "@waitingForCoachSAnswer": {
+    "description": "A member's coaching request that the coach has not answered yet. coach is the coach's name.",
+    "placeholders": {
+      "coach": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "cancelRequest": "إلغاء الطلب",
+  "coachCouldNotTakeYouThisTime": "{coach} مش هتقدر تاخدك المرة دي",
+  "@coachCouldNotTakeYouThisTime": {
+    "description": "A member's request was declined. coach is the coach's name.",
+    "placeholders": {
+      "coach": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "noAnswerInTime": "الطلب خلص من غير رد",
+  "findAnotherCoach": "دوري على مدربة تانية",
+  "waitingForYourReply": "مستنية ردك",
+  "noMessageFromYouInDaysDays": "مفيش رسالة منك بقالها {days} يوم",
+  "@noMessageFromYouInDaysDays": {
+    "description": "Why a client is on the coach's follow up list. days is a number.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "youCanSeeItUnderMyCoach": "هتلاقيه في «مدرّبتي».",
+  "freeForNow": "ببلاش دلوقتي",
+  "egpPriceWhenPaymentsOpen": "{price} جنيه لما الدفع يشتغل",
+  "@egpPriceWhenPaymentsOpen": {
+    "description": "Coach browsing while payments are off: the package price as it will be.",
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "2,000"
+      }
+    }
+  },
+  "freeForMembersUntilPaymentsOpen": "ببلاش للعضوات لحد ما الدفع يشتغل",
+  "notVisibleYetAddAPackage": "لسه مش ظاهرة للعضوات: ضيفي باقة",
+  "backToProfile": "ارجعي للبروفايل",
+  "contactOwnHub": "كلّمي Own Hub",
+  "chooseADateAndTime": "اختاري التاريخ والوقت",
+  "cantMakeIt": "مش هقدر",
+  "countPluralOne1ClientOtherCount": "{count, plural, one{عميلة واحدة} two{عميلتين} few{{count} عميلات} many{{count} عميلة} other{{count} عميلة}}",
+  "@countPluralOne1ClientOtherCount": {
+    "description": "Coach space pill. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "countPluralOne1NewRequestOther": "{count, plural, one{طلب جديد} two{طلبين جداد} few{{count} طلبات جديدة} many{{count} طلب جديد} other{{count} طلب جديد}}",
+  "@countPluralOne1NewRequestOther": {
+    "description": "Coach space pill. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "countPluralOne1UnreadChatOther": "{count, plural, one{محادثة واحدة لسه ما اتقرتش} two{محادثتين لسه ما اتقرتوش} few{{count} محادثات لسه ما اتقرتش} many{{count} محادثة لسه ما اتقرتش} other{{count} محادثة لسه ما اتقرتش}}",
+  "@countPluralOne1UnreadChatOther": {
+    "description": "Coach space pill. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "durationDaysPluralOne1DayOther": "المدة: {days, plural, one{يوم واحد} two{يومين} few{{days} أيام} many{{days} يوم} other{{days} يوم}}",
+  "@durationDaysPluralOne1DayOther": {
+    "description": "A package length on a coach's page. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "28"
+      }
+    }
+  },
+  "overWeeksPluralOne1WeekOther": "على مدى {weeks, plural, one{أسبوع} two{أسبوعين} few{{weeks} أسابيع} many{{weeks} أسبوع} other{{weeks} أسبوع}}",
+  "@overWeeksPluralOne1WeekOther": {
+    "description": "A transformation's length on a coach's page. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "transformationWeeksPluralOne1WeekOther": "تحوّل خلال {weeks, plural, one{أسبوع} two{أسبوعين} few{{weeks} أسابيع} many{{weeks} أسبوع} other{{weeks} أسبوع}}",
+  "@transformationWeeksPluralOne1WeekOther": {
+    "description": "A transformation's title in the coach's list. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "faceToFace": "وجهًا لوجه",
+  "seeItFirst": "شوفيها الأول",
+  "am": "ص",
+  "pm": "م",
+  "pickHerNameIfSheKnowsYou_akwt2": "اختاري اسمها لو بتعرفك. طلبك هيروحلها هي.",
+  "nameYourCoachSees": "الاسم اللي المدرّبة هتشوفه",
+  "yourFirstNameIsOptionalYourCoach": "اسمك الأول اختياري. المدرّبة بتشوفه جنب إجاباتك."
 }

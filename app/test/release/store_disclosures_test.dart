@@ -25,6 +25,8 @@ void main() {
     // Privacy policy v3, section 7.1 of the compliance plan: linked to her
     // account, never tracking, App Functionality.
     for (final type in <String>[
+      'Name',
+      'EmailsorTextMessages',
       'PhoneNumber',
       'UserID',
       'DeviceID',
@@ -162,6 +164,8 @@ void main() {
   test('the Play Data safety answers exist and match the manifest', () {
     final answers = File('android/play-data-safety.txt').readAsStringSync();
     for (final phrase in <String>[
+      'coach applicants',
+      'Emails or text messages',
       'Phone number',
       'User IDs',
       'national ID number',

@@ -184,16 +184,20 @@ const Set<String> kNoChromeScreens = {
   'M08',
   'M16',
   'B10',
+  // The two coaching conversations are full-screen chats with their own
+  // header, the other person's picture and name, like any messaging app.
+  'K16',
+  'H06',
 };
 
 /// Screens that already show her own picture in their page, so the chrome
 /// adds only the switch there.
-const Set<String> _ownPictureScreens = {'A02', 'K07'};
+const Set<String> _ownPictureScreens = {'A02'};
 
 /// Her profile picture and the language switch, side by side, for the end of
 /// a header. Drawn on every routed screen except [kNoChromeScreens].
 ///
-/// The picture opens A02. A02 and K07 already show her picture, so they get
+/// The picture opens A02. A02 already shows her picture, so they get
 /// only the switch. A screen under a
 /// [LanguageSwitchFrame] strip gets its chrome from the strip, so a header
 /// below it draws nothing.

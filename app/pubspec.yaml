@@ -241,6 +241,9 @@ flutter:
     # variant (D47). Content, so JSON, for the reason above. Drafted, and
     # marked as pending Rahma's sign-off inside the file.
     - assets/content/starting_programmes.json
+    - assets/content/exercise_traits.json
+    # The reminder lines in two tones, chosen on the phone (notification_voice.dart).
+    - assets/content/notification_lines.json
     # 159 Egyptian dishes with per 100 g macros and S, M and L portions, built from
     # functions/nutrition/egyptian_dishes.json by tool/build_food_pack.py. USDA
     # FoodData Central (CC0) is the source; the recipes are pending dietitian review.

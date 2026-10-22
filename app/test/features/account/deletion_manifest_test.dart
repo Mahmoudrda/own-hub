@@ -49,7 +49,7 @@ Set<String> _subcollectionsInRules() {
 
 void main() {
   group('the manifest is intact', () {
-    test('54 rows, numbered 1 to 54 with no gaps and no duplicates', () {
+    test('59 rows, numbered 1 to 59 with no gaps and no duplicates', () {
       // 34 until check (e) below ran for the first time and found three
       // collections nobody had enumerated in three passes by eye.
       //
@@ -74,10 +74,13 @@ void main() {
       //
       // 54 with her confirmation marker on shared foods, removed by the
       // server's purge; the count on the food stays.
-      expect(kDeletionManifest, hasLength(54));
+      //
+      // 59 with private coaching: her application, coachPrivate, packages and
+      // drafts, subscriptions, and the pseudonymised payment records.
+      expect(kDeletionManifest, hasLength(59));
 
       final numbers = kDeletionManifest.map((r) => r.number).toList()..sort();
-      expect(numbers, [for (var i = 1; i <= 54; i++) i]);
+      expect(numbers, [for (var i = 1; i <= 59; i++) i]);
     });
 
     test('every row names a path and an owner', () {
@@ -94,7 +97,7 @@ void main() {
 
   test('the community and coach data is named row by row', () {
     // Dormant at launch, and erasable before it is switched on (APL-16).
-    for (final number in [45, 46, 47, 48, 49]) {
+    for (final number in [45, 46, 47, 48, 49, 55, 56, 57, 58]) {
       final row = kDeletionManifest.firstWhere((r) => r.number == number);
       expect(row.method, DeletionMethod.groupHook);
       expect(row.method.removesData, isTrue);
@@ -108,8 +111,8 @@ void main() {
     );
   });
 
-  group('six rows survive on purpose, and A02 must say so', () {
-    test('exactly six rows do not remove data', () {
+  group('seven rows survive on purpose, and A02 must say so', () {
+    test('exactly seven rows do not remove data', () {
       expect(kRowsThatSurvive.map((r) => r.number).toList()..sort(), [
         23,
         30,
@@ -117,6 +120,7 @@ void main() {
         42,
         43,
         44,
+        59,
       ]);
     });
 

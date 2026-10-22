@@ -91,6 +91,7 @@ class EatHubView extends StatefulWidget {
     this.onSearch,
     this.onLogged,
     this.onSelectTab,
+    this.coachSection,
   });
 
   /// See `EatView.constraints`: required, never defaulted.
@@ -176,6 +177,9 @@ class EatHubView extends StatefulWidget {
   /// A meal was logged from anywhere on the page. The hub shows the undo bar
   /// itself; this is for the caller's bookkeeping (analytics).
   final ValueChanged<LogHandle>? onLogged;
+
+  /// "From your coach", at the top of the plan. Null without a coach.
+  final Widget? coachSection;
 
   final ValueChanged<String>? onSelectTab;
 
@@ -556,6 +560,7 @@ class _EatHubViewState extends State<EatHubView> {
       mainAxisSize: MainAxisSize.min,
       spacing: kStackGap,
       children: [
+        ?widget.coachSection,
         Text(l10n.thisWeek, style: AppText.titleL),
         WeekPlanView(
           repository: _repo,

@@ -360,6 +360,9 @@ def test_the_call_carries_the_owners_settings():
     assert settings.thinking_config.thinking_level == "LOW"
     assert settings.thinking_config.thinking_budget is None
     assert settings.system_instruction == model.SYSTEM_PROMPT
+    # Medium halves the photo's tokens (1,120 to 560 on a 768 px photo).
+    assert settings.media_resolution.value == "MEDIA_RESOLUTION_MEDIUM"
+    assert settings.automatic_function_calling.disable is True
     image, prompt = call["contents"]
     assert image.inline_data.mime_type == "image/jpeg"
     assert prompt == model.USER_PROMPT
@@ -454,3 +457,46 @@ def test_the_re_encode_refuses_what_is_not_a_photo(raw, code):
     with pytest.raises(photo.PhotoRejected) as caught:
         photo.reencode(raw)
     assert caught.value.code == code
+
+
+def test_a_refused_call_keeps_its_code_and_never_its_message():
+    from types import SimpleNamespace
+
+    class Refused(Exception):
+        code = 403
+        status = "PERMISSION_DENIED"
+
+        def __str__(self):
+            return "Request rejected, quoting koshary"
+
+    class _Models:
+        def generate_content(self, **kwargs):
+            raise Refused()
+
+    model.set_client(SimpleNamespace(models=_Models()))
+    try:
+        model.analyse(b"\xff\xd8\xff\xe0fake jpeg")
+    except model.ServiceUnavailable as down:
+        assert down.code == 403 and down.status == "PERMISSION_DENIED"
+        assert down.label == "403 PERMISSION_DENIED"
+        assert "koshary" not in down.label and down.__cause__ is None
+    else:
+        raise AssertionError("a refused call must be ServiceUnavailable")
+    finally:
+        model.set_client(None)
+
+
+def test_a_timeout_is_named_by_its_type():
+    from types import SimpleNamespace
+
+    class _Models:
+        def generate_content(self, **kwargs):
+            raise TimeoutError("slow, quoting the photo")
+
+    model.set_client(SimpleNamespace(models=_Models()))
+    try:
+        model.analyse(b"\xff\xd8\xff\xe0fake jpeg")
+    except model.ServiceUnavailable as down:
+        assert down.label == "TimeoutError"
+    finally:
+        model.set_client(None)

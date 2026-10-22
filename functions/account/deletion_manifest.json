@@ -117,7 +117,7 @@
     },
     {
       "number": 24,
-      "path": "Storage user-media/{uid}/** and coach-docs/{uid}/**",
+      "path": "Storage user-media/{uid}/**, coach-docs/{uid}/**, coach-public/{uid}/** and payment-proofs/{uid}/**",
       "method": "prefixDelete"
     },
     {
@@ -269,6 +269,31 @@
       "number": 54,
       "path": "communityFoodCandidates/{key}/by/{HMAC of her uid}",
       "method": "groupHook"
+    },
+    {
+      "number": 55,
+      "path": "coachApplications/{uid}",
+      "method": "groupHook"
+    },
+    {
+      "number": 56,
+      "path": "coachPrivate/{uid}/** (prices, ledger, payouts)",
+      "method": "groupHook"
+    },
+    {
+      "number": 57,
+      "path": "coaches/{uid}/packages/**, coaches/{uid}/drafts/** and coaches/{uid}/media/**",
+      "method": "groupHook"
+    },
+    {
+      "number": 58,
+      "path": "subscriptions where clientUid or coachUid == uid, with private/terms and sessions",
+      "method": "groupHook"
+    },
+    {
+      "number": 59,
+      "path": "receipts and paymentProofs where clientUid or coachUid == uid",
+      "method": "pseudonymised"
     }
   ]
 }

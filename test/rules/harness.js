@@ -33,28 +33,37 @@ export const FIRESTORE_PORT = Number(process.env.OWNHUB_RULES_FIRESTORE_PORT || 
 
 let env = null;
 
-// APL-16. The community and the coach app are switched off in the deployed
-// rules (`communityLive()` and `coachLive()` return false), and
-// 16-dormant-features proves every gated write is refused with the file
-// exactly as it ships. The suites that test the rules BEHIND those switches
-// (blocking, escalation, field validation) would otherwise test nothing but
-// the switch, so they load the same file with both switches turned on, which
-// is what the rules will be on the day the features ship. Nothing else in the
-// text differs, and this refuses to run if the two lines are not found.
-const SWITCHES = [
-  ['function communityLive() {\n      return false;\n    }',
-   'function communityLive() {\n      return true;\n    }'],
-  ['function coachLive() {\n      return false;\n    }',
-   'function coachLive() {\n      return true;\n    }'],
-];
+// APL-16. The community and the money side of coaching are switched off in the
+// deployed rules (`communityLive()` and `coachPaymentsLive()` return false;
+// `coachPortfolioLive()` and `coachClientsLive()` return true), and 16-dormant-features proves every
+// gated write is refused with the file exactly as it ships. The suites that
+// test the rules BEHIND those switches (blocking, escalation, field
+// validation) would otherwise test nothing but the switch, so they load the
+// same file with the dormant switches turned on, which is what the rules will
+// be on the day the features ship. Nothing else in the text differs, and this
+// refuses to run if a switch is not found.
+const SWITCH_NAMES = {
+  community: 'communityLive',
+  coachPortfolio: 'coachPortfolioLive',
+  coachClients: 'coachClientsLive',
+  coachPayments: 'coachPaymentsLive',
+};
 
-export function withDormantFeaturesOn(source) {
+/** `values` maps a switch to true or false; a switch left out keeps the shipped text. */
+export function withSwitches(source, values) {
   let out = source;
-  for (const [off, on] of SWITCHES) {
-    assert.ok(out.includes(off), `rules switch not found: ${off.split('\n')[0]}`);
-    out = out.replace(off, on);
+  for (const [key, value] of Object.entries(values)) {
+    const name = SWITCH_NAMES[key];
+    assert.ok(name, `unknown switch: ${key}`);
+    const pattern = new RegExp(`(function ${name}\\(\\) \\{\\s*return )(true|false)(;\\s*\\})`);
+    assert.ok(pattern.test(out), `rules switch not found: ${name}`);
+    out = out.replace(pattern, `$1${value}$3`);
   }
   return out;
+}
+
+export function withDormantFeaturesOn(source) {
+  return withSwitches(source, { community: true, coachPortfolio: true, coachClients: true, coachPayments: true });
 }
 
 let live = false;
@@ -72,6 +81,23 @@ export async function getEnv() {
     projectId: PROJECT_ID,
     firestore: {
       rules: live ? withDormantFeaturesOn(source) : source,
+      host: FIRESTORE_HOST,
+      port: FIRESTORE_PORT,
+    },
+  });
+  return env;
+}
+
+/** Replaces the running rules with the shipped file plus these switch values
+ *  (for a test that flips one switch). No argument gives the shipped file back. */
+export async function reloadRules(values = {}) {
+  if (env) await env.cleanup();
+  env = null;
+  const source = readFileSync(RULES_PATH, 'utf8');
+  env = await initializeTestEnvironment({
+    projectId: PROJECT_ID,
+    firestore: {
+      rules: withSwitches(source, values),
       host: FIRESTORE_HOST,
       port: FIRESTORE_PORT,
     },

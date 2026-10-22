@@ -63,6 +63,7 @@ import '../../../ui/hand/paper_confetti.dart';
 import '../domain/own_best_challenge.dart';
 import '../domain/session_summary.dart';
 import '../domain/train_repository.dart';
+import '../domain/weight_label.dart';
 import 'finish_reveal.dart';
 import 'session_share_card.dart';
 import 'set_labels.dart';
@@ -535,6 +536,29 @@ class FinishedView extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _points(context, l10n),
+                // Next time, for the loaded moves she weighed: a step up, or
+                // the same weight. Never a lower one.
+                if (measured && summary != null && summary.nextTime.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Column(
+                      key: const ValueKey('r10-next-time'),
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final move in summary.nextTime)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              _nextTimeLine(l10n, move),
+                              style: AppText.bodyM.copyWith(
+                                color: AppColors.onSurface,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 // The next step, while her week still has sessions left in it.
                 // The reason to come back is her own week, said in the week's
                 // terms: the next session, any day this week. Never a day count.
@@ -617,6 +641,18 @@ class FinishedView extends StatelessWidget {
         Expanded(child: bar),
       ],
     );
+  }
+
+  /// A move name with no Arabic letters stays left to right inside an Arabic
+  /// sentence, so "Hip thrust" does not scramble the words around it.
+  static String _isolated(String name) =>
+      RegExp(r'[\u0600-\u06FF]').hasMatch(name) ? name : '\u2066$name\u2069';
+
+  static String _nextTimeLine(AppL10n l10n, NextTimeMove move) {
+    final name = _isolated(move.name);
+    return move.rises
+        ? l10n.nextTimeWeightOnName('${weightLabel(move.kg)} ${l10n.kg}', name)
+        : l10n.sameWeightOnNameNextTimeUntil(name);
   }
 
   static bool _showsStreak(StreakStatus? status) =>

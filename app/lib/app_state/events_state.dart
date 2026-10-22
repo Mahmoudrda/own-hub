@@ -2,7 +2,9 @@
 ///
 /// Read only while [Feature.events] is on, only for a verified account (the
 /// rules refuse anyone else), and at most once an hour: one query of twenty
-/// small documents. Offline or refused, the list is simply empty and both
+/// small documents. The time of the last read from the server is kept on the
+/// phone, so a launch inside the hour reads the list from Firestore's own
+/// copy on the phone and the server is asked only after the hour. Offline or refused, the list is simply empty and both
 /// places show their empty state. Reading the list sends nothing about her;
 /// her seat is asked for only when she taps Reserve or Cancel.
 ///
@@ -18,6 +20,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/flags/feature_flags.dart';
 import '../features/events/data/callable_event_registrar.dart';
@@ -31,6 +34,10 @@ import '../routing/app_router.dart';
 import 'app_changes.dart';
 import 'firebase_boot.dart';
 import 'notification_sync.dart';
+
+/// When the list was last read from the server. Removed by [EventsState.erase],
+/// which both the local wipe and a change of account call.
+const String kEventsReadAtKey = 'own_hub.events_read_at';
 
 class EventsState {
   EventsState._();
@@ -129,16 +136,30 @@ class EventsState {
       return;
     }
     final at = now();
-    final last = _readAt;
-    if (!force && last != null && at.difference(last) < readEvery) return;
+    final epoch = _epoch;
+    DateTime? stored;
+    if (!force) {
+      final last = _readAt;
+      if (last != null) {
+        if (at.difference(last) < readEvery) return;
+      } else {
+        final saved = await _storedReadAt();
+        if (epoch != _epoch) return;
+        final age = saved == null ? null : at.difference(saved);
+        if (age != null && !age.isNegative && age < readEvery) stored = saved;
+      }
+    }
     final reader = source();
     if (reader == null) return;
-    final epoch = _epoch;
     try {
-      final read = await reader.upcoming(at.toUtc());
+      final read = await reader.upcoming(
+        at.toUtc(),
+        cacheFirst: stored != null,
+      );
       if (epoch != _epoch) return;
       _events = read;
-      _readAt = at;
+      _readAt = stored ?? at;
+      if (stored == null) unawaited(_storeReadAt(at));
       _listKnown = true;
       AppChanges.bump();
     } catch (_) {
@@ -150,6 +171,32 @@ class EventsState {
     ]);
     if (epoch != _epoch) return;
     await _replan();
+  }
+
+  static Future<DateTime?> _storedReadAt() async {
+    try {
+      final raw = (await SharedPreferences.getInstance()).getString(
+        kEventsReadAtKey,
+      );
+      return raw == null ? null : DateTime.tryParse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> _storeReadAt(DateTime at) async {
+    try {
+      await (await SharedPreferences.getInstance()).setString(
+        kEventsReadAtKey,
+        at.toUtc().toIso8601String(),
+      );
+    } catch (_) {}
+  }
+
+  static Future<void> _forgetReadAt() async {
+    try {
+      await (await SharedPreferences.getInstance()).remove(kEventsReadAtKey);
+    } catch (_) {}
   }
 
   /// Which of [ids] she holds a seat on. A read that fails leaves what was
@@ -198,6 +245,7 @@ class EventsState {
     _listKnown = false;
     _readAt = null;
     _inFlight = null;
+    unawaited(_forgetReadAt());
   }
 
   /// Puts a list in place. Tests only.
@@ -223,6 +271,7 @@ class EventsState {
     _listKnown = false;
     _readAt = null;
     _inFlight = null;
+    unawaited(_forgetReadAt());
     source = _liveSource;
     registrar = _liveRegistrar;
     now = DateTime.now;

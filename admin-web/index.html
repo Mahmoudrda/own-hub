@@ -18,15 +18,24 @@
     <h1>Own Hub reviews</h1>
     <button class="btn quiet" id="signout" type="button" hidden>Sign out</button>
   </div>
+  <div class="tabs-wrap">
+  <button class="tabs-more prev" id="tabs-prev" type="button" aria-label="Show earlier sections" hidden>&lsaquo;</button>
   <nav class="tabs" role="tablist" aria-label="Sections" id="tabs" hidden>
-    <button role="tab" id="tab-queue" aria-controls="panel-queue" aria-selected="true" type="button"><span>Requests</span><span class="tab-badge" id="badge-queue" hidden></span></button>
+    <button role="tab" id="tab-queue" aria-controls="panel-queue" aria-selected="true" type="button"><span>Verification</span><span class="tab-badge" id="badge-queue" hidden></span></button>
     <button role="tab" id="tab-calendar" aria-controls="panel-calendar" aria-selected="false" tabindex="-1" type="button"><span>Calendar</span><span class="tab-badge" id="badge-calendar" hidden></span></button>
-    <button role="tab" id="tab-phones" aria-controls="panel-phones" aria-selected="false" tabindex="-1" type="button"><span>Pre-approved</span><span class="tab-badge" id="badge-phones" hidden></span></button>
+    <button role="tab" id="tab-phones" aria-controls="panel-phones" aria-selected="false" tabindex="-1" type="button"><span>Pre-approved phones</span><span class="tab-badge" id="badge-phones" hidden></span></button>
     <button role="tab" id="tab-exercises" aria-controls="panel-exercises" aria-selected="false" tabindex="-1" type="button"><span>Exercises</span><span class="tab-badge" id="badge-exercises" hidden></span></button>
     <button role="tab" id="tab-events" aria-controls="panel-events" aria-selected="false" tabindex="-1" type="button"><span>Events</span><span class="tab-badge" id="badge-events" hidden></span></button>
     <button role="tab" id="tab-foods" aria-controls="panel-foods" aria-selected="false" tabindex="-1" type="button"><span>Foods</span><span class="tab-badge" id="badge-foods" hidden></span></button>
+    <button role="tab" id="tab-coaches" aria-controls="panel-coaches" aria-selected="false" tabindex="-1" type="button" hidden><span>Coaches</span><span class="tab-badge" id="badge-coaches" hidden></span></button>
+    <button role="tab" id="tab-payments" aria-controls="panel-payments" aria-selected="false" tabindex="-1" type="button" hidden><span>Payments</span><span class="tab-badge" id="badge-payments" hidden></span></button>
+    <button role="tab" id="tab-refunds" aria-controls="panel-refunds" aria-selected="false" tabindex="-1" type="button" hidden><span>Refunds</span><span class="tab-badge" id="badge-refunds" hidden></span></button>
+    <button role="tab" id="tab-payouts" aria-controls="panel-payouts" aria-selected="false" tabindex="-1" type="button" hidden><span>Payouts</span><span class="tab-badge" id="badge-payouts" hidden></span></button>
+    <button role="tab" id="tab-reports" aria-controls="panel-reports" aria-selected="false" tabindex="-1" type="button" hidden><span>Reports</span><span class="tab-badge" id="badge-reports" hidden></span></button>
     <button role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" tabindex="-1" type="button"><span>Settings</span></button>
   </nav>
+  <button class="tabs-more next" id="tabs-next" type="button" aria-label="Show more sections" hidden>&rsaquo;</button>
+  </div>
 </header>
 <main id="main" tabindex="-1">
   <div class="notice" id="notice" role="status" aria-live="polite" aria-atomic="true" hidden>
@@ -34,7 +43,13 @@
     <button class="notice-close" id="notice-close" type="button" aria-label="Dismiss this message">&times;</button>
   </div>
 
+  <section id="booting" class="booting">
+    <div id="booting-art" class="art"></div>
+    <p role="status">Checking your sign-in...</p>
+  </section>
+
   <section id="login" class="card narrow" hidden>
+    <div id="login-art" class="art"></div>
     <h2>Sign in</h2>
     <p class="muted">Use the email and password the owner gave you.</p>
     <form id="login-form">
@@ -49,7 +64,8 @@
   <div id="app" hidden>
     <section id="panel-queue" role="tabpanel" aria-labelledby="tab-queue">
       <div class="panel-head">
-        <h2 id="queue-title">Requests</h2>
+        <h2 id="queue-title">Verification</h2>
+        <p class="about">Women waiting for a person to check their ID, oldest first. Decide on each one here.</p>
         <p class="muted" id="queue-summary" aria-live="polite"></p>
       </div>
       <div class="filters">
@@ -69,6 +85,10 @@
     </section>
 
     <section id="panel-calendar" role="tabpanel" aria-labelledby="tab-calendar" hidden>
+      <div class="panel-head">
+        <h2>Calendar</h2>
+        <p class="about">The verification calls women booked with you, in Cairo time. Set the hours they can book below.</p>
+      </div>
       <div class="filters">
         <div class="chips" role="group" aria-label="View">
           <button class="chip" type="button" data-view="day" aria-pressed="false">Day</button>
@@ -105,8 +125,8 @@
 
     <section id="panel-phones" role="tabpanel" aria-labelledby="tab-phones" hidden>
       <div class="card">
-        <h2>Pre-approved numbers</h2>
-        <p class="muted">Paste numbers separated by commas or new lines. Anyone signing in with one of these is approved at once.</p>
+        <h2>Pre-approved phones</h2>
+        <p class="about">Anyone who signs in with one of these numbers is approved at once. Paste numbers separated by commas or new lines.</p>
         <label for="phones-input">Numbers to add</label>
         <textarea id="phones-input" rows="4" placeholder="+201012345678, 01012345679"></textarea>
         <p class="muted" id="phones-preview" aria-live="polite"></p>
@@ -121,6 +141,7 @@
         <div class="overview-top">
           <div class="overview-text">
             <h2 id="ex-progress-text">Exercises</h2>
+            <p class="about">The moves members see in their workout plans. Review each one until its checklist is complete.</p>
             <div class="meter" role="progressbar" id="ex-meter" aria-label="Exercises complete" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="ex-meter-fill"></span></div>
             <p class="muted" id="ex-progress-sub"></p>
           </div>
@@ -149,7 +170,7 @@
         <div class="card-head">
           <div>
             <h2>Events</h2>
-            <p class="muted">Published events show to verified women, who can reserve a seat until it is full.</p>
+            <p class="about">Published events show to verified women, who can reserve a seat until it is full. A new event stays a draft until you publish it.</p>
           </div>
           <button class="btn primary" id="ev-new" type="button">Add event</button>
         </div>
@@ -171,7 +192,7 @@
     <section id="panel-foods" role="tabpanel" aria-labelledby="tab-foods" hidden>
       <div class="card">
         <h2>Foods from the meal check</h2>
-        <p class="muted">Meals women confirmed and offered to everyone, most confirmed first. Approve one with names in both languages, a category and its allergens, and every member's phone picks it up within a day.</p>
+        <p class="about">Meals women confirmed and offered to everyone, most confirmed first. Approve one with names in both languages, a category and its allergens, and every member's phone picks it up within a day.</p>
         <div class="filters">
           <div class="chips" id="fd-filters" role="group" aria-label="Show">
             <button class="chip" type="button" data-filter="waiting" aria-pressed="true">Waiting <span class="count"></span></button>
@@ -185,16 +206,36 @@
       <div class="empty-state" id="fd-empty" hidden></div>
     </section>
 
+    <section id="panel-coaches" role="tabpanel" aria-labelledby="tab-coaches" hidden>
+      <div id="coaches-root"></div>
+    </section>
+
+    <section id="panel-payments" role="tabpanel" aria-labelledby="tab-payments" hidden>
+      <div id="payments-root"></div>
+    </section>
+
+    <section id="panel-refunds" role="tabpanel" aria-labelledby="tab-refunds" hidden>
+      <div id="refunds-root"></div>
+    </section>
+
+    <section id="panel-payouts" role="tabpanel" aria-labelledby="tab-payouts" hidden>
+      <div id="payouts-root"></div>
+    </section>
+
+    <section id="panel-reports" role="tabpanel" aria-labelledby="tab-reports" hidden>
+      <div id="reports-root"></div>
+    </section>
+
     <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
       <div class="card">
         <h2>My settings</h2>
+        <p class="about">The first name members see when they pick who to book a call with.</p>
         <label for="first-name">First name shown to members</label>
         <input id="first-name" type="text" autocomplete="given-name" maxlength="40">
-        <label class="switch"><input type="checkbox" id="auto-pass" role="switch"><span class="track"></span><span>Auto-pass people who know me</span></label>
-        <p class="muted">Anyone who signs up can pick your name as the person they know, and they will be approved at once. Turn this on only if you are happy with that.</p>
         <label class="switch"><input type="checkbox" id="listed" role="switch"><span class="track"></span><span>List my first name for members</span></label>
         <button class="btn primary" id="settings-save" type="button">Save settings</button>
       </div>
+      <div id="coaching-settings" hidden></div>
     </section>
   </div>
 </main>

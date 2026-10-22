@@ -56,7 +56,6 @@ def get_settings(reviewer_uid: str) -> dict:
     return {
         "firstName": data.get("firstName") or "",
         "listed": bool(data.get("listed")),
-        "autoPassKnown": bool(data.get("autoPassKnown")),
         "availability": list(data.get("availability") or []),
         "slotMinutes": data.get("slotMinutes") or config.REVIEW_SLOT_DEFAULT_MINUTES,
     }
@@ -89,8 +88,8 @@ def set_settings(reviewer_uid: str, data: dict) -> dict:
     if not isinstance(name, str) or len(name.strip()) > MAX_NAME:
         _fail(review.INVALID)
     name = name.strip()
-    listed, auto = data.get("listed"), data.get("autoPassKnown")
-    if not isinstance(listed, bool) or not isinstance(auto, bool):
+    listed = data.get("listed")
+    if not isinstance(listed, bool):
         _fail(review.INVALID)
     if listed and not name:
         _fail(review.INVALID)
@@ -102,7 +101,6 @@ def set_settings(reviewer_uid: str, data: dict) -> dict:
         {
             "firstName": name,
             "listed": listed,
-            "autoPassKnown": auto,
             "availability": availability,
             "slotMinutes": minutes,
             "updatedAt": firestore.SERVER_TIMESTAMP,

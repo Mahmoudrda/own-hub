@@ -161,37 +161,38 @@ void main() {
   });
 
   group('C15 known reviewer', () {
-    testWidgets('sends knownReviewerId and an instant approval moves on', (
-      tester,
-    ) async {
-      final requester = _Requester(ReviewRequestState.approved);
-      var verified = 0;
-      await tester.pumpWidget(
-        _host(
-          WomanReviewerView(
-            requester: requester,
-            scheduling: _FakeScheduling(
-              reviewers: const [
-                ListedReviewer(reviewerId: 'r1', firstName: 'Mona'),
-                ListedReviewer(reviewerId: 'r2', firstName: 'Salma'),
-              ],
+    testWidgets(
+      'sends knownReviewerId and moves on when the server says approved',
+      (tester) async {
+        final requester = _Requester(ReviewRequestState.approved);
+        var verified = 0;
+        await tester.pumpWidget(
+          _host(
+            WomanReviewerView(
+              requester: requester,
+              scheduling: _FakeScheduling(
+                reviewers: const [
+                  ListedReviewer(reviewerId: 'r1', firstName: 'Mona'),
+                  ListedReviewer(reviewerId: 'r2', firstName: 'Salma'),
+                ],
+              ),
+              onAlreadyVerified: () => verified++,
             ),
-            onAlreadyVerified: () => verified++,
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('I know one of the reviewers'), findsOneWidget);
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('I know one of the reviewers'), findsOneWidget);
 
-      await tester.ensureVisible(find.text('Salma'));
-      await tester.tap(find.text('Salma'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Ask a woman to check me'));
-      await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Salma'));
+        await tester.tap(find.text('Salma'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Ask a woman to check me'));
+        await tester.pumpAndSettle();
 
-      expect(requester.known, ['r2']);
-      expect(verified, 1);
-    });
+        expect(requester.known, ['r2']);
+        expect(verified, 1);
+      },
+    );
 
     testWidgets('a failing list hides the picker and asking still works', (
       tester,

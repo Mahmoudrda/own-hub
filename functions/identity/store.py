@@ -550,6 +550,8 @@ def mint_claims(uid: str, verified: bool) -> None:
     user = auth.get_user(uid)
     claims = dict(user.custom_claims or {})
     claims["verified"] = bool(verified)
+    if not verified and claims.get("coachV") == "active":
+        claims["coachV"] = "suspended"
     auth.set_custom_user_claims(uid, claims)
 
 

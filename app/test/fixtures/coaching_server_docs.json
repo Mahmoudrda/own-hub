@@ -1,0 +1,544 @@
+{
+ "created": {
+  "mealPlan": "lrJT7Y9Wql9tCIUyzATb",
+  "media": {
+   "feedback": "WgygZIw8CI7WoFqeGcHh",
+   "photo": "ukMl0WXvPRUYFWJKNdOq",
+   "transformation": "jBr1e7uAiuCWeVtgyGTE"
+  },
+  "package": "7dTf5IKVS5xHjkt6OYbW",
+  "rel": "kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR",
+  "session": "oTVxUVUypzQzGE5xbXLC",
+  "sub": "kND6SCV1t46cZGPGXggx",
+  "workoutPlan": "I050dHSdZTL5uoNIN6il"
+ },
+ "docs": {
+  "coachApplications/kD63CdtgVtJUEeGjiRurw0lWS8xe": {
+   "approach": {
+    "checkInsPerWeek": 2,
+    "replyHours": 12,
+    "text": "I build every plan around her week, her kitchen and her energy, then adjust it each Sunday.",
+    "trainsWhere": [
+     "home",
+     "online"
+    ]
+   },
+   "certificates": [
+    {
+     "id": "nasm-cpt",
+     "issuer": "NASM",
+     "mime": "image/jpeg",
+     "path": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/certificates/nasm.jpg",
+     "title": "NASM CPT",
+     "year": 2019
+    },
+    {
+     "id": "ces",
+     "issuer": "NASM",
+     "mime": "image/jpeg",
+     "path": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/certificates/ces.jpg",
+     "title": "Corrective Exercise",
+     "year": 2021
+    }
+   ],
+   "decidedAt": "2026-10-22T19:58:32.950987Z",
+   "decidedBy": "44620080",
+   "education": [
+    {
+     "degree": "BSc Sports Science",
+     "institution": "Cairo University",
+     "path": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/education/deg.jpg",
+     "year": 2015
+    },
+    {
+     "degree": "Diploma",
+     "institution": "Nutrition Institute",
+     "path": null,
+     "year": 2018
+    }
+   ],
+   "note": "",
+   "payout": null,
+   "personal": {
+    "displayName": "Mona",
+    "fullName": "Mona Hassan Ali",
+    "governorate": "cairo",
+    "headline": "Strength coach for busy women",
+    "languages": [
+     "ar",
+     "en"
+    ],
+    "photoPath": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/photo/me.jpg"
+   },
+   "qualifications": "Eight years training women one to one in Cairo.",
+   "reasons": {},
+   "round": 1,
+   "rules": [
+    "accurateInfo",
+    "clientPhotoConsent",
+    "noOffPlatformPayment"
+   ],
+   "specialties": [
+    "strength",
+    "fatLoss"
+   ],
+   "status": "approved",
+   "submittedAt": "2026-10-22T19:58:32.101610Z",
+   "termsVersion": 1,
+   "testimonials": [
+    {
+     "from": "Salma",
+     "imagePath": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/testimonials/s1.jpg",
+     "source": "whatsapp",
+     "text": "She changed how I train and eat."
+    },
+    {
+     "from": "Nour",
+     "imagePath": null,
+     "source": "inPerson",
+     "text": "Patient, clear and kind to me."
+    }
+   ],
+   "transformations": [
+    {
+     "afterPath": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/transformations/a1.jpg",
+     "beforePath": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/transformations/b1.jpg",
+     "clientConsent": true,
+     "note": "Three days a week",
+     "weeks": 12
+    }
+   ],
+   "yearsExperience": 8
+  },
+  "coachPrivate/kD63CdtgVtJUEeGjiRurw0lWS8xe": {
+   "claimPending": false,
+   "fullName": "Mona Hassan Ali",
+   "owedEgp": 0,
+   "paidEgp": 0,
+   "payoutState": "none",
+   "suspended": false,
+   "updatedAt": "2026-10-22T19:58:32.950987Z"
+  },
+  "coachPrivate/kD63CdtgVtJUEeGjiRurw0lWS8xe/prices/7dTf5IKVS5xHjkt6OYbW": {
+   "coachPriceEgp": 1000,
+   "priceFinalEgp": 1150,
+   "updatedAt": "2026-10-22T19:58:33.889181Z"
+  },
+  "coaches/kD63CdtgVtJUEeGjiRurw0lWS8xe": {
+   "acceptingClients": true,
+   "activeClients": 0,
+   "approach": {
+    "checkInsPerWeek": 2,
+    "replyHours": 12,
+    "text": "I build every plan around her week, her kitchen and her energy, adjusted weekly.",
+    "trainsWhere": [
+     "home",
+     "online"
+    ]
+   },
+   "autoAccept": true,
+   "badges": [
+    "verifiedCoach",
+    "certificatesChecked",
+    "yearsCoaching"
+   ],
+   "certificates": [
+    {
+     "issuer": "NASM",
+     "title": "NASM CPT",
+     "year": 2019
+    }
+   ],
+   "displayName": "Mona",
+   "fromMonthlyEgp": 1150,
+   "fromPriceEgp": 1150,
+   "governorate": "cairo",
+   "headline": "Strength coach for busy women in Cairo",
+   "languages": [
+    "ar",
+    "en"
+   ],
+   "maxActiveClients": 15,
+   "photoUrl": "coach-public/kD63CdtgVtJUEeGjiRurw0lWS8xe/photo.jpg",
+   "published": true,
+   "replyHours": 12,
+   "specialties": [
+    "strength",
+    "fatLoss"
+   ],
+   "stats": {
+    "clientsCoached": 1,
+    "plansShared": 2,
+    "sessionsDone": 1
+   },
+   "testimonials": [
+    {
+     "from": "Salma",
+     "text": "She changed how I train and eat."
+    },
+    {
+     "from": "Nour",
+     "text": "Patient, clear and kind to me."
+    }
+   ],
+   "trainsWhere": [
+    "home",
+    "online"
+   ],
+   "updatedAt": "2026-10-22T19:58:34.259350Z",
+   "yearsExperience": 8
+  },
+  "coaches/kD63CdtgVtJUEeGjiRurw0lWS8xe/media/WgygZIw8CI7WoFqeGcHh": {
+   "coachUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "createdAt": "2026-10-22T19:58:34.716920Z",
+   "decidedAt": "2026-10-22T19:58:35.663491Z",
+   "decidedBy": "44620080",
+   "from": "Salma",
+   "imagePath": null,
+   "kind": "feedback",
+   "publicPaths": {
+    "image": "coach-public/kD63CdtgVtJUEeGjiRurw0lWS8xe/media/WgygZIw8CI7WoFqeGcHh_image.jpg"
+   },
+   "reason": null,
+   "status": "approved",
+   "text": "She made training feel doable again."
+  },
+  "coaches/kD63CdtgVtJUEeGjiRurw0lWS8xe/media/app-f0": {
+   "coachUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "createdAt": "2026-10-22T19:58:32.950987Z",
+   "from": "Salma",
+   "imagePath": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/testimonials/s1.jpg",
+   "kind": "feedback",
+   "status": "pending",
+   "text": "She changed how I train and eat."
+  },
+  "coaches/kD63CdtgVtJUEeGjiRurw0lWS8xe/media/app-t0": {
+   "afterPath": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/transformations/a1.jpg",
+   "beforePath": "coach-docs/kD63CdtgVtJUEeGjiRurw0lWS8xe/transformations/b1.jpg",
+   "clientConsentPublic": false,
+   "coachUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "createdAt": "2026-10-22T19:58:32.950987Z",
+   "kind": "transformation",
+   "note": "Three days a week",
+   "status": "needsConsent",
+   "weeks": 12
+  },
+  "coaches/kD63CdtgVtJUEeGjiRurw0lWS8xe/media/jBr1e7uAiuCWeVtgyGTE": {
+   "afterPath": null,
+   "beforePath": null,
+   "clientConsentPublic": true,
+   "coachUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "consent": {
+    "at": "2026-10-22T19:58:34.727330Z",
+    "termsVersion": 1
+   },
+   "createdAt": "2026-10-22T19:58:34.727330Z",
+   "decidedAt": "2026-10-22T19:58:35.707489Z",
+   "decidedBy": "44620080",
+   "kind": "transformation",
+   "note": "Three days a week",
+   "publicPaths": {
+    "after": "coach-public/kD63CdtgVtJUEeGjiRurw0lWS8xe/media/jBr1e7uAiuCWeVtgyGTE_after.jpg",
+    "before": "coach-public/kD63CdtgVtJUEeGjiRurw0lWS8xe/media/jBr1e7uAiuCWeVtgyGTE_before.jpg"
+   },
+   "reason": null,
+   "status": "approved",
+   "weeks": 12
+  },
+  "coaches/kD63CdtgVtJUEeGjiRurw0lWS8xe/media/ukMl0WXvPRUYFWJKNdOq": {
+   "caption": "Training day",
+   "coachUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "createdAt": "2026-10-22T19:58:34.697287Z",
+   "decidedAt": "2026-10-22T19:58:35.488217Z",
+   "decidedBy": "44620080",
+   "imagePath": null,
+   "kind": "photo",
+   "publicPaths": {
+    "image": "coach-public/kD63CdtgVtJUEeGjiRurw0lWS8xe/media/ukMl0WXvPRUYFWJKNdOq_image.jpg"
+   },
+   "reason": null,
+   "status": "approved"
+  },
+  "coaches/kD63CdtgVtJUEeGjiRurw0lWS8xe/packages/7dTf5IKVS5xHjkt6OYbW": {
+   "active": true,
+   "checkInsPerWeek": 2,
+   "description": "A plan, live calls and daily support for a month.",
+   "durationDays": 28,
+   "includes": [
+    "Workout plan",
+    "Meal plan"
+   ],
+   "liveSessionsPerMonth": 4,
+   "order": 0,
+   "priceFinalEgp": 1150,
+   "sessionMinutes": 45,
+   "title": "Strong in four weeks",
+   "updatedAt": "2026-10-22T19:58:33.889181Z"
+  },
+  "plans/kswQvNIRGuA1GgLCkufqtgnKocBR/coachPlans/I050dHSdZTL5uoNIN6il": {
+   "body": {
+    "days": [
+     {
+      "kg": [
+       20.0,
+       null
+      ],
+      "session": {
+       "lifeStages": [
+        "none"
+       ],
+       "minutes": 40,
+       "moves": [
+        {
+         "contraindications": [],
+         "exerciseId": "arm_circles",
+         "floorOnly": false,
+         "holdSeconds": null,
+         "nameAr": "arm_circles",
+         "nameEn": "arm_circles",
+         "needsEquipment": false,
+         "notesAr": "",
+         "notesEn": "",
+         "quiet": false,
+         "reps": 12,
+         "restSeconds": 60,
+         "safetyAr": "",
+         "safetyEn": "",
+         "sets": 3
+        },
+        {
+         "contraindications": [],
+         "exerciseId": "back_extension",
+         "floorOnly": false,
+         "holdSeconds": 30,
+         "nameAr": "back_extension",
+         "nameEn": "back_extension",
+         "needsEquipment": false,
+         "notesAr": "",
+         "notesEn": "",
+         "quiet": false,
+         "reps": null,
+         "restSeconds": 60,
+         "safetyAr": "",
+         "safetyEn": "",
+         "sets": 3
+        }
+       ],
+       "sessionId": "mine_1",
+       "titleAr": "رجلين",
+       "titleEn": "Legs"
+      }
+     }
+    ],
+    "name": "Phase one",
+    "revision": 1
+   },
+   "coachName": "Mona",
+   "coachUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "kind": "workout",
+   "name": "My workout plan",
+   "publishedAt": "2026-10-22T19:58:38.114745Z",
+   "revision": 1,
+   "subId": "kND6SCV1t46cZGPGXggx"
+  },
+  "plans/kswQvNIRGuA1GgLCkufqtgnKocBR/coachPlans/lrJT7Y9Wql9tCIUyzATb": {
+   "body": {
+    "days": [
+     {
+      "label": "Day 1",
+      "slots": {
+       "breakfast": [
+        {
+         "kind": "recipe",
+         "note": "warm",
+         "recipeId": "ownhub_air_fried_taameya_rocket_bowl",
+         "servings": 1.5
+        }
+       ],
+       "lunch": [
+        {
+         "foodId": "ahwa_mazboot",
+         "grams": 150,
+         "kind": "food"
+        }
+       ],
+       "snack": [
+        {
+         "kind": "free",
+         "text": "A handful of nuts"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "coachName": "Mona",
+   "coachUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "kind": "meal",
+   "name": "My meal plan",
+   "publishedAt": "2026-10-22T19:58:38.140030Z",
+   "revision": 1,
+   "subId": "kND6SCV1t46cZGPGXggx"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR": {
+   "activeSubId": "kND6SCV1t46cZGPGXggx",
+   "chatOpen": false,
+   "clientUid": "kswQvNIRGuA1GgLCkufqtgnKocBR",
+   "coachUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "createdAt": "2026-10-22T19:58:36.278260Z",
+   "lastMessage": {
+    "at": "2026-10-22T19:58:39.442548Z",
+    "senderUid": "kswQvNIRGuA1GgLCkufqtgnKocBR",
+    "text": "",
+    "type": "system"
+   },
+   "lastMessageAt": "2026-10-22T19:58:39.442548Z",
+   "lastPushAt": {
+    "kD63CdtgVtJUEeGjiRurw0lWS8xe": "2026-10-22T19:58:37.145304Z",
+    "kswQvNIRGuA1GgLCkufqtgnKocBR": "2026-10-22T19:58:37.156233Z"
+   },
+   "status": "ended",
+   "unreadFor": {
+    "kD63CdtgVtJUEeGjiRurw0lWS8xe": 1,
+    "kswQvNIRGuA1GgLCkufqtgnKocBR": 3
+   }
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/messages/1jMLwBefrjcaGYnFHqUM": {
+   "createdAt": "2026-10-22T19:58:38.480758Z",
+   "minutes": 45,
+   "senderUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "sessionId": "oTVxUVUypzQzGE5xbXLC",
+   "startsAt": "2026-10-24T19:58:38.161961Z",
+   "type": "session"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/messages/6u9wQOmzOS2drVIyEtAA": {
+   "createdAt": "2026-10-22T19:58:39.430526Z",
+   "senderUid": "kswQvNIRGuA1GgLCkufqtgnKocBR",
+   "sessionId": "oTVxUVUypzQzGE5xbXLC",
+   "systemKind": "sessionDone",
+   "type": "system"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/messages/8DTd6WkEkga9Q6dY4Okr": {
+   "createdAt": "2026-10-22T19:58:39.798501Z",
+   "senderUid": "system",
+   "systemKind": "ended",
+   "type": "system"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/messages/FsTwJtNZWp4pOiN0Kq0B": {
+   "createdAt": "2026-10-22T19:58:38.140030Z",
+   "planId": "lrJT7Y9Wql9tCIUyzATb",
+   "planKind": "meal",
+   "planName": "My meal plan",
+   "senderUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "type": "mealPlan"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/messages/LxE65BnBdx0pGsDRpBu7": {
+   "createdAt": "2026-10-22T19:58:38.114745Z",
+   "planId": "I050dHSdZTL5uoNIN6il",
+   "planKind": "workout",
+   "planName": "My workout plan",
+   "senderUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "type": "workoutPlan"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/messages/XJDdP8O9WtUyY4bDHTU1": {
+   "createdAt": "2026-10-22T19:58:38.936632Z",
+   "senderUid": "kswQvNIRGuA1GgLCkufqtgnKocBR",
+   "sessionId": "oTVxUVUypzQzGE5xbXLC",
+   "systemKind": "sessionConfirmed",
+   "type": "system"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/messages/client-1792699116369": {
+   "createdAt": "2026-10-22T19:58:36.371Z",
+   "senderUid": "kswQvNIRGuA1GgLCkufqtgnKocBR",
+   "text": "Hello coach, I am ready to start",
+   "type": "text"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/messages/coach-1792699116885": {
+   "createdAt": "2026-10-22T19:58:36.888Z",
+   "senderUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "text": "Welcome, let us begin on Sunday",
+   "type": "text"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/messages/o7TPBkcl4pk75Ah0pTtO": {
+   "createdAt": "2026-10-22T19:58:36.278260Z",
+   "senderUid": "system",
+   "systemKind": "started",
+   "type": "system"
+  },
+  "relationships/kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR/reads/kswQvNIRGuA1GgLCkufqtgnKocBR": {
+   "at": "2026-10-22T19:58:37.766961Z"
+  },
+  "subscriptions/kND6SCV1t46cZGPGXggx": {
+   "acceptedAt": "2026-10-22T19:58:36.278260Z",
+   "clientName": "",
+   "clientUid": "kswQvNIRGuA1GgLCkufqtgnKocBR",
+   "coachUid": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "createdAt": "2026-10-22T19:58:36.278260Z",
+   "endReason": "other",
+   "endsAt": "2026-11-19T19:58:36.278260Z",
+   "free": true,
+   "intake": {
+    "allergies": [
+     "peanut"
+    ],
+    "daysPerWeek": 3,
+    "doctorAck": false,
+    "goal": "stronger",
+    "health": {
+     "boneJoint": false,
+     "chestPain": false,
+     "chronicCondition": false,
+     "dizziness": false,
+     "heart": false,
+     "medication": false,
+     "supervisedOnly": false
+    },
+    "level": "beginner",
+    "lifeStage": "none",
+    "note": "hello",
+    "place": "home"
+   },
+   "nextSessionAt": null,
+   "package": {
+    "checkInsPerWeek": 2,
+    "description": "A plan, live calls and daily support for a month.",
+    "durationDays": 28,
+    "includes": [
+     "Workout plan",
+     "Meal plan"
+    ],
+    "liveSessionsPerMonth": 4,
+    "sessionMinutes": 45,
+    "title": "Strong in four weeks"
+   },
+   "packageId": "7dTf5IKVS5xHjkt6OYbW",
+   "priceFinalEgp": 1150,
+   "relId": "kD63CdtgVtJUEeGjiRurw0lWS8xe__kswQvNIRGuA1GgLCkufqtgnKocBR",
+   "sessionsIncluded": 4,
+   "sessionsUsed": 1,
+   "startsAt": "2026-10-22T19:58:36.278260Z",
+   "status": "ended_early",
+   "statusAt": "2026-10-22T19:58:39.798501Z"
+  },
+  "subscriptions/kND6SCV1t46cZGPGXggx/sessions/oTVxUVUypzQzGE5xbXLC": {
+   "createdAt": "2026-10-22T19:58:38.480758Z",
+   "doneBy": [
+    "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+    "kswQvNIRGuA1GgLCkufqtgnKocBR"
+   ],
+   "link": "https://meet.google.com/abc-defg-hij",
+   "minutes": 45,
+   "proposedBy": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+   "startsAt": "2026-10-22T18:58:38Z",
+   "status": "done",
+   "statusAt": "2026-10-22T19:58:39.430526Z"
+  }
+ },
+ "uids": {
+  "admin": "2o9bP2GukTBz5yk8W7arhKmy6qOO",
+  "client": "kswQvNIRGuA1GgLCkufqtgnKocBR",
+  "coach": "kD63CdtgVtJUEeGjiRurw0lWS8xe",
+  "reviewer": "BUy58xag64AzTr6b0ezv1RrekIL9",
+  "stranger": "K1uCwDRWBNKxVm6QWOYdpEnD4Na5"
+ }
+}

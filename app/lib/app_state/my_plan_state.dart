@@ -12,7 +12,16 @@ import '../features/train/domain/train_repository.dart' show PlannedMove;
 import '../features/train/domain/workout_library.dart';
 import 'app_changes.dart';
 
-class MyPlanState {
+/// What the plan editor needs of the plan it edits, so it can edit her plan or
+/// a plan a coach is building for a client.
+abstract interface class PlanEditing {
+  MyPlan? get current;
+  bool get hasPlan;
+  void save(MyPlan next);
+  void backToOriginal();
+}
+
+class MyPlanState implements PlanEditing {
   MyPlanState._();
 
   static final MyPlanState instance = MyPlanState._();
@@ -31,12 +40,15 @@ class MyPlanState {
   VoidCallback? _onConfirm;
 
   /// Whether she has a plan of her own.
+  @override
   bool get hasPlan => plan != null;
 
   /// What the editor shows: her plan, else the copy she is looking at.
+  @override
   MyPlan? get current => plan ?? pending;
 
   /// Sets the plan and tells every open screen.
+  @override
   void save(MyPlan next) {
     plan = next;
     pending = null;
@@ -74,6 +86,7 @@ class MyPlanState {
   }
 
   /// Drops her plan: Train follows the split again.
+  @override
   void backToOriginal() {
     if (plan == null && pending == null) return;
     plan = null;

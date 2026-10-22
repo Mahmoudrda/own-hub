@@ -54,6 +54,21 @@ class FakeReader:
     def event_seats(self, uid):
         return {"event-1": {"uid": uid, "joinedAt": NOW, "status": "registered"}}
 
+    def coaching(self, uid):
+        return {
+            "application": {"status": "approved", "personal": {"fullName": "Her Name"}},
+            "coach": {"displayName": "Coach Her"},
+            "packages": {"p1": {"title": "Eight weeks"}},
+            "drafts": {"d1": {"name": "Plan"}},
+            "media": {"m1": {"kind": "photo"}},
+            "invites": {"CODE2345": {"coachUid": uid}},
+            "asClient": {"sub-1": {"clientUid": uid, "coachUid": "coach-9", "intake": {"goal": "strength"}}},
+            "asCoach": {"sub-2": {"coachUid": uid}},
+            "messages": {"rel/m1": {"senderUid": uid, "text": "hello"}},
+            "private": {"account": {"payoutState": "none"}},
+            "receipts": {},
+        }
+
     def access_for_flags(self, flag_ids):
         assert flag_ids == ["flag-1"]
         return [{"flagId": "flag-1", "reviewerUid": "reviewer-9", "action": "contact", "at": NOW}]
@@ -128,3 +143,46 @@ def test_files_are_written_once_and_private(tmp_path):
         pass
     else:
         raise AssertionError("an existing folder must not be reused")
+
+
+def test_the_coaching_section_holds_her_application_coaching_and_messages():
+    export = export_user.build_export(HER, FakeReader(), "en", NOW)
+    coaching = export["sections"]["coaching"]
+    assert coaching["source"] == [47, 48, 49, 55, 56, 57, 58, 59]
+    data = coaching["data"]
+    assert data["application"]["status"] == "approved"
+    assert data["asClient"]["sub-1"]["intake"] == {"goal": "strength"}
+    assert data["messages"]["rel/m1"]["text"] == "hello"
+    assert data["packages"]["p1"]["title"] == "Eight weeks"
+    assert data["media"]["m1"]["kind"] == "photo"
+    assert data["inviteCodes"]["CODE2345"]["coachUid"] == HER
+    assert data["asCoach"]["sub-2"] == {"coachUid": HER}
+
+
+def test_the_live_reader_keeps_a_clients_form_out_of_the_coachs_copy():
+    from tests import fake_firestore
+
+    db = fake_firestore.FakeFirestore()
+    db.docs.update(
+        {
+            f"subscriptions/s1": {"clientUid": HER, "coachUid": "coach-9", "intake": {"goal": "strength"}},
+            f"subscriptions/s2": {"clientUid": OTHER, "coachUid": HER, "relId": "r2", "intake": {"goal": "x"}, "status": "active"},
+            f"relationships/{HER}__{OTHER}": {"coachUid": HER, "clientUid": OTHER},
+            f"relationships/{HER}__{OTHER}/messages/m1": {"senderUid": HER, "text": "mine"},
+            f"relationships/{HER}__{OTHER}/messages/m2": {"senderUid": OTHER, "text": "hers"},
+            f"coachPrivate/{HER}": {"payoutState": "none"},
+            f"coachPrivate/{HER}/prices/p1": {"coachPriceEgp": 500},
+            f"coachApplications/{HER}": {"status": "approved"},
+            f"coaches/{HER}": {"displayName": "H"},
+            f"coaches/{HER}/packages/p1": {"title": "T"},
+            f"coaches/{HER}/media/m1": {"kind": "photo"},
+        }
+    )
+    got = export_user.FirestoreReader(db).coaching(HER)
+    assert got["asClient"]["s1"]["intake"] == {"goal": "strength"}
+    assert got["asCoach"]["s2"] == {"coachUid": HER, "status": "active"}
+    assert got["messages"] == {f"{HER}__{OTHER}/m1": {"senderUid": HER, "text": "mine"}}
+    assert got["private"]["prices/p1"] == {"coachPriceEgp": 500}
+    assert got["application"] == {"status": "approved"}
+    assert got["packages"] == {"p1": {"title": "T"}}
+    assert got["media"] == {"m1": {"kind": "photo"}}

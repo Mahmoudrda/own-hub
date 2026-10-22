@@ -4,27 +4,21 @@
 /// so detection costs no reads beyond the bests themselves. It also **fails
 /// closed**: an exercise this map does not describe has no metric to be
 /// compared on, so it can never set a best. That is the safe direction — the
-/// alternative is guessing a metric and recording a best that is not one — but
-/// it means an untagged move costs a woman a best she earned, which is why this
-/// map has to cover everything the product actually prescribes.
+/// alternative is guessing a metric and recording a best that is not one.
 ///
-/// ## Seed data, and only for the moves that exist
-///
-/// `DECISIONS.md` D20: library content is authored now as working seed data so
-/// the guards have something to read, and the owner replaces it later. These are
-/// the six ids the product names today — the five R03 prescribes and the plank
-/// P03 renders. The 124-title library will supply the rest, at which point this
-/// map is replaced wholesale rather than extended by hand.
+/// [bundledExerciseMetrics] is the six legacy ids the first screens name.
+/// [allExerciseMetrics] adds every move of the starting programmes and the
+/// catalogue, from `exercise_traits.dart`; a legacy id keeps its own entry.
 ///
 /// **No progression family is authored here.** `BestMetric.variation` — "moved
 /// to the harder version" — needs a family, a rank and sibling ids, and
 /// inventing a ladder of exercises that do not exist would put a fabricated
-/// progression behind a real celebration. The detector implements the branch and
-/// P03 renders it; it stays unpopulated until the library lands, and that is
-/// reported as a content gap rather than papered over.
+/// progression behind a real celebration. The detector implements the branch
+/// and P03 renders it; no move carries a family yet.
 library;
 
 import '../../../domain/rewards/personal_best_detector.dart';
+import 'exercise_traits.dart';
 
 /// Metric by exercise id. Fails closed for anything absent.
 const Map<String, ExerciseMeta> bundledExerciseMetrics = <String, ExerciseMeta>{
@@ -50,4 +44,10 @@ const Map<String, ExerciseMeta> bundledExerciseMetrics = <String, ExerciseMeta>{
   ),
   'plank_hold': ExerciseMeta(exerciseId: 'plank_hold', metric: BestMetric.hold),
   'dead_bug': ExerciseMeta(exerciseId: 'dead_bug', metric: BestMetric.reps),
+};
+
+/// The six legacy moves plus every bundled and synced move, for detection.
+Map<String, ExerciseMeta> allExerciseMetrics() => <String, ExerciseMeta>{
+  ...ExerciseTraits.traitsMetrics(),
+  ...bundledExerciseMetrics,
 };

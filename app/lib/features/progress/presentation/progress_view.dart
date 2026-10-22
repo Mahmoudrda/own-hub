@@ -93,6 +93,7 @@ class ProgressView extends StatelessWidget {
     this.onBack,
     this.onOpenMilestones,
     this.onOpenBests,
+    this.onOpenRecentSessions,
     this.onOpenBody,
     this.onOpenShare,
     this.onOpenMuscles,
@@ -146,6 +147,9 @@ class ProgressView extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onOpenMilestones;
   final VoidCallback? onOpenBests;
+
+  /// Her last finished sessions, to fix a set. Null draws no row.
+  final VoidCallback? onOpenRecentSessions;
   final VoidCallback? onOpenBody;
 
   /// P05, her progress card.
@@ -304,6 +308,23 @@ class ProgressView extends StatelessWidget {
             InsightsBests(
               bests: bests,
               onOpen: () => openScreen(context, 'P03', onOpenBests),
+            ),
+          if (onOpenRecentSessions != null)
+            AppListItem(
+              key: const ValueKey('p01-recent-sessions'),
+              leading: const Icon(
+                Icons.history,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              title: l10n.recentSessions,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              onTap: onOpenRecentSessions,
             ),
           InsightsFood(
             week:

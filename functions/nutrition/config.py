@@ -33,6 +33,13 @@ tokens, and a plate of four dishes that each list ingredients is about 430,
 which leaves room for the low thinking level."""
 TEMPERATURE = 0.1
 
+MEDIA_RESOLUTION = "MEDIA_RESOLUTION_MEDIUM"
+"""How finely the model reads the photo. Measured with countTokens on a 768 px
+meal photo (22 Oct 2026): 1,120 image tokens at the default, 560 at medium,
+280 at low, beside 355 for the instructions. Medium halves the image's cost and
+still shows a plate's dishes and their portions clearly; low starts to lose
+small items such as a spoon of oil or a slice of tomato."""
+
 
 def thinking_settings(model: str) -> dict:
     """The ThinkingConfig fields for this model family.

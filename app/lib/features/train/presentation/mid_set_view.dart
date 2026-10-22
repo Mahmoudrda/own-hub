@@ -29,8 +29,10 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 
 import '../../../app_state/haptics.dart';
+import '../../../app_state/move_notes.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
@@ -41,18 +43,22 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_big_button.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
+import '../../../ui/app_field.dart';
+import '../../../ui/app_sheet.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_undo_bar.dart';
 import '../../../ui/hand/hand.dart';
 import '../data/exercise_media_store.dart';
 import '../domain/exercise_library.dart';
+import '../domain/load_advice.dart' show LoadKit, loadKitFor;
 import '../domain/train_repository.dart';
 import '../domain/warm_up.dart';
 import '../domain/weight_label.dart';
 import 'end_workout_sheet.dart';
 import 'exercise_clip_frame.dart';
 import 'exercise_clip_player.dart';
+import 'plate_diagram.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
 import 'warm_up_toggle.dart';
@@ -70,6 +76,9 @@ class MidSetView extends StatefulWidget {
     this.onClose,
     this.onPause,
     this.onChange,
+    this.onOpenHistory,
+    this.gymHelpers = true,
+    this.equipment,
     this.onSetLogged,
     this.onMoveLogged,
     this.move,
@@ -141,6 +150,15 @@ class MidSetView extends StatefulWidget {
 
   /// R08 — she did something other than what was asked.
   final VoidCallback? onChange;
+
+  /// Opens the history of this move. Null draws no History button.
+  final VoidCallback? onOpenHistory;
+
+  /// The kit this move uses. A barbell or Smith move shows the plate line.
+  final Iterable<LibraryEquipment>? equipment;
+
+  /// Whether the plate line and the move note are drawn.
+  final bool gymHelpers;
 
   /// R09. The handle carries the five-second window, so the rest screen can
   /// offer Undo on the very log that was just made.
@@ -576,8 +594,22 @@ class _MidSetViewState extends State<MidSetView> {
               color: AppColors.onSurfaceVariant,
               icon: const Icon(Icons.tune),
             ),
+            if (widget.onOpenHistory != null)
+              IconButton(
+                key: const ValueKey('r07-history'),
+                tooltip: l10n.history,
+                onPressed: widget.onOpenHistory,
+                iconSize: 24,
+                color: AppColors.onSurfaceVariant,
+                icon: const Icon(Icons.show_chart),
+              ),
           ],
         ),
+        if (widget.gymHelpers && move.exerciseId.isNotEmpty)
+          _MoveNoteRow(
+            key: ValueKey('r07-note-${move.exerciseId}'),
+            exerciseId: move.exerciseId,
+          ),
         AppCard(
           padding: const EdgeInsets.all(18),
           children: [
@@ -629,6 +661,13 @@ class _MidSetViewState extends State<MidSetView> {
             ?_progressionNote(l10n, prescribed),
           ],
         ),
+        if (widget.gymHelpers &&
+            loadKitFor(widget.equipment) == LoadKit.barbell)
+          PlateHelper(
+            totalKg: warmingUp
+                ? _warmUpOutcome(prescribed).weightKg
+                : prescribed?.weightKg,
+          ),
         if (canWarmUp) ...[
           WarmUpToggle(
             value: _warmUp,
@@ -804,4 +843,144 @@ class _FormCues extends StatelessWidget {
           ),
     ],
   );
+}
+
+/// The note she keeps for a move, under its name, with the way to write it.
+class _MoveNoteRow extends StatefulWidget {
+  const _MoveNoteRow({super.key, required this.exerciseId});
+
+  final String exerciseId;
+
+  @override
+  State<_MoveNoteRow> createState() => _MoveNoteRowState();
+}
+
+class _MoveNoteRowState extends State<_MoveNoteRow> {
+  Future<void> _edit() async {
+    final saved = await showAppSheet<String>(
+      context: context,
+      children: [
+        _NoteSheet(initial: MoveNotes.instance.forMove(widget.exerciseId)),
+      ],
+    );
+    if (saved == null) return;
+    MoveNotes.instance.setFor(widget.exerciseId, saved);
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final note = MoveNotes.instance.forMove(widget.exerciseId);
+    return Semantics(
+      button: true,
+      child: InkWell(
+        key: const ValueKey('r07-note'),
+        onTap: _edit,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Row(
+            children: [
+              const ExcludeSemantics(
+                child: Icon(
+                  Icons.sticky_note_2_outlined,
+                  size: 20,
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  note ?? l10n.addNote,
+                  key: const ValueKey('r07-note-text'),
+                  style: AppText.bodyM.copyWith(
+                    color: note == null
+                        ? AppColors.primary
+                        : AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              if (note != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 8),
+                  child: Text(
+                    l10n.editNote,
+                    key: const ValueKey('r07-note-edit'),
+                    style: AppText.label.copyWith(color: AppColors.primary),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NoteSheet extends StatefulWidget {
+  const _NoteSheet({this.initial});
+
+  final String? initial;
+
+  @override
+  State<_NoteSheet> createState() => _NoteSheetState();
+}
+
+class _NoteSheetState extends State<_NoteSheet> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initial ?? '',
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(l10n.noteForThisMove, style: AppText.titleL),
+          const SizedBox(height: 4),
+          Text(
+            l10n.keptOnThisPhoneOnly,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          const SizedBox(height: 12),
+          AppField(
+            key: const ValueKey('r07-note-field'),
+            controller: _controller,
+            label: l10n.noteForThisMove,
+            hint: l10n.seatAndPinNumbers,
+            autofocus: true,
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(kMoveNoteMaxLength),
+            ],
+          ),
+          const SizedBox(height: 12),
+          AppButton(
+            l10n.save,
+            key: const ValueKey('r07-note-save'),
+            onPressed: () => Navigator.of(context).pop(_controller.text),
+          ),
+          if (widget.initial != null)
+            AppButton(
+              l10n.remove,
+              key: const ValueKey('r07-note-remove'),
+              variant: AppButtonVariant.text,
+              height: 48,
+              fontSize: 15,
+              onPressed: () => Navigator.of(context).pop(''),
+            ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
 }

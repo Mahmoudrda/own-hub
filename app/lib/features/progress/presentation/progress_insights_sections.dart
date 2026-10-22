@@ -14,12 +14,13 @@ import '../../../theme/hand_tokens.dart' show EditorialType;
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_split_row.dart';
 import '../../today/presentation/today_cards.dart' show weekdayLabel;
-import '../../train/presentation/exercise_labels.dart' show muscleLabel;
+import '../../train/presentation/exercise_labels.dart'
+    show MoveName, muscleLabel;
 import '../../train/domain/exercise_library.dart' show Muscle, MuscleSection;
 import '../domain/muscle_report.dart';
 import '../domain/nutrition_insights.dart';
 import 'muscle_figure.dart';
-import 'personal_bests_view.dart' show PersonalBestRow, personalBestRow;
+import 'personal_bests_view.dart' show personalBestRows;
 
 /// Her body from the front and the back with the week's sets on it. A tap on
 /// the figure opens P06 for the detail.
@@ -97,9 +98,7 @@ class InsightsBests extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final rows = <PersonalBestRow>[
-      for (final best in bests) ?personalBestRow(l10n, best),
-    ].take(3).toList();
+    final rows = personalBestRows(l10n, bests, limit: 3);
 
     return Column(
       key: const ValueKey('insights-bests'),
@@ -128,9 +127,9 @@ class InsightsBests extends StatelessWidget {
           Padding(
             padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
             child: AppSplitRow(
-              start: Text(row.title, style: AppText.titleS),
+              start: MoveName(row.title, style: AppText.titleS),
               end: Text(
-                row.delta ?? '',
+                row.delta ?? row.detail ?? '',
                 style: AppText.bodyM.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),

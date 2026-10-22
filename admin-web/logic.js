@@ -1017,3 +1017,306 @@ export function badgeText(n, cap = 99) {
   if (!n || n < 0) return "";
   return n > cap ? `${cap}+` : String(n);
 }
+
+/* private coaching: tabs by claim, money, labels, forms */
+
+export const COACHING_TABS = ["coaches", "payments", "refunds", "payouts", "reports"];
+
+// Moves with the server's payments switch: false hides every money screen.
+export const PAYMENTS_LIVE = false;
+const MONEY_TABS = ["payments", "refunds", "payouts"];
+
+// Which coaching tabs a staff member sees. The server refuses the rest anyway.
+export function coachingTabsFor(claims, live = PAYMENTS_LIVE) {
+  const c = claims ?? {};
+  const out = new Set();
+  if (c.admin) COACHING_TABS.forEach((t) => out.add(t));
+  if (c.womanReviewer) { out.add("coaches"); out.add("reports"); }
+  if (c.finance) MONEY_TABS.forEach((t) => out.add(t));
+  return COACHING_TABS.filter((t) => out.has(t) && (live || !MONEY_TABS.includes(t)));
+}
+
+// Suspending a coach and editing the receiving accounts and seller details.
+export const isAdmin = (claims) => !!claims?.admin;
+
+export function formatEgp(n) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return "";
+  const whole = Number.isInteger(v);
+  return `${v.toLocaleString("en-US", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 })} EGP`;
+}
+
+export function amountMismatch(expected, entered) {
+  const a = Number(expected);
+  const b = Number(entered);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
+  return Math.round(a * 100) !== Math.round(b * 100);
+}
+
+// Callable timestamps arrive as ISO text.
+export function toIso(v) {
+  return typeof v === "string" && !Number.isNaN(Date.parse(v)) ? v : "";
+}
+
+// A page of a list callable joined to what is already shown, in the order the
+// server sent it. A row that came twice (the list moved between pages) shows once.
+export function appendPage(items, page, key) {
+  const seen = new Set(items.map(key));
+  return [...items, ...page.filter((x) => !seen.has(key(x)))];
+}
+
+export const PROOF_FLAG_LABELS = {
+  duplicateReference: "Reference already used",
+  sameImage: "Same picture as another payment",
+  nearImage: "Looks like another payment's picture",
+  amountDiffers: "Amount differs",
+  paidBeforeAccept: "Paid before the coach accepted",
+};
+export const flagLabel = (flag) => PROOF_FLAG_LABELS[flag] ?? String(flag ?? "").replace(/([A-Z])/g, " $1").toLowerCase();
+
+export const PROOF_REJECT_LABELS = {
+  amount_wrong: "Amount is wrong",
+  not_received: "Money not received",
+  unreadable: "Screenshot unreadable",
+  wrong_account: "Paid to the wrong account",
+  duplicate: "Duplicate payment",
+  other: "Other",
+};
+export const PROOF_REJECT_REASONS = Object.keys(PROOF_REJECT_LABELS);
+
+export const SECTION_LABELS = {
+  personal: "Personal details",
+  education: "Education",
+  certificates: "Certificates",
+  specialties: "Specialties",
+  feedback: "Client feedback",
+  transformations: "Transformations",
+  approach: "Approach",
+  payout: "Payout account",
+  terms: "Terms and rules",
+};
+export const SECTIONS = Object.keys(SECTION_LABELS).filter((s) => PAYMENTS_LIVE || s !== "payout");
+
+export const SECTION_REASON_LABELS = {
+  missing: "Missing",
+  unclear: "Unclear",
+  unverifiable: "Can not be checked",
+  not_allowed: "Not allowed",
+  other: "Other",
+};
+export const SECTION_REASONS = Object.keys(SECTION_REASON_LABELS);
+
+export const APPLICATION_STATUSES = ["submitted", "needs_changes", "approved", "rejected"];
+export const APPLICATION_STATUS_LABELS = { submitted: "Submitted", needs_changes: "Needs changes", approved: "Approved", rejected: "Rejected" };
+
+export const RAIL_LABELS = { instapay: "InstaPay", vodafoneCash: "Vodafone Cash" };
+export const railLabel = (r) => RAIL_LABELS[r] ?? String(r ?? "");
+export const RAIL_PATTERNS = {
+  instapay: { account: /^[a-z0-9._-]{3,40}@instapay$/, reference: /^[A-Za-z0-9-]{6,40}$/ },
+  vodafoneCash: { account: /^010[0-9]{8}$/, reference: /^[A-Za-z0-9-]{6,40}$/ },
+};
+
+export const COACH_RULE_LABELS = {
+  accurateInfo: "Everything in the application is accurate",
+  clientPhotoConsent: "Client photos are used only with the client's consent",
+  noOffPlatformPayment: "No payments taken outside the app",
+};
+// The server stores the rules she accepted as a list of ids.
+export const acceptedRuleLabels = (rules) => (rules ?? []).map((id) => COACH_RULE_LABELS[id] ?? String(id));
+
+export const REPORT_STATE_OPEN = "submitted";
+export const REPORT_DECISIONS = ["dismiss", "hide_message", "suspend_coach", "end_coaching"];
+export const REPORT_DECISION_LABELS = { dismiss: "Dismiss", hide_message: "Hide message", suspend_coach: "Suspend coach", end_coaching: "End coaching" };
+export const REPORT_KIND_LABELS = { coachMessage: "Chat message", coachProfile: "Coach profile", coachPlan: "Plan" };
+export const REPORT_REASON_LABELS = {
+  harassment: "Harassment", man_account: "Looks like a man's account", nudity: "Nudity", spam: "Spam", impersonation: "Impersonation",
+  self_harm: "Self harm", off_platform_payment: "Asked to pay outside the app", unsafe_advice: "Unsafe advice", other: "Other",
+};
+export const reportDecisionsFor = (kind) => REPORT_DECISIONS.filter((d) => d !== "hide_message" || kind === "coachMessage");
+
+// Short staff-facing words for the reasons the coaching callables refuse with.
+export const COACHING_REASON_TEXT = {
+  not_a_coach: "That person is not an active coach.",
+  bad_request: "Some of what was sent was not accepted. Check the form.",
+  application_not_found: "That application is gone. Refresh the list.",
+  coach_suspended: "That coach is already suspended.",
+  wrong_status: "Refresh and try again.",
+  reference_used: "That transfer reference is already attached to another payment.",
+  proof_not_found: "That payment is gone. Refresh the list.",
+  request_not_found: "That request is gone. Refresh the list.",
+  payout_account_pending: "Confirm her new payout account first.",
+  nothing_owed: "Nothing is owed to her right now.",
+  seller_not_set: "Set the seller details in Settings first.",
+  staff_is_subject: "You cannot decide your own case.",
+  report_not_found: "That report is gone. Refresh the list.",
+  media_not_found: "That photo is gone. Refresh the list.",
+  too_many_media: "That coach already has the most items she can have.",
+};
+
+export function coachingMessage(e) {
+  const reason = String(e?.details?.reason ?? e?.message ?? "").trim();
+  if (COACHING_REASON_TEXT[reason]) return COACHING_REASON_TEXT[reason];
+  return friendlyMessage(e?.code);
+}
+
+/* accounts typed twice */
+
+export function normaliseAccount(text) {
+  return westernDigits(String(text ?? "")).replace(/\s+/g, "").toLowerCase();
+}
+
+export function retypeMatch(a, b) {
+  const x = normaliseAccount(a);
+  return x !== "" && x === normaliseAccount(b);
+}
+
+export function normaliseName(text) {
+  return String(text ?? "")
+    .normalize("NFKD")
+    .replace(/[̀-ًͯ-ٟـ]/g, "")
+    .replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه")
+    .toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+export const namesMatch = (a, b) => normaliseName(a) !== "" && normaliseName(a) === normaliseName(b);
+
+export function accountProblems(account, rail) {
+  const p = RAIL_PATTERNS[rail];
+  const value = normaliseAccount(account);
+  if (!value) return [];
+  return p.account.test(value) ? [] : [rail === "instapay" ? "The InstaPay address looks like name@instapay." : "The Vodafone Cash number is 11 digits starting 010."];
+}
+
+export function receivingProblems(form) {
+  const out = [];
+  for (const rail of ["instapay", "vodafoneCash"]) {
+    const f = form?.[rail] ?? {};
+    const label = railLabel(rail);
+    const address = normaliseAccount(f.address);
+    if (f.enabled && !address) out.push(`${label}: add the account or turn it off.`);
+    if (f.enabled && address) {
+      out.push(...accountProblems(address, rail).map((p) => `${label}: ${p}`));
+      if (!retypeMatch(f.address, f.again)) out.push(`${label}: type the account a second time, exactly the same.`);
+      if (!String(f.holderName ?? "").trim()) out.push(`${label}: add the holder name.`);
+    }
+  }
+  if (!out.length && !["instapay", "vodafoneCash"].some((r) => form?.[r]?.enabled)) out.push("Turn on at least one account so members can pay.");
+  return out;
+}
+
+export function receivingPayload(form) {
+  const one = (rail) => {
+    const f = form?.[rail] ?? {};
+    const address = normaliseAccount(f.address);
+    if (!f.enabled || !address) return { address: "", holderName: "", enabled: false };
+    return { address, holderName: String(f.holderName ?? "").trim(), enabled: true };
+  };
+  return { instapay: one("instapay"), vodafoneCash: one("vodafoneCash") };
+}
+
+export const SELLER_FIELDS = [
+  ["companyNameEn", "Legal name (English)"],
+  ["companyNameAr", "Legal name (Arabic)"],
+  ["addressEn", "Address (English)"],
+  ["addressAr", "Address (Arabic)"],
+  ["commercialRegistration", "Commercial registration number"],
+  ["taxCard", "Tax card number"],
+  ["vatRatePercent", "VAT %"],
+  ["supportEmail", "Support email"],
+  ["supportPhone", "Support phone"],
+];
+
+export function sellerProblems(form) {
+  const out = [];
+  for (const [key, label] of SELLER_FIELDS) {
+    if (key !== "supportPhone" && !String(form?.[key] ?? "").trim()) out.push(`${label}: fill this in.`);
+  }
+  const vat = Number(westernDigits(form?.vatRatePercent ?? ""));
+  if (String(form?.vatRatePercent ?? "").trim() && !(Number.isInteger(vat) && vat >= 0 && vat <= 14)) out.push("VAT %: use a whole number from 0 to 14.");
+  const email = String(form?.supportEmail ?? "").trim();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) out.push("Support email: this does not look like an email.");
+  return out;
+}
+
+// The saved seller details as the form holds them (numbers become text).
+export function sellerToForm(seller) {
+  const out = {};
+  for (const [key] of SELLER_FIELDS) out[key] = seller?.[key] == null ? "" : String(seller[key]);
+  return out;
+}
+
+export function sellerPayload(form) {
+  const out = {};
+  for (const [key] of SELLER_FIELDS) out[key] = String(form?.[key] ?? "").trim();
+  out.vatRatePercent = Number(westernDigits(out.vatRatePercent));
+  out.supportPhone = westernDigits(out.supportPhone);
+  return out;
+}
+
+/* application review */
+
+export const canApproveApplication = (ticked) => (ticked?.length ?? 0) >= 1;
+
+// The server needs a reason on at least one section for Needs changes and Reject; the note is extra.
+export function applicationDecisionProblems(decision, reasons) {
+  if (decision === "approve") return [];
+  return Object.values(reasons ?? {}).some(Boolean) ? [] : ["Pick a reason on at least one section."];
+}
+
+export function applicationPayload(uid, decision, { reasons = {}, ticked = [], note = "" } = {}) {
+  const clean = {};
+  for (const s of SECTIONS) if (SECTION_REASONS.includes(reasons[s])) clean[s] = reasons[s];
+  return {
+    uid,
+    decision,
+    reasons: decision === "approve" ? {} : clean,
+    checkedCertificates: decision === "approve" ? [...ticked] : [],
+    note: String(note ?? "").trim(),
+  };
+}
+
+export function fileKind(path, mime = "") {
+  const m = String(mime ?? "").toLowerCase();
+  const ext = String(path ?? "").toLowerCase().split("?")[0].split(".").pop();
+  if (m === "application/pdf" || ext === "pdf") return "pdf";
+  if (m.startsWith("image/") || ["jpg", "jpeg", "png", "webp", "gif"].includes(ext)) return "image";
+  return "other";
+}
+
+// An account waits for finance when the state is pending (first account) or a change was requested.
+export const payoutNeedsConfirm = (coach) => coach?.payoutState === "pending" || !!coach?.pendingPayout;
+
+/* badges: counts of what waits */
+
+// Coaches the finance team still has something to do for: money owed or an account to confirm.
+export const payoutBadgeCount = (coaches) => coaches.filter((c) => c.amountEgp > 0 || payoutNeedsConfirm(c)).length;
+
+/* portfolio photos: the woman reviewer's check before members see them */
+
+export const PORTFOLIO_KIND_LABELS = { transformation: "Transformation", feedback: "Feedback", photo: "Photo" };
+export const PORTFOLIO_REJECT_LABELS = { unclear: "Unclear", not_allowed: "Not allowed", no_consent: "No consent", other: "Other" };
+export const PORTFOLIO_REJECT_REASONS = Object.keys(PORTFOLIO_REJECT_LABELS);
+export const PORTFOLIO_CONSENT_LINE = "Her client agreed in writing that members may see these photos";
+
+// Only a woman reviewer may list, see and decide; the server refuses admins.
+export const canDecidePortfolio = (claims) => !!claims?.womanReviewer;
+
+// A row is told apart by coach and media id together.
+export const portfolioKey = (item) => `${item?.coachUid}/${item?.mediaId}`;
+
+// The storage paths an item shows, in display order.
+export function portfolioPaths(item) {
+  const list = item?.kind === "transformation" ? [item.beforePath, item.afterPath]
+    : item?.kind === "feedback" || item?.kind === "photo" ? [item.imagePath] : [];
+  return list.filter(Boolean);
+}
+
+export const portfolioRejectProblems = (decision, reason) =>
+  decision === "reject" && !PORTFOLIO_REJECT_REASONS.includes(reason) ? ["Pick a reason."] : [];
+
+export function portfolioDecisionPayload(item, decision, reason = "") {
+  return { coachUid: item.coachUid, mediaId: item.mediaId, decision, reason: decision === "reject" ? reason : "" };
+}
+
+// What the Coaches tab badge counts: applications plus photos waiting.
+export const coachesBadgeCount = (applications, photos) => (Number(applications) || 0) + (Number(photos) || 0);

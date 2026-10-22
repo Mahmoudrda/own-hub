@@ -129,26 +129,48 @@ service cloud.firestore {
       return isSelf(uid) && isVerified();
     }
 
-    // THE TWO DORMANT FEATURES, SWITCHED OFF HERE TOO (APL-16).
+    // A verified coach working on her own drafts, with the coach portfolio on.
+    function ownDraftAccess(coachUid) {
+      return coachPortfolioLive() && isVerified() && isSelf(coachUid) && isCoach();
+    }
+
+    // A coaching that is still running. A coach reads a subscription and its
+    // sessions only while it is in one of these states.
+    function openCoachingStatus(status) {
+      return status in ['requested', 'awaiting_payment', 'payment_review', 'active'];
+    }
+
+    // THE DORMANT FEATURES, SWITCHED OFF HERE TOO (APL-16).
     //
-    // The community and the coach app ship off in the app (`Feature.community`,
-    // `Feature.coachApp`), and the privacy policy describes no feature that
-    // connects members. Off in the app was not off on the server: a verified
-    // account could write posts, comments, coach pages, relationships and
-    // messages straight to the API, unmoderated. Every create and update on
-    // those paths is AND-ed with one of these two, so the server refuses what
-    // the app does not offer. Deleting her own post or leaving stays open:
-    // taking something down never depends on a feature being live.
+    // The community and the paid side of coaching ship off in the app
+    // (`Feature.community`, `Feature.payments`), and the privacy policy
+    // describes no feature that connects members. Off in the app was not off on
+    // the server: a verified account could write posts, comments,
+    // relationships and messages straight to the API, unmoderated. Every create
+    // and update on those paths is AND-ed with one of these, so the server
+    // refuses what the app does not offer. Deleting her own post or leaving
+    // stays open: taking something down never depends on a feature being live.
     //
-    // Each moves with its app flag, with storage.rules' functions of the same
-    // name and, for the coach app, with functions/coaching COACH_APP_LIVE. All
-    // of them change in the same release, and deletion rows 45 to 49 already
-    // cover what they open.
+    // Coaching has three switches. The portfolio (applications, her page,
+    // packages, drafts, certificates and photos) and clients (relationships,
+    // messages, read markers, subscriptions, sessions, shared plans) are on.
+    // Payments (receipts, payment proofs, receiving accounts, seller) is off.
+    // Each moves with storage.rules' function of the same name and with
+    // functions/coaching COACH_PORTFOLIO_LIVE, COACH_CLIENTS_LIVE and
+    // COACH_PAYMENTS_LIVE, in the same release.
     function communityLive() {
       return false;
     }
 
-    function coachLive() {
+    function coachPortfolioLive() {
+      return true;
+    }
+
+    function coachClientsLive() {
+      return true;
+    }
+
+    function coachPaymentsLive() {
       return false;
     }
 
@@ -295,18 +317,20 @@ service cloud.firestore {
     // The rules compiler reported this as defined but never called, which meant
     // blocking was enforced in the app and nowhere else — a client that skips
     // the app's own check could comment on, follow, or message someone who had
-    // blocked them. It is now attached to four places, and every one of them is
-    // a single-document WRITE:
+    // blocked them. It is attached to three client writes, each a single
+    // document:
     //
-    //   1. posts/{postId}/comments — create
-    //   2. followGraph/{owner}/{edge}/{other} — create and update
-    //   3. relationships/{relId}/messages — create
-    //   4. relationships/{relId} — create
+    //   1. posts/{postId}/comments, create
+    //   2. followGraph/{owner}/{edge}/{other}, create and update
+    //   3. relationships/{relId}/messages, create
+    //
+    // The relationship itself (relationships/{relId}, create) was the fourth.
+    // It is server-only now, so it is no longer a client write at all.
     //
     // Writes, not reads, because the cost note above rules out attaching it to
     // anything a feed touches, and because a write is the thing that actually
     // reaches the person who blocked you. Comment creation pays two extra reads
-    // (the parent post, then the block check); the others pay one. All four are
+    // (the parent post, then the block check); the others pay one. All three are
     // rare compared with the reads they sit beside.
     //
     // DELIBERATELY NOT ATTACHED TO:
@@ -337,24 +361,6 @@ service cloud.firestore {
     // condition.
     function postAuthor(postId) {
       return get(/databases/$(database)/documents/posts/$(postId)).data.authorUid;
-    }
-
-    // Is this uid a coach at all?
-    //
-    // `isCoach()` answers that for the CALLER, from a claim, for free. There is
-    // no equivalent for a third party: rules cannot read another account's
-    // custom claims, so the only server-authored evidence available is the
-    // existence of her coach page — which `coaches/{coachUid}` create gates on
-    // `isCoach()`, i.e. on the server-minted claim. So the page is a durable
-    // record that the claim was held.
-    //
-    // Costs one billed read, on relationship creation only. Before this
-    // existed, `coachUid` on a new relationship was an arbitrary string the
-    // caller chose, and choosing his own uid made `notBlockedBy(coachUid)`
-    // trivially true — half of the escalation documented on the relationships
-    // block below.
-    function isRealCoach(someUid) {
-      return exists(/databases/$(database)/documents/coaches/$(someUid));
     }
 
     // ------------------------------------------------ G7's two maps, by key
@@ -994,79 +1000,86 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------ coaches/{coachUid}
-    // ONE block, for the same reason. G12 (profile, offers), G13 (portfolio,
-    // results, ads) and G14 (splits) are OR-ed slices inside it.
+    // ONE block, so no sibling match can widen what is read here. The page,
+    // packages and drafts are below; the older portfolio, offers, results, ads
+    // and splits paths stay read-only until they are removed.
 
     match /coaches/{coachUid} {
-      // A coach's public face is readable by any VERIFIED woman. It was
-      // `signedIn()`; under the whole-app gate, browsing coaches is using the
-      // product. A coach reading her own page is exempt so she is not locked
-      // out of her own profile while her own verification is pending.
-      allow read: if isVerified() || isSelf(coachUid);
+      // The public face of a checked coach, written only by the server when
+      // staff approve her application. A verified woman reads it while it is
+      // published; the coach reads her own at any time, so a page that staff
+      // have switched off is still visible to her. Nothing writes here from a
+      // client: the trust signals (badges, stats, checked certificates, prices)
+      // are the server's word, and a client that could write the page could
+      // write them too. This used to be client-writable behind a coach switch.
+      allow read: if coachPortfolioLive()
+                  && ((isVerified() && resource.data.published == true)
+                      || isSelf(coachUid));
+      allow create, update, delete: if false;
 
-      // THE THREE TRUST SIGNALS, AT BIRTH AS WELL AS AFTER IT.
-      //
-      // `allow update` has refused `verifiedCerts`, `coachV` and `rating` since
-      // it was written. `allow create` refused nothing, so a coach page could
-      // be BORN with `rating: 5.0` and
-      // `verifiedCerts: ['NASM', 'ACE', 'anything at all']` — measured, and
-      // read back by a verified woman browsing coaches.
-      //
-      // These three are not cosmetic. They are the entire basis on which a
-      // woman decides who she lets design her training and, for in-person
-      // coaching, who she stands in a room with. `rating` is aggregated by a
-      // Function from real reviews; `verifiedCerts` is written after a
-      // credential check; `coachV` mirrors the server-minted claim that gated
-      // this create in the first place, so a client copy of it adds nothing but
-      // a second version of the truth.
-      //
-      // `hasAny` on the new document's own keys rather than `touches()`,
-      // because on a create the two are the same thing and this spelling says
-      // plainly that the field may not exist, not merely that it may not change.
-      allow create: if coachLive()
-                    && isSelf(coachUid)
-                    && isCoach()
-                    && !request.resource.data.keys().hasAny([
-                         'verifiedCerts', 'coachV', 'rating'
-                       ]);
-      allow update: if coachLive()
-                    && isSelf(coachUid)
-                    && isCoach()
-                    && !touches(['verifiedCerts', 'coachV', 'rating']);
-      allow delete: if false;
+      // Her packages, with the final price the member pays. The coach's own
+      // price and the margin live under coachPrivate/ and never here.
+      match /packages/{packageId} {
+        allow read: if coachPortfolioLive()
+                    && ((isVerified() && resource.data.active == true)
+                        || isSelf(coachUid));
+        allow write: if false;
+      }
 
-      // G13: a published portfolio is readable by anyone signed in, because a
-      // woman choosing a coach must be able to see it before she commits.
+      // Her portfolio photos and results, written only by the service. A
+      // verified woman reads an item only after a reviewer approved it and
+      // only while the coach's page is published; the coach reads all of her
+      // own, whatever the status.
+      match /media/{mediaId} {
+        allow read: if coachPortfolioLive()
+                    && ((isVerified() && resource.data.status == 'approved'
+                         && get(/databases/$(database)/documents/coaches/$(coachUid)).data.published == true)
+                        || isSelf(coachUid));
+        allow write: if false;
+      }
+
+      // Her working drafts of workouts, meal plans and packages. Hers alone,
+      // never read by a client or by staff. The body is a small bounded map:
+      // the server checks the real shape when she shares a plan.
+      match /drafts/{draftId} {
+        allow read, delete: if ownDraftAccess(coachUid);
+        allow create, update: if ownDraftAccess(coachUid)
+                              && request.resource.data.keys().hasOnly(
+                                   ['kind', 'name', 'body', 'updatedAt'])
+                              && request.resource.data.keys().hasAll(
+                                   ['kind', 'name', 'body', 'updatedAt'])
+                              && request.resource.data.kind in ['workout', 'meal', 'package']
+                              && request.resource.data.name is string
+                              && request.resource.data.name.size() >= 1
+                              && request.resource.data.name.size() <= 60
+                              && request.resource.data.body is map
+                              && request.resource.data.body.keys().size() <= 40
+                              && request.resource.data.updatedAt == request.time;
+      }
+
+      // The old portfolio, offers, results, ads and splits paths belonged to
+      // the earlier coach app. Their writes were open the moment a coach switch
+      // turned true; the private coaching service replaces them, so they are
+      // closed for good. They are readable by no one.
       match /portfolio/{version} {
-        allow read: if signedIn() && resource.data.published == true
-                    || isSelf(coachUid);
-        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
-        allow delete: if isSelf(coachUid) && isCoach();
+        allow read, write: if false;
       }
 
       match /offers/{offerId} {
-        allow read: if signedIn();
-        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
-        allow delete: if isSelf(coachUid) && isCoach();
+        allow read, write: if false;
       }
 
-      // G13 / spine C10: a client result is publishable only while consent is
-      // active, checked at READ time so withdrawal takes effect everywhere at
-      // once — including inside already-composed ad creatives.
       match /results/{resultId} {
-        allow read: if isSelf(coachUid)
-                    || (signedIn() && resource.data.consentState == 'granted');
-        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
-        allow delete: if isSelf(coachUid) && isCoach();
+        allow read, write: if false;
       }
 
       match /ads/{adId} {
-        allow read, delete: if isSelf(coachUid) && isCoach();
-        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
+        allow read: if isSelf(coachUid) && isCoach();
+        allow write: if false;
       }
       match /splits/{splitId} {
-        allow read, delete: if isSelf(coachUid) && isCoach();
-        allow create, update: if coachLive() && isSelf(coachUid) && isCoach();
+        allow read: if isSelf(coachUid) && isCoach();
+        allow write: if false;
       }
 
       // K02. Her certificate records, written only by submit_coach_certificate
@@ -1135,133 +1148,113 @@ service cloud.firestore {
         return isPartyOf(parent());
       }
 
-      allow read: if isParty();
+      allow read: if coachClientsLive() && isParty();
 
-      // HORIZONTAL PRIVILEGE ESCALATION — the hole this shape used to leave.
-      //
-      // The rule was `signedIn() && clientUid == request.auth.uid &&
-      // notBlockedBy(coachUid)`. Three things it never checked, and what each
-      // one cost:
-      //
-      //   1. `relId` was never compared with the document's own fields. The
-      //      caller chose the id. `plans/{uid}` below granted read to anyone for
-      //      whom `relationships/{callerUid}__{uid}` merely EXISTED, so writing
-      //      a document at that id was a read grant over another woman's entire
-      //      plan tree. Measured: 4 of 4 plan reads leaked, with real content.
-      //   2. `coachUid` was never required to be a coach. Setting it to his own
-      //      uid made `notBlockedBy(coachUid)` a check on whether he had blocked
-      //      himself — so BLOCKING HIM DID NOT CLOSE IT. The victim's block sits
-      //      at `users/{victim}/blocks/...` and was never consulted.
-      //   3. `signedIn()` rather than the gate. It worked WITHOUT the `verified`
-      //      claim, which put it entirely outside the women-only premise this
-      //      product is built on.
-      //
-      // The victim could not see the forged edge, could not list relationships,
-      // and could not delete it.
-      //
-      // All three are closed here, and the plans rule below stops trusting a
-      // bare `exists()` as well. Either fix alone would have closed the measured
-      // attack; both are applied because the id constraint is what makes the
-      // relationship collection honest, and the field check is what stops the
-      // next rule that keys off a client-writable path from inheriting the bug.
-      //
-      // Two billed reads on create: the coach page, then the block check.
-      // Relationships are opened once per coaching engagement.
-      allow create: if coachLive()
-                    && isSelfVerified(request.resource.data.clientUid)
-                    && relId == request.resource.data.coachUid + '__'
-                                + request.resource.data.clientUid
-                    && isRealCoach(request.resource.data.coachUid)
-                    && notBlockedBy(request.resource.data.coachUid)
-                    // Money state, lifecycle state and the sharing grant are
-                    // server-written. `allow update` has always said so; a
-                    // document that could be born holding them said otherwise.
-                    // `grantedForRelId` is the cycle-sharing grant — the key
-                    // that opens the most sensitive data in the product.
-                    && !request.resource.data.keys().hasAny([
-                         'payment', 'status', 'grantedForRelId'
-                       ]);
+      // SERVER-ONLY. This edge used to be client-creatable, and it was the
+      // escalation vector: the caller chose the id, plans/{uid} below once
+      // trusted a bare exists() on it, and a forged edge opened another
+      // woman's plans (measured, 4 of 4 reads leaked). It is now written only
+      // by the coaching service when a subscription starts, changes and ends,
+      // so its status, chatOpen and activeSubId can be trusted by the rules
+      // that read it. The same reason closes update and delete.
+      allow create, update, delete: if false;
 
-      // Money state and the sharing grant are server-written.
-      allow update: if coachLive()
-                    && isParty()
-                    && !touches(['payment', 'status', 'grantedForRelId']);
-      allow delete: if false;
-
-      // Rule 2: a message never changes a plan. A message document may not carry
-      // plan fields at all, so "the coach changed my plan in chat" is not a shape
-      // this collection can hold.
+      // Rule 2: a message never changes a plan. The client may write two kinds
+      // only, plain text and a shared recipe. Plan cards, sessions and system
+      // lines are written by the server, so "the coach changed my plan in chat"
+      // is not a shape a client can produce.
+      //
+      // The thread must be open: the relationship is active and chat is on.
+      // Both are read from the PARENT, the same cached document
+      // isPartyOfParent() already loaded. The counterparty is whichever of the
+      // two is not the sender; one further billed read for the block check.
+      //
+      // A run of ten or more digits is refused outright (a phone number or an
+      // account number is how a conversation leaves the app). That is a
+      // backstop; the service filters the rest. `(?s)` lets `.` cross a line
+      // break, so a number cannot hide after a newline.
       match /messages/{msgId} {
-        allow read: if isPartyOfParent();
-        // The counterparty is whichever of the two parties is not the sender,
-        // read from the PARENT relationship — the same cached document
-        // `isPartyOfParent()` already loaded. One further billed read for the
-        // block check itself.
-        allow create: if coachLive()
+        allow read: if coachClientsLive() && isPartyOfParent();
+        allow create: if coachClientsLive()
                       && isPartyOfParent()
+                      && parent().status == 'active'
+                      && parent().chatOpen == true
                       && request.resource.data.senderUid == request.auth.uid
                       && notBlockedBy(
                            request.auth.uid == parent().coachUid
                              ? parent().clientUid
                              : parent().coachUid)
-                      && !request.resource.data.keys().hasAny(
-                           ['planVersion', 'assignments', 'published']);
+                      && request.resource.data.keys().hasOnly(
+                           ['senderUid', 'type', 'text', 'recipeId', 'createdAt'])
+                      && request.resource.data.keys().hasAll(
+                           ['senderUid', 'type', 'createdAt'])
+                      && request.resource.data.createdAt == request.time
+                      && request.resource.data.type in ['text', 'recipe']
+                      && (!('text' in request.resource.data)
+                          || (request.resource.data.text is string
+                              && request.resource.data.text.size() <= 2000
+                              && !request.resource.data.text.matches(
+                                   '(?s).*[0-9٠-٩]{10,}.*')))
+                      && (request.resource.data.type == 'text'
+                          ? (('text' in request.resource.data)
+                             && request.resource.data.text.size() >= 1
+                             && !('recipeId' in request.resource.data))
+                          : (request.resource.data.recipeId is string
+                             && request.resource.data.recipeId.matches(
+                                  '^[a-z0-9_-]{1,80}$')));
         allow update, delete: if false;
       }
 
+      // When each party last opened the thread. She writes only her own marker,
+      // and only the clock time.
+      match /reads/{readUid} {
+        allow read: if coachClientsLive() && isPartyOfParent();
+        allow create, update: if coachClientsLive()
+                              && isPartyOfParent()
+                              && request.auth.uid == readUid
+                              && request.resource.data.keys().hasOnly(['at'])
+                              && request.resource.data.at == request.time;
+        allow delete: if false;
+      }
+
+      // Reviews belonged to the earlier coach app; reporting through Report
+      // replaces them. Read-only for the two parties.
       match /reviews/{reviewId} {
-        allow read, delete: if isPartyOfParent();
-        allow create, update: if coachLive() && isPartyOfParent();
+        allow read: if coachClientsLive() && isPartyOfParent();
+        allow write: if false;
       }
     }
 
     // ------------------------------------------------------------- plans
-    // G2 authors plans; a coach reads her client's under an active relationship.
+    // G2 authors plans. Only she reads her tree; a coach reads only the plans she
+    // shared (coachPlans, below), while the coaching is active.
     // Publishing is a Function, because publishing is what changes a plan.
 
     match /plans/{uid}/{document=**} {
-      // NEVER TRUST A BARE exists() ON A CLIENT-WRITABLE PATH.
+      // HER TREE IS HERS ALONE.
       //
-      // This rule used to read, in full:
-      //
-      //   exists(/databases/$(database)/documents/relationships/
-      //          $(request.auth.uid + '__' + uid))
-      //
-      // and that is the whole vulnerability in one line. `relationships` is
-      // client-creatable and the caller chose the document id, so the condition
-      // reduced to "has this caller written a document at a path he computed
-      // himself?". Every signed-in account could answer yes about every woman
-      // in the product, and did: 4 of 4 plan reads leaked, including the
-      // published plan's text.
-      //
-      // `exists()` answers "is something there". It never answers "does what is
-      // there say what I am about to assume it says". On a path a client can
-      // write, only the second question is worth asking.
-      //
-      // So the relationship is now LOADED and its fields are checked: it must
-      // name this caller as the coach and this `uid` as the client, which is
-      // also exactly what the id spells — an edge that disagrees with its own
-      // id grants nothing. `isCoach()` first, so a woman without the
-      // server-minted coach claim is refused before any document is read, and
-      // so `request.auth.uid` is never dereferenced on an anonymous call.
-      //
-      // Cost: one billed read on the coach's path only. She is reading her
-      // client's plan, which is several reads already; the woman reading her own
-      // plan takes the left branch and pays nothing.
-      function relWith(clientUid) {
-        return /databases/$(database)/documents/relationships/$(request.auth.uid + '__' + clientUid);
-      }
+      // A coach used to read the whole tree while a relationship existed. That
+      // was the escalation vector once: the rule trusted a bare exists() on a
+      // path a client could write, and every plan leaked. The edge is now
+      // server-written, but the wide read is gone too: a coach sees her
+      // client's intake (on the subscription) and the plans she herself
+      // published (the coachPlans match below), nothing else of the client's.
+      // Never trust a bare exists() on a path a client can write.
+      allow read: if isSelfVerified(uid);
+      allow write: if false;
+    }
 
-      function coachOnActiveRelationship(clientUid) {
-        return isCoach()
-               && isVerified()
-               && exists(relWith(clientUid))
-               && get(relWith(clientUid)).data.coachUid == request.auth.uid
-               && get(relWith(clientUid)).data.clientUid == clientUid;
-      }
-
-      allow read: if isSelfVerified(uid)
-                  || coachOnActiveRelationship(uid);
+    // Plans a coach shared with her client, written by the server only. She
+    // reads them; the coach named on the plan reads them while the coaching is
+    // still active, and not after it ends. This is the only coach read of
+    // anything under plans/. The edge is loaded and its status checked, never
+    // just tested with exists(). She reads these through the wildcard above.
+    match /plans/{uid}/coachPlans/{planId} {
+      allow read: if coachClientsLive()
+                  && isCoach()
+                  && isVerified()
+                  && resource.data.coachUid == request.auth.uid
+                  && get(/databases/$(database)/documents/relationships/$(request.auth.uid + '__' + uid)).data.status == 'active';
       allow write: if false;
     }
 
@@ -1269,7 +1262,7 @@ service cloud.firestore {
     // Spine C9: the feed is assembled on READ. Nothing here fans out on write.
 
     match /posts/{postId} {
-      allow read: if isVerified();
+      allow read: if communityLive() && isVerified();
       // `clientInvariants()` is AND-ed outside every slice of `users/{uid}`,
       // and outside nothing else — so a post could be born with `streak: 40`,
       // which is rule 3 defeated by writing it somewhere the invariant does not
@@ -1294,7 +1287,7 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
 
       match /comments/{commentId} {
-        allow read: if isVerified();
+        allow read: if communityLive() && isVerified();
         // Two extra billed reads on a comment CREATE only: one to learn whose
         // post it is, one for the block check. Creates are rare beside reads,
         // and the alternative — a blocked man able to comment under her posts
@@ -1315,12 +1308,12 @@ service cloud.firestore {
       // notBlockedBy is deliberately NOT here. See the note at its definition:
       // this is a list query, and a rules denial is distinguishable from an
       // empty result, which would turn a block into a signal.
-      allow read: if isVerified();
+      allow read: if communityLive() && isVerified();
       allow write: if false; // Function-maintained projection.
     }
 
     match /followGraph/{ownerUid}/{edge}/{otherUid} {
-      allow read: if isVerified();
+      allow read: if communityLive() && isVerified();
       // One extra billed read per follow. Split from `write` on purpose:
       // DELETE must stay open, because unfollowing someone who blocked you has
       // to keep working or the block traps a stale edge forever.
@@ -1338,7 +1331,7 @@ service cloud.firestore {
     }
 
     match /groups/{groupId} {
-      allow read: if isVerified();
+      allow read: if communityLive() && isVerified();
       allow write: if false;
 
       // Her own membership document, and nothing else.
@@ -1369,6 +1362,81 @@ service cloud.firestore {
       }
     }
 
+    // ------------------------------------------- private coaching (server-owned)
+    //
+    // Everything below is written by the coaching service through the Admin
+    // SDK, which bypasses these rules, so every write here is false. Rules only
+    // decide who may READ, and for money paths the answer is the narrowest one.
+    // Nothing coaching-related lives under meta/*, which an admin token can
+    // write from a client.
+
+    // A subscription holds the package snapshot, her intake, the final price
+    // and the payment code. Its two parties read it and nobody else, staff
+    // included (staff use callables that log the access). A list must carry
+    // the same constraint in its query, so a query by clientUid or coachUid is
+    // allowed and an unconstrained one is not.
+    match /subscriptions/{subId} {
+      // The client reads hers in every status. The coach reads one only while
+      // it is open, so her intake and health answers close to her the moment
+      // the coaching ends, is declined, cancelled or expires. Her list query
+      // must filter status with whereIn on the open list to satisfy this.
+      allow get, list: if coachClientsLive()
+                       && isVerified()
+                       && (resource.data.clientUid == request.auth.uid
+                           || (resource.data.coachUid == request.auth.uid
+                               && openCoachingStatus(resource.data.status)));
+      allow write: if false;
+
+      // The coach's own price and the margin. Closed to both parties.
+      match /private/{docId} {
+        allow read, write: if false;
+      }
+
+      match /sessions/{sessionId} {
+        allow read: if coachClientsLive()
+                    && isVerified()
+                    && (get(/databases/$(database)/documents/subscriptions/$(subId)).data.clientUid == request.auth.uid
+                        || (get(/databases/$(database)/documents/subscriptions/$(subId)).data.coachUid == request.auth.uid
+                            && openCoachingStatus(get(/databases/$(database)/documents/subscriptions/$(subId)).data.status)));
+        allow write: if false;
+      }
+    }
+
+    // A coach's application and her private working records (legal name,
+    // payout account, ledger, payouts, her own price list). She reads her own.
+    // Staff read them through logged callables, never from a client.
+    match /coachApplications/{uid}/{document=**} {
+      allow read: if coachPortfolioLive() && isSelf(uid);
+      allow write: if false;
+    }
+
+    match /coachPrivate/{uid}/{document=**} {
+      allow read: if coachPortfolioLive() && isSelf(uid);
+      allow write: if false;
+    }
+
+    // The accounts a member pays into, and the seller details printed on
+    // receipts. A verified member reads these two documents while payments
+    // are live and never before; every other document in coachingConfig (the
+    // receipt counter) is closed.
+    match /coachingConfig/{docId} {
+      allow read: if coachPaymentsLive() && isVerified()
+                  && docId in ['receivingAccounts', 'seller'];
+      allow write: if false;
+    }
+
+    // Her receipt, by id. A get only: a list has no owner constraint to hold
+    // on to, so her receipts are fetched by subscription id.
+    match /receipts/{subId} {
+      allow get: if coachPaymentsLive() && signedIn() && resource.data.clientUid == request.auth.uid;
+      allow list, write: if false;
+    }
+
+    // The screenshot a member sent as proof of payment, and the reference
+    // numbers already used. Staff and the service only.
+    match /paymentProofs/{proofId} { allow read, write: if false; }
+    match /paymentRefs/{refId}     { allow read, write: if false; }
+
     // ---------------------------------------------------------- moderation
     // She can report; she can never read the queue, and she can never learn
     // whether a report led anywhere.
@@ -1383,11 +1451,13 @@ service cloud.firestore {
     // triage categories the safety team sorts by were whatever a client sent.
     match /reports/{reportId} {
       allow get, list: if false;
-      allow create: if signedIn()
+      allow create: if phoneUser()
                     && request.resource.data.reporterUid == request.auth.uid
                     && request.resource.data.subjectUid != request.auth.uid
-                    // A report about a person is always open. One about a post
-                    // or a comment is about the community, and waits for it.
+                    // A report about a person is always open, and so are the
+                    // coaching kinds (coachMessage, coachProfile, coachPlan).
+                    // One about a post or a comment is about the community,
+                    // and waits for it.
                     && (communityLive()
                         || !(request.resource.data.get('subjectKind', '')
                              in ['post', 'comment']))
@@ -1396,7 +1466,8 @@ service cloud.firestore {
                     && request.resource.data.get('note', '').size() <= 1000
                     && request.resource.data.reason in [
                          'harassment', 'man_account', 'nudity', 'spam',
-                         'impersonation', 'self_harm', 'other'
+                         'impersonation', 'self_harm', 'off_platform_payment',
+                         'unsafe_advice', 'other'
                        ]
                     && request.resource.data.keys().hasOnly([
                          'reporterUid', 'subjectUid', 'subjectKind', 'subjectRef',
@@ -1417,41 +1488,11 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------- assessments
-    // An assessment is a coach's written record of a woman's body, her injuries
-    // and her clearance to train. `allow create` was `signedIn() && isCoach()`
-    // and nothing else — no field constraints at all. Measured, a coach could
-    // create an assessment ATTRIBUTED TO ANOTHER COACH, one about a woman who
-    // never hired her, and — because the rule never asked for the `verified`
-    // claim — one written by a coach account that had not passed the gate.
-    //
-    // Read is already correct: only the two named parties. So the fix is to
-    // make the write side name the same two people, and to require the
-    // relationship that makes the second one her client.
-    //
-    // One billed read on create. An assessment is written once per client.
+    // Closed. Nothing in the app or the functions reads or writes it; an
+    // assessment would be a record of a woman's body and injuries, so the path
+    // stays shut until a feature needs it and brings its own rules and tests.
     match /assessments/{assessmentId} {
-      allow read: if isVerified()
-                  && (request.auth.uid == resource.data.clientUid
-                      || request.auth.uid == resource.data.coachUid);
-      allow create: if isVerified()
-                    && isCoach()
-                    && request.resource.data.coachUid == request.auth.uid
-                    && request.resource.data.clientUid is string
-                    && exists(/databases/$(database)/documents/relationships/$(request.auth.uid + '__' + request.resource.data.clientUid));
-      // P0-ASMT-05, quoted in assessment_repository.dart: "No UI path edits a
-      // recorded assessment. A direct write is denied by rules; the only
-      // permitted update is the status flip to superseded. Deletion is denied
-      // outright. Correcting means recording a new one." The rule said only
-      // that the owning coach may change anything at all, which is not the
-      // same sentence. An answer she gave about her own body cannot be quietly
-      // rewritten afterwards.
-      allow update: if isVerified()
-                    && isCoach()
-                    && request.auth.uid == resource.data.coachUid
-                    && onlyTouches(['status', 'updatedAt'])
-                    && stampedIfTouched()
-                    && request.resource.data.status in ['recorded', 'superseded'];
-      allow delete: if false;
+      allow read, write: if false;
     }
 
     // ------------------------------------------------------------ libraries

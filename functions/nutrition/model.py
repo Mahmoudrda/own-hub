@@ -76,7 +76,31 @@ RESPONSE_SCHEMA = {
 
 
 class ServiceUnavailable(Exception):
-    """The model could not be reached, timed out or failed."""
+    """The model could not be reached, timed out or failed. Carries the error's
+    status code and name when the service gave one (for example 403 and
+    PERMISSION_DENIED), never its message: the message could quote the request."""
+
+    def __init__(self, code: Optional[int] = None, status: Optional[str] = None):
+        super().__init__()
+        self.code = code
+        self.status = status
+
+    @property
+    def label(self) -> str:
+        """"403 PERMISSION_DENIED", "TimeoutError" or "unknown", for the log."""
+        parts = [str(self.code) if self.code is not None else "", self.status or ""]
+        return " ".join(p for p in parts if p) or "unknown"
+
+
+def _error_status(error: BaseException) -> tuple:
+    """The status code and name of a failed call, from the SDK's own fields only."""
+    code = getattr(error, "code", None)
+    status = getattr(error, "status", None)
+    code = code if isinstance(code, int) and not isinstance(code, bool) else None
+    status = status if isinstance(status, str) and status.isupper() else None
+    if code is None and status is None:
+        status = type(error).__name__ if type(error).__name__.isidentifier() else None
+    return code, status
 
 
 class Unclear(Exception):
@@ -157,6 +181,9 @@ def generation_config():
         response_mime_type="application/json",
         response_schema=RESPONSE_SCHEMA,
         thinking_config=types.ThinkingConfig(**config.thinking_settings(config.MODEL)),
+        media_resolution=types.MediaResolution(config.MEDIA_RESOLUTION),
+        # No tools are offered, so nothing is called back automatically.
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
     )
 
 
@@ -175,8 +202,8 @@ def analyse(jpeg: bytes) -> Result:
             ],
             config=generation_config(),
         )
-    except Exception:
-        raise ServiceUnavailable() from None
+    except Exception as error:
+        raise ServiceUnavailable(*_error_status(error)) from None
     usage = getattr(response, "usage_metadata", None)
     prompt_tokens = _count(getattr(usage, "prompt_token_count", None))
     output_tokens = _count(getattr(usage, "candidates_token_count", None))

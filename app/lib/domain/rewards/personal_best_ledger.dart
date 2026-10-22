@@ -173,6 +173,13 @@ class PersonalBestLedger {
     _counted.removeAll(counted);
     bestsCount = bestsCount > counted.length ? bestsCount - counted.length : 0;
 
+    return revertBestsOf(sessionId);
+  }
+
+  /// Puts each running best [sessionId] set back to the one it beat, or takes
+  /// it away when it beat nothing. Counts and points are not touched. Returns
+  /// the moves whose running best changed.
+  Set<String> revertBestsOf(String sessionId) {
     final changed = <String>{};
     for (final entry in bests.entries.toList()) {
       final best = entry.value;

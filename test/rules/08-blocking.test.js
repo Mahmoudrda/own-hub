@@ -3,7 +3,7 @@
 //   1. posts/{postId}/comments               — create
 //   2. followGraph/{owner}/{edge}/{other}    — create and update
 //   3. relationships/{relId}/messages        — create
-//   4. relationships/{relId}                 — create
+//   4. relationships/{relId}                 , create (server-only now)
 //
 // and DELIBERATELY not attached to:
 //
@@ -48,7 +48,7 @@ before(async () => {
     await setDoc(doc(d, 'posts/p_bystander'), { authorUid: uid.her, blurred: true });
     // A live coaching relationship between the two of them.
     await setDoc(doc(d, `relationships/${BLOCKER}__${BLOCKED}`), {
-      coachUid: BLOCKER, clientUid: BLOCKED, status: 'active',
+      coachUid: BLOCKER, clientUid: BLOCKED, status: 'active', chatOpen: true,
     });
 
     // The coach pages. `relationships` create now requires `coachUid` to be a
@@ -179,32 +179,24 @@ describe('2. followGraph create, update and delete', () => {
 });
 
 describe('3. relationship create', () => {
-  test('the blocked man cannot open a relationship with a coach who blocked him', async () => {
-    // The CANONICAL id, against a real coach page, from a verified account:
-    // every other guard on this rule is satisfied, so the only thing left to
-    // refuse the write is the block. That is what makes this a test of
-    // notBlockedBy rather than a test of the id constraint.
-    const db = await verified(BLOCKED);
+  // A relationship is written by the coaching service only. The block check
+  // that used to guard a client create has nothing left to guard, so every
+  // shape is refused, including the one that used to be legitimate.
+  test('nobody opens a relationship from the app, blocked or not', async () => {
+    const blocked = await verified(BLOCKED);
     await assertFails(
-      setDoc(doc(db, `relationships/${uid.coach2}__${BLOCKED}`), {
+      setDoc(doc(blocked, `relationships/${uid.coach2}__${BLOCKED}`), {
         coachUid: uid.coach2, clientUid: BLOCKED,
       }),
     );
-  });
-
-  test('a non-canonical id is refused whatever the block state says', async () => {
-    const db = await verified(BLOCKED);
     await assertFails(
-      setDoc(doc(db, `relationships/${BLOCKER}__${BLOCKED}_new`), {
+      setDoc(doc(blocked, `relationships/${BLOCKER}__${BLOCKED}_new`), {
         coachUid: BLOCKER, clientUid: BLOCKED,
       }),
     );
-  });
-
-  test('a woman the coach has not blocked can open one', async () => {
-    const db = await verified(uid.her);
-    await assertSucceeds(
-      setDoc(doc(db, `relationships/${BLOCKER}__${uid.her}`), {
+    const her = await verified(uid.her);
+    await assertFails(
+      setDoc(doc(her, `relationships/${BLOCKER}__${uid.her}`), {
         coachUid: BLOCKER, clientUid: uid.her,
       }),
     );
@@ -224,18 +216,18 @@ describe('4. message create — the happy path and the blocked path', () => {
   test('the happy path works: a client messages her coach, and the coach replies', async (t) => {
     await seed(async (ctx) => {
       await setDoc(doc(ctx.firestore(), `relationships/${uid.coach}__${uid.her}`), {
-        coachUid: uid.coach, clientUid: uid.her, status: 'active',
+        coachUid: uid.coach, clientUid: uid.her, status: 'active', chatOpen: true,
       });
     });
     const her = await verified(uid.her);
     const coach = await verifiedCoach(uid.coach);
     const r1 = await observe('client messages a coach who never blocked her',
       setDoc(doc(her, `relationships/${uid.coach}__${uid.her}/messages/m_happy`), {
-        senderUid: uid.her, body: 'hello coach', createdAt: new Date(),
+        senderUid: uid.her, type: 'text', text: 'hello coach', createdAt: serverTimestamp(),
       }));
     const r2 = await observe('coach replies',
       setDoc(doc(coach, `relationships/${uid.coach}__${uid.her}/messages/m_reply`), {
-        senderUid: uid.coach, body: 'hello', createdAt: new Date(),
+        senderUid: uid.coach, type: 'text', text: 'hello', createdAt: serverTimestamp(),
       }));
     for (const r of [r1, r2]) t.diagnostic(`  ${r.outcome.padEnd(8)} ${r.label}`);
     assert.equal(r1.outcome, 'ALLOWED', 'coach messaging is unusable again');
@@ -251,11 +243,11 @@ describe('4. message create — the happy path and the blocked path', () => {
     // a mute on yourself — and she may not write to him.
     const r1 = await observe('coach (the blocker) sends a message',
       setDoc(doc(asCoach, `relationships/${rel}/messages/m_coach`), {
-        senderUid: BLOCKER, body: 'hello', createdAt: new Date(),
+        senderUid: BLOCKER, type: 'text', text: 'hello', createdAt: serverTimestamp(),
       }));
     const r2 = await observe('client (the blocked one) sends a message',
       setDoc(doc(asClient, `relationships/${rel}/messages/m_client`), {
-        senderUid: BLOCKED, body: 'hello', createdAt: new Date(),
+        senderUid: BLOCKED, type: 'text', text: 'hello', createdAt: serverTimestamp(),
       }));
     for (const r of [r1, r2]) t.diagnostic(`  ${r.outcome.padEnd(8)} ${r.label}`);
     assert.equal(r1.outcome, 'ALLOWED');
@@ -267,7 +259,7 @@ describe('4. message create — the happy path and the blocked path', () => {
     const her = await verified(uid.her);
     await assertFails(
       setDoc(doc(her, `relationships/${uid.coach}__${uid.her}/messages/m_forged`), {
-        senderUid: uid.coach, body: 'from your coach', createdAt: new Date(),
+        senderUid: uid.coach, type: 'text', text: 'from your coach', createdAt: serverTimestamp(),
       }),
     );
   });
@@ -303,7 +295,7 @@ describe('4. message create — the happy path and the blocked path', () => {
     );
   });
 
-  test('reviews use the same corrected party check', async (t) => {
+  test('reviews are read by the parties and written by nobody', async (t) => {
     const rel = `${uid.coach}__${uid.her}`;
     const her = await verified(uid.her);
     const r1 = await observe('create a review',
@@ -321,8 +313,8 @@ describe('4. message create — the happy path and the blocked path', () => {
     const r3 = await observe('a stranger writes a review under their relationship',
       setDoc(doc(stranger, `relationships/${rel}/reviews/rev_forged`), { stars: 1 }));
     for (const r of [r1, r2, r3]) t.diagnostic(`  ${r.outcome.padEnd(8)} ${r.label}`);
-    assert.equal(r1.outcome, 'ALLOWED', 'reviews are unusable again');
-    assert.equal(r2.outcome, 'ALLOWED');
+    assert.equal(r1.outcome, 'DENIED');
+    assert.equal(r2.outcome, 'ALLOWED', 'reviews are unreadable again');
     assert.equal(r3.outcome, 'DENIED');
   });
 

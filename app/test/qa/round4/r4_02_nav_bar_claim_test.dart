@@ -96,7 +96,7 @@ void main() {
       AppRouter.featureFlags = saved;
     });
 
-    testWidgets('sixteen dark screens do it, and this is the whole list', (
+    testWidgets('fifteen dark screens do it, and this is the whole list', (
       t,
     ) async {
       phone(t);
@@ -111,6 +111,9 @@ void main() {
       // today, so none of them can reach a woman in this release; the list is
       // pinned so that an eighteenth — or a shipping one — cannot arrive
       // quietly. The shipping case above is the one that blocks.
+      //
+      // W02 left when the coach's client page got her tab bar with the rest of
+      // coaching.
       //
       // C04 and C05 left the list when the look-around page became the tour.
       // Each stop is the real screen inside its own `ScreenScope`, so the bar
@@ -132,7 +135,6 @@ void main() {
         'M12',
         'M14',
         'M15',
-        'W02',
         'K19',
       }, reason: liars.join('\n'));
     });

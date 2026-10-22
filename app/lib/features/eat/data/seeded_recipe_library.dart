@@ -159,6 +159,10 @@ class SeededRecipeLibrary implements RecipeLibrary {
 
   static RecipeBook? _cache;
 
+  /// The ids of the bundled recipes once they are read, else null.
+  static Set<String>? get seededIds =>
+      _cache == null ? null : {for (final r in _cache!.recipes) r.recipeId};
+
   /// Drops the parsed copy. Tests that load a different asset call it; nothing
   /// in the app does, because the seed cannot change while the app is running.
   @visibleForTesting

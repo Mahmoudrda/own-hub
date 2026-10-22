@@ -27,12 +27,19 @@ import 'workout_library.dart';
 /// The `programId` of the programme her plan stands in as.
 const String kMyPlanId = 'my_plan';
 
+/// The `programId` of the programme a coach's workout plan stands in as.
+const String kCoachPlanId = 'coach_plan';
+
 /// Most days a plan holds: one week's worth.
 const int kMaxPlanDays = 7;
 
 const int _maxName = 80;
 const int _maxNote = WorkoutLimits.maxText;
 const String _dayPrefix = 'mine_';
+
+/// Whether [programme] is her coach's plan standing in for a split.
+bool isCoachPlanProgramme(AuthoredProgramme programme) =>
+    programme.programId == kCoachPlanId;
 
 /// Whether [session] is one of her own days.
 bool isMyPlanSession(AuthoredSession session) =>
@@ -474,6 +481,28 @@ AuthoredProgramme? myPlanProgramme(MyPlan? plan, LifeStage? stage) {
     status: ProgrammeStatus.published,
     sessions: sessions,
     version: plan.revision,
+  );
+}
+
+/// The workout plan her coach shared as the programme Train follows, or null
+/// when it has no day that suits [stage]. Its days carry the same session ids
+/// as a plan's, so it is told apart by its own `programId`, never by the id of
+/// a session.
+AuthoredProgramme? coachPlanProgramme(
+  MyPlan? workout, {
+  String name = '',
+  int revision = 1,
+  LifeStage? stage,
+}) {
+  final base = myPlanProgramme(workout, stage);
+  if (base == null) return null;
+  return AuthoredProgramme(
+    programId: kCoachPlanId,
+    titleEn: name,
+    titleAr: name,
+    status: ProgrammeStatus.published,
+    sessions: base.sessions,
+    version: revision,
   );
 }
 

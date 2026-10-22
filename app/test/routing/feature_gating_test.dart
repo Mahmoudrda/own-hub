@@ -72,11 +72,8 @@ void main() {
       for (final flow in [
         'admin',
         'community',
-        'coach',
-        'coachplan',
         'coachbrand',
         'coached',
-        'coaching',
         'assistant',
       ]) {
         final f = AppRouter.featureForFlow(flow);

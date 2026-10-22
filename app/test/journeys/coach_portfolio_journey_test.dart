@@ -20,7 +20,6 @@ import 'package:own_hub/features/coachbrand/presentation/insights_view.dart';
 import 'package:own_hub/features/coachbrand/presentation/portfolio_home_view.dart';
 import 'package:own_hub/features/coachbrand/presentation/preview_view.dart';
 import 'package:own_hub/features/coach/domain/coach_profile.dart';
-import 'package:own_hub/features/coach/domain/coach_verification.dart';
 import 'package:own_hub/features/coach/domain/offer.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -48,95 +47,6 @@ void main() {
     CoachingLinkState.instance.reset();
     PledgeState.instance.reset();
     AppRouter.featureFlags = savedFlags;
-  });
-
-  testWidgets('K01 to K06: what she types reaches the one profile K18, K07 '
-      'and the directory read', (tester) async {
-    await _boot(tester);
-    await _open(tester, 'K01');
-
-    // K01: her photo is asked for, not demanded.
-    await _tap(tester, 'Continue');
-
-    // K08: her name and her city, on a screen of their own.
-    await _type(tester, 'Name', 'Hala Mansour');
-    await _type(tester, 'City', 'Tanta');
-    await _tap(tester, 'Continue');
-
-    // The save, and the whole point of the walk: the form is not the profile,
-    // and before this the two never met.
-    expect(
-      AppRouter.coachRepository.profileUnbilled.displayName,
-      'Hala Mansour',
-    );
-    expect(AppRouter.coachRepository.profileUnbilled.city, 'Tanta');
-
-    // K03: one specialty, which is what lets the step advance.
-    await _tap(tester, 'Postpartum');
-    await _tap(tester, 'Continue');
-    expect(
-      AppRouter.coachRepository.profileUnbilled.specialties,
-      isNotEmpty,
-      reason: 'K03 saved her specialties into the profile K18 renders',
-    );
-
-    // K10: how she coaches.
-    await _tap(tester, 'Continue');
-
-    // K04: her capacity and one package she wrote herself.
-    await _type(tester, 'Clients at once', '10');
-    await _tap(tester, 'Add another offer');
-    await _type(tester, 'Name', 'Monthly coaching');
-    await _type(tester, 'Price a month', '1800');
-    await _tap(tester, 'Save');
-    expect(AppRouter.coachRepository.allOffers(), hasLength(1));
-    expect(AppRouter.coachRepository.allOffers().single.pricePiastres, 180000);
-    await _tap(tester, 'Continue');
-    expect(AppRouter.coachRepository.profileUnbilled.capacity.max, 10);
-
-    // K11 and K12: the shape of her clients' results and words. Nothing to
-    // add yet; only a client can.
-    await _tap(tester, 'Continue');
-    await _tap(tester, 'Continue');
-
-    // K02: a certificate recorded without a photo, labelled as a test and as
-    // read by nobody.
-    await _tap(tester, 'Continue');
-
-    // K13: the community's three rules are agreed here, not on C16 (R1-P16).
-    await _tap(tester, 'I agree to these three rules');
-    await _tap(tester, 'Continue');
-    expect(
-      PledgeState.instance.agreed,
-      isTrue,
-      reason: 'her agreement is recorded as C16 records it',
-    );
-
-    // K05: the test rail records where she would be paid and pays nobody.
-    await _type(tester, 'Full name as on the account', 'Hala Mansour');
-    await _type(tester, 'Wallet or account number', '01000000000');
-    await _tap(tester, 'Continue');
-
-    // K06 states the honest version of "checked": nobody looked.
-    expect(CoachProfileState.instance.isTestCoach, isTrue);
-    expect(
-      AppRouter.coachRepository.profileUnbilled.verification,
-      CoachVerificationState.verified,
-    );
-    expect(
-      find.textContaining('Nobody has looked at your certificates'),
-      findsOneWidget,
-    );
-    // A test coach is counted as checked. Her certificate is not: no badge is
-    // claimed anywhere, because nothing cleared one.
-    expect(
-      CoachProfileState.instance
-          .publicProfileModel(DateTime.now())
-          .showsVerifiedBadge,
-      isFalse,
-    );
-    // Her package went live with her, through the same editor.
-    expect(AppRouter.coachRepository.publicOffers(), hasLength(1));
   });
 
   testWidgets('B01 to B11: every editor saves, the preview shows it, and '

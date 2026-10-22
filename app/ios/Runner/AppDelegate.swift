@@ -16,5 +16,21 @@ import UserNotifications
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+
+    // Keeps the screen awake while a workout is live.
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OwnHubScreenAwake") {
+      let channel = FlutterMethodChannel(
+        name: "com.ownhub.app/screen",
+        binaryMessenger: registrar.messenger()
+      )
+      channel.setMethodCallHandler { call, result in
+        if call.method == "keepScreenOn" {
+          UIApplication.shared.isIdleTimerDisabled = (call.arguments as? Bool) ?? false
+          result(true)
+        } else {
+          result(FlutterMethodNotImplemented)
+        }
+      }
+    }
   }
 }

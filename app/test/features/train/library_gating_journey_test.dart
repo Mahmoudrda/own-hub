@@ -114,6 +114,9 @@ void main() {
     expect(find.text('Everyday strength'), findsNothing);
     expect(row, findsOneWidget);
 
+    // Clear of the edge before the tap.
+    await Scrollable.ensureVisible(tester.element(row), alignment: 0.3);
+    await tester.pumpAndSettle();
     await tester.tap(row);
     await tester.pumpAndSettle();
     expect(find.text('Gentle pregnancy session'), findsWidgets);

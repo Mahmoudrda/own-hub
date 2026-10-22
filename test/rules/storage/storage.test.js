@@ -26,16 +26,17 @@ import {
 const here = dirname(fileURLToPath(import.meta.url));
 const RULES = readFileSync(resolve(here, '../../../firebase/storage.rules'), 'utf8');
 
-// APL-16: user-media and coach-docs are switched off as they ship
-// (`communityLive()` and `coachLive()` return false). The tests above the last
-// section are about the rules behind those switches, so they load the file with
-// both turned on, which is what it will be when the features ship. The last
-// section reloads it exactly as it ships and proves nothing can be written.
+// APL-16: user-media is switched off as it ships (`communityLive()` returns
+// false) and so is the money side of coaching (`coachPaymentsLive()` returns
+// false); `coachPortfolioLive()` returns true. The tests above the last
+// section are about the rules behind those switches, so they load the file
+// with community and payments turned on, which is what it will be when the
+// features ship. The last section reloads it exactly as it ships.
 const SWITCHES = [
   ['function communityLive() {\n      return false;\n    }',
    'function communityLive() {\n      return true;\n    }'],
-  ['function coachLive() {\n      return false;\n    }',
-   'function coachLive() {\n      return true;\n    }'],
+  ['function coachPaymentsLive() {\n      return false;\n    }',
+   'function coachPaymentsLive() {\n      return true;\n    }'],
 ];
 function switchedOn(source) {
   let out = source;
@@ -134,20 +135,110 @@ test('she can delete her own media even without the verified claim', async () =>
 
 // ------------------------------------------------------------ coach-docs
 
-test('a coach can upload a PDF or an image certificate up to 10 MB', async () => {
-  await assertSucceeds(put(her(), `coach-docs/${HER}/c1`, 1024, 'application/pdf'));
-  await assertSucceeds(put(her(), `coach-docs/${HER}/c2`, 1024, 'image/png'));
-  await assertFails(put(her(), `coach-docs/${HER}/c3`, 10 * MB, 'application/pdf'));
-  await assertFails(put(her(), `coach-docs/${HER}/c4`, 1024, 'audio/mp4'));
-  await assertFails(put(other(), `coach-docs/${HER}/c5`, 1024, 'application/pdf'));
+const FOLDERS = ['photo', 'education', 'certificates', 'testimonials', 'transformations'];
+const reviewer = () => store(env.authenticatedContext('uid-reviewer', { womanReviewer: true, verified: true }));
+const finance = () => store(env.authenticatedContext('uid-finance', { finance: true }));
+
+test('a coach uploads images to all five folders, and PDFs to education and certificates only', async () => {
+  for (const f of FOLDERS) {
+    await assertSucceeds(put(her(), `coach-docs/${HER}/${f}/a.jpg`, 1024, 'image/jpeg'));
+    await assertSucceeds(put(her(), `coach-docs/${HER}/${f}/b.png`, 1024, 'image/png'));
+    await assertSucceeds(put(her(), `coach-docs/${HER}/${f}/c.webp`, 1024, 'image/webp'));
+  }
+  for (const f of ['education', 'certificates']) {
+    await assertSucceeds(put(her(), `coach-docs/${HER}/${f}/d.pdf`, 1024, 'application/pdf'));
+  }
+  for (const f of ['photo', 'testimonials', 'transformations']) {
+    await assertFails(put(her(), `coach-docs/${HER}/${f}/d.pdf`, 1024, 'application/pdf'));
+  }
 });
 
-test('certificates are read by their owner and an admin only', async () => {
-  await seed(`coach-docs/${HER}/c1`, 'application/pdf');
-  await assertSucceeds(getBytes(ref(her(), `coach-docs/${HER}/c1`)));
-  await assertSucceeds(getBytes(ref(admin(), `coach-docs/${HER}/c1`)));
-  await assertFails(getBytes(ref(other(), `coach-docs/${HER}/c1`)));
-  await assertFails(getBytes(ref(anon(), `coach-docs/${HER}/c1`)));
+test('coach files: 10 MB is allowed, one byte more is not, and only listed types and folders', async () => {
+  await assertSucceeds(put(her(), `coach-docs/${HER}/certificates/big.jpg`, 10 * MB, 'image/jpeg'));
+  await assertFails(put(her(), `coach-docs/${HER}/certificates/toobig.jpg`, 10 * MB + 1, 'image/jpeg'));
+  await assertFails(put(her(), `coach-docs/${HER}/certificates/x.gif`, 1024, 'image/gif'));
+  await assertFails(put(her(), `coach-docs/${HER}/certificates/x.mp4`, 1024, 'video/mp4'));
+  await assertFails(put(her(), `coach-docs/${HER}/certificates/x.m4a`, 1024, 'audio/mp4'));
+  await assertFails(put(her(), `coach-docs/${HER}/certificates/x.bin`, 1024, 'application/octet-stream'));
+  await assertFails(put(her(), `coach-docs/${HER}/other/x.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(her(), `coach-docs/${HER}/c1`, 1024, 'application/pdf'));
+  await assertFails(put(her(), `coach-docs/${HER}/certificates/deep/x.jpg`, 1024, 'image/jpeg'));
+});
+
+test('only the owner writes, and she must be verified', async () => {
+  await assertFails(put(other(), `coach-docs/${HER}/certificates/x.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(anon(), `coach-docs/${HER}/certificates/x.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(her({}), `coach-docs/${HER}/certificates/x.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(admin(), `coach-docs/${HER}/certificates/x.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(reviewer(), `coach-docs/${HER}/certificates/x.jpg`, 1024, 'image/jpeg'));
+});
+
+test('photo, education and certificates are read by the owner, an admin and a woman reviewer', async () => {
+  for (const f of ['photo', 'education', 'certificates']) {
+    await seed(`coach-docs/${HER}/${f}/a.jpg`);
+    await assertSucceeds(getBytes(ref(her(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertSucceeds(getBytes(ref(admin(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertSucceeds(getBytes(ref(reviewer(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertFails(getBytes(ref(other(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertFails(getBytes(ref(finance(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertFails(getBytes(ref(anon(), `coach-docs/${HER}/${f}/a.jpg`)));
+  }
+});
+
+test('testimonials and transformations are read by the owner and a woman reviewer, never the admin', async () => {
+  for (const f of ['testimonials', 'transformations']) {
+    await seed(`coach-docs/${HER}/${f}/a.jpg`);
+    await assertSucceeds(getBytes(ref(her(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertSucceeds(getBytes(ref(reviewer(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertFails(getBytes(ref(admin(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertFails(getBytes(ref(finance(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertFails(getBytes(ref(other(), `coach-docs/${HER}/${f}/a.jpg`)));
+    await assertFails(getBytes(ref(anon(), `coach-docs/${HER}/${f}/a.jpg`)));
+  }
+});
+
+test('an admin who is also a woman reviewer still reads them as a reviewer', async () => {
+  await seed(`coach-docs/${HER}/transformations/a.jpg`);
+  const both = store(env.authenticatedContext('uid-both', { admin: true, womanReviewer: true }));
+  await assertSucceeds(getBytes(ref(both, `coach-docs/${HER}/transformations/a.jpg`)));
+});
+
+test('only the owner deletes a coach file', async () => {
+  await seed(`coach-docs/${HER}/certificates/a.jpg`);
+  await assertFails(deleteObject(ref(other(), `coach-docs/${HER}/certificates/a.jpg`)));
+  await assertFails(deleteObject(ref(admin(), `coach-docs/${HER}/certificates/a.jpg`)));
+  await assertFails(deleteObject(ref(reviewer(), `coach-docs/${HER}/certificates/a.jpg`)));
+  await assertSucceeds(deleteObject(ref(her({}), `coach-docs/${HER}/certificates/a.jpg`)));
+});
+
+// ----------------------------------------------------------- coach-public
+
+test('the public coach photo is read by verified members and written by nobody', async () => {
+  await seed(`coach-public/${HER}/photo.jpg`);
+  await assertSucceeds(getBytes(ref(other(), `coach-public/${HER}/photo.jpg`)));
+  await assertSucceeds(getBytes(ref(her(), `coach-public/${HER}/photo.jpg`)));
+  await assertFails(getBytes(ref(other({}), `coach-public/${HER}/photo.jpg`)));
+  await assertFails(getBytes(ref(anon(), `coach-public/${HER}/photo.jpg`)));
+  await assertFails(put(her(), `coach-public/${HER}/new.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(admin(), `coach-public/${HER}/new.jpg`, 1024, 'image/jpeg'));
+  await assertFails(deleteObject(ref(her(), `coach-public/${HER}/photo.jpg`)));
+});
+
+// --------------------------------------------------------- payment-proofs
+
+test('payment proofs are read by an admin or finance and written by nobody', async () => {
+  await seed(`payment-proofs/${HER}/p1.jpg`);
+  await assertSucceeds(getBytes(ref(admin(), `payment-proofs/${HER}/p1.jpg`)));
+  await assertSucceeds(getBytes(ref(finance(), `payment-proofs/${HER}/p1.jpg`)));
+  await assertFails(getBytes(ref(her(), `payment-proofs/${HER}/p1.jpg`)));
+  await assertFails(getBytes(ref(other(), `payment-proofs/${HER}/p1.jpg`)));
+  await assertFails(getBytes(ref(reviewer(), `payment-proofs/${HER}/p1.jpg`)));
+  await assertFails(getBytes(ref(anon(), `payment-proofs/${HER}/p1.jpg`)));
+  await assertFails(put(her(), `payment-proofs/${HER}/p2.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(admin(), `payment-proofs/${HER}/p2.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(finance(), `payment-proofs/${HER}/p2.jpg`, 1024, 'image/jpeg'));
+  await assertFails(deleteObject(ref(her(), `payment-proofs/${HER}/p1.jpg`)));
+  await assertFails(deleteObject(ref(admin(), `payment-proofs/${HER}/p1.jpg`)));
 });
 
 // ---------------------------------------------------------- user-exports
@@ -217,27 +308,106 @@ test('event media is read by verified members and the admin, not by the rest', a
 
 // ------------------------------------------------- as the rules ship (APL-16)
 
-test('as shipped: nothing can be written to her media or to coach-docs', async () => {
+test('as shipped: user-media is closed and coach-docs takes her application files', async () => {
   await load(RULES);
   await env.clearStorage();
   await assertFails(put(her(), `user-media/${HER}/posts/p1.jpg`, 1024, 'image/jpeg'));
   await assertFails(put(her(), `user-media/${HER}/voice/v1.m4a`, 1024, 'audio/mp4'));
-  await assertFails(put(her(), `coach-docs/${HER}/c1`, 1024, 'application/pdf'));
-  await assertFails(put(her(), `coach-docs/${HER}/c2.jpg`, 1024, 'image/jpeg'));
+  for (const f of FOLDERS) {
+    await assertSucceeds(put(her(), `coach-docs/${HER}/${f}/c1.jpg`, 1024, 'image/jpeg'));
+  }
+  await assertSucceeds(put(her(), `coach-docs/${HER}/certificates/c2.pdf`, 1024, 'application/pdf'));
+  await assertFails(put(her({}), `coach-docs/${HER}/certificates/c3.pdf`, 1024, 'application/pdf'));
 });
 
 test('as shipped: what is already there can still be read and deleted by her', async () => {
   await seed(`user-media/${HER}/p.jpg`);
-  await seed(`coach-docs/${HER}/c1`, 'application/pdf');
+  await seed(`coach-docs/${HER}/certificates/c1.pdf`, 'application/pdf');
   await assertSucceeds(getBytes(ref(her(), `user-media/${HER}/p.jpg`)));
   await assertSucceeds(deleteObject(ref(her({}), `user-media/${HER}/p.jpg`)));
-  await assertSucceeds(deleteObject(ref(her(), `coach-docs/${HER}/c1`)));
+  await assertSucceeds(deleteObject(ref(her(), `coach-docs/${HER}/certificates/c1.pdf`)));
 });
 
-test('as shipped: the switches read false', () => {
-  for (const name of ['communityLive', 'coachLive']) {
-    if (!new RegExp(`function ${name}\\(\\) \\{\\s*return false;\\s*\\}`).test(RULES)) {
-      throw new Error(`${name}() must return false in the shipped storage.rules`);
+test('as shipped: the portfolio is open, user-media and payment proofs are closed', async () => {
+  await load(RULES);
+  await env.clearStorage();
+  await assertFails(put(her(), `user-media/${HER}/posts/p1.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(her(), `user-media/${HER}/voice/v1.m4a`, 1024, 'audio/mp4'));
+  await assertSucceeds(put(her(), `coach-docs/${HER}/certificates/c1.pdf`, 1024, 'application/pdf'));
+  await seed(`coach-public/${HER}/photo.jpg`);
+  await assertSucceeds(getBytes(ref(other(), `coach-public/${HER}/photo.jpg`)));
+  await seed(`payment-proofs/${HER}/p.jpg`);
+  await assertFails(getBytes(ref(admin(), `payment-proofs/${HER}/p.jpg`)));
+});
+
+test('portfolio switch off: coach-docs and coach-public close', async () => {
+  await load(RULES.replace(
+    'function coachPortfolioLive() {\n      return true;\n    }',
+    'function coachPortfolioLive() {\n      return false;\n    }',
+  ));
+  await env.clearStorage();
+  await seed(`coach-public/${HER}/photo.jpg`);
+  await seed(`coach-docs/${HER}/photo/p.jpg`);
+  await assertFails(put(her(), `coach-docs/${HER}/certificates/c1.pdf`, 1024, 'application/pdf'));
+  await assertFails(getBytes(ref(her(), `coach-docs/${HER}/photo/p.jpg`)));
+  await assertFails(getBytes(ref(other(), `coach-public/${HER}/photo.jpg`)));
+});
+
+test('payments switch on: finance and the admin read payment proofs', async () => {
+  await load(RULES.replace(
+    'function coachPaymentsLive() {\n      return false;\n    }',
+    'function coachPaymentsLive() {\n      return true;\n    }',
+  ));
+  await env.clearStorage();
+  await seed(`payment-proofs/${HER}/p.jpg`);
+  await assertSucceeds(getBytes(ref(admin(), `payment-proofs/${HER}/p.jpg`)));
+  await assertFails(getBytes(ref(her(), `payment-proofs/${HER}/p.jpg`)));
+});
+
+test('community switch on, others as shipped: coach-docs stays open', async () => {
+  await load(RULES.replace(
+    'function communityLive() {\n      return false;\n    }',
+    'function communityLive() {\n      return true;\n    }',
+  ));
+  await env.clearStorage();
+  await assertSucceeds(put(her(), `user-media/${HER}/posts/p1.jpg`, 1024, 'image/jpeg'));
+  await assertSucceeds(put(her(), `coach-docs/${HER}/certificates/c1.pdf`, 1024, 'application/pdf'));
+});
+
+test('as shipped: the switches read community false, payments false, portfolio true', () => {
+  for (const [name, value] of [['communityLive', 'false'], ['coachPaymentsLive', 'false'], ['coachPortfolioLive', 'true']]) {
+    if (!new RegExp(`function ${name}\\(\\) \\{\\s*return ${value};\\s*\\}`).test(RULES)) {
+      throw new Error(`${name}() must return ${value} in the shipped storage.rules`);
     }
   }
+});
+
+test('gallery: she uploads images only, a reviewer reads, the admin does not', async () => {
+  const reviewer = () => store(env.authenticatedContext('uid-rev', { womanReviewer: true, verified: true }));
+  await assertSucceeds(put(her(), `coach-docs/${HER}/gallery/g1.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(her(), `coach-docs/${HER}/gallery/g2.pdf`, 1024, 'application/pdf'));
+  await assertFails(put(her(), `coach-docs/${HER}/gallery/g3.jpg`, 10 * MB + 1, 'image/jpeg'));
+  await assertFails(put(other(), `coach-docs/${HER}/gallery/g4.jpg`, 1024, 'image/jpeg'));
+  await seed(`coach-docs/${HER}/gallery/g1.jpg`);
+  await assertSucceeds(getBytes(ref(her(), `coach-docs/${HER}/gallery/g1.jpg`)));
+  await assertSucceeds(getBytes(ref(reviewer(), `coach-docs/${HER}/gallery/g1.jpg`)));
+  await assertFails(getBytes(ref(admin(), `coach-docs/${HER}/gallery/g1.jpg`)));
+  await assertFails(getBytes(ref(other(), `coach-docs/${HER}/gallery/g1.jpg`)));
+});
+
+test('coach-public media: verified members read, nobody writes', async () => {
+  await seed(`coach-public/${HER}/media/m1_image.jpg`);
+  await assertSucceeds(getBytes(ref(other(), `coach-public/${HER}/media/m1_image.jpg`)));
+  await assertFails(getBytes(ref(other({}), `coach-public/${HER}/media/m1_image.jpg`)));
+  await assertFails(getBytes(ref(anon(), `coach-public/${HER}/media/m1_image.jpg`)));
+  await assertFails(put(her(), `coach-public/${HER}/media/new.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(admin(), `coach-public/${HER}/media/new.jpg`, 1024, 'image/jpeg'));
+});
+
+test('admin content uploads take jpeg, png, webp, gif and video, never SVG', async () => {
+  await assertSucceeds(put(admin(), 'content/recipes/r1/ok.png', 16, 'image/png'));
+  await assertSucceeds(put(admin(), 'content/recipes/r1/ok.webp', 16, 'image/webp'));
+  await assertSucceeds(put(admin(), 'content/exercises/e1/clip.mp4', 16, 'video/mp4'));
+  await assertFails(put(admin(), 'content/recipes/r1/bad.svg', 16, 'image/svg+xml'));
+  await assertFails(put(admin(), 'content/exercises/e1/bad.svg', 16, 'image/svg+xml'));
 });

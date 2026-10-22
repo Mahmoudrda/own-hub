@@ -596,7 +596,9 @@ def test_the_home_pages_promise_only_what_this_version_does():
     for claim in ("video call", "gym", "marketplace", "ai assistant", "artificial intelligence",
                   "join the community", "book a coach", "chat with"):
         assert claim not in en, claim
-    assert "no community, coaching or assistant" in " ".join(en.split())
+    flat = " ".join(en.split())
+    assert "coaching with own hub-reviewed coaches is available, free for now" in flat
+    assert "no community or assistant" in flat
 
 
 def test_before_launch_the_waitlist_is_the_first_thing_on_the_home_page():

@@ -49,6 +49,7 @@ class EgyptianFoodPack {
   static void adopt(String json) {
     final decoded = jsonDecode(json) as Map;
     _built.clear();
+    _builtAll.clear();
     _dishes = [
       for (final dish in decoded['foods'] as List)
         (dish as Map).cast<String, Object?>(),
@@ -58,6 +59,7 @@ class EgyptianFoodPack {
   static void reset() {
     _dishes = const [];
     _built.clear();
+    _builtAll.clear();
     _loading = null;
   }
 
@@ -69,6 +71,18 @@ class EgyptianFoodPack {
         if (!_covered.contains(dish['id'])) _food(dish, l10n, arabic),
     ];
   }
+
+  /// Every dish of the pack, the ones the samples cover included: what a
+  /// coach may put in a client's meal plan, since the server accepts pack ids
+  /// only.
+  static List<Food> allFoods(AppL10n l10n) {
+    final arabic = l10n.localeName.startsWith('ar');
+    return _builtAll[arabic] ??= [
+      for (final dish in _dishes) _food(dish, l10n, arabic),
+    ];
+  }
+
+  static final Map<bool, List<Food>> _builtAll = {};
 
   static Food _food(Map<String, Object?> dish, AppL10n l10n, bool arabic) {
     final en = dish['nameEn'] as String;

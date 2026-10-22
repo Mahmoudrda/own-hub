@@ -12427,4 +12427,2399 @@ class AppL10nEn extends AppL10n {
   String foodLastDaysDays(String days) {
     return 'Food, last $days days';
   }
+
+  @override
+  String get noSessionsOfThisMoveYet => 'No sessions of this move yet';
+
+  @override
+  String get yourLastSessionsOfThisMove => 'Your last sessions of this move';
+
+  @override
+  String secondsS(String seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String bestSetOnDateSet(String date, String set) {
+    return 'Best set on $date: $set';
+  }
+
+  @override
+  String get recentSessions => 'Recent sessions';
+
+  @override
+  String get fixingATypoUpdatesYourBestsPoints =>
+      'Fixing a typo updates your bests. Points stay as they are.';
+
+  @override
+  String get noFinishedSessionsYet => 'No finished sessions yet';
+
+  @override
+  String get sessionsYouFinishShowUpHereAnd =>
+      'Sessions you finish show up here, and you can fix a set.';
+
+  @override
+  String get workout => 'Workout';
+
+  @override
+  String get fixThisSet => 'Fix this set';
+
+  @override
+  String setN(String n) {
+    return 'Set $n';
+  }
+
+  @override
+  String setNIsNowSet(String n, String set) {
+    return 'Set $n is now $set';
+  }
+
+  @override
+  String get addNote => 'Add note';
+
+  @override
+  String get editNote => 'Edit note';
+
+  @override
+  String get noteForThisMove => 'Note for this move';
+
+  @override
+  String get keptOnThisPhoneOnly => 'Kept on this phone only.';
+
+  @override
+  String get history => 'History';
+
+  @override
+  String get whichBarDoYouUse => 'Which bar do you use?';
+
+  @override
+  String get changeBar => 'Change bar';
+
+  @override
+  String kgKgBar(String kg) {
+    return '$kg kg bar';
+  }
+
+  @override
+  String barKgBarSideKgEachSide(String bar, String side) {
+    return '$bar kg bar + $side kg each side';
+  }
+
+  @override
+  String justTheBarKgBar(String bar) {
+    return 'Just the $bar kg bar';
+  }
+
+  @override
+  String closestYouCanLoadTotalKgBar(String total, String bar, String side) {
+    return 'Closest you can load: $total kg. $bar kg bar + $side kg each side.';
+  }
+
+  @override
+  String platesOnOneSidePlatesKg(String plates) {
+    return 'Plates on one side: $plates kg';
+  }
+
+  @override
+  String get logTheTotalBarIncluded => 'Log the total, bar included.';
+
+  @override
+  String nextTimeWeightOnName(String weight, String name) {
+    return 'Next time: $weight on $name';
+  }
+
+  @override
+  String sameWeightOnNameNextTimeUntil(String name) {
+    return 'Same weight on $name next time, until it feels steady';
+  }
+
+  @override
+  String weightMustBe0ToMaxKg(String max) {
+    return 'Weight must be 0 to $max kg';
+  }
+
+  @override
+  String repsMustBe0ToMax(String max) {
+    return 'Reps must be 0 to $max';
+  }
+
+  @override
+  String secondsMustBe0ToMax(String max) {
+    return 'Seconds must be 0 to $max';
+  }
+
+  @override
+  String get seatAndPinNumbers => 'Seat and pin numbers';
+
+  @override
+  String get findACoach => 'Find a coach';
+
+  @override
+  String get threeQuickQuestionsThenTheCoachesWho =>
+      'Three quick questions, then the coaches who fit you best.';
+
+  @override
+  String get whereDoYouTrain => 'Where do you train?';
+
+  @override
+  String get atTheGym => 'At the gym';
+
+  @override
+  String get yourBudgetForAMonth => 'Your budget for a month';
+
+  @override
+  String get yourBestMatches => 'Your best matches';
+
+  @override
+  String get matchedOnYourThreeAnswersOnlyThen =>
+      'Matched on your three answers only, then by name A to Z.';
+
+  @override
+  String get noCloseMatchYetBrowseAllThe =>
+      'No close match yet. Browse all the coaches below.';
+
+  @override
+  String get allCoachesAToZ => 'All coaches A to Z';
+
+  @override
+  String get coachesAreJoiningCheckBackSoon =>
+      'Coaches are joining. Check back soon.';
+
+  @override
+  String get weCouldNotLoadTheCoachesCheck =>
+      'We could not load the coaches. Check your connection and try again.';
+
+  @override
+  String get loadingCoaches => 'Loading coaches';
+
+  @override
+  String fromEgpPriceAMonth(String price) {
+    return 'From EGP $price a month';
+  }
+
+  @override
+  String openTheProfileOfName(String name) {
+    return 'Open the profile of $name';
+  }
+
+  @override
+  String get verifiedCoach => 'Verified coach';
+
+  @override
+  String get yearsCoaching => 'Years coaching';
+
+  @override
+  String get fatLoss => 'Fat loss';
+
+  @override
+  String get muscleGain => 'Muscle gain';
+
+  @override
+  String get homeTraining => 'Home training';
+
+  @override
+  String get gymTraining => 'Gym training';
+
+  @override
+  String get mobility => 'Mobility';
+
+  @override
+  String get postnatalReturn => 'Postnatal return';
+
+  @override
+  String get healthyEating => 'Healthy eating';
+
+  @override
+  String get endurance => 'Endurance';
+
+  @override
+  String get coachProfile => 'Coach profile';
+
+  @override
+  String get thisIsHowMembersSeeYou => 'This is how members see you';
+
+  @override
+  String yearsCoachingN(int n) {
+    return 'Years coaching: $n';
+  }
+
+  @override
+  String languagesList(String list) {
+    return 'Languages: $list';
+  }
+
+  @override
+  String usuallyRepliesWithinNHours(int n) {
+    return 'Usually replies within $n hours';
+  }
+
+  @override
+  String get noPackagesYet => 'No packages yet';
+
+  @override
+  String get whatIsIncluded => 'What is included';
+
+  @override
+  String durationNDays(int n) {
+    return 'Duration: $n days';
+  }
+
+  @override
+  String liveSessionsAMonthN(int n) {
+    return 'Live sessions a month: $n';
+  }
+
+  @override
+  String egpPrice(String price) {
+    return 'EGP $price';
+  }
+
+  @override
+  String get finalPriceTaxesAndFeesIncluded =>
+      'Final price, taxes and fees included';
+
+  @override
+  String get youWillBeAbleToBookA =>
+      'You will be able to book a package here once booking opens.';
+
+  @override
+  String get approach => 'Approach';
+
+  @override
+  String get whatMembersSay => 'What members say';
+
+  @override
+  String get checkedCertificates => 'Checked certificates';
+
+  @override
+  String get reportThisProfile => 'Report this profile';
+
+  @override
+  String get whyAreYouReportingThisProfile =>
+      'Why are you reporting this profile?';
+
+  @override
+  String get thisLooksLikeAMansAccount => 'This looks like a man\'s account';
+
+  @override
+  String get nudityOrSexualContent => 'Nudity or sexual content';
+
+  @override
+  String get spamOrAdvertising => 'Spam or advertising';
+
+  @override
+  String get selfHarmOrDanger => 'Self-harm or danger';
+
+  @override
+  String get askingForPaymentOutsideOwnHub =>
+      'Asking for payment outside Own Hub';
+
+  @override
+  String get unsafeTrainingOrFoodAdvice => 'Unsafe training or food advice';
+
+  @override
+  String get addANoteOptional => 'Add a note (optional)';
+
+  @override
+  String get thankYouWeWillLookAtThis => 'Thank you. We will look at this.';
+
+  @override
+  String get yourReportIsPrivateTheCoachIs =>
+      'Your report is private. The coach is not told.';
+
+  @override
+  String get weCouldNotSendYourReportTry =>
+      'We could not send your report. Try again.';
+
+  @override
+  String photoOfName(String name) {
+    return 'Photo of $name';
+  }
+
+  @override
+  String get myCoachSpace => 'My coach space';
+
+  @override
+  String get yourPortfolioIsLive => 'Your portfolio is live';
+
+  @override
+  String get yourPortfolioIsNotLiveYet => 'Your portfolio is not live yet';
+
+  @override
+  String get turnOnOnePackageAndMembersCan =>
+      'Turn on one package and members can see your portfolio.';
+
+  @override
+  String get acceptingNewClients => 'Accepting new clients';
+
+  @override
+  String get photoHeadlineAndHowYouCoach => 'Photo, headline and how you coach';
+
+  @override
+  String get myPackages => 'My packages';
+
+  @override
+  String get upTo6PackagesEachWithYour =>
+      'Up to 6 packages, each with your own price';
+
+  @override
+  String countOf6Packages(String count) {
+    return '$count of 6 packages';
+  }
+
+  @override
+  String get previewMyPortfolio => 'Preview my portfolio';
+
+  @override
+  String get seeItTheWayMembersDo => 'See it the way members do';
+
+  @override
+  String get myApplication => 'My application';
+
+  @override
+  String get whatWasApproved => 'What was approved';
+
+  @override
+  String get yourCoachSpaceIsPaused => 'Your coach space is paused';
+
+  @override
+  String get pleaseContactOwnHubNothingCanBe =>
+      'Please contact Own Hub. Nothing can be changed while it is paused.';
+
+  @override
+  String get yourCoachSpaceIsNotReadyYet => 'Your coach space is not ready yet';
+
+  @override
+  String get itOpensHereOnceYourApplicationIs =>
+      'It opens here once your application is approved.';
+
+  @override
+  String get loadingYourCoachSpace => 'Loading your coach space';
+
+  @override
+  String get weCouldNotReachOwnHubCheck =>
+      'We could not reach Own Hub. Check your connection and try again.';
+
+  @override
+  String get somethingWentWrongPleaseTryAgain =>
+      'Something went wrong. Please try again.';
+
+  @override
+  String get coachingIsNotOpenRightNowPlease =>
+      'Coaching is not open right now. Please try again later.';
+
+  @override
+  String get yourAccountNeedsToBeVerifiedFirst =>
+      'Your account needs to be verified first.';
+
+  @override
+  String get thisAccountIsNotAnApprovedCoach =>
+      'This account is not an approved coach.';
+
+  @override
+  String get somethingInThisFormNeedsAnotherLook =>
+      'Something in this form needs another look.';
+
+  @override
+  String pickAPriceBetweenEgpLowAnd(String low, String high) {
+    return 'Pick a price between EGP $low and EGP $high.';
+  }
+
+  @override
+  String get weCouldNotFindThatPackageGo =>
+      'We could not find that package. Go back and open it again.';
+
+  @override
+  String get thatPictureCouldNotBeUsedTry =>
+      'That picture could not be used. Try a different one.';
+
+  @override
+  String get pleaseSignInAgain_3jocz => 'Please sign in again.';
+
+  @override
+  String get oneLineMembersReadFirst => 'One line members read first';
+
+  @override
+  String get tellMembersHowYouWorkWithA =>
+      'Tell members how you work with a client.';
+
+  @override
+  String useLowToHighCharacters(String low, String high) {
+    return 'Use $low to $high characters.';
+  }
+
+  @override
+  String get acceptRequestsAutomatically => 'Accept requests automatically';
+
+  @override
+  String get mostClientsAtOnce => 'Most clients at once';
+
+  @override
+  String get yourPhotoIsSaved => 'Your photo is saved.';
+
+  @override
+  String get theCameraIsTurnedOffForOwn =>
+      'The camera is turned off for Own Hub. You can turn it on in Settings.';
+
+  @override
+  String get saveChanges => 'Save changes';
+
+  @override
+  String get yourPortfolioIsSaved => 'Your portfolio is saved.';
+
+  @override
+  String get whatMembersSee => 'What members see';
+
+  @override
+  String get startFromATemplateThenSetYour =>
+      'Start from a template, then set your own price.';
+
+  @override
+  String get addAPackage => 'Add a package';
+
+  @override
+  String get turnOnAtLeastOnePackageTo =>
+      'Turn on at least one package to show your portfolio to members.';
+
+  @override
+  String get onForMembers => 'On for members';
+
+  @override
+  String get off => 'Off';
+
+  @override
+  String countDays(String count) {
+    return '$count days';
+  }
+
+  @override
+  String countLiveVideoSessionsAMonth(String count) {
+    return '$count live video sessions a month';
+  }
+
+  @override
+  String countMin(String count) {
+    return '$count min';
+  }
+
+  @override
+  String get newPackage => 'New package';
+
+  @override
+  String get editPackage => 'Edit package';
+
+  @override
+  String get startFromATemplate => 'Start from a template';
+
+  @override
+  String get blankPackage => 'Blank package';
+
+  @override
+  String get fourWeeksBuiltAroundYouAPlan =>
+      'Four weeks built around you: a plan made for you, live video sessions and a weekly look at your progress.';
+
+  @override
+  String get eightWeeksToBuildARoutineThat =>
+      'Eight weeks to build a routine that lasts, with a plan made for you, live video sessions and a weekly look at your progress.';
+
+  @override
+  String get twelveWeeksForARealChangeWith =>
+      'Twelve weeks for a real change, with a plan made for you, live video sessions and a weekly look at your progress.';
+
+  @override
+  String get aWorkoutPlanMadeForYou => 'A workout plan made for you';
+
+  @override
+  String get liveVideoSessionsWithMe => 'Live video sessions with me';
+
+  @override
+  String get aWeeklyLookAtYourProgress => 'A weekly look at your progress';
+
+  @override
+  String get aPlanThatChangesAsYouDo => 'A plan that changes as you do';
+
+  @override
+  String get packageName => 'Package name';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get length => 'Length';
+
+  @override
+  String get removeThisLine => 'Remove this line';
+
+  @override
+  String get liveSessionsAMonth => 'Live sessions a month';
+
+  @override
+  String get progressReviewsAWeek => 'Progress reviews a week';
+
+  @override
+  String get yourPriceEgp => 'Your price (EGP)';
+
+  @override
+  String wholePoundsFromLowToHigh(String low, String high) {
+    return 'Whole pounds, from $low to $high.';
+  }
+
+  @override
+  String get showThisPackageToMembers => 'Show this package to members';
+
+  @override
+  String get positionInYourList => 'Position in your list';
+
+  @override
+  String get savePackage => 'Save package';
+
+  @override
+  String savedYouReceiveEgpAmount(String amount) {
+    return 'Saved. You receive EGP $amount.';
+  }
+
+  @override
+  String get howMembersSeeIt => 'How members see it';
+
+  @override
+  String add1ToMaxLinesEachLow(String max, String low, String high) {
+    return 'Add 1 to $max lines, each $low to $high characters.';
+  }
+
+  @override
+  String get less => 'Less';
+
+  @override
+  String get yourApplication => 'Your application';
+
+  @override
+  String get specialties => 'Specialties';
+
+  @override
+  String get clientFeedback => 'Client feedback';
+
+  @override
+  String get beforeAndAfterStories => 'Before and after stories';
+
+  @override
+  String get returnAfterBirth => 'Return after birth';
+
+  @override
+  String get membersCanAskToJoinYourPackages =>
+      'Members can ask to join your packages. Coaching is free until Own Hub opens payments.';
+
+  @override
+  String get whenThisIsOnARequestGoes =>
+      'When this is on, a request goes straight through while you have room. When it is off, you answer each request yourself.';
+
+  @override
+  String newRequestsWaitOnceYouReachCount(String count) {
+    return 'New requests wait once you reach $count clients at once.';
+  }
+
+  @override
+  String get fewer => 'Fewer';
+
+  @override
+  String membersSeeEgpPrice(String price) {
+    return 'Members see EGP $price';
+  }
+
+  @override
+  String get askToJoin => 'Ask to join';
+
+  @override
+  String get requestsChatsAndClientsInOnePlace =>
+      'Requests, chats and clients in one place';
+
+  @override
+  String countNewRequests(String count) {
+    return '$count new requests';
+  }
+
+  @override
+  String countUnreadChats(String count) {
+    return '$count unread chats';
+  }
+
+  @override
+  String countClients(String count) {
+    return '$count clients';
+  }
+
+  @override
+  String get freeWhileOwnHubOpensCoaching =>
+      'Free while Own Hub opens coaching';
+
+  @override
+  String tellNameAboutYou(String name) {
+    return 'Tell $name about you';
+  }
+
+  @override
+  String get yourLevel => 'Your level';
+
+  @override
+  String get daysAWeekYouCanTrain => 'Days a week you can train';
+
+  @override
+  String get allergiesFromYourProfile => 'Allergies from your profile';
+
+  @override
+  String get tapOneToTakeItOffThe => 'Tap one to take it off the list.';
+
+  @override
+  String get aFewQuestionsAboutYourHealth =>
+      'A few questions about your health';
+
+  @override
+  String get answerEachOneWithYesOrNo => 'Answer each one with yes or no.';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get hasADoctorEverSaidYouHave =>
+      'Has a doctor ever said you have a heart condition?';
+
+  @override
+  String get doYouFeelPainInYourChest =>
+      'Do you feel pain in your chest when you exercise?';
+
+  @override
+  String get doYouFeelDizzyOrFaintWhen =>
+      'Do you feel dizzy or faint when you exercise?';
+
+  @override
+  String get doYouHaveALongTermCondition =>
+      'Do you have a long-term condition, such as diabetes or high blood pressure?';
+
+  @override
+  String get doYouTakeMedicationEveryDay => 'Do you take medication every day?';
+
+  @override
+  String get doYouHaveABoneOrJoint =>
+      'Do you have a bone or joint problem that exercise could make worse?';
+
+  @override
+  String get hasADoctorToldYouToExercise =>
+      'Has a doctor told you to exercise only under supervision?';
+
+  @override
+  String get iWillCheckWithMyDoctorBefore =>
+      'I will check with my doctor before I start';
+
+  @override
+  String get yourCoachWillReadYourAnswersBefore =>
+      'Your coach will read your answers before she accepts.';
+
+  @override
+  String get aNoteForTheCoachOptional => 'A note for the coach (optional)';
+
+  @override
+  String iShareTheseAnswersWithNameMy(String name) {
+    return 'I share these answers with $name, my coach.';
+  }
+
+  @override
+  String get iUnderstandMyAnswersAreStoredIn =>
+      'I understand my answers are stored in Frankfurt, Germany.';
+
+  @override
+  String get sendRequest => 'Send request';
+
+  @override
+  String get answerEveryQuestionAndTickTheBoxes =>
+      'Answer every question and tick the boxes at the end.';
+
+  @override
+  String get requestSent => 'Request sent';
+
+  @override
+  String nameUsuallyRepliesWithinHoursHours(String name, int hours) {
+    return '$name usually replies within $hours hours';
+  }
+
+  @override
+  String nameWillGetBackToYouSoon(String name) {
+    return '$name will get back to you soon.';
+  }
+
+  @override
+  String get youAlreadyAskedToJoinThisCoach =>
+      'You already asked to join this coach.';
+
+  @override
+  String get thisCoachIsNotTakingNewClients =>
+      'This coach is not taking new clients right now.';
+
+  @override
+  String get weCouldNotSendYourRequestTry =>
+      'We could not send your request. Try again.';
+
+  @override
+  String get coachWomenOnOwnHub => 'Coach women on Own Hub';
+
+  @override
+  String get applyToJoinAsACoachOwn =>
+      'Apply to join as a coach. Own Hub\'s reviewer reads every application, and approved coaches get a page that members can find.';
+
+  @override
+  String get whatYouWillNeed => 'What you will need';
+
+  @override
+  String get aClearPhotoOfYou => 'A clear photo of you';
+
+  @override
+  String get photosOfYourDegreeAndCertificates =>
+      'Photos of your degree and certificates';
+
+  @override
+  String get twoMessagesFromWomenYouTrained =>
+      'Two messages from women you trained';
+
+  @override
+  String get aClientTransformationWithHerWrittenConsent =>
+      'A client transformation, with her written consent';
+
+  @override
+  String get ownHubIsForWomenOnlyOnly =>
+      'Own Hub is for women only. Only verified women can apply, and every client is a woman.';
+
+  @override
+  String get continueMyApplication => 'Continue my application';
+
+  @override
+  String get verifyThatYouAreAWomanFirst => 'Verify that you are a woman first';
+
+  @override
+  String get applyingNeedsAVerifiedAccountVerificationTakes =>
+      'Applying needs a verified account. Verification takes a few minutes.';
+
+  @override
+  String get verifyMyAccount => 'Verify my account';
+
+  @override
+  String get saveAndContinue => 'Save and continue';
+
+  @override
+  String get yourAnswersAreSavedOnThisPhone =>
+      'Your answers are saved on this phone after every step.';
+
+  @override
+  String get thisIsNeeded => 'This is needed';
+
+  @override
+  String useAtLeastMinCharacters(String min) {
+    return 'Use at least $min characters';
+  }
+
+  @override
+  String useAtMostMaxCharacters(String max) {
+    return 'Use at most $max characters';
+  }
+
+  @override
+  String minToMaxCharacters(String min, String max) {
+    return '$min to $max characters';
+  }
+
+  @override
+  String enterAYearFromFromToTo(String from, String to) {
+    return 'Enter a year from $from to $to';
+  }
+
+  @override
+  String enterAWholeNumberFromMinTo(String min, String max) {
+    return 'Enter a whole number from $min to $max';
+  }
+
+  @override
+  String addAtLeastMin(String min) {
+    return 'Add at least $min';
+  }
+
+  @override
+  String chooseBetweenMinAndMax(String min, String max) {
+    return 'Choose between $min and $max';
+  }
+
+  @override
+  String get tickThisToContinue => 'Tick this to continue';
+
+  @override
+  String get chooseADifferentOne => 'Choose a different one';
+
+  @override
+  String get membersSeeYourDisplayNameHeadlineAnd =>
+      'Members see your display name, headline and photo. Your full name is for the review only and is never shown.';
+
+  @override
+  String get fullName => 'Full name';
+
+  @override
+  String get forTheReviewOnlyNeverShownPublicly =>
+      'For the review only. Never shown publicly.';
+
+  @override
+  String get displayName => 'Display name';
+
+  @override
+  String get governorate => 'Governorate';
+
+  @override
+  String get languagesYouCoachIn => 'Languages you coach in';
+
+  @override
+  String get arabicLanguage => 'Arabic language';
+
+  @override
+  String get englishLanguage => 'English language';
+
+  @override
+  String get photoAdded => 'Photo added';
+
+  @override
+  String get theCameraIsBlockedAllowItIn =>
+      'The camera is blocked. Allow it in Settings or choose a photo.';
+
+  @override
+  String get yourEducation => 'Your education';
+
+  @override
+  String get degreeOrCourse => 'Degree or course';
+
+  @override
+  String get institution => 'Institution';
+
+  @override
+  String get year => 'Year';
+
+  @override
+  String get addEducation => 'Add education';
+
+  @override
+  String educationN(String n) {
+    return 'Education $n';
+  }
+
+  @override
+  String get proofPhotoOptional => 'Proof photo, optional';
+
+  @override
+  String get yourCertificates => 'Your certificates';
+
+  @override
+  String get certificateTitle => 'Certificate title';
+
+  @override
+  String get issuedBy => 'Issued by';
+
+  @override
+  String get addACertificate => 'Add a certificate';
+
+  @override
+  String certificateN(String n) {
+    return 'Certificate $n';
+  }
+
+  @override
+  String get certificatePhoto => 'Certificate photo';
+
+  @override
+  String get yourSpecialties => 'Your specialties';
+
+  @override
+  String get yearsOfExperience => 'Years of experience';
+
+  @override
+  String get yourQualifications => 'Your qualifications';
+
+  @override
+  String get whatYouStudiedAndTrainedIn => 'What you studied and trained in.';
+
+  @override
+  String get feedbackFromClients => 'Feedback from clients';
+
+  @override
+  String get screenshotsAreSeenOnlyByOwnHubs =>
+      'Screenshots are seen only by Own Hub\'s woman reviewer.';
+
+  @override
+  String get whatSheSaid => 'What she said';
+
+  @override
+  String get herFirstName => 'Her first name';
+
+  @override
+  String get whereItCameFrom => 'Where it came from';
+
+  @override
+  String get whatsapp => 'WhatsApp';
+
+  @override
+  String get instagram => 'Instagram';
+
+  @override
+  String get somewhereElse => 'Somewhere else';
+
+  @override
+  String get screenshotOptional => 'Screenshot, optional';
+
+  @override
+  String get addFeedback => 'Add feedback';
+
+  @override
+  String feedbackN(String n) {
+    return 'Feedback $n';
+  }
+
+  @override
+  String get clientTransformations => 'Client transformations';
+
+  @override
+  String get beforePhoto => 'Before photo';
+
+  @override
+  String get afterPhoto => 'After photo';
+
+  @override
+  String get weeksItTook => 'Weeks it took';
+
+  @override
+  String get noteOptional => 'Note, optional';
+
+  @override
+  String get myClientAgreedInWritingThatOwn =>
+      'My client agreed in writing that Own Hub\'s reviewer may see these photos';
+
+  @override
+  String get addATransformation => 'Add a transformation';
+
+  @override
+  String transformationN(String n) {
+    return 'Transformation $n';
+  }
+
+  @override
+  String get yourApproach => 'Your approach';
+
+  @override
+  String get followUpsWithEachClientPerWeek =>
+      'Follow-ups with each client per week';
+
+  @override
+  String get howFastYouReply => 'How fast you reply';
+
+  @override
+  String withinHoursHours(String hours) {
+    return 'Within $hours hours';
+  }
+
+  @override
+  String get whereYouTrainClients => 'Where you train clients';
+
+  @override
+  String get inAGym => 'In a gym';
+
+  @override
+  String get coachTerms => 'Coach terms';
+
+  @override
+  String get readThesePointsThenTickTheThree =>
+      'Read these points, then tick the three rules.';
+
+  @override
+  String get ownHubReviewsEveryCoachBeforeShe =>
+      'Own Hub reviews every coach before she is listed.';
+
+  @override
+  String get everythingYouTellUsMustBeAccurate =>
+      'Everything you tell us must be accurate.';
+
+  @override
+  String get photosOfClientsAreSharedOnlyWith =>
+      'Photos of clients are shared only with their written consent.';
+
+  @override
+  String get clientsPayThroughOwnHubOnlyNever =>
+      'Clients pay through Own Hub only, never outside it.';
+
+  @override
+  String get youCanWithdrawYourApplicationAtAny =>
+      'You can withdraw your application at any time.';
+
+  @override
+  String get readTheFullCoachTerms => 'Read the full coach terms';
+
+  @override
+  String get everythingIWroteIsAccurate => 'Everything I wrote is accurate';
+
+  @override
+  String get iShareClientPhotosOnlyWithTheir =>
+      'I share client photos only with their written consent';
+
+  @override
+  String get iWillNotTakePaymentFromClients =>
+      'I will not take payment from clients outside Own Hub';
+
+  @override
+  String get reviewYourApplication => 'Review your application';
+
+  @override
+  String get lookOverEachPartYouCanEdit =>
+      'Look over each part. You can edit any of it before you send.';
+
+  @override
+  String get stillNeeded => 'Still needed';
+
+  @override
+  String get complete => 'Complete';
+
+  @override
+  String get sendMyApplication => 'Send my application';
+
+  @override
+  String get sendingYourApplication => 'Sending your application';
+
+  @override
+  String uploadingPhotoDoneOfTotal(String done, String total) {
+    return 'Uploading photo $done of $total';
+  }
+
+  @override
+  String get applicationSent => 'Application sent';
+
+  @override
+  String get onlyVerifiedWomenCanApplyVerifyYour =>
+      'Only verified women can apply. Verify your account first.';
+
+  @override
+  String get youAlreadyHaveAnApplicationWaitingFor =>
+      'You already have an application waiting for review.';
+
+  @override
+  String get somethingIsStillMissingLookAtThe =>
+      'Something is still missing. Look at the parts marked below.';
+
+  @override
+  String get aPhotoDidNotReachUsTry =>
+      'A photo did not reach us. Try sending again.';
+
+  @override
+  String get youAreAlreadyACoachOnOwn => 'You are already a coach on Own Hub.';
+
+  @override
+  String get coachApplicationsAreClosedForNowTry =>
+      'Coach applications are closed for now. Try again later.';
+
+  @override
+  String get yourCoachAccountIsPausedContactSupport =>
+      'Your coach account is paused. Contact support.';
+
+  @override
+  String get someOfYourAnswersWereNotAccepted =>
+      'Some of your answers were not accepted. Check each part and try again.';
+
+  @override
+  String get noConnectionYourAnswersAreSavedSo =>
+      'No connection. Your answers are saved, so try again when you are online.';
+
+  @override
+  String get signInToSendYourApplication => 'Sign in to send your application.';
+
+  @override
+  String get somethingWentWrongYourAnswersAreSaved =>
+      'Something went wrong. Your answers are saved. Try again.';
+
+  @override
+  String get weHaveYourApplication => 'We have your application';
+
+  @override
+  String get whatHappensNext => 'What happens next';
+
+  @override
+  String get aWomanReviewerReadsEachPart => 'A woman reviewer reads each part.';
+
+  @override
+  String get sheMayAskYouToChangeSomething =>
+      'She may ask you to change something.';
+
+  @override
+  String get whenYouAreApprovedYourCoachSpace =>
+      'When you are approved, your coach space opens.';
+
+  @override
+  String get aFewChangesPlease => 'A few changes, please';
+
+  @override
+  String get theReviewerAskedYouToUpdateThese =>
+      'The reviewer asked you to update these parts. Your other answers stay as they are.';
+
+  @override
+  String get reviewersNote => 'Reviewer\'s note';
+
+  @override
+  String get sendAgain => 'Send again';
+
+  @override
+  String get somethingIsMissingHere => 'Something is missing here.';
+
+  @override
+  String get thisPartIsNotClearEnough => 'This part is not clear enough.';
+
+  @override
+  String get weCouldNotVerifyThis => 'We could not verify this.';
+
+  @override
+  String get thisIsNotAllowedOnOwnHub => 'This is not allowed on Own Hub.';
+
+  @override
+  String get pleaseLookAtThisPartAgain => 'Please look at this part again.';
+
+  @override
+  String get notApprovedThisTime => 'Not approved this time';
+
+  @override
+  String get theReviewerCouldNotApproveThisApplication =>
+      'The reviewer could not approve this application.';
+
+  @override
+  String youCanApplyAgainOnDate(String date) {
+    return 'You can apply again on $date.';
+  }
+
+  @override
+  String get youAreApproved => 'You are approved';
+
+  @override
+  String get welcomeToOwnHubsCoachesYourCoach =>
+      'Welcome to Own Hub\'s coaches. Your coach space is ready.';
+
+  @override
+  String get openMyCoachSpace => 'Open my coach space';
+
+  @override
+  String get noApplicationYet => 'No application yet';
+
+  @override
+  String get startMyApplication => 'Start my application';
+
+  @override
+  String get cairo => 'Cairo';
+
+  @override
+  String get alexandria => 'Alexandria';
+
+  @override
+  String get qalyubia => 'Qalyubia';
+
+  @override
+  String get sharqia => 'Sharqia';
+
+  @override
+  String get dakahlia => 'Dakahlia';
+
+  @override
+  String get gharbia => 'Gharbia';
+
+  @override
+  String get monufia => 'Monufia';
+
+  @override
+  String get beheira => 'Beheira';
+
+  @override
+  String get kafrElSheikh => 'Kafr El Sheikh';
+
+  @override
+  String get damietta => 'Damietta';
+
+  @override
+  String get portSaid => 'Port Said';
+
+  @override
+  String get ismailia => 'Ismailia';
+
+  @override
+  String get suez => 'Suez';
+
+  @override
+  String get northSinai => 'North Sinai';
+
+  @override
+  String get southSinai => 'South Sinai';
+
+  @override
+  String get redSea => 'Red Sea';
+
+  @override
+  String get matrouh => 'Matrouh';
+
+  @override
+  String get faiyum => 'Faiyum';
+
+  @override
+  String get beniSuef => 'Beni Suef';
+
+  @override
+  String get minya => 'Minya';
+
+  @override
+  String get asyut => 'Asyut';
+
+  @override
+  String get sohag => 'Sohag';
+
+  @override
+  String get qena => 'Qena';
+
+  @override
+  String get luxor => 'Luxor';
+
+  @override
+  String get aswan => 'Aswan';
+
+  @override
+  String get newValley => 'New Valley';
+
+  @override
+  String get messages => 'Messages';
+
+  @override
+  String get searchChats => 'Search chats';
+
+  @override
+  String get noChatsYet => 'No chats yet';
+
+  @override
+  String get yourChatsWithYourCoachOrYour =>
+      'Your chats with your coach or your clients show up here.';
+
+  @override
+  String get noChatsMatchYourSearch => 'No chats match your search.';
+
+  @override
+  String youText(String text) {
+    return 'You: $text';
+  }
+
+  @override
+  String get recipe => 'Recipe';
+
+  @override
+  String get workoutPlan => 'Workout plan';
+
+  @override
+  String get mealPlan => 'Meal plan';
+
+  @override
+  String get liveSession => 'Live session';
+
+  @override
+  String get messageHidden => 'Message hidden';
+
+  @override
+  String countUnread(String count) {
+    return '$count unread';
+  }
+
+  @override
+  String get yourCoach => 'Your coach';
+
+  @override
+  String get yourClient => 'Your client';
+
+  @override
+  String packageDaysDaysLeft(String package, String days) {
+    return '$package · $days days left';
+  }
+
+  @override
+  String packageEndsToday(String package) {
+    return '$package · ends today';
+  }
+
+  @override
+  String get shareSomething => 'Share something';
+
+  @override
+  String get shareARecipe => 'Share a recipe';
+
+  @override
+  String get shareAWorkoutPlan => 'Share a workout plan';
+
+  @override
+  String get shareAMealPlan => 'Share a meal plan';
+
+  @override
+  String get scheduleALiveSession => 'Schedule a live session';
+
+  @override
+  String get phoneNumbersCantBeSentInThe =>
+      'Phone numbers can\'t be sent in the chat. Your message is still here if you want to change it.';
+
+  @override
+  String get paymentDetailsCantBeSharedInThe =>
+      'Payment details can\'t be shared in the chat. Your message is still here if you want to change it.';
+
+  @override
+  String get linksCantBeSentInTheChat =>
+      'Links can\'t be sent in the chat. Your message is still here if you want to change it.';
+
+  @override
+  String get someWordsInThisMessageArentAllowed =>
+      'Some words in this message aren\'t allowed here. Your message is still here if you want to change it.';
+
+  @override
+  String get yourMessageCouldNotBeSentTry =>
+      'Your message could not be sent. Try again in a moment.';
+
+  @override
+  String get newMessages => 'New messages';
+
+  @override
+  String get thisCoachingHasEndedYouCanRead =>
+      'This coaching has ended. You can read the chat but not write in it.';
+
+  @override
+  String get report => 'Report';
+
+  @override
+  String get block => 'Block';
+
+  @override
+  String get moreOptions => 'More options';
+
+  @override
+  String blockName(String name) {
+    return 'Block $name?';
+  }
+
+  @override
+  String nameCannotWriteToYouAfterThis(String name) {
+    return '$name cannot write to you after this, and you will not see her messages. You can undo it later.';
+  }
+
+  @override
+  String nameIsBlocked(String name) {
+    return '$name is blocked.';
+  }
+
+  @override
+  String get yourReportIsPrivate => 'Your report is private.';
+
+  @override
+  String get reportThisMessage => 'Report this message';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get copied => 'Copied';
+
+  @override
+  String get thereIsNoMessageFromHerTo =>
+      'There is no message from her to report yet.';
+
+  @override
+  String get sending => 'Sending';
+
+  @override
+  String get sent => 'Sent';
+
+  @override
+  String get seen => 'Seen';
+
+  @override
+  String minutesMin(String minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String dayAtTime(String day, String time) {
+    return '$day at $time';
+  }
+
+  @override
+  String get joinTheCall => 'Join the call';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get waitingForConfirmation => 'Waiting for confirmation';
+
+  @override
+  String get confirmed => 'Confirmed';
+
+  @override
+  String get declined => 'Declined';
+
+  @override
+  String get coachingStarted => 'Coaching started';
+
+  @override
+  String get coachingEnded => 'Coaching ended';
+
+  @override
+  String get coachingEndsSoon => 'Coaching ends soon';
+
+  @override
+  String get aPlanWasUpdated => 'A plan was updated';
+
+  @override
+  String get liveSessionConfirmed => 'Live session confirmed';
+
+  @override
+  String get liveSessionFinished => 'Live session finished';
+
+  @override
+  String get thisMessageWasHiddenBecauseItHad =>
+      'This message was hidden because it had contact or payment details';
+
+  @override
+  String get weCouldNotLoadThisChatCheck =>
+      'We could not load this chat. Check your connection.';
+
+  @override
+  String get noMessagesYetSayHello => 'No messages yet. Say hello.';
+
+  @override
+  String get loadingOlderMessages => 'Loading older messages';
+
+  @override
+  String get coachDesk => 'Coach desk';
+
+  @override
+  String get newRequests => 'New requests';
+
+  @override
+  String get unreadChats => 'Unread chats';
+
+  @override
+  String get toFollowUp => 'To follow up';
+
+  @override
+  String get activeClients => 'Active clients';
+
+  @override
+  String get followUp_n22yh => 'Follow up';
+
+  @override
+  String showAllCount(String count) {
+    return 'Show all $count';
+  }
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get decline => 'Decline';
+
+  @override
+  String get whyAreYouDeclining => 'Why are you declining?';
+
+  @override
+  String get myPlacesAreFull => 'My places are full';
+
+  @override
+  String get notTheRightFit => 'Not the right fit';
+
+  @override
+  String get sheShouldSeeHerDoctorFirst => 'She should see her doctor first';
+
+  @override
+  String get requestAccepted => 'Request accepted';
+
+  @override
+  String get requestDeclined => 'Request declined';
+
+  @override
+  String nameAskedToJoin(String name) {
+    return '$name asked to join';
+  }
+
+  @override
+  String get healthAnswersToReadFirst => 'Health answers to read first';
+
+  @override
+  String goalLevelDaysDaysAWeekPlace(
+    String goal,
+    String level,
+    String days,
+    String place,
+  ) {
+    return '$goal · $level · $days days a week · $place';
+  }
+
+  @override
+  String clientTag(String tag) {
+    return 'Client $tag';
+  }
+
+  @override
+  String liveSessionTodayAtTime(String time) {
+    return 'Live session today at $time';
+  }
+
+  @override
+  String noMessageForDaysDays(String days) {
+    return 'No message for $days days';
+  }
+
+  @override
+  String get endsToday => 'Ends today';
+
+  @override
+  String daysDaysLeft(String days) {
+    return '$days days left';
+  }
+
+  @override
+  String get noMessagesYet => 'No messages yet';
+
+  @override
+  String get shareYourPortfolioLinkSoMembersCan =>
+      'Share your portfolio link so members can ask to join.';
+
+  @override
+  String get youAreAllCaughtUp => 'You are all caught up';
+
+  @override
+  String get nothingToAnswerOrFollowUpRight =>
+      'Nothing to answer or follow up right now.';
+
+  @override
+  String get searchClients => 'Search clients';
+
+  @override
+  String get nobodyMatchesThatSearch => 'Nobody matches that search.';
+
+  @override
+  String get noUnreadChatsRightNow => 'No unread chats right now.';
+
+  @override
+  String get nobodyNeedsAFollowUpRightNow =>
+      'Nobody needs a follow up right now.';
+
+  @override
+  String get nobodyIsEndingSoon => 'Nobody is ending soon.';
+
+  @override
+  String get endingSoon => 'Ending soon';
+
+  @override
+  String openTheDetailsOfName(String name) {
+    return 'Open the details of $name';
+  }
+
+  @override
+  String openTheChatWithName(String name) {
+    return 'Open the chat with $name';
+  }
+
+  @override
+  String get clientDetails => 'Client details';
+
+  @override
+  String get started => 'Started';
+
+  @override
+  String get daysLeft => 'Days left';
+
+  @override
+  String get liveSessionsHeld => 'Live sessions held';
+
+  @override
+  String usedOfIncluded(String used, String included) {
+    return '$used of $included';
+  }
+
+  @override
+  String get herAnswers => 'Her answers';
+
+  @override
+  String get sharedWithYouWhileYouCoachHer =>
+      'Shared with you while you coach her';
+
+  @override
+  String get place => 'Place';
+
+  @override
+  String get allergies => 'Allergies';
+
+  @override
+  String get lifeStage => 'Life stage';
+
+  @override
+  String get healthQuestions => 'Health questions';
+
+  @override
+  String get sheTickedThatSheWillCheckWith =>
+      'She ticked that she will check with her doctor';
+
+  @override
+  String get noHealthFlagsInHerAnswers => 'No health flags in her answers';
+
+  @override
+  String get yourPrivateNote => 'Your private note';
+
+  @override
+  String get staysOnThisPhoneOnlySheNever =>
+      'Stays on this phone only. She never sees it and it is never synced.';
+
+  @override
+  String get writeWhatYouWantToRemember => 'Write what you want to remember';
+
+  @override
+  String get saveNote => 'Save note';
+
+  @override
+  String get noteSaved => 'Note saved';
+
+  @override
+  String get plansYouShared => 'Plans you shared';
+
+  @override
+  String get nothingSharedYetShareAWorkoutOr =>
+      'Nothing shared yet. Share a workout or a meal plan below.';
+
+  @override
+  String get shareAWorkout => 'Share a workout';
+
+  @override
+  String get liveSessions => 'Live sessions';
+
+  @override
+  String get waitingForAnAnswer => 'Waiting for an answer';
+
+  @override
+  String get closed => 'Closed';
+
+  @override
+  String withYouSinceStartEndsEnd(String start, String end) {
+    return 'With you since $start · ends $end';
+  }
+
+  @override
+  String get weCouldNotFindThisClient => 'We could not find this client.';
+
+  @override
+  String planForName(String name) {
+    return 'Plan for $name';
+  }
+
+  @override
+  String get startFrom => 'Start from';
+
+  @override
+  String get oneOfTheThreeSplits => 'One of the three splits';
+
+  @override
+  String get yourTemplates => 'Your templates';
+
+  @override
+  String get blankPlan => 'Blank plan';
+
+  @override
+  String get planName => 'Plan name';
+
+  @override
+  String get editDaysAndMoves => 'Edit days and moves';
+
+  @override
+  String publishToName(String name) {
+    return 'Publish to $name';
+  }
+
+  @override
+  String get publishAsANewVersion => 'Publish as a new version';
+
+  @override
+  String get saveAsATemplate => 'Save as a template';
+
+  @override
+  String get templateSaved => 'Template saved.';
+
+  @override
+  String publishedNameCanSeeItNow(String name) {
+    return 'Published. $name can see it now.';
+  }
+
+  @override
+  String get giveThePlanANameFirst => 'Give the plan a name first.';
+
+  @override
+  String get addAtLeastOneDayFirst => 'Add at least one day first.';
+
+  @override
+  String get thisPlanIsTooBigToSend =>
+      'This plan is too big to send. Take out a day or some moves.';
+
+  @override
+  String get aMoveInThisPlanIsNot =>
+      'A move in this plan is not in the exercise library any more.';
+
+  @override
+  String versionN(String n) {
+    return 'Version $n';
+  }
+
+  @override
+  String get dayName => 'Day name';
+
+  @override
+  String get addMoves => 'Add moves';
+
+  @override
+  String get holdInSeconds => 'Hold, in seconds';
+
+  @override
+  String get watchTheClip => 'Watch the clip';
+
+  @override
+  String get howManyDays => 'How many days';
+
+  @override
+  String addToSlot(String slot) {
+    return 'Add to $slot';
+  }
+
+  @override
+  String get aShortLineLikeFruitOfHer =>
+      'A short line, like fruit of her choice';
+
+  @override
+  String get grams => 'Grams';
+
+  @override
+  String get noteForHerIfYouLike => 'Note for her, if you like';
+
+  @override
+  String nameAvoidsList(String name, String list) {
+    return '$name avoids: $list';
+  }
+
+  @override
+  String get noAllergiesOnHerIntake => 'No allergies on her intake.';
+
+  @override
+  String containsAllergensWhichSheAvoids(String allergens) {
+    return 'Contains $allergens, which she avoids.';
+  }
+
+  @override
+  String get allergensNotCheckedForThisOne =>
+      'Allergens not checked for this one.';
+
+  @override
+  String get checkTheMarkedItemsBeforeYouPublish =>
+      'Check the marked items before you publish.';
+
+  @override
+  String aboutKcalKcalProteinGProtein(String kcal, String protein) {
+    return 'About $kcal kcal, $protein g protein';
+  }
+
+  @override
+  String get figuresComeFromOwnHubsFoodTables =>
+      'Figures come from Own Hub\'s food tables.';
+
+  @override
+  String get someItemsHaveNoFigures => 'Some items have no figures.';
+
+  @override
+  String get nothingPlannedYet => 'Nothing planned yet';
+
+  @override
+  String get addAtLeastOneItemFirst => 'Add at least one item first.';
+
+  @override
+  String get noRecipesToPickFromYet => 'No recipes to pick from yet.';
+
+  @override
+  String servingsN(String n) {
+    return 'Servings: $n';
+  }
+
+  @override
+  String get scheduleASession => 'Schedule a session';
+
+  @override
+  String get meetingLink => 'Meeting link';
+
+  @override
+  String get aGoogleMeetOrZoomLinkThat =>
+      'A Google Meet or Zoom link that starts with https';
+
+  @override
+  String get thatLinkIsNotAllowedUseGoogle =>
+      'That link is not allowed. Use Google Meet, Zoom or Teams.';
+
+  @override
+  String get thatTimeIsAfterHerCoachingEnds =>
+      'That time is after her coaching ends.';
+
+  @override
+  String sessionsUsedUsedOfIncluded(String used, String included) {
+    return 'Sessions used: $used of $included';
+  }
+
+  @override
+  String get noSessionsLeftInThisPackage => 'No sessions left in this package.';
+
+  @override
+  String sendToName(String name) {
+    return 'Send to $name';
+  }
+
+  @override
+  String sessionSentNameCanConfirmIt(String name) {
+    return 'Session sent. $name can confirm it.';
+  }
+
+  @override
+  String yourCoachingWithCoachHasEndedYour(String coach) {
+    return 'Your coaching with $coach has ended. Your plans stay here to read.';
+  }
+
+  @override
+  String daysLeftN(String n) {
+    return 'Days left: $n';
+  }
+
+  @override
+  String get lastDay => 'Last day';
+
+  @override
+  String get plansFromYourCoach => 'Plans from your coach';
+
+  @override
+  String get yourCoachHasNotSharedAPlan =>
+      'Your coach has not shared a plan yet.';
+
+  @override
+  String get upcomingSession => 'Upcoming session';
+
+  @override
+  String get markDone => 'Mark done';
+
+  @override
+  String get waitingForTheOtherSideToMark =>
+      'Waiting for the other side to mark it done.';
+
+  @override
+  String get countedInYourSessions => 'Counted in your sessions.';
+
+  @override
+  String get blockThisCoach => 'Block this coach?';
+
+  @override
+  String get sheWillNotBeAbleToMessage =>
+      'She will not be able to message you. You can still read your plans.';
+
+  @override
+  String get newMessagesFromYourCoach => 'New messages from your coach';
+
+  @override
+  String get fromYourCoach => 'From your coach';
+
+  @override
+  String todaysWorkoutName(String name) {
+    return 'Today\'s workout: $name';
+  }
+
+  @override
+  String nextSessionWhen(String when) {
+    return 'Next session: $when';
+  }
+
+  @override
+  String get startThisWorkout => 'Start this workout';
+
+  @override
+  String get heldBackForHowYouAreTraining =>
+      'Held back for how you are training now. Ask your coach or your doctor first.';
+
+  @override
+  String containsAllergensWhichYouAvoid(String allergens) {
+    return 'Contains $allergens, which you avoid.';
+  }
+
+  @override
+  String get notCheckedAgainstYourAllergies =>
+      'Not checked against your allergies.';
+
+  @override
+  String get todaysMealsFromYourCoach => 'Today\'s meals from your coach';
+
+  @override
+  String get ifYouHaveAHealthConditionCheck =>
+      'If you have a health condition, check with your doctor before you follow a plan.';
+
+  @override
+  String get youHaveNoCoachRightNow => 'You have no coach right now.';
+
+  @override
+  String minutesMinSession(String minutes) {
+    return '$minutes min session';
+  }
+
+  @override
+  String get yourCoachHasNotSetAPlan =>
+      'Your coach has not set a plan for today.';
+
+  @override
+  String get openMyCoach => 'Open my coach';
+
+  @override
+  String get moveUp => 'Move up';
+
+  @override
+  String get moveDown => 'Move down';
+
+  @override
+  String get logThis => 'Log this';
+
+  @override
+  String get photosAndResults => 'Photos and results';
+
+  @override
+  String get whatMembersSeeAfterOwnHubChecks =>
+      'What members see after Own Hub checks it';
+
+  @override
+  String get waitingForOwnHubsCheck => 'Waiting for Own Hub\'s check';
+
+  @override
+  String get shownOnYourPortfolio => 'Shown on your portfolio';
+
+  @override
+  String get notApproved => 'Not approved';
+
+  @override
+  String get needsYourClientsConsent => 'Needs your client\'s consent';
+
+  @override
+  String get addAPhotoOfYouOrYour => 'Add a photo of you or your work';
+
+  @override
+  String get nothingHereYetAddYourFirstResult =>
+      'Nothing here yet. Add your first result.';
+
+  @override
+  String countOf30Items(String count) {
+    return '$count of 30 items';
+  }
+
+  @override
+  String transformationWeeksWeeks(String weeks) {
+    return 'Transformation, $weeks weeks';
+  }
+
+  @override
+  String feedbackFromName(String name) {
+    return 'Feedback from $name';
+  }
+
+  @override
+  String get keep => 'Keep';
+
+  @override
+  String get removeThisFromYourPortfolio => 'Remove this from your portfolio?';
+
+  @override
+  String get confirmMyClientAgreed => 'Confirm my client agreed';
+
+  @override
+  String get chooseAPhoto => 'Choose a photo';
+
+  @override
+  String get replacePhoto => 'Replace photo';
+
+  @override
+  String get noteOptional_1l0x9 => 'Note (optional)';
+
+  @override
+  String get myClientAgreedInWritingThatOwn_c2wgd =>
+      'My client agreed in writing that Own Hub members may see these photos';
+
+  @override
+  String get sendForOwnHubsCheck => 'Send for Own Hub\'s check';
+
+  @override
+  String get sentOwnHubChecksEveryPhotoBefore =>
+      'Sent. Own Hub checks every photo before members see it.';
+
+  @override
+  String get whatYourClientSaid => 'What your client said';
+
+  @override
+  String get from => 'From';
+
+  @override
+  String get screenshotOptional_x0klp => 'Screenshot (optional)';
+
+  @override
+  String get captionOptional => 'Caption (optional)';
+
+  @override
+  String get addThePhotoFirst => 'Add the photo first.';
+
+  @override
+  String get addBothPhotos => 'Add both photos.';
+
+  @override
+  String get tickTheBoxToSayYourClient =>
+      'Tick the box to say your client agreed.';
+
+  @override
+  String writeLowToHighCharacters(String low, String high) {
+    return 'Write $low to $high characters.';
+  }
+
+  @override
+  String get writeWhoItIsFrom => 'Write who it is from.';
+
+  @override
+  String get yourClientConfirmed => 'Your client confirmed.';
+
+  @override
+  String get results => 'Results';
+
+  @override
+  String overNWeeks(int n) {
+    return 'Over $n weeks';
+  }
+
+  @override
+  String get sharedWithHerClientsWrittenConsent =>
+      'Shared with her client\'s written consent';
+
+  @override
+  String get nothingApprovedYetPhotosAndResultsShow =>
+      'Nothing approved yet. Photos and results show here after Own Hub checks them.';
+
+  @override
+  String get screenshotOfAMessageFromAClient =>
+      'Screenshot of a message from a client';
+
+  @override
+  String get thePhotoWasNotClearEnough => 'The photo was not clear enough.';
+
+  @override
+  String get itDoesNotFollowTheRulesFor =>
+      'It does not follow the rules for photos.';
+
+  @override
+  String get weNeedYourClientsWrittenAgreement =>
+      'We need your client\'s written agreement.';
+
+  @override
+  String get ownHubCouldNotApproveIt => 'Own Hub could not approve it.';
+
+  @override
+  String get newActivityInTheChat => 'New activity in the chat';
+
+  @override
+  String get thatItemIsNoLongerTherePull =>
+      'That item is no longer there. Pull down to refresh your list.';
+
+  @override
+  String daysPluralOne1DayLeftOther(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days left',
+      one: '1 day left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1WeekOtherCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count weeks',
+      one: '1 week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1LiveSessionA(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count live sessions a month',
+      one: '1 live session a month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeksSessions(String weeks, String sessions) {
+    return '$weeks, $sessions';
+  }
+
+  @override
+  String weeksOfCoachingWithMe(String weeks) {
+    return '$weeks of coaching with me';
+  }
+
+  @override
+  String youAlreadyHaveCountPackagesEditOne(String count) {
+    return 'You already have $count packages. Edit one of them instead.';
+  }
+
+  @override
+  String youHaveAllCountPackages(String count) {
+    return 'You have all $count packages.';
+  }
+
+  @override
+  String youHaveCountItemsRemoveOneTo(String count) {
+    return 'You have $count items. Remove one to add another.';
+  }
+
+  @override
+  String reviewTakesUpToDaysWorkingDays(String days) {
+    return 'Review takes up to $days working days.';
+  }
+
+  @override
+  String ownHubsReviewerIsReadingItThis(String days) {
+    return 'Own Hub\'s reviewer is reading it. This takes up to $days working days, and we will tell you here.';
+  }
+
+  @override
+  String youCanApplyAgainDaysDaysAfter(String days) {
+    return 'You can apply again $days days after the decision.';
+  }
+
+  @override
+  String thatPhotoCouldNotBeUsedChoose(String mb) {
+    return 'That photo could not be used. Choose a JPEG or PNG under $mb MB.';
+  }
+
+  @override
+  String addMinToMaxAPhotoOf(String min, String max) {
+    return 'Add $min to $max. A photo of the degree is optional.';
+  }
+
+  @override
+  String addMinToMaxEachOneNeeds(String min, String max) {
+    return 'Add $min to $max. Each one needs a photo.';
+  }
+
+  @override
+  String chooseMinToMaxThenTellUs(String min, String max) {
+    return 'Choose $min to $max, then tell us about your experience.';
+  }
+
+  @override
+  String addMinToMaxMessagesFromWomen(String min, String max) {
+    return 'Add $min to $max messages from women you trained.';
+  }
+
+  @override
+  String addMinToMaxThePhotosAre(String min, String max) {
+    return 'Add $min to $max. The photos are seen only by Own Hub\'s woman reviewer.';
+  }
+
+  @override
+  String youAddedTooManyCertificatesTheMost(String max) {
+    return 'You added too many certificates. The most is $max.';
+  }
+
+  @override
+  String pickATimeAtLeastMinutesMinutes(String minutes) {
+    return 'Pick a time at least $minutes minutes from now.';
+  }
+
+  @override
+  String typeTheDateAndTimeLikeExample(String example) {
+    return 'Type the date and time like $example.';
+  }
+
+  @override
+  String underEgpN(String n) {
+    return 'Under EGP $n';
+  }
+
+  @override
+  String overEgpN(String n) {
+    return 'Over EGP $n';
+  }
+
+  @override
+  String egpLowToHigh(String low, String high) {
+    return 'EGP $low to $high';
+  }
+
+  @override
+  String get endCoaching => 'End coaching';
+
+  @override
+  String get endThisCoaching => 'End this coaching?';
+
+  @override
+  String theChatBecomesReadOnlyYourPlans(String coach) {
+    return 'The chat becomes read only. Your plans stay with you. $coach will no longer see your answers.';
+  }
+
+  @override
+  String get theChatBecomesReadOnlyHerPlans =>
+      'The chat becomes read only. Her plans stay with her. You will no longer see her answers.';
+
+  @override
+  String get keepCoaching => 'Keep coaching';
+
+  @override
+  String waitingForCoachSAnswer(String coach) {
+    return 'Waiting for $coach\'s answer';
+  }
+
+  @override
+  String get cancelRequest => 'Cancel request';
+
+  @override
+  String coachCouldNotTakeYouThisTime(String coach) {
+    return '$coach could not take you this time';
+  }
+
+  @override
+  String get noAnswerInTime => 'No answer in time';
+
+  @override
+  String get findAnotherCoach => 'Find another coach';
+
+  @override
+  String get waitingForYourReply => 'Waiting for your reply';
+
+  @override
+  String noMessageFromYouInDaysDays(String days) {
+    return 'No message from you in $days days';
+  }
+
+  @override
+  String get youCanSeeItUnderMyCoach => 'You can see it under My coach.';
+
+  @override
+  String get freeForNow => 'Free for now';
+
+  @override
+  String egpPriceWhenPaymentsOpen(String price) {
+    return 'EGP $price when payments open';
+  }
+
+  @override
+  String get freeForMembersUntilPaymentsOpen =>
+      'Free for members until payments open';
+
+  @override
+  String get notVisibleYetAddAPackage => 'Not visible yet: add a package';
+
+  @override
+  String get backToProfile => 'Back to profile';
+
+  @override
+  String get contactOwnHub => 'Contact Own Hub';
+
+  @override
+  String get chooseADateAndTime => 'Choose a date and time';
+
+  @override
+  String get cantMakeIt => 'Can\'t make it';
+
+  @override
+  String countPluralOne1ClientOtherCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count clients',
+      one: '1 client',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1NewRequestOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new requests',
+      one: '1 new request',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1UnreadChatOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unread chats',
+      one: '1 unread chat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationDaysPluralOne1DayOther(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return 'Duration: $_temp0';
+  }
+
+  @override
+  String overWeeksPluralOne1WeekOther(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: '$weeks weeks',
+      one: '1 week',
+    );
+    return 'Over $_temp0';
+  }
+
+  @override
+  String transformationWeeksPluralOne1WeekOther(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: '$weeks weeks',
+      one: '1 week',
+    );
+    return 'Transformation, $_temp0';
+  }
+
+  @override
+  String get faceToFace => 'Face to face';
+
+  @override
+  String get seeItFirst => 'See it first';
+
+  @override
+  String get am => 'AM';
+
+  @override
+  String get pm => 'PM';
+
+  @override
+  String get pickHerNameIfSheKnowsYou_akwt2 =>
+      'Pick her name if she knows you. Your request goes to her.';
+
+  @override
+  String get nameYourCoachSees => 'Name your coach sees';
+
+  @override
+  String get yourFirstNameIsOptionalYourCoach =>
+      'Your first name is optional. Your coach sees it next to your answers.';
 }

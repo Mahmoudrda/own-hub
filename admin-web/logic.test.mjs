@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import * as L from "./logic.js";
+import { readFileSync } from "node:fs";
 
 test("phone list parser", () => {
   const out = L.parsePhoneList("+201012345678, 01012345679\n٠١٠١٢٣٤٥٦٧٨٠\n+201012345678; abc, 123");
@@ -611,4 +612,234 @@ test("events and foods filter by status and search, and badges stay short", () =
   assert.equal(L.badgeText(0), "");
   assert.equal(L.badgeText(7), "7");
   assert.equal(L.badgeText(250), "99+");
+});
+
+/* private coaching helpers */
+
+test("coaching tabs follow the claim", () => {
+  assert.equal(L.PAYMENTS_LIVE, false);
+  assert.deepEqual(L.coachingTabsFor({ womanReviewer: true }), ["coaches", "reports"]);
+  assert.deepEqual(L.coachingTabsFor({ finance: true }), []);
+  assert.deepEqual(L.coachingTabsFor({ admin: true }), ["coaches", "reports"]);
+  assert.deepEqual(L.coachingTabsFor({ finance: true }, true), ["payments", "refunds", "payouts"]);
+  assert.deepEqual(L.coachingTabsFor({ finance: true, womanReviewer: true }, true), L.COACHING_TABS);
+  assert.deepEqual(L.coachingTabsFor({ admin: true }, true), L.COACHING_TABS);
+  assert.ok(!L.SECTIONS.includes("payout"));
+  assert.deepEqual(L.coachingTabsFor({}), []);
+  assert.deepEqual(L.coachingTabsFor(undefined), []);
+  assert.equal(L.isAdmin({ womanReviewer: true }), false);
+  assert.equal(L.isAdmin({ finance: true }), false);
+  assert.equal(L.isAdmin({ admin: true }), true);
+});
+
+test("EGP and amount mismatch", () => {
+  assert.equal(L.formatEgp(1250), "1,250 EGP");
+  assert.equal(L.formatEgp(99.5), "99.50 EGP");
+  assert.equal(L.formatEgp("x"), "");
+  assert.equal(L.amountMismatch(1000, 1000), false);
+  assert.equal(L.amountMismatch(1000, "1000"), false);
+  assert.equal(L.amountMismatch(1000, 900), true);
+  assert.equal(L.amountMismatch(undefined, 900), false);
+});
+
+test("timestamps arrive as ISO text", () => {
+  assert.equal(L.toIso("2026-10-01T10:00:00Z"), "2026-10-01T10:00:00Z");
+  assert.equal(L.toIso("not a date"), "");
+  assert.equal(L.toIso(null), "");
+});
+
+test("a next page is appended in the server's order and a repeated row shows once", () => {
+  const key = (x) => x.id;
+  const first = [{ id: "a" }, { id: "b" }];
+  assert.deepEqual(L.appendPage(first, [{ id: "c" }, { id: "d" }], key).map(key), ["a", "b", "c", "d"]);
+  assert.deepEqual(L.appendPage(first, [{ id: "b" }, { id: "c" }], key).map(key), ["a", "b", "c"]);
+  assert.deepEqual(L.appendPage(first, [], key).map(key), ["a", "b"]);
+  assert.deepEqual(first.map(key), ["a", "b"]);
+});
+
+test("flag and reason labels", () => {
+  assert.equal(L.flagLabel("duplicateReference"), "Reference already used");
+  assert.equal(L.flagLabel("newFlag"), "new flag");
+  assert.deepEqual(L.PROOF_REJECT_REASONS, ["amount_wrong", "not_received", "unreadable", "wrong_account", "duplicate", "other"]);
+  assert.deepEqual(L.SECTION_REASONS, ["missing", "unclear", "unverifiable", "not_allowed", "other"]);
+});
+
+test("coaching errors speak in short staff words", () => {
+  assert.equal(L.coachingMessage({ code: "functions/failed-precondition", message: "wrong_status" }), "Refresh and try again.");
+  assert.equal(L.coachingMessage({ code: "functions/already-exists", details: { reason: "reference_used" } }), "That transfer reference is already attached to another payment.");
+  assert.match(L.coachingMessage({ code: "functions/unavailable", message: "x" }), /can not be reached/);
+});
+
+test("accounts must be typed twice and match", () => {
+  assert.equal(L.retypeMatch("Mona@InstaPay", " mona@instapay "), true);
+  assert.equal(L.retypeMatch("٠١٠١٢٣٤٥٦٧٨", "01012345678"), true);
+  assert.equal(L.retypeMatch("010 1234 5678", "01012345678"), true);
+  assert.equal(L.retypeMatch("a@instapay", "b@instapay"), false);
+  assert.equal(L.retypeMatch("", ""), false);
+  assert.equal(L.retypeMatch("x", undefined), false);
+});
+
+test("receiving accounts form", () => {
+  const good = { instapay: { address: "ownhub@instapay", again: "ownhub@instapay", holderName: "Mahmoud Reda", enabled: true }, vodafoneCash: { address: "", again: "", holderName: "", enabled: false } };
+  assert.deepEqual(L.receivingProblems(good), []);
+  assert.deepEqual(L.receivingPayload(good), { instapay: { address: "ownhub@instapay", holderName: "Mahmoud Reda", enabled: true }, vodafoneCash: { address: "", holderName: "", enabled: false } });
+  // Only one rail on is a valid save, and the other one goes up empty even if it has leftovers typed in.
+  const left = structuredClone(good);
+  left.vodafoneCash = { address: "0101234567", again: "", holderName: "Old name", enabled: false };
+  assert.deepEqual(L.receivingProblems(left), []);
+  assert.deepEqual(L.receivingPayload(left).vodafoneCash, { address: "", holderName: "", enabled: false });
+  const onlyVodafone = structuredClone(good);
+  onlyVodafone.instapay = { address: "", again: "", holderName: "", enabled: false };
+  onlyVodafone.vodafoneCash = { address: "01012345678", again: "01012345678", holderName: "Mona Ali", enabled: true };
+  assert.deepEqual(L.receivingProblems(onlyVodafone), []);
+  assert.deepEqual(L.receivingPayload(onlyVodafone), { instapay: { address: "", holderName: "", enabled: false }, vodafoneCash: { address: "01012345678", holderName: "Mona Ali", enabled: true } });
+  const mismatch = structuredClone(good);
+  mismatch.instapay.again = "other@instapay";
+  assert.equal(L.receivingProblems(mismatch).length, 1);
+  const badFormat = structuredClone(good);
+  badFormat.vodafoneCash = { address: "0123", again: "0123", holderName: "A", enabled: true };
+  assert.ok(L.receivingProblems(badFormat).some((p) => p.startsWith("Vodafone Cash")));
+  const none = structuredClone(good);
+  none.instapay.enabled = false;
+  assert.ok(L.receivingProblems(none).some((p) => /at least one/.test(p)));
+  const noHolder = structuredClone(good);
+  noHolder.instapay.holderName = " ";
+  assert.equal(L.receivingProblems(noHolder).length, 1);
+});
+
+test("seller details form", () => {
+  const form = Object.fromEntries(L.SELLER_FIELDS.map(([k]) => [k, "x"]));
+  form.vatRatePercent = "١٤";
+  form.supportEmail = "help@own-hub.app";
+  form.supportPhone = "٠١٠١٢٣٤٥٦٧٨";
+  assert.deepEqual(L.sellerProblems(form), []);
+  const p = L.sellerPayload(form);
+  assert.equal(p.vatRatePercent, 14);
+  assert.equal(p.supportPhone, "010 12345678".replace(" ", ""));
+  assert.equal(L.sellerProblems({ ...form, vatRatePercent: "150" }).length, 1);
+  assert.equal(L.sellerProblems({ ...form, supportEmail: "nope" }).length, 1);
+  assert.equal(L.sellerProblems({}).length, L.SELLER_FIELDS.length - 1);
+});
+
+test("holder name match tolerates spacing, case and Arabic letter forms", () => {
+  assert.equal(L.namesMatch("Mona  Ali", "mona ali"), true);
+  assert.equal(L.namesMatch("أحمد", "احمد"), true);
+  assert.equal(L.namesMatch("Mona Ali", "Mona Hassan"), false);
+  assert.equal(L.namesMatch("", ""), false);
+});
+
+test("application decisions", () => {
+  assert.equal(L.canApproveApplication([]), false);
+  assert.equal(L.canApproveApplication(["c1"]), true);
+  assert.equal(L.applicationDecisionProblems("approve", {}).length, 0);
+  assert.equal(L.applicationDecisionProblems("reject", {}).length, 1);
+  assert.equal(L.applicationDecisionProblems("reject", { personal: "" }).length, 1);
+  assert.equal(L.applicationDecisionProblems("needs_changes", { personal: "missing" }).length, 0);
+  assert.deepEqual(L.applicationPayload("u1", "approve", { ticked: ["c1"], reasons: { personal: "missing" }, note: " ok " }), { uid: "u1", decision: "approve", reasons: {}, checkedCertificates: ["c1"], note: "ok" });
+  assert.deepEqual(L.applicationPayload("u1", "needs_changes", { ticked: ["c1"], reasons: { personal: "missing", bogus: "x", payout: "nonsense" }, note: "" }), { uid: "u1", decision: "needs_changes", reasons: { personal: "missing" }, checkedCertificates: [], note: "" });
+});
+
+test("file kinds", () => {
+  assert.equal(L.fileKind("a/b/cert.PDF"), "pdf");
+  assert.equal(L.fileKind("a/b/x", "application/pdf"), "pdf");
+  assert.equal(L.fileKind("a/b/x.jpeg"), "image");
+  assert.equal(L.fileKind("a/b/x", "image/png"), "image");
+  assert.equal(L.fileKind("a/b/x.doc"), "other");
+});
+
+test("payout state and report decisions and badges", () => {
+  assert.equal(L.payoutNeedsConfirm({ payoutState: "pending", pendingPayout: { account: "x" } }), true);
+  assert.equal(L.payoutNeedsConfirm({ payoutState: "pending" }), true);
+  assert.equal(L.payoutNeedsConfirm({ payoutState: "confirmed", pendingPayout: { account: "x" } }), true);
+  assert.equal(L.payoutNeedsConfirm({ payoutState: "confirmed" }), false);
+  assert.deepEqual(L.reportDecisionsFor("coachMessage"), ["dismiss", "hide_message", "suspend_coach", "end_coaching"]);
+  assert.deepEqual(L.reportDecisionsFor("coachProfile"), ["dismiss", "suspend_coach", "end_coaching"]);
+  assert.equal(L.payoutBadgeCount([{ amountEgp: 5 }, { amountEgp: 0 }, { amountEgp: 0, payoutState: "pending" }]), 2);
+  assert.equal(L.payoutBadgeCount([]), 0);
+});
+
+test("the open report state is the one the server names", () => {
+  assert.equal(L.REPORT_STATE_OPEN, "submitted");
+});
+
+test("seller form round trip and server limits", () => {
+  const saved = { companyNameEn: "Own Hub LLC", companyNameAr: "أون هب", addressEn: "1 Street, Cairo", addressAr: "١ شارع القاهرة", commercialRegistration: "12345", taxCard: "678-90", vatRatePercent: 14, supportEmail: "help@own-hub.app", updatedAt: "x" };
+  const form = L.sellerToForm(saved);
+  assert.equal(form.vatRatePercent, "14");
+  assert.equal(form.supportPhone, "");
+  assert.deepEqual(L.sellerProblems(form), []);
+  assert.equal(L.sellerPayload(form).vatRatePercent, 14);
+  assert.equal(L.sellerProblems({ ...form, vatRatePercent: "15" }).length, 1);
+  assert.equal(L.sellerProblems({ ...form, vatRatePercent: "7.5" }).length, 1);
+  assert.deepEqual(L.sellerToForm(null), Object.fromEntries(L.SELLER_FIELDS.map(([k]) => [k, ""])));
+});
+
+const contract = JSON.parse(readFileSync(new URL("../contracts/coaching_contract.json", import.meta.url), "utf8"));
+const sorted = (xs) => [...xs].sort();
+
+test("every enum and reason the dashboard maps is in the contract, and none is missing", () => {
+  const same = (name, mine, theirs) => assert.deepEqual(sorted(mine), sorted(theirs), name);
+  same("application sections", Object.keys(L.SECTION_LABELS), contract.enums.applicationSections);
+  same("section reasons", L.SECTION_REASONS, contract.enums.sectionReasons);
+  same("application statuses", L.APPLICATION_STATUSES, contract.enums.applicationStatus);
+  same("proof reject reasons", L.PROOF_REJECT_REASONS, contract.enums.proofRejectReasons);
+  same("proof flags", Object.keys(L.PROOF_FLAG_LABELS), contract.enums.proofFlags);
+  same("report decisions", L.REPORT_DECISIONS, contract.enums.reportDecision);
+  same("report reasons", Object.keys(L.REPORT_REASON_LABELS), contract.enums.reportReasons);
+  same("report kinds", Object.keys(L.REPORT_KIND_LABELS), contract.enums.reportSubjectKinds);
+  same("coach rules", Object.keys(L.COACH_RULE_LABELS), contract.enums.coachRules);
+  same("rails", Object.keys(L.RAIL_LABELS), Object.keys(contract.rails));
+  for (const [rail, p] of Object.entries(contract.rails)) {
+    assert.equal(L.RAIL_PATTERNS[rail].account.source, p.accountPattern, rail);
+    assert.equal(L.RAIL_PATTERNS[rail].reference.source, p.referencePattern, rail);
+  }
+});
+
+test("every reason the dashboard words is a contract reason, and staff_is_subject is worded", () => {
+  const known = new Set(contract.reasons);
+  for (const reason of Object.keys(L.COACHING_REASON_TEXT)) assert.ok(known.has(reason), reason);
+  assert.equal(L.coachingMessage({ details: { reason: "staff_is_subject" } }), "You cannot decide your own case.");
+});
+
+test("accepted rules read as readable labels", () => {
+  assert.deepEqual(L.acceptedRuleLabels(["accurateInfo", "noOffPlatformPayment"]), [L.COACH_RULE_LABELS.accurateInfo, L.COACH_RULE_LABELS.noOffPlatformPayment]);
+  assert.deepEqual(L.acceptedRuleLabels(["mystery"]), ["mystery"]);
+  assert.deepEqual(L.acceptedRuleLabels(undefined), []);
+});
+
+test("portfolio queue is for a woman reviewer only", () => {
+  assert.equal(L.canDecidePortfolio({ womanReviewer: true }), true);
+  assert.equal(L.canDecidePortfolio({ admin: true }), false);
+  assert.equal(L.canDecidePortfolio({ finance: true }), false);
+  assert.equal(L.canDecidePortfolio(undefined), false);
+});
+
+test("portfolio paths follow the kind", () => {
+  assert.deepEqual(L.portfolioPaths({ kind: "transformation", beforePath: "b", afterPath: "a" }), ["b", "a"]);
+  assert.deepEqual(L.portfolioPaths({ kind: "transformation", beforePath: "b" }), ["b"]);
+  assert.deepEqual(L.portfolioPaths({ kind: "feedback", imagePath: "i" }), ["i"]);
+  assert.deepEqual(L.portfolioPaths({ kind: "feedback", imagePath: null }), []);
+  assert.deepEqual(L.portfolioPaths({ kind: "photo", imagePath: "p" }), ["p"]);
+  assert.deepEqual(L.portfolioPaths({ kind: "other", imagePath: "p" }), []);
+  assert.deepEqual(L.portfolioPaths(undefined), []);
+});
+
+test("portfolio decisions need a reason only to reject, and carry the coach", () => {
+  const item = { coachUid: "c1", mediaId: "m1" };
+  assert.deepEqual(L.PORTFOLIO_REJECT_REASONS, ["unclear", "not_allowed", "no_consent", "other"]);
+  assert.deepEqual(L.portfolioRejectProblems("approve", ""), []);
+  assert.deepEqual(L.portfolioRejectProblems("reject", ""), ["Pick a reason."]);
+  assert.deepEqual(L.portfolioRejectProblems("reject", "mystery"), ["Pick a reason."]);
+  assert.deepEqual(L.portfolioRejectProblems("reject", "no_consent"), []);
+  assert.deepEqual(L.portfolioDecisionPayload(item, "approve", "unclear"), { coachUid: "c1", mediaId: "m1", decision: "approve", reason: "" });
+  assert.deepEqual(L.portfolioDecisionPayload(item, "reject", "unclear"), { coachUid: "c1", mediaId: "m1", decision: "reject", reason: "unclear" });
+  assert.equal(L.portfolioKey(item), "c1/m1");
+});
+
+test("badge adds applications and photos; portfolio refusals are worded", () => {
+  assert.equal(L.coachesBadgeCount(2, 3), 5);
+  assert.equal(L.coachesBadgeCount(0, undefined), 0);
+  assert.equal(L.coachingMessage({ details: { reason: "staff_is_subject" } }), "You cannot decide your own case.");
+  assert.equal(L.coachingMessage({ details: { reason: "media_not_found" } }), L.COACHING_REASON_TEXT.media_not_found);
+  assert.equal(L.coachingMessage({ details: { reason: "too_many_media" } }), L.COACHING_REASON_TEXT.too_many_media);
 });

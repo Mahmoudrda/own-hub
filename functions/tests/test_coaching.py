@@ -1,6 +1,7 @@
 """The coach side's callables: her role (C08), her certificates (K02) and her
-invites (K07). Dormant while COACH_APP_LIVE is False, and each one refuses to
-write anything then."""
+invites (K07). The role and certificates follow COACH_PORTFOLIO_LIVE and the
+invites COACH_CLIENTS_LIVE; each refuses to write anything while its switch is
+False."""
 
 from __future__ import annotations
 
@@ -30,12 +31,26 @@ def fs(monkeypatch, stubbed):
 
 @pytest.fixture
 def live(monkeypatch):
-    monkeypatch.setattr(coaching, "COACH_APP_LIVE", True)
+    monkeypatch.setattr(coaching, "COACH_PORTFOLIO_LIVE", True)
+    monkeypatch.setattr(coaching, "COACH_CLIENTS_LIVE", True)
 
 
-def test_the_coach_side_ships_switched_off():
-    # Moves with Feature.coachApp and coachLive() in both rules files.
-    assert coaching.COACH_APP_LIVE is False
+@pytest.fixture
+def portfolio_closed(monkeypatch):
+    monkeypatch.setattr(coaching, "COACH_PORTFOLIO_LIVE", False)
+
+
+@pytest.fixture
+def clients_closed(monkeypatch):
+    monkeypatch.setattr(coaching, "COACH_CLIENTS_LIVE", False)
+
+
+def test_the_portfolio_and_clients_ship_on_and_payments_off():
+    # Move with coachPortfolioLive(), coachClientsLive() and coachPaymentsLive()
+    # in both rules files.
+    assert coaching.COACH_PORTFOLIO_LIVE is True
+    assert coaching.COACH_CLIENTS_LIVE is True
+    assert coaching.COACH_PAYMENTS_LIVE is False
 
 
 # ------------------------------------------------------------------ roles
@@ -45,21 +60,44 @@ def test_the_coach_side_ships_switched_off():
     "role, held",
     [("trainee", ["trainee"]), ("coach", ["coach"]), ("both", ["trainee", "coach"])],
 )
-def test_her_choice_is_written_by_the_server(fs, live, role, held):
-    answer = inner("record_signup_role")(request({"role": role}))
+def test_her_choice_is_written_by_the_server(fs, role, held):
+    answer = roles.record(
+        fs, "uid-1", {"role": role}, live=True, timestamp=NOW, coach_v="active"
+    )
     assert answer == {"ok": True, "held": held}
     stored = fs.docs["users/uid-1"]["roles"]
     assert stored["held"] == held and stored["chosen"] == role
     assert set(stored) <= set(roles.FIELDS)
 
 
-def test_a_trainee_is_recorded_while_the_coach_app_is_closed(fs):
+@pytest.mark.parametrize("coach_v", [None, "suspended", "pending", True])
+@pytest.mark.parametrize("role", ["coach", "both"])
+def test_a_coach_role_needs_the_coach_claim(fs, role, coach_v):
+    with pytest.raises(errors.CoachingError) as caught:
+        roles.record(fs, "uid-1", {"role": role}, live=True, timestamp=NOW, coach_v=coach_v)
+    assert caught.value.code == errors.PERMISSION
+    assert caught.value.reason == errors.NOT_A_COACH
+    assert "users/uid-1" not in fs.docs
+
+
+def test_the_closed_app_is_refused_before_the_claim(fs):
+    with pytest.raises(errors.CoachingError) as caught:
+        roles.record(fs, "uid-1", {"role": "coach"}, live=False, timestamp=NOW, coach_v=None)
+    assert caught.value.reason == errors.COACH_APP_CLOSED
+
+
+def test_a_trainee_needs_no_claim(fs, live):
+    answer = inner("record_signup_role")(request({"role": "trainee"}))
+    assert answer == {"ok": True, "held": ["trainee"]}
+
+
+def test_a_trainee_is_recorded_while_the_portfolio_is_closed(fs, portfolio_closed):
     inner("record_signup_role")(request({"role": "trainee"}))
     assert fs.docs["users/uid-1"]["roles"]["held"] == ["trainee"]
 
 
 @pytest.mark.parametrize("role", ["coach", "both"])
-def test_a_coach_role_is_refused_while_closed(fs, role):
+def test_a_coach_role_is_refused_while_closed(fs, portfolio_closed, role):
     error = raises(
         lambda: inner("record_signup_role")(request({"role": role})),
         https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
@@ -79,7 +117,7 @@ def test_anything_else_is_refused(fs, live, role):
 
 def test_choosing_again_replaces_the_roles_and_keeps_her_profile(fs, live):
     fs.docs["users/uid-1"] = {"profile": {"firstName": "Mai"}}
-    inner("record_signup_role")(request({"role": "both"}))
+    roles.record(fs, "uid-1", {"role": "both"}, live=True, timestamp=NOW, coach_v="active")
     inner("record_signup_role")(request({"role": "trainee"}))
     doc = fs.docs["users/uid-1"]
     assert doc["roles"]["held"] == ["trainee"]
@@ -168,7 +206,7 @@ def test_there_is_a_ceiling():
     assert caught.value.reason == errors.TOO_MANY_CERTIFICATES
 
 
-def test_the_callable_is_closed_at_launch(fs):
+def test_the_callable_is_closed_when_the_portfolio_is_off(fs, portfolio_closed):
     error = raises(
         lambda: inner("submit_coach_certificate")(request(_cert(), token=VERIFIED)),
         https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
@@ -339,7 +377,7 @@ def test_refusals():
     assert not any(path.startswith("relationships/") for path in db.docs)
 
 
-def test_the_invite_callables_are_closed_at_launch(fs):
+def test_the_invite_callables_are_closed_when_clients_are_off(fs, clients_closed):
     for name, body in (("create_coach_invite", {}), ("accept_coach_invite", {"code": "ABCD2345"})):
         error = raises(
             lambda: inner(name)(request(body, token=COACH)),

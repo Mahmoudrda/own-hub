@@ -12,6 +12,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_l10n.dart';
 import 'honest_notice.dart';
 
+/// Whether [url] may be handed to the phone: a web page or a mail address,
+/// nothing else (no `tel:`, `sms:`, `file:` or app schemes).
+bool externalLinkAllowed(String url) {
+  final scheme = Uri.tryParse(url)?.scheme.toLowerCase();
+  return scheme == 'https' || scheme == 'mailto';
+}
+
 /// Opens [url] in her browser. Says so plainly if it cannot, rather than
 /// leaving a tap that appears to have done nothing.
 Future<void> openExternalLink(BuildContext context, String url) async {
@@ -20,10 +27,12 @@ Future<void> openExternalLink(BuildContext context, String url) async {
   final messenger = ScaffoldMessenger.maybeOf(context);
   var opened = false;
   try {
-    opened = await launchUrl(
-      Uri.parse(url),
-      mode: LaunchMode.externalApplication,
-    );
+    if (externalLinkAllowed(url)) {
+      opened = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+    }
   } catch (_) {
     opened = false;
   }

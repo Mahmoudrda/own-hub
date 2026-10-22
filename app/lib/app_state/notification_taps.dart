@@ -20,6 +20,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../features/train/domain/getting_started_tips.dart';
+import '../features/train/domain/notification_voice.dart';
 import '../features/train/presentation/first_gym_guide_view.dart';
 import '../routing/app_router.dart';
 import '../routing/app_routes.dart';
@@ -91,9 +92,12 @@ class NotificationTaps {
   static String? _pending;
   static GlobalKey<NavigatorState>? _navigatorKey;
 
-  /// Called by the adapter for every tap.
-  static void received(String? payload) {
+  /// Called by the adapter for every tap. [id] is the notification's own id,
+  /// which tells the phone which words she tapped; the payload stays a bare
+  /// screen id.
+  static void received(String? payload, {int? id}) {
     if (payload == null || !destinations.contains(payload)) return;
+    if (id != null && VoiceHistory.instance.tap(id)) AppChanges.bump();
     final navigator = _navigatorKey?.currentState;
     if (navigator == null) {
       _pending = payload;

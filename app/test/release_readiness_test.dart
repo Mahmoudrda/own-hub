@@ -371,24 +371,35 @@ void main() {
       // all of them must stay off for as long as the app's flags are.
       final shipped = FeatureFlags.shipped;
       expect(shipped.isOn(Feature.community), isFalse);
-      expect(shipped.isOn(Feature.coachApp), isFalse);
+      expect(shipped.isOn(Feature.coachApp), isTrue);
+      expect(shipped.isOn(Feature.payments), isFalse);
       for (final path in [
         '../firebase/firestore.rules',
         '../firebase/storage.rules',
       ]) {
         final rules = File(path).readAsStringSync();
-        for (final name in ['communityLive', 'coachLive']) {
+        final shippedValue = {
+          'communityLive': 'false',
+          'coachPortfolioLive': 'true',
+          'coachPaymentsLive': 'false',
+        };
+        for (final entry in shippedValue.entries) {
           expect(
-            RegExp('function $name\\(\\) \\{\\s*return false;\\s*\\}')
-                .hasMatch(rules),
+            RegExp(
+              'function ${entry.key}\\(\\) \\{\\s*return ${entry.value};\\s*\\}',
+            ).hasMatch(rules),
             isTrue,
-            reason: '$name() must return false in $path',
+            reason: '${entry.key}() must return ${entry.value} in $path',
           );
         }
       }
       expect(
         File('../functions/coaching/__init__.py').readAsStringSync(),
-        contains('COACH_APP_LIVE = False'),
+        allOf(
+          contains('COACH_PORTFOLIO_LIVE = True'),
+          contains('COACH_CLIENTS_LIVE = True'),
+          contains('COACH_PAYMENTS_LIVE = False'),
+        ),
       );
     });
 
@@ -403,11 +414,14 @@ void main() {
       final snapshot = AppSnapshot.capture();
       expect(snapshot['roles'], isNotNull);
       expect(launchRoles(AppRouter.featureFlags), UserRoles.coach);
-      expect(AppRouter.frontDoor, appRoutes['K01']!.name);
+      // Not approved yet: her application's status, not the desk.
+      expect(AppRouter.frontDoor, appRoutes['K06']!.name);
       expect(OnboardingState.instance.isDue, isFalse);
 
-      // The first release has no coach side, so none of it applies.
-      AppRouter.featureFlags = FeatureFlags.shipped;
+      // With the coach app off there is no coach side, so none of it applies.
+      AppRouter.featureFlags = FeatureFlags.shipped.with_({
+        Feature.coachApp: false,
+      });
       expect(launchRoles(AppRouter.featureFlags), UserRoles.trainee);
       expect(AppRouter.frontDoor, appRoutes['T01']!.name);
     });
@@ -482,9 +496,6 @@ const Set<String> _shippingFlows = {
 const List<String> _switchedOff = [
   'community',
   'communities',
-  'coach',
-  'coaches',
-  'coaching',
   'group',
   'groups',
   'member',
@@ -497,7 +508,6 @@ const List<String> _switchedOff = [
   'followers',
   'moderator',
   'moderators',
-  'marketplace',
   'assistant',
   'unblock',
   'blocked',
@@ -701,10 +711,13 @@ void _shippingFlagsTests() {
       expect(find.text(l10n.shareTheSquatWithYourGroup), findsNothing);
     });
 
-    testWidgets('her profile does not offer a coach', (tester) async {
+    testWidgets('her profile offers a coach and the way to become one', (
+      tester,
+    ) async {
       await _open(tester, 'A02');
       final l10n = await AppL10n.delegate.load(const Locale('en'));
-      expect(find.text(l10n.myCoach), findsNothing);
+      expect(find.text(l10n.myCoach), findsOneWidget);
+      expect(find.text(l10n.coachWomenOnOwnHub), findsOneWidget);
       // And the language chooser is still there, because a build that cannot
       // change language is a build a woman can be trapped in.
       expect(find.text(l10n.language), findsOneWidget);

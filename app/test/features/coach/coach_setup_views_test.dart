@@ -99,6 +99,8 @@ void main() {
         Feature.coachPortfolio: true,
         Feature.coachResults: true,
         Feature.coachReviews: true,
+        Feature.marketplace: true,
+        Feature.payments: true,
       });
       expect(coachSetupWalk().map((s) => s.screenId), [
         'K01',
@@ -123,7 +125,9 @@ void main() {
       });
       expect(coachSetupWalk(), isNot(contains(CoachSetupStep.results)));
       expect(coachSetupWalk(), isNot(contains(CoachSetupStep.reviews)));
-      expect(CoachSetupStep.total, 9);
+      // Getting paid waits for payments, so K05 is not counted either.
+      expect(coachSetupWalk(), isNot(contains(CoachSetupStep.payout)));
+      expect(CoachSetupStep.total, 8);
       expect(CoachSetupStep.packages.next, CoachSetupStep.certificates);
     });
   });

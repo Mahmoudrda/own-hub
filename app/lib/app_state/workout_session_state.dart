@@ -41,6 +41,7 @@ import '../features/train/domain/train_repository.dart';
 import 'app_changes.dart';
 import 'rest_timer_prefs.dart';
 import 'rewards_state.dart';
+import 'screen_awake.dart';
 import 'training_streak_state.dart';
 
 class WorkoutSessionState {
@@ -251,6 +252,7 @@ class WorkoutSessionState {
   }) {
     if (isLive) return;
     _day = day;
+    ScreenAwake.instance.set(true);
     _moveIndex = 0;
     _setIndex = 0;
     _loggedSets = 0;
@@ -499,7 +501,10 @@ class WorkoutSessionState {
     required ProgressStore progress,
     EndedReason reason = EndedReason.finished,
     ChallengeProgress? Function()? challengeNow,
+    bool difficult = false,
   }) async {
+    // Finished or discarded, the workout no longer needs the screen held.
+    ScreenAwake.instance.set(false);
     final session = _session;
     if (session == null) return null;
     // A second finish for the same session — R09's clock and a tap landing
@@ -514,6 +519,7 @@ class WorkoutSessionState {
       progress: progress,
       reason: reason,
       challengeNow: challengeNow,
+      difficult: difficult,
     );
     _finishing = done;
     _finishingId = session.id;
@@ -543,6 +549,7 @@ class WorkoutSessionState {
     required ProgressStore progress,
     required EndedReason reason,
     ChallengeProgress? Function()? challengeNow,
+    bool difficult = false,
   }) async {
     _lastFinished = session;
     _lastFinishedTitle = _day?.title;
@@ -581,13 +588,16 @@ class WorkoutSessionState {
             progress: progress,
           );
 
+    final finishedMoves = List<PlannedMove>.unmodifiable(moves);
+    final flushed = repository is InMemoryTrainRepository
+        ? repository.flushes
+        : const <FlushRecord>[];
+
     final trainingStreakState = TrainingStreakState.instance;
     final summary = summarise(
       sessionId: session.id,
       source: session.source,
-      flushes: repository is InMemoryTrainRepository
-          ? repository.flushes
-          : const <FlushRecord>[],
+      flushes: flushed,
       durationSec: seconds,
       credit: credit,
       bests: _bests.remove(session.id) ?? const <PersonalBest>[],
@@ -598,6 +608,16 @@ class WorkoutSessionState {
           : null,
       moveNames: moveNames,
       bestPoints: _bestPoints.remove(session.id) ?? 0,
+      // Nothing to look ahead to for a session that was discarded or empty.
+      nextTime: uncounted
+          ? const <NextTimeMove>[]
+          : nextTimeFor(
+              repository: repository,
+              moves: finishedMoves,
+              flushes: flushed,
+              sessionId: session.id,
+              difficult: difficult,
+            ),
     );
 
     _session = null;
@@ -665,11 +685,13 @@ class WorkoutSessionState {
     _history.clear();
     _warmUps.clear();
     _liveBest = null;
+    ScreenAwake.instance.set(true);
     AppChanges.bump();
   }
 
   /// For tests: back to no session.
   void reset() {
+    ScreenAwake.instance.set(false);
     _day = null;
     _session = null;
     _lastFinished = null;

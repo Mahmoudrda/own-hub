@@ -41,6 +41,7 @@ class PlanEditorView extends StatefulWidget {
     this.stage,
     this.onBack,
     this.state,
+    this.title,
     this.undoBus,
   });
 
@@ -57,7 +58,10 @@ class PlanEditorView extends StatefulWidget {
   final LifeStage? stage;
 
   final VoidCallback? onBack;
-  final MyPlanState? state;
+  final PlanEditing? state;
+
+  /// The bar title; "My plan" when null.
+  final String? title;
   final LogCommandBus? undoBus;
 
   @override
@@ -68,7 +72,7 @@ class _PlanEditorViewState extends State<PlanEditorView> {
   final LogCommandBus _ownBus = LogCommandBus();
 
   LogCommandBus get _bus => widget.undoBus ?? _ownBus;
-  MyPlanState get _state => widget.state ?? MyPlanState.instance;
+  PlanEditing get _state => widget.state ?? MyPlanState.instance;
   MyPlan get _plan => _state.current ?? const MyPlan.blank();
   AuthoredProgramme? get _original => widget.original?.call();
   String get _language => Localizations.localeOf(context).languageCode;
@@ -263,7 +267,7 @@ class _PlanEditorViewState extends State<PlanEditorView> {
         final plan = _plan;
         final canReplace = _original != null;
         return AppScaffold(
-          appBar: AppTopBar(title: l10n.myPlan, onBack: _back),
+          appBar: AppTopBar(title: widget.title ?? l10n.myPlan, onBack: _back),
           footer: [
             AppButton(
               l10n.addADay,

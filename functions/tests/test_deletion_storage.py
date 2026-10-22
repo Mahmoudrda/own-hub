@@ -6,8 +6,8 @@ The places, from the app and the rules:
                        media, message attachments and voice notes (G7 §1.3:
                        the one prefix the community and coach-media groups own)
   user-exports/{uid}/  her data export (row 25)
-  coach-docs/{uid}/    a coach's certificate scans (coach_credentials.dart,
-                       G12 §6)
+  coach-docs/{uid}/    a coach's application files (certificates, education,
+                       feedback, transformations, photo; G12 §6)
 
 ID and selfie images and progress photos have no Storage path at all
 (storage.rules), so there is nothing to purge for them.
@@ -52,6 +52,8 @@ def test_the_storage_prefixes_cover_every_place_she_has_files():
         "user-media/{uid}/",
         "user-exports/{uid}/",
         "coach-docs/{uid}/",
+        "coach-public/{uid}/",
+        "payment-proofs/{uid}/",
     }
 
 

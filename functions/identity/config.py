@@ -641,7 +641,7 @@ COL_PREAPPROVED = "verificationPreapproved"
 claim_fast_verification approves a signed-in woman whose token phone is here."""
 COL_REVIEWERS = "verificationReviewers"
 """verificationReviewers/{reviewerUid}: her first name, whether she is listed
-for members, auto-pass for people who know her, and her weekly availability."""
+for members, and her weekly availability."""
 COL_BOOKINGS = "verificationBookings"
 """One document per booked review slot, id {reviewerUid}_{UTC start}, so two
 members can never take the same slot."""

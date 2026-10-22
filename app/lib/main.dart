@@ -31,6 +31,7 @@ import 'app_state/home_widget_sync.dart';
 import 'app_state/local_persistence.dart';
 import 'app_state/snapshot_owner.dart';
 import 'app_state/onboarding_state.dart';
+import 'app_state/app_changes.dart';
 import 'app_state/role_state.dart';
 import 'app_state/notification_taps.dart';
 import 'app_state/widget_links.dart';
@@ -43,10 +44,20 @@ import 'domain/flags/feature_flags.dart';
 import 'domain/identity/user_roles.dart';
 import 'l10n/app_l10n.dart';
 import 'features/signup/domain/auth_repository.dart';
+import 'features/train/domain/exercise_traits.dart' show ExerciseTraits;
 import 'routing/app_router.dart';
 import 'routing/app_routes.dart';
 import 'theme/app_tokens.dart';
 import 'theme/hand_theme.dart';
+
+/// Reads what each move is measured on, then re-reads her logged history once
+/// for bests the old detector could not see. The table comes first: with none
+/// loaded a best fails closed. Idempotent, and it pays and counts nothing.
+@visibleForTesting
+Future<void> prepareMoveBests() async {
+  await ExerciseTraits.load();
+  AppRouter.sessionBests.backfill(repository: AppRouter.trainRepository);
+}
 
 Future<void> main() async {
   // Dark status-bar content, before anything is drawn.
@@ -127,6 +138,8 @@ Future<void> main() async {
     );
   } catch (_) {}
 
+  await prepareMoveBests();
+
   // Which painted meal pictures are bundled. Unreadable means none, and every
   // screen keeps its drawn mark.
   try {
@@ -200,6 +213,7 @@ Future<void> main() async {
   // check rather than the app. See `AppRouter.readVerificationAtLaunch`.
   await AppRouter.readVerificationAtLaunch();
   AppRouter.watchVerificationToken();
+  AppRouter.watchPrivateCoaching();
 
   // The Home Screen and Lock Screen widgets (iOS), and the Android Today
   // widget. They read this week's
@@ -404,9 +418,25 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // Every change of side, chosen at C08 or switched from her picture, is
     // kept for the next launch (R1-P17).
     _roles.addListener(_keepRoles);
+    AppChanges.instance.addListener(_followAccount);
   }
 
   void _keepRoles() => RoleState.instance.keep(_roles.value);
+
+  String? _roleUid = AppRouter.signedInUid;
+
+  /// Her side follows the account: another woman signing in on this phone
+  /// starts from her own roles, not the last one's.
+  void _followAccount() {
+    final uid = AppRouter.signedInUid;
+    final next = rolesAfterAccountChange(_roleUid, uid, AppRouter.featureFlags);
+    _roleUid = uid;
+    if (next == null || next == _roles.value) return;
+    // Not a choice of hers, so it is not kept as one.
+    _roles.removeListener(_keepRoles);
+    _roles.value = next;
+    _roles.addListener(_keepRoles);
+  }
 
   void _relabelWidgets() => HomeWidgetSync.instance.useLocale(_locale.value);
 
@@ -502,6 +532,7 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     }
     _locale.dispose();
     _roles.removeListener(_keepRoles);
+    AppChanges.instance.removeListener(_followAccount);
     _roles.dispose();
     super.dispose();
   }

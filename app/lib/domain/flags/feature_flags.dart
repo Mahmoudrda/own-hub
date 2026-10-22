@@ -290,7 +290,15 @@ enum Feature {
 
   /// The personal follow-up card on Home: how she feels after a session, the
   /// Friday week review, a welcome back and a protein idea. In-app only.
-  followUps;
+  followUps,
+
+  /// Her workout history: Recent sessions, the last sessions of one move, and
+  /// fixing a set she typed wrong.
+  trainHistory,
+
+  /// The small helpers inside a gym session: the plate line for a barbell move
+  /// and the note she keeps for a move.
+  gymHelpers;
 
   /// The feature this one lives inside, or null when it is top level.
   Feature? get parent => switch (this) {
@@ -321,7 +329,7 @@ enum Feature {
     shareCard ||
     muscleMap ||
     trainingStreak => progress,
-    weeklyChallenge || finishReveal => train,
+    weeklyChallenge || finishReveal || trainHistory || gymHelpers => train,
     cycleMeals || cycleCalendar || cyclePatterns => cycle,
     appTour => signUp,
     coachResults || coachReviews || coachAds => coachPortfolio,
@@ -397,6 +405,11 @@ enum Feature {
     Feature.reassuringWaits: 'The named steps on O05 and C12.',
     Feature.followUps:
         'One card on T01, its week review sheet, and a switch on A01.',
+    Feature.trainHistory:
+        'Recent sessions and a move\'s history, opened from the programme, '
+        'P01, P03, R04 and R07, and the set editor inside Recent sessions.',
+    Feature.gymHelpers:
+        'The plate line and the move note on R07, and the plate line on R08.',
   };
 }
 
@@ -471,11 +484,14 @@ class FeatureFlags {
     Feature.communityVideo: false,
     Feature.communityVoiceNotes: false,
     Feature.communityFollowerCounts: false,
-    Feature.coachApp: false,
+    // Coaching without money: coaches apply and are checked, build a page,
+    // members find them, ask to join, chat and receive plans. The old
+    // in-memory coach screens and everything that takes payment stay dark.
+    Feature.coachApp: true,
     Feature.coachPlanning: false,
     Feature.coachPortfolio: false,
     Feature.coachedLife: false,
-    Feature.marketplace: false,
+    Feature.marketplace: true,
     Feature.payments: false,
     Feature.assistant: false,
 
@@ -531,6 +547,11 @@ class FeatureFlags {
     Feature.haptics: true,
     Feature.reassuringWaits: true,
     Feature.followUps: true,
+
+    // The gym additions: history and fixing a set, and the plate and note
+    // helpers.
+    Feature.trainHistory: true,
+    Feature.gymHelpers: true,
   });
 
   /// Every feature on, with no account required.

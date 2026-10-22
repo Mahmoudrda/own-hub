@@ -1,0 +1,1545 @@
+{
+  "version": 1,
+  "region": "europe-west3",
+  "about": "Private coaching (DECISIONS D61): the shared client/server contract. functions/tests/test_coaching_contract.py and app/test/contracts/coaching_contract_test.dart read this file. Neither side changes it alone. Three server switches: COACH_PORTFOLIO_LIVE (applications, profiles, packages, drafts, certificates), COACH_CLIENTS_LIVE (requests, accepting, relationships, chat, plans, sessions, invites, ending) and COACH_PAYMENTS_LIVE (proofs, refunds, payouts, receipts, receiving accounts, ledger), matching coachPortfolioLive(), coachClientsLive() and coachPaymentsLive() in the rules. While payments are off, accepting a request starts the coaching at once with free: true.",
+  "limits": {
+    "coachPriceMinEgp": 200,
+    "coachPriceMaxEgp": 30000,
+    "marginPercent": 15,
+    "maxPackages": 6,
+    "durationDays": [
+      28,
+      56,
+      84
+    ],
+    "liveSessionsPerMonthMin": 2,
+    "liveSessionsPerMonthMax": 12,
+    "sessionMinutes": [
+      30,
+      45,
+      60
+    ],
+    "checkInsPerWeekMax": 7,
+    "includesMax": 8,
+    "includeTextMax": 80,
+    "packageTitleMax": 60,
+    "packageDescriptionMax": 600,
+    "maxActiveClientsDefault": 15,
+    "maxActiveClientsMin": 1,
+    "maxActiveClientsMax": 50,
+    "requestAnswerHours": 72,
+    "payByHours": 72,
+    "proofAttempts": 3,
+    "proofLongSidePx": 1600,
+    "proofMaxBytes": 8000000,
+    "nearImageHamming": 6,
+    "nearImageWindow": 1000,
+    "proofImageAlertDays": 7,
+    "cancelWindowDays": 14,
+    "payoutEligibleDays": 14,
+    "refundWithinDays": 7,
+    "endsSoonDays": 3,
+    "messageMaxChars": 2000,
+    "messagePageSize": 50,
+    "pushThrottleMinutes": 3,
+    "planMaxDays": 7,
+    "planBodyMaxBytes": 60000,
+    "planNameMax": 60,
+    "noteMax": 500,
+    "fullNameMax": 80,
+    "displayNameMax": 40,
+    "headlineMax": 120,
+    "qualificationsMax": 1000,
+    "approachTextMin": 50,
+    "approachTextMax": 1500,
+    "yearsExperienceMax": 50,
+    "educationMin": 1,
+    "educationMax": 6,
+    "certificatesMin": 1,
+    "certificatesMax": 10,
+    "testimonialsMin": 2,
+    "testimonialsMax": 10,
+    "testimonialTextMax": 600,
+    "transformationsMin": 1,
+    "transformationsMax": 6,
+    "specialtiesMin": 1,
+    "specialtiesMax": 5,
+    "uploadMaxBytes": 10000000,
+    "matchResultsMax": 5,
+    "reapplyAfterDays": 30,
+    "mediaMaxItems": 30,
+    "mediaPageSize": 25,
+    "transformationWeeksMax": 104,
+    "mediaNoteMax": 300,
+    "mediaFeedbackTextMin": 10,
+    "mediaFeedbackTextMax": 600,
+    "mediaFromMax": 40,
+    "mediaCaptionMax": 120,
+    "mediaTermsVersion": 1
+  },
+  "pricing": {
+    "finalFormula": "(coachPriceEgp * 115 + 50) // 100",
+    "vectorsFile": "contracts/coaching_price_vectors.json",
+    "refundFormula": "priceFinalEgp - (priceFinalEgp * sessionsUsed) // sessionsIncluded",
+    "coachShareAfterRefund": "(coachPriceEgp * sessionsUsed) // sessionsIncluded",
+    "sessionsIncluded": "liveSessionsPerMonth * durationDays // 28",
+    "monthlyEquivalent": "priceFinalEgp * 28 // durationDays"
+  },
+  "ids": {
+    "paymentCode": "^OH[0-9A-HJKMNP-TV-Z]{6}$",
+    "paymentCodeAlphabet": "0123456789ABCDEFGHJKMNPQRSTVWXYZ",
+    "relationshipId": "{coachUid}__{clientUid}",
+    "receiptNumber": "OH-{yyyy}-{seq:06d}",
+    "paymentRefDoc": "{rail}_{normalisedReference}"
+  },
+  "rails": {
+    "instapay": {
+      "accountPattern": "^[a-z0-9._-]{3,40}@instapay$",
+      "referencePattern": "^[A-Za-z0-9-]{6,40}$"
+    },
+    "vodafoneCash": {
+      "accountPattern": "^010[0-9]{8}$",
+      "referencePattern": "^[A-Za-z0-9-]{6,40}$"
+    }
+  },
+  "sessionLinkHosts": [
+    "meet.google.com",
+    "zoom.us",
+    "*.zoom.us",
+    "teams.microsoft.com",
+    "teams.live.com"
+  ],
+  "enums": {
+    "applicationStatus": [
+      "submitted",
+      "needs_changes",
+      "approved",
+      "rejected"
+    ],
+    "applicationDecision": [
+      "approve",
+      "needs_changes",
+      "reject"
+    ],
+    "applicationSections": [
+      "personal",
+      "education",
+      "certificates",
+      "specialties",
+      "feedback",
+      "transformations",
+      "approach",
+      "payout",
+      "terms"
+    ],
+    "sectionReasons": [
+      "missing",
+      "unclear",
+      "unverifiable",
+      "not_allowed",
+      "other"
+    ],
+    "coachV": [
+      "active",
+      "suspended"
+    ],
+    "specialties": [
+      "strength",
+      "fatLoss",
+      "muscleGain",
+      "beginners",
+      "homeTraining",
+      "gymTraining",
+      "mobility",
+      "postnatalReturn",
+      "healthyEating",
+      "endurance"
+    ],
+    "languages": [
+      "ar",
+      "en"
+    ],
+    "trainsWhere": [
+      "home",
+      "gym",
+      "online"
+    ],
+    "replyHours": [
+      4,
+      12,
+      24,
+      48
+    ],
+    "coachRules": [
+      "accurateInfo",
+      "clientPhotoConsent",
+      "noOffPlatformPayment"
+    ],
+    "testimonialSource": [
+      "whatsapp",
+      "instagram",
+      "inPerson",
+      "other"
+    ],
+    "governorates": [
+      "cairo",
+      "giza",
+      "alexandria",
+      "qalyubia",
+      "sharqia",
+      "dakahlia",
+      "gharbia",
+      "monufia",
+      "beheira",
+      "kafrElSheikh",
+      "damietta",
+      "portSaid",
+      "ismailia",
+      "suez",
+      "northSinai",
+      "southSinai",
+      "redSea",
+      "matrouh",
+      "faiyum",
+      "beniSuef",
+      "minya",
+      "asyut",
+      "sohag",
+      "qena",
+      "luxor",
+      "aswan",
+      "newValley"
+    ],
+    "subscriptionStatus": [
+      "requested",
+      "awaiting_payment",
+      "payment_review",
+      "active",
+      "ended",
+      "declined",
+      "cancelled",
+      "expired",
+      "payment_failed",
+      "ended_early"
+    ],
+    "subscriptionOpen": [
+      "requested",
+      "awaiting_payment",
+      "payment_review",
+      "active"
+    ],
+    "requestDecision": [
+      "accept",
+      "decline"
+    ],
+    "declineReasons": [
+      "full",
+      "not_a_fit",
+      "needs_doctor",
+      "other"
+    ],
+    "proofStatus": [
+      "pending",
+      "approved",
+      "rejected"
+    ],
+    "proofDecision": [
+      "approve",
+      "reject"
+    ],
+    "proofRejectReasons": [
+      "amount_wrong",
+      "not_received",
+      "unreadable",
+      "wrong_account",
+      "duplicate",
+      "other"
+    ],
+    "proofFlags": [
+      "duplicateReference",
+      "sameImage",
+      "nearImage",
+      "amountDiffers",
+      "paidBeforeAccept"
+    ],
+    "cancellationState": [
+      "requested",
+      "refunded",
+      "declined"
+    ],
+    "refundDecision": [
+      "refund",
+      "decline"
+    ],
+    "ledgerStatus": [
+      "pending",
+      "eligible",
+      "paid",
+      "reversed"
+    ],
+    "payoutAccountState": [
+      "none",
+      "confirmed",
+      "pending",
+      "rejected"
+    ],
+    "relationshipStatus": [
+      "none",
+      "active",
+      "ended"
+    ],
+    "messageTypeClient": [
+      "text",
+      "recipe"
+    ],
+    "messageTypeServer": [
+      "workoutPlan",
+      "mealPlan",
+      "session",
+      "system"
+    ],
+    "systemMessageKinds": [
+      "started",
+      "ended",
+      "endsSoon",
+      "planUpdated",
+      "sessionConfirmed",
+      "sessionDone",
+      "hidden"
+    ],
+    "planKind": [
+      "workout",
+      "meal"
+    ],
+    "sessionStatus": [
+      "proposed",
+      "confirmed",
+      "declined",
+      "done",
+      "cancelled"
+    ],
+    "sessionDecision": [
+      "confirm",
+      "decline"
+    ],
+    "goals": [
+      "stronger",
+      "buildMuscle",
+      "loseSteadily",
+      "feelBetter",
+      "backIntoIt"
+    ],
+    "levels": [
+      "beginner",
+      "intermediate",
+      "advanced"
+    ],
+    "places": [
+      "home",
+      "gym",
+      "both"
+    ],
+    "budgetBands": [
+      "under1500",
+      "from1500to3000",
+      "over3000"
+    ],
+    "healthQuestions": [
+      "heart",
+      "chestPain",
+      "dizziness",
+      "chronicCondition",
+      "medication",
+      "boneJoint",
+      "supervisedOnly"
+    ],
+    "mealSlots": [
+      "breakfast",
+      "lunch",
+      "dinner",
+      "snack"
+    ],
+    "mealItemKind": [
+      "recipe",
+      "food",
+      "free"
+    ],
+    "reportSubjectKinds": [
+      "coachMessage",
+      "coachProfile",
+      "coachPlan"
+    ],
+    "reportReasons": [
+      "harassment",
+      "man_account",
+      "nudity",
+      "spam",
+      "impersonation",
+      "self_harm",
+      "off_platform_payment",
+      "unsafe_advice",
+      "other"
+    ],
+    "endReasons": [
+      "refund",
+      "dispute",
+      "coach_left",
+      "client_left",
+      "safety",
+      "other"
+    ],
+    "pushKinds": [
+      "coachDecision",
+      "coachingRequest",
+      "requestAnswered",
+      "paymentApproved",
+      "paymentRejected",
+      "coachingStarted",
+      "planShared",
+      "newMessage",
+      "sessionProposed",
+      "endsSoon",
+      "coachingEnded",
+      "payoutRecorded",
+      "portfolioDecision"
+    ],
+    "reportDecision": [
+      "dismiss",
+      "hide_message",
+      "suspend_coach",
+      "end_coaching"
+    ],
+    "paymentState": [
+      "awaiting",
+      "review",
+      "rejected",
+      "approved"
+    ],
+    "mediaKind": [
+      "transformation",
+      "feedback",
+      "photo"
+    ],
+    "mediaStatus": [
+      "pending",
+      "needsConsent",
+      "approved",
+      "rejected"
+    ],
+    "mediaDecision": [
+      "approve",
+      "reject"
+    ],
+    "mediaRejectReasons": [
+      "unclear",
+      "not_allowed",
+      "no_consent",
+      "other"
+    ]
+  },
+  "consents": {
+    "coachTerms": "users/{uid}/consents/coach-terms-v1",
+    "coachingShare": "users/{uid}/consents/coaching-share-v1",
+    "paymentProof": "users/{uid}/consents/payment-proof-v1",
+    "transferAbroad": "users/{uid}/consents/transfer-abroad-v1",
+    "fields": [
+      "version",
+      "at",
+      "locale"
+    ]
+  },
+  "documents": {
+    "coachApplication": {
+      "path": "coachApplications/{uid}",
+      "writer": "server",
+      "keys": [
+        "status",
+        "round",
+        "personal",
+        "education",
+        "certificates",
+        "specialties",
+        "qualifications",
+        "yearsExperience",
+        "testimonials",
+        "transformations",
+        "approach",
+        "payout",
+        "termsVersion",
+        "rules",
+        "reasons",
+        "note",
+        "submittedAt",
+        "decidedAt",
+        "decidedBy"
+      ],
+      "personal": [
+        "fullName",
+        "displayName",
+        "governorate",
+        "languages",
+        "headline",
+        "photoPath"
+      ],
+      "education": [
+        "degree",
+        "institution",
+        "year",
+        "path"
+      ],
+      "certificate": [
+        "id",
+        "title",
+        "issuer",
+        "year",
+        "path",
+        "mime"
+      ],
+      "testimonial": [
+        "text",
+        "from",
+        "source",
+        "imagePath"
+      ],
+      "transformation": [
+        "beforePath",
+        "afterPath",
+        "weeks",
+        "note",
+        "clientConsent"
+      ],
+      "approach": [
+        "text",
+        "checkInsPerWeek",
+        "replyHours",
+        "trainsWhere"
+      ],
+      "payout": [
+        "rail",
+        "account",
+        "holderName"
+      ],
+      "note": "payout is optional in the submitted application (null when absent); coachPrivate.payoutState is none until a payout account is added."
+    },
+    "coach": {
+      "path": "coaches/{uid}",
+      "writer": "server",
+      "keys": [
+        "displayName",
+        "headline",
+        "photoUrl",
+        "governorate",
+        "languages",
+        "specialties",
+        "approach",
+        "yearsExperience",
+        "certificates",
+        "testimonials",
+        "badges",
+        "stats",
+        "fromPriceEgp",
+        "fromMonthlyEgp",
+        "acceptingClients",
+        "autoAccept",
+        "maxActiveClients",
+        "activeClients",
+        "published",
+        "replyHours",
+        "trainsWhere",
+        "updatedAt"
+      ],
+      "publicCertificate": [
+        "title",
+        "issuer",
+        "year"
+      ],
+      "publicTestimonial": [
+        "text",
+        "from"
+      ],
+      "stats": [
+        "clientsCoached",
+        "plansShared",
+        "sessionsDone"
+      ],
+      "badges": [
+        "verifiedCoach",
+        "certificatesChecked",
+        "yearsCoaching"
+      ]
+    },
+    "package": {
+      "path": "coaches/{uid}/packages/{packageId}",
+      "writer": "server",
+      "keys": [
+        "title",
+        "description",
+        "durationDays",
+        "includes",
+        "liveSessionsPerMonth",
+        "sessionMinutes",
+        "checkInsPerWeek",
+        "priceFinalEgp",
+        "active",
+        "order",
+        "updatedAt"
+      ]
+    },
+    "draft": {
+      "path": "coaches/{uid}/drafts/{draftId}",
+      "writer": "coach",
+      "keys": [
+        "kind",
+        "name",
+        "body",
+        "updatedAt"
+      ]
+    },
+    "coachPrivate": {
+      "path": "coachPrivate/{uid}",
+      "writer": "server",
+      "keys": [
+        "fullName",
+        "payout",
+        "payoutState",
+        "pendingPayout",
+        "owedEgp",
+        "paidEgp",
+        "updatedAt",
+        "payoutNameMatches",
+        "suspendReason",
+        "suspendedAt",
+        "suspended",
+        "claimPending"
+      ]
+    },
+    "coachPrice": {
+      "path": "coachPrivate/{uid}/prices/{packageId}",
+      "writer": "server",
+      "keys": [
+        "coachPriceEgp",
+        "priceFinalEgp",
+        "updatedAt"
+      ]
+    },
+    "ledgerEntry": {
+      "path": "coachPrivate/{uid}/ledger/{subId}",
+      "writer": "server",
+      "keys": [
+        "subId",
+        "clientLabel",
+        "packageTitle",
+        "coachAmountEgp",
+        "status",
+        "eligibleAt",
+        "payoutId",
+        "createdAt"
+      ]
+    },
+    "payout": {
+      "path": "coachPrivate/{uid}/payouts/{payoutId}",
+      "writer": "server",
+      "keys": [
+        "amountEgp",
+        "rail",
+        "reference",
+        "paidAt",
+        "entryIds",
+        "recordedBy",
+        "createdAt"
+      ]
+    },
+    "relationship": {
+      "path": "relationships/{coachUid}__{clientUid}",
+      "writer": "server",
+      "keys": [
+        "coachUid",
+        "clientUid",
+        "status",
+        "chatOpen",
+        "activeSubId",
+        "lastMessageAt",
+        "lastMessage",
+        "unreadFor",
+        "lastPushAt",
+        "createdAt"
+      ],
+      "lastMessage": [
+        "text",
+        "type",
+        "senderUid",
+        "at"
+      ],
+      "note": "lastMessage.text is at most 80 characters and empty for a hidden message; unreadFor maps a party's uid to her unread count. Both are written by the message trigger and mark_thread_read, never by a client."
+    },
+    "message": {
+      "path": "relationships/{relId}/messages/{messageId}",
+      "writer": "client for text and recipe, server for the rest",
+      "clientKeys": [
+        "senderUid",
+        "type",
+        "text",
+        "recipeId",
+        "createdAt"
+      ],
+      "serverKeys": [
+        "senderUid",
+        "type",
+        "text",
+        "planId",
+        "planKind",
+        "planName",
+        "sessionId",
+        "startsAt",
+        "minutes",
+        "systemKind",
+        "hidden",
+        "createdAt",
+        "hiddenReason"
+      ]
+    },
+    "read": {
+      "path": "relationships/{relId}/reads/{uid}",
+      "writer": "that party",
+      "keys": [
+        "at"
+      ]
+    },
+    "subscription": {
+      "path": "subscriptions/{subId}",
+      "writer": "server",
+      "keys": [
+        "coachUid",
+        "clientUid",
+        "relId",
+        "packageId",
+        "package",
+        "priceFinalEgp",
+        "status",
+        "intake",
+        "payTo",
+        "paymentCode",
+        "payBy",
+        "payment",
+        "sessionsIncluded",
+        "sessionsUsed",
+        "startsAt",
+        "endsAt",
+        "cancellation",
+        "refund",
+        "endReason",
+        "createdAt",
+        "statusAt",
+        "endsSoonSent",
+        "acceptedAt",
+        "declineReason",
+        "free",
+        "clientName",
+        "nextSessionAt"
+      ],
+      "packageSnapshot": [
+        "title",
+        "description",
+        "durationDays",
+        "includes",
+        "liveSessionsPerMonth",
+        "sessionMinutes",
+        "checkInsPerWeek"
+      ],
+      "intake": [
+        "goal",
+        "level",
+        "daysPerWeek",
+        "place",
+        "allergies",
+        "lifeStage",
+        "health",
+        "doctorAck",
+        "note"
+      ],
+      "payment": [
+        "state",
+        "attempts",
+        "lastReason",
+        "proofId"
+      ],
+      "payTo": [
+        "instapay",
+        "vodafoneCash",
+        "version"
+      ],
+      "cancellation": [
+        "state",
+        "requestedAt",
+        "refundEgp",
+        "reason"
+      ],
+      "refund": [
+        "amountEgp",
+        "rail",
+        "reference",
+        "at"
+      ],
+      "note": "end_coaching with a refundReference stores refund {reference, at}; a declined cancellation may be asked again. free is true when the coaching started without a payment (no payTo, paymentCode, ledger line or receipt). clientName is her first name only, as she typed it in the request (first word, no digits; empty if she left it empty, never taken from her account); nextSessionAt is the earliest upcoming proposed or confirmed session, null when there is none, and null once the coaching ends."
+    },
+    "session": {
+      "path": "subscriptions/{subId}/sessions/{sessionId}",
+      "writer": "server",
+      "keys": [
+        "startsAt",
+        "minutes",
+        "link",
+        "status",
+        "proposedBy",
+        "doneBy",
+        "createdAt",
+        "statusAt"
+      ],
+      "note": "doneBy is a list. A session is done, and counts as used, only when both the client and the coach have marked it. Sessions are frozen (no schedule, respond or mark) while a cancellation is requested."
+    },
+    "paymentProof": {
+      "path": "paymentProofs/{proofId}",
+      "writer": "server",
+      "keys": [
+        "subId",
+        "clientUid",
+        "coachUid",
+        "rail",
+        "reference",
+        "amountEgp",
+        "expectedEgp",
+        "paidAt",
+        "senderName",
+        "imagePath",
+        "sha256",
+        "dHash",
+        "flags",
+        "status",
+        "reason",
+        "createdAt",
+        "decidedBy",
+        "decidedAt",
+        "imageDeletePending"
+      ]
+    },
+    "paymentRef": {
+      "path": "paymentRefs/{rail}_{normalisedReference}",
+      "writer": "server",
+      "keys": [
+        "subId",
+        "proofId",
+        "createdAt"
+      ]
+    },
+    "receipt": {
+      "path": "receipts/{subId}",
+      "writer": "server",
+      "keys": [
+        "number",
+        "clientUid",
+        "seller",
+        "line",
+        "coachName",
+        "priceFinalEgp",
+        "vatRatePercent",
+        "vatEgp",
+        "issuedAt",
+        "refund"
+      ]
+    },
+    "receivingAccounts": {
+      "path": "coachingConfig/receivingAccounts",
+      "writer": "server",
+      "keys": [
+        "instapay",
+        "vodafoneCash",
+        "version",
+        "updatedAt"
+      ],
+      "account": [
+        "address",
+        "holderName",
+        "enabled"
+      ]
+    },
+    "seller": {
+      "path": "coachingConfig/seller",
+      "writer": "server",
+      "keys": [
+        "companyNameEn",
+        "companyNameAr",
+        "addressEn",
+        "addressAr",
+        "commercialRegistration",
+        "taxCard",
+        "vatRatePercent",
+        "supportEmail",
+        "supportPhone",
+        "updatedAt"
+      ]
+    },
+    "coachPlan": {
+      "path": "plans/{clientUid}/coachPlans/{planId}",
+      "writer": "server",
+      "keys": [
+        "kind",
+        "coachUid",
+        "coachName",
+        "subId",
+        "name",
+        "revision",
+        "body",
+        "publishedAt"
+      ]
+    },
+    "report": {
+      "path": "reports/{reportId}",
+      "writer": "client create (existing rule), server decides",
+      "keys": [
+        "reporterUid",
+        "subjectUid",
+        "subjectKind",
+        "subjectRef",
+        "reason",
+        "note",
+        "state",
+        "createdAt",
+        "locale",
+        "appVersion",
+        "decision",
+        "decidedBy",
+        "decidedAt"
+      ],
+      "subjectRef": "coachMessage: relationships/{relId}/messages/{messageId}; coachProfile: coaches/{uid}; coachPlan: plans/{clientUid}/coachPlans/{planId}"
+    },
+    "subscriptionTerms": {
+      "path": "subscriptions/{subId}/private/terms",
+      "writer": "server",
+      "reader": "nobody (closed to clients: holds the coach's own price)",
+      "keys": [
+        "coachPriceEgp",
+        "packageId",
+        "createdAt"
+      ]
+    },
+    "receiptCounter": {
+      "path": "coachingConfig/receiptCounter",
+      "writer": "server",
+      "keys": [
+        "year",
+        "seq"
+      ]
+    },
+    "portfolioMedia": {
+      "path": "coaches/{uid}/media/{mediaId}",
+      "writer": "server",
+      "keys": [
+        "coachUid",
+        "kind",
+        "status",
+        "createdAt",
+        "beforePath",
+        "afterPath",
+        "weeks",
+        "note",
+        "clientConsentPublic",
+        "consent",
+        "text",
+        "from",
+        "imagePath",
+        "caption",
+        "publicPaths",
+        "reason",
+        "decidedAt",
+        "decidedBy"
+      ],
+      "consent": [
+        "at",
+        "termsVersion"
+      ],
+      "publicPaths": [
+        "before",
+        "after",
+        "image"
+      ],
+      "note": "Members read it only when status is approved. The private paths stay in the doc but only the reviewer and the coach can open those files; members open publicPaths (coach-public/{uid}/media/{mediaId}_{before|after|image}.jpg). Application items use the ids app-t{n} (needsConsent) and app-f{n}."
+    }
+  },
+  "planBodies": {
+    "workout": "MyPlan.toJson() shape (app/lib/features/train/domain/my_plan.dart): at most planMaxDays days; every exerciseId is in functions/exercise_library_contract.json",
+    "meal": {
+      "days": [
+        {
+          "label": "<= 40 chars",
+          "slots": {
+            "breakfast": [],
+            "lunch": [],
+            "dinner": [],
+            "snack": []
+          }
+        }
+      ],
+      "item": {
+        "kind": "recipe|food|free",
+        "recipeId": "<recipe id>",
+        "foodId": "<food id>",
+        "servings": "0.25..6",
+        "grams": "1..2000",
+        "text": "<= 80 chars, free only",
+        "note": "<= 120 chars"
+      },
+      "rule": "No nutrition figures in the body. The phone computes them from the verified food pack and recipe library."
+    }
+  },
+  "callables": {
+    "submit_coach_application": {
+      "who": "verified member, not already a coach, no open application",
+      "module": "coaching.applications.submit",
+      "requestKeys": [
+        "personal",
+        "education",
+        "certificates",
+        "specialties",
+        "qualifications",
+        "yearsExperience",
+        "testimonials",
+        "transformations",
+        "approach",
+        "payout",
+        "termsVersion",
+        "rules",
+        "locale"
+      ],
+      "responseKeys": [
+        "status",
+        "round"
+      ]
+    },
+    "list_coach_applications": {
+      "who": "womanReviewer or admin",
+      "module": "coaching.applications.list_for_review",
+      "requestKeys": [
+        "status",
+        "after"
+      ],
+      "responseKeys": [
+        "items",
+        "next"
+      ]
+    },
+    "decide_coach_application": {
+      "who": "womanReviewer or admin",
+      "module": "coaching.applications.decide",
+      "requestKeys": [
+        "uid",
+        "decision",
+        "reasons",
+        "checkedCertificates",
+        "note"
+      ],
+      "responseKeys": [
+        "status"
+      ],
+      "note": "The coach claim is minted after the decision commits; a failed mint leaves coachPrivate.claimPending for the sweeper to retry."
+    },
+    "suspend_coach": {
+      "who": "admin",
+      "module": "coaching.claims.suspend",
+      "requestKeys": [
+        "uid",
+        "reason"
+      ],
+      "responseKeys": [
+        "coachV"
+      ]
+    },
+    "update_coach_profile": {
+      "who": "coach (coachV active)",
+      "module": "coaching.profiles.update",
+      "requestKeys": [
+        "headline",
+        "approachText",
+        "photoPath",
+        "acceptingClients",
+        "autoAccept",
+        "maxActiveClients"
+      ],
+      "responseKeys": [
+        "ok"
+      ]
+    },
+    "request_payout_account_change": {
+      "who": "coach",
+      "module": "coaching.profiles.request_payout_change",
+      "requestKeys": [
+        "rail",
+        "account",
+        "holderName"
+      ],
+      "responseKeys": [
+        "state"
+      ]
+    },
+    "confirm_payout_account": {
+      "who": "finance or admin",
+      "module": "coaching.profiles.confirm_payout",
+      "requestKeys": [
+        "uid",
+        "decision"
+      ],
+      "responseKeys": [
+        "state"
+      ]
+    },
+    "save_coach_package": {
+      "who": "coach",
+      "module": "coaching.packages.save",
+      "requestKeys": [
+        "packageId",
+        "title",
+        "description",
+        "durationDays",
+        "includes",
+        "liveSessionsPerMonth",
+        "sessionMinutes",
+        "checkInsPerWeek",
+        "coachPriceEgp",
+        "active",
+        "order"
+      ],
+      "responseKeys": [
+        "packageId",
+        "priceFinalEgp",
+        "youReceiveEgp"
+      ]
+    },
+    "request_coaching": {
+      "who": "verified member, not blocked either way, coach published and accepting",
+      "module": "coaching.subscriptions.request",
+      "requestKeys": [
+        "coachUid",
+        "packageId",
+        "intake",
+        "locale",
+        "clientName"
+      ],
+      "responseKeys": [
+        "subId",
+        "status"
+      ],
+      "note": "No price travels in the request. Auto-accept moves straight to awaiting_payment when the coach has autoAccept on, is under maxActiveClients and no health answer is yes."
+    },
+    "respond_coaching_request": {
+      "who": "coach, her own request",
+      "module": "coaching.subscriptions.respond",
+      "requestKeys": [
+        "subId",
+        "decision",
+        "reason"
+      ],
+      "responseKeys": [
+        "status"
+      ]
+    },
+    "end_my_coaching": {
+      "who": "the client or the coach of the subscription",
+      "module": "coaching.subscriptions.end_mine",
+      "requestKeys": [
+        "subId",
+        "reason"
+      ],
+      "responseKeys": [
+        "status"
+      ],
+      "note": "Clients switch. reason is optional text, checked and not kept. requested becomes cancelled; awaiting_payment and active become ended_early with endReason client_left or coach_left (active also closes the chat, frees the place and adds the ended line). payment_review and a requested cancellation are refused wrong_status. The other party is pushed coachingEnded. A block between the two ends any open coaching the same way with endReason safety and no push; plan, session and request calls then refuse coach_unavailable."
+    },
+    "cancel_coaching_request": {
+      "who": "the client, before payment_review",
+      "module": "coaching.subscriptions.cancel_request",
+      "requestKeys": [
+        "subId"
+      ],
+      "responseKeys": [
+        "status"
+      ]
+    },
+    "submit_payment_proof": {
+      "who": "the client, status awaiting_payment, before payBy",
+      "module": "coaching.proofs.submit",
+      "requestKeys": [
+        "subId",
+        "rail",
+        "reference",
+        "amountEgp",
+        "paidAt",
+        "senderName",
+        "imageJpeg",
+        "locale"
+      ],
+      "responseKeys": [
+        "status",
+        "proofId"
+      ]
+    },
+    "list_payment_proofs": {
+      "who": "finance or admin",
+      "module": "coaching.proofs.list_for_staff",
+      "requestKeys": [
+        "status",
+        "after"
+      ],
+      "responseKeys": [
+        "items",
+        "next"
+      ]
+    },
+    "decide_payment_proof": {
+      "who": "finance or admin",
+      "module": "coaching.proofs.decide",
+      "requestKeys": [
+        "proofId",
+        "decision",
+        "reason"
+      ],
+      "responseKeys": [
+        "status"
+      ]
+    },
+    "request_cancellation": {
+      "who": "the client, active, within cancelWindowDays of startsAt",
+      "module": "coaching.refunds.request",
+      "requestKeys": [
+        "subId",
+        "reason"
+      ],
+      "responseKeys": [
+        "state",
+        "refundEgp"
+      ]
+    },
+    "list_refund_requests": {
+      "who": "finance or admin",
+      "module": "coaching.refunds.list_for_staff",
+      "requestKeys": [
+        "after"
+      ],
+      "responseKeys": [
+        "items",
+        "next"
+      ]
+    },
+    "record_refund": {
+      "who": "finance or admin",
+      "module": "coaching.refunds.record",
+      "requestKeys": [
+        "subId",
+        "decision",
+        "rail",
+        "reference",
+        "amountEgp"
+      ],
+      "responseKeys": [
+        "status"
+      ],
+      "note": "amountEgp must equal the server's refund_amount(price, sessionsUsed, sessionsIncluded) at record time; rail must be the rail she paid by."
+    },
+    "end_coaching": {
+      "who": "finance or admin",
+      "module": "coaching.subscriptions.end_early",
+      "requestKeys": [
+        "subId",
+        "reason",
+        "rail",
+        "refundEgp",
+        "refundReference"
+      ],
+      "responseKeys": [
+        "status"
+      ],
+      "note": "Refused while a cancellation is requested (record_refund handles that). With a refund: rail, refundEgp (0..price) and refundReference together; the coach's share becomes coachPrice * (price - refund) // price."
+    },
+    "list_payouts_owed": {
+      "who": "finance or admin",
+      "module": "coaching.payouts.owed",
+      "requestKeys": [],
+      "responseKeys": [
+        "coaches"
+      ]
+    },
+    "record_coach_payout": {
+      "who": "finance or admin",
+      "module": "coaching.payouts.record",
+      "requestKeys": [
+        "coachUid",
+        "entryIds",
+        "rail",
+        "reference",
+        "paidAt"
+      ],
+      "responseKeys": [
+        "payoutId",
+        "amountEgp"
+      ]
+    },
+    "get_receiving_accounts": {
+      "who": "finance or admin",
+      "module": "coaching.receiving.get",
+      "requestKeys": [],
+      "responseKeys": [
+        "instapay",
+        "vodafoneCash",
+        "version",
+        "seller"
+      ],
+      "note": "seller is the stored coachingConfig/seller (without updatedAt), or null before it is set"
+    },
+    "set_receiving_accounts": {
+      "who": "admin",
+      "module": "coaching.receiving.set_accounts",
+      "requestKeys": [
+        "instapay",
+        "vodafoneCash"
+      ],
+      "responseKeys": [
+        "version"
+      ]
+    },
+    "set_seller_details": {
+      "who": "admin",
+      "module": "coaching.receiving.set_seller",
+      "requestKeys": [
+        "companyNameEn",
+        "companyNameAr",
+        "addressEn",
+        "addressAr",
+        "commercialRegistration",
+        "taxCard",
+        "vatRatePercent",
+        "supportEmail",
+        "supportPhone"
+      ],
+      "responseKeys": [
+        "ok"
+      ]
+    },
+    "publish_coach_plan": {
+      "who": "coach, active subscription",
+      "module": "coaching.plans.publish",
+      "requestKeys": [
+        "subId",
+        "kind",
+        "name",
+        "body",
+        "planId"
+      ],
+      "responseKeys": [
+        "planId",
+        "revision"
+      ]
+    },
+    "schedule_live_session": {
+      "who": "coach, active subscription",
+      "module": "coaching.sessions.schedule",
+      "requestKeys": [
+        "subId",
+        "startsAt",
+        "minutes",
+        "link"
+      ],
+      "responseKeys": [
+        "sessionId"
+      ]
+    },
+    "respond_live_session": {
+      "who": "the client, active subscription",
+      "module": "coaching.sessions.respond",
+      "requestKeys": [
+        "subId",
+        "sessionId",
+        "decision"
+      ],
+      "responseKeys": [
+        "status"
+      ]
+    },
+    "mark_session_done": {
+      "who": "either party, a confirmed session that has started",
+      "module": "coaching.sessions.mark_done",
+      "requestKeys": [
+        "subId",
+        "sessionId"
+      ],
+      "responseKeys": [
+        "status",
+        "sessionsUsed"
+      ],
+      "note": "Each party marks once; status stays confirmed until both have, then done and sessionsUsed + 1."
+    },
+    "record_signup_role": {
+      "who": "member",
+      "module": "coaching.roles.record",
+      "requestKeys": [
+        "role"
+      ],
+      "responseKeys": [
+        "ok",
+        "held"
+      ],
+      "note": "coach or both only when coachV is active"
+    },
+    "list_coaching_reports": {
+      "who": "womanReviewer or admin",
+      "module": "coaching.moderation.list_for_staff",
+      "requestKeys": [
+        "state",
+        "after"
+      ],
+      "responseKeys": [
+        "items",
+        "next"
+      ],
+      "note": "Reports are created by the client in reports/{id} (firestore.rules) with subjectKind in reportSubjectKinds; staff read them only through this callable."
+    },
+    "decide_coaching_report": {
+      "who": "womanReviewer or admin",
+      "module": "coaching.moderation.decide",
+      "requestKeys": [
+        "reportId",
+        "decision",
+        "note"
+      ],
+      "responseKeys": [
+        "state"
+      ]
+    },
+    "mark_thread_read": {
+      "who": "a party of the thread",
+      "module": "coaching.chat.mark_read",
+      "requestKeys": [
+        "relId"
+      ],
+      "responseKeys": [
+        "ok"
+      ]
+    },
+    "add_portfolio_media": {
+      "who": "coach (active)",
+      "module": "coaching.media.add",
+      "requestKeys": [
+        "kind",
+        "beforePath",
+        "afterPath",
+        "weeks",
+        "note",
+        "clientConsentPublic",
+        "text",
+        "from",
+        "imagePath",
+        "caption"
+      ],
+      "responseKeys": [
+        "mediaId",
+        "status"
+      ]
+    },
+    "remove_portfolio_media": {
+      "who": "coach (own item; a suspended coach may too)",
+      "module": "coaching.media.remove",
+      "requestKeys": [
+        "mediaId"
+      ],
+      "responseKeys": [
+        "removed"
+      ]
+    },
+    "confirm_portfolio_consent": {
+      "who": "coach (active)",
+      "module": "coaching.media.confirm_consent",
+      "requestKeys": [
+        "mediaId"
+      ],
+      "responseKeys": [
+        "status"
+      ]
+    },
+    "list_portfolio_media": {
+      "who": "womanReviewer (not admin)",
+      "module": "coaching.media.list_for_review",
+      "requestKeys": [
+        "status",
+        "after"
+      ],
+      "responseKeys": [
+        "items",
+        "next"
+      ],
+      "note": "after is the previous next, \"coachUid/mediaId\". Items carry coachUid, mediaId, coachName and the private paths the reviewer reads."
+    },
+    "decide_portfolio_media": {
+      "who": "womanReviewer (not admin)",
+      "module": "coaching.media.decide",
+      "requestKeys": [
+        "coachUid",
+        "mediaId",
+        "decision",
+        "reason"
+      ],
+      "responseKeys": [
+        "status"
+      ]
+    }
+  },
+  "triggers": {
+    "on_coaching_message": "relationships/{relId}/messages/{messageId} created: screen the text, hide it when the screen fails, set lastMessageAt, lastMessage and the other party's unreadFor, push the other party at most once per pushThrottleMinutes",
+    "coaching_sweeper": "every 1 hours: expire requests, end finished ones and send the endsSoon push (clients switch); expire unpaid subscriptions, ledger pending to eligible and alert on proof images older than proofImageAlertDays (payments switch); retry missed coach claims always"
+  },
+  "reasons": [
+    "coach_app_closed",
+    "not_verified",
+    "not_a_coach",
+    "bad_request",
+    "certificate_not_uploaded",
+    "too_many_certificates",
+    "invite_invalid",
+    "invite_expired",
+    "invite_own",
+    "already_a_coach",
+    "application_open",
+    "application_incomplete",
+    "file_not_uploaded",
+    "application_not_found",
+    "coach_suspended",
+    "coach_unavailable",
+    "package_not_found",
+    "too_many_packages",
+    "price_out_of_range",
+    "already_requested",
+    "request_not_found",
+    "wrong_status",
+    "past_pay_by",
+    "reference_used",
+    "proof_not_found",
+    "attempts_exhausted",
+    "image_invalid",
+    "cancel_window_closed",
+    "payout_account_pending",
+    "nothing_owed",
+    "accounts_not_set",
+    "seller_not_set",
+    "plan_invalid",
+    "plan_too_large",
+    "session_link_invalid",
+    "session_not_found",
+    "session_not_started",
+    "report_not_found",
+    "staff_is_subject",
+    "media_not_found",
+    "too_many_media"
+  ],
+  "reasonNotes": {
+    "coach_unavailable": "One reason for every case where she cannot request this coach: not published, not accepting, full, or a block either way. A block is never signalled.",
+    "wrong_status": "The subscription, proof or session is not in a status that allows this call. Refresh and try again.",
+    "reference_used": "That transfer reference is already attached to another payment.",
+    "staff_is_subject": "Staff cannot decide their own application, payment, refund, payout or report."
+  }
+}

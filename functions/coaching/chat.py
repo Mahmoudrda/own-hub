@@ -1,0 +1,235 @@
+"""The coaching chat's screen and the trigger that applies it.
+
+A coach and a client talk inside Own Hub so a payment, a phone number or a link
+to somewhere else cannot move the relationship off the platform (the coach
+rules forbid off-platform payment, and a woman's number is hers to keep). The
+phone refuses these before sending; this is the same check on the server, run
+on every message that reaches Firestore, for a client that did not.
+
+`screen` and the app's ChatScreen give one verdict for every case in
+contracts/coaching_chat_screen_vectors.json.
+"""
+
+from __future__ import annotations
+
+import datetime as dt
+import re
+import unicodedata
+from typing import Optional
+
+from google.cloud import firestore
+
+from identity import arabic
+
+from . import common, errors
+
+LIMITS = common.LIMITS
+ENUMS = common.ENUMS
+
+CONTACT, PAYMENT, LINK, ABUSE = "contact", "payment", "link", "abuse"
+
+_INVISIBLE = re.compile("[​-‏‪-‮⁦-⁩ـ﻿]")
+_MARKS = re.compile("[ً-ٰٟ]")
+
+
+def normalise(text: str) -> str:
+    """Lower case, every decimal digit (Arabic-Indic, Persian, full width) as
+    0-9, zero-width marks and diacritics gone, Arabic letter variants folded."""
+    out = []
+    for ch in unicodedata.normalize("NFKC", text):
+        if ch.isdigit() and unicodedata.category(ch) == "Nd":
+            ch = str(unicodedata.digit(ch))
+        out.append(ch)
+    folded = "".join(out)
+    folded = _MARKS.sub("", _INVISIBLE.sub("", folded))
+    return folded.translate(arabic._LETTER_FOLD).lower()
+
+
+# ------------------------------------------------------------------- contact --
+
+_NUMBER_RUN = re.compile(r"\+?\d(?:[\s.\-]*\d)*")
+_EG_MOBILE = re.compile(r"(?:\+?20|0020|0)1[0125]\d{8}")
+MIN_NUMBER_DIGITS = 10
+
+
+def _looks_like_counts(run: str) -> bool:
+    """Sets, reps or kilos written in a row ("12 10 10 8 8 6", "22.5 25 27.5"):
+    every number one or two digits and none starting with 0, which no phone
+    number looks like."""
+    if run.startswith("+"):
+        return False
+    groups = [g for g in re.split(r"[\s.\-]+", run) if g]
+    return len(groups) >= 2 and all(len(g) <= 2 and not g.startswith("0") for g in groups)
+
+
+def _has_contact(text: str) -> bool:
+    for run in _NUMBER_RUN.finditer(text):
+        if _looks_like_counts(run.group()):
+            continue
+        digits = re.sub(r"[\s.\-]", "", run.group())
+        if _EG_MOBILE.search(digits) or len(digits.lstrip("+")) >= MIN_NUMBER_DIGITS:
+            return True
+    return False
+
+
+# ------------------------------------------------------------------- payment --
+
+_PAYMENT_NAMES = (
+    "instapay",
+    "insta pay",
+    "vodafone cash",
+    "vodafonecash",
+    "etisalat cash",
+    "orange cash",
+    "we pay",
+    "wepay",
+    "fawry",
+    "فودافون كاش",
+    "فودافون كش",
+    "انستاباي",
+    "انستا باي",
+    "اتصالات كاش",
+    "اورنج كاش",
+    "فوري",
+)
+_PAYMENT = re.compile(
+    r"(?<!\w)(?:" + "|".join(re.escape(n).replace(r"\ ", r"\s+") for n in _PAYMENT_NAMES) + r")(?!\w)"
+)
+
+# ---------------------------------------------------------------------- link --
+
+_TLDS = (
+    "com|net|org|io|me|co|app|eg|info|biz|ly|gl|tv|xyz|link|shop|store|online|site|"
+    "ai|dev|ae|sa|uk|us|ws|cc|to|gg|page|bio"
+)
+_LINK = re.compile(
+    r"https?://|(?<![\w.])www\.|(?<![\w@.-])[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:"
+    + _TLDS
+    + r")(?![\w-])"
+)
+
+# --------------------------------------------------------------------- abuse --
+
+_ABUSE_WORDS = (
+    "stupid", "idiot", "moron", "bitch", "slut", "whore", "fuck", "fucking", "shit",
+    "غبيه", "غبي", "حمار", "حماره", "شرموطه", "قحبه", "عرص", "متخلفه", "متخلف", "زباله",
+)
+_ABUSE = re.compile(r"(?<!\w)(?:" + "|".join(_ABUSE_WORDS) + r")(?!\w)")
+
+
+def screen(text: str) -> Optional[str]:
+    """"contact", "payment", "link" or "abuse", or None when the text is fine."""
+    if not isinstance(text, str):
+        return None
+    folded = normalise(text)
+    if _has_contact(folded):
+        return CONTACT
+    if _PAYMENT.search(folded):
+        return PAYMENT
+    if _LINK.search(folded):
+        return LINK
+    if _ABUSE.search(folded):
+        return ABUSE
+    return None
+
+
+# ------------------------------------------------------------------- trigger --
+
+PREVIEW_CHARS = 80
+
+
+def preview(data: dict, hidden: bool) -> dict:
+    """What the chat list shows for the newest message: the first words of a
+    text, or the kind of message for anything else. A hidden message shows no
+    words at all."""
+    kind = "hidden" if hidden else str(data.get("type") or "text")
+    text = data.get("text")
+    words = text[:PREVIEW_CHARS] if kind == "text" and isinstance(text, str) else ""
+    return {"text": words, "type": kind, "senderUid": data.get("senderUid")}
+
+
+def on_message(
+    db,
+    rel_id: str,
+    message_id: str,
+    data: dict,
+    *,
+    now: dt.datetime,
+    notify: common.Notify,
+) -> dict:
+    """Runs when a message is created. Client messages are screened and hidden
+    when they fail; the other party is pushed at most once per throttle window,
+    and never for a hidden message. Returns what happened, for the logs."""
+    sender = data.get("senderUid")
+    rel_ref = db.collection("relationships").document(rel_id)
+    message_ref = rel_ref.collection("messages").document(message_id)
+    is_client_type = data.get("type") in ENUMS["messageTypeClient"]
+    # Plan and session cards are written by the server and push on their own.
+    is_card = data.get("type") in ENUMS["messageTypeServer"] and data.get("type") != "system"
+
+    reason = None
+    if is_client_type and isinstance(data.get("text"), str):
+        reason = screen(data["text"])
+    hidden = reason is not None or data.get("hidden") is True
+    window = dt.timedelta(minutes=LIMITS["pushThrottleMinutes"])
+
+    def body(transaction):
+        snapshot = rel_ref.get(transaction=transaction)
+        if not snapshot.exists:
+            return None
+        rel = snapshot.to_dict() or {}
+        parties = (rel.get("coachUid"), rel.get("clientUid"))
+        if sender not in parties:
+            return None
+        changes = {"lastMessageAt": now, "lastMessage": {**preview(data, hidden), "at": now}}
+        recipient = None
+        if (is_client_type or is_card) and not hidden:
+            other = parties[1] if sender == parties[0] else parties[0]
+            changes[f"unreadFor.{other}"] = firestore.Increment(1)
+            last = common.as_utc((rel.get("lastPushAt") or {}).get(other))
+            if is_client_type and (last is None or now - last >= window):
+                recipient = other
+                changes[f"lastPushAt.{other}"] = now
+        transaction.update(rel_ref, changes)
+        if reason is not None:
+            transaction.update(
+                message_ref, {"hidden": True, "hiddenReason": reason, "text": ""}
+            )
+            transaction.set(
+                rel_ref.collection("messages").document(f"hidden_{message_id}"),
+                {
+                    "senderUid": sender,
+                    "type": "system",
+                    "systemKind": "hidden",
+                    "createdAt": now,
+                },
+            )
+        return recipient
+
+    recipient = common.run(db, body)
+    if recipient is not None:
+        notify(recipient, "newMessage")
+    return {
+        "hidden": reason is not None,
+        "reason": reason,
+        "pushed": recipient is not None,
+    }
+
+
+def mark_read(db, uid: str, data: dict, *, live: bool, now: dt.datetime) -> dict:
+    """She opened the thread: her unread count is zero and `reads/{uid}` holds
+    the time, in one write. Only the two parties can; anyone else is told the
+    thread does not exist."""
+    common.require_clients_live(live)
+    rel_id = common.text(data.get("relId"), max_len=128)
+    rel_ref = db.collection("relationships").document(rel_id)
+
+    def body(transaction):
+        rel = common.read(rel_ref, transaction)
+        if rel is None or uid not in (rel.get("coachUid"), rel.get("clientUid")):
+            raise common.refuse(errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
+        transaction.update(rel_ref, {f"unreadFor.{uid}": 0})
+        transaction.set(rel_ref.collection("reads").document(uid), {"at": now})
+
+    common.run(db, body)
+    return {"ok": True}

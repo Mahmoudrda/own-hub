@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import datetime as dt
 import functools
+import logging
 import os
 import re
 from typing import Any, Optional
@@ -25,7 +26,6 @@ from . import config, decisions, reasons, review, store
 VIA_PREAPPROVED = "preapproved"
 VIA_TEST_PHONE = "testPhone"
 VIA_STORE_REVIEWER = "storeReviewer"
-VIA_KNOWN_CONTACT = "knownContact"
 APPROVE_REASONS = ("approve", "knownPerson")
 DECLINE_REASONS = ("notClear", "notMatching", "other")
 
@@ -184,7 +184,20 @@ def revoke(reviewer_uid: str, uid: Any) -> str:
     )
     _forget_preapproved(uid)
     rs.log_access(reviewer_uid, flag_id, "revoke")
+    _unpublish_coach(uid)
     return review.STATE_PENDING
+
+
+def _unpublish_coach(uid: str) -> None:
+    """A revoked woman who coaches loses her page. Never fails the revoke."""
+    try:
+        from coaching import claims as coach_claims
+
+        coach_claims.on_verification_revoked(
+            store.db(), uid, dt.datetime.now(dt.timezone.utc)
+        )
+    except Exception:  # noqa: BLE001
+        logging.getLogger(__name__).error("coach_unpublish_after_revoke_failed")
 
 
 def decline(reviewer_uid: str, uid: Any, reason: Any = "other") -> str:
@@ -469,28 +482,6 @@ def claim_fast(uid: str, phone: Optional[str], store_reviewer: bool) -> dict:
         if number:
             store.db().collection(config.COL_PREAPPROVED).document(number).delete()
     return {"state": review.STATE_APPROVED, "via": via}
-
-
-def known_contact_pass(uid: str, reviewer_id: Any) -> bool:
-    """True when she knows a reviewer who auto-passes the people she knows,
-    and she is approved on the spot. False leaves the normal request to run."""
-    if not isinstance(reviewer_id, str) or not reviewer_id or reviewer_id == uid:
-        return False
-    rs = store.FirestoreReviewStore()
-    state = rs.verification_state(uid)
-    if state in (review.STATE_REJECTED, review.STATE_APPROVED) or rs.verify_in_flight(uid):
-        return False
-    if not reviewer_active(reviewer_id):
-        return False
-    settings = reviewer_doc(reviewer_id)
-    if not settings.get("autoPassKnown"):
-        return False
-    if revoked_since_approval(uid):
-        return False
-    approve(reviewer_id, uid, VIA_KNOWN_CONTACT)
-    note_known_reviewer(uid, reviewer_id)
-    _ledger_ref(uid).set({"knownReviewerId": reviewer_id}, merge=True)
-    return True
 
 
 def note_known_reviewer(uid: str, reviewer_id: Any) -> None:

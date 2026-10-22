@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:own_hub/app_state/events_state.dart';
 import 'package:own_hub/app_state/remote_features.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
@@ -102,10 +103,16 @@ class _CountingReader implements EventReader {
   _CountingReader(this.events);
   final List<HubEvent> events;
   int reads = 0;
+  final List<bool> cacheFirstAsked = <bool>[];
 
   @override
-  Future<List<HubEvent>> upcoming(DateTime now, {int limit = 20}) async {
+  Future<List<HubEvent>> upcoming(
+    DateTime now, {
+    int limit = 20,
+    bool cacheFirst = false,
+  }) async {
     reads++;
+    cacheFirstAsked.add(cacheFirst);
     return upcomingOf(events, now);
   }
 }
@@ -298,6 +305,93 @@ void main() {
       now = now.add(const Duration(hours: 2));
       await EventsState.instance.refresh();
       expect(reader.reads, 2);
+    });
+
+    group('across cold starts', () {
+      final now = DateTime.utc(2026, 11, 1, 10);
+
+      Future<String?> storedReadAt() async =>
+          (await SharedPreferences.getInstance()).getString(kEventsReadAtKey);
+
+      setUp(() {
+        TestWidgetsFlutterBinding.ensureInitialized();
+        AppRouter.featureFlags = FeatureFlags.shipped;
+      });
+
+      test('a first launch reads the server and keeps the time', () async {
+        SharedPreferences.setMockInitialValues({});
+        final reader = _CountingReader([_online()]);
+        EventsState.instance.source = () => reader;
+        EventsState.instance.now = () => now;
+        await EventsState.instance.refresh();
+        await Future<void>.delayed(Duration.zero);
+        expect(reader.cacheFirstAsked, [false]);
+        expect(await storedReadAt(), now.toIso8601String());
+      });
+
+      test('a launch inside the hour reads the phone copy first', () async {
+        final before = now.subtract(const Duration(minutes: 20));
+        SharedPreferences.setMockInitialValues({
+          kEventsReadAtKey: before.toIso8601String(),
+        });
+        final reader = _CountingReader([_online()]);
+        EventsState.instance.source = () => reader;
+        EventsState.instance.now = () => now;
+        await EventsState.instance.refresh();
+        await Future<void>.delayed(Duration.zero);
+        expect(reader.cacheFirstAsked, [true]);
+        expect([for (final e in EventsState.instance.upcoming) e.id], ['e1']);
+        // The server time is not moved by a read from the phone.
+        expect(await storedReadAt(), before.toIso8601String());
+        // Still inside the hour from that read: nothing more is asked.
+        await EventsState.instance.refresh();
+        expect(reader.reads, 1);
+      });
+
+      test(
+        'after the hour, or with a forced read, the server answers',
+        () async {
+          SharedPreferences.setMockInitialValues({
+            kEventsReadAtKey: now
+                .subtract(const Duration(minutes: 61))
+                .toIso8601String(),
+          });
+          final reader = _CountingReader([_online()]);
+          EventsState.instance.source = () => reader;
+          EventsState.instance.now = () => now;
+          await EventsState.instance.refresh();
+          expect(reader.cacheFirstAsked, [false]);
+          EventsState.instance.erase();
+          await Future<void>.delayed(Duration.zero);
+          SharedPreferences.setMockInitialValues({
+            kEventsReadAtKey: now
+                .subtract(const Duration(minutes: 5))
+                .toIso8601String(),
+          });
+          await EventsState.instance.refresh(force: true);
+          expect(reader.cacheFirstAsked, [false, false]);
+        },
+      );
+
+      test('a stored time in the future is not trusted', () async {
+        SharedPreferences.setMockInitialValues({
+          kEventsReadAtKey: now.add(const Duration(days: 3)).toIso8601String(),
+        });
+        final reader = _CountingReader([_online()]);
+        EventsState.instance.source = () => reader;
+        EventsState.instance.now = () => now;
+        await EventsState.instance.refresh();
+        expect(reader.cacheFirstAsked, [false]);
+      });
+
+      test('erase forgets the stored time', () async {
+        SharedPreferences.setMockInitialValues({
+          kEventsReadAtKey: now.toIso8601String(),
+        });
+        EventsState.instance.erase();
+        await Future<void>.delayed(Duration.zero);
+        expect(await storedReadAt(), isNull);
+      });
     });
 
     test('switched off again: the list empties', () async {
